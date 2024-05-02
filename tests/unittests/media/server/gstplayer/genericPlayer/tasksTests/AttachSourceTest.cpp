@@ -146,3 +146,18 @@ TEST_F(AttachSourceTest, shouldNotReattachAudioSourceWhenMimeTypeIsEmpty)
     shouldNotSwitchAudioSourceWhenMimeTypeIsEmpty();
     triggerReattachAudioSourceWithEmptyMimeType();
 }
+
+TEST_F(AttachSourceTest, shouldFailToCastAudioSource)
+{
+    triggerFailToCastAudioSource();
+}
+
+TEST_F(AttachSourceTest, shouldFailToCastVideoSource)
+{
+    triggerFailToCastVideoSource();
+}
+
+TEST_F(AttachSourceTest, shouldFailToCastDolbyVisionSource)
+{
+    triggerFailToCastDolbyVisionSource();
+}

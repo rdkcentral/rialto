@@ -175,6 +175,7 @@ void MediaKeysModuleService::createMediaKeys(::google::protobuf::RpcController *
         done->Run();
         return;
     }
+
     int mediaKeysHandle = generateHandle();
     bool mediaKeysCreated = m_cdmService.createMediaKeys(mediaKeysHandle, request->key_system());
     if (mediaKeysCreated)

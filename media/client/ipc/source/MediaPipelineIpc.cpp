@@ -226,53 +226,76 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     if (configType == SourceConfigType::VIDEO_DOLBY_VISION || configType == SourceConfigType::VIDEO ||
         configType == SourceConfigType::AUDIO)
     {
-        IMediaPipeline::MediaSourceAV &mediaSourceAV = dynamic_cast<IMediaPipeline::MediaSourceAV &>(*source);
-        request.set_segment_alignment(convertSegmentAlignment(mediaSourceAV.getSegmentAlignment()));
-
-        if (mediaSourceAV.getCodecData())
+        IMediaPipeline::MediaSourceAV *mediaSourceAV = dynamic_cast<IMediaPipeline::MediaSourceAV *>(source.get());
+        if (!mediaSourceAV)
         {
-            request.mutable_codec_data()->set_data(mediaSourceAV.getCodecData()->data.data(),
-                                                   mediaSourceAV.getCodecData()->data.size());
-            request.mutable_codec_data()->set_type(convertCodecDataType(mediaSourceAV.getCodecData()->type));
+            RIALTO_CLIENT_LOG_ERROR("Failed to get the audio video source");
+            return false;
         }
-        request.set_stream_format(convertStreamFormat(mediaSourceAV.getStreamFormat()));
+        request.set_segment_alignment(convertSegmentAlignment(mediaSourceAV->getSegmentAlignment()));
+
+        if (mediaSourceAV->getCodecData())
+        {
+            request.mutable_codec_data()->set_data(mediaSourceAV->getCodecData()->data.data(),
+                                                   mediaSourceAV->getCodecData()->data.size());
+            request.mutable_codec_data()->set_type(convertCodecDataType(mediaSourceAV->getCodecData()->type));
+        }
+        request.set_stream_format(convertStreamFormat(mediaSourceAV->getStreamFormat()));
 
         if (configType == SourceConfigType::VIDEO_DOLBY_VISION)
         {
-            IMediaPipeline::MediaSourceVideoDolbyVision &mediaSourceDolby =
-                dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision &>(*source);
-
-            request.set_width(mediaSourceDolby.getWidth());
-            request.set_height(mediaSourceDolby.getHeight());
-            request.set_dolby_vision_profile(mediaSourceDolby.getDolbyVisionProfile());
+            IMediaPipeline::MediaSourceVideoDolbyVision *mediaSourceDolby =
+                dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision *>(source.get());
+            if (!mediaSourceDolby)
+            {
+                RIALTO_CLIENT_LOG_ERROR("Failed to get the video dolby vision media source");
+                return false;
+            }
+            request.set_width(mediaSourceDolby->getWidth());
+            request.set_height(mediaSourceDolby->getHeight());
+            request.set_dolby_vision_profile(mediaSourceDolby->getDolbyVisionProfile());
         }
         else if (configType == SourceConfigType::VIDEO)
         {
-            IMediaPipeline::MediaSourceVideo &mediaSourceVideo =
-                dynamic_cast<IMediaPipeline::MediaSourceVideo &>(*source);
-
-            request.set_width(mediaSourceVideo.getWidth());
-            request.set_height(mediaSourceVideo.getHeight());
+            IMediaPipeline::MediaSourceVideo *mediaSourceVideo =
+                dynamic_cast<IMediaPipeline::MediaSourceVideo *>(source.get());
+            if (!mediaSourceVideo)
+            {
+                RIALTO_CLIENT_LOG_ERROR("Failed to get the video media source");
+                return false;
+            }
+            request.set_width(mediaSourceVideo->getWidth());
+            request.set_height(mediaSourceVideo->getHeight());
         }
         else if (configType == SourceConfigType::AUDIO)
         {
-            IMediaPipeline::MediaSourceAudio &mediaSourceAudio =
-                dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*source);
-            request.mutable_audio_config()->set_number_of_channels(mediaSourceAudio.getAudioConfig().numberOfChannels);
-            request.mutable_audio_config()->set_sample_rate(mediaSourceAudio.getAudioConfig().sampleRate);
-            if (!mediaSourceAudio.getAudioConfig().codecSpecificConfig.empty())
+            IMediaPipeline::MediaSourceAudio *mediaSourceAudio =
+                dynamic_cast<IMediaPipeline::MediaSourceAudio *>(source.get());
+            if (!mediaSourceAudio)
+            {
+                RIALTO_CLIENT_LOG_ERROR("Failed to get the audio media source");
+                return false;
+            }
+            request.mutable_audio_config()->set_number_of_channels(mediaSourceAudio->getAudioConfig().numberOfChannels);
+            request.mutable_audio_config()->set_sample_rate(mediaSourceAudio->getAudioConfig().sampleRate);
+            if (!mediaSourceAudio->getAudioConfig().codecSpecificConfig.empty())
             {
                 request.mutable_audio_config()
-                    ->set_codec_specific_config(mediaSourceAudio.getAudioConfig().codecSpecificConfig.data(),
-                                                mediaSourceAudio.getAudioConfig().codecSpecificConfig.size());
+                    ->set_codec_specific_config(mediaSourceAudio->getAudioConfig().codecSpecificConfig.data(),
+                                                mediaSourceAudio->getAudioConfig().codecSpecificConfig.size());
             }
         }
     }
     else if (configType == SourceConfigType::SUBTITLE)
     {
-        IMediaPipeline::MediaSourceSubtitle &mediaSourceSubtitle =
-            dynamic_cast<IMediaPipeline::MediaSourceSubtitle &>(*source);
-        request.set_text_track_identifier(mediaSourceSubtitle.getTextTrackIdentifier());
+        IMediaPipeline::MediaSourceSubtitle *mediaSourceSubtitle =
+            dynamic_cast<IMediaPipeline::MediaSourceSubtitle *>(source.get());
+        if (!mediaSourceSubtitle)
+        {
+            RIALTO_CLIENT_LOG_ERROR("Failed to get the subtitle source");
+            return false;
+        }
+        request.set_text_track_identifier(mediaSourceSubtitle->getTextTrackIdentifier());
     }
     else
     {

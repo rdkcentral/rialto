@@ -28,6 +28,7 @@
 #include "IPlayerTask.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace firebolt::rialto::server::tasks::generic
@@ -46,7 +47,7 @@ private:
     void addSource(GstCaps *caps, bool isDrm) const;
     void reattachAudioSource(GstCaps *caps, const std::string &strCaps) const;
     GstCaps *createCapsFromMediaSource() const;
-    firebolt::rialto::wrappers::AudioAttributesPrivate createAudioAttributes() const;
+    std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate> createAudioAttributes() const;
 
     GenericPlayerContext &m_context;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
