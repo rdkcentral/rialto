@@ -1341,7 +1341,7 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
     std::unique_lock<std::mutex> locker(m_clientsLock);
 
     auto it = m_clients.find(clientId);
-    if (it->second.sock < 0)
+    if (it == m_clients.end() || it->second.sock < 0)
     {
         RIALTO_IPC_LOG_WARN("socket closed before event could be sent");
         return false;

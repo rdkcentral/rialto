@@ -144,6 +144,9 @@ protected:
     void checkNewAudioSourceAttached();
     void shouldNotSwitchAudioSourceWhenMimeTypeIsEmpty();
     void triggerReattachAudioSourceWithEmptyMimeType();
+    void triggerFailToCastAudioSource();
+    void triggerFailToCastVideoSource();
+    void triggerFailToCastDolbyVisionSource();
 
     // CheckAudioUnderflow test methods
     void shouldQueryPositionAndSetToZero();

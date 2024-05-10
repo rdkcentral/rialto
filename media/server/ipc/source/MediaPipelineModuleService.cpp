@@ -257,6 +257,7 @@ void MediaPipelineModuleService::createSession(::google::protobuf::RpcController
         done->Run();
         return;
     }
+
     int sessionId = generateSessionId();
     bool sessionCreated =
         m_mediaPipelineService.createSession(sessionId,
@@ -290,6 +291,7 @@ void MediaPipelineModuleService::destroySession(::google::protobuf::RpcControlle
         done->Run();
         return;
     }
+
     if (!m_mediaPipelineService.destroySession(request->session_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Destroy session failed");

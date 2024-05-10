@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_SERVER_MANAGER_STUB_H_
 #define FIREBOLT_RIALTO_SERVER_CT_SERVER_MANAGER_STUB_H_
 
+#include "EventRanger.h"
 #include "IStub.h"
 #include <IIpcChannel.h>
 #include <array>
@@ -30,7 +31,7 @@
 
 namespace firebolt::rialto::server::ct
 {
-class ServerManagerStub : public IStub
+class ServerManagerStub : public IStub, public EventRanger
 {
 public:
     ServerManagerStub();

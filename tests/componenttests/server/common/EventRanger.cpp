@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,33 +17,35 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_CT_CLIENT_STUB_H_
-#define FIREBOLT_RIALTO_SERVER_CT_CLIENT_STUB_H_
-
 #include "EventRanger.h"
-#include "IStub.h"
+#include <gtest/gtest.h>
 #include <memory>
-#include <thread>
 
 namespace firebolt::rialto::server::ct
 {
-class ClientStub : public IStub, public EventRanger
+void EventRanger::teardownSubscriptions(const std::shared_ptr<::firebolt::rialto::ipc::IChannel> &channel)
 {
-public:
-    ClientStub() = default;
-    ~ClientStub() override;
+    for (int tag : m_eventTags)
+    {
+        EXPECT_TRUE(channel->unsubscribe(tag));
+    }
+    m_eventTags.clear();
+}
 
-    std::shared_ptr<::firebolt::rialto::ipc::IChannel> getChannel() override;
-    bool connect();
-    void disconnect();
+void EventRanger::removeExpectation(int expectationTag)
+{
+    std::unique_lock lock{m_mutex};
+    for (auto &callbacks : m_callbacks)
+    {
+        if (0 != callbacks.second.erase(expectationTag))
+        {
+            return;
+        }
+    }
+}
 
-private:
-    void ipcThread();
-
-private:
-    std::shared_ptr<::firebolt::rialto::ipc::IChannel> m_ipcChannel;
-    std::thread m_ipcThread;
-};
+void EventRanger::removeSuppression(int expectationTag)
+{
+    removeExpectation(expectationTag);
+}
 } // namespace firebolt::rialto::server::ct
-
-#endif // FIREBOLT_RIALTO_SERVER_CT_CLIENT_STUB_H_

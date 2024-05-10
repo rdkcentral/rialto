@@ -263,6 +263,11 @@ void AttachSource::execute() const
     }
 
     GstCaps *caps = createCapsFromMediaSource();
+    if (!caps)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create caps from media source");
+        return;
+    }
     gchar *capsStr = m_gstWrapper->gstCapsToString(caps);
     std::string strCaps = capsStr;
     m_glibWrapper->gFree(capsStr);
@@ -329,7 +334,6 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
         RIALTO_SERVER_LOG_MIL("Old caps: %s", oldCapsStr.c_str());
         RIALTO_SERVER_LOG_MIL("New caps: %s", strCaps.c_str());
 
-        firebolt::rialto::wrappers::AudioAttributesPrivate audioAttributes{createAudioAttributes()};
         int sampleAttributes{
             0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
         std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work
@@ -341,14 +345,22 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
         bool svpEnabled{true}; // assume always true
         bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
 
+        std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate> audioAttributes = createAudioAttributes();
+        if (!audioAttributes)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to create audio attributes");
+            return;
+        }
+
         bool result =
             m_rdkGstreamerUtilsWrapper
-                ->performAudioTrackCodecChannelSwitch(&m_context.playbackGroup, &sampleAttributes, &audioAttributes,
+                ->performAudioTrackCodecChannelSwitch(&m_context.playbackGroup, &sampleAttributes, &(*audioAttributes),
                                                       &status, &ui32Delay, &audioChangeTargetPts, &currentDispPts,
                                                       &audioChangeStage,
                                                       &caps, // may fail for amlogic - that implementation changes
                                                              // this parameter, it's probably used by Netflix later
                                                       &audioAac, svpEnabled, GST_ELEMENT(appSrc), &retVal);
+
         if (!result || !retVal)
         {
             RIALTO_SERVER_LOG_WARN("performAudioTrackCodecChannelSwitch failed! Result: %d, retval %d", result, retVal);
@@ -378,24 +390,45 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     firebolt::rialto::SourceConfigType configType = m_attachedSource->getConfigType();
     if (configType == firebolt::rialto::SourceConfigType::AUDIO)
     {
-        const IMediaPipeline::MediaSourceAudio &kSource =
-            dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*m_attachedSource);
-
-        capsBuilder = std::make_unique<MediaSourceAudioCapsBuilder>(m_gstWrapper, m_glibWrapper, kSource);
+        const IMediaPipeline::MediaSourceAudio *kSource =
+            dynamic_cast<IMediaPipeline::MediaSourceAudio *>(m_attachedSource.get());
+        if (kSource)
+        {
+            capsBuilder = std::make_unique<MediaSourceAudioCapsBuilder>(m_gstWrapper, m_glibWrapper, *kSource);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to cast to audio source");
+            return nullptr;
+        }
     }
     else if (configType == firebolt::rialto::SourceConfigType::VIDEO)
     {
-        const IMediaPipeline::MediaSourceVideo &kSource =
-            dynamic_cast<IMediaPipeline::MediaSourceVideo &>(*m_attachedSource);
-
-        capsBuilder = std::make_unique<MediaSourceVideoCapsBuilder>(m_gstWrapper, m_glibWrapper, kSource);
+        const IMediaPipeline::MediaSourceVideo *kSource =
+            dynamic_cast<IMediaPipeline::MediaSourceVideo *>(m_attachedSource.get());
+        if (kSource)
+        {
+            capsBuilder = std::make_unique<MediaSourceVideoCapsBuilder>(m_gstWrapper, m_glibWrapper, *kSource);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to cast to video source");
+            return nullptr;
+        }
     }
     else if (configType == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
     {
-        const IMediaPipeline::MediaSourceVideoDolbyVision &kSource =
-            dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision &>(*m_attachedSource);
-
-        capsBuilder = std::make_unique<MediaSourceVideoDolbyVisionCapsBuilder>(m_gstWrapper, m_glibWrapper, kSource);
+        const IMediaPipeline::MediaSourceVideoDolbyVision *kSource =
+            dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision *>(m_attachedSource.get());
+        if (kSource)
+        {
+            capsBuilder = std::make_unique<MediaSourceVideoDolbyVisionCapsBuilder>(m_gstWrapper, m_glibWrapper, *kSource);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to cast to dolby vision source!");
+            return nullptr;
+        }
     }
     else
     {
@@ -406,26 +439,38 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
     return capsBuilder->buildCaps();
 }
 
-firebolt::rialto::wrappers::AudioAttributesPrivate AttachSource::createAudioAttributes() const
+std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate> AttachSource::createAudioAttributes() const
 {
-    const IMediaPipeline::MediaSourceAudio &kSource = dynamic_cast<IMediaPipeline::MediaSourceAudio &>(*m_attachedSource);
-    firebolt::rialto::AudioConfig audioConfig = kSource.getAudioConfig();
-    firebolt::rialto::wrappers::AudioAttributesPrivate
-        audioAttributes{"", // param set below.
-                        audioConfig.numberOfChannels,
-                        audioConfig.sampleRate,
-                        0, // used only in one of logs in rdk_gstreamer_utils, no need to set this param.
-                        0, // used only in one of logs in rdk_gstreamer_utils, no need to set this param.
-                        audioConfig.codecSpecificConfig.data(),
-                        static_cast<std::uint32_t>(audioConfig.codecSpecificConfig.size())};
-    if (m_attachedSource->getMimeType() == "audio/mp4" || m_attachedSource->getMimeType() == "audio/aac")
+    std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate> audioAttributes;
+    const IMediaPipeline::MediaSourceAudio *kSource =
+        dynamic_cast<IMediaPipeline::MediaSourceAudio *>(m_attachedSource.get());
+    if (kSource)
     {
-        audioAttributes.m_codecParam = "mp4a.40.2, mp4a.40.5";
+        firebolt::rialto::AudioConfig audioConfig = kSource->getAudioConfig();
+        audioAttributes =
+            firebolt::rialto::wrappers::AudioAttributesPrivate{"", // param set below.
+                                                               audioConfig.numberOfChannels, audioConfig.sampleRate,
+                                                               0, // used only in one of logs in rdk_gstreamer_utils, no
+                                                                  // need to set this param.
+                                                               0, // used only in one of logs in rdk_gstreamer_utils, no
+                                                                  // need to set this param.
+                                                               audioConfig.codecSpecificConfig.data(),
+                                                               static_cast<std::uint32_t>(
+                                                                   audioConfig.codecSpecificConfig.size())};
+        if (m_attachedSource->getMimeType() == "audio/mp4" || m_attachedSource->getMimeType() == "audio/aac")
+        {
+            audioAttributes->m_codecParam = "mp4a.40.2, mp4a.40.5";
+        }
+        else if (m_attachedSource->getMimeType() == "audio/x-eac3")
+        {
+            audioAttributes->m_codecParam = std::string("ec-3.A") + std::to_string(audioConfig.numberOfChannels);
+        }
     }
-    else if (m_attachedSource->getMimeType() == "audio/x-eac3")
+    else
     {
-        audioAttributes.m_codecParam = std::string("ec-3.A") + std::to_string(audioConfig.numberOfChannels);
+        RIALTO_SERVER_LOG_ERROR("Failed to cast to dolby vision source");
     }
+
     return audioAttributes;
 }
 } // namespace firebolt::rialto::server::tasks::generic

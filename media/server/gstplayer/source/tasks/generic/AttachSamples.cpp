@@ -44,6 +44,7 @@ AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPri
             }
             catch (const std::exception &e)
             {
+                // Catching error, but continuing as best as we can
                 RIALTO_SERVER_LOG_ERROR("Failed to get the video segment, reason: %s", e.what());
             }
         }
@@ -63,6 +64,7 @@ AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPri
             }
             catch (const std::exception &e)
             {
+                // Catching error, but continuing as best as we can
                 RIALTO_SERVER_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
             }
         }
