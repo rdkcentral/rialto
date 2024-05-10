@@ -82,11 +82,3 @@ target_link_libraries(
         RialtoServerManager
         Threads::Threads
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoServerManagerUnitTests
-
-        gcov
-        )
-endif()

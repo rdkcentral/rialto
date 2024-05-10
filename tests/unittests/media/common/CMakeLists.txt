@@ -53,12 +53,3 @@ target_link_libraries(
         RialtoPlayerCommon
         RialtoProtobuf
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoPlayerCommonUnitTests
-
-        gcov
-        )
-endif()
-

@@ -18,6 +18,7 @@
  */
 
 #include <chrono>
+#include <cinttypes>
 
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
@@ -27,7 +28,6 @@
 #include "RialtoServerLogging.h"
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
-#include <cinttypes>
 
 namespace
 {

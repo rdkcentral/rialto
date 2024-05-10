@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     # Generate coverage
     if args['coverage'] == True:
-        generateCoverageReport(args['output'], outputFile, suitesToRun)
+        generateCoverageReport(os.getcwd(), args['output'], outputFile)
 
         # Also generate coverage stats for public interfaces source
         files = ["*/main/source/*"]

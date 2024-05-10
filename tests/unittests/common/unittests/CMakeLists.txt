@@ -17,10 +17,6 @@
 # limitations under the License.
 #
 
-if ( COVERAGE_ENABLED )
-    add_compile_options(-coverage)
-endif()
-
 add_gtests (
         RialtoCommonUnitTests
 
@@ -41,11 +37,3 @@ target_link_libraries(
         RialtoCommonUnitTests
         RialtoCommon
 )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoCommonUnitTests
-
-        gcov
-        )
-endif()

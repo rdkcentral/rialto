@@ -116,11 +116,3 @@ if( RIALTO_ENABLE_CONFIG_FILE )
         JsonCpp::JsonCpp
         )
 endif()
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoWrappers
-        PRIVATE
-        gcov
-        )
-endif()

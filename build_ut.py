@@ -58,4 +58,4 @@ if __name__ == "__main__":
     buildAndRunGTests(args, outputFile, buildDefines, suitesToRun)
 
     if args['coverage'] == True:
-        generateCoverageReport(args['output'], outputFile, suitesToRun)
+        generateCoverageReport(os.getcwd(), args['output'], outputFile)

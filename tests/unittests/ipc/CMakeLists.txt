@@ -63,13 +63,3 @@ target_link_libraries(
         RialtoIpcStub
         RialtoProtobuf
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoIpcUnitTests
-
-        gcov
-        )
-endif()
-
-
