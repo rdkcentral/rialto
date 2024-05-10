@@ -63,7 +63,8 @@ ConfigHelper::ConfigHelper(std::unique_ptr<IConfigReaderFactory> &&configReaderF
       m_sessionServerPath{config.sessionServerPath}, m_sessionServerStartupTimeout{config.sessionServerStartupTimeout},
       m_healthcheckInterval{config.healthcheckInterval}, m_socketPermissions{config.sessionManagementSocketPermissions},
       m_numOfPreloadedServers{config.numOfPreloadedServers},
-      m_numOfFailedPingsBeforeRecovery{config.numOfFailedPingsBeforeRecovery}, m_loggingLevels{}
+      m_numOfFailedPingsBeforeRecovery{config.numOfFailedPingsBeforeRecovery},
+      m_enableInstantRateChangeSeek{config.enableInstantRateChangeSeek}, m_loggingLevels{}
 {
 #ifdef RIALTO_ENABLE_CONFIG_FILE
     readConfigFile(RIALTO_CONFIG_PATH);
@@ -104,6 +105,11 @@ unsigned int ConfigHelper::getNumOfPreloadedServers() const
 unsigned int ConfigHelper::getNumOfFailedPingsBeforeRecovery() const
 {
     return m_numOfFailedPingsBeforeRecovery;
+}
+
+bool ConfigHelper::getEnableInstantRateChangeSeek() const
+{
+    return m_enableInstantRateChangeSeek;
 }
 
 const rialto::servermanager::service::LoggingLevels &ConfigHelper::getLoggingLevels() const
@@ -159,6 +165,9 @@ void ConfigHelper::readConfigFile(const std::string &filePath)
 
     if (configReader->getNumOfPingsBeforeRecovery())
         m_numOfFailedPingsBeforeRecovery = configReader->getNumOfPingsBeforeRecovery().value();
+
+    if (configReader->getEnableInstantRateChangeSeek())
+        m_enableInstantRateChangeSeek = configReader->getEnableInstantRateChangeSeek().value();
 
     if (configReader->getLoggingLevels())
         m_loggingLevels = configReader->getLoggingLevels().value();

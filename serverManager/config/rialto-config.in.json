@@ -30,5 +30,6 @@
     "socket_group" : @SOCKET_GROUP@,
     "num_of_preloaded_servers" : @NUM_OF_PRELOADED_SERVERS@,
     "log_level" : @LOG_LEVEL@,
-    "num_of_pings_before_recovery" : @NUM_OF_PINGS_BEFORE_RECOVERY@
+    "num_of_pings_before_recovery" : @NUM_OF_PINGS_BEFORE_RECOVERY@,
+    "enable_instant_rate_change_seek" : @ENABLE_INSTANT_RATE_CHANGE_SEEK@
 }

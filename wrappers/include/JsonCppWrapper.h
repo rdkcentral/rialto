@@ -45,8 +45,10 @@ public:
     bool isArray() const override { return m_value.isArray(); }
     bool isString() const override { return m_value.isString(); }
     bool isUInt() const override { return m_value.isUInt(); }
+    bool isBool() const override { return m_value.isBool(); }
     JSONCPP_STRING asString() const override { return m_value.asString(); }
     unsigned int asUInt() const override { return m_value.asUInt(); }
+    bool asBool() const override { return m_value.asBool(); }
 
 private:
     /*const*/ T m_value;

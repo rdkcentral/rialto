@@ -80,15 +80,16 @@ SessionServerApp::SessionServerApp(const std::shared_ptr<firebolt::rialto::wrapp
                                    ISessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables,
                                    const std::string &sessionServerPath,
-                                   std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
-                                   const std::string &socketOwner, const std::string &socketGroup)
+                                   std::chrono::milliseconds sessionServerStartupTimeout,
+                                   unsigned int socketPermissions, const std::string &socketOwner,
+                                   const std::string &socketGroup, bool enableInstantRateChangeSeek)
     : m_kServerId{generateServerId()}, m_initialState{firebolt::rialto::common::SessionServerState::UNINITIALIZED},
       m_socks{-1, -1}, m_linuxWrapper{linuxWrapper}, m_timerFactory{timerFactory},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{true},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_kSessionManagementSocketOwner{socketOwner},
-      m_kSessionManagementSocketGroup{socketGroup}, m_childInitialized{false},
-      m_expectedState{firebolt::rialto::common::SessionServerState::UNINITIALIZED}
+      m_kSessionManagementSocketGroup{socketGroup}, m_kEnableInstantRateChangeSeek{enableInstantRateChangeSeek},
+      m_childInitialized{false}, m_expectedState{firebolt::rialto::common::SessionServerState::UNINITIALIZED}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with serverId: %d", m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -104,15 +105,17 @@ SessionServerApp::SessionServerApp(const std::string &appName,
                                    ISessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables,
                                    const std::string &sessionServerPath,
-                                   std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
-                                   const std::string &socketOwner, const std::string &socketGroup)
+                                   std::chrono::milliseconds sessionServerStartupTimeout,
+                                   unsigned int socketPermissions, const std::string &socketOwner,
+                                   const std::string &socketGroup, bool enableInstantRateChangeSeek)
     : m_kServerId{generateServerId()}, m_appName{appName}, m_initialState{initialState},
       m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)},
       m_clientDisplayName{appConfig.clientDisplayName}, m_socks{-1, -1}, m_linuxWrapper{linuxWrapper},
       m_timerFactory{timerFactory}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_kSessionManagementSocketOwner{socketOwner},
-      m_kSessionManagementSocketGroup{socketGroup}, m_childInitialized{false}, m_expectedState{initialState}
+      m_kSessionManagementSocketGroup{socketGroup}, m_kEnableInstantRateChangeSeek{enableInstantRateChangeSeek},
+      m_childInitialized{false}, m_expectedState{initialState}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating SessionServerApp for app: %s with appId: %d", appName.c_str(), m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -211,6 +214,11 @@ std::string SessionServerApp::getSessionManagementSocketOwner() const
 std::string SessionServerApp::getSessionManagementSocketGroup() const
 {
     return m_kSessionManagementSocketGroup;
+}
+
+bool SessionServerApp::getEnableInstantRateChangeSeek() const
+{
+    return m_kEnableInstantRateChangeSeek;
 }
 
 std::string SessionServerApp::getClientDisplayName() const

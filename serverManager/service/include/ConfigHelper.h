@@ -45,6 +45,7 @@ public:
     firebolt::rialto::common::SocketPermissions getSocketPermissions() const;
     unsigned int getNumOfPreloadedServers() const;
     unsigned int getNumOfFailedPingsBeforeRecovery() const;
+    bool getEnableInstantRateChangeSeek() const;
     const rialto::servermanager::service::LoggingLevels &getLoggingLevels() const;
 
 #ifdef RIALTO_ENABLE_CONFIG_FILE
@@ -61,6 +62,7 @@ private:
     firebolt::rialto::common::SocketPermissions m_socketPermissions;
     unsigned int m_numOfPreloadedServers;
     unsigned int m_numOfFailedPingsBeforeRecovery;
+    bool m_enableInstantRateChangeSeek;
     rialto::servermanager::service::LoggingLevels m_loggingLevels;
 };
 } // namespace rialto::servermanager::service

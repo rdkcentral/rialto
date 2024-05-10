@@ -195,6 +195,10 @@ if (NOT NUM_OF_PINGS_BEFORE_RECOVERY)
     set( NUM_OF_PINGS_BEFORE_RECOVERY 3 )
 endif()
 
+if (NOT ENABLE_INSTANT_RATE_CHANGE_SEEK)
+    set( ENABLE_INSTANT_RATE_CHANGE_SEEK "false" )
+endif()
+
 if( NATIVE_BUILD )
     add_subdirectory( stubs/rdk_gstreamer_utils )
     add_subdirectory( stubs/opencdm )
