@@ -46,11 +46,13 @@ public:
     virtual ~IGstGenericPlayerFactory() = default;
 
     /**
-     * @brief Gets the IGstGenericPlayerFactory instance.
+     * @brief Creates the IGstGenericPlayerFactory instance.
+     *
+     * @param[in] enableInstantRateChangeSeek : Defines if new rate change method can be used
      *
      * @retval the factory instance or null on error.
      */
-    static std::shared_ptr<IGstGenericPlayerFactory> getFactory();
+    static std::shared_ptr<IGstGenericPlayerFactory> createFactory(bool enableInstantRateChangeSeek);
 
     /**
      * @brief Creates a IGstGenericPlayer object.
