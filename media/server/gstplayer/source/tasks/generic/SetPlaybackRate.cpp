@@ -32,8 +32,10 @@ namespace firebolt::rialto::server::tasks::generic
 {
 SetPlaybackRate::SetPlaybackRate(GenericPlayerContext &context,
                                  std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                                 std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, double rate)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rate{rate}
+                                 std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, double rate,
+                                 bool enableInstantRateChangeSeek)
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rate{rate},
+      m_enableInstantRateChangeSeek{enableInstantRateChangeSeek}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetPlaybackRate");
 }
@@ -81,6 +83,15 @@ void SetPlaybackRate::execute() const
         RIALTO_SERVER_LOG_DEBUG("Sent new segment, success = %s", success ? "true" : "false");
         m_gstWrapper->gstSegmentFree(segment);
     }
+#if GST_CHECK_VERSION(1, 18, 0)
+    else if (m_enableInstantRateChangeSeek)
+    {
+        success = m_gstWrapper->gstElementSeek(m_context.pipeline, m_rate, GST_FORMAT_TIME,
+                                               static_cast<GstSeekFlags>(GST_SEEK_FLAG_INSTANT_RATE_CHANGE),
+                                               GST_SEEK_TYPE_NONE, 0, GST_SEEK_TYPE_NONE, 0);
+        RIALTO_SERVER_LOG_DEBUG("Rate changed using gst_element_seek, success = %s", success ? "true" : "false");
+    }
+#endif
     else
     {
         GstStructure *structure{

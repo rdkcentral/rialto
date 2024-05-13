@@ -1934,10 +1934,11 @@ void GenericTasksTestsBase::shouldNotifyNeedVideoDataFailure()
         .WillOnce(Return(false));
 }
 
-void GenericTasksTestsBase::triggerSetPlaybackRate()
+void GenericTasksTestsBase::triggerSetPlaybackRate(bool enableInstantRateChangeSeek)
 {
     firebolt::rialto::server::tasks::generic::SetPlaybackRate task{testContext->m_context, testContext->m_gstWrapper,
-                                                                   testContext->m_glibWrapper, kRate};
+                                                                   testContext->m_glibWrapper, kRate,
+                                                                   enableInstantRateChangeSeek};
     task.execute();
 }
 

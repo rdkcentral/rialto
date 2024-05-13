@@ -282,7 +282,7 @@ protected:
     void shouldNotifyNeedVideoDataFailure();
 
     // SetPlaybackRate test methods
-    void triggerSetPlaybackRate();
+    void triggerSetPlaybackRate(bool enableInstantRateChangeSeek = false);
     void checkNoPendingPlaybackRate();
     void checkPendingPlaybackRate();
     void checkPlaybackRateSet();
