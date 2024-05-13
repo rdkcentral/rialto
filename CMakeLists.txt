@@ -196,7 +196,11 @@ if (NOT NUM_OF_PINGS_BEFORE_RECOVERY)
 endif()
 
 if (NOT ENABLE_INSTANT_RATE_CHANGE_SEEK)
-    set( ENABLE_INSTANT_RATE_CHANGE_SEEK "false" )
+    if( NATIVE_BUILD )
+        set( ENABLE_INSTANT_RATE_CHANGE_SEEK "true" )
+    else()
+        set( ENABLE_INSTANT_RATE_CHANGE_SEEK "false" )
+    endif()
 endif()
 
 if( NATIVE_BUILD )
