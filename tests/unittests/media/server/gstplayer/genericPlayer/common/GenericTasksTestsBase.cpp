@@ -2065,6 +2065,42 @@ void GenericTasksTestsBase::shouldFailToSetPlaybackRateAmlhalaAudioSink()
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectUnref(testContext->m_element));
 }
 
+#if GST_CHECK_VERSION(1, 18, 0)
+void GenericTasksTestsBase::shouldSetPlaybackRateUsingSeek()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectGetStub(_, StrEq("audio-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = testContext->m_element;
+            }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementSeek(_, kRate, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_INSTANT_RATE_CHANGE),
+                               GST_SEEK_TYPE_NONE, 0, GST_SEEK_TYPE_NONE, 0))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectUnref(testContext->m_element));
+}
+
+void GenericTasksTestsBase::shouldFailToSetPlaybackRateUsingSeek()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectGetStub(_, StrEq("audio-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = testContext->m_element;
+            }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementSeek(_, kRate, GST_FORMAT_TIME, static_cast<GstSeekFlags>(GST_SEEK_FLAG_INSTANT_RATE_CHANGE),
+                               GST_SEEK_TYPE_NONE, 0, GST_SEEK_TYPE_NONE, 0))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectUnref(testContext->m_element));
+}
+#endif
+
 void GenericTasksTestsBase::checkSegmentInfo()
 {
     EXPECT_EQ(testContext->m_segment.rate, kRate);
