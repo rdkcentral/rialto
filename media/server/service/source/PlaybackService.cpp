@@ -95,6 +95,11 @@ void PlaybackService::setClientDisplayName(const std::string &clientDisplayName)
     }
 }
 
+void PlaybackService::setEnableInstantRateChangeSeek(bool enableInstantRateChangeSeek)
+{
+    m_enableInstantRateChangeSeek = enableInstantRateChangeSeek;
+}
+
 bool PlaybackService::getSharedMemory(int32_t &fd, uint32_t &size) const
 {
     auto shmBuffer = m_shmBuffer;
@@ -121,6 +126,11 @@ int PlaybackService::getMaxPlaybacks() const
 int PlaybackService::getMaxWebAudioPlayers() const
 {
     return m_maxWebAudioPlayers;
+}
+
+bool PlaybackService::getEnableInstantRateChangeSeek() const
+{
+    return m_enableInstantRateChangeSeek;
 }
 
 std::shared_ptr<ISharedMemoryBuffer> PlaybackService::getShmBuffer() const

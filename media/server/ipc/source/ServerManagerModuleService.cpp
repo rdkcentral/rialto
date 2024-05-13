@@ -94,11 +94,14 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     common::MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(),
                                                  request->resources().maxwebaudioplayers()};
     const auto kClientDisplayName = request->has_clientdisplayname() ? request->clientdisplayname() : "";
+    const bool kEnableInstantRateChangeSeek =
+        request->has_enableinstantratechangeseek() ? request->enableinstantratechangeseek() : false;
     bool success =
         m_sessionServerManager.setConfiguration(request->sessionmanagementsocketname(),
                                                 convertSessionServerState(request->initialsessionserverstate()),
                                                 maxResource, kClientDisplayName, request->socketpermissions(),
-                                                request->socketowner(), request->socketgroup());
+                                                request->socketowner(), request->socketgroup(),
+                                                kEnableInstantRateChangeSeek);
     m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().clientloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().sessionserverloglevels()),
