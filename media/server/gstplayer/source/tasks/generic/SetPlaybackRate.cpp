@@ -94,6 +94,12 @@ void SetPlaybackRate::execute() const
 #endif
     else
     {
+#if !GST_CHECK_VERSION(1, 18, 0)
+        if (m_enableInstantRateChangeSeek)
+        {
+            RIALTO_SERVER_LOG_WARN("enableInstantRateChangeSeek set, but gstreamer version not supported");
+        }
+#endif
         GstStructure *structure{
             m_gstWrapper->gstStructureNew(kCustomInstantRateChangeEventName, "rate", G_TYPE_DOUBLE, m_rate, NULL)};
         success = m_gstWrapper->gstElementSendEvent(m_context.pipeline,
