@@ -49,7 +49,7 @@ constexpr uint32_t kMinPrimaryVideoHeight{1080};
 class GstGenericPlayerFactory : public IGstGenericPlayerFactory
 {
 public:
-    GstGenericPlayerFactory(bool enableInstantRateChangeSeek);
+    explicit GstGenericPlayerFactory(bool enableInstantRateChangeSeek);
     std::unique_ptr<IGstGenericPlayer>
     createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
                            const VideoRequirements &videoRequirements,
