@@ -93,6 +93,25 @@ public:
         EXPECT_CALL(*m_objectJsonValueMock, asString()).WillOnce(Return(expectedValue));
     }
 
+    void expectNotBool(const std::string &key)
+    {
+        EXPECT_CALL(*m_rootJsonValueMock, isMember(key)).WillOnce(Return(true));
+        EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe(key))).WillRepeatedly(Return(false));
+
+        EXPECT_CALL(*m_rootJsonValueMock, at(key)).WillRepeatedly(Return(m_objectJsonValueMock));
+        EXPECT_CALL(*m_objectJsonValueMock, isBool()).WillOnce(Return(false));
+    }
+
+    void expectReturnBool(const std::string &key, bool expectedValue)
+    {
+        EXPECT_CALL(*m_rootJsonValueMock, isMember(key)).WillOnce(Return(true));
+        EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe(key))).WillRepeatedly(Return(false));
+
+        EXPECT_CALL(*m_rootJsonValueMock, at(key)).WillRepeatedly(Return(m_objectJsonValueMock));
+        EXPECT_CALL(*m_objectJsonValueMock, isBool()).WillOnce(Return(true));
+        EXPECT_CALL(*m_objectJsonValueMock, asBool()).WillOnce(Return(expectedValue));
+    }
+
     ~ConfigReaderTests() override = default;
 
 protected:
@@ -389,6 +408,24 @@ TEST_F(ConfigReaderTests, numOfPingsBeforeRecoveryExists)
     EXPECT_EQ(m_sut->getNumOfPingsBeforeRecovery(), 3);
 }
 
+TEST_F(ConfigReaderTests, enableInstantRateChangeSeekNotBool)
+{
+    expectSuccessfulParsing();
+    expectNotBool("enable_instant_rate_change_seek");
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getEnableInstantRateChangeSeek().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, enableInstantRateChangeSeekExists)
+{
+    expectSuccessfulParsing();
+    expectReturnBool("enable_instant_rate_change_seek", true);
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_TRUE(m_sut->getEnableInstantRateChangeSeek());
+}
+
 TEST_F(ConfigReaderTests, defaultConfigValuesAreSet)
 {
     // "Real world" constants defined in rialto/CMakeLists.txt
@@ -418,4 +455,5 @@ TEST_F(ConfigReaderTests, defaultConfigValuesAreSet)
     EXPECT_EQ(config.sessionManagementSocketPermissions.groupPermissions, kDefaultPermissions);
     EXPECT_EQ(config.sessionManagementSocketPermissions.otherPermissions, kDefaultPermissions);
     EXPECT_EQ(config.numOfFailedPingsBeforeRecovery, kNumOfFailedPingsBeforeRecovery);
+    EXPECT_FALSE(config.enableInstantRateChangeSeek);
 }

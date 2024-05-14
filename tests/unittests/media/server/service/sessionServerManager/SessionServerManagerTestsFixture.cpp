@@ -45,6 +45,7 @@ constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kMaxPl
 constexpr RIALTO_DEBUG_LEVEL kLogLvl{RIALTO_DEBUG_LEVEL_DEFAULT};
 const std::string kSessionManagementSocket{"/tmp/rialtosessionservermanagertests-0"};
 constexpr unsigned int kSessionManagementSocketPermissions{0777};
+constexpr bool kEnableInstantRateChangeSeek{true};
 // Empty strings for kSocketOwner and kSocketGroup means that chown() won't be called. This will leave the created
 // socket being owned by the user executing the code (and the group would be their primary group)
 const std::string kSocketOwner{};
@@ -155,7 +156,7 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
     EXPECT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->setConfiguration(kSessionManagementSocket, SessionServerState::INACTIVE, kMaxResource,
                                          kClientDisplayName, kSessionManagementSocketPermissions, kSocketOwner,
-                                         kSocketGroup));
+                                         kSocketGroup, kEnableInstantRateChangeSeek));
 }
 
 void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementServerFailsToSetInitialState()
@@ -167,6 +168,7 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
     EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(kMaxPlaybacks));
     EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(kMaxWebAudioPlayers));
     EXPECT_CALL(m_playbackServiceMock, setClientDisplayName(kClientDisplayName));
+    EXPECT_CALL(m_playbackServiceMock, setEnableInstantRateChangeSeek(kEnableInstantRateChangeSeek));
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
     EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::INACTIVE))
@@ -174,7 +176,7 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
     EXPECT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->setConfiguration(kSessionManagementSocket, SessionServerState::INACTIVE, kMaxResource,
                                          kClientDisplayName, kSessionManagementSocketPermissions, kSocketOwner,
-                                         kSocketGroup));
+                                         kSocketGroup, kEnableInstantRateChangeSeek));
 }
 
 void SessionServerManagerTests::willSetConfiguration()
@@ -186,6 +188,7 @@ void SessionServerManagerTests::willSetConfiguration()
     EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(kMaxPlaybacks));
     EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(kMaxWebAudioPlayers));
     EXPECT_CALL(m_playbackServiceMock, setClientDisplayName(kClientDisplayName));
+    EXPECT_CALL(m_playbackServiceMock, setEnableInstantRateChangeSeek(kEnableInstantRateChangeSeek));
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
     EXPECT_CALL(m_controlServiceMock, setApplicationState(ApplicationState::INACTIVE));
@@ -194,7 +197,7 @@ void SessionServerManagerTests::willSetConfiguration()
     EXPECT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->setConfiguration(kSessionManagementSocket, SessionServerState::INACTIVE, kMaxResource,
                                         kClientDisplayName, kSessionManagementSocketPermissions, kSocketOwner,
-                                        kSocketGroup));
+                                        kSocketGroup, kEnableInstantRateChangeSeek));
 }
 
 void SessionServerManagerTests::willFailToSetUnsupportedState()

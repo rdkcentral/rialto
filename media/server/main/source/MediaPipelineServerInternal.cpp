@@ -98,7 +98,8 @@ MediaPipelineServerInternalFactory::createMediaPipeline(std::weak_ptr<IMediaPipe
 
 std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInternalFactory::createMediaPipelineServerInternal(
     std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
-    const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService) const
+    const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService,
+    bool enableInstantRateChangeSeek) const
 {
     std::shared_ptr<IMediaPipelineClient> sharedClient = client.lock();
     if (!sharedClient)
@@ -112,7 +113,8 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
     {
         mediaPipeline =
             std::make_unique<server::MediaPipelineServerInternal>(sharedClient, videoRequirements,
-                                                                  server::IGstGenericPlayerFactory::getFactory(),
+                                                                  server::IGstGenericPlayerFactory::createFactory(
+                                                                      enableInstantRateChangeSeek),
                                                                   sessionId, shmBuffer,
                                                                   server::IMainThreadFactory::createFactory(),
                                                                   common::ITimerFactory::getFactory(),

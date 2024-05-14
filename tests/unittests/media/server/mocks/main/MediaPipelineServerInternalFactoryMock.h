@@ -34,7 +34,8 @@ public:
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IMediaPipelineServerInternal>, createMediaPipelineServerInternal,
                 (std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
-                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService),
+                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService,
+                 bool enableInstantRateChangeSeek),
                 (const, override));
 };
 } // namespace firebolt::rialto::server

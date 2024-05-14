@@ -124,8 +124,9 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateDestroyPrimaryVideoSuccess)
  */
 TEST_F(RialtoServerCreateGstGenericPlayerTest, GetFactorySucceeds)
 {
+    constexpr bool kEnableInstantRateChangeSeek{false};
     std::shared_ptr<firebolt::rialto::server::IGstGenericPlayerFactory> factory =
-        firebolt::rialto::server::IGstGenericPlayerFactory::getFactory();
+        firebolt::rialto::server::IGstGenericPlayerFactory::createFactory(kEnableInstantRateChangeSeek);
     EXPECT_NE(factory, nullptr);
 }
 

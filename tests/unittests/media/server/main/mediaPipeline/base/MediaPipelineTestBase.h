@@ -85,6 +85,7 @@ protected:
     const int m_kSessionId{1};
     const int32_t m_kMainThreadClientId = {5};
     VideoRequirements m_videoReq = {123, 456};
+    const bool m_kEnableInstantRateChangeSeek{true};
 
     void createMediaPipeline();
     void destroyMediaPipeline();
