@@ -18,6 +18,7 @@
  */
 
 #include "AttachedSources.h"
+#include "RialtoClientLogging.h"
 
 namespace firebolt::rialto::client
 {
@@ -63,6 +64,7 @@ void AttachedSources::setFlushing(std::uint32_t id, bool flushing)
     {
         return;
     }
+
     iter->second.isFlushing = flushing;
 }
 } // namespace firebolt::rialto::client
