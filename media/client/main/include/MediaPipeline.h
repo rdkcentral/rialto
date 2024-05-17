@@ -226,6 +226,11 @@ protected:
     std::atomic<State> m_currentState;
 
     /**
+     * @brief The flush request mutex.
+     */
+    std::mutex m_flushMutex;
+
+    /**
      * @brief The attach source mutex.
      */
     std::mutex m_attachSourceMutex;

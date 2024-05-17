@@ -467,9 +467,13 @@ bool MediaPipeline::getMute(bool &mute)
 bool MediaPipeline::flush(int32_t sourceId, bool resetTime)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    std::unique_lock<std::mutex> flushLock{m_flushMutex};
     if (m_mediaPipelineIpc->flush(sourceId, resetTime))
     {
         m_attachedSources.setFlushing(sourceId, true);
+        flushLock.unlock();
+
         // Clear all need datas for flushed source
         std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
         for (auto it = m_needDataRequestMap.begin(); it != m_needDataRequestMap.end();)
@@ -753,8 +757,10 @@ void MediaPipeline::notifyPlaybackError(int32_t sourceId, PlaybackError error)
 void MediaPipeline::notifySourceFlushed(int32_t sourceId)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    m_attachedSources.setFlushing(sourceId, false);
+    {
+        std::lock_guard<std::mutex> lock{m_flushMutex};
+        m_attachedSources.setFlushing(sourceId, false);
+    }
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
     if (client)
     {
