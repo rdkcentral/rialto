@@ -100,7 +100,8 @@ void SessionServerManager::stopService()
 bool SessionServerManager::setConfiguration(const std::string &socketName, const common::SessionServerState &state,
                                             const common::MaxResourceCapabilitites &maxResource,
                                             const std::string &clientDisplayName, unsigned int socketPermissions,
-                                            const std::string &socketOwner, const std::string &socketGroup)
+                                            const std::string &socketOwner, const std::string &socketGroup,
+                                            bool enableInstantRateChangeSeek)
 {
     if (!m_sessionManagementServer->initialize(socketName, socketPermissions, socketOwner, socketGroup))
     {
@@ -111,6 +112,7 @@ bool SessionServerManager::setConfiguration(const std::string &socketName, const
     m_playbackService.setMaxPlaybacks(maxResource.maxPlaybacks);
     m_playbackService.setMaxWebAudioPlayers(maxResource.maxWebAudioPlayers);
     m_playbackService.setClientDisplayName(clientDisplayName);
+    m_playbackService.setEnableInstantRateChangeSeek(enableInstantRateChangeSeek);
     return setState(state);
 }
 

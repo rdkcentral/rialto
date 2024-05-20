@@ -48,6 +48,7 @@ public:
     std::optional<unsigned int> getNumOfPreloadedServers() override;
     std::optional<rialto::servermanager::service::LoggingLevels> getLoggingLevels() override;
     std::optional<unsigned int> getNumOfPingsBeforeRecovery() override;
+    std::optional<bool> getEnableInstantRateChangeSeek() override;
 
 private:
     void parseEnvironmentVariables(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
@@ -60,6 +61,7 @@ private:
     void parseNumOfPreloadedServers(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseLogLevel(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseNumOfPingsBeforeRecovery(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseEnableInstantRateChangeSeek(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
 
     std::shared_ptr<firebolt::rialto::wrappers::IJsonCppWrapper> m_jsonWrapper;
     std::shared_ptr<IFileReader> m_fileReader;
@@ -74,6 +76,7 @@ private:
     std::optional<unsigned int> m_numOfPreloadedServers;
     std::optional<rialto::servermanager::service::LoggingLevels> m_loggingLevels;
     std::optional<unsigned int> m_numOfPingsBeforeRecovery;
+    std::optional<bool> m_enableInstantRateChangeSeek;
 };
 
 } // namespace rialto::servermanager::service

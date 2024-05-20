@@ -70,7 +70,8 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
                                                                convertSocketPermissions(
                                                                    configHelper.getSocketPermissions()),
                                                                configHelper.getSocketPermissions().owner,
-                                                               configHelper.getSocketPermissions().group),
+                                                               configHelper.getSocketPermissions().group,
+                                                               configHelper.getEnableInstantRateChangeSeek()),
                               configHelper.getNumOfPreloadedServers());
 #ifdef RIALTO_ENABLE_CONFIG_FILE
     service->setLogLevels(configHelper.getLoggingLevels());

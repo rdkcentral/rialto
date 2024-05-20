@@ -24,6 +24,7 @@
 #include <string>
 
 #include <gmock/gmock.h>
+#include <gst/gstprotection.h>
 #include <gtest/gtest.h>
 
 using ::testing::_;
@@ -282,7 +283,7 @@ protected:
     void shouldNotifyNeedVideoDataFailure();
 
     // SetPlaybackRate test methods
-    void triggerSetPlaybackRate();
+    void triggerSetPlaybackRate(bool enableInstantRateChangeSeek = false);
     void checkNoPendingPlaybackRate();
     void checkPendingPlaybackRate();
     void checkPlaybackRateSet();
@@ -294,6 +295,10 @@ protected:
     void shouldFailToSetPlaybackRateAudioSinkOtherThanAmlhala();
     void shouldSetPlaybackRateAmlhalaAudioSink();
     void shouldFailToSetPlaybackRateAmlhalaAudioSink();
+#if GST_CHECK_VERSION(1, 18, 0)
+    void shouldSetPlaybackRateUsingSeek();
+    void shouldFailToSetPlaybackRateUsingSeek();
+#endif
     void checkSegmentInfo();
 
     // RenderFrame test methods

@@ -19,6 +19,13 @@
 
 #include "GenericTasksTestsBase.h"
 
+#if GST_CHECK_VERSION(1, 18, 0)
+namespace
+{
+constexpr bool kEnableInstantRateChangeSeek{true};
+} // namespace
+#endif
+
 class SetPlaybackRateTest : public GenericTasksTestsBase
 {
 };
@@ -101,3 +108,23 @@ TEST_F(SetPlaybackRateTest, shouldFailToSetPlaybackRateAmlhalaAudioSink)
     checkPlaybackRateDefault();
     checkSegmentInfo();
 }
+
+#if GST_CHECK_VERSION(1, 18, 0)
+TEST_F(SetPlaybackRateTest, shouldSetPlaybackRateUsingSeek)
+{
+    setPipelinePlaying();
+    shouldSetPlaybackRateUsingSeek();
+    triggerSetPlaybackRate(kEnableInstantRateChangeSeek);
+    checkNoPendingPlaybackRate();
+    checkPlaybackRateSet();
+}
+
+TEST_F(SetPlaybackRateTest, shouldFailToSetPlaybackRateUsingSeek)
+{
+    setPipelinePlaying();
+    shouldFailToSetPlaybackRateUsingSeek();
+    triggerSetPlaybackRate(kEnableInstantRateChangeSeek);
+    checkNoPendingPlaybackRate();
+    checkPlaybackRateDefault();
+}
+#endif

@@ -36,10 +36,12 @@ public:
     MOCK_METHOD(void, setMaxPlaybacks, (int maxPlaybacks), (override));
     MOCK_METHOD(void, setMaxWebAudioPlayers, (int maxWebAudio), (override));
     MOCK_METHOD(void, setClientDisplayName, (const std::string &clientDisplayName), (const, override));
+    MOCK_METHOD(void, setEnableInstantRateChangeSeek, (bool enableInstantRateChangeSeek), (override));
     MOCK_METHOD(bool, isActive, (), (const, override));
     MOCK_METHOD(bool, getSharedMemory, (int32_t & fd, uint32_t &size), (const, override));
     MOCK_METHOD(int, getMaxPlaybacks, (), (const, override));
     MOCK_METHOD(int, getMaxWebAudioPlayers, (), (const, override));
+    MOCK_METHOD(bool, getEnableInstantRateChangeSeek, (), (const, override));
     MOCK_METHOD(std::shared_ptr<ISharedMemoryBuffer>, getShmBuffer, (), (const, override));
     MOCK_METHOD(IMediaPipelineService &, getMediaPipelineService, (), (const, override));
     MOCK_METHOD(IWebAudioPlayerService &, getWebAudioPlayerService, (), (const, override));

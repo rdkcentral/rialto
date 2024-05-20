@@ -45,6 +45,7 @@ TEST_F(MediaPipelineServiceTests, shouldFailToCreateSessionWhenFactoryReturnsNul
     playbackServiceWillReturnActive();
     playbackServiceWillReturnMaxPlaybacks(1);
     playbackServiceWillReturnSharedMemoryBuffer();
+    playbackServiceWillReturnEnableInstantRateChangeSeek();
     mediaPipelineFactoryWillReturnNullptr();
     createSessionShouldFail();
 }
