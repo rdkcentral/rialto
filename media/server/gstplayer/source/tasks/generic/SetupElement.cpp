@@ -141,7 +141,8 @@ void SetupElement::execute() const
     }
 
     GstElementFactory *elementFactory = m_gstWrapper->gstElementGetFactory(m_element);
-    if (m_gstWrapper->gstElementFactoryListIsType(elementFactory,
+    if (elementFactory &&
+        m_gstWrapper->gstElementFactoryListIsType(elementFactory,
                                                   GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
     {
         if (!m_context.pendingGeometry.empty())

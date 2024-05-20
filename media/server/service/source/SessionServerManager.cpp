@@ -51,14 +51,13 @@ SessionServerManager::SessionServerManager(const ipc::IIpcFactory &ipcFactory, I
 SessionServerManager::~SessionServerManager()
 {
     RIALTO_SERVER_LOG_INFO("Stopping Rialto Server Service");
-    std::unique_lock<std::mutex> lock{m_serviceMutex};
-    m_isServiceRunning = false;
-    m_serviceCv.notify_one();
+    stopService();
 }
 
 bool SessionServerManager::initialize(int argc, char *argv[])
 try
 {
+    std::unique_lock<std::mutex> lock{m_switchStateMutex};
     if (argc != 2)
     {
         RIALTO_SERVER_LOG_ERROR("Wrong number of arguments. Rialto Server Service will close now.");
@@ -93,8 +92,11 @@ void SessionServerManager::startService()
 void SessionServerManager::stopService()
 {
     std::unique_lock<std::mutex> lock{m_serviceMutex};
-    m_isServiceRunning = false;
-    m_serviceCv.notify_one();
+    if (m_isServiceRunning)
+    {
+        m_isServiceRunning = false;
+        m_serviceCv.notify_one();
+    }
 }
 
 bool SessionServerManager::setConfiguration(const std::string &socketName, const common::SessionServerState &state,
@@ -226,6 +228,7 @@ bool SessionServerManager::switchToInactive()
 
 bool SessionServerManager::switchToNotRunning()
 {
+    std::unique_lock<std::mutex> lock{m_switchStateMutex};
     if (m_currentState.load() == common::SessionServerState::NOT_RUNNING)
     {
         RIALTO_SERVER_LOG_DEBUG("Session server already in NotRunning state.");

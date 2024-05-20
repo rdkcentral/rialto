@@ -20,10 +20,12 @@
 #ifndef FIREBOLT_RIALTO_SERVER_IPC_SET_LOG_LEVELS_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_IPC_SET_LOG_LEVELS_SERVICE_H_
 
-#include "RialtoServerLogging.h"
-#include <IIpcServer.h>
 #include <memory>
+#include <mutex>
 #include <set>
+
+#include "IIpcServer.h"
+#include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server::ipc
 {
@@ -43,6 +45,7 @@ public:
                       RIALTO_DEBUG_LEVEL ipcLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels);
 
 private:
+    std::mutex m_mutex;
     std::set<std::shared_ptr<::firebolt::rialto::ipc::IClient>> m_connectedClients;
 };
 } // namespace firebolt::rialto::server::ipc
