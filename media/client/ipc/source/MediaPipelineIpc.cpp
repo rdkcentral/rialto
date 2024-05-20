@@ -16,8 +16,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "IMediaPipeline.h"
 #include "MediaPipelineIpc.h"
+#include "IMediaPipeline.h"
 #include "RialtoClientLogging.h"
 #include "RialtoCommonIpc.h"
 #include "mediapipelinemodule.pb.h"

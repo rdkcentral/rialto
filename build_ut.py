@@ -21,6 +21,7 @@
 # Entry script for running rialto unittests
 
 import argparse
+import os
 from scripts.gtest.build_and_run_tests import getGenericArguments, buildAndRunGTests
 from scripts.gtest.utils import getSuitesToRun, getOutputFile
 from scripts.gtest.generate_coverage import generateCoverageReport

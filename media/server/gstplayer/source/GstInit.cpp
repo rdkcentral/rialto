@@ -52,8 +52,8 @@ bool gstInitalise(int argc, char **argv)
 
 bool gstDeinitalise()
 {
-    using firebolt::rialto::wrappers::IGstWrapperFactory;
     using firebolt::rialto::wrappers::IGstWrapper;
+    using firebolt::rialto::wrappers::IGstWrapperFactory;
     std::shared_ptr<IGstWrapperFactory> factory = IGstWrapperFactory::getFactory();
     std::shared_ptr<IGstWrapper> gstWrapper = factory->getGstWrapper();
 

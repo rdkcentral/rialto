@@ -150,7 +150,7 @@ void IpcClient::processIpcThread()
 
     RIALTO_CLIENT_LOG_INFO("started ipc thread");
 
-    while (!m_disconnecting && m_ipcChannel->process())
+    while (m_ipcChannel->process())
     {
         m_ipcChannel->wait(-1);
     }

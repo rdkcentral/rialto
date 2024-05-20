@@ -478,3 +478,108 @@
    fun:start_thread
    fun:clone
 }
+
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:gst_*
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:g_*
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   obj:*/libglib-2.0.so*
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   obj:*/libgstcoreelements.so
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   obj:*/libgstreamer-1.0.so*
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   obj:*/libgstapp-1.0.so*
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   obj:*/libgstbase-1.0.so*
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:LockOrder
+   ...
+   obj:*/libgstreamer-1.0.so*
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:_ZNK6google8protobuf*
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Misc
+   obj:*/libexec/valgrind/vgpreload_helgrind-amd64-linux.so
+   fun:_ZN8firebolt6rialto6server10MainThread11enqueueTaskEjSt8functionIFvvEE
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Misc
+   obj:*/libexec/valgrind/vgpreload_helgrind-amd64-linux.so
+   fun:_ZN8firebolt6rialto6server10MainThread18enqueueTaskAndWaitEjSt8functionIFvvEE
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Misc
+   obj:*/libexec/valgrind/vgpreload_helgrind-amd64-linux.so
+   fun:_ZN8firebolt6rialto6server12WorkerThread11enqueueTaskEOSt10unique_ptrINS1_11IPlayerTaskESt14default_deleteIS4_EE
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   fun:_ZN8firebolt6rialto6server19GstDispatcherThread18gstBusEventHandlerEP11_GstElement
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   fun:_ZNK8firebolt6rialto6server5tasks7generic16HandleBusMessage7executeEv
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Misc
+   ...
+   fun:_ZN8firebolt6rialto6common5Timer6cancelEv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:__vasprintf_internal
+   fun:g_vasprintf
+   fun:g_strdup_vprintf
+   fun:g_error_new_valist
+   fun:g_error_new
+}
