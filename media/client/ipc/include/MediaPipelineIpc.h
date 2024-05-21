@@ -121,7 +121,9 @@ private:
     /**
      * @brief The session id of the current session.
      */
-    std::atomic<int> m_sessionId;
+    // onPlaybackStateUpdated() can be called before createSession() therefore
+    // initialise m_sessionId to -1 which is an invalid session_id
+    std::atomic<int> m_sessionId{-1};
 
     /**
      * @brief Thread for handling media player events from the server.

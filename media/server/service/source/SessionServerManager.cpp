@@ -22,6 +22,7 @@
 #include "IIpcFactory.h"
 #include "ISessionManagementServer.h"
 #include "RialtoServerLogging.h"
+
 #include <algorithm>
 #include <stdexcept>
 #include <utility>
@@ -51,9 +52,15 @@ SessionServerManager::SessionServerManager(const ipc::IIpcFactory &ipcFactory, I
 SessionServerManager::~SessionServerManager()
 {
     RIALTO_SERVER_LOG_INFO("Stopping Rialto Server Service");
-    std::unique_lock<std::mutex> lock{m_serviceMutex};
-    m_isServiceRunning = false;
-    m_serviceCv.notify_one();
+
+    // The following reset() will ensure that the thread ApplicationManagementServer::m_ipcServerThread
+    // isn't currently calling any methods within this class (while it is being destructed)
+    // Particularly, the mentioned thread is responsible for calling the method
+    // SessionServerManager::switchToNotRunning() which then triggers a call to this destuctor
+    // after it calls stopService()
+    m_applicationManagementServer.reset();
+
+    stopService();
 }
 
 bool SessionServerManager::initialize(int argc, char *argv[])
@@ -93,8 +100,11 @@ void SessionServerManager::startService()
 void SessionServerManager::stopService()
 {
     std::unique_lock<std::mutex> lock{m_serviceMutex};
-    m_isServiceRunning = false;
-    m_serviceCv.notify_one();
+    if (m_isServiceRunning)
+    {
+        m_isServiceRunning = false;
+        m_serviceCv.notify_one();
+    }
 }
 
 bool SessionServerManager::setConfiguration(const std::string &socketName, const common::SessionServerState &state,
@@ -235,12 +245,21 @@ bool SessionServerManager::switchToNotRunning()
     m_playbackService.switchToInactive();
     m_cdmService.switchToInactive();
     m_controlService.setApplicationState(ApplicationState::UNKNOWN);
-    stopService();
+
+    bool result{true};
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::NOT_RUNNING))
     {
         m_currentState.store(common::SessionServerState::NOT_RUNNING);
-        return true;
     }
-    return false;
+    else
+    {
+        result = false;
+    }
+
+    // stopService() needs to be the last command of this method.
+    // It triggers destruction of SessionServerManager and therefore
+    // some member variables may not be valid after this command
+    stopService(); // This HAS TO BE LAST (see above)
+    return result;
 }
 } // namespace firebolt::rialto::server::service
