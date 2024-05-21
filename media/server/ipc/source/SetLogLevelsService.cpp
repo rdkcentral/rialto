@@ -24,11 +24,13 @@ namespace firebolt::rialto::server::ipc
 {
 void SetLogLevelsService::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
     m_connectedClients.insert(ipcClient);
 }
 
 void SetLogLevelsService::clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
 {
+    std::lock_guard<std::mutex> lock(m_mutex);
     m_connectedClients.erase(ipcClient);
 }
 
@@ -41,6 +43,7 @@ void SetLogLevelsService::setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIAL
     event->set_ipcloglevels(static_cast<std::uint32_t>(ipcLogLevels));
     event->set_commonloglevels(static_cast<std::uint32_t>(commonLogLevels));
 
+    std::lock_guard<std::mutex> lock(m_mutex);
     for (const auto &client : m_connectedClients)
     {
         client->sendEvent(event);
