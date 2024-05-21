@@ -74,7 +74,6 @@ private:
     std::unique_ptr<ipc::IApplicationManagementServer> m_applicationManagementServer;
     std::unique_ptr<ipc::ISessionManagementServer> m_sessionManagementServer;
     std::mutex m_serviceMutex;
-    std::mutex m_switchStateMutex;
     std::condition_variable m_serviceCv;
     bool m_isServiceRunning;
     std::atomic<common::SessionServerState> m_currentState;
