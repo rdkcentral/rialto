@@ -246,20 +246,20 @@ bool SessionServerManager::switchToNotRunning()
     m_cdmService.switchToInactive();
     m_controlService.setApplicationState(ApplicationState::UNKNOWN);
 
-    bool rv{true};
+    bool result{true};
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::NOT_RUNNING))
     {
         m_currentState.store(common::SessionServerState::NOT_RUNNING);
     }
     else
     {
-        rv = false;
+        result = false;
     }
 
     // stopService() needs to be the last command of this method.
     // It triggers destruction of SessionServerManager and therefore
     // some member variables may not be valid after this command
     stopService(); // This HAS TO BE LAST (see above)
-    return rv;
+    return result;
 }
 } // namespace firebolt::rialto::server::service
