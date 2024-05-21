@@ -25,7 +25,7 @@
 #include <set>
 
 #include "IIpcServer.h"
-#include "RialtoServerLogging.h"
+#include "RialtoLogging.h"
 
 namespace firebolt::rialto::server::ipc
 {
