@@ -208,7 +208,7 @@ if( NATIVE_BUILD )
     add_subdirectory( stubs/rdk_gstreamer_utils )
     add_subdirectory( stubs/opencdm )
     add_compile_options(-DFREE_MEM_BEFORE_EXIT)
-    add_compile_options(-O0 -ggdb)
+    add_compile_options(-ggdb)
 
     include( GNUInstallDirs )
     configure_file( pkg-config/RialtoClient.in.pc ${CMAKE_BINARY_DIR}/RialtoClient.pc @ONLY )
