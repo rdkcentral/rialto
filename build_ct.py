@@ -55,4 +55,4 @@ if __name__ == "__main__":
 
         # Also generate coverage stats for public interfaces source
         files = ["*/main/source/*"]
-        generateSpecificCoverageStats(args['output'], outputFile, files, "coverage_statistics_public_apis")
+        generateSpecificCoverageStats(os.getcwd(), args['output'], outputFile, files, "coverage_statistics_public_apis")

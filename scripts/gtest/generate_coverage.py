@@ -84,7 +84,7 @@ def generateCoverageReport(baseDir, outputDir, resultsFile):
     return genHtmlStatus and genStatsStatus
 
 # Generates a stats file based on the file patterns given in includeFiles. generateCoverageReport must have been run first.
-def generateSpecificCoverageStats(outputDir, resultsFile, includeFiles, statsFileName):
+def generateSpecificCoverageStats(baseDir, outputDir, resultsFile, includeFiles, statsFileName):
     genStatsCmd = ["lcov", "--summary", "coverage.info", "--filter", "brace,function,trivial"]
     genStatsCmd.extend(["--ignore-errors", "empty"])
     
