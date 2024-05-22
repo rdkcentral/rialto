@@ -135,10 +135,10 @@ SharedMemoryBuffer::SharedMemoryBuffer(unsigned numOfPlaybacks, unsigned numOfWe
         {
             RIALTO_SERVER_LOG_SYS_ERROR(errno, "failed to resize memfd");
         }
-        // else if (fcntl(fd, F_ADD_SEALS, (F_SEAL_SEAL | F_SEAL_GROW | F_SEAL_SHRINK)) == -1)
-        // {
-        //     RIALTO_SERVER_LOG_SYS_ERROR(errno, "failed to seal memfd");
-        // }
+        else if (fcntl(fd, F_ADD_SEALS, (F_SEAL_SEAL | F_SEAL_GROW | F_SEAL_SHRINK)) == -1)
+        {
+            RIALTO_SERVER_LOG_SYS_ERROR(errno, "failed to seal memfd");
+        }
         else
         {
             void *addr = mmap(nullptr, kBufferSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
