@@ -17,6 +17,11 @@
 # limitations under the License.
 #
 
+if ( COVERAGE_ENABLED )
+    add_compile_options(--coverage)
+    add_link_options(--coverage)
+endif()
+
 add_gtests (
         RialtoCommonUnitTests
 
