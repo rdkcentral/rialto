@@ -68,14 +68,11 @@ int main(int argc, char *argv[])
     }
 
 #ifdef FREE_MEM_BEFORE_EXIT
-    if (getenv("RIALTO_FREE_MEM_BEFORE_EXIT"))
-    {
-        RIALTO_SERVER_LOG_INFO("Calling gst_deinit");
-        firebolt::rialto::server::gstDeinitalise();
+    RIALTO_SERVER_LOG_INFO("Calling gst_deinit");
+    firebolt::rialto::server::gstDeinitalise();
 
-        RIALTO_SERVER_LOG_INFO("Calling ShutdownProtobufLibrary");
-        google::protobuf::ShutdownProtobufLibrary();
-    }
+    RIALTO_SERVER_LOG_INFO("Calling ShutdownProtobufLibrary");
+    google::protobuf::ShutdownProtobufLibrary();
 #endif
 
     return EXIT_SUCCESS;
