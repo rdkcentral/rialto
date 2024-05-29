@@ -32,7 +32,6 @@ constexpr unsigned int kSocketPermissions{0666};
 constexpr int kMaxSessions{5};
 constexpr int kMaxWebAudioPlayers{3};
 constexpr int kPingId{29};
-constexpr bool kEnableInstantRateChangeSeek{true};
 // Empty strings for kSocketOwner and kSocketGroup means that chown() won't be called. This will leave the created
 // socket being owned by the user executing the code (and the group would be their primary group)
 const std::string kSocketOwner{};
@@ -80,8 +79,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
 {
     EXPECT_CALL(m_sessionServerManagerMock,
                 setConfiguration(kSocketName, state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers),
-                                 kClientDisplayName, kSocketPermissions, kSocketOwner, kSocketGroup,
-                                 kEnableInstantRateChangeSeek))
+                                 kClientDisplayName, kSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(true));
 }
 
@@ -103,8 +101,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
 {
     EXPECT_CALL(m_sessionServerManagerMock,
                 setConfiguration(kSocketName, state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers),
-                                 kClientDisplayName, kSocketPermissions, kSocketOwner, kSocketGroup,
-                                 kEnableInstantRateChangeSeek))
+                                 kClientDisplayName, kSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(false));
 }
 
@@ -145,7 +142,6 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
     request.set_socketpermissions(kSocketPermissions);
     request.set_socketowner(kSocketOwner);
     request.set_socketgroup(kSocketGroup);
-    request.set_enableinstantratechangeseek(kEnableInstantRateChangeSeek);
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

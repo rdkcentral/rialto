@@ -87,7 +87,6 @@ public:
     void playbackServiceWillReturnInactive();
     void playbackServiceWillReturnMaxPlaybacks(int maxPlaybacks);
     void playbackServiceWillReturnSharedMemoryBuffer();
-    void playbackServiceWillReturnEnableInstantRateChangeSeek();
 
     void createMediaPipelineShouldSuccess();
     void createMediaPipelineShouldFailWhenMediaPipelineCapabilitiesFactoryReturnsNullptr();

@@ -43,7 +43,6 @@ public:
     MOCK_METHOD(unsigned int, getSessionManagementSocketPermissions, (), (const, override));
     MOCK_METHOD(std::string, getSessionManagementSocketOwner, (), (const, override));
     MOCK_METHOD(std::string, getSessionManagementSocketGroup, (), (const, override));
-    MOCK_METHOD(bool, getEnableInstantRateChangeSeek, (), (const, override));
     MOCK_METHOD(std::string, getClientDisplayName, (), (const, override));
     MOCK_METHOD(firebolt::rialto::common::SessionServerState, getInitialState, (), (const, override));
     MOCK_METHOD(int, getServerId, (), (const, override));

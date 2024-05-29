@@ -37,7 +37,7 @@ public:
                    const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                    std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckInterval,
                    unsigned numOfFailedPingsBeforeRecovery, unsigned int socketPermissions,
-                   const std::string &socketOwner, const std::string &socketGroup, bool enableInstantRateChangeSeek);
+                   const std::string &socketOwner, const std::string &socketGroup);
     virtual ~ServiceContext() = default;
 
     common::ISessionServerAppManager &getSessionServerAppManager() override;

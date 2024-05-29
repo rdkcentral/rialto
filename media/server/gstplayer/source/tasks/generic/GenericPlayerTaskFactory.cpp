@@ -53,10 +53,9 @@ namespace firebolt::rialto::server
 GenericPlayerTaskFactory::GenericPlayerTaskFactory(
     IGstGenericPlayerClient *client, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
-    bool enableInstantRateChangeSeek)
-    : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_kEnableInstantRateChangeSeek{enableInstantRateChangeSeek}
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper)
+    : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{
+                                                                                  rdkGstreamerUtilsWrapper}
 {
 }
 
@@ -153,8 +152,7 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createCheckAudioUnderflow
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetPlaybackRate(GenericPlayerContext &context,
                                                                              double rate) const
 {
-    return std::make_unique<tasks::generic::SetPlaybackRate>(context, m_gstWrapper, m_glibWrapper, rate,
-                                                             m_kEnableInstantRateChangeSeek);
+    return std::make_unique<tasks::generic::SetPlaybackRate>(context, m_gstWrapper, m_glibWrapper, rate);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetPosition(GenericPlayerContext &context,

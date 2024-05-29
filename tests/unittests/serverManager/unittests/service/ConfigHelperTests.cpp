@@ -42,8 +42,7 @@ const ServerManagerConfig kServerManagerConfig{{"env1=var1"},
                                                std::chrono::milliseconds{3},
                                                std::chrono::seconds{4},
                                                {7, 7, 7, "user1", "group1"},
-                                               5,
-                                               false};
+                                               5};
 const std::list<std::string> kEmptyEnvVars{};
 const std::list<std::string> kOverwrittenEnvVar{"env1=var2"};
 const std::list<std::string> kJsonSessionServerEnvVars{"env2=var2"};
@@ -53,7 +52,6 @@ constexpr std::chrono::milliseconds kJsonStartupTimeout{0};
 constexpr std::chrono::seconds kJsonHealthcheckInterval{5};
 const SocketPermissions kJsonSocketPermissions{5, 5, 5, "user2", "group2"};
 constexpr unsigned kJsonNumOfFailedPingsBeforeRecovery{3};
-constexpr bool kJsonEnableInstantRateChangeSeek{true};
 const LoggingLevels kJsonLoggingLevels{LoggingLevel::DEBUG, LoggingLevel::DEBUG, LoggingLevel::DEBUG,
                                        LoggingLevel::DEBUG, LoggingLevel::DEBUG, LoggingLevel::DEBUG};
 const std::list<std::string> kJsonOverrideSessionServerEnvVars{"env3=var3"};
@@ -65,7 +63,6 @@ const SocketPermissions kJsonOverrideSocketPermissions{7, 3, 4, "user3", "group3
 constexpr unsigned kJsonOverrideNumOfFailedPingsBeforeRecovery{7};
 const LoggingLevels kJsonOverrideLoggingLevels{LoggingLevel::INFO, LoggingLevel::INFO, LoggingLevel::INFO,
                                                LoggingLevel::INFO, LoggingLevel::INFO, LoggingLevel::INFO};
-constexpr bool kJsonOverrideEnableInstantRateChangeSeek{true};
 } // namespace
 
 class ConfigHelperTests : public testing::Test
@@ -87,7 +84,6 @@ public:
         EXPECT_EQ(m_sut->getSocketPermissions().group, kServerManagerConfig.sessionManagementSocketPermissions.group);
         EXPECT_EQ(m_sut->getNumOfPreloadedServers(), kServerManagerConfig.numOfPreloadedServers);
         EXPECT_EQ(m_sut->getNumOfFailedPingsBeforeRecovery(), kServerManagerConfig.numOfFailedPingsBeforeRecovery);
-        EXPECT_EQ(m_sut->getEnableInstantRateChangeSeek(), kServerManagerConfig.enableInstantRateChangeSeek);
         EXPECT_EQ(m_sut->getLoggingLevels().defaultLoggingLevel, LoggingLevel::UNCHANGED);
         EXPECT_EQ(m_sut->getLoggingLevels().clientLoggingLevel, LoggingLevel::UNCHANGED);
         EXPECT_EQ(m_sut->getLoggingLevels().sessionServerLoggingLevel, LoggingLevel::UNCHANGED);
@@ -111,7 +107,6 @@ public:
         EXPECT_EQ(m_sut->getSocketPermissions().group, kJsonSocketPermissions.group);
         EXPECT_EQ(m_sut->getNumOfPreloadedServers(), kJsonNumOfPreloadedServers);
         EXPECT_EQ(m_sut->getNumOfFailedPingsBeforeRecovery(), kJsonNumOfFailedPingsBeforeRecovery);
-        EXPECT_EQ(m_sut->getEnableInstantRateChangeSeek(), kJsonEnableInstantRateChangeSeek);
         EXPECT_EQ(m_sut->getLoggingLevels().defaultLoggingLevel, kJsonLoggingLevels.defaultLoggingLevel);
         EXPECT_EQ(m_sut->getLoggingLevels().clientLoggingLevel, kJsonLoggingLevels.clientLoggingLevel);
         EXPECT_EQ(m_sut->getLoggingLevels().sessionServerLoggingLevel, kJsonLoggingLevels.sessionServerLoggingLevel);
@@ -136,7 +131,6 @@ public:
         EXPECT_EQ(m_sut->getSocketPermissions().group, kJsonOverrideSocketPermissions.group);
         EXPECT_EQ(m_sut->getNumOfPreloadedServers(), kJsonOverrideNumOfPreloadedServers);
         EXPECT_EQ(m_sut->getNumOfFailedPingsBeforeRecovery(), kJsonOverrideNumOfFailedPingsBeforeRecovery);
-        EXPECT_EQ(m_sut->getEnableInstantRateChangeSeek(), kJsonOverrideEnableInstantRateChangeSeek);
         EXPECT_EQ(m_sut->getLoggingLevels().defaultLoggingLevel, kJsonOverrideLoggingLevels.defaultLoggingLevel);
         EXPECT_EQ(m_sut->getLoggingLevels().clientLoggingLevel, kJsonOverrideLoggingLevels.clientLoggingLevel);
         EXPECT_EQ(m_sut->getLoggingLevels().sessionServerLoggingLevel,
@@ -167,7 +161,6 @@ public:
         EXPECT_CALL(*m_configReaderMock, getNumOfPreloadedServers()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configReaderMock, getLoggingLevels()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configReaderMock, getNumOfPingsBeforeRecovery()).WillOnce(Return(std::nullopt));
-        EXPECT_CALL(*m_configReaderMock, getEnableInstantRateChangeSeek()).WillOnce(Return(std::nullopt));
     }
 
     void jsonConfigReaderWillReturnNewValues()
@@ -185,8 +178,6 @@ public:
         EXPECT_CALL(*m_configReaderMock, getLoggingLevels()).WillRepeatedly(Return(kJsonLoggingLevels));
         EXPECT_CALL(*m_configReaderMock, getNumOfPingsBeforeRecovery())
             .WillRepeatedly(Return(kJsonNumOfFailedPingsBeforeRecovery));
-        EXPECT_CALL(*m_configReaderMock, getEnableInstantRateChangeSeek())
-            .WillRepeatedly(Return(kJsonEnableInstantRateChangeSeek));
     }
 
     void jsonConfigOverridesReaderWillFailToReadFile()
@@ -211,7 +202,6 @@ public:
         EXPECT_CALL(*m_configOverridesReaderMock, getNumOfPreloadedServers()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configOverridesReaderMock, getLoggingLevels()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configOverridesReaderMock, getNumOfPingsBeforeRecovery()).WillOnce(Return(std::nullopt));
-        EXPECT_CALL(*m_configOverridesReaderMock, getEnableInstantRateChangeSeek()).WillOnce(Return(std::nullopt));
     }
 
     void jsonConfigOverridesReaderWillReturnNewValues()
@@ -238,8 +228,6 @@ public:
         EXPECT_CALL(*m_configOverridesReaderMock, getLoggingLevels()).WillRepeatedly(Return(kJsonOverrideLoggingLevels));
         EXPECT_CALL(*m_configOverridesReaderMock, getNumOfPingsBeforeRecovery())
             .WillRepeatedly(Return(kJsonOverrideNumOfFailedPingsBeforeRecovery));
-        EXPECT_CALL(*m_configOverridesReaderMock, getEnableInstantRateChangeSeek())
-            .WillRepeatedly(Return(kJsonOverrideEnableInstantRateChangeSeek));
     }
 
     void initSut(std::unique_ptr<StrictMock<ConfigReaderFactoryMock>> &&configReaderFactory)
