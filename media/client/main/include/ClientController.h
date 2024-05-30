@@ -37,6 +37,15 @@ public:
     IClientController &getClientController() const override;
 };
 
+struct ClientProxy
+{
+    ClientProxy(IControlClient *c) : m_client(c), m_isBeingDeleted(false) {}
+
+    IControlClient *m_client;
+    std::mutex m_mutex;
+    bool m_isBeingDeleted;
+};
+
 class ClientController : public IClientController, public IControlClient
 {
 public:
@@ -108,7 +117,7 @@ private:
     /**
      * @brief Vector of clients to notify.
      */
-    std::set<IControlClient *> m_clientVec;
+    std::set<std::shared_ptr<ClientProxy>> m_clients;
 };
 } // namespace firebolt::rialto::client
 

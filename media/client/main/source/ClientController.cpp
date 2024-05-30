@@ -20,6 +20,7 @@
 #include "ClientController.h"
 #include "RialtoClientLogging.h"
 #include "SharedMemoryHandle.h"
+
 #include <cstring>
 #include <sys/mman.h>
 #include <sys/un.h>
@@ -101,7 +102,7 @@ bool ClientController::registerClient(IControlClient *client, ApplicationState &
         }
     }
     m_registrationRequired = false;
-    m_clientVec.insert(client);
+    m_clients.insert(std::make_shared<ClientProxy>(client));
     appState = m_currentState;
 
     return true;
@@ -115,14 +116,24 @@ bool ClientController::unregisterClient(IControlClient *client)
         return false;
     }
 
-    std::lock_guard<std::mutex> lock{m_mutex};
+    std::shared_ptr<ClientProxy> clientProxy;
 
-    auto numDeleted = m_clientVec.erase(client);
-    if (0 == numDeleted)
     {
-        RIALTO_CLIENT_LOG_ERROR("No client unregistered");
-        return false;
+        std::lock_guard<std::mutex> lock{m_mutex};
+        auto i = m_clients.begin();
+        while (i != m_clients.end() && (*i)->m_client != client)
+            ++i;
+        if (i == m_clients.end())
+        {
+            RIALTO_CLIENT_LOG_ERROR("No client unregistered");
+            return false;
+        }
+        clientProxy = *i;
+        m_clients.erase(i);
     }
+
+    std::lock_guard<std::mutex> lock{clientProxy->m_mutex};
+    clientProxy->m_isBeingDeleted = true;
 
     return true;
 }
@@ -217,17 +228,24 @@ std::string ClientController::stateToString(ApplicationState state)
 
 void ClientController::changeStateAndNotifyClients(ApplicationState state)
 {
-    std::set<IControlClient *> currentClients;
+    std::set<std::shared_ptr<ClientProxy>> currentClients;
     {
         std::lock_guard<std::mutex> lock{m_mutex};
         RIALTO_CLIENT_LOG_INFO("Rialto application state changed from %s to %s", stateToString(m_currentState).c_str(),
                                stateToString(state).c_str());
         m_currentState = state;
-        currentClients = m_clientVec;
+        currentClients = m_clients;
     }
-    for (const auto &client : currentClients)
+
+    for (auto &clientProxy : currentClients)
     {
-        client->notifyApplicationState(state);
+        // The following lock will stop the client destructor from finishing while notifyApplicationState
+        // is being called, since the client destructor will call unregisterClient() which tries to take this lock
+        std::lock_guard<std::mutex> lock{clientProxy->m_mutex};
+        if (!clientProxy->m_isBeingDeleted)
+        {
+            clientProxy->m_client->notifyApplicationState(state);
+        }
     }
 }
 } // namespace firebolt::rialto::client
