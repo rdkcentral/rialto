@@ -44,8 +44,8 @@ public:
     ~ClientController() override;
 
     std::shared_ptr<ISharedMemoryHandle> getSharedMemoryHandle() override;
-    bool registerClient(IControlClient *client, ApplicationState &appState) override;
-    bool unregisterClient(IControlClient *client) override;
+    bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
+    bool unregisterClient(std::weak_ptr<IControlClient> client) override;
 
 private:
     void notifyApplicationState(ApplicationState state) override;
@@ -108,7 +108,7 @@ private:
     /**
      * @brief Vector of clients to notify.
      */
-    std::set<IControlClient *> m_clientVec;
+    std::set<std::shared_ptr<IControlClient>> m_clients;
 };
 } // namespace firebolt::rialto::client
 

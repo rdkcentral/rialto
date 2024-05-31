@@ -67,14 +67,14 @@ Control::~Control()
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     for (const auto &client : m_clients)
     {
-        m_clientController.unregisterClient(client.get());
+        m_clientController.unregisterClient(client);
     }
 }
 
 bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
 {
     std::shared_ptr<IControlClient> lockedClient = client.lock();
-    if (lockedClient && m_clientController.registerClient(lockedClient.get(), appState))
+    if (lockedClient && m_clientController.registerClient(lockedClient, appState))
     {
         m_clients.push_back(lockedClient);
         return true;

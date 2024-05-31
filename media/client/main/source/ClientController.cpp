@@ -83,9 +83,10 @@ std::shared_ptr<ISharedMemoryHandle> ClientController::getSharedMemoryHandle()
     return m_shmHandle;
 }
 
-bool ClientController::registerClient(IControlClient *client, ApplicationState &appState)
+bool ClientController::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
 {
-    if (nullptr == client)
+    std::shared_ptr<IControlClient> clientLocked = client.lock();
+    if (!clientLocked)
     {
         RIALTO_CLIENT_LOG_ERROR("Client ptr is null");
         return false;
@@ -101,15 +102,16 @@ bool ClientController::registerClient(IControlClient *client, ApplicationState &
         }
     }
     m_registrationRequired = false;
-    m_clientVec.insert(client);
+    m_clients.insert(clientLocked);
     appState = m_currentState;
 
     return true;
 }
 
-bool ClientController::unregisterClient(IControlClient *client)
+bool ClientController::unregisterClient(std::weak_ptr<IControlClient> client)
 {
-    if (nullptr == client)
+    std::shared_ptr<IControlClient> clientLocked = client.lock();
+    if (!clientLocked)
     {
         RIALTO_CLIENT_LOG_ERROR("Client ptr is null");
         return false;
@@ -117,7 +119,7 @@ bool ClientController::unregisterClient(IControlClient *client)
 
     std::lock_guard<std::mutex> lock{m_mutex};
 
-    auto numDeleted = m_clientVec.erase(client);
+    auto numDeleted = m_clients.erase(clientLocked);
     if (0 == numDeleted)
     {
         RIALTO_CLIENT_LOG_ERROR("No client unregistered");
@@ -217,13 +219,13 @@ std::string ClientController::stateToString(ApplicationState state)
 
 void ClientController::changeStateAndNotifyClients(ApplicationState state)
 {
-    std::set<IControlClient *> currentClients;
+    std::set<std::shared_ptr<IControlClient>> currentClients;
     {
         std::lock_guard<std::mutex> lock{m_mutex};
         RIALTO_CLIENT_LOG_INFO("Rialto application state changed from %s to %s", stateToString(m_currentState).c_str(),
                                stateToString(state).c_str());
         m_currentState = state;
-        currentClients = m_clientVec;
+        currentClients = m_clients;
     }
     for (const auto &client : currentClients)
     {

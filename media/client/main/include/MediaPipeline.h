@@ -71,7 +71,7 @@ namespace firebolt::rialto::client
 /**
  * @brief The definition of the MediaPipeline.
  */
-class MediaPipeline : public IMediaPipeline, public IMediaPipelineIpcClient, public IControlClient
+class MediaPipeline : public IMediaPipelineAndIControlClient, public IMediaPipelineIpcClient
 {
 public:
     /**

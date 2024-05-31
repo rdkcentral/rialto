@@ -35,12 +35,19 @@
 #include <string>
 #include <vector>
 
+#include "IControlClient.h"
 #include "IMediaPipelineClient.h"
 #include "MediaCommon.h"
+
+namespace firebolt::rialto::client
+{
+class IClientController;
+};
 
 namespace firebolt::rialto
 {
 class IMediaPipeline;
+enum class ApplicationState;
 
 /**
  * @brief IMediaPipeline factory class, returns a concrete implementation of IMediaPipeline
@@ -1306,6 +1313,79 @@ public:
     virtual bool setSourcePosition(int32_t sourceId, int64_t position) = 0;
 };
 
+class IMediaPipelineAndIControlClient : public IMediaPipeline, public IControlClient
+{
+};
+
+class MediaPipelineProxy : public IMediaPipelineAndIControlClient
+{
+public:
+    MediaPipelineProxy(std::shared_ptr<IMediaPipelineAndIControlClient> mp, client::IClientController &clientController);
+    virtual ~MediaPipelineProxy();
+
+    std::weak_ptr<IMediaPipelineClient> getClient() override { return m_ptr->getClient(); }
+
+    bool load(MediaType type, const std::string &mimeType, const std::string &url) override
+    {
+        return m_ptr->load(type, mimeType, url);
+    }
+
+    bool attachSource(const std::unique_ptr<MediaSource> &source) override { return m_ptr->attachSource(source); }
+
+    bool removeSource(int32_t id) override { return m_ptr->removeSource(id); }
+
+    bool allSourcesAttached() override { return m_ptr->allSourcesAttached(); }
+
+    bool play() override { return m_ptr->play(); }
+
+    bool pause() override { return m_ptr->pause(); }
+
+    bool stop() override { return m_ptr->stop(); }
+
+    bool setPlaybackRate(double rate) override { return m_ptr->setPlaybackRate(rate); }
+
+    bool setPosition(int64_t position) override { return m_ptr->setPosition(position); }
+
+    bool getPosition(int64_t &position) override { return m_ptr->getPosition(position); }
+
+    bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override
+    {
+        return m_ptr->setVideoWindow(x, y, width, height);
+    }
+
+    bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override
+    {
+        return m_ptr->haveData(status, needDataRequestId);
+    }
+
+    AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override
+    {
+        return m_ptr->addSegment(needDataRequestId, mediaSegment);
+    }
+
+    bool renderFrame() override { return m_ptr->renderFrame(); }
+
+    bool setVolume(double volume) override { return m_ptr->setVolume(volume); }
+
+    bool getVolume(double &volume) override { return m_ptr->getVolume(volume); }
+
+    bool setMute(bool mute) override { return m_ptr->setMute(mute); }
+
+    bool getMute(bool &mute) override { return m_ptr->getMute(mute); }
+
+    bool flush(int32_t sourceId, bool resetTime) override { return m_ptr->flush(sourceId, resetTime); }
+
+    bool setSourcePosition(int32_t sourceId, int64_t position) override
+    {
+        return m_ptr->setSourcePosition(sourceId, position);
+    }
+
+    void notifyApplicationState(ApplicationState state) override { m_ptr->notifyApplicationState(state); }
+
+private:
+    client::IClientController &m_clientController;
+    std::shared_ptr<IMediaPipelineAndIControlClient> m_ptr;
+};
 }; // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_I_MEDIA_PIPELINE_H_

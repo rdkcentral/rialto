@@ -62,14 +62,16 @@ WebAudioPlayerFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient>
         std::shared_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactoryLocked =
             webAudioPlayerIpcFactory.lock();
         std::shared_ptr<client::IClientController> clientControllerLocked = clientController.lock();
-        webAudioPlayer = std::make_unique<client::WebAudioPlayer>(client, audioMimeType, priority, config,
-                                                                  webAudioPlayerIpcFactoryLocked
-                                                                      ? webAudioPlayerIpcFactoryLocked
-                                                                      : client::IWebAudioPlayerIpcFactory::getFactory(),
-                                                                  clientControllerLocked
-                                                                      ? *clientControllerLocked
-                                                                      : client::IClientControllerAccessor::instance()
-                                                                            .getClientController());
+        client::IClientController &cc = clientControllerLocked
+                                            ? *clientControllerLocked
+                                            : client::IClientControllerAccessor::instance().getClientController();
+
+        auto wap{std::make_shared<client::WebAudioPlayer>(client, audioMimeType, priority, config,
+                                                          webAudioPlayerIpcFactoryLocked
+                                                              ? webAudioPlayerIpcFactoryLocked
+                                                              : client::IWebAudioPlayerIpcFactory::getFactory(),
+                                                          cc)};
+        webAudioPlayer = std::make_unique<WebAudioPlayerProxy>(wap, cc);
     }
     catch (const std::exception &e)
     {
@@ -78,6 +80,27 @@ WebAudioPlayerFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient>
 
     return webAudioPlayer;
 }
+
+WebAudioPlayerProxy::WebAudioPlayerProxy(std::shared_ptr<IWebAudioPlayerAndIControlClient> ptr,
+                                         client::IClientController &clientController)
+    : m_clientController{clientController}, m_ptr(ptr)
+{
+    ApplicationState state{ApplicationState::UNKNOWN};
+    if (!m_clientController.registerClient(m_ptr, state))
+    {
+        throw std::runtime_error("Failed to register client with clientController");
+    }
+    m_ptr->notifyApplicationState(state);
+}
+
+WebAudioPlayerProxy::~WebAudioPlayerProxy()
+{
+    if (!m_clientController.unregisterClient(m_ptr))
+    {
+        RIALTO_CLIENT_LOG_WARN("Failed to unregister client with clientController");
+    }
+}
+
 }; // namespace firebolt::rialto
 
 namespace firebolt::rialto::client
@@ -117,23 +140,11 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
     {
         throw std::runtime_error("Web audio player ipc could not be created");
     }
-
-    ApplicationState currentState{ApplicationState::UNKNOWN};
-    if (!m_clientController.registerClient(this, currentState))
-    {
-        throw std::runtime_error("Failed to register client with clientController");
-    }
-    m_currentAppState = currentState;
 }
 
 WebAudioPlayer::~WebAudioPlayer()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    if (!m_clientController.unregisterClient(this))
-    {
-        RIALTO_CLIENT_LOG_WARN("Failed to unregister client with clientController");
-    }
 
     m_webAudioPlayerIpc.reset();
 }
