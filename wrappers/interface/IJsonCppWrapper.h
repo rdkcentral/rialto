@@ -36,10 +36,8 @@ public:
     virtual bool isArray() const = 0;
     virtual bool isString() const = 0;
     virtual bool isUInt() const = 0;
-    virtual bool isBool() const = 0;
     virtual JSONCPP_STRING asString() const = 0;
     virtual unsigned int asUInt() const = 0;
-    virtual bool asBool() const = 0;
 };
 
 class IJsonCppWrapper

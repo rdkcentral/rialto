@@ -105,8 +105,6 @@ struct ServerManagerConfig
     SocketPermissions sessionManagementSocketPermissions{}; /* Defines permissions of session management socket */
     unsigned numOfFailedPingsBeforeRecovery{@NUM_OF_PINGS_BEFORE_RECOVERY@};
         /* Defines how many pings have to fail before recovery action will be taken */
-    bool enableInstantRateChangeSeek{@ENABLE_INSTANT_RATE_CHANGE_SEEK@};
-        /* Defines if new rate change method can be used */
 };
 
 } // namespace firebolt::rialto::common

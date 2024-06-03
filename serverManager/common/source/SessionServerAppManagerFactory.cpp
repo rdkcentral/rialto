@@ -31,14 +31,13 @@ std::unique_ptr<ISessionServerAppManager> createSessionServerAppManager(
     const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
     std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckInterval,
     unsigned numOfFailedPingsBeforeRecovery, unsigned int socketPermissions, const std::string &socketOwner,
-    const std::string &socketGroup, bool enableInstantRateChangeSeek)
+    const std::string &socketGroup)
 {
     return std::make_unique<
         SessionServerAppManager>(ipc, stateObserver,
                                  std::make_unique<SessionServerAppFactory>(environmentVariables, sessionServerPath,
                                                                            sessionServerStartupTimeout,
-                                                                           socketPermissions, socketOwner, socketGroup,
-                                                                           enableInstantRateChangeSeek),
+                                                                           socketPermissions, socketOwner, socketGroup),
                                  std::make_unique<HealthcheckServiceFactory>(healthcheckInterval,
                                                                              numOfFailedPingsBeforeRecovery),
                                  firebolt::rialto::common::IEventThreadFactory::createFactory());

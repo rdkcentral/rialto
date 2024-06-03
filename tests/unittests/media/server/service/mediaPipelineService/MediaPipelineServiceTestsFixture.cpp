@@ -51,7 +51,6 @@ constexpr std::uint32_t kNumFrames{1};
 constexpr double kVolume{0.7};
 constexpr bool kMute{false};
 constexpr bool kResetTime{true};
-constexpr bool kEnableInstantRateChangeSeek{true};
 } // namespace
 
 namespace firebolt::rialto
@@ -296,15 +295,13 @@ void MediaPipelineServiceTests::mediaPipelineWillPing()
 
 void MediaPipelineServiceTests::mediaPipelineFactoryWillCreateMediaPipeline()
 {
-    EXPECT_CALL(*m_mediaPipelineFactoryMock,
-                createMediaPipelineServerInternal(_, kRequirements, _, _, _, kEnableInstantRateChangeSeek))
+    EXPECT_CALL(*m_mediaPipelineFactoryMock, createMediaPipelineServerInternal(_, kRequirements, _, _, _))
         .WillOnce(Return(ByMove(std::move(m_mediaPipeline))));
 }
 
 void MediaPipelineServiceTests::mediaPipelineFactoryWillReturnNullptr()
 {
-    EXPECT_CALL(*m_mediaPipelineFactoryMock,
-                createMediaPipelineServerInternal(_, kRequirements, _, _, _, kEnableInstantRateChangeSeek))
+    EXPECT_CALL(*m_mediaPipelineFactoryMock, createMediaPipelineServerInternal(_, kRequirements, _, _, _))
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::server::IMediaPipelineServerInternal>())));
 }
 
@@ -326,13 +323,6 @@ void MediaPipelineServiceTests::playbackServiceWillReturnMaxPlaybacks(int maxPla
 void MediaPipelineServiceTests::playbackServiceWillReturnSharedMemoryBuffer()
 {
     EXPECT_CALL(m_playbackServiceMock, getShmBuffer()).WillOnce(Return(m_shmBuffer)).RetiresOnSaturation();
-}
-
-void MediaPipelineServiceTests::playbackServiceWillReturnEnableInstantRateChangeSeek()
-{
-    EXPECT_CALL(m_playbackServiceMock, getEnableInstantRateChangeSeek())
-        .WillOnce(Return(kEnableInstantRateChangeSeek))
-        .RetiresOnSaturation();
 }
 
 void MediaPipelineServiceTests::createMediaPipelineShouldSuccess()
@@ -607,7 +597,6 @@ void MediaPipelineServiceTests::initSession()
     playbackServiceWillReturnActive();
     playbackServiceWillReturnMaxPlaybacks(1);
     playbackServiceWillReturnSharedMemoryBuffer();
-    playbackServiceWillReturnEnableInstantRateChangeSeek();
     mediaPipelineFactoryWillCreateMediaPipeline();
     createSessionShouldSucceed();
 }

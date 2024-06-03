@@ -72,9 +72,8 @@ protected:
         std::make_shared<StrictMock<firebolt::rialto::wrappers::GstWrapperMock>>()};
     std::shared_ptr<firebolt::rialto::wrappers::RdkGstreamerUtilsWrapperMock> m_rdkGstreamerUtilsWrapper{
         std::make_shared<StrictMock<firebolt::rialto::wrappers::RdkGstreamerUtilsWrapperMock>>()};
-    const bool m_kEnableInstantRateChangeSeek{true};
     firebolt::rialto::server::GenericPlayerTaskFactory m_sut{&m_gstPlayerClient, m_gstWrapper, m_glibWrapper,
-                                                             m_rdkGstreamerUtilsWrapper, m_kEnableInstantRateChangeSeek};
+                                                             m_rdkGstreamerUtilsWrapper};
 };
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateAttachSamples)

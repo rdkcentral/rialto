@@ -55,7 +55,6 @@ bool ConfigReader::read()
     parseNumOfPreloadedServers(root);
     parseLogLevel(root);
     parseNumOfPingsBeforeRecovery(root);
-    parseEnableInstantRateChangeSeek(root);
 
     return true;
 }
@@ -183,14 +182,6 @@ void ConfigReader::parseNumOfPingsBeforeRecovery(std::shared_ptr<firebolt::rialt
     }
 }
 
-void ConfigReader::parseEnableInstantRateChangeSeek(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
-{
-    if (root->isMember("enable_instant_rate_change_seek") && root->at("enable_instant_rate_change_seek")->isBool())
-    {
-        m_enableInstantRateChangeSeek = root->at("enable_instant_rate_change_seek")->asBool();
-    }
-}
-
 std::list<std::string> ConfigReader::getEnvironmentVariables()
 {
     return m_envVars;
@@ -239,11 +230,6 @@ std::optional<rialto::servermanager::service::LoggingLevels> ConfigReader::getLo
 std::optional<unsigned int> ConfigReader::getNumOfPingsBeforeRecovery()
 {
     return m_numOfPingsBeforeRecovery;
-}
-
-std::optional<bool> ConfigReader::getEnableInstantRateChangeSeek()
-{
-    return m_enableInstantRateChangeSeek;
 }
 
 } // namespace rialto::servermanager::service

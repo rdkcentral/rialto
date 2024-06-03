@@ -62,20 +62,17 @@ public:
     /**
      * @brief IMediaPipelineServerInternal factory method, returns a concrete implementation of IMediaPipeline
      *
-     * @param[in] client                      : The Rialto media player client.
-     * @param[in] videoRequirements           : The video decoder requirements for the MediaPipeline session
-     * @param[in] sessionId                   : The session id for this MediaPipeline.
-     * @param[in] shmBuffer                   : The shared buffer object.
-     * @param[in] decryptionService           : The decryption service object.
-     * @param[in] enableInstantRateChangeSeek : Defines if new rate change method can be used
+     * @param[in] client            : The Rialto media player client.
+     * @param[in] videoRequirements : The video decoder requirements for the MediaPipeline session
+     * @param[in] sessionId         : The session id for this MediaPipeline.
+     * @param[in] shmBuffer         : The shared buffer object.
+     * @param[in] decryptionService : The decryption service object.
      *
      * @retval the new backend instance or null on error.
      */
-    virtual std::unique_ptr<IMediaPipelineServerInternal>
-    createMediaPipelineServerInternal(std::weak_ptr<IMediaPipelineClient> client,
-                                      const VideoRequirements &videoRequirements, int sessionId,
-                                      const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
-                                      IDecryptionService &decryptionService, bool enableInstantRateChangeSeek) const = 0;
+    virtual std::unique_ptr<IMediaPipelineServerInternal> createMediaPipelineServerInternal(
+        std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
+        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService) const = 0;
 };
 
 /**

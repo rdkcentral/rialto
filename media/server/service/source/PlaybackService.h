@@ -61,13 +61,11 @@ public:
     void setMaxPlaybacks(int maxPlaybacks) override;
     void setMaxWebAudioPlayers(int maxWebAudio) override;
     void setClientDisplayName(const std::string &clientDisplayName) const override;
-    void setEnableInstantRateChangeSeek(bool enableInstantRateChangeSeek) override;
 
     bool isActive() const override;
     bool getSharedMemory(int32_t &fd, uint32_t &size) const override;
     int getMaxPlaybacks() const override;
     int getMaxWebAudioPlayers() const override;
-    bool getEnableInstantRateChangeSeek() const override;
     std::shared_ptr<ISharedMemoryBuffer> getShmBuffer() const override;
     IMediaPipelineService &getMediaPipelineService() const override;
     IWebAudioPlayerService &getWebAudioPlayerService() const override;
@@ -78,7 +76,6 @@ private:
     std::atomic<bool> m_isActive;
     std::atomic<int> m_maxPlaybacks;
     std::atomic<int> m_maxWebAudioPlayers;
-    std::atomic_bool m_enableInstantRateChangeSeek;
     std::shared_ptr<ISharedMemoryBuffer> m_shmBuffer;
     std::unique_ptr<MediaPipelineService> m_mediaPipelineService;
     std::unique_ptr<WebAudioPlayerService> m_webAudioPlayerService;

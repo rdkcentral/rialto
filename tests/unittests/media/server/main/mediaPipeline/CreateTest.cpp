@@ -74,8 +74,7 @@ TEST_F(RialtoServerCreateMediaPipelineTest, InternalFactoryCreatesObject)
     std::unique_ptr<server::IMediaPipelineServerInternal> mediaPipelineServer;
     EXPECT_NO_THROW(mediaPipelineServer =
                         factory->createMediaPipelineServerInternal(m_mediaPipelineClientMock, m_videoReq, m_kSessionId,
-                                                                   m_sharedMemoryBufferMock, m_decryptionServiceMock,
-                                                                   m_kEnableInstantRateChangeSeek));
+                                                                   m_sharedMemoryBufferMock, m_decryptionServiceMock));
 
     EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId))
         .WillOnce(Return(true));

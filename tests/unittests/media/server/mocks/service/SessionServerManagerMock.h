@@ -35,8 +35,7 @@ public:
     MOCK_METHOD(bool, setConfiguration,
                 (const std::string &socketName, const common::SessionServerState &state,
                  const common::MaxResourceCapabilitites &maxResource, const std::string &clientDisplayName,
-                 unsigned int socketPermissions, const std::string &socketOwner, const std::string &socketGroup,
-                 bool enableInstantRateChangeSeek),
+                 unsigned int socketPermissions, const std::string &socketOwner, const std::string &socketGroup),
                 (override));
     MOCK_METHOD(bool, setState, (const common::SessionServerState &state), (override));
     MOCK_METHOD(void, setLogLevels,

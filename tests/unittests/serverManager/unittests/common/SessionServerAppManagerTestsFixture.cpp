@@ -65,7 +65,6 @@ const std::string kClientDisplayName{"westeros-rialto"};
 constexpr unsigned int kSocketPermissions{0777};
 const std::string kSocketOwner;
 const std::string kSocketGroup;
-constexpr bool kEnableInstantRateChangeSeek{true};
 } // namespace
 
 MATCHER_P2(MaxResourceMatcher, maxPlaybacks, maxWebAudioPlayers, "")
@@ -215,7 +214,6 @@ void SessionServerAppManagerTests::sessionServerWillChangeStateToUninitialized()
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketPermissions()).WillOnce(Return(kSocketPermissions));
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketOwner()).WillOnce(Return(kSocketOwner));
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketGroup()).WillOnce(Return(kSocketGroup));
-    EXPECT_CALL(m_sessionServerAppMock, getEnableInstantRateChangeSeek()).WillOnce(Return(kEnableInstantRateChangeSeek));
     EXPECT_CALL(m_sessionServerAppMock, getMaxPlaybackSessions()).WillOnce(Return(kMaxSessions));
     EXPECT_CALL(m_sessionServerAppMock, getMaxWebAudioPlayers()).WillOnce(Return(kMaxWebAudioPlayers));
     EXPECT_CALL(m_sessionServerAppMock, isPreloaded()).WillOnce(Return(false));
@@ -223,7 +221,7 @@ void SessionServerAppManagerTests::sessionServerWillChangeStateToUninitialized()
                 performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
                                         kSessionServerSocketName, kClientDisplayName,
                                         MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kSocketPermissions,
-                                        kSocketOwner, kSocketGroup, kEnableInstantRateChangeSeek))
+                                        kSocketOwner, kSocketGroup))
         .WillOnce(Return(true));
     EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, firebolt::rialto::common::SessionServerState::UNINITIALIZED));
 }
@@ -255,14 +253,13 @@ void SessionServerAppManagerTests::preloadedSessionServerWillSetConfiguration()
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketPermissions()).WillOnce(Return(kSocketPermissions));
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketOwner()).WillOnce(Return(kSocketOwner));
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketGroup()).WillOnce(Return(kSocketGroup));
-    EXPECT_CALL(m_sessionServerAppMock, getEnableInstantRateChangeSeek()).WillOnce(Return(kEnableInstantRateChangeSeek));
     EXPECT_CALL(m_sessionServerAppMock, getMaxPlaybackSessions()).WillOnce(Return(kMaxSessions));
     EXPECT_CALL(m_sessionServerAppMock, getMaxWebAudioPlayers()).WillOnce(Return(kMaxWebAudioPlayers));
     EXPECT_CALL(m_controllerMock,
                 performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
                                         kSessionServerSocketName, kClientDisplayName,
                                         MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kSocketPermissions,
-                                        kSocketOwner, kSocketGroup, kEnableInstantRateChangeSeek))
+                                        kSocketOwner, kSocketGroup))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerAppFactoryMock, create(_)).WillOnce(Return(ByMove(std::move(m_secondSessionServerApp))));
     EXPECT_CALL(secondSessionServerAppMock, launch()).WillOnce(Return(false));
@@ -278,7 +275,6 @@ void SessionServerAppManagerTests::sessionServerWillFailToSetConfiguration()
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketPermissions()).WillOnce(Return(kSocketPermissions));
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketOwner()).WillOnce(Return(kSocketOwner));
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketGroup()).WillOnce(Return(kSocketGroup));
-    EXPECT_CALL(m_sessionServerAppMock, getEnableInstantRateChangeSeek()).WillOnce(Return(kEnableInstantRateChangeSeek));
     EXPECT_CALL(m_sessionServerAppMock, getMaxPlaybackSessions()).WillOnce(Return(kMaxSessions));
     EXPECT_CALL(m_sessionServerAppMock, getMaxWebAudioPlayers()).WillOnce(Return(kMaxWebAudioPlayers));
     EXPECT_CALL(m_sessionServerAppMock, isPreloaded()).WillRepeatedly(Return(false));
@@ -286,7 +282,7 @@ void SessionServerAppManagerTests::sessionServerWillFailToSetConfiguration()
                 performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
                                         kSessionServerSocketName, kClientDisplayName,
                                         MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kSocketPermissions,
-                                        kSocketOwner, kSocketGroup, kEnableInstantRateChangeSeek))
+                                        kSocketOwner, kSocketGroup))
         .WillOnce(Return(false));
     EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, firebolt::rialto::common::SessionServerState::UNINITIALIZED));
 }
@@ -300,14 +296,13 @@ void SessionServerAppManagerTests::preloadedSessionServerWillFailToSetConfigurat
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketPermissions()).WillOnce(Return(kSocketPermissions));
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketOwner()).WillOnce(Return(kSocketOwner));
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketGroup()).WillOnce(Return(kSocketGroup));
-    EXPECT_CALL(m_sessionServerAppMock, getEnableInstantRateChangeSeek()).WillOnce(Return(kEnableInstantRateChangeSeek));
     EXPECT_CALL(m_sessionServerAppMock, getMaxPlaybackSessions()).WillOnce(Return(kMaxSessions));
     EXPECT_CALL(m_sessionServerAppMock, getMaxWebAudioPlayers()).WillOnce(Return(kMaxWebAudioPlayers));
     EXPECT_CALL(m_controllerMock,
                 performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
                                         kSessionServerSocketName, kClientDisplayName,
                                         MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kSocketPermissions,
-                                        kSocketOwner, kSocketGroup, kEnableInstantRateChangeSeek))
+                                        kSocketOwner, kSocketGroup))
         .WillOnce(Return(false));
 }
 

@@ -36,10 +36,8 @@ public:
     MOCK_METHOD(bool, isArray, (), (const, override));
     MOCK_METHOD(bool, isString, (), (const, override));
     MOCK_METHOD(bool, isUInt, (), (const, override));
-    MOCK_METHOD(bool, isBool, (), (const, override));
     MOCK_METHOD(JSONCPP_STRING, asString, (), (const, override));
     MOCK_METHOD(unsigned int, asUInt, (), (const, override));
-    MOCK_METHOD(bool, asBool, (), (const, override));
 };
 
 class JsonCppWrapperMock : public IJsonCppWrapper
