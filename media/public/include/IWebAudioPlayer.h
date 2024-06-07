@@ -33,14 +33,8 @@
 #include <stdint.h>
 #include <string>
 
-#include "IControlClient.h"
 #include "IWebAudioPlayerClient.h"
 #include "MediaCommon.h"
-
-namespace firebolt::rialto::client
-{
-class IClientController;
-};
 
 namespace firebolt::rialto
 {
@@ -215,53 +209,6 @@ public:
      * @retval The web audio player client.
      */
     virtual std::weak_ptr<IWebAudioPlayerClient> getClient() = 0;
-};
-
-class IWebAudioPlayerAndIControlClient : public IWebAudioPlayer, public IControlClient
-{
-};
-
-class WebAudioPlayerProxy : public IWebAudioPlayerAndIControlClient
-{
-public:
-    WebAudioPlayerProxy(std::shared_ptr<IWebAudioPlayerAndIControlClient> ptr,
-                        client::IClientController &clientController);
-    virtual ~WebAudioPlayerProxy();
-
-    bool play() override { return m_ptr->play(); }
-
-    bool pause() override { return m_ptr->pause(); }
-
-    bool setEos() override { return m_ptr->setEos(); }
-
-    bool getBufferAvailable(uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo) override
-    {
-        return m_ptr->getBufferAvailable(availableFrames, webAudioShmInfo);
-    }
-
-    bool getBufferDelay(uint32_t &delayFrames) override { return m_ptr->getBufferDelay(delayFrames); }
-
-    bool writeBuffer(const uint32_t numberOfFrames, void *data) override
-    {
-        return m_ptr->writeBuffer(numberOfFrames, data);
-    }
-
-    bool getDeviceInfo(uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay) override
-    {
-        return m_ptr->getDeviceInfo(preferredFrames, maximumFrames, supportDeferredPlay);
-    }
-
-    bool setVolume(double volume) override { return m_ptr->setVolume(volume); }
-
-    bool getVolume(double &volume) override { return m_ptr->getVolume(volume); }
-
-    std::weak_ptr<IWebAudioPlayerClient> getClient() override { return m_ptr->getClient(); }
-
-    void notifyApplicationState(ApplicationState state) override { m_ptr->notifyApplicationState(state); }
-
-private:
-    client::IClientController &m_clientController;
-    std::shared_ptr<IWebAudioPlayerAndIControlClient> m_ptr;
 };
 
 }; // namespace firebolt::rialto

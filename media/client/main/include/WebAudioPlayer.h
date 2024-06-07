@@ -71,6 +71,10 @@ public:
 
 namespace firebolt::rialto::client
 {
+class IWebAudioPlayerAndIControlClient : public IWebAudioPlayer, public IControlClient
+{
+};
+
 /**
  * @brief The definition of the WebAudioPlayer.
  */

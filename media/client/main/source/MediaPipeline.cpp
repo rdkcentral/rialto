@@ -17,11 +17,13 @@
  * limitations under the License.
  */
 
-#include "MediaPipeline.h"
-#include "KeyIdMap.h"
-#include "RialtoClientLogging.h"
 #include <inttypes.h>
 #include <stdint.h>
+
+#include "KeyIdMap.h"
+#include "MediaPipeline.h"
+#include "MediaPipelineProxy.h"
+#include "RialtoClientLogging.h"
 
 namespace
 {
@@ -131,7 +133,6 @@ MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> cl
     std::unique_ptr<IMediaPipeline> mediaPipeline;
     try
     {
-
         std::shared_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactoryLocked = mediaPipelineIpcFactory.lock();
         std::shared_ptr<client::IClientController> clientControllerLocked = clientController.lock();
         firebolt::rialto::client::IClientController &cc =
@@ -143,7 +144,7 @@ MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> cl
                                                             ? mediaPipelineIpcFactoryLocked
                                                             : client::IMediaPipelineIpcFactory::getFactory(),
                                                         common::IMediaFrameWriterFactory::getFactory(), cc)};
-        mediaPipeline = std::move(std::make_unique<MediaPipelineProxy>(mp, cc));
+        mediaPipeline = std::move(std::make_unique<client::MediaPipelineProxy>(mp, cc));
     }
     catch (const std::exception &e)
     {
@@ -153,30 +154,30 @@ MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> cl
     return mediaPipeline;
 }
 
-MediaPipelineProxy::MediaPipelineProxy(std::shared_ptr<IMediaPipelineAndIControlClient> mp,
-                                       client::IClientController &clientController)
-    : m_clientController{clientController}, m_ptr{mp}
+}; // namespace firebolt::rialto
+
+namespace firebolt::rialto::client
+{
+MediaPipelineProxy::MediaPipelineProxy(const std::shared_ptr<IMediaPipelineAndIControlClient> &mediaPipeline,
+                                       IClientController &clientController)
+    : m_mediaPipeline{mediaPipeline}, m_clientController{clientController}
 {
     ApplicationState state{ApplicationState::UNKNOWN};
-    if (!m_clientController.registerClient(m_ptr, state))
+    if (!m_clientController.registerClient(m_mediaPipeline, state))
     {
         throw std::runtime_error("Failed to register client with clientController");
     }
-    m_ptr->notifyApplicationState(state);
+    m_mediaPipeline->notifyApplicationState(state);
 }
 
 MediaPipelineProxy::~MediaPipelineProxy()
 {
-    if (!m_clientController.unregisterClient(m_ptr))
+    if (!m_clientController.unregisterClient(m_mediaPipeline))
     {
         RIALTO_CLIENT_LOG_WARN("Failed to unregister client with clientController");
     }
 }
 
-}; // namespace firebolt::rialto
-
-namespace firebolt::rialto::client
-{
 MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
                              const std::shared_ptr<IMediaPipelineIpcFactory> &mediaPipelineIpcFactory,
                              const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,

@@ -20,13 +20,14 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_H_
 #define FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_H_
 
+#include <list>
+#include <memory>
+#include <mutex>
+#include <string>
+
 #include "IClientController.h"
 #include "IControlClient.h"
 #include "IControlIpc.h"
-#include <memory>
-#include <mutex>
-#include <set>
-#include <string>
 
 namespace firebolt::rialto::client
 {
@@ -106,9 +107,9 @@ private:
     std::shared_ptr<IControlIpc> m_controlIpc;
 
     /**
-     * @brief Vector of clients to notify.
+     * @brief List of clients to notify.
      */
-    std::set<std::shared_ptr<IControlClient>> m_clients;
+    std::list<std::weak_ptr<IControlClient>> m_clients;
 };
 } // namespace firebolt::rialto::client
 

@@ -25,6 +25,14 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+namespace
+{
+// The following error would be reported if a client is deleted
+// before unregisterClient() was called. This can
+// be automated via a proxy class (like the class MediaPipelineProxy)
+const std::string kClientPointerNotLocked{"A client could not be locked"};
+}; // namespace
+
 namespace firebolt::rialto::client
 {
 IClientControllerAccessor &IClientControllerAccessor::instance()
@@ -102,7 +110,7 @@ bool ClientController::registerClient(std::weak_ptr<IControlClient> client, Appl
         }
     }
     m_registrationRequired = false;
-    m_clients.insert(clientLocked);
+    m_clients.push_back(client);
     appState = m_currentState;
 
     return true;
@@ -119,10 +127,28 @@ bool ClientController::unregisterClient(std::weak_ptr<IControlClient> client)
 
     std::lock_guard<std::mutex> lock{m_mutex};
 
-    auto numDeleted = m_clients.erase(clientLocked);
-    if (0 == numDeleted)
+    bool found{false};
+    for (auto i = m_clients.begin(); i != m_clients.end();)
     {
-        RIALTO_CLIENT_LOG_ERROR("No client unregistered");
+        std::shared_ptr<IControlClient> iLocked = i->lock();
+        if (!iLocked)
+        {
+            RIALTO_CLIENT_LOG_ERROR("%s", kClientPointerNotLocked.c_str());
+            i = m_clients.erase(i);
+        }
+        else if (iLocked == clientLocked)
+        {
+            i = m_clients.erase(i);
+            found = true;
+            break;
+        }
+        else
+            ++i;
+    }
+
+    if (!found)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Client not found");
         return false;
     }
 
@@ -219,13 +245,24 @@ std::string ClientController::stateToString(ApplicationState state)
 
 void ClientController::changeStateAndNotifyClients(ApplicationState state)
 {
-    std::set<std::shared_ptr<IControlClient>> currentClients;
+    std::vector<std::shared_ptr<IControlClient>> currentClients;
     {
         std::lock_guard<std::mutex> lock{m_mutex};
         RIALTO_CLIENT_LOG_INFO("Rialto application state changed from %s to %s", stateToString(m_currentState).c_str(),
                                stateToString(state).c_str());
         m_currentState = state;
-        currentClients = m_clients;
+        for (const std::weak_ptr<IControlClient> &client : m_clients)
+        {
+            std::shared_ptr<IControlClient> clientLocked{client.lock()};
+            if (clientLocked)
+            {
+                currentClients.push_back(clientLocked);
+            }
+            else
+            {
+                RIALTO_CLIENT_LOG_ERROR("%s", kClientPointerNotLocked.c_str());
+            }
+        }
     }
     for (const auto &client : currentClients)
     {

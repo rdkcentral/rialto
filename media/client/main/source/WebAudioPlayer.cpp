@@ -17,13 +17,15 @@
  * limitations under the License.
  */
 
-#include "WebAudioPlayer.h"
-#include "IWebAudioPlayerIpc.h"
-#include "IWebAudioPlayerIpcClient.h"
-#include "RialtoClientLogging.h"
 #include <cstring>
 #include <limits.h>
 #include <mutex>
+
+#include "IWebAudioPlayerIpc.h"
+#include "IWebAudioPlayerIpcClient.h"
+#include "RialtoClientLogging.h"
+#include "WebAudioPlayer.h"
+#include "WebAudioPlayerProxy.h"
 
 namespace firebolt::rialto
 {
@@ -81,21 +83,21 @@ WebAudioPlayerFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient>
     return webAudioPlayer;
 }
 
-WebAudioPlayerProxy::WebAudioPlayerProxy(std::shared_ptr<IWebAudioPlayerAndIControlClient> ptr,
+WebAudioPlayerProxy::WebAudioPlayerProxy(const std::shared_ptr<IWebAudioPlayerAndIControlClient> &ptr,
                                          client::IClientController &clientController)
-    : m_clientController{clientController}, m_ptr(ptr)
+    : m_webAudioPlayer(ptr), m_clientController{clientController}
 {
     ApplicationState state{ApplicationState::UNKNOWN};
-    if (!m_clientController.registerClient(m_ptr, state))
+    if (!m_clientController.registerClient(m_webAudioPlayer, state))
     {
         throw std::runtime_error("Failed to register client with clientController");
     }
-    m_ptr->notifyApplicationState(state);
+    m_webAudioPlayer->notifyApplicationState(state);
 }
 
 WebAudioPlayerProxy::~WebAudioPlayerProxy()
 {
-    if (!m_clientController.unregisterClient(m_ptr))
+    if (!m_clientController.unregisterClient(m_webAudioPlayer))
     {
         RIALTO_CLIENT_LOG_WARN("Failed to unregister client with clientController");
     }
