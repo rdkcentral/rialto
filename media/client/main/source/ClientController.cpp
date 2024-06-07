@@ -110,7 +110,16 @@ bool ClientController::registerClient(std::weak_ptr<IControlClient> client, Appl
         }
     }
     m_registrationRequired = false;
-    m_clients.push_back(client);
+
+    bool alreadyRegistered{false};
+    for (auto i = m_clients.begin(); i != m_clients.end(); ++i)
+    {
+        std::shared_ptr<IControlClient> iLocked = i->lock();
+        if (iLocked == clientLocked)
+            alreadyRegistered = true;
+    }
+    if (!alreadyRegistered)
+        m_clients.push_back(client);
     appState = m_currentState;
 
     return true;
