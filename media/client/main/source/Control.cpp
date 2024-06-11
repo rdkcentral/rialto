@@ -65,18 +65,18 @@ Control::Control(IClientController &clientController) : m_clientController(clien
 Control::~Control()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    for (const auto &client : m_clients)
+    for (const auto &client : m_clientsToUnregister)
     {
         m_clientController.unregisterClient(client);
     }
 }
 
-bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
+bool Control::registerClientAndUnregisterOnDestruction(std::weak_ptr<IControlClient> client, ApplicationState &appState)
 {
     std::shared_ptr<IControlClient> lockedClient = client.lock();
     if (lockedClient && m_clientController.registerClient(lockedClient, appState))
     {
-        m_clients.push_back(lockedClient);
+        m_clientsToUnregister.push_back(lockedClient);
         return true;
     }
     RIALTO_CLIENT_LOG_WARN("Unable to register client");

@@ -42,14 +42,14 @@ void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInt
 {
     EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(id, _))
         .WillOnce(Return(m_controlServerInternalMock));
-    EXPECT_CALL(*m_controlServerInternalMock, registerClient(_, _));
+    EXPECT_CALL(*m_controlServerInternalMock, setApplicationState(_));
 }
 
 void ControlServiceTests::controlServerInternalFactoryWillCreateControlServerInternalWithSetState(int id)
 {
     EXPECT_CALL(*m_controlServerInternalFactoryMock, createControlServerInternal(id, _))
         .WillOnce(Return(m_controlServerInternalMock));
-    EXPECT_CALL(*m_controlServerInternalMock, registerClient(_, _));
+    EXPECT_CALL(*m_controlServerInternalMock, setApplicationState(_));
 }
 
 void ControlServiceTests::controlServerInternalWillAck()

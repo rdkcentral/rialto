@@ -79,6 +79,36 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, Create)
 }
 
 /**
+ * Test the WebAudioPlayer proxy
+ */
+TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerProxy)
+{
+    std::unique_ptr<StrictMock<WebAudioPlayerIpcMock>> webAudioPlayerIpcMock =
+        std::make_unique<StrictMock<WebAudioPlayerIpcMock>>();
+
+    // Save a raw pointer to the unique object for use when testing mocks
+    // Object shall be freed by the holder of the unique ptr on destruction
+    m_webAudioPlayerIpcMock = webAudioPlayerIpcMock.get();
+
+    EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock,
+                createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, webAudioConfigMatcher(m_config), _))
+        .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
+
+    EXPECT_CALL(*m_clientControllerMock, registerClient(_, _))
+        .WillOnce(DoAll(SetArgReferee<1>(ApplicationState::RUNNING), Return(true)));
+    EXPECT_CALL(*m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
+
+    std::shared_ptr<IWebAudioPlayerAndIControlClient> webAudioPlayer;
+    webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType, m_priority, m_config,
+                                                      m_webAudioPlayerIpcFactoryMock, *m_clientControllerMock);
+    EXPECT_NE(webAudioPlayer, nullptr);
+
+    std::shared_ptr<WebAudioPlayerProxy> proxy;
+    EXPECT_NO_THROW(proxy = std::make_shared<WebAudioPlayerProxy>(webAudioPlayer, *m_clientControllerMock));
+    EXPECT_NE(proxy, nullptr);
+}
+
+/**
  * Test the factory
  */
 TEST_F(RialtoClientCreateWebAudioPlayerTest, FactoryCreatesObject)
@@ -143,7 +173,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerIpcFailure)
  * Test that a WebAudioPlayer object throws an exeption if failure occurs during construction.
  * In this case, createWebAudioPlayerIpc fails, returning a nullptr.
  */
-TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerRegisterFailure)
+TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerFailure)
 {
     EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock,
                 createWebAudioPlayerIpc(_, m_audioMimeType, m_priority, webAudioConfigMatcher(m_config), _))

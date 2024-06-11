@@ -65,13 +65,16 @@ public:
      */
     ~Control() override;
 
-    bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
+    bool registerClientAndUnregisterOnDestruction(std::weak_ptr<IControlClient> client,
+                                                  ApplicationState &appState) override;
 
 private:
     /**
-     * @brief The registered control clients
+     * @brief The control clients which have been registered with m_clientController
+     *        and are kept so that they can be unregistered upon destruction of this
+     *        object
      */
-    std::vector<std::shared_ptr<IControlClient>> m_clients;
+    std::vector<std::shared_ptr<IControlClient>> m_clientsToUnregister;
 
     /**
      * @brief The rialto client controller object.

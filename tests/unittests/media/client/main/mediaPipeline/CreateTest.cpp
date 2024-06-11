@@ -30,6 +30,12 @@ MATCHER_P(VideoRequirementsMatcher, expectedVidReq, "")
     return ((arg.maxWidth == expectedVidReq.maxWidth) && (arg.maxHeight == expectedVidReq.maxHeight));
 }
 
+MATCHER_P(controlClientMatcher, cc, "")
+{
+    const std::weak_ptr<firebolt::rialto::IControlClient> a{arg};
+    return a.lock() == cc;
+}
+
 class RialtoClientCreateMediaPipelineTest : public MediaPipelineTestBase
 {
 protected:
@@ -57,6 +63,31 @@ TEST_F(RialtoClientCreateMediaPipelineTest, Create)
                                                                     m_mediaFrameWriterFactoryMock,
                                                                     *m_clientControllerMock));
     EXPECT_NE(mediaPipeline, nullptr);
+}
+
+/**
+ * Test that a MediaPipeline proxy object can be used successfully
+ */
+TEST_F(RialtoClientCreateMediaPipelineTest, CreateMediaPipelineProxy)
+{
+    std::shared_ptr<MediaPipeline> mediaPipeline;
+    std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
+        std::make_unique<StrictMock<MediaPipelineIpcMock>>();
+
+    EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, VideoRequirementsMatcher(m_videoReq), _))
+        .WillOnce(Return(ByMove(std::move(mediaPipelineIpcMock))));
+
+    EXPECT_NO_THROW(mediaPipeline = std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, m_videoReq,
+                                                                    m_mediaPipelineIpcFactoryMock,
+                                                                    m_mediaFrameWriterFactoryMock,
+                                                                    *m_clientControllerMock));
+    EXPECT_NE(mediaPipeline, nullptr);
+
+    EXPECT_CALL(*m_clientControllerMock, registerClient(controlClientMatcher(mediaPipeline), _)).WillOnce(Return(true));
+    EXPECT_CALL(*m_clientControllerMock, unregisterClient(controlClientMatcher(mediaPipeline))).WillOnce(Return(true));
+    std::unique_ptr<IMediaPipeline> proxy;
+    EXPECT_NO_THROW(proxy = std::make_unique<MediaPipelineProxy>(mediaPipeline, *m_clientControllerMock));
+    EXPECT_NE(proxy, nullptr);
 }
 
 /**
@@ -131,7 +162,7 @@ TEST_F(RialtoClientCreateMediaPipelineTest, FactoryFailsToCreateObjectDueToRegis
  * Test that a MediaPipeline proxy object throws an exeption if failure occurs during construction.
  * In this case, MediaPipeline proxy fails to register a client with the ClientController.
  */
-TEST_F(RialtoClientCreateMediaPipelineTest, RegisterClientFailure)
+TEST_F(RialtoClientCreateMediaPipelineTest, RegisterClientProxyFailure)
 {
     std::shared_ptr<MediaPipeline> mediaPipeline;
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =

@@ -17,8 +17,10 @@
  * limitations under the License.
  */
 
-#include "ControlTestMethods.h"
 #include <memory>
+
+#include "ControlTestMethods.h"
+#include "IClientController.h"
 
 namespace
 {
@@ -53,7 +55,7 @@ void ControlTestMethods::shouldRegisterClient()
 void ControlTestMethods::registerClient()
 {
     ApplicationState appState;
-    EXPECT_TRUE(m_control->registerClient(m_controlClientMock, appState));
+    EXPECT_TRUE(m_control->registerClientAndUnregisterOnDestruction(m_controlClientMock, appState));
     EXPECT_EQ(ApplicationState::UNKNOWN, appState);
 }
 

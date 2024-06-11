@@ -61,11 +61,11 @@ public:
     createControlServerInternal(int id, const std::shared_ptr<IControlClientServerInternal> &client) const = 0;
 };
 
-class IControlServerInternal : public IControl
+class IControlServerInternal
 {
 public:
     IControlServerInternal() = default;
-    ~IControlServerInternal() override = default;
+    virtual ~IControlServerInternal() = default;
 
     /**
      * @brief Informs connected rialto client about rialto server state change
