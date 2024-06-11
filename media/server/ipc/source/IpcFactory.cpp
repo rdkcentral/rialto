@@ -44,8 +44,8 @@ std::unique_ptr<ISessionManagementServer>
 IpcFactory::createSessionManagementServer(service::IPlaybackService &playbackService, service::ICdmService &cdmService,
                                           service::IControlService &controlService) const
 {
-    std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> linuxWrapper =
-        std::move(firebolt::rialto::wrappers::ILinuxWrapperFactory::createFactory()->createLinuxWrapper());
+    std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> linuxWrapper{
+        firebolt::rialto::wrappers::ILinuxWrapperFactory::createFactory()->createLinuxWrapper()};
     return std::make_unique<
         SessionManagementServer>(linuxWrapper, firebolt::rialto::ipc::IServerFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IMediaPipelineModuleServiceFactory::createFactory(),

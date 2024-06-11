@@ -18,6 +18,7 @@
  */
 
 #include <algorithm>
+#include <stdexcept>
 
 #include "ActiveRequests.h"
 #include "DataReaderFactory.h"

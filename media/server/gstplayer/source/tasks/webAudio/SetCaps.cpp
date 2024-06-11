@@ -24,6 +24,7 @@
 
 #include <gst/audio/gstaudiobasesink.h>
 #include <limits.h>
+#include <stdexcept>
 
 namespace firebolt::rialto::server::tasks::webaudio
 {
@@ -37,6 +38,7 @@ public:
         : m_gstWrapper(gstWrapper), m_glibWrapper(glibWrapper)
     {
     }
+    virtual ~WebAudioCapsBuilder() = default;
     virtual GstCaps *buildCaps() = 0;
 
 protected:
@@ -53,6 +55,7 @@ public:
         : WebAudioCapsBuilder(gstWrapper, glibWrapper), m_pcmConfig(pcmConfig)
     {
     }
+    ~WebAudioPcmCapsBuilder() override = default;
 
     GstCaps *buildCaps() override
     {

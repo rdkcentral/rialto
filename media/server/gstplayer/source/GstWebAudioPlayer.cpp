@@ -22,6 +22,7 @@
 #include "RialtoServerLogging.h"
 #include "WorkerThread.h"
 #include "tasks/webAudio/WebAudioPlayerTaskFactory.h"
+#include <stdexcept>
 
 namespace
 {

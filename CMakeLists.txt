@@ -33,6 +33,10 @@ endif()
 
 add_compile_options(-Wall -Werror)
 
+if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 13.0)
+    add_compile_options(-Wno-error=overloaded-virtual)
+endif()
+
 # By default set link time optimisation, can affect compilation performance
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 

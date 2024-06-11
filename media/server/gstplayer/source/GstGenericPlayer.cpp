@@ -28,6 +28,7 @@
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 #include <cinttypes>
+#include <stdexcept>
 
 namespace
 {

@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_
 #define FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_
 
+#include <cstdint>
 #include <string>
 
 #include "MediaCommon.h"
