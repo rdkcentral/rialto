@@ -53,7 +53,7 @@ public:
     bool setConfiguration(const std::string &socketName, const common::SessionServerState &state,
                           const common::MaxResourceCapabilitites &maxResource, const std::string &clientDisplayName,
                           unsigned int socketPermissions, const std::string &socketOwner,
-                          const std::string &socketGroup, bool enableInstantRateChangeSeek) override;
+                          const std::string &socketGroup) override;
     bool setState(const common::SessionServerState &state) override;
     void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                       RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,

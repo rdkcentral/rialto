@@ -34,7 +34,6 @@ constexpr unsigned int kSocketPermissions{0777};
 // socket being owned by the user executing the code (and the group would be their primary group)
 const std::string kSocketOwner{};
 const std::string kSocketGroup{};
-constexpr bool kEnableInstantRateChangeSeek{true};
 const std::string kAppName{"YouTube"};
 constexpr auto kInitialState{firebolt::rialto::common::SessionServerState::ACTIVE};
 constexpr int kMaxPlaybackSessions{2};
@@ -56,13 +55,13 @@ using testing::StrictMock;
 
 void SessionServerAppTests::createPreloadedAppSut()
 {
-    m_sut =
-        std::make_unique<rialto::servermanager::common::SessionServerApp>(std::move(m_linuxWrapper), m_timerFactoryMock,
-                                                                          m_sessionServerAppManagerMock,
-                                                                          kEnvironmentVariables, kSessionServerPath,
-                                                                          kSessionServerStartupTimeout,
-                                                                          kSocketPermissions, kSocketOwner,
-                                                                          kSocketGroup, kEnableInstantRateChangeSeek);
+    m_sut = std::make_unique<rialto::servermanager::common::SessionServerApp>(std::move(m_linuxWrapper),
+                                                                              m_timerFactoryMock,
+                                                                              m_sessionServerAppManagerMock,
+                                                                              kEnvironmentVariables, kSessionServerPath,
+                                                                              kSessionServerStartupTimeout,
+                                                                              kSocketPermissions, kSocketOwner,
+                                                                              kSocketGroup);
     ASSERT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -72,20 +71,19 @@ void SessionServerAppTests::createPreloadedAppSut()
     EXPECT_EQ(-1, m_sut->getAppManagementSocketName());
     EXPECT_EQ(kMaxPlaybackSessions, m_sut->getMaxPlaybackSessions());
     EXPECT_EQ(kMaxWebAudioPlayers, m_sut->getMaxWebAudioPlayers());
-    EXPECT_EQ(kEnableInstantRateChangeSeek, m_sut->getEnableInstantRateChangeSeek());
 }
 
 void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConfig &appConfig)
 {
-    m_sut =
-        std::make_unique<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
-                                                                          std::move(m_linuxWrapper), m_timerFactoryMock,
-                                                                          m_sessionServerAppManagerMock,
-                                                                          kEnvironmentVariablesWithLogPath,
-                                                                          kSessionServerPath,
-                                                                          kSessionServerStartupTimeout,
-                                                                          kSocketPermissions, kSocketOwner,
-                                                                          kSocketGroup, kEnableInstantRateChangeSeek);
+    m_sut = std::make_unique<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
+                                                                              std::move(m_linuxWrapper),
+                                                                              m_timerFactoryMock,
+                                                                              m_sessionServerAppManagerMock,
+                                                                              kEnvironmentVariablesWithLogPath,
+                                                                              kSessionServerPath,
+                                                                              kSessionServerStartupTimeout,
+                                                                              kSocketPermissions, kSocketOwner,
+                                                                              kSocketGroup);
     ASSERT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -94,20 +92,19 @@ void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConf
     EXPECT_EQ(-1, m_sut->getAppManagementSocketName());
     EXPECT_EQ(kMaxPlaybackSessions, m_sut->getMaxPlaybackSessions());
     EXPECT_EQ(kMaxWebAudioPlayers, m_sut->getMaxWebAudioPlayers());
-    EXPECT_EQ(kEnableInstantRateChangeSeek, m_sut->getEnableInstantRateChangeSeek());
 }
 
 void SessionServerAppTests::createAppSutWithDisabledTimer(const firebolt::rialto::common::AppConfig &appConfig)
 {
-    m_sut =
-        std::make_unique<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
-                                                                          std::move(m_linuxWrapper), m_timerFactoryMock,
-                                                                          m_sessionServerAppManagerMock,
-                                                                          kEnvironmentVariablesWithLogPath,
-                                                                          kSessionServerPath,
-                                                                          std::chrono::milliseconds{0},
-                                                                          kSocketPermissions, kSocketOwner,
-                                                                          kSocketGroup, kEnableInstantRateChangeSeek);
+    m_sut = std::make_unique<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
+                                                                              std::move(m_linuxWrapper),
+                                                                              m_timerFactoryMock,
+                                                                              m_sessionServerAppManagerMock,
+                                                                              kEnvironmentVariablesWithLogPath,
+                                                                              kSessionServerPath,
+                                                                              std::chrono::milliseconds{0},
+                                                                              kSocketPermissions, kSocketOwner,
+                                                                              kSocketGroup);
     ASSERT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -116,7 +113,6 @@ void SessionServerAppTests::createAppSutWithDisabledTimer(const firebolt::rialto
     EXPECT_EQ(-1, m_sut->getAppManagementSocketName());
     EXPECT_EQ(kMaxPlaybackSessions, m_sut->getMaxPlaybackSessions());
     EXPECT_EQ(kMaxWebAudioPlayers, m_sut->getMaxWebAudioPlayers());
-    EXPECT_EQ(kEnableInstantRateChangeSeek, m_sut->getEnableInstantRateChangeSeek());
 }
 
 void SessionServerAppTests::willFailToInitialiseSockets() const

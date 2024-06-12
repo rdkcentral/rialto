@@ -19,6 +19,7 @@
 
 #include <chrono>
 #include <cinttypes>
+#include <stdexcept>
 
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
@@ -41,14 +42,27 @@ constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
 
 namespace firebolt::rialto::server
 {
-std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::createFactory(bool enableInstantRateChangeSeek)
-{
-    return std::make_shared<GstGenericPlayerFactory>(enableInstantRateChangeSeek);
-}
+std::weak_ptr<IGstGenericPlayerFactory> GstGenericPlayerFactory::m_factory;
 
-GstGenericPlayerFactory::GstGenericPlayerFactory(bool enableInstantRateChangeSeek)
-    : m_kEnableInstantRateChangeSeek{enableInstantRateChangeSeek}
+std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
 {
+    std::shared_ptr<IGstGenericPlayerFactory> factory = GstGenericPlayerFactory::m_factory.lock();
+
+    if (!factory)
+    {
+        try
+        {
+            factory = std::make_shared<GstGenericPlayerFactory>();
+        }
+        catch (const std::exception &e)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to create the gstreamer player factory, reason: %s", e.what());
+        }
+
+        GstGenericPlayerFactory::m_factory = factory;
+    }
+
+    return factory;
 }
 
 std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlayer(
@@ -83,8 +97,7 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
                                                glibWrapper, IGstSrcFactory::getFactory(),
                                                common::ITimerFactory::getFactory(),
                                                std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
-                                                                                          rdkGstreamerUtilsWrapper,
-                                                                                          m_kEnableInstantRateChangeSeek),
+                                                                                          rdkGstreamerUtilsWrapper),
                                                std::make_unique<WorkerThreadFactory>(),
                                                std::make_unique<GstDispatcherThreadFactory>(),
                                                IGstProtectionMetadataHelperFactory::createFactory());

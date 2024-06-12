@@ -51,7 +51,6 @@ constexpr std::uint32_t kNumFrames{1};
 constexpr double kVolume{0.7};
 constexpr bool kMute{false};
 constexpr bool kResetTime{true};
-constexpr bool kEnableInstantRateChangeSeek{true};
 } // namespace
 
 namespace firebolt::rialto
@@ -296,15 +295,13 @@ void MediaPipelineServiceTests::mediaPipelineWillPing()
 
 void MediaPipelineServiceTests::mediaPipelineFactoryWillCreateMediaPipeline()
 {
-    EXPECT_CALL(*m_mediaPipelineFactoryMock,
-                createMediaPipelineServerInternal(_, kRequirements, _, _, _, kEnableInstantRateChangeSeek))
+    EXPECT_CALL(*m_mediaPipelineFactoryMock, createMediaPipelineServerInternal(_, kRequirements, _, _, _))
         .WillOnce(Return(ByMove(std::move(m_mediaPipeline))));
 }
 
 void MediaPipelineServiceTests::mediaPipelineFactoryWillReturnNullptr()
 {
-    EXPECT_CALL(*m_mediaPipelineFactoryMock,
-                createMediaPipelineServerInternal(_, kRequirements, _, _, _, kEnableInstantRateChangeSeek))
+    EXPECT_CALL(*m_mediaPipelineFactoryMock, createMediaPipelineServerInternal(_, kRequirements, _, _, _))
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::server::IMediaPipelineServerInternal>())));
 }
 
@@ -328,13 +325,6 @@ void MediaPipelineServiceTests::playbackServiceWillReturnSharedMemoryBuffer()
     EXPECT_CALL(m_playbackServiceMock, getShmBuffer()).WillOnce(Return(m_shmBuffer)).RetiresOnSaturation();
 }
 
-void MediaPipelineServiceTests::playbackServiceWillReturnEnableInstantRateChangeSeek()
-{
-    EXPECT_CALL(m_playbackServiceMock, getEnableInstantRateChangeSeek())
-        .WillOnce(Return(kEnableInstantRateChangeSeek))
-        .RetiresOnSaturation();
-}
-
 void MediaPipelineServiceTests::createMediaPipelineShouldSuccess()
 {
     EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
@@ -349,7 +339,7 @@ void MediaPipelineServiceTests::createMediaPipelineShouldSuccess()
 void MediaPipelineServiceTests::createMediaPipelineShouldFailWhenMediaPipelineCapabilitiesFactoryReturnsNullptr()
 {
     EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
-        .WillOnce(Return(ByMove(std::move(std::unique_ptr<firebolt::rialto::IMediaPipelineCapabilities>()))));
+        .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::IMediaPipelineCapabilities>())));
     EXPECT_THROW(m_sut =
                      std::make_unique<firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
                                                                                                m_mediaPipelineFactoryMock,
@@ -607,7 +597,6 @@ void MediaPipelineServiceTests::initSession()
     playbackServiceWillReturnActive();
     playbackServiceWillReturnMaxPlaybacks(1);
     playbackServiceWillReturnSharedMemoryBuffer();
-    playbackServiceWillReturnEnableInstantRateChangeSeek();
     mediaPipelineFactoryWillCreateMediaPipeline();
     createSessionShouldSucceed();
 }

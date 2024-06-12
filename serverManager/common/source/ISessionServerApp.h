@@ -45,7 +45,6 @@ public:
     virtual unsigned int getSessionManagementSocketPermissions() const = 0;
     virtual std::string getSessionManagementSocketOwner() const = 0;
     virtual std::string getSessionManagementSocketGroup() const = 0;
-    virtual bool getEnableInstantRateChangeSeek() const = 0;
     virtual std::string getClientDisplayName() const = 0;
     virtual firebolt::rialto::common::SessionServerState getInitialState() const = 0;
     virtual int getServerId() const = 0;

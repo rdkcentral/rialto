@@ -67,15 +67,14 @@ bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::c
                                          const std::string &socketName, const std::string &clientDisplayName,
                                          const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                          const unsigned int socketPermissions, const std::string &socketOwner,
-                                         const std::string &socketGroup, bool enableInstantRateChangeSeek)
+                                         const std::string &socketGroup)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
     auto client = m_clients.find(serverId);
     if (client != m_clients.end())
     {
         return client->second->performSetConfiguration(initialState, socketName, clientDisplayName, maxResource,
-                                                       socketPermissions, socketOwner, socketGroup,
-                                                       enableInstantRateChangeSeek);
+                                                       socketPermissions, socketOwner, socketGroup);
     }
     return false;
 }

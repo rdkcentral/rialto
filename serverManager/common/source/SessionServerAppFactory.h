@@ -36,7 +36,7 @@ public:
                                      const std::string &sessionServerPath,
                                      std::chrono::milliseconds sessionServerStartupTimeout,
                                      unsigned int socketPermissions, const std::string &socketOwner,
-                                     const std::string &socketGroup, bool enableInstantRateChangeSeek);
+                                     const std::string &socketGroup);
     ~SessionServerAppFactory() override = default;
 
     std::unique_ptr<ISessionServerApp> create(const std::string &appName,
@@ -52,7 +52,6 @@ private:
     const unsigned int m_kSocketPermissions;
     const std::string m_kSocketOwner;
     const std::string m_kSocketGroup;
-    const bool m_kEnableInstantRateChangeSeek;
     std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapperFactory> m_linuxWrapperFactory;
 };
 } // namespace rialto::servermanager::common

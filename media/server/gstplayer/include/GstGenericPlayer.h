@@ -49,15 +49,16 @@ constexpr uint32_t kMinPrimaryVideoHeight{1080};
 class GstGenericPlayerFactory : public IGstGenericPlayerFactory
 {
 public:
-    explicit GstGenericPlayerFactory(bool enableInstantRateChangeSeek);
+    /**
+     * @brief Weak pointer to the singleton factory object.
+     */
+    static std::weak_ptr<IGstGenericPlayerFactory> m_factory;
+
     std::unique_ptr<IGstGenericPlayer>
     createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
                            const VideoRequirements &videoRequirements,
                            const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
                                &rdkGstreamerUtilsWrapperFactory) override;
-
-private:
-    const bool m_kEnableInstantRateChangeSeek;
 };
 
 /**
