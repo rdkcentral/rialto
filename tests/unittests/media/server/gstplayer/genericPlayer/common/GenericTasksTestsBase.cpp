@@ -2191,12 +2191,12 @@ void GenericTasksTestsBase::shouldFlushAudioSrcFailure()
 
 void GenericTasksTestsBase::shouldReadAudioData()
 {
-    EXPECT_CALL(*testContext->m_dataReader, readData()).WillOnce(Invoke([&]() { return std::move(buildAudioSamples()); }));
+    EXPECT_CALL(*testContext->m_dataReader, readData()).WillOnce(Invoke([&]() { return buildAudioSamples(); }));
 }
 
 void GenericTasksTestsBase::shouldReadVideoData()
 {
-    EXPECT_CALL(*testContext->m_dataReader, readData()).WillOnce(Invoke([&]() { return std::move(buildVideoSamples()); }));
+    EXPECT_CALL(*testContext->m_dataReader, readData()).WillOnce(Invoke([&]() { return buildVideoSamples(); }));
 }
 
 void GenericTasksTestsBase::triggerReadShmDataAndAttachSamplesAudio()

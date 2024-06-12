@@ -339,7 +339,7 @@ void MediaPipelineServiceTests::createMediaPipelineShouldSuccess()
 void MediaPipelineServiceTests::createMediaPipelineShouldFailWhenMediaPipelineCapabilitiesFactoryReturnsNullptr()
 {
     EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
-        .WillOnce(Return(ByMove(std::move(std::unique_ptr<firebolt::rialto::IMediaPipelineCapabilities>()))));
+        .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::IMediaPipelineCapabilities>())));
     EXPECT_THROW(m_sut =
                      std::make_unique<firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
                                                                                                m_mediaPipelineFactoryMock,

@@ -21,6 +21,7 @@
 #include "KeyIdMap.h"
 #include "RialtoClientLogging.h"
 #include <inttypes.h>
+#include <stdexcept>
 #include <stdint.h>
 
 namespace

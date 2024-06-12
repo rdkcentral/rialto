@@ -19,6 +19,7 @@
 
 #include "ActiveRequests.h"
 #include <cstring>
+#include <stdexcept>
 
 namespace firebolt::rialto::server
 {

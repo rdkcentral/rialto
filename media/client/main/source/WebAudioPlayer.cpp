@@ -24,6 +24,7 @@
 #include <cstring>
 #include <limits.h>
 #include <mutex>
+#include <stdexcept>
 
 namespace firebolt::rialto
 {
