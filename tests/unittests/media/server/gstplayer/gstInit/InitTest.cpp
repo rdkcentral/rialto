@@ -47,15 +47,18 @@ protected:
 };
 
 /**
- * Test the initialisation of gstreamer.
+ * Test the initialisation and de-initialisation of gstreamer.
  */
-TEST_F(RialtoServerInitGstPlayerTest, Init)
+TEST_F(RialtoServerInitGstPlayerTest, InitAndDeinit)
 {
-    EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
+    EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillRepeatedly(Return(m_gstWrapperMock));
     EXPECT_CALL(*m_gstWrapperMock, gstInit(_, _));
+    EXPECT_CALL(*m_gstWrapperMock, gstDeinit());
     EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstRegistryFindPlugin(nullptr, StrEq("rialtosinks"))).WillOnce(Return(nullptr));
     bool status = false;
     EXPECT_NO_THROW(status = gstInitalise(argc, static_cast<char **>(argv)));
+    EXPECT_EQ(status, true);
+    EXPECT_NO_THROW(status = gstDeinitalise());
     EXPECT_EQ(status, true);
 }
