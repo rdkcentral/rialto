@@ -55,11 +55,3 @@ target_link_libraries (
         PRIVATE
         RialtoLogging
     )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoCommon
-        PRIVATE
-        gcov
-        )
-endif()

@@ -106,13 +106,3 @@ target_link_libraries(
         # # Link application source
         RialtoClient
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoClientUnitTests
-
-        gcov
-        )
-endif()
-
-

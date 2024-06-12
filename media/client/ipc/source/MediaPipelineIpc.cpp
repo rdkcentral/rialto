@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 #include "MediaPipelineIpc.h"
+#include "IMediaPipeline.h"
 #include "RialtoClientLogging.h"
 #include "RialtoCommonIpc.h"
 #include "mediapipelinemodule.pb.h"
-#include <IMediaPipeline.h>
 
 namespace firebolt::rialto::client
 {

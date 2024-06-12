@@ -124,13 +124,3 @@ target_link_libraries(
         RialtoPlayerCommon
         RialtoProtobuf
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoClientComponentTests
-
-        gcov
-        )
-endif()
-
-

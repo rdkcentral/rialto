@@ -20,12 +20,14 @@
 #ifndef FIREBOLT_RIALTO_WRAPPERS_GST_WRAPPER_H_
 #define FIREBOLT_RIALTO_WRAPPERS_GST_WRAPPER_H_
 
-#include "IGstWrapper.h"
 #include <cassert>
-#include <gst/pbutils/pbutils.h>
 #include <memory>
 #include <mutex>
 #include <string>
+
+#include <gst/pbutils/pbutils.h>
+
+#include "IGstWrapper.h"
 
 namespace firebolt::rialto::wrappers
 {
@@ -70,6 +72,8 @@ public:
     virtual ~GstWrapper() {}
 
     void gstInit(int *argc, char ***argv) override { gst_init(argc, argv); }
+
+    void gstDeinit() override { gst_deinit(); }
 
     GstPlugin *gstRegistryFindPlugin(GstRegistry *registry, const gchar *name) override
     {

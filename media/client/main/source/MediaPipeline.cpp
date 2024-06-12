@@ -17,12 +17,13 @@
  * limitations under the License.
  */
 
-#include "MediaPipeline.h"
-#include "KeyIdMap.h"
-#include "RialtoClientLogging.h"
 #include <inttypes.h>
 #include <stdexcept>
 #include <stdint.h>
+
+#include "KeyIdMap.h"
+#include "MediaPipeline.h"
+#include "RialtoClientLogging.h"
 
 namespace
 {

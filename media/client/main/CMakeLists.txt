@@ -88,15 +88,6 @@ target_link_libraries(
         Threads::Threads
 
         )
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoClient
-
-        PRIVATE
-        gcov
-        )
-endif()
-
 
 include( GNUInstallDirs )
 

@@ -49,4 +49,22 @@ bool gstInitalise(int argc, char **argv)
 
     return true;
 }
+
+bool gstDeinitalise()
+{
+    using firebolt::rialto::wrappers::IGstWrapper;
+    using firebolt::rialto::wrappers::IGstWrapperFactory;
+    std::shared_ptr<IGstWrapperFactory> factory = IGstWrapperFactory::getFactory();
+    std::shared_ptr<IGstWrapper> gstWrapper = factory->getGstWrapper();
+
+    if (!gstWrapper)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the gst wrapper");
+        return false;
+    }
+
+    gstWrapper->gstDeinit();
+
+    return true;
+}
 }; // namespace firebolt::rialto::server

@@ -17,10 +17,12 @@
  * limitations under the License.
  */
 
+#include <cstring>
+#include <google/protobuf/service.h>
+
 #include "GstInit.h"
 #include "IApplicationSessionServer.h"
 #include "RialtoServerLogging.h"
-#include <cstring>
 
 // NOLINT(build/filename_format)
 
@@ -47,13 +49,28 @@ int main(int argc, char *argv[])
 
     firebolt::rialto::server::gstInitalise(argc, argv);
 
-    auto appSessionServer =
-        firebolt::rialto::server::IApplicationSessionServerFactory::getFactory()->createApplicationSessionServer();
-
-    if (!appSessionServer->init(argc, argv))
     {
-        return EXIT_FAILURE;
+        // Creation of this variable in a local scope ensures Rialto
+        // destructors are called before potentially calling gst_deinit()
+        // which would cause free memory reads
+        auto appSessionServer =
+            firebolt::rialto::server::IApplicationSessionServerFactory::getFactory()->createApplicationSessionServer();
+
+        if (!appSessionServer->init(argc, argv))
+        {
+            return EXIT_FAILURE;
+        }
+
+        appSessionServer->startService();
     }
-    appSessionServer->startService();
+
+#ifdef FREE_MEM_BEFORE_EXIT
+    RIALTO_SERVER_LOG_INFO("Calling gst_deinit");
+    firebolt::rialto::server::gstDeinitalise();
+
+    RIALTO_SERVER_LOG_INFO("Calling ShutdownProtobufLibrary");
+    google::protobuf::ShutdownProtobufLibrary();
+#endif
+
     return EXIT_SUCCESS;
 }

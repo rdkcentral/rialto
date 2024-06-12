@@ -388,7 +388,7 @@ void GstSrc::setDefaultStreamFormatIfNeeded(GstElement *appSrc)
     m_gstWrapper->gstCapsUnref(currentCaps);
 }
 
-void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
+void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
                                GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type)
 {
     // Configure and add appsrc
