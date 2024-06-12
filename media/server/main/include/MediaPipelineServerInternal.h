@@ -48,8 +48,7 @@ public:
 
     std::unique_ptr<server::IMediaPipelineServerInternal> createMediaPipelineServerInternal(
         std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
-        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService,
-        bool enableInstantRateChangeSeek) const override;
+        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService) const override;
 
     /**
      * @brief Create the generic media player factory object.

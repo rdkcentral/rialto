@@ -44,7 +44,7 @@ public:
                      ISessionServerAppManager &sessionServerAppManager,
                      const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                      std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
-                     const std::string &socketOwner, const std::string &socketGroup, bool enableInstantRateChangeSeek);
+                     const std::string &socketOwner, const std::string &socketGroup);
     SessionServerApp(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                      const firebolt::rialto::common::AppConfig &appConfig,
                      const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
@@ -52,7 +52,7 @@ public:
                      ISessionServerAppManager &sessionServerAppManager,
                      const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                      std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
-                     const std::string &socketOwner, const std::string &socketGroup, bool enableInstantRateChangeSeek);
+                     const std::string &socketOwner, const std::string &socketGroup);
     virtual ~SessionServerApp();
 
     bool launch() override;
@@ -64,7 +64,6 @@ public:
     unsigned int getSessionManagementSocketPermissions() const override;
     std::string getSessionManagementSocketOwner() const override;
     std::string getSessionManagementSocketGroup() const override;
-    bool getEnableInstantRateChangeSeek() const override;
     firebolt::rialto::common::SessionServerState getInitialState() const override;
     int getServerId() const override;
     const std::string &getAppName() const override;
@@ -102,7 +101,6 @@ private:
     const unsigned int m_kSessionManagementSocketPermissions;
     const std::string m_kSessionManagementSocketOwner;
     const std::string m_kSessionManagementSocketGroup;
-    const bool m_kEnableInstantRateChangeSeek;
     std::vector<char *> m_environmentVariables;
     mutable std::mutex m_timerMutex;
     std::unique_ptr<firebolt::rialto::common::ITimer> m_startupTimer;

@@ -66,7 +66,7 @@ TEST_F(MediaPipelineCapabilitiesTest, createMediaPipelineCapabilitiesIpcFails)
         std::make_shared<StrictMock<MediaPipelineCapabilitiesIpcFactoryMock>>();
 
     EXPECT_CALL(*mediaPipelineCapabilitiesIpcFactoryMock, createMediaPipelineCapabilitiesIpc())
-        .WillOnce(Return(ByMove(std::move(std::unique_ptr<StrictMock<MediaPipelineCapabilitiesIpcMock>>()))));
+        .WillOnce(Return(ByMove(std::unique_ptr<StrictMock<MediaPipelineCapabilitiesIpcMock>>())));
 
     EXPECT_THROW(m_sut = std::make_shared<MediaPipelineCapabilities>(mediaPipelineCapabilitiesIpcFactoryMock),
                  std::runtime_error);

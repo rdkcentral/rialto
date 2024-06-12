@@ -18,6 +18,7 @@
  */
 
 #include <inttypes.h>
+#include <stdexcept>
 #include <stdint.h>
 
 #include "KeyIdMap.h"

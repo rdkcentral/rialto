@@ -35,7 +35,6 @@ PlaybackService::PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFac
                                  std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
                                  IDecryptionService &decryptionService)
     : m_shmBufferFactory{std::move(shmBufferFactory)}, m_isActive{false}, m_maxPlaybacks{0}, m_maxWebAudioPlayers{0},
-      m_enableInstantRateChangeSeek{false},
       m_mediaPipelineService{std::make_unique<MediaPipelineService>(*this, std::move(mediaPipelineFactory),
                                                                     std::move(mediaPipelineCapabilitiesFactory),
                                                                     decryptionService)},
@@ -96,11 +95,6 @@ void PlaybackService::setClientDisplayName(const std::string &clientDisplayName)
     }
 }
 
-void PlaybackService::setEnableInstantRateChangeSeek(bool enableInstantRateChangeSeek)
-{
-    m_enableInstantRateChangeSeek = enableInstantRateChangeSeek;
-}
-
 bool PlaybackService::getSharedMemory(int32_t &fd, uint32_t &size) const
 {
     auto shmBuffer = m_shmBuffer;
@@ -127,11 +121,6 @@ int PlaybackService::getMaxPlaybacks() const
 int PlaybackService::getMaxWebAudioPlayers() const
 {
     return m_maxWebAudioPlayers;
-}
-
-bool PlaybackService::getEnableInstantRateChangeSeek() const
-{
-    return m_enableInstantRateChangeSeek;
 }
 
 std::shared_ptr<ISharedMemoryBuffer> PlaybackService::getShmBuffer() const

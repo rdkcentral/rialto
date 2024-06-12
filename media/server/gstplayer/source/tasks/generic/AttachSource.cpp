@@ -38,6 +38,7 @@ public:
         : m_gstWrapper(gstWrapper), m_glibWrapper(glibWrapper), m_attachedSource(source)
     {
     }
+    virtual ~MediaSourceCapsBuilder() = default;
     virtual GstCaps *buildCaps() { return buildCommonCaps(); }
 
 protected:
@@ -111,6 +112,7 @@ public:
         : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedAudioSource(source)
     {
     }
+    ~MediaSourceAudioCapsBuilder() override = default;
 
     GstCaps *buildCaps() override
     {
@@ -190,6 +192,7 @@ public:
         : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedVideoSource(source)
     {
     }
+    ~MediaSourceVideoCapsBuilder() override = default;
 
     GstCaps *buildCaps() override
     {
@@ -215,6 +218,7 @@ public:
         : MediaSourceVideoCapsBuilder(gstWrapper, glibWrapper, source), m_attachedDolbySource(source)
     {
     }
+    ~MediaSourceVideoDolbyVisionCapsBuilder() override = default;
 
     GstCaps *buildCaps() override
     {

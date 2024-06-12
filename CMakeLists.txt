@@ -33,6 +33,10 @@ endif()
 
 add_compile_options(-Wall -Werror)
 
+if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 13.0)
+    add_compile_options(-Wno-error=overloaded-virtual)
+endif()
+
 # By default set link time optimisation, can affect compilation performance
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
@@ -193,14 +197,6 @@ endif()
 
 if (NOT NUM_OF_PINGS_BEFORE_RECOVERY)
     set( NUM_OF_PINGS_BEFORE_RECOVERY 3 )
-endif()
-
-if (NOT ENABLE_INSTANT_RATE_CHANGE_SEEK)
-    if( NATIVE_BUILD )
-        set( ENABLE_INSTANT_RATE_CHANGE_SEEK "true" )
-    else()
-        set( ENABLE_INSTANT_RATE_CHANGE_SEEK "false" )
-    endif()
 endif()
 
 if( NATIVE_BUILD )

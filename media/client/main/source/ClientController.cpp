@@ -21,6 +21,7 @@
 #include "RialtoClientLogging.h"
 #include "SharedMemoryHandle.h"
 #include <cstring>
+#include <stdexcept>
 #include <sys/mman.h>
 #include <sys/un.h>
 #include <unistd.h>

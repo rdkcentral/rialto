@@ -134,3 +134,11 @@
    fun:gst_debug_add_log_function
    ...
 }
+{
+   ignore_protobuf_internal_parse_possibly_lost
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   fun:*protobuf*FileOptions*_InternalParse*
+   ...
+}

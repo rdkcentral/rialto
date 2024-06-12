@@ -20,6 +20,7 @@
 #include <cstring>
 #include <limits.h>
 #include <mutex>
+#include <stdexcept>
 
 #include "IWebAudioPlayerIpc.h"
 #include "IWebAudioPlayerIpcClient.h"
