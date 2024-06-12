@@ -62,3 +62,14 @@ TEST_F(RialtoServerInitGstPlayerTest, InitAndDeinit)
     EXPECT_NO_THROW(status = gstDeinitalise());
     EXPECT_EQ(status, true);
 }
+
+/**
+ * Test de-initialisation of gstreamer should fail if there is no wrapper
+ */
+TEST_F(RialtoServerInitGstPlayerTest, DeinitShouldFail)
+{
+    EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(nullptr));
+    bool status = false;
+    EXPECT_NO_THROW(status = gstDeinitalise());
+    EXPECT_EQ(status, false);
+}

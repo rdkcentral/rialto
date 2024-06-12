@@ -18,8 +18,6 @@
  */
 
 #include <cstring>
-#include <thread>
-
 #include <google/protobuf/service.h>
 
 #include "GstInit.h"
@@ -60,7 +58,6 @@ int main(int argc, char *argv[])
 
         if (!appSessionServer->init(argc, argv))
         {
-            firebolt::rialto::server::gstDeinitalise();
             return EXIT_FAILURE;
         }
 
