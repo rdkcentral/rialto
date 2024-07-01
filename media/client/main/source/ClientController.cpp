@@ -29,7 +29,7 @@
 namespace
 {
 // The following error would be reported if a client is deleted
-// before unregisterClient() was called. This can
+// before unregisterClient() was called. Calling unregisterClient can
 // be automated via a proxy class (like the class MediaPipelineProxy)
 const std::string kClientPointerNotLocked{"A client could not be locked"};
 }; // namespace
@@ -112,13 +112,12 @@ bool ClientController::registerClient(std::weak_ptr<IControlClient> client, Appl
     }
     m_registrationRequired = false;
 
-    bool alreadyRegistered{false};
-    for (auto i = m_clients.begin(); i != m_clients.end(); ++i)
-    {
-        std::shared_ptr<IControlClient> iLocked = i->lock();
-        if (iLocked == clientLocked)
-            alreadyRegistered = true;
-    }
+    bool alreadyRegistered{std::find_if(m_clients.begin(), m_clients.end(),
+                                        [&](auto &i)
+                                        {
+                                            std::shared_ptr<IControlClient> iLocked = i.lock();
+                                            return (iLocked == clientLocked);
+                                        }) != m_clients.end()};
     if (!alreadyRegistered)
         m_clients.push_back(client);
     appState = m_currentState;

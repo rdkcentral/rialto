@@ -65,8 +65,7 @@ public:
      */
     ~Control() override;
 
-    bool registerClientAndUnregisterOnDestruction(std::weak_ptr<IControlClient> client,
-                                                  ApplicationState &appState) override;
+    bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
 
 private:
     /**

@@ -155,4 +155,9 @@ void ControlServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatH
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 
+bool ControlServerInternal::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
+{
+    RIALTO_SERVER_LOG_ERROR("Method not implemented");
+    return false;
+}
 } // namespace firebolt::rialto::server

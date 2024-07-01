@@ -71,7 +71,7 @@ Control::~Control()
     }
 }
 
-bool Control::registerClientAndUnregisterOnDestruction(std::weak_ptr<IControlClient> client, ApplicationState &appState)
+bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
 {
     std::shared_ptr<IControlClient> lockedClient = client.lock();
     if (lockedClient && m_clientController.registerClient(lockedClient, appState))

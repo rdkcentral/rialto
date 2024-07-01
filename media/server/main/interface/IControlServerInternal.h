@@ -61,7 +61,7 @@ public:
     createControlServerInternal(int id, const std::shared_ptr<IControlClientServerInternal> &client) const = 0;
 };
 
-class IControlServerInternal
+class IControlServerInternal : public IControl
 {
 public:
     IControlServerInternal() = default;
