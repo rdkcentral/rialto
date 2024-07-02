@@ -65,7 +65,7 @@ class IControlServerInternal : public IControl
 {
 public:
     IControlServerInternal() = default;
-    ~IControlServerInternal() override = default;
+    virtual ~IControlServerInternal() = default;
 
     /**
      * @brief Informs connected rialto client about rialto server state change

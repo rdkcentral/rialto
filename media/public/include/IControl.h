@@ -81,7 +81,12 @@ public:
     IControl &operator=(IControl &&) = delete;
 
     /**
-     * @brief Register new IControlClient
+     * @brief Register new IControlClient. This method will hold a shared_ptr
+     *        to the client until the destruction of the IControl object.
+     *        At destruction the client will be unregistered and the
+     *        shared_ptr will be released. NOTE: this is different
+     *        to the behaviour of IClientController::registerClient
+     *        (which requires the user to perform an unregisterClient call)
      *
      * @param[in]  client   : Client object for callbacks
      * @param[out] appState : Current application state

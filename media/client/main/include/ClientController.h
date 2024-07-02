@@ -20,13 +20,14 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_H_
 #define FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_H_
 
+#include <list>
+#include <memory>
+#include <mutex>
+#include <string>
+
 #include "IClientController.h"
 #include "IControlClient.h"
 #include "IControlIpc.h"
-#include <memory>
-#include <mutex>
-#include <set>
-#include <string>
 
 namespace firebolt::rialto::client
 {
@@ -44,8 +45,8 @@ public:
     ~ClientController() override;
 
     std::shared_ptr<ISharedMemoryHandle> getSharedMemoryHandle() override;
-    bool registerClient(IControlClient *client, ApplicationState &appState) override;
-    bool unregisterClient(IControlClient *client) override;
+    bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
+    bool unregisterClient(std::weak_ptr<IControlClient> client) override;
 
 private:
     void notifyApplicationState(ApplicationState state) override;
@@ -106,9 +107,9 @@ private:
     std::shared_ptr<IControlIpc> m_controlIpc;
 
     /**
-     * @brief Vector of clients to notify.
+     * @brief List of clients to notify.
      */
-    std::set<IControlClient *> m_clientVec;
+    std::list<std::weak_ptr<IControlClient>> m_clients;
 };
 } // namespace firebolt::rialto::client
 

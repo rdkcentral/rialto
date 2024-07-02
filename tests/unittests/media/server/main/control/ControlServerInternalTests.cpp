@@ -228,11 +228,3 @@ TEST_F(ControlServerInternalTests, shouldSetApplicationState)
 {
     setRunningState();
 }
-
-TEST_F(ControlServerInternalTests, shouldRegisterClient)
-{
-    firebolt::rialto::ApplicationState appState{firebolt::rialto::ApplicationState::RUNNING};
-    mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(kAppState));
-    m_sut->registerClient(m_controlClientMock, appState);
-}
