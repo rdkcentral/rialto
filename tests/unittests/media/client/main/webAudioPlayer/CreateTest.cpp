@@ -33,6 +33,7 @@
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
 
+using ::testing::DoubleEq;
 using ::testing::Return;
 using ::testing::StrictMock;
 
@@ -99,7 +100,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerProxy)
     EXPECT_CALL(*m_clientControllerMock, unregisterClient(_)).WillOnce(Return(true));
 
     std::shared_ptr<IWebAudioPlayerAndIControlClient> webAudioPlayer;
-    webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType, m_priority, m_config,
+    webAudioPlayer = std::make_shared<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType, m_priority, m_config,
                                                       m_webAudioPlayerIpcFactoryMock, *m_clientControllerMock);
     EXPECT_NE(webAudioPlayer, nullptr);
 
