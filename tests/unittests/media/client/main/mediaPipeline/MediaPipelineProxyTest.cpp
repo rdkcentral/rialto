@@ -30,8 +30,6 @@ using ::testing::StrEq;
 class RialtoClientMediaPipelineProxyTest : public MediaPipelineTestBase
 {
 protected:
-    VideoRequirements m_videoReq = {};
-
     virtual void SetUp() { MediaPipelineTestBase::SetUp(); }
 
     virtual void TearDown() { MediaPipelineTestBase::TearDown(); }
@@ -53,6 +51,8 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     std::shared_ptr<MediaPipelineProxy> proxy;
     EXPECT_NO_THROW(proxy = std::make_shared<MediaPipelineProxy>(mediaPipelineMock, *m_clientControllerMock));
 
+    /////////////////////////////////////////////
+
     const std::string kMimeType{"mime"};
     const std::string kUrl{"url"};
     const std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> kMediaSource;
@@ -69,65 +69,100 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     /////////////////////////////////////////////
 
     EXPECT_CALL(*mediaPipelineMock, load(MediaType::MSE, StrEq(kMimeType), StrEq(kUrl))).WillOnce(Return(true));
-    EXPECT_CALL(*mediaPipelineMock, attachSource(_)).WillOnce(Return(true));
-    EXPECT_CALL(*mediaPipelineMock, removeSource(kSourceId)).WillOnce(Return(true));
-    EXPECT_CALL(*mediaPipelineMock, allSourcesAttached()).WillOnce(Return(true));
-
-    EXPECT_CALL(*mediaPipelineMock, play()).WillOnce(Return(true));
-    EXPECT_CALL(*mediaPipelineMock, pause()).WillOnce(Return(true));
-    EXPECT_CALL(*mediaPipelineMock, stop()).WillOnce(Return(true));
-
-    EXPECT_CALL(*mediaPipelineMock, setPlaybackRate(DoubleEq(kPlaybackRate))).WillOnce(Return(true));
-    EXPECT_CALL(*mediaPipelineMock, setPosition(kPosition1)).WillOnce(Return(true));
-    EXPECT_CALL(*mediaPipelineMock, getPosition(_)).WillOnce(DoAll(SetArgReferee<0>(kPosition2), Return(true)));
-    EXPECT_CALL(*mediaPipelineMock, setVideoWindow(1, 2, 3, 4)).WillOnce(Return(true));
-
-    EXPECT_CALL(*mediaPipelineMock, haveData(MediaSourceStatus::CODEC_CHANGED, kNeedDataRequestId)).WillOnce(Return(true));
-    EXPECT_CALL(*mediaPipelineMock, addSegment(kNeedDataRequestId, _)).WillOnce(Return(AddSegmentStatus::OK));
-    EXPECT_CALL(*mediaPipelineMock, renderFrame()).WillOnce(Return(true));
-
-    EXPECT_CALL(*mediaPipelineMock, setVolume(DoubleEq(kVolume1))).WillOnce(Return(true));
-    EXPECT_CALL(*mediaPipelineMock, getVolume(_)).WillOnce(DoAll(SetArgReferee<0>(kVolume2), Return(true)));
-    EXPECT_CALL(*mediaPipelineMock, setMute(true)).WillOnce(Return(true));
-    EXPECT_CALL(*mediaPipelineMock, getMute(_)).WillOnce(DoAll(SetArgReferee<0>(false), Return(true)));
-
-    EXPECT_CALL(*mediaPipelineMock, flush(kSourceId, true)).WillOnce(Return(true));
-    EXPECT_CALL(*mediaPipelineMock, setSourcePosition(kSourceId, kPosition1)).WillOnce(Return(true));
-    EXPECT_CALL(*mediaPipelineMock, getClient()).WillOnce(Return(kIMediaPipelineClient));
-    EXPECT_CALL(*mediaPipelineMock, notifyApplicationState(ApplicationState::RUNNING));
+    EXPECT_TRUE(proxy->load(MediaType::MSE, kMimeType, kUrl));
 
     /////////////////////////////////////////////
 
-    EXPECT_TRUE(proxy->load(MediaType::MSE, kMimeType, kUrl));
+    EXPECT_CALL(*mediaPipelineMock, attachSource(_)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->attachSource(kMediaSource));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, removeSource(kSourceId)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->removeSource(kSourceId));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, allSourcesAttached()).WillOnce(Return(true));
     EXPECT_TRUE(proxy->allSourcesAttached());
 
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, play()).WillOnce(Return(true));
     EXPECT_TRUE(proxy->play());
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, pause()).WillOnce(Return(true));
     EXPECT_TRUE(proxy->pause());
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, stop()).WillOnce(Return(true));
     EXPECT_TRUE(proxy->stop());
 
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setPlaybackRate(DoubleEq(kPlaybackRate))).WillOnce(Return(true));
     EXPECT_TRUE(proxy->setPlaybackRate(kPlaybackRate));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setPosition(kPosition1)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->setPosition(kPosition1));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, getPosition(_)).WillOnce(DoAll(SetArgReferee<0>(kPosition2), Return(true)));
     {
         int64_t position;
         EXPECT_TRUE(proxy->getPosition(position));
         EXPECT_EQ(position, kPosition2);
     }
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setVideoWindow(1, 2, 3, 4)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->setVideoWindow(1, 2, 3, 4));
 
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, haveData(MediaSourceStatus::CODEC_CHANGED, kNeedDataRequestId)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->haveData(MediaSourceStatus::CODEC_CHANGED, kNeedDataRequestId));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, addSegment(kNeedDataRequestId, _)).WillOnce(Return(AddSegmentStatus::OK));
     EXPECT_EQ(proxy->addSegment(kNeedDataRequestId, kMediaSegment), AddSegmentStatus::OK);
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, renderFrame()).WillOnce(Return(true));
     EXPECT_TRUE(proxy->renderFrame());
 
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setVolume(DoubleEq(kVolume1))).WillOnce(Return(true));
     EXPECT_TRUE(proxy->setVolume(kVolume1));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, getVolume(_)).WillOnce(DoAll(SetArgReferee<0>(kVolume2), Return(true)));
     {
         // The EXPECT_CALL above returns kVolume2
         double volume;
         EXPECT_TRUE(proxy->getVolume(volume));
         EXPECT_EQ(volume, kVolume2);
     }
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setMute(true)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->setMute(true));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, getMute(_)).WillOnce(DoAll(SetArgReferee<0>(false), Return(true)));
     {
         // The EXPECT_CALL above returns false
         bool mute;
@@ -135,8 +170,23 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
         EXPECT_FALSE(mute);
     }
 
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, flush(kSourceId, true)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->flush(kSourceId, true));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setSourcePosition(kSourceId, kPosition1)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->setSourcePosition(kSourceId, kPosition1));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, getClient()).WillOnce(Return(kIMediaPipelineClient));
     EXPECT_EQ(proxy->getClient().lock(), kIMediaPipelineClient);
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, notifyApplicationState(ApplicationState::RUNNING));
     proxy->notifyApplicationState(ApplicationState::RUNNING);
 }
