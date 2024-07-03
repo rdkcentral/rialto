@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-#include "WebAudioPlayerProxy.h"
-#include "WebAudioPlayerAndControlClientMock.h"
-#include "WebAudioPlayerTestBase.h"
-
 #include <gtest/gtest.h>
+
+#include "WebAudioPlayerAndControlClientMock.h"
+#include "WebAudioPlayerProxy.h"
+#include "WebAudioPlayerTestBase.h"
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
@@ -60,6 +60,7 @@ TEST_F(RialtoClientWebAudioPlayerProxyTest, TestPassthrough)
     const bool kSupportDeferredPlay{true};
     const double kTestLevel1{0.1};
     const double kTestLevel2{0.2};
+    const std::shared_ptr<IWebAudioPlayerClient> kClient;
 
     /////////////////////////////////////////////
 
@@ -75,7 +76,8 @@ TEST_F(RialtoClientWebAudioPlayerProxyTest, TestPassthrough)
         .WillOnce(DoAll(SetArgReferee<0>(kPreferredFrames), SetArgReferee<1>(kMaximumFrames),
                         SetArgReferee<2>(kSupportDeferredPlay), Return(true)));
     EXPECT_CALL(*webAudioPlayerMock, writeBuffer(_, _)).WillOnce(Return(true));
-    EXPECT_CALL(*webAudioPlayerMock, getClient());
+    EXPECT_CALL(*webAudioPlayerMock, getClient()).WillOnce(Return(kClient));
+    EXPECT_CALL(*webAudioPlayerMock, notifyApplicationState(ApplicationState::RUNNING));
 
     /////////////////////////////////////////////
 
@@ -109,5 +111,6 @@ TEST_F(RialtoClientWebAudioPlayerProxyTest, TestPassthrough)
         ASSERT_EQ(maximumFrames, kMaximumFrames);
         ASSERT_EQ(supportDeferredPlay, kSupportDeferredPlay);
     }
-    proxy->getClient();
+    EXPECT_EQ(proxy->getClient().lock(), kClient);
+    proxy->notifyApplicationState(ApplicationState::RUNNING);
 }
