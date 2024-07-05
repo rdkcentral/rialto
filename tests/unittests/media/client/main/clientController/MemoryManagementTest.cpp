@@ -17,15 +17,16 @@
  * limitations under the License.
  */
 
-#include "ClientController.h"
-#include "ControlClientMock.h"
-#include "ControlIpcFactoryMock.h"
-#include "ControlIpcMock.h"
 #include <gtest/gtest.h>
 #include <linux/memfd.h>
 #include <sys/mman.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+
+#include "ClientController.h"
+#include "ControlClientMock.h"
+#include "ControlIpcFactoryMock.h"
+#include "ControlIpcMock.h"
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
@@ -44,12 +45,13 @@ protected:
 
     std::shared_ptr<StrictMock<ControlIpcFactoryMock>> m_controlIpcFactoryMock;
     std::shared_ptr<StrictMock<ControlIpcMock>> m_controlIpcMock;
-    StrictMock<ControlClientMock> m_controlClientMock;
+    std::shared_ptr<StrictMock<ControlClientMock>> m_controlClientMock;
     std::unique_ptr<ClientController> m_sut;
 
     ClientControllerMemoryManagementTest()
         : m_controlIpcFactoryMock{std::make_shared<StrictMock<ControlIpcFactoryMock>>()},
-          m_controlIpcMock{std::make_shared<StrictMock<ControlIpcMock>>()}
+          m_controlIpcMock{std::make_shared<StrictMock<ControlIpcMock>>()},
+          m_controlClientMock{std::make_shared<StrictMock<ControlClientMock>>()}
     {
         // Create a valid file descriptor
         m_fd = memfd_create("memfdfile", 0);
@@ -136,21 +138,21 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchToInactiveWithMemoryTerminati
 TEST_F(ClientControllerMemoryManagementTest, RegisterClientFailureWhenClientIsNull)
 {
     ApplicationState appState;
-    EXPECT_FALSE(m_sut->registerClient(nullptr, appState));
+    EXPECT_FALSE(m_sut->registerClient(std::weak_ptr<IControlClient>{}, appState));
 }
 
 TEST_F(ClientControllerMemoryManagementTest, RegisterClientFailureWhenIpcFails)
 {
     ApplicationState appState;
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(false));
-    EXPECT_FALSE(m_sut->registerClient(&m_controlClientMock, appState));
+    EXPECT_FALSE(m_sut->registerClient(m_controlClientMock, appState));
 }
 
 TEST_F(ClientControllerMemoryManagementTest, RegisterClientSuccess)
 {
     ApplicationState appState;
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
-    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
+    EXPECT_TRUE(m_sut->registerClient(m_controlClientMock, appState));
     EXPECT_EQ(ApplicationState::UNKNOWN, appState);
 }
 
@@ -159,9 +161,9 @@ TEST_F(ClientControllerMemoryManagementTest, RegisterClientSuccessTwiceAtTheSame
     ApplicationState appState;
     // Client should be registered only once
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
-    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
+    EXPECT_TRUE(m_sut->registerClient(m_controlClientMock, appState));
     EXPECT_EQ(ApplicationState::UNKNOWN, appState);
-    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
+    EXPECT_TRUE(m_sut->registerClient(m_controlClientMock, appState));
     EXPECT_EQ(ApplicationState::UNKNOWN, appState);
 }
 
@@ -169,15 +171,15 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchStatesWithClientNotification)
 {
     ApplicationState appState;
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
-    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
+    EXPECT_TRUE(m_sut->registerClient(m_controlClientMock, appState));
     EXPECT_EQ(ApplicationState::UNKNOWN, appState);
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
-    EXPECT_CALL(m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING));
+    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING));
     changeAppState(ApplicationState::RUNNING);
     EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
     EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
-    EXPECT_CALL(m_controlClientMock, notifyApplicationState(ApplicationState::INACTIVE));
+    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::INACTIVE));
     changeAppState(ApplicationState::INACTIVE);
     EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
 }
@@ -186,8 +188,8 @@ TEST_F(ClientControllerMemoryManagementTest, SwitchStatesWithoutClientNotificati
 {
     ApplicationState appState;
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
-    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
-    m_sut->unregisterClient(&m_controlClientMock);
+    EXPECT_TRUE(m_sut->registerClient(m_controlClientMock, appState));
+    m_sut->unregisterClient(m_controlClientMock);
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
     changeAppState(ApplicationState::RUNNING);
@@ -203,15 +205,15 @@ TEST_F(ClientControllerMemoryManagementTest, RegisterClientInRunningState)
     constexpr ApplicationState kExpectedAppState{ApplicationState::RUNNING};
     ApplicationState appState;
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
-    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
+    EXPECT_TRUE(m_sut->registerClient(m_controlClientMock, appState));
     EXPECT_EQ(ApplicationState::UNKNOWN, appState);
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
-    EXPECT_CALL(m_controlClientMock, notifyApplicationState(kExpectedAppState));
+    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(kExpectedAppState));
     changeAppState(kExpectedAppState);
 
     // Second client registration should skip sending registerClient via IPC
-    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
+    EXPECT_TRUE(m_sut->registerClient(m_controlClientMock, appState));
     EXPECT_EQ(kExpectedAppState, appState);
     EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
     EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
@@ -222,22 +224,22 @@ TEST_F(ClientControllerMemoryManagementTest, RegisterClientIpcOnceAfterSwitchToI
     // Register first client in Running state
     ApplicationState appState;
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
-    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
+    EXPECT_TRUE(m_sut->registerClient(m_controlClientMock, appState));
     EXPECT_EQ(ApplicationState::UNKNOWN, appState);
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
-    EXPECT_CALL(m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING));
+    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING));
     changeAppState(ApplicationState::RUNNING);
     EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
     EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
 
     // Switch state to Inactive
-    EXPECT_CALL(m_controlClientMock, notifyApplicationState(ApplicationState::INACTIVE));
+    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::INACTIVE));
     changeAppState(ApplicationState::INACTIVE);
     EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
 
     // Second client registration should skip sending registerClient via IPC and return Inactive state
-    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
+    EXPECT_TRUE(m_sut->registerClient(m_controlClientMock, appState));
     EXPECT_EQ(ApplicationState::INACTIVE, appState);
 }
 
@@ -246,23 +248,23 @@ TEST_F(ClientControllerMemoryManagementTest, SendRegisterClientIpcTwiceAfterSwit
     // Register first client in Running state
     ApplicationState appState;
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
-    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
+    EXPECT_TRUE(m_sut->registerClient(m_controlClientMock, appState));
     EXPECT_EQ(ApplicationState::UNKNOWN, appState);
     EXPECT_CALL(*m_controlIpcMock, getSharedMemory(_, _))
         .WillOnce(DoAll(SetArgReferee<0>(m_fd), SetArgReferee<1>(m_size), Return(true)));
-    EXPECT_CALL(m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING));
+    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING));
     changeAppState(ApplicationState::RUNNING);
     EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle());
     EXPECT_NE(nullptr, m_sut->getSharedMemoryHandle()->getShm());
 
     // Switch state to Unknown
-    EXPECT_CALL(m_controlClientMock, notifyApplicationState(ApplicationState::UNKNOWN));
+    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::UNKNOWN));
     changeAppState(ApplicationState::UNKNOWN);
     EXPECT_EQ(nullptr, m_sut->getSharedMemoryHandle());
 
     // Second client registration should send registerClient again
     EXPECT_CALL(*m_controlIpcMock, registerClient()).WillOnce(Return(true));
-    EXPECT_TRUE(m_sut->registerClient(&m_controlClientMock, appState));
+    EXPECT_TRUE(m_sut->registerClient(m_controlClientMock, appState));
     EXPECT_EQ(ApplicationState::UNKNOWN, appState);
 }
 

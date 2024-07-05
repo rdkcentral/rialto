@@ -29,11 +29,12 @@
  * current audio output.
  */
 
-#include "IWebAudioPlayerClient.h"
-#include "MediaCommon.h"
 #include <memory>
 #include <stdint.h>
 #include <string>
+
+#include "IWebAudioPlayerClient.h"
+#include "MediaCommon.h"
 
 namespace firebolt::rialto
 {
