@@ -95,6 +95,7 @@ MediaPipelineIpc::~MediaPipelineIpc()
     detachChannel();
 
     // destroy the thread processing async notifications
+    m_eventThread->flush();
     m_eventThread.reset();
 }
 

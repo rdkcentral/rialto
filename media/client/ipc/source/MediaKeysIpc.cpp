@@ -173,6 +173,7 @@ MediaKeysIpc::~MediaKeysIpc()
 
     detachChannel();
 
+    m_eventThread->flush();
     m_eventThread.reset();
 }
 

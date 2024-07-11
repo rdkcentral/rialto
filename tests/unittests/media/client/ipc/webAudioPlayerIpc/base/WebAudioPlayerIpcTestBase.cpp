@@ -45,6 +45,7 @@ void WebAudioPlayerIpcTestBase::createWebAudioPlayerIpc()
     expectSubscribeEvents();
     expectIpcApiCallSuccess();
 
+    EXPECT_CALL(*m_eventThread, flush());
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createWebAudioPlayer"), _, _, _, _))
         .WillOnce(WithArgs<3>(Invoke(this, &WebAudioPlayerIpcTestBase::setCreateWebAudioPlayerResponse)));

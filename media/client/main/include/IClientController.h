@@ -103,6 +103,11 @@ public:
      * @retval true on success, false otherwise.
      */
     virtual bool unregisterClient(std::weak_ptr<IControlClient> client) = 0;
+
+    /**
+     * @brief Flush all events
+     */
+    virtual void eventFlush() = 0;
 };
 
 }; // namespace firebolt::rialto::client

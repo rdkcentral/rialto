@@ -80,6 +80,11 @@ private:
      */
     void changeStateAndNotifyClients(ApplicationState state);
 
+    /**
+     * @brief Flush all events
+     */
+    void eventFlush() override;
+
 private:
     /**
      * @brief Mutex protection for class attributes.

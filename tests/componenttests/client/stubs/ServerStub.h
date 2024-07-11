@@ -53,6 +53,7 @@ public:
 
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
+    void disconnect();
 
 private:
     std::shared_ptr<::firebolt::rialto::ipc::IServer> m_server;

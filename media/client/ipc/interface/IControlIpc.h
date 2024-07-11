@@ -86,6 +86,11 @@ public:
      * @retval true success, false otherwise.
      */
     virtual bool registerClient() = 0;
+
+    /**
+     * @brief Flush any events in the event thread
+     */
+    virtual void eventThreadFlush() = 0;
 };
 
 }; // namespace firebolt::rialto::client

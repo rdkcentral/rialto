@@ -62,6 +62,7 @@ protected:
 
     ~ClientControllerMemoryManagementTest()
     {
+        EXPECT_CALL(*m_controlIpcMock, eventThreadFlush());
         m_sut.reset();
 
         m_controlIpcMock.reset();

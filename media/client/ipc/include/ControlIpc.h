@@ -71,6 +71,7 @@ public:
 
     bool getSharedMemory(int32_t &fd, uint32_t &size) override;
     bool registerClient() override;
+    void eventThreadFlush() override;
 
 private:
     bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
@@ -91,7 +92,6 @@ private:
      */
     void onPing(const std::shared_ptr<firebolt::rialto::PingEvent> &event);
 
-private:
     /**
      * @brief Control client for handling messages from server
      */

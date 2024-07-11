@@ -41,6 +41,7 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateDestroy)
     expectSubscribeEvents();
     expectIpcApiCallSuccess();
 
+    EXPECT_CALL(*m_eventThread, flush());
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createSession"), m_controllerMock.get(),
                                            createSessionRequestMatcher(m_videoReq.maxWidth, m_videoReq.maxHeight), _,
@@ -72,6 +73,7 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateDestroyWithReconnection)
     expectSubscribeEvents();
     expectIpcApiCallSuccess();
 
+    EXPECT_CALL(*m_eventThread, flush());
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createSession"), m_controllerMock.get(),
                                            createSessionRequestMatcher(m_videoReq.maxWidth, m_videoReq.maxHeight), _,
@@ -130,6 +132,7 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, FactoryCreatesObject)
 /**
  * Test that a MediaPipelineIpc object not created when the ipc channel has not been created.
  */
+
 TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateNoIpcChannel)
 {
     expectInitIpcButAttachChannelFailure();
@@ -217,6 +220,7 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, CreateSessionFailure)
 TEST_F(RialtoClientCreateMediaPipelineIpcTest, DestroySessionFailure)
 {
     /* create media player */
+    EXPECT_CALL(*m_eventThread, flush());
     createMediaPipelineIpc();
 
     /* destroy media player */
@@ -235,6 +239,7 @@ TEST_F(RialtoClientCreateMediaPipelineIpcTest, DestroySessionFailure)
 TEST_F(RialtoClientCreateMediaPipelineIpcTest, DestructorChannelDisconnected)
 {
     /* create media player */
+    EXPECT_CALL(*m_eventThread, flush());
     createMediaPipelineIpc();
 
     /* destroy media player */

@@ -33,6 +33,7 @@ public:
 
     MOCK_METHOD(bool, getSharedMemory, (int32_t & fd, uint32_t &size), (override));
     MOCK_METHOD(bool, registerClient, (), (override));
+    MOCK_METHOD(void, eventThreadFlush, (), (override));
 };
 } // namespace firebolt::rialto::client
 

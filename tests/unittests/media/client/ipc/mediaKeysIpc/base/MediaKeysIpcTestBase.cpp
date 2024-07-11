@@ -37,6 +37,7 @@ void MediaKeysIpcTestBase::createMediaKeysIpc()
     expectSubscribeEvents();
     expectIpcApiCallSuccess();
 
+    EXPECT_CALL(*m_eventThread, flush());
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createMediaKeys"), _, _, _, _))
         .WillOnce(WithArgs<3>(Invoke(this, &MediaKeysIpcTestBase::setCreateMediaKeysResponse)));

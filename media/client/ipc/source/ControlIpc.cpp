@@ -88,7 +88,13 @@ ControlIpc::~ControlIpc()
     detachChannel();
 
     // destroy the thread processing async notifications
+    m_eventThread->flush();
     m_eventThread.reset();
+}
+
+void ControlIpc::eventThreadFlush()
+{
+    m_eventThread->flush();
 }
 
 bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)

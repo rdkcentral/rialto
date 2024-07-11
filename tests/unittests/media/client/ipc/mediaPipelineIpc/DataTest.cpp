@@ -47,6 +47,7 @@ protected:
     {
         MediaPipelineIpcTestBase::SetUp();
 
+        EXPECT_CALL(*m_eventThread, flush());
         createMediaPipelineIpc();
 
         initShmInfo();

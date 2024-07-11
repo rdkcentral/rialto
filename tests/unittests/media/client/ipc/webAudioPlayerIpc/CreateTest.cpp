@@ -42,6 +42,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, CreateDestroy)
     expectSubscribeEvents();
     expectIpcApiCallSuccess();
 
+    EXPECT_CALL(*m_eventThread, flush());
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createWebAudioPlayer"), m_controllerMock.get(),
                                            createWebAudioPlayerRequestMatcher(m_audioMimeType, m_priority, m_config), _,

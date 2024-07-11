@@ -18,6 +18,7 @@
  */
 
 #include "ServerStub.h"
+
 #include <IIpcServer.h>
 #include <IIpcServerFactory.h>
 #include <gtest/gtest.h>
@@ -108,17 +109,33 @@ void ServerStub::init()
 
 ServerStub::~ServerStub()
 {
+    disconnect();
+}
+
+void ServerStub::disconnect()
+{
     // Disconnect client
-    if (m_client && m_client->isConnected())
     {
-        m_client->disconnect();
+        auto client = m_client;
+        if (client)
+            client->disconnect();
     }
 
-    if (m_serverThread.joinable())
+    if (m_clientConnected.load())
+    {
+        // This time the mutex and condition variable are used for disconnection
+        std::unique_lock<std::mutex> clientConnectedLock(m_clientConnectMutex);
+        m_clientConnectCond.wait_for(clientConnectedLock, std::chrono::seconds(5),
+                                     [&]() { return !m_clientConnected.load(); });
+    }
+
+    if (m_running && m_serverThread.joinable())
     {
         m_running = false;
         m_serverThread.join();
     }
+
+    m_server.reset();
 }
 
 void ServerStub::waitForClientConnect()

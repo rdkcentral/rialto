@@ -726,10 +726,10 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
 void MediaPipeline::notifyApplicationState(ApplicationState state)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
     m_currentAppState = state;
     if (ApplicationState::RUNNING != state)
     {
+        std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
         // If shared memory in use, wait for it to finish before returning
         m_needDataRequestMap.clear();
     }

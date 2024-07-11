@@ -20,8 +20,11 @@
 #include "ClientController.h"
 #include "RialtoClientLogging.h"
 #include "SharedMemoryHandle.h"
+
 #include <cstring>
+#include <queue>
 #include <stdexcept>
+
 #include <sys/mman.h>
 #include <sys/un.h>
 #include <unistd.h>
@@ -83,6 +86,7 @@ ClientController::~ClientController()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
+    m_controlIpc->eventThreadFlush();
     termSharedMemory();
 }
 
@@ -94,6 +98,7 @@ std::shared_ptr<ISharedMemoryHandle> ClientController::getSharedMemoryHandle()
 
 bool ClientController::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
 {
+    RIALTO_CLIENT_LOG_DEBUG("registerClient entry");
     std::shared_ptr<IControlClient> clientLocked = client.lock();
     if (!clientLocked)
     {
@@ -192,6 +197,11 @@ void ClientController::termSharedMemory()
     m_shmHandle.reset();
 }
 
+void ClientController::eventFlush()
+{
+    m_controlIpc->eventThreadFlush();
+}
+
 void ClientController::notifyApplicationState(ApplicationState state)
 {
     {
@@ -254,7 +264,7 @@ std::string ClientController::stateToString(ApplicationState state)
 
 void ClientController::changeStateAndNotifyClients(ApplicationState state)
 {
-    std::vector<std::shared_ptr<IControlClient>> currentClients;
+    std::queue<std::shared_ptr<IControlClient>> currentClients;
     {
         std::lock_guard<std::mutex> lock{m_mutex};
         RIALTO_CLIENT_LOG_INFO("Rialto application state changed from %s to %s", stateToString(m_currentState).c_str(),
@@ -265,7 +275,7 @@ void ClientController::changeStateAndNotifyClients(ApplicationState state)
             std::shared_ptr<IControlClient> clientLocked{client.lock()};
             if (clientLocked)
             {
-                currentClients.push_back(clientLocked);
+                currentClients.push(clientLocked);
             }
             else
             {
@@ -273,9 +283,11 @@ void ClientController::changeStateAndNotifyClients(ApplicationState state)
             }
         }
     }
-    for (const auto &client : currentClients)
+    while (!currentClients.empty())
     {
-        client->notifyApplicationState(state);
+        currentClients.front()->notifyApplicationState(state);
+        currentClients.pop();
     }
 }
+
 } // namespace firebolt::rialto::client

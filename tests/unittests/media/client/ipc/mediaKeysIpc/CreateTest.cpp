@@ -33,6 +33,7 @@ TEST_F(RialtoClientCreateMediaKeysIpcTest, Create)
     expectSubscribeEvents();
     expectIpcApiCallSuccess();
 
+    EXPECT_CALL(*m_eventThread, flush());
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createMediaKeys"), m_controllerMock.get(),
                                            createMediaKeysRequestMatcher(m_keySystem), _, m_blockingClosureMock.get()))

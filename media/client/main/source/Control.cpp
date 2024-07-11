@@ -69,6 +69,10 @@ Control::~Control()
     {
         m_clientController.unregisterClient(client);
     }
+
+    // The following line is for client component tests, it ensures that all events
+    // are processed before moving to the next test
+    m_clientController.eventFlush();
 }
 
 bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)

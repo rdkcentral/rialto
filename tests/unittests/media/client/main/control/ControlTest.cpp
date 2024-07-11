@@ -70,5 +70,6 @@ TEST_F(RialtoClientControlTest, CreateDestroy)
     EXPECT_NO_THROW(control = std::make_unique<Control>(*m_clientControllerMock));
 
     // Destroy
+    EXPECT_CALL(*m_clientControllerMock, eventFlush());
     control.reset();
 }

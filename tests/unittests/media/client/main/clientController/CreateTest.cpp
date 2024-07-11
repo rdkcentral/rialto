@@ -58,6 +58,7 @@ TEST_F(ClientControllerCreateTest, CreateDestroy)
     EXPECT_NO_THROW(controller = std::make_unique<ClientController>(m_controlIpcFactoryMock));
 
     // Destroy
+    EXPECT_CALL(*m_controlIpcMock, eventThreadFlush());
     controller.reset();
 }
 

@@ -17,7 +17,6 @@
  * limitations under the License.
  */
 
-#include "ClientComponentTest.h"
 #include <cstring>
 #include <fcntl.h>
 #include <linux/memfd.h>
@@ -29,6 +28,8 @@
 #include <unistd.h>
 #include <utility>
 #include <vector>
+
+#include "ClientComponentTest.h"
 
 #if !defined(SYS_memfd_create)
 #if defined(__NR_memfd_create)
@@ -152,6 +153,7 @@ std::shared_ptr<ServerStub> &ClientComponentTest::getServerStub()
 
 void ClientComponentTest::disconnectServer()
 {
+    m_serverStub->disconnect();
     m_serverStub.reset();
 }
 
