@@ -71,3 +71,21 @@ TEST_F(ClientControllerCreateTest, CreateControlIpcFailure)
     EXPECT_THROW(controller = std::make_unique<ClientController>(m_controlIpcFactoryMock), std::runtime_error);
     EXPECT_EQ(controller, nullptr);
 }
+
+TEST_F(ClientControllerCreateTest, testThatEventFlushWorks)
+{
+    std::unique_ptr<IClientController> controller;
+
+    // Create
+    EXPECT_CALL(*m_controlIpcFactoryMock, createControlIpc(_)).WillOnce(Return(m_controlIpcMock));
+
+    EXPECT_NO_THROW(controller = std::make_unique<ClientController>(m_controlIpcFactoryMock));
+
+    // Call eventFlush which should call eventThreadFlush on m_controlIpc
+    EXPECT_CALL(*m_controlIpcMock, eventThreadFlush());
+    controller->eventFlush();
+
+    // Destroy
+    EXPECT_CALL(*m_controlIpcMock, eventThreadFlush());
+    controller.reset();
+}

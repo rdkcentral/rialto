@@ -91,3 +91,15 @@ TEST_F(RialtoClientControlIpcCreateTest, SubscribeEventFailure)
                      std::make_shared<ControlIpc>(&m_controlClientMock, *m_ipcClientMock, m_eventThreadFactoryMock),
                  std::runtime_error);
 }
+
+/**
+ * Test ControlIpc eventThreadFlush which should call flush on m_eventThread
+ */
+TEST_F(RialtoClientControlIpcCreateTest, EventThreadFlushes)
+{
+    EXPECT_CALL(*m_eventThread, flush()).Times(1);
+
+    createControlIpc();
+    m_controlIpc->eventThreadFlush();
+    destroyControlIpc();
+}

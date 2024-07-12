@@ -49,7 +49,7 @@ void ControlIpcTestBase::createControlIpc()
 {
     expectInitIpc();
     expectSubscribeEvents();
-    EXPECT_CALL(*m_eventThread, flush());
+    EXPECT_CALL(*m_eventThread, flush()).Times(1).RetiresOnSaturation();
     EXPECT_CALL(*m_eventThreadFactoryMock, createEventThread(_)).WillOnce(Return(ByMove(std::move(m_eventThread))));
 
     EXPECT_NO_THROW(
