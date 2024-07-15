@@ -78,8 +78,7 @@ class ApplicationStateChangeTest : public ClientComponentTest
  *   Destroy instance of WebAudioPlayer.
  *   Expect that the session is destroyed on the server.
  *
- *  Step 8: Destroy web audio player session
- *  Step yy: Destroy media session
+ *  Step 8: Destroy media session
  *   Destroy instance of MediaPipeline.
  *   Expect that the session is destroyed on the server.
  *
