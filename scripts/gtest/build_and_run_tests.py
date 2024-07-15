@@ -67,7 +67,8 @@ def getGenericArguments(argParser, suiteInfo):
 # Builds and runs googletests for the given suites
 def buildAndRunGTests(args, f, buildDefines, suitesToRun):
     # Set env variable
-    os.environ["RIALTO_SOCKET_PATH"] = "/tmp/rialto-0"
+    if not "RIALTO_SOCKET_PATH" in os.environ:
+        os.environ["RIALTO_SOCKET_PATH"] = "/tmp/rialto-0"
     # Set env variable to disable journald logging
     os.environ["RIALTO_CONSOLE_LOG"] = "1"
     # Set env variable to enable debug prints

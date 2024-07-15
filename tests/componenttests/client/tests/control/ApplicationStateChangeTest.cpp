@@ -74,11 +74,20 @@ class ApplicationStateChangeTest : public ClientComponentTest
  *   Expect that the state change notification is propagated to the client.
  *   Expect that the shared memory region is fetched from the server.
  *
- *  Step 7: Change state to INACTIVE
+ *  Step 7: Destroy web audio player session
+ *   Destroy instance of WebAudioPlayer.
+ *   Expect that the session is destroyed on the server.
+ *
+ *  Step 8: Destroy web audio player session
+ *  Step yy: Destroy media session
+ *   Destroy instance of MediaPipeline.
+ *   Expect that the session is destroyed on the server.
+ *
+ *  Step 9: Change state to INACTIVE
  *   Server notifies the client that the state has changed to INACTIVE.
  *   Expect that the state change notification is propagated to the client.
  *
- *  Step 8: Disconnect the server
+ *  Step 10: Disconnect the server
  *   Server notifies the client that it has disconnected.
  *   Expect that the state is changed to UNKNOWN in the client.
  *
@@ -117,11 +126,19 @@ TEST_F(ApplicationStateChangeTest, lifecycle)
     ControlTestMethods::shouldNotifyApplicationStateRunning();
     ControlTestMethods::sendNotifyApplicationStateRunning();
 
-    // Step 7: Change state to INACTIVE
+    // Step 7: Destroy web audio player session
+    WebAudioPlayerTestMethods::shouldDestroyWebAudioPlayer();
+    WebAudioPlayerTestMethods::destroyWebAudioPlayer();
+
+    // Step 8: Destroy media session
+    MediaPipelineTestMethods::shouldDestroyMediaSession();
+    MediaPipelineTestMethods::destroyMediaPipeline();
+
+    // Step 9: Change state to INACTIVE
     ControlTestMethods::shouldNotifyApplicationStateInactive();
     ControlTestMethods::sendNotifyApplicationStateInactive();
 
-    // Step 8: Disconnect the server
+    // Step 10: Disconnect the server
     ControlTestMethods::shouldNotifyApplicationStateUnknown();
     ClientComponentTest::disconnectServer();
     ClientComponentTest::waitEvent();
