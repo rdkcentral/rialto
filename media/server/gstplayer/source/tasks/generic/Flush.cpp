@@ -86,17 +86,24 @@ void Flush::execute() const
     }
     m_gstPlayerClient->invalidateActiveRequests(m_type);
 
-    // Flush source
-    GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
-    if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
+    if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
     {
-        RIALTO_SERVER_LOG_WARN("failed to send flush-start event");
-    }
+        // Flush source
+        GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
+        if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
+        {
+            RIALTO_SERVER_LOG_WARN("failed to send flush-start event");
+        }
 
-    GstEvent *flushStop = m_gstWrapper->gstEventNewFlushStop(m_resetTime);
-    if (!m_gstWrapper->gstElementSendEvent(source, flushStop))
+        GstEvent *flushStop = m_gstWrapper->gstEventNewFlushStop(m_resetTime);
+        if (!m_gstWrapper->gstElementSendEvent(source, flushStop))
+        {
+            RIALTO_SERVER_LOG_WARN("failed to send flush-stop event");
+        }
+    }
+    else
     {
-        RIALTO_SERVER_LOG_WARN("failed to send flush-stop event");
+        RIALTO_SERVER_LOG_DEBUG("Skip sending flush event - pipeline below paused");
     }
 
     // Reset Eos info
