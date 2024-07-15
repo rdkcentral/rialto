@@ -32,6 +32,9 @@
 #include <unordered_map>
 #include <vector>
 
+//todo-klops: do usuniecia 
+#include "TextTrackAccessor.h"
+
 namespace firebolt::rialto::server
 {
 /**
@@ -157,6 +160,7 @@ public:
     void notifySourceFlushed(MediaSourceType mediaSourceType) override;
 
 protected:
+    TextTrackAccessor m_textTrackAccessor;
     /**
      * @brief The media player client.
      */
