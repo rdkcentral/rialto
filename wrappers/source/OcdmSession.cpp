@@ -195,7 +195,35 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
         return MediaKeyErrorStatus::FAIL;
     }
 
+#ifdef RIALTO_ENABLE_DECRYPT_BUFFER
     OpenCDMError status = opencdm_gstreamer_session_decrypt_buffer(m_session, encrypted, caps);
+    return convertOpenCdmError(status);
+#else
+    // TODO(RIALTO-127): Remove
+    return MediaKeyErrorStatus::FAIL;
+#endif
+}
+
+// TODO(RIALTO-127): Remove
+MediaKeyErrorStatus OcdmSession::decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
+                                         GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps)
+{
+    if (!m_session)
+    {
+        return MediaKeyErrorStatus::FAIL;
+    }
+
+    OpenCDMError status = ERROR_NONE;
+    if (m_ocdmGstSessionDecryptEx)
+    {
+        status =
+            m_ocdmGstSessionDecryptEx(m_session, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15, caps);
+    }
+    else
+    {
+        status = opencdm_gstreamer_session_decrypt(m_session, encrypted, subSample, subSampleCount, IV, keyId,
+                                                   initWithLast15);
+    }
     return convertOpenCdmError(status);
 }
 
