@@ -23,6 +23,7 @@
 #include "ISharedMemoryBuffer.h"
 #include "RialtoServerLogging.h"
 #include "ShmUtils.h"
+#include "TypeConverters.h"
 
 namespace firebolt::rialto::server
 {
@@ -34,12 +35,14 @@ NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActive
 {
     if (PlaybackState::PLAYING != currentPlaybackState)
     {
-        RIALTO_SERVER_LOG_DEBUG("Pipeline in prerolling state. Sending smaller frame count");
+        RIALTO_SERVER_LOG_DEBUG("Pipeline in prerolling state. Sending smaller frame count for %s",
+                                common::convertMediaSourceType(m_mediaSourceType));
         m_frameCount = kPrerollNumFrames;
     }
     if (MediaSourceType::AUDIO != mediaSourceType && MediaSourceType::VIDEO != mediaSourceType)
     {
-        RIALTO_SERVER_LOG_ERROR("Unable to initialize NeedMediaData - unknown mediaSourceType");
+        RIALTO_SERVER_LOG_ERROR("Unable to initialize NeedMediaData - unknown mediaSourceType: %s",
+                                common::convertMediaSourceType(m_mediaSourceType));
         m_isValid = false;
         return;
     }
@@ -57,7 +60,8 @@ NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActive
     }
     catch (const std::exception &e)
     {
-        RIALTO_SERVER_LOG_ERROR("Unable to construct NeedMediaData message - %s", e.what());
+        RIALTO_SERVER_LOG_ERROR("Unable to construct NeedMediaData message for %s - %s",
+                                common::convertMediaSourceType(m_mediaSourceType), e.what());
         m_isValid = false;
     }
 }

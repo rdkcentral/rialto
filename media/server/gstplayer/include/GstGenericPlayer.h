@@ -231,8 +231,9 @@ private:
      * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
      *
      * @param[in] source          : The Gst Source element, that should receive new sample
+     * @param[in] typeStr         : The media source type string
      */
-    void pushSampleIfRequired(GstElement *source);
+    void pushSampleIfRequired(GstElement *source, const std::string &typeStr);
 
 private:
     /**

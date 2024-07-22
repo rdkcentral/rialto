@@ -19,6 +19,7 @@
 
 #include "tasks/generic/RemoveSource.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -38,7 +39,7 @@ RemoveSource::~RemoveSource()
 
 void RemoveSource::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing RemoveSource");
+    RIALTO_SERVER_LOG_DEBUG("Executing RemoveSource for %s source", common::convertMediaSourceType(m_type));
     if (MediaSourceType::AUDIO != m_type)
     {
         RIALTO_SERVER_LOG_DEBUG("RemoveSource not supported for type != AUDIO");

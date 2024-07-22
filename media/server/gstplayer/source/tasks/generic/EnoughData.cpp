@@ -41,6 +41,7 @@ void EnoughData::execute() const
     {
         if (elem->second.appSrc == GST_ELEMENT(m_src))
         {
+            RIALTO_SERVER_LOG_DEBUG("Audio source has enough data");
             m_context.audioNeedData = false;
         }
     }
@@ -49,6 +50,7 @@ void EnoughData::execute() const
     {
         if (elem->second.appSrc == GST_ELEMENT(m_src))
         {
+            RIALTO_SERVER_LOG_DEBUG("Video source has enough data");
             m_context.videoNeedData = false;
         }
     }
