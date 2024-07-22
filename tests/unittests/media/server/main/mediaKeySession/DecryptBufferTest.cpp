@@ -19,7 +19,7 @@
 
 #include "MediaKeySessionTestBase.h"
 
-#ifdef RIALTO_ENABLE_DECRYPT_BUFFER
+#ifndef RIALTO_DISABLE_DECRYPT_BUFFER
 
 class RialtoServerMediaKeySessionDecryptBufferTest : public MediaKeySessionTestBase
 {
