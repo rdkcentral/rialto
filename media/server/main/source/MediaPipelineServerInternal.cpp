@@ -1136,23 +1136,24 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
         return;
     }
     m_needMediaDataTimers[mediaSourceType] =
-        m_timerFactory->createTimer(kNeedMediaDataResendTimeMs,
-                                    [this, mediaSourceType]()
-                                    {
-                                        m_mainThread->enqueueTask(m_mainThreadClientId,
-                                                                  [this, mediaSourceType]()
-                                                                  {
-                                                                      m_needMediaDataTimers.erase(mediaSourceType);
-                                                                      if (!notifyNeedMediaDataInternal(mediaSourceType))
-                                                                      {
-                                                                          RIALTO_SERVER_LOG_WARN(
-                                                                              "Scheduled Need media data sending "
-                                                                              "failed for: %s. Scheduling again...",
-                                                                              common::convertMediaSourceType(
-                                                                                  mediaSourceType));
-                                                                          scheduleNotifyNeedMediaData(mediaSourceType);
-                                                                      }
-                                                                  });
-                                    });
+        m_timerFactory
+            ->createTimer(kNeedMediaDataResendTimeMs,
+                          [this, mediaSourceType]()
+                          {
+                              m_mainThread
+                                  ->enqueueTask(m_mainThreadClientId,
+                                                [this, mediaSourceType]()
+                                                {
+                                                    m_needMediaDataTimers.erase(mediaSourceType);
+                                                    if (!notifyNeedMediaDataInternal(mediaSourceType))
+                                                    {
+                                                        RIALTO_SERVER_LOG_WARN("Scheduled Need media data sending "
+                                                                               "failed for: %s. Scheduling again...",
+                                                                               common::convertMediaSourceType(
+                                                                                   mediaSourceType));
+                                                        scheduleNotifyNeedMediaData(mediaSourceType);
+                                                    }
+                                                });
+                          });
 }
 }; // namespace firebolt::rialto::server
