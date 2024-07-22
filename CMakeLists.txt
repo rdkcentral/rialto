@@ -97,6 +97,10 @@ if ( RIALTO_LOG_DEBUG_ENABLED )
     add_compile_definitions( RIALTO_LOG_DEBUG_ENABLED )
 endif()
 
+if ( RIALTO_ENABLE_DECRYPT_BUFFER )
+    add_compile_definitions( RIALTO_ENABLE_DECRYPT_BUFFER )
+endif()
+
 # Retrieve the commit ID 
 execute_process(
     COMMAND git rev-parse HEAD

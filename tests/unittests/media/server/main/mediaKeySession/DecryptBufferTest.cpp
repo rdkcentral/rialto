@@ -19,6 +19,8 @@
 
 #include "MediaKeySessionTestBase.h"
 
+#ifdef RIALTO_ENABLE_DECRYPT_BUFFER
+
 class RialtoServerMediaKeySessionDecryptBufferTest : public MediaKeySessionTestBase
 {
 protected:
@@ -69,3 +71,4 @@ TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OnErrorFailure)
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
 }
+#endif

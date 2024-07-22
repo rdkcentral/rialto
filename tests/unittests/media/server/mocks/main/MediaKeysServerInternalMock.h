@@ -58,6 +58,11 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, getCdmKeySessionId, (int32_t keySessionId, std::string &cdmKeySessionId),
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, decrypt, (int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps), (override));
+    // TODO(RIALTO-127): Remove
+    MOCK_METHOD(MediaKeyErrorStatus, decrypt,
+                (int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
+                 GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps),
+                (override));
     MOCK_METHOD(bool, hasSession, (int32_t keySessionId), (const, override));
     MOCK_METHOD(bool, isNetflixPlayreadyKeySystem, (int32_t keySessionId), (const, override));
     MOCK_METHOD(void, incrementSessionIdUsageCounter, (int32_t keySessionId), (override));

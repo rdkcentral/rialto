@@ -32,6 +32,10 @@ class IDecryptionService
 public:
     virtual ~IDecryptionService() = default;
     virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) = 0;
+    // TODO(RIALTO-127): Remove
+    virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
+                                        const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
+                                        uint32_t initWithLast15, GstCaps *caps) = 0;
     virtual bool isNetflixPlayreadyKeySystem(int32_t keySessionId) = 0;
     virtual MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) = 0;
     virtual void incrementSessionIdUsageCounter(int32_t keySessionId) = 0;
