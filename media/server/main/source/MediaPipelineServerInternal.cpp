@@ -28,6 +28,7 @@
 #include "MediaPipelineServerInternal.h"
 #include "NeedMediaData.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 
 namespace
 {
@@ -260,13 +261,12 @@ bool MediaPipelineServerInternal::attachSourceInternal(const std::unique_ptr<Med
     {
         source->setId(generateSourceId());
         RIALTO_SERVER_LOG_DEBUG("New ID generated for MediaSourceType: %s: %d",
-                                (MediaSourceType::AUDIO == source->getType() ? "AUDIO" : "VIDEO"), source->getId());
+                                common::convertMediaSourceType(source->getType()), source->getId());
         m_attachedSources.emplace(source->getType(), source->getId());
     }
     else
     {
-        RIALTO_SERVER_LOG_WARN("SourceType '%s' already attached",
-                               (MediaSourceType::AUDIO == source->getType() ? "AUDIO" : "VIDEO"));
+        RIALTO_SERVER_LOG_WARN("SourceType '%s' already attached", common::convertMediaSourceType(source->getType()));
         return false;
     }
 
@@ -295,7 +295,7 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
                                    [id](const auto &src) { return src.second == id; });
     if (sourceIter == m_attachedSources.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to remove source - Source not found");
+        RIALTO_SERVER_LOG_ERROR("Failed to remove source with id %d- Source not found", id);
         return false;
     }
 
@@ -545,13 +545,12 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         {
             RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
                                     "consecutively for mediaSourceType: %s",
-                                    needDataRequestId, counter,
-                                    (mediaSourceType == MediaSourceType::AUDIO) ? "AUDIO" : "VIDEO");
+                                    needDataRequestId, counter, common::convertMediaSourceType(mediaSourceType));
         }
         else
         {
-            RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status: %s",
-                                   needDataRequestId, toString(status));
+            RIALTO_SERVER_LOG_WARN("%s Data request for needDataRequestId: %u received with wrong status: %s",
+                                   common::convertMediaSourceType(mediaSourceType), needDataRequestId, toString(status));
             counter = 0;
         }
 
@@ -561,7 +560,8 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     }
     else
     {
-        RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u received with correct status", needDataRequestId);
+        RIALTO_SERVER_LOG_DEBUG("%s Data request for needDataRequestId: %u received with correct status",
+                                common::convertMediaSourceType(mediaSourceType), needDataRequestId);
         counter = 0;
     }
 
@@ -624,13 +624,12 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         {
             RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u. NO_AVAILABLE_SAMPLES received: %u "
                                     "consecutively for mediaSourceType: %s",
-                                    needDataRequestId, counter,
-                                    (mediaSourceType == MediaSourceType::AUDIO) ? "AUDIO" : "VIDEO");
+                                    needDataRequestId, counter, common::convertMediaSourceType(mediaSourceType));
         }
         else
         {
-            RIALTO_SERVER_LOG_WARN("Data request for needDataRequestId: %u received with wrong status",
-                                   needDataRequestId);
+            RIALTO_SERVER_LOG_WARN("%s Data request for needDataRequestId: %u received with wrong status",
+                                   common::convertMediaSourceType(mediaSourceType), needDataRequestId);
             counter = 0;
         }
         scheduleNotifyNeedMediaData(mediaSourceType);
@@ -638,7 +637,8 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     }
     else
     {
-        RIALTO_SERVER_LOG_DEBUG("Data request for needDataRequestId: %u received with correct status", needDataRequestId);
+        RIALTO_SERVER_LOG_DEBUG("%s Data request for needDataRequestId: %u received with correct status",
+                                common::convertMediaSourceType(mediaSourceType), needDataRequestId);
         counter = 0;
     }
 
@@ -669,7 +669,8 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
             m_dataReaderFactory->createDataReader(mediaSourceType, buffer, regionOffset, numFrames);
         if (!dataReader)
         {
-            RIALTO_SERVER_LOG_ERROR("Metadata version not supported for request id: %u", needDataRequestId);
+            RIALTO_SERVER_LOG_ERROR("Metadata version not supported for %s request id: %u",
+                                    common::convertMediaSourceType(mediaSourceType), needDataRequestId);
             notifyPlaybackState(PlaybackState::FAILURE);
             return false;
         }
@@ -843,7 +844,7 @@ bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime
                                    [sourceId](const auto &src) { return src.second == sourceId; });
     if (sourceIter == m_attachedSources.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to flush - Source not found");
+        RIALTO_SERVER_LOG_ERROR("Failed to flush - Source with id: %d not found", sourceId);
         return false;
     }
 
@@ -881,7 +882,7 @@ bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, in
                                    [sourceId](const auto &src) { return src.second == sourceId; });
     if (sourceIter == m_attachedSources.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to set source position - Source not found");
+        RIALTO_SERVER_LOG_ERROR("Failed to set source position - Source with id: %d not found", sourceId);
         return false;
     }
 
@@ -965,22 +966,25 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
     const auto kSourceIter = m_attachedSources.find(mediaSourceType);
     if (m_attachedSources.cend() == kSourceIter)
     {
-        RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed - sourceId not found");
+        RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed for %s - sourceId not found",
+                               common::convertMediaSourceType(mediaSourceType));
         return false;
     }
     auto it = m_isMediaTypeEosMap.find(mediaSourceType);
     if (it != m_isMediaTypeEosMap.end() && it->second)
     {
-        RIALTO_SERVER_LOG_INFO("EOS, NeedMediaData not needed");
+        RIALTO_SERVER_LOG_INFO("EOS, NeedMediaData not needed for %s", common::convertMediaSourceType(mediaSourceType));
         return false;
     }
     NeedMediaData event{m_mediaPipelineClient, *m_activeRequests,   *m_shmBuffer,          m_sessionId,
                         mediaSourceType,       kSourceIter->second, m_currentPlaybackState};
     if (!event.send())
     {
-        RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed");
+        RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed for %s",
+                               common::convertMediaSourceType(mediaSourceType));
         return false;
     }
+    RIALTO_SERVER_LOG_DEBUG("%s NeedMediaData sent.", common::convertMediaSourceType(mediaSourceType));
     return true;
 }
 
@@ -1043,7 +1047,8 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
             const auto kSourceIter = m_attachedSources.find(mediaSourceType);
             if (m_attachedSources.cend() == kSourceIter)
             {
-                RIALTO_SERVER_LOG_WARN("Qos notification failed - sourceId not found");
+                RIALTO_SERVER_LOG_WARN("Qos notification failed - sourceId not found for %s",
+                                       common::convertMediaSourceType(mediaSourceType));
                 return;
             }
             m_mediaPipelineClient->notifyQos(kSourceIter->second, qosInfo);
@@ -1064,7 +1069,8 @@ void MediaPipelineServerInternal::notifyBufferUnderflow(MediaSourceType mediaSou
             const auto kSourceIter = m_attachedSources.find(mediaSourceType);
             if (m_attachedSources.cend() == kSourceIter)
             {
-                RIALTO_SERVER_LOG_WARN("Buffer underflow notification failed - sourceId not found");
+                RIALTO_SERVER_LOG_WARN("Buffer underflow notification failed - sourceId not found for %s",
+                                       common::convertMediaSourceType(mediaSourceType));
                 return;
             }
             m_mediaPipelineClient->notifyBufferUnderflow(kSourceIter->second);
@@ -1085,7 +1091,8 @@ void MediaPipelineServerInternal::notifyPlaybackError(MediaSourceType mediaSourc
             const auto kSourceIter = m_attachedSources.find(mediaSourceType);
             if (m_attachedSources.cend() == kSourceIter)
             {
-                RIALTO_SERVER_LOG_WARN("Playback error notification failed - sourceId not found");
+                RIALTO_SERVER_LOG_WARN("Playback error notification failed - sourceId not found for %s",
+                                       common::convertMediaSourceType(mediaSourceType));
                 return;
             }
             m_mediaPipelineClient->notifyPlaybackError(kSourceIter->second, error);
@@ -1106,10 +1113,12 @@ void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourc
             const auto kSourceIter = m_attachedSources.find(mediaSourceType);
             if (m_attachedSources.cend() == kSourceIter)
             {
-                RIALTO_SERVER_LOG_WARN("Source flushed notification failed - sourceId not found");
+                RIALTO_SERVER_LOG_WARN("Source flushed notification failed - sourceId not found for: %s",
+                                       common::convertMediaSourceType(mediaSourceType));
                 return;
             }
             m_mediaPipelineClient->notifySourceFlushed(kSourceIter->second);
+            RIALTO_SERVER_LOG_DEBUG("%s source flushed", common::convertMediaSourceType(mediaSourceType));
         }
     };
 
@@ -1122,25 +1131,29 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
     auto timer = m_needMediaDataTimers.find(mediaSourceType);
     if (m_needMediaDataTimers.end() != timer && timer->second && timer->second->isActive())
     {
-        RIALTO_SERVER_LOG_DEBUG("Skip scheduling need media data - it is already scheduled");
+        RIALTO_SERVER_LOG_DEBUG("Skip scheduling need media data for %s - it is already scheduled",
+                                common::convertMediaSourceType(mediaSourceType));
         return;
     }
     m_needMediaDataTimers[mediaSourceType] =
-        m_timerFactory->createTimer(kNeedMediaDataResendTimeMs,
-                                    [this, mediaSourceType]()
-                                    {
-                                        m_mainThread->enqueueTask(m_mainThreadClientId,
-                                                                  [this, mediaSourceType]()
-                                                                  {
-                                                                      m_needMediaDataTimers.erase(mediaSourceType);
-                                                                      if (!notifyNeedMediaDataInternal(mediaSourceType))
-                                                                      {
-                                                                          RIALTO_SERVER_LOG_WARN(
-                                                                              "Scheduled Need media data sending "
-                                                                              "failed. Scheduling again...");
-                                                                          scheduleNotifyNeedMediaData(mediaSourceType);
-                                                                      }
-                                                                  });
-                                    });
+        m_timerFactory
+            ->createTimer(kNeedMediaDataResendTimeMs,
+                          [this, mediaSourceType]()
+                          {
+                              m_mainThread
+                                  ->enqueueTask(m_mainThreadClientId,
+                                                [this, mediaSourceType]()
+                                                {
+                                                    m_needMediaDataTimers.erase(mediaSourceType);
+                                                    if (!notifyNeedMediaDataInternal(mediaSourceType))
+                                                    {
+                                                        RIALTO_SERVER_LOG_WARN("Scheduled Need media data sending "
+                                                                               "failed for: %s. Scheduling again...",
+                                                                               common::convertMediaSourceType(
+                                                                                   mediaSourceType));
+                                                        scheduleNotifyNeedMediaData(mediaSourceType);
+                                                    }
+                                                });
+                          });
 }
 }; // namespace firebolt::rialto::server

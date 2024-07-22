@@ -19,6 +19,7 @@
 
 #include "SetSourcePosition.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 #include "tasks/generic/NeedData.h"
 
 namespace firebolt::rialto::server::tasks::generic
@@ -38,7 +39,7 @@ SetSourcePosition::~SetSourcePosition()
 
 void SetSourcePosition::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing SetSourcePosition");
+    RIALTO_SERVER_LOG_DEBUG("Executing SetSourcePosition for %s source", common::convertMediaSourceType(m_type));
 
     if (MediaSourceType::UNKNOWN == m_type)
     {
@@ -55,7 +56,8 @@ void SetSourcePosition::execute() const
     }
     if (!source)
     {
-        RIALTO_SERVER_LOG_WARN("failed to set source position - source is NULL");
+        RIALTO_SERVER_LOG_WARN("failed to set source position - %s source is NULL",
+                               common::convertMediaSourceType(m_type));
         return;
     }
 

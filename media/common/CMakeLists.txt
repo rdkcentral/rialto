@@ -34,6 +34,7 @@ add_library(
         source/MediaFrameWriterV1.cpp
         source/MediaFrameWriterV2.cpp
         source/SchemaVersion.cpp
+        source/TypeConverters.cpp
     )
 
 set_property (
