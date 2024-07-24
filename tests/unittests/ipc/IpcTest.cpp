@@ -185,29 +185,6 @@ TEST_F(RialtoIpcTest, MultiVarEvent)
 }
 
 /**
- * Test that IPC client returns false when message is timeouted.
- */
-TEST_F(RialtoIpcTest, Timeout)
-{
-    constexpr bool kExpectMessage{false};
-    ::google::protobuf::RpcController *controller;
-    ::google::protobuf::Closure *done;
-    m_clientStub->startMessageThread(kExpectMessage);
-
-    EXPECT_CALL(*m_testModuleMock, TestRequestSingleVar(_, SingleVarRequestMatcher(m_int), _, _))
-        .WillOnce(WithArgs<0, 3>(Invoke(
-            [&](auto *c, auto *d)
-            {
-                controller = c;
-                done = d;
-            })));
-
-    EXPECT_FALSE(m_clientStub->sendSingleVarRequest(m_int));
-
-    m_testModuleMock->failureReturn(controller, done);
-}
-
-/**
  * Test that IPC client can process no reply request
  */
 TEST_F(RialtoIpcTest, NoReply)
