@@ -38,7 +38,6 @@ TEST_F(IpcTests, ShouldConnectToRialtoSessionServer)
 {
     configureServerToSendOkResponses();
     ASSERT_TRUE(triggerCreateClient());
-    triggerRemoveClient();
 }
 
 TEST_F(IpcTests, ShouldFailToConnectToTheSameAppTwice)
@@ -46,7 +45,6 @@ TEST_F(IpcTests, ShouldFailToConnectToTheSameAppTwice)
     configureServerToSendOkResponses();
     ASSERT_TRUE(triggerCreateClient());
     ASSERT_FALSE(triggerCreateClient());
-    triggerRemoveClient();
 }
 
 TEST_F(IpcTests, ShouldRemoveClient)
@@ -63,7 +61,6 @@ TEST_F(IpcTests, ShouldSuccessfullySetState)
     configureServerToSendOkResponses();
     ASSERT_TRUE(triggerCreateClient());
     ASSERT_TRUE(triggerPerformSetState(firebolt::rialto::common::SessionServerState::INACTIVE));
-    triggerRemoveClient();
 }
 
 TEST_F(IpcTests, ShouldFailToSetStateWhenFailResponseIsReceived)
@@ -71,7 +68,6 @@ TEST_F(IpcTests, ShouldFailToSetStateWhenFailResponseIsReceived)
     configureServerToSendFailResponses();
     ASSERT_TRUE(triggerCreateClient());
     ASSERT_FALSE(triggerPerformSetState(firebolt::rialto::common::SessionServerState::INACTIVE));
-    triggerRemoveClient();
 }
 
 TEST_F(IpcTests, ShouldSuccessfullyPing)
@@ -79,7 +75,6 @@ TEST_F(IpcTests, ShouldSuccessfullyPing)
     configureServerToSendOkResponses();
     ASSERT_TRUE(triggerCreateClient());
     ASSERT_TRUE(triggerPerformPing());
-    triggerRemoveClient();
 }
 
 TEST_F(IpcTests, ShouldFailToPingWhenFailResponseIsReceived)
@@ -87,7 +82,6 @@ TEST_F(IpcTests, ShouldFailToPingWhenFailResponseIsReceived)
     configureServerToSendFailResponses();
     ASSERT_TRUE(triggerCreateClient());
     ASSERT_FALSE(triggerPerformPing());
-    triggerRemoveClient();
 }
 
 TEST_F(IpcTests, ShouldForwardStateChangedIndicationToSessionServerAppManager)
@@ -98,7 +92,6 @@ TEST_F(IpcTests, ShouldForwardStateChangedIndicationToSessionServerAppManager)
         firebolt::rialto::common::SessionServerState::INACTIVE);
     simulateStateChangedEventInactive();
     waitForExpectationsMet();
-    triggerRemoveClient();
 }
 
 TEST_F(IpcTests, ShouldForwardAckEventToSessionServerAppManager)
@@ -108,7 +101,6 @@ TEST_F(IpcTests, ShouldForwardAckEventToSessionServerAppManager)
     sessionServerAppManagerWillBeNotifiedAboutCompletedHealthcheck();
     simulateAckEvent();
     waitForExpectationsMet();
-    triggerRemoveClient();
 }
 
 TEST_F(IpcTests, ShouldForwardNotRunningStateChangeToSessionServerAppManagerWhenUnexpectedlyDisconnected)
@@ -118,7 +110,6 @@ TEST_F(IpcTests, ShouldForwardNotRunningStateChangeToSessionServerAppManagerWhen
     sessionServerAppManagerWillBeRequestedToRestartServer();
     simulateClientDisconnection();
     waitForExpectationsMet();
-    triggerRemoveClient();
 }
 
 TEST_F(IpcTests, ShouldSuccessfullySetLogLevels)
@@ -126,7 +117,6 @@ TEST_F(IpcTests, ShouldSuccessfullySetLogLevels)
     configureServerToSendOkResponses();
     ASSERT_TRUE(triggerCreateClient());
     ASSERT_TRUE(triggerSetLogLevels());
-    triggerRemoveClient();
 }
 
 TEST_F(IpcTests, ShouldFailToSetLogLevels)
@@ -134,7 +124,6 @@ TEST_F(IpcTests, ShouldFailToSetLogLevels)
     configureServerToSendFailResponses();
     ASSERT_TRUE(triggerCreateClient());
     ASSERT_FALSE(triggerSetLogLevels());
-    triggerRemoveClient();
 }
 
 TEST_F(IpcTests, ShouldSuccessfullySetConfiguration)
@@ -142,7 +131,6 @@ TEST_F(IpcTests, ShouldSuccessfullySetConfiguration)
     configureServerToSendOkResponses();
     ASSERT_TRUE(triggerCreateClient());
     ASSERT_TRUE(triggerPerformSetConfiguration());
-    triggerRemoveClient();
 }
 
 TEST_F(IpcTests, ShouldFailToSetConfiguration)
@@ -150,5 +138,4 @@ TEST_F(IpcTests, ShouldFailToSetConfiguration)
     configureServerToSendFailResponses();
     ASSERT_TRUE(triggerCreateClient());
     ASSERT_FALSE(triggerPerformSetConfiguration());
-    triggerRemoveClient();
 }
