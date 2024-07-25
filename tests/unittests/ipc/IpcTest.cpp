@@ -71,8 +71,11 @@ protected:
 
     virtual void TearDown()
     {
-        m_clientStub->disconnect();
-        m_clientStub.reset();
+        if (m_clientStub)
+        {
+            m_clientStub->disconnect();
+            m_clientStub.reset();
+        }
 
         m_serverStub.reset();
 
@@ -182,6 +185,34 @@ TEST_F(RialtoIpcTest, MultiVarEvent)
     m_serverStub->sendMultiVarEvent(m_int, m_uint, eventEnum, m_str);
 
     m_clientStub->waitForMultiVarEvent(retInt, retUint, retEnum, retStr);
+}
+
+/**
+ * Test that IPC client returns false when message is timeouted.
+ */
+TEST_F(RialtoIpcTest, Timeout)
+{
+    constexpr bool kExpectMessage{false};
+    ::google::protobuf::RpcController *controller;
+    ::google::protobuf::Closure *done;
+    m_clientStub->startMessageThread(kExpectMessage);
+
+    EXPECT_CALL(*m_testModuleMock, TestRequestSingleVar(_, SingleVarRequestMatcher(m_int), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(
+            [&](auto *c, auto *d)
+            {
+                controller = c;
+                done = d;
+            })));
+
+    EXPECT_FALSE(m_clientStub->sendSingleVarRequest(m_int));
+
+    // Disconnect and join client stub thread before calling failureReturn
+    // to fix the data race causing code coverage count issues
+    m_clientStub.reset();
+
+    // Call failureReturn at the end to prevent mock leak
+    m_testModuleMock->failureReturn(controller, done);
 }
 
 /**
