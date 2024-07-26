@@ -21,6 +21,7 @@
 #include "GenericPlayerContext.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -39,7 +40,7 @@ Eos::~Eos()
 
 void Eos::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing Eos");
+    RIALTO_SERVER_LOG_DEBUG("Executing Eos for %s", common::convertMediaSourceType(m_type));
     if (m_type == firebolt::rialto::MediaSourceType::AUDIO && m_context.audioUnderflowOccured)
     {
         RIALTO_SERVER_LOG_DEBUG("Cancelling audio underflow in EOS procedure");

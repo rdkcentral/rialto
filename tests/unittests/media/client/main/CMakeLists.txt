@@ -40,6 +40,7 @@ add_gtests (
         mediaPipeline/GetMuteTest.cpp
         mediaPipeline/FlushTest.cpp
         mediaPipeline/SetSourcePositionTest.cpp
+        mediaPipeline/MediaPipelineProxyTest.cpp
 
         # MediaPipelineCapabilities tests
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
@@ -74,6 +75,7 @@ add_gtests (
         webAudioPlayer/GetDeviceInfoTest.cpp
         webAudioPlayer/GetBufferAvailableTest.cpp
         webAudioPlayer/WriteBufferTest.cpp
+        webAudioPlayer/WebAudioPlayerProxyTest.cpp
         )
 
 target_include_directories(

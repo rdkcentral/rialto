@@ -102,6 +102,7 @@ target_include_directories(
         include/tasks/generic
         include/tasks/webAudio
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoPlayerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerMain,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
@@ -125,6 +126,7 @@ target_link_libraries(
         RialtoServerMain
         RialtoWrappers
         RialtoCommon
+        RialtoPlayerCommon
         ${GStreamerApp_LIBRARIES}
 
         )
