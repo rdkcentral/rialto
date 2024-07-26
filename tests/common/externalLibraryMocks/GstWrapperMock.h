@@ -157,9 +157,16 @@ public:
                 (const, override));
     MOCK_METHOD(GstMeta *, gstBufferGetMeta, (GstBuffer * buffer, GType api), (const, override));
     MOCK_METHOD(gboolean, gstBufferRemoveMeta, (GstBuffer * buffer, GstMeta *meta), (const, override));
+#if 0
     MOCK_METHOD(gboolean, gstStructureGetUint, (const GstStructure *structure, const gchar *fieldname, guint *value),
                 (const));
+#endif
+    MOCK_METHOD(gboolean, gstStructureGetUint64, (const GstStructure *structure, const gchar *fieldname, guint64 *value),
+                (const));
+#if 0
     MOCK_METHOD(const GValue *, gstStructureGetValue, (const GstStructure *structure, const gchar *fieldname), (const));
+#endif
+    MOCK_METHOD(void, gstStructureFree, (GstStructure *structure), (const));
     MOCK_METHOD(GstBuffer *, gstValueGetBuffer, (const GValue *value), (const));
     MOCK_METHOD(GstEvent *, gstEventNewStep,
                 (GstFormat format, guint64 amount, gdouble rate, gboolean flush, gboolean intermediate), (const));

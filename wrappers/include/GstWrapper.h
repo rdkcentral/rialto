@@ -417,14 +417,28 @@ public:
         return gst_buffer_remove_meta(buffer, meta);
     }
 
+#if 0
     gboolean gstStructureGetUint(const GstStructure *structure, const gchar *fieldname, guint *value) const override
     {
         return gst_structure_get_uint(structure, fieldname, value);
     }
+#endif
 
+    gboolean gstStructureGetUint64(const GstStructure *structure, const gchar *fieldname, guint64 *value) const override
+    {
+        return gst_structure_get_uint64(structure, fieldname, value);
+    }
+
+#if 0
     const GValue *gstStructureGetValue(const GstStructure *structure, const gchar *fieldname) const override
     {
         return gst_structure_get_value(structure, fieldname);
+    }
+#endif
+
+    void gstStructureFree(GstStructure *structure) const override
+    {
+        gst_structure_free(structure);
     }
 
     GstBuffer *gstValueGetBuffer(const GValue *value) const override { return gst_value_get_buffer(value); }

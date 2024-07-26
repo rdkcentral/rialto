@@ -603,6 +603,39 @@ bool MediaPipelineIpc::getPosition(int64_t &position)
     return true;
 }
 
+bool MediaPipelineIpc::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetStatsRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+
+    firebolt::rialto::GetStatsResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getStats(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get stats due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    renderedFrames = response.rendered_frames();
+    droppedFrames = response.dropped_frames();
+    return true;
+}
+
 bool MediaPipelineIpc::setPlaybackRate(double rate)
 {
     if (!reattachChannelIfRequired())

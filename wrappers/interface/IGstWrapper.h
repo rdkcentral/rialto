@@ -956,6 +956,7 @@ public:
      */
     virtual gboolean gstBufferRemoveMeta(GstBuffer *buffer, GstMeta *meta) const = 0;
 
+#if 0
     /**
      * @brief Gets the uint of the field with name 'fieldname'.
      *
@@ -966,7 +967,20 @@ public:
      * @retval true on success, false if 'fieldname' does not exist or is not a uint.
      */
     virtual gboolean gstStructureGetUint(const GstStructure *structure, const gchar *fieldname, guint *value) const = 0;
+#endif
 
+    /**
+     * @brief Gets the uint of the field with name 'fieldname'.
+     *
+     * @param[in] structure : the gst structure to search
+     * @param[in] fieldname : the name of the field
+     * @param[in] value : the value of the field
+     *
+     * @retval true on success, false if 'fieldname' does not exist or is not a uint.
+     */
+    virtual gboolean gstStructureGetUint64(const GstStructure *structure, const gchar *fieldname, guint64 *value) const = 0;
+
+#if 0
     /**
      * @brief Gets the value of the field with name 'fieldname'.
      *
@@ -976,6 +990,14 @@ public:
      * @retval the field value
      */
     virtual const GValue *gstStructureGetValue(const GstStructure *structure, const gchar *fieldname) const = 0;
+#endif
+
+    /**
+     * @brief Free this structure
+     *
+     * @param[in] structure : the gst structure to free
+     */
+    virtual void gstStructureFree(GstStructure *structure) const = 0;
 
     /**
      * @brief Get a buffer from the given value.

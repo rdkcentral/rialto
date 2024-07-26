@@ -295,6 +295,11 @@ bool MediaPipeline::getPosition(int64_t &position)
     return m_mediaPipelineIpc->getPosition(position);
 }
 
+bool MediaPipeline::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    return m_mediaPipelineIpc->getStats(sourceId, renderedFrames, droppedFrames);
+}
+
 bool MediaPipeline::handleSetPosition(int64_t position)
 {
     // needData requests no longer valid

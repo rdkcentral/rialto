@@ -110,6 +110,8 @@ public:
 
     bool getPosition(int64_t &position) override;
 
+    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
+
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
     bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
@@ -231,7 +233,7 @@ protected:
      * @brief Currently attached sources
      */
     std::map<MediaSourceType, std::int32_t> m_attachedSources;
-
+    
     /**
      * @brief Map to keep track of the count of MediaSourceStatus with the value NO_AVAILABLE_SAMPLES for each MediaSource
      */
@@ -323,9 +325,13 @@ protected:
     bool setPositionInternal(int64_t position);
 
     /**
-     * @brief Get position internally, only to be called on the main thread.
+     * @brief Get stats for this source.
      *
-     * @param[out] position : The playback position in nanoseconds
+     * This method is sychronous, it returns dropped frames and rendered frames
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] renderedFrames : The number of dropped frames
+     * @param[out] droppedFrames : The number of rendered frames
      *
      * @retval true on success.
      */
@@ -338,6 +344,15 @@ protected:
      * @param[in] y      : The y position in pixels.
      * @param[in] width  : The width in pixels.
      * @param[in] height : The height in pixels.
+     *
+     * @retval true on success.
+     */
+    bool getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames);
+    
+    /**
+     * @brief Get position internally, only to be called on the main thread.
+     *
+     * @param[out] position : The playback position in nanoseconds
      *
      * @retval true on success.
      */
