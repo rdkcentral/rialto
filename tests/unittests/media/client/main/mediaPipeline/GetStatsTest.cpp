@@ -48,7 +48,7 @@ TEST_F(RialtoClientMediaPipelineGetStatsTest, GetStatsSuccess)
     constexpr uint64_t kDroppedFrames{5};
     uint64_t renderedFrames;
     uint64_t droppedFrames;
-    EXPECT_CALL(*m_mediaPipelineIpcMock, getStats(m_kSourceId, renderedFrames, droppedFrames))
+    EXPECT_CALL(*m_mediaPipelineIpcMock, getStats(m_kSourceId, _, _))
         .WillOnce(Invoke(
             [&](int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
             {
@@ -67,6 +67,6 @@ TEST_F(RialtoClientMediaPipelineGetStatsTest, GetStatsFailure)
 {
     uint64_t renderedFrames;
     uint64_t droppedFrames;
-    EXPECT_CALL(*m_mediaPipelineIpcMock, getStats(m_kSourceId, renderedFrames, droppedFrames)).WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, getStats(m_kSourceId, _, _)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getStats(m_kSourceId, renderedFrames, droppedFrames));
 }

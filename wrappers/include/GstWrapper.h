@@ -107,11 +107,6 @@ public:
 
     GstBus *gstPipelineGetBus(GstPipeline *pipeline) override { return gst_pipeline_get_bus(pipeline); }
 
-    guint gstBusAddWatch(GstBus *bus, GstBusFunc func, gpointer user_data) override
-    {
-        return gst_bus_add_watch(bus, func, user_data);
-    }
-
     void gstMessageParseStateChanged(GstMessage *message, GstState *oldstate, GstState *newstate, GstState *pending) override
     {
         return gst_message_parse_state_changed(message, oldstate, newstate, pending);
@@ -341,11 +336,6 @@ public:
         return gst_caps;
     }
 
-    gboolean gstCapsIsSubset(const GstCaps *subset, const GstCaps *superset) const override
-    {
-        return gst_caps_is_subset(subset, superset);
-    }
-
     gboolean gstCapsIsStrictlyEqual(const GstCaps *caps1, const GstCaps *caps2) const override
     {
         return gst_caps_is_strictly_equal(caps1, caps2);
@@ -400,11 +390,6 @@ public:
         return gst_buffer_add_protection_meta(buffer, info);
     }
 
-    GstProtectionMeta *gstBufferGetProtectionMeta(GstBuffer *buffer) const override
-    {
-        return gst_buffer_get_protection_meta(buffer);
-    }
-
     GstMeta *gstBufferAddMeta(GstBuffer *buffer, const GstMetaInfo *info, gpointer params) const override
     {
         return gst_buffer_add_meta(buffer, info, params);
@@ -417,31 +402,12 @@ public:
         return gst_buffer_remove_meta(buffer, meta);
     }
 
-#if 0
-    gboolean gstStructureGetUint(const GstStructure *structure, const gchar *fieldname, guint *value) const override
-    {
-        return gst_structure_get_uint(structure, fieldname, value);
-    }
-#endif
-
     gboolean gstStructureGetUint64(const GstStructure *structure, const gchar *fieldname, guint64 *value) const override
     {
         return gst_structure_get_uint64(structure, fieldname, value);
     }
 
-#if 0
-    const GValue *gstStructureGetValue(const GstStructure *structure, const gchar *fieldname) const override
-    {
-        return gst_structure_get_value(structure, fieldname);
-    }
-#endif
-
-    void gstStructureFree(GstStructure *structure) const override
-    {
-        gst_structure_free(structure);
-    }
-
-    GstBuffer *gstValueGetBuffer(const GValue *value) const override { return gst_value_get_buffer(value); }
+    void gstStructureFree(GstStructure *structure) const override { gst_structure_free(structure); }
 
     GstEvent *gstEventNewStep(GstFormat format, guint64 amount, gdouble rate, gboolean flush,
                               gboolean intermediate) const override
@@ -521,16 +487,9 @@ public:
         gst_message_parse_warning(message, gerror, debug);
     }
 
-    GstCaps *gstPadGetCurrentCaps(GstPad *pad) const override { return gst_pad_get_current_caps(pad); }
-
     GstStructure *gstCapsGetStructure(const GstCaps *caps, guint index) const override
     {
         return gst_caps_get_structure(caps, index);
-    }
-
-    const gchar *gstStructureGetName(const GstStructure *structure) const override
-    {
-        return gst_structure_get_name(structure);
     }
 
     bool gstStructureHasName(const GstStructure *structure, const gchar *name) const override

@@ -64,6 +64,8 @@ public:
     void mediaPipelineWillFailToHaveData();
     void mediaPipelineWillGetPosition();
     void mediaPipelineWillFailToGetPosition();
+    void mediaPipelineWillGetStats();
+    void mediaPipelineWillFailToGetStats();
     void mediaPipelineWillRenderFrame();
     void mediaPipelineWillFailToRenderFrame();
     void mediaPipelineWillSetVolume();
@@ -119,6 +121,8 @@ public:
     void haveDataShouldFail();
     void getPositionShouldSucceed();
     void getPositionShouldFail();
+    void getStatsShouldSucceed();
+    void getStatsShouldFail();
     void getSupportedMimeTypesSucceed();
     void isMimeTypeSupportedSucceed();
     void renderFrameShouldSucceed();

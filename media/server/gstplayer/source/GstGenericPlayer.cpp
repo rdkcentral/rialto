@@ -385,29 +385,29 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
 bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
     bool returnValue{false};
-    const char* sinkName{nullptr};
-    switch(mediaSourceType)
+    const char *kSinkName{nullptr};
+    switch (mediaSourceType)
     {
     case MediaSourceType::AUDIO:
-        sinkName = "audio-sink";
+        kSinkName = "audio-sink";
         break;
     case MediaSourceType::VIDEO:
-        sinkName = "video-sink";
+        kSinkName = "video-sink";
         break;
     default:
         break;
     }
-    if (!sinkName)
+    if (!kSinkName)
     {
         RIALTO_SERVER_LOG_WARN("mediaSourceType not supported %d", static_cast<int>(mediaSourceType));
     }
     else
     {
         GstElement *sink{nullptr};
-        m_glibWrapper->gObjectGet(m_context.pipeline, sinkName, &sink, nullptr);
+        m_glibWrapper->gObjectGet(m_context.pipeline, kSinkName, &sink, nullptr);
         if (!sink)
         {
-            RIALTO_SERVER_LOG_WARN("%s could not be obtained", sinkName);
+            RIALTO_SERVER_LOG_WARN("%s could not be obtained", kSinkName);
         }
         else
         {

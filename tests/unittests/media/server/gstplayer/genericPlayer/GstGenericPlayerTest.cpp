@@ -27,12 +27,12 @@
 
 using testing::_;
 using testing::ByMove;
+using testing::DoAll;
 using testing::Invoke;
 using testing::Ref;
 using testing::Return;
-using testing::StrEq;
-using testing::DoAll;
 using testing::SetArgumentPointee;
+using testing::StrEq;
 
 class GstGenericPlayerTest : public GstGenericPlayerTestCommon
 {
@@ -290,39 +290,41 @@ TEST_F(GstGenericPlayerTest, shouldGetStatsInPlayingState)
 
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
         .WillOnce(Invoke(
-                      [&](gpointer object, const gchar *first_property_name, void *element)
-                          {
-                              GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                              *elementPtr = realElement;
-                          }));
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = realElement;
+            }));
     const std::string kElementTypeName{"GenericSink"};
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(realElement))).WillOnce(Return(kElementTypeName.c_str()));
 
     GstStructure testStructure;
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
         .WillOnce(Invoke(
-                      [&](gpointer object, const gchar *first_property_name, void *element)
-                          {
-                              GstStructure **elementPtr = reinterpret_cast<GstStructure **>(element);
-                              *elementPtr = &testStructure;
-                          }));
-    
-    EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&testStructure, StrEq("rendered"), _)).WillOnce(DoAll(SetArgumentPointee<2>(kRenderedFrames), Return(true)));
-    EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&testStructure, StrEq("dropped"), _)).WillOnce(DoAll(SetArgumentPointee<2>(kDroppedFrames), Return(true)));
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstStructure **elementPtr = reinterpret_cast<GstStructure **>(element);
+                *elementPtr = &testStructure;
+            }));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&testStructure, StrEq("rendered"), _))
+        .WillOnce(DoAll(SetArgumentPointee<2>(kRenderedFrames), Return(true)));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&testStructure, StrEq("dropped"), _))
+        .WillOnce(DoAll(SetArgumentPointee<2>(kDroppedFrames), Return(true)));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(realElement)).Times(1);
     EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&testStructure)).Times(1);
 
     EXPECT_TRUE(m_sut->getStats(MediaSourceType::VIDEO, returnedRenderedFrames, returnedDroppedFrames));
     EXPECT_EQ(kRenderedFrames, returnedRenderedFrames);
     EXPECT_EQ(kDroppedFrames, returnedDroppedFrames);
-    
+
     gst_object_unref(realElement);
 }
 
 TEST_F(GstGenericPlayerTest, shouldFailToGetStatsInPlayingStateIfMediaTypeWrong)
 {
     setPipelineState(GST_STATE_PLAYING);
-   
+
     uint64_t returnedRenderedFrames;
     uint64_t returnedDroppedFrames;
     EXPECT_FALSE(m_sut->getStats(MediaSourceType::UNKNOWN, returnedRenderedFrames, returnedDroppedFrames));
@@ -334,7 +336,7 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetStatsInPlayingStateIfStubNull)
 
     // Fail to get sink which should cause the getStats() call to return false
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _)).Times(1);
-    
+
     uint64_t returnedRenderedFrames;
     uint64_t returnedDroppedFrames;
     EXPECT_FALSE(m_sut->getStats(MediaSourceType::AUDIO, returnedRenderedFrames, returnedDroppedFrames));
@@ -348,17 +350,17 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetStatsInPlayingStateIfStructureNull)
 
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
         .WillOnce(Invoke(
-                      [&](gpointer object, const gchar *first_property_name, void *element)
-                          {
-                              GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                              *elementPtr = realElement;
-                          }));
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = realElement;
+            }));
     const std::string kElementTypeName{"GenericSink"};
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(realElement))).WillOnce(Return(kElementTypeName.c_str()));
 
     // Fail to get GstStructure which should cause the getStats() call to return false
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _)).Times(1);
-    
+
     uint64_t returnedRenderedFrames;
     uint64_t returnedDroppedFrames;
     EXPECT_FALSE(m_sut->getStats(MediaSourceType::VIDEO, returnedRenderedFrames, returnedDroppedFrames));
@@ -374,23 +376,23 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetStatsInPlayingStateIfStructIncomplet
 
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
         .WillOnce(Invoke(
-                      [&](gpointer object, const gchar *first_property_name, void *element)
-                          {
-                              GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                              *elementPtr = realElement;
-                          }));
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = realElement;
+            }));
     const std::string kElementTypeName{"GenericSink"};
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(realElement))).WillOnce(Return(kElementTypeName.c_str()));
 
     GstStructure testStructure;
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
         .WillOnce(Invoke(
-                      [&](gpointer object, const gchar *first_property_name, void *element)
-                          {
-                              GstStructure **elementPtr = reinterpret_cast<GstStructure **>(element);
-                              *elementPtr = &testStructure;
-                          }));
-    
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstStructure **elementPtr = reinterpret_cast<GstStructure **>(element);
+                *elementPtr = &testStructure;
+            }));
+
     EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&testStructure, StrEq("rendered"), _)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(realElement)).Times(1);
     EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&testStructure)).Times(1);
@@ -398,7 +400,7 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetStatsInPlayingStateIfStructIncomplet
     uint64_t returnedRenderedFrames;
     uint64_t returnedDroppedFrames;
     EXPECT_FALSE(m_sut->getStats(MediaSourceType::VIDEO, returnedRenderedFrames, returnedDroppedFrames));
-    
+
     gst_object_unref(realElement);
 }
 

@@ -69,6 +69,8 @@ constexpr double kVolume{0.7};
 constexpr bool kMute{false};
 constexpr firebolt::rialto::PlaybackError kPlaybackError{firebolt::rialto::PlaybackError::DECRYPTION};
 constexpr bool kResetTime{true};
+constexpr uint64_t kRenderedFrames{987654};
+constexpr uint64_t kDroppedFrames{321};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -440,6 +442,25 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetPosition(
     EXPECT_CALL(m_mediaPipelineServiceMock, getPosition(kHardcodedSessionId, _)).WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetStats()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getStats(kHardcodedSessionId, _, _, _))
+        .WillOnce(Invoke(
+            [&](int, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+            {
+                renderedFrames = kRenderedFrames;
+                droppedFrames = kDroppedFrames;
+                return true;
+            }));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetStats()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getStats(kHardcodedSessionId, _, _, _)).WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillRenderFrame()
 {
     expectRequestSuccess();
@@ -798,6 +819,29 @@ void MediaPipelineModuleServiceTests::sendGetPositionRequestAndReceiveResponseWi
     request.set_session_id(kHardcodedSessionId);
 
     m_service->getPosition(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendGetStatsRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetStatsRequest request;
+    firebolt::rialto::GetStatsResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getStats(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(response.rendered_frames(), kRenderedFrames);
+    EXPECT_EQ(response.dropped_frames(), kDroppedFrames);
+}
+
+void MediaPipelineModuleServiceTests::sendGetStatsRequestAndReceiveResponseWithoutStatsMatch()
+{
+    firebolt::rialto::GetStatsRequest request;
+    firebolt::rialto::GetStatsResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getStats(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendHaveDataRequestAndReceiveResponse()

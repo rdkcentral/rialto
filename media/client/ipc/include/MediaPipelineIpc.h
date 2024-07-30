@@ -92,7 +92,7 @@ public:
     bool getPosition(int64_t &position) override;
 
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
-    
+
     bool setPlaybackRate(double rate) override;
 
     bool renderFrame() override;

@@ -203,7 +203,7 @@ public:
      * @retval true on success.
      */
     virtual bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
-    
+
     /**
      * @brief Set the playback rate.
      *

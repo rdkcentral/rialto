@@ -186,17 +186,6 @@ public:
     virtual GstBus *gstPipelineGetBus(GstPipeline *pipeline) = 0;
 
     /**
-     * @brief Adds a bus watch to the bus. Revieves asynchronous messages in the main loop.
-     *
-     * @param[in] bus: The bus for the watch.
-     * @param[in] func: The message callback function.
-     * @param[in] user_data: Data to be passed to the function.
-     *
-     * @retval The event source id or 0 if event source already exsists.
-     */
-    virtual guint gstBusAddWatch(GstBus *bus, GstBusFunc func, gpointer user_data) = 0;
-
-    /**
      * @brief Sets the synchronous handler on the bus.
      *
      * @param[in] bus       : The bus for the watch.
@@ -815,16 +804,6 @@ public:
     virtual GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, guint size) const = 0;
 
     /**
-     * @brief Checks if all caps represented by subset are in superset.
-     *
-     * @param[in] subset    : subset caps
-     * @param[in] superset  : superset caps, potentially broader
-     *
-     * @retval true if subset is a subset of superset
-     */
-    virtual gboolean gstCapsIsSubset(const GstCaps *subset, const GstCaps *superset) const = 0;
-
-    /**
      * @brief Checks if the given caps are exactly the same set of caps.
      *
      * @param[in] caps1  : caps
@@ -917,15 +896,6 @@ public:
     virtual GstProtectionMeta *gstBufferAddProtectionMeta(GstBuffer *buffer, GstStructure *info) const = 0;
 
     /**
-     * @brief Gets the metadata used for decryption of a sample.
-     *
-     * @param[in] buffer : the gst buffer to retrieve the protection meta from
-     *
-     * @retval the protected metadata
-     */
-    virtual GstProtectionMeta *gstBufferGetProtectionMeta(GstBuffer *buffer) const = 0;
-
-    /**
      * @brief Adds metadata for info to buffer using the parameters in params.
      *
      * @param[in] buffer : the gst buffer
@@ -956,7 +926,6 @@ public:
      */
     virtual gboolean gstBufferRemoveMeta(GstBuffer *buffer, GstMeta *meta) const = 0;
 
-#if 0
     /**
      * @brief Gets the uint of the field with name 'fieldname'.
      *
@@ -966,31 +935,8 @@ public:
      *
      * @retval true on success, false if 'fieldname' does not exist or is not a uint.
      */
-    virtual gboolean gstStructureGetUint(const GstStructure *structure, const gchar *fieldname, guint *value) const = 0;
-#endif
-
-    /**
-     * @brief Gets the uint of the field with name 'fieldname'.
-     *
-     * @param[in] structure : the gst structure to search
-     * @param[in] fieldname : the name of the field
-     * @param[in] value : the value of the field
-     *
-     * @retval true on success, false if 'fieldname' does not exist or is not a uint.
-     */
-    virtual gboolean gstStructureGetUint64(const GstStructure *structure, const gchar *fieldname, guint64 *value) const = 0;
-
-#if 0
-    /**
-     * @brief Gets the value of the field with name 'fieldname'.
-     *
-     * @param[in] structure : the gst structure to search
-     * @param[in] fieldname : the name of the field
-     *
-     * @retval the field value
-     */
-    virtual const GValue *gstStructureGetValue(const GstStructure *structure, const gchar *fieldname) const = 0;
-#endif
+    virtual gboolean gstStructureGetUint64(const GstStructure *structure, const gchar *fieldname,
+                                           guint64 *value) const = 0;
 
     /**
      * @brief Free this structure
@@ -998,15 +944,6 @@ public:
      * @param[in] structure : the gst structure to free
      */
     virtual void gstStructureFree(GstStructure *structure) const = 0;
-
-    /**
-     * @brief Get a buffer from the given value.
-     *
-     * @param[in] value : the value
-     *
-     * @retval pointer to the buffer, the caller does not own a reference to the buffer.
-     */
-    virtual GstBuffer *gstValueGetBuffer(const GValue *value) const = 0;
 
     /**
      * @brief Create a new step event. The purpose of the step event is to instruct a sink to skip amount (expressed in
@@ -1198,15 +1135,6 @@ public:
     virtual void gstMessageParseWarning(GstMessage *message, GError **gerror, gchar **debug) const = 0;
 
     /**
-     * @brief Get the capabilities from the pad.
-     *
-     * @param[in] pad   : pad to get the capabilities.
-     *
-     * @retval the current caps, NULL otherwise.
-     */
-    virtual GstCaps *gstPadGetCurrentCaps(GstPad *pad) const = 0;
-
-    /**
      * @brief Finds the structure at index in the caps.
      *
      * @param[in] caps  : a GstCaps.
@@ -1215,15 +1143,6 @@ public:
      * @retval ptr to a structure.
      */
     virtual GstStructure *gstCapsGetStructure(const GstCaps *caps, guint index) const = 0;
-
-    /**
-     * @brief Gets the name of the structure.
-     *
-     * @param[in] structure : a GstStructure.
-     *
-     * @retval the name of the structure.
-     */
-    virtual const gchar *gstStructureGetName(const GstStructure *structure) const = 0;
 
     /**
      * @brief Checks if the structure has the passed name

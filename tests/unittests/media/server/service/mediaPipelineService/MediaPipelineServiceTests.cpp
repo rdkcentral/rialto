@@ -322,6 +322,26 @@ TEST_F(MediaPipelineServiceTests, shouldGetPosition)
     getPositionShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToGetStatsForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getStatsShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetStats)
+{
+    initSession();
+    mediaPipelineWillFailToGetStats();
+    getStatsShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetStats)
+{
+    initSession();
+    mediaPipelineWillGetStats();
+    getStatsShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldGetSupportedMimeTypes)
 {
     createMediaPipelineShouldSuccess();

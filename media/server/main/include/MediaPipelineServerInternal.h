@@ -233,7 +233,7 @@ protected:
      * @brief Currently attached sources
      */
     std::map<MediaSourceType, std::int32_t> m_attachedSources;
-    
+
     /**
      * @brief Map to keep track of the count of MediaSourceStatus with the value NO_AVAILABLE_SAMPLES for each MediaSource
      */
@@ -348,7 +348,7 @@ protected:
      * @retval true on success.
      */
     bool getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames);
-    
+
     /**
      * @brief Get position internally, only to be called on the main thread.
      *

@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,8 +47,9 @@ TEST_F(RialtoClientMediaPipelineIpcGetStatsTest, Success)
 {
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getStats"), m_controllerMock.get(),
-                                           getStatsRequestMatcher(m_sessionId, m_kSourceId), _,  m_blockingClosureMock.get()));
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("getStats"), m_controllerMock.get(),
+                           getStatsRequestMatcher(m_sessionId, m_kSourceId), _, m_blockingClosureMock.get()));
 
     uint64_t renderedFrames;
     uint64_t droppedFrames;
