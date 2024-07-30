@@ -125,6 +125,8 @@ protected:
     void checkAudioSourceAttachedWithDrm();
     void shouldAttachAudioSourceWithAudioSpecificConf();
     void triggerAttachOpusAudioSourceWithAudioSpecificConf();
+    void shouldAttachBwavAudioSource();
+    void triggerAttachBwavAudioSource();
     void shouldAttachVideoSource(const std::string &mime, const std::string &alignment, const std::string &format);
     void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
                                   firebolt::rialto::StreamFormat streamFormat);
