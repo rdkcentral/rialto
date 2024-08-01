@@ -168,6 +168,14 @@ struct GetPosition
     static constexpr auto m_kFunction{&Stub::getPosition};
 };
 
+struct GetStats
+{
+    using RequestType = ::firebolt::rialto::GetStatsRequest;
+    using ResponseType = ::firebolt::rialto::GetStatsResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getStats};
+};
+
 struct RenderFrame
 {
     using RequestType = ::firebolt::rialto::RenderFrameRequest;
