@@ -25,6 +25,8 @@
 namespace firebolt::rialto::common
 {
 const char *convertMediaSourceType(const MediaSourceType &mediaSourceType);
+const char *convertLayout(const Layout &layout);
+const char *convertFormat(const Format &format);
 } // namespace firebolt::rialto::common
 
 #endif // FIREBOLT_RIALTO_COMMON_TYPE_CONVERTERS_H_

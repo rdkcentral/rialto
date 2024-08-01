@@ -69,6 +69,9 @@ constexpr double kVolume{0.7};
 constexpr bool kMute{false};
 constexpr firebolt::rialto::PlaybackError kPlaybackError{firebolt::rialto::PlaybackError::DECRYPTION};
 constexpr bool kResetTime{true};
+constexpr firebolt::rialto::Layout kLayout{firebolt::rialto::Layout::INTERLEAVED};
+constexpr firebolt::rialto::Format kFormat{firebolt::rialto::Format::S16LE};
+constexpr uint64_t kChannelMask{0x0000000000000003};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -298,7 +301,8 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachAudioSourceW
 {
     std::vector<uint8_t> codecSpecificConfig;
     codecSpecificConfig.assign(kCodecSpecificConfigStr.begin(), kCodecSpecificConfigStr.end());
-    firebolt::rialto::AudioConfig audioConfig{kNumberOfChannels, kSampleRate, codecSpecificConfig};
+    firebolt::rialto::AudioConfig audioConfig{kNumberOfChannels, kSampleRate, codecSpecificConfig,
+                                              kFormat,           kLayout,     kChannelMask};
     m_source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(kMimeType, true, audioConfig,
                                                                              firebolt::rialto::SegmentAlignment::UNDEFINED,
@@ -720,6 +724,9 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithAdditionalDataReq
     request.mutable_audio_config()->set_number_of_channels(kNumberOfChannels);
     request.mutable_audio_config()->set_sample_rate(kSampleRate);
     request.mutable_audio_config()->set_codec_specific_config(kCodecSpecificConfigStr);
+    request.mutable_audio_config()->set_format(firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S16LE);
+    request.mutable_audio_config()->set_layout(firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_INTERLEAVED);
+    request.mutable_audio_config()->set_channel_mask(kChannelMask);
     request.mutable_codec_data()->set_data(kCodecData->data.data(), kCodecData->data.size());
     request.mutable_codec_data()->set_type(firebolt::rialto::AttachSourceRequest_CodecData_Type_BUFFER);
     request.set_stream_format(convertStreamFormat(firebolt::rialto::StreamFormat::RAW));
