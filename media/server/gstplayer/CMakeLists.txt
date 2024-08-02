@@ -27,6 +27,11 @@ add_compile_options(
 )
 
 find_package( PkgConfig REQUIRED )
+###
+find_package( WPEFrameworkCore )
+find_package( WPEFrameworkCOM )
+find_package(WPEFrameworkMessaging REQUIRED)
+####
 pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0 gstreamer-pbutils-1.0 gstreamer-audio-1.0)
 
 add_library(
@@ -87,6 +92,7 @@ add_library(
         source/WorkerThread.cpp
         source/GstCapabilities.cpp
         source/GstDecryptor.cpp
+        source/GstTextTrackSink.cpp
         source/GstLogForwarding.cpp
         )
 
@@ -126,5 +132,9 @@ target_link_libraries(
         RialtoWrappers
         RialtoCommon
         ${GStreamerApp_LIBRARIES}
+        ####
+                        WPEFrameworkCore::WPEFrameworkCore
+        WPEFrameworkCOM::WPEFrameworkCOM
+        WPEFrameworkMessaging::WPEFrameworkMessaging
 
         )

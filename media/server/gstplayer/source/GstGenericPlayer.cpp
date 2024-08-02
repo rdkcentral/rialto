@@ -829,7 +829,7 @@ bool GstGenericPlayer::setVideoSinkRectangle()
             std::string rect =
                 std::to_string(m_context.pendingGeometry.x) + ',' + std::to_string(m_context.pendingGeometry.y) + ',' +
                 std::to_string(m_context.pendingGeometry.width) + ',' + std::to_string(m_context.pendingGeometry.height);
-            m_glibWrapper->gObjectSet(actualVideoSink, "rectangle", rect.c_str(), nullptr);
+            //m_glibWrapper->gObjectSet(actualVideoSink, "rectangle", rect.c_str(), nullptr);
             m_context.pendingGeometry.clear();
             result = true;
         }
@@ -1102,7 +1102,8 @@ void GstGenericPlayer::setAudioVideoFlags(bool enableAudio, bool enableVideo)
         flagVideo = getGstPlayFlag("video");
         flagNativeVideo = getGstPlayFlag("native-video");
     }
-    m_glibWrapper->gObjectSet(m_context.pipeline, "flags", flagAudio | flagVideo | flagNativeVideo | flagNativeAudio,
+    //todo-klops - text
+    m_glibWrapper->gObjectSet(m_context.pipeline, "flags", flagAudio | flagVideo | flagNativeVideo | flagNativeAudio | getGstPlayFlag("text"),
                               nullptr);
 }
 

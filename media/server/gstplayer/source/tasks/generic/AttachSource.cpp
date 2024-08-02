@@ -25,6 +25,9 @@
 #include "RialtoServerLogging.h"
 #include <unordered_map>
 
+//todo-klops
+#include "GstTextTrackSinkFactory.h"
+
 namespace firebolt::rialto::server::tasks::generic
 {
 namespace
@@ -252,24 +255,18 @@ AttachSource::~AttachSource()
 
 void AttachSource::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing AttachSource");
+    RIALTO_SERVER_LOG_DEBUG("KLOPS Executing AttachSource %u", static_cast<uint32_t>(m_attachedSource->getType()));
 
     if (m_attachedSource->getType() == MediaSourceType::UNKNOWN)
     {
-        RIALTO_SERVER_LOG_ERROR("Unknown media source type");
-        return;
-    }
-    else if (m_attachedSource->getType() == MediaSourceType::SUBTITLE)
-    {
-        // just stub for now
-        RIALTO_SERVER_LOG_DEBUG("Subtitle source attached");
+        RIALTO_SERVER_LOG_ERROR("KLOPS Unknown media source type");
         return;
     }
 
     GstCaps *caps = createCapsFromMediaSource();
     if (!caps)
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to create caps from media source");
+        RIALTO_SERVER_LOG_ERROR("KLOPS Failed to create caps from media source");
         return;
     }
     gchar *capsStr = m_gstWrapper->gstCapsToString(caps);
@@ -307,6 +304,14 @@ void AttachSource::addSource(GstCaps *caps, bool hasDrm) const
     {
         RIALTO_SERVER_LOG_MIL("Adding Video appsrc");
         appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "vidsrc");
+    }
+    else if (m_attachedSource->getType() == MediaSourceType::SUBTITLE)
+    {
+        RIALTO_SERVER_LOG_MIL("KLOPS Adding Subtitle appsrc");
+        appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "subsrc");
+        GstElement *elem = GstTextTrackSinkFactory::createFactory()->createGstTextTrackSink(m_gstWrapper);
+        //todo: checks if exist "text-sink"
+        g_object_set(m_context.pipeline, "text-sink", elem, nullptr);
     }
 
     m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), caps);
@@ -433,6 +438,11 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
             RIALTO_SERVER_LOG_ERROR("Failed to cast to dolby vision source!");
             return nullptr;
         }
+    }
+    else if (configType == firebolt::rialto::SourceConfigType::SUBTITLE)
+    {
+        RIALTO_SERVER_LOG_ERROR("KLOPS3");
+        return m_gstWrapper->gstCapsNewSimple("application/x-subtitle-vtt", nullptr);
     }
     else
     {

@@ -91,12 +91,12 @@ target_link_libraries(
         RialtoWrappers
         RialtoCommon
         RialtoProtobuf
-
-        Threads::Threads
-
         WPEFrameworkCore::WPEFrameworkCore
         WPEFrameworkCOM::WPEFrameworkCOM
         WPEFrameworkMessaging::WPEFrameworkMessaging
+        Threads::Threads
+
+
         )
 
 install(

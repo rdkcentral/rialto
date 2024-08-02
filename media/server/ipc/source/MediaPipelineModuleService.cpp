@@ -395,12 +395,13 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     }
     else if (configType == firebolt::rialto::SourceConfigType::SUBTITLE)
     {
+         RIALTO_SERVER_LOG_ERROR("KLOPS subtitle media source");
         mediaSource = std::make_unique<IMediaPipeline::MediaSourceSubtitle>(request->mime_type().c_str(),
                                                                             request->text_track_identifier());
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Unknown source type");
+        RIALTO_SERVER_LOG_ERROR("KLOPS Unknown source type");
         controller->SetFailed("Operation failed");
         done->Run();
         return;

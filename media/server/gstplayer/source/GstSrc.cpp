@@ -23,6 +23,9 @@
 #include "RialtoServerLogging.h"
 #include <MediaCommon.h>
 
+//todo-klops
+#include "GstTextTrackSinkFactory.h"
+
 static void gstRialtoSrcUriHandlerInit(gpointer gIface, gpointer ifaceData);
 
 static GstStaticPadTemplate rialto_src_template =
@@ -391,6 +394,7 @@ void GstSrc::setDefaultStreamFormatIfNeeded(GstElement *appSrc)
 void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
                                GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type)
 {
+    RIALTO_SERVER_LOG_ERROR("KLOPS type %u", static_cast<uint32_t>(type));
     // Configure and add appsrc
     m_glibWrapper->gObjectSet(streamInfo.appSrc, "block", FALSE, "format", GST_FORMAT_TIME, "stream-type",
                               GST_APP_STREAM_TYPE_STREAM, "min-percent", 20, "handle-segment-change", TRUE, nullptr);
@@ -401,6 +405,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
     }
     else
     {
+        //todo-klops: also subtitle
         m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(streamInfo.appSrc), 512 * 1024);
     }
     m_gstWrapper->gstAppSrcSetStreamType(GST_APP_SRC(streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE);
@@ -486,7 +491,8 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
     m_gstWrapper->gstPadSetQueryFunction(pad, gstRialtoSrcQueryWithParent);
     m_gstWrapper->gstPadSetActive(pad, TRUE);
 
-    m_gstWrapper->gstElementAddPad(source, pad);
+    bool resultr = m_gstWrapper->gstElementAddPad(source, pad);
+    RIALTO_SERVER_LOG_ERROR("KLOPS type %u; result %d", static_cast<uint32_t>(type), resultr);
     GST_OBJECT_FLAG_SET(pad, GST_PAD_FLAG_NEED_PARENT);
 
     m_gstWrapper->gstElementSyncStateWithParent(streamInfo.appSrc);
