@@ -128,7 +128,7 @@ public:
         {
             addMpegVersionToCaps(caps);
         }
-        if (mimeType == "audio/b-wav")
+        else if (mimeType == "audio/b-wav")
         {
             addRawAudioData(caps);
         }
@@ -145,7 +145,6 @@ protected:
         {
             caps = m_gstWrapper->gstCapsNewSimple("audio/x-opus", "channel-mapping-family", G_TYPE_INT, 0, nullptr);
             addSampleRateAndChannelsToCaps(caps);
-            firebolt::rialto::AudioConfig audioConfig = m_attachedAudioSource.getAudioConfig();
         }
 
         return caps;
