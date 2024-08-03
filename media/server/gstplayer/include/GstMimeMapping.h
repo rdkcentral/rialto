@@ -48,7 +48,7 @@ inline GstCaps *createSimpleCapsFromMimeType(std::shared_ptr<firebolt::rialto::w
 {
     static const std::unordered_map<std::string, std::string> mimeToMediaType =
         {{"video/h264", "video/x-h264"}, {"video/h265", "video/x-h265"},   {"video/x-av1", "video/x-av1"},
-         {"video/x-vp9", "video/x-vp9"}, {"video/mp4", "video/mpeg"},      {"audio/mp4", "audio/mpeg"},
+         {"video/mp4", "video/mpeg"},      {"audio/mp4", "audio/mpeg"},
          {"audio/aac", "audio/mpeg"},    {"audio/x-eac3", "audio/x-eac3"}, {"audio/x-opus", "audio/x-opus"}};
 
     auto mimeToMediaTypeIt = mimeToMediaType.find(m_attachedSource.getMimeType());
@@ -81,12 +81,10 @@ convertFromCapsVectorToMimeSet(const std::vector<GstCaps *> &supportedCaps,
          {m_gstWrapper->gstCapsFromString("video/x-av1"), {"video/x-av1"}},
          {m_gstWrapper->gstCapsFromString("video/x-h264"), {"video/h264"}},
          {m_gstWrapper->gstCapsFromString("video/x-h265"), {"video/h265"}},
-         {m_gstWrapper->gstCapsFromString("video/x-vp9"), {"video/x-vp9"}},
          {m_gstWrapper->gstCapsFromString("video/mpeg, mpegversion=(int)4"), {"video/mp4"}},
          {m_gstWrapper->gstCapsFromString("video/x-h264(memory:DMABuf)"), {"video/h264"}},
          {m_gstWrapper->gstCapsFromString("video/x-h265(memory:DMABuf)"), {"video/h265"}},
-         {m_gstWrapper->gstCapsFromString("video/x-av1(memory:DMABuf)"), {"video/x-av1"}},
-         {m_gstWrapper->gstCapsFromString("video/x-vp9(memory:DMABuf)"), {"video/x-vp9"}}};
+         {m_gstWrapper->gstCapsFromString("video/x-av1(memory:DMABuf)"), {"video/x-av1"}}};
 
     std::unordered_set<std::string> supportedMimes;
 
