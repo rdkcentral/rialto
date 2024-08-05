@@ -25,6 +25,7 @@
 #include <IIpcController.h>
 #include <algorithm>
 #include <cstdint>
+#include <unordered_map>
 
 namespace
 {
@@ -173,80 +174,57 @@ firebolt::rialto::CodecDataType convertCodecDataType(const firebolt::rialto::Att
 
 firebolt::rialto::Format convertFormat(const firebolt::rialto::AttachSourceRequest_AudioConfig_Format &format)
 {
-    switch (format)
+    static const std::unordered_map<firebolt::rialto::AttachSourceRequest_AudioConfig_Format, firebolt::rialto::Format>
+        kFormatConversionMap{
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S8, firebolt::rialto::Format::S8},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U8, firebolt::rialto::Format::U8},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S16LE, firebolt::rialto::Format::S16LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S16BE, firebolt::rialto::Format::S16BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U16LE, firebolt::rialto::Format::U16LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U16BE, firebolt::rialto::Format::U16BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24_32LE, firebolt::rialto::Format::S24_32LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24_32BE, firebolt::rialto::Format::S24_32BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24_32LE, firebolt::rialto::Format::U24_32LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24_32BE, firebolt::rialto::Format::U24_32BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S32LE, firebolt::rialto::Format::S32LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S32BE, firebolt::rialto::Format::S32BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U32LE, firebolt::rialto::Format::U32LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U32BE, firebolt::rialto::Format::U32BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24LE, firebolt::rialto::Format::S24LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24BE, firebolt::rialto::Format::S24BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24LE, firebolt::rialto::Format::U24LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24BE, firebolt::rialto::Format::U24BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S20LE, firebolt::rialto::Format::S20LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S20BE, firebolt::rialto::Format::S20BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U20LE, firebolt::rialto::Format::U20LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U20BE, firebolt::rialto::Format::U20BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S18LE, firebolt::rialto::Format::S18LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S18BE, firebolt::rialto::Format::S18BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U18LE, firebolt::rialto::Format::U18LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U18BE, firebolt::rialto::Format::U18BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F32LE, firebolt::rialto::Format::F32LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F32BE, firebolt::rialto::Format::F32BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64LE, firebolt::rialto::Format::F64LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64BE, firebolt::rialto::Format::F64BE}};
+    const auto it = kFormatConversionMap.find(format);
+    if (kFormatConversionMap.end() != it)
     {
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S8:
-        return firebolt::rialto::Format::S8;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U8:
-        return firebolt::rialto::Format::U8;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S16LE:
-        return firebolt::rialto::Format::S16LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S16BE:
-        return firebolt::rialto::Format::S16BE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U16LE:
-        return firebolt::rialto::Format::U16LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U16BE:
-        return firebolt::rialto::Format::U16BE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24_32LE:
-        return firebolt::rialto::Format::S24_32LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24_32BE:
-        return firebolt::rialto::Format::S24_32BE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24_32LE:
-        return firebolt::rialto::Format::U24_32LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24_32BE:
-        return firebolt::rialto::Format::U24_32BE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S32LE:
-        return firebolt::rialto::Format::S32LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S32BE:
-        return firebolt::rialto::Format::S32BE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U32LE:
-        return firebolt::rialto::Format::U32LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U32BE:
-        return firebolt::rialto::Format::U32BE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24LE:
-        return firebolt::rialto::Format::S24LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24BE:
-        return firebolt::rialto::Format::S24BE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24LE:
-        return firebolt::rialto::Format::U24LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24BE:
-        return firebolt::rialto::Format::U24BE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S20LE:
-        return firebolt::rialto::Format::S20LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S20BE:
-        return firebolt::rialto::Format::S20BE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U20LE:
-        return firebolt::rialto::Format::U20LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U20BE:
-        return firebolt::rialto::Format::U20BE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S18LE:
-        return firebolt::rialto::Format::S18LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S18BE:
-        return firebolt::rialto::Format::S18BE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U18LE:
-        return firebolt::rialto::Format::U18LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U18BE:
-        return firebolt::rialto::Format::U18BE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F32LE:
-        return firebolt::rialto::Format::F32LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F32BE:
-        return firebolt::rialto::Format::F32BE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64LE:
-        return firebolt::rialto::Format::F64LE;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64BE:
-        return firebolt::rialto::Format::F64BE;
+        return it->second;
     }
     return firebolt::rialto::Format::S8;
 }
 
 firebolt::rialto::Layout convertLayout(const firebolt::rialto::AttachSourceRequest_AudioConfig_Layout &layout)
 {
-    switch (layout)
+    static const std::unordered_map<firebolt::rialto::AttachSourceRequest_AudioConfig_Layout, firebolt::rialto::Layout>
+        kLayoutConversionMap{{firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_INTERLEAVED,
+                              firebolt::rialto::Layout::INTERLEAVED},
+                             {firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_NON_INTERLEAVED,
+                              firebolt::rialto::Layout::NON_INTERLEAVED}};
+    const auto it = kLayoutConversionMap.find(layout);
+    if (kLayoutConversionMap.end() != it)
     {
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_INTERLEAVED:
-        return firebolt::rialto::Layout::INTERLEAVED;
-    case firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_NON_INTERLEAVED:
-        return firebolt::rialto::Layout::NON_INTERLEAVED;
+        return it->second;
     }
     return firebolt::rialto::Layout::INTERLEAVED;
 }
