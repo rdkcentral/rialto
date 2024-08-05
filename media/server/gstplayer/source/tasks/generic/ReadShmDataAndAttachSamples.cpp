@@ -83,6 +83,11 @@ void ReadShmDataAndAttachSamples::execute() const
             m_context.audioBuffers.push_back(gstBuffer);
             m_player.attachAudioData();
         }
+        else if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::SUBTITLE)
+        {
+            m_context.subtitleBuffers.push_back(gstBuffer);
+            m_player.attachSubtitleData();
+        }
     }
     // All segments in vector have the same type
     m_player.notifyNeedMediaData((!mediaSegments.empty() &&

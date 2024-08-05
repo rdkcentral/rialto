@@ -163,11 +163,13 @@ static gboolean gst_rialto_text_track_sink_stop (GstBaseSink * sink)
 
 static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuffer *buffer) 
 {
+     GST_ERROR_OBJECT(sink, "KLOPS gst_rialto_text_track_sink_render");
     GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK (sink);
 
     GstMapInfo m_info;
     if(gst_buffer_map(buffer, &m_info, GST_MAP_READ))
     {
+        GST_ERROR_OBJECT(sink, "KLOPS gst_rialto_text_track_sink_render1");
         std::string data(reinterpret_cast<char *>(m_info.data), m_info.size);
         textTrackSink->priv->m_textTrackAccessor->sendData(data);
     }

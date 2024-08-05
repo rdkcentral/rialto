@@ -65,6 +65,7 @@ const char *kMemoryBufferName{"rialto_avbuf"};
 constexpr int kNoIdAssigned{-1};
 constexpr uint32_t kVideoRegionSize = 7 * 1024 * 1024; // 7MB
 constexpr uint32_t kAudioRegionSize = 1 * 1024 * 1024; // 1MB
+constexpr uint32_t kSubtitleRegionSize = 256 * 1024; // 256kB
 constexpr uint32_t kWebAudioRegionSize = 10 * 1024;    // 10KB
 
 std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition>
@@ -74,7 +75,7 @@ calculatePartitionSize(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlayb
     {
         // As (for now) resolution of playback (for example HD or UHD) is not known, partitions have the same size.
         firebolt::rialto::server::SharedMemoryBuffer::Partition singlePlaybackDataBuffer{kNoIdAssigned, kAudioRegionSize,
-                                                                                         kVideoRegionSize};
+                                                                                         kVideoRegionSize, kSubtitleRegionSize};
         return std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition>(num, singlePlaybackDataBuffer);
     }
     else if (firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO == playbackType)
@@ -251,18 +252,26 @@ bool SharedMemoryBuffer::clearData(MediaPlaybackType playbackType, int id, const
                                 toString(playbackType), id);
         return false;
     }
-    if (MediaSourceType::AUDIO == mediaSourceType)
-    {
-        std::uint8_t *audioData = partitionDataPtr + partition->dataBufferVideoLen;
-        memset(audioData, 0x00, partition->dataBufferAudioLen);
-        return true;
-    }
+
     if (MediaSourceType::VIDEO == mediaSourceType)
     {
         std::uint8_t *videoData = partitionDataPtr;
         memset(videoData, 0x00, partition->dataBufferVideoLen);
         return true;
     }
+    if (MediaSourceType::AUDIO == mediaSourceType)
+    {
+        std::uint8_t *audioData = partitionDataPtr + partition->dataBufferVideoLen;
+        memset(audioData, 0x00, partition->dataBufferAudioLen);
+        return true;
+    }
+    if (MediaSourceType::SUBTITLE == mediaSourceType)
+    {
+        std::uint8_t *subtitleoData = partitionDataPtr + partition->dataBufferVideoLen + partition->dataBufferAudioLen;
+        memset(subtitleoData, 0x00, partition->dataBufferSubtitleLen);
+        return true;
+    }
+
     return false;
 }
 
@@ -297,14 +306,20 @@ std::uint32_t SharedMemoryBuffer::getMaxDataLen(MediaPlaybackType playbackType, 
                                toString(playbackType), id);
         return 0;
     }
-    if (MediaSourceType::AUDIO == mediaSourceType)
-    {
-        return partition->dataBufferAudioLen;
-    }
+
     if (MediaSourceType::VIDEO == mediaSourceType)
     {
         return partition->dataBufferVideoLen;
     }
+    if (MediaSourceType::AUDIO == mediaSourceType)
+    {
+        return partition->dataBufferAudioLen;
+    }
+    if (MediaSourceType::SUBTITLE == mediaSourceType)
+    {
+        return partition->dataBufferSubtitleLen;
+    }
+
     return 0;
 }
 
@@ -335,14 +350,20 @@ std::uint8_t *SharedMemoryBuffer::getDataPtr(MediaPlaybackType playbackType, int
                                 toString(playbackType), id);
         return nullptr;
     }
-    if ((MediaSourceType::AUDIO == mediaSourceType) && (0 != partition->dataBufferAudioLen))
-    {
-        return partitionDataPtr + partition->dataBufferVideoLen;
-    }
+
     if ((MediaSourceType::VIDEO == mediaSourceType) && (0 != partition->dataBufferVideoLen))
     {
         return partitionDataPtr;
     }
+    if ((MediaSourceType::AUDIO == mediaSourceType) && (0 != partition->dataBufferAudioLen))
+    {
+        return partitionDataPtr + partition->dataBufferVideoLen;
+    }
+    if ((MediaSourceType::SUBTITLE == mediaSourceType) && (0 != partition->dataBufferSubtitleLen))
+    {
+        return partitionDataPtr + partition->dataBufferVideoLen + partition->dataBufferSubtitleLen;
+    }
+
     return nullptr;
 }
 
@@ -365,7 +386,7 @@ size_t SharedMemoryBuffer::calculateBufferSize() const
 {
     size_t genericSum = std::accumulate(m_genericPartitions.begin(), m_genericPartitions.end(), 0,
                                         [](size_t sum, const Partition &p)
-                                        { return sum + p.dataBufferAudioLen + p.dataBufferVideoLen; });
+                                        { return sum + p.dataBufferAudioLen + p.dataBufferVideoLen + p.dataBufferSubtitleLen; });
     size_t webAudioSum = std::accumulate(m_webAudioPartitions.begin(), m_webAudioPartitions.end(), 0,
                                          [](size_t sum, const Partition &p)
                                          { return sum + p.dataBufferAudioLen + p.dataBufferVideoLen; });
@@ -383,7 +404,7 @@ bool SharedMemoryBuffer::getDataPtrForPartition(MediaPlaybackType playbackType, 
             *ptr = result;
             return true;
         }
-        result += (partition.dataBufferVideoLen + partition.dataBufferAudioLen);
+        result += (partition.dataBufferVideoLen + partition.dataBufferAudioLen + partition.dataBufferSubtitleLen);
     }
 
     for (const auto &partition : m_webAudioPartitions)
@@ -393,7 +414,7 @@ bool SharedMemoryBuffer::getDataPtrForPartition(MediaPlaybackType playbackType, 
             *ptr = result;
             return true;
         }
-        result += (partition.dataBufferVideoLen + partition.dataBufferAudioLen);
+        result += (partition.dataBufferVideoLen + partition.dataBufferAudioLen + partition.dataBufferSubtitleLen);
     }
 
     RIALTO_SERVER_LOG_ERROR("Could not find the data ptr for playback type %s with id: %d", toString(playbackType), id);

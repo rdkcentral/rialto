@@ -37,28 +37,28 @@ TextTrackAccessor::TextTrackAccessor(const std::string &displayName)
     uint32_t result = 888;
     result = m_textTrackControlInterface->OpenSession(displayName, m_sessionId);
     RIALTO_SERVER_LOG_ERROR("KLOPS sessionId %u, sessionId2 %u, displayName %s", m_sessionId, result, displayName.c_str());
-    std::string webvttContent = 
-    "WEBVTT\n\n"
-    "00:00:00.000 --> 00:00:00.500\n"
-    "DUUUUUUUUUUUUUUPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n"
-    "00:00:00.500 --> 00:00:01.000\n"
-    "BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n"
-    "00:00:01.000 --> 00:00:01.500\n"
-    "TAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANCCCCCCCCCCCCCCCCCCCCOOOOOOOOWAAAAALA\n\n"
-    "00:00:01.500 --> 00:00:02.000\n"
-    "DUUUUUUUUUUUUUUPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n"
-    "00:00:02.000 --> 00:00:02.500\n"
-    "STUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHI\n\n"
-    "00:00:02.500 --> 00:00:03.000\n"
-    "JKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ\n\n"
-    "00:00:03.000 --> 00:00:03.500\n"
-    "DUUUUUUUUUUUUUUPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n"
-    "00:00:03.500 --> 00:00:04.000\n"
-    "STUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHI\n\n"
-    "00:00:04.000 --> 00:00:04.500\n"
-    "JKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ\n\n"
-    "00:00:04.500 --> 00:00:05.000\n"
-    "DUUUUUUUUUUUUUUPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n";
+    // std::string webvttContent = 
+    // "WEBVTT\n\n"
+    // "00:00:00.000 --> 00:00:00.500\n"
+    // "DUUUUUUUUUUUUUUPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n"
+    // "00:00:00.500 --> 00:00:01.000\n"
+    // "BLAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n"
+    // "00:00:01.000 --> 00:00:01.500\n"
+    // "TAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANCCCCCCCCCCCCCCCCCCCCOOOOOOOOWAAAAALA\n\n"
+    // "00:00:01.500 --> 00:00:02.000\n"
+    // "DUUUUUUUUUUUUUUPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n"
+    // "00:00:02.000 --> 00:00:02.500\n"
+    // "STUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHI\n\n"
+    // "00:00:02.500 --> 00:00:03.000\n"
+    // "JKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ\n\n"
+    // "00:00:03.000 --> 00:00:03.500\n"
+    // "DUUUUUUUUUUUUUUPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n\n"
+    // "00:00:03.500 --> 00:00:04.000\n"
+    // "STUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHI\n\n"
+    // "00:00:04.000 --> 00:00:04.500\n"
+    // "JKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ\n\n"
+    // "00:00:04.500 --> 00:00:05.000\n"
+    // "DUUUUUUUUUUUUUUPAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n";
 
     // Exchange::ITextTrackClosedCaptionsStyle::ClosedCaptionsStyle style;
     // style.fontColor = "#FF0000";
@@ -71,7 +71,7 @@ TextTrackAccessor::TextTrackAccessor(const std::string &displayName)
      RIALTO_SERVER_LOG_ERROR("KLOPS SetSessionWebVTTSelection %u",m_textTrackControlInterface->SetSessionWebVTTSelection(m_sessionId));
    // RIALTO_SERVER_LOG_ERROR("KLOPS SetSessionWebVTTSelection %u",m_textTrackControlInterface->ApplyCustomClosedCaptionsStyleToSession(m_sessionId, style));
     // RIALTO_SERVER_LOG_ERROR("KLOPS SetSessionWebVTTSelection %u",m_textTrackControlInterface->SetSessionWebVTTSelection(m_sessionId));
-    RIALTO_SERVER_LOG_ERROR("KLOPS Send session data %u", m_textTrackControlInterface->SendSessionData(m_sessionId, Exchange::ITextTrack::DataType::WEBVTT, 0, webvttContent));
+    //RIALTO_SERVER_LOG_ERROR("KLOPS Send session data %u", m_textTrackControlInterface->SendSessionData(m_sessionId, Exchange::ITextTrack::DataType::WEBVTT, 0, webvttContent));
     RIALTO_SERVER_LOG_ERROR("KLOPS settimestamp %u", m_textTrackControlInterface->SendSessionTimestamp(m_sessionId, 0));
     // RIALTO_SERVER_LOG_ERROR("KLOPS unmute %u",m_textTrackControlInterface->UnMuteSession(m_sessionId));
    //  RIALTO_SERVER_LOG_ERROR("KLOPS resume %u",m_textTrackControlInterface->ResumeSession(m_sessionId));
@@ -81,10 +81,11 @@ TextTrackAccessor::~TextTrackAccessor()
 {
     if (m_textTrackControlInterface)
     {
-        m_textTrackControlInterface->Release();
+        m_textTrackControlInterface->CloseSession(m_sessionId);
+       // m_textTrackControlInterface->Release();
     }
 
-    m_textTrackPlugin.Close(RPC::CommunicationTimeOut);
+    //m_textTrackPlugin.Close(RPC::CommunicationTimeOut);
 }
 
     bool TextTrackAccessor::pause()
@@ -166,11 +167,11 @@ TextTrackAccessor::~TextTrackAccessor()
             m_textTrackControlInterface->SendSessionData(m_sessionId, dataType, displayOffsetMs, data);
         if (result == WPEFramework::Core::ERROR_NONE)
         {
-            RIALTO_SERVER_LOG_DEBUG("Sending data to TextTrack session %u was successful", m_sessionId);
+            RIALTO_SERVER_LOG_DEBUG("KLOPS Sending data to TextTrack session %u was successful", m_sessionId);
             return true;
         }
 
-        RIALTO_SERVER_LOG_ERROR("Failed to send data to TextTrack session %u; error %s", m_sessionId,
+        RIALTO_SERVER_LOG_ERROR("KLOPS Failed to send data to TextTrack session %u; error %s", m_sessionId,
                                 Core::ErrorToString(result));
         return false;
     }

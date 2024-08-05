@@ -63,5 +63,18 @@ void NeedData::execute() const
             }
         }
     }
+
+    elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::SUBTITLE);
+    if (elem != m_context.streamInfo.end())
+    {
+        if (elem->second.appSrc == GST_ELEMENT(m_src))
+        {
+            m_context.subtitleNeedData = true;
+            if (m_gstPlayerClient && !m_context.subtitleNeedDataPending)
+            {
+                m_context.subtitleNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::SUBTITLE);
+            }
+        }
+    }
 }
 } // namespace firebolt::rialto::server::tasks::generic

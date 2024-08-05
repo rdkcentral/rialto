@@ -167,15 +167,15 @@ void SetupElement::execute() const
         m_glibWrapper->gObjectSet(m_element, "async", TRUE, nullptr);
     }
 
-    //klops 
-    if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink"))
-    {
-        RIALTO_SERVER_LOG_WARN("KLOPS setting opacity and zorder");
-        m_glibWrapper->gObjectSet(m_element, "opacity", 0.0, nullptr);
-        m_glibWrapper->gObjectSet(m_element, "zorder", 1.0, nullptr);
-        m_glibWrapper->gObjectSet(m_element, "rectangle", "0,0,600,600", nullptr);
-        m_glibWrapper->gObjectSet(m_element, "mute", true, nullptr);
-    }
+    // //klops 
+    // if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink"))
+    // {
+    //     RIALTO_SERVER_LOG_WARN("KLOPS setting opacity and zorder");
+    //     m_glibWrapper->gObjectSet(m_element, "opacity", 0.0, nullptr);
+    //     m_glibWrapper->gObjectSet(m_element, "zorder", 1.0, nullptr);
+    //     m_glibWrapper->gObjectSet(m_element, "rectangle", "0,0,600,600", nullptr);
+    //     m_glibWrapper->gObjectSet(m_element, "mute", true, nullptr);
+    // }
     
 
     if (isVideoDecoder(*m_gstWrapper, m_element))

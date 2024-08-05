@@ -121,6 +121,14 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
                                                                                         metadata.width(),
                                                                                         metadata.height(), frameRate);
     }
+    else if (type == firebolt::rialto::MediaSourceType::SUBTITLE)
+    {
+        segment =
+            std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegment>(metadata.stream_id(),
+                                                                             firebolt::rialto::MediaSourceType::SUBTITLE,
+                                                                             metadata.time_position(),
+                                                                             metadata.sample_duration());
+    }
     else
     {
         RIALTO_SERVER_LOG_ERROR("Unknown segment type");

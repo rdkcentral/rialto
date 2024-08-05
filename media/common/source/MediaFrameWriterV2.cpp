@@ -164,8 +164,9 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
         metadata.mutable_frame_rate()->set_numerator(videoSegment.getFrameRate().numerator);
         metadata.mutable_frame_rate()->set_denominator(videoSegment.getFrameRate().denominator);
     }
-    else
+    else if (MediaSourceType::SUBTITLE != data->getType())
     {
+        //todo-klops
         RIALTO_COMMON_LOG_ERROR("Failed to write type specific metadata - media source type not known");
         throw std::exception();
     }

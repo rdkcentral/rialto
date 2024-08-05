@@ -63,6 +63,8 @@ struct GenericPlayerContext
      */
     GstElement *videoAppSrc{nullptr};
 
+    GstElement *subtitleAppSrc{nullptr};
+
     /**
      * @brief The gstreamer pipeline.
      */
@@ -97,6 +99,8 @@ struct GenericPlayerContext
      */
     bool videoNeedData{false};
 
+    bool subtitleNeedData{false};
+
     /**
      * @brief Flag used to check, if request for audio data was sent and we didn't receive response yet.
      *
@@ -111,6 +115,8 @@ struct GenericPlayerContext
      */
     bool videoNeedDataPending{false};
 
+    bool subtitleNeedDataPending{false};
+
     /**
      * @brief Flag used to check, if any audio data has been pushed to gstreamer (to check if BUFFERED can be sent)
      *
@@ -124,6 +130,8 @@ struct GenericPlayerContext
      * Flag can be used only in worker thread
      */
     bool videoDataPushed{false};
+
+    bool subtitleDataPushed{false};
 
     /**
      * @brief Flag used to check, if BUFFERED notification has been sent.
@@ -145,6 +153,8 @@ struct GenericPlayerContext
      * List can be used only in worker thread
      */
     std::list<GstBuffer *> videoBuffers{};
+
+    std::list<GstBuffer *> subtitleBuffers{};
 
     /**
      * @brief Flag used to check, if audio underflow callback occured

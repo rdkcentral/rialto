@@ -547,6 +547,47 @@ void GstGenericPlayer::attachVideoData()
     }
 }
 
+void GstGenericPlayer::attachSubtitleData()
+{
+    RIALTO_SERVER_LOG_WARN("KLOPS attachSubtitleData 1");
+      if (m_context.subtitleBuffers.empty() || !m_context.subtitleNeedData)
+    {
+         RIALTO_SERVER_LOG_WARN("KLOPS attachSubtitleData 2");
+        return;
+    }
+    if (!m_context.subtitleAppSrc)
+    {
+         RIALTO_SERVER_LOG_WARN("KLOPS attachSubtitleData 3");
+        auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::SUBTITLE);
+        if (elem != m_context.streamInfo.end())
+        {
+            m_context.subtitleAppSrc = elem->second.appSrc;
+        }
+    }
+     RIALTO_SERVER_LOG_WARN("KLOPS attachSubtitleData 4");
+    if (m_context.subtitleAppSrc)
+    {
+         RIALTO_SERVER_LOG_WARN("KLOPS attachSubtitleData 5");
+        pushSampleIfRequired(m_context.subtitleAppSrc);
+        for (GstBuffer *buffer : m_context.subtitleBuffers)
+        {
+             RIALTO_SERVER_LOG_WARN("KLOPS attachSubtitleData 6");
+            m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.subtitleAppSrc), buffer);
+        }
+        m_context.subtitleBuffers.clear();
+        m_context.subtitleDataPushed = true;
+        // const bool kSingleVideo{m_context.wereAllSourcesAttached &&
+        //                         m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO) ==
+        //                             m_context.streamInfo.end()};
+        // if (!m_context.bufferedNotificationSent && (m_context.audioDataPushed || kSingleVideo) && m_gstPlayerClient)
+        // {
+        //     m_context.bufferedNotificationSent = true;
+        //     m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
+        // }
+        // cancelUnderflow(m_context.videoUnderflowOccured);
+    }
+}
+
 void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels, const std::shared_ptr<CodecData> &codecData)
 {
     if (!m_context.audioAppSrc)

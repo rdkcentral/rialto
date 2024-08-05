@@ -1038,6 +1038,7 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
     m_needMediaDataTimers.erase(mediaSourceType);
     m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
     const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+    RIALTO_SERVER_LOG_WARN("KLOPS-notifyNeedMediaDataInternal source %u", static_cast<unsigned>(mediaSourceType));
     if (m_attachedSources.cend() == kSourceIter)
     {
         RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed - sourceId not found");
@@ -1056,6 +1057,8 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
         RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed");
         return false;
     }
+
+    RIALTO_SERVER_LOG_WARN("KLOPS-notifyNeedMediaDataInternal1 source %u", static_cast<unsigned>(mediaSourceType));
     return true;
 }
 

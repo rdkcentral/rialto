@@ -37,7 +37,7 @@ NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActive
         RIALTO_SERVER_LOG_DEBUG("Pipeline in prerolling state. Sending smaller frame count");
         m_frameCount = kPrerollNumFrames;
     }
-    if (MediaSourceType::AUDIO != mediaSourceType && MediaSourceType::VIDEO != mediaSourceType)
+    if (MediaSourceType::AUDIO != mediaSourceType && MediaSourceType::VIDEO != mediaSourceType && MediaSourceType::SUBTITLE != mediaSourceType)
     {
         RIALTO_SERVER_LOG_ERROR("Unable to initialize NeedMediaData - unknown mediaSourceType");
         m_isValid = false;

@@ -92,6 +92,8 @@ public:
      */
     virtual void attachVideoData() = 0;
 
+    virtual void attachSubtitleData() = 0;
+
     /**
      * @brief Checks the new audio mediaSegment metadata and updates the caps accordingly.
      */
