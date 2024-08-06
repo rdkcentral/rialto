@@ -61,8 +61,12 @@ public:
 
     MOCK_METHOD(bool, renderFrame, (), (override));
 
-    MOCK_METHOD(bool, setVolume, (double volume), (override));
-    MOCK_METHOD(bool, getVolume, (double &volume), (override));
+    MOCK_METHOD(bool, setVolume, (double targetVolume, uint32_t duration, EaseType type), (override));
+    MOCK_METHOD(bool, getVolume, (double &currentVolume), (override));
+    MOCK_METHOD(bool, isAudioFadeSupported, (), (override));
+    MOCK_METHOD(bool, doAudioFade, (double targetVolume, uint32_t duration, EaseType type), (override));
+    MOCK_METHOD(bool, getFadeVolume, (), (override));
+    MOCK_METHOD(bool, updateVolume, (), (override));
 
     MOCK_METHOD(bool, setMute, (bool volume), (override));
     MOCK_METHOD(bool, getMute, (bool &volume), (override));

@@ -126,9 +126,17 @@ public:
 
     bool renderFrame() override;
 
-    bool setVolume(double volume) override;
+    bool setVolume(double targetVolume, uint32_t duration = 0, EaseType type = EaseType::EASE_LINEAR) override;
 
-    bool getVolume(double &volume) override;
+    bool getVolume(double &currentVolume) override;
+
+    bool isAudioFadeSupported() override;
+
+    bool doAudioFade(double targetVolume, uint32_t duration, EaseType type) override;
+
+    bool getFadeVolume() override;
+
+    bool updateVolume() override;
 
     bool setMute(bool mute) override;
 
@@ -442,22 +450,59 @@ protected:
     void scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType);
 
     /**
-     * @brief Set volume internally, only to be called on the main thread.
+     * @brief Set the target volume level with a transition internally, only to be called on the main thread.
+     *        Sets the volume with a transition effect over the specified duration and easing type.
      *
-     * @param[in] volume Target volume level (0.0 - 1.0)
+     * @param[in] targetVolume : Target volume level (0.0 - 1.0)
+     * @param[in] duration : Duration of the volume transition in milliseconds
+     * @param[in] type : Easing type for the volume transition
      *
-     * @retval true on success false otherwise
+     * @retval true on success, false otherwise
      */
-    bool setVolumeInternal(double volume);
+    bool setVolumeInternal(double targetVolume, uint32_t duration = 0, EaseType type = EaseType::EASE_LINEAR);
 
     /**
-     * @brief Get volume internally, only to be called on the main thread.
+     * @brief Get the current volume level internally, only to be called on the main thread.
+     *        Fetches the current volume level for the pipeline.
      *
-     * @param[out] volume Current volume level (range 0.0 - 1.0)
+     * @param[out] currentVolume : Current volume level (range 0.0 - 1.0)
      *
-     * @retval true on success false otherwise
+     * @retval true on success, false otherwise
      */
-    bool getVolumeInternal(double &volume);
+    bool getVolumeInternal(double &currentVolume);
+
+    /**
+     * @brief Checks if audio fade is supported internally, only to be called on the main thread.
+     *
+     * @retval true if audio fade is supported, false otherwise.
+     */
+    bool isAudioFadeSupportedInternal();
+
+    /**
+     * @brief Performs an audio fade to the specified target volume over a given duration internally, only to be called
+     * on the main thread.
+     *
+     * @param targetVolume The target volume to fade to.
+     * @param duration The duration of the fade in milliseconds.
+     * @param type The easing type to use for the fade.
+     *
+     * @retval true if the fade operation was successful, false otherwise.
+     */
+    bool doAudioFadeInternal(double targetVolume, uint32_t duration, EaseType type);
+
+    /**
+     * @brief Retrieves the current fade volume internally, only to be called on the main thread.
+     *
+     * @retval true if the fade volume was successfully retrieved, false otherwise.
+     */
+    bool getFadeVolumeInternal();
+
+    /**
+     * @brief Updates the current volume internally, only to be called on the main thread.
+     *
+     * @retval true if the volume was successfully updated, false otherwise.
+     */
+    bool updateVolumeInternal();
 
     /**
      * @brief Set mute internally, only to be called on the main thread.

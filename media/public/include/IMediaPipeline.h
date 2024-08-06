@@ -1278,23 +1278,62 @@ public:
     virtual bool renderFrame() = 0;
 
     /**
-     * @brief Set level and transition of audio attenuation.
+     * @brief Set the target volume level and transition duration with easing type.
      *        Sets the current volume for the pipeline (0.0 silent -> 1.0 full volume)
+     *        Default case: 0.0, 0,LINEAR
      *
-     * @param[in] volume : Target volume level (0.0 - 1.0)
+     * @param[in] targetVolume : Target volume level (0.0 - 1.0)
+     * @param[in] duration : (Optional) Duration of the volume transition in milliseconds
+     * @param[in] type : (Optional) Easing type for the volume transition
      *
-     * @retval true on success false otherwise
+     * @retval true on success.
      */
-    virtual bool setVolume(double volume) = 0;
+    virtual bool setVolume(double targetVolume, uint32_t duration = 0, EaseType type = EaseType::EASE_LINEAR) = 0;
 
     /**
      * @brief Get current audio level. Fetches the current volume level for the pipeline.
      *
-     * @param[out] volume : Current volume level (range 0.0 - 1.0)
+     * @param[out] currentVolume : Current volume level (range 0.0 - 1.0)
      *
-     * @retval true on success false otherwise
+     * @retval true on success.
      */
-    virtual bool getVolume(double &volume) = 0;
+    virtual bool getVolume(double &currentVolume) = 0;
+
+    /**
+     * @brief Check if audio fade is supported.
+     *        Determines if the audio fade feature is available in the pipeline.
+     *
+     * @retval true on success.
+     */
+    virtual bool isAudioFadeSupported() = 0;
+
+    /**
+     * @brief Set the target volume level with a fade transition.
+     *        Sets the volume with a fade effect over the specified duration and easing type.
+     *
+     * @param[in] targetVol : Target volume level (0.0 - 1.0)
+     * @param[in] duration : Duration of the fade transition in milliseconds
+     * @param[in] type : Easing type for the fade transition
+     *
+     * @retval true on success.
+     */
+    virtual bool doAudioFade(double targetVolume, uint32_t duration, EaseType type) = 0;
+
+    /**
+     * @brief Get the current fade volume level.
+     *        Fetches the current volume level during a fade transition.
+     *
+     * @retval true on success.
+     */
+    virtual bool getFadeVolume() = 0;
+
+    /**
+     * @brief Update the volume level.
+     *        Updates the current volume level in the pipeline.
+     *
+     * @retval true on success.
+     */
+    virtual bool updateVolume() = 0;
 
     /**
      * @brief Set mute status of pipeline.
