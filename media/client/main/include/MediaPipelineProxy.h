@@ -81,9 +81,23 @@ public:
 
     bool renderFrame() override { return m_mediaPipeline->renderFrame(); }
 
-    bool setVolume(double volume) override { return m_mediaPipeline->setVolume(volume); }
+    bool setVolume(double targetVolume, uint32_t duration, EaseType type) override
+    {
+        return m_mediaPipeline->setVolume(targetVolume, duration, type);
+    }
 
-    bool getVolume(double &volume) override { return m_mediaPipeline->getVolume(volume); }
+    bool getVolume(double &currentVolume) override { return m_mediaPipeline->getVolume(currentVolume); }
+
+    bool isAudioFadeSupported() override { return m_mediaPipeline->isAudioFadeSupported(); }
+
+    bool doAudioFade(double targetVolume, uint32_t duration, EaseType type) override
+    {
+        return m_mediaPipeline->doAudioFade(targetVolume, duration, type);
+    }
+
+    bool getFadeVolume() override { return m_mediaPipeline->getFadeVolume(); }
+
+    bool updateVolume() override { return m_mediaPipeline->updateVolume(); }
 
     bool setMute(bool mute) override { return m_mediaPipeline->setMute(mute); }
 
