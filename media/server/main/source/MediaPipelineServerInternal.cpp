@@ -817,7 +817,7 @@ bool MediaPipelineServerInternal::setVolume(double targetVolume, uint32_t durati
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = setVolumeInternal(targetVolume, duration, type); };
+    auto task = [&]() { result = setVolumeInternal(targetVolume); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;

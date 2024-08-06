@@ -264,12 +264,12 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToRenderFrame()
 
 void MediaPipelineServiceTests::mediaPipelineWillSetVolume()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setVolume(_, _, _)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, setVolume(_)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToSetVolume()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setVolume(_, _, _)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, setVolume(_)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillGetVolume()
