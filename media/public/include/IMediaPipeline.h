@@ -1280,7 +1280,6 @@ public:
     /**
      * @brief Set the target volume level and transition duration with easing type.
      *        Sets the current volume for the pipeline (0.0 silent -> 1.0 full volume)
-     *        Default case: 0.0, 0,LINEAR
      *
      * @param[in] targetVolume : Target volume level (0.0 - 1.0)
      * @param[in] duration : (Optional) Duration of the volume transition in milliseconds
