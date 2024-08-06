@@ -1274,7 +1274,7 @@ public:
      * @brief Set the target volume level with a fade transition.
      *        Sets the volume with a fade effect over the specified duration and easing type.
      *
-     * @param[in] targetVol : Target volume level (0.0 - 1.0)
+     * @param[in] targetVolume : Target volume level (0.0 - 1.0)
      * @param[in] duration : Duration of the fade transition in milliseconds
      * @param[in] type : Easing type for the fade transition
      *
