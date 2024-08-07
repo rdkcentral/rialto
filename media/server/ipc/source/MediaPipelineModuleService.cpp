@@ -733,4 +733,19 @@ void MediaPipelineModuleService::setSourcePosition(::google::protobuf::RpcContro
     }
     done->Run();
 }
+
+void MediaPipelineModuleService::processAudioGap(::google::protobuf::RpcController *controller,
+                                                 const ::firebolt::rialto::ProcessAudioGapRequest *request,
+                                                 ::firebolt::rialto::ProcessAudioGapResponse *response,
+                                                 ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.processAudioGap(request->session_id(), request->position(), request->duration(),
+                                                request->level()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Process audio gap failed.");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc

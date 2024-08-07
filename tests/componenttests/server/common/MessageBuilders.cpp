@@ -272,6 +272,17 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::ProcessAudioGapRequest createProcessAudioGapRequest(int sessionId, std::int64_t position,
+                                                                        unsigned duration, unsigned level)
+{
+    ::firebolt::rialto::ProcessAudioGapRequest request;
+    request.set_session_id(sessionId);
+    request.set_position(position);
+    request.set_duration(duration);
+    request.set_level(level);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;

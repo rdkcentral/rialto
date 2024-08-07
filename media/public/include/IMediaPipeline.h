@@ -1304,6 +1304,19 @@ public:
      * @retval true on success.
      */
     virtual bool setSourcePosition(int32_t sourceId, int64_t position) = 0;
+
+    /**
+     * @brief Process audio gap
+     *
+     * This method handles audio gap in order to avoid audio pops during transitions.
+     *
+     * @param[in] position : Audio pts fade position value
+     * @param[in] duration : Audio pts fade duration
+     * @param[in] level    : (Optional) Audio pts fade target level [0-1]
+     *
+     * @retval true on success.
+     */
+    virtual bool processAudioGap(int64_t position, uint32_t duration, uint32_t level = kUndefinedLevel) = 0;
 };
 
 }; // namespace firebolt::rialto
