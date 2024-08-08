@@ -152,9 +152,9 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     EXPECT_CALL(*mediaPipelineMock, getVolume(_)).WillOnce(DoAll(SetArgReferee<0>(kVolume2), Return(true)));
     {
         // The EXPECT_CALL above returns kVolume2
-        double volume;
-        EXPECT_TRUE(proxy->getVolume(volume));
-        EXPECT_EQ(volume, kVolume2);
+        double currentVolume;
+        EXPECT_TRUE(proxy->getVolume(currentVolume));
+        EXPECT_EQ(currentVolume, kVolume2);
     }
 
     /////////////////////////////////////////////

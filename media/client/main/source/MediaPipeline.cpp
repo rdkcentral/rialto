@@ -466,28 +466,7 @@ bool MediaPipeline::getVolume(double &currentVolume)
     return m_mediaPipelineIpc->getVolume(currentVolume);
 }
 
-bool MediaPipeline::isAudioFadeSupported()
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    return false;
-}
-
-bool MediaPipeline::doAudioFade(double targetVolume, uint32_t duration, EaseType type)
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    return false;
-}
-
-bool MediaPipeline::getFadeVolume()
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    return false;
-}
-
-bool MediaPipeline::updateVolume()
+bool MediaPipeline::getFadeVolume(uint32_t &fadeVolume)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 

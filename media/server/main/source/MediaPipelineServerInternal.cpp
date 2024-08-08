@@ -775,49 +775,13 @@ bool MediaPipelineServerInternal::getVolumeInternal(double &currentVolume)
     return m_gstPlayer->getVolume(currentVolume);
 }
 
-bool MediaPipelineServerInternal::isAudioFadeSupported()
+bool MediaPipelineServerInternal::getFadeVolume(uint32_t &fadeVolume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     return false;
 }
 
-bool MediaPipelineServerInternal::isAudioFadeSupportedInternal()
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
-}
-
-bool MediaPipelineServerInternal::doAudioFade(double targetVolume, uint32_t duration, EaseType type)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
-}
-
-bool MediaPipelineServerInternal::doAudioFadeInternal(double targetVolume, uint32_t duration, EaseType type)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
-}
-
-bool MediaPipelineServerInternal::getFadeVolume()
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
-}
-
-bool MediaPipelineServerInternal::getFadeVolumeInternal()
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
-}
-
-bool MediaPipelineServerInternal::updateVolume()
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
-}
-
-bool MediaPipelineServerInternal::updateVolumeInternal()
+bool MediaPipelineServerInternal::getFadeVolumeInternal(uint32_t &fadeVolume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     return false;
