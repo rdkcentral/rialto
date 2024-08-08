@@ -361,7 +361,7 @@ std::uint8_t *SharedMemoryBuffer::getDataPtr(MediaPlaybackType playbackType, int
     }
     if ((MediaSourceType::SUBTITLE == mediaSourceType) && (0 != partition->dataBufferSubtitleLen))
     {
-        return partitionDataPtr + partition->dataBufferVideoLen + partition->dataBufferSubtitleLen;
+        return partitionDataPtr + partition->dataBufferVideoLen + partition->dataBufferAudioLen;
     }
 
     return nullptr;

@@ -51,6 +51,7 @@ add_library(
         source/ControlServerInternal.cpp
         source/HeartbeatProcedure.cpp
         source/TextTrackAccessor.cpp
+        source/TextTrackSession.cpp
         )
 
 target_include_directories(

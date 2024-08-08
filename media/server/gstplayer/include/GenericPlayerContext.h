@@ -85,6 +85,8 @@ struct GenericPlayerContext
      */
     GstElement *autoVideoChildSink{nullptr};
 
+    GstElement *subtitleSink{nullptr};
+
     /**
      * @brief Flag used to check, if we need to request for new audio data.
      *

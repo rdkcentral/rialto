@@ -50,7 +50,7 @@ public:
      * @retval an element instance or null on error.
      */
     virtual GstElement *
-    createGstTextTrackSink(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const = 0;
+    createGstTextTrackSink() const = 0;
 };
 
 }; // namespace firebolt::rialto::server

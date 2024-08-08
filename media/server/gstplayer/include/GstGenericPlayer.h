@@ -147,7 +147,7 @@ private:
     void addAutoVideoSinkChild(GObject *object) override;
     void removeAutoVideoSinkChild(GObject *object) override;
     GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) override;
-    void setAudioVideoFlags(bool enableAudio, bool enableVideo) override;
+    void setPlaybinFlags(bool enableAudio = true) override;
 
 private:
     /**

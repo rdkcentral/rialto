@@ -17,27 +17,27 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_FACTORY_H_
-#define FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_FACTORY_H_
+#pragma once
 
-#include "IGstTextTrackSinkFactory.h"
+#include "ITextTrackAccessor.h"
 #include <memory>
 
-namespace firebolt::rialto::server
+class TextTrackSession
 {
-/**
- * @brief IGstTextTrackSink factory class definition.
- */
-class GstTextTrackSinkFactory : public IGstTextTrackSinkFactory
-{
-public:
-    GstTextTrackSinkFactory() = default;
-    ~GstTextTrackSinkFactory() override = default;
+    public:
+    TextTrackSession(const std::string &displayName);
+    ~TextTrackSession();
+    bool pause();
+    bool play();
+    bool mute(bool mute);
+    bool setPosition(uint64_t mediaTimestampMs);
+    bool sendData(const std::string &data, int32_t displayOffsetMs = 0);
+    bool setSessionWebVTTSelection();
+    bool setSessionTTMLSelection();
 
-    GstElement *
-    createGstTextTrackSink() const override;
+private:
+    static std::unique_ptr<ITextTrackAccessor> m_textTrackAccessor;
+    ITextTrackAccessor::DataType m_dataType;
+
+    uint32_t m_sessionId;
 };
-
-}; // namespace firebolt::rialto::server
-
-#endif // FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_FACTORY_H_

@@ -29,76 +29,6 @@
 #include "NeedMediaData.h"
 #include "RialtoServerLogging.h"
 
-using namespace WPEFramework;
-using namespace WPEFramework::Exchange;
-
-class TextTrackClosedCaptionsStyleNotification : public Exchange::ITextTrackClosedCaptionsStyle::INotification
-{
-public:
-    TextTrackClosedCaptionsStyleNotification() = default;
-    ~TextTrackClosedCaptionsStyleNotification() override = default;
-    //void stateChanged(const string &appId, const WPEFramework::Exchange::IRialto::SessionServerState &state) override;
-    void AddRef() const override
-    {}
-    uint32_t Release() const override{return 0;}
-    void* QueryInterface(const uint32_t interfaceNumber) override {return nullptr;}
-
-    void OnClosedCaptionsStyleChanged() override
-    {
-        RIALTO_SERVER_LOG_ERROR("KLOPS: OnClosedCaptionsStyleChanged");
-    }
-
-    void OnFontFamilyChanged(const ITextTrackClosedCaptionsStyle::FontFamily font) override
-    {
-        RIALTO_SERVER_LOG_ERROR("KLOPS: OnFontFamilyChanged");
-    }
-
-    void OnFontSizeChanged(const ITextTrackClosedCaptionsStyle::FontSize size) override
-    {
-        RIALTO_SERVER_LOG_ERROR("KLOPS: OnFontSizeChanged");
-    }
-
-    void OnFontColorChanged(const string &color) override
-    {
-        RIALTO_SERVER_LOG_ERROR("KLOPS: OnFontColorChanged");
-    }
-
-    void OnFontOpacityChanged(const int8_t opacity) override
-    {
-        RIALTO_SERVER_LOG_ERROR("KLOPS: OnFontOpacityChanged");
-    }
-
-    void OnFontEdgeChanged(const ITextTrackClosedCaptionsStyle::FontEdge edge) override
-    {
-        RIALTO_SERVER_LOG_ERROR("KLOPS: OnFontEdgeChanged");
-    }
-
-    void OnFontEdgeColorChanged(const string &color) override
-    {
-        RIALTO_SERVER_LOG_ERROR("KLOPS: OnFontEdgeColorChanged");
-    }
-
-    void OnBackgroundColorChanged(const string &color) override
-    {
-        RIALTO_SERVER_LOG_ERROR("KLOPS: OnBackgroundColorChanged");
-    }
-
-    void OnBackgroundOpacityChanged(const int8_t opacity) override
-    {
-        RIALTO_SERVER_LOG_ERROR("KLOPS: OnBackgroundOpacityChanged");
-    }
-
-    void OnWindowColorChanged(const string &color) override
-    {
-        RIALTO_SERVER_LOG_ERROR("KLOPS: OnWindowColorChanged");
-    }
-
-    void OnWindowOpacityChanged(const int8_t opacity) override
-    {
-        RIALTO_SERVER_LOG_ERROR("KLOPS: OnWindowOpacityChanged");
-    }
-};
-
 namespace
 {
 constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMs{100};
@@ -208,12 +138,7 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
       m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
       m_timerFactory{timerFactory}, m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
       m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false}
-{
-    RIALTO_SERVER_LOG_ERROR("KLOPS: MediaPipelineServerInternal1");
-    static TextTrackClosedCaptionsStyleNotification textTrackClosedCaptionsStyleNotification;
-   // m_textTrackAccessor.subscribe(&textTrackClosedCaptionsStyleNotification);
-    RIALTO_SERVER_LOG_ERROR("KLOPS: MediaPipelineServerInternal2");
-    
+{    
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     m_mainThread = mainThreadFactory->getMainThread();

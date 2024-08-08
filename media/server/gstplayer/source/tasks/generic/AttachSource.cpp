@@ -25,7 +25,6 @@
 #include "RialtoServerLogging.h"
 #include <unordered_map>
 
-//todo-klops
 #include "GstTextTrackSinkFactory.h"
 
 namespace firebolt::rialto::server::tasks::generic
@@ -278,6 +277,11 @@ void AttachSource::execute() const
     if (m_context.streamInfo.find(m_attachedSource->getType()) == m_context.streamInfo.end())
     {
         addSource(caps, m_attachedSource->getHasDrm());
+        if (m_attachedSource->getType() == MediaSourceType::SUBTITLE)
+        {
+            //todo-klops
+            //    gObjectSet(elem, "mute", m_isMuted, "texttrackidentifier", textTrackIdentifier.c_str(), nullptr);
+        }
     }
     else if (m_attachedSource->getType() == MediaSourceType::AUDIO && m_context.audioSourceRemoved)
     {
@@ -307,11 +311,16 @@ void AttachSource::addSource(GstCaps *caps, bool hasDrm) const
     }
     else if (m_attachedSource->getType() == MediaSourceType::SUBTITLE)
     {
-        RIALTO_SERVER_LOG_MIL("KLOPS Adding Subtitle appsrc");
+        RIALTO_SERVER_LOG_MIL("Adding Subtitle appsrc");
         appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "subsrc");
-        GstElement *elem = GstTextTrackSinkFactory::createFactory()->createGstTextTrackSink(m_gstWrapper);
-        //todo: checks if exist "text-sink"
-        g_object_set(m_context.pipeline, "text-sink", elem, nullptr);
+
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_context.pipeline), "text-sink"))
+        {
+            GstElement *elem = GstTextTrackSinkFactory::createFactory()->createGstTextTrackSink();
+            m_context.subtitleSink = elem;
+
+            g_object_set(m_context.pipeline, "text-sink", elem, nullptr);
+        }
     }
 
     m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), caps);
@@ -381,7 +390,7 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
     }
 
     // Restart audio sink
-    m_player.setAudioVideoFlags(true, true);
+    m_player.setPlaybinFlags(true);
 
     m_context.audioNeedData = true;
     m_context.audioSourceRemoved = false;

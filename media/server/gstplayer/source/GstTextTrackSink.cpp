@@ -25,30 +25,29 @@
 
 #include <gst/base/gstbasetransform.h>
 #include <gst/gst.h>
-#include "TextTrackAccessor.h"
+#include "GstRialtoTextTrackSinkPrivate.h"
 #include <cstdlib>
+#include <atomic>
 G_BEGIN_DECLS
+
+enum
+{
+    PROP_0,
+    PROP_MUTE,
+    PROP_TEXT_TRACK_IDENTIFIER,
+    PROP_LAST
+};
 
 #define GST_RIALTO_TEXT_TRACK_SINK_TYPE (gst_rialto_text_track_sink_get_type())
 #define GST_RIALTO_TEXT_TRACK_SINK(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), GST_RIALTO_TEXT_TRACK_SINK_TYPE, GstRialtoTextTrackSink))
 #define GST_RIALTO_TEXT_TRACK_SINK_CLASS(klass)                                                                              \
     (G_TYPE_CHECK_CLASS_CAST((klass), GST_RIALTO_TEXT_TRACK_SINK_TYPE, GstRialtoTextTrackSinkClass))
 
-//todo-klops: move to file
-struct GstRialtoTextTrackSinkPrivate
-{
-    std::unique_ptr<TextTrackAccessor> m_textTrackAccessor;
-    std::atomic<bool> m_isMuted{true};
-};
-
-
 typedef struct _GstRialtoTextTrackSink GstRialtoTextTrackSink;
 typedef struct _GstRialtoTextTrackSinkClass GstRialtoTextTrackSinkClass;
-//typedef struct firebolt::rialto::server::GstRialtoTextTrackSinkPrivate GstRialtoTextTrackSinkPrivate;
+typedef struct firebolt::rialto::server::GstRialtoTextTrackSinkPrivate GstRialtoTextTrackSinkPrivate;
 
 GType gst_rialto_text_track_sink_get_type(void); // NOLINT(build/function_format)
-
-
 
 struct _GstRialtoTextTrackSink
 {
@@ -79,17 +78,20 @@ static gboolean gst_rialto_text_track_sink_start (GstBaseSink * sink);
 static gboolean gst_rialto_text_track_sink_stop (GstBaseSink * sink);
 static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *event);
 static GstStateChangeReturn gst_rialto_text_track_sink_change_state(GstElement *element, GstStateChange transition);
+static void gst_rialto_text_track_sink_get_property(GObject *object, guint propId, GValue *value, GParamSpec *pspec);
+static void gst_rialto_text_track_sink_set_property(GObject *object, guint propId, const GValue *value, GParamSpec *pspec);
 
 static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *klass) // NOLINT(build/function_format)
 {
-    RIALTO_SERVER_LOG_ERROR("KLOPSGST0");
     GST_DEBUG_CATEGORY_INIT(gst_rialto_text_track_sink_debug_category, "rialto_text_track_sink", 0, "TextTrack Sink for Rialto");
 
-    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+    GObjectClass *gobjectClass = G_OBJECT_CLASS(klass);
     GstElementClass *elementClass = GST_ELEMENT_CLASS(klass);
     GstBaseSinkClass *baseSinkClass = GST_BASE_SINK_CLASS (klass);
     
-    gobject_class->finalize = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_finalize);
+    gobjectClass->finalize = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_finalize);
+    gobjectClass->get_property = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_get_property);
+    gobjectClass->set_property = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_set_property);
     baseSinkClass->start = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_start);
     baseSinkClass->stop = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_stop);
     baseSinkClass->render = GST_DEBUG_FUNCPTR (gst_rialto_text_track_sink_render);
@@ -100,20 +102,16 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
     gst_element_class_add_pad_template(elementClass, gst_static_pad_template_get(&sinkTemplate));
     gst_element_class_set_static_metadata(elementClass, "Rialto TextTrack Sink",
                                           "Sink/Parser/Subtitle", "Rialto TextTrack Sink", "SKY");
-    RIALTO_SERVER_LOG_ERROR("KLOPSGST1");
-
 }
 
 static void gst_rialto_text_track_sink_init(GstRialtoTextTrackSink *self) // NOLINT(build/function_format)
 {
-    RIALTO_SERVER_LOG_ERROR("KLOPSGST2");
     GstRialtoTextTrackSinkPrivate *priv =
         reinterpret_cast<GstRialtoTextTrackSinkPrivate *>(gst_rialto_text_track_sink_get_instance_private(self));
 
     self->priv = new (priv) GstRialtoTextTrackSinkPrivate();
 
     gst_base_sink_set_async_enabled(GST_BASE_SINK(self), FALSE);
-    RIALTO_SERVER_LOG_ERROR("KLOPSGST3");
 }
 
 static void gst_rialto_text_track_sink_finalize(GObject *object) // NOLINT(build/function_format)
@@ -140,22 +138,22 @@ static gboolean gst_rialto_text_track_sink_start (GstBaseSink * sink)
     GstRialtoTextTrackSink *self = GST_RIALTO_TEXT_TRACK_SINK(sink);
     try
     {
-        self->priv->m_textTrackAccessor = std::make_unique<TextTrackAccessor>(display);
+        self->priv->m_textTrackSession = std::make_unique<TextTrackSession>(display);
     }
     catch(const std::exception& e)
     {
-        GST_ERROR_OBJECT(sink, "KLOPS Failed to create TextTrackAccessor. Reason '%s'", e.what());
+        GST_ERROR_OBJECT(sink, "KLOPS Failed to create TextTrackSession. Reason '%s'", e.what());
         return false;
     }
 
-    GST_ERROR_OBJECT(sink, "KLOPS Successfully started TextTrack sink");
+    GST_INFO_OBJECT(sink, "Successfully started TextTrack sink");
     return true;
 }
 
 static gboolean gst_rialto_text_track_sink_stop (GstBaseSink * sink)
 {
     GstRialtoTextTrackSink *self = GST_RIALTO_TEXT_TRACK_SINK(sink);
-    self->priv->m_textTrackAccessor.reset();
+    self->priv->m_textTrackSession.reset();
 
     GST_INFO_OBJECT(sink, "Successfully stopped TextTrack sink");
     return true;
@@ -169,9 +167,11 @@ static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuf
     GstMapInfo m_info;
     if(gst_buffer_map(buffer, &m_info, GST_MAP_READ))
     {
-        GST_ERROR_OBJECT(sink, "KLOPS gst_rialto_text_track_sink_render1");
         std::string data(reinterpret_cast<char *>(m_info.data), m_info.size);
-        textTrackSink->priv->m_textTrackAccessor->sendData(data);
+        GST_ERROR_OBJECT(sink, "KLOPS gst_rialto_text_track_sink_render1 size %u, '%s'",m_info.size, data.c_str());
+        textTrackSink->priv->m_textTrackSession->sendData(data);
+
+        //unmap!!
     }
     else
     {
@@ -193,19 +193,20 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
     if (g_str_has_prefix(mimeName, "text/vtt") || g_str_has_prefix(mimeName, "application/x-subtitle-vtt"))
     {
         GST_INFO_OBJECT(sink, "Setting session to WebVTT");
-       // textTrackSink->priv->m_textTrackAccessor->setSessionWebVTTSelection();
+        textTrackSink->priv->m_textTrackSession->setSessionWebVTTSelection();
     }
     else if (g_str_has_prefix(mimeName, "application/ttml+xml"))
     {
         GST_INFO_OBJECT(sink, "Setting session to TTML");
-        textTrackSink->priv->m_textTrackAccessor->setSessionTTMLSelection();
+        textTrackSink->priv->m_textTrackSession->setSessionTTMLSelection();
     }
     else
     {
         GST_ERROR_OBJECT(sink, "Invalid mime name '%s'", mimeName);
         return FALSE;
-        //mimeType = mimeName;
     }
+
+    textTrackSink->priv->m_textTrackSession->mute(textTrackSink->priv->m_isMuted);
 
     return TRUE;
 }
@@ -258,13 +259,12 @@ static GstStateChangeReturn gst_rialto_text_track_sink_change_state(GstElement *
      case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
      {
         //todo-klops remove mute
-       textTrackSink->priv->m_textTrackAccessor->mute(false);
-        textTrackSink->priv->m_textTrackAccessor->play();
+        textTrackSink->priv->m_textTrackSession->play();
          break;
      }
      case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
      {
-         textTrackSink->priv->m_textTrackAccessor->pause();
+         textTrackSink->priv->m_textTrackSession->pause();
          break;
      }
      default:
@@ -279,6 +279,65 @@ static GstStateChangeReturn gst_rialto_text_track_sink_change_state(GstElement *
      }
 
      return GST_STATE_CHANGE_SUCCESS;
+}
+
+static void gst_rialto_text_track_sink_get_property(GObject *object, guint propId, GValue *value, GParamSpec *pspec)
+{
+    GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(object);
+    if (!textTrackSink)
+    {
+        GST_ERROR_OBJECT(textTrackSink, "Sink not initalised");
+        return;
+    }
+    GstRialtoTextTrackSinkPrivate *priv = textTrackSink->priv;
+
+    switch (propId)
+    {
+    case PROP_MUTE:
+    {
+        g_value_set_boolean(value, priv->m_isMuted.load());
+        break;
+    }
+    case PROP_TEXT_TRACK_IDENTIFIER:
+    {
+        //TODO:
+        g_value_set_string(value, priv->m_textTrackIdentifier.c_str());
+        break;
+    }
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID(object, propId, pspec);
+        break;
+    }
+}
+
+static void gst_rialto_text_track_sink_set_property(GObject *object, guint propId, const GValue *value, GParamSpec *pspec)
+{
+        GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(object);
+    if (!textTrackSink)
+    {
+        GST_ERROR_OBJECT(textTrackSink, "Sink not initalised");
+        return;
+    }
+    GstRialtoTextTrackSinkPrivate *priv = textTrackSink->priv;
+
+    switch (propId)
+    {
+    case PROP_MUTE:
+    {
+        priv->m_isMuted = g_value_get_boolean(value);
+        priv->m_textTrackSession->mute(priv->m_isMuted);
+        break;
+    }
+    case PROP_TEXT_TRACK_IDENTIFIER:
+    {
+        //TODO:
+        priv->m_textTrackIdentifier = g_value_get_string(value);
+        break;
+    }
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID(object, propId, pspec);
+        break;
+    }
 }
 
 namespace firebolt::rialto::server
@@ -300,11 +359,10 @@ std::shared_ptr<IGstTextTrackSinkFactory> IGstTextTrackSinkFactory::createFactor
     return factory;
 }
 
-GstElement *GstTextTrackSinkFactory::createGstTextTrackSink(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const
+GstElement *GstTextTrackSinkFactory::createGstTextTrackSink() const
 {
-    RIALTO_SERVER_LOG_ERROR("KLOPSGST11");
     GstElement* elem = GST_ELEMENT(g_object_new(GST_RIALTO_TEXT_TRACK_SINK_TYPE, nullptr));
-    RIALTO_SERVER_LOG_ERROR("KLOPSGST13 %p", elem);
+
     return elem;
 }
 

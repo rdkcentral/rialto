@@ -1016,7 +1016,7 @@ void GenericTasksTestsBase::shouldSwitchAudioSource()
                 performAudioTrackCodecChannelSwitch(&testContext->m_context.playbackGroup, _, _, _, _, _, _, _, _, _, _,
                                                     _, _))
         .WillOnce(Return(true));
-    EXPECT_CALL(testContext->m_gstPlayer, setAudioVideoFlags(true, true));
+    EXPECT_CALL(testContext->m_gstPlayer, setPlaybinFlags(true));
     EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(true, false));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps1));
 }
@@ -1042,7 +1042,7 @@ void GenericTasksTestsBase::shouldReattachAudioSource()
                 *cur = kPosition;
                 return TRUE;
             }));
-    EXPECT_CALL(testContext->m_gstPlayer, setAudioVideoFlags(true, true));
+    EXPECT_CALL(testContext->m_gstPlayer, setPlaybinFlags(true));
     EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(true, false));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps1));
 }
@@ -2138,7 +2138,7 @@ void GenericTasksTestsBase::shouldInvalidateActiveAudioRequests()
 
 void GenericTasksTestsBase::shouldDisableAudioFlag()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, setAudioVideoFlags(false, true));
+    EXPECT_CALL(testContext->m_gstPlayer, setPlaybinFlags(false));
 }
 
 void GenericTasksTestsBase::triggerRemoveSourceAudio()

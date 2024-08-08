@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2024 Sky UK
+ * Copyright 2022 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,27 +17,23 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_FACTORY_H_
-#define FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_FACTORY_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_PRIVATE_H_
+#define FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_PRIVATE_H_
 
-#include "IGstTextTrackSinkFactory.h"
+#include "TextTrackSession.h"
+#include <string>
+#include <atomic>
 #include <memory>
 
 namespace firebolt::rialto::server
 {
-/**
- * @brief IGstTextTrackSink factory class definition.
- */
-class GstTextTrackSinkFactory : public IGstTextTrackSinkFactory
+struct GstRialtoTextTrackSinkPrivate
 {
-public:
-    GstTextTrackSinkFactory() = default;
-    ~GstTextTrackSinkFactory() override = default;
-
-    GstElement *
-    createGstTextTrackSink() const override;
+    std::unique_ptr<TextTrackSession> m_textTrackSession;
+    std::atomic<bool> m_isMuted{true};
+    std::string m_textTrackIdentifier;
+    //std::mutex m_mutex;
 };
-
 }; // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_FACTORY_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_PRIVATE_H_

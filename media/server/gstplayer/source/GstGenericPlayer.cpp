@@ -207,7 +207,7 @@ void GstGenericPlayer::initMsePipeline()
     // Make playbin
     m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin", "media_pipeline");
     // Set pipeline flags
-    setAudioVideoFlags(true, true);
+    setPlaybinFlags(true);
 
     // Set callbacks
     m_glibWrapper->gSignalConnect(m_context.pipeline, "source-setup", G_CALLBACK(&GstGenericPlayer::setupSource), this);
@@ -267,6 +267,10 @@ void GstGenericPlayer::termPipeline()
     if (m_context.source)
     {
         m_gstWrapper->gstObjectUnref(m_context.source);
+    }
+    if(m_context.subtitleSink)
+    {
+        m_gstWrapper->gstObjectUnref(m_context.subtitleSink);
     }
 
     // Delete the pipeline
@@ -571,6 +575,15 @@ void GstGenericPlayer::attachSubtitleData()
         pushSampleIfRequired(m_context.subtitleAppSrc);
         for (GstBuffer *buffer : m_context.subtitleBuffers)
         {
+            GstMapInfo m_info;
+            if (gst_buffer_map(buffer, &m_info, GST_MAP_READ))
+            {
+                std::string data(reinterpret_cast<char *>(m_info.data), m_info.size);
+                RIALTO_SERVER_LOG_WARN("KLOPS texttrack-attachSubtitleData '%s', size %u", data.c_str(),
+                                 m_info.size);
+
+                // unmap!!
+            }
              RIALTO_SERVER_LOG_WARN("KLOPS attachSubtitleData 6");
             m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.subtitleAppSrc), buffer);
         }
@@ -870,7 +883,7 @@ bool GstGenericPlayer::setVideoSinkRectangle()
             std::string rect =
                 std::to_string(m_context.pendingGeometry.x) + ',' + std::to_string(m_context.pendingGeometry.y) + ',' +
                 std::to_string(m_context.pendingGeometry.width) + ',' + std::to_string(m_context.pendingGeometry.height);
-            //m_glibWrapper->gObjectSet(actualVideoSink, "rectangle", rect.c_str(), nullptr);
+            m_glibWrapper->gObjectSet(actualVideoSink, "rectangle", rect.c_str(), nullptr);
             m_context.pendingGeometry.clear();
             result = true;
         }
@@ -1127,25 +1140,17 @@ GstElement *GstGenericPlayer::getSinkChildIfAutoVideoSink(GstElement *sink)
     }
 }
 
-void GstGenericPlayer::setAudioVideoFlags(bool enableAudio, bool enableVideo)
+void GstGenericPlayer::setPlaybinFlags(bool enableAudio)
 {
-    unsigned flagAudio{0};
-    unsigned flagNativeAudio{0};
-    unsigned flagVideo{0};
-    unsigned flagNativeVideo{0};
+    unsigned flags = getGstPlayFlag("video") | getGstPlayFlag("native-video") | getGstPlayFlag("text");
+
     if (enableAudio)
     {
-        flagAudio = getGstPlayFlag("audio");
-        flagNativeAudio = shouldEnableNativeAudio() ? getGstPlayFlag("native-audio") : 0;
+        flags |= getGstPlayFlag("audio");
+        flags |= shouldEnableNativeAudio() ? getGstPlayFlag("native-audio") : 0;
     }
-    if (enableVideo)
-    {
-        flagVideo = getGstPlayFlag("video");
-        flagNativeVideo = getGstPlayFlag("native-video");
-    }
-    //todo-klops - text
-    m_glibWrapper->gObjectSet(m_context.pipeline, "flags", flagAudio | flagVideo | flagNativeVideo | flagNativeAudio | getGstPlayFlag("text"),
-                              nullptr);
+
+    m_glibWrapper->gObjectSet(m_context.pipeline, "flags", flags, nullptr);
 }
 
 bool GstGenericPlayer::shouldEnableNativeAudio()

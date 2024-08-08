@@ -186,9 +186,8 @@ public:
      * @brief Sets the audio and video flags on the pipeline based on the input.
      *
      * @param[in] enableAudio : Whether to enable audio flags.
-     * @param[in] enableVideo : Whether to enable video flags.
      */
-    virtual void setAudioVideoFlags(bool enableAudio, bool enableVideo) = 0;
+    virtual void setPlaybinFlags(bool enableAudio) = 0;
 };
 } // namespace firebolt::rialto::server
 
