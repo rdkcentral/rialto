@@ -20,8 +20,33 @@
 #include <string>
 #include <cstdint>
 #include <optional>
+#include <memory>
 
 #pragma once
+class ITextTrackAccessor;
+/**
+ * @brief ITextTrackAccessorFactory factory class, for the ITextTrackAccessorFactory singleton object.
+ */
+class ITextTrackAccessorFactory
+{
+public:
+    ITextTrackAccessorFactory() = default;
+    virtual ~ITextTrackAccessorFactory() = default;
+
+    /**
+     * @brief Gets the ITextTrackAccessorFactory instance.
+     *
+     * @retval the factory instance or null on error.
+     */
+    static std::shared_ptr<ITextTrackAccessorFactory> getFactory();
+
+    /**
+     * @brief Gets a ITextTrackAccessor singleton object.
+     *
+     * @retval the accessor instance or null on error.
+     */
+    virtual std::shared_ptr<ITextTrackAccessor> getTextTrackAccessor() = 0;
+};
 
 class ITextTrackAccessor
 {

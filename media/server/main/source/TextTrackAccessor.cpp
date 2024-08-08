@@ -22,7 +22,49 @@
 #include <cinttypes>
 #include <iostream>
 
+//todo-klops namespace
 using namespace WPEFramework;
+
+std::weak_ptr<ITextTrackAccessorFactory> TextTrackAccessorFactory::m_factory;
+
+std::shared_ptr<ITextTrackAccessorFactory> ITextTrackAccessorFactory::getFactory()
+{
+        std::shared_ptr<ITextTrackAccessorFactory> factory = TextTrackAccessorFactory::m_factory.lock();
+
+    if (!factory)
+    {
+        try
+        {
+            factory = std::make_shared<TextTrackAccessorFactory>();
+        }
+        catch (const std::exception &e)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to create the TextTrackAccessor factory, reason: %s", e.what());
+        }
+
+        TextTrackAccessorFactory::m_factory = factory;
+    }
+
+    return factory;
+}
+
+std::shared_ptr<ITextTrackAccessor> TextTrackAccessorFactory::getTextTrackAccessor()
+{
+    static std::shared_ptr<ITextTrackAccessor> textTrackAccessor{};
+    if (!textTrackAccessor)
+    {
+        try
+        {
+            textTrackAccessor = std::make_shared<TextTrackAccessor>();
+        }
+        catch (const std::exception &e)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to create the TextTrackAccessor, reason: %s", e.what());
+        }
+    }
+
+    return textTrackAccessor;
+}
 
 TextTrackAccessor::TextTrackAccessor()
 {

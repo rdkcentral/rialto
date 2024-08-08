@@ -20,11 +20,21 @@
 #include "TextTrackSession.h"
 #include "TextTrackAccessor.h"
 
-//todo-klops: change to factory
-std::unique_ptr<ITextTrackAccessor> TextTrackSession::m_textTrackAccessor = std::make_unique<TextTrackAccessor>();
-
-TextTrackSession::TextTrackSession(const std::string &displayName)
+TextTrackSession::TextTrackSession(const std::string &displayName, const std::shared_ptr<ITextTrackAccessorFactory> &textTrackAccessorFactory)
 {
+    if (!textTrackAccessorFactory)
+    {
+        RIALTO_SERVER_LOG_ERROR("Invalid TextTrackAccessorFactory");
+        throw std::runtime_error("Invalid TextTrackAccessorFactory");
+    }
+
+    m_textTrackAccessor = textTrackAccessorFactory->getTextTrackAccessor();
+    if (!m_textTrackAccessor)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get TextTrackAccessor");
+        throw std::runtime_error("Failed to get TextTrackAccessor");
+    }
+
     std::optional<uint32_t> sessionId = m_textTrackAccessor->openSession(displayName);
     if (!sessionId)
     {

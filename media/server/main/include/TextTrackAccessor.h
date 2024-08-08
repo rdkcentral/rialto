@@ -33,6 +33,25 @@
 #include "RialtoServerLogging.h"
 #include <mutex>
 
+/**
+ * @brief ITextTrackAccessorFactory factory class definition.
+ */
+class TextTrackAccessorFactory : public ITextTrackAccessorFactory
+{
+public:
+    /**
+     * @brief Weak pointer to the singleton factroy object.
+     */
+    static std::weak_ptr<ITextTrackAccessorFactory> m_factory;
+
+    /**
+     * @brief Weak pointer to the singleton object.
+     */
+    static std::weak_ptr<ITextTrackAccessor> m_textTrackAccessor;
+
+    std::shared_ptr<ITextTrackAccessor> getTextTrackAccessor() override;
+};
+
 class TextTrackAccessor : public ITextTrackAccessor
 {
     public:

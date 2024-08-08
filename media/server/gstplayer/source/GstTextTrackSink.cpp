@@ -138,11 +138,11 @@ static gboolean gst_rialto_text_track_sink_start (GstBaseSink * sink)
     GstRialtoTextTrackSink *self = GST_RIALTO_TEXT_TRACK_SINK(sink);
     try
     {
-        self->priv->m_textTrackSession = std::make_unique<TextTrackSession>(display);
+        self->priv->m_textTrackSession = std::make_unique<TextTrackSession>(display, ITextTrackAccessorFactory::getFactory());
     }
     catch(const std::exception& e)
     {
-        GST_ERROR_OBJECT(sink, "KLOPS Failed to create TextTrackSession. Reason '%s'", e.what());
+        GST_ERROR_OBJECT(sink, "Failed to create TextTrackSession. Reason '%s'", e.what());
         return false;
     }
 

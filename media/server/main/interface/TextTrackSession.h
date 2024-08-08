@@ -25,7 +25,7 @@
 class TextTrackSession
 {
     public:
-    TextTrackSession(const std::string &displayName);
+    TextTrackSession(const std::string &displayName, const std::shared_ptr<ITextTrackAccessorFactory> &textTrackAccessorFactory);
     ~TextTrackSession();
     bool pause();
     bool play();
@@ -36,8 +36,7 @@ class TextTrackSession
     bool setSessionTTMLSelection();
 
 private:
-    static std::unique_ptr<ITextTrackAccessor> m_textTrackAccessor;
-    ITextTrackAccessor::DataType m_dataType;
-
-    uint32_t m_sessionId;
+    std::shared_ptr<ITextTrackAccessor> m_textTrackAccessor;
+    ITextTrackAccessor::DataType m_dataType{ITextTrackAccessor::DataType::UNKNOWN};
+    uint32_t m_sessionId{0};
 };
