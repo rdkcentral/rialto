@@ -220,6 +220,9 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
     {
     case GST_EVENT_SEGMENT:
     {
+        const GstSegment *segment;
+        gst_event_parse_segment(event, &segment);
+        textTrackSink->priv->m_textTrackSession->setPosition(segment->start / GST_MSECOND);
         break;
     }
     case GST_EVENT_EOS:
