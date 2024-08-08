@@ -130,13 +130,7 @@ public:
 
     bool getVolume(double &currentVolume) override;
 
-    bool isAudioFadeSupported() override;
-
-    bool doAudioFade(double targetVolume, uint32_t duration, EaseType type) override;
-
-    bool getFadeVolume() override;
-
-    bool updateVolume() override;
+    bool getFadeVolume(uint32_t &fadeVolume) override;
 
     bool setMute(bool mute) override;
 
@@ -472,37 +466,13 @@ protected:
     bool getVolumeInternal(double &currentVolume);
 
     /**
-     * @brief Checks if audio fade is supported internally, only to be called on the main thread.
+     * @brief Retrieves the target volume internally if supported, only to be called on the main thread.
      *
-     * @retval true if audio fade is supported, false otherwise.
+     * @param[in] fadeVolume : The target fade volume level
+     *
+     * @retval true if the target volume if supported was successfully retrieved, false otherwise.
      */
-    bool isAudioFadeSupportedInternal();
-
-    /**
-     * @brief Performs an audio fade to the specified target volume over a given duration internally, only to be called
-     * on the main thread.
-     *
-     * @param targetVolume The target volume to fade to.
-     * @param duration The duration of the fade in milliseconds.
-     * @param type The easing type to use for the fade.
-     *
-     * @retval true if the fade operation was successful, false otherwise.
-     */
-    bool doAudioFadeInternal(double targetVolume, uint32_t duration, EaseType type);
-
-    /**
-     * @brief Retrieves the current fade volume internally, only to be called on the main thread.
-     *
-     * @retval true if the fade volume was successfully retrieved, false otherwise.
-     */
-    bool getFadeVolumeInternal();
-
-    /**
-     * @brief Updates the current volume internally, only to be called on the main thread.
-     *
-     * @retval true if the volume was successfully updated, false otherwise.
-     */
-    bool updateVolumeInternal();
+    bool getFadeVolumeInternal(uint32_t &fadeVolume);
 
     /**
      * @brief Set mute internally, only to be called on the main thread.

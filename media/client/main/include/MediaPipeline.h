@@ -166,13 +166,7 @@ public:
 
     bool getVolume(double &currentVolume) override;
 
-    bool isAudioFadeSupported() override;
-
-    bool doAudioFade(double targetVolume, uint32_t duration, EaseType type) override;
-
-    bool getFadeVolume() override;
-
-    bool updateVolume() override;
+    bool getFadeVolume(uint32_t &fadeVolume) override;
 
     bool setMute(bool mute) override;
 
