@@ -20,6 +20,7 @@
 #include "DataReaderV1.h"
 #include "RialtoServerLogging.h"
 #include "ShmCommon.h"
+#include "TypeConverters.h"
 
 namespace firebolt::rialto::server
 {
@@ -27,7 +28,8 @@ DataReaderV1::DataReaderV1(const MediaSourceType &mediaSourceType, std::uint8_t 
                            std::uint32_t numFrames)
     : m_mediaSourceType{mediaSourceType}, m_buffer{buffer}, m_metadataOffset{metadataOffset}, m_numFrames{numFrames}
 {
-    RIALTO_SERVER_LOG_DEBUG("Detected Metadata in Version 1.");
+    RIALTO_SERVER_LOG_DEBUG("Detected Metadata in Version 1. Media source type: %s",
+                            common::convertMediaSourceType(m_mediaSourceType));
     static_assert(sizeof(DataReaderV1::MetadataV1) == common::METADATA_V1_SIZE_PER_FRAME_BYTES,
                   "Size of firebolt::rialto::server::DataReaderV1::MetadataV1 is not equal to "
                   "firebolt::rialto::common::METADATA_V1_SIZE_PER_FRAME_BYTES");

@@ -29,6 +29,7 @@
 
 #include "RialtoServerLogging.h"
 #include "SharedMemoryBuffer.h"
+#include "TypeConverters.h"
 
 #if !defined(SYS_memfd_create)
 #if defined(__NR_memfd_create)
@@ -233,23 +234,26 @@ bool SharedMemoryBuffer::clearData(MediaPlaybackType playbackType, int id, const
     const std::vector<Partition> *kPartitions = getPlaybackTypePartition(playbackType);
     if (!kPartitions)
     {
-        RIALTO_SERVER_LOG_ERROR("Cannot clear the data for playback type %s with id: %d", toString(playbackType), id);
+        RIALTO_SERVER_LOG_ERROR("Cannot clear the %s data for playback type %s with id: %d",
+                                common::convertMediaSourceType(mediaSourceType), toString(playbackType), id);
         return false;
     }
 
     auto partition = std::find_if(kPartitions->begin(), kPartitions->end(), [id](const auto &p) { return p.id == id; });
     if (partition == kPartitions->end())
     {
-        RIALTO_SERVER_LOG_WARN("Failed to clear data for playback type %s with id: %d. - partition could not be found",
-                               toString(playbackType), id);
+        RIALTO_SERVER_LOG_WARN("Failed to clear %s data for playback type %s with id: %d. - partition could not be "
+                               "found",
+                               common::convertMediaSourceType(mediaSourceType), toString(playbackType), id);
         return false;
     }
     std::uint8_t *partitionDataPtr = nullptr;
     if (!getDataPtrForPartition(playbackType, id, &partitionDataPtr))
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to clear data for playback type %s with id: %d. - could not get partition data "
+        RIALTO_SERVER_LOG_ERROR("Failed to clear %s data for playback type %s with id: %d. - could not get partition "
+                                "data "
                                 "ptr",
-                                toString(playbackType), id);
+                                common::convertMediaSourceType(mediaSourceType), toString(playbackType), id);
         return false;
     }
 
@@ -293,17 +297,18 @@ std::uint32_t SharedMemoryBuffer::getMaxDataLen(MediaPlaybackType playbackType, 
     const std::vector<Partition> *kPartitions = getPlaybackTypePartition(playbackType);
     if (!kPartitions)
     {
-        RIALTO_SERVER_LOG_ERROR("Cannot get the max data length for playback type %s with id: %d",
-                                toString(playbackType), id);
+        RIALTO_SERVER_LOG_ERROR("Cannot get the max data length for playback type %s with id: %d type: %s",
+                                toString(playbackType), id, common::convertMediaSourceType(mediaSourceType));
         return false;
     }
 
     auto partition = std::find_if(kPartitions->begin(), kPartitions->end(), [id](const auto &p) { return p.id == id; });
     if (partition == kPartitions->end())
     {
-        RIALTO_SERVER_LOG_WARN("Failed to get buffer length for playback type %s with id: %d. - partition could not be "
+        RIALTO_SERVER_LOG_WARN("Failed to get buffer length for playback type %s with id: %d. type: %s- partition "
+                               "could not be "
                                "found",
-                               toString(playbackType), id);
+                               toString(playbackType), id, common::convertMediaSourceType(mediaSourceType));
         return 0;
     }
 
@@ -329,17 +334,18 @@ std::uint8_t *SharedMemoryBuffer::getDataPtr(MediaPlaybackType playbackType, int
     const std::vector<Partition> *kPartitions = getPlaybackTypePartition(playbackType);
     if (!kPartitions)
     {
-        RIALTO_SERVER_LOG_ERROR("Cannot get the buffer offset for playback type %s with id: %d", toString(playbackType),
-                                id);
+        RIALTO_SERVER_LOG_ERROR("Cannot get the buffer offset for playback type %s with id: %d, type: %s",
+                                toString(playbackType), id, common::convertMediaSourceType(mediaSourceType));
         return nullptr;
     }
 
     auto partition = std::find_if(kPartitions->begin(), kPartitions->end(), [id](const auto &p) { return p.id == id; });
     if (partition == kPartitions->end())
     {
-        RIALTO_SERVER_LOG_WARN("Failed to get buffer offset for playback type %s with id: %d. - partition could not be "
+        RIALTO_SERVER_LOG_WARN("Failed to get buffer offset for playback type %s with id: %d, type: %s. - partition "
+                               "could not be "
                                "found",
-                               toString(playbackType), id);
+                               toString(playbackType), id, common::convertMediaSourceType(mediaSourceType));
         return nullptr;
     }
     std::uint8_t *partitionDataPtr = nullptr;

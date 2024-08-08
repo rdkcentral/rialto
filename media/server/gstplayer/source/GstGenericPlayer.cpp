@@ -491,7 +491,7 @@ void GstGenericPlayer::attachAudioData()
 
     if (m_context.audioAppSrc)
     {
-        pushSampleIfRequired(m_context.audioAppSrc);
+        pushSampleIfRequired(m_context.audioAppSrc, "audio");
         if (m_context.audioBuffers.size())
         {
             // This needs to be done before gstAppSrcPushBuffer() is
@@ -532,7 +532,7 @@ void GstGenericPlayer::attachVideoData()
     }
     if (m_context.videoAppSrc)
     {
-        pushSampleIfRequired(m_context.videoAppSrc);
+        pushSampleIfRequired(m_context.videoAppSrc, "video");
         for (GstBuffer *buffer : m_context.videoBuffers)
         {
             m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.videoAppSrc), buffer);
@@ -721,7 +721,7 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
     return false;
 }
 
-void GstGenericPlayer::pushSampleIfRequired(GstElement *source)
+void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::string &typeStr)
 {
     auto initialPosition = m_context.initialPositions.find(source);
     if (m_context.initialPositions.end() == initialPosition)
@@ -729,7 +729,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source)
         // Sending initial sample not needed
         return;
     }
-    RIALTO_SERVER_LOG_DEBUG("Pushing new sample...");
+    RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
     GstSegment *segment{m_gstWrapper->gstSegmentNew()};
     m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
     if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE,
@@ -742,7 +742,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source)
         return;
     }
 
-    RIALTO_SERVER_LOG_MIL("New segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT "], rate: %f \n",
+    RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT "], rate: %f \n", typeStr.c_str(),
                           GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop), segment->rate);
 
     GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));

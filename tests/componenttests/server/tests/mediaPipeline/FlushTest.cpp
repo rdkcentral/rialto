@@ -252,6 +252,7 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
     }
     willNotifyPaused();
     notifyPaused();
+    GST_STATE(&m_pipeline) = GST_STATE_PAUSED;
 
     // Step 8: Flush
     willFlush();
