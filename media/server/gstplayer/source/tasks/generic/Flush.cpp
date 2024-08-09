@@ -53,39 +53,29 @@ void Flush::execute() const
         return;
     }
 
-    // Clear/invalidate old NeedDatas
-    switch (m_type)
+    if (m_type == MediaSourceType::UNKNOWN)
     {
-    case MediaSourceType::AUDIO:
-    {
-        m_context.audioNeedData = false;
-        m_context.audioNeedDataPending = false;
-        for (auto &buffer : m_context.audioBuffers)
-        {
-            m_gstWrapper->gstBufferUnref(buffer);
-        }
-        m_context.audioBuffers.clear();
-        break;
-    }
-    case MediaSourceType::VIDEO:
-    {
-        m_context.videoNeedData = false;
-        m_context.videoNeedDataPending = false;
-        for (auto &buffer : m_context.videoBuffers)
-        {
-            m_gstWrapper->gstBufferUnref(buffer);
-        }
-        m_context.videoBuffers.clear();
-        break;
-    }
-    case MediaSourceType::UNKNOWN:
-    default:
-    {
-        RIALTO_SERVER_LOG_WARN("Flush failed: %s Media source type not supported.",
-                               common::convertMediaSourceType(m_type));
+        RIALTO_SERVER_LOG_WARN("Flush failed: Media source type not supported.");
         return;
     }
+
+    auto elem = m_context.streamInfo.find(m_type);
+    if (elem == m_context.streamInfo.end())
+    {
+        RIALTO_SERVER_LOG_WARN("Flush failed: Stream not found. Type %s", common::convertMediaSourceType(m_type));
+        return;
     }
+
+    StreamInfo &streamInfo = elem->second;
+    streamInfo.isDataNeeded = false;
+    streamInfo.isNeedDataPending = false;
+
+    for (auto &buffer : streamInfo.buffers)
+    {
+        m_gstWrapper->gstBufferUnref(buffer);
+    }
+    streamInfo.buffers.clear();
+
     m_gstPlayerClient->invalidateActiveRequests(m_type);
 
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
@@ -110,7 +100,7 @@ void Flush::execute() const
     }
 
     // Reset Eos info
-    m_context.endOfStreamInfo.erase(m_type);
+    m_context.endOfStreamInfo.erase(m_type); //todo-klops, move to stream info
     m_context.eosNotified = false;
 
     // Notify client, that flush has been finished

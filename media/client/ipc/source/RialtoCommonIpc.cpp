@@ -32,6 +32,9 @@ firebolt::rialto::ProtoMediaSourceType convertProtoMediaSourceType(MediaSourceTy
     case MediaSourceType::VIDEO:
         protoMediaSourceType = firebolt::rialto::ProtoMediaSourceType::VIDEO;
         break;
+    case MediaSourceType::SUBTITLE:
+        protoMediaSourceType = firebolt::rialto::ProtoMediaSourceType::SUBTITLE;
+        break;
     default:
         break;
     }

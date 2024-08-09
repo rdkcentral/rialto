@@ -25,6 +25,10 @@ include( CheckCXXCompilerFlag )
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
+find_package( WPEFrameworkCore )
+find_package( WPEFrameworkCOM )
+find_package(WPEFrameworkMessaging REQUIRED)
+
 add_library(
         RialtoServerMain STATIC
 
@@ -46,6 +50,8 @@ add_library(
         source/WebAudioPlayerServerInternal.cpp
         source/ControlServerInternal.cpp
         source/HeartbeatProcedure.cpp
+        source/TextTrackAccessor.cpp
+        source/TextTrackSession.cpp
         )
 
 target_include_directories(
@@ -86,8 +92,12 @@ target_link_libraries(
         RialtoWrappers
         RialtoCommon
         RialtoProtobuf
-
+        WPEFrameworkCore::WPEFrameworkCore
+        WPEFrameworkCOM::WPEFrameworkCOM
+        WPEFrameworkMessaging::WPEFrameworkMessaging
         Threads::Threads
+
+
         )
 
 install(

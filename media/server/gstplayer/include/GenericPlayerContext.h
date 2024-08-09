@@ -28,6 +28,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <unordered_map>
 
 namespace firebolt::rialto::server
 {
@@ -46,22 +47,22 @@ struct Rectangle
     inline void clear() { x = y = width = height = 0; }
 };
 
+// struct SourceContext
+// {
+//     GstElement *appSrc{nullptr};
+//     bool isDataNeeded{false};
+//     bool isNeedDataPending{false};
+//     bool isDataPushed{false};
+//     std::list<GstBuffer *> buffers{};
+//     bool underflowOccured{false};
+// };
+
 struct GenericPlayerContext
 {
     /**
      * @brief The rialto src object.
      */
     std::shared_ptr<IGstSrc> gstSrc{nullptr};
-
-    /**
-     * @brief The audio app source
-     */
-    GstElement *audioAppSrc{nullptr};
-
-    /**
-     * @brief The video app source
-     */
-    GstElement *videoAppSrc{nullptr};
 
     /**
      * @brief The gstreamer pipeline.
@@ -82,6 +83,8 @@ struct GenericPlayerContext
      * @brief Child sink of the autovideosink.
      */
     GstElement *autoVideoChildSink{nullptr};
+    
+    GstElement *subtitleSink{nullptr};
 
     /**
      * @brief Flag used to check, if we need to request for new audio data.
@@ -97,6 +100,8 @@ struct GenericPlayerContext
      */
     bool videoNeedData{false};
 
+    bool subtitleNeedData{false};
+
     /**
      * @brief Flag used to check, if request for audio data was sent and we didn't receive response yet.
      *
@@ -111,6 +116,8 @@ struct GenericPlayerContext
      */
     bool videoNeedDataPending{false};
 
+    bool subtitleNeedDataPending{false};
+
     /**
      * @brief Flag used to check, if any audio data has been pushed to gstreamer (to check if BUFFERED can be sent)
      *
@@ -124,6 +131,8 @@ struct GenericPlayerContext
      * Flag can be used only in worker thread
      */
     bool videoDataPushed{false};
+
+    bool subtitleDataPushed{false};
 
     /**
      * @brief Flag used to check, if BUFFERED notification has been sent.
@@ -145,6 +154,8 @@ struct GenericPlayerContext
      * List can be used only in worker thread
      */
     std::list<GstBuffer *> videoBuffers{};
+
+    std::list<GstBuffer *> subtitleBuffers{};
 
     /**
      * @brief Flag used to check, if audio underflow callback occured

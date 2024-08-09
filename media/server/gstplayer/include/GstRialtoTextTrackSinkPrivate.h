@@ -17,13 +17,23 @@
  * limitations under the License.
  */
 
-syntax = "proto2";
+#ifndef FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_PRIVATE_H_
+#define FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_PRIVATE_H_
 
-package firebolt.rialto;
+#include "TextTrackSession.h"
+#include <string>
+#include <atomic>
+#include <memory>
 
-enum ProtoMediaSourceType {
-    UNKNOWN = 0;        ///< Media source type not known.
-    AUDIO = 1;          ///< Media source is AUDIO.
-    VIDEO = 2;          ///< Media source is VIDEO.
-    SUBTITLE = 3;       ///< Media source is SUBTITLE.
-}
+namespace firebolt::rialto::server
+{
+struct GstRialtoTextTrackSinkPrivate
+{
+    std::unique_ptr<TextTrackSession> m_textTrackSession;
+    std::atomic<bool> m_isMuted{true};
+    std::string m_textTrackIdentifier;
+    //std::mutex m_mutex;
+};
+}; // namespace firebolt::rialto::server
+
+#endif // FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_PRIVATE_H_

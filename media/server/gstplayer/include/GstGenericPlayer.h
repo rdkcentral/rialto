@@ -126,10 +126,12 @@ private:
     void scheduleVideoUnderflow() override;
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
-    void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) override;
+    void notifyNeedMediaData(const MediaSourceType mediaSource) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
+    void attachData(const firebolt::rialto::MediaSourceType mediaType) override;
     void attachAudioData() override;
     void attachVideoData() override;
+    void attachSubtitleData() override;
     void updateAudioCaps(int32_t rate, int32_t channels, const std::shared_ptr<CodecData> &codecData) override;
     void updateVideoCaps(int32_t width, int32_t height, Fraction frameRate,
                          const std::shared_ptr<CodecData> &codecData) override;
@@ -138,7 +140,7 @@ private:
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopWorkerThread() override;
-    void cancelUnderflow(bool &underflowFlag) override;
+    void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) override;
     void setPendingPlaybackRate() override;
     void renderFrame() override;
     void handleBusMessage(GstMessage *message) override;
@@ -146,7 +148,7 @@ private:
     void addAutoVideoSinkChild(GObject *object) override;
     void removeAutoVideoSinkChild(GObject *object) override;
     GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) override;
-    void setAudioVideoFlags(bool enableAudio, bool enableVideo) override;
+    void setPlaybinFlags(bool enableAudio = true) override;
 
 private:
     /**

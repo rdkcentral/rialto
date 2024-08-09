@@ -39,7 +39,9 @@ void Stop::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing Stop");
     m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
     m_player.changePipelineState(GST_STATE_NULL);
-    m_context.videoNeedData = false;
-    m_context.audioNeedData = false;
+    for (auto &streamInfo : m_context.streamInfo)
+    {
+        streamInfo.second.isDataNeeded = false;
+    }
 }
 } // namespace firebolt::rialto::server::tasks::generic

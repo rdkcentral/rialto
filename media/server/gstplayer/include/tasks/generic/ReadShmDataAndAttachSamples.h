@@ -37,6 +37,7 @@ public:
     void execute() const override;
 
 private:
+    void attachData(const firebolt::rialto::MediaSourceType mediaType, GstBuffer *buffer) const;
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
     std::shared_ptr<IDataReader> m_dataReader;

@@ -41,16 +41,9 @@ Eos::~Eos()
 void Eos::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing Eos for %s", common::convertMediaSourceType(m_type));
-    if (m_type == firebolt::rialto::MediaSourceType::AUDIO && m_context.audioUnderflowOccured)
-    {
-        RIALTO_SERVER_LOG_DEBUG("Cancelling audio underflow in EOS procedure");
-        m_player.cancelUnderflow(m_context.audioUnderflowOccured);
-    }
-    else if (m_type == firebolt::rialto::MediaSourceType::VIDEO && m_context.videoUnderflowOccured)
-    {
-        RIALTO_SERVER_LOG_DEBUG("Cancelling video underflow in EOS procedure");
-        m_player.cancelUnderflow(m_context.videoUnderflowOccured);
-    }
+
+    m_player.cancelUnderflow(m_type);
+
     auto elem = m_context.streamInfo.find(m_type);
     if (elem == m_context.streamInfo.end())
     {

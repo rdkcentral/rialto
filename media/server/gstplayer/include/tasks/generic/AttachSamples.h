@@ -39,6 +39,7 @@ public:
     void execute() const override;
 
 private:
+    void attachData(const firebolt::rialto::MediaSourceType mediaType, GstBuffer *buffer) const;
     struct AudioData
     {
         GstBuffer *buffer;

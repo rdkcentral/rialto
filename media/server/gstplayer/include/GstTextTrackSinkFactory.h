@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,27 @@
  * limitations under the License.
  */
 
-syntax = "proto2";
+#ifndef FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_FACTORY_H_
+#define FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_FACTORY_H_
 
-package firebolt.rialto;
+#include "IGstTextTrackSinkFactory.h"
+#include <memory>
 
-enum ProtoMediaSourceType {
-    UNKNOWN = 0;        ///< Media source type not known.
-    AUDIO = 1;          ///< Media source is AUDIO.
-    VIDEO = 2;          ///< Media source is VIDEO.
-    SUBTITLE = 3;       ///< Media source is SUBTITLE.
-}
+namespace firebolt::rialto::server
+{
+/**
+ * @brief IGstTextTrackSink factory class definition.
+ */
+class GstTextTrackSinkFactory : public IGstTextTrackSinkFactory
+{
+public:
+    GstTextTrackSinkFactory() = default;
+    ~GstTextTrackSinkFactory() override = default;
+
+    GstElement *
+    createGstTextTrackSink() const override;
+};
+
+}; // namespace firebolt::rialto::server
+
+#endif // FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_FACTORY_H_
