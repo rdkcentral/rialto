@@ -23,6 +23,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "IMediaPipeline.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -46,6 +47,12 @@ void ReadShmDataAndAttachSamples::execute() const
 
     for (const auto &mediaSegment : mediaSegments)
     {
+        if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::UNKNOWN)
+        {
+            RIALTO_SERVER_LOG_WARN("Unknown media segment type");
+            continue;
+        }
+
         GstBuffer *gstBuffer = m_player.createBuffer(*mediaSegment);
         if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::VIDEO)
         {
@@ -60,9 +67,6 @@ void ReadShmDataAndAttachSamples::execute() const
             {
                 RIALTO_SERVER_LOG_ERROR("Failed to get the video segment, reason: %s", e.what());
             }
-
-            m_context.videoBuffers.push_back(gstBuffer);
-            m_player.attachVideoData();
         }
         else if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::AUDIO)
         {
@@ -79,20 +83,30 @@ void ReadShmDataAndAttachSamples::execute() const
             {
                 RIALTO_SERVER_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
             }
+        }
+        // no special action for SUBTITLE needed, just attach the buffer
 
-            m_context.audioBuffers.push_back(gstBuffer);
-            m_player.attachAudioData();
-        }
-        else if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::SUBTITLE)
-        {
-            m_context.subtitleBuffers.push_back(gstBuffer);
-            m_player.attachSubtitleData();
-        }
+        attachData(mediaSegment->getType(), gstBuffer);
     }
+
     // All segments in vector have the same type
-    m_player.notifyNeedMediaData((!mediaSegments.empty() &&
-                                  mediaSegments.front()->getType() == firebolt::rialto::MediaSourceType::AUDIO),
-                                 (!mediaSegments.empty() &&
-                                  mediaSegments.front()->getType() == firebolt::rialto::MediaSourceType::VIDEO));
+    if (!mediaSegments.empty())
+    {
+        m_player.attachData(mediaSegments.front()->getType());
+    }
+}
+
+void ReadShmDataAndAttachSamples::attachData(const firebolt::rialto::MediaSourceType mediaType, GstBuffer *buffer) const
+{
+    auto elem = m_context.streamInfo.find(mediaType);
+    if (elem != m_context.streamInfo.end())
+    {
+        elem->second.buffers.push_back(buffer);
+        m_player.attachData(mediaType);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Could not find stream info for %s", common::convertMediaSourceType(mediaType));
+    }
 }
 } // namespace firebolt::rialto::server::tasks::generic

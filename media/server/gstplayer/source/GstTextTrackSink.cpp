@@ -262,6 +262,7 @@ static GstStateChangeReturn gst_rialto_text_track_sink_change_state(GstElement *
      case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
      {
         //todo-klops remove mute
+        textTrackSink->priv->m_textTrackSession->mute(false);
         textTrackSink->priv->m_textTrackSession->play();
          break;
      }

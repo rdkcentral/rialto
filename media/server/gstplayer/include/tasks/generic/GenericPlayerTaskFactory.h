@@ -80,7 +80,7 @@ public:
     std::unique_ptr<IPlayerTask> createStop(GenericPlayerContext &context,
                                             IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                 bool &underflowFlag, bool underflowEnable,
+                                                 bool underflowEnable,
                                                  MediaSourceType sourceType) const override;
     std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context, GstElement *typefind,
                                                            const GstCaps *caps) const override;

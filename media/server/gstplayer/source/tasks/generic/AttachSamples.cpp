@@ -21,6 +21,7 @@
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -84,16 +85,30 @@ void AttachSamples::execute() const
         m_player.updateAudioCaps(audioData.rate, audioData.channels, audioData.codecData);
         m_player.addAudioClippingToBuffer(audioData.buffer, audioData.clippingStart, audioData.clippingEnd);
 
-        m_context.audioBuffers.push_back(audioData.buffer);
-        m_player.attachAudioData();
+        attachData(firebolt::rialto::MediaSourceType::AUDIO, audioData.buffer);
     }
     for (VideoData videoData : m_videoData)
     {
         m_player.updateVideoCaps(videoData.width, videoData.height, videoData.frameRate, videoData.codecData);
 
-        m_context.videoBuffers.push_back(videoData.buffer);
-        m_player.attachVideoData();
+        attachData(firebolt::rialto::MediaSourceType::VIDEO, videoData.buffer);
     }
-    m_player.notifyNeedMediaData(!m_audioData.empty(), !m_videoData.empty());
+    //TODO-klops: subtitles, fix notifyNeedMediaData
+    //m_player.notifyNeedMediaData(!m_audioData.empty(), !m_videoData.empty(), false);
 }
+
+void AttachSamples::attachData(const firebolt::rialto::MediaSourceType mediaType, GstBuffer *buffer) const
+{
+    auto elem = m_context.streamInfo.find(mediaType);
+    if (elem != m_context.streamInfo.end())
+    {
+        elem->second.buffers.push_back(buffer);
+        m_player.attachData(mediaType);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Could not find stream info for %s", common::convertMediaSourceType(mediaType));
+    }
+}
+
 } // namespace firebolt::rialto::server::tasks::generic

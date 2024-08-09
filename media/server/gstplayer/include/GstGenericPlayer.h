@@ -126,8 +126,9 @@ private:
     void scheduleVideoUnderflow() override;
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
-    void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) override;
+    void notifyNeedMediaData(const MediaSourceType mediaSource) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
+    void attachData(const firebolt::rialto::MediaSourceType mediaType) override;
     void attachAudioData() override;
     void attachVideoData() override;
     void attachSubtitleData() override;
@@ -139,7 +140,7 @@ private:
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopWorkerThread() override;
-    void cancelUnderflow(bool &underflowFlag) override;
+    void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) override;
     void setPendingPlaybackRate() override;
     void renderFrame() override;
     void handleBusMessage(GstMessage *message) override;

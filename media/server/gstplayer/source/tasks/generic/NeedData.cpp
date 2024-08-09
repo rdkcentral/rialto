@@ -22,6 +22,7 @@
 #include "IGstGenericPlayerClient.h"
 #include "RialtoServerLogging.h"
 #include <gst/gst.h>
+#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -39,41 +40,20 @@ NeedData::~NeedData()
 void NeedData::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing NeedData");
-    auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
-    if (elem != m_context.streamInfo.end())
-    {
-        if (elem->second.appSrc == GST_ELEMENT(m_src))
-        {
-            m_context.audioNeedData = true;
-            if (m_gstPlayerClient && !m_context.audioNeedDataPending && !m_context.audioSourceRemoved)
-            {
-                m_context.audioNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::AUDIO);
-            }
-        }
-    }
-    elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
-    if (elem != m_context.streamInfo.end())
-    {
-        if (elem->second.appSrc == GST_ELEMENT(m_src))
-        {
-            m_context.videoNeedData = true;
-            if (m_gstPlayerClient && !m_context.videoNeedDataPending)
-            {
-                m_context.videoNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::VIDEO);
-            }
-        }
-    }
 
-    elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::SUBTITLE);
-    if (elem != m_context.streamInfo.end())
+    for (auto &elem : m_context.streamInfo)
     {
-        if (elem->second.appSrc == GST_ELEMENT(m_src))
+        firebolt::rialto::MediaSourceType sourceType = elem.first;
+        if (elem.second.appSrc == GST_ELEMENT(m_src))
         {
-            m_context.subtitleNeedData = true;
-            if (m_gstPlayerClient && !m_context.subtitleNeedDataPending)
+            RIALTO_SERVER_LOG_DEBUG("%s source needs data", common::convertMediaSourceType(sourceType));
+
+            elem.second.isDataNeeded = true;
+            if (m_gstPlayerClient && !elem.second.isNeedDataPending /* todo-klops  && !m_context.audioSourceRemoved*/)
             {
-                m_context.subtitleNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::SUBTITLE);
+                elem.second.isNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::AUDIO);
             }
+            break;
         }
     }
 }

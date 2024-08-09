@@ -74,7 +74,7 @@ public:
     /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
      */
-    virtual void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) = 0;
+    virtual void notifyNeedMediaData(const MediaSourceType mediaSource) = 0;
 
     /**
      * @brief Constructs a new buffer with data from media segment. Does not perform decryption.
@@ -82,6 +82,7 @@ public:
      */
     virtual GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const = 0;
 
+    virtual void attachData(const firebolt::rialto::MediaSourceType mediaType) = 0;
     /**
      * @brief Attach audio data. Called by the worker thread
      */
@@ -143,7 +144,7 @@ public:
      *
      * @param[in] underflowFlag    : The audio or video underflow flag to be cleared.
      */
-    virtual void cancelUnderflow(bool &underflowFlag) = 0;
+    virtual void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) = 0;
 
     /**
      * @brief Sets pending playback rate after reaching PLAYING state

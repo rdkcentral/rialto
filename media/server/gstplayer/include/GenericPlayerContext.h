@@ -28,6 +28,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <unordered_map>
 
 namespace firebolt::rialto::server
 {
@@ -46,24 +47,22 @@ struct Rectangle
     inline void clear() { x = y = width = height = 0; }
 };
 
+// struct SourceContext
+// {
+//     GstElement *appSrc{nullptr};
+//     bool isDataNeeded{false};
+//     bool isNeedDataPending{false};
+//     bool isDataPushed{false};
+//     std::list<GstBuffer *> buffers{};
+//     bool underflowOccured{false};
+// };
+
 struct GenericPlayerContext
 {
     /**
      * @brief The rialto src object.
      */
     std::shared_ptr<IGstSrc> gstSrc{nullptr};
-
-    /**
-     * @brief The audio app source
-     */
-    GstElement *audioAppSrc{nullptr};
-
-    /**
-     * @brief The video app source
-     */
-    GstElement *videoAppSrc{nullptr};
-
-    GstElement *subtitleAppSrc{nullptr};
 
     /**
      * @brief The gstreamer pipeline.
@@ -84,7 +83,7 @@ struct GenericPlayerContext
      * @brief Child sink of the autovideosink.
      */
     GstElement *autoVideoChildSink{nullptr};
-
+    
     GstElement *subtitleSink{nullptr};
 
     /**

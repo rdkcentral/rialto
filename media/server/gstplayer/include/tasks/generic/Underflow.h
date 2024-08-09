@@ -32,7 +32,7 @@ class Underflow : public IPlayerTask
 {
 public:
     Underflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-              bool &underflowFlag, bool underflowEnabled, MediaSourceType sourceType);
+              bool underflowEnabled, MediaSourceType sourceType);
     ~Underflow() override;
     void execute() const override;
 
@@ -40,7 +40,6 @@ private:
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
-    bool &m_underflowFlag;
     bool m_underflowEnabled;
     MediaSourceType m_sourceType;
 };
