@@ -86,6 +86,8 @@ public:
     void mediaPipelineServiceWillFailToFlush();
     void mediaPipelineServiceWillSetSourcePosition();
     void mediaPipelineServiceWillFailToSetSourcePosition();
+    void mediaPipelineServiceWillProcessAudioGap();
+    void mediaPipelineServiceWillFailToProcessAudioGap();
     void mediaClientWillSendPlaybackStateChangedEvent();
     void mediaClientWillSendNetworkStateChangedEvent();
     void mediaClientWillSendNeedMediaDataEvent(int sessionId);
@@ -124,6 +126,7 @@ public:
     void sendGetMuteRequestAndReceiveResponseWithoutMuteMatch();
     void sendFlushRequestAndReceiveResponse();
     void sendSetSourcePositionRequestAndReceiveResponse();
+    void sendProcessAudioGapRequestAndReceiveResponse();
     void sendPlaybackStateChangedEvent();
     void sendNetworkStateChangedEvent();
     void sendNeedMediaDataEvent();

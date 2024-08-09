@@ -380,3 +380,15 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetSourcePosition)
     mediaPipelineServiceWillFailToSetSourcePosition();
     sendSetSourcePositionRequestAndReceiveResponse();
 }
+
+TEST_F(MediaPipelineModuleServiceTests, shouldProcessAudioGap)
+{
+    mediaPipelineServiceWillProcessAudioGap();
+    sendProcessAudioGapRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToProcessAudioGap)
+{
+    mediaPipelineServiceWillFailToProcessAudioGap();
+    sendProcessAudioGapRequestAndReceiveResponse();
+}

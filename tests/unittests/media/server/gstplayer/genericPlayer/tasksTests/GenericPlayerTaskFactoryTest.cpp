@@ -39,6 +39,7 @@
 #include "tasks/generic/Pause.h"
 #include "tasks/generic/Ping.h"
 #include "tasks/generic/Play.h"
+#include "tasks/generic/ProcessAudioGap.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/ReportPosition.h"
@@ -280,4 +281,11 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSourcePosition)
     auto task = m_sut.createSetSourcePosition(m_context, firebolt::rialto::MediaSourceType::AUDIO, 0);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetSourcePosition &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateProcessAudioGap)
+{
+    auto task = m_sut.createProcessAudioGap(m_context, 0, 0, 0);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::ProcessAudioGap &>(*task));
 }

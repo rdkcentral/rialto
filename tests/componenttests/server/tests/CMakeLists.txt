@@ -53,6 +53,7 @@ add_gtests (
         mediaPipeline/NonFatalPlayerErrorUpdatesTest.cpp
         mediaPipeline/FlushTest.cpp
         mediaPipeline/SetSourcePositionTest.cpp
+        mediaPipeline/ProcessAudioGapTest.cpp
         mediaKeys/MediaKeysTestMethods.cpp
         mediaKeys/MediaKeysTest.cpp
         mediaKeys/SessionReadyForDecryptionTest.cpp

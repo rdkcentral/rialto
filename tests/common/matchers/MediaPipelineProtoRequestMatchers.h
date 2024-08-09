@@ -290,4 +290,12 @@ MATCHER_P3(flushRequestMatcher, sessionId, sourceId, resetTime, "")
            (kRequest->reset_time() == resetTime);
 }
 
+MATCHER_P4(processAudioGapRequestMatcher, sessionId, position, duration, level, "")
+{
+    const ::firebolt::rialto::ProcessAudioGapRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::ProcessAudioGapRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->position() == position) &&
+            (kRequest->duration() == duration) && (kRequest->level() == level));
+}
+
 #endif // MEDIA_PIPELINE_PROTO_REQUEST_MATCHERS_H_

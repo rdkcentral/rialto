@@ -46,4 +46,10 @@ bool RdkGstreamerUtilsWrapper::performAudioTrackCodecChannelSwitch(
                                                                     currentDispPts, audioChangeStage, appsrcCaps,
                                                                     audioaac, svpEnabled, aSrc, ret);
 }
+
+void RdkGstreamerUtilsWrapper::processAudioGap(GstElement *pipeline, gint64 gapstartpts, gint32 gapduration,
+                                               gint64 gapdiscontinuity, bool audioaac) const
+{
+    return rdk_gstreamer_utils::processAudioGap(pipeline, gapstartpts, gapduration, gapdiscontinuity, audioaac);
+}
 } // namespace firebolt::rialto::wrappers

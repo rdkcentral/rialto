@@ -78,6 +78,8 @@ public:
     void mediaPipelineWillFailToFlush();
     void mediaPipelineWillSetSourcePosition();
     void mediaPipelineWillFailToSetSourcePosition();
+    void mediaPipelineWillProcessAudioGap();
+    void mediaPipelineWillFailToProcessAudioGap();
     void mediaPipelineWillPing();
 
     void mediaPipelineFactoryWillCreateMediaPipeline();
@@ -135,6 +137,8 @@ public:
     void flushShouldFail();
     void setSourcePositionShouldSucceed();
     void setSourcePositionShouldFail();
+    void processAudioGapShouldSucceed();
+    void processAudioGapShouldFail();
     void clearMediaPipelines();
     void initSession();
     void triggerPing();

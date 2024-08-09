@@ -104,6 +104,9 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSourcePosition,
                 (GenericPlayerContext & context, const firebolt::rialto::MediaSourceType &type, std::int64_t position),
                 (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createProcessAudioGap,
+                (GenericPlayerContext & context, std::int64_t position, std::uint32_t duration, std::uint32_t level),
+                (const, override));
 };
 } // namespace firebolt::rialto::server
 

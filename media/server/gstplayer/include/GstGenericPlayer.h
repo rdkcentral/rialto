@@ -118,6 +118,7 @@ public:
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
     void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position) override;
+    void processAudioGap(int64_t position, uint32_t duration, uint32_t level) override;
 
 private:
     void scheduleNeedMediaData(GstAppSrc *src) override;

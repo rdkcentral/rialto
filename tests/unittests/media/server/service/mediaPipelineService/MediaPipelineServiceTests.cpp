@@ -474,6 +474,26 @@ TEST_F(MediaPipelineServiceTests, shouldSetSourcePosition)
     setSourcePositionShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToProcessAudioGapForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    processAudioGapShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToProcessAudioGap)
+{
+    initSession();
+    mediaPipelineWillFailToProcessAudioGap();
+    processAudioGapShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldProcessAudioGap)
+{
+    initSession();
+    mediaPipelineWillProcessAudioGap();
+    processAudioGapShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldPing)
 {
     initSession();

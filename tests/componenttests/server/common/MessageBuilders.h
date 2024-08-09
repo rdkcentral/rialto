@@ -63,6 +63,8 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::FlushRequest createFlushRequest(int sessionId, int sourceId, bool resetTime);
 ::firebolt::rialto::SetSourcePositionRequest createSetSourcePositionRequest(int sessionId, int sourceId,
                                                                             std::int64_t position);
+::firebolt::rialto::ProcessAudioGapRequest createProcessAudioGapRequest(int sessionId, std::int64_t position,
+                                                                        unsigned duration, unsigned level);
 
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine();

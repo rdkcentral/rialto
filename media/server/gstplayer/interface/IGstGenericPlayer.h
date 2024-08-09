@@ -270,6 +270,17 @@ public:
      * @param[in] position : The position in nanoseconds.
      */
     virtual void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position) = 0;
+
+    /**
+     * @brief Process audio gap
+     *
+     * This method handles audio gap in order to avoid audio pops during transitions.
+     *
+     * @param[in] position : Audio pts fade position value
+     * @param[in] duration : Audio pts fade duration
+     * @param[in] level    : Audio pts fade target level [0-1]
+     */
+    virtual void processAudioGap(int64_t position, uint32_t duration, uint32_t level) = 0;
 };
 
 }; // namespace firebolt::rialto::server
