@@ -36,6 +36,7 @@ namespace
 constexpr unsigned kFramesToPush{1};
 constexpr int kFrameCountInPausedState{3};
 constexpr int kFrameCountInPlayingState{24};
+const std::string kElementTypeName{"GenericSink"};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -86,7 +87,6 @@ public:
                     GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                     *elementPtr = m_videoSink;
                 }));
-        const std::string kElementTypeName{"GenericSink"};
         EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink))).WillOnce(Return(kElementTypeName.c_str()));
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
@@ -128,7 +128,6 @@ public:
                     GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                     *elementPtr = m_videoSink;
                 }));
-        const std::string kElementTypeName{"GenericSink"};
         EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink))).WillOnce(Return(kElementTypeName.c_str()));
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
