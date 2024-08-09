@@ -60,6 +60,7 @@ public:
     {
         EXPECT_CALL(*m_mainThreadMock, unregisterClient(kMainThreadClientId));
         m_sut.reset();
+        m_controlClientMock.reset();
     }
 
     void mainThreadWillEnqueueTaskAndWait()

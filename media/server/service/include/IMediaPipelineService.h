@@ -54,6 +54,7 @@ public:
     virtual bool setPlaybackRate(int sessionId, double rate) = 0;
     virtual bool setPosition(int sessionId, std::int64_t position) = 0;
     virtual bool getPosition(int sessionId, std::int64_t &position) = 0;
+    virtual bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
     virtual bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                                 std::uint32_t height) = 0;
     virtual bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,

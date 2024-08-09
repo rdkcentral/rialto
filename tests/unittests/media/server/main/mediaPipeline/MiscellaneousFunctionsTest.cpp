@@ -27,6 +27,8 @@ class RialtoServerMediaPipelineMiscellaneousFunctionsTest : public MediaPipeline
 protected:
     const int64_t m_kPosition{4028596027};
     const double m_kPlaybackRate{1.5};
+    uint64_t m_kRenderedFrames{3141};
+    uint64_t m_kDroppedFrames{95};
 
     RialtoServerMediaPipelineMiscellaneousFunctionsTest() { createMediaPipeline(); }
 
@@ -239,6 +241,55 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
             }));
     EXPECT_TRUE(m_mediaPipeline->getPosition(targetPosition));
     EXPECT_EQ(targetPosition, m_kPosition);
+}
+
+/**
+ * Test that GetStats returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    uint64_t renderedFrames;
+    uint64_t droppedFrames;
+    const int kSourceId{1};
+    EXPECT_FALSE(m_mediaPipeline->getStats(kSourceId, renderedFrames, droppedFrames));
+}
+
+/**
+ * Test that GetStats returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsFailure)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    uint64_t renderedFrames;
+    uint64_t droppedFrames;
+    EXPECT_CALL(*m_gstPlayerMock, getStats(_, _, _)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getStats(videoSourceId, renderedFrames, droppedFrames));
+}
+
+/**
+ * Test that GetStats returns success if the gstreamer API succeeds and gets playback rate
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsSuccess)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getStats(_, _, _))
+        .WillOnce(Invoke(
+            [&](const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames)
+            {
+                renderedFrames = m_kRenderedFrames;
+                droppedFrames = m_kDroppedFrames;
+                return true;
+            }));
+    uint64_t renderedFrames;
+    uint64_t droppedFrames;
+    EXPECT_TRUE(m_mediaPipeline->getStats(videoSourceId, renderedFrames, droppedFrames));
+    EXPECT_EQ(renderedFrames, m_kRenderedFrames);
+    EXPECT_EQ(droppedFrames, m_kDroppedFrames);
 }
 
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, RenderFrameSuccess)

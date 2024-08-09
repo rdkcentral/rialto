@@ -111,6 +111,7 @@ public:
     void setEos(const firebolt::rialto::MediaSourceType &type) override;
     void setPlaybackRate(double rate) override;
     bool getPosition(std::int64_t &position) override;
+    bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
     void setVolume(double volume) override;
     bool getVolume(double &volume) override;
     void setMute(bool mute) override;

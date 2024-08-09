@@ -63,6 +63,8 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     const int64_t kPosition1{123};
     const int64_t kPosition2{234};
     const uint32_t kNeedDataRequestId{5};
+    const uint32_t kRenderedFrames{5432};
+    const uint32_t kDroppedFrames{51};
     const std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSegment> kMediaSegment;
     const std::shared_ptr<IMediaPipelineClient> kIMediaPipelineClient;
 
@@ -118,6 +120,18 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
         int64_t position;
         EXPECT_TRUE(proxy->getPosition(position));
         EXPECT_EQ(position, kPosition2);
+    }
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, getStats(_, _, _))
+        .WillOnce(DoAll(SetArgReferee<1>(kRenderedFrames), SetArgReferee<2>(kDroppedFrames), Return(true)));
+    {
+        uint64_t renderedFrames;
+        uint64_t droppedFrames;
+        EXPECT_TRUE(proxy->getStats(kSourceId, renderedFrames, droppedFrames));
+        EXPECT_EQ(renderedFrames, kRenderedFrames);
+        EXPECT_EQ(droppedFrames, kDroppedFrames);
     }
 
     /////////////////////////////////////////////

@@ -84,6 +84,8 @@ public:
                          ::google::protobuf::Closure *done) override;
     void getPosition(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetPositionRequest *request,
                      ::firebolt::rialto::GetPositionResponse *response, ::google::protobuf::Closure *done) override;
+    void getStats(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetStatsRequest *request,
+                  ::firebolt::rialto::GetStatsResponse *response, ::google::protobuf::Closure *done) override;
     void renderFrame(::google::protobuf::RpcController *controller, const ::firebolt::rialto::RenderFrameRequest *request,
                      ::firebolt::rialto::RenderFrameResponse *response, ::google::protobuf::Closure *done) override;
     void setVolume(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetVolumeRequest *request,

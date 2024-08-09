@@ -25,8 +25,6 @@ namespace firebolt::rialto::client::ct
 class PositionUpdatesTest : public ClientComponentTest
 {
 public:
-    int64_t m_position = 10;
-
     PositionUpdatesTest() : ClientComponentTest()
     {
         ClientComponentTest::startApplicationRunning();
@@ -74,6 +72,11 @@ public:
  *   GetPosition.
  *   Expect that GetPosition propagated to the server and returns the position 10.
  *
+ *  Step 4: Get Stats
+ *   GetStats
+ *   Expect that GetStats propagated to the server and returns the correct
+ *   number of frames rendered and dropped.
+ *
  * Test Teardown:
  *  Terminate the media session.
  *  Memory region created for the shared buffer is closed.
@@ -94,12 +97,20 @@ TEST_F(PositionUpdatesTest, positionUpdates)
     MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
 
     // Step 2: Notify position
-    m_position = 10;
-    MediaPipelineTestMethods::shouldNotifyPosition(m_position);
-    MediaPipelineTestMethods::sendNotifyPositionChanged(m_position);
+    int64_t position = 10;
+    MediaPipelineTestMethods::shouldNotifyPosition(position);
+    MediaPipelineTestMethods::sendNotifyPositionChanged(position);
 
     // Step 3: Get position
-    MediaPipelineTestMethods::shouldGetPosition(m_position);
-    MediaPipelineTestMethods::getPosition(m_position);
+    MediaPipelineTestMethods::shouldGetPosition(position);
+    MediaPipelineTestMethods::getPosition(position);
+
+    // Step 4: Get stats
+    {
+        const uint64_t kRenderedFrames = 2345;
+        const uint64_t kDroppedFrames = 6;
+        MediaPipelineTestMethods::shouldGetStats(kRenderedFrames, kDroppedFrames);
+        MediaPipelineTestMethods::getStats(kRenderedFrames, kDroppedFrames);
+    }
 }
 } // namespace firebolt::rialto::client::ct
