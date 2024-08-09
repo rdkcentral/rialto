@@ -44,6 +44,13 @@ TEST_F(AttachSourceTest, shouldAttachOpusWithAudioSpecificConf)
     checkAudioSourceAttached();
 }
 
+TEST_F(AttachSourceTest, shouldAttachBwavAudioSource)
+{
+    shouldAttachBwavAudioSource();
+    triggerAttachBwavAudioSource();
+    checkAudioSourceAttachedWithDrm();
+}
+
 TEST_F(AttachSourceTest, shouldAttachVideoSourceAuAvc)
 {
     std::string mimeType = "video/h264";
