@@ -195,12 +195,12 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
         return MediaKeyErrorStatus::FAIL;
     }
 
-#ifdef RIALTO_ENABLE_DECRYPT_BUFFER
-    OpenCDMError status = opencdm_gstreamer_session_decrypt_buffer(m_session, encrypted, caps);
-    return convertOpenCdmError(status);
-#else
+#ifdef RIALTO_DISABLE_DECRYPT_BUFFER
     // TODO(RIALTO-127): Remove
     return MediaKeyErrorStatus::FAIL;
+#else
+    OpenCDMError status = opencdm_gstreamer_session_decrypt_buffer(m_session, encrypted, caps);
+    return convertOpenCdmError(status);
 #endif
 }
 
