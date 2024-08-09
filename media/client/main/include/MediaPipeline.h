@@ -157,9 +157,11 @@ public:
 
     bool renderFrame() override;
 
-    bool setVolume(double volume) override;
+    bool setVolume(double targetVolume, uint32_t duration = 0, EaseType type = EaseType::EASE_LINEAR) override;
 
-    bool getVolume(double &volume) override;
+    bool getVolume(double &currentVolume) override;
+
+    bool getFadeVolume(uint32_t &fadeVolume) override;
 
     bool setMute(bool mute) override;
 

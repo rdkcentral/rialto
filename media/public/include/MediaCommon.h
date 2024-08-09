@@ -439,6 +439,13 @@ enum class PlaybackError
     DECRYPTION, /* Player failed to decrypt a buffer and the frame has been dropped */
 };
 
+enum class EaseType
+{
+    EASE_LINEAR,   /** < Linear EaseType - set as default for setVolume */
+    EASE_IN_CUBIC, /** < Cubic In EaseType  */
+    EASE_OUT_CUBIC /** < Cubic Out EaseType  */
+};
+
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_

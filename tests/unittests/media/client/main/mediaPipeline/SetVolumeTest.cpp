@@ -22,7 +22,7 @@
 class RialtoClientMediaPipelineSetVolumeTest : public MediaPipelineTestBase
 {
 protected:
-    const double m_kVolume{0.7};
+    const double m_kTargetVolume{0.7};
 
     virtual void SetUp()
     {
@@ -44,9 +44,9 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeSuccess)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kVolume)).WillOnce(Return(true));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kTargetVolume)).WillOnce(Return(true));
 
-    EXPECT_EQ(m_mediaPipeline->setVolume(m_kVolume), true);
+    EXPECT_EQ(m_mediaPipeline->setVolume(m_kTargetVolume), true);
 }
 
 /**
@@ -54,7 +54,7 @@ TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeSuccess)
  */
 TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeFailure)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kVolume)).WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kTargetVolume)).WillOnce(Return(false));
 
-    EXPECT_EQ(m_mediaPipeline->setVolume(m_kVolume), false);
+    EXPECT_EQ(m_mediaPipeline->setVolume(m_kTargetVolume), false);
 }

@@ -120,9 +120,11 @@ public:
 
     bool renderFrame() override;
 
-    bool setVolume(double volume) override;
+    bool setVolume(double targetVolume, uint32_t duration = 0, EaseType type = EaseType::EASE_LINEAR) override;
 
-    bool getVolume(double &volume) override;
+    bool getVolume(double &currentVolume) override;
+
+    bool getFadeVolume(uint32_t &fadeVolume) override;
 
     bool setMute(bool mute) override;
 
@@ -397,22 +399,35 @@ protected:
     void scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType);
 
     /**
-     * @brief Set volume internally, only to be called on the main thread.
+     * @brief Set the target volume level with a transition internally, only to be called on the main thread.
+     *        Sets the volume with a transition effect over the specified duration and easing type.
      *
-     * @param[in] volume Target volume level (0.0 - 1.0)
+     * @param[in] targetVolume : Target volume level (0.0 - 1.0)
+     * @param[in] duration : Duration of the volume transition in milliseconds
+     * @param[in] type : Easing type for the volume transition
      *
-     * @retval true on success false otherwise
+     * @retval true on success, false otherwise
      */
-    bool setVolumeInternal(double volume);
+    bool setVolumeInternal(double targetVolume, uint32_t duration = 0, EaseType type = EaseType::EASE_LINEAR);
 
     /**
-     * @brief Get volume internally, only to be called on the main thread.
+     * @brief Get the current volume level internally, only to be called on the main thread.
+     *        Fetches the current volume level for the pipeline.
      *
-     * @param[out] volume Current volume level (range 0.0 - 1.0)
+     * @param[out] currentVolume : Current volume level (range 0.0 - 1.0)
      *
-     * @retval true on success false otherwise
+     * @retval true on success, false otherwise
      */
-    bool getVolumeInternal(double &volume);
+    bool getVolumeInternal(double &currentVolume);
+
+    /**
+     * @brief Retrieves the target volume internally if supported, only to be called on the main thread.
+     *
+     * @param[in] fadeVolume : The target fade volume level
+     *
+     * @retval true if the target volume if supported was successfully retrieved, false otherwise.
+     */
+    bool getFadeVolumeInternal(uint32_t &fadeVolume);
 
     /**
      * @brief Set mute internally, only to be called on the main thread.
