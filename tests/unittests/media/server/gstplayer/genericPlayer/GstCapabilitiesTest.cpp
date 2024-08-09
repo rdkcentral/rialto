@@ -60,6 +60,7 @@ public:
                     {"audio/x-eac3", {}},
                     {"audio/x-opus", {}},
                     {"audio/x-opus, channel-mapping-family=(int)0", {}},
+                    {"audio/b-wav", {}},
                     {"video/x-av1", {}},
                     {"video/x-h264", {}},
                     {"video/x-h265", {}},
