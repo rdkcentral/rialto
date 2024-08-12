@@ -120,7 +120,7 @@ public:
 
     bool renderFrame() override;
 
-    bool setVolume(double targetVolume, uint32_t duration = 0, EaseType type = EaseType::EASE_LINEAR) override;
+    bool setVolume(double targetVolume, uint32_t duration, EaseType type) override;
 
     bool getVolume(double &currentVolume) override;
 
@@ -399,16 +399,13 @@ protected:
     void scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType);
 
     /**
-     * @brief Set the target volume level with a transition internally, only to be called on the main thread.
-     *        Sets the volume with a transition effect over the specified duration and easing type.
-     *
-     * @param[in] targetVolume : Target volume level (0.0 - 1.0)
-     * @param[in] duration : Duration of the volume transition in milliseconds
-     * @param[in] type : Easing type for the volume transition
-     *
-     * @retval true on success, false otherwise
-     */
-    bool setVolumeInternal(double targetVolume, uint32_t duration = 0, EaseType type = EaseType::EASE_LINEAR);
+      * @brief Set the target volume level with a transition internally, only to be called on the main thread.
+      *
+      * @param[in] targetVolume : Target volume level (0.0 - 1.0)
+      *
+      * @retval true on success, false otherwise
+      */
+    bool setVolumeInternal(double targetVolume);
 
     /**
      * @brief Get the current volume level internally, only to be called on the main thread.
@@ -419,15 +416,6 @@ protected:
      * @retval true on success, false otherwise
      */
     bool getVolumeInternal(double &currentVolume);
-
-    /**
-     * @brief Retrieves the target volume internally if supported, only to be called on the main thread.
-     *
-     * @param[in] fadeVolume : The target fade volume level
-     *
-     * @retval true if the target volume if supported was successfully retrieved, false otherwise.
-     */
-    bool getFadeVolumeInternal(uint32_t &fadeVolume);
 
     /**
      * @brief Set mute internally, only to be called on the main thread.
