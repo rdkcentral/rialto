@@ -56,6 +56,7 @@ public:
     MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
     MOCK_METHOD(bool, flush, (int32_t sourceId, bool resetTime), (override));
     MOCK_METHOD(bool, setSourcePosition, (int32_t sourceId, int64_t position), (override));
+    MOCK_METHOD(bool, processAudioGap, (int64_t position, uint32_t duration, uint32_t level), (override));
 };
 } // namespace firebolt::rialto::server
 

@@ -17,16 +17,26 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMMON_TYPE_CONVERTERS_H_
-#define FIREBOLT_RIALTO_COMMON_TYPE_CONVERTERS_H_
+#include "GenericTasksTestsBase.h"
 
-#include "MediaCommon.h"
-
-namespace firebolt::rialto::common
+class ProcessAudioGapTest : public GenericTasksTestsBase
 {
-const char *convertMediaSourceType(const MediaSourceType &mediaSourceType);
-const char *convertLayout(const Layout &layout);
-const char *convertFormat(const Format &format);
-} // namespace firebolt::rialto::common
+};
 
-#endif // FIREBOLT_RIALTO_COMMON_TYPE_CONVERTERS_H_
+TEST_F(ProcessAudioGapTest, shouldFailToProcessAudioGapNoPipeline)
+{
+    setContextPipelineNull();
+    triggerProcessAudioGap();
+}
+
+TEST_F(ProcessAudioGapTest, shouldFailToProcessAudioGapNoSourceAttached)
+{
+    triggerProcessAudioGap();
+}
+
+TEST_F(ProcessAudioGapTest, shouldProcessAudioGap)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    shouldProcessAudioGap();
+    triggerProcessAudioGap();
+}

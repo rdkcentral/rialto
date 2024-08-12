@@ -23,6 +23,7 @@
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 #include <unordered_map>
 
 namespace firebolt::rialto::server::tasks::generic
@@ -127,6 +128,10 @@ public:
         {
             addMpegVersionToCaps(caps);
         }
+        else if (mimeType == "audio/b-wav")
+        {
+            addRawAudioData(caps);
+        }
         addSampleRateAndChannelsToCaps(caps);
 
         return caps;
@@ -178,6 +183,20 @@ protected:
     void addMpegVersionToCaps(GstCaps *caps) const
     {
         m_gstWrapper->gstCapsSetSimple(caps, "mpegversion", G_TYPE_INT, 4, nullptr);
+    }
+
+    void addRawAudioData(GstCaps *caps) const
+    {
+        firebolt::rialto::AudioConfig audioConfig = m_attachedAudioSource.getAudioConfig();
+        if (audioConfig.format.has_value())
+            m_gstWrapper->gstCapsSetSimple(caps, "format", G_TYPE_STRING,
+                                           common::convertFormat(audioConfig.format.value()), nullptr);
+        if (audioConfig.layout.has_value())
+            m_gstWrapper->gstCapsSetSimple(caps, "layout", G_TYPE_STRING,
+                                           common::convertLayout(audioConfig.layout.value()), nullptr);
+        if (audioConfig.channelMask.has_value())
+            m_gstWrapper->gstCapsSetSimple(caps, "channel-mask", GST_TYPE_BITMASK, audioConfig.channelMask.value(),
+                                           nullptr);
     }
 
     const IMediaPipeline::MediaSourceAudio &m_attachedAudioSource;
