@@ -910,6 +910,28 @@ bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, in
     return true;
 }
 
+bool MediaPipelineServerInternal::processAudioGap(int64_t position, uint32_t duration, uint32_t level)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = processAudioGapInternal(position, duration, level); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::processAudioGapInternal(int64_t position, uint32_t duration, uint32_t level)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to process audio gap - Gstreamer player has not been loaded");
+        return false;
+    }
+    m_gstPlayer->processAudioGap(position, duration, level);
+    return true;
+}
+
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
                                                          const std::unique_ptr<MediaSegment> &mediaSegment)
 {

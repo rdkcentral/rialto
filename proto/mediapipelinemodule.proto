@@ -131,9 +131,50 @@ message AttachSourceRequest {
     }
 
     message AudioConfig {
+        enum Format {
+            S8 = 0;
+            U8 = 1;
+            S16LE = 2;
+            S16BE = 3;
+            U16LE = 4;
+            U16BE = 5;
+            S24_32LE = 6;
+            S24_32BE = 7;
+            U24_32LE = 8;
+            U24_32BE = 9;
+            S32LE = 10;
+            S32BE = 11;
+            U32LE = 12;
+            U32BE = 13;
+            S24LE = 14;
+            S24BE = 15;
+            U24LE = 16;
+            U24BE = 17;
+            S20LE = 18;
+            S20BE = 19;
+            U20LE = 20;
+            U20BE = 21;
+            S18LE = 22;
+            S18BE = 23;
+            U18LE = 24;
+            U18BE = 25;
+            F32LE = 26;
+            F32BE = 27;
+            F64LE = 28;
+            F64BE = 29;
+        }
+
+        enum Layout {
+            INTERLEAVED = 0;
+            NON_INTERLEAVED = 1;
+        }
+
         optional uint32 number_of_channels = 1;   ///< The number of channels.
         optional uint32 sample_rate = 2;         ///< The sampling rate.
         optional bytes codec_specific_config = 3; ///The audio specific config. Zero length if no specific config
+        optional Format format = 4; ///< The Format of the audio samples.
+        optional Layout layout = 5; ///< The layout of channels within a buffer.
+        optional uint64 channel_mask = 6; ///< Bitmask of channel positions present.
     }
 
     message CodecData {
@@ -453,6 +494,27 @@ message SetSourcePositionResponse {
 }
 
 /**
+ * @fn void processAudioGap(int64 position, uint32 duration, uint32 level)
+ * @brief Process audio gap.
+ *
+ * @param[in] session_id   The id of the A/V session.
+ * @param[in] position     Audio pts fade pts value
+ * @param[in] duration     Audio pts fade duration
+ * @param[in] level        Audio pts fade target level [0-1]
+ *
+ * This method handles audio gap in order to avoid audio pops during transitions.
+ *
+ */
+message ProcessAudioGapRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int64 position = 2 [default = -1];
+    optional uint32 duration = 3 [default = 0];
+    optional uint32 level = 4 [default = 0];
+}
+message ProcessAudioGapResponse {
+}
+
+/**
  * @brief Event sent the playback state has changed.
  *
  * @param session_id   The id of the A/V session the status is for.
@@ -768,5 +830,12 @@ service MediaPipelineModule {
      * @see SetSourcePositionRequest
      */
     rpc setSourcePosition(SetSourcePositionRequest) returns (SetSourcePositionResponse) {
+    }
+
+    /**
+     * @brief This method handles audio gap in order to avoid audio pops during transitions.
+     * @see ProcessAudioGapRequest
+     */
+    rpc processAudioGap(ProcessAudioGapRequest) returns (ProcessAudioGapResponse) {
     }
 }

@@ -18,22 +18,74 @@
  */
 
 #include "TypeConverters.h"
+#include <unordered_map>
 
 namespace firebolt::rialto::common
 {
 const char *convertMediaSourceType(const MediaSourceType &mediaSourceType)
 {
-    switch (mediaSourceType)
+    static const std::unordered_map<MediaSourceType, const char *>
+        kMediaSourceTypeToStr{{MediaSourceType::AUDIO, "Audio"},
+                              {MediaSourceType::VIDEO, "Video"},
+                              {MediaSourceType::SUBTITLE, "Subtitle"},
+                              {MediaSourceType::UNKNOWN, "Unknown"}};
+    const auto it = kMediaSourceTypeToStr.find(mediaSourceType);
+    if (kMediaSourceTypeToStr.end() != it)
     {
-    case MediaSourceType::AUDIO:
-        return "Audio";
-    case MediaSourceType::VIDEO:
-        return "Video";
-    case MediaSourceType::SUBTITLE:
-        return "Subtitle";
-    case MediaSourceType::UNKNOWN:
-    default:
-        return "Unknown";
+        return it->second;
     }
+    return "Unknown";
+}
+
+const char *convertLayout(const Layout &layout)
+{
+    static const std::unordered_map<Layout, const char *> kLayoutToStr{{Layout::INTERLEAVED, "interleaved"},
+                                                                       {Layout::NON_INTERLEAVED, "non-interleaved"}};
+    const auto it = kLayoutToStr.find(layout);
+    if (kLayoutToStr.end() != it)
+    {
+        return it->second;
+    }
+    return "";
+}
+
+const char *convertFormat(const Format &format)
+{
+    static const std::unordered_map<Format, const char *> kFormatToStr{{Format::S8, "S8"},
+                                                                       {Format::U8, "U8"},
+                                                                       {Format::S16LE, "S16LE"},
+                                                                       {Format::S16BE, "S16BE"},
+                                                                       {Format::U16LE, "U16LE"},
+                                                                       {Format::U16BE, "U16BE"},
+                                                                       {Format::S24_32LE, "S24_32LE"},
+                                                                       {Format::S24_32BE, "S24_32BE"},
+                                                                       {Format::U24_32LE, "U24_32LE"},
+                                                                       {Format::U24_32BE, "U24_32BE"},
+                                                                       {Format::S32LE, "S32LE"},
+                                                                       {Format::S32BE, "S32BE"},
+                                                                       {Format::U32LE, "U32LE"},
+                                                                       {Format::U32BE, "U32BE"},
+                                                                       {Format::S24LE, "S24LE"},
+                                                                       {Format::S24BE, "S24BE"},
+                                                                       {Format::U24LE, "U24LE"},
+                                                                       {Format::U24BE, "U24BE"},
+                                                                       {Format::S20LE, "S20LE"},
+                                                                       {Format::S20BE, "S20BE"},
+                                                                       {Format::U20LE, "U20LE"},
+                                                                       {Format::U20BE, "U20BE"},
+                                                                       {Format::S18LE, "S18LE"},
+                                                                       {Format::S18BE, "S18BE"},
+                                                                       {Format::U18LE, "U18LE"},
+                                                                       {Format::U18BE, "U18BE"},
+                                                                       {Format::F32LE, "F32LE"},
+                                                                       {Format::F32BE, "F32BE"},
+                                                                       {Format::F64LE, "F64LE"},
+                                                                       {Format::F64BE, "F64BE"}};
+    const auto it = kFormatToStr.find(format);
+    if (kFormatToStr.end() != it)
+    {
+        return it->second;
+    }
+    return "";
 }
 } // namespace firebolt::rialto::common

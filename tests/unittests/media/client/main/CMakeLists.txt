@@ -40,6 +40,7 @@ add_gtests (
         mediaPipeline/FlushTest.cpp
         mediaPipeline/SetSourcePositionTest.cpp
         mediaPipeline/MediaPipelineProxyTest.cpp
+        mediaPipeline/ProcessAudioGapTest.cpp
 
         # MediaPipelineCapabilities tests
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp

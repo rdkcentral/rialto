@@ -27,6 +27,8 @@
  *
  */
 
+#include <limits>
+#include <optional>
 #include <stddef.h>
 #include <stdint.h>
 #include <utility>
@@ -53,6 +55,11 @@ constexpr uint32_t kInvalidAudioSampleRate{0};
  * @brief The value of an undefined size
  */
 constexpr int32_t kUndefinedSize{0};
+
+/**
+ * @brief The value of an undefined level
+ */
+constexpr uint32_t kUndefinedLevel{std::numeric_limits<uint32_t>::max()};
 
 /**
  * @brief The supported types of media source.
@@ -157,6 +164,52 @@ enum class PlaybackState
 };
 
 /**
+ * @brief The Format of the audio samples. Used by the raw audio media types
+ */
+enum class Format
+{
+    S8,
+    U8,
+    S16LE,
+    S16BE,
+    U16LE,
+    U16BE,
+    S24_32LE,
+    S24_32BE,
+    U24_32LE,
+    U24_32BE,
+    S32LE,
+    S32BE,
+    U32LE,
+    U32BE,
+    S24LE,
+    S24BE,
+    U24LE,
+    U24BE,
+    S20LE,
+    S20BE,
+    U20LE,
+    U20BE,
+    S18LE,
+    S18BE,
+    U18LE,
+    U18BE,
+    F32LE,
+    F32BE,
+    F64LE,
+    F64BE
+};
+
+/**
+ * @brief The layout of channels within a buffer. Used by the raw audio media types
+ */
+enum class Layout
+{
+    INTERLEAVED,
+    NON_INTERLEAVED
+};
+
+/**
  * @brief Audio specific configuration
  */
 struct AudioConfig
@@ -164,6 +217,9 @@ struct AudioConfig
     uint32_t numberOfChannels = kInvalidAudioChannels; /**< The number of channels. */
     uint32_t sampleRate = kInvalidAudioSampleRate;     /**< The sampling rate.*/
     std::vector<uint8_t> codecSpecificConfig; /**< The audio specific config. Zero length if no specific config*/
+    std::optional<Format> format;             /**< The Format of the audio samples.*/
+    std::optional<Layout> layout;             /**< The layout of channels within a buffer.*/
+    std::optional<uint64_t> channelMask;      /**< Bitmask of channel positions present. */
 };
 
 /**

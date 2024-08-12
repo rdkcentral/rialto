@@ -125,6 +125,8 @@ protected:
     void checkAudioSourceAttachedWithDrm();
     void shouldAttachAudioSourceWithAudioSpecificConf();
     void triggerAttachOpusAudioSourceWithAudioSpecificConf();
+    void shouldAttachBwavAudioSource();
+    void triggerAttachBwavAudioSource();
     void shouldAttachVideoSource(const std::string &mime, const std::string &alignment, const std::string &format);
     void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
                                   firebolt::rialto::StreamFormat streamFormat);
@@ -330,6 +332,10 @@ protected:
     void triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionSet(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType);
+
+    // ProcessAudioGap test methods
+    void triggerProcessAudioGap();
+    void shouldProcessAudioGap();
 
 private:
     // SetupElement helper methods
