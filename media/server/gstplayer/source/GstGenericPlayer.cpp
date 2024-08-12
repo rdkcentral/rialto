@@ -419,7 +419,6 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
             if (!stats)
             {
                 RIALTO_SERVER_LOG_WARN("failed to get stats");
-                return false;
             }
             else
             {
