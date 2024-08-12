@@ -360,6 +360,7 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetStatsInPlayingStateIfStructureNull)
 
     // Fail to get GstStructure which should cause the getStats() call to return false
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _)).Times(1);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(videoSink)).Times(1);
 
     uint64_t returnedRenderedFrames;
     uint64_t returnedDroppedFrames;
