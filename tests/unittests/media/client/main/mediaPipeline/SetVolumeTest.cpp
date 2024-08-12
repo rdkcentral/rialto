@@ -23,6 +23,8 @@ class RialtoClientMediaPipelineSetVolumeTest : public MediaPipelineTestBase
 {
 protected:
     const double m_kTargetVolume{0.7};
+    const uint32_t m_kDuration = 0; 
+    const firebolt::rialto::EaseType m_kType = firebolt::rialto::EaseType::EASE_LINEAR;
 
     virtual void SetUp()
     {
@@ -46,7 +48,7 @@ TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeSuccess)
 {
     EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kTargetVolume)).WillOnce(Return(true));
 
-    EXPECT_EQ(m_mediaPipeline->setVolume(m_kTargetVolume), true);
+    EXPECT_EQ(m_mediaPipeline->setVolume(m_kTargetVolume, m_kDuration, m_kType), true);
 }
 
 /**
@@ -56,5 +58,5 @@ TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeFailure)
 {
     EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kTargetVolume)).WillOnce(Return(false));
 
-    EXPECT_EQ(m_mediaPipeline->setVolume(m_kTargetVolume), false);
+    EXPECT_EQ(m_mediaPipeline->setVolume(m_kTargetVolume, m_kDuration, m_kType), false);
 }

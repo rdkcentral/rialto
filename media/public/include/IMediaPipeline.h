@@ -1279,22 +1279,22 @@ public:
 
     /**
      * @brief Set the target volume level and transition duration with easing type.
-     *        If duration is 0 milliseconds, then volume is immediately set
+     *        By default volume is set immediately if duration and type are not set.
      *
      * @param[in] targetVolume : Target volume level (0.0 - 1.0)
      * @param[in] duration : (Optional) Duration of the volume transition in milliseconds
      * @param[in] type : (Optional) Easing type for the volume transition
      *
-     * @retval true on success.
+     * @retval true on success, false otherwise.
      */
     virtual bool setVolume(double targetVolume, uint32_t duration = 0, EaseType type = EaseType::EASE_LINEAR) = 0;
 
     /**
-     * @brief Get current audio level or target volume if no fade transition. Fetches the current volume level for the pipeline.
+     * @brief Get current audio level. Fetches the current volume level for the pipeline.
      *
      * @param[out] currentVolume : Current volume level (range 0.0 - 1.0)
      *
-     * @retval true on success.
+     * @retval true on success, false otherwise.
      */
     virtual bool getVolume(double &currentVolume) = 0;
 

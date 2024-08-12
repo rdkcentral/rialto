@@ -823,7 +823,7 @@ bool MediaPipelineServerInternal::setVolume(double targetVolume, uint32_t durati
     return result;
 }
 
-bool MediaPipelineServerInternal::setVolumeInternal(double targetVolume, uint32_t duration, EaseType type)
+bool MediaPipelineServerInternal::setVolumeInternal(double targetVolume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -860,12 +860,6 @@ bool MediaPipelineServerInternal::getVolumeInternal(double &currentVolume)
 }
 
 bool MediaPipelineServerInternal::getFadeVolume(uint32_t &fadeVolume)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
-}
-
-bool MediaPipelineServerInternal::getFadeVolumeInternal(uint32_t &fadeVolume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     return false;
