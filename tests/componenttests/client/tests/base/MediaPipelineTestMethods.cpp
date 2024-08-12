@@ -86,6 +86,7 @@ const std::vector<std::string> kVideoMimeType{"video/h264", "video/h265", "video
 const std::vector<std::string> kUnknownMimeType{};
 constexpr bool kResetTime{true};
 constexpr double kPosition{1234};
+constexpr uint32_t kLevel{1};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -1358,6 +1359,30 @@ void MediaPipelineTestMethods::shouldFailToSetSourcePosition()
 void MediaPipelineTestMethods::setSourcePositionFailure()
 {
     EXPECT_FALSE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition));
+}
+
+void MediaPipelineTestMethods::shouldProcessAudioGap()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                processAudioGap(_, processAudioGapRequestMatcher(kSessionId, kPosition, kDuration, kLevel), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::processAudioGap()
+{
+    EXPECT_TRUE(m_mediaPipeline->processAudioGap(kPosition, kDuration, kLevel));
+}
+
+void MediaPipelineTestMethods::shouldFailToProcessAudioGap()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                processAudioGap(_, processAudioGapRequestMatcher(kSessionId, kPosition, kDuration, kLevel), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
+}
+
+void MediaPipelineTestMethods::processAudioGapFailure()
+{
+    EXPECT_FALSE(m_mediaPipeline->processAudioGap(kPosition, kDuration, kLevel));
 }
 
 /*************************** Private methods ********************************/

@@ -71,6 +71,7 @@ public:
 
     MOCK_METHOD(std::weak_ptr<IMediaPipelineClient>, getClient, (), (override));
     MOCK_METHOD(void, notifyApplicationState, (ApplicationState state), (override));
+    MOCK_METHOD(bool, processAudioGap, (int64_t position, uint32_t duration, uint32_t level), (override));
 };
 } // namespace firebolt::rialto::client
 

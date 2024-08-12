@@ -333,6 +333,10 @@ protected:
     void checkInitialPositionSet(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType);
 
+    // ProcessAudioGap test methods
+    void triggerProcessAudioGap();
+    void shouldProcessAudioGap();
+
 private:
     // SetupElement helper methods
     void expectSetupVideoElement();

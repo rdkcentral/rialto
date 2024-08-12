@@ -125,6 +125,8 @@ protected:
     void shouldFailToFlush();
     void shouldSetSourcePosition();
     void shouldFailToSetSourcePosition();
+    void shouldProcessAudioGap();
+    void shouldFailToProcessAudioGap();
 
     // MediaPipelineClient Expect methods
     void shouldNotifyNetworkStateBuffering();
@@ -231,6 +233,8 @@ protected:
     void flushFailure();
     void setSourcePosition();
     void setSourcePositionFailure();
+    void processAudioGap();
+    void processAudioGapFailure();
 
     // Event methods
     void sendNotifyNetworkStateBuffering();

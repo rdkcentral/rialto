@@ -29,4 +29,8 @@ bool performAudioTrackCodecChannelSwitch(struct rdkGstreamerUtilsPlaybackGrp *pg
 {
     return true;
 }
+
+void processAudioGap(GstElement *pipeline, gint64 gapstartpts, gint32 gapduration, gint64 gapdiscontinuity, bool audioaac)
+{
+}
 } // namespace rdk_gstreamer_utils

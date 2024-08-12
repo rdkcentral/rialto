@@ -240,6 +240,14 @@ struct SetSourcePosition
     static constexpr auto m_kFunction{&Stub::setSourcePosition};
 };
 
+struct ProcessAudioGap
+{
+    using RequestType = ::firebolt::rialto::ProcessAudioGapRequest;
+    using ResponseType = ::firebolt::rialto::ProcessAudioGapResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::processAudioGap};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {

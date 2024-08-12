@@ -109,6 +109,8 @@ public:
 
     bool setSourcePosition(int32_t sourceId, int64_t position) override;
 
+    bool processAudioGap(int64_t position, uint32_t duration, uint32_t level) override;
+
 private:
     /**
      * @brief The media player client ipc.

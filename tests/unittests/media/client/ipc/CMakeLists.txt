@@ -43,6 +43,7 @@ add_gtests (
         mediaPipelineIpc/SetMuteTest.cpp
         mediaPipelineIpc/FlushTest.cpp
         mediaPipelineIpc/SetSourcePositionTest.cpp
+        mediaPipelineIpc/ProcessAudioGapTest.cpp
 
         # MediaPipelineCapabilitiesIpc tests
         mediaPipelineCapabilitiesIpc/MediaPipelineCapabilitiesIpcTest.cpp
