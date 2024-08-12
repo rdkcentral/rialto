@@ -867,6 +867,39 @@ bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position)
     return true;
 }
 
+bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, uint32_t level)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::ProcessAudioGapRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_position(position);
+    request.set_duration(duration);
+    request.set_level(level);
+
+    firebolt::rialto::ProcessAudioGapResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->processAudioGap(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to process audio gap due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
 void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event)
 {
     /* Ignore event if not for this session */
