@@ -433,7 +433,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, RenderFrameFail)
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVolumeFailureDueToUninitializedPlayer)
 {
     const double kVolume{0.7};
-    const uint32_t kDuration = 0; 
+    const uint32_t kDuration = 0;
     const firebolt::rialto::EaseType kType = firebolt::rialto::EaseType::EASE_LINEAR;
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->setVolume(kVolume, kDuration, kType));
@@ -445,7 +445,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVolumeFailureDueT
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVolumeSuccess)
 {
     const double kVolume{0.7};
-    const uint32_t kDuration = 0; 
+    const uint32_t kDuration = 0;
     const firebolt::rialto::EaseType kType = firebolt::rialto::EaseType::EASE_LINEAR;
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();

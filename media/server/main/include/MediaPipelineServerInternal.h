@@ -444,12 +444,12 @@ protected:
     void scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType);
 
     /**
-      * @brief Set the target volume level with a transition internally, only to be called on the main thread.
-      *
-      * @param[in] targetVolume : Target volume level (0.0 - 1.0)
-      *
-      * @retval true on success, false otherwise
-      */
+     * @brief Set the target volume level with a transition internally, only to be called on the main thread.
+     *
+     * @param[in] targetVolume : Target volume level (0.0 - 1.0)
+     *
+     * @retval true on success, false otherwise
+     */
     bool setVolumeInternal(double targetVolume);
 
     /**

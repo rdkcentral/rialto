@@ -441,9 +441,9 @@ enum class PlaybackError
 
 enum class EaseType
 {
-    EASE_LINEAR,   
-    EASE_IN_CUBIC, 
-    EASE_OUT_CUBIC 
+    EASE_LINEAR,
+    EASE_IN_CUBIC,
+    EASE_OUT_CUBIC
 };
 
 } // namespace firebolt::rialto
