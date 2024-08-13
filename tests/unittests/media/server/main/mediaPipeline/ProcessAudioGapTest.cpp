@@ -26,7 +26,7 @@ class RialtoServerMediaPipelineProcessAudioGapTest : public MediaPipelineTestBas
 protected:
     const int64_t m_kPosition{4321};
     const uint32_t m_kDuration{1234};
-    const uint32_t m_kLevel{1};
+    const int64_t m_kDiscontinuityGap{1};
 
     RialtoServerMediaPipelineProcessAudioGapTest() { createMediaPipeline(); }
 
@@ -41,8 +41,8 @@ TEST_F(RialtoServerMediaPipelineProcessAudioGapTest, ProcessAudioGapSuccess)
     loadGstPlayer();
 
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, processAudioGap(m_kPosition, m_kDuration, m_kLevel));
-    EXPECT_TRUE(m_mediaPipeline->processAudioGap(m_kPosition, m_kDuration, m_kLevel));
+    EXPECT_CALL(*m_gstPlayerMock, processAudioGap(m_kPosition, m_kDuration, m_kDiscontinuityGap));
+    EXPECT_TRUE(m_mediaPipeline->processAudioGap(m_kPosition, m_kDuration, m_kDiscontinuityGap));
 }
 
 /**
@@ -51,5 +51,5 @@ TEST_F(RialtoServerMediaPipelineProcessAudioGapTest, ProcessAudioGapSuccess)
 TEST_F(RialtoServerMediaPipelineProcessAudioGapTest, ProcessAudioGapNoGstPlayerFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_FALSE(m_mediaPipeline->processAudioGap(m_kPosition, m_kDuration, m_kLevel));
+    EXPECT_FALSE(m_mediaPipeline->processAudioGap(m_kPosition, m_kDuration, m_kDiscontinuityGap));
 }

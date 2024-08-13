@@ -24,7 +24,7 @@ class RialtoClientMediaPipelineProcessAudioGapTest : public MediaPipelineTestBas
 protected:
     const int64_t m_kPosition{12};
     const uint32_t m_kDuration{34};
-    const uint32_t m_kLevel{56};
+    const int64_t m_kDiscontinuityGap{56};
 
     virtual void SetUp()
     {
@@ -46,9 +46,10 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineProcessAudioGapTest, Success)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, processAudioGap(m_kPosition, m_kDuration, m_kLevel)).WillOnce(Return(true));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, processAudioGap(m_kPosition, m_kDuration, m_kDiscontinuityGap))
+        .WillOnce(Return(true));
 
-    EXPECT_EQ(m_mediaPipeline->processAudioGap(m_kPosition, m_kDuration, m_kLevel), true);
+    EXPECT_EQ(m_mediaPipeline->processAudioGap(m_kPosition, m_kDuration, m_kDiscontinuityGap), true);
 }
 
 /**
@@ -56,7 +57,8 @@ TEST_F(RialtoClientMediaPipelineProcessAudioGapTest, Success)
  */
 TEST_F(RialtoClientMediaPipelineProcessAudioGapTest, Failure)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, processAudioGap(m_kPosition, m_kDuration, m_kLevel)).WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, processAudioGap(m_kPosition, m_kDuration, m_kDiscontinuityGap))
+        .WillOnce(Return(false));
 
-    EXPECT_EQ(m_mediaPipeline->processAudioGap(m_kPosition, m_kDuration, m_kLevel), false);
+    EXPECT_EQ(m_mediaPipeline->processAudioGap(m_kPosition, m_kDuration, m_kDiscontinuityGap), false);
 }

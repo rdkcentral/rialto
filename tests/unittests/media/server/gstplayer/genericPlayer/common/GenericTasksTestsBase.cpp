@@ -104,7 +104,7 @@ constexpr int32_t kId{0};
 constexpr firebolt::rialto::Layout kLayout{firebolt::rialto::Layout::INTERLEAVED};
 constexpr firebolt::rialto::Format kFormat{firebolt::rialto::Format::S16LE};
 constexpr uint64_t kChannelMask{0x0000000000000003};
-constexpr uint32_t kLevel{1};
+constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
@@ -2353,7 +2353,7 @@ void GenericTasksTestsBase::triggerProcessAudioGap()
                                                                    testContext->m_rdkGstreamerUtilsWrapper,
                                                                    kPosition,
                                                                    static_cast<uint32_t>(kDuration),
-                                                                   kLevel};
+                                                                   kDiscontinuityGap};
     task.execute();
 }
 
@@ -2366,8 +2366,8 @@ void GenericTasksTestsBase::shouldProcessAudioGap()
     EXPECT_CALL(*testContext->m_glibWrapper, gFree(testContext->m_xEac3Str));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps2));
     EXPECT_CALL(*(testContext->m_rdkGstreamerUtilsWrapper),
-                processAudioGap(testContext->m_context.pipeline, kPosition, static_cast<uint32_t>(kDuration), kLevel,
-                                kIsAudioAac));
+                processAudioGap(testContext->m_context.pipeline, kPosition, static_cast<uint32_t>(kDuration),
+                                kDiscontinuityGap, kIsAudioAac));
 }
 
 void GenericTasksTestsBase::triggerFailToCastAudioSource()

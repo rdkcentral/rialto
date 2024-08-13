@@ -867,7 +867,7 @@ bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position)
     return true;
 }
 
-bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, uint32_t level)
+bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap)
 {
     if (!reattachChannelIfRequired())
     {
@@ -880,7 +880,7 @@ bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, uint
     request.set_session_id(m_sessionId);
     request.set_position(position);
     request.set_duration(duration);
-    request.set_level(level);
+    request.set_discontinuity_gap(discontinuityGap);
 
     firebolt::rialto::ProcessAudioGapResponse response;
     auto ipcController = m_ipc.createRpcController();

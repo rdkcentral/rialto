@@ -26,9 +26,10 @@ ProcessAudioGap::ProcessAudioGap(
     GenericPlayerContext &context, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
-    std::int64_t position, std::uint32_t duration, std::uint32_t level)
+    std::int64_t position, std::uint32_t duration, std::int64_t discontinuityGap)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_position{position}, m_duration{duration}, m_level{level}
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_position{position}, m_duration{duration},
+      m_discontinuityGap{discontinuityGap}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing ProcessAudioGap");
 }
@@ -59,6 +60,6 @@ void ProcessAudioGap::execute() const
     m_glibWrapper->gFree(capsCStr);
     m_gstWrapper->gstCapsUnref(caps);
     const bool audioAac{capsStr.find("audio/mpeg") != std::string::npos};
-    m_rdkGstreamerUtilsWrapper->processAudioGap(m_context.pipeline, m_position, m_duration, m_level, audioAac);
+    m_rdkGstreamerUtilsWrapper->processAudioGap(m_context.pipeline, m_position, m_duration, m_discontinuityGap, audioAac);
 }
 } // namespace firebolt::rialto::server::tasks::generic

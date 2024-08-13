@@ -273,13 +273,13 @@ namespace firebolt::rialto::server::ct
 }
 
 ::firebolt::rialto::ProcessAudioGapRequest createProcessAudioGapRequest(int sessionId, std::int64_t position,
-                                                                        unsigned duration, unsigned level)
+                                                                        unsigned duration, std::int64_t discontinuityGap)
 {
     ::firebolt::rialto::ProcessAudioGapRequest request;
     request.set_session_id(sessionId);
     request.set_position(position);
     request.set_duration(duration);
-    request.set_level(level);
+    request.set_discontinuity_gap(discontinuityGap);
     return request;
 }
 
