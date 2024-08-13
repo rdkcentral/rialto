@@ -132,7 +132,7 @@ public:
 
     bool setSourcePosition(int32_t sourceId, int64_t position) override;
 
-    bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap) override;
+    bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
@@ -471,10 +471,11 @@ protected:
      * @param[in] position         : Audio pts fade position
      * @param[in] duration         : Audio pts fade duration
      * @param[in] discontinuityGap : Audio discontinuity gap
+     * @param[in] audioAac         : True if audio codec is AAC
      *
      * @retval true on success.
      */
-    bool processAudioGapInternal(int64_t position, uint32_t duration, int64_t discontinuityGap);
+    bool processAudioGapInternal(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac);
 };
 
 }; // namespace firebolt::rialto::server

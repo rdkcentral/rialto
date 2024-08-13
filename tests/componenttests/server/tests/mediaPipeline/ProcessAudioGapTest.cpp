@@ -46,17 +46,13 @@ public:
 
     void willProcessAudioGap()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&m_audioAppSrc))).WillOnce(Return(&m_audioCaps));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_audioCaps)).WillOnce(Return(&m_audioCapsStr));
-        EXPECT_CALL(*m_glibWrapperMock, gFree(&m_audioCapsStr));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps));
         EXPECT_CALL(*(m_rdkGstreamerUtilsWrapperMock),
                     processAudioGap(&m_pipeline, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac));
     }
 
     void processAudioGap()
     {
-        auto req{createProcessAudioGapRequest(m_sessionId, kPosition, kDuration, kDiscontinuityGap)};
+        auto req{createProcessAudioGapRequest(m_sessionId, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac)};
         ConfigureAction<ProcessAudioGap>(m_clientStub).send(req).expectSuccess();
     }
 
@@ -263,7 +259,7 @@ TEST_F(ProcessAudioGapTest, ProcessAudioGapFailure)
     play();
 
     // Step 5: ProcessAudioGap failure
-    auto req{createProcessAudioGapRequest(m_sessionId + 1, kPosition, kDuration, kDiscontinuityGap)};
+    auto req{createProcessAudioGapRequest(m_sessionId + 1, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac)};
     ConfigureAction<ProcessAudioGap>(m_clientStub).send(req).expectFailure();
 
     // Step 6: Stop

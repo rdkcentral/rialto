@@ -248,10 +248,11 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSourcePosition(
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createProcessAudioGap(GenericPlayerContext &context,
                                                                              std::int64_t position,
                                                                              std::uint32_t duration,
-                                                                             std::int64_t discontinuityGap) const
+                                                                             std::int64_t discontinuityGap,
+                                                                             bool audioAac) const
 {
     return std::make_unique<tasks::generic::ProcessAudioGap>(context, m_gstWrapper, m_glibWrapper,
                                                              m_rdkGstreamerUtilsWrapper, position, duration,
-                                                             discontinuityGap);
+                                                             discontinuityGap, audioAac);
 }
 } // namespace firebolt::rialto::server

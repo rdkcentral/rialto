@@ -261,10 +261,11 @@ public:
      * @param[in] position         : Audio pts fade pts value
      * @param[in] duration         : Audio pts fade duration
      * @param[in] discontinuityGap : Audio discontinuity gap
+     * @param[in] audioAac         : True if audio codec is AAC
      *
      * @retval true on success.
      */
-    virtual bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap) = 0;
+    virtual bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) = 0;
 };
 
 }; // namespace firebolt::rialto::client

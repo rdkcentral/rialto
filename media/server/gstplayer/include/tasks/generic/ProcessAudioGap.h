@@ -37,7 +37,7 @@ public:
                     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
-                    std::int64_t position, std::uint32_t duration, std::int64_t discontinuityGap);
+                    std::int64_t position, std::uint32_t duration, std::int64_t discontinuityGap, bool audioAac);
     ~ProcessAudioGap() override;
     void execute() const override;
 
@@ -49,6 +49,7 @@ private:
     std::int64_t m_position;
     std::uint32_t m_duration;
     std::int64_t m_discontinuityGap;
+    bool m_audioAac;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

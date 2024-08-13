@@ -26,10 +26,10 @@ ProcessAudioGap::ProcessAudioGap(
     GenericPlayerContext &context, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
-    std::int64_t position, std::uint32_t duration, std::int64_t discontinuityGap)
+    std::int64_t position, std::uint32_t duration, std::int64_t discontinuityGap, bool audioAac)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
       m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_position{position}, m_duration{duration},
-      m_discontinuityGap{discontinuityGap}
+      m_discontinuityGap{discontinuityGap}, m_audioAac{audioAac}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing ProcessAudioGap");
 }
@@ -47,19 +47,7 @@ void ProcessAudioGap::execute() const
         RIALTO_SERVER_LOG_ERROR("Process audio gap failed - pipeline is null");
         return;
     }
-    auto audioSourceIt = m_context.streamInfo.find(MediaSourceType::AUDIO);
-    if (audioSourceIt == m_context.streamInfo.end())
-    {
-        RIALTO_SERVER_LOG_ERROR("Process audio gap failed - no audio source attached");
-        return;
-    }
-    GstAppSrc *appSrc{GST_APP_SRC(audioSourceIt->second.appSrc)};
-    GstCaps *caps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
-    gchar *capsCStr = m_gstWrapper->gstCapsToString(caps);
-    const std::string capsStr = std::string(capsCStr);
-    m_glibWrapper->gFree(capsCStr);
-    m_gstWrapper->gstCapsUnref(caps);
-    const bool audioAac{capsStr.find("audio/mpeg") != std::string::npos};
-    m_rdkGstreamerUtilsWrapper->processAudioGap(m_context.pipeline, m_position, m_duration, m_discontinuityGap, audioAac);
+    m_rdkGstreamerUtilsWrapper->processAudioGap(m_context.pipeline, m_position, m_duration, m_discontinuityGap,
+                                                m_audioAac);
 }
 } // namespace firebolt::rialto::server::tasks::generic

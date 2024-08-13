@@ -342,10 +342,11 @@ TEST_F(GstGenericPlayerTest, shouldProcessAudioGap)
     constexpr int64_t kPosition{3};
     constexpr uint64_t kDuration{2};
     constexpr int64_t kDiscontinuityGap{1};
+    constexpr bool kIsAudioAac{false};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createProcessAudioGap(_, kPosition, kDuration, kDiscontinuityGap))
+    EXPECT_CALL(m_taskFactoryMock, createProcessAudioGap(_, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac))
         .WillOnce(Return(ByMove(std::move(task))));
 
-    m_sut->processAudioGap(kPosition, kDuration, kDiscontinuityGap);
+    m_sut->processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac);
 }

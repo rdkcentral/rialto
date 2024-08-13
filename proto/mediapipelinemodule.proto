@@ -497,10 +497,11 @@ message SetSourcePositionResponse {
  * @fn void processAudioGap(int64 position, uint32 duration, uint32 level)
  * @brief Process audio gap.
  *
- * @param[in] session_id       The id of the A/V session.
- * @param[in] position         Audio pts fade pts value
- * @param[in] duration         Audio pts fade duration
- * @param[in] discontinuityGap Audio discontinuity gap
+ * @param[in] session_id        The id of the A/V session.
+ * @param[in] position          Audio pts fade pts value
+ * @param[in] duration          Audio pts fade duration
+ * @param[in] discontinuity_gap Audio discontinuity gap
+ * @param[in] audio_aac         True if audio codec is AAC
  *
  * This method handles audio gap in order to avoid audio pops during transitions.
  *
@@ -510,6 +511,7 @@ message ProcessAudioGapRequest {
     optional int64 position = 2 [default = -1];
     optional uint32 duration = 3 [default = 0];
     optional int64 discontinuity_gap = 4 [default = 0];
+    optional bool audio_aac = 5 [default = false];
 }
 message ProcessAudioGapResponse {
 }

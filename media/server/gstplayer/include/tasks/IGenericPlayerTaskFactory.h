@@ -372,12 +372,13 @@ public:
      * @param[in] position         : Audio pts fade position
      * @param[in] duration         : Audio pts fade duration
      * @param[in] discontinuityGap : Audio discontinuity gap
+     * @param[in] audioAac         : True if audio codec is AAC
      *
      * @retval the new ProcessAudioGap task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createProcessAudioGap(GenericPlayerContext &context, std::int64_t position,
-                                                               std::uint32_t duration,
-                                                               std::int64_t discontinuityGap) const = 0;
+                                                               std::uint32_t duration, std::int64_t discontinuityGap,
+                                                               bool audioAac) const = 0;
 };
 
 } // namespace firebolt::rialto::server

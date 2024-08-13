@@ -106,7 +106,7 @@ public:
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createProcessAudioGap,
                 (GenericPlayerContext & context, std::int64_t position, std::uint32_t duration,
-                 std::int64_t discontinuityGap),
+                 std::int64_t discontinuityGap, bool isAudioAac),
                 (const, override));
 };
 } // namespace firebolt::rialto::server
