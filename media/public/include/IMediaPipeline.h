@@ -1301,7 +1301,7 @@ public:
     /**
      * @brief Retrieves the target volume level during a fade transition if supported
      *
-     * @param[in] fadeVolume : The target fade volume level
+     * @param[out] fadeVolume : The target fade volume level
      * @retval true on success, false if not supported
      */
     virtual bool getFadeVolume(uint32_t &fadeVolume) = 0;
