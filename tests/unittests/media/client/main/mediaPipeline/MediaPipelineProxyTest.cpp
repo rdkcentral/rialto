@@ -59,7 +59,6 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     const int kSourceId{2};
     const double kPlaybackRate{2.1};
     const double kVolume1{3.1};
-    const uint32_t kDuration{1000};
     const EaseType kEaseType{EaseType::EASE_LINEAR};
     const double kVolume2{4.1};
     const int64_t kPosition1{123};
