@@ -197,8 +197,8 @@ public:
      * @brief Get stats for this source.
      *
      * @param[in] mediaSourceType : The media source type to get stats for
-     * @param[out] renderedFrames : The number of dropped frames
-     * @param[out] droppedFrames : The number of rendered frames
+     * @param[out] renderedFrames : The number of rendered frames
+     * @param[out] droppedFrames : The number of dropped frames
      *
      * @retval true on success.
      */

@@ -1189,8 +1189,8 @@ public:
      * This method is sychronous, it returns dropped frames and rendered frames
      *
      * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
-     * @param[out] renderedFrames : The number of dropped frames
-     * @param[out] droppedFrames : The number of rendered frames
+     * @param[out] renderedFrames : The number of rendered frames
+     * @param[out] droppedFrames : The number of dropped frames
      *
      * @retval true on success.
      */
