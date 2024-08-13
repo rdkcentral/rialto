@@ -327,6 +327,15 @@ protected:
     bool setPositionInternal(int64_t position);
 
     /**
+     * @brief Get position internally, only to be called on the main thread.
+     *
+     * @param[out] position : The playback position in nanoseconds
+     *
+     * @retval true on success.
+     */
+    bool getPositionInternal(int64_t &position);
+
+    /**
      * @brief Get stats for this source.
      *
      * This method is sychronous, it returns dropped frames and rendered frames
@@ -337,7 +346,7 @@ protected:
      *
      * @retval true on success.
      */
-    bool getPositionInternal(int64_t &position);
+    bool getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames);
 
     /**
      * @brief Set video window internally, only to be called on the main thread.
@@ -346,15 +355,6 @@ protected:
      * @param[in] y      : The y position in pixels.
      * @param[in] width  : The width in pixels.
      * @param[in] height : The height in pixels.
-     *
-     * @retval true on success.
-     */
-    bool getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames);
-
-    /**
-     * @brief Get position internally, only to be called on the main thread.
-     *
-     * @param[out] position : The playback position in nanoseconds
      *
      * @retval true on success.
      */
