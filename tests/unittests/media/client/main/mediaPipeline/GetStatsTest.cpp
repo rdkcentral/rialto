@@ -57,7 +57,6 @@ TEST_F(RialtoClientMediaPipelineGetStatsTest, GetStatsSuccess)
                 return true;
             }));
     EXPECT_TRUE(m_mediaPipeline->getStats(m_kSourceId, renderedFrames, droppedFrames));
-    // EXPECT_EQ(resultStats, kExpectedStats);
 }
 
 /**

@@ -74,7 +74,7 @@ TEST_F(RialtoClientMediaPipelineIpcGetStatsTest, ChannelDisconnected)
 }
 
 /**
- * Test that getStats fails if the ipc channel disconnected and succeeds if the channel is reconnected.
+ * Ipc channel disconnected but getStats succeeds if the channel is reconnected.
  */
 TEST_F(RialtoClientMediaPipelineIpcGetStatsTest, ReconnectChannel)
 {
