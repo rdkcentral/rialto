@@ -42,6 +42,23 @@ SetPosition::~SetPosition()
 void SetPosition::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetPosition");
+
+    GstElement *audioSink{nullptr};
+    g_object_get(m_context.pipeline, "audio-sink", &audioSink, nullptr);
+
+    if (audioSink)
+    {
+        gdouble fadeVolume = 0.0;
+        g_object_get(audioSink, "fade-volume", &fadeVolume, NULL);
+        RIALTO_SERVER_LOG_DEBUG("Read fade-volume: %f", fadeVolume);
+
+        g_object_unref(audioSink);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to retrieve audio-sink element from the pipeline");
+    }
+
     if (!m_gstPlayerClient)
     {
         RIALTO_SERVER_LOG_ERROR("Seek failed - GstPlayerClient is NULL");

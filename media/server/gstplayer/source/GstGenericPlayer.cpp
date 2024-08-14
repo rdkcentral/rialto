@@ -29,6 +29,7 @@
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 #include <cinttypes>
 #include <stdexcept>
+#include <cmath>
 
 namespace
 {
@@ -184,7 +185,7 @@ GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionS
     }
     else
     {
-        RIALTO_SERVER_LOG_MIL("Primary video playback selected");
+        RIALTO_SERVER_LOG_MIL("Primary video playback selected!!!!!!!!!!!!!!");
     }
 
     m_gstDispatcherThread =
@@ -794,6 +795,40 @@ bool GstGenericPlayer::changePipelineState(GstState newState)
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
         return false;
+    }
+    
+    if(newState == GST_STATE_PLAYING)
+    {
+        
+
+        GstElement *audioSink = nullptr;
+        g_object_get(m_context.pipeline, "audio-sink", &audioSink, nullptr);
+
+        
+        if(audioSink)
+        {
+            double targetVolume = 1.0;
+            uint32_t duration = 1000000;
+            std::string easeString = "EASE_LINEAR";
+            uint32_t scaledTarget = trunc(100 * targetVolume);
+
+            if (easeString == "EASE_LINEAR")
+            {
+                easeString = "L";
+                RIALTO_SERVER_LOG_DEBUG("Audio Easing function: Ease Linear");
+            }
+
+            gchar fadeStr[32];
+            snprintf(fadeStr, sizeof(fadeStr), "%u,%u,%s", scaledTarget, duration, easeString.c_str());
+
+            g_object_set(audioSink, "audio-fade", fadeStr, nullptr);
+            RIALTO_SERVER_LOG_DEBUG("Set audio-fade on the audio sink");
+            g_object_unref(audioSink);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to get the audio sink");
+        }
     }
     return true;
 }
