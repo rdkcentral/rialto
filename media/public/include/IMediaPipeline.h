@@ -1184,6 +1184,30 @@ public:
     virtual bool getPosition(int64_t &position) = 0;
 
     /**
+     * @brief Sets the "Immediate Output" property for this source.
+     *
+     * This method is sychronous, it sets the "Immediate Output" property
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] immediateOutput : Set immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    virtual bool setImmediateOutput(int32_t sourceId, bool immediateOutput) = 0;
+
+    /**
+     * @brief Sets the "Immediate Output" property for this source.
+     *
+     * This method is sychronous, it sets the "Immediate Output" property
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] immediateOutput : Set immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    virtual bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) = 0;
+
+    /**
      * @brief Sets the coordinates of where the video should be displayed.
      *
      * @param[in] x      : The x position in pixels.

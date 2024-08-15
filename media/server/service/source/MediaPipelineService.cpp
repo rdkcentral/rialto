@@ -253,6 +253,34 @@ bool MediaPipelineService::getPosition(int sessionId, std::int64_t &position)
     return mediaPipelineIter->second->getPosition(position);
 }
 
+bool MediaPipelineService::setImmediateOutput(int sessionId, int32_t sourceId, bool immediateOutput)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to setImmediateOutput, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setImmediateOutput(sourceId, immediateOutput);
+}
+
+bool MediaPipelineService::getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to getImmediateOutput, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getImmediateOutput(sourceId, immediateOutput);
+}
+
 bool MediaPipelineService::setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                                           std::uint32_t height)
 {

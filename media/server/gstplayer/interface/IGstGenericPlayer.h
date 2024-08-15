@@ -194,6 +194,26 @@ public:
     virtual bool getPosition(std::int64_t &position) = 0;
 
     /**
+     * @brief Sets the "Immediate Output" property for this source.
+     *
+     * @param[in] mediaSourceType : The media source type
+     * @param[in] immediateOutput : Set immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    virtual bool setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput) = 0;
+
+    /**
+     * @brief Gets the "Immediate Output" property for this source.
+     *
+     * @param[in] mediaSourceType : The media source type
+     * @param[out] immediateOutput : Set immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    virtual bool getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutput) = 0;
+
+    /**
      * @brief Set the playback rate.
      *
      * @param[in] rate : The playback rate.

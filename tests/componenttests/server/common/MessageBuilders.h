@@ -54,6 +54,9 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::SetPlaybackRateRequest createSetPlaybackRateRequest(int sessionId);
 ::firebolt::rialto::SetPositionRequest createSetPositionRequest(int sessionId, std::int64_t position);
 ::firebolt::rialto::GetPositionRequest createGetPositionRequest(int sessionId);
+::firebolt::rialto::SetImmediateOutputRequest createSetImmediateOutputRequest(int sessionId, int sourceId,
+                                                                              bool immediateOutput);
+::firebolt::rialto::GetImmediateOutputRequest createGetImmediateOutputRequest(int sessionId, int sourceId);
 ::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId);
 ::firebolt::rialto::SetVolumeRequest createSetVolumeRequest(int sessionId);
 ::firebolt::rialto::GetVolumeRequest createGetVolumeRequest(int sessionId);

@@ -64,6 +64,15 @@ public:
 
     bool getPosition(int64_t &position) override { return m_mediaPipeline->getPosition(position); }
 
+    bool setImmediateOutput(int32_t sourceId, bool immediateOutput)
+    {
+        return m_mediaPipeline->setImmediateOutput(sourceId, immediateOutput);
+    }
+    bool getImmediateOutput(int32_t sourceId, bool &immediateOutput)
+    {
+        return m_mediaPipeline->getImmediateOutput(sourceId, immediateOutput);
+    }
+
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override
     {
         return m_mediaPipeline->setVideoWindow(x, y, width, height);

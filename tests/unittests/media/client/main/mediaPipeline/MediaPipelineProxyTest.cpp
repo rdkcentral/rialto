@@ -124,6 +124,22 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
+    EXPECT_CALL(*mediaPipelineMock, setImmediateOutput(kSourceId, true)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setImmediateOutput(kSourceId, true));
+
+    /////////////////////////////////////////////
+
+    {
+        const bool kImmediateOutputState{true};
+        bool returnImmediateOutputState;
+        EXPECT_CALL(*mediaPipelineMock, getImmediateOutput(kSourceId, _))
+            .WillOnce(DoAll(SetArgReferee<1>(kImmediateOutputState), Return(true)));
+        EXPECT_TRUE(proxy->getImmediateOutput(kSourceId, returnImmediateOutputState));
+        EXPECT_EQ(returnImmediateOutputState, kImmediateOutputState);
+    }
+
+    /////////////////////////////////////////////
+
     EXPECT_CALL(*mediaPipelineMock, setVideoWindow(1, 2, 3, 4)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->setVideoWindow(1, 2, 3, 4));
 

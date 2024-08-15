@@ -18,6 +18,8 @@
  */
 
 #include <chrono>
+#include <cinttypes>
+#include <stdexcept>
 
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
@@ -27,8 +29,6 @@
 #include "RialtoServerLogging.h"
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
-#include <cinttypes>
-#include <stdexcept>
 
 namespace
 {
@@ -380,6 +380,72 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
         return false;
     }
     return true;
+}
+
+GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType)
+{
+    const char *kSinkName{nullptr};
+    GstElement *sink{nullptr};
+    switch (mediaSourceType)
+    {
+    case MediaSourceType::AUDIO:
+        kSinkName = "audio-sink";
+        break;
+    case MediaSourceType::VIDEO:
+        kSinkName = "video-sink";
+        break;
+    default:
+        break;
+    }
+    if (!kSinkName)
+    {
+        RIALTO_SERVER_LOG_WARN("mediaSourceType not supported %d", static_cast<int>(mediaSourceType));
+    }
+    else
+    {
+        m_glibWrapper->gObjectGet(m_context.pipeline, kSinkName, &sink, nullptr);
+        if (!sink)
+        {
+            RIALTO_SERVER_LOG_WARN("%s could not be obtained", kSinkName);
+        }
+    }
+    return sink;
+}
+
+bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput)
+{
+    bool returnValue{false};
+    GstElement *sink = getSink(mediaSourceType);
+    if (sink)
+    {
+        // For AutoVideoSink we use properties on the child sink
+        if (MediaSourceType::VIDEO == mediaSourceType)
+            sink = getSinkChildIfAutoVideoSink(sink);
+
+        m_glibWrapper->gObjectSet(sink, "immediate-output", immediateOutput, nullptr);
+        returnValue = true;
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+    }
+
+    return returnValue;
+}
+
+bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutput)
+{
+    bool returnValue{false};
+    GstElement *sink = getSink(mediaSourceType);
+    if (sink)
+    {
+        // For AutoVideoSink we use properties on the child sink
+        if (MediaSourceType::VIDEO == mediaSourceType)
+            sink = getSinkChildIfAutoVideoSink(sink);
+
+        m_glibWrapper->gObjectGet(sink, "immediate-output", &immediateOutput, nullptr);
+        returnValue = true;
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+    }
+
+    return returnValue;
 }
 
 GstBuffer *GstGenericPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const
@@ -1075,7 +1141,11 @@ void GstGenericPlayer::removeAutoVideoSinkChild(GObject *object)
 
 GstElement *GstGenericPlayer::getSinkChildIfAutoVideoSink(GstElement *sink)
 {
-    const std::string kElementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
+    const gchar *kTmpName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
+    if (!kTmpName)
+        return sink;
+
+    const std::string kElementTypeName{kTmpName};
     if (kElementTypeName == "GstAutoVideoSink")
     {
         if (!m_context.autoVideoChildSink)

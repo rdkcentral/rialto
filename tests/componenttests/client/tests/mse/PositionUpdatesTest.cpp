@@ -25,8 +25,6 @@ namespace firebolt::rialto::client::ct
 class PositionUpdatesTest : public ClientComponentTest
 {
 public:
-    int64_t m_position = 10;
-
     PositionUpdatesTest() : ClientComponentTest()
     {
         ClientComponentTest::startApplicationRunning();
@@ -74,6 +72,10 @@ public:
  *   GetPosition.
  *   Expect that GetPosition propagated to the server and returns the position 10.
  *
+ *  Step 4: Set Immediate Output
+ *   SetImmediateOutput
+ *   Expect that SetImmediateOutput propagated to the server and sets the property
+ *
  * Test Teardown:
  *  Terminate the media session.
  *  Memory region created for the shared buffer is closed.
@@ -94,12 +96,21 @@ TEST_F(PositionUpdatesTest, positionUpdates)
     MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
 
     // Step 2: Notify position
-    m_position = 10;
-    MediaPipelineTestMethods::shouldNotifyPosition(m_position);
-    MediaPipelineTestMethods::sendNotifyPositionChanged(m_position);
+    int64_t position = 10;
+    MediaPipelineTestMethods::shouldNotifyPosition(position);
+    MediaPipelineTestMethods::sendNotifyPositionChanged(position);
 
     // Step 3: Get position
-    MediaPipelineTestMethods::shouldGetPosition(m_position);
-    MediaPipelineTestMethods::getPosition(m_position);
+    MediaPipelineTestMethods::shouldGetPosition(position);
+    MediaPipelineTestMethods::getPosition(position);
+
+    // Step 4: Set Immediate Output
+    bool kTestValueOfImmediateOutput{true};
+    MediaPipelineTestMethods::shouldSetImmediateOutput(kTestValueOfImmediateOutput);
+    MediaPipelineTestMethods::setImmediateOutput(kTestValueOfImmediateOutput);
+
+    // Step 4: Set Immediate Output
+    MediaPipelineTestMethods::shouldGetImmediateOutput(kTestValueOfImmediateOutput);
+    MediaPipelineTestMethods::getImmediateOutput(kTestValueOfImmediateOutput);
 }
 } // namespace firebolt::rialto::client::ct

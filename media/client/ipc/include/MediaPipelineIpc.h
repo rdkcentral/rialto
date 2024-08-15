@@ -91,6 +91,9 @@ public:
 
     bool getPosition(int64_t &position) override;
 
+    bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
+    bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
+
     bool setPlaybackRate(double rate) override;
 
     bool renderFrame() override;

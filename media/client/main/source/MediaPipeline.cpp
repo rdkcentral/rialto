@@ -308,6 +308,16 @@ bool MediaPipeline::getPosition(int64_t &position)
     return m_mediaPipelineIpc->getPosition(position);
 }
 
+bool MediaPipeline::setImmediateOutput(int32_t sourceId, bool immediateOutput)
+{
+    return m_mediaPipelineIpc->setImmediateOutput(sourceId, immediateOutput);
+}
+
+bool MediaPipeline::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
+{
+    return m_mediaPipelineIpc->getImmediateOutput(sourceId, immediateOutput);
+}
+
 bool MediaPipeline::handleSetPosition(int64_t position)
 {
     // needData requests no longer valid

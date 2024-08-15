@@ -206,6 +206,16 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToGetPosition()
     EXPECT_CALL(m_mediaPipelineMock, getPosition(_)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillSetImmediateOutput()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setImmediateOutput(_, _)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetImmediateOutput()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setImmediateOutput(_, _)).WillOnce(Return(false));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillRenderFrame()
 {
     EXPECT_CALL(m_mediaPipelineMock, renderFrame()).WillOnce(Return(true));
@@ -505,6 +515,16 @@ void MediaPipelineServiceTests::getPositionShouldFail()
 {
     std::int64_t targetPosition{};
     EXPECT_FALSE(m_sut->getPosition(kSessionId, targetPosition));
+}
+
+void MediaPipelineServiceTests::setImmediateOutputShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setImmediateOutput(kSessionId, kSourceId, true)); // todo
+}
+
+void MediaPipelineServiceTests::setImmediateOutputShouldFail()
+{
+    EXPECT_FALSE(m_sut->setImmediateOutput(kSessionId, kSourceId, true)); // todo
 }
 
 void MediaPipelineServiceTests::getSupportedMimeTypesSucceed()

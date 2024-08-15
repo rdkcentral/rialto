@@ -168,6 +168,22 @@ struct GetPosition
     static constexpr auto m_kFunction{&Stub::getPosition};
 };
 
+struct SetImmediateOutput
+{
+    using RequestType = ::firebolt::rialto::SetImmediateOutputRequest;
+    using ResponseType = ::firebolt::rialto::SetImmediateOutputResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setImmediateOutput};
+};
+
+struct GetImmediateOutput
+{
+    using RequestType = ::firebolt::rialto::GetImmediateOutputRequest;
+    using ResponseType = ::firebolt::rialto::GetImmediateOutputResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getImmediateOutput};
+};
+
 struct RenderFrame
 {
     using RequestType = ::firebolt::rialto::RenderFrameRequest;

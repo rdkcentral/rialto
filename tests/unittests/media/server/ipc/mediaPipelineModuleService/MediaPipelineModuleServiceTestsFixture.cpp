@@ -74,6 +74,8 @@ constexpr firebolt::rialto::Format kFormat{firebolt::rialto::Format::S16LE};
 constexpr uint64_t kChannelMask{0x0000000000000003};
 constexpr uint32_t kDuration{30};
 constexpr uint32_t kLevel{1};
+constexpr bool kImmediateOutputVal1{false};
+constexpr bool kImmediateOutputVal2{true};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -444,6 +446,33 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetPosition(
 {
     expectRequestFailure();
     EXPECT_CALL(m_mediaPipelineServiceMock, getPosition(kHardcodedSessionId, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetImmediateOutput()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(kHardcodedSessionId, _, kImmediateOutputVal1))
+        .WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetImmediateOutput()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setImmediateOutput(kHardcodedSessionId, _, kImmediateOutputVal1))
+        .WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetImmediateOutput()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getImmediateOutput(kHardcodedSessionId, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(kImmediateOutputVal2), Return(true)));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetImmediateOutput()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getImmediateOutput(kHardcodedSessionId, _, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillRenderFrame()
@@ -821,6 +850,50 @@ void MediaPipelineModuleServiceTests::sendGetPositionRequestAndReceiveResponseWi
     request.set_session_id(kHardcodedSessionId);
 
     m_service->getPosition(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetImmediateOutputRequestAndReceiveResponse()
+{
+    firebolt::rialto::SetImmediateOutputRequest request;
+    firebolt::rialto::SetImmediateOutputResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_immediate_output(kImmediateOutputVal1);
+
+    m_service->setImmediateOutput(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetImmediateOutputRequestAndReceiveFail()
+{
+    firebolt::rialto::SetImmediateOutputRequest request;
+    firebolt::rialto::SetImmediateOutputResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_immediate_output(kImmediateOutputVal1);
+
+    m_service->setImmediateOutput(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendGetImmediateOutputRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetImmediateOutputRequest request;
+    firebolt::rialto::GetImmediateOutputResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getImmediateOutput(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(response.immediate_output(), kImmediateOutputVal2);
+}
+
+void MediaPipelineModuleServiceTests::sendGetImmediateOutputRequestAndReceiveFail()
+{
+    firebolt::rialto::GetImmediateOutputRequest request;
+    firebolt::rialto::GetImmediateOutputResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getImmediateOutput(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendHaveDataRequestAndReceiveResponse()

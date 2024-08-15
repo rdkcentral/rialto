@@ -1299,6 +1299,32 @@ void MediaPipelineTestMethods::getPosition(const int64_t expectedPosition)
     EXPECT_EQ(returnPosition, expectedPosition);
 }
 
+void MediaPipelineTestMethods::shouldSetImmediateOutput(bool immediateOutput)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setImmediateOutput(_, setImmediateOutputRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->setImmediateOutputResponse()),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::setImmediateOutput(bool immediateOutput)
+{
+    EXPECT_TRUE(m_mediaPipeline->setImmediateOutput(kVideoSourceId, immediateOutput));
+}
+
+void MediaPipelineTestMethods::shouldGetImmediateOutput(bool immediateOutput)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                getImmediateOutput(_, getImmediateOutputRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getImmediateOutputResponse(immediateOutput)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getImmediateOutput(bool immediateOutput)
+{
+    EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(kVideoSourceId, immediateOutput));
+}
+
 void MediaPipelineTestMethods::shouldFlush()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock, flush(_, flushRequestMatcher(kSessionId, kAudioSourceId, kResetTime), _, _))

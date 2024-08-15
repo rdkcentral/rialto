@@ -175,6 +175,30 @@ public:
     virtual bool getPosition(int64_t &position) = 0;
 
     /**
+     * @brief Sets the "Immediate Output" property for this source.
+     *
+     * This method is sychronous
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] immediateOutput : Set immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    virtual bool setImmediateOutput(int32_t sourceId, bool immediateOutput) = 0;
+
+    /**
+     * @brief Gets the "Immediate Output" property for this source.
+     *
+     * This method is sychronous
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] immediateOutput : Set immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    virtual bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) = 0;
+
+    /**
      * @brief Request new playback rate.
      *
      * @param[in] rate : The playback rate.

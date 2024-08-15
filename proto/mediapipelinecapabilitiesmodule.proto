@@ -55,6 +55,21 @@ message IsMimeTypeSupportedResponse {
   optional bool is_supported = 1;
 }
 
+/**
+ * @fn void doesAnyGstreamerElementHaveProperty(int session_id, string property_name, bool &has_property)
+ * @brief Has any gstreamer element got a named property
+ *
+ * @param[in]  property_name     The property name to look for
+ * @param[out] immediate_output  Has immediate output mode on the sink
+ *
+ */
+message doesAnyGstreamerElementHavePropertyRequest {
+    optional string property_name = 2 [default = ""];
+}
+message doesAnyGstreamerElementHavePropertyResponse {
+    optional bool has_property = 1 [default = false];
+}
+
 
 service MediaPipelineCapabilitiesModule {
     /**
@@ -69,5 +84,12 @@ service MediaPipelineCapabilitiesModule {
      * @see IsMimeTypeSupportedRequest
      */
     rpc isMimeTypeSupported(IsMimeTypeSupportedRequest) returns (IsMimeTypeSupportedResponse) {
+    }
+
+    /**
+     * @brief Has any gstreamer element got the specified property
+     * @see doesAnyGstreamerElementHavePropertyRequest
+     */
+    rpc doesAnyGstreamerElementHaveProperty(doesAnyGstreamerElementHavePropertyRequest) returns (doesAnyGstreamerElementHavePropertyResponse) {
     }
 }

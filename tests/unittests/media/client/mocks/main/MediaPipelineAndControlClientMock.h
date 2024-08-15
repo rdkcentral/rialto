@@ -48,6 +48,8 @@ public:
     MOCK_METHOD(bool, setPosition, (int64_t position), (override));
 
     MOCK_METHOD(bool, getPosition, (int64_t & position), (override));
+    MOCK_METHOD(bool, setImmediateOutput, (int32_t sourceId, bool immediateOutput), (override));
+    MOCK_METHOD(bool, getImmediateOutput, (int32_t sourceId, bool &immediateOutput), (override));
 
     MOCK_METHOD(bool, setVideoWindow, (uint32_t x, uint32_t y, uint32_t width, uint32_t height), (override));
 

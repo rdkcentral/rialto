@@ -205,6 +205,24 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::SetImmediateOutputRequest createSetImmediateOutputRequest(int sessionId, int sourceId,
+                                                                              bool immediateOutput)
+{
+    ::firebolt::rialto::SetImmediateOutputRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    request.set_immediate_output(immediateOutput);
+    return request;
+}
+
+::firebolt::rialto::GetImmediateOutputRequest createGetImmediateOutputRequest(int sessionId, int sourceId)
+{
+    ::firebolt::rialto::GetImmediateOutputRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    return request;
+}
+
 ::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId)
 {
     ::firebolt::rialto::RenderFrameRequest request;

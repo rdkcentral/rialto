@@ -120,6 +120,8 @@ protected:
     void shouldRenderFrame();
     void shouldRenderFrameFailure();
     void shouldGetPosition(const int64_t position);
+    void shouldSetImmediateOutput(bool immediateOutput);
+    void shouldGetImmediateOutput(bool immediateOutput);
     void shouldFlush();
     void shouldFailToFlush();
     void shouldSetSourcePosition();
@@ -220,6 +222,8 @@ protected:
     void renderFrame();
     void renderFrameFailure();
     void getPosition(const int64_t expectedPosition);
+    void setImmediateOutput(bool immediateOutput);
+    void getImmediateOutput(bool immediateOutput);
     void createMediaPipelineCapabilitiesObject();
     void destroyMediaPipelineCapabilitiesObject();
     void getSupportedAudioMimeTypes();

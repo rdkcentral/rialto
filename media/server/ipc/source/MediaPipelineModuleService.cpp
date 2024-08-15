@@ -617,6 +617,40 @@ void MediaPipelineModuleService::getPosition(::google::protobuf::RpcController *
     done->Run();
 }
 
+void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcController *controller,
+                                                    const ::firebolt::rialto::SetImmediateOutputRequest *request,
+                                                    ::firebolt::rialto::SetImmediateOutputResponse *response,
+                                                    ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setImmediateOutput(request->session_id(), request->source_id(),
+                                                   request->immediate_output()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Immediate Output failed");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getImmediateOutput(::google::protobuf::RpcController *controller,
+                                                    const ::firebolt::rialto::GetImmediateOutputRequest *request,
+                                                    ::firebolt::rialto::GetImmediateOutputResponse *response,
+                                                    ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    bool immediateOutputState;
+    if (!m_mediaPipelineService.getImmediateOutput(request->session_id(), request->source_id(), immediateOutputState))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get Immediate Output failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_immediate_output(immediateOutputState);
+    }
+    done->Run();
+}
+
 void MediaPipelineModuleService::renderFrame(::google::protobuf::RpcController *controller,
                                              const ::firebolt::rialto::RenderFrameRequest *request,
                                              ::firebolt::rialto::RenderFrameResponse *response,

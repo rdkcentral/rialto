@@ -241,6 +241,78 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
     EXPECT_EQ(targetPosition, m_kPosition);
 }
 
+/**
+ * Test that SetImmediateOutput returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    const int kSourceId{1};
+    EXPECT_FALSE(m_mediaPipeline->setImmediateOutput(kSourceId, true)); // todo
+}
+
+/**
+ * Test that SetImmediateOutput returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputFailure)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setImmediateOutput(_, _)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->setImmediateOutput(videoSourceId, true)); // todo
+}
+
+/**
+ * Test that SetImmediateOutput returns success if the gstreamer API succeeds and gets playback rate
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputSuccess)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setImmediateOutput(_, _)).WillOnce(Return(true));
+    EXPECT_TRUE(m_mediaPipeline->setImmediateOutput(videoSourceId, true)); // todo
+}
+
+/**
+ * Test that GetImmediateOutput returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    const int kSourceId{1};
+    bool immediateOutputState;
+    EXPECT_FALSE(m_mediaPipeline->getImmediateOutput(kSourceId, immediateOutputState));
+}
+
+/**
+ * Test that GetImmediateOutput returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputFailure)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getImmediateOutput(_, _)).WillOnce(Return(false));
+    bool immediateOutputState;
+    EXPECT_FALSE(m_mediaPipeline->getImmediateOutput(videoSourceId, immediateOutputState));
+}
+
+/**
+ * Test that GetImmediateOutput returns success if the gstreamer API succeeds and gets playback rate
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputSuccess)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getImmediateOutput(_, _)).WillOnce(Return(true));
+    bool immediateOutputState;
+    EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(videoSourceId, immediateOutputState)); // todo
+    // EXPECT_EQ(immediateOutputState, ??? );  // todo
+}
+
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, RenderFrameSuccess)
 {
     loadGstPlayer();
