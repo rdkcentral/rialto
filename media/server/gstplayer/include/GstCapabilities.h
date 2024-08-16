@@ -73,6 +73,13 @@ public:
      */
     bool isMimeTypeSupported(const std::string &mimeType) override;
 
+    /**
+     * @brief  Has any gstreamer sink or decoder got a named property
+     *
+     * @retval true if any gstreamer sink or decoder has the property
+     */
+    bool doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, const std::string &propertyName) override;
+
 private:
     /**
      * @brief Sets list of supported mime types

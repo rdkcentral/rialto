@@ -144,4 +144,36 @@ bool MediaPipelineCapabilitiesIpc::isMimeTypeSupported(const std::string &mimeTy
     return response.is_supported();
 }
 
+bool MediaPipelineCapabilitiesIpc::doesSinkOrDecoderHaveProperty(MediaSourceType mediaType,
+                                                                 const std::string &propertyName)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return {};
+    }
+
+    firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest request;
+    request.set_media_type(convertProtoMediaSourceType(mediaType));
+    request.set_property_name(propertyName);
+
+    firebolt::rialto::DoesSinkOrDecoderHavePropertyResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineCapabilitiesStub->doesSinkOrDecoderHaveProperty(ipcController.get(), &request, &response,
+                                                                   blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return response.has_property();
+}
+
 }; // namespace firebolt::rialto::client

@@ -81,6 +81,16 @@ public:
      */
     bool isMimeTypeSupported(const std::string &mimeType) override;
 
+    /**
+     * @brief  Has any gstreamer sink or decoder got a named property
+     *
+     * @param[in] mediaType : media source type
+     * @param[in] propertyName : the property name to look for
+     *
+     * @retval true if any gstreamer sink or decoder has the property
+     */
+    bool doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, const std::string &propertyName) override;
+
 private:
     /**
      * @brief The ipc protobuf media Pipeline capabilities stub.

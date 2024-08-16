@@ -96,6 +96,16 @@ public:
      * @retval true if supported.
      */
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
+
+    /**
+     * @brief  Has any gstreamer sink or decoder got a named property
+     *
+     * @param[in] mediaType : media source type
+     * @param[in] propertyName : the property name to look for
+     *
+     * @retval true if any gstreamer sink or decoder has the property
+     */
+    virtual bool doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, const std::string &propertyName) = 0;
 };
 
 }; // namespace firebolt::rialto

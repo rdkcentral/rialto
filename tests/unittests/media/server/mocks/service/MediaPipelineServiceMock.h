@@ -58,6 +58,8 @@ public:
     MOCK_METHOD(bool, processAudioGap, (int sessionId, int64_t position, uint32_t duration, uint32_t level), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedMimeTypes, (MediaSourceType type), (override));
     MOCK_METHOD(bool, isMimeTypeSupported, (const std::string &mimeType), (override));
+    MOCK_METHOD(bool, doesSinkOrDecoderHaveProperty, (MediaSourceType mediaType, const std::string &propertyName),
+                (override));
     MOCK_METHOD(void, ping, (const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure), (override));
 };
 } // namespace firebolt::rialto::server::service

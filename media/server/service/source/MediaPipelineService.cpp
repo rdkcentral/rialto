@@ -432,6 +432,11 @@ bool MediaPipelineService::isMimeTypeSupported(const std::string &mimeType)
     return m_mediaPipelineCapabilities->isMimeTypeSupported(mimeType);
 }
 
+bool MediaPipelineService::doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, const std::string &propertyName)
+{
+    return m_mediaPipelineCapabilities->doesSinkOrDecoderHaveProperty(mediaType, propertyName);
+}
+
 void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure)
 {
     RIALTO_SERVER_LOG_DEBUG("Ping requested");

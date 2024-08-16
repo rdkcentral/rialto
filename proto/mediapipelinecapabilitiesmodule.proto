@@ -56,20 +56,21 @@ message IsMimeTypeSupportedResponse {
 }
 
 /**
- * @fn void doesAnyGstreamerElementHaveProperty(int session_id, string property_name, bool &has_property)
- * @brief Has any gstreamer element got a named property
+ * @fn bool doesSinkOrDecoderHaveProperty(MediaSourceType media_type, string property_name)
+ * @brief Has any gstreamer sink or decoder got a named property
  *
- * @param[in]  property_name     The property name to look for
- * @param[out] immediate_output  Has immediate output mode on the sink
+ * @param[in]  media_type     The media type to look for. If set to UNKNOWN then both AUDIO and VIDEO are searched
+ * @param[in]  property_name  The property name to look for
+ * @param[out] has_property   Self explanitory
  *
  */
-message doesAnyGstreamerElementHavePropertyRequest {
-    optional string property_name = 2 [default = ""];
+message DoesSinkOrDecoderHavePropertyRequest {
+  optional ProtoMediaSourceType media_type = 1 [default = UNKNOWN];
+  optional string property_name = 2 [default = ""];
 }
-message doesAnyGstreamerElementHavePropertyResponse {
-    optional bool has_property = 1 [default = false];
+message DoesSinkOrDecoderHavePropertyResponse {
+  optional bool has_property = 1 [default = false];
 }
-
 
 service MediaPipelineCapabilitiesModule {
     /**
@@ -88,8 +89,8 @@ service MediaPipelineCapabilitiesModule {
 
     /**
      * @brief Has any gstreamer element got the specified property
-     * @see doesAnyGstreamerElementHavePropertyRequest
+     * @see DoesSinkOrDecoderHavePropertyRequest
      */
-    rpc doesAnyGstreamerElementHaveProperty(doesAnyGstreamerElementHavePropertyRequest) returns (doesAnyGstreamerElementHavePropertyResponse) {
+    rpc doesSinkOrDecoderHaveProperty(DoesSinkOrDecoderHavePropertyRequest) returns (DoesSinkOrDecoderHavePropertyResponse) {
     }
 }

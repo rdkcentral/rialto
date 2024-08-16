@@ -32,6 +32,8 @@ class GstCapabilitiesMock : public IGstCapabilities
 public:
     MOCK_METHOD(std::vector<std::string>, getSupportedMimeTypes, (MediaSourceType sourceType), (override));
     MOCK_METHOD(bool, isMimeTypeSupported, (const std::string &mimeType), (override));
+    MOCK_METHOD(bool, doesSinkOrDecoderHaveProperty, (MediaSourceType mediaType, const std::string &propertyName),
+                (override));
 };
 
 } // namespace firebolt::rialto::server

@@ -109,6 +109,64 @@ bool GstCapabilities::isMimeTypeSupported(const std::string &mimeType)
     return m_supportedMimeTypes.find(mimeType) != m_supportedMimeTypes.end();
 }
 
+// Function to check if an element has a property
+static bool elementHasProperty(GstElementFactory *factory, const char *propertyName)
+{
+    GstElement *element = gst_element_factory_create(factory, nullptr);
+    if (!element)
+    {
+        return false;
+    }
+
+    GParamSpec **props;
+    guint n_props;
+    props = g_object_class_list_properties(G_OBJECT_GET_CLASS(element), &n_props);
+
+    bool hasProperty{false};
+    for (guint i = 0; i < n_props; ++i)
+    {
+        if (g_strcmp0(props[i]->name, propertyName) == 0)
+        {
+            hasProperty = true;
+            break;
+        }
+    }
+
+    gst_object_unref(element);
+    g_free(props);
+    return hasProperty;
+}
+
+static bool doesAnyElementHaveProperty(const char *propertyName)
+{
+    // Get all element factories
+    GList *factories =
+        gst_element_factory_list_get_elements(GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER,
+                                              GST_RANK_NONE);
+
+    // Scan all sinks and decoders for the "audio-fade" property
+
+    bool hasProperty{false};
+    for (GList *iter = factories; iter != nullptr; iter = iter->next)
+    {
+        GstElementFactory *factory = GST_ELEMENT_FACTORY(iter->data);
+        if (elementHasProperty(factory, propertyName))
+        {
+            hasProperty = true;
+        }
+    }
+
+    // Cleanup
+    gst_plugin_feature_list_free(factories);
+    return hasProperty;
+}
+
+bool GstCapabilities::doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, const std::string &propertyName)
+{
+    // todo use mediaType
+    return doesAnyElementHaveProperty(propertyName.c_str());
+}
+
 void GstCapabilities::fillSupportedMimeTypes()
 {
     std::vector<GstCaps *> supportedCaps = getSupportedCapsFromDecoders();

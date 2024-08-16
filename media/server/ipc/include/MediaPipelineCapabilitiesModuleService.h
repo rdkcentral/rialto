@@ -55,6 +55,10 @@ public:
                              const ::firebolt::rialto::IsMimeTypeSupportedRequest *request,
                              ::firebolt::rialto::IsMimeTypeSupportedResponse *response,
                              ::google::protobuf::Closure *done) override;
+    void doesSinkOrDecoderHaveProperty(::google::protobuf::RpcController *controller,
+                                       const ::firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest *request,
+                                       ::firebolt::rialto::DoesSinkOrDecoderHavePropertyResponse *response,
+                                       ::google::protobuf::Closure *done) override;
 
 private:
     service::IMediaPipelineService &m_mediaPipelineService;

@@ -70,6 +70,7 @@ public:
     virtual bool processAudioGap(int sessionId, int64_t position, uint32_t duration, uint32_t level) = 0;
     virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) = 0;
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
+    virtual bool doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, const std::string &propertyName) = 0;
     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
 };
 } // namespace firebolt::rialto::server::service
