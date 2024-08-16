@@ -113,8 +113,8 @@ public:
     bool getPosition(std::int64_t &position) override;
     void setVolume(double volume) override;
     bool getVolume(double &volume) override;
-    void setMute(bool mute) override;
-    bool getMute(bool &mute) override;
+    void setMute(const MediaSourceType &mediaSourceType, bool mute) override;
+    bool getMute(const MediaSourceType &mediaSourceType, bool &mute) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
     void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position) override;
@@ -149,6 +149,8 @@ private:
     void removeAutoVideoSinkChild(GObject *object) override;
     GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) override;
     void setPlaybinFlags(bool enableAudio = true) override;
+    void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
+
 
 private:
     /**
@@ -228,14 +230,6 @@ private:
      * @retval True if caps were changed
      */
     bool setCodecData(GstCaps *caps, const std::shared_ptr<CodecData> &codecData) const;
-
-    /**
-     * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
-     *
-     * @param[in] source          : The Gst Source element, that should receive new sample
-     * @param[in] typeStr         : The media source type string
-     */
-    void pushSampleIfRequired(GstElement *source, const std::string &typeStr);
 
 private:
     /**

@@ -324,7 +324,7 @@ bool MediaPipelineService::getVolume(int sessionId, double &volume)
     return mediaPipelineIter->second->getVolume(volume);
 }
 
-bool MediaPipelineService::setMute(int sessionId, bool mute)
+bool MediaPipelineService::setMute(int sessionId, std::int32_t sourceId, bool mute)
 {
     RIALTO_SERVER_LOG_DEBUG("Set mute requested, session id: %d", sessionId);
 
@@ -335,10 +335,10 @@ bool MediaPipelineService::setMute(int sessionId, bool mute)
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->setMute(mute);
+    return mediaPipelineIter->second->setMute(sourceId, mute);
 }
 
-bool MediaPipelineService::getMute(int sessionId, bool &mute)
+bool MediaPipelineService::getMute(int sessionId, std::int32_t sourceId, bool &mute)
 {
     RIALTO_SERVER_LOG_DEBUG("Get mute requested, session id: %d", sessionId);
 
@@ -349,7 +349,7 @@ bool MediaPipelineService::getMute(int sessionId, bool &mute)
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->getMute(mute);
+    return mediaPipelineIter->second->getMute(sourceId, mute);
 }
 
 bool MediaPipelineService::flush(int sessionId, std::int32_t sourceId, bool resetTime)

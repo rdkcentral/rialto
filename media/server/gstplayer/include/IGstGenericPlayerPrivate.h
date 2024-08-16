@@ -189,6 +189,14 @@ public:
      * @param[in] enableAudio : Whether to enable audio flags.
      */
     virtual void setPlaybinFlags(bool enableAudio) = 0;
+
+    /**
+     * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
+     *
+     * @param[in] source          : The Gst Source element, that should receive new sample
+     * @param[in] typeStr         : The media source type string
+     */
+    virtual void pushSampleIfRequired(GstElement *source, const std::string &typeStr) = 0;
 };
 } // namespace firebolt::rialto::server
 

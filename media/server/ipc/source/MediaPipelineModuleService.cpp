@@ -395,13 +395,12 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     }
     else if (configType == firebolt::rialto::SourceConfigType::SUBTITLE)
     {
-         RIALTO_SERVER_LOG_ERROR("KLOPS subtitle media source");
         mediaSource = std::make_unique<IMediaPipeline::MediaSourceSubtitle>(request->mime_type().c_str(),
                                                                             request->text_track_identifier());
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("KLOPS Unknown source type");
+        RIALTO_SERVER_LOG_ERROR("Unknown source type");
         controller->SetFailed("Operation failed");
         done->Run();
         return;
@@ -604,7 +603,7 @@ void MediaPipelineModuleService::setMute(::google::protobuf::RpcController *cont
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (!m_mediaPipelineService.setMute(request->session_id(), request->mute()))
+    if (!m_mediaPipelineService.setMute(request->session_id(), request->source_id(), request->mute()))
     {
         RIALTO_SERVER_LOG_ERROR("Set mute failed.");
         controller->SetFailed("Operation failed");
@@ -620,7 +619,7 @@ void MediaPipelineModuleService::getMute(::google::protobuf::RpcController *cont
     RIALTO_SERVER_LOG_DEBUG("entry:");
     bool mute{};
 
-    if (!m_mediaPipelineService.getMute(request->session_id(), mute))
+    if (!m_mediaPipelineService.getMute(request->session_id(), request->source_id(), mute))
     {
         RIALTO_SERVER_LOG_ERROR("Get mute failed.");
         controller->SetFailed("Operation failed");

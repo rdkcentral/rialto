@@ -69,6 +69,10 @@ AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPri
                 RIALTO_SERVER_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
             }
         }
+        else if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::SUBTITLE)
+        {
+            m_subtitleData.push_back(gstBuffer);
+        }
     }
 }
 
@@ -93,8 +97,23 @@ void AttachSamples::execute() const
 
         attachData(firebolt::rialto::MediaSourceType::VIDEO, videoData.buffer);
     }
-    //TODO-klops: subtitles, fix notifyNeedMediaData
-    //m_player.notifyNeedMediaData(!m_audioData.empty(), !m_videoData.empty(), false);
+    for (GstBuffer *buffer : m_subtitleData)
+    {
+        attachData(firebolt::rialto::MediaSourceType::SUBTITLE, buffer);
+    }
+
+    if (!m_audioData.empty())
+    {
+        m_player.notifyNeedMediaData(firebolt::rialto::MediaSourceType::AUDIO);
+    }
+    else if (!m_videoData.empty())
+    {
+        m_player.notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO);
+    }
+    else if (!m_subtitleData.empty())
+    {
+        m_player.notifyNeedMediaData(firebolt::rialto::MediaSourceType::SUBTITLE);
+    }
 }
 
 void AttachSamples::attachData(const firebolt::rialto::MediaSourceType mediaType, GstBuffer *buffer) const

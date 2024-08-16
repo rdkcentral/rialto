@@ -85,9 +85,9 @@ public:
 
     bool getVolume(double &volume) override { return m_mediaPipeline->getVolume(volume); }
 
-    bool setMute(bool mute) override { return m_mediaPipeline->setMute(mute); }
+    bool setMute(int32_t sourceId, bool mute) override { return m_mediaPipeline->setMute(sourceId, mute); }
 
-    bool getMute(bool &mute) override { return m_mediaPipeline->getMute(mute); }
+    bool getMute(int32_t sourceId, bool &mute) override { return m_mediaPipeline->getMute(sourceId, mute); }
 
     bool flush(int32_t sourceId, bool resetTime) override { return m_mediaPipeline->flush(sourceId, resetTime); }
 

@@ -24,10 +24,11 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetSourcePosition::SetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerClient *client,
+SetSourcePosition::SetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                     IGstGenericPlayerClient *client,
                                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                                      const MediaSourceType &type, std::int64_t position)
-    : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}, m_position{position}
+    : m_context{context}, m_player(player), m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}, m_position{position}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetSourcePosition");
 }
@@ -61,10 +62,20 @@ void SetSourcePosition::execute() const
         return;
     }
 
-    m_context.initialPositions[source] = m_position;
+    if (MediaSourceType::VIDEO == m_type || MediaSourceType::AUDIO == m_type)
+    {
+        m_context.initialPositions[source] = m_position;
+    }
 
     if (m_context.setupSourceFinished)
     {
+        if (MediaSourceType::SUBTITLE == m_type)
+        {
+            // in case of subtitles, all data might be already in the sink and we might not get any data anymore,
+            // so send the new segment here and to not depend on any following buffers
+            setSubtitlePosition();
+        }
+
         // Reset Eos info
         m_context.endOfStreamInfo.erase(m_type);
         m_context.eosNotified = false;
@@ -74,4 +85,25 @@ void SetSourcePosition::execute() const
         task.execute();
     }
 }
+
+void SetSourcePosition::setSubtitlePosition() const
+{
+    GstSegment *segment{m_gstWrapper->gstSegmentNew()};
+    m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
+    if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE,
+                                        GST_SEEK_TYPE_SET, m_position, GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
+    {
+        RIALTO_SERVER_LOG_WARN("Segment seek failed.");
+        m_gstWrapper->gstSegmentFree(segment);
+        return;
+    }
+
+    if (!m_gstWrapper->gstPadSendEvent(GST_BASE_SINK_PAD(m_context.subtitleSink), m_gstWrapper->gstEventNewSegment(segment)))
+    {
+        RIALTO_SERVER_LOG_WARN("Failed to new segment to subtitle sink");
+    }
+
+    m_gstWrapper->gstSegmentFree(segment);
+}
+
 } // namespace firebolt::rialto::server::tasks::generic

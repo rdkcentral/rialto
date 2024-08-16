@@ -22,14 +22,13 @@
 #include <cinttypes>
 #include <iostream>
 
-//todo-klops namespace
 using namespace WPEFramework;
 
 std::weak_ptr<ITextTrackAccessorFactory> TextTrackAccessorFactory::m_factory;
 
 std::shared_ptr<ITextTrackAccessorFactory> ITextTrackAccessorFactory::getFactory()
 {
-        std::shared_ptr<ITextTrackAccessorFactory> factory = TextTrackAccessorFactory::m_factory.lock();
+    std::shared_ptr<ITextTrackAccessorFactory> factory = TextTrackAccessorFactory::m_factory.lock();
 
     if (!factory)
     {
@@ -68,7 +67,7 @@ std::shared_ptr<ITextTrackAccessor> TextTrackAccessorFactory::getTextTrackAccess
 
 TextTrackAccessor::TextTrackAccessor()
 {
-    if (!textTrackControlInterface())
+    if (!createTextTrackControlInterface())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create TextTrack interfaces");
         throw std::runtime_error("Failed to create TextTrack interfaces");
@@ -79,7 +78,6 @@ TextTrackAccessor::~TextTrackAccessor()
 {
     if (m_textTrackControlInterface)
     {
-        //m_textTrackControlInterface->CloseSession(sessionId);
         m_textTrackControlInterface->Release();
     }
 
@@ -151,8 +149,7 @@ bool TextTrackAccessor::mute(uint32_t sessionId, bool mute)
             return true;
         }
 
-        RIALTO_SERVER_LOG_ERROR("Failed to mute TextTrack session %u; error %s", sessionId,
-                                Core::ErrorToString(result));
+        RIALTO_SERVER_LOG_ERROR("Failed to mute TextTrack session %u; error %s", sessionId, Core::ErrorToString(result));
     }
     else
     {
@@ -204,19 +201,20 @@ bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, Da
     const uint32_t result = m_textTrackControlInterface->SendSessionData(sessionId, wpeDataType, displayOffsetMs, data);
     if (result == WPEFramework::Core::ERROR_NONE)
     {
-        RIALTO_SERVER_LOG_DEBUG("KLOPS Sending data to TextTrack session %u was successful", sessionId);
+        RIALTO_SERVER_LOG_DEBUG("Sending data to TextTrack session %u was successful", sessionId);
         return true;
     }
 
-    RIALTO_SERVER_LOG_ERROR("KLOPS Failed to send data to TextTrack session %u; error %s", sessionId,
+    RIALTO_SERVER_LOG_ERROR("Failed to send data to TextTrack session %u; error %s", sessionId,
                             Core::ErrorToString(result));
     return false;
 }
 
-bool TextTrackAccessor::textTrackControlInterface()
+bool TextTrackAccessor::createTextTrackControlInterface()
 {
     uint32_t openResult = m_textTrackPlugin.Open(WPEFramework::RPC::CommunicationTimeOut, m_textTrackPlugin.Connector(),
                                                  "org.rdk.TextTrack");
+
     if (openResult == WPEFramework::Core::ERROR_NONE)
     {
         if (m_textTrackPlugin.IsOperational())
@@ -249,8 +247,7 @@ bool TextTrackAccessor::textTrackControlInterface()
 bool TextTrackAccessor::setSessionWebVTTSelection(uint32_t sessionId)
 {
     uint32_t result = m_textTrackControlInterface->SetSessionWebVTTSelection(sessionId);
-    //todo-klops
-    m_textTrackControlInterface->SendSessionTimestamp(sessionId, 0);
+
     if (result == WPEFramework::Core::ERROR_NONE)
     {
         RIALTO_SERVER_LOG_DEBUG("Setting WebVTT selection for session %u was successful", sessionId);

@@ -99,9 +99,9 @@ public:
 
     bool getVolume(double &volume) override;
 
-    bool setMute(bool mute) override;
+    bool setMute(int32_t sourceId, bool mute) override;
 
-    bool getMute(bool &mute) override;
+    bool getMute(int32_t sourceId, bool &mute) override;
 
     bool flush(int32_t sourceId, bool resetTime) override;
 

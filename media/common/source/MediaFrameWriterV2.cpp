@@ -166,7 +166,6 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
     }
     else if (MediaSourceType::SUBTITLE != data->getType())
     {
-        //todo-klops
         RIALTO_COMMON_LOG_ERROR("Failed to write type specific metadata - media source type unsupported");
         throw std::exception();
     }

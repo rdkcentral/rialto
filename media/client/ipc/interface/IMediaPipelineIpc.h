@@ -210,24 +210,24 @@ public:
     /**
      * @brief Set mute status of pipeline.
      *
-     * Muting does not change the underlying volume setting so when
-     * unmuted the user will hear audio at the same volume as previously
-     * set.
+     * Change mute status of media source
      *
+     * @param[in] sourceId Source, which mute status should be changed
      * @param[in] mute   Desired mute state, true=muted, false=not muted
      *
      * @retval true on success false otherwise
      */
-    virtual bool setMute(bool mute) = 0;
+    virtual bool setMute(int32_t sourceId, bool mute) = 0;
 
     /**
-     * @brief Get current mute status of the pipeline
-     *
+     * @brief Get current mute status of the media source
+     * 
+     * @param[in] sourceId Source, which mute status should be fetched
      * @param[out] mute   Current mute state
      *
      * @retval true on success false otherwise
      */
-    virtual bool getMute(bool &mute) = 0;
+    virtual bool getMute(int32_t sourceId, bool &mute) = 0;
 
     /**
      * @brief Flushes a source.

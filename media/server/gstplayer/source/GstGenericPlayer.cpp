@@ -259,7 +259,6 @@ void GstGenericPlayer::termPipeline()
 
         streamInfo.buffers.clear();
     }
-    //todo-klops - check if appsrc doesnt need to be unrefed for sure
 
     m_taskFactory->createStop(m_context, *this)->execute();
     GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
@@ -452,7 +451,6 @@ GstBuffer *GstGenericPlayer::createBuffer(const IMediaPipeline::MediaSegment &me
     return gstBuffer;
 }
 
-//todo-klops
 void GstGenericPlayer::notifyNeedMediaData(const MediaSourceType mediaSource)
 {
     auto elem = m_context.streamInfo.find(mediaSource);
@@ -460,6 +458,7 @@ void GstGenericPlayer::notifyNeedMediaData(const MediaSourceType mediaSource)
     {
         StreamInfo &streamInfo = elem->second;
         streamInfo.isNeedDataPending = false;
+
         // Send new NeedMediaData if we still need it
         if (m_gstPlayerClient && streamInfo.isDataNeeded)
         {
@@ -468,7 +467,7 @@ void GstGenericPlayer::notifyNeedMediaData(const MediaSourceType mediaSource)
     }
     else
     {
-        // TODO-klops: error handling
+        RIALTO_SERVER_LOG_WARN("Media type %s could not be found", common::convertMediaSourceType(mediaSource));
     }
 }
 
@@ -649,6 +648,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         // Sending initial sample not needed
         return;
     }
+
     RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
     GstSegment *segment{m_gstWrapper->gstSegmentNew()};
     m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
@@ -961,23 +961,42 @@ bool GstGenericPlayer::getVolume(double &volume)
     return true;
 }
 
-void GstGenericPlayer::setMute(bool mute)
+void GstGenericPlayer::setMute(const MediaSourceType &mediaSourceType, bool mute)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetMute(m_context, mute));
+        m_workerThread->enqueueTask(m_taskFactory->createSetMute(m_context, mediaSourceType, mute));
     }
 }
 
-bool GstGenericPlayer::getMute(bool &mute)
+bool GstGenericPlayer::getMute(const MediaSourceType &mediaSourceType, bool &mute)
 {
     // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
     // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
-    if (!m_context.pipeline)
+    if (mediaSourceType == MediaSourceType::SUBTITLE)
     {
+        if (!m_context.subtitleSink)
+        {
+            RIALTO_SERVER_LOG_ERROR("There is no subtitle sink");
+            return false;
+        }
+        m_glibWrapper->gObjectGet(m_context.subtitleSink, "mute", mute, nullptr);
+    }
+    else if (mediaSourceType == MediaSourceType::AUDIO)
+    {
+        if (!m_context.pipeline)
+        {
+            return false;
+        }
+        mute = m_gstWrapper->gstStreamVolumeGetMute(GST_STREAM_VOLUME(m_context.pipeline));
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Getting mute for type %s unsupported",
+                                common::convertMediaSourceType(mediaSourceType));
         return false;
     }
-    mute = m_gstWrapper->gstStreamVolumeGetMute(GST_STREAM_VOLUME(m_context.pipeline));
+
     return true;
 }
 
@@ -1001,7 +1020,7 @@ void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType,
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, mediaSourceType, position));
+        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, *this, mediaSourceType, position));
     }
 }
 

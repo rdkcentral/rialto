@@ -515,7 +515,7 @@ bool MediaPipelineIpc::haveData(MediaSourceStatus status, uint32_t numFrames, ui
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
         return false;
     }
-    RIALTO_CLIENT_LOG_ERROR("KLOPS haveDataClient");
+ 
     firebolt::rialto::HaveDataRequest request;
 
     request.set_session_id(m_sessionId);
@@ -725,7 +725,7 @@ bool MediaPipelineIpc::getVolume(double &volume)
     return true;
 }
 
-bool MediaPipelineIpc::setMute(bool mute)
+bool MediaPipelineIpc::setMute(int32_t sourceId, bool mute)
 {
     if (!reattachChannelIfRequired())
     {
@@ -737,6 +737,7 @@ bool MediaPipelineIpc::setMute(bool mute)
 
     request.set_session_id(m_sessionId);
     request.set_mute(mute);
+    request.set_source_id(sourceId);
 
     firebolt::rialto::SetMuteResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -756,7 +757,7 @@ bool MediaPipelineIpc::setMute(bool mute)
     return true;
 }
 
-bool MediaPipelineIpc::getMute(bool &mute)
+bool MediaPipelineIpc::getMute(std::int32_t sourceId, bool &mute)
 {
     if (!reattachChannelIfRequired())
     {

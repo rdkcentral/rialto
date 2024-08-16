@@ -188,9 +188,9 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetVolume(GenericPl
     return std::make_unique<tasks::generic::SetVolume>(context, m_gstWrapper, volume);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetMute(GenericPlayerContext &context, bool mute) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetMute(GenericPlayerContext &context, const MediaSourceType &mediaSourceType, bool mute) const
 {
-    return std::make_unique<tasks::generic::SetMute>(context, m_gstWrapper, mute);
+    return std::make_unique<tasks::generic::SetMute>(context, m_gstWrapper, m_glibWrapper, mediaSourceType, mute);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createShutdown(IGstGenericPlayerPrivate &player) const
@@ -238,9 +238,11 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFlush(GenericPlayer
     return std::make_unique<tasks::generic::Flush>(context, m_client, m_gstWrapper, type, resetTime);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSourcePosition(
-    GenericPlayerContext &context, const firebolt::rialto::MediaSourceType &type, std::int64_t position) const
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createSetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                  const firebolt::rialto::MediaSourceType &type,
+                                                  std::int64_t position) const
 {
-    return std::make_unique<tasks::generic::SetSourcePosition>(context, m_client, m_gstWrapper, type, position);
+    return std::make_unique<tasks::generic::SetSourcePosition>(context, player, m_client, m_gstWrapper, type, position);
 }
 } // namespace firebolt::rialto::server

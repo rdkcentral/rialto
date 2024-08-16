@@ -30,7 +30,7 @@ namespace firebolt::rialto::server
 struct GstRialtoTextTrackSinkPrivate
 {
     std::unique_ptr<TextTrackSession> m_textTrackSession;
-    std::atomic<bool> m_isMuted{true};
+    std::atomic<bool> m_isMuted{false};
     std::string m_textTrackIdentifier;
     //std::mutex m_mutex;
 };

@@ -100,7 +100,7 @@ void Flush::execute() const
     }
 
     // Reset Eos info
-    m_context.endOfStreamInfo.erase(m_type); //todo-klops, move to stream info
+    m_context.endOfStreamInfo.erase(m_type);
     m_context.eosNotified = false;
 
     // Notify client, that flush has been finished

@@ -22,8 +22,6 @@
 #include "GstSrc.h"
 #include "RialtoServerLogging.h"
 #include <MediaCommon.h>
-
-//todo-klops
 #include "GstTextTrackSinkFactory.h"
 
 static void gstRialtoSrcUriHandlerInit(gpointer gIface, gpointer ifaceData);

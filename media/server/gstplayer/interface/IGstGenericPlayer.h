@@ -233,7 +233,7 @@ public:
      *
      * @param[in] mute : Desired mute state, true=muted, false=not muted
      */
-    virtual void setMute(bool mute) = 0;
+    virtual void setMute(const MediaSourceType &mediaSourceType, bool mute) = 0;
 
     /**
      * @brief Get current mute status of the pipeline
@@ -242,7 +242,7 @@ public:
      *
      * @retval True in success, false otherwise
      */
-    virtual bool getMute(bool &mute) = 0;
+    virtual bool getMute(const MediaSourceType &mediaSourceType, bool &mute) = 0;
 
     /**
      * @brief Checks if worker thread is not deadlocked

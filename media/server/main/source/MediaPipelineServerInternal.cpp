@@ -775,18 +775,18 @@ bool MediaPipelineServerInternal::getVolumeInternal(double &volume)
     return m_gstPlayer->getVolume(volume);
 }
 
-bool MediaPipelineServerInternal::setMute(bool mute)
+bool MediaPipelineServerInternal::setMute(std::int32_t sourceId, bool mute)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = setMuteInternal(mute); };
+    auto task = [&]() { result = setMuteInternal(sourceId, mute); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::setMuteInternal(bool mute)
+bool MediaPipelineServerInternal::setMuteInternal(std::int32_t sourceId, bool mute)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -795,22 +795,31 @@ bool MediaPipelineServerInternal::setMuteInternal(bool mute)
         RIALTO_SERVER_LOG_ERROR("Failed to set mute - Gstreamer player has not been loaded");
         return false;
     }
-    m_gstPlayer->setMute(mute);
+
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set mute - Source with id: %d not found", sourceId);
+    }
+
+    m_gstPlayer->setMute(sourceIter->first, mute);
+
     return true;
 }
 
-bool MediaPipelineServerInternal::getMute(bool &mute)
+bool MediaPipelineServerInternal::getMute(std::int32_t sourceId, bool &mute)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = getMuteInternal(mute); };
+    auto task = [&]() { result = getMuteInternal(sourceId, mute); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::getMuteInternal(bool &mute)
+bool MediaPipelineServerInternal::getMuteInternal(std::int32_t sourceId, bool &mute)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -819,7 +828,16 @@ bool MediaPipelineServerInternal::getMuteInternal(bool &mute)
         RIALTO_SERVER_LOG_ERROR("Failed to get mute - Gstreamer player has not been loaded");
         return false;
     }
-    return m_gstPlayer->getMute(mute);
+
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get mute - Source with id: %d not found", sourceId);
+        return false;
+    }
+
+    return m_gstPlayer->getMute(sourceIter->first, mute);
 }
 
 bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime)
@@ -964,7 +982,7 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
     m_needMediaDataTimers.erase(mediaSourceType);
     m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
     const auto kSourceIter = m_attachedSources.find(mediaSourceType);
-    RIALTO_SERVER_LOG_WARN("KLOPS-notifyNeedMediaDataInternal source %u", static_cast<unsigned>(mediaSourceType));
+
     if (m_attachedSources.cend() == kSourceIter)
     {
         RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed for %s - sourceId not found",

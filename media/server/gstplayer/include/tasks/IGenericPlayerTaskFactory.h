@@ -280,7 +280,7 @@ public:
      *
      * @retval the new SetMute task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, bool mute) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, const MediaSourceType &mediaSourceType, bool mute) const = 0;
 
     /**
      * @brief Creates a Shutdown task.
@@ -354,12 +354,14 @@ public:
      * @brief Creates a SetSourcePosition task.
      *
      * @param[in] context   : The GstPlayer context
+     * @param[in] player     : The GstGenericPlayer instance
      * @param[in] type      : The media source type to set position
      * @param[in] position  : The new source position
      *
      * @retval the new SetSourcePosition task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context,
+                                                                 IGstGenericPlayerPrivate &player,
                                                                  const firebolt::rialto::MediaSourceType &type,
                                                                  std::int64_t position) const = 0;
 };

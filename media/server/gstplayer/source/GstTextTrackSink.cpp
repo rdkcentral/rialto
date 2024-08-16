@@ -18,7 +18,6 @@
  */
 
 #include "GstTextTrackSinkFactory.h"
-//#include "GstDecryptorPrivate.h"
 #include "GstProtectionMetadataHelperFactory.h"
 #include "RialtoServerLogging.h"
 #include <stdexcept>
@@ -99,6 +98,14 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
     baseSinkClass->event = GST_DEBUG_FUNCPTR (gst_rialto_text_track_sink_event);
     elementClass->change_state = GST_DEBUG_FUNCPTR (gst_rialto_text_track_sink_change_state);
 
+    g_object_class_install_property(gobjectClass, PROP_MUTE,
+                                    g_param_spec_boolean("mute", "Mute", "Mute subtitles", FALSE, G_PARAM_READWRITE));
+
+    g_object_class_install_property(gobjectClass, PROP_TEXT_TRACK_IDENTIFIER,
+                                    g_param_spec_string("text-track-identifier", "Text Track Identifier",
+                                                        "Identifier of text track", nullptr,
+                                                        GParamFlags(G_PARAM_READWRITE)));
+
     gst_element_class_add_pad_template(elementClass, gst_static_pad_template_get(&sinkTemplate));
     gst_element_class_set_static_metadata(elementClass, "Rialto TextTrack Sink",
                                           "Sink/Parser/Subtitle", "Rialto TextTrack Sink", "SKY");
@@ -130,7 +137,7 @@ static gboolean gst_rialto_text_track_sink_start (GstBaseSink * sink)
     const char* wayland_display = std::getenv("WAYLAND_DISPLAY");
     if (!wayland_display)
     {
-        GST_ERROR_OBJECT(sink, "KLOPS Failed to get WAYLAND_DISPLAY env variable");
+        GST_ERROR_OBJECT(sink, "Failed to get WAYLAND_DISPLAY env variable");
         return false;
     }
 
@@ -161,17 +168,15 @@ static gboolean gst_rialto_text_track_sink_stop (GstBaseSink * sink)
 
 static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuffer *buffer) 
 {
-     GST_ERROR_OBJECT(sink, "KLOPS gst_rialto_text_track_sink_render");
     GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK (sink);
 
-    GstMapInfo m_info;
-    if(gst_buffer_map(buffer, &m_info, GST_MAP_READ))
+    GstMapInfo info;
+    if(gst_buffer_map(buffer, &info, GST_MAP_READ))
     {
-        std::string data(reinterpret_cast<char *>(m_info.data), m_info.size);
-        GST_ERROR_OBJECT(sink, "KLOPS gst_rialto_text_track_sink_render1 size %u, '%s'",m_info.size, data.c_str());
+        std::string data(reinterpret_cast<char *>(info.data), info.size);
         textTrackSink->priv->m_textTrackSession->sendData(data);
 
-        //unmap!!
+        gst_buffer_unmap(buffer, &info);
     }
     else
     {
@@ -184,7 +189,7 @@ static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuf
 
 static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *caps)
 {
-    GST_ERROR_OBJECT(sink, "KLOPS Setting caps %" GST_PTR_FORMAT, caps);
+    GST_INFO_OBJECT(sink, "Setting caps %" GST_PTR_FORMAT, caps);
     GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(sink);
 
     GstStructure *structure = gst_caps_get_structure(caps, 0);
@@ -206,8 +211,6 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
         return FALSE;
     }
 
-    textTrackSink->priv->m_textTrackSession->mute(textTrackSink->priv->m_isMuted);
-
     return TRUE;
 }
 
@@ -222,16 +225,13 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
     {
         const GstSegment *segment;
         gst_event_parse_segment(event, &segment);
+
+        GST_DEBUG_OBJECT(textTrackSink, "setting position to %" GST_TIME_FORMAT, GST_TIME_ARGS(segment->start));
         textTrackSink->priv->m_textTrackSession->setPosition(segment->start / GST_MSECOND);
-        break;
-    }
-    case GST_EVENT_EOS:
-    {
         break;
     }
     case GST_EVENT_FLUSH_START:
     {
-
         break;
     }
     case GST_EVENT_FLUSH_STOP:
@@ -254,21 +254,28 @@ static GstStateChangeReturn gst_rialto_text_track_sink_change_state(GstElement *
 
     GstState current_state = GST_STATE_TRANSITION_CURRENT(transition);
     GstState next_state = GST_STATE_TRANSITION_NEXT(transition);
-    GST_ERROR_OBJECT(textTrackSink, "KLOPS State change: (%s) -> (%s)", gst_element_state_get_name(current_state),
+    GST_INFO_OBJECT(textTrackSink, "State change: (%s) -> (%s)", gst_element_state_get_name(current_state),
                     gst_element_state_get_name(next_state));
 
      switch (transition)
      {
      case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
      {
-        //todo-klops remove mute
-        textTrackSink->priv->m_textTrackSession->mute(false);
-        textTrackSink->priv->m_textTrackSession->play();
+         if(!textTrackSink->priv->m_textTrackSession->play())
+         {
+             GST_ERROR_OBJECT(textTrackSink, "Failed to play textTrack session");
+             return GST_STATE_CHANGE_FAILURE;
+         }
          break;
      }
      case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
      {
-         textTrackSink->priv->m_textTrackSession->pause();
+         if (!textTrackSink->priv->m_textTrackSession->pause())
+         {
+             GST_ERROR_OBJECT(textTrackSink, "Failed to pause textTrack session");
+             return GST_STATE_CHANGE_FAILURE;
+         }
+
          break;
      }
      default:
@@ -278,7 +285,7 @@ static GstStateChangeReturn gst_rialto_text_track_sink_change_state(GstElement *
      GstStateChangeReturn result = GST_ELEMENT_CLASS(parent_class)->change_state(element, transition);
      if (G_UNLIKELY(result == GST_STATE_CHANGE_FAILURE))
      {
-         GST_WARNING_OBJECT(textTrackSink, "KLOPS State change failed");
+         GST_WARNING_OBJECT(textTrackSink, "State change failed");
          return result;
      }
 
@@ -316,7 +323,7 @@ static void gst_rialto_text_track_sink_get_property(GObject *object, guint propI
 
 static void gst_rialto_text_track_sink_set_property(GObject *object, guint propId, const GValue *value, GParamSpec *pspec)
 {
-        GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(object);
+    GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(object);
     if (!textTrackSink)
     {
         GST_ERROR_OBJECT(textTrackSink, "Sink not initalised");
@@ -348,7 +355,6 @@ namespace firebolt::rialto::server
 {
 std::shared_ptr<IGstTextTrackSinkFactory> IGstTextTrackSinkFactory::createFactory()
 {
-    RIALTO_SERVER_LOG_ERROR("KLOPSGST12");
     std::shared_ptr<IGstTextTrackSinkFactory> factory;
 
     try

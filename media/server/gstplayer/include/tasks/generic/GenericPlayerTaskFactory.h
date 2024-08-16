@@ -75,7 +75,7 @@ public:
     std::unique_ptr<IPlayerTask> createSetVideoGeometry(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                         const Rectangle &rectangle) const override;
     std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, double volume) const override;
-    std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, bool mute) const override;
+    std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, const MediaSourceType &mediaSourceType, bool mute) const override;
     std::unique_ptr<IPlayerTask> createShutdown(IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createStop(GenericPlayerContext &context,
                                             IGstGenericPlayerPrivate &player) const override;
@@ -89,7 +89,7 @@ public:
     std::unique_ptr<IPlayerTask> createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const override;
     std::unique_ptr<IPlayerTask> createFlush(GenericPlayerContext &context, const firebolt::rialto::MediaSourceType &type,
                                              bool resetTime) const override;
-    std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context,
+    std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                          const firebolt::rialto::MediaSourceType &type,
                                                          std::int64_t position) const override;
 

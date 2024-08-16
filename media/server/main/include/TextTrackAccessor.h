@@ -68,7 +68,7 @@ class TextTrackAccessor : public ITextTrackAccessor
     bool setSessionTTMLSelection(uint32_t sessionId) override;
 
 private:
-    bool textTrackControlInterface();
+    bool createTextTrackControlInterface();
 
     WPEFramework::Exchange::ITextTrack *m_textTrackControlInterface = nullptr;
     WPEFramework::RPC::SmartInterfaceType<WPEFramework::Exchange::ITextTrack> m_textTrackPlugin;

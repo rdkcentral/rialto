@@ -88,11 +88,10 @@ void ReadShmDataAndAttachSamples::execute() const
 
         attachData(mediaSegment->getType(), gstBuffer);
     }
-
     // All segments in vector have the same type
     if (!mediaSegments.empty())
     {
-        m_player.attachData(mediaSegments.front()->getType());
+        m_player.notifyNeedMediaData(mediaSegments.front()->getType());
     }
 }
 

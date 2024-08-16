@@ -124,9 +124,9 @@ public:
 
     bool getVolume(double &volume) override;
 
-    bool setMute(bool mute) override;
+    bool setMute(std::int32_t sourceId, bool mute) override;
 
-    bool getMute(bool &mute) override;
+    bool getMute(std::int32_t sourceId, bool &mute) override;
 
     bool flush(int32_t sourceId, bool resetTime) override;
 
@@ -422,7 +422,7 @@ protected:
      *
      * @retval true on success false otherwise
      */
-    bool setMuteInternal(bool mute);
+    bool setMuteInternal(std::int32_t sourceId, bool mute);
 
     /**
      * @brief Get mute internally, only to be called on the main thread.
@@ -431,7 +431,7 @@ protected:
      *
      * @retval true on success false otherwise
      */
-    bool getMuteInternal(bool &mute);
+    bool getMuteInternal(std::int32_t sourceId, bool &mute);
 
     /**
      * @brief Checks if MediaPipeline threads are not deadlocked internally

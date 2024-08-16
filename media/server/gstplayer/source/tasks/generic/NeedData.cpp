@@ -49,9 +49,14 @@ void NeedData::execute() const
             RIALTO_SERVER_LOG_DEBUG("%s source needs data", common::convertMediaSourceType(sourceType));
 
             elem.second.isDataNeeded = true;
-            if (m_gstPlayerClient && !elem.second.isNeedDataPending /* todo-klops  && !m_context.audioSourceRemoved*/)
+            if (m_gstPlayerClient && !elem.second.isNeedDataPending)
             {
-                elem.second.isNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::AUDIO);
+                if (sourceType == MediaSourceType::AUDIO && m_context.audioSourceRemoved)
+                {
+                    RIALTO_SERVER_LOG_DEBUG("Audio source is removed, no need to request data");
+                    break;
+                }
+                elem.second.isNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(sourceType);
             }
             break;
         }
