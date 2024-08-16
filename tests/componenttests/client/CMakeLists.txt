@@ -60,6 +60,7 @@ add_gtests (
         tests/mse/MediaPipelineCapabilitiesTest.cpp
         tests/mse/FlushTest.cpp
         tests/mse/SetSourcePositionTest.cpp
+        tests/mse/ProcessAudioGapTest.cpp
         
         # Web Audio Component tests
         tests/webaudio/CreateWebAudioPlayerTest.cpp

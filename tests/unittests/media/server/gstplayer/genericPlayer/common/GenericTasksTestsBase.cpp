@@ -35,6 +35,7 @@
 #include "tasks/generic/Pause.h"
 #include "tasks/generic/Ping.h"
 #include "tasks/generic/Play.h"
+#include "tasks/generic/ProcessAudioGap.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
@@ -100,6 +101,11 @@ const std::string kAutoVideoSinkTypeName{"GstAutoVideoSink"};
 const std::string kElementTypeName{"GenericSink"};
 constexpr bool kResetTime{false};
 constexpr int32_t kId{0};
+constexpr firebolt::rialto::Layout kLayout{firebolt::rialto::Layout::INTERLEAVED};
+constexpr firebolt::rialto::Format kFormat{firebolt::rialto::Format::S16LE};
+constexpr uint64_t kChannelMask{0x0000000000000003};
+constexpr uint32_t kLevel{1};
+constexpr bool kIsAudioAac{false};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 {
@@ -777,6 +783,44 @@ void GenericTasksTestsBase::triggerAttachOpusAudioSourceWithAudioSpecificConf()
     firebolt::rialto::AudioConfig audioConfig{0, 0, kCodecBufferVector};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/x-opus", false, audioConfig);
+    firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
+                                                                testContext->m_gstWrapper,
+                                                                testContext->m_glibWrapper,
+                                                                testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstPlayer,
+                                                                source};
+    task.execute();
+}
+
+void GenericTasksTestsBase::shouldAttachBwavAudioSource()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/b-wav")))
+        .WillOnce(Return(&testContext->m_gstCaps1));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleIntStub(&testContext->m_gstCaps1, StrEq("channels"), G_TYPE_INT, kNumberOfChannels));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleIntStub(&testContext->m_gstCaps1, StrEq("rate"), G_TYPE_INT, kSampleRate));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps1))
+        .WillOnce(Return(&testContext->m_capsStr));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleStringStub(&testContext->m_gstCaps1, StrEq("format"), G_TYPE_STRING, StrEq("S16LE")));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleStringStub(&testContext->m_gstCaps1, StrEq("layout"),
+                                                                       G_TYPE_STRING, StrEq("interleaved")));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleBitMaskStub(&testContext->m_gstCaps1, StrEq("channel-mask"),
+                                                                        GST_TYPE_BITMASK, kChannelMask));
+    EXPECT_CALL(*testContext->m_glibWrapper, gFree(&testContext->m_capsStr));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryMake(_, StrEq(kAudName.c_str())))
+        .WillOnce(Return(&testContext->m_appSrcAudio));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstAppSrcSetCaps(GST_APP_SRC(&testContext->m_appSrcAudio), &testContext->m_gstCaps1));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps1));
+}
+
+void GenericTasksTestsBase::triggerAttachBwavAudioSource()
+{
+    firebolt::rialto::AudioConfig audioConfig{kNumberOfChannels, kSampleRate, {}, kFormat, kLayout, kChannelMask};
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/b-wav", true, audioConfig);
     firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
@@ -2299,6 +2343,31 @@ void GenericTasksTestsBase::checkInitialPositionNotSet(firebolt::rialto::MediaSo
     GstElement *source = sourceType == firebolt::rialto::MediaSourceType::AUDIO ? &testContext->m_appSrcAudio
                                                                                 : &testContext->m_appSrcVideo;
     EXPECT_EQ(testContext->m_context.initialPositions.end(), testContext->m_context.initialPositions.find(source));
+}
+
+void GenericTasksTestsBase::triggerProcessAudioGap()
+{
+    firebolt::rialto::server::tasks::generic::ProcessAudioGap task{testContext->m_context,
+                                                                   testContext->m_gstWrapper,
+                                                                   testContext->m_glibWrapper,
+                                                                   testContext->m_rdkGstreamerUtilsWrapper,
+                                                                   kPosition,
+                                                                   static_cast<uint32_t>(kDuration),
+                                                                   kLevel};
+    task.execute();
+}
+
+void GenericTasksTestsBase::shouldProcessAudioGap()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&testContext->m_appSrcAudio)))
+        .WillOnce(Return(&testContext->m_gstCaps2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps2))
+        .WillOnce(Return(testContext->m_xEac3Str));
+    EXPECT_CALL(*testContext->m_glibWrapper, gFree(testContext->m_xEac3Str));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps2));
+    EXPECT_CALL(*(testContext->m_rdkGstreamerUtilsWrapper),
+                processAudioGap(testContext->m_context.pipeline, kPosition, static_cast<uint32_t>(kDuration), kLevel,
+                                kIsAudioAac));
 }
 
 void GenericTasksTestsBase::triggerFailToCastAudioSource()

@@ -96,6 +96,11 @@ public:
         return m_mediaPipeline->setSourcePosition(sourceId, position);
     }
 
+    bool processAudioGap(int64_t position, uint32_t duration, uint32_t level) override
+    {
+        return m_mediaPipeline->processAudioGap(position, duration, level);
+    }
+
     void notifyApplicationState(ApplicationState state) override { m_mediaPipeline->notifyApplicationState(state); }
 
 private:

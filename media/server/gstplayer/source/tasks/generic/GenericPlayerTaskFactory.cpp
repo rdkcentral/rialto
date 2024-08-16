@@ -31,6 +31,7 @@
 #include "tasks/generic/Pause.h"
 #include "tasks/generic/Ping.h"
 #include "tasks/generic/Play.h"
+#include "tasks/generic/ProcessAudioGap.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
@@ -244,5 +245,14 @@ GenericPlayerTaskFactory::createSetSourcePosition(GenericPlayerContext &context,
                                                   std::int64_t position) const
 {
     return std::make_unique<tasks::generic::SetSourcePosition>(context, player, m_client, m_gstWrapper, type, position);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createProcessAudioGap(GenericPlayerContext &context,
+                                                                             std::int64_t position,
+                                                                             std::uint32_t duration,
+                                                                             std::uint32_t level) const
+{
+    return std::make_unique<tasks::generic::ProcessAudioGap>(context, m_gstWrapper, m_glibWrapper,
+                                                             m_rdkGstreamerUtilsWrapper, position, duration, level);
 }
 } // namespace firebolt::rialto::server

@@ -364,6 +364,19 @@ public:
                                                                  IGstGenericPlayerPrivate &player,
                                                                  const firebolt::rialto::MediaSourceType &type,
                                                                  std::int64_t position) const = 0;
+
+    /**
+     * @brief Creates a ProcessAudioGap task.
+     *
+     * @param[in] context   : The GstPlayer context
+     * @param[in] position  : The Audio pts fade position value
+     * @param[in] duration  : The Audio pts fade duration
+     * @param[in] level     : The Audio pts fade target level [0-1]
+     *
+     * @retval the new ProcessAudioGap task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createProcessAudioGap(GenericPlayerContext &context, std::int64_t position,
+                                                               std::uint32_t duration, std::uint32_t level) const = 0;
 };
 
 } // namespace firebolt::rialto::server

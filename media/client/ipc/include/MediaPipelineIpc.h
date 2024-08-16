@@ -107,6 +107,8 @@ public:
 
     bool setSourcePosition(int32_t sourceId, int64_t position) override;
 
+    bool processAudioGap(int64_t position, uint32_t duration, uint32_t level) override;
+
 private:
     /**
      * @brief The media player client ipc.
@@ -234,6 +236,16 @@ private:
      */
     firebolt::rialto::AttachSourceRequest_CodecData_Type
     convertCodecDataType(const firebolt::rialto::CodecDataType &codecDataType);
+
+    /**
+     * @brief Converts the Format enum to protobuf AttachSourceRequest Format.
+     */
+    firebolt::rialto::AttachSourceRequest_AudioConfig_Format convertFormat(const firebolt::rialto::Format &format);
+
+    /**
+     * @brief Converts the Layout enum to protobuf AttachSourceRequest Layout.
+     */
+    firebolt::rialto::AttachSourceRequest_AudioConfig_Layout convertLayout(const firebolt::rialto::Layout &layout);
 };
 
 }; // namespace firebolt::rialto::client

@@ -51,6 +51,7 @@ add_library(
         source/tasks/generic/Pause.cpp
         source/tasks/generic/Ping.cpp
         source/tasks/generic/Play.cpp
+        source/tasks/generic/ProcessAudioGap.cpp
         source/tasks/generic/ReadShmDataAndAttachSamples.cpp
         source/tasks/generic/RemoveSource.cpp
         source/tasks/generic/RenderFrame.cpp

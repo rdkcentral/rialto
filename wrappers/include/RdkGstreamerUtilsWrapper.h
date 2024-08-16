@@ -41,6 +41,8 @@ public:
         std::uint32_t *status, unsigned int *ui32Delay, long long *audioChangeTargetPts, // NOLINT(runtime/int)
         const long long *currentDispPts, unsigned int *audioChangeStage,                 // NOLINT(runtime/int)
         GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled, GstElement *aSrc, bool *ret) const override;
+    void processAudioGap(GstElement *pipeline, gint64 gapstartpts, gint32 gapduration, gint64 gapdiscontinuity,
+                         bool audioaac) const override;
 };
 } // namespace firebolt::rialto::wrappers
 
