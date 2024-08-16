@@ -24,8 +24,9 @@
 
 class TextTrackSession
 {
-    public:
-    TextTrackSession(const std::string &displayName, const std::shared_ptr<ITextTrackAccessorFactory> &textTrackAccessorFactory);
+public:
+    TextTrackSession(const std::string &displayName,
+                     const std::shared_ptr<ITextTrackAccessorFactory> &textTrackAccessorFactory);
     ~TextTrackSession();
     bool pause();
     bool play();

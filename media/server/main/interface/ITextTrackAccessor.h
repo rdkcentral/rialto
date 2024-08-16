@@ -17,10 +17,10 @@
  * limitations under the License.
  */
 
-#include <string>
 #include <cstdint>
-#include <optional>
 #include <memory>
+#include <optional>
+#include <string>
 
 #pragma once
 class ITextTrackAccessor;
@@ -50,24 +50,23 @@ public:
 
 class ITextTrackAccessor
 {
-    public:
-        enum class DataType
-        {
-            UNKNOWN,
-            WebVTT,
-            TTML
-        };
+public:
+    enum class DataType
+    {
+        UNKNOWN,
+        WebVTT,
+        TTML
+    };
 
-        virtual ~ITextTrackAccessor() = default;
+    virtual ~ITextTrackAccessor() = default;
 
-        virtual std::optional<uint32_t> openSession(const std::string &displayName) = 0;
-        virtual bool closeSession(uint32_t sessionId) = 0;
-        virtual bool pause(uint32_t sessionId) = 0;
-        virtual bool play(uint32_t sessionId) = 0;
-        virtual bool mute(uint32_t sessionId, bool mute) = 0;
-        virtual bool setPosition(uint32_t sessionId, uint64_t mediaTimestampMs) = 0;
-        virtual bool sendData(uint32_t sessionId, const std::string &data, DataType datatype,
-                              int32_t displayOffsetMs = 0) = 0;
-        virtual bool setSessionWebVTTSelection(uint32_t sessionId) = 0;
-        virtual bool setSessionTTMLSelection(uint32_t sessionId) = 0;
+    virtual std::optional<uint32_t> openSession(const std::string &displayName) = 0;
+    virtual bool closeSession(uint32_t sessionId) = 0;
+    virtual bool pause(uint32_t sessionId) = 0;
+    virtual bool play(uint32_t sessionId) = 0;
+    virtual bool mute(uint32_t sessionId, bool mute) = 0;
+    virtual bool setPosition(uint32_t sessionId, uint64_t mediaTimestampMs) = 0;
+    virtual bool sendData(uint32_t sessionId, const std::string &data, DataType datatype, int32_t displayOffsetMs = 0) = 0;
+    virtual bool setSessionWebVTTSelection(uint32_t sessionId) = 0;
+    virtual bool setSessionTTMLSelection(uint32_t sessionId) = 0;
 };

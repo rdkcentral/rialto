@@ -28,7 +28,8 @@ SetSourcePosition::SetSourcePosition(GenericPlayerContext &context, IGstGenericP
                                      IGstGenericPlayerClient *client,
                                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                                      const MediaSourceType &type, std::int64_t position)
-    : m_context{context}, m_player(player), m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}, m_position{position}
+    : m_context{context},
+      m_player(player), m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}, m_position{position}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetSourcePosition");
 }
@@ -98,7 +99,8 @@ void SetSourcePosition::setSubtitlePosition() const
         return;
     }
 
-    if (!m_gstWrapper->gstPadSendEvent(GST_BASE_SINK_PAD(m_context.subtitleSink), m_gstWrapper->gstEventNewSegment(segment)))
+    if (!m_gstWrapper->gstPadSendEvent(GST_BASE_SINK_PAD(m_context.subtitleSink),
+                                       m_gstWrapper->gstEventNewSegment(segment)))
     {
         RIALTO_SERVER_LOG_WARN("Failed to new segment to subtitle sink");
     }

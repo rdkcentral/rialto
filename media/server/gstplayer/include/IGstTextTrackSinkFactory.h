@@ -49,8 +49,7 @@ public:
      *
      * @retval an element instance or null on error.
      */
-    virtual GstElement *
-    createGstTextTrackSink() const = 0;
+    virtual GstElement *createGstTextTrackSink() const = 0;
 };
 
 }; // namespace firebolt::rialto::server

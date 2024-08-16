@@ -49,7 +49,6 @@ IMediaPipeline::MediaSegmentVector DataReaderV1::readData() const
         {
             mediaSegments.emplace_back(createSegment<IMediaPipeline::MediaSegmentVideo>(metadata));
         }
-
     }
     return mediaSegments;
 }

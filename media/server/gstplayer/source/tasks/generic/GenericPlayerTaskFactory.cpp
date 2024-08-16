@@ -189,7 +189,9 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetVolume(GenericPl
     return std::make_unique<tasks::generic::SetVolume>(context, m_gstWrapper, volume);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetMute(GenericPlayerContext &context, const MediaSourceType &mediaSourceType, bool mute) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetMute(GenericPlayerContext &context,
+                                                                     const MediaSourceType &mediaSourceType,
+                                                                     bool mute) const
 {
     return std::make_unique<tasks::generic::SetMute>(context, m_gstWrapper, m_glibWrapper, mediaSourceType, mute);
 }
@@ -210,8 +212,7 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(GenericPl
                                                                        bool underflowEnabled,
                                                                        MediaSourceType sourceType) const
 {
-    return std::make_unique<tasks::generic::Underflow>(context, player, m_client, underflowEnabled,
-                                                       sourceType);
+    return std::make_unique<tasks::generic::Underflow>(context, player, m_client, underflowEnabled, sourceType);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUpdatePlaybackGroup(GenericPlayerContext &context,

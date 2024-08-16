@@ -20,7 +20,8 @@
 #include "TextTrackSession.h"
 #include "TextTrackAccessor.h"
 
-TextTrackSession::TextTrackSession(const std::string &displayName, const std::shared_ptr<ITextTrackAccessorFactory> &textTrackAccessorFactory)
+TextTrackSession::TextTrackSession(const std::string &displayName,
+                                   const std::shared_ptr<ITextTrackAccessorFactory> &textTrackAccessorFactory)
 {
     if (!textTrackAccessorFactory)
     {

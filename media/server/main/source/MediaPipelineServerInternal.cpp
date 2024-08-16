@@ -139,7 +139,7 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
       m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
       m_timerFactory{timerFactory}, m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
       m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false}
-{    
+{
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     m_mainThread = mainThreadFactory->getMainThread();

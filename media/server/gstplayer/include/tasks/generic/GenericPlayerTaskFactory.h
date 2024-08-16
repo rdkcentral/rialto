@@ -75,13 +75,13 @@ public:
     std::unique_ptr<IPlayerTask> createSetVideoGeometry(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                         const Rectangle &rectangle) const override;
     std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, double volume) const override;
-    std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, const MediaSourceType &mediaSourceType, bool mute) const override;
+    std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, const MediaSourceType &mediaSourceType,
+                                               bool mute) const override;
     std::unique_ptr<IPlayerTask> createShutdown(IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createStop(GenericPlayerContext &context,
                                             IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                 bool underflowEnable,
-                                                 MediaSourceType sourceType) const override;
+                                                 bool underflowEnable, MediaSourceType sourceType) const override;
     std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context, GstElement *typefind,
                                                            const GstCaps *caps) const override;
     std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context,

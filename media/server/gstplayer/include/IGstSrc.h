@@ -24,10 +24,10 @@
 #include <MediaCommon.h>
 #include <gst/app/gstappsrc.h>
 #include <gst/gst.h>
+#include <list>
 #include <memory>
 #include <stdint.h>
 #include <unordered_map>
-#include <list>
 
 namespace firebolt::rialto::server
 {
@@ -63,7 +63,8 @@ public:
 struct StreamInfo
 {
     explicit StreamInfo(GstElement *appSrc_ = nullptr, bool hasDrm_ = true) : appSrc(appSrc_), hasDrm(hasDrm_) {}
-    bool operator==(const StreamInfo &other) const {
+    bool operator==(const StreamInfo &other) const
+    {
         return appSrc == other.appSrc && hasDrm == other.hasDrm && isDataNeeded == other.isDataNeeded &&
                isNeedDataPending == other.isNeedDataPending && isDataPushed == other.isDataPushed;
     }

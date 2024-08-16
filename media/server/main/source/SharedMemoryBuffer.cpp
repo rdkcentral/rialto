@@ -66,7 +66,7 @@ const char *kMemoryBufferName{"rialto_avbuf"};
 constexpr int kNoIdAssigned{-1};
 constexpr uint32_t kVideoRegionSize = 7 * 1024 * 1024; // 7MB
 constexpr uint32_t kAudioRegionSize = 1 * 1024 * 1024; // 1MB
-constexpr uint32_t kSubtitleRegionSize = 256 * 1024; // 256kB
+constexpr uint32_t kSubtitleRegionSize = 256 * 1024;   // 256kB
 constexpr uint32_t kWebAudioRegionSize = 10 * 1024;    // 10KB
 
 std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition>
@@ -76,7 +76,8 @@ calculatePartitionSize(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlayb
     {
         // As (for now) resolution of playback (for example HD or UHD) is not known, partitions have the same size.
         firebolt::rialto::server::SharedMemoryBuffer::Partition singlePlaybackDataBuffer{kNoIdAssigned, kAudioRegionSize,
-                                                                                         kVideoRegionSize, kSubtitleRegionSize};
+                                                                                         kVideoRegionSize,
+                                                                                         kSubtitleRegionSize};
         return std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition>(num, singlePlaybackDataBuffer);
     }
     else if (firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO == playbackType)
@@ -390,9 +391,10 @@ std::uint8_t *SharedMemoryBuffer::getBuffer() const
 
 size_t SharedMemoryBuffer::calculateBufferSize() const
 {
-    size_t genericSum = std::accumulate(m_genericPartitions.begin(), m_genericPartitions.end(), 0,
-                                        [](size_t sum, const Partition &p)
-                                        { return sum + p.dataBufferAudioLen + p.dataBufferVideoLen + p.dataBufferSubtitleLen; });
+    size_t genericSum =
+        std::accumulate(m_genericPartitions.begin(), m_genericPartitions.end(), 0,
+                        [](size_t sum, const Partition &p)
+                        { return sum + p.dataBufferAudioLen + p.dataBufferVideoLen + p.dataBufferSubtitleLen; });
     size_t webAudioSum = std::accumulate(m_webAudioPartitions.begin(), m_webAudioPartitions.end(), 0,
                                          [](size_t sum, const Partition &p)
                                          { return sum + p.dataBufferAudioLen + p.dataBufferVideoLen; });

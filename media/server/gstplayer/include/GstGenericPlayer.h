@@ -152,7 +152,6 @@ private:
     void setPlaybinFlags(bool enableAudio = true) override;
     void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
 
-
 private:
     /**
      * @brief Initialises the player pipeline for MSE playback.

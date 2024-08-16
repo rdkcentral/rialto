@@ -34,8 +34,7 @@ public:
     GstTextTrackSinkFactory() = default;
     ~GstTextTrackSinkFactory() override = default;
 
-    GstElement *
-    createGstTextTrackSink() const override;
+    GstElement *createGstTextTrackSink() const override;
 };
 
 }; // namespace firebolt::rialto::server

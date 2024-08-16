@@ -39,7 +39,8 @@ NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActive
                                 common::convertMediaSourceType(m_mediaSourceType));
         m_frameCount = kPrerollNumFrames;
     }
-    if (MediaSourceType::AUDIO != mediaSourceType && MediaSourceType::VIDEO != mediaSourceType && MediaSourceType::SUBTITLE != mediaSourceType)
+    if (MediaSourceType::AUDIO != mediaSourceType && MediaSourceType::VIDEO != mediaSourceType &&
+        MediaSourceType::SUBTITLE != mediaSourceType)
     {
         RIALTO_SERVER_LOG_ERROR("Unable to initialize NeedMediaData - unknown mediaSourceType: %s",
                                 common::convertMediaSourceType(m_mediaSourceType));

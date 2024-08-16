@@ -20,9 +20,9 @@
 #include <stdexcept>
 
 #include "GstSrc.h"
+#include "GstTextTrackSinkFactory.h"
 #include "RialtoServerLogging.h"
 #include <MediaCommon.h>
-#include "GstTextTrackSinkFactory.h"
 
 static void gstRialtoSrcUriHandlerInit(gpointer gIface, gpointer ifaceData);
 

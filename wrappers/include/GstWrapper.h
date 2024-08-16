@@ -571,12 +571,12 @@ public:
     void gstContextUnref(GstContext *context) const override { gst_context_unref(context); }
 
     GstAudioClippingMeta *gstBufferAddAudioClippingMeta(GstBuffer *buffer, GstFormat format, guint64 start,
-                                                                guint64 end) const
+                                                        guint64 end) const
     {
         return gst_buffer_add_audio_clipping_meta(buffer, format, start, end);
     }
 
-    GstPad* gstElementGetStaticPad(GstElement *element, const gchar *name) const override
+    GstPad *gstElementGetStaticPad(GstElement *element, const gchar *name) const override
     {
         return gst_element_get_static_pad(element, name);
     }

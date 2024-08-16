@@ -159,7 +159,7 @@ public:
     void notifySourceFlushed(MediaSourceType mediaSourceType) override;
 
 protected:
-    //TextTrackAccessor m_textTrackAccessor;
+    // TextTrackAccessor m_textTrackAccessor;
     /**
      * @brief The media player client.
      */

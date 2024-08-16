@@ -17,16 +17,16 @@
  * limitations under the License.
  */
 
-#include "GstTextTrackSinkFactory.h"
 #include "GstProtectionMetadataHelperFactory.h"
+#include "GstTextTrackSinkFactory.h"
 #include "RialtoServerLogging.h"
 #include <stdexcept>
 
+#include "GstRialtoTextTrackSinkPrivate.h"
+#include <atomic>
+#include <cstdlib>
 #include <gst/base/gstbasetransform.h>
 #include <gst/gst.h>
-#include "GstRialtoTextTrackSinkPrivate.h"
-#include <cstdlib>
-#include <atomic>
 G_BEGIN_DECLS
 
 enum
@@ -38,8 +38,9 @@ enum
 };
 
 #define GST_RIALTO_TEXT_TRACK_SINK_TYPE (gst_rialto_text_track_sink_get_type())
-#define GST_RIALTO_TEXT_TRACK_SINK(obj) (G_TYPE_CHECK_INSTANCE_CAST((obj), GST_RIALTO_TEXT_TRACK_SINK_TYPE, GstRialtoTextTrackSink))
-#define GST_RIALTO_TEXT_TRACK_SINK_CLASS(klass)                                                                              \
+#define GST_RIALTO_TEXT_TRACK_SINK(obj)                                                                                \
+    (G_TYPE_CHECK_INSTANCE_CAST((obj), GST_RIALTO_TEXT_TRACK_SINK_TYPE, GstRialtoTextTrackSink))
+#define GST_RIALTO_TEXT_TRACK_SINK_CLASS(klass)                                                                        \
     (G_TYPE_CHECK_CLASS_CAST((klass), GST_RIALTO_TEXT_TRACK_SINK_TYPE, GstRialtoTextTrackSinkClass))
 
 typedef struct _GstRialtoTextTrackSink GstRialtoTextTrackSink;
@@ -62,7 +63,8 @@ struct _GstRialtoTextTrackSinkClass
 G_END_DECLS
 
 static GstStaticPadTemplate sinkTemplate =
-    GST_STATIC_PAD_TEMPLATE("sink", GST_PAD_SINK, GST_PAD_ALWAYS, GST_STATIC_CAPS("application/ttml+xml; text/vtt; application/x-subtitle-vtt"));
+    GST_STATIC_PAD_TEMPLATE("sink", GST_PAD_SINK, GST_PAD_ALWAYS,
+                            GST_STATIC_CAPS("application/ttml+xml; text/vtt; application/x-subtitle-vtt"));
 
 GST_DEBUG_CATEGORY(gst_rialto_text_track_sink_debug_category);
 #define GST_CAT_DEFAULT gst_rialto_text_track_sink_debug_category
@@ -70,33 +72,35 @@ GST_DEBUG_CATEGORY(gst_rialto_text_track_sink_debug_category);
 #define gst_rialto_text_track_sink_parent_class parent_class
 G_DEFINE_TYPE_WITH_PRIVATE(GstRialtoTextTrackSink, gst_rialto_text_track_sink, GST_TYPE_BASE_SINK);
 
-static void gst_rialto_text_track_sink_finalize(GObject *object);                   // NOLINT(build/function_format)
+static void gst_rialto_text_track_sink_finalize(GObject *object); // NOLINT(build/function_format)
 static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuffer *buffer);
 static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *caps);
-static gboolean gst_rialto_text_track_sink_start (GstBaseSink * sink);
-static gboolean gst_rialto_text_track_sink_stop (GstBaseSink * sink);
+static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink);
+static gboolean gst_rialto_text_track_sink_stop(GstBaseSink *sink);
 static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *event);
 static GstStateChangeReturn gst_rialto_text_track_sink_change_state(GstElement *element, GstStateChange transition);
 static void gst_rialto_text_track_sink_get_property(GObject *object, guint propId, GValue *value, GParamSpec *pspec);
-static void gst_rialto_text_track_sink_set_property(GObject *object, guint propId, const GValue *value, GParamSpec *pspec);
+static void gst_rialto_text_track_sink_set_property(GObject *object, guint propId, const GValue *value,
+                                                    GParamSpec *pspec);
 
 static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *klass) // NOLINT(build/function_format)
 {
-    GST_DEBUG_CATEGORY_INIT(gst_rialto_text_track_sink_debug_category, "rialto_text_track_sink", 0, "TextTrack Sink for Rialto");
+    GST_DEBUG_CATEGORY_INIT(gst_rialto_text_track_sink_debug_category, "rialto_text_track_sink", 0,
+                            "TextTrack Sink for Rialto");
 
     GObjectClass *gobjectClass = G_OBJECT_CLASS(klass);
     GstElementClass *elementClass = GST_ELEMENT_CLASS(klass);
-    GstBaseSinkClass *baseSinkClass = GST_BASE_SINK_CLASS (klass);
-    
+    GstBaseSinkClass *baseSinkClass = GST_BASE_SINK_CLASS(klass);
+
     gobjectClass->finalize = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_finalize);
     gobjectClass->get_property = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_get_property);
     gobjectClass->set_property = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_set_property);
     baseSinkClass->start = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_start);
     baseSinkClass->stop = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_stop);
-    baseSinkClass->render = GST_DEBUG_FUNCPTR (gst_rialto_text_track_sink_render);
-    baseSinkClass->set_caps = GST_DEBUG_FUNCPTR (gst_rialto_text_track_sink_set_caps);
-    baseSinkClass->event = GST_DEBUG_FUNCPTR (gst_rialto_text_track_sink_event);
-    elementClass->change_state = GST_DEBUG_FUNCPTR (gst_rialto_text_track_sink_change_state);
+    baseSinkClass->render = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_render);
+    baseSinkClass->set_caps = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_set_caps);
+    baseSinkClass->event = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_event);
+    elementClass->change_state = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_change_state);
 
     g_object_class_install_property(gobjectClass, PROP_MUTE,
                                     g_param_spec_boolean("mute", "Mute", "Mute subtitles", FALSE, G_PARAM_READWRITE));
@@ -107,8 +111,8 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
                                                         GParamFlags(G_PARAM_READWRITE)));
 
     gst_element_class_add_pad_template(elementClass, gst_static_pad_template_get(&sinkTemplate));
-    gst_element_class_set_static_metadata(elementClass, "Rialto TextTrack Sink",
-                                          "Sink/Parser/Subtitle", "Rialto TextTrack Sink", "SKY");
+    gst_element_class_set_static_metadata(elementClass, "Rialto TextTrack Sink", "Sink/Parser/Subtitle",
+                                          "Rialto TextTrack Sink", "SKY");
 }
 
 static void gst_rialto_text_track_sink_init(GstRialtoTextTrackSink *self) // NOLINT(build/function_format)
@@ -132,9 +136,9 @@ static void gst_rialto_text_track_sink_finalize(GObject *object) // NOLINT(build
     GST_CALL_PARENT(G_OBJECT_CLASS, finalize, (object));
 }
 
-static gboolean gst_rialto_text_track_sink_start (GstBaseSink * sink)
+static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink)
 {
-    const char* wayland_display = std::getenv("WAYLAND_DISPLAY");
+    const char *wayland_display = std::getenv("WAYLAND_DISPLAY");
     if (!wayland_display)
     {
         GST_ERROR_OBJECT(sink, "Failed to get WAYLAND_DISPLAY env variable");
@@ -145,9 +149,10 @@ static gboolean gst_rialto_text_track_sink_start (GstBaseSink * sink)
     GstRialtoTextTrackSink *self = GST_RIALTO_TEXT_TRACK_SINK(sink);
     try
     {
-        self->priv->m_textTrackSession = std::make_unique<TextTrackSession>(display, ITextTrackAccessorFactory::getFactory());
+        self->priv->m_textTrackSession =
+            std::make_unique<TextTrackSession>(display, ITextTrackAccessorFactory::getFactory());
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         GST_ERROR_OBJECT(sink, "Failed to create TextTrackSession. Reason '%s'", e.what());
         return false;
@@ -157,7 +162,7 @@ static gboolean gst_rialto_text_track_sink_start (GstBaseSink * sink)
     return true;
 }
 
-static gboolean gst_rialto_text_track_sink_stop (GstBaseSink * sink)
+static gboolean gst_rialto_text_track_sink_stop(GstBaseSink *sink)
 {
     GstRialtoTextTrackSink *self = GST_RIALTO_TEXT_TRACK_SINK(sink);
     self->priv->m_textTrackSession.reset();
@@ -166,12 +171,12 @@ static gboolean gst_rialto_text_track_sink_stop (GstBaseSink * sink)
     return true;
 }
 
-static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuffer *buffer) 
+static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuffer *buffer)
 {
-    GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK (sink);
+    GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(sink);
 
     GstMapInfo info;
-    if(gst_buffer_map(buffer, &info, GST_MAP_READ))
+    if (gst_buffer_map(buffer, &info, GST_MAP_READ))
     {
         std::string data(reinterpret_cast<char *>(info.data), info.size);
         textTrackSink->priv->m_textTrackSession->sendData(data);
@@ -244,8 +249,7 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
     }
     }
 
-
-  return GST_BASE_SINK_CLASS (parent_class)->event (sink, event);
+    return GST_BASE_SINK_CLASS(parent_class)->event(sink, event);
 }
 
 static GstStateChangeReturn gst_rialto_text_track_sink_change_state(GstElement *element, GstStateChange transition)
@@ -257,39 +261,39 @@ static GstStateChangeReturn gst_rialto_text_track_sink_change_state(GstElement *
     GST_INFO_OBJECT(textTrackSink, "State change: (%s) -> (%s)", gst_element_state_get_name(current_state),
                     gst_element_state_get_name(next_state));
 
-     switch (transition)
-     {
-     case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
-     {
-         if(!textTrackSink->priv->m_textTrackSession->play())
-         {
-             GST_ERROR_OBJECT(textTrackSink, "Failed to play textTrack session");
-             return GST_STATE_CHANGE_FAILURE;
-         }
-         break;
-     }
-     case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
-     {
-         if (!textTrackSink->priv->m_textTrackSession->pause())
-         {
-             GST_ERROR_OBJECT(textTrackSink, "Failed to pause textTrack session");
-             return GST_STATE_CHANGE_FAILURE;
-         }
+    switch (transition)
+    {
+    case GST_STATE_CHANGE_PAUSED_TO_PLAYING:
+    {
+        if (!textTrackSink->priv->m_textTrackSession->play())
+        {
+            GST_ERROR_OBJECT(textTrackSink, "Failed to play textTrack session");
+            return GST_STATE_CHANGE_FAILURE;
+        }
+        break;
+    }
+    case GST_STATE_CHANGE_PLAYING_TO_PAUSED:
+    {
+        if (!textTrackSink->priv->m_textTrackSession->pause())
+        {
+            GST_ERROR_OBJECT(textTrackSink, "Failed to pause textTrack session");
+            return GST_STATE_CHANGE_FAILURE;
+        }
 
-         break;
-     }
-     default:
-         break;
-     }
+        break;
+    }
+    default:
+        break;
+    }
 
-     GstStateChangeReturn result = GST_ELEMENT_CLASS(parent_class)->change_state(element, transition);
-     if (G_UNLIKELY(result == GST_STATE_CHANGE_FAILURE))
-     {
-         GST_WARNING_OBJECT(textTrackSink, "State change failed");
-         return result;
-     }
+    GstStateChangeReturn result = GST_ELEMENT_CLASS(parent_class)->change_state(element, transition);
+    if (G_UNLIKELY(result == GST_STATE_CHANGE_FAILURE))
+    {
+        GST_WARNING_OBJECT(textTrackSink, "State change failed");
+        return result;
+    }
 
-     return GST_STATE_CHANGE_SUCCESS;
+    return GST_STATE_CHANGE_SUCCESS;
 }
 
 static void gst_rialto_text_track_sink_get_property(GObject *object, guint propId, GValue *value, GParamSpec *pspec)
@@ -311,7 +315,7 @@ static void gst_rialto_text_track_sink_get_property(GObject *object, guint propI
     }
     case PROP_TEXT_TRACK_IDENTIFIER:
     {
-        //TODO:
+        // TODO:
         g_value_set_string(value, priv->m_textTrackIdentifier.c_str());
         break;
     }
@@ -341,7 +345,7 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
     }
     case PROP_TEXT_TRACK_IDENTIFIER:
     {
-        //TODO:
+        // TODO:
         priv->m_textTrackIdentifier = g_value_get_string(value);
         break;
     }
@@ -371,7 +375,7 @@ std::shared_ptr<IGstTextTrackSinkFactory> IGstTextTrackSinkFactory::createFactor
 
 GstElement *GstTextTrackSinkFactory::createGstTextTrackSink() const
 {
-    GstElement* elem = GST_ELEMENT(g_object_new(GST_RIALTO_TEXT_TRACK_SINK_TYPE, nullptr));
+    GstElement *elem = GST_ELEMENT(g_object_new(GST_RIALTO_TEXT_TRACK_SINK_TYPE, nullptr));
 
     return elem;
 }

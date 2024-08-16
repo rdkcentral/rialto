@@ -19,14 +19,16 @@
 
 #include "tasks/generic/SetMute.h"
 #include "RialtoServerLogging.h"
-#include <gst/gst.h>
 #include "TypeConverters.h"
+#include <gst/gst.h>
 
 namespace firebolt::rialto::server::tasks::generic
 {
 SetMute::SetMute(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                 std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, const MediaSourceType &mediaSourceType, bool mute)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_mediaSourceType{mediaSourceType}, m_mute{mute}
+                 std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                 const MediaSourceType &mediaSourceType, bool mute)
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
+      m_mediaSourceType{mediaSourceType}, m_mute{mute}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetMute");
 }
@@ -59,7 +61,8 @@ void SetMute::execute() const
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Setting mute for type %s unsupported", common::convertMediaSourceType(m_mediaSourceType));
+        RIALTO_SERVER_LOG_ERROR("Setting mute for type %s unsupported",
+                                common::convertMediaSourceType(m_mediaSourceType));
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

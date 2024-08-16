@@ -280,7 +280,8 @@ public:
      *
      * @retval the new SetMute task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, const MediaSourceType &mediaSourceType, bool mute) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context,
+                                                       const MediaSourceType &mediaSourceType, bool mute) const = 0;
 
     /**
      * @brief Creates a Shutdown task.

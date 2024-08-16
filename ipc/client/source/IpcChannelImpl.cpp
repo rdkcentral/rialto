@@ -663,7 +663,7 @@ void ChannelImpl::updateTimeoutTimer()
         }
 
         RIALTO_IPC_LOG_DEBUG("next timeout in %" PRId64 "us - %ld.%09lds", kDuration.count(), ts.it_value.tv_sec,
-                            ts.it_value.tv_nsec);
+                             ts.it_value.tv_nsec);
     }
 
     // write the timeout value

@@ -19,19 +19,19 @@
 
 #pragma once
 
-//todo: wywalic to do Module.h
+// todo: wywalic to do Module.h
 #ifndef MODULE_NAME
 #define MODULE_NAME TextTrackClosedCaptionsStyleClient
 #endif
 
 #include "ITextTrackAccessor.h"
-#include <core/core.h>
+#include "RialtoServerLogging.h"
 #include <com/com.h>
+#include <core/core.h>
+#include <interfaces/ITextTrack.h>
+#include <mutex>
 #include <plugins/Types.h>
 #include <set>
-#include <interfaces/ITextTrack.h>
-#include "RialtoServerLogging.h"
-#include <mutex>
 
 /**
  * @brief ITextTrackAccessorFactory factory class definition.
@@ -54,7 +54,7 @@ public:
 
 class TextTrackAccessor : public ITextTrackAccessor
 {
-    public:
+public:
     TextTrackAccessor();
     ~TextTrackAccessor();
     std::optional<uint32_t> openSession(const std::string &displayName) override;

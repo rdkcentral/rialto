@@ -25,11 +25,11 @@
 #include "IMediaPipeline.h"
 #include "ITimer.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 #include <cinttypes>
 #include <stdexcept>
-#include "TypeConverters.h"
 
 namespace
 {
@@ -269,7 +269,7 @@ void GstGenericPlayer::termPipeline()
     {
         m_gstWrapper->gstObjectUnref(m_context.source);
     }
-    if(m_context.subtitleSink)
+    if (m_context.subtitleSink)
     {
         m_gstWrapper->gstObjectUnref(m_context.subtitleSink);
     }
@@ -517,20 +517,11 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
     }
 }
 
-void GstGenericPlayer::attachAudioData()
-{
+void GstGenericPlayer::attachAudioData() {}
 
-}
+void GstGenericPlayer::attachVideoData() {}
 
-void GstGenericPlayer::attachVideoData()
-{
-
-}
-
-void GstGenericPlayer::attachSubtitleData()
-{
-    
-}
+void GstGenericPlayer::attachSubtitleData() {}
 
 void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels, const std::shared_ptr<CodecData> &codecData)
 {
@@ -992,8 +983,7 @@ bool GstGenericPlayer::getMute(const MediaSourceType &mediaSourceType, bool &mut
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Getting mute for type %s unsupported",
-                                common::convertMediaSourceType(mediaSourceType));
+        RIALTO_SERVER_LOG_ERROR("Getting mute for type %s unsupported", common::convertMediaSourceType(mediaSourceType));
         return false;
     }
 

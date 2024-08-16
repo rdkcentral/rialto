@@ -83,7 +83,7 @@ struct GenericPlayerContext
      * @brief Child sink of the autovideosink.
      */
     GstElement *autoVideoChildSink{nullptr};
-    
+
     GstElement *subtitleSink{nullptr};
 
     /**

@@ -21,8 +21,8 @@
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "RialtoServerLogging.h"
-#include <gst/gst.h>
 #include "TypeConverters.h"
+#include <gst/gst.h>
 
 namespace firebolt::rialto::server::tasks::generic
 {

@@ -1273,7 +1273,7 @@ public:
 
     /**
      * @brief Get current mute status of the media source
-     * 
+     *
      * @param[in] sourceId Source, which mute status should be fetched
      * @param[out] mute   Current mute state
      *

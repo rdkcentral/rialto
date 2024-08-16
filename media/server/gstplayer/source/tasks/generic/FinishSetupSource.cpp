@@ -25,8 +25,6 @@
 #include <gst/app/gstappsrc.h>
 #include <gst/gst.h>
 
-
-
 namespace
 {
 /**
