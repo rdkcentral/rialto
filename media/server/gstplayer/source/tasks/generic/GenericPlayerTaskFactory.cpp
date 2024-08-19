@@ -48,6 +48,7 @@
 #include "tasks/generic/Stop.h"
 #include "tasks/generic/Underflow.h"
 #include "tasks/generic/UpdatePlaybackGroup.h"
+#include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server
 {
@@ -186,6 +187,7 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetVideoGeometry(Ge
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetVolume(GenericPlayerContext &context, double volume) const
 {
+    RIALTO_SERVER_LOG_ERROR("Set Volume volume: %f ", volume);
     return std::make_unique<tasks::generic::SetVolume>(context, m_gstWrapper, volume);
 }
 
