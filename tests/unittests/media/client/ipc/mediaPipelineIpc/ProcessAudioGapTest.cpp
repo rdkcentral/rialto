@@ -25,7 +25,8 @@ class RialtoClientMediaPipelineIpcProcessAudioGapTest : public MediaPipelineIpcT
 protected:
     const int64_t m_kPosition{12};
     const uint32_t m_kDuration{34};
-    const uint32_t m_kLevel{56};
+    const int64_t m_kDiscontinuityGap{56};
+    const bool m_kIsAudioAac{false};
 
     virtual void SetUp()
     {
@@ -50,10 +51,11 @@ TEST_F(RialtoClientMediaPipelineIpcProcessAudioGapTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("processAudioGap"), m_controllerMock.get(),
-                                           processAudioGapRequestMatcher(m_sessionId, m_kPosition, m_kDuration, m_kLevel),
+                                           processAudioGapRequestMatcher(m_sessionId, m_kPosition, m_kDuration,
+                                                                         m_kDiscontinuityGap, m_kIsAudioAac),
                                            _, m_blockingClosureMock.get()));
 
-    EXPECT_EQ(m_mediaPipelineIpc->processAudioGap(m_kPosition, m_kDuration, m_kLevel), true);
+    EXPECT_EQ(m_mediaPipelineIpc->processAudioGap(m_kPosition, m_kDuration, m_kDiscontinuityGap, m_kIsAudioAac), true);
 }
 
 /**
@@ -64,7 +66,7 @@ TEST_F(RialtoClientMediaPipelineIpcProcessAudioGapTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaPipelineIpc->processAudioGap(m_kPosition, m_kDuration, m_kLevel), false);
+    EXPECT_EQ(m_mediaPipelineIpc->processAudioGap(m_kPosition, m_kDuration, m_kDiscontinuityGap, m_kIsAudioAac), false);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -82,7 +84,7 @@ TEST_F(RialtoClientMediaPipelineIpcProcessAudioGapTest, ReconnectChannel)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("processAudioGap"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->processAudioGap(m_kPosition, m_kDuration, m_kLevel), true);
+    EXPECT_EQ(m_mediaPipelineIpc->processAudioGap(m_kPosition, m_kDuration, m_kDiscontinuityGap, m_kIsAudioAac), true);
 }
 
 /**
@@ -94,5 +96,5 @@ TEST_F(RialtoClientMediaPipelineIpcProcessAudioGapTest, ProcessAudioGapFailure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("processAudioGap"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->processAudioGap(m_kPosition, m_kDuration, m_kLevel), false);
+    EXPECT_EQ(m_mediaPipelineIpc->processAudioGap(m_kPosition, m_kDuration, m_kDiscontinuityGap, m_kIsAudioAac), false);
 }

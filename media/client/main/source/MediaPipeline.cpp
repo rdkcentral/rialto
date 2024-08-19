@@ -518,11 +518,11 @@ bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position)
     return m_mediaPipelineIpc->setSourcePosition(sourceId, position);
 }
 
-bool MediaPipeline::processAudioGap(int64_t position, uint32_t duration, uint32_t level)
+bool MediaPipeline::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaPipelineIpc->processAudioGap(position, duration, level);
+    return m_mediaPipelineIpc->processAudioGap(position, duration, discontinuityGap, audioAac);
 }
 
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)

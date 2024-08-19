@@ -75,7 +75,8 @@ constexpr uint64_t kChannelMask{0x0000000000000003};
 constexpr uint64_t kRenderedFrames{987654};
 constexpr uint64_t kDroppedFrames{321};
 constexpr uint32_t kDuration{30};
-constexpr uint32_t kLevel{1};
+constexpr int64_t kDiscontinuityGap{1};
+constexpr bool kIsAudioAac{false};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -568,14 +569,16 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetSourcePos
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillProcessAudioGap()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, processAudioGap(kHardcodedSessionId, kPosition, kDuration, kLevel))
+    EXPECT_CALL(m_mediaPipelineServiceMock,
+                processAudioGap(kHardcodedSessionId, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac))
         .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToProcessAudioGap()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, processAudioGap(kHardcodedSessionId, kPosition, kDuration, kLevel))
+    EXPECT_CALL(m_mediaPipelineServiceMock,
+                processAudioGap(kHardcodedSessionId, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac))
         .WillOnce(Return(false));
 }
 
@@ -1003,7 +1006,8 @@ void MediaPipelineModuleServiceTests::sendProcessAudioGapRequestAndReceiveRespon
     request.set_session_id(kHardcodedSessionId);
     request.set_position(kPosition);
     request.set_duration(kDuration);
-    request.set_level(kLevel);
+    request.set_discontinuity_gap(kDiscontinuityGap);
+    request.set_audio_aac(kIsAudioAac);
 
     m_service->processAudioGap(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

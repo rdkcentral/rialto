@@ -66,7 +66,8 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     constexpr uint64_t kRenderedFrames{5432};
     constexpr uint64_t kDroppedFrames{51};
     constexpr uint32_t kDuration{5432};
-    constexpr uint32_t kLevel{1};
+    constexpr int64_t kDiscontinuityGap{1};
+    constexpr bool kIsAudioAac{false};
     const std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSegment> kMediaSegment;
     const std::shared_ptr<IMediaPipelineClient> kIMediaPipelineClient;
 
@@ -198,8 +199,9 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, processAudioGap(kPosition1, kDuration, kLevel)).WillOnce(Return(true));
-    EXPECT_TRUE(proxy->processAudioGap(kPosition1, kDuration, kLevel));
+    EXPECT_CALL(*mediaPipelineMock, processAudioGap(kPosition1, kDuration, kDiscontinuityGap, kIsAudioAac))
+        .WillOnce(Return(true));
+    EXPECT_TRUE(proxy->processAudioGap(kPosition1, kDuration, kDiscontinuityGap, kIsAudioAac));
 
     /////////////////////////////////////////////
 
