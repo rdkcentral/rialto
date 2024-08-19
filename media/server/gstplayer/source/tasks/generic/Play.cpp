@@ -35,7 +35,7 @@ Play::~Play()
 
 void Play::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing Play");
+    RIALTO_SERVER_LOG_ERROR("Executing Play");
     m_player.changePipelineState(GST_STATE_PLAYING);
 }
 } // namespace firebolt::rialto::server::tasks::generic

@@ -28,8 +28,8 @@
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 #include <cinttypes>
-#include <stdexcept>
 #include <cmath>
+#include <stdexcept>
 
 namespace
 {
@@ -369,6 +369,22 @@ void GstGenericPlayer::setPlaybackRate(double rate)
 
 bool GstGenericPlayer::getPosition(std::int64_t &position)
 {
+    GstElement *audioSink{nullptr};
+    g_object_get(m_context.pipeline, "audio-sink", &audioSink, nullptr);
+
+    if (audioSink)
+    {
+        gdouble fadeVolume = 0.0;
+        g_object_get(audioSink, "fade-volume", &fadeVolume, NULL);
+        RIALTO_SERVER_LOG_ERROR("Read fade-volume: %f", fadeVolume);
+
+        g_object_unref(audioSink);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to retrieve audio-sink element from the pipeline");
+    }
+
     // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
     // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
     if (!m_context.pipeline || GST_STATE(m_context.pipeline) < GST_STATE_PAUSED)
@@ -796,16 +812,13 @@ bool GstGenericPlayer::changePipelineState(GstState newState)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
         return false;
     }
-    
-    if(newState == GST_STATE_PLAYING)
-    {
-        
 
+    if (newState == GST_STATE_PLAYING)
+    {
         GstElement *audioSink = nullptr;
         g_object_get(m_context.pipeline, "audio-sink", &audioSink, nullptr);
 
-        
-        if(audioSink)
+        if (audioSink)
         {
             double targetVolume = 1.0;
             uint32_t duration = 1000000;
@@ -815,14 +828,14 @@ bool GstGenericPlayer::changePipelineState(GstState newState)
             if (easeString == "EASE_LINEAR")
             {
                 easeString = "L";
-                RIALTO_SERVER_LOG_DEBUG("Audio Easing function: Ease Linear");
+                RIALTO_SERVER_LOG_ERROR("Audio Easing function: Ease Linear");
             }
 
             gchar fadeStr[32];
             snprintf(fadeStr, sizeof(fadeStr), "%u,%u,%s", scaledTarget, duration, easeString.c_str());
 
             g_object_set(audioSink, "audio-fade", fadeStr, nullptr);
-            RIALTO_SERVER_LOG_DEBUG("Set audio-fade on the audio sink");
+            RIALTO_SERVER_LOG_ERROR("Set audio-fade on the audio sink");
             g_object_unref(audioSink);
         }
         else
