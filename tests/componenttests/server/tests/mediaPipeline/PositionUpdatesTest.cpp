@@ -127,8 +127,8 @@ public:
             .WillOnce(Invoke(
                 [&](gpointer object, const gchar *first_property_name, void *val)
                 {
-                    bool *immediateOutputValue = reinterpret_cast<bool *>(val);
-                    *immediateOutputValue = kImmediateOutput;
+                    gboolean *immediateOutputValue = reinterpret_cast<gboolean *>(val);
+                    *immediateOutputValue = kImmediateOutput ? TRUE : FALSE;
                 }));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(1);
     }

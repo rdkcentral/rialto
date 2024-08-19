@@ -412,7 +412,7 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType)
     return sink;
 }
 
-bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput)
+bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutputParam)
 {
     bool returnValue{false};
     GstElement *sink = getSink(mediaSourceType);
@@ -422,6 +422,7 @@ bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType
         if (MediaSourceType::VIDEO == mediaSourceType)
             sink = getSinkChildIfAutoVideoSink(sink);
 
+        gboolean immediateOutput(immediateOutputParam);
         m_glibWrapper->gObjectSet(sink, "immediate-output", immediateOutput, nullptr);
         returnValue = true;
         m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
@@ -430,7 +431,7 @@ bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType
     return returnValue;
 }
 
-bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutput)
+bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutputRef)
 {
     bool returnValue{false};
     GstElement *sink = getSink(mediaSourceType);
@@ -440,8 +441,10 @@ bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType
         if (MediaSourceType::VIDEO == mediaSourceType)
             sink = getSinkChildIfAutoVideoSink(sink);
 
+        gboolean immediateOutput;
         m_glibWrapper->gObjectGet(sink, "immediate-output", &immediateOutput, nullptr);
         returnValue = true;
+        immediateOutputRef = (immediateOutput == TRUE);
         m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
     }
 
