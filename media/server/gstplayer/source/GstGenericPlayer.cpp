@@ -371,19 +371,21 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
 {
     GstElement *audioSink{nullptr};
     g_object_get(m_context.pipeline, "audio-sink", &audioSink, nullptr);
-
+    double fadeVolume = 0.0;
+    int volume = -200;
     if (audioSink)
     {
-        gdouble fadeVolume = 0.0;
-        g_object_get(audioSink, "fade-volume", &fadeVolume, NULL);
-        RIALTO_SERVER_LOG_ERROR("Read fade-volume: %f", fadeVolume);
-
+        
+        g_object_get(audioSink, "fade-volume", &volume, NULL);
+        RIALTO_SERVER_LOG_ERROR("volume in audiosink: %d", volume);
         g_object_unref(audioSink);
     }
     else
     {
         RIALTO_SERVER_LOG_ERROR("Failed to retrieve audio-sink element from the pipeline");
     }
+    fadeVolume = ((double)volume) / 100.0;
+    RIALTO_SERVER_LOG_ERROR("fadeVolume %lf", fadeVolume);
 
     // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
     // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
@@ -1025,6 +1027,7 @@ bool GstGenericPlayer::getVolume(double &volume)
     }
     volume =
         m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR);
+    RIALTO_SERVER_LOG_ERROR("getVolume volume: %lf", volume);    
     return true;
 }
 
