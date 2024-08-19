@@ -86,7 +86,8 @@ const std::vector<std::string> kVideoMimeType{"video/h264", "video/h265", "video
 const std::vector<std::string> kUnknownMimeType{};
 constexpr bool kResetTime{true};
 constexpr double kPosition{1234};
-constexpr uint32_t kLevel{1};
+constexpr int64_t kDiscontinuityGap{1};
+constexpr bool kIsAudioAac{false};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -1348,25 +1349,31 @@ void MediaPipelineTestMethods::setSourcePositionFailure()
 void MediaPipelineTestMethods::shouldProcessAudioGap()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                processAudioGap(_, processAudioGapRequestMatcher(kSessionId, kPosition, kDuration, kLevel), _, _))
+                processAudioGap(_,
+                                processAudioGapRequestMatcher(kSessionId, kPosition, kDuration, kDiscontinuityGap,
+                                                              kIsAudioAac),
+                                _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
 void MediaPipelineTestMethods::processAudioGap()
 {
-    EXPECT_TRUE(m_mediaPipeline->processAudioGap(kPosition, kDuration, kLevel));
+    EXPECT_TRUE(m_mediaPipeline->processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac));
 }
 
 void MediaPipelineTestMethods::shouldFailToProcessAudioGap()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                processAudioGap(_, processAudioGapRequestMatcher(kSessionId, kPosition, kDuration, kLevel), _, _))
+                processAudioGap(_,
+                                processAudioGapRequestMatcher(kSessionId, kPosition, kDuration, kDiscontinuityGap,
+                                                              kIsAudioAac),
+                                _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
 }
 
 void MediaPipelineTestMethods::processAudioGapFailure()
 {
-    EXPECT_FALSE(m_mediaPipeline->processAudioGap(kPosition, kDuration, kLevel));
+    EXPECT_FALSE(m_mediaPipeline->processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac));
 }
 
 /*************************** Private methods ********************************/
