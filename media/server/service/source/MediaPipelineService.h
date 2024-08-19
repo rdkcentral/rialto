@@ -74,6 +74,8 @@ public:
     bool getVolume(int sessionId, double &volume) override;
     bool setMute(int sessionId, std::int32_t sourceId, bool mute) override;
     bool getMute(int sessionId, std::int32_t sourceId, bool &mute) override;
+    bool setTextTrackIdentifier(int sessionId, const std::string &textTrackIdentifier) override;
+    bool getTextTrackIdentifier(int sessionId, std::string &textTrackIdentifier) override;
     bool flush(int sessionId, std::int32_t sourceId, bool resetTime) override;
     bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position) override;
     bool processAudioGap(int sessionId, int64_t position, uint32_t duration, uint32_t level) override;

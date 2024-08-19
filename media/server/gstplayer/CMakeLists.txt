@@ -64,6 +64,7 @@ add_library(
         source/tasks/generic/SetVideoGeometry.cpp
         source/tasks/generic/SetVolume.cpp
         source/tasks/generic/SetMute.cpp
+        source/tasks/generic/SetTextTrackIdentifier.cpp
         source/tasks/generic/SetSourcePosition.cpp
         source/tasks/generic/Shutdown.cpp
         source/tasks/generic/Stop.cpp

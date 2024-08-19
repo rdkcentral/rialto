@@ -69,4 +69,5 @@ public:
     virtual bool sendData(uint32_t sessionId, const std::string &data, DataType datatype, int32_t displayOffsetMs = 0) = 0;
     virtual bool setSessionWebVTTSelection(uint32_t sessionId) = 0;
     virtual bool setSessionTTMLSelection(uint32_t sessionId) = 0;
+    virtual bool setSessionCCSelection(uint32_t sessionId, const std::string &service) = 0;
 };

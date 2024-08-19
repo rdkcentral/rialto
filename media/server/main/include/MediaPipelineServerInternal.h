@@ -128,6 +128,10 @@ public:
 
     bool getMute(std::int32_t sourceId, bool &mute) override;
 
+    bool setTextTrackIdentifier(const std::string &textTrackIdentifier) override;
+
+    bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
+
     bool flush(int32_t sourceId, bool resetTime) override;
 
     bool setSourcePosition(int32_t sourceId, int64_t position) override;
@@ -434,6 +438,24 @@ protected:
      * @retval true on success false otherwise
      */
     bool getMuteInternal(std::int32_t sourceId, bool &mute);
+
+    /**
+     * @brief Change Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    bool setTextTrackIdentifierInternal(const std::string &textTrackIdentifier);
+
+    /**
+     * @brief Get Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    bool getTextTrackIdentifierInternal(std::string &textTrackIdentifier);
 
     /**
      * @brief Checks if MediaPipeline threads are not deadlocked internally

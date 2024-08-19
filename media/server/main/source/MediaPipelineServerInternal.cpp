@@ -840,6 +840,56 @@ bool MediaPipelineServerInternal::getMuteInternal(std::int32_t sourceId, bool &m
     return m_gstPlayer->getMute(sourceIter->first, mute);
 }
 
+bool MediaPipelineServerInternal::setTextTrackIdentifier(const std::string &textTrackIdentifier)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setTextTrackIdentifierInternal(textTrackIdentifier); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setTextTrackIdentifierInternal(const std::string &textTrackIdentifier)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set text track identifier - Gstreamer player has not been loaded");
+        return false;
+    }
+
+    m_gstPlayer->setTextTrackIdentifier(textTrackIdentifier);
+
+    return true;
+}
+
+bool MediaPipelineServerInternal::getTextTrackIdentifier(std::string &textTrackIdentifier)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = getTextTrackIdentifierInternal(textTrackIdentifier); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getTextTrackIdentifierInternal(std::string &textTrackIdentifier)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get mute - Gstreamer player has not been loaded");
+        return false;
+    }
+
+    return m_gstPlayer->getTextTrackIdentifier(textTrackIdentifier);
+}
+
 bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

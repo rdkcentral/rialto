@@ -971,6 +971,7 @@ bool GstGenericPlayer::getMute(const MediaSourceType &mediaSourceType, bool &mut
             RIALTO_SERVER_LOG_ERROR("There is no subtitle sink");
             return false;
         }
+
         m_glibWrapper->gObjectGet(m_context.subtitleSink, "mute", mute, nullptr);
     }
     else if (mediaSourceType == MediaSourceType::AUDIO)
@@ -988,6 +989,38 @@ bool GstGenericPlayer::getMute(const MediaSourceType &mediaSourceType, bool &mut
     }
 
     return true;
+}
+
+void GstGenericPlayer::setTextTrackIdentifier(const std::string &textTrackIdentifier)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetTextTrackIdentifier(m_context, textTrackIdentifier));
+    }
+}
+
+bool GstGenericPlayer::getTextTrackIdentifier(std::string &textTrackIdentifier)
+{
+    if (!m_context.subtitleSink)
+    {
+        RIALTO_SERVER_LOG_ERROR("There is no subtitle sink");
+        return false;
+    }
+
+    gchar *identifier = nullptr;
+    m_glibWrapper->gObjectGet(m_context.subtitleSink, "text-track-identifier", &identifier, nullptr);
+
+    if (identifier)
+    {
+        textTrackIdentifier = identifier;
+        m_glibWrapper->gFree(identifier);
+        return true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get text track identifier");
+        return false;
+    }
 }
 
 void GstGenericPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)

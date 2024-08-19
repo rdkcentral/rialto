@@ -64,7 +64,7 @@ G_END_DECLS
 
 static GstStaticPadTemplate sinkTemplate =
     GST_STATIC_PAD_TEMPLATE("sink", GST_PAD_SINK, GST_PAD_ALWAYS,
-                            GST_STATIC_CAPS("application/ttml+xml; text/vtt; application/x-subtitle-vtt"));
+                            GST_STATIC_CAPS("application/ttml+xml; text/vtt; application/x-subtitle-vtt; text/x-raw"));
 
 GST_DEBUG_CATEGORY(gst_rialto_text_track_sink_debug_category);
 #define GST_CAT_DEFAULT gst_rialto_text_track_sink_debug_category
@@ -210,6 +210,11 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
         GST_INFO_OBJECT(sink, "Setting session to TTML");
         textTrackSink->priv->m_textTrackSession->setSessionTTMLSelection();
     }
+    else if (g_str_has_prefix(mimeName, "text/x-raw"))
+    {
+        GST_INFO_OBJECT(sink, "Setting session to CC");
+        textTrackSink->priv->m_textTrackSession->setSessionCCSelection(textTrackSink->priv->m_textTrackIdentifier);
+    }
     else
     {
         GST_ERROR_OBJECT(sink, "Invalid mime name '%s'", mimeName);
@@ -315,7 +320,6 @@ static void gst_rialto_text_track_sink_get_property(GObject *object, guint propI
     }
     case PROP_TEXT_TRACK_IDENTIFIER:
     {
-        // TODO:
         g_value_set_string(value, priv->m_textTrackIdentifier.c_str());
         break;
     }
@@ -345,8 +349,12 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
     }
     case PROP_TEXT_TRACK_IDENTIFIER:
     {
-        // TODO:
         priv->m_textTrackIdentifier = g_value_get_string(value);
+        if (priv->m_textTrackSession)
+        {
+            priv->m_textTrackSession->setSessionCCSelection(priv->m_textTrackIdentifier);
+        }
+
         break;
     }
     default:

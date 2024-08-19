@@ -87,3 +87,8 @@ bool TextTrackSession::setSessionTTMLSelection()
     m_dataType = ITextTrackAccessor::DataType::TTML;
     return m_textTrackAccessor->setSessionTTMLSelection(m_sessionId);
 }
+
+bool TextTrackSession::setSessionCCSelection(const std::string &service)
+{
+    return m_textTrackAccessor->setSessionCCSelection(m_sessionId, service);
+}

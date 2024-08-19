@@ -804,6 +804,69 @@ bool MediaPipelineIpc::getMute(std::int32_t sourceId, bool &mute)
     return true;
 }
 
+bool MediaPipelineIpc::setTextTrackIdentifier(const std::string &textTrackIdentifier)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetTextTrackIdentifierRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_text_track_identifier(textTrackIdentifier);
+
+    firebolt::rialto::SetTextTrackIdentifierResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setTextTrackIdentifier(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // waiting for call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set text track identifier due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getTextTrackIdentifier(std::string &textTrackIdentifier)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetTextTrackIdentifierRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetTextTrackIdentifierResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getTextTrackIdentifier(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get mute due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    textTrackIdentifier = response.text_track_identifier();
+
+    return true;
+}
+
 bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime)
 {
     if (!reattachChannelIfRequired())

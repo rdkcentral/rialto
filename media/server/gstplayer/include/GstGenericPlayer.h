@@ -115,6 +115,8 @@ public:
     bool getVolume(double &volume) override;
     void setMute(const MediaSourceType &mediaSourceType, bool mute) override;
     bool getMute(const MediaSourceType &mediaSourceType, bool &mute) override;
+    void setTextTrackIdentifier(const std::string &textTrackIdentifier) override;
+    bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
     void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position) override;

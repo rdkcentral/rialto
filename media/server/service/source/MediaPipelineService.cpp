@@ -352,6 +352,34 @@ bool MediaPipelineService::getMute(int sessionId, std::int32_t sourceId, bool &m
     return mediaPipelineIter->second->getMute(sourceId, mute);
 }
 
+bool MediaPipelineService::setTextTrackIdentifier(int sessionId, const std::string &textTrackIdentifier)
+{
+    RIALTO_SERVER_LOG_DEBUG("Set text track identifier requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setTextTrackIdentifier(textTrackIdentifier);
+}
+
+bool MediaPipelineService::getTextTrackIdentifier(int sessionId, std::string &textTrackIdentifier)
+{
+    RIALTO_SERVER_LOG_DEBUG("Get text track identifier requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getTextTrackIdentifier(textTrackIdentifier);
+}
+
 bool MediaPipelineService::flush(int sessionId, std::int32_t sourceId, bool resetTime)
 {
     RIALTO_SERVER_LOG_DEBUG("Flush requested, session id: %d", sessionId);

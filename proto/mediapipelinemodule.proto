@@ -461,6 +461,37 @@ message GetMuteResponse {
 }
 
 /**
+ * @fn void setTextTrackIdentifier(const std::string &textTrackIdentifier)
+ * @brief Change Text Track Identifier
+ *
+ * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+ *
+ * @retval true on success false otherwise
+ *
+ */
+message SetTextTrackIdentifierRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional string text_track_identifier = 2;
+}
+message SetTextTrackIdentifierResponse {
+}
+
+/**
+ * @fn void getTextTrackIdentifier(std::string &textTrackIdentifier) 
+ * @brief Get Text Track Identifier
+ *
+ * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+ *
+ * @retval true on success false otherwise
+ */
+message GetTextTrackIdentifierRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetTextTrackIdentifierResponse {
+    optional string text_track_identifier = 1;
+}
+
+/**
  * @fn void flush(int session_id, int source_id)
  * @brief Flush a media source for a session.
  *
@@ -807,7 +838,7 @@ service MediaPipelineModule {
     rpc getVolume(GetVolumeRequest) returns (GetVolumeResponse) {
     }
 
-        /**
+    /**
      * @brief Set mute status of pipeline.
      * @see SetMuteRequest
      */
@@ -819,6 +850,20 @@ service MediaPipelineModule {
      * @see GetMuteRequest
      */
     rpc getMute(GetMuteRequest) returns (GetMuteResponse) {
+    }
+
+    /**
+     * @brief Text Track Identifier
+     * @see SetTextTrackIdentifierRequest
+     */
+    rpc setTextTrackIdentifier(SetTextTrackIdentifierRequest) returns (SetTextTrackIdentifierResponse) {
+    } 
+
+    /**
+     * @brief Get Text Track Identifier
+     * @see GetTextTrackIdentifierRequest
+     */
+    rpc getTextTrackIdentifier(GetTextTrackIdentifierRequest) returns (GetTextTrackIdentifierResponse) {
     }
 
     /**

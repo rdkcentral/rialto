@@ -275,13 +275,25 @@ public:
     /**
      * @brief Creates a SetMute task.
      *
-     * @param[in] context       : The GstGenericPlayer context
-     * @param[in] mute          : The mute state to be set
+     * @param[in] context         : The GstGenericPlayer context
+     * @param[in] mediaSourceType : The media source type to set mute
+     * @param[in] mute            : The mute state to be set
      *
      * @retval the new SetMute task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context,
                                                        const MediaSourceType &mediaSourceType, bool mute) const = 0;
+
+    /**
+     * @brief Creates a SetTextTrackIdentifier task.
+     *
+     * @param[in] context             : The GstGenericPlayer context
+     * @param[in] textTrackIdentifier : The text track identifier to be set
+     *
+     * @retval the new SetTextTrackIdentifier task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetTextTrackIdentifier(GenericPlayerContext &context,
+                                                       const std::string& textTrackIdentifier) const = 0;
 
     /**
      * @brief Creates a Shutdown task.

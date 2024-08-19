@@ -35,6 +35,7 @@ public:
     bool sendData(const std::string &data, int32_t displayOffsetMs = 0);
     bool setSessionWebVTTSelection();
     bool setSessionTTMLSelection();
+    bool setSessionCCSelection(const std::string &service);
 
 private:
     std::shared_ptr<ITextTrackAccessor> m_textTrackAccessor;

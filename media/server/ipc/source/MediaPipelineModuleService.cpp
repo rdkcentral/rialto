@@ -705,6 +705,41 @@ void MediaPipelineModuleService::getMute(::google::protobuf::RpcController *cont
     done->Run();
 }
 
+void MediaPipelineModuleService::setTextTrackIdentifier(::google::protobuf::RpcController *controller,
+                                         const ::firebolt::rialto::SetTextTrackIdentifierRequest *request,
+                                         ::firebolt::rialto::SetTextTrackIdentifierResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_mediaPipelineService.setTextTrackIdentifier(request->session_id(), request->text_track_identifier()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set text track identifier failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
+}
+
+void MediaPipelineModuleService::getTextTrackIdentifier(::google::protobuf::RpcController *controller,
+                                         const ::firebolt::rialto::GetTextTrackIdentifierRequest *request,
+                                         ::firebolt::rialto::GetTextTrackIdentifierResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    std::string textTrackIdentifier{};
+
+    if (!m_mediaPipelineService.getTextTrackIdentifier(request->session_id(), textTrackIdentifier))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get TextTrackIdentifier failed.");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_text_track_identifier(textTrackIdentifier);
+    }
+
+    done->Run();
+}
+
 void MediaPipelineModuleService::flush(::google::protobuf::RpcController *controller,
                                        const ::firebolt::rialto::FlushRequest *request,
                                        ::firebolt::rialto::FlushResponse *response, ::google::protobuf::Closure *done)

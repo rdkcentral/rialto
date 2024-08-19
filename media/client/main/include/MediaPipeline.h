@@ -165,6 +165,10 @@ public:
 
     bool getMute(int32_t sourceId, bool &mute) override;
 
+    bool setTextTrackIdentifier(const std::string &textTrackIdentifier) override;
+
+    bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
+
     bool flush(int32_t sourceId, bool resetTime) override;
 
     bool setSourcePosition(int32_t sourceId, int64_t position) override;

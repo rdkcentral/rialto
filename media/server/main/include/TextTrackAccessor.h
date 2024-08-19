@@ -66,6 +66,7 @@ public:
     bool sendData(uint32_t sessionId, const std::string &data, DataType datatype, int32_t displayOffsetMs = 0) override;
     bool setSessionWebVTTSelection(uint32_t sessionId) override;
     bool setSessionTTMLSelection(uint32_t sessionId) override;
+    bool setSessionCCSelection(uint32_t sessionId, const std::string &service) override;
 
 private:
     bool createTextTrackControlInterface();
