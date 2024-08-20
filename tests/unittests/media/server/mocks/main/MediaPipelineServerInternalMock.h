@@ -48,7 +48,7 @@ public:
     MOCK_METHOD(bool, renderFrame, (), (override));
     MOCK_METHOD(AddSegmentStatus, addSegment,
                 (uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment), (override));
-    MOCK_METHOD(bool, setVolume, (double targetVolume, uint32_t duration, EaseType type), (override));
+    MOCK_METHOD(bool, setVolume, (double targetVolume, uint32_t volumeDuration, EaseType easeType), (override));
     MOCK_METHOD(bool, getVolume, (double &currentVolume), (override));
     MOCK_METHOD(bool, setMute, (bool mute), (override));
     MOCK_METHOD(bool, getMute, (bool &mute), (override));

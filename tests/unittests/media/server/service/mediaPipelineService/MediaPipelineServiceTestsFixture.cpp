@@ -547,15 +547,15 @@ void MediaPipelineServiceTests::setVolumeShouldFail()
 
 void MediaPipelineServiceTests::getVolumeShouldSucceed()
 {
-    double targetVolume{};
-    EXPECT_TRUE(m_sut->getVolume(kSessionId, targetVolume));
-    EXPECT_EQ(targetVolume, kVolume);
+    double currentVolume{};
+    EXPECT_TRUE(m_sut->getVolume(kSessionId, currentVolume));
+    EXPECT_EQ(currentVolume, kVolume);
 }
 
 void MediaPipelineServiceTests::getVolumeShouldFail()
 {
-    double targetVolume{};
-    EXPECT_FALSE(m_sut->getVolume(kSessionId, targetVolume));
+    double currentVolume{};
+    EXPECT_FALSE(m_sut->getVolume(kSessionId, currentVolume));
 }
 
 void MediaPipelineServiceTests::setMuteShouldSucceed()

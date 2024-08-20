@@ -120,7 +120,7 @@ public:
 
     bool renderFrame() override;
 
-    bool setVolume(double targetVolume, uint32_t duration, EaseType type) override;
+    bool setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType) override;
 
     bool getVolume(double &currentVolume) override;
 

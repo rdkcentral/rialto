@@ -81,9 +81,9 @@ public:
 
     bool renderFrame() override { return m_mediaPipeline->renderFrame(); }
 
-    bool setVolume(double targetVolume, uint32_t duration, EaseType type) override
+    bool setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType) override
     {
-        return m_mediaPipeline->setVolume(targetVolume, duration, type);
+        return m_mediaPipeline->setVolume(targetVolume, volumeDuration, easeType);
     }
 
     bool getVolume(double &currentVolume) override { return m_mediaPipeline->getVolume(currentVolume); }
