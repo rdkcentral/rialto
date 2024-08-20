@@ -469,7 +469,7 @@ bool MediaPipeline::renderFrame()
     return m_mediaPipelineIpc->renderFrame();
 }
 
-bool MediaPipeline::setVolume(double targetVolume, uint32_t duration, EaseType type)
+bool MediaPipeline::setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->setVolume(targetVolume);

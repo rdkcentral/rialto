@@ -58,9 +58,10 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     const std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> kMediaSource;
     const int kSourceId{2};
     const double kPlaybackRate{2.1};
-    const double kVolume1{3.1};
+    const uint32_t kVolumeDuration{1000};
+    const double kTargetVolume{3.1};
     const EaseType kEaseType{EaseType::EASE_LINEAR};
-    const double kVolume2{4.1};
+    const double kCurrentVolume{4.1};
     const int64_t kPosition1{123};
     const int64_t kPosition2{234};
     const uint32_t kNeedDataRequestId{5};
@@ -177,17 +178,17 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, setVolume(DoubleEq(kVolume1), kDuration, kEaseType)).WillOnce(Return(true));
-    EXPECT_TRUE(proxy->setVolume(kVolume1, kDuration, kEaseType));
+    EXPECT_CALL(*mediaPipelineMock, setVolume(DoubleEq(kTargetVolume), kVolumeDuration, kEaseType)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setVolume(kTargetVolume, kVolumeDuration, kEaseType));
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, getVolume(_)).WillOnce(DoAll(SetArgReferee<0>(kVolume2), Return(true)));
+    EXPECT_CALL(*mediaPipelineMock, getVolume(_)).WillOnce(DoAll(SetArgReferee<0>(kCurrentVolume), Return(true)));
     {
-        // The EXPECT_CALL above returns kVolume2
+        // The EXPECT_CALL above returns kCurrentVolume
         double currentVolume;
         EXPECT_TRUE(proxy->getVolume(currentVolume));
-        EXPECT_EQ(currentVolume, kVolume2);
+        EXPECT_EQ(currentVolume, kCurrentVolume);
     }
 
     /////////////////////////////////////////////

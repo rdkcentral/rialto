@@ -812,7 +812,7 @@ bool MediaPipelineServerInternal::renderFrameInternal()
     return true;
 }
 
-bool MediaPipelineServerInternal::setVolume(double targetVolume, uint32_t duration, EaseType type)
+bool MediaPipelineServerInternal::setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
