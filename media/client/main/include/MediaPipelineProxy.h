@@ -102,8 +102,6 @@ public:
 
     bool getVolume(double &currentVolume) override { return m_mediaPipeline->getVolume(currentVolume); }
 
-    bool getFadeVolume(uint32_t &fadeVolume) override { return m_mediaPipeline->getFadeVolume(fadeVolume); }
-
     bool setMute(bool mute) override { return m_mediaPipeline->setMute(mute); }
 
     bool getMute(bool &mute) override { return m_mediaPipeline->getMute(mute); }

@@ -481,13 +481,6 @@ bool MediaPipeline::getVolume(double &currentVolume)
     return m_mediaPipelineIpc->getVolume(currentVolume);
 }
 
-bool MediaPipeline::getFadeVolume(uint32_t &fadeVolume)
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    return false;
-}
-
 bool MediaPipeline::setMute(bool mute)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
