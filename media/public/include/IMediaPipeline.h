@@ -1262,14 +1262,6 @@ public:
     virtual bool getVolume(double &currentVolume) = 0;
 
     /**
-     * @brief Retrieves the target volume level during a fade transition if supported
-     *
-     * @param[out] fadeVolume : The target fade volume level
-     * @retval true on success, false if not supported
-     */
-    virtual bool getFadeVolume(uint32_t &fadeVolume) = 0;
-
-    /**
      * @brief Set mute status of pipeline.
      *
      * Muting does not change the underlying volume setting so when

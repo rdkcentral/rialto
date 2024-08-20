@@ -775,12 +775,6 @@ bool MediaPipelineServerInternal::getVolumeInternal(double &currentVolume)
     return m_gstPlayer->getVolume(currentVolume);
 }
 
-bool MediaPipelineServerInternal::getFadeVolume(uint32_t &fadeVolume)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
-}
-
 bool MediaPipelineServerInternal::setMute(bool mute)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

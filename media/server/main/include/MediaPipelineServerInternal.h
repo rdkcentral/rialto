@@ -124,8 +124,6 @@ public:
 
     bool getVolume(double &currentVolume) override;
 
-    bool getFadeVolume(uint32_t &fadeVolume) override;
-
     bool setMute(bool mute) override;
 
     bool getMute(bool &mute) override;
