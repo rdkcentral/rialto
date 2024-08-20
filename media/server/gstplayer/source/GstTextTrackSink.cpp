@@ -221,6 +221,8 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
         return FALSE;
     }
 
+    textTrackSink->priv->m_textTrackSession->mute(textTrackSink->priv->m_isMuted);
+
     return TRUE;
 }
 
@@ -344,7 +346,10 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
     case PROP_MUTE:
     {
         priv->m_isMuted = g_value_get_boolean(value);
-        priv->m_textTrackSession->mute(priv->m_isMuted);
+        if (priv->m_textTrackSession)
+        {
+            priv->m_textTrackSession->mute(priv->m_isMuted);
+        }
         break;
     }
     case PROP_TEXT_TRACK_IDENTIFIER:
