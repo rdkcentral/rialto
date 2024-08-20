@@ -706,8 +706,9 @@ void MediaPipelineModuleService::getMute(::google::protobuf::RpcController *cont
 }
 
 void MediaPipelineModuleService::setTextTrackIdentifier(::google::protobuf::RpcController *controller,
-                                         const ::firebolt::rialto::SetTextTrackIdentifierRequest *request,
-                                         ::firebolt::rialto::SetTextTrackIdentifierResponse *response, ::google::protobuf::Closure *done)
+                                                        const ::firebolt::rialto::SetTextTrackIdentifierRequest *request,
+                                                        ::firebolt::rialto::SetTextTrackIdentifierResponse *response,
+                                                        ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -721,8 +722,9 @@ void MediaPipelineModuleService::setTextTrackIdentifier(::google::protobuf::RpcC
 }
 
 void MediaPipelineModuleService::getTextTrackIdentifier(::google::protobuf::RpcController *controller,
-                                         const ::firebolt::rialto::GetTextTrackIdentifierRequest *request,
-                                         ::firebolt::rialto::GetTextTrackIdentifierResponse *response, ::google::protobuf::Closure *done)
+                                                        const ::firebolt::rialto::GetTextTrackIdentifierRequest *request,
+                                                        ::firebolt::rialto::GetTextTrackIdentifierResponse *response,
+                                                        ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     std::string textTrackIdentifier{};

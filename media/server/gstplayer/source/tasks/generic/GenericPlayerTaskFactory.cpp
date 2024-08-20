@@ -37,10 +37,10 @@
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetMute.h"
-#include "tasks/generic/SetTextTrackIdentifier.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
 #include "tasks/generic/SetSourcePosition.h"
+#include "tasks/generic/SetTextTrackIdentifier.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
@@ -197,8 +197,9 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetMute(GenericPlay
     return std::make_unique<tasks::generic::SetMute>(context, m_gstWrapper, m_glibWrapper, mediaSourceType, mute);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetTextTrackIdentifier(GenericPlayerContext &context,
-                                                                     const std::string &textTrackIdentifier) const
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createSetTextTrackIdentifier(GenericPlayerContext &context,
+                                                       const std::string &textTrackIdentifier) const
 {
     return std::make_unique<tasks::generic::SetTextTrackIdentifier>(context, m_glibWrapper, textTrackIdentifier);
 }

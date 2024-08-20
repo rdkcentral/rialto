@@ -278,11 +278,12 @@ bool TextTrackAccessor::setSessionCCSelection(uint32_t sessionId, const std::str
     uint32_t result = m_textTrackControlInterface->SetSessionClosedCaptionsService(sessionId, service);
     if (result == WPEFramework::Core::ERROR_NONE)
     {
-        RIALTO_SERVER_LOG_DEBUG("Setting CC selection service '%s' for session %u was successful", service.c_str(), sessionId);
+        RIALTO_SERVER_LOG_DEBUG("Setting CC selection service '%s' for session %u was successful", service.c_str(),
+                                sessionId);
         return true;
     }
 
-    RIALTO_SERVER_LOG_ERROR("Failed to set CC selection service '%s' for session %u; error %s", service.c_str(), sessionId,
-                            Core::ErrorToString(result));
+    RIALTO_SERVER_LOG_ERROR("Failed to set CC selection service '%s' for session %u; error %s", service.c_str(),
+                            sessionId, Core::ErrorToString(result));
     return false;
 }

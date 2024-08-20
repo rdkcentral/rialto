@@ -293,7 +293,7 @@ public:
      * @retval the new SetTextTrackIdentifier task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createSetTextTrackIdentifier(GenericPlayerContext &context,
-                                                       const std::string& textTrackIdentifier) const = 0;
+                                                                      const std::string &textTrackIdentifier) const = 0;
 
     /**
      * @brief Creates a Shutdown task.
