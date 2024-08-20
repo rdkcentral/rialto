@@ -385,6 +385,7 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
         RIALTO_SERVER_LOG_ERROR("Failed to retrieve audio-sink element from the pipeline");
     }
     fadeVolume = ((double)volume) / 100.0;
+    getVolume(fadeVolume);
     RIALTO_SERVER_LOG_ERROR("fadeVolume %lf", fadeVolume);
 
     // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
@@ -822,8 +823,8 @@ bool GstGenericPlayer::changePipelineState(GstState newState)
 
         if (audioSink)
         {
-            double targetVolume = 1.0;
-            uint32_t duration = 1000000;
+            double targetVolume = 0.0;
+            uint32_t duration = 1000;
             std::string easeString = "EASE_LINEAR";
             uint32_t scaledTarget = trunc(100 * targetVolume);
 
