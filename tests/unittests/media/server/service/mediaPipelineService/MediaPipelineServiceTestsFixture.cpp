@@ -52,7 +52,8 @@ constexpr double kVolume{0.7};
 constexpr bool kMute{false};
 constexpr bool kResetTime{true};
 constexpr uint32_t kDuration{35};
-constexpr uint32_t kLevel{1};
+constexpr int64_t kDiscontinuityGap{1};
+constexpr bool kIsAudioAac{false};
 } // namespace
 
 namespace firebolt::rialto
@@ -290,12 +291,14 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToSetSourcePosition()
 
 void MediaPipelineServiceTests::mediaPipelineWillProcessAudioGap()
 {
-    EXPECT_CALL(m_mediaPipelineMock, processAudioGap(kPosition, kDuration, kLevel)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac))
+        .WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToProcessAudioGap()
 {
-    EXPECT_CALL(m_mediaPipelineMock, processAudioGap(kPosition, kDuration, kLevel)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac))
+        .WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillPing()
@@ -600,12 +603,12 @@ void MediaPipelineServiceTests::setSourcePositionShouldFail()
 
 void MediaPipelineServiceTests::processAudioGapShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->processAudioGap(kSessionId, kPosition, kDuration, kLevel));
+    EXPECT_TRUE(m_sut->processAudioGap(kSessionId, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac));
 }
 
 void MediaPipelineServiceTests::processAudioGapShouldFail()
 {
-    EXPECT_FALSE(m_sut->processAudioGap(kSessionId, kPosition, kDuration, kLevel));
+    EXPECT_FALSE(m_sut->processAudioGap(kSessionId, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()

@@ -285,7 +285,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSourcePosition)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateProcessAudioGap)
 {
-    auto task = m_sut.createProcessAudioGap(m_context, 0, 0, 0);
+    auto task = m_sut.createProcessAudioGap(m_context, 0, 0, 0, false);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::ProcessAudioGap &>(*task));
 }

@@ -741,7 +741,7 @@ void MediaPipelineModuleService::processAudioGap(::google::protobuf::RpcControll
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_mediaPipelineService.processAudioGap(request->session_id(), request->position(), request->duration(),
-                                                request->level()))
+                                                request->discontinuity_gap(), request->audio_aac()))
     {
         RIALTO_SERVER_LOG_ERROR("Process audio gap failed.");
         controller->SetFailed("Operation failed");

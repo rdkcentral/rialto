@@ -27,7 +27,6 @@
  *
  */
 
-#include <limits>
 #include <optional>
 #include <stddef.h>
 #include <stdint.h>
@@ -55,11 +54,6 @@ constexpr uint32_t kInvalidAudioSampleRate{0};
  * @brief The value of an undefined size
  */
 constexpr int32_t kUndefinedSize{0};
-
-/**
- * @brief The value of an undefined level
- */
-constexpr uint32_t kUndefinedLevel{std::numeric_limits<uint32_t>::max()};
 
 /**
  * @brief The supported types of media source.
