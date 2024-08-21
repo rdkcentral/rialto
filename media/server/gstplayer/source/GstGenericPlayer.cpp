@@ -27,6 +27,7 @@
 #include "IMediaPipeline.h"
 #include "ITimer.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 
@@ -399,7 +400,7 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
     }
     if (!kSinkName)
     {
-        RIALTO_SERVER_LOG_WARN("mediaSourceType not supported %d", static_cast<int>(mediaSourceType));
+        RIALTO_SERVER_LOG_WARN("mediaSourceType '%s' not supported", firebolt::rialto::common::convertMediaSourceType(mediaSourceType));
     }
     else
     {
@@ -407,18 +408,19 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
         m_glibWrapper->gObjectGet(m_context.pipeline, kSinkName, &sink, nullptr);
         if (!sink)
         {
-            RIALTO_SERVER_LOG_WARN("%s could not be obtained", kSinkName);
+            RIALTO_SERVER_LOG_WARN("'%s' could not be obtained", kSinkName);
         }
         else
         {
             // For AutoVideoSink we set properties on the child sink
-            sink = getSinkChildIfAutoVideoSink(sink);
+            if (MediaSourceType::VIDEO == mediaSourceType)
+                sink = getSinkChildIfAutoVideoSink(sink);
 
             GstStructure *stats{nullptr};
             m_glibWrapper->gObjectGet(sink, "stats", &stats, nullptr);
             if (!stats)
             {
-                RIALTO_SERVER_LOG_WARN("failed to get stats");
+                RIALTO_SERVER_LOG_WARN("failed to get stats from '%s'", kSinkName);
             }
             else
             {
@@ -433,7 +435,7 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
                 }
                 else
                 {
-                    RIALTO_SERVER_LOG_WARN("failed to get stats from structure");
+                    RIALTO_SERVER_LOG_WARN("failed to get 'rendered' or 'dropped' from structure (%s)", kSinkName);
                 }
                 m_gstWrapper->gstStructureFree(stats);
             }
