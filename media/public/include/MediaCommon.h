@@ -431,7 +431,7 @@ struct CodecData
 };
 
 /**
- * @brief None fatel asynchronous errors reported by the player.
+ * @brief None fatal asynchronous errors reported by the player.
  */
 enum class PlaybackError
 {
@@ -439,6 +439,9 @@ enum class PlaybackError
     DECRYPTION, /* Player failed to decrypt a buffer and the frame has been dropped */
 };
 
+/**
+ * @brief Ease type for audio volume changes.
+ */
 enum class EaseType
 {
     EASE_LINEAR,
