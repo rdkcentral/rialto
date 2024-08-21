@@ -400,7 +400,8 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
     }
     if (!kSinkName)
     {
-        RIALTO_SERVER_LOG_WARN("mediaSourceType '%s' not supported", firebolt::rialto::common::convertMediaSourceType(mediaSourceType));
+        RIALTO_SERVER_LOG_WARN("mediaSourceType '%s' not supported",
+                               firebolt::rialto::common::convertMediaSourceType(mediaSourceType));
     }
     else
     {
