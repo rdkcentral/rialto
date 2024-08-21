@@ -1093,11 +1093,12 @@ void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType,
     }
 }
 
-void GstGenericPlayer::processAudioGap(int64_t position, uint32_t duration, uint32_t level)
+void GstGenericPlayer::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createProcessAudioGap(m_context, position, duration, level));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createProcessAudioGap(m_context, position, duration, discontinuityGap, audioAac));
     }
 }
 

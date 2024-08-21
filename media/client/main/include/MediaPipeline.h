@@ -172,7 +172,7 @@ public:
 
     bool setSourcePosition(int32_t sourceId, int64_t position) override;
 
-    bool processAudioGap(int64_t position, uint32_t duration, uint32_t level) override;
+    bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
     void notifyApplicationState(ApplicationState state) override;
 

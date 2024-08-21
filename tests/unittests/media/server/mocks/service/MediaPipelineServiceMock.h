@@ -55,7 +55,9 @@ public:
     MOCK_METHOD(bool, getMute, (int sessionId, bool &mute), (override));
     MOCK_METHOD(bool, flush, (int, std::int32_t, bool), (override));
     MOCK_METHOD(bool, setSourcePosition, (int sessionId, int32_t sourceId, int64_t position), (override));
-    MOCK_METHOD(bool, processAudioGap, (int sessionId, int64_t position, uint32_t duration, uint32_t level), (override));
+    MOCK_METHOD(bool, processAudioGap,
+                (int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
+                (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedMimeTypes, (MediaSourceType type), (override));
     MOCK_METHOD(bool, isMimeTypeSupported, (const std::string &mimeType), (override));
     MOCK_METHOD(bool, doesSinkOrDecoderHaveProperty, (MediaSourceType mediaType, const std::string &propertyName),
