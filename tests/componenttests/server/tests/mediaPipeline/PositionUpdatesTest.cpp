@@ -551,8 +551,8 @@ TEST_F(PositionUpdatesTest, GetPositionSuccess)
     gstNotifyEos();
 
     // Step 16: Immediate output tests
-    willSetImmediateOutput();
-    setImmediateOutput();
+    willGetImmediateOutput();
+    getImmediateOutput();
 
     // Step 17: Remove sources
     willRemoveAudioSource();
@@ -616,18 +616,22 @@ TEST_F(PositionUpdatesTest, GetPositionSuccess)
  *   Rialto client sends SetImmediateOutput request and waits for response
  *   SetImmediateOutputResponse is false because the server couldn't process it
  *
- *  Step 6: Remove sources
+ *  Step 6: Fail to Get Immediate Output
+ *   Rialto client sends GetImmediateOutput request and waits for response
+ *   GetImmediateOutputResponse is false because the server couldn't process it
+ *
+ *  Step 7: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 7: Stop
+ *  Step 8: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 8: Destroy media session
+ *  Step 9: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -668,16 +672,20 @@ TEST_F(PositionUpdatesTest, getPositionFailure)
     willFailToSetImmediateOutput();
     setImmediateOutputFailure();
 
-    // Step 6: Remove sources
+    // Step 6: Fail to get Immediate Output
+    willFailToGetImmediateOutput();
+    getImmediateOutputFailure();
+
+    // Step 7: Remove sources
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 7: Stop
+    // Step 8: Stop
     willStop();
     stop();
 
-    // Step 8: Destroy media session
+    // Step 9: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

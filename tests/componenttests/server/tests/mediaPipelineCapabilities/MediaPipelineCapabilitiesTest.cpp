@@ -22,6 +22,8 @@
 #include "MessageBuilders.h"
 #include "RialtoServerComponentTest.h"
 
+using ::testing::Return;
+using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
 
 namespace firebolt::rialto::server::ct
@@ -36,6 +38,40 @@ public:
         connectClient();
     }
     ~MediaPipelineCapabilitiesTest() override = default;
+
+    void willCallDoesSinkOrDecoderHaveProperty()
+    {
+        GstElementFactoryListType expectedFactoryListType{
+            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+        m_dummyElement = gst_bin_new("Dummy");
+        m_listOfFactories = g_list_append(m_listOfFactories, m_dummyFactory);
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(expectedFactoryListType, GST_RANK_NONE))
+            .WillOnce(Return(m_listOfFactories));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(m_dummyFactory, nullptr)).WillOnce(Return(m_dummyElement));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_dummyElement), StrEq(m_kParamName)))
+            .WillOnce(Return(&m_dummyParam));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_dummyElement));
+        EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
+    }
+
+    void callDoesSinkOrDecoderHaveProperty()
+    {
+        auto request{createDoesSinkOrDecoderHavePropertyRequest(ProtoMediaSourceType::VIDEO, m_kParamName)};
+        ConfigureAction<DoesSinkOrDecoderHaveProperty>{m_clientStub}.send(request).expectSuccess().matchResponse(
+            [](const auto &resp) { EXPECT_TRUE(resp.has_property()); });
+
+        gst_object_unref(m_dummyElement);
+        gst_plugin_feature_list_free(m_listOfFactories);
+        m_listOfFactories = nullptr;
+        m_dummyElement = nullptr;
+    }
+
+private:
+    GList *m_listOfFactories{nullptr};
+    GstElementFactory *m_dummyFactory{nullptr};
+    GstElement *m_dummyElement{nullptr};
+    GParamSpec m_dummyParam;
+    const char *m_kParamName = "test-name-5";
 };
 
 /*
@@ -273,5 +309,12 @@ TEST_F(MediaPipelineCapabilitiesTest, checkVideoMimeTypes)
         .send(vp9Request)
         .expectSuccess()
         .matchResponse([](const auto &resp) { EXPECT_FALSE(resp.is_supported()); });
-};
+}
+
+TEST_F(MediaPipelineCapabilitiesTest, checkDoesSinkOrDecoderHaveProperty)
+{
+    // Step 1:
+    willCallDoesSinkOrDecoderHaveProperty();
+    callDoesSinkOrDecoderHaveProperty();
+}
 } // namespace firebolt::rialto::server::ct

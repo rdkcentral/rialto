@@ -76,6 +76,10 @@ public:
  *   SetImmediateOutput
  *   Expect that SetImmediateOutput propagated to the server and sets the property
  *
+ *  Step 5: Get Immediate Output
+ *   GetImmediateOutput
+ *   Expect that GetImmediateOutput propagated to the server and sets the property
+ *
  * Test Teardown:
  *  Terminate the media session.
  *  Memory region created for the shared buffer is closed.
@@ -109,7 +113,7 @@ TEST_F(PositionUpdatesTest, positionUpdates)
     MediaPipelineTestMethods::shouldSetImmediateOutput(kTestValueOfImmediateOutput);
     MediaPipelineTestMethods::setImmediateOutput(kTestValueOfImmediateOutput);
 
-    // Step 4: Set Immediate Output
+    // Step 5: Get Immediate Output
     MediaPipelineTestMethods::shouldGetImmediateOutput(kTestValueOfImmediateOutput);
     MediaPipelineTestMethods::getImmediateOutput(kTestValueOfImmediateOutput);
 }

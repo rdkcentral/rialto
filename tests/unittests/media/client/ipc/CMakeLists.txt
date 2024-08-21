@@ -36,6 +36,7 @@ add_gtests (
         mediaPipelineIpc/SetPlaybackRateTest.cpp
         mediaPipelineIpc/GetPositionTest.cpp
         mediaPipelineIpc/SetImmediateOutputTest.cpp
+        mediaPipelineIpc/GetImmediateOutputTest.cpp
         mediaPipelineIpc/RenderFrameTest.cpp
         mediaPipelineIpc/GetVolumeTest.cpp
         mediaPipelineIpc/SetVolumeTest.cpp

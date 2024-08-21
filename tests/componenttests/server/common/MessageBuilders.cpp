@@ -541,6 +541,15 @@ createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType)
     return request;
 }
 
+::firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest
+createDoesSinkOrDecoderHavePropertyRequest(const ProtoMediaSourceType &mediaType, const std::string &propertyName)
+{
+    ::firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest request;
+    request.set_media_type(mediaType);
+    request.set_property_name(propertyName);
+    return request;
+}
+
 ::firebolt::rialto::CreateWebAudioPlayerRequest
 createCreateWebAudioPlayerRequest(uint32 pcmRate, uint32 pcmChannels, uint32 pcmSampleSize, bool pcmIsBigEndian,
                                   bool pcmIsSigned, bool pcmIsFloat, const std::string &audioMimeType, uint32 priority)

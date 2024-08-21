@@ -27,8 +27,10 @@
 
 using testing::_;
 using testing::ByMove;
+using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
+using testing::SetArgReferee;
 using testing::StrEq;
 using testing::Throw;
 
@@ -219,6 +221,16 @@ void MediaPipelineServiceTests::mediaPipelineWillSetImmediateOutput()
 void MediaPipelineServiceTests::mediaPipelineWillFailToSetImmediateOutput()
 {
     EXPECT_CALL(m_mediaPipelineMock, setImmediateOutput(_, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetImmediateOutput()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getImmediateOutput(_, _)).WillOnce(DoAll(SetArgReferee<1>(true), Return(true)));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetImmediateOutput()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getImmediateOutput(_, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillRenderFrame()
@@ -532,6 +544,19 @@ void MediaPipelineServiceTests::setImmediateOutputShouldSucceed()
 void MediaPipelineServiceTests::setImmediateOutputShouldFail()
 {
     EXPECT_FALSE(m_sut->setImmediateOutput(kSessionId, kSourceId, true));
+}
+
+void MediaPipelineServiceTests::getImmediateOutputShouldSucceed()
+{
+    bool immOp;
+    EXPECT_TRUE(m_sut->getImmediateOutput(kSessionId, kSourceId, immOp));
+    EXPECT_TRUE(immOp);
+}
+
+void MediaPipelineServiceTests::getImmediateOutputShouldFail()
+{
+    bool immOp;
+    EXPECT_FALSE(m_sut->getImmediateOutput(kSessionId, kSourceId, immOp));
 }
 
 void MediaPipelineServiceTests::getSupportedMimeTypesSucceed()

@@ -484,6 +484,14 @@ struct IsMimeTypeSupported
     static constexpr auto m_kFunction{&Stub::isMimeTypeSupported};
 };
 
+struct DoesSinkOrDecoderHaveProperty
+{
+    using RequestType = ::firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest;
+    using ResponseType = ::firebolt::rialto::DoesSinkOrDecoderHavePropertyResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::doesSinkOrDecoderHaveProperty};
+};
+
 // web audio player module
 struct CreateWebAudioPlayer
 {

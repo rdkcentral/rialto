@@ -328,6 +328,12 @@ TEST_F(MediaPipelineServiceTests, shouldFailToSetImmediateOutputForNotExistingSe
     setImmediateOutputShouldFail();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToGetImmediateOutputForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getImmediateOutputShouldFail();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldFailToSetImmediateOutput)
 {
     initSession();
@@ -335,11 +341,39 @@ TEST_F(MediaPipelineServiceTests, shouldFailToSetImmediateOutput)
     setImmediateOutputShouldFail();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToGetImmediateOutput)
+{
+    initSession();
+    mediaPipelineWillFailToGetImmediateOutput();
+    getImmediateOutputShouldFail();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldSetImmediateOutput)
 {
     initSession();
     mediaPipelineWillSetImmediateOutput();
     setImmediateOutputShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetImmediateOutput)
+{
+    initSession();
+    mediaPipelineWillGetImmediateOutput();
+    getImmediateOutputShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetImmediateOutput)
+{
+    initSession();
+    mediaPipelineWillGetImmediateOutput();
+    getImmediateOutputShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetImmediateOutput)
+{
+    initSession();
+    mediaPipelineWillGetImmediateOutput();
+    getImmediateOutputShouldSucceed();
 }
 
 TEST_F(MediaPipelineServiceTests, shouldGetSupportedMimeTypes)
