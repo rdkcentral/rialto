@@ -20,8 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_H_
 #define FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_H_
 
+#include "IGlibWrapper.h"
 #include "IGstCapabilities.h"
 #include "IGstWrapper.h"
+
 #include <memory>
 #include <string>
 #include <unordered_set>
@@ -51,7 +53,8 @@ public:
 class GstCapabilities : public IGstCapabilities
 {
 public:
-    explicit GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper);
+    explicit GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                             const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper);
     ~GstCapabilities() = default;
 
     GstCapabilities(const GstCapabilities &) = delete;
@@ -124,6 +127,7 @@ private:
      * @brief The gstreamer wrapper object.
      */
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
 };
 
 }; // namespace firebolt::rialto::server

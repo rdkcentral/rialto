@@ -20,6 +20,7 @@
 #include "MediaPipelineServiceTestsFixture.h"
 #include "HeartbeatHandlerMock.h"
 #include "MediaCommon.h"
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -28,7 +29,10 @@ using testing::_;
 using testing::ByMove;
 using testing::Invoke;
 using testing::Return;
+using testing::StrEq;
 using testing::Throw;
+
+using firebolt::rialto::MediaSourceType;
 
 namespace
 {
@@ -519,20 +523,20 @@ void MediaPipelineServiceTests::getPositionShouldFail()
 
 void MediaPipelineServiceTests::setImmediateOutputShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->setImmediateOutput(kSessionId, kSourceId, true)); // todo
+    EXPECT_TRUE(m_sut->setImmediateOutput(kSessionId, kSourceId, true));
 }
 
 void MediaPipelineServiceTests::setImmediateOutputShouldFail()
 {
-    EXPECT_FALSE(m_sut->setImmediateOutput(kSessionId, kSourceId, true)); // todo
+    EXPECT_FALSE(m_sut->setImmediateOutput(kSessionId, kSourceId, true));
 }
 
 void MediaPipelineServiceTests::getSupportedMimeTypesSucceed()
 {
-    firebolt::rialto::MediaSourceType type = firebolt::rialto::MediaSourceType::VIDEO;
+    MediaSourceType type = MediaSourceType::VIDEO;
     std::vector<std::string> mimeTypes = {"video/h264", "video/h265"};
     EXPECT_CALL(m_mediaPipelineCapabilitiesMock, getSupportedMimeTypes(type)).WillOnce(Return(mimeTypes));
-    EXPECT_THAT(m_sut->getSupportedMimeTypes(firebolt::rialto::MediaSourceType::VIDEO), mimeTypes);
+    EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), mimeTypes);
 }
 
 void MediaPipelineServiceTests::isMimeTypeSupportedSucceed()
@@ -540,6 +544,15 @@ void MediaPipelineServiceTests::isMimeTypeSupportedSucceed()
     std::string mimeType = "video/h264";
     EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isMimeTypeSupported(mimeType)).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->isMimeTypeSupported(mimeType));
+}
+
+void MediaPipelineServiceTests::doesSinkOrDecoderHavePropertySucceed()
+{
+    const MediaSourceType kMediaType{MediaSourceType::VIDEO};
+    const std::string kPropertyName{"testing"};
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, doesSinkOrDecoderHaveProperty(kMediaType, StrEq(kPropertyName)))
+        .WillOnce(Return(true));
+    EXPECT_TRUE(m_sut->doesSinkOrDecoderHaveProperty(kMediaType, kPropertyName));
 }
 
 void MediaPipelineServiceTests::renderFrameShouldSucceed()

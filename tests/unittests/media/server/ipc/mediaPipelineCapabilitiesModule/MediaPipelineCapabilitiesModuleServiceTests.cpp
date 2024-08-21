@@ -37,6 +37,12 @@ TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldIfMimeTypeIsSupported)
     sendIsMimeTypeSupportedRequestAndReceiveResponse();
 }
 
+TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldCallDoesSinkOrDecoderHaveProperty)
+{
+    mediaPipelineWillDoesSinkOrDecoderHaveProperty();
+    sendDoesSinkOrDecoderHavePropertyWithSuccess();
+}
+
 TEST_F(MediaPipelineCapabilitiesModuleServiceTests, getSupportedMimeTypesWillFail)
 {
     expectInvalidControlFailure();

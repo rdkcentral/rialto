@@ -20,6 +20,8 @@
 #include "MediaPipelineCapabilitiesModuleServiceTestsFixture.h"
 #include "MediaCommon.h"
 #include "MediaPipelineCapabilitiesModuleService.h"
+#include "RialtoCommonModule.h"
+
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>
@@ -36,6 +38,8 @@ namespace
 {
 const std::vector<std::string> kMimeTypes{"video/h264", "video/h265"};
 const firebolt::rialto::MediaSourceType kSourceType{firebolt::rialto::MediaSourceType::VIDEO};
+const firebolt::rialto::ProtoMediaSourceType kMediaSourceType{firebolt::rialto::ProtoMediaSourceType::VIDEO};
+const std::string kPropertyName{"test-property"};
 } // namespace
 
 MediaPipelineCapabilitiesModuleServiceTests::MediaPipelineCapabilitiesModuleServiceTests()
@@ -65,6 +69,15 @@ void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillCheckIfMimeTy
 {
     expectRequestSuccess();
     EXPECT_CALL(m_mediaPipelineServiceMock, isMimeTypeSupported(kMimeTypes[0])).WillOnce(Return(true));
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillDoesSinkOrDecoderHaveProperty()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock,
+                doesSinkOrDecoderHaveProperty(firebolt::rialto::server::ipc::convertMediaSourceType(kMediaSourceType),
+                                              kPropertyName))
+        .WillOnce(Return(true));
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::expectRequestSuccess()
@@ -114,6 +127,18 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendIsMimeTypeSupportedRequest
 
     m_service->isMimeTypeSupported(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_EQ(response.is_supported(), true);
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::sendDoesSinkOrDecoderHavePropertyWithSuccess()
+{
+    firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest request;
+    firebolt::rialto::DoesSinkOrDecoderHavePropertyResponse response;
+
+    request.set_media_type(kMediaSourceType);
+    request.set_property_name(kPropertyName);
+
+    m_service->doesSinkOrDecoderHaveProperty(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(response.has_property(), true);
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::sendIsMimeTypeSupportedRequestAndExpectFailure()

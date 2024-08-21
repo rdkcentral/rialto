@@ -26,36 +26,6 @@
 #include "GstMimeMapping.h"
 #include "RialtoServerLogging.h"
 
-namespace
-{
-bool elementHasProperty(GstElementFactory *factory, const char *propertyName)
-{
-    GstElement *element = gst_element_factory_create(factory, nullptr);
-    if (!element)
-    {
-        return false;
-    }
-
-    GParamSpec **props;
-    guint n_props;
-    props = g_object_class_list_properties(G_OBJECT_GET_CLASS(element), &n_props);
-
-    bool hasProperty{false};
-    for (guint i = 0; i < n_props; ++i)
-    {
-        if (g_strcmp0(props[i]->name, propertyName) == 0)
-        {
-            hasProperty = true;
-            break;
-        }
-    }
-
-    gst_object_unref(element);
-    g_free(props);
-    return hasProperty;
-}
-} // namespace
-
 namespace firebolt::rialto::server
 {
 std::weak_ptr<IGstCapabilitiesFactory> GstCapabilitiesFactory::m_factory;
@@ -95,7 +65,15 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
             throw std::runtime_error("Cannot create GstWrapper");
         }
 
-        gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper);
+        std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapperFactory> glibWrapperFactory =
+            firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory();
+        std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper;
+
+        if ((!glibWrapperFactory) || (!(glibWrapper = glibWrapperFactory->getGlibWrapper())))
+        {
+            throw std::runtime_error("Cannot create GlibWrapper");
+        }
+        gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper);
     }
     catch (const std::exception &e)
     {
@@ -105,8 +83,9 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
     return gstCapabilities;
 }
 
-GstCapabilities::GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper)
-    : m_gstWrapper{gstWrapper}
+GstCapabilities::GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
+    : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
 {
     fillSupportedMimeTypes();
 }
@@ -154,22 +133,25 @@ bool GstCapabilities::doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, c
             factoryListType |= i->second;
     }
 
-    GList *factories{gst_element_factory_list_get_elements(factoryListType, GST_RANK_NONE)};
+    GList *factories{m_gstWrapper->gstElementFactoryListGetElements(factoryListType, GST_RANK_NONE)};
 
     // Scan all sinks and decoders for the property
     bool hasProperty{false};
-    for (GList *iter = factories; iter != nullptr; iter = iter->next)
+    for (GList *iter = factories; iter != nullptr && !hasProperty; iter = iter->next)
     {
         GstElementFactory *factory = GST_ELEMENT_FACTORY(iter->data);
-        if (elementHasProperty(factory, propertyName.c_str()))
+        GstElement *element = m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
+        if (element)
         {
-            hasProperty = true;
-            break;
+            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(element), propertyName.c_str()))
+                hasProperty = true;
+
+            m_gstWrapper->gstObjectUnref(element);
         }
     }
 
     // Cleanup
-    gst_plugin_feature_list_free(factories);
+    m_gstWrapper->gstPluginFeatureListFree(factories);
     return hasProperty;
 }
 

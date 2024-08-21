@@ -55,10 +55,10 @@ void ProcessAudioGap::execute() const
     GstAppSrc *appSrc{GST_APP_SRC(audioSourceIt->second.appSrc)};
     GstCaps *caps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
     gchar *capsCStr = m_gstWrapper->gstCapsToString(caps);
-    const std::string capsStr = std::string(capsCStr);
+    const std::string kCapsStr = std::string(capsCStr);
     m_glibWrapper->gFree(capsCStr);
     m_gstWrapper->gstCapsUnref(caps);
-    const bool audioAac{capsStr.find("audio/mpeg") != std::string::npos};
-    m_rdkGstreamerUtilsWrapper->processAudioGap(m_context.pipeline, m_position, m_duration, m_level, audioAac);
+    const bool kAudioAac{kCapsStr.find("audio/mpeg") != std::string::npos};
+    m_rdkGstreamerUtilsWrapper->processAudioGap(m_context.pipeline, m_position, m_duration, m_level, kAudioAac);
 }
 } // namespace firebolt::rialto::server::tasks::generic

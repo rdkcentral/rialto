@@ -206,10 +206,10 @@ firebolt::rialto::Format convertFormat(const firebolt::rialto::AttachSourceReque
             {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F32BE, firebolt::rialto::Format::F32BE},
             {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64LE, firebolt::rialto::Format::F64LE},
             {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64BE, firebolt::rialto::Format::F64BE}};
-    const auto it = kFormatConversionMap.find(format);
-    if (kFormatConversionMap.end() != it)
+    const auto kIt = kFormatConversionMap.find(format);
+    if (kFormatConversionMap.end() != kIt)
     {
-        return it->second;
+        return kIt->second;
     }
     return firebolt::rialto::Format::S8;
 }
@@ -221,10 +221,10 @@ firebolt::rialto::Layout convertLayout(const firebolt::rialto::AttachSourceReque
                               firebolt::rialto::Layout::INTERLEAVED},
                              {firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_NON_INTERLEAVED,
                               firebolt::rialto::Layout::NON_INTERLEAVED}};
-    const auto it = kLayoutConversionMap.find(layout);
-    if (kLayoutConversionMap.end() != it)
+    const auto kIt = kLayoutConversionMap.find(layout);
+    if (kLayoutConversionMap.end() != kIt)
     {
-        return it->second;
+        return kIt->second;
     }
     return firebolt::rialto::Layout::INTERLEAVED;
 }

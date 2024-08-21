@@ -342,7 +342,7 @@ TEST_F(GstGenericPlayerTest, shouldGetImmediateOutputInPlayingState)
             [&](gpointer object, const gchar *first_property_name, void *ptr)
             {
                 gboolean *responsePtr = reinterpret_cast<gboolean *>(ptr);
-                *responsePtr = kTestImmediateOutputValue ? TRUE : FALSE;
+                *responsePtr = kTestImmediateOutputValue;
             }));
 
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(videoSink)).Times(1);

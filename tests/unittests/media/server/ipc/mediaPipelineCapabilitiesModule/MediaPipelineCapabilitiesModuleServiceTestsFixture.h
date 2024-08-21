@@ -41,6 +41,7 @@ public:
     void clientWillConnect();
     void mediaPipelineServiceWillGetSupportedMimeTypes();
     void mediaPipelineWillCheckIfMimeTypeIsSupported();
+    void mediaPipelineWillDoesSinkOrDecoderHaveProperty();
 
     void sendClientConnected();
     void sendClientDisconnected();
@@ -48,6 +49,7 @@ public:
     void sendGetSupportedMimeTypesRequestAndExpectFailure();
     void sendIsMimeTypeSupportedRequestAndReceiveResponse();
     void sendIsMimeTypeSupportedRequestAndExpectFailure();
+    void sendDoesSinkOrDecoderHavePropertyWithSuccess();
     void expectInvalidControlFailure();
 
 private:

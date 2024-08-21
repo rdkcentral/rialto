@@ -29,10 +29,10 @@ const char *convertMediaSourceType(const MediaSourceType &mediaSourceType)
                               {MediaSourceType::VIDEO, "Video"},
                               {MediaSourceType::SUBTITLE, "Subtitle"},
                               {MediaSourceType::UNKNOWN, "Unknown"}};
-    const auto it = kMediaSourceTypeToStr.find(mediaSourceType);
-    if (kMediaSourceTypeToStr.end() != it)
+    const auto kIt = kMediaSourceTypeToStr.find(mediaSourceType);
+    if (kMediaSourceTypeToStr.end() != kIt)
     {
-        return it->second;
+        return kIt->second;
     }
     return "Unknown";
 }
@@ -41,10 +41,10 @@ const char *convertLayout(const Layout &layout)
 {
     static const std::unordered_map<Layout, const char *> kLayoutToStr{{Layout::INTERLEAVED, "interleaved"},
                                                                        {Layout::NON_INTERLEAVED, "non-interleaved"}};
-    const auto it = kLayoutToStr.find(layout);
-    if (kLayoutToStr.end() != it)
+    const auto kIt = kLayoutToStr.find(layout);
+    if (kLayoutToStr.end() != kIt)
     {
-        return it->second;
+        return kIt->second;
     }
     return "";
 }
@@ -81,10 +81,10 @@ const char *convertFormat(const Format &format)
                                                                        {Format::F32BE, "F32BE"},
                                                                        {Format::F64LE, "F64LE"},
                                                                        {Format::F64BE, "F64BE"}};
-    const auto it = kFormatToStr.find(format);
-    if (kFormatToStr.end() != it)
+    const auto kIt = kFormatToStr.find(format);
+    if (kFormatToStr.end() != kIt)
     {
-        return it->second;
+        return kIt->second;
     }
     return "";
 }

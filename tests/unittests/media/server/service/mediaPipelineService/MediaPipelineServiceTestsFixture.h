@@ -127,6 +127,7 @@ public:
     void setImmediateOutputShouldFail();
     void getSupportedMimeTypesSucceed();
     void isMimeTypeSupportedSucceed();
+    void doesSinkOrDecoderHavePropertySucceed();
     void renderFrameShouldSucceed();
     void renderFrameShouldFail();
     void setVolumeShouldSucceed();

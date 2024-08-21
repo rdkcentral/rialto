@@ -452,18 +452,21 @@ TEST_F(PositionUpdatesTest, PositionUpdate)
  *   Simulate, that gst_message_eos is received by Rialto Server
  *   Expect that server notifies the client that the Network state has changed to END_OF_STREAM.
  *
- *  Step 16: Remove sources
+ *  Step 16: Immediate output tests
+ *   Will set the immediate output property of the Rialto Server
+ *
+ *  Step 17: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 17: Stop
+ *  Step 18: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 18: Destroy media session
+ *  Step 19: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -547,16 +550,20 @@ TEST_F(PositionUpdatesTest, GetPositionSuccess)
     // Step 15: Notify end of stream
     gstNotifyEos();
 
-    // Step 16: Remove sources
+    // Step 16: Immediate output tests
+    willSetImmediateOutput();
+    setImmediateOutput();
+
+    // Step 17: Remove sources
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 17: Stop
+    // Step 18: Stop
     willStop();
     stop();
 
-    // Step 18: Destroy media session
+    // Step 19: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

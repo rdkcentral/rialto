@@ -297,6 +297,13 @@ MATCHER_P(isMimeTypeSupportedRequestMatcher, mimeType, "")
     return (kRequest->mime_type() == mimeType);
 }
 
+MATCHER_P2(doesSinkOrDecoderHavePropertyRequestMatcher, mediaType, propertyName, "")
+{
+    const ::firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest *>(arg);
+    return (kRequest->media_type() == mediaType && kRequest->property_name() == propertyName);
+}
+
 MATCHER_P3(flushRequestMatcher, sessionId, sourceId, resetTime, "")
 {
     const ::firebolt::rialto::FlushRequest *kRequest = dynamic_cast<const ::firebolt::rialto::FlushRequest *>(arg);

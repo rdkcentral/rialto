@@ -55,6 +55,13 @@ public:
             dynamic_cast<firebolt::rialto::IsMimeTypeSupportedResponse *>(response);
         isMimeTypeSupportedResponse->set_is_supported(true);
     }
+
+    void setDoesSinkOrDecoderHavePropertyResponse(google::protobuf::Message *response)
+    {
+        firebolt::rialto::DoesSinkOrDecoderHavePropertyResponse *doesSinkOrDecoderHavePropertyResponse =
+            dynamic_cast<firebolt::rialto::DoesSinkOrDecoderHavePropertyResponse *>(response);
+        doesSinkOrDecoderHavePropertyResponse->set_has_property(true);
+    }
 };
 
 TEST_F(MediaPipelineCapabilitiesIpcTest, createMediaPipelineCapabilitiesIpc)
@@ -120,6 +127,18 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, IsMimeTypeSupportedSuccess)
         .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setIsMimeTypeSupportedResponse)));
 
     EXPECT_TRUE(m_sut->isMimeTypeSupported("video/h264"));
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, DoesSinkOrDecoderHavePropertySuccess)
+{
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("doesSinkOrDecoderHaveProperty"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setDoesSinkOrDecoderHavePropertyResponse)));
+
+    EXPECT_TRUE(m_sut->doesSinkOrDecoderHaveProperty(MediaSourceType::VIDEO, "immediate-output"));
 }
 
 TEST_F(MediaPipelineCapabilitiesIpcTest, IsMimeTypeSupportedsDisconnected)

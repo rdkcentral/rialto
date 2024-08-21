@@ -21,6 +21,7 @@
 #include "MediaPipelineTestBase.h"
 
 using ::testing::ByMove;
+using ::testing::SetArgReferee;
 
 class RialtoServerMediaPipelineMiscellaneousFunctionsTest : public MediaPipelineTestBase
 {
@@ -248,7 +249,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputFa
 {
     mainThreadWillEnqueueTaskAndWait();
     const int kSourceId{1};
-    EXPECT_FALSE(m_mediaPipeline->setImmediateOutput(kSourceId, true)); // todo
+    EXPECT_FALSE(m_mediaPipeline->setImmediateOutput(kSourceId, true));
 }
 
 /**
@@ -260,19 +261,24 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputFa
     int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, setImmediateOutput(_, _)).WillOnce(Return(false));
-    EXPECT_FALSE(m_mediaPipeline->setImmediateOutput(videoSourceId, true)); // todo
+    EXPECT_FALSE(m_mediaPipeline->setImmediateOutput(videoSourceId, true));
 }
 
 /**
- * Test that SetImmediateOutput returns success if the gstreamer API succeeds and gets playback rate
+ * Test that SetImmediateOutput returns success if the gstreamer API succeeds
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputSuccess)
 {
     loadGstPlayer();
     int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, setImmediateOutput(_, _)).WillOnce(Return(true));
-    EXPECT_TRUE(m_mediaPipeline->setImmediateOutput(videoSourceId, true)); // todo
+    EXPECT_CALL(*m_gstPlayerMock, setImmediateOutput(_, true)).WillOnce(Return(true));
+    EXPECT_TRUE(m_mediaPipeline->setImmediateOutput(videoSourceId, true));
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setImmediateOutput(_, false)).WillOnce(Return(true));
+    EXPECT_TRUE(m_mediaPipeline->setImmediateOutput(videoSourceId, false));
 }
 
 /**
@@ -300,17 +306,23 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputFa
 }
 
 /**
- * Test that GetImmediateOutput returns success if the gstreamer API succeeds and gets playback rate
+ * Test that GetImmediateOutput returns success if the gstreamer API succeeds
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputSuccess)
 {
     loadGstPlayer();
     int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
-    mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, getImmediateOutput(_, _)).WillOnce(Return(true));
+
     bool immediateOutputState;
-    EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(videoSourceId, immediateOutputState)); // todo
-    // EXPECT_EQ(immediateOutputState, ??? );  // todo
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getImmediateOutput(_, _)).WillOnce(DoAll(SetArgReferee<1>(true), Return(true)));
+    EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(videoSourceId, immediateOutputState));
+    EXPECT_EQ(immediateOutputState, true);
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getImmediateOutput(_, _)).WillOnce(DoAll(SetArgReferee<1>(false), Return(true)));
+    EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(videoSourceId, immediateOutputState));
+    EXPECT_EQ(immediateOutputState, false);
 }
 
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, RenderFrameSuccess)
