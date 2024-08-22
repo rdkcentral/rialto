@@ -362,20 +362,6 @@ TEST_F(MediaPipelineServiceTests, shouldGetImmediateOutput)
     getImmediateOutputShouldSucceed();
 }
 
-TEST_F(MediaPipelineServiceTests, shouldGetImmediateOutput)
-{
-    initSession();
-    mediaPipelineWillGetImmediateOutput();
-    getImmediateOutputShouldSucceed();
-}
-
-TEST_F(MediaPipelineServiceTests, shouldGetImmediateOutput)
-{
-    initSession();
-    mediaPipelineWillGetImmediateOutput();
-    getImmediateOutputShouldSucceed();
-}
-
 TEST_F(MediaPipelineServiceTests, shouldGetSupportedMimeTypes)
 {
     createMediaPipelineShouldSuccess();
