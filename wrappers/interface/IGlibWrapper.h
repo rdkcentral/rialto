@@ -141,35 +141,6 @@ public:
     virtual gulong gSignalConnect(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data) = 0;
 
     /**
-     * @brief Disconnects a handler from an instance so it will not be called during any future or currently ongoing
-     * emissions of the signal it has been connected to. The handler_id becomes invalid and may be reused.
-     *
-     * @param[in] instance     : The instance to remove the signal handler from.
-     * @param[in] handler_id   : Handler id of the handler to be disconnected.
-     */
-    virtual void gSignalHandlerDisconnect(GObject *instance, gulong handler_id) const = 0;
-
-    /**
-     * @brief Sets a function to be called at every interval.
-     *
-     * @param[in] interval  : The time interval to call the function.
-     * @param[in] function  : Function to call.
-     * @param[in] data      : Data to pass into function.
-     *
-     * @retval The Id of the event source.
-     */
-    virtual guint gTimeoutAdd(guint interval, GSourceFunc function, gpointer data) = 0;
-
-    /**
-     * @brief Remove the source with Id.
-     *
-     * @param[in] tag  : Id of the source.
-     *
-     * @retval TRUE on success, FALSE otherwise.
-     */
-    virtual gboolean gSourceRemove(guint tag) = 0;
-
-    /**
      * @brief Similar to sprintf. Returning string should be freed using gFree.
      *
      * @param[in] format    : Format string.

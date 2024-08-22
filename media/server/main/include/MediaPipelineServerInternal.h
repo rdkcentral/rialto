@@ -110,6 +110,8 @@ public:
 
     bool getPosition(int64_t &position) override;
 
+    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
+
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
     bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
@@ -332,6 +334,19 @@ protected:
      * @retval true on success.
      */
     bool getPositionInternal(int64_t &position);
+
+    /**
+     * @brief Get stats for this source.
+     *
+     * This method is sychronous, it returns dropped frames and rendered frames
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] renderedFrames : The number of rendered frames
+     * @param[out] droppedFrames : The number of dropped frames
+     *
+     * @retval true on success.
+     */
+    bool getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames);
 
     /**
      * @brief Set video window internally, only to be called on the main thread.

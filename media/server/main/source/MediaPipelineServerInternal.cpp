@@ -486,6 +486,34 @@ bool MediaPipelineServerInternal::getPositionInternal(int64_t &position)
     return m_gstPlayer->getPosition(position);
 }
 
+bool MediaPipelineServerInternal::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = getStatsInternal(sourceId, renderedFrames, droppedFrames); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get stats - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get stats - Source not found");
+        return false;
+    }
+    return m_gstPlayer->getStats(sourceIter->first, renderedFrames, droppedFrames);
+}
+
 bool MediaPipelineServerInternal::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

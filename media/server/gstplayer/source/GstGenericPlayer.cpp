@@ -18,6 +18,8 @@
  */
 
 #include <chrono>
+#include <cinttypes>
+#include <stdexcept>
 
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
@@ -25,10 +27,9 @@
 #include "IMediaPipeline.h"
 #include "ITimer.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
-#include <cinttypes>
-#include <stdexcept>
 
 namespace
 {
@@ -380,6 +381,70 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
         return false;
     }
     return true;
+}
+
+bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    bool returnValue{false};
+    const char *kSinkName{nullptr};
+    switch (mediaSourceType)
+    {
+    case MediaSourceType::AUDIO:
+        kSinkName = "audio-sink";
+        break;
+    case MediaSourceType::VIDEO:
+        kSinkName = "video-sink";
+        break;
+    default:
+        break;
+    }
+    if (!kSinkName)
+    {
+        RIALTO_SERVER_LOG_WARN("mediaSourceType '%s' not supported",
+                               firebolt::rialto::common::convertMediaSourceType(mediaSourceType));
+    }
+    else
+    {
+        GstElement *sink{nullptr};
+        m_glibWrapper->gObjectGet(m_context.pipeline, kSinkName, &sink, nullptr);
+        if (!sink)
+        {
+            RIALTO_SERVER_LOG_WARN("'%s' could not be obtained", kSinkName);
+        }
+        else
+        {
+            // For AutoVideoSink we set properties on the child sink
+            if (MediaSourceType::VIDEO == mediaSourceType)
+                sink = getSinkChildIfAutoVideoSink(sink);
+
+            GstStructure *stats{nullptr};
+            m_glibWrapper->gObjectGet(sink, "stats", &stats, nullptr);
+            if (!stats)
+            {
+                RIALTO_SERVER_LOG_WARN("failed to get stats from '%s'", kSinkName);
+            }
+            else
+            {
+                guint64 renderedFramesTmp;
+                guint64 droppedFramesTmp;
+                if (m_gstWrapper->gstStructureGetUint64(stats, "rendered", &renderedFramesTmp) &&
+                    m_gstWrapper->gstStructureGetUint64(stats, "dropped", &droppedFramesTmp))
+                {
+                    renderedFrames = renderedFramesTmp;
+                    droppedFrames = droppedFramesTmp;
+                    returnValue = true;
+                }
+                else
+                {
+                    RIALTO_SERVER_LOG_WARN("failed to get 'rendered' or 'dropped' from structure (%s)", kSinkName);
+                }
+                m_gstWrapper->gstStructureFree(stats);
+            }
+            m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+        }
+    }
+
+    return returnValue;
 }
 
 GstBuffer *GstGenericPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const
@@ -1076,7 +1141,11 @@ void GstGenericPlayer::removeAutoVideoSinkChild(GObject *object)
 
 GstElement *GstGenericPlayer::getSinkChildIfAutoVideoSink(GstElement *sink)
 {
-    const std::string kElementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
+    const gchar *kTmpName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
+    if (!kTmpName)
+        return sink;
+
+    const std::string kElementTypeName{kTmpName};
     if (kElementTypeName == "GstAutoVideoSink")
     {
         if (!m_context.autoVideoChildSink)
