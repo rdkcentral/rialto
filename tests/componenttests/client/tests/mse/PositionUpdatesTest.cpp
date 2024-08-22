@@ -121,7 +121,7 @@ TEST_F(PositionUpdatesTest, positionUpdates)
     // Step 5: Get Immediate Output
     MediaPipelineTestMethods::shouldGetImmediateOutput(kTestValueOfImmediateOutput);
     MediaPipelineTestMethods::getImmediateOutput(kTestValueOfImmediateOutput);
-    
+
     // Step 6: Get stats
     {
         const uint64_t kRenderedFrames = 2345;

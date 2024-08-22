@@ -165,7 +165,7 @@ public:
         response.set_immediate_output(immediateOutputResponse);
         return response;
     }
-    
+
     ::firebolt::rialto::GetStatsResponse getStatsResponse(const uint64_t renderedFrames, const uint64_t droppedFrames)
     {
         firebolt::rialto::GetStatsResponse response;
