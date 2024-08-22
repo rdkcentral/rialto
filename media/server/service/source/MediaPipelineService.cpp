@@ -281,6 +281,20 @@ bool MediaPipelineService::getImmediateOutput(int sessionId, int32_t sourceId, b
     return mediaPipelineIter->second->getImmediateOutput(sourceId, immediateOutput);
 }
 
+bool MediaPipelineService::getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to get stats, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getStats(sourceId, renderedFrames, droppedFrames);
+}
+
 bool MediaPipelineService::setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                                           std::uint32_t height)
 {

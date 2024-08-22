@@ -80,6 +80,11 @@ public:
  *   GetImmediateOutput
  *   Expect that GetImmediateOutput propagated to the server and sets the property
  *
+ *  Step 6: Get Stats
+ *   GetStats
+ *   Expect that GetStats propagated to the server and returns the correct
+ *   number of frames rendered and dropped.
+ *
  * Test Teardown:
  *  Terminate the media session.
  *  Memory region created for the shared buffer is closed.
@@ -116,5 +121,13 @@ TEST_F(PositionUpdatesTest, positionUpdates)
     // Step 5: Get Immediate Output
     MediaPipelineTestMethods::shouldGetImmediateOutput(kTestValueOfImmediateOutput);
     MediaPipelineTestMethods::getImmediateOutput(kTestValueOfImmediateOutput);
+    
+    // Step 6: Get stats
+    {
+        const uint64_t kRenderedFrames = 2345;
+        const uint64_t kDroppedFrames = 6;
+        MediaPipelineTestMethods::shouldGetStats(kRenderedFrames, kDroppedFrames);
+        MediaPipelineTestMethods::getStats(kRenderedFrames, kDroppedFrames);
+    }
 }
 } // namespace firebolt::rialto::client::ct

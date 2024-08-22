@@ -68,6 +68,8 @@ public:
     void mediaPipelineWillFailToSetImmediateOutput();
     void mediaPipelineWillGetImmediateOutput();
     void mediaPipelineWillFailToGetImmediateOutput();
+    void mediaPipelineWillGetStats();
+    void mediaPipelineWillFailToGetStats();
     void mediaPipelineWillRenderFrame();
     void mediaPipelineWillFailToRenderFrame();
     void mediaPipelineWillSetVolume();
@@ -129,6 +131,8 @@ public:
     void setImmediateOutputShouldFail();
     void getImmediateOutputShouldSucceed();
     void getImmediateOutputShouldFail();
+    void getStatsShouldSucceed();
+    void getStatsShouldFail();
     void getSupportedMimeTypesSucceed();
     void isMimeTypeSupportedSucceed();
     void doesSinkOrDecoderHavePropertySucceed();

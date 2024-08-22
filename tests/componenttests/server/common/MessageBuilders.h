@@ -57,6 +57,7 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::SetImmediateOutputRequest createSetImmediateOutputRequest(int sessionId, int sourceId,
                                                                               bool immediateOutput);
 ::firebolt::rialto::GetImmediateOutputRequest createGetImmediateOutputRequest(int sessionId, int sourceId);
+::firebolt::rialto::GetStatsRequest createGetStatsRequest(int sessionId, int sourceId);
 ::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId);
 ::firebolt::rialto::SetVolumeRequest createSetVolumeRequest(int sessionId);
 ::firebolt::rialto::GetVolumeRequest createGetVolumeRequest(int sessionId);

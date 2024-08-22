@@ -88,18 +88,6 @@ public:
         return g_signal_connect(instance, detailed_signal, c_handler, data);
     }
 
-    void gSignalHandlerDisconnect(GObject *instance, gulong handler_id) const override
-    {
-        g_signal_handler_disconnect(instance, handler_id);
-    }
-
-    guint gTimeoutAdd(guint interval, GSourceFunc function, gpointer data) override
-    {
-        return g_timeout_add(interval, function, data);
-    }
-
-    gboolean gSourceRemove(guint tag) override { return g_source_remove(tag); }
-
     gchar *gStrdupPrintf(const gchar *format, ...) override;
 
     gboolean gStrHasPrefix(const gchar *str, const gchar *prefix) override;

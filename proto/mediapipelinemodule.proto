@@ -528,6 +528,27 @@ message GetImmediateOutputResponse {
 }
 
 /**
+ * @fn void getStats(int session_id, int source_id, uint64 &rendered_frames, uint64 &dropped_frames)
+ * @brief Get various stats from the source.
+ *
+ * @param[in]  session_id        The id of the A/V session.
+ * @param[in]  source_id         The id of the media source.
+ * @param[out] rendered_frames   The number of rendered frames
+ * @param[out] dropped_frames    The number of dropped frames
+ *
+ * This method gets various stats from the source.
+ *
+ */
+message GetStatsRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+message GetStatsResponse {
+    optional int64 rendered_frames = 1 [default = -1];
+    optional int64 dropped_frames = 2 [default = -1];
+}
+
+/**
  * @fn void processAudioGap(int64 position, uint32 duration, uint32 level)
  * @brief Process audio gap.
  *
@@ -817,6 +838,13 @@ service MediaPipelineModule {
      * @see GetImmediateOutputRequest
      */
     rpc getImmediateOutput(GetImmediateOutputRequest) returns (GetImmediateOutputResponse) {
+    }
+
+    /**
+     * @brief Gets the current stats property
+     * @see GetStatsRequest
+     */
+    rpc getStats(GetStatsRequest) returns (GetStatsResponse) {
     }
 
     /**

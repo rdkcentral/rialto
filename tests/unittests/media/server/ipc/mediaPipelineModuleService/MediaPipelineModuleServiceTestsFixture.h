@@ -76,6 +76,8 @@ public:
     void mediaPipelineServiceWillFailToSetImmediateOutput();
     void mediaPipelineServiceWillGetImmediateOutput();
     void mediaPipelineServiceWillFailToGetImmediateOutput();
+    void mediaPipelineServiceWillGetStats();
+    void mediaPipelineServiceWillFailToGetStats();
     void mediaPipelineServiceWillRenderFrame();
     void mediaPipelineServiceWillFailToRenderFrame();
     void mediaPipelineServiceWillSetVolume();
@@ -123,6 +125,8 @@ public:
     void sendSetImmediateOutputRequestAndReceiveFail();
     void sendGetImmediateOutputRequestAndReceiveResponse();
     void sendGetImmediateOutputRequestAndReceiveFail();
+    void sendGetStatsRequestAndReceiveResponse();
+    void sendGetStatsRequestAndReceiveResponseWithoutStatsMatch();
     void sendHaveDataRequestAndReceiveResponse();
     void sendSetPlaybackRateRequestAndReceiveResponse();
     void sendSetVideoWindowRequestAndReceiveResponse();

@@ -47,6 +47,7 @@ public:
     MOCK_METHOD(bool, getPosition, (int64_t & position), (override));
     MOCK_METHOD(bool, setImmediateOutput, (int32_t sourceId, bool immediateOutput), (override));
     MOCK_METHOD(bool, getImmediateOutput, (int32_t sourceId, bool &immediateOutput), (override));
+    MOCK_METHOD(bool, getStats, (int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames), (override));
     MOCK_METHOD(bool, setPlaybackRate, (double rate), (override));
     MOCK_METHOD(bool, renderFrame, (), (override));
     MOCK_METHOD(bool, setVolume, (double volume), (override));

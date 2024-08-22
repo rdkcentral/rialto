@@ -111,7 +111,10 @@ public:
     bool getPosition(int64_t &position) override;
 
     bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
+    
     bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
+    
+    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
 
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
@@ -359,6 +362,19 @@ protected:
      * @retval true on success.
      */
     bool getImmediateOutputInternal(int32_t sourceId, bool &immediateOutput);
+
+    /**
+     * @brief Get stats for this source.
+     *
+     * This method is sychronous, it returns dropped frames and rendered frames
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] renderedFrames : The number of rendered frames
+     * @param[out] droppedFrames : The number of dropped frames
+     *
+     * @retval true on success.
+     */
+    bool getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames);
 
     /**
      * @brief Set video window internally, only to be called on the main thread.

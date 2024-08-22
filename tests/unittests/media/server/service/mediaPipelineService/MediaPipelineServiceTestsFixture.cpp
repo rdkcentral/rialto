@@ -57,6 +57,8 @@ constexpr std::uint32_t kNumFrames{1};
 constexpr double kVolume{0.7};
 constexpr bool kMute{false};
 constexpr bool kResetTime{true};
+constexpr uint64_t kRenderedFrames{987654};
+constexpr uint64_t kDroppedFrames{321};
 constexpr uint32_t kDuration{35};
 constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
@@ -231,6 +233,23 @@ void MediaPipelineServiceTests::mediaPipelineWillGetImmediateOutput()
 void MediaPipelineServiceTests::mediaPipelineWillFailToGetImmediateOutput()
 {
     EXPECT_CALL(m_mediaPipelineMock, getImmediateOutput(_, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetStats()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getStats(_, _, _))
+        .WillOnce(Invoke(
+            [&](int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+            {
+                renderedFrames = kRenderedFrames;
+                droppedFrames = kDroppedFrames;
+                return true;
+            }));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetStats()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getStats(_, _, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillRenderFrame()
@@ -534,6 +553,22 @@ void MediaPipelineServiceTests::getPositionShouldFail()
 {
     std::int64_t targetPosition{};
     EXPECT_FALSE(m_sut->getPosition(kSessionId, targetPosition));
+}
+
+void MediaPipelineServiceTests::getStatsShouldSucceed()
+{
+    std::uint64_t renderedFrames;
+    std::uint64_t droppedFrames;
+    EXPECT_TRUE(m_sut->getStats(kSessionId, kSourceId, renderedFrames, droppedFrames));
+    EXPECT_EQ(renderedFrames, kRenderedFrames);
+    EXPECT_EQ(droppedFrames, kDroppedFrames);
+}
+
+void MediaPipelineServiceTests::getStatsShouldFail()
+{
+    std::uint64_t renderedFrames;
+    std::uint64_t droppedFrames;
+    EXPECT_FALSE(m_sut->getStats(kSessionId, kSourceId, renderedFrames, droppedFrames));
 }
 
 void MediaPipelineServiceTests::setImmediateOutputShouldSucceed()

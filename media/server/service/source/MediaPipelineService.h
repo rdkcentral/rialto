@@ -67,6 +67,7 @@ public:
     bool getPosition(int sessionId, std::int64_t &position) override;
     bool setImmediateOutput(int sessionId, int32_t sourceId, bool immediateOutput) override;
     bool getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput) override;
+    bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
     bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                         std::uint32_t height) override;
     bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,

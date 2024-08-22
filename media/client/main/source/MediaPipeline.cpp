@@ -318,6 +318,11 @@ bool MediaPipeline::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
     return m_mediaPipelineIpc->getImmediateOutput(sourceId, immediateOutput);
 }
 
+bool MediaPipeline::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    return m_mediaPipelineIpc->getStats(sourceId, renderedFrames, droppedFrames);
+}
+
 bool MediaPipeline::handleSetPosition(int64_t position)
 {
     // needData requests no longer valid

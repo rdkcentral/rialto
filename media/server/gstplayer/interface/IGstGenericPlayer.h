@@ -214,6 +214,17 @@ public:
     virtual bool getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutput) = 0;
 
     /**
+     * @brief Get stats for this source.
+     *
+     * @param[in] mediaSourceType : The media source type to get stats for
+     * @param[out] renderedFrames : The number of rendered frames
+     * @param[out] droppedFrames : The number of dropped frames
+     *
+     * @retval true on success.
+     */
+    virtual bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
+
+    /**
      * @brief Set the playback rate.
      *
      * @param[in] rate : The playback rate.

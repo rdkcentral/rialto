@@ -72,6 +72,9 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::GetImmediateOutputRequest *request,
                  ::firebolt::rialto::GetImmediateOutputResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getStats,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetStatsRequest *request,
+                 ::firebolt::rialto::GetStatsResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, setPlaybackRate,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::SetPlaybackRateRequest *request,
                  ::firebolt::rialto::SetPlaybackRateResponse *response, ::google::protobuf::Closure *done));
@@ -160,6 +163,14 @@ public:
     {
         firebolt::rialto::GetImmediateOutputResponse response;
         response.set_immediate_output(immediateOutputResponse);
+        return response;
+    }
+    
+    ::firebolt::rialto::GetStatsResponse getStatsResponse(const uint64_t renderedFrames, const uint64_t droppedFrames)
+    {
+        firebolt::rialto::GetStatsResponse response;
+        response.set_rendered_frames(renderedFrames);
+        response.set_dropped_frames(droppedFrames);
         return response;
     }
 
