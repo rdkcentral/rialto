@@ -34,7 +34,7 @@ class SetSourcePosition : public IPlayerTask
 public:
     SetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerClient *client,
                       const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                      const MediaSourceType &type, std::int64_t position);
+                      const MediaSourceType &type, std::int64_t position, bool resetTime);
     ~SetSourcePosition() override;
     void execute() const override;
 

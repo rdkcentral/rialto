@@ -1081,11 +1081,12 @@ void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetT
     }
 }
 
-void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position)
+void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, mediaSourceType, position));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createSetSourcePosition(m_context, mediaSourceType, position, resetTime));
     }
 }
 

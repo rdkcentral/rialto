@@ -868,7 +868,7 @@ bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime)
     return true;
 }
 
-bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position)
+bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime)
 {
     if (!reattachChannelIfRequired())
     {
@@ -881,6 +881,7 @@ bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position)
     request.set_session_id(m_sessionId);
     request.set_source_id(sourceId);
     request.set_position(position);
+    request.set_reset_time(resetTime);
 
     firebolt::rialto::SetSourcePositionResponse response;
     auto ipcController = m_ipc.createRpcController();

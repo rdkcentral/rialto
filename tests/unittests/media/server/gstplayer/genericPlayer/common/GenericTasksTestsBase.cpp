@@ -2326,7 +2326,10 @@ void GenericTasksTestsBase::triggerSetSourcePosition(firebolt::rialto::MediaSour
 {
     firebolt::rialto::server::tasks::generic::SetSourcePosition task{testContext->m_context,
                                                                      &testContext->m_gstPlayerClient,
-                                                                     testContext->m_gstWrapper, sourceType, kPosition};
+                                                                     testContext->m_gstWrapper,
+                                                                     sourceType,
+                                                                     kPosition,
+                                                                     kResetTime};
     task.execute();
 }
 

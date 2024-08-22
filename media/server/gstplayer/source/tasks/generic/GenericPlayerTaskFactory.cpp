@@ -239,10 +239,13 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFlush(GenericPlayer
     return std::make_unique<tasks::generic::Flush>(context, m_client, m_gstWrapper, type, resetTime);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSourcePosition(
-    GenericPlayerContext &context, const firebolt::rialto::MediaSourceType &type, std::int64_t position) const
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createSetSourcePosition(GenericPlayerContext &context,
+                                                  const firebolt::rialto::MediaSourceType &type, std::int64_t position,
+                                                  bool resetTime) const
 {
-    return std::make_unique<tasks::generic::SetSourcePosition>(context, m_client, m_gstWrapper, type, position);
+    return std::make_unique<tasks::generic::SetSourcePosition>(context, m_client, m_gstWrapper, type, position,
+                                                               resetTime);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createProcessAudioGap(GenericPlayerContext &context,

@@ -26,7 +26,7 @@ namespace firebolt::rialto::server::tasks::generic
 {
 SetSourcePosition::SetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerClient *client,
                                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                     const MediaSourceType &type, std::int64_t position)
+                                     const MediaSourceType &type, std::int64_t position, bool resetTime)
     : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}, m_position{position}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetSourcePosition");
