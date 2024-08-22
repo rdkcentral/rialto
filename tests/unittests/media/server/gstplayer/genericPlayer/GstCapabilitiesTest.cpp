@@ -165,6 +165,8 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_NoDecoders)
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(dummyElement));
     EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(listOfFactories)).Times(1);
     EXPECT_FALSE(m_sut->doesSinkOrDecoderHaveProperty(MediaSourceType::VIDEO, kParamName));
+    gst_object_unref(dummyElement);
+    gst_plugin_feature_list_free(listOfFactories);
 }
 
 /**
