@@ -44,6 +44,7 @@ private:
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     MediaSourceType m_type;
     std::int64_t m_position;
+    bool m_resetTime;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

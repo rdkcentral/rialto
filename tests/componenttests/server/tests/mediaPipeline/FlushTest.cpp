@@ -29,7 +29,7 @@ namespace
 {
 constexpr unsigned kFramesToPush{1};
 constexpr int kFrameCount{3};
-constexpr bool kResetTime{true};
+constexpr bool kResetTime{false};
 } // namespace
 
 using testing::Return;
