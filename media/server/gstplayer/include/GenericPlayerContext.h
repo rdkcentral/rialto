@@ -28,6 +28,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <vector>
 
 namespace firebolt::rialto::server
 {
