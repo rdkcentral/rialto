@@ -415,21 +415,11 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType)
 
 bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutputParam)
 {
-    bool returnValue{false};
-    GstElement *sink = getSink(mediaSourceType);
-    if (sink)
-    {
-        // For AutoVideoSink we use properties on the child sink
-        if (MediaSourceType::VIDEO == mediaSourceType)
-            sink = getSinkChildIfAutoVideoSink(sink);
+    if (!m_workerThread)
+        return false;
 
-        gboolean immediateOutput(immediateOutputParam);
-        m_glibWrapper->gObjectSet(sink, "immediate-output", immediateOutput, nullptr);
-        returnValue = true;
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
-    }
-
-    return returnValue;
+    m_workerThread->enqueueTask(m_taskFactory->createSetImmediateOutput(*this, mediaSourceType, immediateOutputParam));
+    return true;
 }
 
 bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutputRef)

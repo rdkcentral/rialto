@@ -40,6 +40,7 @@
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
+#include "tasks/generic/SetImmediateOutput.h"
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
@@ -52,6 +53,7 @@
 #include "tasks/generic/Stop.h"
 #include "tasks/generic/Underflow.h"
 #include "tasks/generic/UpdatePlaybackGroup.h"
+
 #include <gst/gst.h>
 #include <memory>
 #include <string>
@@ -2412,4 +2414,31 @@ void GenericTasksTestsBase::triggerFailToCastDolbyVisionSource()
     EXPECT_EQ(0, testContext->m_context.streamInfo.size());
     EXPECT_EQ(testContext->m_context.streamInfo.end(),
               testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO));
+}
+
+void GenericTasksTestsBase::shouldFailToSetImmediateOutputIfSinkIsNull()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(nullptr));
+}
+
+void GenericTasksTestsBase::shouldSetImmediateOutput()
+{
+    GstElement *videoSink = testContext->m_element;
+    const std::string kElementTypeName{"GenericSink"};
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(videoSink));
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element)).WillOnce(Return(videoSink));
+
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(_, StrEq("immediate-output"))).Times(1);
+
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(videoSink)).Times(1);
+}
+
+void GenericTasksTestsBase::triggerSetImmediateOutput()
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> source =
+        std::make_unique<MediaAudioSourceTest>(SourceConfigType::AUDIO, kId);
+    firebolt::rialto::server::tasks::generic::SetImmediateOutput task{testContext->m_gstPlayer, testContext->m_gstWrapper,
+                                                                      testContext->m_glibWrapper,
+                                                                      MediaSourceType::VIDEO, true};
+    task.execute();
 }

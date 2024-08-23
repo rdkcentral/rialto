@@ -207,7 +207,7 @@ public:
      * @brief Gets the "Immediate Output" property for this source.
      *
      * @param[in] mediaSourceType : The media source type
-     * @param[out] immediateOutput : Set immediate output mode on the sink
+     * @param[out] immediateOutput : Get immediate output mode on the sink
      *
      * @retval true on success.
      */

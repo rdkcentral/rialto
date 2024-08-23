@@ -298,6 +298,33 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangleAutoVideoSink)
     EXPECT_TRUE(m_sut->setVideoSinkRectangle());
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldGetSink)
+{
+    GstElement *videoSink{setAutoVideoSinkChild()};
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = videoSink;
+            }));
+    EXPECT_EQ(videoSink, m_sut->getSink(MediaSourceType::VIDEO));
+    gst_object_unref(videoSink);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToGetSinkForUnknownMediaSourceType)
+{
+    EXPECT_EQ(0, m_sut->getSink(MediaSourceType::UNKNOWN));
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToGetSinkIfStubNull)
+{
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _)).Times(1);
+
+    EXPECT_FALSE(m_sut->getSink(MediaSourceType::AUDIO));
+}
+
 TEST_F(GstGenericPlayerPrivateTest, shouldGetSinkChildAutoVideoSink)
 {
     GstElement *autoVideoSinkChild = setAutoVideoSinkChild();

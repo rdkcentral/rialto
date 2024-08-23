@@ -284,40 +284,14 @@ TEST_F(GstGenericPlayerTest, shouldSetImmediateOutputInPlayingState)
     videoSink = initVideoSink();
     setPipelineState(GST_STATE_PLAYING);
 
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
-        .WillOnce(Invoke(
-            [&](gpointer object, const gchar *first_property_name, void *element)
-            {
-                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                *elementPtr = videoSink;
-            }));
-    const std::string kElementTypeName{"GenericSink"};
-    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(videoSink))).WillOnce(Return(kElementTypeName.c_str()));
-
-    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq("immediate-output"))).Times(1);
-
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(videoSink)).Times(1);
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetImmediateOutput(_, MediaSourceType::VIDEO, true))
+        .WillOnce(Return(ByMove(std::move(task))));
 
     EXPECT_TRUE(m_sut->setImmediateOutput(MediaSourceType::VIDEO, true));
 
     gst_object_unref(videoSink);
-}
-
-TEST_F(GstGenericPlayerTest, shouldFailToSetImmediateOutputInPlayingStateIfMediaTypeWrong)
-{
-    setPipelineState(GST_STATE_PLAYING);
-
-    EXPECT_FALSE(m_sut->setImmediateOutput(MediaSourceType::UNKNOWN, true));
-}
-
-TEST_F(GstGenericPlayerTest, shouldFailToSetImmediateOutputInPlayingStateIfStubNull)
-{
-    setPipelineState(GST_STATE_PLAYING);
-
-    // Fail to get sink which should cause the setImmediateOutput() call to return false
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _)).Times(1);
-
-    EXPECT_FALSE(m_sut->setImmediateOutput(MediaSourceType::AUDIO, true));
 }
 
 TEST_F(GstGenericPlayerTest, shouldGetImmediateOutputInPlayingState)
@@ -373,12 +347,6 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetImmediateOutputInPlayingStateIfStubN
     EXPECT_FALSE(m_sut->getImmediateOutput(MediaSourceType::AUDIO, immediateOutputState));
 }
 
-TEST_F(GstGenericPlayerTest, shouldFailToSetImmediateOutputIfMediaTypeUnknown)
-{
-    setPipelineState(GST_STATE_PLAYING);
-
-    EXPECT_FALSE(m_sut->setImmediateOutput(MediaSourceType::UNKNOWN, true));
-}
 TEST_F(GstGenericPlayerTest, shouldGetStatsInPlayingState)
 {
     constexpr guint64 kRenderedFrames{1234};

@@ -223,6 +223,11 @@ protected:
     void triggerSetMute();
     void shouldGstSetMute();
 
+    // immediate-output sink property test methods
+    void shouldSetImmediateOutput();
+    void shouldFailToSetImmediateOutputIfSinkIsNull();
+    void triggerSetImmediateOutput();
+
     // SetPosition test methods
     void triggerSetPositionNullClient();
     void triggerSetPosition();

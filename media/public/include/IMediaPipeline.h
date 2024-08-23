@@ -1209,12 +1209,12 @@ public:
     virtual bool setImmediateOutput(int32_t sourceId, bool immediateOutput) = 0;
 
     /**
-     * @brief Sets the "Immediate Output" property for this source.
+     * @brief Gets the "Immediate Output" property for this source.
      *
-     * This method is sychronous, it sets the "Immediate Output" property
+     * This method is sychronous, it gets the "Immediate Output" property
      *
-     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
-     * @param[in] immediateOutput : Set immediate output mode on the sink
+     * @param[in] sourceId  : The source id. Value should be get to the MediaSource.id returned after attachSource()
+     * @param[out] immediateOutput : Get immediate output mode on the sink
      *
      * @retval true on success.
      */
