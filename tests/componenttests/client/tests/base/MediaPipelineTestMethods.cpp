@@ -1341,25 +1341,27 @@ void MediaPipelineTestMethods::flushFailure()
 void MediaPipelineTestMethods::shouldSetSourcePosition()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition), _, _))
+                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition, kResetTime),
+                                  _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
 void MediaPipelineTestMethods::setSourcePosition()
 {
-    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition));
+    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime));
 }
 
 void MediaPipelineTestMethods::shouldFailToSetSourcePosition()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition), _, _))
+                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition, kResetTime),
+                                  _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
 }
 
 void MediaPipelineTestMethods::setSourcePositionFailure()
 {
-    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition));
+    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime));
 }
 
 void MediaPipelineTestMethods::shouldProcessAudioGap()

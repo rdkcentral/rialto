@@ -300,12 +300,12 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToFlush()
 
 void MediaPipelineServiceTests::mediaPipelineWillSetSourcePosition()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition, kResetTime)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToSetSourcePosition()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition, kResetTime)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillProcessAudioGap()
@@ -628,12 +628,12 @@ void MediaPipelineServiceTests::flushShouldFail()
 
 void MediaPipelineServiceTests::setSourcePositionShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition));
+    EXPECT_TRUE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition, kResetTime));
 }
 
 void MediaPipelineServiceTests::setSourcePositionShouldFail()
 {
-    EXPECT_FALSE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition));
+    EXPECT_FALSE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition, kResetTime));
 }
 
 void MediaPipelineServiceTests::processAudioGapShouldSucceed()

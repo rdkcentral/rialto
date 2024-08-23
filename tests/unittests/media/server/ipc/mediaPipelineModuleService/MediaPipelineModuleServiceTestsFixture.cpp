@@ -555,14 +555,14 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToFlush()
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetSourcePosition()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setSourcePosition(kHardcodedSessionId, kSourceId, kPosition))
+    EXPECT_CALL(m_mediaPipelineServiceMock, setSourcePosition(kHardcodedSessionId, kSourceId, kPosition, kResetTime))
         .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetSourcePosition()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setSourcePosition(kHardcodedSessionId, kSourceId, kPosition))
+    EXPECT_CALL(m_mediaPipelineServiceMock, setSourcePosition(kHardcodedSessionId, kSourceId, kPosition, kResetTime))
         .WillOnce(Return(false));
 }
 
@@ -994,6 +994,7 @@ void MediaPipelineModuleServiceTests::sendSetSourcePositionRequestAndReceiveResp
     request.set_session_id(kHardcodedSessionId);
     request.set_source_id(kSourceId);
     request.set_position(kPosition);
+    request.set_reset_time(kResetTime);
 
     m_service->setSourcePosition(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

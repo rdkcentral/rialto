@@ -740,32 +740,36 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         // Sending initial sample not needed
         return;
     }
-    RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
-    GstSegment *segment{m_gstWrapper->gstSegmentNew()};
-    m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
-    if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE,
-                                        GST_SEEK_TYPE_SET, initialPosition->second, GST_SEEK_TYPE_SET,
-                                        GST_CLOCK_TIME_NONE, nullptr))
+    for (const auto &[position, resetTime] : initialPosition->second)
     {
-        RIALTO_SERVER_LOG_WARN("Segment seek failed.");
+        GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
+        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
+        GstSegment *segment{m_gstWrapper->gstSegmentNew()};
+        m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
+        if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, seekFlag,
+                                            GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
+        {
+            RIALTO_SERVER_LOG_WARN("Segment seek failed.");
+            m_gstWrapper->gstSegmentFree(segment);
+            m_context.initialPositions.erase(initialPosition);
+            return;
+        }
+
+        RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT "], rate: %f reset_time: %d\n",
+                              typeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
+                              segment->rate, resetTime);
+
+        GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
+        // We can't pass buffer in GstSample, because implementation of gst_app_src_push_sample
+        // uses gst_buffer_copy, which loses RialtoProtectionMeta (that causes problems with EME
+        // for first frame).
+        GstSample *sample = m_gstWrapper->gstSampleNew(nullptr, currentCaps, segment, nullptr);
+        m_gstWrapper->gstAppSrcPushSample(GST_APP_SRC(source), sample);
+        m_gstWrapper->gstSampleUnref(sample);
+        m_gstWrapper->gstCapsUnref(currentCaps);
+
         m_gstWrapper->gstSegmentFree(segment);
-        m_context.initialPositions.erase(initialPosition);
-        return;
     }
-
-    RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT "], rate: %f \n", typeStr.c_str(),
-                          GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop), segment->rate);
-
-    GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
-    // We can't pass buffer in GstSample, because implementation of gst_app_src_push_sample
-    // uses gst_buffer_copy, which loses RialtoProtectionMeta (that causes problems with EME
-    // for first frame).
-    GstSample *sample = m_gstWrapper->gstSampleNew(nullptr, currentCaps, segment, nullptr);
-    m_gstWrapper->gstAppSrcPushSample(GST_APP_SRC(source), sample);
-    m_gstWrapper->gstSampleUnref(sample);
-    m_gstWrapper->gstCapsUnref(currentCaps);
-
-    m_gstWrapper->gstSegmentFree(segment);
     m_context.initialPositions.erase(initialPosition);
     return;
 }
@@ -1081,11 +1085,12 @@ void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetT
     }
 }
 
-void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position)
+void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, mediaSourceType, position));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createSetSourcePosition(m_context, mediaSourceType, position, resetTime));
     }
 }
 

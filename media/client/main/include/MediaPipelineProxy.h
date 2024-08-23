@@ -96,9 +96,9 @@ public:
 
     bool flush(int32_t sourceId, bool resetTime) override { return m_mediaPipeline->flush(sourceId, resetTime); }
 
-    bool setSourcePosition(int32_t sourceId, int64_t position) override
+    bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime) override
     {
-        return m_mediaPipeline->setSourcePosition(sourceId, position);
+        return m_mediaPipeline->setSourcePosition(sourceId, position, resetTime);
     }
 
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override
