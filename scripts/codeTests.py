@@ -169,7 +169,7 @@ def doCheckClang():
 
 def doCheckValgrind():
     print("Running valgrind...")
-    executeCmd = ["./build_ut.py", "-c", "-xml", "-f", "-val"]
+    executeCmd = ["./build_ut.py", "-xml", "-f", "-val"]
     if not runcmd(0, executeCmd, cwd=baseDir):
         exit(1)
     printOk("valgrind test ok")

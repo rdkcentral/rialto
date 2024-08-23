@@ -269,6 +269,12 @@ MATCHER_P(getPositionRequestMatcher, sessionId, "")
     return ((kRequest->session_id() == sessionId));
 }
 
+MATCHER_P2(getStatsRequestMatcher, sessionId, sourceId, "")
+{
+    const ::firebolt::rialto::GetStatsRequest *kRequest = dynamic_cast<const ::firebolt::rialto::GetStatsRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+}
+
 MATCHER_P(getSupportedMimeTypesRequestMatcher, sourceType, "")
 {
     const ::firebolt::rialto::GetSupportedMimeTypesRequest *kRequest =

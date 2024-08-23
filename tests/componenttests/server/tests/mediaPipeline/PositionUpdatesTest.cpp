@@ -24,11 +24,19 @@
 #include "MediaPipelineTest.h"
 #include "MessageBuilders.h"
 
+using testing::_;
+using testing::DoAll;
+using testing::Invoke;
+using testing::Return;
+using testing::SetArgumentPointee;
+using testing::StrEq;
+
 namespace
 {
 constexpr unsigned kFramesToPush{1};
 constexpr int kFrameCountInPausedState{3};
 constexpr int kFrameCountInPlayingState{24};
+const std::string kElementTypeName{"GenericSink"};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -36,8 +44,14 @@ namespace firebolt::rialto::server::ct
 class PositionUpdatesTest : public MediaPipelineTest
 {
 public:
-    PositionUpdatesTest() = default;
-    ~PositionUpdatesTest() override = default;
+    PositionUpdatesTest()
+    {
+        GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
+        m_videoSink = gst_element_factory_create(elementFactory, nullptr);
+        gst_object_unref(elementFactory);
+    }
+
+    ~PositionUpdatesTest() override { gst_object_unref(m_videoSink); }
 
     void waitForPositionUpdate()
     {
@@ -63,6 +77,83 @@ public:
         auto req{createGetPositionRequest(m_sessionId)};
         ConfigureAction<GetPosition>(m_clientStub).send(req).expectFailure();
     }
+
+    void willGetStats()
+    {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _))
+            .WillOnce(Invoke(
+                [&](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                    *elementPtr = m_videoSink;
+                }));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink))).WillOnce(Return(kElementTypeName.c_str()));
+
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
+            .WillOnce(Invoke(
+                [&](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    GstStructure **elementPtr = reinterpret_cast<GstStructure **>(element);
+                    *elementPtr = &m_testStructure;
+                }));
+
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&m_testStructure, StrEq("rendered"), _))
+            .WillOnce(DoAll(SetArgumentPointee<2>(kRenderedFrames), Return(true)));
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&m_testStructure, StrEq("dropped"), _))
+            .WillOnce(DoAll(SetArgumentPointee<2>(kDroppedFrames), Return(true)));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&m_testStructure)).Times(1);
+    }
+
+    void getStats()
+    {
+        auto req{createGetStatsRequest(m_sessionId, m_videoSourceId)};
+        ConfigureAction<GetStats>(m_clientStub)
+            .send(req)
+            .expectSuccess()
+            .matchResponse(
+                [&](const auto &resp)
+                {
+                    EXPECT_EQ(resp.rendered_frames(), kRenderedFrames);
+                    EXPECT_EQ(resp.dropped_frames(), kDroppedFrames);
+                });
+    }
+
+    void willFailToGetStats()
+    {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _))
+            .WillOnce(Invoke(
+                [&](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                    *elementPtr = m_videoSink;
+                }));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink))).WillOnce(Return(kElementTypeName.c_str()));
+
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
+            .WillOnce(Invoke(
+                [&](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    GstStructure **elementPtr = reinterpret_cast<GstStructure **>(element);
+                    *elementPtr = &m_testStructure;
+                }));
+
+        // Emulate a situation that the stats structure doesn't contain the number
+        // of rendered frames...
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&m_testStructure, StrEq("rendered"), _)).WillOnce(Return(false));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&m_testStructure)).Times(1);
+    }
+
+    void getStatsFailure()
+    {
+        auto req{createGetStatsRequest(m_sessionId, m_videoSourceId)};
+        ConfigureAction<GetStats>(m_clientStub).send(req).expectFailure();
+    }
+
+private:
+    GstElement *m_videoSink{nullptr};
+    GstStructure m_testStructure;
 };
 /*
  * Component Test: Position Reporting test
@@ -343,30 +434,34 @@ TEST_F(PositionUpdatesTest, PositionUpdate)
  *   Rialto should send GetPosition request and wait for response
  *   GetPositionResponse should contain current position
  *
- *  Step 12: End of audio stream
+ *  Step 12: Get Stats
+ *   Rialto should send GetStats request and wait for response
+ *   GetStatsResponse should contain the number of rendered and dropped frames
+ *
+ *  Step 13: End of audio stream
  *   Send audio haveData with one frame and EOS status
  *   Expect that Gstreamer is notified about end of stream
  *
- *  Step 13: End of video stream
+ *  Step 14: End of video stream
  *   Send video haveData with one frame and EOS status
  *   Expect that Gstreamer is notified about end of stream
  *
- *  Step 14: Notify end of stream
+ *  Step 15: Notify end of stream
  *   Simulate, that gst_message_eos is received by Rialto Server
  *   Expect that server notifies the client that the Network state has changed to END_OF_STREAM.
  *
- *  Step 15: Remove sources
+ *  Step 16: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 16: Stop
+ *  Step 17: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 17: Destroy media session
+ *  Step 18: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -436,26 +531,30 @@ TEST_F(PositionUpdatesTest, GetPositionSuccess)
     // Step 11: Get Position
     getPosition();
 
-    // Step 12: End of audio stream
-    // Step 13: End of video stream
+    // Step 12: Get Stats
+    willGetStats();
+    getStats();
+
+    // Step 13: End of audio stream
+    // Step 14: End of video stream
     willEos(&m_audioAppSrc);
     eosAudio(kFramesToPush);
     willEos(&m_videoAppSrc);
     eosVideo(kFramesToPush);
 
-    // Step 14: Notify end of stream
+    // Step 15: Notify end of stream
     gstNotifyEos();
 
-    // Step 15: Remove sources
+    // Step 16: Remove sources
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 16: Stop
+    // Step 17: Stop
     willStop();
     stop();
 
-    // Step 17: Destroy media session
+    // Step 18: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }
@@ -504,18 +603,23 @@ TEST_F(PositionUpdatesTest, GetPositionSuccess)
  *   Rialto should send GetPosition request and wait for response
  *   GetPositionResponse should contain current position
  *
- *  Step 5: Remove sources
+ *  Step 5: Fail to get Stats
+ *   Rialto client sends GetStats request and waits for response
+ *   GetStatsResponse is false because the server couldn't obtain the
+ *   relevant information from gstreamer
+ *
+ *  Step 6: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 6: Stop
+ *  Step 7: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 7: Destroy media session
+ *  Step 8: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -552,16 +656,20 @@ TEST_F(PositionUpdatesTest, getPositionFailure)
     // Step 4: Get Position Failure
     getPositionFailure();
 
-    // Step 5: Remove sources
+    // Step 5: Fail to get Stats
+    willFailToGetStats();
+    getStatsFailure();
+
+    // Step 6: Remove sources
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 6: Stop
+    // Step 7: Stop
     willStop();
     stop();
 
-    // Step 7: Destroy media session
+    // Step 8: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

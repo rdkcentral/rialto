@@ -617,6 +617,27 @@ void MediaPipelineModuleService::getPosition(::google::protobuf::RpcController *
     done->Run();
 }
 
+void MediaPipelineModuleService::getStats(::google::protobuf::RpcController *controller,
+                                          const ::firebolt::rialto::GetStatsRequest *request,
+                                          ::firebolt::rialto::GetStatsResponse *response,
+                                          ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    uint64_t renderedFrames;
+    uint64_t droppedFrames;
+    if (!m_mediaPipelineService.getStats(request->session_id(), request->source_id(), renderedFrames, droppedFrames))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get stats failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_rendered_frames(renderedFrames);
+        response->set_dropped_frames(droppedFrames);
+    }
+    done->Run();
+}
+
 void MediaPipelineModuleService::renderFrame(::google::protobuf::RpcController *controller,
                                              const ::firebolt::rialto::RenderFrameRequest *request,
                                              ::firebolt::rialto::RenderFrameResponse *response,

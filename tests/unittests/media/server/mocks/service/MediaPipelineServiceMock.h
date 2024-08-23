@@ -44,6 +44,8 @@ public:
     MOCK_METHOD(bool, setPlaybackRate, (int, double), (override));
     MOCK_METHOD(bool, setPosition, (int, int64_t), (override));
     MOCK_METHOD(bool, getPosition, (int sessionId, int64_t &position), (override));
+    MOCK_METHOD(bool, getStats, (int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames),
+                (override));
     MOCK_METHOD(bool, setVideoWindow, (int, std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t), (override));
     MOCK_METHOD(bool, haveData, (int, MediaSourceStatus, std::uint32_t, std::uint32_t), (override));
     MOCK_METHOD(bool, renderFrame, (int), (override));

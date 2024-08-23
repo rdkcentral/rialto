@@ -175,6 +175,19 @@ public:
     virtual bool getPosition(int64_t &position) = 0;
 
     /**
+     * @brief Get stats for this source.
+     *
+     * This method is sychronous, it returns dropped frames and rendered frames
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] droppedFrames : The number of dropped frames
+     * @param[out] renderedFrames : The number of rendered frames
+     *
+     * @retval true on success.
+     */
+    virtual bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
+
+    /**
      * @brief Request new playback rate.
      *
      * @param[in] rate : The playback rate.
