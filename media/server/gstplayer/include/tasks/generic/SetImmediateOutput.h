@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SETIMMEDIATEOUTPUT_H_
-#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SETIMMEDIATEOUTPUT_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_IMMEDIATE_OUTPUT_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_IMMEDIATE_OUTPUT_H_
 
-#include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
-
 #include "IPlayerTask.h"
+
+#include <memory>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -48,4 +48,4 @@ private:
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SETIMMEDIATEOUTPUT_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_IMMEDIATE_OUTPUT_H_

@@ -2424,7 +2424,6 @@ void GenericTasksTestsBase::shouldFailToSetImmediateOutputIfSinkIsNull()
 void GenericTasksTestsBase::shouldSetImmediateOutput()
 {
     GstElement *videoSink = testContext->m_element;
-    const std::string kElementTypeName{"GenericSink"};
     EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(videoSink));
     EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element)).WillOnce(Return(videoSink));
 
@@ -2435,8 +2434,6 @@ void GenericTasksTestsBase::shouldSetImmediateOutput()
 
 void GenericTasksTestsBase::triggerSetImmediateOutput()
 {
-    std::unique_ptr<IMediaPipeline::MediaSource> source =
-        std::make_unique<MediaAudioSourceTest>(SourceConfigType::AUDIO, kId);
     firebolt::rialto::server::tasks::generic::SetImmediateOutput task{testContext->m_gstPlayer, testContext->m_gstWrapper,
                                                                       testContext->m_glibWrapper,
                                                                       MediaSourceType::VIDEO, true};

@@ -104,12 +104,16 @@ public:
     {
         // Failure to get the video sync will cause setImmediateOutput() to fail
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _)).Times(1);
+        // We expect no further calls to gst or glib as would be the case if
+        // the video-sink had been returned. See "willSetImmediateOutput()"
     }
 
     void setImmediateOutputFailure()
     {
         auto req{createSetImmediateOutputRequest(m_sessionId, m_videoSourceId, true)};
-        ConfigureAction<SetImmediateOutput>(m_clientStub).send(req).expectFailure();
+        // We expect success from this test because it's asyncronous (and the return
+        // value doesn't reflect that the immediate-output flag wasn't set)
+        ConfigureAction<SetImmediateOutput>(m_clientStub).send(req).expectSuccess();
     }
 
     void willGetImmediateOutput()

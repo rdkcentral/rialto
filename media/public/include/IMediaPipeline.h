@@ -1199,7 +1199,7 @@ public:
     /**
      * @brief Sets the "Immediate Output" property for this source.
      *
-     * This method is sychronous, it sets the "Immediate Output" property
+     * This method is asychronous, it will set the "Immediate Output" property
      *
      * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
      * @param[in] immediateOutput : Set immediate output mode on the sink
