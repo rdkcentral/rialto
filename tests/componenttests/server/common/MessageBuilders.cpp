@@ -289,12 +289,13 @@ namespace firebolt::rialto::server::ct
 }
 
 ::firebolt::rialto::SetSourcePositionRequest createSetSourcePositionRequest(int sessionId, int sourceId,
-                                                                            std::int64_t position)
+                                                                            std::int64_t position, bool resetTime)
 {
     ::firebolt::rialto::SetSourcePositionRequest request;
     request.set_session_id(sessionId);
     request.set_source_id(sourceId);
     request.set_position(position);
+    request.set_reset_time(resetTime);
     return request;
 }
 

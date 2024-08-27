@@ -29,6 +29,7 @@ namespace
 {
 constexpr unsigned kFramesToPush{1};
 constexpr int kFrameCount{3};
+constexpr bool kResetTime{false};
 } // namespace
 
 using testing::Return;
@@ -44,13 +45,13 @@ public:
     void setSourcePosition(int sourceId)
     {
         // Send SetSourcePositionRequest and expect success
-        auto request{createSetSourcePositionRequest(m_sessionId, sourceId, kPosition)};
+        auto request{createSetSourcePositionRequest(m_sessionId, sourceId, kPosition, kResetTime)};
         ConfigureAction<SetSourcePosition>(m_clientStub).send(request).expectSuccess();
     }
 
     void setSourcePositionFailure()
     {
-        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition)};
+        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition, kResetTime)};
         ConfigureAction<SetSourcePosition>(m_clientStub).send(request).expectFailure();
     }
 };

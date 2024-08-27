@@ -408,7 +408,7 @@ bool MediaPipelineService::flush(int sessionId, std::int32_t sourceId, bool rese
     return mediaPipelineIter->second->flush(sourceId, resetTime);
 }
 
-bool MediaPipelineService::setSourcePosition(int sessionId, int32_t sourceId, int64_t position)
+bool MediaPipelineService::setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime)
 {
     RIALTO_SERVER_LOG_DEBUG("Set Source Position requested, session id: %d", sessionId);
 
@@ -419,7 +419,7 @@ bool MediaPipelineService::setSourcePosition(int sessionId, int32_t sourceId, in
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->setSourcePosition(sourceId, position);
+    return mediaPipelineIter->second->setSourcePosition(sourceId, position, resetTime);
 }
 
 bool MediaPipelineService::processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,

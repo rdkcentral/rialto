@@ -25,6 +25,7 @@ class RialtoClientMediaPipelineIpcSetSourcePositionTest : public MediaPipelineIp
 protected:
     const int64_t m_kPosition = 123;
     const int32_t m_kSourceId{1};
+    const bool m_kResetTime{false};
 
     virtual void SetUp()
     {
@@ -48,11 +49,12 @@ TEST_F(RialtoClientMediaPipelineIpcSetSourcePositionTest, Success)
 {
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setSourcePosition"), m_controllerMock.get(),
-                                           setSourcePositionRequestMatcher(m_sessionId, m_kSourceId, m_kPosition), _,
-                                           m_blockingClosureMock.get()));
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("setSourcePosition"), m_controllerMock.get(),
+                           setSourcePositionRequestMatcher(m_sessionId, m_kSourceId, m_kPosition, m_kResetTime), _,
+                           m_blockingClosureMock.get()));
 
-    EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition), true);
+    EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime), true);
 }
 
 /**
@@ -63,7 +65,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetSourcePositionTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition), false);
+    EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime), false);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -81,7 +83,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetSourcePositionTest, ReconnectChannel)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setSourcePosition"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition), true);
+    EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime), true);
 }
 
 /**
@@ -93,5 +95,5 @@ TEST_F(RialtoClientMediaPipelineIpcSetSourcePositionTest, SetSourcePositionFailu
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setSourcePosition"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition), false);
+    EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime), false);
 }

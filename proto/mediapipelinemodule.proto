@@ -481,6 +481,7 @@ message FlushResponse {
  * @param[in]  session_id   The id of the A/V session.
  * @param[in]  source_id    The id of the media source.
  * @param[in]  position     The position in nanoseconds.
+ * @param[in]  reset_time   True if time should be reset
  *
  * This method sets the start position for a source.
  *
@@ -489,6 +490,7 @@ message SetSourcePositionRequest {
     optional int32 session_id = 1 [default = -1];
     optional int32 source_id = 2 [default = -1];
     optional int64 position = 3 [default = -1];
+    optional bool reset_time = 4 [default = false];
 }
 message SetSourcePositionResponse {
 }
