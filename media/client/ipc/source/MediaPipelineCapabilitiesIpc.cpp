@@ -144,8 +144,8 @@ bool MediaPipelineCapabilitiesIpc::isMimeTypeSupported(const std::string &mimeTy
     return response.is_supported();
 }
 
-bool MediaPipelineCapabilitiesIpc::doesSinkOrDecoderHaveProperty(MediaSourceType mediaType,
-                                                                 const std::string &propertyName)
+std::vector<std::string> MediaPipelineCapabilitiesIpc::getSupportedProperties(MediaSourceType mediaType,
+                                                                              const std::vector<std::string> &propertyNames)
 {
     if (!reattachChannelIfRequired())
     {
@@ -153,15 +153,16 @@ bool MediaPipelineCapabilitiesIpc::doesSinkOrDecoderHaveProperty(MediaSourceType
         return {};
     }
 
-    firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest request;
+    firebolt::rialto::GetSupportedPropertiesRequest request;
     request.set_media_type(convertProtoMediaSourceType(mediaType));
-    request.set_property_name(propertyName);
+    for (const std::string &property : propertyNames)
+        request.add_property_names(property);
 
-    firebolt::rialto::DoesSinkOrDecoderHavePropertyResponse response;
+    firebolt::rialto::GetSupportedPropertiesResponse response;
     auto ipcController = m_ipc.createRpcController();
     auto blockingClosure = m_ipc.createBlockingClosure();
-    m_mediaPipelineCapabilitiesStub->doesSinkOrDecoderHaveProperty(ipcController.get(), &request, &response,
-                                                                   blockingClosure.get());
+    m_mediaPipelineCapabilitiesStub->getSupportedProperties(ipcController.get(), &request, &response,
+                                                            blockingClosure.get());
 
     // wait for the call to complete
     blockingClosure->wait();
@@ -170,10 +171,10 @@ bool MediaPipelineCapabilitiesIpc::doesSinkOrDecoderHaveProperty(MediaSourceType
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed due to '%s'", ipcController->ErrorText().c_str());
-        return false;
+        return std::vector<std::string>{};
     }
 
-    return response.has_property();
+    return std::vector<std::string>{response.supported_properties().begin(), response.supported_properties().end()};
 }
 
 }; // namespace firebolt::rialto::client

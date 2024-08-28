@@ -18,9 +18,9 @@
  */
 
 #include <algorithm>
+#include <list>
 #include <stdexcept>
 #include <unordered_map>
-#include <unordered_set>
 
 #include "GstCapabilities.h"
 #include "GstMimeMapping.h"
@@ -119,7 +119,8 @@ bool GstCapabilities::isMimeTypeSupported(const std::string &mimeType)
     return m_supportedMimeTypes.find(mimeType) != m_supportedMimeTypes.end();
 }
 
-bool GstCapabilities::doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, const std::string &propertyName)
+std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType mediaType,
+                                                                 const std::vector<std::string> &propertyNames)
 {
     // Get all element factories
     GstElementFactoryListType factoryListType{GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER};
@@ -136,15 +137,24 @@ bool GstCapabilities::doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, c
     GList *factories{m_gstWrapper->gstElementFactoryListGetElements(factoryListType, GST_RANK_NONE)};
 
     // Scan all sinks and decoders for the property
-    bool hasProperty{false};
-    for (GList *iter = factories; iter != nullptr && !hasProperty; iter = iter->next)
+    std::list<std::string> propertiesToLookFor{propertyNames.begin(), propertyNames.end()};
+    std::vector<std::string> propertiesFound;
+    for (GList *iter = factories; iter != nullptr && !propertiesToLookFor.empty(); iter = iter->next)
     {
         GstElementFactory *factory = GST_ELEMENT_FACTORY(iter->data);
         GstElement *element = m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
         if (element)
         {
-            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(element), propertyName.c_str()))
-                hasProperty = true;
+            for (auto i = propertiesToLookFor.begin(); i != propertiesToLookFor.end();)
+            {
+                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(element), i->c_str()))
+                {
+                    propertiesFound.push_back(*i);
+                    i = propertiesToLookFor.erase(i);
+                }
+                else
+                    ++i;
+            }
 
             m_gstWrapper->gstObjectUnref(element);
         }
@@ -152,7 +162,7 @@ bool GstCapabilities::doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, c
 
     // Cleanup
     m_gstWrapper->gstPluginFeatureListFree(factories);
-    return hasProperty;
+    return propertiesFound;
 }
 
 void GstCapabilities::fillSupportedMimeTypes()

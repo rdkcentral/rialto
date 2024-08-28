@@ -303,11 +303,11 @@ MATCHER_P(isMimeTypeSupportedRequestMatcher, mimeType, "")
     return (kRequest->mime_type() == mimeType);
 }
 
-MATCHER_P2(doesSinkOrDecoderHavePropertyRequestMatcher, mediaType, propertyName, "")
+MATCHER_P2(getSupportedPropertiesRequestMatcher, mediaType, propertyNames, "")
 {
-    const ::firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest *>(arg);
-    return (kRequest->media_type() == mediaType && kRequest->property_name() == propertyName);
+    const ::firebolt::rialto::GetSupportedPropertiesRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetSupportedPropertiesRequest *>(arg);
+    return (kRequest->media_type() == mediaType && kRequest->property_names() == propertyNames);
 }
 
 MATCHER_P3(flushRequestMatcher, sessionId, sourceId, resetTime, "")

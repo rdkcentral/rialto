@@ -105,7 +105,8 @@ public:
      *
      * @retval true if any gstreamer sink or decoder has the property
      */
-    virtual bool doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, const std::string &propertyName) = 0;
+    virtual std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
+                                                            const std::vector<std::string> &propertyNames) = 0;
 };
 
 }; // namespace firebolt::rialto

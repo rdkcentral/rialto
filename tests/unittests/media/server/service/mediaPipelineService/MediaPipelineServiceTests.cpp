@@ -394,10 +394,10 @@ TEST_F(MediaPipelineServiceTests, shouldCheckSupportedMimeType)
     isMimeTypeSupportedSucceed();
 }
 
-TEST_F(MediaPipelineServiceTests, shouldCallDoesSinkOrDecoderHaveProperty)
+TEST_F(MediaPipelineServiceTests, shouldCallGetSupportedProperties)
 {
     createMediaPipelineShouldSuccess();
-    doesSinkOrDecoderHavePropertySucceed();
+    getSupportedPropertiesSucceed();
 }
 
 TEST_F(MediaPipelineServiceTests, shouldFailToRenderframeForNotExistingSession)

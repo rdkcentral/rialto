@@ -32,6 +32,7 @@ using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::wrappers;
 
+using ::testing::_;
 using ::testing::ByMove;
 using ::testing::Return;
 using ::testing::StrictMock;
@@ -125,13 +126,14 @@ TEST_F(MediaPipelineCapabilitiesTest, isMimeTypeSupported)
     EXPECT_TRUE(m_sut->isMimeTypeSupported(mimeType));
 }
 
-TEST_F(MediaPipelineCapabilitiesTest, doesSinkOrDecoderHaveProperty)
+TEST_F(MediaPipelineCapabilitiesTest, getSupportedProperties)
 {
     const MediaSourceType kMediaType{MediaSourceType::AUDIO};
-    const std::string kPropertyName{"immediateOutput"};
+    const std::vector<std::string> kProperties{"immediateOutput"};
 
-    EXPECT_CALL(*m_gstCapabilities, doesSinkOrDecoderHaveProperty(kMediaType, kPropertyName)).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstCapabilities, getSupportedProperties(kMediaType, _)).WillOnce(Return(kProperties));
 
     createMediaPipelineCapabilities();
-    EXPECT_TRUE(m_sut->doesSinkOrDecoderHaveProperty(kMediaType, kPropertyName));
+    std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(kMediaType, kProperties)};
+    EXPECT_EQ(kProperties, supportedProperties);
 }

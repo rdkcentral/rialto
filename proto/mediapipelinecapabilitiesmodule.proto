@@ -56,20 +56,20 @@ message IsMimeTypeSupportedResponse {
 }
 
 /**
- * @fn bool doesSinkOrDecoderHaveProperty(MediaSourceType media_type, string property_name)
+ * @fn vector<string> getSupportedProperties(MediaSourceType media_type, const vector<string> &property_names)
  * @brief Has any gstreamer sink or decoder got a named property
  *
- * @param[in]  media_type     The media type to look for. If set to UNKNOWN then both AUDIO and VIDEO are searched
- * @param[in]  property_name  The property name to look for
- * @param[out] has_property   Self explanitory
+ * @param[in]  media_type     The media type to search. If set to UNKNOWN then both AUDIO and VIDEO are searched
+ * @param[in]  property_names  The property names that will be checked
  *
+ * @returns    supported_properties   Returns the subset of property_names that are supported by the media_type
  */
-message DoesSinkOrDecoderHavePropertyRequest {
+message GetSupportedPropertiesRequest {
   optional ProtoMediaSourceType media_type = 1 [default = UNKNOWN];
-  optional string property_name = 2 [default = ""];
+  repeated string property_names = 2;
 }
-message DoesSinkOrDecoderHavePropertyResponse {
-  optional bool has_property = 1 [default = false];
+message GetSupportedPropertiesResponse {
+  repeated string supported_properties = 1;
 }
 
 service MediaPipelineCapabilitiesModule {
@@ -89,8 +89,8 @@ service MediaPipelineCapabilitiesModule {
 
     /**
      * @brief Has any gstreamer element got the specified property
-     * @see DoesSinkOrDecoderHavePropertyRequest
+     * @see GetSupportedPropertiesRequest
      */
-    rpc doesSinkOrDecoderHaveProperty(DoesSinkOrDecoderHavePropertyRequest) returns (DoesSinkOrDecoderHavePropertyResponse) {
+    rpc getSupportedProperties(GetSupportedPropertiesRequest) returns (GetSupportedPropertiesResponse) {
     }
 }

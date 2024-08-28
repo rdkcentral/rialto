@@ -83,7 +83,8 @@ public:
                          bool audioAac) override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
-    bool doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, const std::string &propertyName) override;
+    std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
+                                                    const std::vector<std::string> &propertyNames) override;
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;
 
     void clearMediaPipelines();

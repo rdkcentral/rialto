@@ -124,10 +124,9 @@ void MediaPipelineCapabilitiesModuleService::isMimeTypeSupported(
     done->Run();
 }
 
-void MediaPipelineCapabilitiesModuleService::doesSinkOrDecoderHaveProperty(
-    ::google::protobuf::RpcController *controller,
-    const ::firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest *request,
-    ::firebolt::rialto::DoesSinkOrDecoderHavePropertyResponse *response, ::google::protobuf::Closure *done)
+void MediaPipelineCapabilitiesModuleService::getSupportedProperties(
+    ::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetSupportedPropertiesRequest *request,
+    ::firebolt::rialto::GetSupportedPropertiesResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
@@ -140,9 +139,15 @@ void MediaPipelineCapabilitiesModuleService::doesSinkOrDecoderHaveProperty(
     }
 
     firebolt::rialto::MediaSourceType mediaType = convertMediaSourceType(request->media_type());
-    bool hasProperty = m_mediaPipelineService.doesSinkOrDecoderHaveProperty(mediaType, request->property_name());
+    std::vector<std::string> propertiesToSearch{request->property_names().begin(), request->property_names().end()};
 
-    response->set_has_property(hasProperty);
+    std::vector<std::string> supportedProperties{
+        m_mediaPipelineService.getSupportedProperties(mediaType, propertiesToSearch)};
+
+    for (const std::string &property : supportedProperties)
+    {
+        response->add_supported_properties(property.c_str());
+    }
 
     done->Run();
 }

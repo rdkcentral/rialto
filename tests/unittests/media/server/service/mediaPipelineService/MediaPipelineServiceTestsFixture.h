@@ -135,7 +135,7 @@ public:
     void getStatsShouldFail();
     void getSupportedMimeTypesSucceed();
     void isMimeTypeSupportedSucceed();
-    void doesSinkOrDecoderHavePropertySucceed();
+    void getSupportedPropertiesSucceed();
     void renderFrameShouldSucceed();
     void renderFrameShouldFail();
     void setVolumeShouldSucceed();

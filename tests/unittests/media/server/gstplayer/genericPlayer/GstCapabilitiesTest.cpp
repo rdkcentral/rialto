@@ -148,23 +148,23 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_NoDecoders)
     EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/mp4"));
     EXPECT_FALSE(m_sut->isMimeTypeSupported("video/h264"));
 
-    // The following EXPECTs are for the call to doesSinkOrDecoderHaveProperty()
+    // The following EXPECTs are for the call to getSupportedProperties()
     GstElementFactoryListType expectedFactoryListType{GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER |
                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
     GList *listOfFactories{nullptr};
     GstElementFactory *dummyFactory{nullptr};
     GstElement *dummyElement{gst_bin_new("Dummy")};
-    const char *kParamName = "test-name-123";
+    std::vector<std::string> kParamNames{"test-name-123"};
     listOfFactories = g_list_append(listOfFactories, dummyFactory);
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(expectedFactoryListType, GST_RANK_NONE))
         .WillOnce(Return(listOfFactories));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(dummyFactory, nullptr)).WillOnce(Return(dummyElement));
     // the call will return false because the following EXPECT returns null (property not found)
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(dummyElement), StrEq(kParamName)))
-        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(dummyElement), _)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(dummyElement));
     EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(listOfFactories)).Times(1);
-    EXPECT_FALSE(m_sut->doesSinkOrDecoderHaveProperty(MediaSourceType::VIDEO, kParamName));
+    std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
+    EXPECT_TRUE(supportedProperties.empty());
     gst_object_unref(dummyElement);
     gst_plugin_feature_list_free(listOfFactories);
 }
@@ -246,23 +246,24 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoSinkPadsA
     EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/beep-boop3"));
     EXPECT_FALSE(m_sut->isMimeTypeSupported("video/h264"));
 
-    // The following EXPECTs are for the call to doesSinkOrDecoderHaveProperty()
+    // The following EXPECTs are for the call to getSupportedProperties()
     GstElementFactoryListType expectedFactoryListType{GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER |
                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
     GList *listOfFactories{nullptr};
     GstElementFactory *dummyFactory{nullptr};
     GstElement *dummyElement{gst_bin_new("Dummy")};
     GParamSpec dummyParam;
-    const char *kParamName = "test-name-123";
+    std::vector<std::string> kParamNames{"test-name-123", "test2"};
     listOfFactories = g_list_append(listOfFactories, dummyFactory);
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(expectedFactoryListType, GST_RANK_NONE))
         .WillOnce(Return(listOfFactories));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(dummyFactory, nullptr)).WillOnce(Return(dummyElement));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(dummyElement), StrEq(kParamName)))
-        .WillOnce(Return(&dummyParam));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(dummyElement), _))
+        .WillRepeatedly(Return(&dummyParam));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(dummyElement));
     EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(listOfFactories)).Times(1);
-    EXPECT_TRUE(m_sut->doesSinkOrDecoderHaveProperty(MediaSourceType::VIDEO, kParamName));
+    std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
+    EXPECT_EQ(supportedProperties, kParamNames);
 
     gst_object_unref(dummyElement);
     gst_plugin_feature_list_free(listOfFactories);

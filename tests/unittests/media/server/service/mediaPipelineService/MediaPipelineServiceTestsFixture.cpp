@@ -609,13 +609,13 @@ void MediaPipelineServiceTests::isMimeTypeSupportedSucceed()
     EXPECT_TRUE(m_sut->isMimeTypeSupported(mimeType));
 }
 
-void MediaPipelineServiceTests::doesSinkOrDecoderHavePropertySucceed()
+void MediaPipelineServiceTests::getSupportedPropertiesSucceed()
 {
     const MediaSourceType kMediaType{MediaSourceType::VIDEO};
-    const std::string kPropertyName{"testing"};
-    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, doesSinkOrDecoderHaveProperty(kMediaType, StrEq(kPropertyName)))
-        .WillOnce(Return(true));
-    EXPECT_TRUE(m_sut->doesSinkOrDecoderHaveProperty(kMediaType, kPropertyName));
+    const std::vector<std::string> kPropertyNames{"testing", "test-prop"};
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, getSupportedProperties(kMediaType, _)).WillOnce(Return(kPropertyNames));
+    std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(kMediaType, kPropertyNames)};
+    EXPECT_EQ(supportedProperties, kPropertyNames);
 }
 
 void MediaPipelineServiceTests::renderFrameShouldSucceed()

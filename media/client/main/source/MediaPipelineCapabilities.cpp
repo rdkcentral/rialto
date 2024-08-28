@@ -94,11 +94,12 @@ bool MediaPipelineCapabilities::isMimeTypeSupported(const std::string &mimeType)
     return m_mediaPipelineCapabilitiesIpc->isMimeTypeSupported(mimeType);
 }
 
-bool MediaPipelineCapabilities::doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, const std::string &propertyName)
+std::vector<std::string> MediaPipelineCapabilities::getSupportedProperties(MediaSourceType mediaType,
+                                                                           const std::vector<std::string> &propertyNames)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaPipelineCapabilitiesIpc->doesSinkOrDecoderHaveProperty(mediaType, propertyName);
+    return m_mediaPipelineCapabilitiesIpc->getSupportedProperties(mediaType, propertyNames);
 }
 
 }; // namespace firebolt::rialto::client

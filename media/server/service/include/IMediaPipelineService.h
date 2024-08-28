@@ -72,7 +72,8 @@ public:
                                  bool audioAac) = 0;
     virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) = 0;
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
-    virtual bool doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, const std::string &propertyName) = 0;
+    virtual std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
+                                                            const std::vector<std::string> &propertyNames) = 0;
     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
 };
 } // namespace firebolt::rialto::server::service

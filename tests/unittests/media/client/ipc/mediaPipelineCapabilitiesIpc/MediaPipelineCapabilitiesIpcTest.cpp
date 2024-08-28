@@ -24,6 +24,10 @@
 using ::testing::Return;
 using ::testing::WithArgs;
 
+namespace
+{
+const char *kPropertyName = "immediate-output";
+}
 class MediaPipelineCapabilitiesIpcTest : public IpcModuleBase, public ::testing::Test
 {
 protected:
@@ -56,11 +60,11 @@ public:
         isMimeTypeSupportedResponse->set_is_supported(true);
     }
 
-    void setDoesSinkOrDecoderHavePropertyResponse(google::protobuf::Message *response)
+    void setGetSupportedPropertiesResponse(google::protobuf::Message *response)
     {
-        firebolt::rialto::DoesSinkOrDecoderHavePropertyResponse *doesSinkOrDecoderHavePropertyResponse =
-            dynamic_cast<firebolt::rialto::DoesSinkOrDecoderHavePropertyResponse *>(response);
-        doesSinkOrDecoderHavePropertyResponse->set_has_property(true);
+        firebolt::rialto::GetSupportedPropertiesResponse *getSupportedPropertiesResponse =
+            dynamic_cast<firebolt::rialto::GetSupportedPropertiesResponse *>(response);
+        getSupportedPropertiesResponse->add_supported_properties(kPropertyName);
     }
 };
 
@@ -129,16 +133,20 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, IsMimeTypeSupportedSuccess)
     EXPECT_TRUE(m_sut->isMimeTypeSupported("video/h264"));
 }
 
-TEST_F(MediaPipelineCapabilitiesIpcTest, DoesSinkOrDecoderHavePropertySuccess)
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedPropertiesSuccess)
 {
     createMediaPipelineCapabilitiesIpc();
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("doesSinkOrDecoderHaveProperty"), m_controllerMock.get(), _, _,
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedProperties"), m_controllerMock.get(), _, _,
                                            m_blockingClosureMock.get()))
-        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setDoesSinkOrDecoderHavePropertyResponse)));
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setGetSupportedPropertiesResponse)));
 
-    EXPECT_TRUE(m_sut->doesSinkOrDecoderHaveProperty(MediaSourceType::VIDEO, "immediate-output"));
+    std::vector<std::string> propertiesToLookFor{kPropertyName};
+
+    std::vector<std::string> propertiesSupported{
+        m_sut->getSupportedProperties(MediaSourceType::VIDEO, propertiesToLookFor)};
+    EXPECT_EQ(propertiesToLookFor, propertiesSupported);
 }
 
 TEST_F(MediaPipelineCapabilitiesIpcTest, IsMimeTypeSupportedsDisconnected)

@@ -447,9 +447,10 @@ bool MediaPipelineService::isMimeTypeSupported(const std::string &mimeType)
     return m_mediaPipelineCapabilities->isMimeTypeSupported(mimeType);
 }
 
-bool MediaPipelineService::doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, const std::string &propertyName)
+std::vector<std::string> MediaPipelineService::getSupportedProperties(MediaSourceType mediaType,
+                                                                      const std::vector<std::string> &propertyNames)
 {
-    return m_mediaPipelineCapabilities->doesSinkOrDecoderHaveProperty(mediaType, propertyName);
+    return m_mediaPipelineCapabilities->getSupportedProperties(mediaType, propertyNames);
 }
 
 void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure)

@@ -550,12 +550,13 @@ createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType)
     return request;
 }
 
-::firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest
-createDoesSinkOrDecoderHavePropertyRequest(const ProtoMediaSourceType &mediaType, const std::string &propertyName)
+::firebolt::rialto::GetSupportedPropertiesRequest
+createGetSupportedPropertiesRequest(const ProtoMediaSourceType &mediaType, const std::vector<std::string> &propertyNames)
 {
-    ::firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest request;
+    ::firebolt::rialto::GetSupportedPropertiesRequest request;
     request.set_media_type(mediaType);
-    request.set_property_name(propertyName);
+    for (const std::string &prop : propertyNames)
+        request.add_property_names(prop.c_str());
     return request;
 }
 

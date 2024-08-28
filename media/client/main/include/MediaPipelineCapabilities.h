@@ -92,7 +92,8 @@ public:
      *
      * @retval true if any gstreamer sink or decoder has the property
      */
-    bool doesSinkOrDecoderHaveProperty(MediaSourceType mediaType, const std::string &propertyName) override;
+    std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
+                                                    const std::vector<std::string> &propertyNames) override;
 
 private:
     /**

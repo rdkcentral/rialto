@@ -22,6 +22,7 @@
 #include "MessageBuilders.h"
 #include "RialtoServerComponentTest.h"
 
+using ::testing::_;
 using ::testing::Return;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
@@ -39,7 +40,7 @@ public:
     }
     ~MediaPipelineCapabilitiesTest() override = default;
 
-    void willCallDoesSinkOrDecoderHaveProperty()
+    void willCallGetSupportedProperties()
     {
         GstElementFactoryListType expectedFactoryListType{
             GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
@@ -48,17 +49,22 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(expectedFactoryListType, GST_RANK_NONE))
             .WillOnce(Return(m_listOfFactories));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(m_dummyFactory, nullptr)).WillOnce(Return(m_dummyElement));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_dummyElement), StrEq(m_kParamName)))
-            .WillOnce(Return(&m_dummyParam));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_dummyElement), _))
+            .WillRepeatedly(Return(&m_dummyParam));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_dummyElement));
         EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
     }
 
-    void callDoesSinkOrDecoderHaveProperty()
+    void callGetSupportedProperties()
     {
-        auto request{createDoesSinkOrDecoderHavePropertyRequest(ProtoMediaSourceType::VIDEO, m_kParamName)};
-        ConfigureAction<DoesSinkOrDecoderHaveProperty>{m_clientStub}.send(request).expectSuccess().matchResponse(
-            [](const auto &resp) { EXPECT_TRUE(resp.has_property()); });
+        auto request{createGetSupportedPropertiesRequest(ProtoMediaSourceType::VIDEO, m_kParamNames)};
+        ConfigureAction<GetSupportedProperties>{m_clientStub}.send(request).expectSuccess().matchResponse(
+            [this](const auto &resp)
+            {
+                std::vector<std::string> supportedProperties{resp.supported_properties().begin(),
+                                                             resp.supported_properties().end()};
+                EXPECT_EQ(supportedProperties, m_kParamNames);
+            });
 
         gst_object_unref(m_dummyElement);
         gst_plugin_feature_list_free(m_listOfFactories);
@@ -71,7 +77,7 @@ private:
     GstElementFactory *m_dummyFactory{nullptr};
     GstElement *m_dummyElement{nullptr};
     GParamSpec m_dummyParam;
-    const char *m_kParamName = "test-name-5";
+    std::vector<std::string> m_kParamNames{"test-name-5", "test2", "prop3"};
 };
 
 /*
@@ -311,10 +317,10 @@ TEST_F(MediaPipelineCapabilitiesTest, checkVideoMimeTypes)
         .matchResponse([](const auto &resp) { EXPECT_FALSE(resp.is_supported()); });
 }
 
-TEST_F(MediaPipelineCapabilitiesTest, checkDoesSinkOrDecoderHaveProperty)
+TEST_F(MediaPipelineCapabilitiesTest, checkGetSupportedProperties)
 {
     // Step 1:
-    willCallDoesSinkOrDecoderHaveProperty();
-    callDoesSinkOrDecoderHaveProperty();
+    willCallGetSupportedProperties();
+    callGetSupportedProperties();
 }
 } // namespace firebolt::rialto::server::ct

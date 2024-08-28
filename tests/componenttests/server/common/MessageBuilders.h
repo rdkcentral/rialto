@@ -114,8 +114,8 @@ createIsServerCertificateSupportedRequest(const std::string &keySystem);
 ::firebolt::rialto::GetSupportedMimeTypesRequest
 createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType);
 ::firebolt::rialto::IsMimeTypeSupportedRequest createIsMimeTypeSupportedRequest(const std::string &mimeType);
-::firebolt::rialto::DoesSinkOrDecoderHavePropertyRequest
-createDoesSinkOrDecoderHavePropertyRequest(const ProtoMediaSourceType &mediaType, const std::string &propertyName);
+::firebolt::rialto::GetSupportedPropertiesRequest
+createGetSupportedPropertiesRequest(const ProtoMediaSourceType &mediaType, const std::vector<std::string> &propertyNames);
 
 // web audio player module
 ::firebolt::rialto::CreateWebAudioPlayerRequest
