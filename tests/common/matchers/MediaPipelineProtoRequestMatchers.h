@@ -235,16 +235,16 @@ MATCHER_P(getVolumeRequestMatcher, sessionId, "")
     return ((kRequest->session_id() == sessionId));
 }
 
-MATCHER_P2(setMuteRequestMatcher, sessionId, mute, "")
+MATCHER_P3(setMuteRequestMatcher, sessionId, sourceId, mute, "")
 {
     const ::firebolt::rialto::SetMuteRequest *kRequest = dynamic_cast<const ::firebolt::rialto::SetMuteRequest *>(arg);
-    return ((kRequest->session_id() == sessionId) && (kRequest->mute() == mute));
+    return ((kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId) && (kRequest->mute() == mute));
 }
 
-MATCHER_P(getMuteRequestMatcher, sessionId, "")
+MATCHER_P2(getMuteRequestMatcher, sessionId, sourceId, "")
 {
     const ::firebolt::rialto::GetMuteRequest *kRequest = dynamic_cast<const ::firebolt::rialto::GetMuteRequest *>(arg);
-    return ((kRequest->session_id() == sessionId));
+    return ((kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId));
 }
 
 MATCHER_P5(setVideoWindowRequestMatcher, sessionId, x, y, width, height, "")

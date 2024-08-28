@@ -783,6 +783,7 @@ bool MediaPipelineIpc::getMute(std::int32_t sourceId, bool &mute)
     firebolt::rialto::GetMuteRequest request;
 
     request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
 
     firebolt::rialto::GetMuteResponse response;
     auto ipcController = m_ipc.createRpcController();

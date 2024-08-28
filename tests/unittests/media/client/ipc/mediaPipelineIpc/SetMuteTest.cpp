@@ -49,7 +49,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetMuteTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setMute"), m_controllerMock.get(),
-                                           setMuteRequestMatcher(m_sessionId, m_mute), _, m_blockingClosureMock.get()));
+                                           setMuteRequestMatcher(m_sessionId, m_kSourceId, m_mute), _, m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->setMute(m_kSourceId, m_mute), true);
 }

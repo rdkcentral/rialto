@@ -37,12 +37,12 @@ public:
 
     void willGetMute() { EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetMute(_)).WillOnce(Return(true)); }
 
-    void setMute() { ConfigureAction<SetMute>(m_clientStub).send(createSetMuteRequest(m_sessionId)).expectSuccess(); }
+    void setMute() { ConfigureAction<SetMute>(m_clientStub).send(createSetMuteRequest(m_sessionId, m_audioSourceId)).expectSuccess(); }
 
     void getMute()
     {
         ConfigureAction<GetMute>(m_clientStub)
-            .send(createGetMuteRequest(m_sessionId))
+            .send(createGetMuteRequest(m_sessionId, m_audioSourceId))
             .expectSuccess()
             .matchResponse([&](const auto &resp) { EXPECT_TRUE(resp.mute()); });
     }

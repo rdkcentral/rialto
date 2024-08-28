@@ -73,13 +73,14 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("rialtosrc"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementRegister(0, StrEq("rialtosrc"), _, _));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("playbin"), _)).WillOnce(Return(&m_pipeline));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(3).WillRepeatedly(Return(kGstPlayFlagsType));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(3).WillRepeatedly(Return(&m_flagsClass));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(4).WillRepeatedly(Return(kGstPlayFlagsType));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(4).WillRepeatedly(Return(&m_flagsClass));
 
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio"))).WillOnce(Return(&m_audioFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("native-video")))
         .WillOnce(Return(&m_nativeVideoFlag));
+    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("text"))).WillOnce(Return(&m_subtitleFlag));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("brcmaudiosink"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("flags")));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("uri")));
@@ -380,11 +381,12 @@ void MediaPipelineTest::willRemoveAudioSource()
     EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStopEvent))
         .WillOnce(Return(TRUE));
 
-    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(2).WillRepeatedly(Return(kGstPlayFlagsType));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(2).WillRepeatedly(Return(&m_flagsClass));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(3).WillRepeatedly(Return(kGstPlayFlagsType));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(3).WillRepeatedly(Return(&m_flagsClass));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("native-video")))
         .WillOnce(Return(&m_nativeVideoFlag));
+    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("text"))).WillOnce(Return(&m_subtitleFlag));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("flags")))
         .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
 }
@@ -403,13 +405,14 @@ void MediaPipelineTest::willStop()
 
 void MediaPipelineTest::willSetAudioAndVideoFlags()
 {
-    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(3).WillRepeatedly(Return(kGstPlayFlagsType));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(3).WillRepeatedly(Return(&m_flagsClass));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(4).WillRepeatedly(Return(kGstPlayFlagsType));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(4).WillRepeatedly(Return(&m_flagsClass));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("brcmaudiosink"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio"))).WillOnce(Return(&m_audioFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("native-video")))
         .WillOnce(Return(&m_nativeVideoFlag));
+    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("text"))).WillOnce(Return(&m_subtitleFlag));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("flags")));
 }
 

@@ -227,18 +227,20 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::SetMuteRequest createSetMuteRequest(int sessionId)
+::firebolt::rialto::SetMuteRequest createSetMuteRequest(int sessionId, int sourceId)
 {
     ::firebolt::rialto::SetMuteRequest request;
     request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
     request.set_mute(true);
     return request;
 }
 
-::firebolt::rialto::GetMuteRequest createGetMuteRequest(int sessionId)
+::firebolt::rialto::GetMuteRequest createGetMuteRequest(int sessionId, int sourceId)
 {
     ::firebolt::rialto::GetMuteRequest request;
     request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
     return request;
 }
 
