@@ -122,9 +122,12 @@ bool GstCapabilities::isMimeTypeSupported(const std::string &mimeType)
 std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType mediaType,
                                                                  const std::vector<std::string> &propertyNames)
 {
-    // Get all element factories
+    // Get gstreamer element factories. The following flag settings will fetch both SINK and DECODER types
+    // of gstreamer classes...
     GstElementFactoryListType factoryListType{GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER};
     {
+        // If MediaSourceType::AUDIO is specified then adjust the flag so that we
+        // restrict the list to gstreamer AUDIO elemet types (likewise for video and subtitle)...
         static const std::unordered_map<MediaSourceType, GstElementFactoryListType>
             kLookupExtraConditions{{MediaSourceType::AUDIO, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO},
                                    {MediaSourceType::VIDEO, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO},
@@ -136,7 +139,7 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
 
     GList *factories{m_gstWrapper->gstElementFactoryListGetElements(factoryListType, GST_RANK_NONE)};
 
-    // Scan all sinks and decoders for the property
+    // Scan all returned elements for the specified properties...
     std::list<std::string> propertiesToLookFor{propertyNames.begin(), propertyNames.end()};
     std::vector<std::string> propertiesFound;
     for (GList *iter = factories; iter != nullptr && !propertiesToLookFor.empty(); iter = iter->next)
