@@ -114,7 +114,7 @@ public:
     bool setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput) override;
     bool getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutput) override;
     bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
-    void setVolume(double volume) override;
+    void setVolume(double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType) override;
     bool getVolume(double &volume) override;
     void setMute(bool mute) override;
     bool getMute(bool &mute) override;

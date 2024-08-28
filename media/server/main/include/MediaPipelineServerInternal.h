@@ -448,7 +448,7 @@ protected:
      *
      * @retval true on success, false otherwise
      */
-    bool setVolumeInternal(double targetVolume);
+    bool setVolumeInternal(double targetVolume, uint32_t volumeDuration, EaseType easeType);
 
     /**
      * @brief Get the current volume level internally, only to be called on the main thread.

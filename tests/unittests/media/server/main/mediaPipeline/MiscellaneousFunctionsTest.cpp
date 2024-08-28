@@ -450,7 +450,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVolumeSuccess)
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
 
-    EXPECT_CALL(*m_gstPlayerMock, setVolume(kVolume));
+    EXPECT_CALL(*m_gstPlayerMock, setVolume(kVolume, kVolumeDuration, kEaseType));
     EXPECT_TRUE(m_mediaPipeline->setVolume(kVolume, kVolumeDuration, kEaseType));
 }
 

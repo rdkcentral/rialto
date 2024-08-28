@@ -31,14 +31,19 @@ class SetVolume : public IPlayerTask
 {
 public:
     SetVolume(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-              double volume);
+                std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+              double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType);
     ~SetVolume() override;
     void execute() const override;
 
 private:
     GenericPlayerContext &m_context;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
-    double m_volume;
+    std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
+    double m_targetVolume;
+    uint32_t m_volumeDuration;
+    firebolt::rialto::EaseType m_easeType;
+    GenericPlayerContext::AudioFadeMechanism m_audioFadeMechanism;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

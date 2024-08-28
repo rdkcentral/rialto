@@ -51,7 +51,7 @@ public:
     MOCK_METHOD(void, setEos, (const firebolt::rialto::MediaSourceType &type), (override));
     MOCK_METHOD(void, setPlaybackRate, (double rate), (override));
     MOCK_METHOD(void, renderFrame, (), (override));
-    MOCK_METHOD(void, setVolume, (double volume), (override));
+    MOCK_METHOD(void, setVolume, (double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType), (override));
     MOCK_METHOD(bool, getVolume, (double &volume), (override));
     MOCK_METHOD(void, setMute, (bool mute), (override));
     MOCK_METHOD(bool, getMute, (bool &mute), (override));

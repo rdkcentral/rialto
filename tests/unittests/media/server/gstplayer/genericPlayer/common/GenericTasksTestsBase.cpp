@@ -69,6 +69,8 @@ std::shared_ptr<GenericTasksTestsContext> testContext;
 
 constexpr firebolt::rialto::server::Rectangle kRectangle{1, 2, 3, 4};
 constexpr double kVolume{0.7};
+constexpr uint32_t kVolumeDuration{1000};
+constexpr firebolt::rialto::EaseType kEaseType{firebolt::rialto::EaseType::EASE_LINEAR};
 constexpr gulong kSignalId{123};
 constexpr auto kAudioSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::AUDIO)};
 constexpr auto kVideoSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::VIDEO)};
@@ -639,7 +641,7 @@ void GenericTasksTestsBase::shouldSetGstVolume()
 
 void GenericTasksTestsBase::triggerSetVolume()
 {
-    firebolt::rialto::server::tasks::generic::SetVolume task{testContext->m_context, testContext->m_gstWrapper, kVolume};
+    firebolt::rialto::server::tasks::generic::SetVolume task{testContext->m_context, testContext->m_gstWrapper, testContext->m_rdkGstreamerUtilsWrapper,kVolume, kVolumeDuration, kEaseType};
     task.execute();
 }
 

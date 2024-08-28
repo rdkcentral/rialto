@@ -244,7 +244,7 @@ public:
      *
      * @param[in] volume : Target volume level (0.0 - 1.0)
      */
-    virtual void setVolume(double volume) = 0;
+    virtual void setVolume(double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType) = 0;
 
     /**
      * @brief Get current audio level. Fetches the current volume level for the pipeline.

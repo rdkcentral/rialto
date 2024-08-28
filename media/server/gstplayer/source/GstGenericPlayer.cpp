@@ -1087,11 +1087,11 @@ void GstGenericPlayer::renderFrame()
     }
 }
 
-void GstGenericPlayer::setVolume(double volume)
+void GstGenericPlayer::setVolume(double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetVolume(m_context, volume));
+        m_workerThread->enqueueTask(m_taskFactory->createSetVolume(m_context, targetVolume, volumeDuration, easeType));
     }
 }
 

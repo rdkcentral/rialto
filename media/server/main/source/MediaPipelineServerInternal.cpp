@@ -817,13 +817,13 @@ bool MediaPipelineServerInternal::setVolume(double targetVolume, uint32_t volume
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = setVolumeInternal(targetVolume); };
+    auto task = [&]() { result = setVolumeInternal(targetVolume, volumeDuration, easeType); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::setVolumeInternal(double targetVolume)
+bool MediaPipelineServerInternal::setVolumeInternal(double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -832,7 +832,7 @@ bool MediaPipelineServerInternal::setVolumeInternal(double targetVolume)
         RIALTO_SERVER_LOG_ERROR("Failed to set volume - Gstreamer player has not been loaded");
         return false;
     }
-    m_gstPlayer->setVolume(targetVolume);
+    m_gstPlayer->setVolume(targetVolume, volumeDuration, easeType);
     return true;
 }
 
