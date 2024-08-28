@@ -127,7 +127,7 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
     GstElementFactoryListType factoryListType{GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER};
     {
         // If MediaSourceType::AUDIO is specified then adjust the flag so that we
-        // restrict the list to gstreamer AUDIO elemet types (likewise for video and subtitle)...
+        // restrict the list to gstreamer AUDIO element types (and likewise for video and subtitle)...
         static const std::unordered_map<MediaSourceType, GstElementFactoryListType>
             kLookupExtraConditions{{MediaSourceType::AUDIO, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO},
                                    {MediaSourceType::VIDEO, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO},
