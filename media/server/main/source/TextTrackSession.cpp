@@ -19,6 +19,7 @@
 
 #include "TextTrackSession.h"
 #include "TextTrackAccessor.h"
+#include <stdexcept>
 
 TextTrackSession::TextTrackSession(const std::string &displayName,
                                    const std::shared_ptr<ITextTrackAccessorFactory> &textTrackAccessorFactory)

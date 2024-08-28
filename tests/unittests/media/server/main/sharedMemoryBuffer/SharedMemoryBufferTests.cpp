@@ -278,7 +278,7 @@ TEST_F(SharedMemoryBufferTests, shouldReturnAudioDataOffsetForOneWebAudioPlayer)
 {
     constexpr int kHandle1{0};
     // Audio buffer for first mapped session is after generic playback session buffer
-    constexpr std::uint32_t kExpectedOffset{m_audioBufferLen + m_videoBufferLen};
+    constexpr std::uint32_t kExpectedOffset{m_audioBufferLen + m_videoBufferLen + m_subtitleBufferLen};
     initialize();
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle1);
     shouldReturnAudioDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle1,
@@ -290,7 +290,7 @@ TEST_F(SharedMemoryBufferTests, shouldReturnVideoDataOffsetForTwoGenericPlayback
     constexpr int kMaxPlaybacks{2};
     constexpr int kSession1{0}, kSession2{1};
     // Video buffer for second mapped session is after video and audio buffer of 1st session
-    constexpr std::uint32_t kExpectedOffset{m_audioBufferLen + m_videoBufferLen};
+    constexpr std::uint32_t kExpectedOffset{m_audioBufferLen + m_videoBufferLen + m_subtitleBufferLen};
     initialize(kMaxPlaybacks);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession2);
@@ -306,10 +306,10 @@ TEST_F(SharedMemoryBufferTests, shouldReturnAudioDataOffsetForTwoGenericPlayback
     constexpr int kHandle1{0}, kHandle2{1};
     // Audio buffer for second mapped session is after video and audio buffer of 1st session
     // and video buffer of 2nd session
-    constexpr std::uint32_t kExpectedOffsetSecondGeneric{m_audioBufferLen + 2 * m_videoBufferLen};
+    constexpr std::uint32_t kExpectedOffsetSecondGeneric{m_audioBufferLen + m_videoBufferLen + m_subtitleBufferLen + m_videoBufferLen};
     // Audio buffer for second mapped web audio player is after video and audio buffer of 1st and 2nd generic playback
     // sessions and the audio buffer of the 1st web audio player
-    constexpr std::uint32_t kExpectedOffsetSecondWebAudio{2 * m_audioBufferLen + 2 * m_videoBufferLen +
+    constexpr std::uint32_t kExpectedOffsetSecondWebAudio{2 * m_audioBufferLen + 2 * m_videoBufferLen + 2 * m_subtitleBufferLen +
                                                           m_webAudioBufferLen};
     initialize(kMaxPlaybacks, kMaxWebAudioPlayers);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
@@ -369,17 +369,24 @@ TEST_F(SharedMemoryBufferTests, shouldGetDataPtrForGenericPlaybackSessions)
                                               kSession1, firebolt::rialto::MediaSourceType::VIDEO);
     uint8_t *session1Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
                                               kSession1, firebolt::rialto::MediaSourceType::AUDIO);
+    uint8_t *session1Subtitle = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                                 kSession1, firebolt::rialto::MediaSourceType::SUBTITLE);
     uint8_t *session2Video = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
                                               kSession2, firebolt::rialto::MediaSourceType::VIDEO);
     uint8_t *session2Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
                                               kSession2, firebolt::rialto::MediaSourceType::AUDIO);
+    uint8_t *session2Subtitle = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
+                                                 kSession2, firebolt::rialto::MediaSourceType::SUBTITLE);
     EXPECT_NE(nullptr, session1Video);
     EXPECT_NE(nullptr, session1Audio);
+    EXPECT_NE(nullptr, session1Subtitle);
     EXPECT_NE(nullptr, session2Video);
     EXPECT_NE(nullptr, session2Audio);
+    EXPECT_NE(nullptr, session2Subtitle);
     EXPECT_EQ((session1Audio - session1Video), (m_videoBufferLen));
-    EXPECT_EQ((session2Video - session1Audio), (m_audioBufferLen));
-    EXPECT_EQ((session2Video - session1Video), (m_videoBufferLen + m_audioBufferLen));
+    EXPECT_EQ((session1Subtitle - session1Audio), m_audioBufferLen);
+    EXPECT_EQ((session2Video - session1Subtitle), (m_subtitleBufferLen));
+    EXPECT_EQ((session2Video - session1Video), (m_videoBufferLen + m_audioBufferLen + m_subtitleBufferLen));
     EXPECT_EQ((session2Audio - session2Video), (m_videoBufferLen));
 }
 

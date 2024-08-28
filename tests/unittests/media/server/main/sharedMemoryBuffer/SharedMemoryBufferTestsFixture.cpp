@@ -172,7 +172,7 @@ void SharedMemoryBufferTests::shouldGetFd()
 void SharedMemoryBufferTests::shouldGetSize()
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_EQ(m_audioBufferLen + m_videoBufferLen + m_webAudioBufferLen,
+    EXPECT_EQ(m_audioBufferLen + m_videoBufferLen + m_subtitleBufferLen + m_webAudioBufferLen,
               m_sut->getSize()); // Size for one session & one webaudio
 }
 

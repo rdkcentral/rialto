@@ -49,8 +49,10 @@ public:
     MOCK_METHOD(bool, renderFrame, (), (override));
     MOCK_METHOD(bool, setVolume, (double volume), (override));
     MOCK_METHOD(bool, getVolume, (double &volume), (override));
-    MOCK_METHOD(bool, setMute, (bool mute), (override));
-    MOCK_METHOD(bool, getMute, (bool &mute), (override));
+    MOCK_METHOD(bool, setMute, (int32_t sourceId, bool mute), (override));
+    MOCK_METHOD(bool, getMute, (int32_t sourceId, bool &mute), (override));
+    MOCK_METHOD(bool, setTextTrackIdentifier, (const std::string &textTrackIdentifier), (override));
+    MOCK_METHOD(bool, getTextTrackIdentifier, (std::string &textTrackIdentifier), (override));
     MOCK_METHOD(bool, flush, (int32_t sourceId, bool resetTime), (override));
     MOCK_METHOD(bool, setSourcePosition, (int32_t sourceId, int64_t position), (override));
     MOCK_METHOD(bool, processAudioGap, (int64_t position, uint32_t duration, uint32_t level), (override));

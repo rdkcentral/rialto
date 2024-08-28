@@ -21,34 +21,32 @@
 
 class UnderflowTest : public GenericTasksTestsBase
 {
-protected:
-    UnderflowTest()
-    {
-        setContextAudioAppSrc();
-        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
-    }
 };
 
 TEST_F(UnderflowTest, shouldNotReportUnderflowWhenItIsDisabled)
 {
-    setUnderflowFlag(false);
     setUnderflowEnabled(false);
+    triggerVideoUnderflow();
+}
+
+TEST_F(UnderflowTest, shouldNotReportUnderflowForNotAttachedSource)
+{
+    setUnderflowEnabled(true);
     triggerVideoUnderflow();
 }
 
 TEST_F(UnderflowTest, shouldNotReportUnderflowWhenItIsAlreadyActive)
 {
-    setUnderflowFlag(true);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
     setUnderflowEnabled(true);
+    setContextVideoUnderflowOccured(true);
     triggerVideoUnderflow();
-    checkUnderflowFlag(true);
 }
 
 TEST_F(UnderflowTest, shouldReportUnderflow)
 {
-    setUnderflowFlag(false);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
     setUnderflowEnabled(true);
     shouldNotifyVideoUnderflow();
     triggerVideoUnderflow();
-    checkUnderflowFlag(true);
 }

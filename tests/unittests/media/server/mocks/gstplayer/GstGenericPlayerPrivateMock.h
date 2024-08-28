@@ -36,10 +36,9 @@ public:
     MOCK_METHOD(void, scheduleVideoUnderflow, (), (override));
     MOCK_METHOD(void, scheduleAllSourcesAttached, (), (override));
     MOCK_METHOD(bool, setVideoSinkRectangle, (), (override));
-    MOCK_METHOD(void, notifyNeedMediaData, (bool audioNotificationNeeded, bool videoNotificationNeeded), (override));
+    MOCK_METHOD(void, notifyNeedMediaData, (const MediaSourceType mediaSource), (override));
     MOCK_METHOD(GstBuffer *, createBuffer, (const IMediaPipeline::MediaSegment &mediaSegment), (const, override));
-    MOCK_METHOD(void, attachAudioData, (), (override));
-    MOCK_METHOD(void, attachVideoData, (), (override));
+    MOCK_METHOD(void, attachData, (const firebolt::rialto::MediaSourceType mediaType), (override));
     MOCK_METHOD(void, updateAudioCaps, (int32_t rate, int32_t channels, const std::shared_ptr<CodecData> &codecData),
                 (override));
     MOCK_METHOD(void, updateVideoCaps,
@@ -49,7 +48,7 @@ public:
     MOCK_METHOD(void, startPositionReportingAndCheckAudioUnderflowTimer, (), (override));
     MOCK_METHOD(void, stopPositionReportingAndCheckAudioUnderflowTimer, (), (override));
     MOCK_METHOD(void, stopWorkerThread, (), (override));
-    MOCK_METHOD(void, cancelUnderflow, (bool &underflowFlag), (override));
+    MOCK_METHOD(void, cancelUnderflow, (firebolt::rialto::MediaSourceType mediaSource), (override));
     MOCK_METHOD(void, setPendingPlaybackRate, (), (override));
     MOCK_METHOD(void, updatePlaybackGroup, (GstElement * typefind, const GstCaps *caps), (override));
     MOCK_METHOD(void, addAutoVideoSinkChild, (GObject * object), (override));
@@ -58,6 +57,7 @@ public:
     MOCK_METHOD(void, setPlaybinFlags, (bool enableAudio), (override));
     MOCK_METHOD(void, addAudioClippingToBuffer, (GstBuffer * buffer, uint64_t clippingStart, uint64_t clippingEnd),
                 (const, override));
+    MOCK_METHOD(void, pushSampleIfRequired, (GstElement *source, const std::string &typeStr), (override));
 };
 } // namespace firebolt::rialto::server
 

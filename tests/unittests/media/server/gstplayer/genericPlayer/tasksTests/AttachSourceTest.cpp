@@ -109,6 +109,7 @@ TEST_F(AttachSourceTest, shouldAttachVideoSourceAuHev)
 
 TEST_F(AttachSourceTest, shouldAttachSubtitleSource)
 {
+    shouldAttachSubtitleSource();
     triggerAttachSubtitleSource();
     checkSubtitleSourceAttached();
 }

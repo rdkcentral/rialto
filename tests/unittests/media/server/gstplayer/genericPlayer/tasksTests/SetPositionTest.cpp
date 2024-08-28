@@ -24,11 +24,11 @@ class SetPositionTest : public GenericTasksTestsBase
 protected:
     SetPositionTest()
     {
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
         setContextNeedData(true);
         setContextNeedDataPending(true);
         setContextEndOfStreamNotified();
-        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
-        setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
         setContextEndOfStream(firebolt::rialto::MediaSourceType::AUDIO);
         setContextEndOfStream(firebolt::rialto::MediaSourceType::VIDEO);
         setContextAudioBuffer();

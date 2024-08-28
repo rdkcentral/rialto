@@ -517,12 +517,6 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
     }
 }
 
-void GstGenericPlayer::attachAudioData() {}
-
-void GstGenericPlayer::attachVideoData() {}
-
-void GstGenericPlayer::attachSubtitleData() {}
-
 void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels, const std::shared_ptr<CodecData> &codecData)
 {
     auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);

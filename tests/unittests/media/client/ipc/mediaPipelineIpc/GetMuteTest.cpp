@@ -23,6 +23,8 @@
 class RialtoClientMediaPipelineIpcGetMuteTest : public MediaPipelineIpcTestBase
 {
 protected:
+    const int32_t m_kSourceId{1};
+
     virtual void SetUp()
     {
         MediaPipelineIpcTestBase::SetUp();
@@ -57,7 +59,7 @@ TEST_F(RialtoClientMediaPipelineIpcGetMuteTest, Success)
             }));
 
     bool resultMute;
-    EXPECT_TRUE(m_mediaPipelineIpc->getMute(resultMute));
+    EXPECT_TRUE(m_mediaPipelineIpc->getMute(m_kSourceId, resultMute));
     EXPECT_EQ(resultMute, kMute);
 }
 
@@ -70,7 +72,7 @@ TEST_F(RialtoClientMediaPipelineIpcGetMuteTest, ChannelDisconnected)
     expectUnsubscribeEvents();
 
     bool mute;
-    EXPECT_FALSE(m_mediaPipelineIpc->getMute(mute));
+    EXPECT_FALSE(m_mediaPipelineIpc->getMute(m_kSourceId, mute));
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -89,7 +91,7 @@ TEST_F(RialtoClientMediaPipelineIpcGetMuteTest, ReconnectChannel)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getMute"), _, _, _, _));
 
     bool mute;
-    EXPECT_TRUE(m_mediaPipelineIpc->getMute(mute));
+    EXPECT_TRUE(m_mediaPipelineIpc->getMute(m_kSourceId, mute));
 }
 
 /**
@@ -102,5 +104,5 @@ TEST_F(RialtoClientMediaPipelineIpcGetMuteTest, GetMuteFailure)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getMute"), _, _, _, _));
 
     bool mute;
-    EXPECT_FALSE(m_mediaPipelineIpc->getMute(mute));
+    EXPECT_FALSE(m_mediaPipelineIpc->getMute(m_kSourceId, mute));
 }

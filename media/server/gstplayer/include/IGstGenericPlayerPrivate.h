@@ -83,17 +83,6 @@ public:
     virtual GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const = 0;
 
     virtual void attachData(const firebolt::rialto::MediaSourceType mediaType) = 0;
-    /**
-     * @brief Attach audio data. Called by the worker thread
-     */
-    virtual void attachAudioData() = 0;
-
-    /**
-     * @brief Attach video data. Called by the worker thread
-     */
-    virtual void attachVideoData() = 0;
-
-    virtual void attachSubtitleData() = 0;
 
     /**
      * @brief Checks the new audio mediaSegment metadata and updates the caps accordingly.

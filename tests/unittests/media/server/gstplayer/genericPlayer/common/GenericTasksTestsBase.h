@@ -59,7 +59,6 @@ protected:
     void setContextNeedData(bool doNeedData);
     void setContextAudioUnderflowOccured(bool isUnderflow);
     void setContextVideoUnderflowOccured(bool isUnderflow);
-    void setContextAudioAppSrc();
     void setContextEndOfStream(firebolt::rialto::MediaSourceType sourceType);
     void setContextEndOfStreamNotified();
     void setContextPipelineNull();
@@ -131,6 +130,7 @@ protected:
     void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
                                   firebolt::rialto::StreamFormat streamFormat);
     void checkVideoSourceAttached();
+    void shouldAttachSubtitleSource();
     void checkSubtitleSourceAttached();
     void triggerAttachSubtitleSource();
     void shouldAttachVideoSourceWithStringCodecData();
@@ -206,13 +206,11 @@ protected:
     void triggerEosVideo();
     void shouldGstAppSrcEndOfStreamSuccess();
     void shouldGstAppSrcEndOfStreamFailure();
-    void shouldCancelUnderflow();
+    void shouldCancelUnderflow(firebolt::rialto::MediaSourceType sourceType);
 
     // Underflow test methods
-    void setUnderflowFlag(bool isUnderflowFlag);
     void setUnderflowEnabled(bool isUnderflowEnabled);
     void triggerVideoUnderflow();
-    void checkUnderflowFlag(bool expected);
     void shouldNotifyVideoUnderflow();
 
     // Shutdown test methods

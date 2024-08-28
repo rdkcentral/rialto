@@ -47,16 +47,6 @@ struct Rectangle
     inline void clear() { x = y = width = height = 0; }
 };
 
-// struct SourceContext
-// {
-//     GstElement *appSrc{nullptr};
-//     bool isDataNeeded{false};
-//     bool isNeedDataPending{false};
-//     bool isDataPushed{false};
-//     std::list<GstBuffer *> buffers{};
-//     bool underflowOccured{false};
-// };
-
 struct GenericPlayerContext
 {
     /**
@@ -87,38 +77,6 @@ struct GenericPlayerContext
     GstElement *subtitleSink{nullptr};
 
     /**
-     * @brief Flag used to check, if we need to request for new audio data.
-     *
-     * Flag can be used only in worker thread
-     */
-    bool audioNeedData{false};
-
-    /**
-     * @brief Flag used to check, if we need to request for new video data.
-     *
-     * Flag can be used only in worker thread
-     */
-    bool videoNeedData{false};
-
-    bool subtitleNeedData{false};
-
-    /**
-     * @brief Flag used to check, if request for audio data was sent and we didn't receive response yet.
-     *
-     * Flag can be used only in worker thread
-     */
-    bool audioNeedDataPending{false};
-
-    /**
-     * @brief Flag used to check, if request for video data was sent and we didn't receive response yet.
-     *
-     * Flag can be used only in worker thread
-     */
-    bool videoNeedDataPending{false};
-
-    bool subtitleNeedDataPending{false};
-
-    /**
      * @brief Flag used to check, if any audio data has been pushed to gstreamer (to check if BUFFERED can be sent)
      *
      * Flag can be used only in worker thread
@@ -140,36 +98,6 @@ struct GenericPlayerContext
      * Flag can be used only in worker thread
      */
     bool bufferedNotificationSent{false};
-
-    /**
-     * @brief List containing audio buffers to attach
-     *
-     * List can be used only in worker thread
-     */
-    std::list<GstBuffer *> audioBuffers{};
-
-    /**
-     * @brief List containing video buffers to attach
-     *
-     * List can be used only in worker thread
-     */
-    std::list<GstBuffer *> videoBuffers{};
-
-    std::list<GstBuffer *> subtitleBuffers{};
-
-    /**
-     * @brief Flag used to check, if audio underflow callback occured
-     *
-     * Flag can be used only in worker thread
-     */
-    bool audioUnderflowOccured{false};
-
-    /**
-     * @brief Flag used to check, if video underflow callback occured
-     *
-     * Flag can be used only in worker thread
-     */
-    bool videoUnderflowOccured{false};
 
     /**
      * @brief Flag used to check, if the playback is in the playing state

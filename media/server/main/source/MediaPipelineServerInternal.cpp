@@ -801,6 +801,7 @@ bool MediaPipelineServerInternal::setMuteInternal(std::int32_t sourceId, bool mu
     if (sourceIter == m_attachedSources.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set mute - Source with id: %d not found", sourceId);
+        return false;
     }
 
     m_gstPlayer->setMute(sourceIter->first, mute);

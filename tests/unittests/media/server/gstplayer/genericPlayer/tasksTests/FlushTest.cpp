@@ -24,12 +24,12 @@ class FlushTest : public GenericTasksTestsBase
 protected:
     FlushTest()
     {
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
         setContextNeedData(true);
         setContextNeedDataPending(true);
         setContextAudioBuffer();
         setContextVideoBuffer();
-        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
-        setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
         setContextEndOfStream(firebolt::rialto::MediaSourceType::AUDIO);
         setContextEndOfStream(firebolt::rialto::MediaSourceType::VIDEO);
         setContextEndOfStreamNotified();

@@ -21,6 +21,12 @@
 
 class ReadShmDataAndAttachSamplesTest : public GenericTasksTestsBase
 {
+    protected:
+    ReadShmDataAndAttachSamplesTest()
+    {
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    }
 };
 
 TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllAudioSamples)

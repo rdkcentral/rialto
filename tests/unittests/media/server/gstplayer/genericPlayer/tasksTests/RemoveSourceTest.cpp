@@ -24,10 +24,11 @@ class RemoveSourceTest : public GenericTasksTestsBase
 protected:
     RemoveSourceTest()
     {
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
         setContextNeedDataAudioOnly();
         setContextAudioBuffer();
         setContextNeedDataPendingAudioOnly(true);
-        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
     }
 };
 
@@ -36,10 +37,7 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSourceWithoutFlushing)
     setContextStreamInfoEmpty();
     shouldInvalidateActiveAudioRequests();
     triggerRemoveSourceAudio();
-    checkNoMoreNeedData();
-    checkNoNeedDataPendingForBothSources();
     checkAudioSourceRemoved();
-    checkBuffersEmpty();
 }
 
 TEST_F(RemoveSourceTest, shouldNotRemoveVideoSource)

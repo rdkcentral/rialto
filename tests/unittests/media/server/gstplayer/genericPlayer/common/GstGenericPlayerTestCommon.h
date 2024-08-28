@@ -112,6 +112,7 @@ private:
     GFlagsValue m_videoFlag{2, "video", "video"};
     GFlagsValue m_nativeVideoFlag{3, "native-video", "native-video"};
     GFlagsValue m_nativeAudioFlag{4, "native-audio", "native-audio"};
+    GFlagsValue m_subtitleFlag{5, "subtitle", "subtitle"};
     gpointer m_setupSourceUserData;
     GCallback m_setupSourceFunc;
     gulong m_setupSourceSignalId{0};

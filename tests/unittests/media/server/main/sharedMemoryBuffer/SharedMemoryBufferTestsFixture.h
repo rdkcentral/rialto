@@ -26,6 +26,7 @@
 
 constexpr std::uint32_t m_audioBufferLen{1 * 1024 * 1024}; // 1MB
 constexpr std::uint32_t m_videoBufferLen{7 * 1024 * 1024}; // 7MB
+constexpr std::uint32_t m_subtitleBufferLen{256 * 1024};   // 256kB
 constexpr std::uint32_t m_webAudioBufferLen{10 * 1024};    // 10KB
 
 class SharedMemoryBufferTests : public testing::Test

@@ -407,7 +407,7 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
     // Restart audio sink
     m_player.setPlaybinFlags(true);
 
-    m_context.audioNeedData = true;
+    m_context.streamInfo[m_attachedSource->getType()].isDataNeeded = true;
     m_context.audioSourceRemoved = false;
     m_context.lastAudioSampleTimestamps = currentDispPts;
     m_player.notifyNeedMediaData(MediaSourceType::AUDIO);

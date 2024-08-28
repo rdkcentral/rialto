@@ -244,19 +244,19 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToGetVolume()
 
 void MediaPipelineServiceTests::mediaPipelineWillSetMute()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setMute(_)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, setMute(kSourceId, _)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToSetMute()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setMute(_)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, setMute(kSourceId, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillGetMute()
 {
-    EXPECT_CALL(m_mediaPipelineMock, getMute(_))
+    EXPECT_CALL(m_mediaPipelineMock, getMute(kSourceId, _))
         .WillOnce(Invoke(
-            [&](bool &mut)
+            [&](int32_t sourceId, bool &mut)
             {
                 mut = kMute;
                 return true;
@@ -265,7 +265,7 @@ void MediaPipelineServiceTests::mediaPipelineWillGetMute()
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToGetMute()
 {
-    EXPECT_CALL(m_mediaPipelineMock, getMute(_)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, getMute(kSourceId, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFlush()
@@ -557,25 +557,25 @@ void MediaPipelineServiceTests::getVolumeShouldFail()
 
 void MediaPipelineServiceTests::setMuteShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->setMute(kSessionId, kMute));
+    EXPECT_TRUE(m_sut->setMute(kSessionId, kSourceId, kMute));
 }
 
 void MediaPipelineServiceTests::setMuteShouldFail()
 {
-    EXPECT_FALSE(m_sut->setMute(kSessionId, kMute));
+    EXPECT_FALSE(m_sut->setMute(kSessionId, kSourceId, kMute));
 }
 
 void MediaPipelineServiceTests::getMuteShouldSucceed()
 {
     bool targetMute{};
-    EXPECT_TRUE(m_sut->getMute(kSessionId, targetMute));
+    EXPECT_TRUE(m_sut->getMute(kSessionId, kSourceId, targetMute));
     EXPECT_EQ(targetMute, kMute);
 }
 
 void MediaPipelineServiceTests::getMuteShouldFail()
 {
     bool targetMute{};
-    EXPECT_FALSE(m_sut->getMute(kSessionId, targetMute));
+    EXPECT_FALSE(m_sut->getMute(kSessionId, kSourceId, targetMute));
 }
 
 void MediaPipelineServiceTests::flushShouldSucceed()

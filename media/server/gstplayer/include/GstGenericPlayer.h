@@ -132,9 +132,6 @@ private:
     void notifyNeedMediaData(const MediaSourceType mediaSource) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachData(const firebolt::rialto::MediaSourceType mediaType) override;
-    void attachAudioData() override;
-    void attachVideoData() override;
-    void attachSubtitleData() override;
     void updateAudioCaps(int32_t rate, int32_t channels, const std::shared_ptr<CodecData> &codecData) override;
     void updateVideoCaps(int32_t width, int32_t height, Fraction frameRate,
                          const std::shared_ptr<CodecData> &codecData) override;

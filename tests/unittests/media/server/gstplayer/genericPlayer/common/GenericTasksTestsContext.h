@@ -67,6 +67,7 @@ public:
     GstCaps m_gstCaps2{};
     GstElement m_appSrcAudio{};
     GstElement m_appSrcVideo{};
+    GstElement m_appSrcSubtitle{};
     GstBin m_bin{};
     GstObject m_obj1{};
     GstObject m_obj2{};
@@ -105,7 +106,6 @@ public:
     GObject m_gObj{};
 
     // Standard members
-    bool m_underflowFlag{false};
     bool m_underflowEnabled{false};
     firebolt::rialto::server::StreamInfo m_streamInfoAudio{&m_appSrcAudio, true};
     firebolt::rialto::server::StreamInfo m_streamInfoVideo{&m_appSrcVideo, true};

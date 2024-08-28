@@ -491,21 +491,21 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetVolume()
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetMute()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(kHardcodedSessionId, kMute)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(kHardcodedSessionId, kSourceId, kMute)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetMute()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(kHardcodedSessionId, kMute)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(kHardcodedSessionId, kSourceId, kMute)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetMute()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(kHardcodedSessionId, _))
+    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(kHardcodedSessionId, kSourceId, _))
         .WillOnce(Invoke(
-            [&](int, bool &mut)
+            [&](int, int32_t, bool &mut)
             {
                 mut = kMute;
                 return true;
@@ -515,7 +515,7 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetMute()
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetMute()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(kHardcodedSessionId, _)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(kHardcodedSessionId, kSourceId, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFlush()
@@ -900,6 +900,7 @@ void MediaPipelineModuleServiceTests::sendSetMuteRequestAndReceiveResponse()
     firebolt::rialto::SetMuteResponse response;
 
     request.set_session_id(kHardcodedSessionId);
+    request.set_source_id(kSourceId);
     request.set_mute(kMute);
 
     m_service->setMute(m_controllerMock.get(), &request, &response, m_closureMock.get());
@@ -911,6 +912,7 @@ void MediaPipelineModuleServiceTests::sendGetMuteRequestAndReceiveResponse()
     firebolt::rialto::GetMuteResponse response;
 
     request.set_session_id(kHardcodedSessionId);
+    request.set_source_id(kSourceId);
 
     m_service->getMute(m_controllerMock.get(), &request, &response, m_closureMock.get());
 
@@ -923,6 +925,7 @@ void MediaPipelineModuleServiceTests::sendGetMuteRequestAndReceiveResponseWithou
     firebolt::rialto::GetMuteResponse response;
 
     request.set_session_id(kHardcodedSessionId);
+    request.set_source_id(kSourceId);
 
     m_service->getMute(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

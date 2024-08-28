@@ -34,6 +34,7 @@ TEST_F(PauseTest, shouldPause)
 
 TEST_F(PauseTest, shouldPauseDuringUnderflow)
 {
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
     setContextVideoUnderflowOccured(true);
     shouldPause();
     triggerPause();

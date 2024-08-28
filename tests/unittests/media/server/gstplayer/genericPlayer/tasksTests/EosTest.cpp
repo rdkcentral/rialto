@@ -25,6 +25,7 @@ class EosTest : public GenericTasksTestsBase
 
 TEST_F(EosTest, shouldFailWhenStreamIsNotFound)
 {
+    shouldCancelUnderflow(firebolt::rialto::MediaSourceType::AUDIO);
     triggerEosAudio();
 }
 
@@ -32,6 +33,7 @@ TEST_F(EosTest, shouldSetEos)
 {
     setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
     shouldGstAppSrcEndOfStreamSuccess();
+    shouldCancelUnderflow(firebolt::rialto::MediaSourceType::AUDIO);
     triggerEosAudio();
 }
 
@@ -39,6 +41,7 @@ TEST_F(EosTest, shouldFailToSetEos)
 {
     setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
     shouldGstAppSrcEndOfStreamFailure();
+    shouldCancelUnderflow(firebolt::rialto::MediaSourceType::AUDIO);
     triggerEosAudio();
 }
 
@@ -46,7 +49,7 @@ TEST_F(EosTest, shouldSetEosForAudioAndCancelAudioUnderflow)
 {
     setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
     setContextAudioUnderflowOccured(true);
-    shouldCancelUnderflow();
+    shouldCancelUnderflow(firebolt::rialto::MediaSourceType::AUDIO);
     shouldGstAppSrcEndOfStreamSuccess();
     triggerEosAudio();
 }
@@ -54,6 +57,8 @@ TEST_F(EosTest, shouldSetEosForAudioAndCancelAudioUnderflow)
 TEST_F(EosTest, shouldSetEosForAudioAndSkipCancellingVideoUnderflow)
 {
     setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    shouldCancelUnderflow(firebolt::rialto::MediaSourceType::AUDIO);
     setContextVideoUnderflowOccured(true);
     shouldGstAppSrcEndOfStreamSuccess();
     triggerEosAudio();
@@ -63,15 +68,17 @@ TEST_F(EosTest, shouldSetEosForVideoAndCancelVideoUnderflow)
 {
     setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
     setContextVideoUnderflowOccured(true);
-    shouldCancelUnderflow();
+    shouldCancelUnderflow(firebolt::rialto::MediaSourceType::VIDEO);
     shouldGstAppSrcEndOfStreamSuccess();
     triggerEosVideo();
 }
 
 TEST_F(EosTest, shouldSetEosForVideoAndSkipCancellingAudioUnderflow)
 {
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
     setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
     setContextAudioUnderflowOccured(true);
     shouldGstAppSrcEndOfStreamSuccess();
+    shouldCancelUnderflow(firebolt::rialto::MediaSourceType::VIDEO);
     triggerEosVideo();
 }

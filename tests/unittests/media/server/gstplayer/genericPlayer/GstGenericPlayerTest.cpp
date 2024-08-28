@@ -293,7 +293,7 @@ TEST_F(GstGenericPlayerTest, shouldReturnMute)
 
     getContext([&](GenericPlayerContext &m_context) { volume = GST_STREAM_VOLUME(m_context.pipeline); });
     EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetMute(volume)).WillOnce(Return(kMute));
-    EXPECT_TRUE(m_sut->getMute(resultMute));
+    EXPECT_TRUE(m_sut->getMute(MediaSourceType::AUDIO, resultMute));
     EXPECT_EQ(resultMute, kMute);
 }
 
@@ -301,9 +301,9 @@ TEST_F(GstGenericPlayerTest, shouldMute)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetMute(_, _)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createSetMute(_, MediaSourceType::AUDIO, _)).WillOnce(Return(ByMove(std::move(task))));
 
-    m_sut->setMute(true);
+    m_sut->setMute(MediaSourceType::AUDIO, true);
 }
 
 TEST_F(GstGenericPlayerTest, shouldPing)
@@ -331,7 +331,7 @@ TEST_F(GstGenericPlayerTest, shouldSetSourcePosition)
     constexpr int64_t kPosition{1234};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetSourcePosition(_, MediaSourceType::AUDIO, kPosition))
+    EXPECT_CALL(m_taskFactoryMock, createSetSourcePosition(_, _, MediaSourceType::AUDIO, kPosition))
         .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->setSourcePosition(MediaSourceType::AUDIO, kPosition);

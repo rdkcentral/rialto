@@ -50,8 +50,10 @@ public:
                 (uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment), (override));
     MOCK_METHOD(bool, setVolume, (double volume), (override));
     MOCK_METHOD(bool, getVolume, (double &volume), (override));
-    MOCK_METHOD(bool, setMute, (bool mute), (override));
-    MOCK_METHOD(bool, getMute, (bool &mute), (override));
+    MOCK_METHOD(bool, setMute, (int32_t sourceId, bool mute), (override));
+    MOCK_METHOD(bool, getMute, (int32_t sourceId, bool &mute), (override));
+    MOCK_METHOD(bool, setTextTrackIdentifier, (const std::string &textTrackIdentifier), (override));
+    MOCK_METHOD(bool, getTextTrackIdentifier, (std::string &textTrackIdentifier), (override));
     MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
     MOCK_METHOD(bool, flush, (int32_t sourceId, bool resetTime), (override));
     MOCK_METHOD(bool, setSourcePosition, (int32_t sourceId, int64_t position), (override));
