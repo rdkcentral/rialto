@@ -49,7 +49,8 @@ public:
     void sendGetSupportedMimeTypesRequestAndExpectFailure();
     void sendIsMimeTypeSupportedRequestAndReceiveResponse();
     void sendIsMimeTypeSupportedRequestAndExpectFailure();
-    void sendGetSupportedPropertiesWithSuccess();
+    void sendGetSupportedPropertiesRequestWithSuccess();
+    void sendGetSupportedPropertiesRequestAndExpectFailure();
     void expectInvalidControlFailure();
 
 private:

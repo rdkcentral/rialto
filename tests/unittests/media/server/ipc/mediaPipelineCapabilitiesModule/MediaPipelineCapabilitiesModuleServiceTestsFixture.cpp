@@ -129,7 +129,16 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendIsMimeTypeSupportedRequest
     EXPECT_EQ(response.is_supported(), true);
 }
 
-void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedPropertiesWithSuccess()
+void MediaPipelineCapabilitiesModuleServiceTests::sendIsMimeTypeSupportedRequestAndExpectFailure()
+{
+    firebolt::rialto::IsMimeTypeSupportedRequest request;
+    firebolt::rialto::IsMimeTypeSupportedResponse response;
+
+    m_service->isMimeTypeSupported(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(response.is_supported(), false);
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedPropertiesRequestWithSuccess()
 {
     firebolt::rialto::GetSupportedPropertiesRequest request;
     firebolt::rialto::GetSupportedPropertiesResponse response;
@@ -145,11 +154,18 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedPropertiesWith
     EXPECT_EQ(supportedProperties, kPropertyNames);
 }
 
-void MediaPipelineCapabilitiesModuleServiceTests::sendIsMimeTypeSupportedRequestAndExpectFailure()
+void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedPropertiesRequestAndExpectFailure()
 {
-    firebolt::rialto::IsMimeTypeSupportedRequest request;
-    firebolt::rialto::IsMimeTypeSupportedResponse response;
+    firebolt::rialto::GetSupportedPropertiesRequest request;
+    firebolt::rialto::GetSupportedPropertiesResponse response;
 
-    m_service->isMimeTypeSupported(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
-    EXPECT_EQ(response.is_supported(), false);
+    request.set_media_type(kMediaSourceType);
+    for (const std::string &property : kPropertyNames)
+        request.add_property_names(property.c_str());
+
+    m_service->getSupportedProperties(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
+
+    std::vector<std::string> supportedProperties{response.supported_properties().begin(),
+                                                 response.supported_properties().end()};
+    EXPECT_TRUE(supportedProperties.empty());
 }

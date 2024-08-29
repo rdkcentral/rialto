@@ -37,16 +37,22 @@ TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldIfMimeTypeIsSupported)
     sendIsMimeTypeSupportedRequestAndReceiveResponse();
 }
 
-TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldCallGetSupportedProperties)
-{
-    mediaPipelineWillGetSupportedProperties();
-    sendGetSupportedPropertiesWithSuccess();
-}
-
 TEST_F(MediaPipelineCapabilitiesModuleServiceTests, getSupportedMimeTypesWillFail)
 {
     expectInvalidControlFailure();
     sendGetSupportedMimeTypesRequestAndExpectFailure();
+}
+
+TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldCallGetSupportedProperties)
+{
+    mediaPipelineWillGetSupportedProperties();
+    sendGetSupportedPropertiesRequestWithSuccess();
+}
+
+TEST_F(MediaPipelineCapabilitiesModuleServiceTests, GetSupportedPropertiesWillFail)
+{
+    expectInvalidControlFailure();
+    sendGetSupportedPropertiesRequestAndExpectFailure();
 }
 
 TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldIfMimeTypeIsSupportedWillFail)
