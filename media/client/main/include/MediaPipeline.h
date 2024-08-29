@@ -130,6 +130,8 @@ public:
 
     bool getPosition(int64_t &position) override;
 
+    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
+
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
     bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
@@ -171,9 +173,9 @@ public:
 
     bool flush(int32_t sourceId, bool resetTime) override;
 
-    bool setSourcePosition(int32_t sourceId, int64_t position) override;
+    bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime) override;
 
-    bool processAudioGap(int64_t position, uint32_t duration, uint32_t level) override;
+    bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
     void notifyApplicationState(ApplicationState state) override;
 

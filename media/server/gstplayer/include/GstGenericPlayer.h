@@ -111,6 +111,7 @@ public:
     void setEos(const firebolt::rialto::MediaSourceType &type) override;
     void setPlaybackRate(double rate) override;
     bool getPosition(std::int64_t &position) override;
+    bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
     void setVolume(double volume) override;
     bool getVolume(double &volume) override;
     void setMute(const MediaSourceType &mediaSourceType, bool mute) override;
@@ -119,8 +120,8 @@ public:
     bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
     void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
-    void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position) override;
-    void processAudioGap(int64_t position, uint32_t duration, uint32_t level) override;
+    void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime) override;
+    void processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
 private:
     void scheduleNeedMediaData(GstAppSrc *src) override;

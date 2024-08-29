@@ -64,6 +64,11 @@ public:
 
     bool getPosition(int64_t &position) override { return m_mediaPipeline->getPosition(position); }
 
+    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+    {
+        return m_mediaPipeline->getStats(sourceId, renderedFrames, droppedFrames);
+    }
+
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override
     {
         return m_mediaPipeline->setVideoWindow(x, y, width, height);
@@ -101,14 +106,14 @@ public:
 
     bool flush(int32_t sourceId, bool resetTime) override { return m_mediaPipeline->flush(sourceId, resetTime); }
 
-    bool setSourcePosition(int32_t sourceId, int64_t position) override
+    bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime) override
     {
-        return m_mediaPipeline->setSourcePosition(sourceId, position);
+        return m_mediaPipeline->setSourcePosition(sourceId, position, resetTime);
     }
 
-    bool processAudioGap(int64_t position, uint32_t duration, uint32_t level) override
+    bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override
     {
-        return m_mediaPipeline->processAudioGap(position, duration, level);
+        return m_mediaPipeline->processAudioGap(position, duration, discontinuityGap, audioAac);
     }
 
     void notifyApplicationState(ApplicationState state) override { m_mediaPipeline->notifyApplicationState(state); }

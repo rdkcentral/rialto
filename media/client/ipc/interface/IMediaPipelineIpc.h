@@ -175,6 +175,19 @@ public:
     virtual bool getPosition(int64_t &position) = 0;
 
     /**
+     * @brief Get stats for this source.
+     *
+     * This method is sychronous, it returns dropped frames and rendered frames
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] droppedFrames : The number of dropped frames
+     * @param[out] renderedFrames : The number of rendered frames
+     *
+     * @retval true on success.
+     */
+    virtual bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
+
+    /**
      * @brief Request new playback rate.
      *
      * @param[in] rate : The playback rate.
@@ -266,23 +279,25 @@ public:
      *
      * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
      * @param[in] position : The position in nanoseconds.
+     * @param[in] resetTime : True if time should be reset
      *
      * @retval true on success.
      */
-    virtual bool setSourcePosition(int32_t sourceId, int64_t position) = 0;
+    virtual bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime) = 0;
 
     /**
      * @brief Process audio gap
      *
      * This method handles audio gap in order to avoid audio pops during transitions.
      *
-     * @param[in] position : Audio pts fade pts value
-     * @param[in] duration : Audio pts fade duration
-     * @param[in] level    : Audio pts fade target level [0-1]
+     * @param[in] position         : Audio pts fade pts value
+     * @param[in] duration         : Audio pts fade duration
+     * @param[in] discontinuityGap : Audio discontinuity gap
+     * @param[in] audioAac         : True if audio codec is AAC
      *
      * @retval true on success.
      */
-    virtual bool processAudioGap(int64_t position, uint32_t duration, uint32_t level) = 0;
+    virtual bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) = 0;
 };
 
 }; // namespace firebolt::rialto::client

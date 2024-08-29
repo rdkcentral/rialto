@@ -486,6 +486,34 @@ bool MediaPipelineServerInternal::getPositionInternal(int64_t &position)
     return m_gstPlayer->getPosition(position);
 }
 
+bool MediaPipelineServerInternal::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = getStatsInternal(sourceId, renderedFrames, droppedFrames); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get stats - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get stats - Source not found");
+        return false;
+    }
+    return m_gstPlayer->getStats(sourceIter->first, renderedFrames, droppedFrames);
+}
+
 bool MediaPipelineServerInternal::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -929,18 +957,18 @@ bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime
     return true;
 }
 
-bool MediaPipelineServerInternal::setSourcePosition(int32_t sourceId, int64_t position)
+bool MediaPipelineServerInternal::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = setSourcePositionInternal(sourceId, position); };
+    auto task = [&]() { result = setSourcePositionInternal(sourceId, position, resetTime); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, int64_t position)
+bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, int64_t position, bool resetTime)
 {
     if (!m_gstPlayer)
     {
@@ -955,7 +983,7 @@ bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, in
         return false;
     }
 
-    m_gstPlayer->setSourcePosition(sourceIter->first, position);
+    m_gstPlayer->setSourcePosition(sourceIter->first, position, resetTime);
 
     // Reset Eos on seek
     auto it = m_isMediaTypeEosMap.find(sourceIter->first);
@@ -967,25 +995,27 @@ bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, in
     return true;
 }
 
-bool MediaPipelineServerInternal::processAudioGap(int64_t position, uint32_t duration, uint32_t level)
+bool MediaPipelineServerInternal::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap,
+                                                  bool audioAac)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = processAudioGapInternal(position, duration, level); };
+    auto task = [&]() { result = processAudioGapInternal(position, duration, discontinuityGap, audioAac); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::processAudioGapInternal(int64_t position, uint32_t duration, uint32_t level)
+bool MediaPipelineServerInternal::processAudioGapInternal(int64_t position, uint32_t duration, int64_t discontinuityGap,
+                                                          bool audioAac)
 {
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to process audio gap - Gstreamer player has not been loaded");
         return false;
     }
-    m_gstPlayer->processAudioGap(position, duration, level);
+    m_gstPlayer->processAudioGap(position, duration, discontinuityGap, audioAac);
     return true;
 }
 

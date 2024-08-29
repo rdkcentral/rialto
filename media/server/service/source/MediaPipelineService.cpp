@@ -253,6 +253,20 @@ bool MediaPipelineService::getPosition(int sessionId, std::int64_t &position)
     return mediaPipelineIter->second->getPosition(position);
 }
 
+bool MediaPipelineService::getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to get stats, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getStats(sourceId, renderedFrames, droppedFrames);
+}
+
 bool MediaPipelineService::setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                                           std::uint32_t height)
 {
@@ -394,7 +408,7 @@ bool MediaPipelineService::flush(int sessionId, std::int32_t sourceId, bool rese
     return mediaPipelineIter->second->flush(sourceId, resetTime);
 }
 
-bool MediaPipelineService::setSourcePosition(int sessionId, int32_t sourceId, int64_t position)
+bool MediaPipelineService::setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime)
 {
     RIALTO_SERVER_LOG_DEBUG("Set Source Position requested, session id: %d", sessionId);
 
@@ -405,10 +419,11 @@ bool MediaPipelineService::setSourcePosition(int sessionId, int32_t sourceId, in
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->setSourcePosition(sourceId, position);
+    return mediaPipelineIter->second->setSourcePosition(sourceId, position, resetTime);
 }
 
-bool MediaPipelineService::processAudioGap(int sessionId, int64_t position, uint32_t duration, uint32_t level)
+bool MediaPipelineService::processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,
+                                           bool audioAac)
 {
     RIALTO_SERVER_LOG_DEBUG("Process Audio Gap requested, session id: %d", sessionId);
 
@@ -419,7 +434,7 @@ bool MediaPipelineService::processAudioGap(int sessionId, int64_t position, uint
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->processAudioGap(position, duration, level);
+    return mediaPipelineIter->second->processAudioGap(position, duration, discontinuityGap, audioAac);
 }
 
 std::vector<std::string> MediaPipelineService::getSupportedMimeTypes(MediaSourceType type)

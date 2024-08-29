@@ -54,6 +54,7 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::SetPlaybackRateRequest createSetPlaybackRateRequest(int sessionId);
 ::firebolt::rialto::SetPositionRequest createSetPositionRequest(int sessionId, std::int64_t position);
 ::firebolt::rialto::GetPositionRequest createGetPositionRequest(int sessionId);
+::firebolt::rialto::GetStatsRequest createGetStatsRequest(int sessionId, int sourceId);
 ::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId);
 ::firebolt::rialto::SetVolumeRequest createSetVolumeRequest(int sessionId);
 ::firebolt::rialto::GetVolumeRequest createGetVolumeRequest(int sessionId);
@@ -62,9 +63,10 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::SetVideoWindowRequest createSetVideoWindowRequest(int sessionId);
 ::firebolt::rialto::FlushRequest createFlushRequest(int sessionId, int sourceId, bool resetTime);
 ::firebolt::rialto::SetSourcePositionRequest createSetSourcePositionRequest(int sessionId, int sourceId,
-                                                                            std::int64_t position);
+                                                                            std::int64_t position, bool resetTime);
 ::firebolt::rialto::ProcessAudioGapRequest createProcessAudioGapRequest(int sessionId, std::int64_t position,
-                                                                        unsigned duration, unsigned level);
+                                                                        unsigned duration,
+                                                                        std::int64_t discontinuityGap, bool audioAac);
 
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine();

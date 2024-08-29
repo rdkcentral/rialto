@@ -63,10 +63,14 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     const int64_t kPosition1{123};
     const int64_t kPosition2{234};
     const uint32_t kNeedDataRequestId{5};
+    constexpr uint64_t kRenderedFrames{5432};
+    constexpr uint64_t kDroppedFrames{51};
     constexpr uint32_t kDuration{5432};
-    constexpr uint32_t kLevel{1};
+    constexpr int64_t kDiscontinuityGap{1};
+    constexpr bool kIsAudioAac{false};
     const std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSegment> kMediaSegment;
     const std::shared_ptr<IMediaPipelineClient> kIMediaPipelineClient;
+    constexpr bool kResetTime{false};
 
     /////////////////////////////////////////////
 
@@ -120,6 +124,18 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
         int64_t position;
         EXPECT_TRUE(proxy->getPosition(position));
         EXPECT_EQ(position, kPosition2);
+    }
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, getStats(_, _, _))
+        .WillOnce(DoAll(SetArgReferee<1>(kRenderedFrames), SetArgReferee<2>(kDroppedFrames), Return(true)));
+    {
+        uint64_t renderedFrames;
+        uint64_t droppedFrames;
+        EXPECT_TRUE(proxy->getStats(kSourceId, renderedFrames, droppedFrames));
+        EXPECT_EQ(renderedFrames, kRenderedFrames);
+        EXPECT_EQ(droppedFrames, kDroppedFrames);
     }
 
     /////////////////////////////////////////////
@@ -179,13 +195,14 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, setSourcePosition(kSourceId, kPosition1)).WillOnce(Return(true));
-    EXPECT_TRUE(proxy->setSourcePosition(kSourceId, kPosition1));
+    EXPECT_CALL(*mediaPipelineMock, setSourcePosition(kSourceId, kPosition1, kResetTime)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setSourcePosition(kSourceId, kPosition1, kResetTime));
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, processAudioGap(kPosition1, kDuration, kLevel)).WillOnce(Return(true));
-    EXPECT_TRUE(proxy->processAudioGap(kPosition1, kDuration, kLevel));
+    EXPECT_CALL(*mediaPipelineMock, processAudioGap(kPosition1, kDuration, kDiscontinuityGap, kIsAudioAac))
+        .WillOnce(Return(true));
+    EXPECT_TRUE(proxy->processAudioGap(kPosition1, kDuration, kDiscontinuityGap, kIsAudioAac));
 
     /////////////////////////////////////////////
 

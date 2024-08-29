@@ -29,14 +29,8 @@ TEST_F(ProcessAudioGapTest, shouldFailToProcessAudioGapNoPipeline)
     triggerProcessAudioGap();
 }
 
-TEST_F(ProcessAudioGapTest, shouldFailToProcessAudioGapNoSourceAttached)
-{
-    triggerProcessAudioGap();
-}
-
 TEST_F(ProcessAudioGapTest, shouldProcessAudioGap)
 {
-    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
     shouldProcessAudioGap();
     triggerProcessAudioGap();
 }

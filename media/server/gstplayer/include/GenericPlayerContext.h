@@ -29,6 +29,7 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 namespace firebolt::rialto::server
 {
@@ -45,6 +46,15 @@ struct Rectangle
     Rectangle(const Rectangle &rhs) = default;
     inline constexpr bool empty() { return (width == 0) || (height == 0); }
     inline void clear() { x = y = width = height = 0; }
+};
+
+/**
+ * @brief Structure used for set source position
+ */
+struct SegmentData
+{
+    int64_t position;
+    bool resetTime;
 };
 
 struct GenericPlayerContext
@@ -175,7 +185,7 @@ struct GenericPlayerContext
      *
      * Attribute can be used only in worker thread
      */
-    std::map<GstElement *, std::uint64_t> initialPositions;
+    std::map<GstElement *, std::vector<SegmentData>> initialPositions;
 };
 } // namespace firebolt::rialto::server
 

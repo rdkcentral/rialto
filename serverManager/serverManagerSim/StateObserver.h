@@ -39,7 +39,6 @@ public:
 
     void stateChanged(const std::string &appId, const firebolt::rialto::common::SessionServerState &state) override;
     firebolt::rialto::common::SessionServerState getCurrentState(const std::string &appId) const;
-    std::string getActiveApp() const;
 
 private:
     mutable std::mutex m_sessionServerStateMutex;

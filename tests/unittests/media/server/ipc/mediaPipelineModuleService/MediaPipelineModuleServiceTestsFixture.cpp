@@ -72,8 +72,11 @@ constexpr bool kResetTime{true};
 constexpr firebolt::rialto::Layout kLayout{firebolt::rialto::Layout::INTERLEAVED};
 constexpr firebolt::rialto::Format kFormat{firebolt::rialto::Format::S16LE};
 constexpr uint64_t kChannelMask{0x0000000000000003};
+constexpr uint64_t kRenderedFrames{987654};
+constexpr uint64_t kDroppedFrames{321};
 constexpr uint32_t kDuration{30};
-constexpr uint32_t kLevel{1};
+constexpr int64_t kDiscontinuityGap{1};
+constexpr bool kIsAudioAac{false};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -446,6 +449,25 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetPosition(
     EXPECT_CALL(m_mediaPipelineServiceMock, getPosition(kHardcodedSessionId, _)).WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetStats()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getStats(kHardcodedSessionId, _, _, _))
+        .WillOnce(Invoke(
+            [&](int, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+            {
+                renderedFrames = kRenderedFrames;
+                droppedFrames = kDroppedFrames;
+                return true;
+            }));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetStats()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getStats(kHardcodedSessionId, _, _, _)).WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillRenderFrame()
 {
     expectRequestSuccess();
@@ -533,28 +555,30 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToFlush()
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetSourcePosition()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setSourcePosition(kHardcodedSessionId, kSourceId, kPosition))
+    EXPECT_CALL(m_mediaPipelineServiceMock, setSourcePosition(kHardcodedSessionId, kSourceId, kPosition, kResetTime))
         .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetSourcePosition()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setSourcePosition(kHardcodedSessionId, kSourceId, kPosition))
+    EXPECT_CALL(m_mediaPipelineServiceMock, setSourcePosition(kHardcodedSessionId, kSourceId, kPosition, kResetTime))
         .WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillProcessAudioGap()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, processAudioGap(kHardcodedSessionId, kPosition, kDuration, kLevel))
+    EXPECT_CALL(m_mediaPipelineServiceMock,
+                processAudioGap(kHardcodedSessionId, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac))
         .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToProcessAudioGap()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, processAudioGap(kHardcodedSessionId, kPosition, kDuration, kLevel))
+    EXPECT_CALL(m_mediaPipelineServiceMock,
+                processAudioGap(kHardcodedSessionId, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac))
         .WillOnce(Return(false));
 }
 
@@ -823,6 +847,29 @@ void MediaPipelineModuleServiceTests::sendGetPositionRequestAndReceiveResponseWi
     m_service->getPosition(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
+void MediaPipelineModuleServiceTests::sendGetStatsRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetStatsRequest request;
+    firebolt::rialto::GetStatsResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getStats(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(response.rendered_frames(), kRenderedFrames);
+    EXPECT_EQ(response.dropped_frames(), kDroppedFrames);
+}
+
+void MediaPipelineModuleServiceTests::sendGetStatsRequestAndReceiveResponseWithoutStatsMatch()
+{
+    firebolt::rialto::GetStatsRequest request;
+    firebolt::rialto::GetStatsResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getStats(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
 void MediaPipelineModuleServiceTests::sendHaveDataRequestAndReceiveResponse()
 {
     firebolt::rialto::HaveDataRequest request;
@@ -950,6 +997,7 @@ void MediaPipelineModuleServiceTests::sendSetSourcePositionRequestAndReceiveResp
     request.set_session_id(kHardcodedSessionId);
     request.set_source_id(kSourceId);
     request.set_position(kPosition);
+    request.set_reset_time(kResetTime);
 
     m_service->setSourcePosition(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -962,7 +1010,8 @@ void MediaPipelineModuleServiceTests::sendProcessAudioGapRequestAndReceiveRespon
     request.set_session_id(kHardcodedSessionId);
     request.set_position(kPosition);
     request.set_duration(kDuration);
-    request.set_level(kLevel);
+    request.set_discontinuity_gap(kDiscontinuityGap);
+    request.set_audio_aac(kIsAudioAac);
 
     m_service->processAudioGap(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

@@ -618,6 +618,39 @@ bool MediaPipelineIpc::getPosition(int64_t &position)
     return true;
 }
 
+bool MediaPipelineIpc::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetStatsRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+
+    firebolt::rialto::GetStatsResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getStats(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get stats due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    renderedFrames = response.rendered_frames();
+    droppedFrames = response.dropped_frames();
+    return true;
+}
+
 bool MediaPipelineIpc::setPlaybackRate(double rate)
 {
     if (!reattachChannelIfRequired())
@@ -900,7 +933,7 @@ bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime)
     return true;
 }
 
-bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position)
+bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime)
 {
     if (!reattachChannelIfRequired())
     {
@@ -913,6 +946,7 @@ bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position)
     request.set_session_id(m_sessionId);
     request.set_source_id(sourceId);
     request.set_position(position);
+    request.set_reset_time(resetTime);
 
     firebolt::rialto::SetSourcePositionResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -932,7 +966,7 @@ bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position)
     return true;
 }
 
-bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, uint32_t level)
+bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)
 {
     if (!reattachChannelIfRequired())
     {
@@ -945,7 +979,8 @@ bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, uint
     request.set_session_id(m_sessionId);
     request.set_position(position);
     request.set_duration(duration);
-    request.set_level(level);
+    request.set_discontinuity_gap(discontinuityGap);
+    request.set_audio_aac(audioAac);
 
     firebolt::rialto::ProcessAudioGapResponse response;
     auto ipcController = m_ipc.createRpcController();

@@ -51,8 +51,11 @@ constexpr std::uint32_t kNumFrames{1};
 constexpr double kVolume{0.7};
 constexpr bool kMute{false};
 constexpr bool kResetTime{true};
+constexpr uint64_t kRenderedFrames{987654};
+constexpr uint64_t kDroppedFrames{321};
 constexpr uint32_t kDuration{35};
-constexpr uint32_t kLevel{1};
+constexpr int64_t kDiscontinuityGap{1};
+constexpr bool kIsAudioAac{false};
 } // namespace
 
 namespace firebolt::rialto
@@ -206,6 +209,23 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToGetPosition()
     EXPECT_CALL(m_mediaPipelineMock, getPosition(_)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillGetStats()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getStats(_, _, _))
+        .WillOnce(Invoke(
+            [&](int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+            {
+                renderedFrames = kRenderedFrames;
+                droppedFrames = kDroppedFrames;
+                return true;
+            }));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetStats()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getStats(_, _, _)).WillOnce(Return(false));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillRenderFrame()
 {
     EXPECT_CALL(m_mediaPipelineMock, renderFrame()).WillOnce(Return(true));
@@ -280,22 +300,24 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToFlush()
 
 void MediaPipelineServiceTests::mediaPipelineWillSetSourcePosition()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition, kResetTime)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToSetSourcePosition()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition, kResetTime)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillProcessAudioGap()
 {
-    EXPECT_CALL(m_mediaPipelineMock, processAudioGap(kPosition, kDuration, kLevel)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac))
+        .WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToProcessAudioGap()
 {
-    EXPECT_CALL(m_mediaPipelineMock, processAudioGap(kPosition, kDuration, kLevel)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac))
+        .WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillPing()
@@ -507,6 +529,22 @@ void MediaPipelineServiceTests::getPositionShouldFail()
     EXPECT_FALSE(m_sut->getPosition(kSessionId, targetPosition));
 }
 
+void MediaPipelineServiceTests::getStatsShouldSucceed()
+{
+    std::uint64_t renderedFrames;
+    std::uint64_t droppedFrames;
+    EXPECT_TRUE(m_sut->getStats(kSessionId, kSourceId, renderedFrames, droppedFrames));
+    EXPECT_EQ(renderedFrames, kRenderedFrames);
+    EXPECT_EQ(droppedFrames, kDroppedFrames);
+}
+
+void MediaPipelineServiceTests::getStatsShouldFail()
+{
+    std::uint64_t renderedFrames;
+    std::uint64_t droppedFrames;
+    EXPECT_FALSE(m_sut->getStats(kSessionId, kSourceId, renderedFrames, droppedFrames));
+}
+
 void MediaPipelineServiceTests::getSupportedMimeTypesSucceed()
 {
     firebolt::rialto::MediaSourceType type = firebolt::rialto::MediaSourceType::VIDEO;
@@ -590,22 +628,22 @@ void MediaPipelineServiceTests::flushShouldFail()
 
 void MediaPipelineServiceTests::setSourcePositionShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition));
+    EXPECT_TRUE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition, kResetTime));
 }
 
 void MediaPipelineServiceTests::setSourcePositionShouldFail()
 {
-    EXPECT_FALSE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition));
+    EXPECT_FALSE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition, kResetTime));
 }
 
 void MediaPipelineServiceTests::processAudioGapShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->processAudioGap(kSessionId, kPosition, kDuration, kLevel));
+    EXPECT_TRUE(m_sut->processAudioGap(kSessionId, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac));
 }
 
 void MediaPipelineServiceTests::processAudioGapShouldFail()
 {
-    EXPECT_FALSE(m_sut->processAudioGap(kSessionId, kPosition, kDuration, kLevel));
+    EXPECT_FALSE(m_sut->processAudioGap(kSessionId, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()

@@ -308,6 +308,11 @@ bool MediaPipeline::getPosition(int64_t &position)
     return m_mediaPipelineIpc->getPosition(position);
 }
 
+bool MediaPipeline::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    return m_mediaPipelineIpc->getStats(sourceId, renderedFrames, droppedFrames);
+}
+
 bool MediaPipeline::handleSetPosition(int64_t position)
 {
     // needData requests no longer valid
@@ -518,18 +523,18 @@ bool MediaPipeline::flush(int32_t sourceId, bool resetTime)
     return false;
 }
 
-bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position)
+bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaPipelineIpc->setSourcePosition(sourceId, position);
+    return m_mediaPipelineIpc->setSourcePosition(sourceId, position, resetTime);
 }
 
-bool MediaPipeline::processAudioGap(int64_t position, uint32_t duration, uint32_t level)
+bool MediaPipeline::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaPipelineIpc->processAudioGap(position, duration, level);
+    return m_mediaPipelineIpc->processAudioGap(position, duration, discontinuityGap, audioAac);
 }
 
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)

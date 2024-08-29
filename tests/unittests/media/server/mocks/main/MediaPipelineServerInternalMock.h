@@ -42,6 +42,8 @@ public:
     MOCK_METHOD(bool, setPlaybackRate, (double rate), (override));
     MOCK_METHOD(bool, setPosition, (int64_t position), (override));
     MOCK_METHOD(bool, getPosition, (std::int64_t & position), (override));
+    MOCK_METHOD(bool, getStats, (int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames), (override));
+
     MOCK_METHOD(bool, setVideoWindow, (uint32_t x, uint32_t y, uint32_t width, uint32_t height), (override));
     MOCK_METHOD(bool, haveData, (MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId), (override));
     MOCK_METHOD(bool, haveData, (MediaSourceStatus status, uint32_t needDataRequestId), (override));
@@ -56,8 +58,9 @@ public:
     MOCK_METHOD(bool, getTextTrackIdentifier, (std::string & textTrackIdentifier), (override));
     MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
     MOCK_METHOD(bool, flush, (int32_t sourceId, bool resetTime), (override));
-    MOCK_METHOD(bool, setSourcePosition, (int32_t sourceId, int64_t position), (override));
-    MOCK_METHOD(bool, processAudioGap, (int64_t position, uint32_t duration, uint32_t level), (override));
+    MOCK_METHOD(bool, setSourcePosition, (int32_t sourceId, int64_t position, bool resetTime), (override));
+    MOCK_METHOD(bool, processAudioGap, (int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
+                (override));
 };
 } // namespace firebolt::rialto::server
 

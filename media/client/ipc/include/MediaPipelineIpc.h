@@ -91,6 +91,8 @@ public:
 
     bool getPosition(int64_t &position) override;
 
+    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
+
     bool setPlaybackRate(double rate) override;
 
     bool renderFrame() override;
@@ -109,9 +111,9 @@ public:
 
     bool flush(int32_t sourceId, bool resetTime) override;
 
-    bool setSourcePosition(int32_t sourceId, int64_t position) override;
+    bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime) override;
 
-    bool processAudioGap(int64_t position, uint32_t duration, uint32_t level) override;
+    bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
 private:
     /**

@@ -105,7 +105,7 @@ constexpr int32_t kId{0};
 constexpr firebolt::rialto::Layout kLayout{firebolt::rialto::Layout::INTERLEAVED};
 constexpr firebolt::rialto::Format kFormat{firebolt::rialto::Format::S16LE};
 constexpr uint64_t kChannelMask{0x0000000000000003};
-constexpr uint32_t kLevel{1};
+constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
@@ -2459,7 +2459,8 @@ void GenericTasksTestsBase::triggerSetSourcePosition(firebolt::rialto::MediaSour
                                                                      &testContext->m_gstPlayerClient,
                                                                      testContext->m_gstWrapper,
                                                                      sourceType,
-                                                                     kPosition};
+                                                                     kPosition,
+                                                                     kResetTime};
     task.execute();
 }
 
@@ -2468,7 +2469,9 @@ void GenericTasksTestsBase::checkInitialPositionSet(firebolt::rialto::MediaSourc
     GstElement *source = sourceType == firebolt::rialto::MediaSourceType::AUDIO ? &testContext->m_appSrcAudio
                                                                                 : &testContext->m_appSrcVideo;
     ASSERT_NE(testContext->m_context.initialPositions.end(), testContext->m_context.initialPositions.find(source));
-    EXPECT_EQ(testContext->m_context.initialPositions.at(source), kPosition);
+    ASSERT_EQ(testContext->m_context.initialPositions.at(source).size(), 1);
+    EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].position, kPosition);
+    EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].resetTime, kResetTime);
 }
 
 void GenericTasksTestsBase::checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType)
@@ -2486,21 +2489,16 @@ void GenericTasksTestsBase::triggerProcessAudioGap()
                                                                    testContext->m_rdkGstreamerUtilsWrapper,
                                                                    kPosition,
                                                                    static_cast<uint32_t>(kDuration),
-                                                                   kLevel};
+                                                                   kDiscontinuityGap,
+                                                                   kIsAudioAac};
     task.execute();
 }
 
 void GenericTasksTestsBase::shouldProcessAudioGap()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCaps(GST_APP_SRC(&testContext->m_appSrcAudio)))
-        .WillOnce(Return(&testContext->m_gstCaps2));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps2))
-        .WillOnce(Return(testContext->m_xEac3Str));
-    EXPECT_CALL(*testContext->m_glibWrapper, gFree(testContext->m_xEac3Str));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps2));
     EXPECT_CALL(*(testContext->m_rdkGstreamerUtilsWrapper),
-                processAudioGap(testContext->m_context.pipeline, kPosition, static_cast<uint32_t>(kDuration), kLevel,
-                                kIsAudioAac));
+                processAudioGap(testContext->m_context.pipeline, kPosition, static_cast<uint32_t>(kDuration),
+                                kDiscontinuityGap, kIsAudioAac));
 }
 
 void GenericTasksTestsBase::triggerFailToCastAudioSource()

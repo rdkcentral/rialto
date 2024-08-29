@@ -213,12 +213,12 @@ MATCHER_P2(setPositionRequestMatcher, sessionId, position, "")
     return ((kRequest->session_id() == sessionId) && (kRequest->position() == position));
 }
 
-MATCHER_P3(setSourcePositionRequestMatcher, sessionId, sourceId, position, "")
+MATCHER_P4(setSourcePositionRequestMatcher, sessionId, sourceId, position, resetTime, "")
 {
     const ::firebolt::rialto::SetSourcePositionRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::SetSourcePositionRequest *>(arg);
     return ((kRequest->session_id() == sessionId) && (kRequest->position() == position) &&
-            (kRequest->source_id() == sourceId));
+            (kRequest->source_id() == sourceId) && (kRequest->reset_time() == resetTime));
 }
 
 MATCHER_P2(setVolumeRequestMatcher, sessionId, volume, "")
@@ -269,6 +269,12 @@ MATCHER_P(getPositionRequestMatcher, sessionId, "")
     return ((kRequest->session_id() == sessionId));
 }
 
+MATCHER_P2(getStatsRequestMatcher, sessionId, sourceId, "")
+{
+    const ::firebolt::rialto::GetStatsRequest *kRequest = dynamic_cast<const ::firebolt::rialto::GetStatsRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+}
+
 MATCHER_P(getSupportedMimeTypesRequestMatcher, sourceType, "")
 {
     const ::firebolt::rialto::GetSupportedMimeTypesRequest *kRequest =
@@ -290,12 +296,13 @@ MATCHER_P3(flushRequestMatcher, sessionId, sourceId, resetTime, "")
            (kRequest->reset_time() == resetTime);
 }
 
-MATCHER_P4(processAudioGapRequestMatcher, sessionId, position, duration, level, "")
+MATCHER_P5(processAudioGapRequestMatcher, sessionId, position, duration, discontinuityGap, isAudioAac, "")
 {
     const ::firebolt::rialto::ProcessAudioGapRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::ProcessAudioGapRequest *>(arg);
     return ((kRequest->session_id() == sessionId) && (kRequest->position() == position) &&
-            (kRequest->duration() == duration) && (kRequest->level() == level));
+            (kRequest->duration() == duration) && (kRequest->discontinuity_gap() == discontinuityGap) &&
+            (kRequest->audio_aac() == isAudioAac));
 }
 
 #endif // MEDIA_PIPELINE_PROTO_REQUEST_MATCHERS_H_

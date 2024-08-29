@@ -617,6 +617,27 @@ void MediaPipelineModuleService::getPosition(::google::protobuf::RpcController *
     done->Run();
 }
 
+void MediaPipelineModuleService::getStats(::google::protobuf::RpcController *controller,
+                                          const ::firebolt::rialto::GetStatsRequest *request,
+                                          ::firebolt::rialto::GetStatsResponse *response,
+                                          ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    uint64_t renderedFrames;
+    uint64_t droppedFrames;
+    if (!m_mediaPipelineService.getStats(request->session_id(), request->source_id(), renderedFrames, droppedFrames))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get stats failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_rendered_frames(renderedFrames);
+        response->set_dropped_frames(droppedFrames);
+    }
+    done->Run();
+}
+
 void MediaPipelineModuleService::renderFrame(::google::protobuf::RpcController *controller,
                                              const ::firebolt::rialto::RenderFrameRequest *request,
                                              ::firebolt::rialto::RenderFrameResponse *response,
@@ -763,7 +784,8 @@ void MediaPipelineModuleService::setSourcePosition(::google::protobuf::RpcContro
                                                    ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_mediaPipelineService.setSourcePosition(request->session_id(), request->source_id(), request->position()))
+    if (!m_mediaPipelineService.setSourcePosition(request->session_id(), request->source_id(), request->position(),
+                                                  request->reset_time()))
     {
         RIALTO_SERVER_LOG_ERROR("Set Source Position failed.");
         controller->SetFailed("Operation failed");
@@ -778,7 +800,7 @@ void MediaPipelineModuleService::processAudioGap(::google::protobuf::RpcControll
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_mediaPipelineService.processAudioGap(request->session_id(), request->position(), request->duration(),
-                                                request->level()))
+                                                request->discontinuity_gap(), request->audio_aac()))
     {
         RIALTO_SERVER_LOG_ERROR("Process audio gap failed.");
         controller->SetFailed("Operation failed");

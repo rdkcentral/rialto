@@ -65,6 +65,7 @@ public:
     bool setPlaybackRate(int sessionId, double rate) override;
     bool setPosition(int sessionId, std::int64_t position) override;
     bool getPosition(int sessionId, std::int64_t &position) override;
+    bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
     bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                         std::uint32_t height) override;
     bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
@@ -77,8 +78,9 @@ public:
     bool setTextTrackIdentifier(int sessionId, const std::string &textTrackIdentifier) override;
     bool getTextTrackIdentifier(int sessionId, std::string &textTrackIdentifier) override;
     bool flush(int sessionId, std::int32_t sourceId, bool resetTime) override;
-    bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position) override;
-    bool processAudioGap(int sessionId, int64_t position, uint32_t duration, uint32_t level) override;
+    bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime) override;
+    bool processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,
+                         bool audioAac) override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;

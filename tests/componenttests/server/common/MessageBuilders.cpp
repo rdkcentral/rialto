@@ -205,6 +205,14 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::GetStatsRequest createGetStatsRequest(int sessionId, int sourceId)
+{
+    ::firebolt::rialto::GetStatsRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    return request;
+}
+
 ::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId)
 {
     ::firebolt::rialto::RenderFrameRequest request;
@@ -265,23 +273,26 @@ namespace firebolt::rialto::server::ct
 }
 
 ::firebolt::rialto::SetSourcePositionRequest createSetSourcePositionRequest(int sessionId, int sourceId,
-                                                                            std::int64_t position)
+                                                                            std::int64_t position, bool resetTime)
 {
     ::firebolt::rialto::SetSourcePositionRequest request;
     request.set_session_id(sessionId);
     request.set_source_id(sourceId);
     request.set_position(position);
+    request.set_reset_time(resetTime);
     return request;
 }
 
 ::firebolt::rialto::ProcessAudioGapRequest createProcessAudioGapRequest(int sessionId, std::int64_t position,
-                                                                        unsigned duration, unsigned level)
+                                                                        unsigned duration,
+                                                                        std::int64_t discontinuityGap, bool audioAac)
 {
     ::firebolt::rialto::ProcessAudioGapRequest request;
     request.set_session_id(sessionId);
     request.set_position(position);
     request.set_duration(duration);
-    request.set_level(level);
+    request.set_discontinuity_gap(discontinuityGap);
+    request.set_audio_aac(audioAac);
     return request;
 }
 

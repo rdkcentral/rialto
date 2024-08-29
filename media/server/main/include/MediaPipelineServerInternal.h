@@ -110,6 +110,8 @@ public:
 
     bool getPosition(int64_t &position) override;
 
+    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
+
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
     bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
@@ -134,9 +136,9 @@ public:
 
     bool flush(int32_t sourceId, bool resetTime) override;
 
-    bool setSourcePosition(int32_t sourceId, int64_t position) override;
+    bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime) override;
 
-    bool processAudioGap(int64_t position, uint32_t duration, uint32_t level) override;
+    bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
@@ -339,6 +341,19 @@ protected:
     bool getPositionInternal(int64_t &position);
 
     /**
+     * @brief Get stats for this source.
+     *
+     * This method is sychronous, it returns dropped frames and rendered frames
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] renderedFrames : The number of rendered frames
+     * @param[out] droppedFrames : The number of dropped frames
+     *
+     * @retval true on success.
+     */
+    bool getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames);
+
+    /**
      * @brief Set video window internally, only to be called on the main thread.
      *
      * @param[in] x      : The x position in pixels.
@@ -481,23 +496,25 @@ protected:
      *
      * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
      * @param[in] position : The position in nanoseconds.
+     * @param[in] resetTime : True if time should be reset
      *
      * @retval true on success.
      */
-    bool setSourcePositionInternal(int32_t sourceId, int64_t position);
+    bool setSourcePositionInternal(int32_t sourceId, int64_t position, bool resetTime);
 
     /**
      * @brief Process audio gap
      *
      * This method handles audio gap in order to avoid audio pops during transitions.
      *
-     * @param[in] position : Audio pts fade position value
-     * @param[in] duration : Audio pts fade duration
-     * @param[in] level    : Audio pts fade target level [0-1]
+     * @param[in] position         : Audio pts fade position
+     * @param[in] duration         : Audio pts fade duration
+     * @param[in] discontinuityGap : Audio discontinuity gap
+     * @param[in] audioAac         : True if audio codec is AAC
      *
      * @retval true on success.
      */
-    bool processAudioGapInternal(int64_t position, uint32_t duration, uint32_t level);
+    bool processAudioGapInternal(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac);
 };
 
 }; // namespace firebolt::rialto::server

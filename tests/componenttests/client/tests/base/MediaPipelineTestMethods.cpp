@@ -86,7 +86,8 @@ const std::vector<std::string> kVideoMimeType{"video/h264", "video/h265", "video
 const std::vector<std::string> kUnknownMimeType{};
 constexpr bool kResetTime{true};
 constexpr double kPosition{1234};
-constexpr uint32_t kLevel{1};
+constexpr int64_t kDiscontinuityGap{1};
+constexpr bool kIsAudioAac{false};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -1300,6 +1301,22 @@ void MediaPipelineTestMethods::getPosition(const int64_t expectedPosition)
     EXPECT_EQ(returnPosition, expectedPosition);
 }
 
+void MediaPipelineTestMethods::shouldGetStats(uint64_t renderedFrames, uint64_t droppedFrames)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getStats(_, getStatsRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getStatsResponse(renderedFrames, droppedFrames)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getStats(uint64_t expectedFrames, uint64_t expectedDropped)
+{
+    uint64_t returnFrames;
+    uint64_t returnDropped;
+    EXPECT_TRUE(m_mediaPipeline->getStats(kVideoSourceId, returnFrames, returnDropped));
+    EXPECT_EQ(returnFrames, expectedFrames);
+    EXPECT_EQ(returnDropped, expectedDropped);
+}
+
 void MediaPipelineTestMethods::shouldFlush()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock, flush(_, flushRequestMatcher(kSessionId, kAudioSourceId, kResetTime), _, _))
@@ -1325,49 +1342,57 @@ void MediaPipelineTestMethods::flushFailure()
 void MediaPipelineTestMethods::shouldSetSourcePosition()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition), _, _))
+                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition, kResetTime),
+                                  _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
 void MediaPipelineTestMethods::setSourcePosition()
 {
-    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition));
+    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime));
 }
 
 void MediaPipelineTestMethods::shouldFailToSetSourcePosition()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition), _, _))
+                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition, kResetTime),
+                                  _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
 }
 
 void MediaPipelineTestMethods::setSourcePositionFailure()
 {
-    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition));
+    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime));
 }
 
 void MediaPipelineTestMethods::shouldProcessAudioGap()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                processAudioGap(_, processAudioGapRequestMatcher(kSessionId, kPosition, kDuration, kLevel), _, _))
+                processAudioGap(_,
+                                processAudioGapRequestMatcher(kSessionId, kPosition, kDuration, kDiscontinuityGap,
+                                                              kIsAudioAac),
+                                _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
 void MediaPipelineTestMethods::processAudioGap()
 {
-    EXPECT_TRUE(m_mediaPipeline->processAudioGap(kPosition, kDuration, kLevel));
+    EXPECT_TRUE(m_mediaPipeline->processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac));
 }
 
 void MediaPipelineTestMethods::shouldFailToProcessAudioGap()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                processAudioGap(_, processAudioGapRequestMatcher(kSessionId, kPosition, kDuration, kLevel), _, _))
+                processAudioGap(_,
+                                processAudioGapRequestMatcher(kSessionId, kPosition, kDuration, kDiscontinuityGap,
+                                                              kIsAudioAac),
+                                _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
 }
 
 void MediaPipelineTestMethods::processAudioGapFailure()
 {
-    EXPECT_FALSE(m_mediaPipeline->processAudioGap(kPosition, kDuration, kLevel));
+    EXPECT_FALSE(m_mediaPipeline->processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac));
 }
 
 /*************************** Private methods ********************************/

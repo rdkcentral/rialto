@@ -18,6 +18,8 @@
  */
 
 #include <chrono>
+#include <cinttypes>
+#include <stdexcept>
 
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
@@ -29,8 +31,6 @@
 #include "TypeConverters.h"
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
-#include <cinttypes>
-#include <stdexcept>
 
 namespace
 {
@@ -387,6 +387,70 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
     return true;
 }
 
+bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    bool returnValue{false};
+    const char *kSinkName{nullptr};
+    switch (mediaSourceType)
+    {
+    case MediaSourceType::AUDIO:
+        kSinkName = "audio-sink";
+        break;
+    case MediaSourceType::VIDEO:
+        kSinkName = "video-sink";
+        break;
+    default:
+        break;
+    }
+    if (!kSinkName)
+    {
+        RIALTO_SERVER_LOG_WARN("mediaSourceType '%s' not supported",
+                               firebolt::rialto::common::convertMediaSourceType(mediaSourceType));
+    }
+    else
+    {
+        GstElement *sink{nullptr};
+        m_glibWrapper->gObjectGet(m_context.pipeline, kSinkName, &sink, nullptr);
+        if (!sink)
+        {
+            RIALTO_SERVER_LOG_WARN("'%s' could not be obtained", kSinkName);
+        }
+        else
+        {
+            // For AutoVideoSink we set properties on the child sink
+            if (MediaSourceType::VIDEO == mediaSourceType)
+                sink = getSinkChildIfAutoVideoSink(sink);
+
+            GstStructure *stats{nullptr};
+            m_glibWrapper->gObjectGet(sink, "stats", &stats, nullptr);
+            if (!stats)
+            {
+                RIALTO_SERVER_LOG_WARN("failed to get stats from '%s'", kSinkName);
+            }
+            else
+            {
+                guint64 renderedFramesTmp;
+                guint64 droppedFramesTmp;
+                if (m_gstWrapper->gstStructureGetUint64(stats, "rendered", &renderedFramesTmp) &&
+                    m_gstWrapper->gstStructureGetUint64(stats, "dropped", &droppedFramesTmp))
+                {
+                    renderedFrames = renderedFramesTmp;
+                    droppedFrames = droppedFramesTmp;
+                    returnValue = true;
+                }
+                else
+                {
+                    RIALTO_SERVER_LOG_WARN("failed to get 'rendered' or 'dropped' from structure (%s)", kSinkName);
+                }
+                m_gstWrapper->gstStructureFree(stats);
+            }
+            m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+        }
+    }
+
+    return returnValue;
+}
+
 GstBuffer *GstGenericPlayer::createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const
 {
     GstBuffer *gstBuffer = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getDataLength(), nullptr);
@@ -633,33 +697,36 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         // Sending initial sample not needed
         return;
     }
-
-    RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
-    GstSegment *segment{m_gstWrapper->gstSegmentNew()};
-    m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
-    if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE,
-                                        GST_SEEK_TYPE_SET, initialPosition->second, GST_SEEK_TYPE_SET,
-                                        GST_CLOCK_TIME_NONE, nullptr))
+    for (const auto &[position, resetTime] : initialPosition->second)
     {
-        RIALTO_SERVER_LOG_WARN("Segment seek failed.");
+        GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
+        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
+        GstSegment *segment{m_gstWrapper->gstSegmentNew()};
+        m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
+        if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, seekFlag,
+                                            GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
+        {
+            RIALTO_SERVER_LOG_WARN("Segment seek failed.");
+            m_gstWrapper->gstSegmentFree(segment);
+            m_context.initialPositions.erase(initialPosition);
+            return;
+        }
+
+        RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT "], rate: %f reset_time: %d\n",
+                              typeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
+                              segment->rate, resetTime);
+
+        GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
+        // We can't pass buffer in GstSample, because implementation of gst_app_src_push_sample
+        // uses gst_buffer_copy, which loses RialtoProtectionMeta (that causes problems with EME
+        // for first frame).
+        GstSample *sample = m_gstWrapper->gstSampleNew(nullptr, currentCaps, segment, nullptr);
+        m_gstWrapper->gstAppSrcPushSample(GST_APP_SRC(source), sample);
+        m_gstWrapper->gstSampleUnref(sample);
+        m_gstWrapper->gstCapsUnref(currentCaps);
+
         m_gstWrapper->gstSegmentFree(segment);
-        m_context.initialPositions.erase(initialPosition);
-        return;
     }
-
-    RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT "], rate: %f \n", typeStr.c_str(),
-                          GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop), segment->rate);
-
-    GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
-    // We can't pass buffer in GstSample, because implementation of gst_app_src_push_sample
-    // uses gst_buffer_copy, which loses RialtoProtectionMeta (that causes problems with EME
-    // for first frame).
-    GstSample *sample = m_gstWrapper->gstSampleNew(nullptr, currentCaps, segment, nullptr);
-    m_gstWrapper->gstAppSrcPushSample(GST_APP_SRC(source), sample);
-    m_gstWrapper->gstSampleUnref(sample);
-    m_gstWrapper->gstCapsUnref(currentCaps);
-
-    m_gstWrapper->gstSegmentFree(segment);
     m_context.initialPositions.erase(initialPosition);
     return;
 }
@@ -1033,19 +1100,20 @@ void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetT
     }
 }
 
-void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position)
+void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, *this, mediaSourceType, position));
+        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, *this, mediaSourceType, position, resetTime));
     }
 }
 
-void GstGenericPlayer::processAudioGap(int64_t position, uint32_t duration, uint32_t level)
+void GstGenericPlayer::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createProcessAudioGap(m_context, position, duration, level));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createProcessAudioGap(m_context, position, duration, discontinuityGap, audioAac));
     }
 }
 
@@ -1092,7 +1160,11 @@ void GstGenericPlayer::removeAutoVideoSinkChild(GObject *object)
 
 GstElement *GstGenericPlayer::getSinkChildIfAutoVideoSink(GstElement *sink)
 {
-    const std::string kElementTypeName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
+    const gchar *kTmpName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
+    if (!kTmpName)
+        return sink;
+
+    const std::string kElementTypeName{kTmpName};
     if (kElementTypeName == "GstAutoVideoSink")
     {
         if (!m_context.autoVideoChildSink)

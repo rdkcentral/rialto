@@ -515,6 +515,7 @@ message FlushResponse {
  * @param[in]  session_id   The id of the A/V session.
  * @param[in]  source_id    The id of the media source.
  * @param[in]  position     The position in nanoseconds.
+ * @param[in]  reset_time   True if time should be reset
  *
  * This method sets the start position for a source.
  *
@@ -523,18 +524,41 @@ message SetSourcePositionRequest {
     optional int32 session_id = 1 [default = -1];
     optional int32 source_id = 2 [default = -1];
     optional int64 position = 3 [default = -1];
+    optional bool reset_time = 4 [default = false];
 }
 message SetSourcePositionResponse {
+}
+
+/**
+ * @fn void getStats(int session_id, int source_id, uint64 &rendered_frames, uint64 &dropped_frames)
+ * @brief Get various stats from the source.
+ *
+ * @param[in]  session_id        The id of the A/V session.
+ * @param[in]  source_id         The id of the media source.
+ * @param[out] rendered_frames   The number of rendered frames
+ * @param[out] dropped_frames    The number of dropped frames
+ *
+ * This method gets various stats from the source.
+ *
+ */
+message GetStatsRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+message GetStatsResponse {
+    optional int64 rendered_frames = 1 [default = -1];
+    optional int64 dropped_frames = 2 [default = -1];
 }
 
 /**
  * @fn void processAudioGap(int64 position, uint32 duration, uint32 level)
  * @brief Process audio gap.
  *
- * @param[in] session_id   The id of the A/V session.
- * @param[in] position     Audio pts fade pts value
- * @param[in] duration     Audio pts fade duration
- * @param[in] level        Audio pts fade target level [0-1]
+ * @param[in] session_id        The id of the A/V session.
+ * @param[in] position          Audio pts fade pts value
+ * @param[in] duration          Audio pts fade duration
+ * @param[in] discontinuity_gap Audio discontinuity gap
+ * @param[in] audio_aac         True if audio codec is AAC
  *
  * This method handles audio gap in order to avoid audio pops during transitions.
  *
@@ -543,7 +567,8 @@ message ProcessAudioGapRequest {
     optional int32 session_id = 1 [default = -1];
     optional int64 position = 2 [default = -1];
     optional uint32 duration = 3 [default = 0];
-    optional uint32 level = 4 [default = 0];
+    optional int64 discontinuity_gap = 4 [default = 0];
+    optional bool audio_aac = 5 [default = false];
 }
 message ProcessAudioGapResponse {
 }
@@ -801,6 +826,13 @@ service MediaPipelineModule {
      * @see GetPositionRequest
      */
     rpc getPosition(GetPositionRequest) returns (GetPositionResponse) {
+    }
+
+    /**
+     * @brief Gets the current stats property
+     * @see GetStatsRequest
+     */
+    rpc getStats(GetStatsRequest) returns (GetStatsResponse) {
     }
 
     /**
