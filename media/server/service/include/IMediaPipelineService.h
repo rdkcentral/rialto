@@ -62,7 +62,7 @@ public:
     virtual bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
                           std::uint32_t needDataRequestId) = 0;
     virtual bool renderFrame(int sessionId) = 0;
-    virtual bool setVolume(int sessionId, double volume) = 0;
+    virtual bool setVolume(int sessionId, double targetVolume, uint32_t volumeDuration, EaseType easeType) = 0;
     virtual bool getVolume(int sessionId, double &volume) = 0;
     virtual bool setMute(int sessionId, bool mute) = 0;
     virtual bool getMute(int sessionId, bool &mute) = 0;

@@ -94,6 +94,7 @@ public:
     virtual void processAudioGap(GstElement *pipeline, gint64 gapstartpts, gint32 gapduration, gint64 gapdiscontinuity,
                                  bool audioaac) const = 0;
     virtual void doAudioEasingonSoc(double targetVolume, uint32_t volumeDuration, rgu_Ease easeType) const = 0;
+    virtual bool initialVolSettingNeeded() const = 0;
 };
 } // namespace firebolt::rialto::wrappers
 

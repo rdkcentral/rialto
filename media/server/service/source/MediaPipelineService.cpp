@@ -338,7 +338,7 @@ bool MediaPipelineService::renderFrame(int sessionId)
     }
     return mediaPipelineIter->second->renderFrame();
 }
-bool MediaPipelineService::setVolume(int sessionId, double volume)
+bool MediaPipelineService::setVolume(int sessionId, double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
     RIALTO_SERVER_LOG_DEBUG("Set volume requested, session id: %d", sessionId);
 
@@ -349,7 +349,7 @@ bool MediaPipelineService::setVolume(int sessionId, double volume)
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->setVolume(volume);
+    return mediaPipelineIter->second->setVolume(targetVolume, volumeDuration, easeType);
 }
 
 bool MediaPipelineService::getVolume(int sessionId, double &volume)

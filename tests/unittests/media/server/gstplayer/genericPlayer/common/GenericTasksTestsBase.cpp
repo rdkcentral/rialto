@@ -641,7 +641,12 @@ void GenericTasksTestsBase::shouldSetGstVolume()
 
 void GenericTasksTestsBase::triggerSetVolume()
 {
-    firebolt::rialto::server::tasks::generic::SetVolume task{testContext->m_context, testContext->m_gstWrapper, testContext->m_rdkGstreamerUtilsWrapper,kVolume, kVolumeDuration, kEaseType};
+    firebolt::rialto::server::tasks::generic::SetVolume task{testContext->m_context,
+                                                             testContext->m_gstWrapper,
+                                                             testContext->m_rdkGstreamerUtilsWrapper,
+                                                             kVolume,
+                                                             kVolumeDuration,
+                                                             kEaseType};
     task.execute();
 }
 

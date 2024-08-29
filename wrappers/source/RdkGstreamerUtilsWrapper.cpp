@@ -53,9 +53,14 @@ void RdkGstreamerUtilsWrapper::processAudioGap(GstElement *pipeline, gint64 gaps
     return rdk_gstreamer_utils::processAudioGap(pipeline, gapstartpts, gapduration, gapdiscontinuity, audioaac);
 }
 
-void RdkGstreamerUtilsWrapper::doAudioEasingonSoc(double targetVolume, uint32_t volumeDuration, rdk_gstreamer_utils::rgu_Ease easeType)
+void RdkGstreamerUtilsWrapper::doAudioEasingonSoc(double targetVolume, uint32_t volumeDuration,
+                                                  rdk_gstreamer_utils::rgu_Ease easeType)
 {
     return rdk_gstreamer_utils::doAudioEasingonSoc(targetVolume, volumeDuration, easeType);
 }
 
+bool RdkGstreamerUtilsWrapper::initialVolSettingNeeded() const
+{
+    return rdk_gstreamer_utils::initialVolSettingNeeded();
+}
 } // namespace firebolt::rialto::wrappers

@@ -396,16 +396,26 @@ message RenderFrameResponse {
 }
 
 /**
- * @fn void setVolume(double volume)
- * @brief Set level and transition of audio attenuation
+ * @fn void setVolume(int session_id, double targetVolume, uint32 volumeDuration, EaseType easeType)
+ * @brief Set the target volume level and transition duration with easing type
  *
  * @param[in] session_id  The id of the A/V session the request is for.
- * @param[in] volume      Target volume level (0.0 - 1.0)
+ * @param[in] target_volume : Target volume level (0.0 - 1.0)
+ * @param[in] volume_duration : Duration of the volume transition in milliseconds
+ * @param[in] ease_type : Easing type for the volume transition
  *
  */
 message SetVolumeRequest {
+    enum EaseType {
+        EASE_LINEAR = 0;
+        EASE_IN_CUBIC = 1;
+        EASE_OUT_CUBIC = 2;
+    };
+
     optional int32 session_id = 1 [default = -1];
-    optional double volume = 2 [default = -1];
+    optional double target_volume = 2 [default = -1];
+    optional uint32 volume_duration = 3;
+    optional EaseType ease_type = 4;
 }
 message SetVolumeResponse {
 }
@@ -871,7 +881,7 @@ service MediaPipelineModule {
     }
 
     /**
-     * @brief Set level and transition of audio attenuation
+     * @brief Set the target volume level and transition duration with easing type
      * @see SetVolumeRequest
      */
     rpc setVolume(SetVolumeRequest) returns (SetVolumeResponse) {

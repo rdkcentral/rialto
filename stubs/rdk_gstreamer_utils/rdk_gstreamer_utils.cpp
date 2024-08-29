@@ -33,7 +33,8 @@ bool performAudioTrackCodecChannelSwitch(struct rdkGstreamerUtilsPlaybackGrp *pg
 void processAudioGap(GstElement *pipeline, gint64 gapstartpts, gint32 gapduration, gint64 gapdiscontinuity, bool audioaac)
 {
 }
-void doAudioEasingonSoc(double targetVolume, uint32_t volumeDuration, rdk_gstreamer_utils::rgu_Ease easeType)
-{
-}
+
+void doAudioEasingonSoc(double targetVolume, uint32_t volumeDuration, rdk_gstreamer_utils::rgu_Ease easeType) {}
+
+bool initialVolSettingNeeded() {}
 } // namespace rdk_gstreamer_utils

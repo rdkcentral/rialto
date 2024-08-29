@@ -445,6 +445,8 @@ protected:
      * @brief Set the target volume level with a transition internally, only to be called on the main thread.
      *
      * @param[in] targetVolume : Target volume level (0.0 - 1.0)
+     * @param[in] volumeDuration : Duration of the volume transition in milliseconds
+     * @param[in] ease_type : Easing type for the volume transition
      *
      * @retval true on success, false otherwise
      */

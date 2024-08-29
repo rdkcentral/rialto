@@ -38,7 +38,9 @@ public:
     MOCK_METHOD(void, processAudioGap,
                 (GstElement * pipeline, gint64 gapstartpts, gint32 gapduration, gint64 gapdiscontinuity, bool audioaac),
                 (const, override));
-    MOCK_METHOD(void, doAudioEasingonSoc, (double targetVolume, uint32_t volumeDuration, rgu_Ease easeType), (const, override));
+    MOCK_METHOD(void, doAudioEasingonSoc, (double targetVolume, uint32_t volumeDuration, rgu_Ease easeType),
+                (const, override));
+    MOCK_METHOD(bool, initialVolSettingNeeded, (), (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 

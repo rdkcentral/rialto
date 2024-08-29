@@ -270,7 +270,9 @@ public:
      *
      * @retval the new SetVolume task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, double targetVolume,
+                                                         uint32_t volumeDuration,
+                                                         firebolt::rialto::EaseType easeType) const = 0;
 
     /**
      * @brief Creates a SetMute task.

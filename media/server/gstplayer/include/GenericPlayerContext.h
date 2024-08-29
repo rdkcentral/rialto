@@ -248,7 +248,7 @@ struct GenericPlayerContext
      *
      * Attribute can be used only in worker thread
      */
-    std::map<GstElement *, std::uint64_t> initialPositions;
+    std::map<GstElement *, std::vector<SegmentData>> initialPositions;
 
     /**
      * @brief The audio fade mechanism.
