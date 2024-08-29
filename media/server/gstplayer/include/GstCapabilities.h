@@ -90,6 +90,11 @@ private:
     void appendSupportedCapsFromParserDecoderChains(std::vector<GstCaps *> &supportedCaps);
 
     /**
+     * @brief Appends all unique caps from parser->decoders chains' sink pads to \a supportedCaps
+     */
+    void appendSupportedCapsFromSink(std::vector<GstCaps *> &supportedCaps);
+
+    /**
      * @brief Adds unique sink pads from \a padTemplates list to \a capsVector
      */
     void addAllUniqueSinkPadsCapsToVector(std::vector<GstCaps *> &capsVector, const GList *padTemplates);

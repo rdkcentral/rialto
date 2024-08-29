@@ -112,7 +112,35 @@ bool GstCapabilities::isMimeTypeSupported(const std::string &mimeType)
 void GstCapabilities::fillSupportedMimeTypes()
 {
     std::vector<GstCaps *> supportedCaps = getSupportedCapsFromDecoders();
+    for (const auto &caps : supportedCaps) {
+        if (caps) {
+            gchar *capsStr = gst_caps_to_string(caps);
+            RIALTO_SERVER_LOG_WARN("Supported caps after Decoders: %s", capsStr);
+            g_free(capsStr);
+        } else {
+            RIALTO_SERVER_LOG_WARN("Empty Caps");
+        }
+    }
     appendSupportedCapsFromParserDecoderChains(supportedCaps);
+    for (const auto &caps : supportedCaps) {
+        if (caps) {
+            gchar *capsStr = gst_caps_to_string(caps);
+            RIALTO_SERVER_LOG_WARN("Supported caps after ParserDecoderChains: %s", capsStr);
+            g_free(capsStr);
+        } else {
+            RIALTO_SERVER_LOG_WARN("Empty Caps");
+        }
+    }
+    appendSupportedCapsFromSink(supportedCaps);
+    for (const auto &caps : supportedCaps) {
+        if (caps) {
+            gchar *capsStr = gst_caps_to_string(caps);
+            RIALTO_SERVER_LOG_WARN("Supported caps after Sink: %s", capsStr);
+            g_free(capsStr);
+        } else {
+            RIALTO_SERVER_LOG_WARN("Empty Caps");
+        }
+    }
 
     if (supportedCaps.empty())
     {
@@ -185,6 +213,32 @@ void GstCapabilities::appendSupportedCapsFromParserDecoderChains(std::vector<Gst
     }
 
     m_gstWrapper->gstPluginFeatureListFree(parserFactories);
+}
+
+void GstCapabilities::appendSupportedCapsFromSink(std::vector<GstCaps *> &supportedCaps)
+{
+    if (supportedCaps.empty())
+    {
+        return;
+    }
+
+    GList *sinkFactories =
+        m_gstWrapper->gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL);
+    if (!sinkFactories)
+    {
+        RIALTO_SERVER_LOG_WARN("Could not find any sink");
+        return {};
+    }
+
+    for (GList *factoriesIter = sinkFactories; factoriesIter; factoriesIter = factoriesIter->next)
+    {
+        GstElementFactory *factory = static_cast<GstElementFactory *>(factoriesIter->data);
+        const GList *kSinkPadTemplates = m_gstWrapper->gstElementFactoryGetStaticPadTemplates(factory);
+
+        addAllUniqueSinkPadsCapsToVector(supportedCaps, kSinkPadTemplates);
+    }
+
+    m_gstWrapper->gstPluginFeatureListFree(sinkFactories);
 }
 
 bool GstCapabilities::canCreateParserDecoderChain(GstCaps *decoderCaps, const GList *kParserPadTemplates)
