@@ -66,7 +66,7 @@ public:
      * @retval the error code
      */
     virtual std::uint32_t open() = 0;
-    
+
     /**
      * @brief Checks if Text Track plugin is operational
      *
@@ -82,6 +82,5 @@ public:
     virtual std::shared_ptr<ITextTrackWrapper> interface() = 0;
 };
 } // namespace firebolt::rialto::wrappers
-
 
 #endif // FIREBOLT_RIALTO_WRAPPERS_I_TEXT_TRACK_PLUGIN_WRAPPER_H_

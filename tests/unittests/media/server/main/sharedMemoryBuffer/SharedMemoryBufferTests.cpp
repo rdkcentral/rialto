@@ -306,11 +306,12 @@ TEST_F(SharedMemoryBufferTests, shouldReturnAudioDataOffsetForTwoGenericPlayback
     constexpr int kHandle1{0}, kHandle2{1};
     // Audio buffer for second mapped session is after video and audio buffer of 1st session
     // and video buffer of 2nd session
-    constexpr std::uint32_t kExpectedOffsetSecondGeneric{m_audioBufferLen + m_videoBufferLen + m_subtitleBufferLen + m_videoBufferLen};
+    constexpr std::uint32_t kExpectedOffsetSecondGeneric{m_audioBufferLen + m_videoBufferLen + m_subtitleBufferLen +
+                                                         m_videoBufferLen};
     // Audio buffer for second mapped web audio player is after video and audio buffer of 1st and 2nd generic playback
     // sessions and the audio buffer of the 1st web audio player
-    constexpr std::uint32_t kExpectedOffsetSecondWebAudio{2 * m_audioBufferLen + 2 * m_videoBufferLen + 2 * m_subtitleBufferLen +
-                                                          m_webAudioBufferLen};
+    constexpr std::uint32_t kExpectedOffsetSecondWebAudio{2 * m_audioBufferLen + 2 * m_videoBufferLen +
+                                                          2 * m_subtitleBufferLen + m_webAudioBufferLen};
     initialize(kMaxPlaybacks, kMaxWebAudioPlayers);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession2);

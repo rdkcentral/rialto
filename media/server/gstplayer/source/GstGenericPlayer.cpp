@@ -22,8 +22,8 @@
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
 #include "GstProtectionMetadata.h"
-#include "IMediaPipeline.h"
 #include "IGstTextTrackSinkFactory.h"
+#include "IMediaPipeline.h"
 #include "ITimer.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
@@ -94,16 +94,14 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
         {
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
-        gstPlayer =
-            std::make_unique<GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper,
-                                               glibWrapper, IGstSrcFactory::getFactory(),
-                                               common::ITimerFactory::getFactory(),
-                                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
-                                                                                          rdkGstreamerUtilsWrapper,
-                                                                                          IGstTextTrackSinkFactory::createFactory()),
-                                               std::make_unique<WorkerThreadFactory>(),
-                                               std::make_unique<GstDispatcherThreadFactory>(),
-                                               IGstProtectionMetadataHelperFactory::createFactory());
+        gstPlayer = std::make_unique<
+            GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper, glibWrapper,
+                              IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
+                              std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
+                                                                         rdkGstreamerUtilsWrapper,
+                                                                         IGstTextTrackSinkFactory::createFactory()),
+                              std::make_unique<WorkerThreadFactory>(), std::make_unique<GstDispatcherThreadFactory>(),
+                              IGstProtectionMetadataHelperFactory::createFactory());
     }
     catch (const std::exception &e)
     {

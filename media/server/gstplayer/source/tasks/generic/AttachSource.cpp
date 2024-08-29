@@ -258,11 +258,11 @@ AttachSource::AttachSource(
     GenericPlayerContext &context, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
-    const std::shared_ptr<IGstTextTrackSinkFactory> &gstTextTrackSinkFactory,
-    IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
+    const std::shared_ptr<IGstTextTrackSinkFactory> &gstTextTrackSinkFactory, IGstGenericPlayerPrivate &player,
+    const std::unique_ptr<IMediaPipeline::MediaSource> &source)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_gstTextTrackSinkFactory{gstTextTrackSinkFactory},
-      m_player{player}, m_attachedSource{source->copy()}
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
+      m_gstTextTrackSinkFactory{gstTextTrackSinkFactory}, m_player{player}, m_attachedSource{source->copy()}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing AttachSource");
 }

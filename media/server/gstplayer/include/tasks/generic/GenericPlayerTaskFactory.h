@@ -23,9 +23,9 @@
 #include "IGenericPlayerTaskFactory.h"
 #include "IGlibWrapper.h"
 #include "IGstGenericPlayerClient.h"
+#include "IGstTextTrackSinkFactory.h"
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
-#include "IGstTextTrackSinkFactory.h"
 #include <memory>
 
 namespace firebolt::rialto::server

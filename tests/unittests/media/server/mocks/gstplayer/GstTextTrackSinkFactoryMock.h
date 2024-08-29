@@ -32,5 +32,4 @@ public:
 };
 } // namespace firebolt::rialto::server
 
-
 #endif // FIREBOLT_RIALTO_SERVER_I_GST_TEXT_TRACK_SINK_FACTORY_MOCK_H_

@@ -63,7 +63,7 @@ public:
      * @brief Converts error code to string
      *
      * @param[in] errorCode : The error code
-     * 
+     *
      * @retval the error code string
      */
     virtual const char *errorToString(std::uint32_t errorCode) const = 0;
@@ -72,12 +72,11 @@ public:
      * @brief Checks, if operation finished with ERROR_NONE code
      *
      * @param[in] errorCode : The operation error code
-     * 
+     *
      * @retval true if operation finished without error
      */
     virtual bool isSuccessful(std::uint32_t errorCode) const = 0;
 };
 } // namespace firebolt::rialto::wrappers
-
 
 #endif // FIREBOLT_RIALTO_WRAPPERS_I_THUNDER_WRAPPER_H_

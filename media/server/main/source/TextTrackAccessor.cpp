@@ -30,11 +30,14 @@ TextTrackAccessorFactory &TextTrackAccessorFactory::getFactory()
     return factory;
 }
 
-std::shared_ptr<TextTrackAccessor> TextTrackAccessorFactory::getTextTrackAccessor() const try
+std::shared_ptr<TextTrackAccessor> TextTrackAccessorFactory::getTextTrackAccessor() const
+try
 {
-    static std::shared_ptr<TextTrackAccessor> textTrackAccessor{std::make_shared<TextTrackAccessor>(
-                firebolt::rialto::wrappers::ITextTrackPluginWrapperFactory::getFactory()->getTextTrackPluginWrapper(),
-                firebolt::rialto::wrappers::IThunderWrapperFactory::getFactory()->getThunderWrapper())};
+    static std::shared_ptr<TextTrackAccessor> textTrackAccessor{
+        std::make_shared<TextTrackAccessor>(firebolt::rialto::wrappers::ITextTrackPluginWrapperFactory::getFactory()
+                                                ->getTextTrackPluginWrapper(),
+                                            firebolt::rialto::wrappers::IThunderWrapperFactory::getFactory()
+                                                ->getThunderWrapper())};
 
     return textTrackAccessor;
 }
@@ -46,7 +49,7 @@ catch (const std::exception &e)
 TextTrackAccessor::TextTrackAccessor(
     const std::shared_ptr<firebolt::rialto::wrappers::ITextTrackPluginWrapper> &textTrackPluginWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IThunderWrapper> &thunderWrapper)
-: m_textTrackPluginWrapper{textTrackPluginWrapper}, m_thunderWrapper{thunderWrapper}
+    : m_textTrackPluginWrapper{textTrackPluginWrapper}, m_thunderWrapper{thunderWrapper}
 {
     if (!createTextTrackControlInterface())
     {
@@ -55,9 +58,7 @@ TextTrackAccessor::TextTrackAccessor(
     }
 }
 
-TextTrackAccessor::~TextTrackAccessor()
-{
-}
+TextTrackAccessor::~TextTrackAccessor() {}
 
 std::optional<uint32_t> TextTrackAccessor::openSession(const std::string &displayName)
 {
@@ -83,7 +84,8 @@ bool TextTrackAccessor::closeSession(uint32_t sessionId)
         return true;
     }
 
-    RIALTO_SERVER_LOG_ERROR("Failed to close TextTrack session %u; error %s", sessionId, m_thunderWrapper->errorToString(result));
+    RIALTO_SERVER_LOG_ERROR("Failed to close TextTrack session %u; error %s", sessionId,
+                            m_thunderWrapper->errorToString(result));
     return false;
 }
 
@@ -96,7 +98,8 @@ bool TextTrackAccessor::pause(uint32_t sessionId)
         return true;
     }
 
-    RIALTO_SERVER_LOG_ERROR("Failed to pause TextTrack session %u; error %s", sessionId, m_thunderWrapper->errorToString(result));
+    RIALTO_SERVER_LOG_ERROR("Failed to pause TextTrack session %u; error %s", sessionId,
+                            m_thunderWrapper->errorToString(result));
     return false;
 }
 
@@ -109,7 +112,8 @@ bool TextTrackAccessor::play(uint32_t sessionId)
         return true;
     }
 
-    RIALTO_SERVER_LOG_ERROR("Failed to resume TextTrack session %u; error %s", sessionId, m_thunderWrapper->errorToString(result));
+    RIALTO_SERVER_LOG_ERROR("Failed to resume TextTrack session %u; error %s", sessionId,
+                            m_thunderWrapper->errorToString(result));
     return false;
 }
 
@@ -124,7 +128,8 @@ bool TextTrackAccessor::mute(uint32_t sessionId, bool mute)
             return true;
         }
 
-        RIALTO_SERVER_LOG_ERROR("Failed to mute TextTrack session %u; error %s", sessionId, m_thunderWrapper->errorToString(result));
+        RIALTO_SERVER_LOG_ERROR("Failed to mute TextTrack session %u; error %s", sessionId,
+                                m_thunderWrapper->errorToString(result));
     }
     else
     {

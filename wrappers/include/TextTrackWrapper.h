@@ -39,7 +39,8 @@ public:
     std::uint32_t muteSession(std::uint32_t sessionId) const override;
     std::uint32_t unmuteSession(std::uint32_t sessionId) const override;
     std::uint32_t sendSessionTimestamp(std::uint32_t sessionId, std::uint64_t mediaTimestampMs) const override;
-    std::uint32_t sendSessionData(std::uint32_t sessionId, ITextTrackWrapper::DataType type, std::int32_t displayOffsetMs, const std::string &data) const override;
+    std::uint32_t sendSessionData(std::uint32_t sessionId, ITextTrackWrapper::DataType type,
+                                  std::int32_t displayOffsetMs, const std::string &data) const override;
     std::uint32_t setSessionWebVTTSelection(std::uint32_t sessionId) const override;
     std::uint32_t setSessionTTMLSelection(std::uint32_t sessionId) const override;
     std::uint32_t setSessionClosedCaptionsService(std::uint32_t sessionId, const std::string &service) const override;
@@ -48,6 +49,5 @@ private:
     WPEFramework::Exchange::ITextTrack *m_textTrackControlInterface;
 };
 } // namespace firebolt::rialto::wrappers
-
 
 #endif // FIREBOLT_RIALTO_WRAPPERS_TEXT_TRACK_WRAPPER_H_

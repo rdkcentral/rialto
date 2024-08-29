@@ -1128,7 +1128,8 @@ void MediaPipelineTestMethods::getVolume(const double expectedVolume)
 
 void MediaPipelineTestMethods::shouldSetMute(const bool expectedMute)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, setMute(_, setMuteRequestMatcher(kSessionId, kAudioSourceId, expectedMute), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setMute(_, setMuteRequestMatcher(kSessionId, kAudioSourceId, expectedMute), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 

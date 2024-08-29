@@ -37,7 +37,10 @@ public:
 
     void willGetMute() { EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetMute(_)).WillOnce(Return(true)); }
 
-    void setMute() { ConfigureAction<SetMute>(m_clientStub).send(createSetMuteRequest(m_sessionId, m_audioSourceId)).expectSuccess(); }
+    void setMute()
+    {
+        ConfigureAction<SetMute>(m_clientStub).send(createSetMuteRequest(m_sessionId, m_audioSourceId)).expectSuccess();
+    }
 
     void getMute()
     {

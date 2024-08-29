@@ -20,10 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_TEXT_TRACK_ACCESSOR_H_
 #define FIREBOLT_RIALTO_SERVER_TEXT_TRACK_ACCESSOR_H_
 
-#include "RialtoServerLogging.h"
 #include "ITextTrackPluginWrapper.h"
 #include "ITextTrackWrapper.h"
 #include "IThunderWrapper.h"
+#include "RialtoServerLogging.h"
 #include <cstdint>
 #include <memory>
 #include <optional>

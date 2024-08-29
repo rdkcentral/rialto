@@ -21,7 +21,8 @@
 
 namespace
 {
-WPEFramework::Exchange::ITextTrack::DataType convertDataType(const firebolt::rialto::wrappers::ITextTrackWrapper::DataType &dataType)
+WPEFramework::Exchange::ITextTrack::DataType
+convertDataType(const firebolt::rialto::wrappers::ITextTrackWrapper::DataType &dataType)
 {
     switch (dataType)
     {
@@ -41,7 +42,7 @@ WPEFramework::Exchange::ITextTrack::DataType convertDataType(const firebolt::ria
 namespace firebolt::rialto::wrappers
 {
 TextTrackWrapper::TextTrackWrapper(WPEFramework::Exchange::ITextTrack *textTrackControlInterface)
-: m_textTrackControlInterface{textTrackControlInterface}
+    : m_textTrackControlInterface{textTrackControlInterface}
 {
 }
 
@@ -88,7 +89,8 @@ std::uint32_t TextTrackWrapper::sendSessionTimestamp(std::uint32_t sessionId, st
     return m_textTrackControlInterface->SendSessionTimestamp(sessionId, mediaTimestampMs);
 }
 
-std::uint32_t TextTrackWrapper::sendSessionData(std::uint32_t sessionId, ITextTrackWrapper::DataType type, std::int32_t displayOffsetMs, const std::string &data) const
+std::uint32_t TextTrackWrapper::sendSessionData(std::uint32_t sessionId, ITextTrackWrapper::DataType type,
+                                                std::int32_t displayOffsetMs, const std::string &data) const
 {
     return m_textTrackControlInterface->SendSessionData(sessionId, convertDataType(type), displayOffsetMs, data);
 }

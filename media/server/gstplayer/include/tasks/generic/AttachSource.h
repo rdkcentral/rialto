@@ -37,7 +37,8 @@ namespace firebolt::rialto::server::tasks::generic
 class AttachSource : public IPlayerTask
 {
 public:
-    AttachSource(GenericPlayerContext &context, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    AttachSource(GenericPlayerContext &context,
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                  const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                  const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
                  const std::shared_ptr<IGstTextTrackSinkFactory> &gstTextTrackSinkFactory,

@@ -47,7 +47,8 @@ TEST_F(RialtoClientMediaPipelineGetMuteTest, getMuteSuccess)
 {
     bool returnMute = !m_mute;
 
-    EXPECT_CALL(*m_mediaPipelineIpcMock, getMute(m_kSourceId, returnMute)).WillOnce(DoAll(SetArgReferee<1>(m_mute), Return(true)));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, getMute(m_kSourceId, returnMute))
+        .WillOnce(DoAll(SetArgReferee<1>(m_mute), Return(true)));
 
     EXPECT_EQ(m_mediaPipeline->getMute(m_kSourceId, returnMute), true);
     EXPECT_EQ(returnMute, m_mute);

@@ -106,23 +106,23 @@ std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &FactoryAccessor::rdkGstreamer
 
 std::shared_ptr<ITextTrackPluginWrapperFactory> &FactoryAccessor::textTrackPluginWrapperFactory()
 {
-    #ifdef WRAPPERS_ENABLED
+#ifdef WRAPPERS_ENABLED
     if (!m_textTrackPluginWrapperFactory)
     {
         m_textTrackPluginWrapperFactory = std::make_shared<TextTrackPluginWrapperFactory>();
     }
-    #endif // WRAPPERS_ENABLED
+#endif // WRAPPERS_ENABLED
     return m_textTrackPluginWrapperFactory;
 }
 
 std::shared_ptr<IThunderWrapperFactory> &FactoryAccessor::thunderWrapperFactory()
 {
-    #ifdef WRAPPERS_ENABLED
+#ifdef WRAPPERS_ENABLED
     if (!m_thunderWrapperFactory)
     {
         m_thunderWrapperFactory = std::make_shared<ThunderWrapperFactory>();
     }
-    #endif // WRAPPERS_ENABLED
+#endif // WRAPPERS_ENABLED
     return m_thunderWrapperFactory;
 }
 } // namespace firebolt::rialto::wrappers

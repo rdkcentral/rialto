@@ -322,7 +322,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotGetSinkChildAutoVideoSink)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotifyNeedAudioData)
 {
-    modifyContext([&](GenericPlayerContext &context) { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].isDataNeeded = true; });
+    modifyContext([&](GenericPlayerContext &context)
+                  { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].isDataNeeded = true; });
 
     EXPECT_CALL(m_gstPlayerClient, notifyNeedMediaData(MediaSourceType::AUDIO)).WillOnce(Return(true));
     m_sut->notifyNeedMediaData(MediaSourceType::AUDIO);
@@ -330,7 +331,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotifyNeedAudioData)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotifyNeedVideoData)
 {
-    modifyContext([&](GenericPlayerContext &context) { context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].isDataNeeded = true; });
+    modifyContext([&](GenericPlayerContext &context)
+                  { context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].isDataNeeded = true; });
 
     EXPECT_CALL(m_gstPlayerClient, notifyNeedMediaData(MediaSourceType::VIDEO)).WillOnce(Return(true));
     m_sut->notifyNeedMediaData(MediaSourceType::VIDEO);
@@ -507,7 +509,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldFailToAddProtectionMetadata)
 TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachAudioDataWhenItIsNotNeeded)
 {
     GstBuffer buffer{};
-    modifyContext([&](GenericPlayerContext &context) { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].buffers.emplace_back(&buffer); });
+    modifyContext([&](GenericPlayerContext &context)
+                  { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].buffers.emplace_back(&buffer); });
     m_sut->attachData(firebolt::rialto::MediaSourceType::AUDIO);
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buffer)); // In destructor
 }
@@ -630,7 +633,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachVideoDataWhenBuffersAreEmpty)
 TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachVideoDataWhenItIsNotNeeded)
 {
     GstBuffer buffer{};
-    modifyContext([&](GenericPlayerContext &context) { context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].buffers.emplace_back(&buffer); });
+    modifyContext([&](GenericPlayerContext &context)
+                  { context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].buffers.emplace_back(&buffer); });
     m_sut->attachData(firebolt::rialto::MediaSourceType::VIDEO);
     EXPECT_CALL(*m_gstWrapperMock, gstBufferUnref(&buffer)); // In destructor
 }

@@ -35,8 +35,7 @@ public:
 class TextTrackSession : public ITextTrackSession
 {
 public:
-    TextTrackSession(const std::string &displayName,
-                     const TextTrackAccessorFactory &textTrackAccessorFactory);
+    TextTrackSession(const std::string &displayName, const TextTrackAccessorFactory &textTrackAccessorFactory);
     ~TextTrackSession() override;
     bool pause() override;
     bool play() override;

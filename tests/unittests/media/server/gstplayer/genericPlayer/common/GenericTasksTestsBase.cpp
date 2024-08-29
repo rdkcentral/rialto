@@ -909,8 +909,8 @@ void GenericTasksTestsBase::shouldAttachSubtitleSource()
     EXPECT_CALL(*testContext->m_gstTextTrackSinkFactoryMock, createGstTextTrackSink())
         .WillOnce(Return(&testContext->m_textTrackSink));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_pipeline, StrEq("text-sink")));
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_pipeline),
-                                                                      StrEq("text-sink")))
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_pipeline), StrEq("text-sink")))
         .WillOnce(Return(&testContext->m_paramSpec));
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstAppSrcSetCaps(GST_APP_SRC(&testContext->m_appSrcSubtitle), &testContext->m_gstCaps2));
@@ -1678,11 +1678,9 @@ void GenericTasksTestsBase::setUnderflowEnabled(bool isUnderflowEnabled)
 void GenericTasksTestsBase::triggerVideoUnderflow()
 {
     firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::VIDEO};
-    firebolt::rialto::server::tasks::generic::Underflow task{testContext->m_context,
-                                                             testContext->m_gstPlayer,
+    firebolt::rialto::server::tasks::generic::Underflow task{testContext->m_context, testContext->m_gstPlayer,
                                                              &testContext->m_gstPlayerClient,
-                                                             testContext->m_underflowEnabled,
-                                                             sourceType};
+                                                             testContext->m_underflowEnabled, sourceType};
     task.execute();
 }
 
@@ -1704,7 +1702,8 @@ void GenericTasksTestsBase::triggerShutdown()
 
 void GenericTasksTestsBase::triggerSetMute()
 {
-    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context, testContext->m_gstWrapper, testContext->m_glibWrapper, MediaSourceType::AUDIO, kMute};
+    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context, testContext->m_gstWrapper,
+                                                           testContext->m_glibWrapper, MediaSourceType::AUDIO, kMute};
     task.execute();
 }
 
@@ -2458,7 +2457,9 @@ void GenericTasksTestsBase::triggerSetSourcePosition(firebolt::rialto::MediaSour
     firebolt::rialto::server::tasks::generic::SetSourcePosition task{testContext->m_context,
                                                                      testContext->m_gstPlayer,
                                                                      &testContext->m_gstPlayerClient,
-                                                                     testContext->m_gstWrapper, sourceType, kPosition};
+                                                                     testContext->m_gstWrapper,
+                                                                     sourceType,
+                                                                     kPosition};
     task.execute();
 }
 

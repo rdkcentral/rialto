@@ -150,8 +150,12 @@ void RialtoServerComponentTest::configureWrappers() const
     EXPECT_CALL(*m_rdkGstreamerUtilsWrapperFactoryMock, createRdkGstreamerUtilsWrapper())
         .Times(AtLeast(0))
         .WillRepeatedly(Return(m_rdkGstreamerUtilsWrapperMock));
-    EXPECT_CALL(*m_textTrackPluginWrapperFactoryMock, getTextTrackPluginWrapper()).Times(AtLeast(0)).WillRepeatedly(Return(m_textTrackPluginWrapperMock));
-    EXPECT_CALL(*m_thunderWrapperFactoryMock, getThunderWrapper()).Times(AtLeast(0)).WillRepeatedly(Return(m_thunderWrapperMock));
+    EXPECT_CALL(*m_textTrackPluginWrapperFactoryMock, getTextTrackPluginWrapper())
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(m_textTrackPluginWrapperMock));
+    EXPECT_CALL(*m_thunderWrapperFactoryMock, getThunderWrapper())
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(m_thunderWrapperMock));
     wrappers::IFactoryAccessor::instance().glibWrapperFactory() = m_glibWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().linuxWrapperFactory() = m_linuxWrapperFactoryMock;

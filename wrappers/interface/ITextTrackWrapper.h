@@ -47,9 +47,10 @@ public:
     /**
      * @brief Opens a new renderSession.
      *
-     * @param[in]  displayHandle : displayHandle is an encoding of the wayland display name optionally including the and window ID
+     * @param[in]  displayHandle : displayHandle is an encoding of the wayland display name optionally including the and
+     * window ID
      * @param[out] sessionId     : On success the returned session id
-     * 
+     *
      * @retval the error code
      */
     virtual std::uint32_t openSession(const std::string &displayName, std::uint32_t &sessionId) const = 0;
@@ -58,7 +59,7 @@ public:
      * @brief Closes a previously opened render session.
      *
      * @param[in] sessionId : the session to close
-     * 
+     *
      * @retval the error code
      */
     virtual std::uint32_t closeSession(std::uint32_t sessionId) const = 0;
@@ -67,7 +68,7 @@ public:
      * @brief Pauses a render session.
      *
      * @param[in] sessionId : the session id
-     * 
+     *
      * @retval the error code
      */
     virtual std::uint32_t pauseSession(std::uint32_t sessionId) const = 0;
@@ -76,7 +77,7 @@ public:
      * @brief Resumes a paused session
      *
      * @param[in] sessionId : the session id
-     * 
+     *
      * @retval the error code
      */
     virtual std::uint32_t resumeSession(std::uint32_t sessionId) const = 0;
@@ -85,7 +86,7 @@ public:
      * @brief Mute will hide rendering of Captions
      *
      * @param[in] sessionId : the session id
-     * 
+     *
      * @retval the error code
      */
     virtual std::uint32_t muteSession(std::uint32_t sessionId) const = 0;
@@ -94,7 +95,7 @@ public:
      * @brief UnMute will unhide the rendering of Captions.
      *
      * @param[in] sessionId : the session id
-     * 
+     *
      * @retval the error code
      */
     virtual std::uint32_t unmuteSession(std::uint32_t sessionId) const = 0;
@@ -104,7 +105,7 @@ public:
      *
      * @param[in] sessionId        : the session id
      * @param[in] mediaTimestampMs : the timestamp
-     * 
+     *
      * @retval the error code
      */
     virtual std::uint32_t sendSessionTimestamp(std::uint32_t sessionId, std::uint64_t mediaTimestampMs) const = 0;
@@ -116,16 +117,17 @@ public:
      * @param[in] type            : the type of data
      * @param[in] displayOffsetMs : currently unused
      * @param[in] data            : the data to display, properly formatted as per the expectations of the type used
-     * 
+     *
      * @retval the error code
      */
-    virtual std::uint32_t sendSessionData(std::uint32_t sessionId, DataType type, std::int32_t displayOffsetMs, const std::string &data) const = 0;
+    virtual std::uint32_t sendSessionData(std::uint32_t sessionId, DataType type, std::int32_t displayOffsetMs,
+                                          const std::string &data) const = 0;
 
     /**
      * @brief Set the render session into WebVTT mode
      *
      * @param[in] sessionId : the session id
-     * 
+     *
      * @retval the error code
      */
     virtual std::uint32_t setSessionWebVTTSelection(std::uint32_t sessionId) const = 0;
@@ -134,7 +136,7 @@ public:
      * @brief Set the render session into TTML mode
      *
      * @param[in] sessionId : the session id
-     * 
+     *
      * @retval the error code
      */
     virtual std::uint32_t setSessionTTMLSelection(std::uint32_t sessionId) const = 0;
@@ -144,12 +146,11 @@ public:
      *
      * @param[in] sessionId : the session id
      * @param[in] service   : the service to display e.g. "CC3"
-     * 
+     *
      * @retval the error code
      */
     virtual std::uint32_t setSessionClosedCaptionsService(std::uint32_t sessionId, const std::string &service) const = 0;
 };
 } // namespace firebolt::rialto::wrappers
-
 
 #endif // FIREBOLT_RIALTO_WRAPPERS_I_TEXT_TRACK_WRAPPER_H_

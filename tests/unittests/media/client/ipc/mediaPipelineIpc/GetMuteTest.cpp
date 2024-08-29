@@ -48,8 +48,9 @@ TEST_F(RialtoClientMediaPipelineIpcGetMuteTest, Success)
     constexpr bool kMute{false};
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getMute"), m_controllerMock.get(),
-                                           getMuteRequestMatcher(m_sessionId, m_kSourceId), _, m_blockingClosureMock.get()))
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("getMute"), m_controllerMock.get(),
+                           getMuteRequestMatcher(m_sessionId, m_kSourceId), _, m_blockingClosureMock.get()))
         .WillOnce(Invoke(
             [&](const google::protobuf::MethodDescriptor *, google::protobuf::RpcController *,
                 const google::protobuf::Message *, google::protobuf::Message *response, google::protobuf::Closure *)

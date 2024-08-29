@@ -57,7 +57,7 @@ public:
     MOCK_METHOD(void, setPlaybinFlags, (bool enableAudio), (override));
     MOCK_METHOD(void, addAudioClippingToBuffer, (GstBuffer * buffer, uint64_t clippingStart, uint64_t clippingEnd),
                 (const, override));
-    MOCK_METHOD(void, pushSampleIfRequired, (GstElement *source, const std::string &typeStr), (override));
+    MOCK_METHOD(void, pushSampleIfRequired, (GstElement * source, const std::string &typeStr), (override));
 };
 } // namespace firebolt::rialto::server
 
