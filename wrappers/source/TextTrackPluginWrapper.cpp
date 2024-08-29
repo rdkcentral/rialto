@@ -21,8 +21,6 @@
 #include "TextTrackPluginWrapperFactory.h"
 #include "TextTrackWrapper.h"
 
-using namespace WPEFramework;
-
 namespace firebolt::rialto::wrappers
 {
 std::shared_ptr<ITextTrackPluginWrapper> TextTrackPluginWrapperFactory::getTextTrackPluginWrapper()
@@ -32,7 +30,7 @@ std::shared_ptr<ITextTrackPluginWrapper> TextTrackPluginWrapperFactory::getTextT
 
 TextTrackPluginWrapper::~TextTrackPluginWrapper()
 {
-    m_textTrackPlugin.Close(RPC::CommunicationTimeOut);
+    m_textTrackPlugin.Close(WPEFramework::RPC::CommunicationTimeOut);
 }
 
 std::uint32_t TextTrackPluginWrapper::open()

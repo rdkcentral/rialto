@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_PRIVATE_H_
-#define FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_PRIVATE_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_RIALTO_TEXT_TRACK_SINK_PRIVATE_H_
+#define FIREBOLT_RIALTO_SERVER_GST_RIALTO_TEXT_TRACK_SINK_PRIVATE_H_
 
 #include "ITextTrackSession.h"
 #include <atomic>
@@ -36,4 +36,4 @@ struct GstRialtoTextTrackSinkPrivate
 };
 }; // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_PRIVATE_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_RIALTO_TEXT_TRACK_SINK_PRIVATE_H_

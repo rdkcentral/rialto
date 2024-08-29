@@ -27,6 +27,7 @@
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <string>
 
 namespace firebolt::rialto::server
 {

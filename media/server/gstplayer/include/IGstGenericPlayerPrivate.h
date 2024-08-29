@@ -24,6 +24,7 @@
 #include <gst/app/gstappsrc.h>
 #include <gst/gst.h>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace firebolt::rialto::server

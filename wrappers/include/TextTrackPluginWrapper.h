@@ -27,6 +27,7 @@
 #include <com/com.h>
 #include <core/core.h>
 #include <interfaces/ITextTrack.h>
+#include <memory>
 #include <plugins/Types.h>
 
 namespace firebolt::rialto::wrappers

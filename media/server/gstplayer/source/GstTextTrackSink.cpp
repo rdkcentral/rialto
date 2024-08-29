@@ -72,16 +72,19 @@ GST_DEBUG_CATEGORY(gst_rialto_text_track_sink_debug_category);
 #define gst_rialto_text_track_sink_parent_class parent_class
 G_DEFINE_TYPE_WITH_PRIVATE(GstRialtoTextTrackSink, gst_rialto_text_track_sink, GST_TYPE_BASE_SINK);
 
-static void gst_rialto_text_track_sink_finalize(GObject *object); // NOLINT(build/function_format)
-static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuffer *buffer);
-static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *caps);
-static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink);
-static gboolean gst_rialto_text_track_sink_stop(GstBaseSink *sink);
-static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *event);
-static GstStateChangeReturn gst_rialto_text_track_sink_change_state(GstElement *element, GstStateChange transition);
-static void gst_rialto_text_track_sink_get_property(GObject *object, guint propId, GValue *value, GParamSpec *pspec);
-static void gst_rialto_text_track_sink_set_property(GObject *object, guint propId, const GValue *value,
-                                                    GParamSpec *pspec);
+static void gst_rialto_text_track_sink_finalize(GObject *object);         // NOLINT(build/function_format)
+static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, // NOLINT(build/function_format)
+                                                       GstBuffer *buffer);
+static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *caps); // NOLINT(build/function_format)
+static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink);                   // NOLINT(build/function_format)
+static gboolean gst_rialto_text_track_sink_stop(GstBaseSink *sink);                    // NOLINT(build/function_format)
+static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *event);  // NOLINT(build/function_format)
+static GstStateChangeReturn
+gst_rialto_text_track_sink_change_state(GstElement *element, GstStateChange transition); // NOLINT(build/function_format)
+static void gst_rialto_text_track_sink_get_property(GObject *object, guint propId, // NOLINT(build/function_format)
+                                                    GValue *value, GParamSpec *pspec);
+static void gst_rialto_text_track_sink_set_property(GObject *object, guint propId, // NOLINT(build/function_format)
+                                                    const GValue *value, GParamSpec *pspec);
 
 static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *klass) // NOLINT(build/function_format)
 {
@@ -136,7 +139,7 @@ static void gst_rialto_text_track_sink_finalize(GObject *object) // NOLINT(build
     GST_CALL_PARENT(G_OBJECT_CLASS, finalize, (object));
 }
 
-static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink)
+static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink) // NOLINT(build/function_format)
 {
     const char *wayland_display = std::getenv("WAYLAND_DISPLAY");
     if (!wayland_display)
@@ -162,7 +165,7 @@ static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink)
     return true;
 }
 
-static gboolean gst_rialto_text_track_sink_stop(GstBaseSink *sink)
+static gboolean gst_rialto_text_track_sink_stop(GstBaseSink *sink) // NOLINT(build/function_format)
 {
     GstRialtoTextTrackSink *self = GST_RIALTO_TEXT_TRACK_SINK(sink);
     self->priv->m_textTrackSession.reset();
@@ -171,7 +174,7 @@ static gboolean gst_rialto_text_track_sink_stop(GstBaseSink *sink)
     return true;
 }
 
-static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuffer *buffer)
+static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuffer *buffer) // NOLINT(build/function_format)
 {
     GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(sink);
 
@@ -192,7 +195,7 @@ static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuf
     return GST_FLOW_OK;
 }
 
-static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *caps)
+static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *caps) // NOLINT(build/function_format)
 {
     GST_INFO_OBJECT(sink, "Setting caps %" GST_PTR_FORMAT, caps);
     GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(sink);
@@ -226,7 +229,7 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
     return TRUE;
 }
 
-static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *event)
+static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *event) // NOLINT(build/function_format)
 {
     GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(sink);
     GST_DEBUG_OBJECT(textTrackSink, "handling event %" GST_PTR_FORMAT, event);
@@ -259,7 +262,8 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
     return GST_BASE_SINK_CLASS(parent_class)->event(sink, event);
 }
 
-static GstStateChangeReturn gst_rialto_text_track_sink_change_state(GstElement *element, GstStateChange transition)
+static GstStateChangeReturn
+gst_rialto_text_track_sink_change_state(GstElement *element, GstStateChange transition) // NOLINT(build/function_format)
 {
     GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(element);
 
@@ -303,7 +307,8 @@ static GstStateChangeReturn gst_rialto_text_track_sink_change_state(GstElement *
     return GST_STATE_CHANGE_SUCCESS;
 }
 
-static void gst_rialto_text_track_sink_get_property(GObject *object, guint propId, GValue *value, GParamSpec *pspec)
+static void gst_rialto_text_track_sink_get_property(GObject *object, guint propId, // NOLINT(build/function_format)
+                                                    GValue *value, GParamSpec *pspec)
 {
     GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(object);
     if (!textTrackSink)
@@ -331,7 +336,8 @@ static void gst_rialto_text_track_sink_get_property(GObject *object, guint propI
     }
 }
 
-static void gst_rialto_text_track_sink_set_property(GObject *object, guint propId, const GValue *value, GParamSpec *pspec)
+static void gst_rialto_text_track_sink_set_property(GObject *object, guint propId, // NOLINT(build/function_format)
+                                                    const GValue *value, GParamSpec *pspec)
 {
     GstRialtoTextTrackSink *textTrackSink = GST_RIALTO_TEXT_TRACK_SINK(object);
     if (!textTrackSink)

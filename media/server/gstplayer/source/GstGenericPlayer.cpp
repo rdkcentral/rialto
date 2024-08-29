@@ -562,15 +562,8 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
         streamInfo.isDataPushed = true;
 
         const bool kIsSingle = m_context.streamInfo.size() == 1;
-        bool allOtherStreamsPushed = true;
-        for (const auto &entry : m_context.streamInfo)
-        {
-            if (entry.first != mediaType && !entry.second.isDataPushed)
-            {
-                allOtherStreamsPushed = false;
-                break;
-            }
-        }
+        bool allOtherStreamsPushed = std::all_of(m_context.streamInfo.begin(), m_context.streamInfo.end(),
+                                                 [](const auto &entry) { return entry.second.isDataPushed; });
 
         if (!m_context.bufferedNotificationSent && (allOtherStreamsPushed || kIsSingle) && m_gstPlayerClient)
         {
@@ -1104,7 +1097,8 @@ void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType,
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, *this, mediaSourceType, position, resetTime));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createSetSourcePosition(m_context, *this, mediaSourceType, position, resetTime));
     }
 }
 

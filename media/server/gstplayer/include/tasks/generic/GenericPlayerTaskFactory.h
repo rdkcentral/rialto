@@ -27,6 +27,7 @@
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::server
 {

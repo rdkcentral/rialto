@@ -23,6 +23,7 @@
 #include "ITextTrackSession.h"
 #include "TextTrackAccessor.h"
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::server
 {

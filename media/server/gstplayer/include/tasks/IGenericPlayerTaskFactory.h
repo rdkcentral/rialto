@@ -30,6 +30,7 @@
 #include <cstdint>
 #include <gst/app/gstappsrc.h>
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::server
 {

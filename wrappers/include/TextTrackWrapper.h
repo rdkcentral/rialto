@@ -23,13 +23,14 @@
 #include "ITextTrackWrapper.h"
 #include <interfaces/ITextTrack.h>
 #include <plugins/Types.h>
+#include <string>
 
 namespace firebolt::rialto::wrappers
 {
 class TextTrackWrapper : public ITextTrackWrapper
 {
 public:
-    TextTrackWrapper(WPEFramework::Exchange::ITextTrack *textTrackControlInterface);
+    explicit TextTrackWrapper(WPEFramework::Exchange::ITextTrack *textTrackControlInterface);
     ~TextTrackWrapper() override;
 
     std::uint32_t openSession(const std::string &displayName, std::uint32_t &sessionId) const override;

@@ -22,6 +22,7 @@
 
 #include "ITextTrackWrapper.h"
 #include <gmock/gmock.h>
+#include <string>
 
 namespace firebolt::rialto::wrappers
 {

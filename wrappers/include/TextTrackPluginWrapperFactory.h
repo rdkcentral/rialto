@@ -20,6 +20,7 @@
 #define FIREBOLT_RIALTO_WRAPPERS_TEXT_TRACK_PLUGIN_WRAPPER_FACTORY_H_
 
 #include "ITextTrackPluginWrapper.h"
+#include <memory>
 
 namespace firebolt::rialto::wrappers
 {

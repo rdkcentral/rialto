@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_WRAPPERS_THUNDER_WRAPPER_H_
 
 #include "IThunderWrapper.h"
+#include <memory>
 
 namespace firebolt::rialto::wrappers
 {

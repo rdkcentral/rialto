@@ -25,6 +25,7 @@
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::server::tasks::generic
 {
