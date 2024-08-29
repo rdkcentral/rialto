@@ -22,47 +22,25 @@
 #include <cinttypes>
 #include <stdexcept>
 
-std::weak_ptr<ITextTrackAccessorFactory> TextTrackAccessorFactory::m_factory;
-
-std::shared_ptr<ITextTrackAccessorFactory> ITextTrackAccessorFactory::getFactory()
+namespace firebolt::rialto::server
 {
-    std::shared_ptr<ITextTrackAccessorFactory> factory = TextTrackAccessorFactory::m_factory.lock();
-
-    if (!factory)
-    {
-        try
-        {
-            factory = std::make_shared<TextTrackAccessorFactory>();
-        }
-        catch (const std::exception &e)
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to create the TextTrackAccessor factory, reason: %s", e.what());
-        }
-
-        TextTrackAccessorFactory::m_factory = factory;
-    }
-
+TextTrackAccessorFactory &TextTrackAccessorFactory::getFactory()
+{
+    static TextTrackAccessorFactory factory;
     return factory;
 }
 
-std::shared_ptr<ITextTrackAccessor> TextTrackAccessorFactory::getTextTrackAccessor()
+std::shared_ptr<TextTrackAccessor> TextTrackAccessorFactory::getTextTrackAccessor() const try
 {
-    static std::shared_ptr<ITextTrackAccessor> textTrackAccessor{};
-    if (!textTrackAccessor)
-    {
-        try
-        {
-            textTrackAccessor = std::make_shared<TextTrackAccessor>(
+    static std::shared_ptr<TextTrackAccessor> textTrackAccessor{std::make_shared<TextTrackAccessor>(
                 firebolt::rialto::wrappers::ITextTrackPluginWrapperFactory::getFactory()->getTextTrackPluginWrapper(),
-                firebolt::rialto::wrappers::IThunderWrapperFactory::getFactory()->getThunderWrapper());
-        }
-        catch (const std::exception &e)
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to create the TextTrackAccessor, reason: %s", e.what());
-        }
-    }
+                firebolt::rialto::wrappers::IThunderWrapperFactory::getFactory()->getThunderWrapper())};
 
     return textTrackAccessor;
+}
+catch (const std::exception &e)
+{
+    return nullptr;
 }
 
 TextTrackAccessor::TextTrackAccessor(
@@ -283,3 +261,4 @@ bool TextTrackAccessor::setSessionCCSelection(uint32_t sessionId, const std::str
                             sessionId, m_thunderWrapper->errorToString(result));
     return false;
 }
+} // namespace firebolt::rialto::server

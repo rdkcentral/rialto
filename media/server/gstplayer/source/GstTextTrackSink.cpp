@@ -150,7 +150,7 @@ static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink)
     try
     {
         self->priv->m_textTrackSession =
-            std::make_unique<TextTrackSession>(display, ITextTrackAccessorFactory::getFactory());
+            firebolt::rialto::server::ITextTrackSessionFactory::getFactory().createTextTrackSession(display);
     }
     catch (const std::exception &e)
     {

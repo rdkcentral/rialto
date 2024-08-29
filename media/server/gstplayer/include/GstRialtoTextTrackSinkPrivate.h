@@ -20,7 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_PRIVATE_H_
 #define FIREBOLT_RIALTO_SERVER_GST_TEXT_TRACK_SINK_PRIVATE_H_
 
-#include "TextTrackSession.h"
+#include "ITextTrackSession.h"
 #include <atomic>
 #include <memory>
 #include <string>
@@ -29,7 +29,7 @@ namespace firebolt::rialto::server
 {
 struct GstRialtoTextTrackSinkPrivate
 {
-    std::unique_ptr<TextTrackSession> m_textTrackSession;
+    std::unique_ptr<ITextTrackSession> m_textTrackSession;
     std::atomic<bool> m_isMuted{false};
     std::string m_textTrackIdentifier;
     // std::mutex m_mutex;

@@ -21,16 +21,23 @@
 #include "TextTrackAccessor.h"
 #include <stdexcept>
 
-TextTrackSession::TextTrackSession(const std::string &displayName,
-                                   const std::shared_ptr<ITextTrackAccessorFactory> &textTrackAccessorFactory)
+namespace firebolt::rialto::server
 {
-    if (!textTrackAccessorFactory)
-    {
-        RIALTO_SERVER_LOG_ERROR("Invalid TextTrackAccessorFactory");
-        throw std::runtime_error("Invalid TextTrackAccessorFactory");
-    }
+ITextTrackSessionFactory &ITextTrackSessionFactory::getFactory()
+{
+    static TextTrackSessionFactory factory;
+    return factory;
+}
 
-    m_textTrackAccessor = textTrackAccessorFactory->getTextTrackAccessor();
+std::unique_ptr<ITextTrackSession> TextTrackSessionFactory::createTextTrackSession(const std::string &display) const
+{
+    return std::make_unique<TextTrackSession>(display, TextTrackAccessorFactory::getFactory());
+}
+
+TextTrackSession::TextTrackSession(const std::string &displayName,
+                                   const TextTrackAccessorFactory &textTrackAccessorFactory)
+{
+    m_textTrackAccessor = textTrackAccessorFactory.getTextTrackAccessor();
     if (!m_textTrackAccessor)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get TextTrackAccessor");
@@ -79,13 +86,13 @@ bool TextTrackSession::sendData(const std::string &data, int32_t displayOffsetMs
 
 bool TextTrackSession::setSessionWebVTTSelection()
 {
-    m_dataType = ITextTrackAccessor::DataType::WebVTT;
+    m_dataType = TextTrackAccessor::DataType::WebVTT;
     return m_textTrackAccessor->setSessionWebVTTSelection(m_sessionId);
 }
 
 bool TextTrackSession::setSessionTTMLSelection()
 {
-    m_dataType = ITextTrackAccessor::DataType::TTML;
+    m_dataType = TextTrackAccessor::DataType::TTML;
     return m_textTrackAccessor->setSessionTTMLSelection(m_sessionId);
 }
 
@@ -93,3 +100,4 @@ bool TextTrackSession::setSessionCCSelection(const std::string &service)
 {
     return m_textTrackAccessor->setSessionCCSelection(m_sessionId, service);
 }
+} // namespace firebolt::rialto::server
