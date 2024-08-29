@@ -149,7 +149,7 @@ void GstCapabilities::fillSupportedMimeTypes()
     }
 
     m_supportedMimeTypes = firebolt::rialto::server::convertFromCapsVectorToMimeSet(supportedCaps, m_gstWrapper);
-    m_supportedMimeTypes.insert("audio/x-raw");
+    //m_supportedMimeTypes.insert("audio/x-raw");
 
     for (GstCaps *caps : supportedCaps)
     {
