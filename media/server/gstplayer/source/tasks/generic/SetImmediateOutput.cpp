@@ -30,12 +30,12 @@ SetImmediateOutput::SetImmediateOutput(IGstGenericPlayerPrivate &player,
     : m_player(player), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_type{type}, m_immediateOutput{
                                                                                                 immediateOutput}
 {
-    RIALTO_SERVER_LOG_DEBUG("Constructing");
+    RIALTO_SERVER_LOG_DEBUG("Constructing SetImmediateOutput");
 }
 
 SetImmediateOutput::~SetImmediateOutput()
 {
-    RIALTO_SERVER_LOG_DEBUG("Destructing");
+    RIALTO_SERVER_LOG_DEBUG("SetImmediateOutput finished");
 }
 
 void SetImmediateOutput::execute() const

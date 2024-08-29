@@ -153,19 +153,22 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_NoDecoders)
                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
     GList *listOfFactories{nullptr};
     GstElementFactory *dummyFactory{nullptr};
-    GstElement *dummyElement{gst_bin_new("Dummy")};
+    GObjectClass dummyClass;
+    const GType kDummyType{1};
     std::vector<std::string> kParamNames{"test-name-123"};
+    memset(&dummyClass, 0x00, sizeof(dummyClass));
     listOfFactories = g_list_append(listOfFactories, dummyFactory);
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(expectedFactoryListType, GST_RANK_NONE))
         .WillOnce(Return(listOfFactories));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(dummyFactory, nullptr)).WillOnce(Return(dummyElement));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(dummyFactory)).WillOnce(Return(kDummyType));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&dummyClass));
     // the call will return false because the following EXPECT returns null (property not found)
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(dummyElement), _)).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(dummyElement));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(&dummyClass, StrEq(kParamNames.front().c_str())))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&dummyClass));
     EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(listOfFactories)).Times(1);
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
     EXPECT_TRUE(supportedProperties.empty());
-    gst_object_unref(dummyElement);
     gst_plugin_feature_list_free(listOfFactories);
 }
 
@@ -251,21 +254,21 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoSinkPadsA
                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
     GList *listOfFactories{nullptr};
     GstElementFactory *dummyFactory{nullptr};
-    GstElement *dummyElement{gst_bin_new("Dummy")};
+    const GType kDummyType{3};
+    GObjectClass dummyClass;
     GParamSpec dummyParam;
     std::vector<std::string> kParamNames{"test-name-123", "test2"};
+    memset(&dummyClass, 0x00, sizeof(dummyClass));
     listOfFactories = g_list_append(listOfFactories, dummyFactory);
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(expectedFactoryListType, GST_RANK_NONE))
         .WillOnce(Return(listOfFactories));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(dummyFactory, nullptr)).WillOnce(Return(dummyElement));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(dummyElement), _))
-        .WillRepeatedly(Return(&dummyParam));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(dummyElement));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(dummyFactory)).WillOnce(Return(kDummyType));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&dummyClass));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(&dummyClass, _)).WillRepeatedly(Return(&dummyParam));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&dummyClass));
     EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(listOfFactories)).Times(1);
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
     EXPECT_EQ(supportedProperties, kParamNames);
-
-    gst_object_unref(dummyElement);
     gst_plugin_feature_list_free(listOfFactories);
 }
 

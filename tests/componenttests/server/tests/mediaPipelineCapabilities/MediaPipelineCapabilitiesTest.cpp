@@ -42,16 +42,18 @@ public:
 
     void willCallGetSupportedProperties()
     {
+        const GType kDummyType{3};
+        GstElementFactory *dummyFactory{nullptr};
+        memset(&m_dummyClass, 0x00, sizeof(m_dummyClass));
         GstElementFactoryListType expectedFactoryListType{
             GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
-        m_dummyElement = gst_bin_new("Dummy");
-        m_listOfFactories = g_list_append(m_listOfFactories, m_dummyFactory);
+        m_listOfFactories = g_list_append(m_listOfFactories, dummyFactory);
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(expectedFactoryListType, GST_RANK_NONE))
             .WillOnce(Return(m_listOfFactories));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(m_dummyFactory, nullptr)).WillOnce(Return(m_dummyElement));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_dummyElement), _))
-            .WillRepeatedly(Return(&m_dummyParam));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_dummyElement));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(dummyFactory)).WillOnce(Return(kDummyType));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&m_dummyClass));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(&m_dummyClass, _)).WillRepeatedly(Return(&m_dummyParam));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_dummyClass));
         EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
     }
 
@@ -66,16 +68,13 @@ public:
                 EXPECT_EQ(supportedProperties, m_kParamNames);
             });
 
-        gst_object_unref(m_dummyElement);
         gst_plugin_feature_list_free(m_listOfFactories);
         m_listOfFactories = nullptr;
-        m_dummyElement = nullptr;
     }
 
 private:
     GList *m_listOfFactories{nullptr};
-    GstElementFactory *m_dummyFactory{nullptr};
-    GstElement *m_dummyElement{nullptr};
+    GObjectClass m_dummyClass;
     GParamSpec m_dummyParam;
     std::vector<std::string> m_kParamNames{"test-name-5", "test2", "prop3"};
 };

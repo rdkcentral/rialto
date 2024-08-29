@@ -279,7 +279,6 @@ protected:
      * @brief Handles a have data request.
      *
      * @param[in] status  : The status
-     * @param[in] dataVec : The data returned.
      * @param[in] needDataRequestId : Need data request id
      *
      * @retval true on success.

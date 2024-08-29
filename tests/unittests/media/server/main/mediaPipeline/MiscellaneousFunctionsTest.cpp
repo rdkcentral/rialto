@@ -30,6 +30,7 @@ protected:
     const double m_kPlaybackRate{1.5};
     uint64_t m_kRenderedFrames{3141};
     uint64_t m_kDroppedFrames{95};
+    const int m_kDummySourceId{123};
 
     RialtoServerMediaPipelineMiscellaneousFunctionsTest() { createMediaPipeline(); }
 
@@ -250,8 +251,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputFailureDueToUninitializedPlayer)
 {
     mainThreadWillEnqueueTaskAndWait();
-    const int kSourceId{1};
-    EXPECT_FALSE(m_mediaPipeline->setImmediateOutput(kSourceId, true));
+    EXPECT_FALSE(m_mediaPipeline->setImmediateOutput(m_kDummySourceId, true));
 }
 
 /**
@@ -264,6 +264,18 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputFa
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, setImmediateOutput(_, _)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->setImmediateOutput(videoSourceId, true));
+}
+
+/**
+ * Test that SetImmediateOutput fails if source is not present.
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputNoSourcePresent)
+{
+    loadGstPlayer();
+    // No attachment of source
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_FALSE(m_mediaPipeline->setImmediateOutput(m_kDummySourceId, true));
 }
 
 /**
@@ -289,9 +301,8 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputSu
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputFailureDueToUninitializedPlayer)
 {
     mainThreadWillEnqueueTaskAndWait();
-    const int kSourceId{1};
     bool immediateOutputState;
-    EXPECT_FALSE(m_mediaPipeline->getImmediateOutput(kSourceId, immediateOutputState));
+    EXPECT_FALSE(m_mediaPipeline->getImmediateOutput(m_kDummySourceId, immediateOutputState));
 }
 
 /**
@@ -305,6 +316,19 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputFa
     EXPECT_CALL(*m_gstPlayerMock, getImmediateOutput(_, _)).WillOnce(Return(false));
     bool immediateOutputState;
     EXPECT_FALSE(m_mediaPipeline->getImmediateOutput(videoSourceId, immediateOutputState));
+}
+
+/**
+ * Test that GetImmediateOutput fails if source is not present.
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputNoSourcePresent)
+{
+    loadGstPlayer();
+    // No attachment of source
+    mainThreadWillEnqueueTaskAndWait();
+
+    bool immediateOutputState;
+    EXPECT_FALSE(m_mediaPipeline->getImmediateOutput(m_kDummySourceId, immediateOutputState));
 }
 
 /**
@@ -335,8 +359,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsFailureDueTo
     mainThreadWillEnqueueTaskAndWait();
     uint64_t renderedFrames;
     uint64_t droppedFrames;
-    const int kSourceId{1};
-    EXPECT_FALSE(m_mediaPipeline->getStats(kSourceId, renderedFrames, droppedFrames));
+    EXPECT_FALSE(m_mediaPipeline->getStats(m_kDummySourceId, renderedFrames, droppedFrames));
 }
 
 /**
@@ -351,6 +374,20 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsFailure)
     uint64_t droppedFrames;
     EXPECT_CALL(*m_gstPlayerMock, getStats(_, _, _)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getStats(videoSourceId, renderedFrames, droppedFrames));
+}
+
+/**
+ * Test that GetStats fails if source is not present.
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsNoSourcePresent)
+{
+    loadGstPlayer();
+    // No attachment of source
+    mainThreadWillEnqueueTaskAndWait();
+
+    uint64_t renderedFrames;
+    uint64_t droppedFrames;
+    EXPECT_FALSE(m_mediaPipeline->getStats(m_kDummySourceId, renderedFrames, droppedFrames));
 }
 
 /**

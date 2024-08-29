@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ using testing::_;
 using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
-using testing::SetArgPointee;
 using testing::SetArgumentPointee;
 using testing::StrEq;
 
@@ -36,46 +35,127 @@ namespace
 {
 constexpr unsigned kFramesToPush{1};
 constexpr int kFrameCountInPausedState{3};
-const std::string kAudioSourceName{"Audio"};
-const std::string kVideoSourceName{"Video"};
+constexpr int kFrameCountInPlayingState{24};
 const std::string kElementTypeName{"GenericSink"};
+constexpr bool kImmediateOutput{true};
 } // namespace
 
 namespace firebolt::rialto::server::ct
 {
-class QosUpdatesTest : public MediaPipelineTest
+class PipelinePropertyTest : public MediaPipelineTest
 {
 public:
-    QosUpdatesTest()
+    PipelinePropertyTest()
     {
         GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
         m_videoSink = gst_element_factory_create(elementFactory, nullptr);
         gst_object_unref(elementFactory);
     }
 
-    ~QosUpdatesTest() override { gst_object_unref(m_videoSink); }
+    ~PipelinePropertyTest() override { gst_object_unref(m_videoSink); }
 
-    void willQos(const std::string &sourceName)
+    void waitForPositionUpdate()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstMessageParseQos(_, _, _, _, _, _));
-        EXPECT_CALL(*m_gstWrapperMock, gstMessageParseQosStats(_, _, _, _))
-            .WillOnce(DoAll(SetArgPointee<1>(GST_FORMAT_BUFFERS), SetArgPointee<2>(kQosInfo.processed),
-                            SetArgPointee<3>(kQosInfo.dropped)));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return(sourceName.c_str()));
+        ExpectMessage<PositionChangeEvent> expectPositionUpdate{m_clientStub};
+        expectPositionUpdate.setTimeout(std::chrono::milliseconds(300)); // Timeout is received every 250ms
+        auto receivedPositionUpdate = expectPositionUpdate.getMessage();
+        ASSERT_TRUE(receivedPositionUpdate);
+        EXPECT_EQ(receivedPositionUpdate->session_id(), m_sessionId);
+        EXPECT_EQ(receivedPositionUpdate->position(), kCurrentPosition);
     }
 
-    void qos(int sourceId)
+    void getPosition()
     {
-        ExpectMessage<QosEvent> expectedQos{m_clientStub};
+        auto req{createGetPositionRequest(m_sessionId)};
+        ConfigureAction<GetPosition>(m_clientStub)
+            .send(req)
+            .expectSuccess()
+            .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.position(), kCurrentPosition); });
+    }
 
-        m_gstreamerStub.sendQos(&m_src);
+    void getPositionFailure()
+    {
+        auto req{createGetPositionRequest(m_sessionId)};
+        ConfigureAction<GetPosition>(m_clientStub).send(req).expectFailure();
+    }
 
-        auto receivedQos = expectedQos.getMessage();
-        ASSERT_TRUE(receivedQos);
-        EXPECT_EQ(receivedQos->session_id(), m_sessionId);
-        EXPECT_EQ(receivedQos->source_id(), sourceId);
-        EXPECT_EQ(receivedQos->qos_info().processed(), kQosInfo.processed);
-        EXPECT_EQ(receivedQos->qos_info().dropped(), kQosInfo.dropped);
+    void willSetImmediateOutput()
+    {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _))
+            .WillOnce(Invoke(
+                [&](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                    *elementPtr = m_videoSink;
+                }));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink))).WillOnce(Return(kElementTypeName.c_str()));
+
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, _)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(1);
+    }
+
+    void setImmediateOutput()
+    {
+        auto req{createSetImmediateOutputRequest(m_sessionId, m_videoSourceId, true)};
+        ConfigureAction<SetImmediateOutput>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
+    }
+
+    void willFailToSetImmediateOutput()
+    {
+        // Failure to get the video sync will cause setImmediateOutput() to fail
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _)).Times(1);
+        // We expect no further calls to gst or glib as would be the case if
+        // the video-sink had been returned. See "willSetImmediateOutput()"
+    }
+
+    void setImmediateOutputFailure()
+    {
+        auto req{createSetImmediateOutputRequest(m_sessionId, m_videoSourceId, true)};
+        // We expect success from this test because it's asyncronous (and the return
+        // value doesn't reflect that the immediate-output flag wasn't set)
+        ConfigureAction<SetImmediateOutput>(m_clientStub).send(req).expectSuccess();
+    }
+
+    void willGetImmediateOutput()
+    {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _))
+            .WillOnce(Invoke(
+                [&](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                    *elementPtr = m_videoSink;
+                }));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink))).WillOnce(Return(kElementTypeName.c_str()));
+
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("immediate-output"), _))
+            .WillOnce(Invoke(
+                [&](gpointer object, const gchar *first_property_name, void *val)
+                {
+                    gboolean *immediateOutputValue = reinterpret_cast<gboolean *>(val);
+                    *immediateOutputValue = kImmediateOutput ? TRUE : FALSE;
+                }));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(1);
+    }
+
+    void getImmediateOutput()
+    {
+        auto req{createGetImmediateOutputRequest(m_sessionId, m_videoSourceId)};
+        ConfigureAction<GetImmediateOutput>(m_clientStub)
+            .send(req)
+            .expectSuccess()
+            .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.immediate_output(), kImmediateOutput); });
+    }
+
+    void willFailToGetImmediateOutput()
+    {
+        // Failure to get the video sync will cause getImmediateOutput() to fail
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _)).Times(1);
+    }
+
+    void getImmediateOutputFailure()
+    {
+        auto req{createGetImmediateOutputRequest(m_sessionId, m_videoSourceId)};
+        ConfigureAction<GetImmediateOutput>(m_clientStub).send(req).expectFailure();
     }
 
     void willGetStats()
@@ -153,19 +233,17 @@ public:
 
 private:
     GstElement *m_videoSink{nullptr};
-    GstElement m_src{};
     GstStructure m_testStructure;
 };
 
 /*
- * Component Test: Qos Updates Test
+ * Component Test: Get position test
  * Test Objective:
- *  Test the notifyQos API. After receiving GST_MESSAGE_QOS, RialtoServer should send notifyQos to RialtoClient
+ *  Test the GetPosition method in rialto
  *
  * Sequence Diagrams:
- *  Create, Destroy - https://wiki.rdkcentral.com/pages/viewpage.action?pageId=226375556
- *  Quality of Service
- *   - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
+ *  Position Reporting:
+ *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
  *
  * Test Setup:
  *  Language: C++
@@ -198,70 +276,24 @@ private:
  *   Expect that all sources are attached.
  *   Expect that the Playback state has changed to IDLE.
  *
- *  Step 4: Pause
- *   Pause the content.
- *   Expect that gstreamer pipeline is paused.
+ *  Step 4: Set Immediate Output
+ *   Rialto should send SetImmediateOutput request and wait for response
  *
- *  Step 5: Write 1 audio frame
- *   Gstreamer Stub notifies, that it needs audio data
- *   Expect that server notifies the client that it needs 3 frames of audio data.
- *   Write 1 frame of audio data to the shared buffer.
- *   Send HaveData message
- *   Expect that server notifies the client that it needs 3 frames of audio data.
+ *  Step 5: Get Immediate output
+ *   Will get the immediate output property of the sink on the Rialto Server
  *
- *  Step 6: Write 1 video frame
- *   Gstreamer Stub notifies, that it needs video data
- *   Expect that server notifies the client that it needs 3 frames of video data.
- *   Write 1 frame of video data to the shared buffer.
- *   Send HaveData message
- *   Expect that server notifies the client that it needs 3 frames of video data.
- *
- *  Step 7: Notify buffered and Paused
- *   Expect that server notifies the client that the Network state has changed to BUFFERED.
- *   Gstreamer Stub notifies, that pipeline state is in PAUSED state
- *   Expect that server notifies the client that the Network state has changed to PAUSED.
- *
- *  Step 8: Play
- *   Play the content.
- *   Expect that gstreamer pipeline is in playing state
- *   Expect that server notifies the client that the Playback state has changed to PLAYING.
- *
- *  Step 9: Audio QoS
- *   GST_MESSAGE_QOS should be received from audio source
- *   Rialto Server should send NotifyQos to Rialto Client
- *
- *  Step 10: Video QoS
- *   GST_MESSAGE_QOS should be received from video source
- *   Rialto Server should send NotifyQos to Rialto Client
- *
- *  Step 11: Get Stats
- *   Rialto should send GetStats request and wait for response
- *   GetStatsResponse should contain the number of rendered and dropped frames
- *
- *  Step 12: End of audio stream
- *   Send audio haveData with one frame and EOS status
- *   Expect that Gstreamer is notified about end of stream
- *
- *  Step 13: End of video stream
- *   Send video haveData with one frame and EOS status
- *   Expect that Gstreamer is notified about end of stream
- *
- *  Step 14: Notify end of stream
- *   Simulate, that gst_message_eos is received by Rialto Server
- *   Expect that server notifies the client that the Network state has changed to END_OF_STREAM.
- *
- *  Step 15: Remove sources
+ *  Step 6: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 16: Stop
+ *  Step 7: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 17: Destroy media session
+ *  Step 8: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -270,11 +302,11 @@ private:
  *  Server is terminated.
  *
  * Expected Results:
- *  Qos information from GStreamer is forwarded to Rialto Client
+ *  GetPosition is successful in >= PAUSED state
  *
  * Code:
  */
-TEST_F(QosUpdatesTest, QosUpdates)
+TEST_F(PipelinePropertyTest, GetPositionSuccess)
 {
     // Step 1: Create a new media session
     createSession();
@@ -295,78 +327,36 @@ TEST_F(QosUpdatesTest, QosUpdates)
     willFinishSetupAndAddSource();
     indicateAllSourcesAttached();
 
-    // Step 4: Pause
-    willPause();
-    pause();
+    // Step 4: Set Immediate Output
+    willSetImmediateOutput();
+    setImmediateOutput();
 
-    // Step 5: Write 1 audio frame
-    // Step 6: Write 1 video frame
-    // Step 7: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
-    {
-        ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
+    // Step 5: Get Immediate output
+    willGetImmediateOutput();
+    getImmediateOutput();
 
-        pushAudioData(kFramesToPush, kFrameCountInPausedState);
-        pushVideoData(kFramesToPush, kFrameCountInPausedState);
-
-        auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
-        ASSERT_TRUE(receivedNetworkStateChange);
-        EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
-        EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
-    }
-    willNotifyPaused();
-    notifyPaused();
-
-    // Step 8: Play
-    willPlay();
-    play();
-
-    // Step 9: Audio QoS
-    willQos(kAudioSourceName);
-    qos(m_audioSourceId);
-
-    // Step 10: Video QoS
-    willQos(kVideoSourceName);
-    qos(m_videoSourceId);
-
-    // Step 11: Get Stats
-    willGetStats();
-    getStats();
-
-    // Step 12: End of audio stream
-    // Step 13: End of video stream
-    willEos(&m_audioAppSrc);
-    eosAudio(kFramesToPush);
-    willEos(&m_videoAppSrc);
-    eosVideo(kFramesToPush);
-
-    // Step 14: Notify end of stream
-    gstNotifyEos();
+    // Step 6: Remove sources
     willRemoveAudioSource();
-
-    // Step 15: Remove sources
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 16: Stop
+    // Step 7: Stop
     willStop();
     stop();
 
-    // Step 16: Destroy media session
+    // Step 8: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }
 
 /*
- * Component Test: Qos Updates Test
+ * Component Test: Get position failure test
  * Test Objective:
- *  Test the notifyQos API. After receiving GST_MESSAGE_QOS, RialtoServer should send notifyQos to RialtoClient
+ *  Test the GetPosition method in rialto. It should fail, when pipeline is below PAUSED state
  *
  * Sequence Diagrams:
- *  Create, Destroy - https://wiki.rdkcentral.com/pages/viewpage.action?pageId=226375556
- *  Quality of Service
- *   - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
+ *  Position Reporting:
+ *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
  *
  * Test Setup:
  *  Language: C++
@@ -399,63 +389,26 @@ TEST_F(QosUpdatesTest, QosUpdates)
  *   Expect that all sources are attached.
  *   Expect that the Playback state has changed to IDLE.
  *
- *  Step 4: Pause
- *   Pause the content.
- *   Expect that gstreamer pipeline is paused.
+ *  Step 4: Fail to Set Immediate Output
+ *   Rialto client sends SetImmediateOutput request and waits for response
+ *   SetImmediateOutputResponse is false because the server couldn't process it
  *
- *  Step 5: Write 1 audio frame
- *   Gstreamer Stub notifies, that it needs audio data
- *   Expect that server notifies the client that it needs 3 frames of audio data.
- *   Write 1 frame of audio data to the shared buffer.
- *   Send HaveData message
- *   Expect that server notifies the client that it needs 3 frames of audio data.
+ *  Step 5: Fail to Get Immediate Output
+ *   Rialto client sends GetImmediateOutput request and waits for response
+ *   GetImmediateOutputResponse is false because the server couldn't process it
  *
- *  Step 6: Write 1 video frame
- *   Gstreamer Stub notifies, that it needs video data
- *   Expect that server notifies the client that it needs 3 frames of video data.
- *   Write 1 frame of video data to the shared buffer.
- *   Send HaveData message
- *   Expect that server notifies the client that it needs 3 frames of video data.
- *
- *  Step 7: Notify buffered and Paused
- *   Expect that server notifies the client that the Network state has changed to BUFFERED.
- *   Gstreamer Stub notifies, that pipeline state is in PAUSED state
- *   Expect that server notifies the client that the Network state has changed to PAUSED.
- *
- *  Step 8: Play
- *   Play the content.
- *   Expect that gstreamer pipeline is in playing state
- *   Expect that server notifies the client that the Playback state has changed to PLAYING.
- *
- *  Step 9: Fail to get Stats
- *   Rialto client sends GetStats request and waits for response
- *   GetStatsResponse is false because the server couldn't obtain the
- *   relevant information from gstreamer
- *
- *  Step 10: End of audio stream
- *   Send audio haveData with one frame and EOS status
- *   Expect that Gstreamer is notified about end of stream
- *
- *  Step 11: End of video stream
- *   Send video haveData with one frame and EOS status
- *   Expect that Gstreamer is notified about end of stream
- *
- *  Step 12: Notify end of stream
- *   Simulate, that gst_message_eos is received by Rialto Server
- *   Expect that server notifies the client that the Network state has changed to END_OF_STREAM.
- *
- *  Step 13: Remove sources
+ *  Step 6: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 14: Stop
+ *  Step 7: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 15: Destroy media session
+ *  Step 8: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -464,11 +417,11 @@ TEST_F(QosUpdatesTest, QosUpdates)
  *  Server is terminated.
  *
  * Expected Results:
- *  Qos information from GStreamer is forwarded to Rialto Client
+ *  Position update notification is received in playing state
  *
  * Code:
  */
-TEST_F(QosUpdatesTest, QosUpdatesFailures)
+TEST_F(PipelinePropertyTest, getPositionFailure)
 {
     // Step 1: Create a new media session
     createSession();
@@ -489,57 +442,24 @@ TEST_F(QosUpdatesTest, QosUpdatesFailures)
     willFinishSetupAndAddSource();
     indicateAllSourcesAttached();
 
-    // Step 4: Pause
-    willPause();
-    pause();
+    // Step 4: Fail to set Immediate Output
+    willFailToSetImmediateOutput();
+    setImmediateOutputFailure();
 
-    // Step 5: Write 1 audio frame
-    // Step 6: Write 1 video frame
-    // Step 7: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
-    {
-        ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
+    // Step 5: Fail to get Immediate Output
+    willFailToGetImmediateOutput();
+    getImmediateOutputFailure();
 
-        pushAudioData(kFramesToPush, kFrameCountInPausedState);
-        pushVideoData(kFramesToPush, kFrameCountInPausedState);
-
-        auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
-        ASSERT_TRUE(receivedNetworkStateChange);
-        EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
-        EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
-    }
-    willNotifyPaused();
-    notifyPaused();
-
-    // Step 8: Play
-    willPlay();
-    play();
-
-    // Step 9: Fail to get Stats
-    willFailToGetStats();
-    getStatsFailure();
-
-    // Step 10: End of audio stream
-    // Step 11: End of video stream
-    willEos(&m_audioAppSrc);
-    eosAudio(kFramesToPush);
-    willEos(&m_videoAppSrc);
-    eosVideo(kFramesToPush);
-
-    // Step 12: Notify end of stream
-    gstNotifyEos();
+    // Step 6: Remove sources
     willRemoveAudioSource();
-
-    // Step 13: Remove sources
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 14: Stop
+    // Step 7: Stop
     willStop();
     stop();
 
-    // Step 15: Destroy media session
+    // Step 8: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

@@ -357,7 +357,7 @@ protected:
      * This method is sychronous
      *
      * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
-     * @param[in] immediateOutput : Returns the immediate output mode on the sink
+     * @param[out] immediateOutput : Returns the immediate output mode on the sink
      *
      * @retval true on success.
      */

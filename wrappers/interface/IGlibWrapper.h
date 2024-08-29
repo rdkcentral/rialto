@@ -78,7 +78,7 @@ public:
      *
      * @param[in] object                : Pointer to the object.
      * @param[in] first_property_name   : Name of the first property to get.
-     * @param[in] ...                   : Return location for the first property, followed optionally by more
+     * @param[out] ...                   : Return location for the first property, followed optionally by more
      * name/return location pairs
      */
     virtual void gObjectGet(gpointer object, const gchar *first_property_name, ...) = 0;

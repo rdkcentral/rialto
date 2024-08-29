@@ -145,12 +145,13 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
     for (GList *iter = factories; iter != nullptr && !propertiesToLookFor.empty(); iter = iter->next)
     {
         GstElementFactory *factory = GST_ELEMENT_FACTORY(iter->data);
-        GstElement *element = m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
-        if (element)
+        GType elementType = m_gstWrapper->gstElementFactoryGetElementType(factory);
+        gpointer elementClass = m_glibWrapper->gTypeClassRef(elementType);
+        if (elementClass)
         {
             for (auto i = propertiesToLookFor.begin(); i != propertiesToLookFor.end();)
             {
-                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(element), i->c_str()))
+                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_CLASS(elementClass), i->c_str()))
                 {
                     propertiesFound.push_back(*i);
                     i = propertiesToLookFor.erase(i);
@@ -159,7 +160,7 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
                     ++i;
             }
 
-            m_gstWrapper->gstObjectUnref(element);
+            m_glibWrapper->gObjectUnref(elementClass);
         }
     }
 
