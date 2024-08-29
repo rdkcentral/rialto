@@ -25,6 +25,7 @@
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
+#include "IGstTextTrackSinkFactory.h"
 #include <memory>
 
 namespace firebolt::rialto::server
@@ -35,7 +36,8 @@ public:
     GenericPlayerTaskFactory(
         IGstGenericPlayerClient *client, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
         const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-        const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper);
+        const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+        const std::shared_ptr<IGstTextTrackSinkFactory> &gstTextTrackSinkFactory);
     ~GenericPlayerTaskFactory() override = default;
 
     std::unique_ptr<IPlayerTask> createAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
@@ -102,6 +104,7 @@ private:
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
+    std::shared_ptr<IGstTextTrackSinkFactory> m_gstTextTrackSinkFactory;
 };
 } // namespace firebolt::rialto::server
 

@@ -22,6 +22,7 @@
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerClientMock.h"
 #include "GstGenericPlayerPrivateMock.h"
+#include "GstTextTrackSinkFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "HeartbeatHandlerMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
@@ -73,8 +74,10 @@ protected:
         std::make_shared<StrictMock<firebolt::rialto::wrappers::GstWrapperMock>>()};
     std::shared_ptr<firebolt::rialto::wrappers::RdkGstreamerUtilsWrapperMock> m_rdkGstreamerUtilsWrapper{
         std::make_shared<StrictMock<firebolt::rialto::wrappers::RdkGstreamerUtilsWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::server::GstTextTrackSinkFactoryMock> m_gstTextTrackSinkFactoryMock{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstTextTrackSinkFactoryMock>>()};
     firebolt::rialto::server::GenericPlayerTaskFactory m_sut{&m_gstPlayerClient, m_gstWrapper, m_glibWrapper,
-                                                             m_rdkGstreamerUtilsWrapper};
+                                                             m_rdkGstreamerUtilsWrapper, m_gstTextTrackSinkFactoryMock};
 };
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateAttachSamples)

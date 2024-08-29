@@ -23,6 +23,7 @@
 #include "GstGenericPlayer.h"
 #include "GstProtectionMetadata.h"
 #include "IMediaPipeline.h"
+#include "IGstTextTrackSinkFactory.h"
 #include "ITimer.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
@@ -98,7 +99,8 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
                                                glibWrapper, IGstSrcFactory::getFactory(),
                                                common::ITimerFactory::getFactory(),
                                                std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
-                                                                                          rdkGstreamerUtilsWrapper),
+                                                                                          rdkGstreamerUtilsWrapper,
+                                                                                          IGstTextTrackSinkFactory::createFactory()),
                                                std::make_unique<WorkerThreadFactory>(),
                                                std::make_unique<GstDispatcherThreadFactory>(),
                                                IGstProtectionMetadataHelperFactory::createFactory());

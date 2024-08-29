@@ -20,7 +20,6 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_TEXT_TRACK_SINK_FACTORY_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_TEXT_TRACK_SINK_FACTORY_H_
 
-#include "IGstWrapper.h"
 #include <gst/gst.h>
 #include <memory>
 

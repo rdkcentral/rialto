@@ -38,6 +38,11 @@
 #include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 #include "ServerManagerStub.h"
+#include "TextTrackPluginWrapperFactoryMock.h"
+#include "TextTrackPluginWrapperMock.h"
+#include "TextTrackWrapperMock.h"
+#include "ThunderWrapperFactoryMock.h"
+#include "ThunderWrapperMock.h"
 
 namespace firebolt::rialto::server::ct
 {
@@ -86,6 +91,16 @@ protected:
         std::make_shared<testing::StrictMock<wrappers::RdkGstreamerUtilsWrapperFactoryMock>>()};
     std::shared_ptr<testing::StrictMock<wrappers::RdkGstreamerUtilsWrapperMock>> m_rdkGstreamerUtilsWrapperMock{
         std::make_shared<testing::StrictMock<wrappers::RdkGstreamerUtilsWrapperMock>>()};
+    std::shared_ptr<testing::StrictMock<wrappers::TextTrackPluginWrapperFactoryMock>> m_textTrackPluginWrapperFactoryMock{
+        std::make_shared<testing::StrictMock<wrappers::TextTrackPluginWrapperFactoryMock>>()};
+    std::shared_ptr<testing::StrictMock<wrappers::TextTrackPluginWrapperMock>> m_textTrackPluginWrapperMock{
+        std::make_shared<testing::StrictMock<wrappers::TextTrackPluginWrapperMock>>()};
+    std::shared_ptr<testing::StrictMock<wrappers::TextTrackWrapperMock>> m_textTrackWrapperMock{
+        std::make_shared<testing::StrictMock<wrappers::TextTrackWrapperMock>>()};
+    std::shared_ptr<testing::StrictMock<wrappers::ThunderWrapperFactoryMock>> m_thunderWrapperFactoryMock{
+        std::make_shared<testing::StrictMock<wrappers::ThunderWrapperFactoryMock>>()};
+    std::shared_ptr<testing::StrictMock<wrappers::ThunderWrapperMock>> m_thunderWrapperMock{
+        std::make_shared<testing::StrictMock<wrappers::ThunderWrapperMock>>()};
 
 private:
     std::unique_ptr<IApplicationSessionServer> m_sut;

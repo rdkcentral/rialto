@@ -20,9 +20,7 @@
 #include "TextTrackAccessor.h"
 
 #include <cinttypes>
-#include <iostream>
-
-using namespace WPEFramework;
+#include <stdexcept>
 
 std::weak_ptr<ITextTrackAccessorFactory> TextTrackAccessorFactory::m_factory;
 
@@ -54,7 +52,9 @@ std::shared_ptr<ITextTrackAccessor> TextTrackAccessorFactory::getTextTrackAccess
     {
         try
         {
-            textTrackAccessor = std::make_shared<TextTrackAccessor>();
+            textTrackAccessor = std::make_shared<TextTrackAccessor>(
+                firebolt::rialto::wrappers::ITextTrackPluginWrapperFactory::getFactory()->getTextTrackPluginWrapper(),
+                firebolt::rialto::wrappers::IThunderWrapperFactory::getFactory()->getThunderWrapper());
         }
         catch (const std::exception &e)
         {
@@ -65,7 +65,10 @@ std::shared_ptr<ITextTrackAccessor> TextTrackAccessorFactory::getTextTrackAccess
     return textTrackAccessor;
 }
 
-TextTrackAccessor::TextTrackAccessor()
+TextTrackAccessor::TextTrackAccessor(
+    const std::shared_ptr<firebolt::rialto::wrappers::ITextTrackPluginWrapper> &textTrackPluginWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IThunderWrapper> &thunderWrapper)
+: m_textTrackPluginWrapper{textTrackPluginWrapper}, m_thunderWrapper{thunderWrapper}
 {
     if (!createTextTrackControlInterface())
     {
@@ -76,65 +79,59 @@ TextTrackAccessor::TextTrackAccessor()
 
 TextTrackAccessor::~TextTrackAccessor()
 {
-    if (m_textTrackControlInterface)
-    {
-        m_textTrackControlInterface->Release();
-    }
-
-    m_textTrackPlugin.Close(RPC::CommunicationTimeOut);
 }
 
 std::optional<uint32_t> TextTrackAccessor::openSession(const std::string &displayName)
 {
     uint32_t sessionId = {};
-    uint32_t result = m_textTrackControlInterface->OpenSession(displayName, sessionId);
-    if (result == Core::ERROR_NONE)
+    uint32_t result = m_textTrackWrapper->openSession(displayName, sessionId);
+    if (m_thunderWrapper->isSuccessful(result))
     {
         RIALTO_SERVER_LOG_INFO("TextTrack session %u created with display '%s'", sessionId, displayName.c_str());
         return sessionId;
     }
 
     RIALTO_SERVER_LOG_ERROR("Failed to create TextTrack session with display '%s'; error '%s'", displayName.c_str(),
-                            Core::ErrorToString(result));
+                            m_thunderWrapper->errorToString(result));
     return std::nullopt;
 }
 
 bool TextTrackAccessor::closeSession(uint32_t sessionId)
 {
-    uint32_t result = m_textTrackControlInterface->CloseSession(sessionId);
-    if (result == Core::ERROR_NONE)
+    uint32_t result = m_textTrackWrapper->closeSession(sessionId);
+    if (m_thunderWrapper->isSuccessful(result))
     {
         RIALTO_SERVER_LOG_INFO("TextTrack session %u closed", sessionId);
         return true;
     }
 
-    RIALTO_SERVER_LOG_ERROR("Failed to close TextTrack session %u; error %s", sessionId, Core::ErrorToString(result));
+    RIALTO_SERVER_LOG_ERROR("Failed to close TextTrack session %u; error %s", sessionId, m_thunderWrapper->errorToString(result));
     return false;
 }
 
 bool TextTrackAccessor::pause(uint32_t sessionId)
 {
-    uint32_t result = m_textTrackControlInterface->PauseSession(sessionId);
-    if (result == Core::ERROR_NONE)
+    uint32_t result = m_textTrackWrapper->pauseSession(sessionId);
+    if (m_thunderWrapper->isSuccessful(result))
     {
         RIALTO_SERVER_LOG_INFO("TextTrack session %u paused", sessionId);
         return true;
     }
 
-    RIALTO_SERVER_LOG_ERROR("Failed to pause TextTrack session %u; error %s", sessionId, Core::ErrorToString(result));
+    RIALTO_SERVER_LOG_ERROR("Failed to pause TextTrack session %u; error %s", sessionId, m_thunderWrapper->errorToString(result));
     return false;
 }
 
 bool TextTrackAccessor::play(uint32_t sessionId)
 {
-    uint32_t result = m_textTrackControlInterface->ResumeSession(sessionId);
-    if (result == WPEFramework::Core::ERROR_NONE)
+    uint32_t result = m_textTrackWrapper->resumeSession(sessionId);
+    if (m_thunderWrapper->isSuccessful(result))
     {
         RIALTO_SERVER_LOG_INFO("TextTrack session %u resumed", sessionId);
         return true;
     }
 
-    RIALTO_SERVER_LOG_ERROR("Failed to resume TextTrack session %u; error %s", sessionId, Core::ErrorToString(result));
+    RIALTO_SERVER_LOG_ERROR("Failed to resume TextTrack session %u; error %s", sessionId, m_thunderWrapper->errorToString(result));
     return false;
 }
 
@@ -142,26 +139,26 @@ bool TextTrackAccessor::mute(uint32_t sessionId, bool mute)
 {
     if (mute)
     {
-        uint32_t result = m_textTrackControlInterface->MuteSession(sessionId);
-        if (result == WPEFramework::Core::ERROR_NONE)
+        uint32_t result = m_textTrackWrapper->muteSession(sessionId);
+        if (m_thunderWrapper->isSuccessful(result))
         {
             RIALTO_SERVER_LOG_INFO("TextTrack session %u muted", sessionId);
             return true;
         }
 
-        RIALTO_SERVER_LOG_ERROR("Failed to mute TextTrack session %u; error %s", sessionId, Core::ErrorToString(result));
+        RIALTO_SERVER_LOG_ERROR("Failed to mute TextTrack session %u; error %s", sessionId, m_thunderWrapper->errorToString(result));
     }
     else
     {
-        uint32_t result = m_textTrackControlInterface->UnMuteSession(sessionId);
-        if (result == WPEFramework::Core::ERROR_NONE)
+        uint32_t result = m_textTrackWrapper->unmuteSession(sessionId);
+        if (m_thunderWrapper->isSuccessful(result))
         {
             RIALTO_SERVER_LOG_INFO("TextTrack session %u unmuted", sessionId);
             return true;
         }
 
         RIALTO_SERVER_LOG_ERROR("Failed to unmute TextTrack session %u; error %s", sessionId,
-                                Core::ErrorToString(result));
+                                m_thunderWrapper->errorToString(result));
     }
 
     return false;
@@ -169,28 +166,28 @@ bool TextTrackAccessor::mute(uint32_t sessionId, bool mute)
 
 bool TextTrackAccessor::setPosition(uint32_t sessionId, uint64_t mediaTimestampMs)
 {
-    uint32_t result = m_textTrackControlInterface->SendSessionTimestamp(sessionId, mediaTimestampMs);
-    if (result == WPEFramework::Core::ERROR_NONE)
+    uint32_t result = m_textTrackWrapper->sendSessionTimestamp(sessionId, mediaTimestampMs);
+    if (m_thunderWrapper->isSuccessful(result))
     {
         RIALTO_SERVER_LOG_INFO("TextTrack session %u set position to %" PRIu64, sessionId, mediaTimestampMs);
         return true;
     }
 
     RIALTO_SERVER_LOG_ERROR("Failed to set position of TextTrack session %u to  %" PRIu64 "; error %s", sessionId,
-                            mediaTimestampMs, Core::ErrorToString(result));
+                            mediaTimestampMs, m_thunderWrapper->errorToString(result));
     return false;
 }
 
 bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, DataType datatype, int32_t displayOffsetMs)
 {
-    Exchange::ITextTrack::DataType wpeDataType{};
+    firebolt::rialto::wrappers::ITextTrackWrapper::DataType wrapperDataType{};
     if (datatype == DataType::WebVTT)
     {
-        wpeDataType = WPEFramework::Exchange::ITextTrack::DataType::TTML;
+        wrapperDataType = firebolt::rialto::wrappers::ITextTrackWrapper::DataType::TTML;
     }
     else if (datatype == DataType::TTML)
     {
-        wpeDataType = WPEFramework::Exchange::ITextTrack::DataType::WEBVTT;
+        wrapperDataType = firebolt::rialto::wrappers::ITextTrackWrapper::DataType::WEBVTT;
     }
     else
     {
@@ -198,29 +195,28 @@ bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, Da
         return false;
     }
 
-    const uint32_t result = m_textTrackControlInterface->SendSessionData(sessionId, wpeDataType, displayOffsetMs, data);
-    if (result == WPEFramework::Core::ERROR_NONE)
+    const uint32_t result = m_textTrackWrapper->sendSessionData(sessionId, wrapperDataType, displayOffsetMs, data);
+    if (m_thunderWrapper->isSuccessful(result))
     {
         RIALTO_SERVER_LOG_DEBUG("Sending data to TextTrack session %u was successful", sessionId);
         return true;
     }
 
     RIALTO_SERVER_LOG_ERROR("Failed to send data to TextTrack session %u; error %s", sessionId,
-                            Core::ErrorToString(result));
+                            m_thunderWrapper->errorToString(result));
     return false;
 }
 
 bool TextTrackAccessor::createTextTrackControlInterface()
 {
-    uint32_t openResult = m_textTrackPlugin.Open(WPEFramework::RPC::CommunicationTimeOut, m_textTrackPlugin.Connector(),
-                                                 "org.rdk.TextTrack");
+    uint32_t openResult = m_textTrackPluginWrapper->open();
 
-    if (openResult == WPEFramework::Core::ERROR_NONE)
+    if (m_thunderWrapper->isSuccessful(openResult))
     {
-        if (m_textTrackPlugin.IsOperational())
+        if (m_textTrackPluginWrapper->isOperational())
         {
-            m_textTrackControlInterface = m_textTrackPlugin.Interface();
-            if (m_textTrackControlInterface)
+            m_textTrackWrapper = m_textTrackPluginWrapper->interface();
+            if (m_textTrackWrapper)
             {
                 RIALTO_SERVER_LOG_INFO("Created TextTrack interface");
                 return true;
@@ -238,7 +234,7 @@ bool TextTrackAccessor::createTextTrackControlInterface()
     else
     {
         RIALTO_SERVER_LOG_ERROR("Failed to open TextTrack plugin; error '%s'",
-                                WPEFramework::Core::ErrorToString(openResult));
+                                m_thunderWrapper->errorToString(openResult));
     }
 
     return false;
@@ -246,37 +242,37 @@ bool TextTrackAccessor::createTextTrackControlInterface()
 
 bool TextTrackAccessor::setSessionWebVTTSelection(uint32_t sessionId)
 {
-    uint32_t result = m_textTrackControlInterface->SetSessionWebVTTSelection(sessionId);
+    uint32_t result = m_textTrackWrapper->setSessionWebVTTSelection(sessionId);
 
-    if (result == WPEFramework::Core::ERROR_NONE)
+    if (m_thunderWrapper->isSuccessful(result))
     {
         RIALTO_SERVER_LOG_DEBUG("Setting WebVTT selection for session %u was successful", sessionId);
         return true;
     }
 
     RIALTO_SERVER_LOG_ERROR("Failed to set WebVTT selection for session %u; error %s", sessionId,
-                            Core::ErrorToString(result));
+                            m_thunderWrapper->errorToString(result));
     return false;
 }
 
 bool TextTrackAccessor::setSessionTTMLSelection(uint32_t sessionId)
 {
-    uint32_t result = m_textTrackControlInterface->SetSessionTTMLSelection(sessionId);
-    if (result == WPEFramework::Core::ERROR_NONE)
+    uint32_t result = m_textTrackWrapper->setSessionTTMLSelection(sessionId);
+    if (m_thunderWrapper->isSuccessful(result))
     {
         RIALTO_SERVER_LOG_DEBUG("Setting TTML selection for session %u was successful", sessionId);
         return true;
     }
 
     RIALTO_SERVER_LOG_ERROR("Failed to set TTML selection for session %u; error %s", sessionId,
-                            Core::ErrorToString(result));
+                            m_thunderWrapper->errorToString(result));
     return false;
 }
 
 bool TextTrackAccessor::setSessionCCSelection(uint32_t sessionId, const std::string &service)
 {
-    uint32_t result = m_textTrackControlInterface->SetSessionClosedCaptionsService(sessionId, service);
-    if (result == WPEFramework::Core::ERROR_NONE)
+    uint32_t result = m_textTrackWrapper->setSessionClosedCaptionsService(sessionId, service);
+    if (m_thunderWrapper->isSuccessful(result))
     {
         RIALTO_SERVER_LOG_DEBUG("Setting CC selection service '%s' for session %u was successful", service.c_str(),
                                 sessionId);
@@ -284,6 +280,6 @@ bool TextTrackAccessor::setSessionCCSelection(uint32_t sessionId, const std::str
     }
 
     RIALTO_SERVER_LOG_ERROR("Failed to set CC selection service '%s' for session %u; error %s", service.c_str(),
-                            sessionId, Core::ErrorToString(result));
+                            sessionId, m_thunderWrapper->errorToString(result));
     return false;
 }

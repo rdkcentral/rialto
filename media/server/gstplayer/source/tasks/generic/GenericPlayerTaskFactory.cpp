@@ -55,9 +55,11 @@ namespace firebolt::rialto::server
 GenericPlayerTaskFactory::GenericPlayerTaskFactory(
     IGstGenericPlayerClient *client, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper)
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+    const std::shared_ptr<IGstTextTrackSinkFactory> &gstTextTrackSinkFactory)
     : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{
-                                                                                  rdkGstreamerUtilsWrapper}
+                                                                                  rdkGstreamerUtilsWrapper},
+                                    m_gstTextTrackSinkFactory{gstTextTrackSinkFactory}
 {
 }
 
@@ -73,7 +75,8 @@ GenericPlayerTaskFactory::createAttachSource(GenericPlayerContext &context, IGst
                                              const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
 {
     return std::make_unique<tasks::generic::AttachSource>(context, m_gstWrapper, m_glibWrapper,
-                                                          m_rdkGstreamerUtilsWrapper, player, source);
+                                                          m_rdkGstreamerUtilsWrapper, m_gstTextTrackSinkFactory,
+                                                          player, source);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createDeepElementAdded(GenericPlayerContext &context,

@@ -27,6 +27,7 @@
 #include "GstGenericPlayerClientMock.h"
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstSrcMock.h"
+#include "GstTextTrackSinkFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 #include <memory>
@@ -56,6 +57,8 @@ public:
         std::make_shared<StrictMock<firebolt::rialto::server::GstSrcMock>>()};
     std::shared_ptr<StrictMock<firebolt::rialto::server::DataReaderMock>> m_dataReader{
         std::make_shared<StrictMock<firebolt::rialto::server::DataReaderMock>>()};
+    std::shared_ptr<firebolt::rialto::server::GstTextTrackSinkFactoryMock> m_gstTextTrackSinkFactoryMock{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstTextTrackSinkFactoryMock>>()};
 
     // Gstreamer members
     GstElement *m_element{};
@@ -82,6 +85,7 @@ public:
     GstIterator m_iterator{};
     GstElement m_childElement{};
     GstQuery m_query{};
+    GstElement m_textTrackSink{};
 
     // Glib members
     guint m_signals[1]{123};

@@ -26,8 +26,6 @@
 #include "TypeConverters.h"
 #include <unordered_map>
 
-#include "GstTextTrackSinkFactory.h"
-
 namespace firebolt::rialto::server::tasks::generic
 {
 namespace
@@ -257,12 +255,14 @@ protected:
 }; // namespace
 
 AttachSource::AttachSource(
-    GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
-    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+    GenericPlayerContext &context, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+    const std::shared_ptr<IGstTextTrackSinkFactory> &gstTextTrackSinkFactory,
     IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_player{player}, m_attachedSource{source->copy()}
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_gstTextTrackSinkFactory{gstTextTrackSinkFactory},
+      m_player{player}, m_attachedSource{source->copy()}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing AttachSource");
 }
@@ -331,7 +331,7 @@ void AttachSource::addSource(GstCaps *caps, bool hasDrm) const
 
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_context.pipeline), "text-sink"))
         {
-            GstElement *elem = GstTextTrackSinkFactory::createFactory()->createGstTextTrackSink();
+            GstElement *elem = m_gstTextTrackSinkFactory->createGstTextTrackSink();
             m_context.subtitleSink = elem;
 
             m_glibWrapper->gObjectSet(m_context.pipeline, "text-sink", elem, nullptr);

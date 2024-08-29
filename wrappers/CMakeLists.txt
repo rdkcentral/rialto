@@ -47,6 +47,9 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
     add_compile_definitions(WRAPPERS_ENABLED)
 
     find_package( ocdm REQUIRED )
+    find_package( WPEFrameworkCore REQUIRED )
+    find_package( WPEFrameworkCOM REQUIRED )
+    find_package( WPEFrameworkMessaging REQUIRED )
 
     set(WRAPPER_INCLUDES
         ${OCdm_INCLUDE_DIRS})
@@ -54,6 +57,9 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
     set(WRAPPER_LIBS
         rdkgstreamerutils
         ocdm::ocdm
+        WPEFrameworkCore::WPEFrameworkCore
+        WPEFrameworkCOM::WPEFrameworkCOM
+        WPEFrameworkMessaging::WPEFrameworkMessaging
         ${CMAKE_DL_LIBS})
 
     set(WRAPPER_SOURCES
@@ -64,7 +70,10 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
         source/OcdmCommon.cpp
         source/OcdmSystem.cpp
         source/OcdmSession.cpp
-        source/RdkGstreamerUtilsWrapper.cpp)
+        source/RdkGstreamerUtilsWrapper.cpp
+        source/TextTrackPluginWrapper.cpp
+        source/TextTrackWrapper.cpp
+        source/ThunderWrapper.cpp)
 endif()
 
 add_library(
@@ -78,6 +87,8 @@ add_library(
         source/OcdmAccessor.cpp
         source/OcdmSystemAccessor.cpp
         source/RdkGstreamerUtilsWrapperAccessor.cpp
+        source/TextTrackPluginWrapperFactoryAccessor.cpp
+        source/ThunderWrapperFactoryAccessor.cpp
         ${WRAPPER_SOURCES}
         ${JSONCPP_WRAPPER_SOURCE_FILES}
     )

@@ -733,6 +733,7 @@ void GenericTasksTestsBase::triggerAttachAudioSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -775,6 +776,7 @@ void GenericTasksTestsBase::triggerAttachAudioSourceWithChannelsAndRateAndDrm()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -814,6 +816,7 @@ void GenericTasksTestsBase::triggerAttachOpusAudioSourceWithAudioSpecificConf()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -852,6 +855,7 @@ void GenericTasksTestsBase::triggerAttachBwavAudioSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -888,6 +892,7 @@ void GenericTasksTestsBase::triggerAttachVideoSource(const std::string &mimeType
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -901,6 +906,9 @@ void GenericTasksTestsBase::shouldAttachSubtitleSource()
     EXPECT_CALL(*testContext->m_glibWrapper, gFree(&testContext->m_capsStr));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryMake(_, StrEq(kSubtitleName.c_str())))
         .WillOnce(Return(&testContext->m_appSrcSubtitle));
+    EXPECT_CALL(*testContext->m_gstTextTrackSinkFactoryMock, createGstTextTrackSink())
+        .WillOnce(Return(&testContext->m_textTrackSink));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_pipeline, StrEq("text-sink")));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_pipeline),
                                                                       StrEq("text-sink")))
         .WillOnce(Return(&testContext->m_paramSpec));
@@ -918,6 +926,7 @@ void GenericTasksTestsBase::triggerAttachSubtitleSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -940,6 +949,7 @@ void GenericTasksTestsBase::checkSubtitleSourceAttached()
               testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::SUBTITLE));
     EXPECT_EQ(&testContext->m_appSrcSubtitle,
               testContext->m_context.streamInfo.at(firebolt::rialto::MediaSourceType::SUBTITLE).appSrc);
+    EXPECT_EQ(testContext->m_context.subtitleSink, &testContext->m_textTrackSink);
 }
 
 void GenericTasksTestsBase::shouldAttachVideoSourceWithStringCodecData()
@@ -966,6 +976,7 @@ void GenericTasksTestsBase::triggerAttachVideoSourceWithStringCodecData()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -1019,6 +1030,7 @@ void GenericTasksTestsBase::triggerAttachVideoSourceWithEmptyCodecData()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -1058,6 +1070,7 @@ void GenericTasksTestsBase::triggerAttachVideoSourceWithDolbyVisionSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -1174,6 +1187,7 @@ void GenericTasksTestsBase::triggerReattachAudioSourceWithEmptyMimeType()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -2496,6 +2510,7 @@ void GenericTasksTestsBase::triggerFailToCastAudioSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -2512,6 +2527,7 @@ void GenericTasksTestsBase::triggerFailToCastVideoSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -2529,6 +2545,7 @@ void GenericTasksTestsBase::triggerFailToCastDolbyVisionSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();

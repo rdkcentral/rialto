@@ -19,19 +19,11 @@
 
 #pragma once
 
-// todo: wywalic to do Module.h
-#ifndef MODULE_NAME
-#define MODULE_NAME TextTrackClosedCaptionsStyleClient
-#endif
-
 #include "ITextTrackAccessor.h"
 #include "RialtoServerLogging.h"
-#include <com/com.h>
-#include <core/core.h>
-#include <interfaces/ITextTrack.h>
-#include <mutex>
-#include <plugins/Types.h>
-#include <set>
+#include "ITextTrackPluginWrapper.h"
+#include "ITextTrackWrapper.h"
+#include "IThunderWrapper.h"
 
 /**
  * @brief ITextTrackAccessorFactory factory class definition.
@@ -55,7 +47,8 @@ public:
 class TextTrackAccessor : public ITextTrackAccessor
 {
 public:
-    TextTrackAccessor();
+    TextTrackAccessor(const std::shared_ptr<firebolt::rialto::wrappers::ITextTrackPluginWrapper> &textTrackPluginWrapper,
+                      const std::shared_ptr<firebolt::rialto::wrappers::IThunderWrapper> &thunderWrapper);
     ~TextTrackAccessor();
     std::optional<uint32_t> openSession(const std::string &displayName) override;
     bool closeSession(uint32_t sessionId) override;
@@ -71,6 +64,7 @@ public:
 private:
     bool createTextTrackControlInterface();
 
-    WPEFramework::Exchange::ITextTrack *m_textTrackControlInterface = nullptr;
-    WPEFramework::RPC::SmartInterfaceType<WPEFramework::Exchange::ITextTrack> m_textTrackPlugin;
+    std::shared_ptr<firebolt::rialto::wrappers::ITextTrackPluginWrapper> m_textTrackPluginWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IThunderWrapper> m_thunderWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::ITextTrackWrapper> m_textTrackWrapper;
 };

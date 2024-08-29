@@ -90,8 +90,6 @@ struct GenericPlayerContext
      */
     bool videoDataPushed{false};
 
-    bool subtitleDataPushed{false};
-
     /**
      * @brief Flag used to check, if BUFFERED notification has been sent.
      *
