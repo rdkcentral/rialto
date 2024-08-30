@@ -98,7 +98,6 @@ if ( RIALTO_LOG_DEBUG_ENABLED )
 endif()
 
 if ( RIALTO_DISABLE_DECRYPT_BUFFER )
-    message("RIALTO_DISABLE_DECRYPT_BUFFER IS ENABLED")
     add_compile_definitions( RIALTO_DISABLE_DECRYPT_BUFFER )
 endif()
 
