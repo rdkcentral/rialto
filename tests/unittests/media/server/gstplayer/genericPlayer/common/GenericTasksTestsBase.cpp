@@ -792,6 +792,7 @@ void GenericTasksTestsBase::triggerAttachBwavAudioSource()
                                                                 source};
     task.execute();
 }
+
 void GenericTasksTestsBase::shouldAttachXrawAudioSource()
 {
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/x-raw")))
@@ -800,6 +801,20 @@ void GenericTasksTestsBase::shouldAttachXrawAudioSource()
     expectAddChannelAndRateAudioToCaps();
     expectAddRawAudioDataToCaps();
     expectSetCaps();
+}
+
+void GenericTasksTestsBase::triggerAttachXrawAudioSource()
+{
+    firebolt::rialto::AudioConfig audioConfig{kNumberOfChannels, kSampleRate, {}, kFormat, kLayout, kChannelMask};
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/x-raw", true, audioConfig);
+    firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
+                                                                testContext->m_gstWrapper,
+                                                                testContext->m_glibWrapper,
+                                                                testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstPlayer,
+                                                                source};
+    task.execute();
 }
 
 void GenericTasksTestsBase::expectAddChannelAndRateAudioToCaps()
