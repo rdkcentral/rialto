@@ -127,6 +127,8 @@ protected:
     void triggerAttachOpusAudioSourceWithAudioSpecificConf();
     void shouldAttachBwavAudioSource();
     void triggerAttachBwavAudioSource();
+    void shouldAttachXrawAudioSource();
+    void triggerAttachXrawAudioSource();
     void shouldAttachVideoSource(const std::string &mime, const std::string &alignment, const std::string &format);
     void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
                                   firebolt::rialto::StreamFormat streamFormat);
@@ -349,6 +351,10 @@ private:
 
     // AttachSource helper methods
     void expectSetGenericVideoCaps();
+    void expectSetChannelAndRateAudioCaps();
+    void expectAddChannelAndRateAudioToCaps();
+    void expectAddRawAudioDataToCaps();
+    void expectSetCaps();
 };
 
 #endif // GENERIC_TASKS_TESTS_BASE_H_

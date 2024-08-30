@@ -64,6 +64,7 @@ public:
                     {"audio/x-opus", {}},
                     {"audio/x-opus, channel-mapping-family=(int)0", {}},
                     {"audio/b-wav", {}},
+                    {"audio/x-raw", {}},
                     {"video/x-av1", {}},
                     {"video/x-h264", {}},
                     {"video/x-h265", {}},
@@ -134,43 +135,42 @@ public:
     std::unordered_map<std::string, GstCaps> m_capsMap;
     std::unique_ptr<GstCapabilities> m_sut;
     std::shared_ptr<StrictMock<GlibWrapperMock>> m_glibWrapperMock{std::make_shared<StrictMock<GlibWrapperMock>>()};
+
+    // Common sink factory type variables to be used in tests
+    char m_dummySink = 0;
+    GstElementFactory *m_sinkFactory{reinterpret_cast<GstElementFactory *>(&m_dummySink)};
+    GstStaticPadTemplate m_sinkPadTemplateSink;
+    GstStaticPadTemplate m_sinkPadTemplateSrc;
+    GstCaps m_sinkTemplateCaps;
+    GListWrapper<GstElementFactory *> m_sinkFactoryList{m_sinkFactory};
+    GListWrapper<GstStaticPadTemplate *> m_sinkPadTemplatesList{&m_sinkPadTemplateSink, &m_sinkPadTemplateSrc};
+
+    // Common decoder factory type variables to be used in tests
+    char m_dummyDecoder = 0;
+    GstElementFactory *m_decoderFactory{reinterpret_cast<GstElementFactory *>(&m_dummyDecoder)};
+    GstStaticPadTemplate m_decoderPadTemplateSink;
+    GstStaticPadTemplate m_decoderPadTemplateSink2;
+    GstStaticPadTemplate m_decoderPadTemplateSrc;
+    GstCaps m_decoderTemplateCapsSink;
+    GstCaps m_decoderTemplateCapsSink2;
+    GListWrapper<GstElementFactory *> m_decoderFactoryList{m_decoderFactory};
+    GListWrapper<GstStaticPadTemplate *> m_decoderPadTemplateListWithSingleSink{&m_decoderPadTemplateSink};
+    GListWrapper<GstStaticPadTemplate *> m_decoderPadTemplateListWithTwoSinks{&m_decoderPadTemplateSink,
+                                                                              &m_decoderPadTemplateSink2};
+    GListWrapper<GstStaticPadTemplate *> m_decoderPadTemplateListWithTwoSinksOneSrc{&m_decoderPadTemplateSink,
+                                                                                    &m_decoderPadTemplateSink2,
+                                                                                    &m_decoderPadTemplateSrc};
+
+    // Common decoder parser factory type variables to be used in tests
+    char m_dummyParser = 0;
+    GstElementFactory *m_parserFactory{reinterpret_cast<GstElementFactory *>(&m_dummyParser)};
+    GstStaticPadTemplate m_parserPadTemplateSink;
+    GstStaticPadTemplate m_parserPadTemplateSrc;
+    GstCaps m_parserTemplateCapsSink;
+    GstCaps m_parserTemplateCapsSrc;
+    GListWrapper<GstElementFactory *> m_parserFactoryList{m_parserFactory};
+    GListWrapper<GstStaticPadTemplate *> m_parserPadTemplatesList{&m_parserPadTemplateSink, &m_parserPadTemplateSrc};
 };
-
-TEST_F(GstCapabilitiesTest, CreateGstCapabilities_NoDecoders)
-{
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
-        .WillOnce(Return(nullptr));
-
-    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
-
-    EXPECT_TRUE(m_sut->getSupportedMimeTypes(MediaSourceType::AUDIO).empty());
-
-    EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/mp4"));
-    EXPECT_FALSE(m_sut->isMimeTypeSupported("video/h264"));
-
-    // The following EXPECTs are for the call to getSupportedProperties()
-    GstElementFactoryListType expectedFactoryListType{GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                      GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
-    GList *listOfFactories{nullptr};
-    GstElementFactory *dummyFactory{nullptr};
-    GObjectClass dummyClass;
-    const GType kDummyType{1};
-    std::vector<std::string> kParamNames{"test-name-123"};
-    memset(&dummyClass, 0x00, sizeof(dummyClass));
-    listOfFactories = g_list_append(listOfFactories, dummyFactory);
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(expectedFactoryListType, GST_RANK_NONE))
-        .WillOnce(Return(listOfFactories));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(dummyFactory)).WillOnce(Return(kDummyType));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&dummyClass));
-    // the call will return false because the following EXPECT returns null (property not found)
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(&dummyClass, StrEq(kParamNames.front().c_str())))
-        .WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&dummyClass));
-    EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(listOfFactories)).Times(1);
-    std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
-    EXPECT_TRUE(supportedProperties.empty());
-    gst_plugin_feature_list_free(listOfFactories);
-}
 
 /**
  * Test the factory
@@ -182,23 +182,68 @@ TEST_F(GstCapabilitiesTest, FactoryCreatesObject)
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
 
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+
     std::shared_ptr<firebolt::rialto::server::IGstCapabilitiesFactory> factory =
         firebolt::rialto::server::IGstCapabilitiesFactory::getFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_NE(factory->createGstCapabilities(), nullptr);
 }
 
+TEST_F(GstCapabilitiesTest, CreateGstCapabilities_NoDecoderAndNoSink)
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+
+    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
+
+    EXPECT_TRUE(m_sut->getSupportedMimeTypes(MediaSourceType::AUDIO).empty());
+
+    EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/x-raw"));
+    EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/mp4"));
+    EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/x-eac3"));
+    EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/aac"));
+}
+
+TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneSinkElement)
+{
+    m_sinkPadTemplateSink = createSinkPadTemplate();
+    m_sinkPadTemplateSrc = createSrcPadTemplate();
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+
+    expectGetFactoryListAndFreeList(m_sinkFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_sinkFactory, m_sinkPadTemplatesList.get());
+
+    expectGetStaticCapsAndCapsUnref(m_sinkPadTemplateSink, &m_sinkTemplateCaps);
+
+    expectCapsToMimeMapping();
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/x-raw"], &m_sinkTemplateCaps))
+        .WillOnce(Return(true));
+
+    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
+
+    EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::AUDIO), UnorderedElementsAre("audio/x-raw"));
+
+    EXPECT_TRUE(m_sut->isMimeTypeSupported("audio/x-raw"));
+    EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/mp4"));
+    EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/x-eac3"));
+    EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/aac"));
+}
+
 TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithNoPads)
 {
-    char dummy = 0;
-    GstElementFactory *decoderFactory =
-        reinterpret_cast<GstElementFactory *>(&dummy); // just dummy address is needed, will not be dereferenced
+    expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
 
-    GListWrapper<GstElementFactory *> listDecoders({decoderFactory});
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetStaticPadTemplates(m_decoderFactory)).WillOnce(Return(nullptr));
 
-    expectGetFactoryListAndFreeList(listDecoders.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetStaticPadTemplates(decoderFactory)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
 
@@ -210,35 +255,32 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithNoPads)
 
 TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoSinkPadsAndOneSrcPad)
 {
-    char dummy = 0;
-    GstElementFactory *decoderFactory = reinterpret_cast<GstElementFactory *>(&dummy);
-    GstStaticPadTemplate decoderPadTemplate1 = createSinkPadTemplate();
-    GstStaticPadTemplate decoderPadTemplate2 = createSinkPadTemplate();
-    GstStaticPadTemplate decoderPadTemplate3 = createSrcPadTemplate();
+    m_decoderPadTemplateSink = createSinkPadTemplate();
+    m_decoderPadTemplateSink2 = createSinkPadTemplate();
+    m_decoderPadTemplateSrc = createSrcPadTemplate();
 
-    GstCaps padTemplateCaps1;
-    GstCaps padTemplateCaps2;
+    expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithTwoSinksOneSrc.get());
 
-    GListWrapper<GstElementFactory *> listDecoders{decoderFactory};
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&decoderPadTemplate1, &decoderPadTemplate2,
-                                                             &decoderPadTemplate3};
+    expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
+    expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink2, &m_decoderTemplateCapsSink2);
 
-    expectGetFactoryListAndFreeList(listDecoders.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(decoderFactory, decoderPadTemplates.get());
-
-    expectGetStaticCapsAndCapsUnref(decoderPadTemplate1, &padTemplateCaps1);
-    expectGetStaticCapsAndCapsUnref(decoderPadTemplate2, &padTemplateCaps2);
-
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&padTemplateCaps2, &padTemplateCaps1)).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_decoderTemplateCapsSink2, &m_decoderTemplateCapsSink))
+        .WillOnce(Return(false));
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
 
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+
     expectCapsToMimeMapping();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/mpeg, mpegversion=(int)4"], &padTemplateCaps1))
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsCanIntersect(&m_capsMap["audio/mpeg, mpegversion=(int)4"], &m_decoderTemplateCapsSink))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/x-opus"], &padTemplateCaps2)).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/x-opus"], &m_decoderTemplateCapsSink2))
+        .WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
 
@@ -250,8 +292,8 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoSinkPadsA
     EXPECT_FALSE(m_sut->isMimeTypeSupported("video/h264"));
 
     // The following EXPECTs are for the call to getSupportedProperties()
-    GstElementFactoryListType expectedFactoryListType{GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                      GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+    const GstElementFactoryListType kExpectedFactoryListType{
+        GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
     GList *listOfFactories{nullptr};
     GstElementFactory *dummyFactory{nullptr};
     const GType kDummyType{3};
@@ -260,45 +302,57 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoSinkPadsA
     std::vector<std::string> kParamNames{"test-name-123", "test2"};
     memset(&dummyClass, 0x00, sizeof(dummyClass));
     listOfFactories = g_list_append(listOfFactories, dummyFactory);
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(expectedFactoryListType, GST_RANK_NONE))
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(kExpectedFactoryListType, GST_RANK_NONE))
         .WillOnce(Return(listOfFactories));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(dummyFactory)).WillOnce(Return(kDummyType));
     EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&dummyClass));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(&dummyClass, _)).WillRepeatedly(Return(&dummyParam));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(&dummyClass, _))
+        .Times(kParamNames.size())
+        .WillRepeatedly(Return(&dummyParam));
     EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&dummyClass));
     EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(listOfFactories)).Times(1);
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
     EXPECT_EQ(supportedProperties, kParamNames);
+
+    // call getSupportedProperties() once again, this time gstreamer will not find the properties...
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(kExpectedFactoryListType, GST_RANK_NONE))
+        .WillOnce(Return(listOfFactories));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(dummyFactory)).WillOnce(Return(kDummyType));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&dummyClass));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(&dummyClass, _))
+        .Times(kParamNames.size())
+        .WillRepeatedly(Return(nullptr));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&dummyClass));
+    EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(listOfFactories)).Times(1);
+    supportedProperties = m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames);
+    EXPECT_TRUE(supportedProperties.empty());
+
     gst_plugin_feature_list_free(listOfFactories);
 }
 
 TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoPadsWithTheSameCaps)
 {
-    char dummy = 0;
-    GstElementFactory *decoderFactory =
-        reinterpret_cast<GstElementFactory *>(&dummy); // just dummy address is needed, will not be dereferenced
-    GstStaticPadTemplate decoderPadTemplate1 = createSinkPadTemplate();
-    GstStaticPadTemplate decoderPadTemplate2 = createSinkPadTemplate();
+    m_decoderPadTemplateSink = createSinkPadTemplate();
+    m_decoderPadTemplateSink2 = createSinkPadTemplate();
 
-    GstCaps padTemplateCaps1;
-    GstCaps padTemplateCaps2;
+    expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithTwoSinks.get());
 
-    GListWrapper<GstElementFactory *> listDecoders{decoderFactory};
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&decoderPadTemplate1, &decoderPadTemplate2};
-
-    expectGetFactoryListAndFreeList(listDecoders.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(decoderFactory, decoderPadTemplates.get());
-
-    expectGetStaticCapsAndCapsUnref(decoderPadTemplate1, &padTemplateCaps1);
-    expectGetStaticCapsAndCapsUnref(decoderPadTemplate2, &padTemplateCaps2);
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&padTemplateCaps2, &padTemplateCaps1)).WillOnce(Return(true));
+    expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
+    expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink2, &m_decoderTemplateCapsSink2);
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_decoderTemplateCapsSink2, &m_decoderTemplateCapsSink))
+        .WillOnce(Return(true));
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
 
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+
     expectCapsToMimeMapping();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/mpeg, mpegversion=(int)4"], &padTemplateCaps1))
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsCanIntersect(&m_capsMap["audio/mpeg, mpegversion=(int)4"], &m_decoderTemplateCapsSink))
         .WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
@@ -313,46 +367,33 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoPadsWithT
 
 TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_ParserWithConnectableSrcPad)
 {
-    char dummyDecoder = 0;
-    GstElementFactory *decoderFactory = reinterpret_cast<GstElementFactory *>(&dummyDecoder);
+    m_decoderPadTemplateSink = createSinkPadTemplate();
+    m_parserPadTemplateSink = createSinkPadTemplate();
+    m_parserPadTemplateSrc = createSrcPadTemplate();
 
-    char dummyParser = 0;
-    GstElementFactory *parserFactory = reinterpret_cast<GstElementFactory *>(&dummyParser);
+    expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
 
-    GstStaticPadTemplate decoderPadTemplateSink = createSinkPadTemplate();
-    GstStaticPadTemplate parserPadTemplateSink = createSinkPadTemplate();
-    GstStaticPadTemplate parserPadTemplateSrc = createSrcPadTemplate();
+    expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
 
-    GstCaps decoderPadTemplateCapsSink;
-    GstCaps parserPadTemplateCapsSink;
-    GstCaps parserPadTemplateCapsSrc;
+    expectGetFactoryListAndFreeList(m_parserFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_parserFactory, m_parserPadTemplatesList.get());
+    expectGetStaticCapsAndCapsUnref(m_parserPadTemplateSrc, &m_parserTemplateCapsSrc);
 
-    GListWrapper<GstElementFactory *> listDecoders{decoderFactory};
-    GListWrapper<GstElementFactory *> listParsers{parserFactory};
-
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&decoderPadTemplateSink};
-    GListWrapper<GstStaticPadTemplate *> parserPadTemplates{&parserPadTemplateSink, &parserPadTemplateSrc};
-
-    expectGetFactoryListAndFreeList(listDecoders.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(decoderFactory, decoderPadTemplates.get());
-
-    expectGetStaticCapsAndCapsUnref(decoderPadTemplateSink, &decoderPadTemplateCapsSink);
-
-    expectGetFactoryListAndFreeList(listParsers.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(parserFactory, parserPadTemplates.get());
-    expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc, &parserPadTemplateCapsSrc);
-
-    expectGetStaticCapsAndCapsUnref(parserPadTemplateSink, &parserPadTemplateCapsSink);
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink, &decoderPadTemplateCapsSink))
+    expectGetStaticCapsAndCapsUnref(m_parserPadTemplateSink, &m_parserTemplateCapsSink);
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_parserTemplateCapsSink, &m_decoderTemplateCapsSink))
         .WillOnce(Return(false));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
 
     expectCapsToMimeMapping();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_decoderTemplateCapsSink, &m_parserTemplateCapsSrc))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &m_decoderTemplateCapsSink))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &parserPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &m_parserTemplateCapsSink))
         .WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
@@ -364,41 +405,80 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
     EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/x-opus"));
 }
 
-TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_ParserWithNoConnectableSrcPad)
+TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_ParserWithConnectableSrcPad_OneSinkElement)
 {
-    char dummyDecoder = 0;
-    GstElementFactory *decoderFactory = reinterpret_cast<GstElementFactory *>(&dummyDecoder);
+    m_decoderPadTemplateSink = createSinkPadTemplate();
+    m_parserPadTemplateSink = createSinkPadTemplate();
+    m_parserPadTemplateSrc = createSrcPadTemplate();
+    m_sinkPadTemplateSink = createSinkPadTemplate();
+    m_sinkPadTemplateSrc = createSrcPadTemplate();
 
-    char dummyParser = 0;
-    GstElementFactory *parserFactory = reinterpret_cast<GstElementFactory *>(&dummyParser);
+    expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
 
-    GstStaticPadTemplate decoderPadTemplateSink = createSinkPadTemplate();
-    GstStaticPadTemplate parserPadTemplateSink = createSinkPadTemplate();
-    GstStaticPadTemplate parserPadTemplateSrc = createSrcPadTemplate();
+    expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
 
-    GstCaps decoderPadTemplateCapsSink;
-    GstCaps parserPadTemplateCapsSrc;
+    expectGetFactoryListAndFreeList(m_parserFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_parserFactory, m_parserPadTemplatesList.get());
+    expectGetStaticCapsAndCapsUnref(m_parserPadTemplateSrc, &m_parserTemplateCapsSrc);
 
-    GListWrapper<GstElementFactory *> listDecoders{decoderFactory};
-    GListWrapper<GstElementFactory *> listParsers{parserFactory};
+    expectGetStaticCapsAndCapsUnref(m_parserPadTemplateSink, &m_parserTemplateCapsSink);
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_parserTemplateCapsSink, &m_decoderTemplateCapsSink))
+        .WillOnce(Return(false));
 
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&decoderPadTemplateSink};
-    GListWrapper<GstStaticPadTemplate *> parserPadTemplates{&parserPadTemplateSink, &parserPadTemplateSrc};
+    expectGetFactoryListAndFreeList(m_sinkFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_sinkFactory, m_sinkPadTemplatesList.get());
+    expectGetStaticCapsAndCapsUnref(m_sinkPadTemplateSink, &m_sinkTemplateCaps);
 
-    expectGetFactoryListAndFreeList(listDecoders.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(decoderFactory, decoderPadTemplates.get());
-    expectGetStaticCapsAndCapsUnref(decoderPadTemplateSink, &decoderPadTemplateCapsSink);
-
-    expectGetFactoryListAndFreeList(listParsers.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(parserFactory, parserPadTemplates.get());
-    expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc, &parserPadTemplateCapsSrc);
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_sinkTemplateCaps, &m_decoderTemplateCapsSink))
+        .WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_sinkTemplateCaps, &m_parserTemplateCapsSink))
+        .WillOnce(Return(false));
 
     expectCapsToMimeMapping();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_decoderTemplateCapsSink, &m_parserTemplateCapsSrc))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &m_decoderTemplateCapsSink))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &m_parserTemplateCapsSink))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/x-raw"], &m_sinkTemplateCaps))
+        .WillOnce(Return(true));
+
+    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
+
+    EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), UnorderedElementsAre("video/h264", "video/h265"));
+
+    EXPECT_TRUE(m_sut->isMimeTypeSupported("video/h264"));
+    EXPECT_TRUE(m_sut->isMimeTypeSupported("audio/x-raw"));
+    EXPECT_FALSE(m_sut->isMimeTypeSupported("video/x-av1"));
+    EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/x-opus"));
+}
+
+TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_ParserWithNoConnectableSrcPad)
+{
+    m_decoderPadTemplateSink = createSinkPadTemplate();
+    m_parserPadTemplateSink = createSinkPadTemplate();
+    m_parserPadTemplateSrc = createSrcPadTemplate();
+
+    expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
+    expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
+
+    expectGetFactoryListAndFreeList(m_parserFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_parserFactory, m_parserPadTemplatesList.get());
+    expectGetStaticCapsAndCapsUnref(m_parserPadTemplateSrc, &m_parserTemplateCapsSrc);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+
+    expectCapsToMimeMapping();
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_decoderTemplateCapsSink, &m_parserTemplateCapsSrc))
         .WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock,
-                gstCapsCanIntersect(&m_capsMap["video/mpeg, mpegversion=(int)4"], &decoderPadTemplateCapsSink))
+                gstCapsCanIntersect(&m_capsMap["video/mpeg, mpegversion=(int)4"], &m_decoderTemplateCapsSink))
         .WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
@@ -413,46 +493,32 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
 TEST_F(GstCapabilitiesTest,
        CreateGstCapabilities_OneDecoderWithOneSinkPad_ParserWithConnectableSrcPadButNotRialtoMimeTypes)
 {
-    char dummyDecoder = 0;
-    GstElementFactory *decoderFactory = reinterpret_cast<GstElementFactory *>(&dummyDecoder);
+    m_decoderPadTemplateSink = createSinkPadTemplate();
+    m_parserPadTemplateSink = createSinkPadTemplate();
+    m_parserPadTemplateSrc = createSrcPadTemplate();
 
-    char dummyParser = 0;
-    GstElementFactory *parserFactory = reinterpret_cast<GstElementFactory *>(&dummyParser);
+    expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
+    expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
 
-    GstStaticPadTemplate decoderPadTemplateSink = createSinkPadTemplate();
-    GstStaticPadTemplate parserPadTemplateSink = createSinkPadTemplate();
-    GstStaticPadTemplate parserPadTemplateSrc = createSrcPadTemplate();
+    expectGetFactoryListAndFreeList(m_parserFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_parserFactory, m_parserPadTemplatesList.get());
+    expectGetStaticCapsAndCapsUnref(m_parserPadTemplateSrc, &m_parserTemplateCapsSrc);
 
-    GstCaps decoderPadTemplateCapsSink;
-    GstCaps parserPadTemplateCapsSink;
-    GstCaps parserPadTemplateCapsSrc;
-
-    GListWrapper<GstElementFactory *> listDecoders{decoderFactory};
-    GListWrapper<GstElementFactory *> listParsers{parserFactory};
-
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&decoderPadTemplateSink};
-    GListWrapper<GstStaticPadTemplate *> parserPadTemplates{&parserPadTemplateSink, &parserPadTemplateSrc};
-
-    expectGetFactoryListAndFreeList(listDecoders.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(decoderFactory, decoderPadTemplates.get());
-
-    expectGetStaticCapsAndCapsUnref(decoderPadTemplateSink, &decoderPadTemplateCapsSink);
-
-    expectGetFactoryListAndFreeList(listParsers.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(parserFactory, parserPadTemplates.get());
-    expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc, &parserPadTemplateCapsSrc);
-
-    expectGetStaticCapsAndCapsUnref(parserPadTemplateSink, &parserPadTemplateCapsSink);
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink, &decoderPadTemplateCapsSink))
+    expectGetStaticCapsAndCapsUnref(m_parserPadTemplateSink, &m_parserTemplateCapsSink);
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_parserTemplateCapsSink, &m_decoderTemplateCapsSink))
         .WillOnce(Return(false));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
 
     expectCapsToMimeMapping();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_decoderTemplateCapsSink, &m_parserTemplateCapsSrc))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &m_decoderTemplateCapsSink))
         .WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &parserPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &m_parserTemplateCapsSink))
         .WillOnce(Return(false));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
@@ -465,61 +531,53 @@ TEST_F(GstCapabilitiesTest,
 
 TEST_F(GstCapabilitiesTest, CreateGstCapabilities_TwoDecodersWithOneSinkPad_ParserWithMatchingSrcPad)
 {
-    char dummyDecoder = {};
-    GstElementFactory *decoderFactory = reinterpret_cast<GstElementFactory *>(&dummyDecoder);
     char dummyDecoder2 = {};
     GstElementFactory *decoderFactory2 = reinterpret_cast<GstElementFactory *>(&dummyDecoder2);
 
-    char dummyParser = {};
-    GstElementFactory *parserFactory = reinterpret_cast<GstElementFactory *>(&dummyParser);
+    m_decoderPadTemplateSink = createSinkPadTemplate();
+    m_decoderPadTemplateSink2 = createSinkPadTemplate();
 
-    GstStaticPadTemplate decoderPadTemplateSink = createSinkPadTemplate();
-    GstStaticPadTemplate decoderPadTemplateSink2 = createSinkPadTemplate();
+    m_parserPadTemplateSink = createSinkPadTemplate();
+    m_parserPadTemplateSrc = createSrcPadTemplate();
 
-    GstStaticPadTemplate parserPadTemplateSink = createSinkPadTemplate();
-    GstStaticPadTemplate parserPadTemplateSrc = createSrcPadTemplate();
+    // Create decoder list with with multiple decoders
+    GListWrapper<GstElementFactory *> listDecoders{m_decoderFactory, decoderFactory2};
 
-    GstCaps decoderPadTemplateCapsSink;
-    GstCaps decoderPadTemplateCapsSink2;
-    GstCaps parserPadTemplateCapsSink;
-    GstCaps parserPadTemplateCapsSrc;
-
-    GListWrapper<GstElementFactory *> listDecoders{decoderFactory, decoderFactory2};
-    GListWrapper<GstElementFactory *> listParsers{parserFactory};
-
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&decoderPadTemplateSink};
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates2{&decoderPadTemplateSink2};
-    GListWrapper<GstStaticPadTemplate *> parserPadTemplates{&parserPadTemplateSink, &parserPadTemplateSrc};
+    // Create another decoder list with with one pad
+    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates2{&m_decoderPadTemplateSink2};
 
     expectGetFactoryListAndFreeList(listDecoders.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(decoderFactory, decoderPadTemplates.get());
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
     expectGetStaticPadTemplates(decoderFactory2, decoderPadTemplates2.get());
 
-    expectGetStaticCapsAndCapsUnref(decoderPadTemplateSink, &decoderPadTemplateCapsSink);
-    expectGetStaticCapsAndCapsUnref(decoderPadTemplateSink2, &decoderPadTemplateCapsSink2);
+    expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
+    expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink2, &m_decoderTemplateCapsSink2);
 
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&decoderPadTemplateCapsSink2, &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_decoderTemplateCapsSink2, &m_decoderTemplateCapsSink))
         .WillOnce(Return(false));
 
-    expectGetFactoryListAndFreeList(listParsers.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(parserFactory, parserPadTemplates.get(), 2);
-    expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc, &parserPadTemplateCapsSrc, 2);
+    expectGetFactoryListAndFreeList(m_parserFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_parserFactory, m_parserPadTemplatesList.get(), 2);
+    expectGetStaticCapsAndCapsUnref(m_parserPadTemplateSrc, &m_parserTemplateCapsSrc, 2);
 
-    expectGetStaticCapsAndCapsUnref(parserPadTemplateSink, &parserPadTemplateCapsSink);
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink, &decoderPadTemplateCapsSink))
+    expectGetStaticCapsAndCapsUnref(m_parserPadTemplateSink, &m_parserTemplateCapsSink);
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_parserTemplateCapsSink, &m_decoderTemplateCapsSink))
         .WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink, &decoderPadTemplateCapsSink2))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_parserTemplateCapsSink, &m_decoderTemplateCapsSink2))
         .WillOnce(Return(true));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
 
     expectCapsToMimeMapping();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_decoderTemplateCapsSink, &m_parserTemplateCapsSrc))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink2, &parserPadTemplateCapsSrc))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_decoderTemplateCapsSink2, &m_parserTemplateCapsSrc))
         .WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &m_decoderTemplateCapsSink))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &decoderPadTemplateCapsSink2))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &m_decoderTemplateCapsSink2))
         .WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
@@ -533,54 +591,45 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_TwoDecodersWithOneSinkPad_Pars
 
 TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPad_ParserWithTwoSrcPadsAndSecondConnectable)
 {
-    char dummyDecoder = {};
-    GstElementFactory *decoderFactory = reinterpret_cast<GstElementFactory *>(&dummyDecoder);
+    m_decoderPadTemplateSink = createSinkPadTemplate();
 
-    char dummyParser = {};
-    GstElementFactory *parserFactory = reinterpret_cast<GstElementFactory *>(&dummyParser);
+    m_parserPadTemplateSink = createSinkPadTemplate();
+    m_parserPadTemplateSrc = createSrcPadTemplate();
+    GstStaticPadTemplate parserPadTemplateSink2 = createSrcPadTemplate();
 
-    GstStaticPadTemplate decoderPadTemplateSink = createSinkPadTemplate();
+    GstCaps parserTemplateCaps3;
 
-    GstStaticPadTemplate parserPadTemplateSink = createSinkPadTemplate();
-    GstStaticPadTemplate parserPadTemplateSrc = createSrcPadTemplate();
-    GstStaticPadTemplate parserPadTemplateSrc2 = createSrcPadTemplate();
+    // Create decoder parser list with with three pads
+    GListWrapper<GstStaticPadTemplate *> parserPadTemplates{&m_parserPadTemplateSink, &m_parserPadTemplateSrc,
+                                                            &parserPadTemplateSink2};
 
-    GstCaps decoderPadTemplateCapsSink;
-    GstCaps parserPadTemplateCapsSink;
-    GstCaps parserPadTemplateCapsSrc;
-    GstCaps parserPadTemplateCapsSrc2;
+    expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
 
-    GListWrapper<GstElementFactory *> listDecoders{decoderFactory};
-    GListWrapper<GstElementFactory *> listParsers{parserFactory};
+    expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
 
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&decoderPadTemplateSink};
-    GListWrapper<GstStaticPadTemplate *> parserPadTemplates{&parserPadTemplateSink, &parserPadTemplateSrc,
-                                                            &parserPadTemplateSrc2};
+    expectGetFactoryListAndFreeList(m_parserFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
 
-    expectGetFactoryListAndFreeList(listDecoders.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(decoderFactory, decoderPadTemplates.get());
+    expectGetStaticPadTemplates(m_parserFactory, parserPadTemplates.get());
+    expectGetStaticCapsAndCapsUnref(m_parserPadTemplateSrc, &m_parserTemplateCapsSrc);
+    expectGetStaticCapsAndCapsUnref(parserPadTemplateSink2, &parserTemplateCaps3);
 
-    expectGetStaticCapsAndCapsUnref(decoderPadTemplateSink, &decoderPadTemplateCapsSink);
-
-    expectGetFactoryListAndFreeList(listParsers.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
-
-    expectGetStaticPadTemplates(parserFactory, parserPadTemplates.get());
-    expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc, &parserPadTemplateCapsSrc);
-    expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc2, &parserPadTemplateCapsSrc2);
-
-    expectGetStaticCapsAndCapsUnref(parserPadTemplateSink, &parserPadTemplateCapsSink);
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink, &decoderPadTemplateCapsSink))
+    expectGetStaticCapsAndCapsUnref(m_parserPadTemplateSink, &m_parserTemplateCapsSink);
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_parserTemplateCapsSink, &m_decoderTemplateCapsSink))
         .WillOnce(Return(false));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
 
     expectCapsToMimeMapping();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_decoderTemplateCapsSink, &m_parserTemplateCapsSrc))
         .WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc2))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_decoderTemplateCapsSink, &parserTemplateCaps3))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &m_decoderTemplateCapsSink))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &parserPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &m_parserTemplateCapsSink))
         .WillOnce(Return(true));
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
@@ -594,66 +643,60 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPad_Pars
 
 TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPads_TwoParsersWithConnectableSrcPads)
 {
-    char dummyDecoder = {};
-    GstElementFactory *decoderFactory = reinterpret_cast<GstElementFactory *>(&dummyDecoder);
-
-    char dummyParser = {};
-    GstElementFactory *parserFactory = reinterpret_cast<GstElementFactory *>(&dummyParser);
     char dummyParser2 = {};
     GstElementFactory *parserFactory2 = reinterpret_cast<GstElementFactory *>(&dummyParser2);
 
-    GstStaticPadTemplate decoderPadTemplateSink = createSinkPadTemplate();
+    m_decoderPadTemplateSink = createSinkPadTemplate();
 
-    GstStaticPadTemplate parserPadTemplateSink = createSinkPadTemplate();
-    GstStaticPadTemplate parserPadTemplateSrc = createSrcPadTemplate();
+    m_parserPadTemplateSink = createSinkPadTemplate();
+    m_parserPadTemplateSrc = createSrcPadTemplate();
 
     GstStaticPadTemplate parserPadTemplateSink2 = createSinkPadTemplate();
     GstStaticPadTemplate parserPadTemplateSrc2 = createSrcPadTemplate();
 
-    GstCaps decoderPadTemplateCapsSink;
-    GstCaps parserPadTemplateCapsSink;
-    GstCaps parserPadTemplateCapsSrc;
     GstCaps parserPadTemplateCapsSink2;
     GstCaps parserPadTemplateCapsSrc2;
 
-    GListWrapper<GstElementFactory *> listDecoders{decoderFactory};
-    GListWrapper<GstElementFactory *> listParsers{parserFactory, parserFactory2};
+    // Create decoder list with with multiple parsers
+    GListWrapper<GstElementFactory *> listParsers{m_parserFactory, parserFactory2};
 
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&decoderPadTemplateSink};
-    GListWrapper<GstStaticPadTemplate *> parserPadTemplates{&parserPadTemplateSink, &parserPadTemplateSrc};
+    // Create another decoder parser list with with two pads
     GListWrapper<GstStaticPadTemplate *> parserPadTemplates2{&parserPadTemplateSink2, &parserPadTemplateSrc2};
 
-    expectGetFactoryListAndFreeList(listDecoders.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(decoderFactory, decoderPadTemplates.get());
+    expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
 
-    expectGetStaticCapsAndCapsUnref(decoderPadTemplateSink, &decoderPadTemplateCapsSink);
+    expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
 
     expectGetFactoryListAndFreeList(listParsers.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(parserFactory, parserPadTemplates.get());
+    expectGetStaticPadTemplates(m_parserFactory, m_parserPadTemplatesList.get());
     expectGetStaticPadTemplates(parserFactory2, parserPadTemplates2.get());
 
-    expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc, &parserPadTemplateCapsSrc);
+    expectGetStaticCapsAndCapsUnref(m_parserPadTemplateSrc, &m_parserTemplateCapsSrc);
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSrc2, &parserPadTemplateCapsSrc2);
 
-    expectGetStaticCapsAndCapsUnref(parserPadTemplateSink, &parserPadTemplateCapsSink);
+    expectGetStaticCapsAndCapsUnref(m_parserPadTemplateSink, &m_parserTemplateCapsSink);
     expectGetStaticCapsAndCapsUnref(parserPadTemplateSink2, &parserPadTemplateCapsSink2);
 
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink, &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&m_parserTemplateCapsSink, &m_decoderTemplateCapsSink))
         .WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink2, &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink2, &m_decoderTemplateCapsSink))
         .WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink2, &parserPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&parserPadTemplateCapsSink2, &m_parserTemplateCapsSink))
         .WillOnce(Return(false));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
 
     expectCapsToMimeMapping();
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_decoderTemplateCapsSink, &m_parserTemplateCapsSrc))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&decoderPadTemplateCapsSink, &parserPadTemplateCapsSrc2))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_decoderTemplateCapsSink, &parserPadTemplateCapsSrc2))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &decoderPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h264"], &m_decoderTemplateCapsSink))
         .WillOnce(Return(true));
-    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &parserPadTemplateCapsSink))
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &m_parserTemplateCapsSink))
         .WillOnce(Return(true));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-av1"], &parserPadTemplateCapsSink2))
         .WillOnce(Return(true));

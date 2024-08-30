@@ -99,6 +99,8 @@ TEST_F(MediaPipelineCapabilitiesTest, FactoryCreatesObject)
     EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
     std::shared_ptr<firebolt::rialto::IMediaPipelineCapabilitiesFactory> factory =
         firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
     EXPECT_NE(factory, nullptr);

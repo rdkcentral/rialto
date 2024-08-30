@@ -181,6 +181,8 @@ void RialtoServerComponentTest::startSut()
     EXPECT_CALL(*m_gstWrapperMock, gstCapsIsStrictlyEqual(&videoCaps, &audioCaps)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsFromString(_)).WillRepeatedly(Return(&unsupportedCaps));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsFromString(PtrStrMatcher("audio/mpeg, mpegversion=(int)4")))
         .WillOnce(Return(&supportedCaps));

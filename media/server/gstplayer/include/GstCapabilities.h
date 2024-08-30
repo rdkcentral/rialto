@@ -94,14 +94,14 @@ private:
     void fillSupportedMimeTypes();
 
     /**
-     * @brief Gets all unique caps from decoders' sink pads
-     */
-    std::vector<GstCaps *> getSupportedCapsFromDecoders();
-
-    /**
      * @brief Appends all unique caps from parser->decoders chains' sink pads to \a supportedCaps
      */
-    void appendSupportedCapsFromParserDecoderChains(std::vector<GstCaps *> &supportedCaps);
+    void appendLinkableCapsFromParserDecoderChains(std::vector<GstCaps *> &supportedCaps);
+
+    /**
+     * @brief Appends all unique caps from \a type pads to \a supportedCaps
+     */
+    void appendSupportedCapsFromFactoryType(const GstElementFactoryListType &type, std::vector<GstCaps *> &supportedCaps);
 
     /**
      * @brief Adds unique sink pads from \a padTemplates list to \a capsVector

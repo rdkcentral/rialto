@@ -26,6 +26,68 @@
 #include "GstMimeMapping.h"
 #include "RialtoServerLogging.h"
 
+namespace
+{
+const char *toString(const GstElementFactoryListType &listType)
+{
+    switch (listType)
+    {
+    case GST_ELEMENT_FACTORY_TYPE_ANY:
+        return "Any";
+    case GST_ELEMENT_FACTORY_TYPE_AUDIOVIDEO_SINKS:
+        return "AudioVideo Sinks";
+    case GST_ELEMENT_FACTORY_TYPE_AUDIO_ENCODER:
+        return "Audio Encoder";
+    case GST_ELEMENT_FACTORY_TYPE_DECODABLE:
+        return "Decodable";
+    case GST_ELEMENT_FACTORY_TYPE_DECODER:
+        return "Decoder";
+    case GST_ELEMENT_FACTORY_TYPE_DECRYPTOR:
+        return "Decryptor";
+    case GST_ELEMENT_FACTORY_TYPE_DEMUXER:
+        return "Demuxer";
+    case GST_ELEMENT_FACTORY_TYPE_DEPAYLOADER:
+        return "Depayloader";
+    case GST_ELEMENT_FACTORY_TYPE_ENCODER:
+        return "Encoder";
+    case GST_ELEMENT_FACTORY_TYPE_ENCRYPTOR:
+        return "Encryptor";
+    case GST_ELEMENT_FACTORY_TYPE_FORMATTER:
+        return "Formatter";
+    case GST_ELEMENT_FACTORY_TYPE_HARDWARE:
+        return "Hardware";
+    case GST_ELEMENT_FACTORY_TYPE_MAX_ELEMENTS:
+        return "Max Elements";
+    case GST_ELEMENT_FACTORY_TYPE_MEDIA_ANY:
+        return "Media Any";
+    case GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO:
+        return "Media Audio";
+    case GST_ELEMENT_FACTORY_TYPE_MEDIA_IMAGE:
+        return "Media Image";
+    case GST_ELEMENT_FACTORY_TYPE_MEDIA_METADATA:
+        return "Media Metadata";
+    case GST_ELEMENT_FACTORY_TYPE_MEDIA_SUBTITLE:
+        return "Media Subtitle";
+    case GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO:
+        return "Media Video";
+    case GST_ELEMENT_FACTORY_TYPE_MUXER:
+        return "Muxer";
+    case GST_ELEMENT_FACTORY_TYPE_PARSER:
+        return "Parser";
+    case GST_ELEMENT_FACTORY_TYPE_PAYLOADER:
+        return "Payloader";
+    case GST_ELEMENT_FACTORY_TYPE_SINK:
+        return "Sink";
+    case GST_ELEMENT_FACTORY_TYPE_SRC:
+        return "Source";
+    case GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER:
+        return "Video Encoder";
+    default:
+        return "Unknown";
+    }
+}
+} // namespace
+
 namespace firebolt::rialto::server
 {
 std::weak_ptr<IGstCapabilitiesFactory> GstCapabilitiesFactory::m_factory;
@@ -171,8 +233,14 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
 
 void GstCapabilities::fillSupportedMimeTypes()
 {
-    std::vector<GstCaps *> supportedCaps = getSupportedCapsFromDecoders();
-    appendSupportedCapsFromParserDecoderChains(supportedCaps);
+    std::vector<GstCaps *> supportedCaps;
+    appendSupportedCapsFromFactoryType(GST_ELEMENT_FACTORY_TYPE_DECODER, supportedCaps);
+
+    // Only append caps from decoder parser if they can link with the decoder
+    appendLinkableCapsFromParserDecoderChains(supportedCaps);
+
+    // Sink caps do not require decoder support
+    appendSupportedCapsFromFactoryType(GST_ELEMENT_FACTORY_TYPE_SINK, supportedCaps);
 
     if (supportedCaps.empty())
     {
@@ -188,31 +256,7 @@ void GstCapabilities::fillSupportedMimeTypes()
     }
 }
 
-std::vector<GstCaps *> GstCapabilities::getSupportedCapsFromDecoders()
-{
-    std::vector<GstCaps *> supportedCaps;
-
-    GList *decoderFactories =
-        m_gstWrapper->gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    if (!decoderFactories)
-    {
-        RIALTO_SERVER_LOG_WARN("Could not find any decoder");
-        return {};
-    }
-
-    for (GList *factoriesIter = decoderFactories; factoriesIter; factoriesIter = factoriesIter->next)
-    {
-        GstElementFactory *factory = static_cast<GstElementFactory *>(factoriesIter->data);
-        const GList *kDecoderPadTemplates = m_gstWrapper->gstElementFactoryGetStaticPadTemplates(factory);
-
-        addAllUniqueSinkPadsCapsToVector(supportedCaps, kDecoderPadTemplates);
-    }
-
-    m_gstWrapper->gstPluginFeatureListFree(decoderFactories);
-    return supportedCaps;
-}
-
-void GstCapabilities::appendSupportedCapsFromParserDecoderChains(std::vector<GstCaps *> &supportedCaps)
+void GstCapabilities::appendLinkableCapsFromParserDecoderChains(std::vector<GstCaps *> &supportedCaps)
 {
     if (supportedCaps.empty())
     {
@@ -244,6 +288,27 @@ void GstCapabilities::appendSupportedCapsFromParserDecoderChains(std::vector<Gst
     }
 
     m_gstWrapper->gstPluginFeatureListFree(parserFactories);
+}
+
+void GstCapabilities::appendSupportedCapsFromFactoryType(const GstElementFactoryListType &type,
+                                                         std::vector<GstCaps *> &supportedCaps)
+{
+    GList *factories = m_gstWrapper->gstElementFactoryListGetElements(type, GST_RANK_MARGINAL);
+    if (!factories)
+    {
+        RIALTO_SERVER_LOG_WARN("Could not find any %s", toString(type));
+        return;
+    }
+
+    for (GList *factoriesIter = factories; factoriesIter; factoriesIter = factoriesIter->next)
+    {
+        GstElementFactory *factory = static_cast<GstElementFactory *>(factoriesIter->data);
+        const GList *kPadTemplates = m_gstWrapper->gstElementFactoryGetStaticPadTemplates(factory);
+
+        addAllUniqueSinkPadsCapsToVector(supportedCaps, kPadTemplates);
+    }
+
+    m_gstWrapper->gstPluginFeatureListFree(factories);
 }
 
 bool GstCapabilities::canCreateParserDecoderChain(GstCaps *decoderCaps, const GList *kParserPadTemplates)
