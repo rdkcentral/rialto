@@ -46,7 +46,7 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeSuccess)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kTargetVolume)).WillOnce(Return(true));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kTargetVolume, m_kVolumeDuration, m_kEaseType)).WillOnce(Return(true));
 
     EXPECT_EQ(m_mediaPipeline->setVolume(m_kTargetVolume, m_kVolumeDuration, m_kEaseType), true);
 }
@@ -56,7 +56,7 @@ TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeSuccess)
  */
 TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeFailure)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kTargetVolume)).WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kTargetVolume, m_kVolumeDuration, m_kEaseType)).WillOnce(Return(false));
 
     EXPECT_EQ(m_mediaPipeline->setVolume(m_kTargetVolume, m_kVolumeDuration, m_kEaseType), false);
 }

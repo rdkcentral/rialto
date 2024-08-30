@@ -229,11 +229,13 @@ public:
      * @brief Set level and transition of audio attenuation.
      *        Sets the current volume for the pipeline (0.0 silent -> 1.0 full volume)
      *
-     * @param[in] volume Target volume level (0.0 - 1.0)
+     * @param[in] targetVolume : Target volume level (0.0 - 1.0)
+     * @param[in] volumeDuration : Duration of the volume transition in milliseconds
+     * @param[in] ease_type : Easing type for the volume transition
      *
      * @retval true on success false otherwise
      */
-    virtual bool setVolume(double volume) = 0;
+    virtual bool setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType) = 0;
 
     /**
      * @brief Get current audio level. Fetches the current volume level for the pipeline.

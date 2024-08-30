@@ -778,7 +778,7 @@ bool MediaPipelineIpc::renderFrame()
     return true;
 }
 
-bool MediaPipelineIpc::setVolume(double volume)
+bool MediaPipelineIpc::setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
     if (!reattachChannelIfRequired())
     {
@@ -789,7 +789,9 @@ bool MediaPipelineIpc::setVolume(double volume)
     firebolt::rialto::SetVolumeRequest request;
 
     request.set_session_id(m_sessionId);
-    request.set_volume(volume);
+    request.set_target_volume(targetVolume);
+    request.set_volume_duration(volumeDuration);
+    request.set_ease_type(convertEaseType(easeType));
 
     firebolt::rialto::SetVolumeResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -1288,6 +1290,26 @@ MediaPipelineIpc::convertConfigType(const firebolt::rialto::SourceConfigType &co
     }
     }
     return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_UNKNOWN;
+}
+
+firebolt::rialto::SetVolumeRequest_EaseType MediaPipelineIpc::convertEaseType(const firebolt::rialto::EaseType &easeType)
+{
+    switch (easeType)
+    {
+    case firebolt::rialto::EaseType::EASE_LINEAR:
+    {
+        return firebolt::rialto::SetVolumeRequest_EaseType_EASE_LINEAR;
+    }
+    case firebolt::rialto::EaseType::EASE_IN_CUBIC:
+    {
+        return firebolt::rialto::SetVolumeRequest_EaseType_EASE_IN_CUBIC;
+    }
+    case firebolt::rialto::EaseType::EASE_OUT_CUBIC:
+    {
+        return firebolt::rialto::SetVolumeRequest_EaseType_EASE_OUT_CUBIC;
+    }
+    }
+    return firebolt::rialto::SetVolumeRequest_EaseType_EASE_LINEAR;
 }
 
 firebolt::rialto::AttachSourceRequest_SegmentAlignment

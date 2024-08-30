@@ -81,7 +81,8 @@ void SetVolume::execute() const
                 RIALTO_SERVER_LOG_ERROR("Audio Easing function: Ease out Cubic");
                 break;
             }
-            snprintf(reinterpret_cast<gchar *>(fadeStr), sizeof(fadeStr), "%u,%u,%s", scaledTarget, m_volumeDuration, easeString.c_str());
+            snprintf(reinterpret_cast<gchar *>(fadeStr), sizeof(fadeStr), "%u,%u,%s", scaledTarget, m_volumeDuration,
+                     easeString.c_str());
             RIALTO_SERVER_LOG_ERROR("Fade String: %s", fadeStr);
             g_object_set(audioSink, "audio-fade", fadeStr, nullptr);
             gst_object_unref(audioSink);
