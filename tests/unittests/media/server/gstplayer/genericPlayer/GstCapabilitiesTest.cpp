@@ -143,8 +143,12 @@ public:
     GstCaps m_decoderTemplateCapsSink;
     GstCaps m_decoderTemplateCapsSink2;
     GListWrapper<GstElementFactory *> m_decoderFactoryList{m_decoderFactory};
-    GListWrapper<GstStaticPadTemplate *> m_decoderPadTemplatesList{&m_decoderPadTemplateSink,
-                                                                   &m_decoderPadTemplateSink2, &m_decoderPadTemplateSrc};
+    GListWrapper<GstStaticPadTemplate *> m_decoderPadTemplateListWithSingleSink{&m_decoderPadTemplateSink};
+    GListWrapper<GstStaticPadTemplate *> m_decoderPadTemplateListWithTwoSinks{&m_decoderPadTemplateSink,
+                                                                              &m_decoderPadTemplateSink2};
+    GListWrapper<GstStaticPadTemplate *> m_decoderPadTemplateListWithTwoSinksOneSrc{&m_decoderPadTemplateSink,
+                                                                                    &m_decoderPadTemplateSink2,
+                                                                                    &m_decoderPadTemplateSrc};
 
     // Common decoder parser factory type variables to be used in tests
     char m_dummyParser = 0;
@@ -243,7 +247,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoSinkPadsA
     m_decoderPadTemplateSrc = createSrcPadTemplate();
 
     expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplatesList.get());
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithTwoSinksOneSrc.get());
 
     expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
     expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink2, &m_decoderTemplateCapsSink2);
@@ -281,7 +285,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoPadsWithT
     m_decoderPadTemplateSink2 = createSinkPadTemplate();
 
     expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplatesList.get());
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithTwoSinks.get());
 
     expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
     expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink2, &m_decoderTemplateCapsSink2);
@@ -316,11 +320,8 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
     m_parserPadTemplateSink = createSinkPadTemplate();
     m_parserPadTemplateSrc = createSrcPadTemplate();
 
-    // Create decoder list with only one pad
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&m_decoderPadTemplateSink};
-
     expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(m_decoderFactory, decoderPadTemplates.get());
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
 
     expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
 
@@ -361,11 +362,8 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
     m_sinkPadTemplateSink = createSinkPadTemplate();
     m_sinkPadTemplateSrc = createSrcPadTemplate();
 
-    // Create decoder list with only one pad
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&m_decoderPadTemplateSink};
-
     expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(m_decoderFactory, decoderPadTemplates.get());
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
 
     expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
 
@@ -413,11 +411,8 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
     m_parserPadTemplateSink = createSinkPadTemplate();
     m_parserPadTemplateSrc = createSrcPadTemplate();
 
-    // Create decoder list with only one pad
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&m_decoderPadTemplateSink};
-
     expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(m_decoderFactory, decoderPadTemplates.get());
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
     expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
 
     expectGetFactoryListAndFreeList(m_parserFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
@@ -451,11 +446,8 @@ TEST_F(GstCapabilitiesTest,
     m_parserPadTemplateSink = createSinkPadTemplate();
     m_parserPadTemplateSrc = createSrcPadTemplate();
 
-    // Create decoder list with only one pad
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&m_decoderPadTemplateSink};
-
     expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(m_decoderFactory, decoderPadTemplates.get());
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
     expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
 
     expectGetFactoryListAndFreeList(m_parserFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_PARSER, GST_RANK_MARGINAL);
@@ -500,12 +492,11 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_TwoDecodersWithOneSinkPad_Pars
     // Create decoder list with with multiple decoders
     GListWrapper<GstElementFactory *> listDecoders{m_decoderFactory, decoderFactory2};
 
-    // Create two decoder lists with with one pad
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&m_decoderPadTemplateSink};
+    // Create another decoder list with with one pad
     GListWrapper<GstStaticPadTemplate *> decoderPadTemplates2{&m_decoderPadTemplateSink2};
 
     expectGetFactoryListAndFreeList(listDecoders.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(m_decoderFactory, decoderPadTemplates.get());
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
     expectGetStaticPadTemplates(decoderFactory2, decoderPadTemplates2.get());
 
     expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
@@ -557,14 +548,12 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPad_Pars
 
     GstCaps parserTemplateCaps3;
 
-    // Create decoder list with with one pad
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&m_decoderPadTemplateSink};
     // Create decoder parser list with with three pads
     GListWrapper<GstStaticPadTemplate *> parserPadTemplates{&m_parserPadTemplateSink, &m_parserPadTemplateSrc,
                                                             &parserPadTemplateSink2};
 
     expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(m_decoderFactory, decoderPadTemplates.get());
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
 
     expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
 
@@ -620,13 +609,11 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPads_Two
     // Create decoder list with with multiple parsers
     GListWrapper<GstElementFactory *> listParsers{m_parserFactory, parserFactory2};
 
-    // Create decoder list with with one pad
-    GListWrapper<GstStaticPadTemplate *> decoderPadTemplates{&m_decoderPadTemplateSink};
     // Create another decoder parser list with with two pads
     GListWrapper<GstStaticPadTemplate *> parserPadTemplates2{&parserPadTemplateSink2, &parserPadTemplateSrc2};
 
     expectGetFactoryListAndFreeList(m_decoderFactoryList.get(), GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL);
-    expectGetStaticPadTemplates(m_decoderFactory, decoderPadTemplates.get());
+    expectGetStaticPadTemplates(m_decoderFactory, m_decoderPadTemplateListWithSingleSink.get());
 
     expectGetStaticCapsAndCapsUnref(m_decoderPadTemplateSink, &m_decoderTemplateCapsSink);
 
