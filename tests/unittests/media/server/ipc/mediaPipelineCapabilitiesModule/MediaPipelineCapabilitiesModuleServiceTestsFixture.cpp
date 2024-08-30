@@ -20,6 +20,8 @@
 #include "MediaPipelineCapabilitiesModuleServiceTestsFixture.h"
 #include "MediaCommon.h"
 #include "MediaPipelineCapabilitiesModuleService.h"
+#include "RialtoCommonModule.h"
+
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>
@@ -36,6 +38,8 @@ namespace
 {
 const std::vector<std::string> kMimeTypes{"video/h264", "video/h265"};
 const firebolt::rialto::MediaSourceType kSourceType{firebolt::rialto::MediaSourceType::VIDEO};
+const firebolt::rialto::ProtoMediaSourceType kMediaSourceType{firebolt::rialto::ProtoMediaSourceType::VIDEO};
+const std::vector<std::string> kPropertyNames{"test-property", "another-property"};
 } // namespace
 
 MediaPipelineCapabilitiesModuleServiceTests::MediaPipelineCapabilitiesModuleServiceTests()
@@ -65,6 +69,15 @@ void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillCheckIfMimeTy
 {
     expectRequestSuccess();
     EXPECT_CALL(m_mediaPipelineServiceMock, isMimeTypeSupported(kMimeTypes[0])).WillOnce(Return(true));
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillGetSupportedProperties()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock,
+                getSupportedProperties(firebolt::rialto::server::ipc::convertMediaSourceType(kMediaSourceType),
+                                       kPropertyNames))
+        .WillOnce(Return(kPropertyNames));
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::expectRequestSuccess()
@@ -123,4 +136,36 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendIsMimeTypeSupportedRequest
 
     m_service->isMimeTypeSupported(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_EQ(response.is_supported(), false);
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedPropertiesRequestWithSuccess()
+{
+    firebolt::rialto::GetSupportedPropertiesRequest request;
+    firebolt::rialto::GetSupportedPropertiesResponse response;
+
+    request.set_media_type(kMediaSourceType);
+    for (const std::string &property : kPropertyNames)
+        request.add_property_names(property.c_str());
+
+    m_service->getSupportedProperties(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    std::vector<std::string> supportedProperties{response.supported_properties().begin(),
+                                                 response.supported_properties().end()};
+    EXPECT_EQ(supportedProperties, kPropertyNames);
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedPropertiesRequestAndExpectFailure()
+{
+    firebolt::rialto::GetSupportedPropertiesRequest request;
+    firebolt::rialto::GetSupportedPropertiesResponse response;
+
+    request.set_media_type(kMediaSourceType);
+    for (const std::string &property : kPropertyNames)
+        request.add_property_names(property.c_str());
+
+    m_service->getSupportedProperties(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
+
+    std::vector<std::string> supportedProperties{response.supported_properties().begin(),
+                                                 response.supported_properties().end()};
+    EXPECT_TRUE(supportedProperties.empty());
 }

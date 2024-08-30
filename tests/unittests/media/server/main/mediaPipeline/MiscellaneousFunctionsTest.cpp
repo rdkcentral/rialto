@@ -21,6 +21,7 @@
 #include "MediaPipelineTestBase.h"
 
 using ::testing::ByMove;
+using ::testing::SetArgReferee;
 
 class RialtoServerMediaPipelineMiscellaneousFunctionsTest : public MediaPipelineTestBase
 {
@@ -29,6 +30,7 @@ protected:
     const double m_kPlaybackRate{1.5};
     uint64_t m_kRenderedFrames{3141};
     uint64_t m_kDroppedFrames{95};
+    const int m_kDummySourceId{123};
 
     RialtoServerMediaPipelineMiscellaneousFunctionsTest() { createMediaPipeline(); }
 
@@ -244,6 +246,112 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
 }
 
 /**
+ * Test that SetImmediateOutput returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setImmediateOutput(m_kDummySourceId, true));
+}
+
+/**
+ * Test that SetImmediateOutput returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputFailure)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setImmediateOutput(_, _)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->setImmediateOutput(videoSourceId, true));
+}
+
+/**
+ * Test that SetImmediateOutput fails if source is not present.
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputNoSourcePresent)
+{
+    loadGstPlayer();
+    // No attachment of source
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_FALSE(m_mediaPipeline->setImmediateOutput(m_kDummySourceId, true));
+}
+
+/**
+ * Test that SetImmediateOutput returns success if the gstreamer API succeeds
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputSuccess)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setImmediateOutput(_, true)).WillOnce(Return(true));
+    EXPECT_TRUE(m_mediaPipeline->setImmediateOutput(videoSourceId, true));
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setImmediateOutput(_, false)).WillOnce(Return(true));
+    EXPECT_TRUE(m_mediaPipeline->setImmediateOutput(videoSourceId, false));
+}
+
+/**
+ * Test that GetImmediateOutput returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    bool immediateOutputState;
+    EXPECT_FALSE(m_mediaPipeline->getImmediateOutput(m_kDummySourceId, immediateOutputState));
+}
+
+/**
+ * Test that GetImmediateOutput returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputFailure)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getImmediateOutput(_, _)).WillOnce(Return(false));
+    bool immediateOutputState;
+    EXPECT_FALSE(m_mediaPipeline->getImmediateOutput(videoSourceId, immediateOutputState));
+}
+
+/**
+ * Test that GetImmediateOutput fails if source is not present.
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputNoSourcePresent)
+{
+    loadGstPlayer();
+    // No attachment of source
+    mainThreadWillEnqueueTaskAndWait();
+
+    bool immediateOutputState;
+    EXPECT_FALSE(m_mediaPipeline->getImmediateOutput(m_kDummySourceId, immediateOutputState));
+}
+
+/**
+ * Test that GetImmediateOutput returns success if the gstreamer API succeeds
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputSuccess)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+
+    bool immediateOutputState;
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getImmediateOutput(_, _)).WillOnce(DoAll(SetArgReferee<1>(true), Return(true)));
+    EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(videoSourceId, immediateOutputState));
+    EXPECT_EQ(immediateOutputState, true);
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getImmediateOutput(_, _)).WillOnce(DoAll(SetArgReferee<1>(false), Return(true)));
+    EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(videoSourceId, immediateOutputState));
+    EXPECT_EQ(immediateOutputState, false);
+}
+
+/**
  * Test that GetStats returns failure if the gstreamer player is not initialized
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsFailureDueToUninitializedPlayer)
@@ -251,8 +359,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsFailureDueTo
     mainThreadWillEnqueueTaskAndWait();
     uint64_t renderedFrames;
     uint64_t droppedFrames;
-    const int kSourceId{1};
-    EXPECT_FALSE(m_mediaPipeline->getStats(kSourceId, renderedFrames, droppedFrames));
+    EXPECT_FALSE(m_mediaPipeline->getStats(m_kDummySourceId, renderedFrames, droppedFrames));
 }
 
 /**
@@ -267,6 +374,20 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsFailure)
     uint64_t droppedFrames;
     EXPECT_CALL(*m_gstPlayerMock, getStats(_, _, _)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getStats(videoSourceId, renderedFrames, droppedFrames));
+}
+
+/**
+ * Test that GetStats fails if source is not present.
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsNoSourcePresent)
+{
+    loadGstPlayer();
+    // No attachment of source
+    mainThreadWillEnqueueTaskAndWait();
+
+    uint64_t renderedFrames;
+    uint64_t droppedFrames;
+    EXPECT_FALSE(m_mediaPipeline->getStats(m_kDummySourceId, renderedFrames, droppedFrames));
 }
 
 /**

@@ -111,6 +111,8 @@ public:
     void setEos(const firebolt::rialto::MediaSourceType &type) override;
     void setPlaybackRate(double rate) override;
     bool getPosition(std::int64_t &position) override;
+    bool setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput) override;
+    bool getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutput) override;
     bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
     void setVolume(double volume) override;
     bool getVolume(double &volume) override;
@@ -148,6 +150,7 @@ private:
     void addAutoVideoSinkChild(GObject *object) override;
     void removeAutoVideoSinkChild(GObject *object) override;
     GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) override;
+    GstElement *getSink(const MediaSourceType &mediaSourceType) override;
     void setAudioVideoFlags(bool enableAudio, bool enableVideo) override;
 
 private:

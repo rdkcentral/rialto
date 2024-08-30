@@ -54,6 +54,8 @@ public:
     virtual bool setPlaybackRate(int sessionId, double rate) = 0;
     virtual bool setPosition(int sessionId, std::int64_t position) = 0;
     virtual bool getPosition(int sessionId, std::int64_t &position) = 0;
+    virtual bool setImmediateOutput(int sessionId, int32_t sourceId, bool immediateOutput) = 0;
+    virtual bool getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput) = 0;
     virtual bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
     virtual bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                                 std::uint32_t height) = 0;
@@ -70,6 +72,8 @@ public:
                                  bool audioAac) = 0;
     virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) = 0;
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
+    virtual std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
+                                                            const std::vector<std::string> &propertyNames) = 0;
     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
 };
 } // namespace firebolt::rialto::server::service

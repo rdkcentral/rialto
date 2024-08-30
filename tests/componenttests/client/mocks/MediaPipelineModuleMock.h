@@ -64,6 +64,14 @@ public:
     MOCK_METHOD(void, getPosition,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetPositionRequest *request,
                  ::firebolt::rialto::GetPositionResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setImmediateOutput,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::SetImmediateOutputRequest *request,
+                 ::firebolt::rialto::SetImmediateOutputResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getImmediateOutput,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::GetImmediateOutputRequest *request,
+                 ::firebolt::rialto::GetImmediateOutputResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getStats,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetStatsRequest *request,
                  ::firebolt::rialto::GetStatsResponse *response, ::google::protobuf::Closure *done));
@@ -142,6 +150,19 @@ public:
     {
         firebolt::rialto::GetPositionResponse response;
         response.set_position(position);
+        return response;
+    }
+
+    ::firebolt::rialto::SetImmediateOutputResponse setImmediateOutputResponse()
+    {
+        firebolt::rialto::SetImmediateOutputResponse response;
+        return response;
+    }
+
+    ::firebolt::rialto::GetImmediateOutputResponse getImmediateOutputResponse(bool immediateOutputResponse)
+    {
+        firebolt::rialto::GetImmediateOutputResponse response;
+        response.set_immediate_output(immediateOutputResponse);
         return response;
     }
 

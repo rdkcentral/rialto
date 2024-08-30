@@ -110,6 +110,10 @@ public:
 
     bool getPosition(int64_t &position) override;
 
+    bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
+
+    bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
+
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
 
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
@@ -334,6 +338,30 @@ protected:
      * @retval true on success.
      */
     bool getPositionInternal(int64_t &position);
+
+    /**
+     * @brief Sets the "Immediate Output" property for this source.
+     *
+     * This method is asynchronous
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] immediateOutput : The desired immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    bool setImmediateOutputInternal(int32_t sourceId, bool immediateOutput);
+
+    /**
+     * @brief Gets the "Immediate Output" property for this source.
+     *
+     * This method is sychronous
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] immediateOutput : Returns the immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    bool getImmediateOutputInternal(int32_t sourceId, bool &immediateOutput);
 
     /**
      * @brief Get stats for this source.

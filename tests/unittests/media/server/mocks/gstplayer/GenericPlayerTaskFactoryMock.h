@@ -109,6 +109,9 @@ public:
                 (GenericPlayerContext & context, std::int64_t position, std::uint32_t duration,
                  std::int64_t discontinuityGap, bool isAudioAac),
                 (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetImmediateOutput,
+                (IGstGenericPlayerPrivate & player, const firebolt::rialto::MediaSourceType &type, bool immediateOutput),
+                (const, override));
 };
 } // namespace firebolt::rialto::server
 

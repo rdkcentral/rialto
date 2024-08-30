@@ -120,6 +120,8 @@ protected:
     void shouldRenderFrame();
     void shouldRenderFrameFailure();
     void shouldGetPosition(const int64_t position);
+    void shouldSetImmediateOutput(bool immediateOutput);
+    void shouldGetImmediateOutput(bool immediateOutput);
     void shouldGetStats(uint64_t renderedFrames, uint64_t droppedFrames);
     void shouldFlush();
     void shouldFailToFlush();
@@ -221,6 +223,8 @@ protected:
     void renderFrame();
     void renderFrameFailure();
     void getPosition(const int64_t expectedPosition);
+    void setImmediateOutput(bool immediateOutput);
+    void getImmediateOutput(bool immediateOutput);
     void getStats(uint64_t expectedFrames, uint64_t expectedDropped);
     void createMediaPipelineCapabilitiesObject();
     void destroyMediaPipelineCapabilitiesObject();

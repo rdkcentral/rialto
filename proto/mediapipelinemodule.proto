@@ -496,6 +496,40 @@ message SetSourcePositionResponse {
 }
 
 /**
+ * @fn void setImmediateOutput(int session_id, int source_id, bool immediate_output)
+ * @brief Sets the "Immediate Output" property for this source.
+ *
+ * @param[in]  session_id        The id of the A/V session.
+ * @param[in]  source_id         The id of the media source.
+ * @param[in]  immediate_output  Set immediate output mode on the sink
+ *
+ */
+message SetImmediateOutputRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+    optional bool immediate_output = 3 [default = false];
+}
+message SetImmediateOutputResponse {
+}
+
+/**
+ * @fn void getImmediateOutput(int session_id, int source_id, bool &immediate_output)
+ * @brief Gets the "Immediate Output" property for this source.
+ *
+ * @param[in]  session_id        The id of the A/V session.
+ * @param[in]  source_id         The id of the media source.
+ * @param[out] immediate_output  Get immediate output mode on the sink
+ *
+ */
+message GetImmediateOutputRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+message GetImmediateOutputResponse {
+    optional bool immediate_output = 1 [default = false];
+}
+
+/**
  * @fn void getStats(int session_id, int source_id, uint64 &rendered_frames, uint64 &dropped_frames)
  * @brief Get various stats from the source.
  *
@@ -792,6 +826,20 @@ service MediaPipelineModule {
      * @see GetPositionRequest
      */
     rpc getPosition(GetPositionRequest) returns (GetPositionResponse) {
+    }
+
+    /**
+     * @brief Sets the "Immediate Output" property for this source.
+     * @see SetImmediateOutputRequest
+     */
+    rpc setImmediateOutput(SetImmediateOutputRequest) returns (SetImmediateOutputResponse) {
+    }
+
+    /**
+     * @brief Gets the "Immediate Output" property for this source.
+     * @see GetImmediateOutputRequest
+     */
+    rpc getImmediateOutput(GetImmediateOutputRequest) returns (GetImmediateOutputResponse) {
     }
 
     /**

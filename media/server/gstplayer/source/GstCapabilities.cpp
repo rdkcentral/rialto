@@ -17,13 +17,14 @@
  * limitations under the License.
  */
 
+#include <algorithm>
+#include <list>
 #include <stdexcept>
+#include <unordered_map>
 
 #include "GstCapabilities.h"
 #include "GstMimeMapping.h"
 #include "RialtoServerLogging.h"
-#include <algorithm>
-#include <unordered_set>
 
 namespace
 {
@@ -126,7 +127,15 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
             throw std::runtime_error("Cannot create GstWrapper");
         }
 
-        gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper);
+        std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapperFactory> glibWrapperFactory =
+            firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory();
+        std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper;
+
+        if ((!glibWrapperFactory) || (!(glibWrapper = glibWrapperFactory->getGlibWrapper())))
+        {
+            throw std::runtime_error("Cannot create GlibWrapper");
+        }
+        gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper);
     }
     catch (const std::exception &e)
     {
@@ -136,8 +145,9 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
     return gstCapabilities;
 }
 
-GstCapabilities::GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper)
-    : m_gstWrapper{gstWrapper}
+GstCapabilities::GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
+    : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
 {
     fillSupportedMimeTypes();
 }
@@ -169,6 +179,56 @@ std::vector<std::string> GstCapabilities::getSupportedMimeTypes(MediaSourceType 
 bool GstCapabilities::isMimeTypeSupported(const std::string &mimeType)
 {
     return m_supportedMimeTypes.find(mimeType) != m_supportedMimeTypes.end();
+}
+
+std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType mediaType,
+                                                                 const std::vector<std::string> &propertyNames)
+{
+    // Get gstreamer element factories. The following flag settings will fetch both SINK and DECODER types
+    // of gstreamer classes...
+    GstElementFactoryListType factoryListType{GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER};
+    {
+        // If MediaSourceType::AUDIO is specified then adjust the flag so that we
+        // restrict the list to gstreamer AUDIO element types (and likewise for video and subtitle)...
+        static const std::unordered_map<MediaSourceType, GstElementFactoryListType>
+            kLookupExtraConditions{{MediaSourceType::AUDIO, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO},
+                                   {MediaSourceType::VIDEO, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO},
+                                   {MediaSourceType::SUBTITLE, GST_ELEMENT_FACTORY_TYPE_MEDIA_SUBTITLE}};
+        auto i = kLookupExtraConditions.find(mediaType);
+        if (i != kLookupExtraConditions.end())
+            factoryListType |= i->second;
+    }
+
+    GList *factories{m_gstWrapper->gstElementFactoryListGetElements(factoryListType, GST_RANK_NONE)};
+
+    // Scan all returned elements for the specified properties...
+    std::list<std::string> propertiesToLookFor{propertyNames.begin(), propertyNames.end()};
+    std::vector<std::string> propertiesFound;
+    for (GList *iter = factories; iter != nullptr && !propertiesToLookFor.empty(); iter = iter->next)
+    {
+        GstElementFactory *factory = GST_ELEMENT_FACTORY(iter->data);
+        GType elementType = m_gstWrapper->gstElementFactoryGetElementType(factory);
+        gpointer elementClass = m_glibWrapper->gTypeClassRef(elementType);
+        if (elementClass)
+        {
+            for (auto i = propertiesToLookFor.begin(); i != propertiesToLookFor.end();)
+            {
+                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_CLASS(elementClass), i->c_str()))
+                {
+                    propertiesFound.push_back(*i);
+                    i = propertiesToLookFor.erase(i);
+                }
+                else
+                    ++i;
+            }
+
+            m_glibWrapper->gObjectUnref(elementClass);
+        }
+    }
+
+    // Cleanup
+    m_gstWrapper->gstPluginFeatureListFree(factories);
+    return propertiesFound;
 }
 
 void GstCapabilities::fillSupportedMimeTypes()

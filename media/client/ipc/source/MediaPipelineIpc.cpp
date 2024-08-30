@@ -618,6 +618,73 @@ bool MediaPipelineIpc::getPosition(int64_t &position)
     return true;
 }
 
+bool MediaPipelineIpc::setImmediateOutput(int32_t sourceId, bool immediateOutput)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetImmediateOutputRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+    request.set_immediate_output(immediateOutput);
+
+    firebolt::rialto::SetImmediateOutputResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setImmediateOutput(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set immediate-output due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetImmediateOutputRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+
+    firebolt::rialto::GetImmediateOutputResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getImmediateOutput(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get immediate-output due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+    else
+    {
+        immediateOutput = response.immediate_output();
+    }
+
+    return true;
+}
+
 bool MediaPipelineIpc::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
     if (!reattachChannelIfRequired())
@@ -1322,10 +1389,10 @@ MediaPipelineIpc::convertFormat(const firebolt::rialto::Format &format)
             {firebolt::rialto::Format::F32BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F32BE},
             {firebolt::rialto::Format::F64LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64LE},
             {firebolt::rialto::Format::F64BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64BE}};
-    const auto it = kFormatConversionMap.find(format);
-    if (kFormatConversionMap.end() != it)
+    const auto kIt = kFormatConversionMap.find(format);
+    if (kFormatConversionMap.end() != kIt)
     {
-        return it->second;
+        return kIt->second;
     }
     return firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S8;
 }
@@ -1338,10 +1405,10 @@ MediaPipelineIpc::convertLayout(const firebolt::rialto::Layout &layout)
                               firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_INTERLEAVED},
                              {firebolt::rialto::Layout::NON_INTERLEAVED,
                               firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_NON_INTERLEAVED}};
-    const auto it = kLayoutConversionMap.find(layout);
-    if (kLayoutConversionMap.end() != it)
+    const auto kIt = kLayoutConversionMap.find(layout);
+    if (kLayoutConversionMap.end() != kIt)
     {
-        return it->second;
+        return kIt->second;
     }
     return firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_INTERLEAVED;
 }

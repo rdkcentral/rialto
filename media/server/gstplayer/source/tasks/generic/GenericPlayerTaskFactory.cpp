@@ -36,6 +36,7 @@
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
+#include "tasks/generic/SetImmediateOutput.h"
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
@@ -257,5 +258,12 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createProcessAudioGap(Gen
     return std::make_unique<tasks::generic::ProcessAudioGap>(context, m_gstWrapper, m_glibWrapper,
                                                              m_rdkGstreamerUtilsWrapper, position, duration,
                                                              discontinuityGap, audioAac);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetImmediateOutput(
+    IGstGenericPlayerPrivate &player, const firebolt::rialto::MediaSourceType &type, bool immediateOutput) const
+{
+    return std::make_unique<tasks::generic::SetImmediateOutput>(player, m_gstWrapper, m_glibWrapper, type,
+                                                                immediateOutput);
 }
 } // namespace firebolt::rialto::server

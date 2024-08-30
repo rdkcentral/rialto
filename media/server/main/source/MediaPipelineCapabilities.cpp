@@ -88,4 +88,10 @@ bool MediaPipelineCapabilities::isMimeTypeSupported(const std::string &mimeType)
     return m_gstCapabilities->isMimeTypeSupported(mimeType);
 }
 
+std::vector<std::string> MediaPipelineCapabilities::getSupportedProperties(MediaSourceType mediaType,
+                                                                           const std::vector<std::string> &propertyNames)
+{
+    return m_gstCapabilities->getSupportedProperties(mediaType, propertyNames);
+}
+
 }; // namespace firebolt::rialto::server

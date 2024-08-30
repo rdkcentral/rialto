@@ -20,15 +20,21 @@
 #include "MediaPipelineServiceTestsFixture.h"
 #include "HeartbeatHandlerMock.h"
 #include "MediaCommon.h"
+
 #include <string>
 #include <utility>
 #include <vector>
 
 using testing::_;
 using testing::ByMove;
+using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
+using testing::SetArgReferee;
+using testing::StrEq;
 using testing::Throw;
+
+using firebolt::rialto::MediaSourceType;
 
 namespace
 {
@@ -207,6 +213,26 @@ void MediaPipelineServiceTests::mediaPipelineWillGetPosition()
 void MediaPipelineServiceTests::mediaPipelineWillFailToGetPosition()
 {
     EXPECT_CALL(m_mediaPipelineMock, getPosition(_)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillSetImmediateOutput()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setImmediateOutput(_, _)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetImmediateOutput()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setImmediateOutput(_, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetImmediateOutput()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getImmediateOutput(_, _)).WillOnce(DoAll(SetArgReferee<1>(true), Return(true)));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetImmediateOutput()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getImmediateOutput(_, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillGetStats()
@@ -545,12 +571,35 @@ void MediaPipelineServiceTests::getStatsShouldFail()
     EXPECT_FALSE(m_sut->getStats(kSessionId, kSourceId, renderedFrames, droppedFrames));
 }
 
+void MediaPipelineServiceTests::setImmediateOutputShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setImmediateOutput(kSessionId, kSourceId, true));
+}
+
+void MediaPipelineServiceTests::setImmediateOutputShouldFail()
+{
+    EXPECT_FALSE(m_sut->setImmediateOutput(kSessionId, kSourceId, true));
+}
+
+void MediaPipelineServiceTests::getImmediateOutputShouldSucceed()
+{
+    bool immOp;
+    EXPECT_TRUE(m_sut->getImmediateOutput(kSessionId, kSourceId, immOp));
+    EXPECT_TRUE(immOp);
+}
+
+void MediaPipelineServiceTests::getImmediateOutputShouldFail()
+{
+    bool immOp;
+    EXPECT_FALSE(m_sut->getImmediateOutput(kSessionId, kSourceId, immOp));
+}
+
 void MediaPipelineServiceTests::getSupportedMimeTypesSucceed()
 {
-    firebolt::rialto::MediaSourceType type = firebolt::rialto::MediaSourceType::VIDEO;
+    MediaSourceType type = MediaSourceType::VIDEO;
     std::vector<std::string> mimeTypes = {"video/h264", "video/h265"};
     EXPECT_CALL(m_mediaPipelineCapabilitiesMock, getSupportedMimeTypes(type)).WillOnce(Return(mimeTypes));
-    EXPECT_THAT(m_sut->getSupportedMimeTypes(firebolt::rialto::MediaSourceType::VIDEO), mimeTypes);
+    EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), mimeTypes);
 }
 
 void MediaPipelineServiceTests::isMimeTypeSupportedSucceed()
@@ -558,6 +607,15 @@ void MediaPipelineServiceTests::isMimeTypeSupportedSucceed()
     std::string mimeType = "video/h264";
     EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isMimeTypeSupported(mimeType)).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->isMimeTypeSupported(mimeType));
+}
+
+void MediaPipelineServiceTests::getSupportedPropertiesSucceed()
+{
+    const MediaSourceType kMediaType{MediaSourceType::VIDEO};
+    const std::vector<std::string> kPropertyNames{"testing", "test-prop"};
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, getSupportedProperties(kMediaType, _)).WillOnce(Return(kPropertyNames));
+    std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(kMediaType, kPropertyNames)};
+    EXPECT_EQ(supportedProperties, kPropertyNames);
 }
 
 void MediaPipelineServiceTests::renderFrameShouldSucceed()
