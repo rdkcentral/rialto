@@ -80,7 +80,7 @@ public:
     /**
      * @brief Starts playback of the web audio.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request playback and then return.
      *
      * Once the backend is successfully playing it should notify the
@@ -91,7 +91,7 @@ public:
     /**
      * @brief Pauses playback of the web audio.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request the playback pause and then return.
      *
      * Once the backend is successfully paused it should notify the

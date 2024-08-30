@@ -1099,7 +1099,7 @@ public:
     /**
      * @brief Starts playback of the media.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request playback and then return.
      *
      * Once the backend is successfully playing it should notify the
@@ -1113,7 +1113,7 @@ public:
     /**
      * @brief Pauses playback of the media.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request the playback pause and then return.
      *
      * Once the backend is successfully playing it should notify the
@@ -1127,7 +1127,7 @@ public:
     /**
      * @brief Stops playback of the media.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request the playback stop and then return.
      *
      * Once the backend is successfully stopped it should notify the
@@ -1156,7 +1156,7 @@ public:
      * If playback has not started this method sets the start position
      * for playback. If playback has started this method performs a seek.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request the new playback position and then return.
      *
      * Once the backend is seeking it should notify the media player
@@ -1199,7 +1199,7 @@ public:
     /**
      * @brief Sets the "Immediate Output" property for this source.
      *
-     * This method is asychronous, it will set the "Immediate Output" property
+     * This method is asynchronous, it will set the "Immediate Output" property
      *
      * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
      * @param[in] immediateOutput : Set immediate output mode on the sink

@@ -105,7 +105,7 @@ public:
     /**
      * @brief Starts playback of the media.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request playback and then return.
      *
      * Once the backend is successfully playing it should notify the
@@ -117,7 +117,7 @@ public:
     /**
      * @brief Pauses playback of the media.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request the playback pause and then return.
      *
      * Once the backend is successfully paused it should notify the
@@ -129,7 +129,7 @@ public:
     /**
      * @brief Stops playback of the media.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request the playback stop and then return.
      *
      * Once the backend is successfully stopped it should notify the
@@ -160,7 +160,7 @@ public:
     /**
      * @brief Attaches new samples
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request to attach new sample and then return.
      */
     virtual void attachSamples(const IMediaPipeline::MediaSegmentVector &mediaSegments) = 0;
@@ -168,7 +168,7 @@ public:
     /**
      * @brief Attaches new samples
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request to attach new sample and then return.
      */
     virtual void attachSamples(const std::shared_ptr<IDataReader> &dataReader) = 0;

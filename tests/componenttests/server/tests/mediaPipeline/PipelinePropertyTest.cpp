@@ -25,17 +25,12 @@
 #include "MessageBuilders.h"
 
 using testing::_;
-using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
-using testing::SetArgumentPointee;
 using testing::StrEq;
 
 namespace
 {
-constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{3};
-constexpr int kFrameCountInPlayingState{24};
 const std::string kElementTypeName{"GenericSink"};
 constexpr bool kImmediateOutput{true};
 } // namespace
@@ -53,31 +48,6 @@ public:
     }
 
     ~PipelinePropertyTest() override { gst_object_unref(m_videoSink); }
-
-    void waitForPositionUpdate()
-    {
-        ExpectMessage<PositionChangeEvent> expectPositionUpdate{m_clientStub};
-        expectPositionUpdate.setTimeout(std::chrono::milliseconds(300)); // Timeout is received every 250ms
-        auto receivedPositionUpdate = expectPositionUpdate.getMessage();
-        ASSERT_TRUE(receivedPositionUpdate);
-        EXPECT_EQ(receivedPositionUpdate->session_id(), m_sessionId);
-        EXPECT_EQ(receivedPositionUpdate->position(), kCurrentPosition);
-    }
-
-    void getPosition()
-    {
-        auto req{createGetPositionRequest(m_sessionId)};
-        ConfigureAction<GetPosition>(m_clientStub)
-            .send(req)
-            .expectSuccess()
-            .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.position(), kCurrentPosition); });
-    }
-
-    void getPositionFailure()
-    {
-        auto req{createGetPositionRequest(m_sessionId)};
-        ConfigureAction<GetPosition>(m_clientStub).send(req).expectFailure();
-    }
 
     void willSetImmediateOutput()
     {
@@ -111,7 +81,7 @@ public:
     void setImmediateOutputFailure()
     {
         auto req{createSetImmediateOutputRequest(m_sessionId, m_videoSourceId, true)};
-        // We expect success from this test because it's asyncronous (and the return
+        // We expect success from this test because it's asynchronous (and the return
         // value doesn't reflect that the immediate-output flag wasn't set)
         ConfigureAction<SetImmediateOutput>(m_clientStub).send(req).expectSuccess();
     }
@@ -158,92 +128,17 @@ public:
         ConfigureAction<GetImmediateOutput>(m_clientStub).send(req).expectFailure();
     }
 
-    void willGetStats()
-    {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _))
-            .WillOnce(Invoke(
-                [&](gpointer object, const gchar *first_property_name, void *element)
-                {
-                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                    *elementPtr = m_videoSink;
-                }));
-        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink))).WillOnce(Return(kElementTypeName.c_str()));
-
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
-            .WillOnce(Invoke(
-                [&](gpointer object, const gchar *first_property_name, void *element)
-                {
-                    GstStructure **elementPtr = reinterpret_cast<GstStructure **>(element);
-                    *elementPtr = &m_testStructure;
-                }));
-
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&m_testStructure, StrEq("rendered"), _))
-            .WillOnce(DoAll(SetArgumentPointee<2>(kRenderedFrames), Return(true)));
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&m_testStructure, StrEq("dropped"), _))
-            .WillOnce(DoAll(SetArgumentPointee<2>(kDroppedFrames), Return(true)));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(1);
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&m_testStructure)).Times(1);
-    }
-
-    void getStats()
-    {
-        auto req{createGetStatsRequest(m_sessionId, m_videoSourceId)};
-        ConfigureAction<GetStats>(m_clientStub)
-            .send(req)
-            .expectSuccess()
-            .matchResponse(
-                [&](const auto &resp)
-                {
-                    EXPECT_EQ(resp.rendered_frames(), kRenderedFrames);
-                    EXPECT_EQ(resp.dropped_frames(), kDroppedFrames);
-                });
-    }
-
-    void willFailToGetStats()
-    {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _))
-            .WillOnce(Invoke(
-                [&](gpointer object, const gchar *first_property_name, void *element)
-                {
-                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                    *elementPtr = m_videoSink;
-                }));
-        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_videoSink))).WillOnce(Return(kElementTypeName.c_str()));
-
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stats"), _))
-            .WillOnce(Invoke(
-                [&](gpointer object, const gchar *first_property_name, void *element)
-                {
-                    GstStructure **elementPtr = reinterpret_cast<GstStructure **>(element);
-                    *elementPtr = &m_testStructure;
-                }));
-
-        // Emulate a situation that the stats structure doesn't contain the number
-        // of rendered frames...
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureGetUint64(&m_testStructure, StrEq("rendered"), _)).WillOnce(Return(false));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoSink)).Times(1);
-        EXPECT_CALL(*m_gstWrapperMock, gstStructureFree(&m_testStructure)).Times(1);
-    }
-
-    void getStatsFailure()
-    {
-        auto req{createGetStatsRequest(m_sessionId, m_videoSourceId)};
-        ConfigureAction<GetStats>(m_clientStub).send(req).expectFailure();
-    }
-
 private:
     GstElement *m_videoSink{nullptr};
     GstStructure m_testStructure;
 };
 
 /*
- * Component Test: Get position test
+ * Component Test: Get and set properties of the pipeline
  * Test Objective:
- *  Test the GetPosition method in rialto
+ *  Test the ability of the Rialto Server to set and get properties of the pipeline
  *
  * Sequence Diagrams:
- *  Position Reporting:
- *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
  *
  * Test Setup:
  *  Language: C++
@@ -277,10 +172,11 @@ private:
  *   Expect that the Playback state has changed to IDLE.
  *
  *  Step 4: Set Immediate Output
- *   Rialto should send SetImmediateOutput request and wait for response
+ *   Rialto client sends SetImmediateOutput request and wait for response.
+ *   the property should be set by the RialtoServer.
  *
  *  Step 5: Get Immediate output
- *   Will get the immediate output property of the sink on the Rialto Server
+ *   Will get the immediate-output property of the sink on the Rialto Server
  *
  *  Step 6: Remove sources
  *   Remove the audio source.
@@ -306,7 +202,7 @@ private:
  *
  * Code:
  */
-TEST_F(PipelinePropertyTest, GetPositionSuccess)
+TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
 {
     // Step 1: Create a new media session
     createSession();
@@ -350,13 +246,12 @@ TEST_F(PipelinePropertyTest, GetPositionSuccess)
 }
 
 /*
- * Component Test: Get position failure test
+ * Component Test: Test falures to Get and set properties of the pipeline
  * Test Objective:
- *  Test the GetPosition method in rialto. It should fail, when pipeline is below PAUSED state
+ *  Test the ability of the Rialto Server to handle failres while
+ *  setting and getting properties of the pipeline
  *
  * Sequence Diagrams:
- *  Position Reporting:
- *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
  *
  * Test Setup:
  *  Language: C++
@@ -391,7 +286,9 @@ TEST_F(PipelinePropertyTest, GetPositionSuccess)
  *
  *  Step 4: Fail to Set Immediate Output
  *   Rialto client sends SetImmediateOutput request and waits for response
- *   SetImmediateOutputResponse is false because the server couldn't process it
+ *   SetImmediateOutputResponse is true because the server processes
+ *   the request asyncronusly, but the RialtoServer fails gracefully to
+ *   process the request (it doesn't crash)
  *
  *  Step 5: Fail to Get Immediate Output
  *   Rialto client sends GetImmediateOutput request and waits for response
@@ -421,7 +318,7 @@ TEST_F(PipelinePropertyTest, GetPositionSuccess)
  *
  * Code:
  */
-TEST_F(PipelinePropertyTest, getPositionFailure)
+TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetFailures)
 {
     // Step 1: Create a new media session
     createSession();
