@@ -299,7 +299,27 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
 
             // Create new GstProtectionMeta decrypt
             GstStructure *info = createProtectionMetaInfo(protectionData);
-#ifdef RIALTO_DISABLE_DECRYPT_BUFFER
+#ifdef RIALTO_ENABLE_DECRYPT_BUFFER
+            GstProtectionMeta *meta = m_gstWrapper->gstBufferAddProtectionMeta(buffer, info);
+            if (meta == nullptr)
+            {
+                GST_ERROR_OBJECT(self, "Failed to add protection meta to the buffer");
+            }
+            else
+            {
+                firebolt::rialto::MediaKeyErrorStatus status =
+                    m_decryptionService->decrypt(protectionData->keySessionId, buffer, caps);
+                if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
+                {
+                    GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
+                }
+                else
+                {
+                    GST_TRACE_OBJECT(self, "Decryption successful");
+                    returnStatus = GST_FLOW_OK;
+                }
+            }
+#else
             // TODO(RIALTO-127): Remove
             if (info != nullptr)
             {
@@ -329,26 +349,6 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
                 GST_TRACE_OBJECT(self, "Decryption successful");
                 returnStatus = GST_FLOW_OK;
             }
-#else
-            GstProtectionMeta *meta = m_gstWrapper->gstBufferAddProtectionMeta(buffer, info);
-            if (meta == nullptr)
-            {
-                GST_ERROR_OBJECT(self, "Failed to add protection meta to the buffer");
-            }
-            else
-            {
-                firebolt::rialto::MediaKeyErrorStatus status =
-                    m_decryptionService->decrypt(protectionData->keySessionId, buffer, caps);
-                if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
-                {
-                    GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
-                }
-                else
-                {
-                    GST_TRACE_OBJECT(self, "Decryption successful");
-                    returnStatus = GST_FLOW_OK;
-                }
-            }
 #endif
         }
 
@@ -375,7 +375,21 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
 
 GstStructure *GstRialtoDecryptorPrivate::createProtectionMetaInfo(GstRialtoProtectionData *protectionData)
 {
-#ifdef RIALTO_DISABLE_DECRYPT_BUFFER
+#ifdef RIALTO_ENABLE_DECRYPT_BUFFER
+    GstStructure *info = m_gstWrapper->gstStructureNew("application/x-cenc", "kid", GST_TYPE_BUFFER,
+                                                       protectionData->key, "iv", GST_TYPE_BUFFER, protectionData->iv,
+                                                       "subsample_count", G_TYPE_UINT, protectionData->subsampleCount,
+                                                       "subsamples", GST_TYPE_BUFFER, protectionData->subsamples,
+                                                       "encryption_scheme", G_TYPE_UINT, 0, "init_with_last_15",
+                                                       G_TYPE_UINT, protectionData->initWithLast15, "cipher-mode",
+                                                       G_TYPE_STRING, toString(protectionData->cipherMode), NULL);
+
+    if (protectionData->encryptionPatternSet)
+    {
+        m_gstWrapper->gstStructureSet(info, "crypt_byte_block", G_TYPE_UINT, protectionData->crypt, NULL);
+        m_gstWrapper->gstStructureSet(info, "skip_byte_block", G_TYPE_UINT, protectionData->skip, NULL);
+    }
+#else
     // TODO(RIALTO-127): Remove
     GstStructure *info = nullptr;
 
@@ -390,20 +404,6 @@ GstStructure *GstRialtoDecryptorPrivate::createProtectionMetaInfo(GstRialtoProte
             m_gstWrapper->gstStructureSet(info, "crypt_byte_block", G_TYPE_UINT, protectionData->crypt, NULL);
             m_gstWrapper->gstStructureSet(info, "skip_byte_block", G_TYPE_UINT, protectionData->skip, NULL);
         }
-    }
-#else
-    GstStructure *info = m_gstWrapper->gstStructureNew("application/x-cenc", "kid", GST_TYPE_BUFFER,
-                                                       protectionData->key, "iv", GST_TYPE_BUFFER, protectionData->iv,
-                                                       "subsample_count", G_TYPE_UINT, protectionData->subsampleCount,
-                                                       "subsamples", GST_TYPE_BUFFER, protectionData->subsamples,
-                                                       "encryption_scheme", G_TYPE_UINT, 0, "init_with_last_15",
-                                                       G_TYPE_UINT, protectionData->initWithLast15, "cipher-mode",
-                                                       G_TYPE_STRING, toString(protectionData->cipherMode), NULL);
-
-    if (protectionData->encryptionPatternSet)
-    {
-        m_gstWrapper->gstStructureSet(info, "crypt_byte_block", G_TYPE_UINT, protectionData->crypt, NULL);
-        m_gstWrapper->gstStructureSet(info, "skip_byte_block", G_TYPE_UINT, protectionData->skip, NULL);
     }
 #endif
     return info;
