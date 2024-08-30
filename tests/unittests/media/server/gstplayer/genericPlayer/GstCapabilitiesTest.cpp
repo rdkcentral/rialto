@@ -92,17 +92,17 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(list)).Times(1);
     }
 
-    void expectGetStaticCapsAndCapsUnref(GstStaticPadTemplate &padTemplate, GstCaps *caps, int count = 1)
-    {
-        EXPECT_CALL(*m_gstWrapperMock, gstStaticCapsGet(&padTemplate.static_caps)).Times(count).WillRepeatedly(Return(caps));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(caps)).Times(count);
-    }
-
     void expectGetStaticPadTemplates(GstElementFactory *factory, GList *list, int count = 1)
     {
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetStaticPadTemplates(factory))
             .Times(count)
             .WillRepeatedly(Return(list));
+    }
+
+    void expectGetStaticCapsAndCapsUnref(GstStaticPadTemplate &padTemplate, GstCaps *caps, int count = 1)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstStaticCapsGet(&padTemplate.static_caps)).Times(count).WillRepeatedly(Return(caps));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(caps)).Times(count);
     }
 
     GstStaticPadTemplate createSinkPadTemplate()
@@ -147,8 +147,8 @@ public:
                                                                    &m_decoderPadTemplateSink2, &m_decoderPadTemplateSrc};
 
     // Common decoder parser factory type variables to be used in tests
-    char m_dummyparser = 0;
-    GstElementFactory *m_parserFactory{reinterpret_cast<GstElementFactory *>(&m_dummyparser)};
+    char m_dummyParser = 0;
+    GstElementFactory *m_parserFactory{reinterpret_cast<GstElementFactory *>(&m_dummyParser)};
     GstStaticPadTemplate m_parserPadTemplateSink;
     GstStaticPadTemplate m_parserPadTemplateSrc;
     GstCaps m_parserTemplateCapsSink;
