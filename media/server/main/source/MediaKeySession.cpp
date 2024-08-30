@@ -232,27 +232,6 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
     return status;
 }
 
-// TODO(RIALTO-127): Remove
-MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
-                                             GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps)
-{
-    initOcdmErrorChecking();
-
-    MediaKeyErrorStatus status =
-        m_ocdmSession->decrypt(encrypted, subSample, subSampleCount, IV, keyId, initWithLast15, caps);
-    if (MediaKeyErrorStatus::OK != status)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to decrypt");
-    }
-
-    if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))
-    {
-        status = MediaKeyErrorStatus::FAIL;
-    }
-
-    return status;
-}
-
 MediaKeyErrorStatus MediaKeySession::closeKeySession()
 {
     initOcdmErrorChecking();

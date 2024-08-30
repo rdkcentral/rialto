@@ -573,21 +573,6 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     return status;
 }
 
-// TODO(RIALTO-127): Remove
-MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
-                                                     const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
-                                                     uint32_t initWithLast15, GstCaps *caps)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    MediaKeyErrorStatus status;
-    auto task = [&]()
-    { status = decryptInternal(keySessionId, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15, caps); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
-}
-
 MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
@@ -598,30 +583,6 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
     }
 
     MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->decrypt(encrypted, caps);
-    if (MediaKeyErrorStatus::OK != status)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");
-        return status;
-    }
-
-    return status;
-}
-
-// TODO(RIALTO-127): Remove
-MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionId, GstBuffer *encrypted,
-                                                             GstBuffer *subSample, const uint32_t subSampleCount,
-                                                             GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15,
-                                                             GstCaps *caps)
-{
-    auto sessionIter = m_mediaKeySessions.find(keySessionId);
-    if (sessionIter == m_mediaKeySessions.end())
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
-        return MediaKeyErrorStatus::BAD_SESSION_ID;
-    }
-
-    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->decrypt(encrypted, subSample, subSampleCount, IV,
-                                                                              keyId, initWithLast15, caps);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");
