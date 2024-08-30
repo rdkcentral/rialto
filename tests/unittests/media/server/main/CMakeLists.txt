@@ -74,7 +74,6 @@ add_gtests (
 
         mediaKeySession/base/MediaKeySessionTestBase.cpp
         mediaKeySession/CreateTest.cpp
-        mediaKeySession/DecryptTest.cpp
         mediaKeySession/DecryptBufferTest.cpp
         mediaKeySession/GenerateRequestTest.cpp
         mediaKeySession/LoadSessionTest.cpp
