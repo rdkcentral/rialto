@@ -923,12 +923,12 @@ bool MediaPipelineIpc::setSyncOff(bool syncOff)
     return false;
 }
 
-bool MediaPipelineIpc::setStreamSyncMode(bool streamSyncMode)
+bool MediaPipelineIpc::setStreamSyncMode(int32_t streamSyncMode)
 {
     return false;
 }
 
-bool MediaPipelineIpc::getStreamSyncMode(bool &streamSyncMode)
+bool MediaPipelineIpc::getStreamSyncMode(int32_t &streamSyncMode)
 {
     return false;
 }

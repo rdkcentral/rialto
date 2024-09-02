@@ -309,7 +309,7 @@ public:
      *
      * @retval true on success false otherwise
      */
-    virtual bool setStreamSyncMode(bool streamSyncMode) = 0;
+    virtual bool setStreamSyncMode(int32_t streamSyncMode) = 0;
 
     /**
      * @brief Get stream sync mode property on the pipeline.
@@ -318,7 +318,7 @@ public:
      *
      * @retval true on success false otherwise
      */
-    virtual bool getStreamSyncMode(bool &streamSyncMode) = 0;
+    virtual bool getStreamSyncMode(int32_t &streamSyncMode) = 0;
 
     /**
      * @brief Flushes a source.

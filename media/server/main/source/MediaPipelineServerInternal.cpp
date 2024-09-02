@@ -906,6 +906,42 @@ bool MediaPipelineServerInternal::getMuteInternal(bool &mute)
     return m_gstPlayer->getMute(mute);
 }
 
+bool MediaPipelineServerInternal::setLowLatency(bool lowLatency)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    return false;
+}
+
+bool MediaPipelineServerInternal::setSync(bool sync)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    return false;
+}
+
+bool MediaPipelineServerInternal::getSync(bool &sync)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    return false;
+}
+
+bool MediaPipelineServerInternal::setSyncOff(bool syncOff)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    return false;
+}
+
+bool MediaPipelineServerInternal::setStreamSyncMode(int32_t streamSyncMode)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    return false;
+}
+
+bool MediaPipelineServerInternal::getStreamSyncMode(int32_t &streamSyncMode)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    return false;
+}
+
 bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

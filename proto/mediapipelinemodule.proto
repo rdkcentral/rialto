@@ -458,6 +458,97 @@ message GetMuteResponse {
 }
 
 /**
+ * @fn void setLowLatency(bool lowLatency)
+ * @brief Set low latency property on the pipeline.
+ *
+ * @param[in] lowLatency : The low latency value to set.
+ *
+ */
+message SetLowLatencyRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool low_latency = 2;
+}
+message SetLowLatencyResponse {
+}
+
+/**
+ * @fn void setSync(bool sync)
+ * @brief Set sync property on the pipeline.
+ *
+ * @param[in] session_id  The id of the A/V session the request is for.
+ * @param[in] sync        The sync value to set.
+ *
+ */
+message SetSyncRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool sync = 2;
+}
+message SetSyncResponse {
+}
+
+/**
+ * @fn void getSync(bool &sync)
+ * @brief Get sync property on the pipeline.
+ *
+ * @param[in]  session_id  The id of the A/V session the request is for.
+ * @param[out] sync        Current sync value.
+ *
+ * @retval true on success false otherwise
+ */
+message GetSyncRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetSyncResponse {
+    optional bool sync = 1;
+}
+
+/**
+ * @fn void setSyncOff(bool sync_off)
+ * @brief Set sync off property on the pipeline.
+ *
+ * @param[in] session_id  The id of the A/V session the request is for.
+ * @param[in] sync_off    The sync off value to set.
+ *
+ */
+message SetSyncOffRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool sync_off = 2;
+}
+message SetSyncOffResponse {
+}
+
+/**
+ * @fn void setStreamSyncMode(bool stream_sync_mode)
+ * @brief Set stream sync mode property on the pipeline.
+ *
+ * @param[in] session_id        The id of the A/V session the request is for.
+ * @param[in] stream_sync_mode  The stream sync mode value to set.
+ *
+ */
+message SetStreamSyncModeRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool stream_sync_mode = 2;
+}
+message SetStreamSyncModeResponse {
+}
+
+/**
+ * @fn void getStreamSyncMode(bool &stream_sync_mode)
+ * @brief Get stream sync mode property on the pipeline.
+ *
+ * @param[in]  session_id       The id of the A/V session the request is for.
+ * @param[out] stream_sync_mode Current stream sync mode value.
+ *
+ * @retval true on success false otherwise
+ */
+message GetStreamSyncModeRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetStreamSyncModeResponse {
+    optional bool stream_sync_mode = 1;
+}
+
+/**
  * @fn void flush(int session_id, int source_id)
  * @brief Flush a media source for a session.
  *
@@ -884,7 +975,7 @@ service MediaPipelineModule {
     rpc getVolume(GetVolumeRequest) returns (GetVolumeResponse) {
     }
 
-        /**
+    /**
      * @brief Set mute status of pipeline.
      * @see SetMuteRequest
      */
@@ -897,6 +988,48 @@ service MediaPipelineModule {
      */
     rpc getMute(GetMuteRequest) returns (GetMuteResponse) {
     }
+
+    /**
+     * @brief Set low latency property on the pipeline.
+     * @see SetLowLatencyRequest
+     */
+    rpc setLowLatency(SetLowLatencyRequest) returns (SetLowLatencyResponse) {
+    } 
+
+    /**
+     * @brief Set sync property on the pipeline.
+     * @see SetSyncRequest
+     */
+    rpc setSync(SetSyncRequest) returns (SetSyncResponse) {
+    } 
+
+    /**
+     * @brief Get sync property on the pipeline.
+     * @see GetSyncRequest
+     */
+    rpc getSync(GetSyncRequest) returns (GetSyncResponse) {
+    } 
+
+    /**
+     * @brief Set sync off property on the pipeline.
+     * @see SetSyncOffRequest
+     */
+    rpc setSyncOff(SetSyncOffRequest) returns (SetSyncOffResponse) {
+    } 
+
+    /**
+     * @brief Set stream sync mode property on the pipeline.
+     * @see SetStreamSyncModeRequest
+     */
+    rpc setStreamSyncMode(SetStreamSyncModeRequest) returns (SetStreamSyncModeResponse) {
+    } 
+
+    /**
+     * @brief Get stream sync mode property on the pipeline.
+     * @see GetStreamSyncModeRequest
+     */
+    rpc getStreamSyncMode(GetStreamSyncModeRequest) returns (GetStreamSyncModeResponse) {
+    } 
 
     /**
      * @brief Flush the media source.

@@ -517,13 +517,13 @@ bool MediaPipeline::setSyncOff(bool syncOff)
     return m_mediaPipelineIpc->setSyncOff(syncOff);
 }
 
-bool MediaPipeline::setStreamSyncMode(bool streamSyncMode)
+bool MediaPipeline::setStreamSyncMode(int32_t streamSyncMode)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->setStreamSyncMode(streamSyncMode);
 }
 
-bool MediaPipeline::getStreamSyncMode(bool &streamSyncMode)
+bool MediaPipeline::getStreamSyncMode(int32_t &streamSyncMode)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->getStreamSyncMode(streamSyncMode);

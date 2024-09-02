@@ -394,6 +394,36 @@ bool MediaPipelineService::getMute(int sessionId, bool &mute)
     return mediaPipelineIter->second->getMute(mute);
 }
 
+bool MediaPipelineService::setLowLatency(int sessionId, bool lowLatency)
+{
+    return false;
+}
+
+bool MediaPipelineService::setSync(int sessionId, bool sync)
+{
+    return false;
+}
+
+bool MediaPipelineService::getSync(int sessionId, bool &sync)
+{
+    return false;
+}
+
+bool MediaPipelineService::setSyncOff(int sessionId, bool syncOff)
+{
+    return false;
+}
+
+bool MediaPipelineService::setStreamSyncMode(int sessionId, int32_t streamSyncMode)
+{
+    return false;
+}
+
+bool MediaPipelineService::getStreamSyncMode(int sessionId, int32_t &streamSyncMode)
+{
+    return false;
+}
+
 bool MediaPipelineService::flush(int sessionId, std::int32_t sourceId, bool resetTime)
 {
     RIALTO_SERVER_LOG_DEBUG("Flush requested, session id: %d", sessionId);

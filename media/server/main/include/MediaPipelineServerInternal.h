@@ -134,6 +134,18 @@ public:
 
     bool getMute(bool &mute) override;
 
+    bool setLowLatency(bool lowLatency) override;
+
+    bool setSync(bool sync) override;
+
+    bool getSync(bool &sync) override;
+
+    bool setSyncOff(bool syncOff) override;
+
+    bool setStreamSyncMode(int32_t streamSyncMode) override;
+
+    bool getStreamSyncMode(int32_t &streamSyncMode) override;
+
     bool flush(int32_t sourceId, bool resetTime) override;
 
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime) override;
