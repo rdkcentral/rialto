@@ -903,6 +903,36 @@ bool MediaPipelineIpc::getMute(bool &mute)
     return true;
 }
 
+bool MediaPipelineIpc::setLowLatency(bool lowLatency)
+{
+    return false;
+}
+
+bool MediaPipelineIpc::setSync(bool sync)
+{
+    return false;
+}
+
+bool MediaPipelineIpc::getSync(bool &sync)
+{
+    return false;
+}
+
+bool MediaPipelineIpc::setSyncOff(bool syncOff)
+{
+    return false;
+}
+
+bool MediaPipelineIpc::setStreamSyncMode(bool streamSyncMode)
+{
+    return false;
+}
+
+bool MediaPipelineIpc::getStreamSyncMode(bool &streamSyncMode)
+{
+    return false;
+}
+
 bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime)
 {
     if (!reattachChannelIfRequired())

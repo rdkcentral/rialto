@@ -267,6 +267,60 @@ public:
     virtual bool getMute(bool &mute) = 0;
 
     /**
+     * @brief Set low latency property on the pipeline. Default false.
+     *
+     * @param[in] lowLatency : The low latency value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setLowLatency(bool lowLatency) = 0;
+
+    /**
+     * @brief Set sync property on the pipeline. Default false.
+     *
+     * @param[in] sync : The sync value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setSync(bool sync) = 0;
+
+    /**
+     * @brief Get sync property on the pipeline.
+     *
+     * @param[out] sync : Current sync value.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getSync(bool &sync) = 0;
+
+    /**
+     * @brief Set sync off property on the pipeline. Default false.
+     *
+     * @param[in] syncOff : The sync off value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setSyncOff(bool syncOff) = 0;
+
+    /**
+     * @brief Set stream sync mode property on the pipeline. Default 0.
+     *
+     * @param[in] streamSyncMode : The stream sync mode value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setStreamSyncMode(bool streamSyncMode) = 0;
+
+    /**
+     * @brief Get stream sync mode property on the pipeline.
+     *
+     * @param[out] streamSyncMode : Current stream sync mode value.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getStreamSyncMode(bool &streamSyncMode) = 0;
+
+    /**
      * @brief Flushes a source.
      *
      * This method is called by Rialto Client to flush out all queued data for a media source stream.

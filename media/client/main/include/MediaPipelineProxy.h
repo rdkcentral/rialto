@@ -103,6 +103,18 @@ public:
 
     bool getMute(bool &mute) override { return m_mediaPipeline->getMute(mute); }
 
+    bool setLowLatency(bool lowLatency) override { return m_mediaPipeline->setLowLatency(lowLatency); }
+
+    bool setSync(bool sync) override { return m_mediaPipeline->setSync(sync); }
+
+    bool getSync(bool &sync) override { return m_mediaPipeline->getSync(sync); }
+
+    bool setSyncOff(bool syncOff) override { return m_mediaPipeline->setSyncOff(syncOff); }
+
+    bool setStreamSyncMode(bool streamSyncMode) override { return m_mediaPipeline->setStreamSyncMode(streamSyncMode); }
+
+    bool getStreamSyncMode(bool &streamSyncMode) override { return m_mediaPipeline->getStreamSyncMode(streamSyncMode); }
+
     bool flush(int32_t sourceId, bool resetTime) override { return m_mediaPipeline->flush(sourceId, resetTime); }
 
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime) override
