@@ -23,9 +23,11 @@
 #include "MediaCommon.h"
 #include "mediapipelinecapabilitiesmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
+#include <string>
 #include <vector>
 
 MATCHER_P2(createSessionRequestMatcher, maxWidth, maxHeight, "")
@@ -307,7 +309,9 @@ MATCHER_P2(getSupportedPropertiesRequestMatcher, mediaType, propertyNames, "")
 {
     const ::firebolt::rialto::GetSupportedPropertiesRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::GetSupportedPropertiesRequest *>(arg);
-    return (kRequest->media_type() == mediaType && kRequest->property_names() == propertyNames);
+    std::vector<std::string> tmp{kRequest->property_names().begin(), kRequest->property_names().end()};
+    return (kRequest->media_type() == static_cast<firebolt::rialto::ProtoMediaSourceType>(mediaType) &&
+            tmp == propertyNames);
 }
 
 MATCHER_P3(flushRequestMatcher, sessionId, sourceId, resetTime, "")

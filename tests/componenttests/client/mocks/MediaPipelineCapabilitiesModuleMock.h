@@ -31,12 +31,20 @@ public:
     MOCK_METHOD(void, getSupportedMimeTypes,
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::GetSupportedMimeTypesRequest *request,
-                 ::firebolt::rialto::GetSupportedMimeTypesResponse *response, ::google::protobuf::Closure *done));
+                 ::firebolt::rialto::GetSupportedMimeTypesResponse *response, ::google::protobuf::Closure *done),
+                (override));
 
     MOCK_METHOD(void, isMimeTypeSupported,
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::IsMimeTypeSupportedRequest *request,
-                 ::firebolt::rialto::IsMimeTypeSupportedResponse *response, ::google::protobuf::Closure *done));
+                 ::firebolt::rialto::IsMimeTypeSupportedResponse *response, ::google::protobuf::Closure *done),
+                (override));
+
+    MOCK_METHOD(void, getSupportedProperties,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::GetSupportedPropertiesRequest *request,
+                 ::firebolt::rialto::GetSupportedPropertiesResponse *response, ::google::protobuf::Closure *done),
+                (override));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -65,6 +73,18 @@ public:
     {
         firebolt::rialto::IsMimeTypeSupportedResponse response;
         response.set_is_supported(value);
+        return response;
+    }
+
+    ::firebolt::rialto::GetSupportedPropertiesResponse getSupportedPropertiesResponse(const std::vector<std::string> &values)
+    {
+        firebolt::rialto::GetSupportedPropertiesResponse response;
+
+        for (const std::string &property : values)
+        {
+            response.add_supported_properties(property);
+        }
+
         return response;
     }
 

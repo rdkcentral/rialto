@@ -165,7 +165,9 @@ private:
  * Sequence Diagrams:
  *  Create, Destroy - https://wiki.rdkcentral.com/pages/viewpage.action?pageId=226375556
  *  Quality of Service
- *   - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
+ *  - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
+ *  Stats
+ *  - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-Stats
  *
  * Test Setup:
  *  Language: C++
@@ -359,14 +361,14 @@ TEST_F(QosUpdatesTest, QosUpdates)
 }
 
 /*
- * Component Test: Qos Updates Test
+ * Component Test: Test Failures
  * Test Objective:
- *  Test the notifyQos API. After receiving GST_MESSAGE_QOS, RialtoServer should send notifyQos to RialtoClient
+ *  Test a failure to get stats from Rialto Server
  *
  * Sequence Diagrams:
  *  Create, Destroy - https://wiki.rdkcentral.com/pages/viewpage.action?pageId=226375556
- *  Quality of Service
- *   - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
+ *  Stats
+ *  - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-Stats
  *
  * Test Setup:
  *  Language: C++
@@ -468,7 +470,7 @@ TEST_F(QosUpdatesTest, QosUpdates)
  *
  * Code:
  */
-TEST_F(QosUpdatesTest, QosUpdatesFailures)
+TEST_F(QosUpdatesTest, StatsFailure)
 {
     // Step 1: Create a new media session
     createSession();

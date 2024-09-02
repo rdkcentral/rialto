@@ -51,7 +51,10 @@ public:
  *  Also test the get-stats functionality (which returns the number of rendered and dropped frames)
  *
  * Sequence Diagrams:
- *  Quality of Service - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
+ *  Quality of Service
+ *  - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-QualityofService
+ *  Stats
+ *  - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-Stats
  *
  * Test Setup:
  *  Language: C++
