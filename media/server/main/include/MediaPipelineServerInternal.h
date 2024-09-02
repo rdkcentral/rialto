@@ -304,27 +304,6 @@ protected:
     bool allSourcesAttachedInternal();
 
     /**
-     * @brief Play internally, only to be called on the main thread.
-     *
-     * @retval true on success.
-     */
-    bool playInternal();
-
-    /**
-     * @brief Pause internally, only to be called on the main thread.
-     *
-     * @retval true on success.
-     */
-    bool pauseInternal();
-
-    /**
-     * @brief Stop internally, only to be called on the main thread.
-     *
-     * @retval true on success.
-     */
-    bool stopInternal();
-
-    /**
      * @brief Set the playback rate internally, only to be called on the main thread.
      *
      * @param[in] rate : The playback rate.
@@ -341,15 +320,6 @@ protected:
      * @retval true on success.
      */
     bool setPositionInternal(int64_t position);
-
-    /**
-     * @brief Get position internally, only to be called on the main thread.
-     *
-     * @param[out] position : The playback position in nanoseconds
-     *
-     * @retval true on success.
-     */
-    bool getPositionInternal(int64_t &position);
 
     /**
      * @brief Sets the "Immediate Output" property for this source.
@@ -389,18 +359,6 @@ protected:
     bool getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames);
 
     /**
-     * @brief Set video window internally, only to be called on the main thread.
-     *
-     * @param[in] x      : The x position in pixels.
-     * @param[in] y      : The y position in pixels.
-     * @param[in] width  : The width in pixels.
-     * @param[in] height : The height in pixels.
-     *
-     * @retval true on success.
-     */
-    bool setVideoWindowInternal(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-
-    /**
      * @brief Have data internally, only to be called on the main thread.
      *
      * @param[in] status : The status
@@ -409,13 +367,6 @@ protected:
      * @retval true on success.
      */
     bool haveDataInternal(MediaSourceStatus status, uint32_t needDataRequestId);
-
-    /**
-     * @brief Render frame internally, only to be called on the main thread.
-     *
-     * @retval true on success.
-     */
-    bool renderFrameInternal();
 
     /**
      * @brief Have data internally, only to be called on the main thread.
@@ -472,31 +423,6 @@ protected:
     bool getVolumeInternal(double &volume);
 
     /**
-     * @brief Set mute internally, only to be called on the main thread.
-     *
-     * @param[in] mute Desired mute state, true=muted, false=not muted
-     *
-     * @retval true on success false otherwise
-     */
-    bool setMuteInternal(bool mute);
-
-    /**
-     * @brief Get mute internally, only to be called on the main thread.
-     *
-     * @param[out] mute Current mute state
-     *
-     * @retval true on success false otherwise
-     */
-    bool getMuteInternal(bool &mute);
-
-    /**
-     * @brief Checks if MediaPipeline threads are not deadlocked internally
-     *
-     * @param[out] heartbeatHandler : The heartbeat handler instance
-     */
-    void pingInternal(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler);
-
-    /**
      * @brief Flushes a source.
      *
      * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
@@ -520,18 +446,15 @@ protected:
     bool setSourcePositionInternal(int32_t sourceId, int64_t position, bool resetTime);
 
     /**
-     * @brief Process audio gap
+     * @brief Template for pass through methods that call GstGenericPlayer APIs.
      *
-     * This method handles audio gap in order to avoid audio pops during transitions.
-     *
-     * @param[in] position         : Audio pts fade position
-     * @param[in] duration         : Audio pts fade duration
-     * @param[in] discontinuityGap : Audio discontinuity gap
-     * @param[in] audioAac         : True if audio codec is AAC
+     * @param[in] funcName  : Name of function.
+     * @param[in] position  : Lambda function calling GstGenericPlayer API.
      *
      * @retval true on success.
      */
-    bool processAudioGapInternal(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac);
+    template <typename Func>
+    bool callPlayerOnMainThread(const char* funcName, Func&& func);
 };
 
 }; // namespace firebolt::rialto::server

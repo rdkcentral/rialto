@@ -337,71 +337,17 @@ bool MediaPipelineServerInternal::allSourcesAttachedInternal()
 
 bool MediaPipelineServerInternal::play()
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    bool result;
-    auto task = [&]() { result = playInternal(); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::playInternal()
-{
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to play - Gstreamer player has not been loaded");
-        return false;
-    }
-
-    m_gstPlayer->play();
-    return true;
+    return callPlayerOnMainThread(__func__, [](auto &player) { player->play(); return true; });
 }
 
 bool MediaPipelineServerInternal::pause()
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    bool result;
-    auto task = [&]() { result = pauseInternal(); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::pauseInternal()
-{
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to pause - Gstreamer player has not been loaded");
-        return false;
-    }
-
-    m_gstPlayer->pause();
-    return true;
+    return callPlayerOnMainThread(__func__, [](auto &player) { player->pause(); return true; });
 }
 
 bool MediaPipelineServerInternal::stop()
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    bool result;
-    auto task = [&]() { result = stopInternal(); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::stopInternal()
-{
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to stop - Gstreamer player has not been loaded");
-        return false;
-    }
-
-    m_gstPlayer->stop();
-    return true;
+    return callPlayerOnMainThread(__func__, [](auto &player) { player->stop(); return true; });
 }
 
 bool MediaPipelineServerInternal::setPlaybackRate(double rate)
@@ -465,25 +411,7 @@ bool MediaPipelineServerInternal::setPositionInternal(int64_t position)
 
 bool MediaPipelineServerInternal::getPosition(int64_t &position)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    bool result;
-    auto task = [&]() { result = getPositionInternal(position); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::getPositionInternal(int64_t &position)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to get position - Gstreamer player has not been loaded");
-        return false;
-    }
-    return m_gstPlayer->getPosition(position);
+    return callPlayerOnMainThread(__func__, [&position](auto &player) { return player->getPosition(position); });
 }
 
 bool MediaPipelineServerInternal::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
@@ -572,25 +500,7 @@ bool MediaPipelineServerInternal::getImmediateOutputInternal(int32_t sourceId, b
 
 bool MediaPipelineServerInternal::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    bool result;
-    auto task = [&]() { result = setVideoWindowInternal(x, y, width, height); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::setVideoWindowInternal(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
-{
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to set video window - Gstreamer player has not been loaded");
-        return false;
-    }
-
-    m_gstPlayer->setVideoGeometry(x, y, width, height);
-    return true;
+    return callPlayerOnMainThread(__func__, [x, y, width, height](auto &player) { player->setVideoGeometry(x, y, width, height); return true; });
 }
 
 bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t needDataRequestId)
@@ -771,175 +681,62 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
 
 void MediaPipelineServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    auto task = [&]() { pingInternal(std::move(heartbeatHandler)); };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-}
-
-void MediaPipelineServerInternal::pingInternal(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
-{
-    if (!m_gstPlayer)
-    {
-        // No need to check GstPlayer worker thread, we reached this function, so main thread is working fine.
-        heartbeatHandler.reset();
-        return;
-    }
-    // Check GstPlayer worker thread
-    m_gstPlayer->ping(std::move(heartbeatHandler));
+    callPlayerOnMainThread(__func__, [&heartbeatHandler](auto &player) { player->ping(std::move(heartbeatHandler)); return true; });
 }
 
 bool MediaPipelineServerInternal::renderFrame()
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    bool result;
-    auto task = [&]() { result = renderFrameInternal(); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::renderFrameInternal()
-{
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("renderFrame failed - Gstreamer player has not been loaded");
-        return false;
-    }
-
-    m_gstPlayer->renderFrame();
-    return true;
+    return callPlayerOnMainThread(__func__, [](auto &player) { player->renderFrame(); return true; });
 }
 
 bool MediaPipelineServerInternal::setVolume(double volume)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    bool result;
-    auto task = [&]() { result = setVolumeInternal(volume); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::setVolumeInternal(double volume)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to set volume - Gstreamer player has not been loaded");
-        return false;
-    }
-    m_gstPlayer->setVolume(volume);
-    return true;
+    return callPlayerOnMainThread(__func__, [volume](auto &player) { player->setVolume(volume); return true; });
 }
 
 bool MediaPipelineServerInternal::getVolume(double &volume)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    bool result;
-    auto task = [&]() { result = getVolumeInternal(volume); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::getVolumeInternal(double &volume)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to get volume - Gstreamer player has not been loaded");
-        return false;
-    }
-    return m_gstPlayer->getVolume(volume);
+    return callPlayerOnMainThread(__func__, [&volume](auto &player) { return player->getVolume(volume); });
 }
 
 bool MediaPipelineServerInternal::setMute(bool mute)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    bool result;
-    auto task = [&]() { result = setMuteInternal(mute); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::setMuteInternal(bool mute)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to set mute - Gstreamer player has not been loaded");
-        return false;
-    }
-    m_gstPlayer->setMute(mute);
-    return true;
+    return callPlayerOnMainThread(__func__, [mute](auto &player) { player->setMute(mute); return true; });
 }
 
 bool MediaPipelineServerInternal::getMute(bool &mute)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    bool result;
-    auto task = [&]() { result = getMuteInternal(mute); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::getMuteInternal(bool &mute)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to get mute - Gstreamer player has not been loaded");
-        return false;
-    }
-    return m_gstPlayer->getMute(mute);
+    return callPlayerOnMainThread(__func__, [&mute](auto &player) { return player->getMute(mute); });
 }
 
 bool MediaPipelineServerInternal::setLowLatency(bool lowLatency)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
+    return callPlayerOnMainThread(__func__, [lowLatency](auto &player) { return player->setLowLatency(lowLatency); });
 }
 
 bool MediaPipelineServerInternal::setSync(bool sync)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
+    return callPlayerOnMainThread(__func__, [sync](auto &player) { return player->setSync(sync); });
 }
 
 bool MediaPipelineServerInternal::getSync(bool &sync)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
+    return callPlayerOnMainThread(__func__, [&sync](auto &player) { return player->getSync(sync); });
 }
 
 bool MediaPipelineServerInternal::setSyncOff(bool syncOff)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
+    return callPlayerOnMainThread(__func__, [syncOff](auto &player) { return player->setSyncOff(syncOff); });
 }
 
 bool MediaPipelineServerInternal::setStreamSyncMode(int32_t streamSyncMode)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
+    return callPlayerOnMainThread(__func__, [streamSyncMode](auto &player) { return player->setStreamSyncMode(streamSyncMode); });
 }
 
 bool MediaPipelineServerInternal::getStreamSyncMode(int32_t &streamSyncMode)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return false;
+    return callPlayerOnMainThread(__func__, [&streamSyncMode](auto &player) { return player->getStreamSyncMode(streamSyncMode); });
 }
 
 bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime)
@@ -1021,25 +818,7 @@ bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, in
 bool MediaPipelineServerInternal::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap,
                                                   bool audioAac)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    bool result;
-    auto task = [&]() { result = processAudioGapInternal(position, duration, discontinuityGap, audioAac); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::processAudioGapInternal(int64_t position, uint32_t duration, int64_t discontinuityGap,
-                                                          bool audioAac)
-{
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to process audio gap - Gstreamer player has not been loaded");
-        return false;
-    }
-    m_gstPlayer->processAudioGap(position, duration, discontinuityGap, audioAac);
-    return true;
+    return callPlayerOnMainThread(__func__, [position, duration, discontinuityGap, audioAac](auto &player) { player->processAudioGap(position, duration, discontinuityGap, audioAac); return true; });
 }
 
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
@@ -1299,5 +1078,24 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
                                                     }
                                                 });
                           });
+}
+
+template <typename Func>
+bool MediaPipelineServerInternal::callPlayerOnMainThread(const char* funcName, Func&& func)
+{
+    bool result = false;
+    
+    auto task = [&]() {
+        if (!m_gstPlayer)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to execute %s - Gstreamer player has not been loaded", funcName);
+            return;
+        }
+        result = func(m_gstPlayer);
+    };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+
+    return result;
 }
 }; // namespace firebolt::rialto::server

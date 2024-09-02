@@ -1128,6 +1128,36 @@ bool GstGenericPlayer::getMute(bool &mute)
     return true;
 }
 
+bool GstGenericPlayer::setLowLatency(bool lowLatency)
+{
+    return false;
+}
+
+bool GstGenericPlayer::setSync(bool sync)
+{
+    return false;
+}
+
+bool GstGenericPlayer::getSync(bool &sync)
+{
+    return false;
+}
+
+bool GstGenericPlayer::setSyncOff(bool syncOff)
+{
+    return false;
+}
+
+bool GstGenericPlayer::setStreamSyncMode(int32_t streamSyncMode)
+{
+    return false;
+}
+
+bool GstGenericPlayer::getStreamSyncMode(int32_t &streamSyncMode)
+{
+    return false;
+}
+
 void GstGenericPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
 {
     if (m_workerThread)
