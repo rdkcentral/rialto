@@ -33,6 +33,8 @@ pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0 gstre
 
 if( NATIVE_BUILD )
     set(ocdm_DIR "${CMAKE_BINARY_DIR}/stubs/opencdm/" )
+    set(WPEFrameworkCore_DIR "${CMAKE_BINARY_DIR}/stubs/wpeframework-core/" )
+    set(WPEFrameworkCOM_DIR "${CMAKE_BINARY_DIR}/stubs/wpeframework-com/" )
 endif()
 
 if( RIALTO_ENABLE_CONFIG_FILE )
@@ -51,7 +53,10 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
     find_package( WPEFrameworkCOM REQUIRED )
 
     set(WRAPPER_INCLUDES
-        ${OCdm_INCLUDE_DIRS})
+        ${OCdm_INCLUDE_DIRS}
+        ${WPEFRAMEWORK_CORE_INCLUDE_DIRS}
+        ${WPEFRAMEWORK_COM_INCLUDE_DIRS}
+    )
 
     set(WRAPPER_LIBS
         rdkgstreamerutils

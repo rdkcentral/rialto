@@ -203,6 +203,8 @@ endif()
 if( NATIVE_BUILD )
     add_subdirectory( stubs/rdk_gstreamer_utils )
     add_subdirectory( stubs/opencdm )
+    add_subdirectory( stubs/wpeframework-core )
+    add_subdirectory( stubs/wpeframework-com )
 
     include( GNUInstallDirs )
     configure_file( pkg-config/RialtoClient.in.pc ${CMAKE_BINARY_DIR}/RialtoClient.pc @ONLY )

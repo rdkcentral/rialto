@@ -41,7 +41,7 @@ std::uint32_t TextTrackPluginWrapper::open()
     return m_textTrackPlugin.Open(WPEFramework::RPC::CommunicationTimeOut, m_textTrackPlugin.Connector(),
                                   "org.rdk.TextTrack");
 #else
-    return 1234; // wez to zmien
+    return WPEFramework::Core::ERROR_UNAVAILABLE;
 #endif // RIALTO_ENABLE_TEXT_TRACK
 }
 
