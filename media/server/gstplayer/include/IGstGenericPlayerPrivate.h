@@ -181,6 +181,32 @@ public:
     virtual GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) = 0;
 
     /**
+     * @brief Notification that a new child element has been added to the autoaudiosink.
+     *        Stores the child audio sink in the player context.
+     *
+     * @param[in] object    : Element added to the autoaudiosink.
+     */
+    virtual void addAutoAudioSinkChild(GObject *object) = 0;
+
+    /**
+     * @brief Notification that a child element has been removed from the autoaudiosink.
+     *        Removes the child audio sink in the player context if it has been stored.
+     *
+     * @param[in] object    : Element removed from the autoaudiosink.
+     */
+    virtual void removeAutoAudioSinkChild(GObject *object) = 0;
+
+    /**
+     * @brief Gets the audio sink element child sink if present.
+     *        Only gets children for GstAutoAudioSink's.
+     *
+     * @param[in] sink    : Sink element to check.
+     *
+     * @retval Underlying child audio sink or 'sink' if there are no children.
+     */
+    virtual GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) = 0;
+
+    /**
      * @brief Sets the audio and video flags on the pipeline based on the input.
      *
      * @param[in] enableAudio : Whether to enable audio flags.

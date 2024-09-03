@@ -61,6 +61,7 @@ const std::shared_ptr<firebolt::rialto::CodecData> kCodecDataWithString{std::mak
     firebolt::rialto::CodecData{std::vector<std::uint8_t>{kCodecDataStr.begin(), kCodecDataStr.end()},
                                 firebolt::rialto::CodecDataType::STRING})};
 const std::string kAutoVideoSinkTypeName{"GstAutoVideoSink"};
+const std::string kAutoAudioSinkTypeName{"GstAutoAudioSink"};
 const std::string kElementTypeName{"GenericSink"};
 constexpr bool kResetTime{true};
 } // namespace
@@ -138,6 +139,12 @@ protected:
     GstElement *setAutoVideoSinkChild()
     {
         modifyContext([&](GenericPlayerContext &context) { context.autoVideoChildSink = &m_element; });
+        return &m_element;
+    }
+
+    GstElement *setAutoAudioSinkChild()
+    {
+        modifyContext([&](GenericPlayerContext &context) { context.autoAudioChildSink = &m_element; });
         return &m_element;
     }
 
@@ -307,11 +314,26 @@ TEST_F(GstGenericPlayerPrivateTest, shouldGetSinkChildAutoVideoSink)
     EXPECT_EQ(autoVideoSinkChild, m_sut->getSinkChildIfAutoVideoSink(m_realElement));
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldNotGetSinkChildGenericSink)
+TEST_F(GstGenericPlayerPrivateTest, shouldGetSinkChildAutoAudioSink)
+{
+    GstElement *autoAudioSinkChild = setAutoAudioSinkChild();
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
+        .WillOnce(Return(kAutoAudioSinkTypeName.c_str()));
+    EXPECT_EQ(autoAudioSinkChild, m_sut->getSinkChildIfAutoAudioSink(m_realElement));
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotGetVideoSinkChildGenericSink)
 {
     setAutoVideoSinkChild();
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement))).WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_EQ(m_realElement, m_sut->getSinkChildIfAutoVideoSink(m_realElement));
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotGetAudioSinkChildGenericSink)
+{
+    setAutoAudioSinkChild();
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement))).WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_EQ(m_realElement, m_sut->getSinkChildIfAutoAudioSink(m_realElement));
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotGetSinkChildAutoVideoSink)
@@ -319,6 +341,13 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotGetSinkChildAutoVideoSink)
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
         .WillOnce(Return(kAutoVideoSinkTypeName.c_str()));
     EXPECT_EQ(m_realElement, m_sut->getSinkChildIfAutoVideoSink(m_realElement));
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotGetSinkChildAutoAudioSink)
+{
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
+        .WillOnce(Return(kAutoAudioSinkTypeName.c_str()));
+    EXPECT_EQ(m_realElement, m_sut->getSinkChildIfAutoAudioSink(m_realElement));
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotifyNeedAudioData)
@@ -1275,12 +1304,30 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAddAutoVideoSinkChildSink)
     EXPECT_EQ(context->autoVideoChildSink, m_realElement);
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldAddAutoAudioSinkChildSink)
+{
+    GenericPlayerContext *context = getPlayerContext();
+
+    GST_OBJECT_FLAG_SET(GST_OBJECT(m_realElement), GST_ELEMENT_FLAG_SINK);
+
+    m_sut->addAutoAudioSinkChild(G_OBJECT(m_realElement));
+    EXPECT_EQ(context->autoAudioChildSink, m_realElement);
+}
+
 TEST_F(GstGenericPlayerPrivateTest, shouldNotAddAutoVideoSinkChildIfNotASink)
 {
     GenericPlayerContext *context = getPlayerContext();
 
     m_sut->addAutoVideoSinkChild(G_OBJECT(m_realElement));
     EXPECT_EQ(context->autoVideoChildSink, nullptr);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotAddAutoAudioSinkChildIfNotASink)
+{
+    GenericPlayerContext *context = getPlayerContext();
+
+    m_sut->addAutoAudioSinkChild(G_OBJECT(m_realElement));
+    EXPECT_EQ(context->autoAudioChildSink, nullptr);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldAddAutoVideoSinkChildAndOverwrite)
@@ -1298,6 +1345,21 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAddAutoVideoSinkChildAndOverwrite)
     gst_object_unref(realElement2);
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldAddAutoAudioSinkChildAndOverwrite)
+{
+    GenericPlayerContext *context = getPlayerContext();
+
+    GstElement *realElement2 = initRealElement();
+    GST_OBJECT_FLAG_SET(GST_OBJECT(m_realElement), GST_ELEMENT_FLAG_SINK);
+    GST_OBJECT_FLAG_SET(GST_OBJECT(realElement2), GST_ELEMENT_FLAG_SINK);
+    context->autoAudioChildSink = m_realElement;
+
+    m_sut->addAutoAudioSinkChild(G_OBJECT(realElement2));
+    EXPECT_EQ(context->autoAudioChildSink, realElement2);
+
+    gst_object_unref(realElement2);
+}
+
 TEST_F(GstGenericPlayerPrivateTest, shouldRemoveAutoVideoSinkChildSink)
 {
     GenericPlayerContext *context = getPlayerContext();
@@ -1307,6 +1369,17 @@ TEST_F(GstGenericPlayerPrivateTest, shouldRemoveAutoVideoSinkChildSink)
 
     m_sut->removeAutoVideoSinkChild(G_OBJECT(m_realElement));
     EXPECT_EQ(context->autoVideoChildSink, nullptr);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldRemoveAutoAudioSinkChildSink)
+{
+    GenericPlayerContext *context = getPlayerContext();
+
+    GST_OBJECT_FLAG_SET(GST_OBJECT(m_realElement), GST_ELEMENT_FLAG_SINK);
+    context->autoAudioChildSink = m_realElement;
+
+    m_sut->removeAutoAudioSinkChild(G_OBJECT(m_realElement));
+    EXPECT_EQ(context->autoAudioChildSink, nullptr);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoVideoSinkChildIfDifferentSink)
@@ -1324,6 +1397,21 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoVideoSinkChildIfDifferent
     gst_object_unref(realElement2);
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoAudioSinkChildIfDifferentSink)
+{
+    GenericPlayerContext *context = getPlayerContext();
+
+    GstElement *realElement2 = initRealElement();
+    GST_OBJECT_FLAG_SET(GST_OBJECT(m_realElement), GST_ELEMENT_FLAG_SINK);
+    GST_OBJECT_FLAG_SET(GST_OBJECT(realElement2), GST_ELEMENT_FLAG_SINK);
+    context->autoAudioChildSink = m_realElement;
+
+    m_sut->removeAutoAudioSinkChild(G_OBJECT(realElement2));
+    EXPECT_EQ(context->autoAudioChildSink, m_realElement);
+
+    gst_object_unref(realElement2);
+}
+
 TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoVideoSinkChildIfNotAdded)
 {
     GenericPlayerContext *context = getPlayerContext();
@@ -1332,4 +1420,14 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoVideoSinkChildIfNotAdded)
 
     m_sut->removeAutoVideoSinkChild(G_OBJECT(m_realElement));
     EXPECT_EQ(context->autoVideoChildSink, nullptr);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoAudioSinkChildIfNotAdded)
+{
+    GenericPlayerContext *context = getPlayerContext();
+
+    GST_OBJECT_FLAG_SET(GST_OBJECT(m_realElement), GST_ELEMENT_FLAG_SINK);
+
+    m_sut->removeAutoAudioSinkChild(G_OBJECT(m_realElement));
+    EXPECT_EQ(context->autoAudioChildSink, nullptr);
 }
