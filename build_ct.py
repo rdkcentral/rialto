@@ -45,7 +45,7 @@ if __name__ == "__main__":
     outputFile = getOutputFile(args['file'], args['clean'])
 
     # Build and run tests
-    buildDefines = ["-DCMAKE_BUILD_FLAG=ComponentTests", "-DRIALTO_ENABLE_CONFIG_FILE=1", "-DRIALTO_BUILD_TYPE=Debug"]
+    buildDefines = ["-DCMAKE_BUILD_FLAG=ComponentTests", "-DRIALTO_ENABLE_CONFIG_FILE=1", "-DRIALTO_BUILD_TYPE=Debug", "-DRIALTO_ENABLE_TEXT_TRACK=1"]
     buildAndRunGTests(args, outputFile, buildDefines, suitesToRun)
 
     # Generate coverage

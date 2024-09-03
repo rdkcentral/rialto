@@ -26,13 +26,14 @@
 #include "ITextTrackPluginWrapper.h"
 #include <com/com.h>
 #include <core/core.h>
+#ifdef RIALTO_ENABLE_TEXT_TRACK
 #include <interfaces/ITextTrack.h>
+#endif // RIALTO_ENABLE_TEXT_TRACK
 #include <memory>
 #include <plugins/Types.h>
 
 namespace firebolt::rialto::wrappers
 {
-
 class TextTrackPluginWrapper : public ITextTrackPluginWrapper
 {
 public:
@@ -43,8 +44,10 @@ public:
     bool isOperational() const override;
     std::shared_ptr<ITextTrackWrapper> interface() override;
 
+#ifdef RIALTO_ENABLE_TEXT_TRACK
 private:
     WPEFramework::RPC::SmartInterfaceType<WPEFramework::Exchange::ITextTrack> m_textTrackPlugin;
+#endif // RIALTO_ENABLE_TEXT_TRACK
 };
 } // namespace firebolt::rialto::wrappers
 

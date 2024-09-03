@@ -20,9 +20,10 @@
 #ifndef FIREBOLT_RIALTO_WRAPPERS_TEXT_TRACK_WRAPPER_H_
 #define FIREBOLT_RIALTO_WRAPPERS_TEXT_TRACK_WRAPPER_H_
 
+#ifdef RIALTO_ENABLE_TEXT_TRACK
+
 #include "ITextTrackWrapper.h"
 #include <interfaces/ITextTrack.h>
-#include <plugins/Types.h>
 #include <string>
 
 namespace firebolt::rialto::wrappers
@@ -50,5 +51,7 @@ private:
     WPEFramework::Exchange::ITextTrack *m_textTrackControlInterface;
 };
 } // namespace firebolt::rialto::wrappers
+
+#endif // RIALTO_ENABLE_TEXT_TRACK
 
 #endif // FIREBOLT_RIALTO_WRAPPERS_TEXT_TRACK_WRAPPER_H_

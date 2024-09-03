@@ -97,6 +97,11 @@ if ( RIALTO_LOG_DEBUG_ENABLED )
     add_compile_definitions( RIALTO_LOG_DEBUG_ENABLED )
 endif()
 
+if ( RIALTO_ENABLE_TEXT_TRACK )
+    message("RIALTO_ENABLE_TEXT_TRACK IS ENABLED")
+    add_compile_definitions( RIALTO_ENABLE_TEXT_TRACK )
+endif()
+
 # Retrieve the commit ID 
 execute_process(
     COMMAND git rev-parse HEAD

@@ -192,6 +192,12 @@ bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, Da
 
 bool TextTrackAccessor::createTextTrackControlInterface()
 {
+    if (!m_textTrackPluginWrapper)
+    {
+        RIALTO_SERVER_LOG_ERROR("TextTrackPlugin is null!");
+        return false;
+    }
+
     uint32_t openResult = m_textTrackPluginWrapper->open();
 
     if (m_thunderWrapper->isSuccessful(openResult))

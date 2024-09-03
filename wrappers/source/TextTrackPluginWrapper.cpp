@@ -30,27 +30,39 @@ std::shared_ptr<ITextTrackPluginWrapper> TextTrackPluginWrapperFactory::getTextT
 
 TextTrackPluginWrapper::~TextTrackPluginWrapper()
 {
+#ifdef RIALTO_ENABLE_TEXT_TRACK
     m_textTrackPlugin.Close(WPEFramework::RPC::CommunicationTimeOut);
+#endif // RIALTO_ENABLE_TEXT_TRACK
 }
 
 std::uint32_t TextTrackPluginWrapper::open()
 {
+#ifdef RIALTO_ENABLE_TEXT_TRACK
     return m_textTrackPlugin.Open(WPEFramework::RPC::CommunicationTimeOut, m_textTrackPlugin.Connector(),
                                   "org.rdk.TextTrack");
+#else
+    return 1234; // wez to zmien
+#endif // RIALTO_ENABLE_TEXT_TRACK
 }
 
 bool TextTrackPluginWrapper::isOperational() const
 {
+#ifdef RIALTO_ENABLE_TEXT_TRACK
     return m_textTrackPlugin.IsOperational();
+#else
+    return false;
+#endif // RIALTO_ENABLE_TEXT_TRACK
 }
 
 std::shared_ptr<ITextTrackWrapper> TextTrackPluginWrapper::interface()
 {
+#ifdef RIALTO_ENABLE_TEXT_TRACK
     WPEFramework::Exchange::ITextTrack *textTrackControlInterface = m_textTrackPlugin.Interface();
     if (textTrackControlInterface)
     {
         return std::make_shared<TextTrackWrapper>(textTrackControlInterface);
     }
+#endif // RIALTO_ENABLE_TEXT_TRACK
     return nullptr;
 }
 } // namespace firebolt::rialto::wrappers

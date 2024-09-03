@@ -19,6 +19,7 @@
 
 #include "TextTrackWrapper.h"
 
+#ifdef RIALTO_ENABLE_TEXT_TRACK
 namespace
 {
 WPEFramework::Exchange::ITextTrack::DataType
@@ -110,3 +111,5 @@ std::uint32_t TextTrackWrapper::setSessionClosedCaptionsService(std::uint32_t se
     return m_textTrackControlInterface->SetSessionClosedCaptionsService(sessionId, service);
 }
 } // namespace firebolt::rialto::wrappers
+
+#endif // RIALTO_ENABLE_TEXT_TRACK

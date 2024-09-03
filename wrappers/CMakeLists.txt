@@ -49,7 +49,6 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
     find_package( ocdm REQUIRED )
     find_package( WPEFrameworkCore REQUIRED )
     find_package( WPEFrameworkCOM REQUIRED )
-    find_package( WPEFrameworkMessaging REQUIRED )
 
     set(WRAPPER_INCLUDES
         ${OCdm_INCLUDE_DIRS})
@@ -59,7 +58,6 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
         ocdm::ocdm
         WPEFrameworkCore::WPEFrameworkCore
         WPEFrameworkCOM::WPEFrameworkCOM
-        WPEFrameworkMessaging::WPEFrameworkMessaging
         ${CMAKE_DL_LIBS})
 
     set(WRAPPER_SOURCES
