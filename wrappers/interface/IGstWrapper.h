@@ -1094,6 +1094,15 @@ public:
     virtual GstIterator *gstBinIterateSinks(GstBin *bin) const = 0;
 
     /**
+     * @brief Gets an iterator for the bin that contains all the elements.
+     *
+     * @param[in]  bin  : the bin.
+     *
+     * @retval an iterator of elements.
+     */
+    virtual GstIterator *gstBinIterateElements(GstBin *bin) const = 0;
+
+    /**
      * @brief Gets the next item from the iterator.
      *
      * @param[in]  it   : the iterator to iterate.
@@ -1105,6 +1114,15 @@ public:
      *         GST_ITERATOR_ERROR if an error occured.
      */
     virtual GstIteratorResult gstIteratorNext(GstIterator *it, GValue *elem) const = 0;
+
+    /**
+     * @brief Rsync the iterator.
+     *
+     * To be used if the element list has been updated while iteration.
+     *
+     * @param[in]  it   : the iterator to resync.
+     */
+    virtual void gstIteratorResync(GstIterator *it) const = 0;
 
     /**
      * @brief Free the iterator.

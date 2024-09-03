@@ -72,12 +72,12 @@ protected:
         m_sut->setVolume(volume);
     }
 
-    GstElement *initSink()
+    GstElement *fakeElement()
     {
         GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
-        GstElement *sink = gst_element_factory_create(elementFactory, nullptr);
+        GstElement *elem = gst_element_factory_create(elementFactory, nullptr);
         gst_object_unref(elementFactory);
-        return sink;
+        return elem;
     }
 };
 
@@ -281,7 +281,7 @@ TEST_F(GstGenericPlayerTest, shouldReturnPositionInPausedState)
 TEST_F(GstGenericPlayerTest, shouldSetImmediateOutputInPlayingState)
 {
     GstElement *videoSink;
-    videoSink = initSink();
+    videoSink = fakeElement();
     setPipelineState(GST_STATE_PLAYING);
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
@@ -297,7 +297,7 @@ TEST_F(GstGenericPlayerTest, shouldSetImmediateOutputInPlayingState)
 TEST_F(GstGenericPlayerTest, shouldGetImmediateOutputInPlayingState)
 {
     GstElement *videoSink;
-    videoSink = initSink();
+    videoSink = fakeElement();
     setPipelineState(GST_STATE_PLAYING);
     const bool kTestImmediateOutputValue{true};
 
@@ -352,7 +352,7 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetImmediateOutputInPlayingStateIfStubN
 TEST_F(GstGenericPlayerTest, shouldFailToGetImmediateOutputInPlayingStateIfPropertyDoesntExist)
 {
     GstElement *videoSink;
-    videoSink = initSink();
+    videoSink = fakeElement();
     setPipelineState(GST_STATE_PLAYING);
 
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
@@ -381,7 +381,7 @@ TEST_F(GstGenericPlayerTest, shouldGetStatsInPlayingState)
     uint64_t returnedRenderedFrames{};
     uint64_t returnedDroppedFrames{};
     GstElement *videoSink;
-    videoSink = initSink();
+    videoSink = fakeElement();
     setPipelineState(GST_STATE_PLAYING);
 
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
@@ -441,7 +441,7 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetStatsInPlayingStateIfStubNull)
 TEST_F(GstGenericPlayerTest, shouldFailToGetStatsInPlayingStateIfStructureNull)
 {
     GstElement *videoSink;
-    videoSink = initSink();
+    videoSink = fakeElement();
     setPipelineState(GST_STATE_PLAYING);
 
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
@@ -468,7 +468,7 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetStatsInPlayingStateIfStructureNull)
 TEST_F(GstGenericPlayerTest, shouldFailToGetStatsInPlayingStateIfStructIncomplete)
 {
     GstElement *videoSink;
-    videoSink = initSink();
+    videoSink = fakeElement();
     setPipelineState(GST_STATE_PLAYING);
 
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
@@ -543,7 +543,7 @@ TEST_F(GstGenericPlayerTest, shouldMute)
 TEST_F(GstGenericPlayerTest, shouldGetSyncInPlayingState)
 {
     GstElement *audioSink;
-    audioSink = initSink();
+    audioSink = fakeElement();
     setPipelineState(GST_STATE_PLAYING);
     const bool kSyncValue{true};
 
@@ -587,7 +587,73 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetSyncInPlayingStateIfStubNull)
 TEST_F(GstGenericPlayerTest, shouldFailToGetSyncInPlayingStateIfPropertyDoesntExist)
 {
     GstElement *audioSink;
-    audioSink = initSink();
+    audioSink = fakeElement();
+    setPipelineState(GST_STATE_PLAYING);
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = audioSink;
+            }));
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("sync"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(audioSink)).Times(1);
+
+    bool sync;
+    EXPECT_FALSE(m_sut->getSync(sync));
+
+    gst_object_unref(audioSink);
+}
+
+TEST_F(GstGenericPlayerTest, shouldGetStreamSyncModeInPlayingState)
+{
+    GstElement *audioDecoder = fakeElement();
+    setPipelineState(GST_STATE_PLAYING);
+    const int32_t kStreamSyncModeValue{1};
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = audioSink;
+            }));
+
+    GParamSpec prop{};
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("sync"))).WillOnce(Return(&prop));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("sync"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *ptr)
+            {
+                gboolean *responsePtr = reinterpret_cast<gboolean *>(ptr);
+                *responsePtr = kSyncValue;
+            }));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(audioSink)).Times(1);
+
+    bool sync;
+    EXPECT_TRUE(m_sut->getSync(sync));
+    EXPECT_EQ(sync, kSyncValue);
+
+    gst_object_unref(audioSink);
+}
+
+TEST_F(GstGenericPlayerTest, shouldFailToGetSyncInPlayingStateIfStubNull)
+{
+    setPipelineState(GST_STATE_PLAYING);
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _)).Times(1);
+
+    bool sync;
+    EXPECT_FALSE(m_sut->getSync(sync));
+}
+
+TEST_F(GstGenericPlayerTest, shouldFailToGetSyncInPlayingStateIfPropertyDoesntExist)
+{
+    GstElement *audioSink;
+    audioSink = fakeElement();
     setPipelineState(GST_STATE_PLAYING);
 
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))

@@ -470,6 +470,8 @@ public:
 
     GstIterator *gstBinIterateSinks(GstBin *bin) const override { return gst_bin_iterate_sinks(bin); }
 
+    GstIterator *gstBinIterateElements(GstBin *bin) const override { return gst_bin_iterate_elements(bin); }
+
     GstIteratorResult gstIteratorNext(GstIterator *it, GValue *elem) const override
     {
         return gst_iterator_next(it, elem);
