@@ -278,6 +278,75 @@ TEST_F(GstGenericPlayerTest, shouldReturnPositionInPausedState)
     EXPECT_EQ(kExpectedPosition, targetPosition);
 }
 
+TEST_F(GstGenericPlayerTest, shouldSetImmediateOutputInPlayingState)
+{
+    GstElement *videoSink;
+    videoSink = initVideoSink();
+    setPipelineState(GST_STATE_PLAYING);
+
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetImmediateOutput(_, MediaSourceType::VIDEO, true))
+        .WillOnce(Return(ByMove(std::move(task))));
+
+    EXPECT_TRUE(m_sut->setImmediateOutput(MediaSourceType::VIDEO, true));
+
+    gst_object_unref(videoSink);
+}
+
+TEST_F(GstGenericPlayerTest, shouldGetImmediateOutputInPlayingState)
+{
+    GstElement *videoSink;
+    videoSink = initVideoSink();
+    setPipelineState(GST_STATE_PLAYING);
+    const bool kTestImmediateOutputValue{true};
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = videoSink;
+            }));
+    const std::string kElementTypeName{"GenericSink"};
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(videoSink))).WillOnce(Return(kElementTypeName.c_str()));
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("immediate-output"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *ptr)
+            {
+                gboolean *responsePtr = reinterpret_cast<gboolean *>(ptr);
+                *responsePtr = kTestImmediateOutputValue;
+            }));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(videoSink)).Times(1);
+
+    bool immediateOutputState;
+    EXPECT_TRUE(m_sut->getImmediateOutput(MediaSourceType::VIDEO, immediateOutputState));
+    EXPECT_EQ(immediateOutputState, kTestImmediateOutputValue);
+
+    gst_object_unref(videoSink);
+}
+
+TEST_F(GstGenericPlayerTest, shouldFailToGetImmediateOutputInPlayingStateIfMediaTypeWrong)
+{
+    setPipelineState(GST_STATE_PLAYING);
+
+    bool immediateOutputState;
+    EXPECT_FALSE(m_sut->getImmediateOutput(MediaSourceType::UNKNOWN, immediateOutputState));
+}
+
+TEST_F(GstGenericPlayerTest, shouldFailToGetImmediateOutputInPlayingStateIfStubNull)
+{
+    setPipelineState(GST_STATE_PLAYING);
+
+    // Fail to get sink which should cause the getImmediateOutput() call to return false
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _)).Times(1);
+
+    bool immediateOutputState;
+    EXPECT_FALSE(m_sut->getImmediateOutput(MediaSourceType::AUDIO, immediateOutputState));
+}
+
 TEST_F(GstGenericPlayerTest, shouldGetStatsInPlayingState)
 {
     constexpr guint64 kRenderedFrames{1234};

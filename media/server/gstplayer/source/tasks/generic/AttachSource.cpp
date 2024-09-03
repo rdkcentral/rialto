@@ -128,7 +128,7 @@ public:
         {
             addMpegVersionToCaps(caps);
         }
-        else if (mimeType == "audio/b-wav")
+        else if (mimeType == "audio/b-wav" || mimeType == "audio/x-raw")
         {
             addRawAudioData(caps);
         }

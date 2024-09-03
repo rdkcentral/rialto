@@ -206,10 +206,10 @@ firebolt::rialto::Format convertFormat(const firebolt::rialto::AttachSourceReque
             {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F32BE, firebolt::rialto::Format::F32BE},
             {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64LE, firebolt::rialto::Format::F64LE},
             {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64BE, firebolt::rialto::Format::F64BE}};
-    const auto it = kFormatConversionMap.find(format);
-    if (kFormatConversionMap.end() != it)
+    const auto kIt = kFormatConversionMap.find(format);
+    if (kFormatConversionMap.end() != kIt)
     {
-        return it->second;
+        return kIt->second;
     }
     return firebolt::rialto::Format::S8;
 }
@@ -221,10 +221,10 @@ firebolt::rialto::Layout convertLayout(const firebolt::rialto::AttachSourceReque
                               firebolt::rialto::Layout::INTERLEAVED},
                              {firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_NON_INTERLEAVED,
                               firebolt::rialto::Layout::NON_INTERLEAVED}};
-    const auto it = kLayoutConversionMap.find(layout);
-    if (kLayoutConversionMap.end() != it)
+    const auto kIt = kLayoutConversionMap.find(layout);
+    if (kLayoutConversionMap.end() != kIt)
     {
-        return it->second;
+        return kIt->second;
     }
     return firebolt::rialto::Layout::INTERLEAVED;
 }
@@ -613,6 +613,40 @@ void MediaPipelineModuleService::getPosition(::google::protobuf::RpcController *
     else
     {
         response->set_position(position);
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcController *controller,
+                                                    const ::firebolt::rialto::SetImmediateOutputRequest *request,
+                                                    ::firebolt::rialto::SetImmediateOutputResponse *response,
+                                                    ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setImmediateOutput(request->session_id(), request->source_id(),
+                                                   request->immediate_output()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Immediate Output failed");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getImmediateOutput(::google::protobuf::RpcController *controller,
+                                                    const ::firebolt::rialto::GetImmediateOutputRequest *request,
+                                                    ::firebolt::rialto::GetImmediateOutputResponse *response,
+                                                    ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    bool immediateOutputState;
+    if (!m_mediaPipelineService.getImmediateOutput(request->session_id(), request->source_id(), immediateOutputState))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get Immediate Output failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_immediate_output(immediateOutputState);
     }
     done->Run();
 }

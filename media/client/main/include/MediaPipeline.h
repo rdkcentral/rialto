@@ -130,8 +130,11 @@ public:
 
     bool getPosition(int64_t &position) override;
 
-    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
+    bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
 
+    bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
+
+    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
     bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
@@ -280,7 +283,6 @@ protected:
      * @brief Handles a have data request.
      *
      * @param[in] status  : The status
-     * @param[in] dataVec : The data returned.
      * @param[in] needDataRequestId : Need data request id
      *
      * @retval true on success.

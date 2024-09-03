@@ -64,6 +64,8 @@ public:
 
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType sourceType) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
+    std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
+                                                    const std::vector<std::string> &propertyNames) override;
 
 private:
     /**

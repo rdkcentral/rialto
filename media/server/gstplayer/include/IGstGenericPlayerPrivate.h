@@ -174,6 +174,15 @@ public:
     virtual GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) = 0;
 
     /**
+     * @brief Gets the video sink element
+     *
+     * @param[in] mediaSourceType : the source type to obtain the sink for
+     *
+     * @retval The sink
+     */
+    virtual GstElement *getSink(const MediaSourceType &mediaSourceType) = 0;
+
+    /**
      * @brief Sets the audio and video flags on the pipeline based on the input.
      *
      * @param[in] enableAudio : Whether to enable audio flags.

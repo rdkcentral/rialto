@@ -33,14 +33,15 @@ add_library(
         RialtoServerGstPlayer
         STATIC
 
-        source/tasks/generic/GenericPlayerTaskFactory.cpp
         source/tasks/generic/AttachSamples.cpp
         source/tasks/generic/AttachSource.cpp
+        source/tasks/generic/CheckAudioUnderflow.cpp
         source/tasks/generic/DeepElementAdded.cpp
         source/tasks/generic/EnoughData.cpp
         source/tasks/generic/Eos.cpp
         source/tasks/generic/FinishSetupSource.cpp
         source/tasks/generic/Flush.cpp
+        source/tasks/generic/GenericPlayerTaskFactory.cpp
         source/tasks/generic/HandleBusMessage.cpp
         source/tasks/generic/NeedData.cpp
         source/tasks/generic/Pause.cpp
@@ -51,16 +52,16 @@ add_library(
         source/tasks/generic/RemoveSource.cpp
         source/tasks/generic/RenderFrame.cpp
         source/tasks/generic/ReportPosition.cpp
-        source/tasks/generic/CheckAudioUnderflow.cpp
+        source/tasks/generic/SetImmediateOutput.cpp
+        source/tasks/generic/SetMute.cpp
         source/tasks/generic/SetPlaybackRate.cpp
         source/tasks/generic/SetPosition.cpp
-        source/tasks/generic/SetupElement.cpp
-        source/tasks/generic/SetupSource.cpp
+        source/tasks/generic/SetSourcePosition.cpp
+        source/tasks/generic/SetTextTrackIdentifier.cpp
         source/tasks/generic/SetVideoGeometry.cpp
         source/tasks/generic/SetVolume.cpp
-        source/tasks/generic/SetMute.cpp
-        source/tasks/generic/SetTextTrackIdentifier.cpp
-        source/tasks/generic/SetSourcePosition.cpp
+        source/tasks/generic/SetupElement.cpp
+        source/tasks/generic/SetupSource.cpp
         source/tasks/generic/Shutdown.cpp
         source/tasks/generic/Stop.cpp
         source/tasks/generic/Underflow.cpp

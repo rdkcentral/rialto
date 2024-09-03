@@ -144,4 +144,37 @@ bool MediaPipelineCapabilitiesIpc::isMimeTypeSupported(const std::string &mimeTy
     return response.is_supported();
 }
 
+std::vector<std::string> MediaPipelineCapabilitiesIpc::getSupportedProperties(MediaSourceType mediaType,
+                                                                              const std::vector<std::string> &propertyNames)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return {};
+    }
+
+    firebolt::rialto::GetSupportedPropertiesRequest request;
+    request.set_media_type(convertProtoMediaSourceType(mediaType));
+    for (const std::string &property : propertyNames)
+        request.add_property_names(property);
+
+    firebolt::rialto::GetSupportedPropertiesResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineCapabilitiesStub->getSupportedProperties(ipcController.get(), &request, &response,
+                                                            blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed due to '%s'", ipcController->ErrorText().c_str());
+        return std::vector<std::string>{};
+    }
+
+    return std::vector<std::string>{response.supported_properties().begin(), response.supported_properties().end()};
+}
+
 }; // namespace firebolt::rialto::client

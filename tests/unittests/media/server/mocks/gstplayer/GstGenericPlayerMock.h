@@ -43,9 +43,10 @@ public:
     MOCK_METHOD(void, attachSamples, (const std::shared_ptr<IDataReader> &dataReader), (override));
     MOCK_METHOD(void, setPosition, (std::int64_t position), (override));
     MOCK_METHOD(bool, getPosition, (std::int64_t & position), (override));
+    MOCK_METHOD(bool, setImmediateOutput, (const MediaSourceType &mediaSourceType, bool immediateOutput), (override));
+    MOCK_METHOD(bool, getImmediateOutput, (const MediaSourceType &mediaSourceType, bool &immediateOutput), (override));
     MOCK_METHOD(bool, getStats,
                 (const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames), (override));
-
     MOCK_METHOD(void, setVideoGeometry, (int x, int y, int width, int height), (override));
     MOCK_METHOD(void, setEos, (const firebolt::rialto::MediaSourceType &type), (override));
     MOCK_METHOD(void, setPlaybackRate, (double rate), (override));

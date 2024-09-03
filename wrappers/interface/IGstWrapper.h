@@ -141,6 +141,15 @@ public:
     virtual GstElement *gstElementFactoryMake(const gchar *factoryname, const gchar *name) = 0;
 
     /**
+     * @brief Get the element type returned by the requested factory.
+     *
+     * @param[in] factory   : Factory
+     *
+     * @retval GType that the factory produces
+     */
+    virtual GType gstElementFactoryGetElementType(GstElementFactory *factory) = 0;
+
+    /**
      * @brief Increment reference count on object.
      *
      * @param[in] object   : Object to increment.

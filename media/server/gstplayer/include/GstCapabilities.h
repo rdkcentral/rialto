@@ -20,8 +20,10 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_H_
 #define FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_H_
 
+#include "IGlibWrapper.h"
 #include "IGstCapabilities.h"
 #include "IGstWrapper.h"
+
 #include <memory>
 #include <string>
 #include <unordered_set>
@@ -51,7 +53,8 @@ public:
 class GstCapabilities : public IGstCapabilities
 {
 public:
-    explicit GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper);
+    explicit GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                             const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper);
     ~GstCapabilities() = default;
 
     GstCapabilities(const GstCapabilities &) = delete;
@@ -73,6 +76,17 @@ public:
      */
     bool isMimeTypeSupported(const std::string &mimeType) override;
 
+    /**
+     * @brief  Check sinks and decoders for supported properties
+     *
+     * @param[in] mediaType     : The media type to search. If set to UNKNOWN then both AUDIO and VIDEO are searched
+     * @param[in] propertyNames : A vector of property names to look for
+     *
+     * @retval Returns the subset of propertyNames that are supported by the mediaType
+     */
+    std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
+                                                    const std::vector<std::string> &propertyNames) override;
+
 private:
     /**
      * @brief Sets list of supported mime types
@@ -80,14 +94,14 @@ private:
     void fillSupportedMimeTypes();
 
     /**
-     * @brief Gets all unique caps from decoders' sink pads
-     */
-    std::vector<GstCaps *> getSupportedCapsFromDecoders();
-
-    /**
      * @brief Appends all unique caps from parser->decoders chains' sink pads to \a supportedCaps
      */
-    void appendSupportedCapsFromParserDecoderChains(std::vector<GstCaps *> &supportedCaps);
+    void appendLinkableCapsFromParserDecoderChains(std::vector<GstCaps *> &supportedCaps);
+
+    /**
+     * @brief Appends all unique caps from \a type pads to \a supportedCaps
+     */
+    void appendSupportedCapsFromFactoryType(const GstElementFactoryListType &type, std::vector<GstCaps *> &supportedCaps);
 
     /**
      * @brief Adds unique sink pads from \a padTemplates list to \a capsVector
@@ -117,6 +131,7 @@ private:
      * @brief The gstreamer wrapper object.
      */
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
 };
 
 }; // namespace firebolt::rialto::server

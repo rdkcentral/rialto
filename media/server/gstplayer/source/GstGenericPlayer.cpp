@@ -387,6 +387,65 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
     return true;
 }
 
+GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType)
+{
+    const char *kSinkName{nullptr};
+    GstElement *sink{nullptr};
+    switch (mediaSourceType)
+    {
+    case MediaSourceType::AUDIO:
+        kSinkName = "audio-sink";
+        break;
+    case MediaSourceType::VIDEO:
+        kSinkName = "video-sink";
+        break;
+    default:
+        break;
+    }
+    if (!kSinkName)
+    {
+        RIALTO_SERVER_LOG_WARN("mediaSourceType not supported %d", static_cast<int>(mediaSourceType));
+    }
+    else
+    {
+        m_glibWrapper->gObjectGet(m_context.pipeline, kSinkName, &sink, nullptr);
+        if (!sink)
+        {
+            RIALTO_SERVER_LOG_WARN("%s could not be obtained", kSinkName);
+        }
+    }
+    return sink;
+}
+
+bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutputParam)
+{
+    if (!m_workerThread)
+        return false;
+
+    m_workerThread->enqueueTask(m_taskFactory->createSetImmediateOutput(*this, mediaSourceType, immediateOutputParam));
+    return true;
+}
+
+bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutputRef)
+{
+    bool returnValue{false};
+    GstElement *sink = getSink(mediaSourceType);
+    if (sink)
+    {
+        // For AutoVideoSink we use properties on the child sink
+        if (MediaSourceType::VIDEO == mediaSourceType)
+            sink = getSinkChildIfAutoVideoSink(sink);
+
+        gboolean immediateOutput;
+        m_glibWrapper->gObjectGet(sink, "immediate-output", &immediateOutput, nullptr);
+        returnValue = true;
+        immediateOutputRef = (immediateOutput == TRUE);
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+    }
+
+    return returnValue;
+}
+
 bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
     bool returnValue{false};

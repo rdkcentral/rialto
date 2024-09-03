@@ -44,6 +44,8 @@ public:
     MOCK_METHOD(bool, setPlaybackRate, (int, double), (override));
     MOCK_METHOD(bool, setPosition, (int, int64_t), (override));
     MOCK_METHOD(bool, getPosition, (int sessionId, int64_t &position), (override));
+    MOCK_METHOD(bool, setImmediateOutput, (int sessionId, int32_t sourceId, bool immediateOutput), (override));
+    MOCK_METHOD(bool, getImmediateOutput, (int sessionId, int32_t sourceId, bool &immediateOutput), (override));
     MOCK_METHOD(bool, getStats, (int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames),
                 (override));
     MOCK_METHOD(bool, setVideoWindow, (int, std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t), (override));
@@ -62,6 +64,8 @@ public:
                 (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedMimeTypes, (MediaSourceType type), (override));
     MOCK_METHOD(bool, isMimeTypeSupported, (const std::string &mimeType), (override));
+    MOCK_METHOD(std::vector<std::string>, getSupportedProperties,
+                (MediaSourceType mediaType, const std::vector<std::string> &propertyNames), (override));
     MOCK_METHOD(void, ping, (const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure), (override));
 };
 } // namespace firebolt::rialto::server::service

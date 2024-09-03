@@ -22,6 +22,9 @@
 #include "MessageBuilders.h"
 #include "RialtoServerComponentTest.h"
 
+using ::testing::_;
+using ::testing::Return;
+using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
 
 namespace firebolt::rialto::server::ct
@@ -36,6 +39,44 @@ public:
         connectClient();
     }
     ~MediaPipelineCapabilitiesTest() override = default;
+
+    void willCallGetSupportedProperties()
+    {
+        const GType kDummyType{3};
+        GstElementFactory *dummyFactory{nullptr};
+        memset(&m_dummyClass, 0x00, sizeof(m_dummyClass));
+        GstElementFactoryListType expectedFactoryListType{
+            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+        m_listOfFactories = g_list_append(m_listOfFactories, dummyFactory);
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(expectedFactoryListType, GST_RANK_NONE))
+            .WillOnce(Return(m_listOfFactories));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(dummyFactory)).WillOnce(Return(kDummyType));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&m_dummyClass));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(&m_dummyClass, _)).WillRepeatedly(Return(&m_dummyParam));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_dummyClass));
+        EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
+    }
+
+    void callGetSupportedProperties()
+    {
+        auto request{createGetSupportedPropertiesRequest(ProtoMediaSourceType::VIDEO, m_kParamNames)};
+        ConfigureAction<GetSupportedProperties>{m_clientStub}.send(request).expectSuccess().matchResponse(
+            [this](const auto &resp)
+            {
+                std::vector<std::string> supportedProperties{resp.supported_properties().begin(),
+                                                             resp.supported_properties().end()};
+                EXPECT_EQ(supportedProperties, m_kParamNames);
+            });
+
+        gst_plugin_feature_list_free(m_listOfFactories);
+        m_listOfFactories = nullptr;
+    }
+
+private:
+    GList *m_listOfFactories{nullptr};
+    GObjectClass m_dummyClass;
+    GParamSpec m_dummyParam;
+    std::vector<std::string> m_kParamNames{"test-name-5", "test2", "prop3"};
 };
 
 /*
@@ -273,5 +314,12 @@ TEST_F(MediaPipelineCapabilitiesTest, checkVideoMimeTypes)
         .send(vp9Request)
         .expectSuccess()
         .matchResponse([](const auto &resp) { EXPECT_FALSE(resp.is_supported()); });
-};
+}
+
+TEST_F(MediaPipelineCapabilitiesTest, checkGetSupportedProperties)
+{
+    // Step 1:
+    willCallGetSupportedProperties();
+    callGetSupportedProperties();
+}
 } // namespace firebolt::rialto::server::ct

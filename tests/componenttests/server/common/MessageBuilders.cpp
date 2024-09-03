@@ -205,6 +205,24 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::SetImmediateOutputRequest createSetImmediateOutputRequest(int sessionId, int sourceId,
+                                                                              bool immediateOutput)
+{
+    ::firebolt::rialto::SetImmediateOutputRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    request.set_immediate_output(immediateOutput);
+    return request;
+}
+
+::firebolt::rialto::GetImmediateOutputRequest createGetImmediateOutputRequest(int sessionId, int sourceId)
+{
+    ::firebolt::rialto::GetImmediateOutputRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    return request;
+}
+
 ::firebolt::rialto::GetStatsRequest createGetStatsRequest(int sessionId, int sourceId)
 {
     ::firebolt::rialto::GetStatsRequest request;
@@ -531,6 +549,16 @@ createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType)
 {
     ::firebolt::rialto::IsMimeTypeSupportedRequest request;
     request.set_mime_type(mimeType);
+    return request;
+}
+
+::firebolt::rialto::GetSupportedPropertiesRequest
+createGetSupportedPropertiesRequest(const ProtoMediaSourceType &mediaType, const std::vector<std::string> &propertyNames)
+{
+    ::firebolt::rialto::GetSupportedPropertiesRequest request;
+    request.set_media_type(mediaType);
+    for (const std::string &prop : propertyNames)
+        request.add_property_names(prop.c_str());
     return request;
 }
 

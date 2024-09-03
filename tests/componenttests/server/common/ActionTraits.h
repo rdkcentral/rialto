@@ -168,6 +168,22 @@ struct GetPosition
     static constexpr auto m_kFunction{&Stub::getPosition};
 };
 
+struct SetImmediateOutput
+{
+    using RequestType = ::firebolt::rialto::SetImmediateOutputRequest;
+    using ResponseType = ::firebolt::rialto::SetImmediateOutputResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setImmediateOutput};
+};
+
+struct GetImmediateOutput
+{
+    using RequestType = ::firebolt::rialto::GetImmediateOutputRequest;
+    using ResponseType = ::firebolt::rialto::GetImmediateOutputResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getImmediateOutput};
+};
+
 struct GetStats
 {
     using RequestType = ::firebolt::rialto::GetStatsRequest;
@@ -474,6 +490,14 @@ struct IsMimeTypeSupported
     using ResponseType = ::firebolt::rialto::IsMimeTypeSupportedResponse;
     using Stub = ::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub;
     static constexpr auto m_kFunction{&Stub::isMimeTypeSupported};
+};
+
+struct GetSupportedProperties
+{
+    using RequestType = ::firebolt::rialto::GetSupportedPropertiesRequest;
+    using ResponseType = ::firebolt::rialto::GetSupportedPropertiesResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getSupportedProperties};
 };
 
 // web audio player module

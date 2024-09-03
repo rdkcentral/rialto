@@ -394,6 +394,19 @@ public:
     virtual std::unique_ptr<IPlayerTask> createProcessAudioGap(GenericPlayerContext &context, std::int64_t position,
                                                                std::uint32_t duration, std::int64_t discontinuityGap,
                                                                bool audioAac) const = 0;
+
+    /**
+     * @brief Creates a SetImmediateOutput task.
+     *
+     * @param[in] player          : The GstPlayer instance
+     * @param[in] type            : The media source type
+     * @param[in] immediateOutput : the value to set for immediate-output
+     *
+     * @retval the new ProcessAudioGap task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetImmediateOutput(IGstGenericPlayerPrivate &player,
+                                                                  const firebolt::rialto::MediaSourceType &type,
+                                                                  bool immediateOutput) const = 0;
 };
 
 } // namespace firebolt::rialto::server

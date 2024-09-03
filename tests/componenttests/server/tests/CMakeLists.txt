@@ -26,51 +26,52 @@ add_gtests (
         main.cpp
 
         # gtest code
-        sessionServer/SessionServerStateChangeTest.cpp
-        sessionServer/SessionServerHealthCheckTest.cpp
-        sessionServer/SessionServerLogLevelTest.cpp
+        control/ApplicationStateChangeTest.cpp
+        control/HealthcheckTest.cpp
+        mediaKeys/DrmStoreTest.cpp
+        mediaKeys/GetDrmInfoTest.cpp
+        mediaKeys/GetSessionInfoTest.cpp
+        mediaKeys/KeyApisTest.cpp
+        mediaKeys/KeyStoreTest.cpp
+        mediaKeys/LicenseRenewalTest.cpp
+        mediaKeys/MediaKeysTest.cpp
+        mediaKeys/MediaKeysTestMethods.cpp
+        mediaKeys/SessionReadyForDecryptionTest.cpp
+        mediaKeys/SetDrmHeaderTest.cpp
+        mediaKeysCapabilities/MediaKeysCapabilitiesTest.cpp
         mediaPipeline/AudioOnlyPlaybackTest.cpp
         mediaPipeline/AudioSourceSwitchTest.cpp
         mediaPipeline/CreatePipelineTest.cpp
         mediaPipeline/DualVideoPlaybackTest.cpp
         mediaPipeline/EncryptedPlaybackTest.cpp
         mediaPipeline/FailureTests.cpp
+        mediaPipeline/FlushTest.cpp
         mediaPipeline/HaveDataFailureTest.cpp
         mediaPipeline/MuteTest.cpp
-        mediaPipeline/PlaybackTest.cpp
+        mediaPipeline/NonFatalPlayerErrorUpdatesTest.cpp
+        mediaPipeline/PipelinePropertyTest.cpp
         mediaPipeline/PlayPauseStopFailuresTest.cpp
+        mediaPipeline/PlaybackTest.cpp
         mediaPipeline/PositionUpdatesTest.cpp
+        mediaPipeline/ProcessAudioGapTest.cpp
         mediaPipeline/QosUpdatesTest.cpp
+        mediaPipeline/RemoveAudioPlaybackTest.cpp
         mediaPipeline/RenderFrameTest.cpp
         mediaPipeline/SetPlaybackRateTest.cpp
         mediaPipeline/SetPositionTest.cpp
+        mediaPipeline/SetSourcePositionTest.cpp
         mediaPipeline/SetVideoWindowTest.cpp
         mediaPipeline/SourceTest.cpp
         mediaPipeline/UnderflowTest.cpp
         mediaPipeline/VolumeTest.cpp
         mediaPipeline/WriteSegmentsTest.cpp
-        mediaPipeline/RemoveAudioPlaybackTest.cpp
-        mediaPipeline/NonFatalPlayerErrorUpdatesTest.cpp
-        mediaPipeline/FlushTest.cpp
-        mediaPipeline/SetSourcePositionTest.cpp
-        mediaPipeline/ProcessAudioGapTest.cpp
-        mediaKeys/MediaKeysTestMethods.cpp
-        mediaKeys/MediaKeysTest.cpp
-        mediaKeys/SessionReadyForDecryptionTest.cpp
-        mediaKeys/KeyStoreTest.cpp
-        mediaKeys/DrmStoreTest.cpp
-        mediaKeys/GetDrmInfoTest.cpp
-        mediaKeys/KeyApisTest.cpp
-        mediaKeys/GetSessionInfoTest.cpp
-        mediaKeys/SetDrmHeaderTest.cpp
-        mediaKeys/LicenseRenewalTest.cpp
-        mediaKeysCapabilities/MediaKeysCapabilitiesTest.cpp
-        control/ApplicationStateChangeTest.cpp
-        control/HealthcheckTest.cpp
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
-        webAudio/WebAudioTestMethods.cpp
-        webAudio/WebAudioTest.cpp
+        sessionServer/SessionServerHealthCheckTest.cpp
+        sessionServer/SessionServerLogLevelTest.cpp
+        sessionServer/SessionServerStateChangeTest.cpp
         webAudio/WebAudioFailuresTest.cpp
+        webAudio/WebAudioTest.cpp
+        webAudio/WebAudioTestMethods.cpp
         )
 
 target_include_directories(
