@@ -322,6 +322,46 @@ TEST_F(MediaPipelineServiceTests, shouldGetPosition)
     getPositionShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToSetImmediateOutputForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setImmediateOutputShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetImmediateOutputForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getImmediateOutputShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetImmediateOutput)
+{
+    initSession();
+    mediaPipelineWillFailToSetImmediateOutput();
+    setImmediateOutputShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetImmediateOutput)
+{
+    initSession();
+    mediaPipelineWillFailToGetImmediateOutput();
+    getImmediateOutputShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetImmediateOutput)
+{
+    initSession();
+    mediaPipelineWillSetImmediateOutput();
+    setImmediateOutputShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetImmediateOutput)
+{
+    initSession();
+    mediaPipelineWillGetImmediateOutput();
+    getImmediateOutputShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldFailToGetStatsForNotExistingSession)
 {
     createMediaPipelineShouldSuccess();
@@ -352,6 +392,12 @@ TEST_F(MediaPipelineServiceTests, shouldCheckSupportedMimeType)
 {
     createMediaPipelineShouldSuccess();
     isMimeTypeSupportedSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldCallGetSupportedProperties)
+{
+    createMediaPipelineShouldSuccess();
+    getSupportedPropertiesSucceed();
 }
 
 TEST_F(MediaPipelineServiceTests, shouldFailToRenderframeForNotExistingSession)

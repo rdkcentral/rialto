@@ -135,6 +135,8 @@ protected:
     void triggerAttachOpusAudioSourceWithAudioSpecificConf();
     void shouldAttachBwavAudioSource();
     void triggerAttachBwavAudioSource();
+    void shouldAttachXrawAudioSource();
+    void triggerAttachXrawAudioSource();
     void shouldAttachVideoSource(const std::string &mime, const std::string &alignment, const std::string &format);
     void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
                                   firebolt::rialto::StreamFormat streamFormat);
@@ -230,6 +232,11 @@ protected:
     // SetMute test methods
     void triggerSetMute();
     void shouldGstSetMute();
+
+    // immediate-output sink property test methods
+    void shouldSetImmediateOutput();
+    void shouldFailToSetImmediateOutputIfSinkIsNull();
+    void triggerSetImmediateOutput();
 
     // SetPosition test methods
     void triggerSetPositionNullClient();
@@ -352,6 +359,10 @@ private:
 
     // AttachSource helper methods
     void expectSetGenericVideoCaps();
+    void expectSetChannelAndRateAudioCaps();
+    void expectAddChannelAndRateAudioToCaps();
+    void expectAddRawAudioDataToCaps();
+    void expectSetCaps();
 };
 
 #endif // GENERIC_TASKS_TESTS_BASE_H_

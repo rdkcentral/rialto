@@ -124,10 +124,10 @@ protected:
     // to avoid occassional test failures
     int m_positionChangeEventSuppressionId{-1};
 
-    // Used to syncronise the writing of the data to gstreamer
+    // Used to synchronise the writing of the data to gstreamer
     testing::Sequence m_writeBufferSeq;
 
-    // Required to syncronise gstBufferNewAllocate, this method only takes a size parameter, if the
+    // Required to synchronise gstBufferNewAllocate, this method only takes a size parameter, if the
     // size of two buffers are equal the test can fail.
     testing::Sequence m_bufferAllocateSeq;
 

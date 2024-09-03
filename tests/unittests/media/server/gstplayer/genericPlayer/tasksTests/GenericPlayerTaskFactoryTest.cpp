@@ -17,7 +17,8 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/GenericPlayerTaskFactory.h"
+#include <gtest/gtest.h>
+
 #include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerClientMock.h"
@@ -34,6 +35,7 @@
 #include "tasks/generic/Eos.h"
 #include "tasks/generic/FinishSetupSource.h"
 #include "tasks/generic/Flush.h"
+#include "tasks/generic/GenericPlayerTaskFactory.h"
 #include "tasks/generic/HandleBusMessage.h"
 #include "tasks/generic/NeedData.h"
 #include "tasks/generic/Pause.h"
@@ -43,6 +45,7 @@
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/ReportPosition.h"
+#include "tasks/generic/SetImmediateOutput.h"
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
@@ -55,7 +58,6 @@
 #include "tasks/generic/Stop.h"
 #include "tasks/generic/Underflow.h"
 #include "tasks/generic/UpdatePlaybackGroup.h"
-#include <gtest/gtest.h>
 
 using testing::_;
 using testing::Return;
@@ -288,4 +290,11 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateProcessAudioGap)
     auto task = m_sut.createProcessAudioGap(m_context, 0, 0, 0, false);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::ProcessAudioGap &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetImmediateOutput)
+{
+    auto task = m_sut.createSetImmediateOutput(m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetImmediateOutput &>(*task));
 }

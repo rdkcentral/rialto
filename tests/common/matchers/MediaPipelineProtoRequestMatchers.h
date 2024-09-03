@@ -23,9 +23,11 @@
 #include "MediaCommon.h"
 #include "mediapipelinecapabilitiesmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
+#include <string>
 #include <vector>
 
 MATCHER_P2(createSessionRequestMatcher, maxWidth, maxHeight, "")
@@ -269,6 +271,20 @@ MATCHER_P(getPositionRequestMatcher, sessionId, "")
     return ((kRequest->session_id() == sessionId));
 }
 
+MATCHER_P2(setImmediateOutputRequestMatcher, sessionId, sourceId, "")
+{
+    const ::firebolt::rialto::SetImmediateOutputRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetImmediateOutputRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+}
+
+MATCHER_P2(getImmediateOutputRequestMatcher, sessionId, sourceId, "")
+{
+    const ::firebolt::rialto::GetImmediateOutputRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetImmediateOutputRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+}
+
 MATCHER_P2(getStatsRequestMatcher, sessionId, sourceId, "")
 {
     const ::firebolt::rialto::GetStatsRequest *kRequest = dynamic_cast<const ::firebolt::rialto::GetStatsRequest *>(arg);
@@ -287,6 +303,15 @@ MATCHER_P(isMimeTypeSupportedRequestMatcher, mimeType, "")
     const ::firebolt::rialto::IsMimeTypeSupportedRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::IsMimeTypeSupportedRequest *>(arg);
     return (kRequest->mime_type() == mimeType);
+}
+
+MATCHER_P2(getSupportedPropertiesRequestMatcher, mediaType, propertyNames, "")
+{
+    const ::firebolt::rialto::GetSupportedPropertiesRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetSupportedPropertiesRequest *>(arg);
+    std::vector<std::string> tmp{kRequest->property_names().begin(), kRequest->property_names().end()};
+    return (kRequest->media_type() == static_cast<firebolt::rialto::ProtoMediaSourceType>(mediaType) &&
+            tmp == propertyNames);
 }
 
 MATCHER_P3(flushRequestMatcher, sessionId, sourceId, resetTime, "")

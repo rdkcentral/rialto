@@ -514,6 +514,62 @@ bool MediaPipelineServerInternal::getStatsInternal(int32_t sourceId, uint64_t &r
     return m_gstPlayer->getStats(sourceIter->first, renderedFrames, droppedFrames);
 }
 
+bool MediaPipelineServerInternal::setImmediateOutput(int32_t sourceId, bool immediateOutput)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setImmediateOutputInternal(sourceId, immediateOutput); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setImmediateOutputInternal(int32_t sourceId, bool immediateOutput)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed - Source not found");
+        return false;
+    }
+    return m_gstPlayer->setImmediateOutput(sourceIter->first, immediateOutput);
+}
+
+bool MediaPipelineServerInternal::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = getImmediateOutputInternal(sourceId, immediateOutput); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getImmediateOutputInternal(int32_t sourceId, bool &immediateOutput)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed - Source not found");
+        return false;
+    }
+    return m_gstPlayer->getImmediateOutput(sourceIter->first, immediateOutput);
+}
+
 bool MediaPipelineServerInternal::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

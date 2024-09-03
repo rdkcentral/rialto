@@ -65,6 +65,8 @@ public:
     bool setPlaybackRate(int sessionId, double rate) override;
     bool setPosition(int sessionId, std::int64_t position) override;
     bool getPosition(int sessionId, std::int64_t &position) override;
+    bool setImmediateOutput(int sessionId, int32_t sourceId, bool immediateOutput) override;
+    bool getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput) override;
     bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
     bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                         std::uint32_t height) override;
@@ -81,6 +83,8 @@ public:
                          bool audioAac) override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
+    std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
+                                                    const std::vector<std::string> &propertyNames) override;
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;
 
     void clearMediaPipelines();

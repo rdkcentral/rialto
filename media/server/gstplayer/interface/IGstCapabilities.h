@@ -78,6 +78,17 @@ public:
      * @retval True if mime type is supported by gstreamer
      */
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
+
+    /**
+     * @brief  Check sinks and decoders for supported properties
+     *
+     * @param[in] mediaType     : The media type to search. If set to UNKNOWN then both AUDIO and VIDEO are searched
+     * @param[in] propertyNames : A vector of property names to look for
+     *
+     * @retval Returns the subset of propertyNames that are supported by the mediaType
+     */
+    virtual std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
+                                                            const std::vector<std::string> &propertyNames) = 0;
 };
 
 }; // namespace firebolt::rialto::server

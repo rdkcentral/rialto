@@ -78,22 +78,6 @@ void autoVideoSinkChildAddedCallback(GstChildProxy *obj, GObject *object, gchar 
 }
 
 /**
- * @brief Callback for a autovideosink when a child has been removed from the sink.
- *
- * @param[in] obj        : the parent element (autovideosink)
- * @param[in] object     : the child element
- * @param[in] name       : the name of the child element
- * @param[in] self       : The pointer to IGstGenericPlayerPrivate
- */
-void autoVideoSinkChildRemovedCallback(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)
-{
-    RIALTO_SERVER_LOG_DEBUG("AutoVideoSink removed element %s", name);
-    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
-        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
-    player->removeAutoVideoSinkChild(object);
-}
-
-/**
  * @brief Callback for a autoaudiosink when a child has been added to the sink.
  *
  * @param[in] obj        : the parent element (autoaudiosink)
@@ -107,6 +91,22 @@ void autoAudioSinkChildAddedCallback(GstChildProxy *obj, GObject *object, gchar 
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
     player->addAutoAudioSinkChild(object);
+}
+
+/**
+ * @brief Callback for a autovideosink when a child has been removed from the sink.
+ *
+ * @param[in] obj        : the parent element (autovideosink)
+ * @param[in] object     : the child element
+ * @param[in] name       : the name of the child element
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
+void autoVideoSinkChildRemovedCallback(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)
+{
+    RIALTO_SERVER_LOG_DEBUG("AutoVideoSink removed element %s", name);
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->removeAutoVideoSinkChild(object);
 }
 
 /**

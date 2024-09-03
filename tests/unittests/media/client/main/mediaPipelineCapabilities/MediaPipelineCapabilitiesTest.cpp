@@ -26,8 +26,10 @@
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
 
+using ::testing::_;
 using ::testing::ByMove;
 using ::testing::Return;
+using ::testing::StrEq;
 using ::testing::StrictMock;
 
 class MediaPipelineCapabilitiesTest : public ::testing::Test
@@ -88,6 +90,16 @@ TEST_F(MediaPipelineCapabilitiesTest, isMimeTypeSupported)
 
     EXPECT_CALL(*m_mediaPipelineCapabilitiesIpcMock, isMimeTypeSupported("video/h264")).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->isMimeTypeSupported("video/h264"));
+}
+
+TEST_F(MediaPipelineCapabilitiesTest, getSupportedProperties)
+{
+    createMediaPipelineCapabilitiesIpcSucceeds();
+    const MediaSourceType kType{MediaSourceType::VIDEO};
+    const std::vector<std::string> kProperties{"test-prop1", "prop2"};
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesIpcMock, getSupportedProperties(kType, _)).WillOnce(Return(kProperties));
+    std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(kType, kProperties)};
+    EXPECT_EQ(supportedProperties, kProperties);
 }
 
 /**

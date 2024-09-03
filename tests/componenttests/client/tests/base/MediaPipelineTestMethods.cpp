@@ -88,6 +88,7 @@ constexpr bool kResetTime{true};
 constexpr double kPosition{1234};
 constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
+const std::vector<std::string> kSupportedProperties{"immediate-output", "testProp2"};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -1300,6 +1301,32 @@ void MediaPipelineTestMethods::getPosition(const int64_t expectedPosition)
     EXPECT_EQ(returnPosition, expectedPosition);
 }
 
+void MediaPipelineTestMethods::shouldSetImmediateOutput(bool immediateOutput)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setImmediateOutput(_, setImmediateOutputRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->setImmediateOutputResponse()),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::setImmediateOutput(bool immediateOutput)
+{
+    EXPECT_TRUE(m_mediaPipeline->setImmediateOutput(kVideoSourceId, immediateOutput));
+}
+
+void MediaPipelineTestMethods::shouldGetImmediateOutput(bool immediateOutput)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                getImmediateOutput(_, getImmediateOutputRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getImmediateOutputResponse(immediateOutput)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getImmediateOutput(bool immediateOutput)
+{
+    EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(kVideoSourceId, immediateOutput));
+}
+
 void MediaPipelineTestMethods::shouldGetStats(uint64_t renderedFrames, uint64_t droppedFrames)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock, getStats(_, getStatsRequestMatcher(kSessionId, kVideoSourceId), _, _))
@@ -1925,5 +1952,44 @@ void MediaPipelineTestMethods::shouldCheckIsMimeTypeNotSupported()
 void MediaPipelineTestMethods::isMimeTypeNotSupported()
 {
     EXPECT_EQ(m_mediaPipelineCapabilities->isMimeTypeSupported(kVideoMimeType[0]), false);
+}
+
+void MediaPipelineTestMethods::shouldGetSupportedProperties()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
+                getSupportedProperties(_,
+                                       getSupportedPropertiesRequestMatcher(firebolt::rialto::MediaSourceType::VIDEO,
+                                                                            kSupportedProperties),
+                                       _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(
+                            m_mediaPipelineCapabilitiesModuleMock->getSupportedPropertiesResponse(kSupportedProperties)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
+                                              &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getSupportedProperties()
+{
+    MediaSourceType sourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    EXPECT_EQ(m_mediaPipelineCapabilities->getSupportedProperties(sourceType, kSupportedProperties),
+              kSupportedProperties);
+}
+
+void MediaPipelineTestMethods::shouldGetSupportedPropertiesFailure()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
+                getSupportedProperties(_,
+                                       getSupportedPropertiesRequestMatcher(firebolt::rialto::MediaSourceType::VIDEO,
+                                                                            kSupportedProperties),
+                                       _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(
+                            m_mediaPipelineCapabilitiesModuleMock->getSupportedPropertiesResponse(kSupportedProperties)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
+                                              &MediaPipelineCapabilitiesModuleMock::failureReturn))));
+}
+
+void MediaPipelineTestMethods::getSupportedPropertiesFailure()
+{
+    MediaSourceType sourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    EXPECT_TRUE(m_mediaPipelineCapabilities->getSupportedProperties(sourceType, kSupportedProperties).empty());
 }
 } // namespace firebolt::rialto::client::ct

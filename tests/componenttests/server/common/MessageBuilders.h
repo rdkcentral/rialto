@@ -54,6 +54,9 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::SetPlaybackRateRequest createSetPlaybackRateRequest(int sessionId);
 ::firebolt::rialto::SetPositionRequest createSetPositionRequest(int sessionId, std::int64_t position);
 ::firebolt::rialto::GetPositionRequest createGetPositionRequest(int sessionId);
+::firebolt::rialto::SetImmediateOutputRequest createSetImmediateOutputRequest(int sessionId, int sourceId,
+                                                                              bool immediateOutput);
+::firebolt::rialto::GetImmediateOutputRequest createGetImmediateOutputRequest(int sessionId, int sourceId);
 ::firebolt::rialto::GetStatsRequest createGetStatsRequest(int sessionId, int sourceId);
 ::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId);
 ::firebolt::rialto::SetVolumeRequest createSetVolumeRequest(int sessionId);
@@ -111,6 +114,8 @@ createIsServerCertificateSupportedRequest(const std::string &keySystem);
 ::firebolt::rialto::GetSupportedMimeTypesRequest
 createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType);
 ::firebolt::rialto::IsMimeTypeSupportedRequest createIsMimeTypeSupportedRequest(const std::string &mimeType);
+::firebolt::rialto::GetSupportedPropertiesRequest
+createGetSupportedPropertiesRequest(const ProtoMediaSourceType &mediaType, const std::vector<std::string> &propertyNames);
 
 // web audio player module
 ::firebolt::rialto::CreateWebAudioPlayerRequest
