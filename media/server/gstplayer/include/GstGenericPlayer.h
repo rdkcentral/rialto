@@ -157,6 +157,7 @@ private:
     void removeAutoVideoSinkChild(GObject *object) override;
     GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) override;
     GstElement *getSink(const MediaSourceType &mediaSourceType) override;
+    GstElement *getDecoder(const MediaSourceType &mediaSourceType) override;
     void setAudioVideoFlags(bool enableAudio, bool enableVideo) override;
 
 private:
