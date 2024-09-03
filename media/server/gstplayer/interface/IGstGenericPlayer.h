@@ -278,6 +278,8 @@ public:
     /**
      * @brief Set low latency property on the pipeline. Default false.
      *
+     * @param[in] lowLatency : The low latency value to set.
+     *
      * @retval true on success false otherwise
      */
     virtual bool setLowLatency(bool lowLatency) = 0;
