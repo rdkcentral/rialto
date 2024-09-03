@@ -208,6 +208,8 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
     {
         GstElementFactory *factory = GST_ELEMENT_FACTORY(iter->data);
         GType elementType = m_gstWrapper->gstElementFactoryGetElementType(factory);
+        if (elementType == G_TYPE_INVALID)
+            continue;
         gpointer elementClass = m_glibWrapper->gTypeClassRef(elementType);
         if (elementClass)
         {
