@@ -428,12 +428,15 @@ bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType
     GstElement *sink = getSink(mediaSourceType);
     if (sink)
     {
-        // For AutoVideoSink we use properties on the child sink
+        // For AutoVideoSink or AutoAudioSink we use properties on the child sink
+        GstElement *actualSink{sink};
         if (MediaSourceType::VIDEO == mediaSourceType)
-            sink = getSinkChildIfAutoVideoSink(sink);
+            actualSink = getSinkChildIfAutoVideoSink(sink);
+        else if (MediaSourceType::AUDIO == mediaSourceType)
+            actualSink = getSinkChildIfAutoAudioSink(sink);
 
         gboolean immediateOutput;
-        m_glibWrapper->gObjectGet(sink, "immediate-output", &immediateOutput, nullptr);
+        m_glibWrapper->gObjectGet(actualSink, "immediate-output", &immediateOutput, nullptr);
         returnValue = true;
         immediateOutputRef = (immediateOutput == TRUE);
         m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
@@ -472,14 +475,15 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
         }
         else
         {
-            // For AutoVideoSink we set properties on the child sink
+            // For AutoVideoSink or AutoAudioSink we set properties on the child sink
+            GstElement *actualSink{sink};
             if (MediaSourceType::VIDEO == mediaSourceType)
-                sink = getSinkChildIfAutoVideoSink(sink);
-            else
-                sink = getSinkChildIfAutoAudioSink(sink);
+                actualSink = getSinkChildIfAutoVideoSink(sink);
+            else if (MediaSourceType::AUDIO == mediaSourceType)
+                actualSink = getSinkChildIfAutoAudioSink(sink);
 
             GstStructure *stats{nullptr};
-            m_glibWrapper->gObjectGet(sink, "stats", &stats, nullptr);
+            m_glibWrapper->gObjectGet(actualSink, "stats", &stats, nullptr);
             if (!stats)
             {
                 RIALTO_SERVER_LOG_WARN("failed to get stats from '%s'", kSinkName);

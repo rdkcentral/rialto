@@ -54,18 +54,12 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithChildSinkForAutoVideoSink)
     triggerSetupElement();
 }
 
-#if 1
-#define AUTO_AUDIO
-#endif
-
-#ifdef AUTO_AUDIO
 TEST_F(SetupElementTest, shouldSetupAudioElementWithChildSinkForAutoAudioSink)
 {
     shouldSetupAudioElementAutoAudioSink();
     shouldAddFirstAutoAudioSinkChild();
     triggerSetupElement();
 }
-#endif
 
 TEST_F(SetupElementTest, shouldSetupVideoElementWithoutChildSinkForAutoVideoSink)
 {
@@ -74,14 +68,12 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithoutChildSinkForAutoVideoSink
     triggerSetupElement();
 }
 
-#ifdef AUTO_AUDIO
 TEST_F(SetupElementTest, shouldSetupAudioElementWithoutChildSinkForAutoAudioSink)
 {
     shouldSetupAudioElementAutoAudioSink();
     shouldNotAddAutoAudioSinkChild();
     triggerSetupElement();
 }
-#endif
 
 TEST_F(SetupElementTest, shouldSetupVideoElementWithMultpileChildSinkForAutoVideoSink)
 {
@@ -90,14 +82,12 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithMultpileChildSinkForAutoVide
     triggerSetupElement();
 }
 
-#ifdef AUTO_AUDIO
 TEST_F(SetupElementTest, shouldSetupAudioElementWithMultpileChildSinkForAutoAudioSink)
 {
     shouldSetupAudioElementAutoAudioSinkWithMultipleChildren();
     shouldAddFirstAutoAudioSinkChild();
     triggerSetupElement();
 }
-#endif
 
 TEST_F(SetupElementTest, shouldSetupAudioElement)
 {
@@ -133,7 +123,6 @@ TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildAdded)
     triggerAutoVideoSinkChildAddedCallback();
 }
 
-#ifdef AUTO_AUDIO
 TEST_F(SetupElementTest, shouldReportAutoAudioSinkChildAdded)
 {
     shouldSetupAudioElementAutoAudioSink();
@@ -143,7 +132,6 @@ TEST_F(SetupElementTest, shouldReportAutoAudioSinkChildAdded)
     shouldAddAutoAudioSinkChildCallback();
     triggerAutoAudioSinkChildAddedCallback();
 }
-#endif
 
 TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildRemoved)
 {
@@ -155,7 +143,6 @@ TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildRemoved)
     triggerAutoVideoSinkChildRemovedCallback();
 }
 
-#ifdef AUTO_AUDIO
 TEST_F(SetupElementTest, shouldReportAutoAudioSinkChildRemoved)
 {
     shouldSetupAudioElementAutoAudioSink();
@@ -165,4 +152,3 @@ TEST_F(SetupElementTest, shouldReportAutoAudioSinkChildRemoved)
     shouldRemoveAutoAudioSinkChildCallback();
     triggerAutoAudioSinkChildRemovedCallback();
 }
-#endif
