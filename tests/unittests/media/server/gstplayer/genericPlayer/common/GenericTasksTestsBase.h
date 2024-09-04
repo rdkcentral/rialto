@@ -228,7 +228,32 @@ protected:
     // immediate-output sink property test methods
     void shouldSetImmediateOutput();
     void shouldFailToSetImmediateOutputIfSinkIsNull();
+    void shouldFailToSetImmediateOutputIfPropertyDoesntExist();
     void triggerSetImmediateOutput();
+
+    // low-latency sink property test methods
+    void shouldSetLowLatency();
+    void shouldFailToSetLowLatencyIfSinkIsNull();
+    void shouldFailToSetLowLatencyIfPropertyDoesntExist();
+    void triggerSetLowLatency();
+
+    // sync sink property test methods
+    void shouldSetSync();
+    void shouldFailToSetSyncIfSinkIsNull();
+    void shouldFailToSetSyncIfPropertyDoesntExist();
+    void triggerSetSync();
+
+    // sync-off decoder property test methods
+    void shouldSetSyncOff();
+    void shouldFailToSetSyncOffIfDecoderIsNull();
+    void shouldFailToSetSyncOffIfPropertyDoesntExist();
+    void triggerSetSyncOff();
+
+    // stream-sync-mode decoder property test methods
+    void shouldSetStreamSyncMode();
+    void shouldFailToSetStreamSyncModeIfDecoderIsNull();
+    void shouldFailToSetStreamSyncModeIfPropertyDoesntExist();
+    void triggerSetStreamSyncMode();
 
     // SetPosition test methods
     void triggerSetPositionNullClient();

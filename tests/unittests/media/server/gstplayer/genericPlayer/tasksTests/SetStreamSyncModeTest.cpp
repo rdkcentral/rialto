@@ -19,24 +19,24 @@
 
 #include "GenericTasksTestsBase.h"
 
-class SetImmediateOutputTest : public GenericTasksTestsBase
+class SetStreamSyncModeTest : public GenericTasksTestsBase
 {
 };
 
-TEST_F(SetImmediateOutputTest, shouldFailToSetImmediateOutputIfSinkIsNull)
+TEST_F(SetStreamSyncModeTest, shouldFailToSetStreamSyncModeIfDecoderIsNull)
 {
-    shouldFailToSetImmediateOutputIfSinkIsNull();
-    triggerSetImmediateOutput();
+    shouldFailToSetStreamSyncModeIfDecoderIsNull();
+    triggerSetStreamSyncMode();
 }
 
-TEST_F(SetImmediateOutputTest, shouldFailToSetImmediateOutputIfPropertyDoesntExist)
+TEST_F(SetStreamSyncModeTest, shouldFailToSetStreamSyncModeIfPropertyDoesntExist)
 {
-    shouldFailToSetImmediateOutputIfPropertyDoesntExist();
-    triggerSetImmediateOutput();
+    shouldFailToSetStreamSyncModeIfPropertyDoesntExist();
+    triggerSetStreamSyncMode();
 }
 
-TEST_F(SetImmediateOutputTest, shouldSetImmediateOutput)
+TEST_F(SetStreamSyncModeTest, shouldSetStreamSyncMode)
 {
-    shouldSetImmediateOutput();
-    triggerSetImmediateOutput();
+    shouldSetStreamSyncMode();
+    triggerSetStreamSyncMode();
 }

@@ -19,24 +19,24 @@
 
 #include "GenericTasksTestsBase.h"
 
-class SetImmediateOutputTest : public GenericTasksTestsBase
+class SetLowLatencyTest : public GenericTasksTestsBase
 {
 };
 
-TEST_F(SetImmediateOutputTest, shouldFailToSetImmediateOutputIfSinkIsNull)
+TEST_F(SetLowLatencyTest, shouldFailToSetLowLatencyIfSinkIsNull)
 {
-    shouldFailToSetImmediateOutputIfSinkIsNull();
-    triggerSetImmediateOutput();
+    shouldFailToSetLowLatencyIfSinkIsNull();
+    triggerSetLowLatency();
 }
 
-TEST_F(SetImmediateOutputTest, shouldFailToSetImmediateOutputIfPropertyDoesntExist)
+TEST_F(SetLowLatencyTest, shouldFailToSetLowLatencyIfPropertyDoesntExist)
 {
-    shouldFailToSetImmediateOutputIfPropertyDoesntExist();
-    triggerSetImmediateOutput();
+    shouldFailToSetLowLatencyIfPropertyDoesntExist();
+    triggerSetLowLatency();
 }
 
-TEST_F(SetImmediateOutputTest, shouldSetImmediateOutput)
+TEST_F(SetLowLatencyTest, shouldSetLowLatency)
 {
-    shouldSetImmediateOutput();
-    triggerSetImmediateOutput();
+    shouldSetLowLatency();
+    triggerSetLowLatency();
 }

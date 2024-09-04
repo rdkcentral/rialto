@@ -76,6 +76,10 @@ public:
                                                         const Rectangle &rectangle) const override;
     std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, double volume) const override;
     std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, bool mute) const override;
+    std::unique_ptr<IPlayerTask> createSetLowLatency(IGstGenericPlayerPrivate &player, bool lowLatency) const override;
+    std::unique_ptr<IPlayerTask> createSetSync(IGstGenericPlayerPrivate &player, bool sync) const override;
+    std::unique_ptr<IPlayerTask> createSetSyncOff(IGstGenericPlayerPrivate &player, bool syncOff) const override;
+    std::unique_ptr<IPlayerTask> createSetStreamSyncMode(IGstGenericPlayerPrivate &player, int32_t streamSyncMode) const override;
     std::unique_ptr<IPlayerTask> createShutdown(IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createStop(GenericPlayerContext &context,
                                             IGstGenericPlayerPrivate &player) const override;

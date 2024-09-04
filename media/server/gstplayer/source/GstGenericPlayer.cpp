@@ -1165,7 +1165,7 @@ bool GstGenericPlayer::setLowLatency(bool lowLatency)
 {
     if (m_workerThread)
     {
-        //m_workerThread->enqueueTask(m_taskFactory->createSetLowLatency(m_context, lowLatency));
+        m_workerThread->enqueueTask(m_taskFactory->createSetLowLatency(*this, lowLatency));
     }
     return true;
 }
@@ -1174,7 +1174,7 @@ bool GstGenericPlayer::setSync(bool sync)
 {
     if (m_workerThread)
     {
-        //m_workerThread->enqueueTask(m_taskFactory->createSetSync(m_context, sync));
+        m_workerThread->enqueueTask(m_taskFactory->createSetSync(*this, sync));
     }
     return true;
 }
@@ -1205,7 +1205,7 @@ bool GstGenericPlayer::setSyncOff(bool syncOff)
 {
     if (m_workerThread)
     {
-        //m_workerThread->enqueueTask(m_taskFactory->createSetSyncOff(m_context, syncOff));
+        m_workerThread->enqueueTask(m_taskFactory->createSetSyncOff(*this, syncOff));
     }
     return true;
 }
@@ -1214,7 +1214,7 @@ bool GstGenericPlayer::setStreamSyncMode(int32_t streamSyncMode)
 {
     if (m_workerThread)
     {
-        //m_workerThread->enqueueTask(m_taskFactory->createSetStreamSyncMode(m_context, streamSyncMode));
+        m_workerThread->enqueueTask(m_taskFactory->createSetStreamSyncMode(*this, streamSyncMode));
     }
     return true;
 }

@@ -39,6 +39,10 @@ class GstGenericPlayerTest : public GstGenericPlayerTestCommon
 protected:
     std::unique_ptr<IGstGenericPlayer> m_sut;
     VideoRequirements m_videoReq = {kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
+    GstElement *m_pipeline;
+    GstIterator m_it{};
+    char m_dummy{0};
+    GstElementFactory *m_factory = reinterpret_cast<GstElementFactory *>(&m_dummy);
 
     GstGenericPlayerTest()
     {
@@ -78,6 +82,24 @@ protected:
         GstElement *elem = gst_element_factory_create(elementFactory, nullptr);
         gst_object_unref(elementFactory);
         return elem;
+    }
+
+    void expectGetAudioDecoder(GstElement *audioDecoder)
+    {
+        getContext([&](GenericPlayerContext &m_context) { m_pipeline = m_context.pipeline; });
+
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(GST_BIN(m_pipeline)))
+            .WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _))
+            .WillOnce(Return(GST_ITERATOR_OK));
+        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_))
+            .WillOnce(Return(audioDecoder));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(audioDecoder))
+            .WillOnce(Return(m_factory));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
+            .WillOnce(Return(TRUE));
+        EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
     }
 };
 
@@ -540,11 +562,29 @@ TEST_F(GstGenericPlayerTest, shouldMute)
     m_sut->setMute(true);
 }
 
-TEST_F(GstGenericPlayerTest, shouldGetSyncInPlayingState)
+TEST_F(GstGenericPlayerTest, shouldSetLowLatency)
 {
-    GstElement *audioSink;
-    audioSink = fakeElement();
-    setPipelineState(GST_STATE_PLAYING);
+    constexpr bool kLowLatency{true};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetLowLatency(_, kLowLatency)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->setLowLatency(kLowLatency);
+}
+
+TEST_F(GstGenericPlayerTest, shouldSetSync)
+{
+    constexpr bool kSync{true};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetSync(_, kSync)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->setSync(kSync);
+}
+
+TEST_F(GstGenericPlayerTest, shouldGetSync)
+{
+    GstElement *audioSink = fakeElement();
     const bool kSyncValue{true};
 
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
@@ -574,21 +614,17 @@ TEST_F(GstGenericPlayerTest, shouldGetSyncInPlayingState)
     gst_object_unref(audioSink);
 }
 
-TEST_F(GstGenericPlayerTest, shouldFailToGetSyncInPlayingStateIfStubNull)
+TEST_F(GstGenericPlayerTest, shouldFailToGetSyncIfStubNull)
 {
-    setPipelineState(GST_STATE_PLAYING);
-
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _)).Times(1);
 
     bool sync;
     EXPECT_FALSE(m_sut->getSync(sync));
 }
 
-TEST_F(GstGenericPlayerTest, shouldFailToGetSyncInPlayingStateIfPropertyDoesntExist)
+TEST_F(GstGenericPlayerTest, shouldFailToGetSyncIfPropertyDoesntExist)
 {
-    GstElement *audioSink;
-    audioSink = fakeElement();
-    setPipelineState(GST_STATE_PLAYING);
+    GstElement *audioSink = fakeElement();
 
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
         .WillOnce(Invoke(
@@ -607,70 +643,117 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetSyncInPlayingStateIfPropertyDoesntEx
     gst_object_unref(audioSink);
 }
 
-TEST_F(GstGenericPlayerTest, shouldGetStreamSyncModeInPlayingState)
+TEST_F(GstGenericPlayerTest, shouldSetSyncOff)
+{
+    constexpr bool kSyncOff{true};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetSyncOff(_, kSyncOff)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->setSyncOff(kSyncOff);
+}
+
+TEST_F(GstGenericPlayerTest, shouldSetStreamSyncMode)
+{
+    constexpr int32_t kStreamSyncMode{1};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetStreamSyncMode(_, kStreamSyncMode)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->setStreamSyncMode(kStreamSyncMode);
+}
+
+TEST_F(GstGenericPlayerTest, shouldGetStreamSyncMode)
 {
     GstElement *audioDecoder = fakeElement();
-    setPipelineState(GST_STATE_PLAYING);
     const int32_t kStreamSyncModeValue{1};
 
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
-        .WillOnce(Invoke(
-            [&](gpointer object, const gchar *first_property_name, void *element)
-            {
-                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                *elementPtr = audioSink;
-            }));
+    expectGetAudioDecoder(audioDecoder);
 
     GParamSpec prop{};
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("sync"))).WillOnce(Return(&prop));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("sync"), _))
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("stream-sync-mode"))).WillOnce(Return(&prop));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stream-sync-mode"), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *ptr)
             {
                 gboolean *responsePtr = reinterpret_cast<gboolean *>(ptr);
-                *responsePtr = kSyncValue;
+                *responsePtr = kStreamSyncModeValue;
             }));
 
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(audioSink)).Times(1);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(audioDecoder)).Times(1);
 
-    bool sync;
-    EXPECT_TRUE(m_sut->getSync(sync));
-    EXPECT_EQ(sync, kSyncValue);
+    int32_t streamSyncMode;
+    EXPECT_TRUE(m_sut->getStreamSyncMode(streamSyncMode));
+    EXPECT_EQ(streamSyncMode, kStreamSyncModeValue);
 
-    gst_object_unref(audioSink);
+    gst_object_unref(audioDecoder);
 }
 
-TEST_F(GstGenericPlayerTest, shouldFailToGetSyncInPlayingStateIfStubNull)
+TEST_F(GstGenericPlayerTest, shouldGetStreamSyncModeWithIteratorResync)
 {
-    setPipelineState(GST_STATE_PLAYING);
+    GstElement *audioDecoder = fakeElement();
+    const int32_t kStreamSyncModeValue{1};
 
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _)).Times(1);
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_))
+        .WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(_, _))
+        .WillOnce(Return(GST_ITERATOR_RESYNC))
+        .WillOnce(Return(GST_ITERATOR_OK));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorResync(&m_it));
+    EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_))
+        .WillOnce(Return(audioDecoder));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(audioDecoder))
+        .WillOnce(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(_));
 
-    bool sync;
-    EXPECT_FALSE(m_sut->getSync(sync));
-}
-
-TEST_F(GstGenericPlayerTest, shouldFailToGetSyncInPlayingStateIfPropertyDoesntExist)
-{
-    GstElement *audioSink;
-    audioSink = fakeElement();
-    setPipelineState(GST_STATE_PLAYING);
-
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
+    GParamSpec prop{};
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("stream-sync-mode"))).WillOnce(Return(&prop));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stream-sync-mode"), _))
         .WillOnce(Invoke(
-            [&](gpointer object, const gchar *first_property_name, void *element)
+            [&](gpointer object, const gchar *first_property_name, void *ptr)
             {
-                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                *elementPtr = audioSink;
+                gboolean *responsePtr = reinterpret_cast<gboolean *>(ptr);
+                *responsePtr = kStreamSyncModeValue;
             }));
 
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("sync"))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(audioSink)).Times(1);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(audioDecoder)).Times(1);
 
-    bool sync;
-    EXPECT_FALSE(m_sut->getSync(sync));
+    int32_t streamSyncMode;
+    EXPECT_TRUE(m_sut->getStreamSyncMode(streamSyncMode));
+    EXPECT_EQ(streamSyncMode, kStreamSyncModeValue);
 
-    gst_object_unref(audioSink);
+    gst_object_unref(audioDecoder);
+}
+
+TEST_F(GstGenericPlayerTest, shouldFailToGetStreamSyncModeIfNoDecoder)
+{
+    getContext([&](GenericPlayerContext &m_context) { m_pipeline = m_context.pipeline; });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(GST_BIN(m_pipeline)))
+        .WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _))
+        .WillOnce(Return(GST_ITERATOR_DONE));
+
+    int32_t streamSyncMode;
+    EXPECT_FALSE(m_sut->getStreamSyncMode(streamSyncMode));
+}
+
+TEST_F(GstGenericPlayerTest, shouldFailToGetStreamSyncModeIfPropertyDoesntExist)
+{
+    GstElement *audioDecoder = fakeElement();
+
+    expectGetAudioDecoder(audioDecoder);
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("stream-sync-mode"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(audioDecoder)).Times(1);
+
+    int32_t streamSyncMode;
+    EXPECT_FALSE(m_sut->getStreamSyncMode(streamSyncMode));
+
+    gst_object_unref(audioDecoder);
 }
 
 TEST_F(GstGenericPlayerTest, shouldPing)

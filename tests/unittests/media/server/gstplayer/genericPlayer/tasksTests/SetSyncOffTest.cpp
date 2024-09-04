@@ -19,24 +19,24 @@
 
 #include "GenericTasksTestsBase.h"
 
-class SetImmediateOutputTest : public GenericTasksTestsBase
+class SetSyncOffTest : public GenericTasksTestsBase
 {
 };
 
-TEST_F(SetImmediateOutputTest, shouldFailToSetImmediateOutputIfSinkIsNull)
+TEST_F(SetSyncOffTest, shouldFailToSetSyncOffIfDecoderIsNull)
 {
-    shouldFailToSetImmediateOutputIfSinkIsNull();
-    triggerSetImmediateOutput();
+    shouldFailToSetSyncOffIfDecoderIsNull();
+    triggerSetSyncOff();
 }
 
-TEST_F(SetImmediateOutputTest, shouldFailToSetImmediateOutputIfPropertyDoesntExist)
+TEST_F(SetSyncOffTest, shouldFailToSetSyncOffIfPropertyDoesntExist)
 {
-    shouldFailToSetImmediateOutputIfPropertyDoesntExist();
-    triggerSetImmediateOutput();
+    shouldFailToSetSyncOffIfPropertyDoesntExist();
+    triggerSetSyncOff();
 }
 
-TEST_F(SetImmediateOutputTest, shouldSetImmediateOutput)
+TEST_F(SetSyncOffTest, shouldSetSyncOff)
 {
-    shouldSetImmediateOutput();
-    triggerSetImmediateOutput();
+    shouldSetSyncOff();
+    triggerSetSyncOff();
 }
