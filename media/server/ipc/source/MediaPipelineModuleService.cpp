@@ -764,36 +764,94 @@ void MediaPipelineModuleService::setLowLatency(::google::protobuf::RpcController
                 ::firebolt::rialto::SetLowLatencyResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_mediaPipelineService.setLowLatency(request->session_id(), request->low_latency()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set low latency failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
 }
 
 void MediaPipelineModuleService::setSync(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetSyncRequest *request,
                 ::firebolt::rialto::SetSyncResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_mediaPipelineService.setSync(request->session_id(), request->sync()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set sync failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
 }
 
 void MediaPipelineModuleService::getSync(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetSyncRequest *request,
                 ::firebolt::rialto::GetSyncResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    bool sync{};
+
+    if (!m_mediaPipelineService.getSync(request->session_id(), sync))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get sync failed.");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_sync(sync);
+    }
+
+    done->Run();
 }
 
 void MediaPipelineModuleService::setSyncOff(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetSyncOffRequest *request,
                 ::firebolt::rialto::SetSyncOffResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_mediaPipelineService.setSyncOff(request->session_id(), request->sync_off()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set sync off failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
 }
 
 void MediaPipelineModuleService::setStreamSyncMode(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetStreamSyncModeRequest *request,
                 ::firebolt::rialto::SetStreamSyncModeResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_mediaPipelineService.setStreamSyncMode(request->session_id(), request->stream_sync_mode()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set stream sync mode failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
 }
 
 void MediaPipelineModuleService::getStreamSyncMode(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetStreamSyncModeRequest *request,
                 ::firebolt::rialto::GetStreamSyncModeResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    int32_t streamSyncMode{};
+
+    if (!m_mediaPipelineService.getStreamSyncMode(request->session_id(), streamSyncMode))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get stream sync mode failed.");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_stream_sync_mode(streamSyncMode);
+    }
+
+    done->Run();
 }
 
 void MediaPipelineModuleService::flush(::google::protobuf::RpcController *controller,
