@@ -78,6 +78,22 @@ void autoVideoSinkChildAddedCallback(GstChildProxy *obj, GObject *object, gchar 
 }
 
 /**
+ * @brief Callback for a autoaudiosink when a child has been added to the sink.
+ *
+ * @param[in] obj        : the parent element (autoaudiosink)
+ * @param[in] object     : the child element
+ * @param[in] name       : the name of the child element
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
+void autoAudioSinkChildAddedCallback(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)
+{
+    RIALTO_SERVER_LOG_DEBUG("AutoAudioSink added element %s", name);
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->addAutoAudioSinkChild(object);
+}
+
+/**
  * @brief Callback for a autovideosink when a child has been removed from the sink.
  *
  * @param[in] obj        : the parent element (autovideosink)
@@ -91,6 +107,22 @@ void autoVideoSinkChildRemovedCallback(GstChildProxy *obj, GObject *object, gcha
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
     player->removeAutoVideoSinkChild(object);
+}
+
+/**
+ * @brief Callback for a autoaudiosink when a child has been removed from the sink.
+ *
+ * @param[in] obj        : the parent element (autoaudiosink)
+ * @param[in] object     : the child element
+ * @param[in] name       : the name of the child element
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
+void autoAudioSinkChildRemovedCallback(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)
+{
+    RIALTO_SERVER_LOG_DEBUG("AutoAudioSink removed element %s", name);
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->removeAutoAudioSinkChild(object);
 }
 } // namespace
 
@@ -133,6 +165,30 @@ void SetupElement::execute() const
         if (m_gstWrapper->gstIteratorNext(sinks, &elem) == GST_ITERATOR_OK)
         {
             m_player.addAutoVideoSinkChild(G_OBJECT(m_glibWrapper->gValueGetObject(&elem)));
+        }
+        m_glibWrapper->gValueUnset(&elem);
+
+        if (sinks)
+            m_gstWrapper->gstIteratorFree(sinks);
+    }
+    else if (kElementTypeName == "GstAutoAudioSink")
+    {
+        // Check and store child sink so we can set underlying properties
+        m_glibWrapper->gSignalConnect(m_element, "child-added", G_CALLBACK(autoAudioSinkChildAddedCallback), &m_player);
+        m_glibWrapper->gSignalConnect(m_element, "child-removed", G_CALLBACK(autoAudioSinkChildRemovedCallback),
+                                      &m_player);
+
+        // AutoAudioSink sets child before it is setup on the pipeline, so check for children here
+        GstIterator *sinks = m_gstWrapper->gstBinIterateSinks(GST_BIN(m_element));
+        if (sinks && sinks->size > 1)
+        {
+            RIALTO_SERVER_LOG_WARN("More than one child sink attached");
+        }
+
+        GValue elem = G_VALUE_INIT;
+        if (m_gstWrapper->gstIteratorNext(sinks, &elem) == GST_ITERATOR_OK)
+        {
+            m_player.addAutoAudioSinkChild(G_OBJECT(m_glibWrapper->gValueGetObject(&elem)));
         }
         m_glibWrapper->gValueUnset(&elem);
 
