@@ -611,6 +611,33 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToProcessAudio
         .WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetTextTrackIdentifier()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setTextTrackIdentifier(kHardcodedSessionId, kTextTrackIdentifier))
+        .WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetTextTrackIdentifier()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setTextTrackIdentifier(kHardcodedSessionId, kTextTrackIdentifier))
+        .WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetTextTrackIdentifier()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getTextTrackIdentifier(kHardcodedSessionId, _))
+        .WillOnce(DoAll(SetArgReferee<1>(kTextTrackIdentifier), Return(true)));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetTextTrackIdentifier()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getTextTrackIdentifier(kHardcodedSessionId, _)).WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackStateChangedEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(PlaybackStateChangeEventMatcher(convertPlaybackState(kPlaybackState))));
@@ -1087,6 +1114,39 @@ void MediaPipelineModuleServiceTests::sendProcessAudioGapRequestAndReceiveRespon
     request.set_audio_aac(kIsAudioAac);
 
     m_service->processAudioGap(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetTextTrackIdentifierRequestAndReceiveResponse()
+{
+    firebolt::rialto::SetTextTrackIdentifierRequest request;
+    firebolt::rialto::SetTextTrackIdentifierResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_text_track_identifier(kTextTrackIdentifier);
+
+    m_service->setTextTrackIdentifier(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendGetTextTrackIdentifierRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetTextTrackIdentifierRequest request;
+    firebolt::rialto::GetTextTrackIdentifierResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getTextTrackIdentifier(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(kTextTrackIdentifier, response.text_track_identifier());
+}
+
+void MediaPipelineModuleServiceTests::sendGetTextTrackIdentifierRequestAndReceiveResponseWithoutMatch()
+{
+    firebolt::rialto::GetTextTrackIdentifierRequest request;
+    firebolt::rialto::GetTextTrackIdentifierResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getTextTrackIdentifier(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendPlaybackStateChangedEvent()

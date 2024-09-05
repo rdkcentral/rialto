@@ -60,3 +60,8 @@ TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldIfMimeTypeIsSupportedW
     expectInvalidControlFailure();
     sendIsMimeTypeSupportedRequestAndExpectFailure();
 }
+
+TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldConvertMediaType)
+{
+    expectCorrectMediaTypeConversion();
+}

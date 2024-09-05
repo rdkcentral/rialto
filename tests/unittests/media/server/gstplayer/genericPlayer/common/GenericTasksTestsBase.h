@@ -114,6 +114,10 @@ protected:
     void triggerAttachSamplesAudio();
     void shouldAttachAllVideoSamples();
     void triggerAttachSamplesVideo();
+    void shouldAttachAllSubtitleSamples();
+    void shouldSkipAttachingSubtitleSamples();
+    void triggerAttachSamplesSubtitle();
+    void checkSubtitleSamplesAttached();
 
     // AttachSource test methods
     void shouldAttachAudioSource();
@@ -220,8 +224,12 @@ protected:
     void triggerShutdown();
 
     // SetMute test methods
-    void triggerSetMute();
-    void shouldGstSetMute();
+    void triggerSetAudioMute();
+    void triggerSetVideoMute();
+    void triggerSetSubtitleMute();
+    void setContextSubtitleSink();
+    void shouldSetAudioMute();
+    void shouldSetSubtitleMute();
 
     // immediate-output sink property test methods
     void shouldSetImmediateOutput();
@@ -283,6 +291,7 @@ protected:
     void triggerNeedDataUnknownSrc();
     void shouldNotifyNeedAudioDataSuccess();
     void shouldNotifyNeedVideoDataSuccess();
+    void shouldNotifyNeedSubtitleDataSuccess();
     void checkNeedDataPendingForAudioOnly();
     void checkNeedDataPendingForVideoOnly();
     void shouldNotifyNeedAudioDataFailure();
@@ -314,8 +323,12 @@ protected:
     // ReadShmDataAndAttachSamples test methods
     void shouldReadAudioData();
     void shouldReadVideoData();
+    void shouldReadSubtitleData();
+    void shouldReadUnknownData();
+    void shouldNotAttachUnknownSamples();
     void triggerReadShmDataAndAttachSamplesAudio();
     void triggerReadShmDataAndAttachSamplesVideo();
+    void triggerReadShmDataAndAttachSamples();
 
     // RemoveSource test methods
     void shouldInvalidateActiveAudioRequests();
@@ -334,6 +347,8 @@ protected:
     void shouldFlushVideoSrcSuccess();
 
     // Set Source Position test methods
+    void shouldSetSubtitleSourcePosition();
+    void shouldFailToSetSubtitleSourcePosition();
     void triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionSet(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType);
@@ -341,6 +356,10 @@ protected:
     // ProcessAudioGap test methods
     void triggerProcessAudioGap();
     void shouldProcessAudioGap();
+
+    // SetTextTrackIdentifier test methods
+    void shouldSetTextTrackIdentifier();
+    void triggerSetTextTrackIdentifier();
 
 private:
     // SetupElement helper methods

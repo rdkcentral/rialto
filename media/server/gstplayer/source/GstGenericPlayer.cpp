@@ -1084,8 +1084,9 @@ bool GstGenericPlayer::getMute(const MediaSourceType &mediaSourceType, bool &mut
             RIALTO_SERVER_LOG_ERROR("There is no subtitle sink");
             return false;
         }
-
-        m_glibWrapper->gObjectGet(m_context.subtitleSink, "mute", mute, nullptr);
+        gboolean muteValue{FALSE};
+        m_glibWrapper->gObjectGet(m_context.subtitleSink, "mute", &muteValue, nullptr);
+        mute = muteValue;
     }
     else if (mediaSourceType == MediaSourceType::AUDIO)
     {

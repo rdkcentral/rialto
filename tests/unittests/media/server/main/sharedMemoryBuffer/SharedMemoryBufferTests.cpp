@@ -133,6 +133,14 @@ TEST_F(SharedMemoryBufferTests, shouldReturnMaxWebAudioDataLen)
     shouldReturnMaxWebAudioDataLen(kHandle1);
 }
 
+TEST_F(SharedMemoryBufferTests, shouldReturnMaxSubtitleDataLen)
+{
+    constexpr int kSession1{0};
+    initialize();
+    mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
+    shouldReturnMaxSubtitleDataLen(kSession1);
+}
+
 TEST_F(SharedMemoryBufferTests, shouldNotReturnMaxAudioDataLenForNotMappedGenericPlaybackSession)
 {
     constexpr int kSession1{0};
@@ -217,6 +225,21 @@ TEST_F(SharedMemoryBufferTests, shouldNotClearVideoDataForNotMappedGenericPlayba
     constexpr int kSession1{0};
     initialize();
     shouldFailToClearVideoData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
+}
+
+TEST_F(SharedMemoryBufferTests, shouldClearSubtitleDataForGenericPlaybackSession)
+{
+    constexpr int kSession1{0};
+    initialize();
+    mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
+    shouldClearSubtitleData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
+}
+
+TEST_F(SharedMemoryBufferTests, shouldNotClearSubtitleDataForNotMappedGenericPlaybackSession)
+{
+    constexpr int kSession1{0};
+    initialize();
+    shouldFailToClearSubtitleData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
 }
 
 TEST_F(SharedMemoryBufferTests, shouldFailToReturnVideoDataOffsetForGenericPlaybackSession)

@@ -59,14 +59,7 @@ void Flush::execute() const
         return;
     }
 
-    auto elem = m_context.streamInfo.find(m_type);
-    if (elem == m_context.streamInfo.end())
-    {
-        RIALTO_SERVER_LOG_WARN("Flush failed: Stream not found. Type %s", common::convertMediaSourceType(m_type));
-        return;
-    }
-
-    StreamInfo &streamInfo = elem->second;
+    StreamInfo &streamInfo = sourceElem->second;
     streamInfo.isDataNeeded = false;
     streamInfo.isNeedDataPending = false;
 

@@ -67,7 +67,7 @@ std::unique_ptr<IPlayerTask>
 GenericPlayerTaskFactory::createAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                               const IMediaPipeline::MediaSegmentVector &mediaSegments) const
 {
-    return std::make_unique<tasks::generic::AttachSamples>(context, player, mediaSegments);
+    return std::make_unique<tasks::generic::AttachSamples>(context, m_gstWrapper, player, mediaSegments);
 }
 
 std::unique_ptr<IPlayerTask>
@@ -133,7 +133,7 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createPlay(IGstGenericPla
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReadShmDataAndAttachSamples(
     GenericPlayerContext &context, IGstGenericPlayerPrivate &player, const std::shared_ptr<IDataReader> &dataReader) const
 {
-    return std::make_unique<tasks::generic::ReadShmDataAndAttachSamples>(context, player, dataReader);
+    return std::make_unique<tasks::generic::ReadShmDataAndAttachSamples>(context, m_gstWrapper, player, dataReader);
 }
 
 std::unique_ptr<IPlayerTask>

@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_TEXT_TRACK_ACCESSOR_H_
 #define FIREBOLT_RIALTO_SERVER_TEXT_TRACK_ACCESSOR_H_
 
+#include "ITextTrackAccessor.h"
 #include "ITextTrackPluginWrapper.h"
 #include "ITextTrackWrapper.h"
 #include "IThunderWrapper.h"
@@ -31,38 +32,28 @@
 
 namespace firebolt::rialto::server
 {
-class TextTrackAccessor;
-
-class TextTrackAccessorFactory
+class TextTrackAccessorFactory : public ITextTrackAccessorFactory
 {
 public:
-    static TextTrackAccessorFactory &getFactory();
-    std::shared_ptr<TextTrackAccessor> getTextTrackAccessor() const;
+    std::shared_ptr<ITextTrackAccessor> getTextTrackAccessor() const override;
 };
 
-class TextTrackAccessor
+class TextTrackAccessor : public ITextTrackAccessor
 {
 public:
-    enum class DataType
-    {
-        UNKNOWN,
-        WebVTT,
-        TTML
-    };
-
     TextTrackAccessor(const std::shared_ptr<firebolt::rialto::wrappers::ITextTrackPluginWrapper> &textTrackPluginWrapper,
                       const std::shared_ptr<firebolt::rialto::wrappers::IThunderWrapper> &thunderWrapper);
-    ~TextTrackAccessor();
-    std::optional<uint32_t> openSession(const std::string &displayName);
-    bool closeSession(uint32_t sessionId);
-    bool pause(uint32_t sessionId);
-    bool play(uint32_t sessionId);
-    bool mute(uint32_t sessionId, bool mute);
-    bool setPosition(uint32_t sessionId, uint64_t mediaTimestampMs);
-    bool sendData(uint32_t sessionId, const std::string &data, DataType datatype, int32_t displayOffsetMs = 0);
-    bool setSessionWebVTTSelection(uint32_t sessionId);
-    bool setSessionTTMLSelection(uint32_t sessionId);
-    bool setSessionCCSelection(uint32_t sessionId, const std::string &service);
+    ~TextTrackAccessor() override;
+    std::optional<uint32_t> openSession(const std::string &displayName) override;
+    bool closeSession(uint32_t sessionId) override;
+    bool pause(uint32_t sessionId) override;
+    bool play(uint32_t sessionId) override;
+    bool mute(uint32_t sessionId, bool mute) override;
+    bool setPosition(uint32_t sessionId, uint64_t mediaTimestampMs) override;
+    bool sendData(uint32_t sessionId, const std::string &data, DataType datatype, int32_t displayOffsetMs) override;
+    bool setSessionWebVTTSelection(uint32_t sessionId) override;
+    bool setSessionTTMLSelection(uint32_t sessionId) override;
+    bool setSessionCCSelection(uint32_t sessionId, const std::string &service) override;
 
 private:
     bool createTextTrackControlInterface();

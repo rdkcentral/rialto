@@ -45,12 +45,14 @@
 #include "tasks/generic/ProcessAudioGap.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
+#include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetImmediateOutput.h"
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
 #include "tasks/generic/SetSourcePosition.h"
+#include "tasks/generic/SetTextTrackIdentifier.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
@@ -299,4 +301,18 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetImmediateOutput)
     auto task = m_sut.createSetImmediateOutput(m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetImmediateOutput &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetTextTrackIdentifier)
+{
+    auto task = m_sut.createSetTextTrackIdentifier(m_context, "");
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetTextTrackIdentifier &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateRenderFrame)
+{
+    auto task = m_sut.createRenderFrame(m_context, m_gstPlayer);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::RenderFrame &>(*task));
 }

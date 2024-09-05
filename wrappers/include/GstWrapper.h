@@ -558,6 +558,8 @@ public:
     {
         return gst_element_get_static_pad(element, name);
     }
+
+    GstPad *gstBaseSinkPad(GstElement *element) const override { return GST_BASE_SINK_PAD(element); }
 };
 
 }; // namespace firebolt::rialto::wrappers

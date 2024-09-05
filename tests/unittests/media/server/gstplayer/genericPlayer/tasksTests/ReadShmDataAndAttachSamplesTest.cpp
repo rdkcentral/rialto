@@ -42,3 +42,26 @@ TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllVideoSamples)
     shouldAttachAllVideoSamples();
     triggerReadShmDataAndAttachSamplesVideo();
 }
+
+TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllSubtitleSamples)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    shouldReadSubtitleData();
+    shouldAttachAllSubtitleSamples();
+    triggerReadShmDataAndAttachSamples();
+    checkSubtitleSamplesAttached();
+}
+
+TEST_F(ReadShmDataAndAttachSamplesTest, shouldSkipAttachingSubtitleSamples)
+{
+    shouldReadSubtitleData();
+    shouldSkipAttachingSubtitleSamples();
+    triggerReadShmDataAndAttachSamples();
+}
+
+TEST_F(ReadShmDataAndAttachSamplesTest, shouldSkipAttachingUnknownSamples)
+{
+    shouldReadUnknownData();
+    shouldNotAttachUnknownSamples();
+    triggerReadShmDataAndAttachSamples();
+}

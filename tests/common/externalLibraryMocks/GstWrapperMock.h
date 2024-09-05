@@ -205,6 +205,7 @@ public:
     MOCK_METHOD(GstAudioClippingMeta *, gstBufferAddAudioClippingMeta,
                 (GstBuffer * buffer, GstFormat format, guint64 start, guint64 end), (const, override));
     MOCK_METHOD(GstPad *, gstElementGetStaticPad, (GstElement * element, const gchar *name), (const, override));
+    MOCK_METHOD(GstPad *, gstBaseSinkPad, (GstElement * element), (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

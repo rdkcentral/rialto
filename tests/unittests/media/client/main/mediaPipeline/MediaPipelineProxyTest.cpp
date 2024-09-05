@@ -222,6 +222,22 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
+    const std::string kTextTrackIdentifier{"Identifier"};
+    EXPECT_CALL(*mediaPipelineMock, setTextTrackIdentifier(kTextTrackIdentifier)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setTextTrackIdentifier(kTextTrackIdentifier));
+
+    /////////////////////////////////////////////
+
+    {
+        std::string textTrackIdentifier;
+        EXPECT_CALL(*mediaPipelineMock, getTextTrackIdentifier(_))
+            .WillOnce(DoAll(SetArgReferee<0>(kTextTrackIdentifier), Return(true)));
+        EXPECT_TRUE(proxy->getTextTrackIdentifier(textTrackIdentifier));
+        EXPECT_EQ(textTrackIdentifier, kTextTrackIdentifier);
+    }
+
+    /////////////////////////////////////////////
+
     EXPECT_CALL(*mediaPipelineMock, getClient()).WillOnce(Return(kIMediaPipelineClient));
     EXPECT_EQ(proxy->getClient().lock(), kIMediaPipelineClient);
 

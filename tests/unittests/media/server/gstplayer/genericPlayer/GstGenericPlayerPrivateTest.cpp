@@ -1357,3 +1357,12 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoVideoSinkChildIfNotAdded)
     m_sut->removeAutoVideoSinkChild(G_OBJECT(m_realElement));
     EXPECT_EQ(context->autoVideoChildSink, nullptr);
 }
+
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAllSourcesAttached)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createFinishSetupSource(_, _)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->scheduleAllSourcesAttached();
+}

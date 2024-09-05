@@ -49,6 +49,7 @@ public:
     void shouldFailToReturnMaxVideoDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
                                            int id);
     void shouldReturnMaxWebAudioDataLen(int id);
+    void shouldReturnMaxSubtitleDataLen(int id);
     void shouldReturnVideoDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
                                      int id, std::uint32_t expectedOffset);
     void shouldFailToReturnVideoDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
@@ -63,6 +64,9 @@ public:
     void shouldClearVideoData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
     void shouldFailToClearVideoData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
                                     int id);
+    void shouldClearSubtitleData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id);
+    void shouldFailToClearSubtitleData(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
+                                       int id);
     uint8_t *shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id,
                               const firebolt::rialto::MediaSourceType &mediaSourceType);
     void shouldFailToGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id,

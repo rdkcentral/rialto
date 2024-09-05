@@ -20,8 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_TEXT_TRACK_SESSION_H_
 #define FIREBOLT_RIALTO_SERVER_TEXT_TRACK_SESSION_H_
 
+#include "ITextTrackAccessor.h"
 #include "ITextTrackSession.h"
-#include "TextTrackAccessor.h"
 #include <memory>
 #include <string>
 
@@ -36,7 +36,7 @@ public:
 class TextTrackSession : public ITextTrackSession
 {
 public:
-    TextTrackSession(const std::string &displayName, const TextTrackAccessorFactory &textTrackAccessorFactory);
+    TextTrackSession(const std::string &displayName, const ITextTrackAccessorFactory &textTrackAccessorFactory);
     ~TextTrackSession() override;
     bool pause() override;
     bool play() override;
@@ -48,8 +48,8 @@ public:
     bool setSessionCCSelection(const std::string &service) override;
 
 private:
-    std::shared_ptr<TextTrackAccessor> m_textTrackAccessor;
-    TextTrackAccessor::DataType m_dataType{TextTrackAccessor::DataType::UNKNOWN};
+    std::shared_ptr<ITextTrackAccessor> m_textTrackAccessor;
+    ITextTrackAccessor::DataType m_dataType{ITextTrackAccessor::DataType::UNKNOWN};
     uint32_t m_sessionId{0};
 };
 } // namespace firebolt::rialto::server

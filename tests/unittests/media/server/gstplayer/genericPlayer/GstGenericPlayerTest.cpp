@@ -492,7 +492,30 @@ TEST_F(GstGenericPlayerTest, shouldReturnVolume)
     EXPECT_EQ(resultVolume, kVolume);
 }
 
-TEST_F(GstGenericPlayerTest, shouldReturnMute)
+TEST_F(GstGenericPlayerTest, shouldFailToReturnVideoMute)
+{
+    bool resultMute{};
+    EXPECT_FALSE(m_sut->getMute(MediaSourceType::VIDEO, resultMute));
+}
+
+TEST_F(GstGenericPlayerTest, shouldFailToReturnAudioMuteWhenPipelineIsNull)
+{
+    bool resultMute{};
+    GstElement *pipelineTemp{nullptr};
+
+    getContext(
+        [&](GenericPlayerContext &m_context)
+        {
+            pipelineTemp = m_context.pipeline;
+            m_context.pipeline = nullptr;
+        });
+    EXPECT_FALSE(m_sut->getMute(MediaSourceType::AUDIO, resultMute));
+
+    // For teardown
+    getContext([&](GenericPlayerContext &m_context) { m_context.pipeline = pipelineTemp; });
+}
+
+TEST_F(GstGenericPlayerTest, shouldReturnAudioMute)
 {
     constexpr bool kMute{false};
     bool resultMute{};
@@ -504,6 +527,34 @@ TEST_F(GstGenericPlayerTest, shouldReturnMute)
     EXPECT_EQ(resultMute, kMute);
 }
 
+TEST_F(GstGenericPlayerTest, shouldFailToReturnSubtitleMuteWhenSinkIsNull)
+{
+    bool resultMute{};
+
+    EXPECT_FALSE(m_sut->getMute(MediaSourceType::SUBTITLE, resultMute));
+}
+
+TEST_F(GstGenericPlayerTest, shouldReturnSubtitleMute)
+{
+    GstElement subtitleSink{};
+    constexpr bool kMute{false};
+    bool resultMute{};
+
+    getContext([&](GenericPlayerContext &m_context) { m_context.subtitleSink = &subtitleSink; });
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&subtitleSink, StrEq("mute"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *ptr)
+            {
+                gboolean *responsePtr = reinterpret_cast<gboolean *>(ptr);
+                *responsePtr = kMute;
+            }));
+    EXPECT_TRUE(m_sut->getMute(MediaSourceType::SUBTITLE, resultMute));
+    EXPECT_EQ(resultMute, kMute);
+
+    // in teardown
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&subtitleSink));
+}
+
 TEST_F(GstGenericPlayerTest, shouldMute)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
@@ -511,6 +562,58 @@ TEST_F(GstGenericPlayerTest, shouldMute)
     EXPECT_CALL(m_taskFactoryMock, createSetMute(_, MediaSourceType::AUDIO, _)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->setMute(MediaSourceType::AUDIO, true);
+}
+
+TEST_F(GstGenericPlayerTest, shouldSetTextTrackIdentifier)
+{
+    const std::string kTextTrackIdentifier{"Identifier"};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetTextTrackIdentifier(_, kTextTrackIdentifier))
+        .WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->setTextTrackIdentifier(kTextTrackIdentifier);
+}
+
+TEST_F(GstGenericPlayerTest, shouldFailToGetTextTrackIdentifierWhenSinkIsNull)
+{
+    std::string textTrackIdentifier;
+    EXPECT_FALSE(m_sut->getTextTrackIdentifier(textTrackIdentifier));
+}
+
+TEST_F(GstGenericPlayerTest, shouldFailToGetTextTrackIdentifierWhenSinkReturnsNull)
+{
+    GstElement subtitleSink{};
+    std::string textTrackIdentifier;
+
+    getContext([&](GenericPlayerContext &m_context) { m_context.subtitleSink = &subtitleSink; });
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&subtitleSink, StrEq("text-track-identifier"), _));
+    EXPECT_FALSE(m_sut->getTextTrackIdentifier(textTrackIdentifier));
+
+    // in teardown
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&subtitleSink));
+}
+
+TEST_F(GstGenericPlayerTest, shouldGetTextTrackIdentifier)
+{
+    GstElement subtitleSink{};
+    std::string resultTextTrackIdentifier;
+    std::string textTrackIdentifier{"Identifier"};
+
+    getContext([&](GenericPlayerContext &m_context) { m_context.subtitleSink = &subtitleSink; });
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&subtitleSink, StrEq("text-track-identifier"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *ptr)
+            {
+                gchar **responsePtr = reinterpret_cast<gchar **>(ptr);
+                *responsePtr = textTrackIdentifier.data();
+            }));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(textTrackIdentifier.data()));
+    EXPECT_TRUE(m_sut->getTextTrackIdentifier(resultTextTrackIdentifier));
+    EXPECT_EQ(textTrackIdentifier, resultTextTrackIdentifier);
+
+    // in teardown
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&subtitleSink));
 }
 
 TEST_F(GstGenericPlayerTest, shouldPing)
@@ -557,4 +660,19 @@ TEST_F(GstGenericPlayerTest, shouldProcessAudioGap)
         .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac);
+}
+
+TEST_F(GstGenericPlayerTest, shouldResetSourceAndSubtitleSinkOnTeardownWhenSet)
+{
+    GstElement source{};
+    GstElement subtitleSink{};
+
+    getContext(
+        [&](GenericPlayerContext &m_context)
+        {
+            m_context.subtitleSink = &subtitleSink;
+            m_context.source = &source;
+        });
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&source));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&subtitleSink));
 }

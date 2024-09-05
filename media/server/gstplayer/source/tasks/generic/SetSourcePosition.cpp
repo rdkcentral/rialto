@@ -99,7 +99,7 @@ void SetSourcePosition::setSubtitlePosition() const
         return;
     }
 
-    if (!m_gstWrapper->gstPadSendEvent(GST_BASE_SINK_PAD(m_context.subtitleSink),
+    if (!m_gstWrapper->gstPadSendEvent(m_gstWrapper->gstBaseSinkPad(m_context.subtitleSink),
                                        m_gstWrapper->gstEventNewSegment(segment)))
     {
         RIALTO_SERVER_LOG_WARN("Failed to new segment to subtitle sink");

@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,35 +19,18 @@
 
 #include "GenericTasksTestsBase.h"
 
-class SetMuteTest : public GenericTasksTestsBase
+class SetTextTrackIdentifierTest : public GenericTasksTestsBase
 {
 };
 
-TEST_F(SetMuteTest, shouldFailToSetVideoMute)
+TEST_F(SetTextTrackIdentifierTest, shouldFailToSetTextTrackIdentifierWhenSinkIsNull)
 {
-    triggerSetVideoMute();
+    triggerSetTextTrackIdentifier();
 }
 
-TEST_F(SetMuteTest, shouldFailToSetAudioMuteWhenPipelineIsNull)
-{
-    setContextPipelineNull();
-    triggerSetAudioMute();
-}
-
-TEST_F(SetMuteTest, shouldSetAudioMute)
-{
-    shouldSetAudioMute();
-    triggerSetAudioMute();
-}
-
-TEST_F(SetMuteTest, shouldFailToSetSubtitleMuteWhenSinkIsNull)
-{
-    triggerSetSubtitleMute();
-}
-
-TEST_F(SetMuteTest, shouldSetSubtitleMute)
+TEST_F(SetTextTrackIdentifierTest, shouldSetTextTrackIdentifier)
 {
     setContextSubtitleSink();
-    shouldSetSubtitleMute();
-    triggerSetSubtitleMute();
+    shouldSetTextTrackIdentifier();
+    triggerSetTextTrackIdentifier();
 }

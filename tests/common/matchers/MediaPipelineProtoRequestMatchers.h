@@ -330,4 +330,17 @@ MATCHER_P5(processAudioGapRequestMatcher, sessionId, position, duration, discont
             (kRequest->audio_aac() == isAudioAac));
 }
 
+MATCHER_P2(setTextTrackIdentifierRequestMatcher, sessionId, textTrackIdentifier, "")
+{
+    const ::firebolt::rialto::SetTextTrackIdentifierRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetTextTrackIdentifierRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->text_track_identifier() == textTrackIdentifier));
+}
+
+MATCHER_P(getTextTrackIdentifierRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetTextTrackIdentifierRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetTextTrackIdentifierRequest *>(arg);
+    return (kRequest->session_id() == sessionId);
+}
 #endif // MEDIA_PIPELINE_PROTO_REQUEST_MATCHERS_H_

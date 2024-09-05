@@ -27,9 +27,10 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-ReadShmDataAndAttachSamples::ReadShmDataAndAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                         const std::shared_ptr<IDataReader> &dataReader)
-    : m_context{context}, m_player{player}, m_dataReader{dataReader}
+ReadShmDataAndAttachSamples::ReadShmDataAndAttachSamples(
+    GenericPlayerContext &context, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    IGstGenericPlayerPrivate &player, const std::shared_ptr<IDataReader> &dataReader)
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_player{player}, m_dataReader{dataReader}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing ReadShmDataAndAttachSamples");
 }
@@ -106,6 +107,7 @@ void ReadShmDataAndAttachSamples::attachData(const firebolt::rialto::MediaSource
     else
     {
         RIALTO_SERVER_LOG_WARN("Could not find stream info for %s", common::convertMediaSourceType(mediaType));
+        m_gstWrapper->gstBufferUnref(buffer);
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

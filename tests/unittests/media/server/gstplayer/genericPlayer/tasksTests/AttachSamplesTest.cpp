@@ -36,3 +36,17 @@ TEST_F(AttachSamplesTest, shouldAttachAllVideoSamples)
     shouldAttachAllVideoSamples();
     triggerAttachSamplesVideo();
 }
+
+TEST_F(AttachSamplesTest, shouldAttachAllSubtitleSamples)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    shouldAttachAllSubtitleSamples();
+    triggerAttachSamplesSubtitle();
+    checkSubtitleSamplesAttached();
+}
+
+TEST_F(AttachSamplesTest, shouldSkipAttachingSubtitleSamples)
+{
+    shouldSkipAttachingSubtitleSamples();
+    triggerAttachSamplesSubtitle();
+}

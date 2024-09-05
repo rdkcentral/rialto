@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,37 +17,19 @@
  * limitations under the License.
  */
 
-#include "GenericTasksTestsBase.h"
+#ifndef FIREBOLT_RIALTO_SERVER_TEXT_TRACK_ACCESSOR_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_TEXT_TRACK_ACCESSOR_FACTORY_MOCK_H_
 
-class SetMuteTest : public GenericTasksTestsBase
+#include "ITextTrackAccessor.h"
+#include <gmock/gmock.h>
+
+namespace firebolt::rialto::server
 {
+class TextTrackAccessorFactoryMock : public ITextTrackAccessorFactory
+{
+public:
+    MOCK_METHOD(std::shared_ptr<ITextTrackAccessor>, getTextTrackAccessor, (), (const, override));
 };
+} // namespace firebolt::rialto::server
 
-TEST_F(SetMuteTest, shouldFailToSetVideoMute)
-{
-    triggerSetVideoMute();
-}
-
-TEST_F(SetMuteTest, shouldFailToSetAudioMuteWhenPipelineIsNull)
-{
-    setContextPipelineNull();
-    triggerSetAudioMute();
-}
-
-TEST_F(SetMuteTest, shouldSetAudioMute)
-{
-    shouldSetAudioMute();
-    triggerSetAudioMute();
-}
-
-TEST_F(SetMuteTest, shouldFailToSetSubtitleMuteWhenSinkIsNull)
-{
-    triggerSetSubtitleMute();
-}
-
-TEST_F(SetMuteTest, shouldSetSubtitleMute)
-{
-    setContextSubtitleSink();
-    shouldSetSubtitleMute();
-    triggerSetSubtitleMute();
-}
+#endif // FIREBOLT_RIALTO_SERVER_TEXT_TRACK_ACCESSOR_FACTORY_MOCK_H_

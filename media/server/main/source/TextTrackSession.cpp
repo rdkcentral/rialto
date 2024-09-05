@@ -18,7 +18,8 @@
  */
 
 #include "TextTrackSession.h"
-#include "TextTrackAccessor.h"
+#include "ITextTrackAccessor.h"
+#include "RialtoServerLogging.h"
 #include <stdexcept>
 
 namespace firebolt::rialto::server
@@ -31,11 +32,11 @@ ITextTrackSessionFactory &ITextTrackSessionFactory::getFactory()
 
 std::unique_ptr<ITextTrackSession> TextTrackSessionFactory::createTextTrackSession(const std::string &display) const
 {
-    return std::make_unique<TextTrackSession>(display, TextTrackAccessorFactory::getFactory());
+    return std::make_unique<TextTrackSession>(display, ITextTrackAccessorFactory::getFactory());
 }
 
 TextTrackSession::TextTrackSession(const std::string &displayName,
-                                   const TextTrackAccessorFactory &textTrackAccessorFactory)
+                                   const ITextTrackAccessorFactory &textTrackAccessorFactory)
 {
     m_textTrackAccessor = textTrackAccessorFactory.getTextTrackAccessor();
     if (!m_textTrackAccessor)
@@ -86,13 +87,13 @@ bool TextTrackSession::sendData(const std::string &data, int32_t displayOffsetMs
 
 bool TextTrackSession::setSessionWebVTTSelection()
 {
-    m_dataType = TextTrackAccessor::DataType::WebVTT;
+    m_dataType = ITextTrackAccessor::DataType::WebVTT;
     return m_textTrackAccessor->setSessionWebVTTSelection(m_sessionId);
 }
 
 bool TextTrackSession::setSessionTTMLSelection()
 {
-    m_dataType = TextTrackAccessor::DataType::TTML;
+    m_dataType = ITextTrackAccessor::DataType::TTML;
     return m_textTrackAccessor->setSessionTTMLSelection(m_sessionId);
 }
 

@@ -24,13 +24,13 @@
 
 namespace firebolt::rialto::server
 {
-TextTrackAccessorFactory &TextTrackAccessorFactory::getFactory()
+ITextTrackAccessorFactory &ITextTrackAccessorFactory::getFactory()
 {
     static TextTrackAccessorFactory factory;
     return factory;
 }
 
-std::shared_ptr<TextTrackAccessor> TextTrackAccessorFactory::getTextTrackAccessor() const
+std::shared_ptr<ITextTrackAccessor> TextTrackAccessorFactory::getTextTrackAccessor() const
 try
 {
     static std::shared_ptr<TextTrackAccessor> textTrackAccessor{
@@ -166,11 +166,11 @@ bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, Da
     firebolt::rialto::wrappers::ITextTrackWrapper::DataType wrapperDataType{};
     if (datatype == DataType::WebVTT)
     {
-        wrapperDataType = firebolt::rialto::wrappers::ITextTrackWrapper::DataType::TTML;
+        wrapperDataType = firebolt::rialto::wrappers::ITextTrackWrapper::DataType::WEBVTT;
     }
     else if (datatype == DataType::TTML)
     {
-        wrapperDataType = firebolt::rialto::wrappers::ITextTrackWrapper::DataType::WEBVTT;
+        wrapperDataType = firebolt::rialto::wrappers::ITextTrackWrapper::DataType::TTML;
     }
     else
     {

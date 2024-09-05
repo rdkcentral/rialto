@@ -25,9 +25,10 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                             const IMediaPipeline::MediaSegmentVector &mediaSegments)
-    : m_context{context}, m_player{player}
+AttachSamples::AttachSamples(GenericPlayerContext &context,
+                             const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                             IGstGenericPlayerPrivate &player, const IMediaPipeline::MediaSegmentVector &mediaSegments)
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_player{player}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing AttachSamples");
     for (const auto &mediaSegment : mediaSegments)
@@ -127,6 +128,7 @@ void AttachSamples::attachData(const firebolt::rialto::MediaSourceType mediaType
     else
     {
         RIALTO_SERVER_LOG_WARN("Could not find stream info for %s", common::convertMediaSourceType(mediaType));
+        m_gstWrapper->gstBufferUnref(buffer);
     }
 }
 

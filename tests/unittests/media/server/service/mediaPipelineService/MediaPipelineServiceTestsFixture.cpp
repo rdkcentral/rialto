@@ -62,6 +62,7 @@ constexpr uint64_t kDroppedFrames{321};
 constexpr uint32_t kDuration{35};
 constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
+const std::string kTextTrackIdentifier{"TextTrackIdentifier"};
 } // namespace
 
 namespace firebolt::rialto
@@ -344,6 +345,27 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToProcessAudioGap()
 {
     EXPECT_CALL(m_mediaPipelineMock, processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac))
         .WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillSetTextTrackIdentifier()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setTextTrackIdentifier(kTextTrackIdentifier)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetTextTrackIdentifier()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setTextTrackIdentifier(kTextTrackIdentifier)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetTextTrackIdentifier()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getTextTrackIdentifier(_))
+        .WillOnce(DoAll(SetArgReferee<0>(kTextTrackIdentifier), Return(true)));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetTextTrackIdentifier()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getTextTrackIdentifier(_)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillPing()
@@ -702,6 +724,29 @@ void MediaPipelineServiceTests::processAudioGapShouldSucceed()
 void MediaPipelineServiceTests::processAudioGapShouldFail()
 {
     EXPECT_FALSE(m_sut->processAudioGap(kSessionId, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac));
+}
+
+void MediaPipelineServiceTests::setTextTrackIdentifierShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setTextTrackIdentifier(kSessionId, kTextTrackIdentifier));
+}
+
+void MediaPipelineServiceTests::setTextTrackIdentifierShouldFail()
+{
+    EXPECT_FALSE(m_sut->setTextTrackIdentifier(kSessionId, kTextTrackIdentifier));
+}
+
+void MediaPipelineServiceTests::getTextTrackIdentifierShouldSucceed()
+{
+    std::string textTrackIdentifier;
+    EXPECT_TRUE(m_sut->getTextTrackIdentifier(kSessionId, textTrackIdentifier));
+    EXPECT_EQ(kTextTrackIdentifier, textTrackIdentifier);
+}
+
+void MediaPipelineServiceTests::getTextTrackIdentifierShouldFail()
+{
+    std::string textTrackIdentifier;
+    EXPECT_FALSE(m_sut->getTextTrackIdentifier(kSessionId, textTrackIdentifier));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()

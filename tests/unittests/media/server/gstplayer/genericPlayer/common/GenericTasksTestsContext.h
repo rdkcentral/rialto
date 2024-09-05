@@ -66,6 +66,7 @@ public:
     GstElement m_pipeline{};
     GstBuffer m_audioBuffer{};
     GstBuffer m_videoBuffer{};
+    GstBuffer m_subtitleBuffer{};
     GstCaps m_gstCaps1{};
     GstCaps m_gstCaps2{};
     GstElement m_appSrcAudio{};
@@ -86,6 +87,7 @@ public:
     GstElement m_childElement{};
     GstQuery m_query{};
     GstElement m_textTrackSink{};
+    GstPad m_pad{};
 
     // Glib members
     guint m_signals[1]{123};
@@ -111,8 +113,10 @@ public:
 
     // Standard members
     bool m_underflowEnabled{false};
+    std::string m_textTrackIdentifier{"Identifier"};
     firebolt::rialto::server::StreamInfo m_streamInfoAudio{&m_appSrcAudio, true};
     firebolt::rialto::server::StreamInfo m_streamInfoVideo{&m_appSrcVideo, true};
+    firebolt::rialto::server::StreamInfo m_streamInfoSubtitle{&m_appSrcSubtitle, true};
 };
 
 #endif // GENERIC_TASKS_TESTS_CONTEXT_H_
