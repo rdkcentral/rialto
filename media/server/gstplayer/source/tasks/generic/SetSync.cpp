@@ -41,17 +41,22 @@ void SetSync::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing SetSync");
 
     GstElement *sink = m_player.getSink(MediaSourceType::AUDIO);
-    GstElement *actualSink = getSinkChildIfAutoAudioSink(sink);
-    if (actualSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "sync"))
+    if (sink)
     {
-        m_glibWrapper->gObjectSet(actualSink, "sync", m_sync, nullptr);
+        GstElement *actualSink = m_player.getSinkChildIfAutoAudioSink(sink);
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "sync"))
+        {
+            m_glibWrapper->gObjectSet(actualSink, "sync", m_sync, nullptr);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set sync property on sink '%s'", GST_ELEMENT_NAME(actualSink));
+        }
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to set sync property on sink '%s'", (actualSink ? GST_ELEMENT_NAME(actualSink) : "null"));
+        RIALTO_SERVER_LOG_ERROR("Failed to set sync property, sink is NULL");
     }
-
-    if (sink)
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
 }
 } // namespace firebolt::rialto::server::tasks::generic

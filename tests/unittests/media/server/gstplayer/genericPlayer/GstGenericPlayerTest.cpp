@@ -362,6 +362,8 @@ TEST_F(GstGenericPlayerTest, shouldGetImmediateOutputInPlayingStateForAudio)
     const std::string kElementTypeName{"GenericSink"};
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(audioSink))).WillOnce(Return(kElementTypeName.c_str()));
 
+    GParamSpec prop{};
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("immediate-output"))).WillOnce(Return(&prop));
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("immediate-output"), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *ptr)
@@ -614,6 +616,8 @@ TEST_F(GstGenericPlayerTest, shouldGetSync)
     GstElement *audioSink = fakeElement();
     const bool kSyncValue{true};
 
+    const std::string kElementTypeName{"GenericSink"};
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(audioSink))).WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *element)
@@ -653,6 +657,8 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetSyncIfPropertyDoesntExist)
 {
     GstElement *audioSink = fakeElement();
 
+    const std::string kElementTypeName{"GenericSink"};
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(audioSink))).WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *element)

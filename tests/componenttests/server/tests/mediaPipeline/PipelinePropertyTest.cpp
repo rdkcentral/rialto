@@ -115,6 +115,7 @@ public:
                     GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                     *elementPtr = m_element;
                 }));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element))).WillOnce(Return(kElementTypeName.c_str()));
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("low-latency"))).WillOnce(Return(&m_prop));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, _)).Times(1);
@@ -136,6 +137,7 @@ public:
                     GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                     *elementPtr = m_element;
                 }));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element))).WillOnce(Return(kElementTypeName.c_str()));
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("sync"))).WillOnce(Return(&m_prop));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, _)).Times(1);
@@ -157,6 +159,7 @@ public:
                     GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                     *elementPtr = m_element;
                 }));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element))).WillOnce(Return(kElementTypeName.c_str()));
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("sync"))).WillOnce(Return(&m_prop));
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("sync"), _))
