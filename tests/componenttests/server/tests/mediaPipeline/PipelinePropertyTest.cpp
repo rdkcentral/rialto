@@ -53,9 +53,10 @@ public:
 
     ~PipelinePropertyTest() override { gst_object_unref(m_element); }
 
-    void willSetImmediateOutput()
+    template <typename T>
+    void willSetSinkProperty(const std::string &sinkName, const std::string &propertyName, const T &value)
     {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _))
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq(sinkName.c_str()), _))
             .WillOnce(Invoke(
                 [&](gpointer object, const gchar *first_property_name, void *element)
                 {
@@ -63,38 +64,129 @@ public:
                     *elementPtr = m_element;
                 }));
         EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element))).WillOnce(Return(kElementTypeName.c_str()));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq(propertyName.c_str()))).WillOnce(Return(&m_prop));
 
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("immediate-output"))).WillOnce(Return(&m_prop));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, _)).Times(1);
+        if constexpr (std::is_same_v<T, bool>)
+        {
+            EXPECT_CALL(*m_glibWrapperMock, gObjectSetBoolStub(_, StrEq(propertyName.c_str()), value)).Times(1);
+        }
+        else
+        {
+            EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq(propertyName.c_str()))).Times(1);
+        }
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
+    }
+
+    template <typename T>
+    void willGetSinkProperty(const std::string &sinkName, const std::string &propertyName, const T &value)
+    {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq(sinkName.c_str()), _))
+            .WillOnce(Invoke(
+                [&](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                    *elementPtr = m_element;
+                }));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element))).WillOnce(Return(kElementTypeName.c_str()));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq(propertyName.c_str()))).WillOnce(Return(&m_prop));
+        
+        if constexpr (std::is_same_v<T, bool>)
+        {
+            EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(propertyName.c_str()), _))
+                .WillOnce(Invoke(
+                    [&](gpointer object, const gchar *first_property_name, void *val)
+                    {
+                        gboolean *returnVal = reinterpret_cast<gboolean *>(val);
+                        *returnVal = value ? TRUE : FALSE;
+                    }));
+        }
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
+    }
+
+    template <typename T>
+    void willSetDecoderProperty(GstElementFactoryListType type, const std::string &propertyName, const T &value)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
+        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                       type)))
+            .WillOnce(Return(TRUE));
+        EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
+
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq(propertyName.c_str()))).WillOnce(Return(&m_prop));
+        if constexpr (std::is_same_v<T, bool>)
+        {
+            EXPECT_CALL(*m_glibWrapperMock, gObjectSetBoolStub(_, StrEq(propertyName.c_str()), value)).Times(1);
+        }
+        else if constexpr (std::is_same_v<T, int32_t>)
+        {
+            EXPECT_CALL(*m_glibWrapperMock, gObjectSetIntStub(_, StrEq(propertyName.c_str()), value)).Times(1);
+        }
+        else
+        {
+            EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq(propertyName.c_str()))).Times(1);
+        }
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
+    }
+
+    template <typename T>
+    void willGetDecoderProperty(GstElementFactoryListType type, const std::string &propertyName, const T &value)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
+        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                       type)))
+            .WillOnce(Return(TRUE));
+        EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
+
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq(propertyName.c_str()))).WillOnce(Return(&m_prop));
+
+        if constexpr (std::is_same_v<T, bool>)
+        {
+            EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(propertyName.c_str()), _))
+                .WillOnce(Invoke(
+                    [&](gpointer object, const gchar *first_property_name, void *val)
+                    {
+                        gboolean *returnVal = reinterpret_cast<gboolean *>(val);
+                        *returnVal = value ? TRUE : FALSE;
+                    }));
+        }
+        else if constexpr (std::is_same_v<T, int32_t>)
+        {
+            EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(propertyName.c_str()), _))
+                .WillOnce(Invoke(
+                    [&](gpointer object, const gchar *first_property_name, void *val)
+                    {
+                        gint *returnVal = reinterpret_cast<gint *>(val);
+                        *returnVal = value;
+                    }));
+        }
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
+    }
+
+    void willFailToGetSink()
+    {
+        // Failure to get the sink will cause setting of sink properties to fail
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, _, _)).Times(1);
+    }
+
+    void willFailToGetDecoder()
+    {
+        // Failure to get the sink will cause setting of decoder properties to fail
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_ERROR));
     }
 
     void setImmediateOutput()
     {
-        auto req{createSetImmediateOutputRequest(m_sessionId, m_videoSourceId, true)};
+        auto req{createSetImmediateOutputRequest(m_sessionId, m_videoSourceId, kImmediateOutput)};
         ConfigureAction<SetImmediateOutput>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
-    }
-
-    void willGetImmediateOutput()
-    {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _))
-            .WillOnce(Invoke(
-                [&](gpointer object, const gchar *first_property_name, void *element)
-                {
-                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                    *elementPtr = m_element;
-                }));
-        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element))).WillOnce(Return(kElementTypeName.c_str()));
-
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("immediate-output"))).WillOnce(Return(&m_prop));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("immediate-output"), _))
-            .WillOnce(Invoke(
-                [&](gpointer object, const gchar *first_property_name, void *val)
-                {
-                    gboolean *immediateOutputValue = reinterpret_cast<gboolean *>(val);
-                    *immediateOutputValue = kImmediateOutput ? TRUE : FALSE;
-                }));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
     }
 
     void getImmediateOutput()
@@ -106,70 +198,16 @@ public:
             .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.immediate_output(), kImmediateOutput); });
     }
 
-    void willSetLowLatency()
-    {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("audio-sink"), _))
-            .WillOnce(Invoke(
-                [&](gpointer object, const gchar *first_property_name, void *element)
-                {
-                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                    *elementPtr = m_element;
-                }));
-        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element))).WillOnce(Return(kElementTypeName.c_str()));
-
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("low-latency"))).WillOnce(Return(&m_prop));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, _)).Times(1);
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
-    }
-
     void setLowLatency()
     {
         auto req{createSetLowLatencyRequest(m_sessionId, kLowLatency)};
         ConfigureAction<SetLowLatency>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
     }
 
-    void willSetSync()
-    {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("audio-sink"), _))
-            .WillOnce(Invoke(
-                [&](gpointer object, const gchar *first_property_name, void *element)
-                {
-                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                    *elementPtr = m_element;
-                }));
-        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element))).WillOnce(Return(kElementTypeName.c_str()));
-
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("sync"))).WillOnce(Return(&m_prop));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, _)).Times(1);
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
-    }
-
     void setSync()
     {
         auto req{createSetSyncRequest(m_sessionId, kSync)};
         ConfigureAction<SetSync>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
-    }
-
-    void willGetSync()
-    {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("audio-sink"), _))
-            .WillOnce(Invoke(
-                [&](gpointer object, const gchar *first_property_name, void *element)
-                {
-                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                    *elementPtr = m_element;
-                }));
-        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element))).WillOnce(Return(kElementTypeName.c_str()));
-
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("sync"))).WillOnce(Return(&m_prop));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("sync"), _))
-            .WillOnce(Invoke(
-                [&](gpointer object, const gchar *first_property_name, void *val)
-                {
-                    gboolean *syncValue = reinterpret_cast<gboolean *>(val);
-                    *syncValue = kSync ? TRUE : FALSE;
-                }));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
     }
 
     void getSync()
@@ -181,73 +219,16 @@ public:
             .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.sync(), kSync); });
     }
 
-    void willSetSyncOff()
-    {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
-        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
-            .WillOnce(Return(TRUE));
-        EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
-
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("sync-off"))).WillOnce(Return(&m_prop));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, _)).Times(1);
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
-    }
-
     void setSyncOff()
     {
         auto req{createSetSyncOffRequest(m_sessionId, kSyncOff)};
         ConfigureAction<SetSyncOff>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
     }
 
-    void willSetStreamSyncMode()
-    {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
-        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
-            .WillOnce(Return(TRUE));
-        EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
-
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("stream-sync-mode"))).WillOnce(Return(&m_prop));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, _)).Times(1);
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
-    }
-
     void setStreamSyncMode()
     {
         auto req{createSetStreamSyncModeRequest(m_sessionId, kStreamSyncMode)};
         ConfigureAction<SetStreamSyncMode>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
-    }
-
-    void willGetStreamSyncMode()
-    {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
-        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
-            .WillOnce(Return(TRUE));
-        EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
-
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("stream-sync-mode"))).WillOnce(Return(&m_prop));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("stream-sync-mode"), _))
-            .WillOnce(Invoke(
-                [&](gpointer object, const gchar *first_property_name, void *val)
-                {
-                    gboolean *syncValue = reinterpret_cast<gboolean *>(val);
-                    *syncValue = kSync ? TRUE : FALSE;
-                }));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
     }
 
     void getStreamSyncMode()
@@ -259,14 +240,6 @@ public:
             .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.stream_sync_mode(), kStreamSyncMode); });
     }
 
-    void willFailToSetImmediateOutput()
-    {
-        // Failure to get the video sync will cause setImmediateOutput() to fail
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _)).Times(1);
-        // We expect no further calls to gst or glib as would be the case if
-        // the video-sink had been returned. See "willSetImmediateOutput()"
-    }
-
     void setImmediateOutputFailure()
     {
         auto req{createSetImmediateOutputRequest(m_sessionId, m_videoSourceId, true)};
@@ -275,21 +248,10 @@ public:
         ConfigureAction<SetImmediateOutput>(m_clientStub).send(req).expectSuccess();
     }
 
-    void willFailToGetImmediateOutput()
-    {
-        // Failure to get the video sync will cause getImmediateOutput() to fail
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("video-sink"), _)).Times(1);
-    }
-
     void getImmediateOutputFailure()
     {
         auto req{createGetImmediateOutputRequest(m_sessionId, m_videoSourceId)};
         ConfigureAction<GetImmediateOutput>(m_clientStub).send(req).expectFailure();
-    }
-
-    void willFailToSetLowLatency()
-    {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("audio-sink"), _)).Times(1);
     }
 
     void setLowLatencyFailure()
@@ -298,20 +260,10 @@ public:
         ConfigureAction<SetLowLatency>(m_clientStub).send(req).expectSuccess();
     }
 
-    void willFailToSetSync()
-    {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("audio-sink"), _)).Times(1);
-    }
-
     void setSyncFailure()
     {
         auto req{createSetSyncRequest(m_sessionId, true)};
         ConfigureAction<SetSync>(m_clientStub).send(req).expectSuccess();
-    }
-
-    void willFailToGetSync()
-    {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("audio-sink"), _)).Times(1);
     }
 
     void getSyncFailure()
@@ -320,34 +272,16 @@ public:
         ConfigureAction<GetSync>(m_clientStub).send(req).expectFailure();
     }
 
-    void willFailToSetSyncOff()
-    {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_ERROR));
-    }
-
     void setSyncOffFailure()
     {
         auto req{createSetSyncOffRequest(m_sessionId, kSyncOff)};
         ConfigureAction<SetSyncOff>(m_clientStub).send(req).expectSuccess();
     }
 
-    void willFailToSetStreamSyncMode()
-    {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_ERROR));
-    }
-
     void setStreamSyncModeFailure()
     {
         auto req{createSetStreamSyncModeRequest(m_sessionId, kStreamSyncMode)};
         ConfigureAction<SetStreamSyncMode>(m_clientStub).send(req).expectSuccess();
-    }
-
-    void willFailToGetStreamSyncMode()
-    {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_ERROR));
     }
 
     void getStreamSyncModeFailure()
@@ -480,35 +414,35 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
     indicateAllSourcesAttached();
 
     // Step 4: Set Immediate Output
-    willSetImmediateOutput();
+    willSetSinkProperty("video-sink", "immediate-output", kImmediateOutput);
     setImmediateOutput();
 
     // Step 5: Get Immediate output
-    willGetImmediateOutput();
+    willGetSinkProperty("video-sink", "immediate-output", kImmediateOutput);
     getImmediateOutput();
 
     // Step 6: Set Low Latency
-    willSetLowLatency();
+    willSetSinkProperty("audio-sink", "low-latency", kLowLatency);
     setLowLatency();
 
     // Step 7: Set Sync
-    willSetSync();
+    willSetSinkProperty("audio-sink", "sync", kSync);
     setSync();
 
     // Step 8: Get Sync
-    willGetSync();
+    willGetSinkProperty("audio-sink", "sync", kSync);
     getSync();
 
     // Step 9: Set Sync Off
-    willSetSyncOff();
+    willSetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "sync-off", kSyncOff); 
     setSyncOff();
 
     // Step 10: Set Stream Sync Mode
-    willSetStreamSyncMode();
+    willSetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "stream-sync-mode", kStreamSyncMode); 
     setStreamSyncMode();
 
     // Step 11: Get Stream Sync Mode
-    willGetStreamSyncMode();
+    willGetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "stream-sync-mode", kStreamSyncMode); 
     getStreamSyncMode();
 
     // Step 12: Remove sources
@@ -654,35 +588,35 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetFailures)
     indicateAllSourcesAttached();
 
     // Step 4: Fail to set Immediate Output
-    willFailToSetImmediateOutput();
+    willFailToGetSink();
     setImmediateOutputFailure();
 
     // Step 5: Fail to get Immediate Output
-    willFailToGetImmediateOutput();
+    willFailToGetSink();
     getImmediateOutputFailure();
 
     // Step 6: Fail to set Low Latency
-    willFailToSetLowLatency();
+    willFailToGetSink();
     setLowLatencyFailure();
 
     // Step 7: Fail to set Sync
-    willFailToSetSync();
+    willFailToGetSink();
     setSyncFailure();
 
     // Step 8: Fail to get Sync
-    willFailToGetSync();
+    willFailToGetSink();
     getSyncFailure();
 
     // Step 9: Fail to set Sync Off
-    willFailToSetSyncOff();
+    willFailToGetDecoder();
     setSyncOffFailure();
 
     // Step 10: Fail to set Stream Sync Mode
-    willFailToSetStreamSyncMode();
+    willFailToGetDecoder();
     setStreamSyncModeFailure();
 
     // Step 11: Fail to get Stream Sync Mode
-    willFailToGetStreamSyncMode();
+    willFailToGetDecoder();
     getStreamSyncModeFailure();
 
     // Step 12: Remove sources

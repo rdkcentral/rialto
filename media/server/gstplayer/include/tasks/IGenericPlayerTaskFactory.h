@@ -286,7 +286,7 @@ public:
      * @brief Creates a SetLowLatency task.
      *
      * @param[in] player        : The GstGenericPlayer instance
-     * @param[in] mute          : The mute state to be set
+     * @param[in] lowLatency    : The low latency value to set
      *
      * @retval the new SetLowLatency task instance.
      */
@@ -296,7 +296,7 @@ public:
      * @brief Creates a SetSync task.
      *
      * @param[in] player        : The GstGenericPlayer instance
-     * @param[in] sync          : The sync state to be set
+     * @param[in] sync          : The sync value to set
      *
      * @retval the new SetSync task instance.
      */
@@ -306,7 +306,7 @@ public:
      * @brief Creates a SetSyncOff task.
      *
      * @param[in] player        : The GstGenericPlayer instance
-     * @param[in] syncOff       : The syncOff state to be set
+     * @param[in] syncOff       : The syncOff value to set
      *
      * @retval the new SetSyncOff task instance.
      */
@@ -315,8 +315,8 @@ public:
     /**
      * @brief Creates a SetStreamSyncMode task.
      *
-     * @param[in] player        : The GstGenericPlayer instance
-     * @param[in] streamSyncMode       : The streamSyncMode state to be set
+     * @param[in] player            : The GstGenericPlayer instance
+     * @param[in] streamSyncMode    : The streamSyncMode value to set
      *
      * @retval the new SetStreamSyncMode task instance.
      */

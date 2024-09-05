@@ -58,9 +58,9 @@ add_library(
         source/tasks/generic/SetPlaybackRate.cpp
         source/tasks/generic/SetPosition.cpp
         source/tasks/generic/SetSourcePosition.cpp
+        source/tasks/generic/SetStreamSyncMode.cpp
         source/tasks/generic/SetSync.cpp
         source/tasks/generic/SetSyncOff.cpp
-        source/tasks/generic/SetStreamSyncMode.cpp
         source/tasks/generic/SetVideoGeometry.cpp
         source/tasks/generic/SetVolume.cpp
         source/tasks/generic/SetupElement.cpp

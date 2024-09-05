@@ -1204,7 +1204,7 @@ bool GstGenericPlayer::getSync(bool &sync)
         }
         else
         {
-            RIALTO_SERVER_LOG_WARN("Sync not supported in sink '%s'", GST_ELEMENT_NAME(actualSink));
+            RIALTO_SERVER_LOG_ERROR("Sync not supported in sink '%s'", GST_ELEMENT_NAME(actualSink));
         }
         m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
     }
@@ -1245,7 +1245,7 @@ bool GstGenericPlayer::getStreamSyncMode(int32_t &streamSyncMode)
     }
     else
     {
-        RIALTO_SERVER_LOG_WARN("Stream sync mode not supported in decoder '%s'",
+        RIALTO_SERVER_LOG_ERROR("Stream sync mode not supported in decoder '%s'",
                                (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
     }
 

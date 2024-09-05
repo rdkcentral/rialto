@@ -63,7 +63,7 @@ void SetImmediateOutput::execute() const
     }
     else
     {
-        RIALTO_SERVER_LOG_WARN("Failed to set immediate-output property, sink is NULL");
+        RIALTO_SERVER_LOG_ERROR("Failed to set immediate-output property, sink is NULL");
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

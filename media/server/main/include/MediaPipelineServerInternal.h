@@ -508,7 +508,7 @@ protected:
     bool setSyncInternal(bool sync);
 
     /**
-     * @brief Get internally, only to be called on the main thread.
+     * @brief Get sync internally, only to be called on the main thread.
      *
      * @param[out] sync : Current sync value.
      *
