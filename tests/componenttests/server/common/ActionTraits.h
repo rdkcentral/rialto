@@ -232,6 +232,54 @@ struct GetMute
     static constexpr auto m_kFunction{&Stub::getMute};
 };
 
+struct SetLowLatency
+{
+    using RequestType = ::firebolt::rialto::SetLowLatencyRequest;
+    using ResponseType = ::firebolt::rialto::SetLowLatencyResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setLowLatency};
+};
+
+struct SetSync
+{
+    using RequestType = ::firebolt::rialto::SetSyncRequest;
+    using ResponseType = ::firebolt::rialto::SetSyncResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setSync};
+};
+
+struct GetSync
+{
+    using RequestType = ::firebolt::rialto::GetSyncRequest;
+    using ResponseType = ::firebolt::rialto::GetSyncResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getSync};
+};
+
+struct SetSyncOff
+{
+    using RequestType = ::firebolt::rialto::SetSyncOffRequest;
+    using ResponseType = ::firebolt::rialto::SetSyncOffResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setSyncOff};
+};
+
+struct SetStreamSyncMode
+{
+    using RequestType = ::firebolt::rialto::SetStreamSyncModeRequest;
+    using ResponseType = ::firebolt::rialto::SetStreamSyncModeResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setStreamSyncMode};
+};
+
+struct GetStreamSyncMode
+{
+    using RequestType = ::firebolt::rialto::GetStreamSyncModeRequest;
+    using ResponseType = ::firebolt::rialto::GetStreamSyncModeResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getStreamSyncMode};
+};
+
 struct SetVideoWindow
 {
     using RequestType = ::firebolt::rialto::SetVideoWindowRequest;

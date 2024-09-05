@@ -1319,7 +1319,7 @@ public:
     virtual bool getMute(bool &mute) = 0;
 
     /**
-     * @brief Set low latency property on the pipeline. Default false.
+     * @brief Set low latency property on the audio sink. Default false.
      *
      * For use with gaming (no audio decoding, no a/v sync).
      *
@@ -1330,7 +1330,7 @@ public:
     virtual bool setLowLatency(bool lowLatency) = 0;
 
     /**
-     * @brief Set sync property on the pipeline. Default false.
+     * @brief Set sync property on the audio sink. Default false.
      *
      * Syncs the stream on the clock.
      *
@@ -1341,7 +1341,7 @@ public:
     virtual bool setSync(bool sync) = 0;
 
     /**
-     * @brief Get sync property on the pipeline.
+     * @brief Get sync property on the audio sink.
      *
      * @param[out] sync : Current sync value.
      *
@@ -1350,7 +1350,7 @@ public:
     virtual bool getSync(bool &sync) = 0;
 
     /**
-     * @brief Set sync off property on the pipeline. Default false.
+     * @brief Set sync off property on the audio decoder. Default false.
      *
      * Turn on free running audio. Must be set before pipeline is PLAYING state.
      *
@@ -1361,7 +1361,7 @@ public:
     virtual bool setSyncOff(bool syncOff) = 0;
 
     /**
-     * @brief Set stream sync mode property on the pipeline. Default 0.
+     * @brief Set stream sync mode property on the audio decoder. Default 0.
      *
      * 1 - Frame to decode frame will immediately proceed next frame sync.
      * 0 - Frame decoded with no frame sync.
@@ -1373,7 +1373,7 @@ public:
     virtual bool setStreamSyncMode(int32_t streamSyncMode) = 0;
 
     /**
-     * @brief Get stream sync mode property on the pipeline.
+     * @brief Get stream sync mode property on the audio decoder.
      *
      * @param[out] streamSyncMode : Current stream sync mode value.
      *

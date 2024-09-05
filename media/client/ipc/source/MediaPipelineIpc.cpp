@@ -927,7 +927,7 @@ bool MediaPipelineIpc::setLowLatency(bool lowLatency)
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to set low latency due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("failed to set low-latency due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -1021,7 +1021,7 @@ bool MediaPipelineIpc::setSyncOff(bool syncOff)
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to set sync off due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("failed to set sync-off due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -1052,7 +1052,7 @@ bool MediaPipelineIpc::setStreamSyncMode(int32_t streamSyncMode)
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to set stream sync mode due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("failed to set stream-sync-mode due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -1082,7 +1082,7 @@ bool MediaPipelineIpc::getStreamSyncMode(int32_t &streamSyncMode)
     // check the result
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to get stream sync mode due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_ERROR("failed to get stream-sync-mode due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 

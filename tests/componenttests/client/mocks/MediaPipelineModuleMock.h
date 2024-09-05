@@ -158,6 +158,20 @@ public:
         return response;
     }
 
+    ::firebolt::rialto::GetSyncResponse getSyncResponse(const bool sync)
+    {
+        firebolt::rialto::GetSyncResponse response;
+        response.set_sync(sync);
+        return response;
+    }
+
+    ::firebolt::rialto::GetStreamSyncModeResponse getStreamSyncModeResponse(const int32_t streamSyncMode)
+    {
+        firebolt::rialto::GetStreamSyncModeResponse response;
+        response.set_stream_sync_mode(streamSyncMode);
+        return response;
+    }
+
     ::firebolt::rialto::GetPositionResponse getPositionResponse(const int64_t position)
     {
         firebolt::rialto::GetPositionResponse response;
