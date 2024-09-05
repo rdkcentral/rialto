@@ -24,9 +24,8 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 SetSyncOff::SetSyncOff(IGstGenericPlayerPrivate &player,
-                                       const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                       const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                                       bool syncOff)
+                       const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                       const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, bool syncOff)
     : m_player(player), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_syncOff{syncOff}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetSyncOff");
@@ -44,13 +43,15 @@ void SetSyncOff::execute() const
     GstElement *decoder = m_player.getDecoder(MediaSourceType::AUDIO);
     if (decoder && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "sync-off"))
     {
-        // TODO: For AutoVideoSink we use properties on the child sink
         m_glibWrapper->gObjectSet(decoder, "sync-off", m_syncOff, nullptr);
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(decoder));
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to set sync-off property on decoder '%s'", (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
+        RIALTO_SERVER_LOG_ERROR("Failed to set sync-off property on decoder '%s'",
+                                (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
     }
+
+    if (decoder)
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(decoder));
 }
 } // namespace firebolt::rialto::server::tasks::generic

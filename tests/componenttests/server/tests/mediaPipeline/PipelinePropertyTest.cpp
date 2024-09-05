@@ -180,15 +180,12 @@ public:
 
     void willSetSyncOff()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_))
-            .WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _))
-            .WillOnce(Return(GST_ITERATOR_OK));
-        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_))
-            .WillOnce(Return(m_element));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_))
-            .WillOnce(Return(m_factory));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
+        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
             .WillOnce(Return(TRUE));
         EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
@@ -206,15 +203,12 @@ public:
 
     void willSetStreamSyncMode()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_))
-            .WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _))
-            .WillOnce(Return(GST_ITERATOR_OK));
-        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_))
-            .WillOnce(Return(m_element));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_))
-            .WillOnce(Return(m_factory));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
+        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
             .WillOnce(Return(TRUE));
         EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
@@ -232,15 +226,12 @@ public:
 
     void willGetStreamSyncMode()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_))
-            .WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _))
-            .WillOnce(Return(GST_ITERATOR_OK));
-        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_))
-            .WillOnce(Return(m_element));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_))
-            .WillOnce(Return(m_factory));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
+        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
             .WillOnce(Return(TRUE));
         EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
@@ -328,10 +319,8 @@ public:
 
     void willFailToSetSyncOff()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_))
-            .WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _))
-            .WillOnce(Return(GST_ITERATOR_ERROR));
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_ERROR));
     }
 
     void setSyncOffFailure()
@@ -342,10 +331,8 @@ public:
 
     void willFailToSetStreamSyncMode()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_))
-            .WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _))
-            .WillOnce(Return(GST_ITERATOR_ERROR));
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_ERROR));
     }
 
     void setStreamSyncModeFailure()
@@ -356,10 +343,8 @@ public:
 
     void willFailToGetStreamSyncMode()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_))
-            .WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _))
-            .WillOnce(Return(GST_ITERATOR_ERROR));
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_ERROR));
     }
 
     void getStreamSyncModeFailure()

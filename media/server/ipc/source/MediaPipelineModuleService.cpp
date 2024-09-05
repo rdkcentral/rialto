@@ -760,8 +760,10 @@ void MediaPipelineModuleService::getMute(::google::protobuf::RpcController *cont
     done->Run();
 }
 
-void MediaPipelineModuleService::setLowLatency(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetLowLatencyRequest *request,
-                ::firebolt::rialto::SetLowLatencyResponse *response, ::google::protobuf::Closure *done)
+void MediaPipelineModuleService::setLowLatency(::google::protobuf::RpcController *controller,
+                                               const ::firebolt::rialto::SetLowLatencyRequest *request,
+                                               ::firebolt::rialto::SetLowLatencyResponse *response,
+                                               ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -774,8 +776,9 @@ void MediaPipelineModuleService::setLowLatency(::google::protobuf::RpcController
     done->Run();
 }
 
-void MediaPipelineModuleService::setSync(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetSyncRequest *request,
-                ::firebolt::rialto::SetSyncResponse *response, ::google::protobuf::Closure *done)
+void MediaPipelineModuleService::setSync(::google::protobuf::RpcController *controller,
+                                         const ::firebolt::rialto::SetSyncRequest *request,
+                                         ::firebolt::rialto::SetSyncResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -788,8 +791,9 @@ void MediaPipelineModuleService::setSync(::google::protobuf::RpcController *cont
     done->Run();
 }
 
-void MediaPipelineModuleService::getSync(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetSyncRequest *request,
-                ::firebolt::rialto::GetSyncResponse *response, ::google::protobuf::Closure *done)
+void MediaPipelineModuleService::getSync(::google::protobuf::RpcController *controller,
+                                         const ::firebolt::rialto::GetSyncRequest *request,
+                                         ::firebolt::rialto::GetSyncResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     bool sync{};
@@ -807,8 +811,10 @@ void MediaPipelineModuleService::getSync(::google::protobuf::RpcController *cont
     done->Run();
 }
 
-void MediaPipelineModuleService::setSyncOff(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetSyncOffRequest *request,
-                ::firebolt::rialto::SetSyncOffResponse *response, ::google::protobuf::Closure *done)
+void MediaPipelineModuleService::setSyncOff(::google::protobuf::RpcController *controller,
+                                            const ::firebolt::rialto::SetSyncOffRequest *request,
+                                            ::firebolt::rialto::SetSyncOffResponse *response,
+                                            ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -821,8 +827,10 @@ void MediaPipelineModuleService::setSyncOff(::google::protobuf::RpcController *c
     done->Run();
 }
 
-void MediaPipelineModuleService::setStreamSyncMode(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetStreamSyncModeRequest *request,
-                ::firebolt::rialto::SetStreamSyncModeResponse *response, ::google::protobuf::Closure *done)
+void MediaPipelineModuleService::setStreamSyncMode(::google::protobuf::RpcController *controller,
+                                                   const ::firebolt::rialto::SetStreamSyncModeRequest *request,
+                                                   ::firebolt::rialto::SetStreamSyncModeResponse *response,
+                                                   ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -835,8 +843,10 @@ void MediaPipelineModuleService::setStreamSyncMode(::google::protobuf::RpcContro
     done->Run();
 }
 
-void MediaPipelineModuleService::getStreamSyncMode(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetStreamSyncModeRequest *request,
-                ::firebolt::rialto::GetStreamSyncModeResponse *response, ::google::protobuf::Closure *done)
+void MediaPipelineModuleService::getStreamSyncMode(::google::protobuf::RpcController *controller,
+                                                   const ::firebolt::rialto::GetStreamSyncModeRequest *request,
+                                                   ::firebolt::rialto::GetStreamSyncModeResponse *response,
+                                                   ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     int32_t streamSyncMode{};

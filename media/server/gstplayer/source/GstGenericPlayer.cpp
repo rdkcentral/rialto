@@ -419,45 +419,45 @@ GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
     GValue item = G_VALUE_INIT;
     gboolean done = FALSE;
 
-    while (!done) 
+    while (!done)
     {
-        switch (m_gstWrapper->gstIteratorNext(it, &item)) 
+        switch (m_gstWrapper->gstIteratorNext(it, &item))
         {
-            case GST_ITERATOR_OK: 
+        case GST_ITERATOR_OK:
+        {
+            GstElement *element = GST_ELEMENT(m_glibWrapper->gValueGetObject(&item));
+            GstElementFactory *factory = m_gstWrapper->gstElementGetFactory(element);
+
+            if (factory)
             {
-                GstElement *element = GST_ELEMENT(m_glibWrapper->gValueGetObject(&item));
-                GstElementFactory *factory = m_gstWrapper->gstElementGetFactory(element);
-
-                if (factory) 
+                GstElementFactoryListType type = GST_ELEMENT_FACTORY_TYPE_DECODER;
+                if (mediaSourceType == MediaSourceType::AUDIO)
                 {
-                    GstElementFactoryListType type = GST_ELEMENT_FACTORY_TYPE_DECODER;
-                    if (mediaSourceType == MediaSourceType::AUDIO) 
-                    {
-                        type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO;
-                    }
-                    else if (mediaSourceType == MediaSourceType::VIDEO) 
-                    {
-                        type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO;
-                    }
-
-                    if (m_gstWrapper->gstElementFactoryListIsType(factory, type))
-                    { 
-                        m_glibWrapper->gValueUnset(&item);
-                        m_gstWrapper->gstIteratorFree(it);
-                        return element;
-                    }
+                    type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO;
+                }
+                else if (mediaSourceType == MediaSourceType::VIDEO)
+                {
+                    type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO;
                 }
 
-                m_glibWrapper->gValueUnset(&item);
-                break;
+                if (m_gstWrapper->gstElementFactoryListIsType(factory, type))
+                {
+                    m_glibWrapper->gValueUnset(&item);
+                    m_gstWrapper->gstIteratorFree(it);
+                    return element;
+                }
             }
-            case GST_ITERATOR_RESYNC:
-                m_gstWrapper->gstIteratorResync(it);
-                break;
-            case GST_ITERATOR_ERROR:
-            case GST_ITERATOR_DONE:
-                done = TRUE;
-                break;
+
+            m_glibWrapper->gValueUnset(&item);
+            break;
+        }
+        case GST_ITERATOR_RESYNC:
+            m_gstWrapper->gstIteratorResync(it);
+            break;
+        case GST_ITERATOR_ERROR:
+        case GST_ITERATOR_DONE:
+            done = TRUE;
+            break;
         }
     }
 
@@ -492,7 +492,7 @@ bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType
         }
         else
         {
-            RIALTO_SERVER_LOG_WARN("immediate-output not supported in element %s",GST_ELEMENT_NAME(sink));
+            RIALTO_SERVER_LOG_WARN("immediate-output not supported in element %s", GST_ELEMENT_NAME(sink));
         }
         m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
     }
@@ -529,7 +529,8 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
             }
             else
             {
-                RIALTO_SERVER_LOG_WARN("failed to get 'rendered' or 'dropped' from structure (%s)", GST_ELEMENT_NAME(sink));
+                RIALTO_SERVER_LOG_WARN("failed to get 'rendered' or 'dropped' from structure (%s)",
+                                       GST_ELEMENT_NAME(sink));
             }
             m_gstWrapper->gstStructureFree(stats);
         }
@@ -1183,20 +1184,19 @@ bool GstGenericPlayer::getSync(bool &sync)
 {
     bool returnValue{false};
     GstElement *sink = getSink(MediaSourceType::AUDIO);
-    if (sink)
+    GstElement *actualSink = getSinkChildIfAutoAudioSink(sink);
+    if (actualSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "sync"))
     {
-        // TODO: For AutoVideoSink we use properties on the child sink
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "sync"))
-        {
-            m_glibWrapper->gObjectGet(sink, "sync", &sync, nullptr);
-            returnValue = true;
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_WARN("Sync not supported in element %s",GST_ELEMENT_NAME(sink));
-        }
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+        m_glibWrapper->gObjectGet(actualSink, "sync", &sync, nullptr);
+        returnValue = true;
     }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Sync not supported in sink '%s'", (decoder ? GST_ELEMENT_NAME(actualSink) : "null"));
+    }
+
+    if (sink)
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
 
     return returnValue;
 }
@@ -1223,19 +1223,18 @@ bool GstGenericPlayer::getStreamSyncMode(int32_t &streamSyncMode)
 {
     bool returnValue{false};
     GstElement *decoder = getDecoder(MediaSourceType::AUDIO);
-    if (decoder)
+    if (decoder && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "stream-sync-mode"))
     {
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "stream-sync-mode"))
-        {
-            m_glibWrapper->gObjectGet(decoder, "stream-sync-mode", &streamSyncMode, nullptr);
-            returnValue = true;
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_WARN("Stream sync mode not supported in element %s", GST_ELEMENT_NAME(decoder));
-        }
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(decoder));
+        m_glibWrapper->gObjectGet(decoder, "stream-sync-mode", &streamSyncMode, nullptr);
+        returnValue = true;
     }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Stream sync mode not supported in decoder '%s'", (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
+    }
+    
+    if (decoder)
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(decoder));
 
     return returnValue;
 }

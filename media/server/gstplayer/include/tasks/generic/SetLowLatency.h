@@ -33,9 +33,8 @@ class SetLowLatency : public IPlayerTask
 {
 public:
     explicit SetLowLatency(IGstGenericPlayerPrivate &player,
-                                const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                                bool lowLatency);
+                           const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                           const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, bool lowLatency);
     ~SetLowLatency() override;
     void execute() const override;
 

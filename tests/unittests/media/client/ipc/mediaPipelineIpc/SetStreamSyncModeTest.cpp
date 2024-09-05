@@ -48,7 +48,8 @@ TEST_F(RialtoClientMediaPipelineIpcSetStreamSyncModeTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setStreamSyncMode"), m_controllerMock.get(),
-                                           setStreamSyncModeRequestMatcher(m_sessionId, m_streamSyncMode), _, m_blockingClosureMock.get()));
+                                           setStreamSyncModeRequestMatcher(m_sessionId, m_streamSyncMode), _,
+                                           m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->setStreamSyncMode(m_streamSyncMode), true);
 }

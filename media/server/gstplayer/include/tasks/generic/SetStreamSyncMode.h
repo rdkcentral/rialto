@@ -33,9 +33,9 @@ class SetStreamSyncMode : public IPlayerTask
 {
 public:
     explicit SetStreamSyncMode(IGstGenericPlayerPrivate &player,
-                                const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                                int32_t streamSyncMode);
+                               const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                               const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                               int32_t streamSyncMode);
     ~SetStreamSyncMode() override;
     void execute() const override;
 

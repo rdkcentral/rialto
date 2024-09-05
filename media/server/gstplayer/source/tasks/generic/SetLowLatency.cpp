@@ -24,9 +24,9 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 SetLowLatency::SetLowLatency(IGstGenericPlayerPrivate &player,
-                                       const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                       const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                                       bool lowLatency)
+                             const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                             const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                             bool lowLatency)
     : m_player(player), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_lowLatency{lowLatency}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetLowLatency");
@@ -42,15 +42,18 @@ void SetLowLatency::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing SetLowLatency");
 
     GstElement *sink = m_player.getSink(MediaSourceType::AUDIO);
-    if (sink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "low-latency"))
+    GstElement *actualSink = getSinkChildIfAutoAudioSink(sink);
+    if (actualSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "low-latency"))
     {
-        // TODO: For AutoVideoSink we use properties on the child sink
-        m_glibWrapper->gObjectSet(sink, "low-latency", m_lowLatency, nullptr);
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+        m_glibWrapper->gObjectSet(actualSink, "low-latency", m_lowLatency, nullptr);
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to set low-latency property on sink '%s'", (sink ? GST_ELEMENT_NAME(sink) : "null"));
+        RIALTO_SERVER_LOG_ERROR("Failed to set low-latency property on sink '%s'",
+                                (actualSink ? GST_ELEMENT_NAME(actualSink) : "null"));
     }
+
+    if (sink)
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
 }
 } // namespace firebolt::rialto::server::tasks::generic

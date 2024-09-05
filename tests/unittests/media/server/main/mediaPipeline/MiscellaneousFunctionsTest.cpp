@@ -590,8 +590,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetLowLatencySuccess
     constexpr bool kLowLatency{true};
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, setLowLatency(kLowLatency))
-        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstPlayerMock, setLowLatency(kLowLatency)).WillOnce(Return(true));
 
     EXPECT_TRUE(m_mediaPipeline->setLowLatency(kLowLatency));
 }
@@ -626,8 +625,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetSyncSuccess)
     constexpr bool kSync{true};
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, setSync(kSync))
-        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstPlayerMock, setSync(kSync)).WillOnce(Return(true));
 
     EXPECT_TRUE(m_mediaPipeline->setSync(kSync));
 }
@@ -663,8 +661,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetSyncSuccess)
     bool resultSync{};
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, getSync(_))
-        .WillOnce(DoAll(SetArgReferee<0>(kSync), Return(true)));
+    EXPECT_CALL(*m_gstPlayerMock, getSync(_)).WillOnce(DoAll(SetArgReferee<0>(kSync), Return(true)));
 
     EXPECT_TRUE(m_mediaPipeline->getSync(resultSync));
     EXPECT_EQ(resultSync, kSync);
@@ -700,8 +697,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetSyncOffSuccess)
     constexpr bool kSyncOff{true};
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, setSyncOff(kSyncOff))
-        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstPlayerMock, setSyncOff(kSyncOff)).WillOnce(Return(true));
 
     EXPECT_TRUE(m_mediaPipeline->setSyncOff(kSyncOff));
 }
@@ -736,8 +732,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeSuc
     constexpr int32_t kStreamSyncMode{1};
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, setStreamSyncMode(kStreamSyncMode))
-        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstPlayerMock, setStreamSyncMode(kStreamSyncMode)).WillOnce(Return(true));
 
     EXPECT_TRUE(m_mediaPipeline->setStreamSyncMode(kStreamSyncMode));
 }
@@ -773,8 +768,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStreamSyncModeSuc
     int32_t resultStreamSyncMode{};
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, getStreamSyncMode(_))
-        .WillOnce(DoAll(SetArgReferee<0>(kStreamSyncMode), Return(true)));
+    EXPECT_CALL(*m_gstPlayerMock, getStreamSyncMode(_)).WillOnce(DoAll(SetArgReferee<0>(kStreamSyncMode), Return(true)));
 
     EXPECT_TRUE(m_mediaPipeline->getStreamSyncMode(resultStreamSyncMode));
     EXPECT_EQ(resultStreamSyncMode, kStreamSyncMode);

@@ -199,7 +199,8 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetMute(GenericPlay
     return std::make_unique<tasks::generic::SetMute>(context, m_gstWrapper, mute);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetLowLatency(IGstGenericPlayerPrivate &player, bool lowLatency) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetLowLatency(IGstGenericPlayerPrivate &player,
+                                                                           bool lowLatency) const
 {
     return std::make_unique<tasks::generic::SetLowLatency>(player, m_gstWrapper, m_glibWrapper, lowLatency);
 }
@@ -214,7 +215,8 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSyncOff(IGstGene
     return std::make_unique<tasks::generic::SetSyncOff>(player, m_gstWrapper, m_glibWrapper, syncOff);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetStreamSyncMode(IGstGenericPlayerPrivate &player, int32_t streamSyncMode) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetStreamSyncMode(IGstGenericPlayerPrivate &player,
+                                                                               int32_t streamSyncMode) const
 {
     return std::make_unique<tasks::generic::SetStreamSyncMode>(player, m_gstWrapper, m_glibWrapper, streamSyncMode);
 }

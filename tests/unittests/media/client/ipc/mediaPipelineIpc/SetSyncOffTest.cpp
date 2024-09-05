@@ -47,8 +47,9 @@ TEST_F(RialtoClientMediaPipelineIpcSetSyncOffTest, Success)
 {
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setSyncOff"), m_controllerMock.get(),
-                                           setSyncOffRequestMatcher(m_sessionId, m_syncOff), _, m_blockingClosureMock.get()));
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("setSyncOff"), m_controllerMock.get(),
+                           setSyncOffRequestMatcher(m_sessionId, m_syncOff), _, m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->setSyncOff(m_syncOff), true);
 }

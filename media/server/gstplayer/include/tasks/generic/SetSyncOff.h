@@ -33,9 +33,8 @@ class SetSyncOff : public IPlayerTask
 {
 public:
     explicit SetSyncOff(IGstGenericPlayerPrivate &player,
-                                const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                                bool syncOff);
+                        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                        const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, bool syncOff);
     ~SetSyncOff() override;
     void execute() const override;
 

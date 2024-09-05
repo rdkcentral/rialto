@@ -139,6 +139,5 @@ TEST_F(PipelinePropertyTest, setAndGetPipelineProperties)
     // Step 8: Get StreamSyncMode
     MediaPipelineTestMethods::shouldGetStreamSyncMode(streamSyncMode);
     MediaPipelineTestMethods::getStreamSyncMode(streamSyncMode);
-
 }
 } // namespace firebolt::rialto::client::ct

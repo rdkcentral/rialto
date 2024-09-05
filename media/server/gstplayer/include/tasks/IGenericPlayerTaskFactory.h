@@ -320,7 +320,8 @@ public:
      *
      * @retval the new SetStreamSyncMode task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetStreamSyncMode(IGstGenericPlayerPrivate &player, int32_t streamSyncMode) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetStreamSyncMode(IGstGenericPlayerPrivate &player,
+                                                                 int32_t streamSyncMode) const = 0;
 
     /**
      * @brief Creates a Shutdown task.

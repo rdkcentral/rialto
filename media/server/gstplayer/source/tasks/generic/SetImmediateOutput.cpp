@@ -51,11 +51,14 @@ void SetImmediateOutput::execute() const
 
         gboolean immediateOutput{m_immediateOutput};
         m_glibWrapper->gObjectSet(sink, "immediate-output", immediateOutput, nullptr);
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to set immediate-output property on sink '%s'", (sink ? GST_ELEMENT_NAME(sink) : "null"));
+        RIALTO_SERVER_LOG_ERROR("Failed to set immediate-output property on sink '%s'",
+                                (sink ? GST_ELEMENT_NAME(sink) : "null"));
     }
+
+    if (sink)
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
 }
 } // namespace firebolt::rialto::server::tasks::generic

@@ -33,9 +33,8 @@ class SetSync : public IPlayerTask
 {
 public:
     explicit SetSync(IGstGenericPlayerPrivate &player,
-                                const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                                bool sync);
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, bool sync);
     ~SetSync() override;
     void execute() const override;
 

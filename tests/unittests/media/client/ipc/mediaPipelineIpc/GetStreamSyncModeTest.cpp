@@ -52,7 +52,8 @@ TEST_F(RialtoClientMediaPipelineIpcGetStreamSyncModeTest, Success)
             [&](const google::protobuf::MethodDescriptor *, google::protobuf::RpcController *,
                 const google::protobuf::Message *, google::protobuf::Message *response, google::protobuf::Closure *)
             {
-                ::firebolt::rialto::GetStreamSyncModeResponse *resp = dynamic_cast<::firebolt::rialto::GetStreamSyncModeResponse *>(response);
+                ::firebolt::rialto::GetStreamSyncModeResponse *resp =
+                    dynamic_cast<::firebolt::rialto::GetStreamSyncModeResponse *>(response);
                 resp->set_stream_sync_mode(kStreamSyncMode);
             }));
 

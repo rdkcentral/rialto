@@ -24,9 +24,8 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 SetSync::SetSync(IGstGenericPlayerPrivate &player,
-                                       const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                       const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                                       bool sync)
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, bool sync)
     : m_player(player), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_sync{sync}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetSync");
@@ -42,15 +41,17 @@ void SetSync::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing SetSync");
 
     GstElement *sink = m_player.getSink(MediaSourceType::AUDIO);
-    if (sink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "sync"))
+    GstElement *actualSink = getSinkChildIfAutoAudioSink(sink);
+    if (actualSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "sync"))
     {
-        // TODO: For AutoVideoSink we use properties on the child sink
-        m_glibWrapper->gObjectSet(sink, "sync", m_sync, nullptr);
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+        m_glibWrapper->gObjectSet(actualSink, "sync", m_sync, nullptr);
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to set sync property on sink '%s'", (sink ? GST_ELEMENT_NAME(sink) : "null"));
+        RIALTO_SERVER_LOG_ERROR("Failed to set sync property on sink '%s'", (actualSink ? GST_ELEMENT_NAME(actualSink) : "null"));
     }
+
+    if (sink)
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
 }
 } // namespace firebolt::rialto::server::tasks::generic

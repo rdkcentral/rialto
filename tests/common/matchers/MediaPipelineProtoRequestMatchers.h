@@ -249,7 +249,8 @@ MATCHER_P(getMuteRequestMatcher, sessionId, "")
 
 MATCHER_P2(setLowLatencyRequestMatcher, sessionId, lowLatency, "")
 {
-    const ::firebolt::rialto::SetLowLatencyRequest *kRequest = dynamic_cast<const ::firebolt::rialto::SetLowLatencyRequest *>(arg);
+    const ::firebolt::rialto::SetLowLatencyRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetLowLatencyRequest *>(arg);
     return ((kRequest->session_id() == sessionId) && (kRequest->low_latency() == lowLatency));
 }
 
@@ -267,19 +268,22 @@ MATCHER_P(getSyncRequestMatcher, sessionId, "")
 
 MATCHER_P2(setSyncOffRequestMatcher, sessionId, syncOff, "")
 {
-    const ::firebolt::rialto::SetSyncOffRequest *kRequest = dynamic_cast<const ::firebolt::rialto::SetSyncOffRequest *>(arg);
+    const ::firebolt::rialto::SetSyncOffRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetSyncOffRequest *>(arg);
     return ((kRequest->session_id() == sessionId) && (kRequest->sync_off() == syncOff));
 }
 
 MATCHER_P2(setStreamSyncModeRequestMatcher, sessionId, streamSyncMode, "")
 {
-    const ::firebolt::rialto::SetStreamSyncModeRequest *kRequest = dynamic_cast<const ::firebolt::rialto::SetStreamSyncModeRequest *>(arg);
+    const ::firebolt::rialto::SetStreamSyncModeRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetStreamSyncModeRequest *>(arg);
     return ((kRequest->session_id() == sessionId) && (kRequest->stream_sync_mode() == streamSyncMode));
 }
 
 MATCHER_P(getStreamSyncModeRequestMatcher, sessionId, "")
 {
-    const ::firebolt::rialto::GetStreamSyncModeRequest *kRequest = dynamic_cast<const ::firebolt::rialto::GetStreamSyncModeRequest *>(arg);
+    const ::firebolt::rialto::GetStreamSyncModeRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetStreamSyncModeRequest *>(arg);
     return ((kRequest->session_id() == sessionId));
 }
 

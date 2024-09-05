@@ -1154,7 +1154,8 @@ void MediaPipelineTestMethods::getMute(const bool expectedMute)
 
 void MediaPipelineTestMethods::shouldSetLowLatency(const bool expectedLowLatency)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, setLowLatency(_, setLowLatencyRequestMatcher(kSessionId, expectedLowLatency), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setLowLatency(_, setLowLatencyRequestMatcher(kSessionId, expectedLowLatency), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
@@ -1201,7 +1202,8 @@ void MediaPipelineTestMethods::setSyncOff(const bool syncOff)
 
 void MediaPipelineTestMethods::shouldSetStreamSyncMode(const int32_t expectedStreamSyncMode)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, setStreamSyncMode(_, setStreamSyncModeRequestMatcher(kSessionId, expectedStreamSyncMode), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setStreamSyncMode(_, setStreamSyncModeRequestMatcher(kSessionId, expectedStreamSyncMode), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 

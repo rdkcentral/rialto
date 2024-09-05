@@ -47,8 +47,9 @@ TEST_F(RialtoClientMediaPipelineIpcSetLowLatencyTest, Success)
 {
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setLowLatency"), m_controllerMock.get(),
-                                           setLowLatencyRequestMatcher(m_sessionId, m_lowLatency), _, m_blockingClosureMock.get()));
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("setLowLatency"), m_controllerMock.get(),
+                           setLowLatencyRequestMatcher(m_sessionId, m_lowLatency), _, m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->setLowLatency(m_lowLatency), true);
 }

@@ -46,7 +46,8 @@ TEST_F(RialtoClientMediaPipelineGetStreamSyncModeTest, getStreamSyncModeSuccess)
 {
     int32_t returnStreamSyncMode{};
 
-    EXPECT_CALL(*m_mediaPipelineIpcMock, getStreamSyncMode(returnStreamSyncMode)).WillOnce(DoAll(SetArgReferee<0>(m_streamSyncMode), Return(true)));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, getStreamSyncMode(returnStreamSyncMode))
+        .WillOnce(DoAll(SetArgReferee<0>(m_streamSyncMode), Return(true)));
 
     EXPECT_EQ(m_mediaPipeline->getStreamSyncMode(returnStreamSyncMode), true);
     EXPECT_EQ(returnStreamSyncMode, m_streamSyncMode);
