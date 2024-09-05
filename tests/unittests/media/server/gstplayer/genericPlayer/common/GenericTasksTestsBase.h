@@ -80,7 +80,9 @@ protected:
     void shouldSetupVideoElementAmlhalasink();
     void shouldSetupAudioElementBrcmAudioSink();
     void shouldSetupVideoElementAutoVideoSink();
+    void shouldSetupAudioElementAutoAudioSink();
     void shouldSetupVideoElementAutoVideoSinkWithMultipleChildren();
+    void shouldSetupAudioElementAutoAudioSinkWithMultipleChildren();
     void shouldSetupAudioElementOnly();
     void shouldSetVideoUnderflowCallback();
     void triggerSetupElement();
@@ -88,11 +90,17 @@ protected:
     void shouldSetAudioUnderflowCallback();
     void triggerAudioUnderflowCallback();
     void shouldAddFirstAutoVideoSinkChild();
+    void shouldAddFirstAutoAudioSinkChild();
     void shouldNotAddAutoVideoSinkChild();
+    void shouldNotAddAutoAudioSinkChild();
     void shouldAddAutoVideoSinkChildCallback();
+    void shouldAddAutoAudioSinkChildCallback();
     void triggerAutoVideoSinkChildAddedCallback();
+    void triggerAutoAudioSinkChildAddedCallback();
     void shouldRemoveAutoVideoSinkChildCallback();
+    void shouldRemoveAutoAudioSinkChildCallback();
     void triggerAutoVideoSinkChildRemovedCallback();
+    void triggerAutoAudioSinkChildRemovedCallback();
 
     // SetVideoGeometry test methods
     void setPipelineToNull();

@@ -85,23 +85,14 @@ struct GenericPlayerContext
     GstElement *autoVideoChildSink{nullptr};
 
     /**
-     * @brief Subtitle sink
+     * @brief Child sink of the autoaudiosink.
+     */
+    GstElement *autoAudioChildSink{nullptr};
+
+    /**
+     * @brief The subtitle sink
      */
     GstElement *subtitleSink{nullptr};
-
-    /**
-     * @brief Flag used to check, if any audio data has been pushed to gstreamer (to check if BUFFERED can be sent)
-     *
-     * Flag can be used only in worker thread
-     */
-    bool audioDataPushed{false};
-
-    /**
-     * @brief Flag used to check, if any video data has been pushed to gstreamer (to check if BUFFERED can be sent)
-     *
-     * Flag can be used only in worker thread
-     */
-    bool videoDataPushed{false};
 
     /**
      * @brief Flag used to check, if BUFFERED notification has been sent.

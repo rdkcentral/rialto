@@ -54,6 +54,13 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithChildSinkForAutoVideoSink)
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupAudioElementWithChildSinkForAutoAudioSink)
+{
+    shouldSetupAudioElementAutoAudioSink();
+    shouldAddFirstAutoAudioSinkChild();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupVideoElementWithoutChildSinkForAutoVideoSink)
 {
     shouldSetupVideoElementAutoVideoSink();
@@ -61,10 +68,24 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithoutChildSinkForAutoVideoSink
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupAudioElementWithoutChildSinkForAutoAudioSink)
+{
+    shouldSetupAudioElementAutoAudioSink();
+    shouldNotAddAutoAudioSinkChild();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupVideoElementWithMultpileChildSinkForAutoVideoSink)
 {
     shouldSetupVideoElementAutoVideoSinkWithMultipleChildren();
     shouldAddFirstAutoVideoSinkChild();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementWithMultpileChildSinkForAutoAudioSink)
+{
+    shouldSetupAudioElementAutoAudioSinkWithMultipleChildren();
+    shouldAddFirstAutoAudioSinkChild();
     triggerSetupElement();
 }
 
@@ -102,6 +123,16 @@ TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildAdded)
     triggerAutoVideoSinkChildAddedCallback();
 }
 
+TEST_F(SetupElementTest, shouldReportAutoAudioSinkChildAdded)
+{
+    shouldSetupAudioElementAutoAudioSink();
+    shouldNotAddAutoAudioSinkChild();
+    triggerSetupElement();
+
+    shouldAddAutoAudioSinkChildCallback();
+    triggerAutoAudioSinkChildAddedCallback();
+}
+
 TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildRemoved)
 {
     shouldSetupVideoElementAutoVideoSink();
@@ -110,4 +141,14 @@ TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildRemoved)
 
     shouldRemoveAutoVideoSinkChildCallback();
     triggerAutoVideoSinkChildRemovedCallback();
+}
+
+TEST_F(SetupElementTest, shouldReportAutoAudioSinkChildRemoved)
+{
+    shouldSetupAudioElementAutoAudioSink();
+    shouldNotAddAutoAudioSinkChild();
+    triggerSetupElement();
+
+    shouldRemoveAutoAudioSinkChildCallback();
+    triggerAutoAudioSinkChildRemovedCallback();
 }
