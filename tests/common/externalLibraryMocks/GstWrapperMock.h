@@ -148,6 +148,7 @@ public:
     MOCK_METHOD(GList *, gstElementFactoryListGetElements, (GstElementFactoryListType type, GstRank minrank), (const));
     MOCK_METHOD(const GList *, gstElementFactoryGetStaticPadTemplates, (GstElementFactory * factory), (const));
     MOCK_METHOD(void, gstPluginFeatureListFree, (GList * list), (const));
+    MOCK_METHOD(GstPluginFeature *, gstPluginFeatureLoad, (GstPluginFeature * feature), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewEmptySimple, (const char *media_type), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewEmpty, (), (const));
     MOCK_METHOD(GstProtectionMeta *, gstBufferAddProtectionMeta, (GstBuffer * buffer, GstStructure *info), (const));

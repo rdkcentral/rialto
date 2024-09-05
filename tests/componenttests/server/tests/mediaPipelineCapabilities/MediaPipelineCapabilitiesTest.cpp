@@ -23,10 +23,19 @@
 #include "RialtoServerComponentTest.h"
 
 using ::testing::_;
+using ::testing::DoAll;
 using ::testing::Return;
+using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
 
+namespace
+{
+constexpr int kNumPropertiesOnSink{3};
+const char *kPropertyName1 = "test-name-5";
+const char *kPropertyName2 = "test2";
+const char *kPropertyName3 = "prop";
+}; // namespace
 namespace firebolt::rialto::server::ct
 {
 class MediaPipelineCapabilitiesTest : public RialtoServerComponentTest
@@ -37,6 +46,12 @@ public:
         willConfigureSocket();
         configureSutInActiveState();
         connectClient();
+
+        m_dummyParams[0].name = kPropertyName1;
+        m_dummyParams[1].name = kPropertyName3;
+        m_dummyParams[2].name = kPropertyName2;
+        for (int i = 0; i < kNumPropertiesOnSink; ++i)
+            m_dummyParamsPtr[i] = &m_dummyParams[i];
     }
     ~MediaPipelineCapabilitiesTest() override = default;
 
@@ -52,7 +67,9 @@ public:
             .WillOnce(Return(m_listOfFactories));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(dummyFactory)).WillOnce(Return(kDummyType));
         EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&m_dummyClass));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(&m_dummyClass, _)).WillRepeatedly(Return(&m_dummyParam));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
+            .WillRepeatedly(DoAll(SetArgPointee<1>(kNumPropertiesOnSink), Return(m_dummyParamsPtr)));
+        EXPECT_CALL(*m_glibWrapperMock, gFree(m_dummyParamsPtr)).Times(1);
         EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_dummyClass));
         EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
     }
@@ -75,8 +92,9 @@ public:
 private:
     GList *m_listOfFactories{nullptr};
     GObjectClass m_dummyClass;
-    GParamSpec m_dummyParam;
-    std::vector<std::string> m_kParamNames{"test-name-5", "test2", "prop3"};
+    GParamSpec m_dummyParams[kNumPropertiesOnSink];
+    GParamSpec *m_dummyParamsPtr[kNumPropertiesOnSink];
+    std::vector<std::string> m_kParamNames{kPropertyName1, kPropertyName2};
 };
 
 /*

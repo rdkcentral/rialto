@@ -96,6 +96,7 @@ public:
     MOCK_METHOD(gchar *, gStrdupPrintfStub, (const gchar *format));
 
     MOCK_METHOD(GParamSpec *, gObjectClassFindProperty, (GObjectClass *, const gchar *), (override));
+    MOCK_METHOD(GParamSpec **, gObjectClassListProperties, (GObjectClass * oclass, guint *nProps), (override));
     MOCK_METHOD(gboolean, gStrHasPrefix, (const gchar *, const gchar *), (override));
     MOCK_METHOD(guint *, gSignalListIds, (GType itype, guint *n_ids), (const, override));
     MOCK_METHOD(void, gSignalQuery, (guint signal_id, GSignalQuery *query), (const, override));

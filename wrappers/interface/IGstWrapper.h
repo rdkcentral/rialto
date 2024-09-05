@@ -869,6 +869,15 @@ public:
     virtual void gstPluginFeatureListFree(GList *list) const = 0;
 
     /**
+     * @brief Loads the plugin containing feature if it's not already loaded
+     *
+     * @param[in] feature : the feature to load
+     *
+     * @retval a reference to the loaded feature, or NULL on error
+     */
+    virtual GstPluginFeature *gstPluginFeatureLoad(GstPluginFeature *feature) const = 0;
+
+    /**
      * @brief Creates a new GstCaps with one GstStructure.
      *
      * @param[in] media_type : the media type of the structure

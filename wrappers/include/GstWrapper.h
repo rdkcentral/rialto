@@ -365,6 +365,11 @@ public:
 
     void gstPluginFeatureListFree(GList *list) const override { gst_plugin_feature_list_free(list); }
 
+    GstPluginFeature *gstPluginFeatureLoad(GstPluginFeature *feature) const override
+    {
+        return gst_plugin_feature_load(feature);
+    }
+
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
         /* there's no valist equivalent of gst_caps_new_simple */

@@ -72,6 +72,8 @@ public:
 
     GParamSpec *gObjectClassFindProperty(GObjectClass *oclass, const gchar *property_name) override;
 
+    GParamSpec **gObjectClassListProperties(GObjectClass *oclass, guint *nProps) override;
+
     gpointer gTypeClassRef(GType type) override { return g_type_class_ref(type); }
 
     GType gTypeFromName(const gchar *name) override { return g_type_from_name(name); }

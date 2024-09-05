@@ -207,28 +207,102 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
     for (GList *iter = factories; iter != nullptr && !propertiesToLookFor.empty(); iter = iter->next)
     {
         GstElementFactory *factory = GST_ELEMENT_FACTORY(iter->data);
-        GType elementType = m_gstWrapper->gstElementFactoryGetElementType(factory);
-        if (elementType == G_TYPE_INVALID)
-            continue;
-        gpointer elementClass = m_glibWrapper->gTypeClassRef(elementType);
-        if (elementClass)
+        gpointer elementClass{nullptr};
+        GstPluginFeature *loadFeature{nullptr};
+        GstElement *elementObj{nullptr};
+
+        RIALTO_SERVER_LOG_DEBUG("Searching the properties of a class");
         {
-            for (auto i = propertiesToLookFor.begin(); i != propertiesToLookFor.end();)
+            // Try to obtain the class without instantiating an object...
+            GType elementType = m_gstWrapper->gstElementFactoryGetElementType(factory);
+            if (elementType == G_TYPE_INVALID)
             {
-                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_CLASS(elementClass), i->c_str()))
-                {
-                    propertiesFound.push_back(*i);
-                    i = propertiesToLookFor.erase(i);
-                }
-                else
-                    ++i;
+                RIALTO_SERVER_LOG_DEBUG("  Using gstPluginFeatureLoad");
+                loadFeature = m_gstWrapper->gstPluginFeatureLoad(GST_PLUGIN_FEATURE(factory));
+                if (loadFeature)
+                    elementType = m_gstWrapper->gstElementFactoryGetElementType(factory);
             }
 
-            m_glibWrapper->gObjectUnref(elementClass);
+            if (elementType != G_TYPE_INVALID)
+                elementClass = m_glibWrapper->gTypeClassRef(elementType);
         }
+
+        if (!elementClass)
+        {
+            // Create an object because we couldn't get the class
+            RIALTO_SERVER_LOG_DEBUG("  Using gstElementFactoryCreate");
+            elementObj = m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
+        }
+
+        if (elementClass || elementObj)
+        {
+            GParamSpec **props;
+            guint nProps;
+            if (elementObj)
+                props = m_glibWrapper->gObjectClassListProperties(G_OBJECT_GET_CLASS(elementObj), &nProps);
+            else
+                props = m_glibWrapper->gObjectClassListProperties(G_OBJECT_GET_CLASS(elementClass), &nProps);
+
+            if (!props && elementClass && !loadFeature)
+            {
+                RIALTO_SERVER_LOG_DEBUG("  No properties seen, trying gst_plugin_feature_load");
+                m_glibWrapper->gObjectUnref(elementClass);
+                elementClass = nullptr;
+                loadFeature = m_gstWrapper->gstPluginFeatureLoad(GST_PLUGIN_FEATURE(factory));
+                if (loadFeature)
+                {
+                    GType elementType = m_gstWrapper->gstElementFactoryGetElementType(factory);
+
+                    if (elementType != G_TYPE_INVALID)
+                        elementClass = m_glibWrapper->gTypeClassRef(elementType);
+                    if (elementClass)
+                    {
+                        props = m_glibWrapper->gObjectClassListProperties(G_OBJECT_GET_CLASS(elementClass), &nProps);
+                        if (props)
+                        {
+                            RIALTO_SERVER_LOG_DEBUG("  gst_plugin_feature_load worked");
+                        }
+                    }
+                }
+            }
+
+            if (!props && !elementObj)
+            {
+                // Fall back to create an object
+                RIALTO_SERVER_LOG_DEBUG("  No properties seen, creating an object");
+                elementObj = m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
+                if (elementObj)
+                    props = m_glibWrapper->gObjectClassListProperties(G_OBJECT_GET_CLASS(elementObj), &nProps);
+            }
+
+            if (props)
+            {
+                for (guint j = 0; j < nProps && !propertiesToLookFor.empty(); ++j)
+                {
+                    const std::string kPropName{props[j]->name};
+                    for (auto i = propertiesToLookFor.begin(); i != propertiesToLookFor.end();)
+                    {
+                        if (*i == kPropName)
+                        {
+                            RIALTO_SERVER_LOG_DEBUG("  Found property '%s'", kPropName.c_str());
+                            propertiesFound.push_back(*i);
+                            i = propertiesToLookFor.erase(i);
+                        }
+                        else
+                            ++i;
+                    }
+                }
+                m_glibWrapper->gFree(props);
+            }
+        }
+        if (elementObj)
+            m_gstWrapper->gstObjectUnref(elementObj);
+        if (loadFeature)
+            m_gstWrapper->gstObjectUnref(loadFeature);
+        if (elementClass)
+            m_glibWrapper->gObjectUnref(elementClass);
     }
 
-    // Cleanup
     m_gstWrapper->gstPluginFeatureListFree(factories);
     return propertiesFound;
 }
