@@ -153,9 +153,13 @@ private:
     void renderFrame() override;
     void handleBusMessage(GstMessage *message) override;
     void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
+
     void addAutoVideoSinkChild(GObject *object) override;
+    void addAutoAudioSinkChild(GObject *object) override;
     void removeAutoVideoSinkChild(GObject *object) override;
+    void removeAutoAudioSinkChild(GObject *object) override;
     GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) override;
+    GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) override;
     GstElement *getSink(const MediaSourceType &mediaSourceType) override;
     GstElement *getDecoder(const MediaSourceType &mediaSourceType) override;
     void setAudioVideoFlags(bool enableAudio, bool enableVideo) override;

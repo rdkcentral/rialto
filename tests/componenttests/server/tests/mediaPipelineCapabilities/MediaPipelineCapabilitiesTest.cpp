@@ -316,9 +316,38 @@ TEST_F(MediaPipelineCapabilitiesTest, checkVideoMimeTypes)
         .matchResponse([](const auto &resp) { EXPECT_FALSE(resp.is_supported()); });
 }
 
+/*
+ * Component Test: Check that the API call GetSupportedProperties works
+ * Test Objective:
+ *  Test that the RialtoServer can process a request to get supported pipeline properites
+ *
+ * Sequence Diagrams:
+ *  Capabilities - Get Supported Properties
+ *  https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-Getsupportedproperties
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipelineCapabilities
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *
+ * Test Steps:
+ *  Step 1: Get supported properties
+ *
+ * Test Teardown:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  Rialto server checks, if mime types are supported.
+ *
+ * Code:
+ */
 TEST_F(MediaPipelineCapabilitiesTest, checkGetSupportedProperties)
 {
-    // Step 1:
+    // Step 1: Get supported properties
     willCallGetSupportedProperties();
     callGetSupportedProperties();
 }

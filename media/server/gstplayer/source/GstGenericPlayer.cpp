@@ -481,9 +481,12 @@ bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType
     GstElement *sink = getSink(mediaSourceType);
     if (sink)
     {
-        // For AutoVideoSink we use properties on the child sink
+        // For AutoVideoSink or AutoAudioSink we use properties on the child sink
+        GstElement *actualSink{sink};
         if (MediaSourceType::VIDEO == mediaSourceType)
-            sink = getSinkChildIfAutoVideoSink(sink);
+            actualSink = getSinkChildIfAutoVideoSink(sink);
+        else if (MediaSourceType::AUDIO == mediaSourceType)
+            actualSink = getSinkChildIfAutoAudioSink(sink);
 
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "immediate-output"))
         {
@@ -506,15 +509,18 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
     GstElement *sink = getSink(mediaSourceType);
     if (sink)
     {
-        // For AutoVideoSink we set properties on the child sink
+        // For AutoVideoSink or AutoAudioSink we set properties on the child sink
+        GstElement *actualSink{sink};
         if (MediaSourceType::VIDEO == mediaSourceType)
-            sink = getSinkChildIfAutoVideoSink(sink);
+            actualSink = getSinkChildIfAutoVideoSink(sink);
+        else if (MediaSourceType::AUDIO == mediaSourceType)
+            actualSink = getSinkChildIfAutoAudioSink(sink);
 
         GstStructure *stats{nullptr};
-        m_glibWrapper->gObjectGet(sink, "stats", &stats, nullptr);
+        m_glibWrapper->gObjectGet(actualSink, "stats", &stats, nullptr);
         if (!stats)
         {
-            RIALTO_SERVER_LOG_WARN("failed to get stats from %s", GST_ELEMENT_NAME(sink));
+            RIALTO_SERVER_LOG_WARN("failed to get stats from '%s'", kSinkName);
         }
         else
         {
@@ -529,13 +535,13 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
             }
             else
             {
-                RIALTO_SERVER_LOG_WARN("failed to get 'rendered' or 'dropped' from structure (%s)",
-                                       GST_ELEMENT_NAME(sink));
+                RIALTO_SERVER_LOG_WARN("failed to get 'rendered' or 'dropped' from structure (%s)", kSinkName);
             }
             m_gstWrapper->gstStructureFree(stats);
         }
         m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
     }
+
 
     return returnValue;
 }
@@ -1298,6 +1304,21 @@ void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)
     }
 }
 
+void GstGenericPlayer::addAutoAudioSinkChild(GObject *object)
+{
+    // Only add children that are sinks
+    if (GST_OBJECT_FLAG_IS_SET(GST_ELEMENT(object), GST_ELEMENT_FLAG_SINK))
+    {
+        RIALTO_SERVER_LOG_DEBUG("Store AutoAudioSink child sink");
+
+        if (m_context.autoAudioChildSink && m_context.autoAudioChildSink != GST_ELEMENT(object))
+        {
+            RIALTO_SERVER_LOG_MIL("AutoAudioSink child is been overwritten");
+        }
+        m_context.autoAudioChildSink = GST_ELEMENT(object);
+    }
+}
+
 void GstGenericPlayer::removeAutoVideoSinkChild(GObject *object)
 {
     if (GST_OBJECT_FLAG_IS_SET(GST_ELEMENT(object), GST_ELEMENT_FLAG_SINK))
@@ -1314,6 +1335,22 @@ void GstGenericPlayer::removeAutoVideoSinkChild(GObject *object)
     }
 }
 
+void GstGenericPlayer::removeAutoAudioSinkChild(GObject *object)
+{
+    if (GST_OBJECT_FLAG_IS_SET(GST_ELEMENT(object), GST_ELEMENT_FLAG_SINK))
+    {
+        RIALTO_SERVER_LOG_DEBUG("Remove AutoAudioSink child sink");
+
+        if (m_context.autoAudioChildSink && m_context.autoAudioChildSink != GST_ELEMENT(object))
+        {
+            RIALTO_SERVER_LOG_MIL("AutoAudioSink child sink is not the same as the one stored");
+            return;
+        }
+
+        m_context.autoAudioChildSink = nullptr;
+    }
+}
+
 GstElement *GstGenericPlayer::getSinkChildIfAutoVideoSink(GstElement *sink)
 {
     const gchar *kTmpName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
@@ -1326,17 +1363,34 @@ GstElement *GstGenericPlayer::getSinkChildIfAutoVideoSink(GstElement *sink)
         if (!m_context.autoVideoChildSink)
         {
             RIALTO_SERVER_LOG_WARN("No child sink has been added to the autovideosink");
-            return sink;
         }
         else
         {
             return m_context.autoVideoChildSink;
         }
     }
-    else
-    {
+    return sink;
+}
+
+GstElement *GstGenericPlayer::getSinkChildIfAutoAudioSink(GstElement *sink)
+{
+    const gchar *kTmpName = m_glibWrapper->gTypeName(G_OBJECT_TYPE(sink));
+    if (!kTmpName)
         return sink;
+
+    const std::string kElementTypeName{kTmpName};
+    if (kElementTypeName == "GstAutoAudioSink")
+    {
+        if (!m_context.autoAudioChildSink)
+        {
+            RIALTO_SERVER_LOG_WARN("No child sink has been added to the autoaudiosink");
+        }
+        else
+        {
+            return m_context.autoAudioChildSink;
+        }
     }
+    return sink;
 }
 
 void GstGenericPlayer::setAudioVideoFlags(bool enableAudio, bool enableVideo)

@@ -94,6 +94,11 @@ struct GenericPlayerContext
     GstElement *autoVideoChildSink{nullptr};
 
     /**
+     * @brief Child sink of the autoaudiosink.
+     */
+    GstElement *autoAudioChildSink{nullptr};
+
+    /**
      * @brief Flag used to check, if we need to request for new audio data.
      *
      * Flag can be used only in worker thread

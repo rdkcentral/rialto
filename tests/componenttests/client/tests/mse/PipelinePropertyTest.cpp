@@ -45,6 +45,8 @@ public:
  *   on the RialtoServer.
  *
  * Sequence Diagrams:
+ *  Immediate-output property
+ *  - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-ImmediateOutput
  *
  * Test Setup:
  *  Language: C++

@@ -53,8 +53,11 @@ public:
     MOCK_METHOD(void, setPendingPlaybackRate, (), (override));
     MOCK_METHOD(void, updatePlaybackGroup, (GstElement * typefind, const GstCaps *caps), (override));
     MOCK_METHOD(void, addAutoVideoSinkChild, (GObject * object), (override));
+    MOCK_METHOD(void, addAutoAudioSinkChild, (GObject * object), (override));
     MOCK_METHOD(void, removeAutoVideoSinkChild, (GObject * object), (override));
+    MOCK_METHOD(void, removeAutoAudioSinkChild, (GObject * object), (override));
     MOCK_METHOD(GstElement *, getSinkChildIfAutoVideoSink, (GstElement * sink), (override));
+    MOCK_METHOD(GstElement *, getSinkChildIfAutoAudioSink, (GstElement * sink), (override));
     MOCK_METHOD(GstElement *, getSink, (const MediaSourceType &mediaSourceType), (override));
     MOCK_METHOD(GstElement *, getDecoder, (const MediaSourceType &mediaSourceType), (override));
     MOCK_METHOD(void, setAudioVideoFlags, (bool enableAudio, bool enableVideo), (override));

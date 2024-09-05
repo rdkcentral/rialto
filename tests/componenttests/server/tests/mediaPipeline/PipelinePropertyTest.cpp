@@ -368,6 +368,8 @@ private:
  *  Test the ability of the Rialto Server to set and get properties of the pipeline
  *
  * Sequence Diagrams:
+ *  Immediate-output property
+ *  - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-ImmediateOutput
  *
  * Test Setup:
  *  Language: C++
@@ -521,12 +523,14 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
 }
 
 /*
- * Component Test: Test falures to Get and set properties of the pipeline
+ * Component Test: Test failures to Get and set properties of the pipeline
  * Test Objective:
  *  Test the ability of the Rialto Server to handle failres while
  *  setting and getting properties of the pipeline
  *
  * Sequence Diagrams:
+ *  Immediate-output property
+ *  - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-ImmediateOutput
  *
  * Test Setup:
  *  Language: C++
