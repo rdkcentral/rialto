@@ -335,6 +335,8 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported)
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
     // this time we should find all the properties...
     EXPECT_EQ(supportedProperties, kParamNames);
+
+    gst_plugin_feature_list_free(listOfFactories);
 }
 
 TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported_usePluginFeatureLoad)
@@ -380,6 +382,8 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported_usePlu
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
     // this time we should find all the properties...
     EXPECT_EQ(supportedProperties, kParamNames);
+
+    gst_plugin_feature_list_free(listOfFactories);
 }
 
 TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported_useObjectCreation)
@@ -423,6 +427,8 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported_useObj
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
     // this time we should find all the properties...
     EXPECT_EQ(supportedProperties, kParamNames);
+
+    gst_plugin_feature_list_free(listOfFactories);
 }
 
 TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported_usePluginFeatureLoadAfterNoProperties)
@@ -467,6 +473,8 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported_usePlu
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
     // this time we should find all the properties...
     EXPECT_EQ(supportedProperties, kParamNames);
+
+    gst_plugin_feature_list_free(listOfFactories);
 }
 
 TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported_useObjectCreationAfterNoProperties)
@@ -518,6 +526,8 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported_useObj
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
     // this time we should find all the properties...
     EXPECT_EQ(supportedProperties, kParamNames);
+
+    gst_plugin_feature_list_free(listOfFactories);
 }
 
 TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithNoPropertiesSupported)
