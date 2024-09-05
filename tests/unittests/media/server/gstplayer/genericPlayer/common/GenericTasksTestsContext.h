@@ -31,6 +31,7 @@
 #include "GstWrapperMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 #include <memory>
+#include <string>
 
 /**
  * @brief GenericTasksTests context
