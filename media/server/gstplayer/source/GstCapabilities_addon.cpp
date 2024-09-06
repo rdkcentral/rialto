@@ -38,7 +38,7 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
     GList *factories{m_gstWrapper->gstElementFactoryListGetElements(factoryListType, GST_RANK_NONE)};
 
     // Scan all returned elements for the specified properties...
-    std::list<std::string> propertiesToLookFor{propertyNames.begin(), propertyNames.end()};
+    std::unordered_set<std::string> propertiesToLookFor{propertyNames.begin(), propertyNames.end()};
     std::vector<std::string> propertiesFound;
     for (GList *iter = factories; iter != nullptr && !propertiesToLookFor.empty(); iter = iter->next)
     {
@@ -116,16 +116,12 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
                 for (guint j = 0; j < nProps && !propertiesToLookFor.empty(); ++j)
                 {
                     const std::string kPropName{props[j]->name};
-                    for (auto i = propertiesToLookFor.begin(); i != propertiesToLookFor.end();)
+                    auto it = propertiesToLookFor.find(kPropName);
+                    if (it != propertiesToLookFor.end())
                     {
-                        if (*i == kPropName)
-                        {
-                            RIALTO_SERVER_LOG_DEBUG("  Found property '%s'", kPropName.c_str());
-                            propertiesFound.push_back(*i);
-                            i = propertiesToLookFor.erase(i);
-                        }
-                        else
-                            ++i;
+                        RIALTO_SERVER_LOG_DEBUG("Found property '%s'", kPropName.c_str());
+                        propertiesFound.push_back(kPropName);
+                        propertiesToLookFor.erase(it);
                     }
                 }
                 m_glibWrapper->gFree(props);
