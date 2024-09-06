@@ -141,15 +141,6 @@ public:
     virtual GstElement *gstElementFactoryMake(const gchar *factoryname, const gchar *name) = 0;
 
     /**
-     * @brief Get the element type returned by the requested factory.
-     *
-     * @param[in] factory   : Factory
-     *
-     * @retval GType that the factory produces
-     */
-    virtual GType gstElementFactoryGetElementType(GstElementFactory *factory) = 0;
-
-    /**
      * @brief Increment reference count on object.
      *
      * @param[in] object   : Object to increment.
@@ -867,15 +858,6 @@ public:
      * @param[in] list : list of GstPluginFeature
      */
     virtual void gstPluginFeatureListFree(GList *list) const = 0;
-
-    /**
-     * @brief Loads the plugin containing feature if it's not already loaded
-     *
-     * @param[in] feature : the feature to load
-     *
-     * @retval a reference to the loaded feature, or NULL on error
-     */
-    virtual GstPluginFeature *gstPluginFeatureLoad(GstPluginFeature *feature) const = 0;
 
     /**
      * @brief Creates a new GstCaps with one GstStructure.

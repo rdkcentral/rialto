@@ -41,7 +41,6 @@ public:
     MOCK_METHOD(gboolean, gstElementRegister, (GstPlugin * plugin, const gchar *name, guint rank, GType type),
                 (override));
     MOCK_METHOD(GstElement *, gstElementFactoryMake, (const gchar *factoryname, const gchar *name), (override));
-    MOCK_METHOD(GType, gstElementFactoryGetElementType, (GstElementFactory * factory), (override));
     MOCK_METHOD(gpointer, gstObjectRef, (gpointer object), (override));
     MOCK_METHOD(GstElement *, gstBinGetByName, (GstBin * bin, const gchar *name), (override));
     MOCK_METHOD(GstBus *, gstPipelineGetBus, (GstPipeline * pipeline), (override));
@@ -148,7 +147,6 @@ public:
     MOCK_METHOD(GList *, gstElementFactoryListGetElements, (GstElementFactoryListType type, GstRank minrank), (const));
     MOCK_METHOD(const GList *, gstElementFactoryGetStaticPadTemplates, (GstElementFactory * factory), (const));
     MOCK_METHOD(void, gstPluginFeatureListFree, (GList * list), (const));
-    MOCK_METHOD(GstPluginFeature *, gstPluginFeatureLoad, (GstPluginFeature * feature), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewEmptySimple, (const char *media_type), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewEmpty, (), (const));
     MOCK_METHOD(GstProtectionMeta *, gstBufferAddProtectionMeta, (GstBuffer * buffer, GstStructure *info), (const));

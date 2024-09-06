@@ -97,11 +97,6 @@ public:
         return gst_element_factory_make(factoryname, name);
     }
 
-    GType gstElementFactoryGetElementType(GstElementFactory *factory)
-    {
-        return gst_element_factory_get_element_type(factory);
-    }
-
     GstElement *gstBinGetByName(GstBin *bin, const gchar *name) override { return gst_bin_get_by_name(bin, name); }
 
     gpointer gstObjectRef(gpointer object) override { return gst_object_ref(object); }
@@ -364,11 +359,6 @@ public:
     }
 
     void gstPluginFeatureListFree(GList *list) const override { gst_plugin_feature_list_free(list); }
-
-    GstPluginFeature *gstPluginFeatureLoad(GstPluginFeature *feature) const override
-    {
-        return gst_plugin_feature_load(feature);
-    }
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

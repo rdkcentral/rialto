@@ -57,20 +57,21 @@ public:
 
     void willCallGetSupportedProperties()
     {
-        const GType kDummyType{3};
         GstElementFactory *dummyFactory{nullptr};
-        memset(&m_dummyClass, 0x00, sizeof(m_dummyClass));
         GstElementFactoryListType expectedFactoryListType{
             GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
         m_listOfFactories = g_list_append(m_listOfFactories, dummyFactory);
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(expectedFactoryListType, GST_RANK_NONE))
             .WillOnce(Return(m_listOfFactories));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(dummyFactory)).WillOnce(Return(kDummyType));
-        EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&m_dummyClass));
+        // The next calls should ensure that an object is created and then freed
+        GstElement object;
+        memset(&object, 0x00, sizeof(object));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(dummyFactory, nullptr)).WillOnce(Return(&object));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&object));
+
         EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
             .WillRepeatedly(DoAll(SetArgPointee<1>(kNumPropertiesOnSink), Return(m_dummyParamsPtr)));
         EXPECT_CALL(*m_glibWrapperMock, gFree(m_dummyParamsPtr)).Times(1);
-        EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_dummyClass));
         EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
     }
 
@@ -91,7 +92,6 @@ public:
 
 private:
     GList *m_listOfFactories{nullptr};
-    GObjectClass m_dummyClass;
     GParamSpec m_dummyParams[kNumPropertiesOnSink];
     GParamSpec *m_dummyParamsPtr[kNumPropertiesOnSink];
     std::vector<std::string> m_kParamNames{kPropertyName1, kPropertyName2};
