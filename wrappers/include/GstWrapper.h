@@ -97,11 +97,6 @@ public:
         return gst_element_factory_make(factoryname, name);
     }
 
-    GType gstElementFactoryGetElementType(GstElementFactory *factory)
-    {
-        return gst_element_factory_get_element_type(factory);
-    }
-
     GstElement *gstBinGetByName(GstBin *bin, const gchar *name) override { return gst_bin_get_by_name(bin, name); }
 
     gpointer gstObjectRef(gpointer object) override { return gst_object_ref(object); }

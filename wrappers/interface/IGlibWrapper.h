@@ -94,6 +94,16 @@ public:
     virtual GParamSpec *gObjectClassFindProperty(GObjectClass *oclass, const gchar *property_name) = 0;
 
     /**
+     * @brief returns all the GParamSpec for the properties of a class.
+     *
+     * @param[in] oclass        : a GObjectClass
+     * @param[out] nProps : the number of properties returned
+     *
+     * @retval an array of GParamSpec for the oclass
+     */
+    virtual GParamSpec **gObjectClassListProperties(GObjectClass *oclass, guint *nProps) = 0;
+
+    /**
      * @brief Increments the reference count of the class. Creates the class if it does not exist.
      *
      * @param[in] type  : Type of class to increment.
