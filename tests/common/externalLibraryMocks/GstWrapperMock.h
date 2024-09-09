@@ -41,7 +41,6 @@ public:
     MOCK_METHOD(gboolean, gstElementRegister, (GstPlugin * plugin, const gchar *name, guint rank, GType type),
                 (override));
     MOCK_METHOD(GstElement *, gstElementFactoryMake, (const gchar *factoryname, const gchar *name), (override));
-    MOCK_METHOD(GType, gstElementFactoryGetElementType, (GstElementFactory * factory), (override));
     MOCK_METHOD(gpointer, gstObjectRef, (gpointer object), (override));
     MOCK_METHOD(GstElement *, gstBinGetByName, (GstBin * bin, const gchar *name), (override));
     MOCK_METHOD(GstBus *, gstPipelineGetBus, (GstPipeline * pipeline), (override));

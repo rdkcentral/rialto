@@ -59,6 +59,11 @@ GParamSpec *GlibWrapper::gObjectClassFindProperty(GObjectClass *oclass, const gc
     return g_object_class_find_property(oclass, property_name);
 }
 
+GParamSpec **GlibWrapper::gObjectClassListProperties(GObjectClass *oclass, guint *nProps)
+{
+    return g_object_class_list_properties(oclass, nProps);
+}
+
 gchar *GlibWrapper::gStrdupPrintf(const gchar *format, ...)
 {
     gchar *str = NULL;
