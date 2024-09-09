@@ -437,7 +437,7 @@ GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
                 }
                 else if (mediaSourceType == MediaSourceType::VIDEO)
                 {
-                    type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO;
+                    type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO;
                 }
 
                 if (m_gstWrapper->gstElementFactoryListIsType(factory, type))
