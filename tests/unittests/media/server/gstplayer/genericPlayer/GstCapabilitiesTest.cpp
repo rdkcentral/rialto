@@ -43,7 +43,6 @@ namespace
 {
 const GstElementFactoryListType kExpectedFactoryListType{
     GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
-const GstElementFactory *kDummyElementFactory{nullptr};
 }; // namespace
 template <typename T> class GListWrapper
 {
@@ -86,12 +85,14 @@ public:
         IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock;
         IFactoryAccessor::instance().glibWrapperFactory() = m_glibWrapperFactoryMock;
         memset(&m_object, 0x00, sizeof(m_object));
+        m_elementFactory = gst_element_factory_find("fakesrc");
     }
 
     ~GstCapabilitiesTest() override
     {
         IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
         IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
+        gst_object_unref(m_elementFactory);
     }
 
     void expectCapsToMimeMapping()
@@ -151,15 +152,13 @@ public:
     {
         createSutWithNoDecoderAndNoSink();
 
-        m_listOfFactories = g_list_append(m_listOfFactories, const_cast<GstElementFactory *>(kDummyElementFactory));
+        m_listOfFactories = g_list_append(m_listOfFactories, m_elementFactory);
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(kExpectedFactoryListType, GST_RANK_NONE))
             .WillOnce(Return(m_listOfFactories));
         EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
 
         // The next calls should ensure that an object is created and then freed
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementFactoryCreate(const_cast<GstElementFactory *>(kDummyElementFactory), nullptr))
-            .WillOnce(Return(&m_object));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(m_elementFactory, nullptr)).WillOnce(Return(&m_object));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_object));
     }
 
@@ -210,6 +209,7 @@ public:
     // variables used to test getSupportedProperties
     GstElement m_object;
     GList *m_listOfFactories{nullptr};
+    GstElementFactory *m_elementFactory;
 };
 
 /**
