@@ -74,7 +74,7 @@ public:
         {
             EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq(propertyName.c_str()))).Times(1);
         }
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     template <typename T>
@@ -100,7 +100,7 @@ public:
                         *returnVal = value ? TRUE : FALSE;
                     }));
         }
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     template <typename T>
@@ -128,7 +128,7 @@ public:
         {
             EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq(propertyName.c_str()))).Times(1);
         }
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     template <typename T>
@@ -165,26 +165,34 @@ public:
                         *returnVal = value;
                     }));
         }
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     void willFailToGetSink()
     {
         // Failure to get the sink will cause setting of sink properties to fail
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, _, _)).Times(1);
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, _, _))
+            .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     void willFailToGetDecoder()
     {
         // Failure to get the decoder will cause setting of decoder properties to fail
         EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_ERROR));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _))
+            .WillOnce(Invoke(
+                [this](GstIterator *it, GValue *elem)
+                {
+                    workerFinished();
+                    return GST_ITERATOR_ERROR;
+                }));
     }
 
     void setImmediateOutput()
     {
         auto req{createSetImmediateOutputRequest(m_sessionId, m_videoSourceId, kImmediateOutput)};
         ConfigureAction<SetImmediateOutput>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
+        waitWorker();
     }
 
     void getImmediateOutput()
@@ -194,18 +202,21 @@ public:
             .send(req)
             .expectSuccess()
             .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.immediate_output(), kImmediateOutput); });
+        waitWorker();
     }
 
     void setLowLatency()
     {
         auto req{createSetLowLatencyRequest(m_sessionId, kLowLatency)};
         ConfigureAction<SetLowLatency>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
+        waitWorker();
     }
 
     void setSync()
     {
         auto req{createSetSyncRequest(m_sessionId, kSync)};
         ConfigureAction<SetSync>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
+        waitWorker();
     }
 
     void getSync()
@@ -215,18 +226,21 @@ public:
             .send(req)
             .expectSuccess()
             .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.sync(), kSync); });
+        waitWorker();
     }
 
     void setSyncOff()
     {
         auto req{createSetSyncOffRequest(m_sessionId, kSyncOff)};
         ConfigureAction<SetSyncOff>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
+        waitWorker();
     }
 
     void setStreamSyncMode()
     {
         auto req{createSetStreamSyncModeRequest(m_sessionId, kStreamSyncMode)};
         ConfigureAction<SetStreamSyncMode>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
+        waitWorker();
     }
 
     void getStreamSyncMode()
@@ -236,6 +250,7 @@ public:
             .send(req)
             .expectSuccess()
             .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.stream_sync_mode(), kStreamSyncMode); });
+        waitWorker();
     }
 
     void setImmediateOutputFailure()
@@ -244,18 +259,21 @@ public:
         // We expect success from this test because it's asynchronous (and the return
         // value doesn't reflect that the immediate-output flag wasn't set)
         ConfigureAction<SetImmediateOutput>(m_clientStub).send(req).expectSuccess();
+        waitWorker();
     }
 
     void getImmediateOutputFailure()
     {
         auto req{createGetImmediateOutputRequest(m_sessionId, m_videoSourceId)};
         ConfigureAction<GetImmediateOutput>(m_clientStub).send(req).expectFailure();
+        waitWorker();
     }
 
     void setLowLatencyFailure()
     {
         auto req{createSetLowLatencyRequest(m_sessionId, true)};
         ConfigureAction<SetLowLatency>(m_clientStub).send(req).expectSuccess();
+        waitWorker();
     }
 
     void setSyncFailure()
@@ -268,24 +286,28 @@ public:
     {
         auto req{createGetSyncRequest(m_sessionId)};
         ConfigureAction<GetSync>(m_clientStub).send(req).expectFailure();
+        waitWorker();
     }
 
     void setSyncOffFailure()
     {
         auto req{createSetSyncOffRequest(m_sessionId, kSyncOff)};
         ConfigureAction<SetSyncOff>(m_clientStub).send(req).expectSuccess();
+        waitWorker();
     }
 
     void setStreamSyncModeFailure()
     {
         auto req{createSetStreamSyncModeRequest(m_sessionId, kStreamSyncMode)};
         ConfigureAction<SetStreamSyncMode>(m_clientStub).send(req).expectSuccess();
+        waitWorker();
     }
 
     void getStreamSyncModeFailure()
     {
         auto req{createGetStreamSyncModeRequest(m_sessionId)};
         ConfigureAction<GetStreamSyncMode>(m_clientStub).send(req).expectFailure();
+        waitWorker();
     }
 
 private:

@@ -92,10 +92,15 @@ constexpr gint64 kPosition{1234};
 constexpr gint64 kPositionOverUnderflowMargin{350 * 1000000 + 1};
 constexpr bool kMute{false};
 constexpr bool kImmediateOutput{true};
+const std::string kImmediateOutputStr{"immediate-output"};
 constexpr bool kLowLatency{true};
+const std::string kLowLatencyStr{"low-latency"};
 constexpr bool kSync{true};
+const std::string kSyncStr{"sync"};
 constexpr bool kSyncOff{true};
+const std::string kSyncOffStr{"sync-off"};
 constexpr int32_t kStreamSyncMode{1};
+const std::string kStreamSyncModeStr{"stream-sync-mode"};
 constexpr double kRate{1.5};
 constexpr guint kDataLength{7};
 constexpr guint64 kOffset{123};
@@ -2536,7 +2541,7 @@ void GenericTasksTestsBase::shouldFailToSetImmediateOutputIfPropertyDoesntExist(
     EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element))
         .WillOnce(Return(testContext->m_element));
 
-    expectPropertyDoesntExist("immediate-output");
+    expectPropertyDoesntExist(kImmediateOutputStr);
 }
 
 void GenericTasksTestsBase::shouldSetImmediateOutput()
@@ -2545,7 +2550,7 @@ void GenericTasksTestsBase::shouldSetImmediateOutput()
     EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element))
         .WillOnce(Return(testContext->m_element));
 
-    expectSetProperty("immediate-output", kImmediateOutput);
+    expectSetProperty(kImmediateOutputStr, kImmediateOutput);
 }
 
 void GenericTasksTestsBase::triggerSetImmediateOutput()
@@ -2567,7 +2572,7 @@ void GenericTasksTestsBase::shouldFailToSetLowLatencyIfPropertyDoesntExist()
     EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(testContext->m_element))
         .WillOnce(Return(testContext->m_element));
 
-    expectPropertyDoesntExist("low-latency");
+    expectPropertyDoesntExist(kLowLatencyStr);
 }
 
 void GenericTasksTestsBase::shouldSetLowLatency()
@@ -2576,7 +2581,7 @@ void GenericTasksTestsBase::shouldSetLowLatency()
     EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(testContext->m_element))
         .WillOnce(Return(testContext->m_element));
 
-    expectSetProperty("low-latency", kLowLatency);
+    expectSetProperty(kLowLatencyStr, kLowLatency);
 }
 
 void GenericTasksTestsBase::triggerSetLowLatency()
@@ -2597,7 +2602,7 @@ void GenericTasksTestsBase::shouldFailToSetSyncIfPropertyDoesntExist()
     EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(testContext->m_element))
         .WillOnce(Return(testContext->m_element));
 
-    expectPropertyDoesntExist("sync");
+    expectPropertyDoesntExist(kSyncStr);
 }
 
 void GenericTasksTestsBase::shouldSetSync()
@@ -2606,7 +2611,7 @@ void GenericTasksTestsBase::shouldSetSync()
     EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(testContext->m_element))
         .WillOnce(Return(testContext->m_element));
 
-    expectSetProperty("sync", kSync);
+    expectSetProperty(kSyncStr, kSync);
 }
 
 void GenericTasksTestsBase::triggerSetSync()
@@ -2625,14 +2630,14 @@ void GenericTasksTestsBase::shouldFailToSetSyncOffIfPropertyDoesntExist()
 {
     EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
 
-    expectPropertyDoesntExist("sync-off");
+    expectPropertyDoesntExist(kSyncOffStr);
 }
 
 void GenericTasksTestsBase::shouldSetSyncOff()
 {
     EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
 
-    expectSetProperty("sync-off", kSyncOff);
+    expectSetProperty(kSyncOffStr, kSyncOff);
 }
 
 void GenericTasksTestsBase::triggerSetSyncOff()
@@ -2651,14 +2656,14 @@ void GenericTasksTestsBase::shouldFailToSetStreamSyncModeIfPropertyDoesntExist()
 {
     EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
 
-    expectPropertyDoesntExist("stream-sync-mode");
+    expectPropertyDoesntExist(kStreamSyncModeStr);
 }
 
 void GenericTasksTestsBase::shouldSetStreamSyncMode()
 {
     EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
 
-    expectSetProperty("stream-sync-mode", kStreamSyncMode);
+    expectSetProperty(kStreamSyncModeStr, kStreamSyncMode);
 }
 
 void GenericTasksTestsBase::triggerSetStreamSyncMode()

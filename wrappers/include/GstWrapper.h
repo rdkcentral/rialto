@@ -477,6 +477,8 @@ public:
         return gst_iterator_next(it, elem);
     }
 
+    void gstIteratorResync(GstIterator *it) const override { return gst_iterator_resync(it); }
+
     void gstIteratorFree(GstIterator *it) const override { return gst_iterator_free(it); }
 
     gboolean gstElementPostMessage(GstElement *element, GstMessage *message) const override
