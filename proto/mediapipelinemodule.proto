@@ -518,7 +518,7 @@ message SetSyncOffResponse {
 }
 
 /**
- * @fn void setStreamSyncMode(bool stream_sync_mode)
+ * @fn void setStreamSyncMode(int32 stream_sync_mode)
  * @brief Set stream sync mode property on the pipeline.
  *
  * @param[in] session_id        The id of the A/V session the request is for.
@@ -527,13 +527,13 @@ message SetSyncOffResponse {
  */
 message SetStreamSyncModeRequest {
     optional int32 session_id = 1 [default = -1];
-    optional bool stream_sync_mode = 2;
+    optional int32 stream_sync_mode = 2;
 }
 message SetStreamSyncModeResponse {
 }
 
 /**
- * @fn void getStreamSyncMode(bool &stream_sync_mode)
+ * @fn void getStreamSyncMode(int32 &stream_sync_mode)
  * @brief Get stream sync mode property on the pipeline.
  *
  * @param[in]  session_id       The id of the A/V session the request is for.
@@ -545,7 +545,7 @@ message GetStreamSyncModeRequest {
     optional int32 session_id = 1 [default = -1];
 }
 message GetStreamSyncModeResponse {
-    optional bool stream_sync_mode = 1;
+    optional int32 stream_sync_mode = 1;
 }
 
 /**

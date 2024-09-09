@@ -90,7 +90,7 @@ protected:
 
     void expectGetDecoder()
     {
-        getContext([&](GenericPlayerContext &m_context) { m_pipeline = m_context.pipeline; });
+        getContext([&](const GenericPlayerContext &m_context) { m_pipeline = m_context.pipeline; });
 
         EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(GST_BIN(m_pipeline))).WillOnce(Return(&m_it));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
@@ -539,7 +539,7 @@ TEST_F(GstGenericPlayerTest, shouldReturnMute)
     bool resultMute{};
     GstStreamVolume *volume = nullptr;
 
-    getContext([&](GenericPlayerContext &m_context) { volume = GST_STREAM_VOLUME(m_context.pipeline); });
+    getContext([&](const GenericPlayerContext &m_context) { volume = GST_STREAM_VOLUME(m_context.pipeline); });
     EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetMute(volume)).WillOnce(Return(kMute));
     EXPECT_TRUE(m_sut->getMute(resultMute));
     EXPECT_EQ(resultMute, kMute);
@@ -671,7 +671,7 @@ TEST_F(GstGenericPlayerTest, shouldGetStreamSyncModeWithIteratorResync)
 
 TEST_F(GstGenericPlayerTest, shouldFailToGetStreamSyncModeIfNoDecoder)
 {
-    getContext([&](GenericPlayerContext &m_context) { m_pipeline = m_context.pipeline; });
+    getContext([&](const GenericPlayerContext &m_context) { m_pipeline = m_context.pipeline; });
 
     EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(GST_BIN(m_pipeline))).WillOnce(Return(&m_it));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_DONE));

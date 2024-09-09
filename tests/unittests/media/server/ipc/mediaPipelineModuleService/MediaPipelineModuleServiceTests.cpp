@@ -405,6 +405,78 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetMute)
     sendGetMuteRequestAndReceiveResponseWithoutMuteMatch();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldSetLowLatency)
+{
+    mediaPipelineServiceWillSetLowLatency();
+    sendSetLowLatencyRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetLowLatency)
+{
+    mediaPipelineServiceWillFailToSetLowLatency();
+    sendSetLowLatencyRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetSync)
+{
+    mediaPipelineServiceWillSetSync();
+    sendSetSyncRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetSync)
+{
+    mediaPipelineServiceWillFailToSetSync();
+    sendSetSyncRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetSync)
+{
+    mediaPipelineServiceWillGetSync();
+    sendGetSyncRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetSync)
+{
+    mediaPipelineServiceWillFailToGetSync();
+    sendGetSyncRequestAndReceiveResponseWithoutSyncMatch();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetSyncOff)
+{
+    mediaPipelineServiceWillSetSyncOff();
+    sendSetSyncOffRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetSyncOff)
+{
+    mediaPipelineServiceWillFailToSetSyncOff();
+    sendSetSyncOffRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetStreamSyncMode)
+{
+    mediaPipelineServiceWillSetStreamSyncMode();
+    sendSetStreamSyncModeRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetStreamSyncMode)
+{
+    mediaPipelineServiceWillFailToSetStreamSyncMode();
+    sendSetStreamSyncModeRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetStreamSyncMode)
+{
+    mediaPipelineServiceWillGetStreamSyncMode();
+    sendGetStreamSyncModeRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetStreamSyncMode)
+{
+    mediaPipelineServiceWillFailToGetStreamSyncMode();
+    sendGetStreamSyncModeRequestAndReceiveResponseWithoutStreamSyncModeMatch();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldFlush)
 {
     mediaPipelineServiceWillFlush();
