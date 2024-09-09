@@ -39,6 +39,12 @@ using ::testing::StrEq;
 using ::testing::StrictMock;
 using ::testing::UnorderedElementsAre;
 
+namespace
+{
+const GstElementFactoryListType kExpectedFactoryListType{
+    GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+
+};
 template <typename T> class GListWrapper
 {
 public:
@@ -79,6 +85,7 @@ public:
     {
         IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock;
         IFactoryAccessor::instance().glibWrapperFactory() = m_glibWrapperFactoryMock;
+        memset(&m_object, 0x00, sizeof(m_object));
     }
 
     ~GstCapabilitiesTest() override
@@ -144,20 +151,14 @@ public:
     {
         createSutWithNoDecoderAndNoSink();
 
-        const GstElementFactoryListType kExpectedFactoryListType{
-            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
-        GstElementFactory *dummyFactory{nullptr};
-
-        m_listOfFactories = g_list_append(m_listOfFactories, dummyFactory);
+        m_listOfFactories = g_list_append(m_listOfFactories, m_dummyElementFactory);
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(kExpectedFactoryListType, GST_RANK_NONE))
             .WillOnce(Return(m_listOfFactories));
         EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
 
         // The next calls should ensure that an object is created and then freed
-        GstElement object;
-        memset(&object, 0x00, sizeof(object));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(dummyFactory, nullptr)).WillOnce(Return(&object));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&object));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(m_dummyElementFactory, nullptr)).WillOnce(Return(&m_object));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_object));
     }
 
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};
@@ -204,8 +205,12 @@ public:
     GListWrapper<GstElementFactory *> m_parserFactoryList{m_parserFactory};
     GListWrapper<GstStaticPadTemplate *> m_parserPadTemplatesList{&m_parserPadTemplateSink, &m_parserPadTemplateSrc};
 
-    // variable used to test getSupportedProperties
+    // variables used to test getSupportedProperties
+    GstElement m_object;
     GList *m_listOfFactories{nullptr};
+    char m_suppliesAddressOfDummyElementFactory{0};
+    GstElementFactory *m_dummyElementFactory{
+        reinterpret_cast<GstElementFactory *>(&m_suppliesAddressOfDummyElementFactory)};
 };
 
 /**
@@ -344,6 +349,7 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported)
     EXPECT_EQ(supportedProperties, kParamNames);
 
     gst_plugin_feature_list_free(m_listOfFactories);
+    m_listOfFactories = nullptr;
 }
 
 TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithNoPropertiesSupported)
@@ -368,6 +374,7 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithNoPropertiesSupported)
     EXPECT_TRUE(supportedProperties.empty());
 
     gst_plugin_feature_list_free(m_listOfFactories);
+    m_listOfFactories = nullptr;
 }
 
 TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoPadsWithTheSameCaps)
