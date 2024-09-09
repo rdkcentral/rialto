@@ -63,4 +63,9 @@ bool RdkGstreamerUtilsWrapper::initialVolSettingNeeded() const
 {
     return rdk_gstreamer_utils::initialVolSettingNeeded();
 }
+
+bool RdkGstreamerUtilsWrapper::isSocAudioFadeSupported() const
+{
+    return rdk_gstreamer_utils::isSocAudioFadeSupported();
+}
 } // namespace firebolt::rialto::wrappers

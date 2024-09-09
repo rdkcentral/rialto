@@ -43,7 +43,6 @@ private:
     double m_targetVolume;
     uint32_t m_volumeDuration;
     firebolt::rialto::EaseType m_easeType;
-    // GenericPlayerContext::AudioFadeMechanism m_audioFadeMechanism;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

@@ -45,6 +45,7 @@ public:
                          bool audioaac) const override;
     void doAudioEasingonSoc(double targetVolume, uint32_t volumeDuration, rgu_Ease easeType) const override;
     bool initialVolSettingNeeded() const override;
+    bool isSocAudioFadeSupported() const override;
 };
 } // namespace firebolt::rialto::wrappers
 

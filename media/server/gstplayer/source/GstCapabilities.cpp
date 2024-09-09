@@ -135,7 +135,17 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
         {
             throw std::runtime_error("Cannot create GlibWrapper");
         }
-        gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper);
+
+        std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> rdkGstreamerUtilsWrapperFactory =
+            firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory::getFactory();
+        std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper;
+
+        if ((!rdkGstreamerUtilsWrapperFactory) || (!(rdkGstreamerUtilsWrapper = rdkGstreamerUtilsWrapperFactory->createRdkGstreamerUtilsWrapper())))
+        {
+            throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
+        }
+
+        gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper, rdkGstreamerUtilsWrapper);
     }
     catch (const std::exception &e)
     {
@@ -146,8 +156,9 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
 }
 
 GstCapabilities::GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
-    : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
+                                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                                 const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper)
+    : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}
 {
     fillSupportedMimeTypes();
 }
@@ -204,6 +215,7 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
     // Scan all returned elements for the specified properties...
     std::list<std::string> propertiesToLookFor{propertyNames.begin(), propertyNames.end()};
     std::vector<std::string> propertiesFound;
+    bool isAudioFadeSupported{false};
     for (GList *iter = factories; iter != nullptr && !propertiesToLookFor.empty(); iter = iter->next)
     {
         GstElementFactory *factory = GST_ELEMENT_FACTORY(iter->data);
@@ -216,6 +228,8 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
                 if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_CLASS(elementClass), i->c_str()))
                 {
                     propertiesFound.push_back(*i);
+                    if (*i == "audio-fade")
+                        isAudioFadeSupported = true;
                     i = propertiesToLookFor.erase(i);
                 }
                 else
@@ -226,6 +240,16 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
         }
     }
 
+    if (!isAudioFadeSupported)
+    {
+        bool socAudioFadeSupported = m_rdkGstreamerUtilsWrapper->isSocAudioFadeSupported();
+        RIALTO_SERVER_LOG_ERROR("Is Soc-Implementation for Audio fade available ? = %s", socAudioFadeSupported ? "Yes" : "No");
+        if (socAudioFadeSupported)
+        {
+            RIALTO_SERVER_LOG_ERROR("asdfasdfsadfsadfsadfasdfasdfasdf");
+            propertiesFound.push_back("audio-fade");  // Add "audio-fade" if supported by SoC
+        }
+    }
     // Cleanup
     m_gstWrapper->gstPluginFeatureListFree(factories);
     return propertiesFound;

@@ -95,6 +95,7 @@ public:
                                  bool audioaac) const = 0;
     virtual void doAudioEasingonSoc(double targetVolume, uint32_t volumeDuration, rgu_Ease easeType) const = 0;
     virtual bool initialVolSettingNeeded() const = 0;
+    virtual bool isSocAudioFadeSupported() const = 0;
 };
 } // namespace firebolt::rialto::wrappers
 
