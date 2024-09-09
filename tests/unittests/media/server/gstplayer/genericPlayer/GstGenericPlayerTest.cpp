@@ -116,11 +116,10 @@ protected:
         EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element))).WillOnce(Return(kElementTypeName.c_str()));
     }
 
-    template <typename T>
-    void willGetElementProperty(const std::string &propertyName, const T &value)
+    template <typename T> void willGetElementProperty(const std::string &propertyName, const T &value)
     {
         EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq(propertyName.c_str()))).WillOnce(Return(&m_prop));
-        
+
         if constexpr (std::is_same_v<T, bool>)
         {
             EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(propertyName.c_str()), _))
@@ -144,7 +143,6 @@ protected:
 
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
     }
-
 };
 
 TEST_F(GstGenericPlayerTest, shouldAttachSource)

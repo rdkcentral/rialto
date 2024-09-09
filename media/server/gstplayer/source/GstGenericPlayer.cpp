@@ -540,7 +540,7 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
             else
             {
                 RIALTO_SERVER_LOG_ERROR("failed to get 'rendered' or 'dropped' from structure (%s)",
-                                       GST_ELEMENT_NAME(actualSink));
+                                        GST_ELEMENT_NAME(actualSink));
             }
             m_gstWrapper->gstStructureFree(stats);
         }
@@ -1246,7 +1246,7 @@ bool GstGenericPlayer::getStreamSyncMode(int32_t &streamSyncMode)
     else
     {
         RIALTO_SERVER_LOG_ERROR("Stream sync mode not supported in decoder '%s'",
-                               (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
+                                (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
     }
 
     if (decoder)

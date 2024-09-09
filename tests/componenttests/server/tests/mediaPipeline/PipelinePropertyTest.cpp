@@ -89,7 +89,7 @@ public:
                 }));
         EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element))).WillOnce(Return(kElementTypeName.c_str()));
         EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq(propertyName.c_str()))).WillOnce(Return(&m_prop));
-        
+
         if constexpr (std::is_same_v<T, bool>)
         {
             EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(propertyName.c_str()), _))
@@ -110,8 +110,7 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
         EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                                       type)))
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER | type)))
             .WillOnce(Return(TRUE));
         EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
@@ -139,8 +138,7 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
         EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                                       type)))
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER | type)))
             .WillOnce(Return(TRUE));
         EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
@@ -434,15 +432,15 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
     getSync();
 
     // Step 9: Set Sync Off
-    willSetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "sync-off", kSyncOff); 
+    willSetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "sync-off", kSyncOff);
     setSyncOff();
 
     // Step 10: Set Stream Sync Mode
-    willSetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "stream-sync-mode", kStreamSyncMode); 
+    willSetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "stream-sync-mode", kStreamSyncMode);
     setStreamSyncMode();
 
     // Step 11: Get Stream Sync Mode
-    willGetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "stream-sync-mode", kStreamSyncMode); 
+    willGetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "stream-sync-mode", kStreamSyncMode);
     getStreamSyncMode();
 
     // Step 12: Remove sources

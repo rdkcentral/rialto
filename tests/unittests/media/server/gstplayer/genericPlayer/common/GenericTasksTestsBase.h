@@ -390,8 +390,7 @@ private:
     void expectSetCaps();
 
     // Set property helpers
-    template <typename T>
-    void expectSetProperty(const std::string &propertyName, const T &value);
+    template <typename T> void expectSetProperty(const std::string &propertyName, const T &value);
     void expectPropertyDoesntExist(const std::string &propertyName);
 };
 

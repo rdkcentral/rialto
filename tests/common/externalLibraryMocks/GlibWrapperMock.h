@@ -55,7 +55,7 @@ public:
                 gboolean val = va_arg(args, gboolean);
                 gObjectSetBoolStub(object, kProperty, val);
             }
-            else if(g_strcmp0(kProperty, "stream-sync-mode") == 0)
+            else if (g_strcmp0(kProperty, "stream-sync-mode") == 0)
             {
                 gint val = va_arg(args, gint);
                 gObjectSetIntStub(object, kProperty, val);
