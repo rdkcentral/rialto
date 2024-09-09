@@ -53,39 +53,22 @@ void Flush::execute() const
         return;
     }
 
-    // Clear/invalidate old NeedDatas
-    switch (m_type)
+    if (m_type == MediaSourceType::UNKNOWN)
     {
-    case MediaSourceType::AUDIO:
-    {
-        m_context.audioNeedData = false;
-        m_context.audioNeedDataPending = false;
-        for (auto &buffer : m_context.audioBuffers)
-        {
-            m_gstWrapper->gstBufferUnref(buffer);
-        }
-        m_context.audioBuffers.clear();
-        break;
-    }
-    case MediaSourceType::VIDEO:
-    {
-        m_context.videoNeedData = false;
-        m_context.videoNeedDataPending = false;
-        for (auto &buffer : m_context.videoBuffers)
-        {
-            m_gstWrapper->gstBufferUnref(buffer);
-        }
-        m_context.videoBuffers.clear();
-        break;
-    }
-    case MediaSourceType::UNKNOWN:
-    default:
-    {
-        RIALTO_SERVER_LOG_WARN("Flush failed: %s Media source type not supported.",
-                               common::convertMediaSourceType(m_type));
+        RIALTO_SERVER_LOG_WARN("Flush failed: Media source type not supported.");
         return;
     }
+
+    StreamInfo &streamInfo = sourceElem->second;
+    streamInfo.isDataNeeded = false;
+    streamInfo.isNeedDataPending = false;
+
+    for (auto &buffer : streamInfo.buffers)
+    {
+        m_gstWrapper->gstBufferUnref(buffer);
     }
+    streamInfo.buffers.clear();
+
     m_gstPlayerClient->invalidateActiveRequests(m_type);
 
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)

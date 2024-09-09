@@ -25,12 +25,28 @@ class AttachSamplesTest : public GenericTasksTestsBase
 
 TEST_F(AttachSamplesTest, shouldAttachAllAudioSamples)
 {
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
     shouldAttachAllAudioSamples();
     triggerAttachSamplesAudio();
 }
 
 TEST_F(AttachSamplesTest, shouldAttachAllVideoSamples)
 {
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
     shouldAttachAllVideoSamples();
     triggerAttachSamplesVideo();
+}
+
+TEST_F(AttachSamplesTest, shouldAttachAllSubtitleSamples)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    shouldAttachAllSubtitleSamples();
+    triggerAttachSamplesSubtitle();
+    checkSubtitleSamplesAttached();
+}
+
+TEST_F(AttachSamplesTest, shouldSkipAttachingSubtitleSamples)
+{
+    shouldSkipAttachingSubtitleSamples();
+    triggerAttachSamplesSubtitle();
 }

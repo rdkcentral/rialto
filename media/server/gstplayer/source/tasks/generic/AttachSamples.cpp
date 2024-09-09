@@ -21,12 +21,14 @@
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
-AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                             const IMediaPipeline::MediaSegmentVector &mediaSegments)
-    : m_context{context}, m_player{player}
+AttachSamples::AttachSamples(GenericPlayerContext &context,
+                             const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                             IGstGenericPlayerPrivate &player, const IMediaPipeline::MediaSegmentVector &mediaSegments)
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_player{player}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing AttachSamples");
     for (const auto &mediaSegment : mediaSegments)
@@ -68,6 +70,10 @@ AttachSamples::AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPri
                 RIALTO_SERVER_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
             }
         }
+        else if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::SUBTITLE)
+        {
+            m_subtitleData.push_back(gstBuffer);
+        }
     }
 }
 
@@ -84,16 +90,46 @@ void AttachSamples::execute() const
         m_player.updateAudioCaps(audioData.rate, audioData.channels, audioData.codecData);
         m_player.addAudioClippingToBuffer(audioData.buffer, audioData.clippingStart, audioData.clippingEnd);
 
-        m_context.audioBuffers.push_back(audioData.buffer);
-        m_player.attachAudioData();
+        attachData(firebolt::rialto::MediaSourceType::AUDIO, audioData.buffer);
     }
     for (VideoData videoData : m_videoData)
     {
         m_player.updateVideoCaps(videoData.width, videoData.height, videoData.frameRate, videoData.codecData);
 
-        m_context.videoBuffers.push_back(videoData.buffer);
-        m_player.attachVideoData();
+        attachData(firebolt::rialto::MediaSourceType::VIDEO, videoData.buffer);
     }
-    m_player.notifyNeedMediaData(!m_audioData.empty(), !m_videoData.empty());
+    for (GstBuffer *buffer : m_subtitleData)
+    {
+        attachData(firebolt::rialto::MediaSourceType::SUBTITLE, buffer);
+    }
+
+    if (!m_audioData.empty())
+    {
+        m_player.notifyNeedMediaData(firebolt::rialto::MediaSourceType::AUDIO);
+    }
+    else if (!m_videoData.empty())
+    {
+        m_player.notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO);
+    }
+    else if (!m_subtitleData.empty())
+    {
+        m_player.notifyNeedMediaData(firebolt::rialto::MediaSourceType::SUBTITLE);
+    }
 }
+
+void AttachSamples::attachData(const firebolt::rialto::MediaSourceType mediaType, GstBuffer *buffer) const
+{
+    auto elem = m_context.streamInfo.find(mediaType);
+    if (elem != m_context.streamInfo.end())
+    {
+        elem->second.buffers.push_back(buffer);
+        m_player.attachData(mediaType);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Could not find stream info for %s", common::convertMediaSourceType(mediaType));
+        m_gstWrapper->gstBufferUnref(buffer);
+    }
+}
+
 } // namespace firebolt::rialto::server::tasks::generic

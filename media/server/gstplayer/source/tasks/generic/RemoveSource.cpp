@@ -45,9 +45,6 @@ void RemoveSource::execute() const
         RIALTO_SERVER_LOG_DEBUG("RemoveSource not supported for type != AUDIO");
         return;
     }
-    m_context.audioBuffers.clear();
-    m_context.audioNeedData = false;
-    m_context.audioNeedDataPending = false;
     m_context.audioSourceRemoved = true;
     m_gstPlayerClient->invalidateActiveRequests(m_type);
     GstElement *source{nullptr};
@@ -61,6 +58,9 @@ void RemoveSource::execute() const
         RIALTO_SERVER_LOG_WARN("failed to flush - source is NULL");
         return;
     }
+    sourceElem->second.buffers.clear();
+    sourceElem->second.isDataNeeded = false;
+    sourceElem->second.isNeedDataPending = false;
     GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
     if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
     {
@@ -73,6 +73,6 @@ void RemoveSource::execute() const
     }
 
     // Turn audio off, removing audio sink from playsink
-    m_player.setAudioVideoFlags(false, true);
+    m_player.setPlaybinFlags(false);
 }
 } // namespace firebolt::rialto::server::tasks::generic

@@ -1272,6 +1272,25 @@ public:
      */
     virtual GstAudioClippingMeta *gstBufferAddAudioClippingMeta(GstBuffer *buffer, GstFormat format, guint64 start,
                                                                 guint64 end) const = 0;
+
+    /**
+     * @brief Gets a pad of given \a element
+     *
+     * @param element element from which pad should be returned
+     * @param name name of the pad
+     *
+     * @return given pad or NULL if failed
+     */
+    virtual GstPad *gstElementGetStaticPad(GstElement *element, const gchar *name) const = 0;
+
+    /**
+     * @brief Gives the pointer to the GstPad object of the element.
+     *
+     * @param element element from which pad should be returned
+     *
+     * @return given pad or NULL if failed
+     */
+    virtual GstPad *gstBaseSinkPad(GstElement *element) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

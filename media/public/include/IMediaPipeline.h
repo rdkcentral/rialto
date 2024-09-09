@@ -1299,24 +1299,42 @@ public:
     /**
      * @brief Set mute status of pipeline.
      *
-     * Muting does not change the underlying volume setting so when
-     * unmuted the user will hear audio at the same volume as previously
-     * set.
+     * Change mute status of media source
      *
-     * @param[in] mute : Desired mute state, true=muted, false=not muted
+     * @param[in] sourceId Source, which mute status should be changed
+     * @param[in] mute   Desired mute state, true=muted, false=not muted
      *
      * @retval true on success false otherwise
      */
-    virtual bool setMute(bool mute) = 0;
+    virtual bool setMute(int32_t sourceId, bool mute) = 0;
 
     /**
-     * @brief Get current mute status of the pipeline
+     * @brief Get current mute status of the media source
      *
-     * @param[out] mute : Current mute state
+     * @param[in] sourceId Source, which mute status should be fetched
+     * @param[out] mute   Current mute state
      *
      * @retval true on success false otherwise
      */
-    virtual bool getMute(bool &mute) = 0;
+    virtual bool getMute(int32_t sourceId, bool &mute) = 0;
+
+    /**
+     * @brief Change Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setTextTrackIdentifier(const std::string &textTrackIdentifier) = 0;
+
+    /**
+     * @brief Get Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getTextTrackIdentifier(std::string &textTrackIdentifier) = 0;
 
     /**
      * @brief Flushes a source.

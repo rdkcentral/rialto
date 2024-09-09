@@ -36,6 +36,14 @@ TEST_F(FinishSetupSourceTest, shouldFinishSetupSource)
     checkSetupSourceFinished();
 }
 
+TEST_F(FinishSetupSourceTest, shouldFinishSetupSourceWithUnknownSource)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::UNKNOWN);
+    shouldFinishSetupSource();
+    triggerFinishSetupSource();
+    checkSetupSourceFinished();
+}
+
 TEST_F(FinishSetupSourceTest, shouldScheduleAudioNeedData)
 {
     shouldFinishSetupSource();

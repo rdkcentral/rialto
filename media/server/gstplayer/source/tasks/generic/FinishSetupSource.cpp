@@ -99,20 +99,19 @@ void FinishSetupSource::execute() const
 
     GstAppSrcCallbacks callbacks = {appSrcNeedData, appSrcEnoughData, appSrcSeekData, {nullptr}};
 
-    auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
-    if (elem != m_context.streamInfo.end())
+    for (auto &elem : m_context.streamInfo)
     {
-        m_context.gstSrc->setupAndAddAppArc(m_context.decryptionService, m_context.source, elem->second, &callbacks,
-                                            &m_player, firebolt::rialto::MediaSourceType::AUDIO);
-        m_player.notifyNeedMediaData(true, false);
-    }
+        firebolt::rialto::MediaSourceType sourceType = elem.first;
+        if (sourceType == firebolt::rialto::MediaSourceType::UNKNOWN)
+        {
+            RIALTO_SERVER_LOG_WARN("Unknown media segment type");
+            continue;
+        }
 
-    elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
-    if (elem != m_context.streamInfo.end())
-    {
-        m_context.gstSrc->setupAndAddAppArc(m_context.decryptionService, m_context.source, elem->second, &callbacks,
-                                            &m_player, firebolt::rialto::MediaSourceType::VIDEO);
-        m_player.notifyNeedMediaData(false, true);
+        StreamInfo &streamInfo = elem.second;
+        m_context.gstSrc->setupAndAddAppArc(m_context.decryptionService, m_context.source, streamInfo, &callbacks,
+                                            &m_player, sourceType);
+        m_player.notifyNeedMediaData(sourceType);
     }
 
     m_context.gstSrc->allAppSrcsAdded(m_context.source);

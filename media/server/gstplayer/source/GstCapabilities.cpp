@@ -164,6 +164,10 @@ std::vector<std::string> GstCapabilities::getSupportedMimeTypes(MediaSourceType 
     {
         type = "audio/";
     }
+    else if (sourceType == MediaSourceType::SUBTITLE)
+    {
+        return {"text/vtt", "text/ttml"};
+    }
     else
     {
         RIALTO_SERVER_LOG_WARN("Unsupported media type");

@@ -758,3 +758,16 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPads_Two
     EXPECT_FALSE(m_sut->isMimeTypeSupported("video/x-vp9"));
     EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/x-opus"));
 }
+
+TEST_F(GstCapabilitiesTest, CreateGstCapabilities_GetSubtitlesMimeTypes)
+{
+    const std::vector<std::string> kSubtitleMimeTypes{"text/vtt", "text/ttml"};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+
+    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
+
+    EXPECT_EQ(m_sut->getSupportedMimeTypes(MediaSourceType::SUBTITLE), kSubtitleMimeTypes);
+}

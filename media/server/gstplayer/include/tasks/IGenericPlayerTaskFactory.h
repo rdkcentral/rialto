@@ -30,6 +30,7 @@
 #include <cstdint>
 #include <gst/app/gstappsrc.h>
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::server
 {
@@ -275,12 +276,25 @@ public:
     /**
      * @brief Creates a SetMute task.
      *
-     * @param[in] context       : The GstGenericPlayer context
-     * @param[in] mute          : The mute state to be set
+     * @param[in] context         : The GstGenericPlayer context
+     * @param[in] mediaSourceType : The media source type to set mute
+     * @param[in] mute            : The mute state to be set
      *
      * @retval the new SetMute task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, bool mute) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context,
+                                                       const MediaSourceType &mediaSourceType, bool mute) const = 0;
+
+    /**
+     * @brief Creates a SetTextTrackIdentifier task.
+     *
+     * @param[in] context             : The GstGenericPlayer context
+     * @param[in] textTrackIdentifier : The text track identifier to be set
+     *
+     * @retval the new SetTextTrackIdentifier task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetTextTrackIdentifier(GenericPlayerContext &context,
+                                                                      const std::string &textTrackIdentifier) const = 0;
 
     /**
      * @brief Creates a Shutdown task.
@@ -307,13 +321,11 @@ public:
      *
      * @param[in] context          : The GstGenericPlayer context
      * @param[in] player           : The GstPlayer instance
-     * @param[in] underflowFlag    : The underflow flag (audio or video).
      * @param[in] underflowEnabled : The underflow enabled flag (audio or video).
      *
      * @retval the new Underflow task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context,
-                                                         IGstGenericPlayerPrivate &player, bool &underflowFlag,
+    virtual std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                          bool underflowEnabled, MediaSourceType sourceType) const = 0;
 
     /**
@@ -356,6 +368,7 @@ public:
      * @brief Creates a SetSourcePosition task.
      *
      * @param[in] context   : The GstPlayer context
+     * @param[in] player     : The GstGenericPlayer instance
      * @param[in] type      : The media source type to set position
      * @param[in] position  : The new source position
      * @param[in] resetTime : True if time should be reset
@@ -363,6 +376,7 @@ public:
      * @retval the new SetSourcePosition task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context,
+                                                                 IGstGenericPlayerPrivate &player,
                                                                  const firebolt::rialto::MediaSourceType &type,
                                                                  std::int64_t position, bool resetTime) const = 0;
 

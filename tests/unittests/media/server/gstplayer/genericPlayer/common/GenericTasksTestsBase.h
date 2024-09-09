@@ -59,7 +59,6 @@ protected:
     void setContextNeedData(bool doNeedData);
     void setContextAudioUnderflowOccured(bool isUnderflow);
     void setContextVideoUnderflowOccured(bool isUnderflow);
-    void setContextAudioAppSrc();
     void setContextEndOfStream(firebolt::rialto::MediaSourceType sourceType);
     void setContextEndOfStreamNotified();
     void setContextPipelineNull();
@@ -123,6 +122,10 @@ protected:
     void triggerAttachSamplesAudio();
     void shouldAttachAllVideoSamples();
     void triggerAttachSamplesVideo();
+    void shouldAttachAllSubtitleSamples();
+    void shouldSkipAttachingSubtitleSamples();
+    void triggerAttachSamplesSubtitle();
+    void checkSubtitleSamplesAttached();
 
     // AttachSource test methods
     void shouldAttachAudioSource();
@@ -141,6 +144,7 @@ protected:
     void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
                                   firebolt::rialto::StreamFormat streamFormat);
     void checkVideoSourceAttached();
+    void shouldAttachSubtitleSource();
     void checkSubtitleSourceAttached();
     void triggerAttachSubtitleSource();
     void shouldAttachVideoSourceWithStringCodecData();
@@ -216,13 +220,11 @@ protected:
     void triggerEosVideo();
     void shouldGstAppSrcEndOfStreamSuccess();
     void shouldGstAppSrcEndOfStreamFailure();
-    void shouldCancelUnderflow();
+    void shouldCancelUnderflow(firebolt::rialto::MediaSourceType sourceType);
 
     // Underflow test methods
-    void setUnderflowFlag(bool isUnderflowFlag);
     void setUnderflowEnabled(bool isUnderflowEnabled);
     void triggerVideoUnderflow();
-    void checkUnderflowFlag(bool expected);
     void shouldNotifyVideoUnderflow();
 
     // Shutdown test methods
@@ -230,8 +232,12 @@ protected:
     void triggerShutdown();
 
     // SetMute test methods
-    void triggerSetMute();
-    void shouldGstSetMute();
+    void triggerSetAudioMute();
+    void triggerSetVideoMute();
+    void triggerSetSubtitleMute();
+    void setContextSubtitleSink();
+    void shouldSetAudioMute();
+    void shouldSetSubtitleMute();
 
     // immediate-output sink property test methods
     void shouldSetImmediateOutput();
@@ -293,6 +299,7 @@ protected:
     void triggerNeedDataUnknownSrc();
     void shouldNotifyNeedAudioDataSuccess();
     void shouldNotifyNeedVideoDataSuccess();
+    void shouldNotifyNeedSubtitleDataSuccess();
     void checkNeedDataPendingForAudioOnly();
     void checkNeedDataPendingForVideoOnly();
     void shouldNotifyNeedAudioDataFailure();
@@ -324,8 +331,12 @@ protected:
     // ReadShmDataAndAttachSamples test methods
     void shouldReadAudioData();
     void shouldReadVideoData();
+    void shouldReadSubtitleData();
+    void shouldReadUnknownData();
+    void shouldNotAttachUnknownSamples();
     void triggerReadShmDataAndAttachSamplesAudio();
     void triggerReadShmDataAndAttachSamplesVideo();
+    void triggerReadShmDataAndAttachSamples();
 
     // RemoveSource test methods
     void shouldInvalidateActiveAudioRequests();
@@ -344,6 +355,8 @@ protected:
     void shouldFlushVideoSrcSuccess();
 
     // Set Source Position test methods
+    void shouldSetSubtitleSourcePosition();
+    void shouldFailToSetSubtitleSourcePosition();
     void triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionSet(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType);
@@ -351,6 +364,10 @@ protected:
     // ProcessAudioGap test methods
     void triggerProcessAudioGap();
     void shouldProcessAudioGap();
+
+    // SetTextTrackIdentifier test methods
+    void shouldSetTextTrackIdentifier();
+    void triggerSetTextTrackIdentifier();
 
 private:
     // SetupElement helper methods

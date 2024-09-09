@@ -205,3 +205,15 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, IsMimeTypeSupportedFailure)
 
     EXPECT_FALSE(m_sut->isMimeTypeSupported("video/h264"));
 }
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedSubtitlesMimeTypesSuccess)
+{
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedMimeTypes"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setGetSupportedMimeTypesResponse)));
+
+    EXPECT_EQ(m_sut->getSupportedMimeTypes(MediaSourceType::SUBTITLE), m_mimeTypes);
+}

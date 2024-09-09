@@ -23,6 +23,7 @@
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerClientMock.h"
 #include "GstGenericPlayerPrivateMock.h"
+#include "GstTextTrackSinkFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "HeartbeatHandlerMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
@@ -44,12 +45,14 @@
 #include "tasks/generic/ProcessAudioGap.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
+#include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetImmediateOutput.h"
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
 #include "tasks/generic/SetSourcePosition.h"
+#include "tasks/generic/SetTextTrackIdentifier.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
@@ -75,8 +78,10 @@ protected:
         std::make_shared<StrictMock<firebolt::rialto::wrappers::GstWrapperMock>>()};
     std::shared_ptr<firebolt::rialto::wrappers::RdkGstreamerUtilsWrapperMock> m_rdkGstreamerUtilsWrapper{
         std::make_shared<StrictMock<firebolt::rialto::wrappers::RdkGstreamerUtilsWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::server::GstTextTrackSinkFactoryMock> m_gstTextTrackSinkFactoryMock{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstTextTrackSinkFactoryMock>>()};
     firebolt::rialto::server::GenericPlayerTaskFactory m_sut{&m_gstPlayerClient, m_gstWrapper, m_glibWrapper,
-                                                             m_rdkGstreamerUtilsWrapper};
+                                                             m_rdkGstreamerUtilsWrapper, m_gstTextTrackSinkFactoryMock};
 };
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateAttachSamples)
@@ -222,7 +227,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetVolume)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetMute)
 {
     constexpr bool kMute{false};
-    auto task = m_sut.createSetMute(m_context, kMute);
+    auto task = m_sut.createSetMute(m_context, firebolt::rialto::MediaSourceType::AUDIO, kMute);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetMute &>(*task));
 }
@@ -243,9 +248,8 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateStop)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUnderflow)
 {
-    bool flag{false};
     bool enabled{false};
-    auto task = m_sut.createUnderflow(m_context, m_gstPlayer, flag, enabled, firebolt::rialto::MediaSourceType::VIDEO);
+    auto task = m_sut.createUnderflow(m_context, m_gstPlayer, enabled, firebolt::rialto::MediaSourceType::VIDEO);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Underflow &>(*task));
 }
@@ -280,7 +284,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateFlush)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSourcePosition)
 {
-    auto task = m_sut.createSetSourcePosition(m_context, firebolt::rialto::MediaSourceType::AUDIO, 0, false);
+    auto task = m_sut.createSetSourcePosition(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, 0, false);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetSourcePosition &>(*task));
 }
@@ -297,4 +301,18 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetImmediateOutput)
     auto task = m_sut.createSetImmediateOutput(m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetImmediateOutput &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetTextTrackIdentifier)
+{
+    auto task = m_sut.createSetTextTrackIdentifier(m_context, "");
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetTextTrackIdentifier &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateRenderFrame)
+{
+    auto task = m_sut.createRenderFrame(m_context, m_gstPlayer);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::RenderFrame &>(*task));
 }

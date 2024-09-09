@@ -264,7 +264,7 @@ public:
      *
      * @param[in] mute : Desired mute state, true=muted, false=not muted
      */
-    virtual void setMute(bool mute) = 0;
+    virtual void setMute(const MediaSourceType &mediaSourceType, bool mute) = 0;
 
     /**
      * @brief Get current mute status of the pipeline
@@ -273,7 +273,25 @@ public:
      *
      * @retval True in success, false otherwise
      */
-    virtual bool getMute(bool &mute) = 0;
+    virtual bool getMute(const MediaSourceType &mediaSourceType, bool &mute) = 0;
+
+    /**
+     * @brief Change Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    virtual void setTextTrackIdentifier(const std::string &textTrackIdentifier) = 0;
+
+    /**
+     * @brief Get Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getTextTrackIdentifier(std::string &textTrackIdentifier) = 0;
 
     /**
      * @brief Checks if worker thread is not deadlocked

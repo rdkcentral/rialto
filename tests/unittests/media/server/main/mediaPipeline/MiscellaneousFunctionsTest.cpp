@@ -499,21 +499,35 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeSuccess)
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetMuteFailureDueToUninitializedPlayer)
 {
     const bool kMute{false};
+    const int32_t kUnknownSourceId{-1};
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_FALSE(m_mediaPipeline->setMute(kMute));
+    EXPECT_FALSE(m_mediaPipeline->setMute(kUnknownSourceId, kMute));
 }
 
 /**
- * Test that SetMute returns failure if the gstreamer player is not initialized
+ * Test that SetMute returns failure if the source is not attached
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetMuteFailureDueToUnattachedSource)
+{
+    const bool kMute{false};
+    const int32_t kUnknownSourceId{-1};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setMute(kUnknownSourceId, kMute));
+}
+
+/**
+ * Test that SetMute returns success
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetMuteSuccess)
 {
     const bool kMute{false};
     loadGstPlayer();
-    mainThreadWillEnqueueTaskAndWait();
+    int audioSourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
 
-    EXPECT_CALL(*m_gstPlayerMock, setMute(kMute));
-    EXPECT_TRUE(m_mediaPipeline->setMute(kMute));
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setMute(firebolt::rialto::MediaSourceType::AUDIO, kMute));
+    EXPECT_TRUE(m_mediaPipeline->setMute(audioSourceId, kMute));
 }
 
 /**
@@ -521,9 +535,22 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetMuteSuccess)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteFailureDueToUninitializedPlayer)
 {
+    const int32_t kUnknownSourceId{-1};
     mainThreadWillEnqueueTaskAndWait();
     bool resultMute{};
-    EXPECT_FALSE(m_mediaPipeline->getMute(resultMute));
+    EXPECT_FALSE(m_mediaPipeline->getMute(kUnknownSourceId, resultMute));
+}
+
+/**
+ * Test that GetMute returns failure if the source is not attached
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteFailureDueToUnattachedSource)
+{
+    const int32_t kUnknownSourceId{-1};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    bool resultMute{};
+    EXPECT_FALSE(m_mediaPipeline->getMute(kUnknownSourceId, resultMute));
 }
 
 /**
@@ -533,9 +560,10 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteFailure)
 {
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
+    int audioSourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
     bool resultMute{};
-    EXPECT_CALL(*m_gstPlayerMock, getMute(_)).WillOnce(Return(false));
-    EXPECT_FALSE(m_mediaPipeline->getMute(resultMute));
+    EXPECT_CALL(*m_gstPlayerMock, getMute(MediaSourceType::AUDIO, _)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getMute(audioSourceId, resultMute));
 }
 
 /**
@@ -547,16 +575,18 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteSuccess)
     bool resultMute{};
 
     loadGstPlayer();
+    int audioSourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
+
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, getMute(_))
+    EXPECT_CALL(*m_gstPlayerMock, getMute(MediaSourceType::AUDIO, _))
         .WillOnce(Invoke(
-            [&](bool &mut)
+            [&](MediaSourceType, bool &mut)
             {
                 mut = kCurrentMute;
                 return true;
             }));
 
-    EXPECT_TRUE(m_mediaPipeline->getMute(resultMute));
+    EXPECT_TRUE(m_mediaPipeline->getMute(audioSourceId, resultMute));
     EXPECT_EQ(resultMute, kCurrentMute);
 }
 
