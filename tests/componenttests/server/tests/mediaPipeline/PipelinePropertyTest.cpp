@@ -178,7 +178,7 @@ public:
 
     void willFailToGetDecoder()
     {
-        // Failure to get the sink will cause setting of decoder properties to fail
+        // Failure to get the decoder will cause setting of decoder properties to fail
         EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_ERROR));
     }
@@ -366,7 +366,7 @@ private:
  *   the property should be set by the RialtoServer.
  *
  *  Step 11: Get Stream Sync Mode
- *   Will get the StreamSyncMode property of the sink on the Rialto Server
+ *   Will get the StreamSyncMode property of the decoder on the Rialto Server
  *
  *  Step 12: Remove sources
  *   Remove the audio source.

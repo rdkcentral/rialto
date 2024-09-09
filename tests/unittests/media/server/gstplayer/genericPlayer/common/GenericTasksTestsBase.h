@@ -388,6 +388,11 @@ private:
     void expectAddChannelAndRateAudioToCaps();
     void expectAddRawAudioDataToCaps();
     void expectSetCaps();
+
+    // Set property helpers
+    template <typename T>
+    void expectSetProperty(const std::string &propertyName, const T &value);
+    void expectPropertyDoesntExist(const std::string &propertyName);
 };
 
 #endif // GENERIC_TASKS_TESTS_BASE_H_

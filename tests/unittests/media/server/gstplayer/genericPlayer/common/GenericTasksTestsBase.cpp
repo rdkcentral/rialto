@@ -91,6 +91,11 @@ constexpr int32_t kDolbyVisionProfile{5};
 constexpr gint64 kPosition{1234};
 constexpr gint64 kPositionOverUnderflowMargin{350 * 1000000 + 1};
 constexpr bool kMute{false};
+constexpr bool kImmediateOutput{true};
+constexpr bool kLowLatency{true};
+constexpr bool kSync{true};
+constexpr bool kSyncOff{true};
+constexpr int32_t kStreamSyncMode{1};
 constexpr double kRate{1.5};
 constexpr guint kDataLength{7};
 constexpr guint64 kOffset{123};
@@ -2527,32 +2532,18 @@ void GenericTasksTestsBase::shouldFailToSetImmediateOutputIfSinkIsNull()
 
 void GenericTasksTestsBase::shouldFailToSetImmediateOutputIfPropertyDoesntExist()
 {
-    GstElement *videoSink = testContext->m_element;
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(videoSink));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element)).WillOnce(Return(testContext->m_element));
 
-    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(videoSink)).WillOnce(Return(videoSink));
-
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), StrEq("immediate-output")))
-        .WillOnce(Return(nullptr));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(videoSink)).Times(1);
+    expectPropertyDoesntExist("immediate-output");
 }
 
 void GenericTasksTestsBase::shouldSetImmediateOutput()
 {
-    GstElement *videoSink = testContext->m_element;
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(videoSink));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element)).WillOnce(Return(testContext->m_element));
 
-    GParamSpec prop{};
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), StrEq("immediate-output")))
-        .WillOnce(Return(&prop));
-
-    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element)).WillOnce(Return(videoSink));
-
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(_, StrEq("immediate-output"))).Times(1);
-
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(videoSink)).Times(1);
+    expectSetProperty("immediate-output", kImmediateOutput);
 }
 
 void GenericTasksTestsBase::triggerSetImmediateOutput()
@@ -2570,33 +2561,18 @@ void GenericTasksTestsBase::shouldFailToSetLowLatencyIfSinkIsNull()
 
 void GenericTasksTestsBase::shouldFailToSetLowLatencyIfPropertyDoesntExist()
 {
-    GstElement *audioSink = testContext->m_element;
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(audioSink));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(testContext->m_element)).WillOnce(Return(testContext->m_element));
 
-    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(audioSink)).WillOnce(Return(audioSink));
-
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(audioSink), StrEq("low-latency")))
-        .WillOnce(Return(nullptr));
-
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(audioSink)).Times(1);
+    expectPropertyDoesntExist("low-latency");
 }
 
 void GenericTasksTestsBase::shouldSetLowLatency()
 {
-    GstElement *audioSink = testContext->m_element;
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(audioSink));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(testContext->m_element)).WillOnce(Return(testContext->m_element));
 
-    GParamSpec prop{};
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(audioSink), StrEq("low-latency")))
-        .WillOnce(Return(&prop));
-
-    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(audioSink)).WillOnce(Return(audioSink));
-
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(_, StrEq("low-latency"))).Times(1);
-
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(audioSink)).Times(1);
+    expectSetProperty("low-latency", kLowLatency);
 }
 
 void GenericTasksTestsBase::triggerSetLowLatency()
@@ -2613,31 +2589,18 @@ void GenericTasksTestsBase::shouldFailToSetSyncIfSinkIsNull()
 
 void GenericTasksTestsBase::shouldFailToSetSyncIfPropertyDoesntExist()
 {
-    GstElement *audioSink = testContext->m_element;
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(audioSink));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(testContext->m_element)).WillOnce(Return(testContext->m_element));
 
-    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(audioSink)).WillOnce(Return(audioSink));
-
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectClassFindProperty(G_OBJECT_GET_CLASS(audioSink), StrEq("sync")))
-        .WillOnce(Return(nullptr));
-
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(audioSink)).Times(1);
+    expectPropertyDoesntExist("sync-off");
 }
 
 void GenericTasksTestsBase::shouldSetSync()
 {
-    GstElement *audioSink = testContext->m_element;
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(audioSink));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(testContext->m_element)).WillOnce(Return(testContext->m_element));
 
-    GParamSpec prop{};
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectClassFindProperty(G_OBJECT_GET_CLASS(audioSink), StrEq("sync")))
-        .WillOnce(Return(&prop));
-
-    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(audioSink)).WillOnce(Return(audioSink));
-
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(_, StrEq("sync"))).Times(1);
-
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(audioSink)).Times(1);
+    expectSetProperty("sync", kSync);
 }
 
 void GenericTasksTestsBase::triggerSetSync()
@@ -2654,28 +2617,16 @@ void GenericTasksTestsBase::shouldFailToSetSyncOffIfDecoderIsNull()
 
 void GenericTasksTestsBase::shouldFailToSetSyncOffIfPropertyDoesntExist()
 {
-    GstElement *audioDecoder = testContext->m_element;
-    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(audioDecoder));
+    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
 
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(audioDecoder), StrEq("sync-off")))
-        .WillOnce(Return(nullptr));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(audioDecoder)).Times(1);
+    expectPropertyDoesntExist("sync-off");
 }
 
 void GenericTasksTestsBase::shouldSetSyncOff()
 {
-    GstElement *audioDecoder = testContext->m_element;
-    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(audioDecoder));
+    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return());
 
-    GParamSpec prop{};
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(audioDecoder), StrEq("sync-off")))
-        .WillOnce(Return(&prop));
-
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(_, StrEq("sync-off"))).Times(1);
-
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(audioDecoder)).Times(1);
+    expectSetProperty("sync-off", kSyncOff);
 }
 
 void GenericTasksTestsBase::triggerSetSyncOff()
@@ -2692,28 +2643,16 @@ void GenericTasksTestsBase::shouldFailToSetStreamSyncModeIfDecoderIsNull()
 
 void GenericTasksTestsBase::shouldFailToSetStreamSyncModeIfPropertyDoesntExist()
 {
-    GstElement *audioDecoder = testContext->m_element;
-    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(audioDecoder));
+    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
 
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(audioDecoder), StrEq("stream-sync-mode")))
-        .WillOnce(Return(nullptr));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(audioDecoder)).Times(1);
+    expectPropertyDoesntExist("stream-sync-mode");
 }
 
 void GenericTasksTestsBase::shouldSetStreamSyncMode()
 {
-    GstElement *audioDecoder = testContext->m_element;
-    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(audioDecoder));
+    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
 
-    GParamSpec prop{};
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(audioDecoder), StrEq("stream-sync-mode")))
-        .WillOnce(Return(&prop));
-
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(_, StrEq("stream-sync-mode"))).Times(1);
-
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(audioDecoder)).Times(1);
+    expectSetProperty("stream-sync-mode", kLowLatency);
 }
 
 void GenericTasksTestsBase::triggerSetStreamSyncMode()
@@ -2721,4 +2660,35 @@ void GenericTasksTestsBase::triggerSetStreamSyncMode()
     firebolt::rialto::server::tasks::generic::SetStreamSyncMode task{testContext->m_gstPlayer, testContext->m_gstWrapper,
                                                                      testContext->m_glibWrapper, true};
     task.execute();
+}
+
+template <typename T>
+void GenericTasksTestsBase::expectSetProperty(const std::string &propertyName, const T &value)
+{
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq("stream-sync-mode")))
+        .WillOnce(Return(&(testContext->m_paramSpec)));
+    
+    if constexpr (std::is_same_v<T, bool>)
+    {
+        EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetBoolStub(_, StrEq(propertyName.c_str()), value)).Times(1);
+    }
+    if constexpr (std::is_same_v<T, int32_t>)
+    {
+        EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetIntStub(_, StrEq(propertyName.c_str()), value)).Times(1);
+    }
+    else
+    {
+        EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(_, StrEq(propertyName.c_str()))).Times(1);
+    }
+
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(testContext->m_element)).Times(1);
+}
+
+void GenericTasksTestsBase::expectPropertyDoesntExist(const std::string &propertyName)
+{
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq(propertyName.c_str())))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(testContext->m_element)).Times(1);
 }

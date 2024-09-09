@@ -495,13 +495,13 @@ bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType
         }
         else
         {
-            RIALTO_SERVER_LOG_WARN("immediate-output not supported in element %s", GST_ELEMENT_NAME(actualSink));
+            RIALTO_SERVER_LOG_ERROR("immediate-output not supported in element %s", GST_ELEMENT_NAME(actualSink));
         }
         m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
     }
     else
     {
-        RIALTO_SERVER_LOG_WARN("Failed to set immediate-output property, sink is NULL");
+        RIALTO_SERVER_LOG_ERROR("Failed to set immediate-output property, sink is NULL");
     }
 
     return returnValue;
@@ -524,7 +524,7 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
         m_glibWrapper->gObjectGet(actualSink, "stats", &stats, nullptr);
         if (!stats)
         {
-            RIALTO_SERVER_LOG_WARN("failed to get stats from '%s'", GST_ELEMENT_NAME(actualSink));
+            RIALTO_SERVER_LOG_ERROR("failed to get stats from '%s'", GST_ELEMENT_NAME(actualSink));
         }
         else
         {
@@ -539,7 +539,7 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
             }
             else
             {
-                RIALTO_SERVER_LOG_WARN("failed to get 'rendered' or 'dropped' from structure (%s)",
+                RIALTO_SERVER_LOG_ERROR("failed to get 'rendered' or 'dropped' from structure (%s)",
                                        GST_ELEMENT_NAME(actualSink));
             }
             m_gstWrapper->gstStructureFree(stats);
