@@ -37,6 +37,7 @@ const char *kPropertyName2 = "test2";
 const char *kPropertyName3 = "prop";
 const GstElementFactoryListType kExpectedFactoryListType{
     GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+const GstElementFactory *kDummyElementFactory{nullptr};
 }; // namespace
 namespace firebolt::rialto::server::ct
 {
@@ -60,11 +61,13 @@ public:
 
     void willCallGetSupportedProperties()
     {
-        m_listOfFactories = g_list_append(m_listOfFactories, m_dummyElementFactory);
+        m_listOfFactories = g_list_append(m_listOfFactories, const_cast<GstElementFactory *>(kDummyElementFactory));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(kExpectedFactoryListType, GST_RANK_NONE))
             .WillOnce(Return(m_listOfFactories));
         // The next calls should ensure that an object is created and then freed
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(m_dummyElementFactory, nullptr)).WillOnce(Return(&m_object));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstElementFactoryCreate(const_cast<GstElementFactory *>(kDummyElementFactory), nullptr))
+            .WillOnce(Return(&m_object));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_object));
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
@@ -94,9 +97,6 @@ private:
     GParamSpec *m_dummyParamsPtr[kNumPropertiesOnSink];
     std::vector<std::string> m_kParamNames{kPropertyName1, kPropertyName2};
     GstElement m_object;
-    char m_suppliesAddressOfDummyElementFactory{0};
-    GstElementFactory *m_dummyElementFactory{
-        reinterpret_cast<GstElementFactory *>(&m_suppliesAddressOfDummyElementFactory)};
 };
 
 /*
