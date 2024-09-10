@@ -481,16 +481,28 @@ bool MediaPipeline::getVolume(double &volume)
     return m_mediaPipelineIpc->getVolume(volume);
 }
 
-bool MediaPipeline::setMute(bool mute)
+bool MediaPipeline::setMute(int32_t sourceId, bool mute)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    return m_mediaPipelineIpc->setMute(mute);
+    return m_mediaPipelineIpc->setMute(sourceId, mute);
 }
 
-bool MediaPipeline::getMute(bool &mute)
+bool MediaPipeline::getMute(int32_t sourceId, bool &mute)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    return m_mediaPipelineIpc->getMute(mute);
+    return m_mediaPipelineIpc->getMute(sourceId, mute);
+}
+
+bool MediaPipeline::setTextTrackIdentifier(const std::string &textTrackIdentifier)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setTextTrackIdentifier(textTrackIdentifier);
+}
+
+bool MediaPipeline::getTextTrackIdentifier(std::string &textTrackIdentifier)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->getTextTrackIdentifier(textTrackIdentifier);
 }
 
 bool MediaPipeline::setLowLatency(bool lowLatency)

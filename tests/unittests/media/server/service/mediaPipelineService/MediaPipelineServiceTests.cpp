@@ -679,6 +679,46 @@ TEST_F(MediaPipelineServiceTests, shouldProcessAudioGap)
     processAudioGapShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToSetTextTrackIdentifierForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setTextTrackIdentifierShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetTextTrackIdentifier)
+{
+    initSession();
+    mediaPipelineWillFailToSetTextTrackIdentifier();
+    setTextTrackIdentifierShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetTextTrackIdentifier)
+{
+    initSession();
+    mediaPipelineWillSetTextTrackIdentifier();
+    setTextTrackIdentifierShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetTextTrackIdentifierForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getTextTrackIdentifierShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetTextTrackIdentifier)
+{
+    initSession();
+    mediaPipelineWillFailToGetTextTrackIdentifier();
+    getTextTrackIdentifierShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetTextTrackIdentifier)
+{
+    initSession();
+    mediaPipelineWillGetTextTrackIdentifier();
+    getTextTrackIdentifierShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldPing)
 {
     initSession();

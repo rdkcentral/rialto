@@ -546,21 +546,21 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetVolume()
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetMute()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(kHardcodedSessionId, kMute)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(kHardcodedSessionId, kSourceId, kMute)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetMute()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(kHardcodedSessionId, kMute)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setMute(kHardcodedSessionId, kSourceId, kMute)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetMute()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(kHardcodedSessionId, _))
+    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(kHardcodedSessionId, kSourceId, _))
         .WillOnce(Invoke(
-            [&](int, bool &mut)
+            [&](int, int32_t, bool &mut)
             {
                 mut = kMute;
                 return true;
@@ -570,7 +570,7 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetMute()
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetMute()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(kHardcodedSessionId, _)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getMute(kHardcodedSessionId, kSourceId, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetLowLatency()
@@ -697,6 +697,33 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToProcessAudio
     EXPECT_CALL(m_mediaPipelineServiceMock,
                 processAudioGap(kHardcodedSessionId, kPosition, kDuration, kDiscontinuityGap, kIsAudioAac))
         .WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetTextTrackIdentifier()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setTextTrackIdentifier(kHardcodedSessionId, kTextTrackIdentifier))
+        .WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetTextTrackIdentifier()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setTextTrackIdentifier(kHardcodedSessionId, kTextTrackIdentifier))
+        .WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetTextTrackIdentifier()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getTextTrackIdentifier(kHardcodedSessionId, _))
+        .WillOnce(DoAll(SetArgReferee<1>(kTextTrackIdentifier), Return(true)));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetTextTrackIdentifier()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getTextTrackIdentifier(kHardcodedSessionId, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackStateChangedEvent()
@@ -1108,6 +1135,7 @@ void MediaPipelineModuleServiceTests::sendSetMuteRequestAndReceiveResponse()
     firebolt::rialto::SetMuteResponse response;
 
     request.set_session_id(kHardcodedSessionId);
+    request.set_source_id(kSourceId);
     request.set_mute(kMute);
 
     m_service->setMute(m_controllerMock.get(), &request, &response, m_closureMock.get());
@@ -1119,6 +1147,7 @@ void MediaPipelineModuleServiceTests::sendGetMuteRequestAndReceiveResponse()
     firebolt::rialto::GetMuteResponse response;
 
     request.set_session_id(kHardcodedSessionId);
+    request.set_source_id(kSourceId);
 
     m_service->getMute(m_controllerMock.get(), &request, &response, m_closureMock.get());
 
@@ -1131,6 +1160,7 @@ void MediaPipelineModuleServiceTests::sendGetMuteRequestAndReceiveResponseWithou
     firebolt::rialto::GetMuteResponse response;
 
     request.set_session_id(kHardcodedSessionId);
+    request.set_source_id(kSourceId);
 
     m_service->getMute(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -1260,6 +1290,39 @@ void MediaPipelineModuleServiceTests::sendProcessAudioGapRequestAndReceiveRespon
     request.set_audio_aac(kIsAudioAac);
 
     m_service->processAudioGap(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetTextTrackIdentifierRequestAndReceiveResponse()
+{
+    firebolt::rialto::SetTextTrackIdentifierRequest request;
+    firebolt::rialto::SetTextTrackIdentifierResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_text_track_identifier(kTextTrackIdentifier);
+
+    m_service->setTextTrackIdentifier(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendGetTextTrackIdentifierRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetTextTrackIdentifierRequest request;
+    firebolt::rialto::GetTextTrackIdentifierResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getTextTrackIdentifier(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(kTextTrackIdentifier, response.text_track_identifier());
+}
+
+void MediaPipelineModuleServiceTests::sendGetTextTrackIdentifierRequestAndReceiveResponseWithoutMatch()
+{
+    firebolt::rialto::GetTextTrackIdentifierRequest request;
+    firebolt::rialto::GetTextTrackIdentifierResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getTextTrackIdentifier(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendPlaybackStateChangedEvent()

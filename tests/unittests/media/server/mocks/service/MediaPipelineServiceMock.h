@@ -53,8 +53,11 @@ public:
     MOCK_METHOD(bool, renderFrame, (int), (override));
     MOCK_METHOD(bool, setVolume, (int sessionId, double volume), (override));
     MOCK_METHOD(bool, getVolume, (int sessionId, double &volume), (override));
-    MOCK_METHOD(bool, setMute, (int sessionId, bool mute), (override));
-    MOCK_METHOD(bool, getMute, (int sessionId, bool &mute), (override));
+
+    MOCK_METHOD(bool, setMute, (int sessionId, std::int32_t sourceId, bool mute), (override));
+    MOCK_METHOD(bool, getMute, (int sessionId, std::int32_t sourceId, bool &mute), (override));
+    MOCK_METHOD(bool, setTextTrackIdentifier, (int sessionId, const std::string &textTrackIdentifier), (override));
+    MOCK_METHOD(bool, getTextTrackIdentifier, (int sessionId, std::string &textTrackIdentifier), (override));
     MOCK_METHOD(bool, setLowLatency, (int sessionId, bool lowLatency), (override));
     MOCK_METHOD(bool, setSync, (int sessionId, bool sync), (override));
     MOCK_METHOD(bool, getSync, (int sessionId, bool &sync), (override));

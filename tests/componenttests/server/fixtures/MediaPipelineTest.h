@@ -106,6 +106,7 @@ protected:
     GFlagsValue m_audioFlag{1, "audio", "audio"};
     GFlagsValue m_videoFlag{2, "video", "video"};
     GFlagsValue m_nativeVideoFlag{3, "native-video", "native-video"};
+    GFlagsValue m_subtitleFlag{4, "subtitle", "subtitle"};
     GstCaps m_audioCaps{};
     GstCaps m_videoCaps{};
     gchar m_audioCapsStr{};

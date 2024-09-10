@@ -1130,26 +1130,27 @@ void MediaPipelineTestMethods::getVolume(const double expectedVolume)
 
 void MediaPipelineTestMethods::shouldSetMute(const bool expectedMute)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, setMute(_, setMuteRequestMatcher(kSessionId, expectedMute), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setMute(_, setMuteRequestMatcher(kSessionId, kAudioSourceId, expectedMute), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
 void MediaPipelineTestMethods::shouldGetMute(const bool mute)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, getMute(_, getMuteRequestMatcher(kSessionId), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getMute(_, getMuteRequestMatcher(kSessionId, kAudioSourceId), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getMuteResponse(mute)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
 }
 
 void MediaPipelineTestMethods::setMute(const bool mute)
 {
-    EXPECT_EQ(m_mediaPipeline->setMute(mute), true);
+    EXPECT_EQ(m_mediaPipeline->setMute(kAudioSourceId, mute), true);
 }
 
 void MediaPipelineTestMethods::getMute(const bool expectedMute)
 {
     bool returnMute;
-    EXPECT_EQ(m_mediaPipeline->getMute(returnMute), true);
+    EXPECT_EQ(m_mediaPipeline->getMute(kAudioSourceId, returnMute), true);
     EXPECT_EQ(returnMute, expectedMute);
 }
 

@@ -141,15 +141,6 @@ public:
     virtual GstElement *gstElementFactoryMake(const gchar *factoryname, const gchar *name) = 0;
 
     /**
-     * @brief Get the element type returned by the requested factory.
-     *
-     * @param[in] factory   : Factory
-     *
-     * @retval GType that the factory produces
-     */
-    virtual GType gstElementFactoryGetElementType(GstElementFactory *factory) = 0;
-
-    /**
      * @brief Increment reference count on object.
      *
      * @param[in] object   : Object to increment.
@@ -1299,6 +1290,25 @@ public:
      */
     virtual GstAudioClippingMeta *gstBufferAddAudioClippingMeta(GstBuffer *buffer, GstFormat format, guint64 start,
                                                                 guint64 end) const = 0;
+
+    /**
+     * @brief Gets a pad of given \a element
+     *
+     * @param element element from which pad should be returned
+     * @param name name of the pad
+     *
+     * @return given pad or NULL if failed
+     */
+    virtual GstPad *gstElementGetStaticPad(GstElement *element, const gchar *name) const = 0;
+
+    /**
+     * @brief Gives the pointer to the GstPad object of the element.
+     *
+     * @param element element from which pad should be returned
+     *
+     * @return given pad or NULL if failed
+     */
+    virtual GstPad *gstBaseSinkPad(GstElement *element) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

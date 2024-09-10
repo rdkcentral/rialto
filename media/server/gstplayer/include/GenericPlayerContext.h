@@ -28,6 +28,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 namespace firebolt::rialto::server
@@ -64,16 +65,6 @@ struct GenericPlayerContext
     std::shared_ptr<IGstSrc> gstSrc{nullptr};
 
     /**
-     * @brief The audio app source
-     */
-    GstElement *audioAppSrc{nullptr};
-
-    /**
-     * @brief The video app source
-     */
-    GstElement *videoAppSrc{nullptr};
-
-    /**
      * @brief The gstreamer pipeline.
      */
     GstElement *pipeline{nullptr};
@@ -99,46 +90,9 @@ struct GenericPlayerContext
     GstElement *autoAudioChildSink{nullptr};
 
     /**
-     * @brief Flag used to check, if we need to request for new audio data.
-     *
-     * Flag can be used only in worker thread
+     * @brief The subtitle sink
      */
-    bool audioNeedData{false};
-
-    /**
-     * @brief Flag used to check, if we need to request for new video data.
-     *
-     * Flag can be used only in worker thread
-     */
-    bool videoNeedData{false};
-
-    /**
-     * @brief Flag used to check, if request for audio data was sent and we didn't receive response yet.
-     *
-     * Flag can be used only in worker thread
-     */
-    bool audioNeedDataPending{false};
-
-    /**
-     * @brief Flag used to check, if request for video data was sent and we didn't receive response yet.
-     *
-     * Flag can be used only in worker thread
-     */
-    bool videoNeedDataPending{false};
-
-    /**
-     * @brief Flag used to check, if any audio data has been pushed to gstreamer (to check if BUFFERED can be sent)
-     *
-     * Flag can be used only in worker thread
-     */
-    bool audioDataPushed{false};
-
-    /**
-     * @brief Flag used to check, if any video data has been pushed to gstreamer (to check if BUFFERED can be sent)
-     *
-     * Flag can be used only in worker thread
-     */
-    bool videoDataPushed{false};
+    GstElement *subtitleSink{nullptr};
 
     /**
      * @brief Flag used to check, if BUFFERED notification has been sent.
@@ -146,34 +100,6 @@ struct GenericPlayerContext
      * Flag can be used only in worker thread
      */
     bool bufferedNotificationSent{false};
-
-    /**
-     * @brief List containing audio buffers to attach
-     *
-     * List can be used only in worker thread
-     */
-    std::list<GstBuffer *> audioBuffers{};
-
-    /**
-     * @brief List containing video buffers to attach
-     *
-     * List can be used only in worker thread
-     */
-    std::list<GstBuffer *> videoBuffers{};
-
-    /**
-     * @brief Flag used to check, if audio underflow callback occured
-     *
-     * Flag can be used only in worker thread
-     */
-    bool audioUnderflowOccured{false};
-
-    /**
-     * @brief Flag used to check, if video underflow callback occured
-     *
-     * Flag can be used only in worker thread
-     */
-    bool videoUnderflowOccured{false};
 
     /**
      * @brief Flag used to check, if the playback is in the playing state

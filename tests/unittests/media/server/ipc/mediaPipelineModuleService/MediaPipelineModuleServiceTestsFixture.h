@@ -106,6 +106,10 @@ public:
     void mediaPipelineServiceWillFailToSetSourcePosition();
     void mediaPipelineServiceWillProcessAudioGap();
     void mediaPipelineServiceWillFailToProcessAudioGap();
+    void mediaPipelineServiceWillSetTextTrackIdentifier();
+    void mediaPipelineServiceWillFailToSetTextTrackIdentifier();
+    void mediaPipelineServiceWillGetTextTrackIdentifier();
+    void mediaPipelineServiceWillFailToGetTextTrackIdentifier();
     void mediaClientWillSendPlaybackStateChangedEvent();
     void mediaClientWillSendNetworkStateChangedEvent();
     void mediaClientWillSendNeedMediaDataEvent(int sessionId);
@@ -159,6 +163,9 @@ public:
     void sendFlushRequestAndReceiveResponse();
     void sendSetSourcePositionRequestAndReceiveResponse();
     void sendProcessAudioGapRequestAndReceiveResponse();
+    void sendSetTextTrackIdentifierRequestAndReceiveResponse();
+    void sendGetTextTrackIdentifierRequestAndReceiveResponse();
+    void sendGetTextTrackIdentifierRequestAndReceiveResponseWithoutMatch();
     void sendPlaybackStateChangedEvent();
     void sendNetworkStateChangedEvent();
     void sendNeedMediaDataEvent();

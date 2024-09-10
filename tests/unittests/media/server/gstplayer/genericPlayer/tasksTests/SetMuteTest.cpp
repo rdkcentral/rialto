@@ -23,14 +23,31 @@ class SetMuteTest : public GenericTasksTestsBase
 {
 };
 
-TEST_F(SetMuteTest, shouldFailToSetMuteWhenPipelineIsNull)
+TEST_F(SetMuteTest, shouldFailToSetVideoMute)
 {
-    setContextPipelineNull();
-    triggerSetMute();
+    triggerSetVideoMute();
 }
 
-TEST_F(SetMuteTest, shouldSetMute)
+TEST_F(SetMuteTest, shouldFailToSetAudioMuteWhenPipelineIsNull)
 {
-    shouldGstSetMute();
-    triggerSetMute();
+    setContextPipelineNull();
+    triggerSetAudioMute();
+}
+
+TEST_F(SetMuteTest, shouldSetAudioMute)
+{
+    shouldSetAudioMute();
+    triggerSetAudioMute();
+}
+
+TEST_F(SetMuteTest, shouldFailToSetSubtitleMuteWhenSinkIsNull)
+{
+    triggerSetSubtitleMute();
+}
+
+TEST_F(SetMuteTest, shouldSetSubtitleMute)
+{
+    setContextSubtitleSink();
+    shouldSetSubtitleMute();
+    triggerSetSubtitleMute();
 }

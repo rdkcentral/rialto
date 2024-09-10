@@ -512,3 +512,27 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToProcessAudioGap)
     mediaPipelineServiceWillFailToProcessAudioGap();
     sendProcessAudioGapRequestAndReceiveResponse();
 }
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetTextTrackIdentifier)
+{
+    mediaPipelineServiceWillSetTextTrackIdentifier();
+    sendSetTextTrackIdentifierRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetTextTrackIdentifier)
+{
+    mediaPipelineServiceWillFailToSetTextTrackIdentifier();
+    sendSetTextTrackIdentifierRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetTextTrackIdentifier)
+{
+    mediaPipelineServiceWillGetTextTrackIdentifier();
+    sendGetTextTrackIdentifierRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetTextTrackIdentifier)
+{
+    mediaPipelineServiceWillFailToGetTextTrackIdentifier();
+    sendGetTextTrackIdentifierRequestAndReceiveResponseWithoutMatch();
+}

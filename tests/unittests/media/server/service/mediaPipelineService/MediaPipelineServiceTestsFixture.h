@@ -98,6 +98,10 @@ public:
     void mediaPipelineWillFailToSetSourcePosition();
     void mediaPipelineWillProcessAudioGap();
     void mediaPipelineWillFailToProcessAudioGap();
+    void mediaPipelineWillSetTextTrackIdentifier();
+    void mediaPipelineWillFailToSetTextTrackIdentifier();
+    void mediaPipelineWillGetTextTrackIdentifier();
+    void mediaPipelineWillFailToGetTextTrackIdentifier();
     void mediaPipelineWillPing();
 
     void mediaPipelineFactoryWillCreateMediaPipeline();
@@ -176,6 +180,10 @@ public:
     void setSourcePositionShouldFail();
     void processAudioGapShouldSucceed();
     void processAudioGapShouldFail();
+    void setTextTrackIdentifierShouldSucceed();
+    void setTextTrackIdentifierShouldFail();
+    void getTextTrackIdentifierShouldSucceed();
+    void getTextTrackIdentifierShouldFail();
     void clearMediaPipelines();
     void initSession();
     void triggerPing();

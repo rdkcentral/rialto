@@ -97,11 +97,6 @@ public:
         return gst_element_factory_make(factoryname, name);
     }
 
-    GType gstElementFactoryGetElementType(GstElementFactory *factory)
-    {
-        return gst_element_factory_get_element_type(factory);
-    }
-
     GstElement *gstBinGetByName(GstBin *bin, const gchar *name) override { return gst_bin_get_by_name(bin, name); }
 
     gpointer gstObjectRef(gpointer object) override { return gst_object_ref(object); }
@@ -552,11 +547,18 @@ public:
 
     void gstContextUnref(GstContext *context) const override { gst_context_unref(context); }
 
-    virtual GstAudioClippingMeta *gstBufferAddAudioClippingMeta(GstBuffer *buffer, GstFormat format, guint64 start,
-                                                                guint64 end) const
+    GstAudioClippingMeta *gstBufferAddAudioClippingMeta(GstBuffer *buffer, GstFormat format, guint64 start,
+                                                        guint64 end) const
     {
         return gst_buffer_add_audio_clipping_meta(buffer, format, start, end);
     }
+
+    GstPad *gstElementGetStaticPad(GstElement *element, const gchar *name) const override
+    {
+        return gst_element_get_static_pad(element, name);
+    }
+
+    GstPad *gstBaseSinkPad(GstElement *element) const override { return GST_BASE_SINK_PAD(element); }
 };
 
 }; // namespace firebolt::rialto::wrappers

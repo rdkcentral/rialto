@@ -45,6 +45,7 @@
 #include "tasks/generic/SetStreamSyncMode.h"
 #include "tasks/generic/SetSync.h"
 #include "tasks/generic/SetSyncOff.h"
+#include "tasks/generic/SetTextTrackIdentifier.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
@@ -59,9 +60,10 @@ namespace firebolt::rialto::server
 GenericPlayerTaskFactory::GenericPlayerTaskFactory(
     IGstGenericPlayerClient *client, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper)
-    : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{
-                                                                                  rdkGstreamerUtilsWrapper}
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+    const std::shared_ptr<IGstTextTrackSinkFactory> &gstTextTrackSinkFactory)
+    : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_gstTextTrackSinkFactory{gstTextTrackSinkFactory}
 {
 }
 
@@ -69,7 +71,7 @@ std::unique_ptr<IPlayerTask>
 GenericPlayerTaskFactory::createAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                               const IMediaPipeline::MediaSegmentVector &mediaSegments) const
 {
-    return std::make_unique<tasks::generic::AttachSamples>(context, player, mediaSegments);
+    return std::make_unique<tasks::generic::AttachSamples>(context, m_gstWrapper, player, mediaSegments);
 }
 
 std::unique_ptr<IPlayerTask>
@@ -77,7 +79,8 @@ GenericPlayerTaskFactory::createAttachSource(GenericPlayerContext &context, IGst
                                              const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
 {
     return std::make_unique<tasks::generic::AttachSource>(context, m_gstWrapper, m_glibWrapper,
-                                                          m_rdkGstreamerUtilsWrapper, player, source);
+                                                          m_rdkGstreamerUtilsWrapper, m_gstTextTrackSinkFactory, player,
+                                                          source);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createDeepElementAdded(GenericPlayerContext &context,
@@ -134,7 +137,7 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createPlay(IGstGenericPla
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReadShmDataAndAttachSamples(
     GenericPlayerContext &context, IGstGenericPlayerPrivate &player, const std::shared_ptr<IDataReader> &dataReader) const
 {
-    return std::make_unique<tasks::generic::ReadShmDataAndAttachSamples>(context, player, dataReader);
+    return std::make_unique<tasks::generic::ReadShmDataAndAttachSamples>(context, m_gstWrapper, player, dataReader);
 }
 
 std::unique_ptr<IPlayerTask>
@@ -194,9 +197,18 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetVolume(GenericPl
     return std::make_unique<tasks::generic::SetVolume>(context, m_gstWrapper, volume);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetMute(GenericPlayerContext &context, bool mute) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetMute(GenericPlayerContext &context,
+                                                                     const MediaSourceType &mediaSourceType,
+                                                                     bool mute) const
 {
-    return std::make_unique<tasks::generic::SetMute>(context, m_gstWrapper, mute);
+    return std::make_unique<tasks::generic::SetMute>(context, m_gstWrapper, m_glibWrapper, mediaSourceType, mute);
+}
+
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createSetTextTrackIdentifier(GenericPlayerContext &context,
+                                                       const std::string &textTrackIdentifier) const
+{
+    return std::make_unique<tasks::generic::SetTextTrackIdentifier>(context, m_glibWrapper, textTrackIdentifier);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetLowLatency(IGstGenericPlayerPrivate &player,
@@ -234,11 +246,10 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createStop(GenericPlayerC
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(GenericPlayerContext &context,
                                                                        IGstGenericPlayerPrivate &player,
-                                                                       bool &underflowFlag, bool underflowEnabled,
+                                                                       bool underflowEnabled,
                                                                        MediaSourceType sourceType) const
 {
-    return std::make_unique<tasks::generic::Underflow>(context, player, m_client, underflowFlag, underflowEnabled,
-                                                       sourceType);
+    return std::make_unique<tasks::generic::Underflow>(context, player, m_client, underflowEnabled, sourceType);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUpdatePlaybackGroup(GenericPlayerContext &context,
@@ -267,11 +278,11 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFlush(GenericPlayer
 }
 
 std::unique_ptr<IPlayerTask>
-GenericPlayerTaskFactory::createSetSourcePosition(GenericPlayerContext &context,
+GenericPlayerTaskFactory::createSetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                   const firebolt::rialto::MediaSourceType &type, std::int64_t position,
                                                   bool resetTime) const
 {
-    return std::make_unique<tasks::generic::SetSourcePosition>(context, m_client, m_gstWrapper, type, position,
+    return std::make_unique<tasks::generic::SetSourcePosition>(context, player, m_client, m_gstWrapper, type, position,
                                                                resetTime);
 }
 

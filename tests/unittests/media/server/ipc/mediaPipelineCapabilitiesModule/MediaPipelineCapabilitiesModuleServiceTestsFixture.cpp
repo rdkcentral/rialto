@@ -169,3 +169,18 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedPropertiesRequ
                                                  response.supported_properties().end()};
     EXPECT_TRUE(supportedProperties.empty());
 }
+
+void MediaPipelineCapabilitiesModuleServiceTests::expectCorrectMediaTypeConversion()
+{
+    EXPECT_EQ(firebolt::rialto::server::ipc::convertMediaSourceType(firebolt::rialto::ProtoMediaSourceType::UNKNOWN),
+              firebolt::rialto::MediaSourceType::UNKNOWN);
+    EXPECT_EQ(firebolt::rialto::server::ipc::convertMediaSourceType(firebolt::rialto::ProtoMediaSourceType::AUDIO),
+              firebolt::rialto::MediaSourceType::AUDIO);
+    EXPECT_EQ(firebolt::rialto::server::ipc::convertMediaSourceType(firebolt::rialto::ProtoMediaSourceType::VIDEO),
+              firebolt::rialto::MediaSourceType::VIDEO);
+    EXPECT_EQ(firebolt::rialto::server::ipc::convertMediaSourceType(firebolt::rialto::ProtoMediaSourceType::SUBTITLE),
+              firebolt::rialto::MediaSourceType::SUBTITLE);
+    EXPECT_EQ(firebolt::rialto::server::ipc::convertMediaSourceType(
+                  static_cast<firebolt::rialto::ProtoMediaSourceType>(4)),
+              firebolt::rialto::MediaSourceType::UNKNOWN);
+}

@@ -23,6 +23,7 @@
 #include "GenericPlayerContext.h"
 #include "IDataReader.h"
 #include "IGstGenericPlayerPrivate.h"
+#include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include <memory>
 
@@ -31,13 +32,16 @@ namespace firebolt::rialto::server::tasks::generic
 class ReadShmDataAndAttachSamples : public IPlayerTask
 {
 public:
-    ReadShmDataAndAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                const std::shared_ptr<IDataReader> &dataReader);
+    ReadShmDataAndAttachSamples(GenericPlayerContext &context,
+                                const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                IGstGenericPlayerPrivate &player, const std::shared_ptr<IDataReader> &dataReader);
     ~ReadShmDataAndAttachSamples() override;
     void execute() const override;
 
 private:
+    void attachData(const firebolt::rialto::MediaSourceType mediaType, GstBuffer *buffer) const;
     GenericPlayerContext &m_context;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     IGstGenericPlayerPrivate &m_player;
     std::shared_ptr<IDataReader> m_dataReader;
 };

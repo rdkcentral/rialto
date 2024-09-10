@@ -18,9 +18,9 @@
  */
 
 #include <algorithm>
-#include <list>
 #include <stdexcept>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "GstCapabilities.h"
 #include "GstMimeMapping.h"
@@ -164,6 +164,10 @@ std::vector<std::string> GstCapabilities::getSupportedMimeTypes(MediaSourceType 
     {
         type = "audio/";
     }
+    else if (sourceType == MediaSourceType::SUBTITLE)
+    {
+        return {"text/vtt", "text/ttml"};
+    }
     else
     {
         RIALTO_SERVER_LOG_WARN("Unsupported media type");
@@ -202,33 +206,41 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
     GList *factories{m_gstWrapper->gstElementFactoryListGetElements(factoryListType, GST_RANK_NONE)};
 
     // Scan all returned elements for the specified properties...
-    std::list<std::string> propertiesToLookFor{propertyNames.begin(), propertyNames.end()};
+    std::unordered_set<std::string> propertiesToLookFor{propertyNames.begin(), propertyNames.end()};
     std::vector<std::string> propertiesFound;
     for (GList *iter = factories; iter != nullptr && !propertiesToLookFor.empty(); iter = iter->next)
     {
         GstElementFactory *factory = GST_ELEMENT_FACTORY(iter->data);
-        GType elementType = m_gstWrapper->gstElementFactoryGetElementType(factory);
-        if (elementType == G_TYPE_INVALID)
-            continue;
-        gpointer elementClass = m_glibWrapper->gTypeClassRef(elementType);
-        if (elementClass)
-        {
-            for (auto i = propertiesToLookFor.begin(); i != propertiesToLookFor.end();)
-            {
-                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_CLASS(elementClass), i->c_str()))
-                {
-                    propertiesFound.push_back(*i);
-                    i = propertiesToLookFor.erase(i);
-                }
-                else
-                    ++i;
-            }
+        GstElement *elementObj{nullptr};
 
-            m_glibWrapper->gObjectUnref(elementClass);
+        // We instantiate an object because fetching the class, even after gstPluginFeatureLoad,
+        // was found to sometimes return a class with no properties. A code branch is
+        // kept with this feature "supportedPropertiesViaClass"
+        elementObj = m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
+        if (elementObj)
+        {
+            GParamSpec **props;
+            guint nProps;
+            props = m_glibWrapper->gObjectClassListProperties(G_OBJECT_GET_CLASS(elementObj), &nProps);
+            if (props)
+            {
+                for (guint j = 0; j < nProps && !propertiesToLookFor.empty(); ++j)
+                {
+                    const std::string kPropName{props[j]->name};
+                    auto it = propertiesToLookFor.find(kPropName);
+                    if (it != propertiesToLookFor.end())
+                    {
+                        RIALTO_SERVER_LOG_DEBUG("Found property '%s'", kPropName.c_str());
+                        propertiesFound.push_back(kPropName);
+                        propertiesToLookFor.erase(it);
+                    }
+                }
+                m_glibWrapper->gFree(props);
+            }
+            m_gstWrapper->gstObjectUnref(elementObj);
         }
     }
 
-    // Cleanup
     m_gstWrapper->gstPluginFeatureListFree(factories);
     return propertiesFound;
 }

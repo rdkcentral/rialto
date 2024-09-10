@@ -21,6 +21,12 @@
 
 class ReadShmDataAndAttachSamplesTest : public GenericTasksTestsBase
 {
+protected:
+    ReadShmDataAndAttachSamplesTest()
+    {
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    }
 };
 
 TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllAudioSamples)
@@ -35,4 +41,27 @@ TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllVideoSamples)
     shouldReadVideoData();
     shouldAttachAllVideoSamples();
     triggerReadShmDataAndAttachSamplesVideo();
+}
+
+TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllSubtitleSamples)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    shouldReadSubtitleData();
+    shouldAttachAllSubtitleSamples();
+    triggerReadShmDataAndAttachSamples();
+    checkSubtitleSamplesAttached();
+}
+
+TEST_F(ReadShmDataAndAttachSamplesTest, shouldSkipAttachingSubtitleSamples)
+{
+    shouldReadSubtitleData();
+    shouldSkipAttachingSubtitleSamples();
+    triggerReadShmDataAndAttachSamples();
+}
+
+TEST_F(ReadShmDataAndAttachSamplesTest, shouldSkipAttachingUnknownSamples)
+{
+    shouldReadUnknownData();
+    shouldNotAttachUnknownSamples();
+    triggerReadShmDataAndAttachSamples();
 }

@@ -24,6 +24,7 @@
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
 #include "GstProtectionMetadata.h"
+#include "IGstTextTrackSinkFactory.h"
 #include "IMediaPipeline.h"
 #include "ITimer.h"
 #include "RialtoServerLogging.h"
@@ -93,15 +94,14 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
         {
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
-        gstPlayer =
-            std::make_unique<GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper,
-                                               glibWrapper, IGstSrcFactory::getFactory(),
-                                               common::ITimerFactory::getFactory(),
-                                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
-                                                                                          rdkGstreamerUtilsWrapper),
-                                               std::make_unique<WorkerThreadFactory>(),
-                                               std::make_unique<GstDispatcherThreadFactory>(),
-                                               IGstProtectionMetadataHelperFactory::createFactory());
+        gstPlayer = std::make_unique<
+            GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper, glibWrapper,
+                              IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
+                              std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
+                                                                         rdkGstreamerUtilsWrapper,
+                                                                         IGstTextTrackSinkFactory::createFactory()),
+                              std::make_unique<WorkerThreadFactory>(), std::make_unique<GstDispatcherThreadFactory>(),
+                              IGstProtectionMetadataHelperFactory::createFactory());
     }
     catch (const std::exception &e)
     {
@@ -208,7 +208,7 @@ void GstGenericPlayer::initMsePipeline()
     // Make playbin
     m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin", "media_pipeline");
     // Set pipeline flags
-    setAudioVideoFlags(true, true);
+    setPlaybinFlags(true);
 
     // Set callbacks
     m_glibWrapper->gSignalConnect(m_context.pipeline, "source-setup", G_CALLBACK(&GstGenericPlayer::setupSource), this);
@@ -249,16 +249,16 @@ void GstGenericPlayer::termPipeline()
 
     m_finishSourceSetupTimer.reset();
 
-    for (auto &buffer : m_context.audioBuffers)
+    for (auto &elem : m_context.streamInfo)
     {
-        m_gstWrapper->gstBufferUnref(buffer);
+        StreamInfo &streamInfo = elem.second;
+        for (auto &buffer : streamInfo.buffers)
+        {
+            m_gstWrapper->gstBufferUnref(buffer);
+        }
+
+        streamInfo.buffers.clear();
     }
-    m_context.audioBuffers.clear();
-    for (auto &buffer : m_context.videoBuffers)
-    {
-        m_gstWrapper->gstBufferUnref(buffer);
-    }
-    m_context.videoBuffers.clear();
 
     m_taskFactory->createStop(m_context, *this)->execute();
     GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
@@ -268,6 +268,10 @@ void GstGenericPlayer::termPipeline()
     if (m_context.source)
     {
         m_gstWrapper->gstObjectUnref(m_context.source);
+    }
+    if (m_context.subtitleSink)
+    {
+        m_gstWrapper->gstObjectUnref(m_context.subtitleSink);
     }
 
     // Delete the pipeline
@@ -614,122 +618,74 @@ GstBuffer *GstGenericPlayer::createBuffer(const IMediaPipeline::MediaSegment &me
     return gstBuffer;
 }
 
-void GstGenericPlayer::notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded)
+void GstGenericPlayer::notifyNeedMediaData(const MediaSourceType mediaSource)
 {
-    if (audioNotificationNeeded)
+    auto elem = m_context.streamInfo.find(mediaSource);
+    if (elem != m_context.streamInfo.end())
     {
-        // Mark needMediaData as received
-        m_context.audioNeedDataPending = false;
+        StreamInfo &streamInfo = elem->second;
+        streamInfo.isNeedDataPending = false;
+
         // Send new NeedMediaData if we still need it
-        if (m_gstPlayerClient && m_context.audioNeedData)
+        if (m_gstPlayerClient && streamInfo.isDataNeeded)
         {
-            m_context.audioNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::AUDIO);
+            streamInfo.isNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(mediaSource);
         }
     }
-    else if (videoNotificationNeeded)
+    else
     {
-        // Mark needMediaData as received
-        m_context.videoNeedDataPending = false;
-        // Send new NeedMediaData if we still need it
-        if (m_gstPlayerClient && m_context.videoNeedData)
-        {
-            m_context.videoNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::VIDEO);
-        }
+        RIALTO_SERVER_LOG_WARN("Media type %s could not be found", common::convertMediaSourceType(mediaSource));
     }
 }
 
-void GstGenericPlayer::attachAudioData()
+void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaType)
 {
-    if (m_context.audioBuffers.empty() || !m_context.audioNeedData)
+    auto elem = m_context.streamInfo.find(mediaType);
+    if (elem != m_context.streamInfo.end())
     {
-        return;
-    }
-    if (!m_context.audioAppSrc)
-    {
-        auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
-        if (elem != m_context.streamInfo.end())
+        StreamInfo &streamInfo = elem->second;
+        if (streamInfo.buffers.empty() || !streamInfo.isDataNeeded)
         {
-            m_context.audioAppSrc = elem->second.appSrc;
+            return;
         }
-    }
 
-    if (m_context.audioAppSrc)
-    {
-        pushSampleIfRequired(m_context.audioAppSrc, "audio");
-        if (m_context.audioBuffers.size())
+        pushSampleIfRequired(streamInfo.appSrc, common::convertMediaSourceType(mediaType));
+        if (mediaType == firebolt::rialto::MediaSourceType::AUDIO)
         {
             // This needs to be done before gstAppSrcPushBuffer() is
             // called because it can free the memory
-            m_context.lastAudioSampleTimestamps = static_cast<int64_t>(GST_BUFFER_PTS(m_context.audioBuffers.back()));
+            m_context.lastAudioSampleTimestamps = static_cast<int64_t>(GST_BUFFER_PTS(streamInfo.buffers.back()));
         }
-        for (GstBuffer *buffer : m_context.audioBuffers)
-        {
-            m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.audioAppSrc), buffer);
-        }
-        m_context.audioBuffers.clear();
-        m_context.audioDataPushed = true;
-        const bool kSingleAudio{m_context.wereAllSourcesAttached &&
-                                m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO) ==
-                                    m_context.streamInfo.end()};
-        if (!m_context.bufferedNotificationSent && (m_context.videoDataPushed || kSingleAudio) && m_gstPlayerClient)
-        {
-            m_context.bufferedNotificationSent = true;
-            m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
-        }
-        cancelUnderflow(m_context.audioUnderflowOccured);
-    }
-}
 
-void GstGenericPlayer::attachVideoData()
-{
-    if (m_context.videoBuffers.empty() || !m_context.videoNeedData)
-    {
-        return;
-    }
-    if (!m_context.videoAppSrc)
-    {
-        auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
-        if (elem != m_context.streamInfo.end())
+        for (GstBuffer *buffer : streamInfo.buffers)
         {
-            m_context.videoAppSrc = elem->second.appSrc;
+            m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(streamInfo.appSrc), buffer);
         }
-    }
-    if (m_context.videoAppSrc)
-    {
-        pushSampleIfRequired(m_context.videoAppSrc, "video");
-        for (GstBuffer *buffer : m_context.videoBuffers)
-        {
-            m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(m_context.videoAppSrc), buffer);
-        }
-        m_context.videoBuffers.clear();
-        m_context.videoDataPushed = true;
-        const bool kSingleVideo{m_context.wereAllSourcesAttached &&
-                                m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO) ==
-                                    m_context.streamInfo.end()};
-        if (!m_context.bufferedNotificationSent && (m_context.audioDataPushed || kSingleVideo) && m_gstPlayerClient)
+        streamInfo.buffers.clear();
+        streamInfo.isDataPushed = true;
+
+        const bool kIsSingle = m_context.streamInfo.size() == 1;
+        bool allOtherStreamsPushed = std::all_of(m_context.streamInfo.begin(), m_context.streamInfo.end(),
+                                                 [](const auto &entry) { return entry.second.isDataPushed; });
+
+        if (!m_context.bufferedNotificationSent && (allOtherStreamsPushed || kIsSingle) && m_gstPlayerClient)
         {
             m_context.bufferedNotificationSent = true;
             m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
         }
-        cancelUnderflow(m_context.videoUnderflowOccured);
+        cancelUnderflow(mediaType);
     }
 }
 
 void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels, const std::shared_ptr<CodecData> &codecData)
 {
-    if (!m_context.audioAppSrc)
+    auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
+    if (elem != m_context.streamInfo.end())
     {
-        auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
-        if (elem != m_context.streamInfo.end())
-        {
-            m_context.audioAppSrc = elem->second.appSrc;
-        }
-    }
+        StreamInfo &streamInfo = elem->second;
 
-    if (m_context.audioAppSrc)
-    {
         constexpr int kInvalidRate{0}, kInvalidChannels{0};
-        GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(m_context.audioAppSrc));
+        GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(streamInfo.appSrc));
         GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
 
         if (rate != kInvalidRate)
@@ -746,7 +702,7 @@ void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels, const std
 
         if (!m_gstWrapper->gstCapsIsEqual(currentCaps, newCaps))
         {
-            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.audioAppSrc), newCaps);
+            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(streamInfo.appSrc), newCaps);
         }
 
         m_gstWrapper->gstCapsUnref(newCaps);
@@ -757,18 +713,12 @@ void GstGenericPlayer::updateAudioCaps(int32_t rate, int32_t channels, const std
 void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, Fraction frameRate,
                                        const std::shared_ptr<CodecData> &codecData)
 {
-    if (!m_context.videoAppSrc)
+    auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
+    if (elem != m_context.streamInfo.end())
     {
-        auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
-        if (elem != m_context.streamInfo.end())
-        {
-            m_context.videoAppSrc = elem->second.appSrc;
-        }
-    }
+        StreamInfo &streamInfo = elem->second;
 
-    if (m_context.videoAppSrc)
-    {
-        GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(m_context.videoAppSrc));
+        GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(streamInfo.appSrc));
         GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
 
         if (width > 0)
@@ -791,7 +741,7 @@ void GstGenericPlayer::updateVideoCaps(int32_t width, int32_t height, Fraction f
 
         if (!m_gstWrapper->gstCapsIsEqual(currentCaps, newCaps))
         {
-            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(m_context.videoAppSrc), newCaps);
+            m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(streamInfo.appSrc), newCaps);
         }
 
         m_gstWrapper->gstCapsUnref(currentCaps);
@@ -898,8 +848,8 @@ void GstGenericPlayer::scheduleAudioUnderflow()
     if (m_workerThread)
     {
         bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
-        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(m_context, *this, m_context.audioUnderflowOccured,
-                                                                   underflowEnabled, MediaSourceType::AUDIO));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createUnderflow(m_context, *this, underflowEnabled, MediaSourceType::AUDIO));
     }
 }
 
@@ -908,8 +858,8 @@ void GstGenericPlayer::scheduleVideoUnderflow()
     if (m_workerThread)
     {
         bool underflowEnabled = m_context.isPlaying;
-        m_workerThread->enqueueTask(m_taskFactory->createUnderflow(m_context, *this, m_context.videoUnderflowOccured,
-                                                                   underflowEnabled, MediaSourceType::VIDEO));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createUnderflow(m_context, *this, underflowEnabled, MediaSourceType::VIDEO));
     }
 }
 
@@ -918,13 +868,20 @@ void GstGenericPlayer::scheduleAllSourcesAttached()
     allSourcesAttached();
 }
 
-void GstGenericPlayer::cancelUnderflow(bool &underflowFlag)
+void GstGenericPlayer::cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource)
 {
-    if (!underflowFlag)
+    auto elem = m_context.streamInfo.find(mediaSource);
+    if (elem != m_context.streamInfo.end())
     {
-        return;
+        StreamInfo &streamInfo = elem->second;
+        if (!streamInfo.underflowOccured)
+        {
+            return;
+        }
+
+        RIALTO_SERVER_LOG_DEBUG("Cancelling %s underflow", common::convertMediaSourceType(mediaSource));
+        streamInfo.underflowOccured = false;
     }
-    underflowFlag = false;
 }
 
 void GstGenericPlayer::play()
@@ -1152,24 +1109,76 @@ bool GstGenericPlayer::getVolume(double &volume)
     return true;
 }
 
-void GstGenericPlayer::setMute(bool mute)
+void GstGenericPlayer::setMute(const MediaSourceType &mediaSourceType, bool mute)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetMute(m_context, mute));
+        m_workerThread->enqueueTask(m_taskFactory->createSetMute(m_context, mediaSourceType, mute));
     }
 }
 
-bool GstGenericPlayer::getMute(bool &mute)
+bool GstGenericPlayer::getMute(const MediaSourceType &mediaSourceType, bool &mute)
 {
     // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
     // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
-    if (!m_context.pipeline)
+    if (mediaSourceType == MediaSourceType::SUBTITLE)
     {
+        if (!m_context.subtitleSink)
+        {
+            RIALTO_SERVER_LOG_ERROR("There is no subtitle sink");
+            return false;
+        }
+        gboolean muteValue{FALSE};
+        m_glibWrapper->gObjectGet(m_context.subtitleSink, "mute", &muteValue, nullptr);
+        mute = muteValue;
+    }
+    else if (mediaSourceType == MediaSourceType::AUDIO)
+    {
+        if (!m_context.pipeline)
+        {
+            return false;
+        }
+        mute = m_gstWrapper->gstStreamVolumeGetMute(GST_STREAM_VOLUME(m_context.pipeline));
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Getting mute for type %s unsupported", common::convertMediaSourceType(mediaSourceType));
         return false;
     }
-    mute = m_gstWrapper->gstStreamVolumeGetMute(GST_STREAM_VOLUME(m_context.pipeline));
+
     return true;
+}
+
+void GstGenericPlayer::setTextTrackIdentifier(const std::string &textTrackIdentifier)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetTextTrackIdentifier(m_context, textTrackIdentifier));
+    }
+}
+
+bool GstGenericPlayer::getTextTrackIdentifier(std::string &textTrackIdentifier)
+{
+    if (!m_context.subtitleSink)
+    {
+        RIALTO_SERVER_LOG_ERROR("There is no subtitle sink");
+        return false;
+    }
+
+    gchar *identifier = nullptr;
+    m_glibWrapper->gObjectGet(m_context.subtitleSink, "text-track-identifier", &identifier, nullptr);
+
+    if (identifier)
+    {
+        textTrackIdentifier = identifier;
+        m_glibWrapper->gFree(identifier);
+        return true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get text track identifier");
+        return false;
+    }
 }
 
 bool GstGenericPlayer::setLowLatency(bool lowLatency)
@@ -1276,7 +1285,7 @@ void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType,
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(
-            m_taskFactory->createSetSourcePosition(m_context, mediaSourceType, position, resetTime));
+            m_taskFactory->createSetSourcePosition(m_context, *this, mediaSourceType, position, resetTime));
     }
 }
 
@@ -1403,24 +1412,17 @@ GstElement *GstGenericPlayer::getSinkChildIfAutoAudioSink(GstElement *sink)
     return sink;
 }
 
-void GstGenericPlayer::setAudioVideoFlags(bool enableAudio, bool enableVideo)
+void GstGenericPlayer::setPlaybinFlags(bool enableAudio)
 {
-    unsigned flagAudio{0};
-    unsigned flagNativeAudio{0};
-    unsigned flagVideo{0};
-    unsigned flagNativeVideo{0};
+    unsigned flags = getGstPlayFlag("video") | getGstPlayFlag("native-video") | getGstPlayFlag("text");
+
     if (enableAudio)
     {
-        flagAudio = getGstPlayFlag("audio");
-        flagNativeAudio = shouldEnableNativeAudio() ? getGstPlayFlag("native-audio") : 0;
+        flags |= getGstPlayFlag("audio");
+        flags |= shouldEnableNativeAudio() ? getGstPlayFlag("native-audio") : 0;
     }
-    if (enableVideo)
-    {
-        flagVideo = getGstPlayFlag("video");
-        flagNativeVideo = getGstPlayFlag("native-video");
-    }
-    m_glibWrapper->gObjectSet(m_context.pipeline, "flags", flagAudio | flagVideo | flagNativeVideo | flagNativeAudio,
-                              nullptr);
+
+    m_glibWrapper->gObjectSet(m_context.pipeline, "flags", flags, nullptr);
 }
 
 bool GstGenericPlayer::shouldEnableNativeAudio()

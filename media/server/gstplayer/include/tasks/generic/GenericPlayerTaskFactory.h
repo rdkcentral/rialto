@@ -23,9 +23,11 @@
 #include "IGenericPlayerTaskFactory.h"
 #include "IGlibWrapper.h"
 #include "IGstGenericPlayerClient.h"
+#include "IGstTextTrackSinkFactory.h"
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::server
 {
@@ -35,7 +37,8 @@ public:
     GenericPlayerTaskFactory(
         IGstGenericPlayerClient *client, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
         const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-        const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper);
+        const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+        const std::shared_ptr<IGstTextTrackSinkFactory> &gstTextTrackSinkFactory);
     ~GenericPlayerTaskFactory() override = default;
 
     std::unique_ptr<IPlayerTask> createAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
@@ -75,7 +78,10 @@ public:
     std::unique_ptr<IPlayerTask> createSetVideoGeometry(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                         const Rectangle &rectangle) const override;
     std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, double volume) const override;
-    std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, bool mute) const override;
+    std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, const MediaSourceType &mediaSourceType,
+                                               bool mute) const override;
+    std::unique_ptr<IPlayerTask> createSetTextTrackIdentifier(GenericPlayerContext &context,
+                                                              const std::string &textTrackIdentifier) const override;
     std::unique_ptr<IPlayerTask> createSetLowLatency(IGstGenericPlayerPrivate &player, bool lowLatency) const override;
     std::unique_ptr<IPlayerTask> createSetSync(IGstGenericPlayerPrivate &player, bool sync) const override;
     std::unique_ptr<IPlayerTask> createSetSyncOff(IGstGenericPlayerPrivate &player, bool syncOff) const override;
@@ -85,8 +91,7 @@ public:
     std::unique_ptr<IPlayerTask> createStop(GenericPlayerContext &context,
                                             IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                 bool &underflowFlag, bool underflowEnable,
-                                                 MediaSourceType sourceType) const override;
+                                                 bool underflowEnable, MediaSourceType sourceType) const override;
     std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context, GstElement *typefind,
                                                            const GstCaps *caps) const override;
     std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context,
@@ -94,7 +99,7 @@ public:
     std::unique_ptr<IPlayerTask> createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const override;
     std::unique_ptr<IPlayerTask> createFlush(GenericPlayerContext &context, const firebolt::rialto::MediaSourceType &type,
                                              bool resetTime) const override;
-    std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context,
+    std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                          const firebolt::rialto::MediaSourceType &type,
                                                          std::int64_t position, bool resetTime) const override;
     std::unique_ptr<IPlayerTask> createProcessAudioGap(GenericPlayerContext &context, std::int64_t position,
@@ -109,6 +114,7 @@ private:
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
+    std::shared_ptr<IGstTextTrackSinkFactory> m_gstTextTrackSinkFactory;
 };
 } // namespace firebolt::rialto::server
 

@@ -104,6 +104,14 @@ public:
                  ::firebolt::rialto::SetMuteResponse *response, ::google::protobuf::Closure *done) override;
     void getMute(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetMuteRequest *request,
                  ::firebolt::rialto::GetMuteResponse *response, ::google::protobuf::Closure *done) override;
+    void setTextTrackIdentifier(::google::protobuf::RpcController *controller,
+                                const ::firebolt::rialto::SetTextTrackIdentifierRequest *request,
+                                ::firebolt::rialto::SetTextTrackIdentifierResponse *response,
+                                ::google::protobuf::Closure *done) override;
+    void getTextTrackIdentifier(::google::protobuf::RpcController *controller,
+                                const ::firebolt::rialto::GetTextTrackIdentifierRequest *request,
+                                ::firebolt::rialto::GetTextTrackIdentifierResponse *response,
+                                ::google::protobuf::Closure *done) override;
     void setLowLatency(::google::protobuf::RpcController *controller,
                        const ::firebolt::rialto::SetLowLatencyRequest *request,
                        ::firebolt::rialto::SetLowLatencyResponse *response, ::google::protobuf::Closure *done) override;

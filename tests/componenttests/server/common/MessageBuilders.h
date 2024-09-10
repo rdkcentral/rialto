@@ -61,8 +61,8 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId);
 ::firebolt::rialto::SetVolumeRequest createSetVolumeRequest(int sessionId);
 ::firebolt::rialto::GetVolumeRequest createGetVolumeRequest(int sessionId);
-::firebolt::rialto::SetMuteRequest createSetMuteRequest(int sessionId);
-::firebolt::rialto::GetMuteRequest createGetMuteRequest(int sessionId);
+::firebolt::rialto::SetMuteRequest createSetMuteRequest(int sessionId, int sourceId);
+::firebolt::rialto::GetMuteRequest createGetMuteRequest(int sessionId, int sourceId);
 ::firebolt::rialto::SetLowLatencyRequest createSetLowLatencyRequest(int sessionId, bool lowLatency);
 ::firebolt::rialto::SetSyncRequest createSetSyncRequest(int sessionId, bool sync);
 ::firebolt::rialto::GetSyncRequest createGetSyncRequest(int sessionId);

@@ -64,8 +64,10 @@ public:
     virtual bool renderFrame(int sessionId) = 0;
     virtual bool setVolume(int sessionId, double volume) = 0;
     virtual bool getVolume(int sessionId, double &volume) = 0;
-    virtual bool setMute(int sessionId, bool mute) = 0;
-    virtual bool getMute(int sessionId, bool &mute) = 0;
+    virtual bool setMute(int sessionId, std::int32_t sourceId, bool mute) = 0;
+    virtual bool getMute(int sessionId, std::int32_t sourceId, bool &mute) = 0;
+    virtual bool setTextTrackIdentifier(int sessionId, const std::string &textTrackIdentifier) = 0;
+    virtual bool getTextTrackIdentifier(int sessionId, std::string &textTrackIdentifier) = 0;
     virtual bool setLowLatency(int sessionId, bool lowLatency) = 0;
     virtual bool setSync(int sessionId, bool sync) = 0;
     virtual bool getSync(int sessionId, bool &sync) = 0;

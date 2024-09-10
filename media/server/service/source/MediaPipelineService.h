@@ -75,8 +75,10 @@ public:
     bool renderFrame(int sessionId) override;
     bool setVolume(int sessionId, double volume) override;
     bool getVolume(int sessionId, double &volume) override;
-    bool setMute(int sessionId, bool mute) override;
-    bool getMute(int sessionId, bool &mute) override;
+    bool setMute(int sessionId, std::int32_t sourceId, bool mute) override;
+    bool getMute(int sessionId, std::int32_t sourceId, bool &mute) override;
+    bool setTextTrackIdentifier(int sessionId, const std::string &textTrackIdentifier) override;
+    bool getTextTrackIdentifier(int sessionId, std::string &textTrackIdentifier) override;
     bool setLowLatency(int sessionId, bool lowLatency) override;
     bool setSync(int sessionId, bool sync) override;
     bool getSync(int sessionId, bool &sync) override;

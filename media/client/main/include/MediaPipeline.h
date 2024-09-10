@@ -166,9 +166,13 @@ public:
 
     bool getVolume(double &volume) override;
 
-    bool setMute(bool mute) override;
+    bool setMute(int32_t sourceId, bool mute) override;
 
-    bool getMute(bool &mute) override;
+    bool getMute(int32_t sourceId, bool &mute) override;
+
+    bool setTextTrackIdentifier(const std::string &textTrackIdentifier) override;
+
+    bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
 
     bool setLowLatency(bool lowLatency) override;
 

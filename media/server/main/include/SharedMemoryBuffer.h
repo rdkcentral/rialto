@@ -66,6 +66,7 @@ public:
         int id;
         std::uint32_t dataBufferAudioLen;
         std::uint32_t dataBufferVideoLen;
+        std::uint32_t dataBufferSubtitleLen;
     };
 
 private:

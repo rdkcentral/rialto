@@ -53,8 +53,10 @@ public:
     MOCK_METHOD(void, renderFrame, (), (override));
     MOCK_METHOD(void, setVolume, (double volume), (override));
     MOCK_METHOD(bool, getVolume, (double &volume), (override));
-    MOCK_METHOD(void, setMute, (bool mute), (override));
-    MOCK_METHOD(bool, getMute, (bool &mute), (override));
+    MOCK_METHOD(void, setMute, (const MediaSourceType &mediaSourceType, bool mute), (override));
+    MOCK_METHOD(bool, getMute, (const MediaSourceType &mediaSourceType, bool &mute), (override));
+    MOCK_METHOD(void, setTextTrackIdentifier, (const std::string &textTrackIdentifier), (override));
+    MOCK_METHOD(bool, getTextTrackIdentifier, (std::string & textTrackIdentifier), (override));
     MOCK_METHOD(bool, setLowLatency, (bool lowLatency), (override));
     MOCK_METHOD(bool, setSync, (bool sync), (override));
     MOCK_METHOD(bool, getSync, (bool &sync), (override));

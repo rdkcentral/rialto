@@ -47,11 +47,13 @@ inline GstCaps *createSimpleCapsFromMimeType(std::shared_ptr<firebolt::rialto::w
                                              const IMediaPipeline::MediaSource &m_attachedSource)
 {
     static const std::unordered_map<std::string, std::string> mimeToMediaType =
-        {{"video/h264", "video/x-h264"}, {"video/h265", "video/x-h265"},   {"video/x-av1", "video/x-av1"},
-         {"video/x-vp9", "video/x-vp9"}, {"video/mp4", "video/mpeg"},      {"audio/mp4", "audio/mpeg"},
-         {"audio/aac", "audio/mpeg"},    {"audio/x-eac3", "audio/x-eac3"}, {"audio/x-opus", "audio/x-opus"},
-         {"audio/b-wav", "audio/b-wav"}, {"audio/x-raw", "audio/x-raw"}};
-
+        {{"video/h264", "video/x-h264"},       {"video/h265", "video/x-h265"},
+         {"video/x-av1", "video/x-av1"},       {"video/x-vp9", "video/x-vp9"},
+         {"video/mp4", "video/mpeg"},          {"audio/mp4", "audio/mpeg"},
+         {"audio/aac", "audio/mpeg"},          {"audio/x-eac3", "audio/x-eac3"},
+         {"audio/x-opus", "audio/x-opus"},     {"audio/b-wav", "audio/b-wav"},
+         {"audio/x-raw", "audio/x-raw"},       {"text/vtt", "application/x-subtitle-vtt"},
+         {"text/ttml", "application/ttml+xml"}};
     auto mimeToMediaTypeIt = mimeToMediaType.find(m_attachedSource.getMimeType());
     if (mimeToMediaTypeIt != mimeToMediaType.end())
     {
