@@ -467,6 +467,9 @@ GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
 
     RIALTO_SERVER_LOG_WARN("Could not find decoder");
 
+    m_glibWrapper->gValueUnset(&item);
+    m_gstWrapper->gstIteratorFree(it);
+
     return nullptr;
 }
 
