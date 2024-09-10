@@ -175,7 +175,6 @@ public:
             .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
-
     void willFailToGetDecoder()
     {
         // Failure to get the decoder will cause setting of decoder properties to fail
