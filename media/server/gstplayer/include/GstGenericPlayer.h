@@ -164,11 +164,7 @@ private:
     void setPlaybinFlags(bool enableAudio = true) override;
     void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
     GstElement *getSink(const MediaSourceType &mediaSourceType) override;
-<<<<<<< HEAD
     GstElement *getDecoder(const MediaSourceType &mediaSourceType) override;
-    void setAudioVideoFlags(bool enableAudio, bool enableVideo) override;
-=======
->>>>>>> master
 
 private:
     /**

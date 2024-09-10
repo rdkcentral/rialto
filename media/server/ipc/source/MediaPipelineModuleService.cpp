@@ -792,7 +792,6 @@ void MediaPipelineModuleService::getTextTrackIdentifier(::google::protobuf::RpcC
     else
     {
         response->set_text_track_identifier(textTrackIdentifier);
-
     }
 
     done->Run();

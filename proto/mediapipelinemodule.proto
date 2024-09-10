@@ -461,7 +461,37 @@ message GetMuteResponse {
 }
 
 /**
-<<<<<<< HEAD
+ * @fn void setTextTrackIdentifier(const std::string &textTrackIdentifier)
+ * @brief Change Text Track Identifier
+ *
+ * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+ *
+ * @retval true on success false otherwise
+ *
+ */
+message SetTextTrackIdentifierRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional string text_track_identifier = 2;
+}
+message SetTextTrackIdentifierResponse {
+}
+
+/**
+ * @fn void getTextTrackIdentifier(std::string &textTrackIdentifier) 
+ * @brief Get Text Track Identifier
+ *
+ * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+ *
+ * @retval true on success false otherwise
+ */
+message GetTextTrackIdentifierRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetTextTrackIdentifierResponse {
+    optional string text_track_identifier = 1;
+}
+
+/**
  * @fn void setLowLatency(bool lowLatency)
  * @brief Set low latency property on the pipeline.
  *
@@ -550,36 +580,6 @@ message GetStreamSyncModeRequest {
 }
 message GetStreamSyncModeResponse {
     optional int32 stream_sync_mode = 1;
-=======
- * @fn void setTextTrackIdentifier(const std::string &textTrackIdentifier)
- * @brief Change Text Track Identifier
- *
- * @param[in] textTrackIdentifier Text track identifier of subtitle stream
- *
- * @retval true on success false otherwise
- *
- */
-message SetTextTrackIdentifierRequest {
-    optional int32 session_id = 1 [default = -1];
-    optional string text_track_identifier = 2;
-}
-message SetTextTrackIdentifierResponse {
-}
-
-/**
- * @fn void getTextTrackIdentifier(std::string &textTrackIdentifier) 
- * @brief Get Text Track Identifier
- *
- * @param[in] textTrackIdentifier Text track identifier of subtitle stream
- *
- * @retval true on success false otherwise
- */
-message GetTextTrackIdentifierRequest {
-    optional int32 session_id = 1 [default = -1];
-}
-message GetTextTrackIdentifierResponse {
-    optional string text_track_identifier = 1;
->>>>>>> master
 }
 
 /**
