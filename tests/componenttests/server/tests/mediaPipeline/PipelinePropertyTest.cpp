@@ -179,13 +179,9 @@ public:
     {
         // Failure to get the decoder will cause setting of decoder properties to fail
         EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _))
-            .WillOnce(Invoke(
-                [this](GstIterator *it, GValue *elem)
-                {
-                    workerFinished();
-                    return GST_ITERATOR_ERROR;
-                }));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_ERROR));
+        EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     void setImmediateOutput()
