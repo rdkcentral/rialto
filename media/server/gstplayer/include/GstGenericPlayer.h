@@ -120,6 +120,12 @@ public:
     bool getMute(const MediaSourceType &mediaSourceType, bool &mute) override;
     void setTextTrackIdentifier(const std::string &textTrackIdentifier) override;
     bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
+    bool setLowLatency(bool lowLatency) override;
+    bool setSync(bool sync) override;
+    bool getSync(bool &sync) override;
+    bool setSyncOff(bool syncOff) override;
+    bool setStreamSyncMode(int32_t streamSyncMode) override;
+    bool getStreamSyncMode(int32_t &streamSyncMode) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
     void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime) override;
@@ -158,6 +164,7 @@ private:
     void setPlaybinFlags(bool enableAudio = true) override;
     void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
     GstElement *getSink(const MediaSourceType &mediaSourceType) override;
+    GstElement *getDecoder(const MediaSourceType &mediaSourceType) override;
 
 private:
     /**

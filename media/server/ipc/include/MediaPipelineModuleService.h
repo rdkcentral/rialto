@@ -112,6 +112,23 @@ public:
                                 const ::firebolt::rialto::GetTextTrackIdentifierRequest *request,
                                 ::firebolt::rialto::GetTextTrackIdentifierResponse *response,
                                 ::google::protobuf::Closure *done) override;
+    void setLowLatency(::google::protobuf::RpcController *controller,
+                       const ::firebolt::rialto::SetLowLatencyRequest *request,
+                       ::firebolt::rialto::SetLowLatencyResponse *response, ::google::protobuf::Closure *done) override;
+    void setSync(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetSyncRequest *request,
+                 ::firebolt::rialto::SetSyncResponse *response, ::google::protobuf::Closure *done) override;
+    void getSync(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetSyncRequest *request,
+                 ::firebolt::rialto::GetSyncResponse *response, ::google::protobuf::Closure *done) override;
+    void setSyncOff(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetSyncOffRequest *request,
+                    ::firebolt::rialto::SetSyncOffResponse *response, ::google::protobuf::Closure *done) override;
+    void setStreamSyncMode(::google::protobuf::RpcController *controller,
+                           const ::firebolt::rialto::SetStreamSyncModeRequest *request,
+                           ::firebolt::rialto::SetStreamSyncModeResponse *response,
+                           ::google::protobuf::Closure *done) override;
+    void getStreamSyncMode(::google::protobuf::RpcController *controller,
+                           const ::firebolt::rialto::GetStreamSyncModeRequest *request,
+                           ::firebolt::rialto::GetStreamSyncModeResponse *response,
+                           ::google::protobuf::Closure *done) override;
     void flush(::google::protobuf::RpcController *controller, const ::firebolt::rialto::FlushRequest *request,
                ::firebolt::rialto::FlushResponse *response, ::google::protobuf::Closure *done) override;
     void setSourcePosition(::google::protobuf::RpcController *controller,

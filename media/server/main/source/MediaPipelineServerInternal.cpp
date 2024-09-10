@@ -986,6 +986,144 @@ bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime)
     return result;
 }
 
+bool MediaPipelineServerInternal::setLowLatency(bool lowLatency)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setLowLatencyInternal(lowLatency); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setLowLatencyInternal(bool lowLatency)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set low latency - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->setLowLatency(lowLatency);
+}
+
+bool MediaPipelineServerInternal::setSync(bool sync)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setSyncInternal(sync); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setSyncInternal(bool sync)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set sync - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->setSync(sync);
+}
+
+bool MediaPipelineServerInternal::getSync(bool &sync)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = getSyncInternal(sync); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getSyncInternal(bool &sync)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get sync - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->getSync(sync);
+}
+
+bool MediaPipelineServerInternal::setSyncOff(bool syncOff)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setSyncOffInternal(syncOff); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setSyncOffInternal(bool syncOff)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set sync off - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->setSyncOff(syncOff);
+}
+
+bool MediaPipelineServerInternal::setStreamSyncMode(int32_t streamSyncMode)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setStreamSyncModeInternal(streamSyncMode); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setStreamSyncModeInternal(int32_t streamSyncMode)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set stream sync mode - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->setStreamSyncMode(streamSyncMode);
+}
+
+bool MediaPipelineServerInternal::getStreamSyncMode(int32_t &streamSyncMode)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = getStreamSyncModeInternal(streamSyncMode); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getStreamSyncModeInternal(int32_t &streamSyncMode)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get stream sync mode - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->getStreamSyncMode(streamSyncMode);
+}
+
 bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime)
 {
     if (!m_gstPlayer)

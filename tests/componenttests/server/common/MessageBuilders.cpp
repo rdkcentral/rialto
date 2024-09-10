@@ -270,6 +270,52 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::SetLowLatencyRequest createSetLowLatencyRequest(int sessionId, bool lowLatency)
+{
+    ::firebolt::rialto::SetLowLatencyRequest request;
+    request.set_session_id(sessionId);
+    request.set_low_latency(lowLatency);
+    return request;
+}
+
+::firebolt::rialto::SetSyncRequest createSetSyncRequest(int sessionId, bool sync)
+{
+    ::firebolt::rialto::SetSyncRequest request;
+    request.set_session_id(sessionId);
+    request.set_sync(sync);
+    return request;
+}
+
+::firebolt::rialto::GetSyncRequest createGetSyncRequest(int sessionId)
+{
+    ::firebolt::rialto::GetSyncRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::SetSyncOffRequest createSetSyncOffRequest(int sessionId, bool syncOff)
+{
+    ::firebolt::rialto::SetSyncOffRequest request;
+    request.set_session_id(sessionId);
+    request.set_sync_off(syncOff);
+    return request;
+}
+
+::firebolt::rialto::SetStreamSyncModeRequest createSetStreamSyncModeRequest(int sessionId, bool streamSyncMode)
+{
+    ::firebolt::rialto::SetStreamSyncModeRequest request;
+    request.set_session_id(sessionId);
+    request.set_stream_sync_mode(streamSyncMode);
+    return request;
+}
+
+::firebolt::rialto::GetStreamSyncModeRequest createGetStreamSyncModeRequest(int sessionId)
+{
+    ::firebolt::rialto::GetStreamSyncModeRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
 ::firebolt::rialto::SetVideoWindowRequest createSetVideoWindowRequest(int sessionId)
 {
     ::firebolt::rialto::SetVideoWindowRequest request;

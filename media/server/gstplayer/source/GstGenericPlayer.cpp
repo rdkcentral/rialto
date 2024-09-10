@@ -417,6 +417,62 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType)
     return sink;
 }
 
+GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
+{
+    GstIterator *it = m_gstWrapper->gstBinIterateElements(GST_BIN(m_context.pipeline));
+    GValue item = G_VALUE_INIT;
+    gboolean done = FALSE;
+
+    while (!done)
+    {
+        switch (m_gstWrapper->gstIteratorNext(it, &item))
+        {
+        case GST_ITERATOR_OK:
+        {
+            GstElement *element = GST_ELEMENT(m_glibWrapper->gValueGetObject(&item));
+            GstElementFactory *factory = m_gstWrapper->gstElementGetFactory(element);
+
+            if (factory)
+            {
+                GstElementFactoryListType type = GST_ELEMENT_FACTORY_TYPE_DECODER;
+                if (mediaSourceType == MediaSourceType::AUDIO)
+                {
+                    type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO;
+                }
+                else if (mediaSourceType == MediaSourceType::VIDEO)
+                {
+                    type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO;
+                }
+
+                if (m_gstWrapper->gstElementFactoryListIsType(factory, type))
+                {
+                    m_glibWrapper->gValueUnset(&item);
+                    m_gstWrapper->gstIteratorFree(it);
+                    return element;
+                }
+            }
+
+            m_glibWrapper->gValueUnset(&item);
+            break;
+        }
+        case GST_ITERATOR_RESYNC:
+            m_gstWrapper->gstIteratorResync(it);
+            break;
+        case GST_ITERATOR_ERROR:
+        case GST_ITERATOR_DONE:
+            done = TRUE;
+            break;
+        }
+    }
+
+    RIALTO_SERVER_LOG_WARN("Could not find decoder");
+
+    m_glibWrapper->gValueUnset(&item);
+    m_gstWrapper->gstIteratorFree(it);
+
+    return nullptr;
+}
+
 bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutputParam)
 {
     if (!m_workerThread)
@@ -439,11 +495,20 @@ bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType
         else if (MediaSourceType::AUDIO == mediaSourceType)
             actualSink = getSinkChildIfAutoAudioSink(sink);
 
-        gboolean immediateOutput;
-        m_glibWrapper->gObjectGet(actualSink, "immediate-output", &immediateOutput, nullptr);
-        returnValue = true;
-        immediateOutputRef = (immediateOutput == TRUE);
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "immediate-output"))
+        {
+            m_glibWrapper->gObjectGet(actualSink, "immediate-output", &immediateOutputRef, nullptr);
+            returnValue = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("immediate-output not supported in element %s", GST_ELEMENT_NAME(actualSink));
+        }
         m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set immediate-output property, sink is NULL");
     }
 
     return returnValue;
@@ -452,65 +517,41 @@ bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType
 bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
     bool returnValue{false};
-    const char *kSinkName{nullptr};
-    switch (mediaSourceType)
+    GstElement *sink = getSink(mediaSourceType);
+    if (sink)
     {
-    case MediaSourceType::AUDIO:
-        kSinkName = "audio-sink";
-        break;
-    case MediaSourceType::VIDEO:
-        kSinkName = "video-sink";
-        break;
-    default:
-        break;
-    }
-    if (!kSinkName)
-    {
-        RIALTO_SERVER_LOG_WARN("mediaSourceType '%s' not supported",
-                               firebolt::rialto::common::convertMediaSourceType(mediaSourceType));
-    }
-    else
-    {
-        GstElement *sink{nullptr};
-        m_glibWrapper->gObjectGet(m_context.pipeline, kSinkName, &sink, nullptr);
-        if (!sink)
+        // For AutoVideoSink or AutoAudioSink we set properties on the child sink
+        GstElement *actualSink{sink};
+        if (MediaSourceType::VIDEO == mediaSourceType)
+            actualSink = getSinkChildIfAutoVideoSink(sink);
+        else if (MediaSourceType::AUDIO == mediaSourceType)
+            actualSink = getSinkChildIfAutoAudioSink(sink);
+
+        GstStructure *stats{nullptr};
+        m_glibWrapper->gObjectGet(actualSink, "stats", &stats, nullptr);
+        if (!stats)
         {
-            RIALTO_SERVER_LOG_WARN("'%s' could not be obtained", kSinkName);
+            RIALTO_SERVER_LOG_ERROR("failed to get stats from '%s'", GST_ELEMENT_NAME(actualSink));
         }
         else
         {
-            // For AutoVideoSink or AutoAudioSink we set properties on the child sink
-            GstElement *actualSink{sink};
-            if (MediaSourceType::VIDEO == mediaSourceType)
-                actualSink = getSinkChildIfAutoVideoSink(sink);
-            else if (MediaSourceType::AUDIO == mediaSourceType)
-                actualSink = getSinkChildIfAutoAudioSink(sink);
-
-            GstStructure *stats{nullptr};
-            m_glibWrapper->gObjectGet(actualSink, "stats", &stats, nullptr);
-            if (!stats)
+            guint64 renderedFramesTmp;
+            guint64 droppedFramesTmp;
+            if (m_gstWrapper->gstStructureGetUint64(stats, "rendered", &renderedFramesTmp) &&
+                m_gstWrapper->gstStructureGetUint64(stats, "dropped", &droppedFramesTmp))
             {
-                RIALTO_SERVER_LOG_WARN("failed to get stats from '%s'", kSinkName);
+                renderedFrames = renderedFramesTmp;
+                droppedFrames = droppedFramesTmp;
+                returnValue = true;
             }
             else
             {
-                guint64 renderedFramesTmp;
-                guint64 droppedFramesTmp;
-                if (m_gstWrapper->gstStructureGetUint64(stats, "rendered", &renderedFramesTmp) &&
-                    m_gstWrapper->gstStructureGetUint64(stats, "dropped", &droppedFramesTmp))
-                {
-                    renderedFrames = renderedFramesTmp;
-                    droppedFrames = droppedFramesTmp;
-                    returnValue = true;
-                }
-                else
-                {
-                    RIALTO_SERVER_LOG_WARN("failed to get 'rendered' or 'dropped' from structure (%s)", kSinkName);
-                }
-                m_gstWrapper->gstStructureFree(stats);
+                RIALTO_SERVER_LOG_ERROR("failed to get 'rendered' or 'dropped' from structure (%s)",
+                                        GST_ELEMENT_NAME(actualSink));
             }
-            m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+            m_gstWrapper->gstStructureFree(stats);
         }
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
     }
 
     return returnValue;
@@ -1141,6 +1182,89 @@ bool GstGenericPlayer::getTextTrackIdentifier(std::string &textTrackIdentifier)
         RIALTO_SERVER_LOG_ERROR("Failed to get text track identifier");
         return false;
     }
+}
+
+bool GstGenericPlayer::setLowLatency(bool lowLatency)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetLowLatency(*this, lowLatency));
+    }
+    return true;
+}
+
+bool GstGenericPlayer::setSync(bool sync)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetSync(*this, sync));
+    }
+    return true;
+}
+
+bool GstGenericPlayer::getSync(bool &sync)
+{
+    bool returnValue{false};
+    GstElement *sink = getSink(MediaSourceType::AUDIO);
+    if (sink)
+    {
+        GstElement *actualSink = getSinkChildIfAutoAudioSink(sink);
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "sync"))
+        {
+            m_glibWrapper->gObjectGet(actualSink, "sync", &sync, nullptr);
+            returnValue = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Sync not supported in sink '%s'", GST_ELEMENT_NAME(actualSink));
+        }
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get sync property, sink is NULL");
+    }
+
+    return returnValue;
+}
+
+bool GstGenericPlayer::setSyncOff(bool syncOff)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetSyncOff(*this, syncOff));
+    }
+    return true;
+}
+
+bool GstGenericPlayer::setStreamSyncMode(int32_t streamSyncMode)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetStreamSyncMode(*this, streamSyncMode));
+    }
+    return true;
+}
+
+bool GstGenericPlayer::getStreamSyncMode(int32_t &streamSyncMode)
+{
+    bool returnValue{false};
+    GstElement *decoder = getDecoder(MediaSourceType::AUDIO);
+    if (decoder && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "stream-sync-mode"))
+    {
+        m_glibWrapper->gObjectGet(decoder, "stream-sync-mode", &streamSyncMode, nullptr);
+        returnValue = true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Stream sync mode not supported in decoder '%s'",
+                                (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
+    }
+
+    if (decoder)
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(decoder));
+
+    return returnValue;
 }
 
 void GstGenericPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)

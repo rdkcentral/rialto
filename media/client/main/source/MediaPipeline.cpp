@@ -505,6 +505,42 @@ bool MediaPipeline::getTextTrackIdentifier(std::string &textTrackIdentifier)
     return m_mediaPipelineIpc->getTextTrackIdentifier(textTrackIdentifier);
 }
 
+bool MediaPipeline::setLowLatency(bool lowLatency)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setLowLatency(lowLatency);
+}
+
+bool MediaPipeline::setSync(bool sync)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setSync(sync);
+}
+
+bool MediaPipeline::getSync(bool &sync)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->getSync(sync);
+}
+
+bool MediaPipeline::setSyncOff(bool syncOff)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setSyncOff(syncOff);
+}
+
+bool MediaPipeline::setStreamSyncMode(int32_t streamSyncMode)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setStreamSyncMode(streamSyncMode);
+}
+
+bool MediaPipeline::getStreamSyncMode(int32_t &streamSyncMode)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->getStreamSyncMode(streamSyncMode);
+}
+
 bool MediaPipeline::flush(int32_t sourceId, bool resetTime)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");

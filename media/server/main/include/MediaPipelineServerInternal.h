@@ -138,6 +138,18 @@ public:
 
     bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
 
+    bool setLowLatency(bool lowLatency) override;
+
+    bool setSync(bool sync) override;
+
+    bool getSync(bool &sync) override;
+
+    bool setSyncOff(bool syncOff) override;
+
+    bool setStreamSyncMode(int32_t streamSyncMode) override;
+
+    bool getStreamSyncMode(int32_t &streamSyncMode) override;
+
     bool flush(int32_t sourceId, bool resetTime) override;
 
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime) override;
@@ -498,6 +510,60 @@ protected:
      * @retval true on success false otherwise
      */
     bool getTextTrackIdentifierInternal(std::string &textTrackIdentifier);
+
+    /**
+     * @brief Set low latency internally, only to be called on the main thread.
+     *
+     * @param[in] lowLatency : The low latency value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    bool setLowLatencyInternal(bool lowLatency);
+
+    /**
+     * @brief Set sync internally, only to be called on the main thread.
+     *
+     * @param[in] sync : The sync value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    bool setSyncInternal(bool sync);
+
+    /**
+     * @brief Get sync internally, only to be called on the main thread.
+     *
+     * @param[out] sync : Current sync value.
+     *
+     * @retval true on success false otherwise
+     */
+    bool getSyncInternal(bool &sync);
+
+    /**
+     * @brief Set sync off internally, only to be called on the main thread.
+     *
+     * @param[in] syncOff : The sync off value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    bool setSyncOffInternal(bool syncOff);
+
+    /**
+     * @brief Set stream sync mode internally, only to be called on the main thread.
+     *
+     * @param[in] streamSyncMode : The stream sync mode value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    bool setStreamSyncModeInternal(int32_t streamSyncMode);
+
+    /**
+     * @brief Get stream sync mode internally, only to be called on the main thread.
+     *
+     * @param[out] streamSyncMode : Current stream sync mode value.
+     *
+     * @retval true on success false otherwise
+     */
+    bool getStreamSyncModeInternal(int32_t &streamSyncMode);
 
     /**
      * @brief Checks if MediaPipeline threads are not deadlocked internally

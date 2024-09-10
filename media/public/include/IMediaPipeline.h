@@ -1337,6 +1337,69 @@ public:
     virtual bool getTextTrackIdentifier(std::string &textTrackIdentifier) = 0;
 
     /**
+     * @brief Set low latency property on the audio sink. Default false.
+     *
+     * For use with gaming (no audio decoding, no a/v sync).
+     *
+     * @param[in] lowLatency : The low latency value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setLowLatency(bool lowLatency) = 0;
+
+    /**
+     * @brief Set sync property on the audio sink. Default false.
+     *
+     * Syncs the stream on the clock.
+     *
+     * @param[in] sync : The sync value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setSync(bool sync) = 0;
+
+    /**
+     * @brief Get sync property on the audio sink.
+     *
+     * @param[out] sync : Current sync value.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getSync(bool &sync) = 0;
+
+    /**
+     * @brief Set sync off property on the audio decoder. Default false.
+     *
+     * Turn on free running audio. Must be set before pipeline is PLAYING state.
+     *
+     * @param[in] syncOff : The sync off value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setSyncOff(bool syncOff) = 0;
+
+    /**
+     * @brief Set stream sync mode property on the audio decoder. Default 0.
+     *
+     * 1 - Frame to decode frame will immediately proceed next frame sync.
+     * 0 - Frame decoded with no frame sync.
+     *
+     * @param[in] streamSyncMode : The stream sync mode value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setStreamSyncMode(int32_t streamSyncMode) = 0;
+
+    /**
+     * @brief Get stream sync mode property on the audio decoder.
+     *
+     * @param[out] streamSyncMode : Current stream sync mode value.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getStreamSyncMode(int32_t &streamSyncMode) = 0;
+
+    /**
      * @brief Flushes a source.
      *
      * This method is called by Rialto Client to flush out all queued data for a media source stream.

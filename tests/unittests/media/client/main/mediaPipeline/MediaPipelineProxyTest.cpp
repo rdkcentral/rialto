@@ -206,6 +206,44 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
+    EXPECT_CALL(*mediaPipelineMock, setLowLatency(true)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setLowLatency(true));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setSync(true)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setSync(true));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, getSync(_)).WillOnce(DoAll(SetArgReferee<0>(false), Return(true)));
+    {
+        bool sync;
+        EXPECT_TRUE(proxy->getSync(sync));
+        EXPECT_FALSE(sync);
+    }
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setSyncOff(true)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setSyncOff(true));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setStreamSyncMode(1)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setStreamSyncMode(1));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, getStreamSyncMode(_)).WillOnce(DoAll(SetArgReferee<0>(1), Return(true)));
+    {
+        int32_t streamSyncMode;
+        EXPECT_TRUE(proxy->getStreamSyncMode(streamSyncMode));
+        EXPECT_EQ(streamSyncMode, 1);
+    }
+
+    /////////////////////////////////////////////
+
     EXPECT_CALL(*mediaPipelineMock, flush(kSourceId, true)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->flush(kSourceId, true));
 

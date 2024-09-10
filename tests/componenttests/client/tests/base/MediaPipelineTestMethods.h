@@ -115,6 +115,12 @@ protected:
     void shouldGetVolume(const double volume);
     void shouldSetMute(const bool expectedMute);
     void shouldGetMute(const bool mute);
+    void shouldSetLowLatency(const bool expectedLowLatency);
+    void shouldSetSync(const bool expectedSync);
+    void shouldGetSync(const bool sync);
+    void shouldSetSyncOff(const bool expectedSyncOff);
+    void shouldSetStreamSyncMode(const int32_t expectedStreamSyncMode);
+    void shouldGetStreamSyncMode(const int32_t streamSyncMode);
     void shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY, const uint32_t expectedWidth,
                               const uint32_t expectedHeight);
     void shouldRenderFrame();
@@ -221,6 +227,12 @@ protected:
     void getVolume(const double expectedVolume);
     void setMute(const bool mute);
     void getMute(const bool expectedMute);
+    void setLowLatency(const bool lowLatency);
+    void setSync(const bool sync);
+    void getSync(const bool expectedSync);
+    void setSyncOff(const bool syncOff);
+    void setStreamSyncMode(const int32_t streamSyncMode);
+    void getStreamSyncMode(const int32_t expectedStreamSyncMode);
     void setSetVideoWindow(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height);
     void renderFrame();
     void renderFrameFailure();

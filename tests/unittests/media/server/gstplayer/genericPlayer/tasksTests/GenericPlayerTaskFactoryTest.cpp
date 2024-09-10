@@ -48,10 +48,14 @@
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetImmediateOutput.h"
+#include "tasks/generic/SetLowLatency.h"
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
 #include "tasks/generic/SetSourcePosition.h"
+#include "tasks/generic/SetStreamSyncMode.h"
+#include "tasks/generic/SetSync.h"
+#include "tasks/generic/SetSyncOff.h"
 #include "tasks/generic/SetTextTrackIdentifier.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
@@ -230,6 +234,38 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetMute)
     auto task = m_sut.createSetMute(m_context, firebolt::rialto::MediaSourceType::AUDIO, kMute);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetMute &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetLowLatency)
+{
+    constexpr bool kLowLatency{true};
+    auto task = m_sut.createSetLowLatency(m_gstPlayer, kLowLatency);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetLowLatency &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSync)
+{
+    constexpr bool kSync{true};
+    auto task = m_sut.createSetSync(m_gstPlayer, kSync);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetSync &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSyncOff)
+{
+    constexpr bool kSyncOff{true};
+    auto task = m_sut.createSetSyncOff(m_gstPlayer, kSyncOff);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetSyncOff &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetStreamSyncMode)
+{
+    constexpr int32_t kStreamSyncMode{1};
+    auto task = m_sut.createSetStreamSyncMode(m_gstPlayer, kStreamSyncMode);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetStreamSyncMode &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateShutdown)

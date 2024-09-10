@@ -500,6 +500,125 @@ TEST_F(MediaPipelineServiceTests, shouldGetMute)
     getMuteShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToSetLowLatencyForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setLowLatencyShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetLowLatency)
+{
+    initSession();
+    mediaPipelineWillFailToSetLowLatency();
+    setLowLatencyShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetLowLatency)
+{
+    initSession();
+    mediaPipelineWillSetLowLatency();
+    setLowLatencyShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetSyncForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setSyncShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetSync)
+{
+    initSession();
+    mediaPipelineWillFailToSetSync();
+    setSyncShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetSync)
+{
+    initSession();
+    mediaPipelineWillSetSync();
+    setSyncShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetSyncForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getSyncShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetSync)
+{
+    initSession();
+    mediaPipelineWillFailToGetSync();
+    getSyncShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetSync)
+{
+    initSession();
+    mediaPipelineWillGetSync();
+    getSyncShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetSyncOffForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setSyncOffShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetSyncOff)
+{
+    initSession();
+    mediaPipelineWillFailToSetSyncOff();
+    setSyncOffShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetSyncOff)
+{
+    initSession();
+    mediaPipelineWillSetSyncOff();
+    setSyncOffShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetStreamSyncModeForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setStreamSyncModeShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetStreamSyncMode)
+{
+    initSession();
+    mediaPipelineWillFailToSetStreamSyncMode();
+    setStreamSyncModeShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetStreamSyncMode)
+{
+    initSession();
+    mediaPipelineWillSetStreamSyncMode();
+    setStreamSyncModeShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetStreamSyncModeForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getStreamSyncModeShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetStreamSyncMode)
+{
+    initSession();
+    mediaPipelineWillFailToGetStreamSyncMode();
+    getStreamSyncModeShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetStreamSyncMode)
+{
+    initSession();
+    mediaPipelineWillGetStreamSyncMode();
+    getStreamSyncModeShouldSucceed();
+}
 TEST_F(MediaPipelineServiceTests, shouldFailToFlushForNotExistingSession)
 {
     createMediaPipelineShouldSuccess();

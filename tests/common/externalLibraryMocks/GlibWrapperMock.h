@@ -49,16 +49,32 @@ public:
 
         while (NULL != kProperty)
         {
-            gObjectSetStub(object, kProperty);
+            if (g_strcmp0(kProperty, "immediate-output") == 0 || g_strcmp0(kProperty, "low-latency") == 0 ||
+                g_strcmp0(kProperty, "sync") == 0 || g_strcmp0(kProperty, "sync-off") == 0)
+            {
+                gboolean val = va_arg(args, gboolean);
+                gObjectSetBoolStub(object, kProperty, val);
+            }
+            else if (g_strcmp0(kProperty, "stream-sync-mode") == 0)
+            {
+                gint val = va_arg(args, gint);
+                gObjectSetIntStub(object, kProperty, val);
+            }
+            else
+            {
+                gObjectSetStub(object, kProperty);
+                // Get the next propery, ignore the values
+                va_arg(args, void *);
+            }
 
-            // Get the next propery, ignore the values
-            va_arg(args, void *);
             kProperty = va_arg(args, const gchar *);
         }
 
         va_end(args);
     };
     MOCK_METHOD(void, gObjectSetStub, (gpointer object, const gchar *first_property_name));
+    MOCK_METHOD(void, gObjectSetBoolStub, (gpointer object, const gchar *first_property_name, gboolean val));
+    MOCK_METHOD(void, gObjectSetIntStub, (gpointer object, const gchar *first_property_name, gint val));
     void gObjectGet(gpointer object, const gchar *first_property_name, ...) override
     {
         va_list args;
