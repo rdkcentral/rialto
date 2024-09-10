@@ -1052,7 +1052,6 @@ bool MediaPipelineIpc::getSync(bool &sync)
     // check the result
     if (ipcController->Failed())
     {
-
         RIALTO_CLIENT_LOG_ERROR("failed to get sync due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
