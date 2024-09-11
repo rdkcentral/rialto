@@ -787,7 +787,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_GetSubtitlesMimeTypes)
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
 
-    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
+    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock);
 
     EXPECT_EQ(m_sut->getSupportedMimeTypes(MediaSourceType::SUBTITLE), kSubtitleMimeTypes);
 }

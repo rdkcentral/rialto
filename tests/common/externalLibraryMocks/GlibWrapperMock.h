@@ -60,6 +60,11 @@ public:
                 gint val = va_arg(args, gint);
                 gObjectSetIntStub(object, kProperty, val);
             }
+            else if(g_strcmp0(kProperty, "audio-fade") == 0)
+            {
+                const gchar* val = va_arg(args, const gchar*);
+                gObjectSetStrStub(object, kProperty, val);
+            }
             else
             {
                 gObjectSetStub(object, kProperty);
@@ -73,6 +78,7 @@ public:
         va_end(args);
     };
     MOCK_METHOD(void, gObjectSetStub, (gpointer object, const gchar *first_property_name));
+    MOCK_METHOD(void, gObjectSetStrStub, (gpointer object, const gchar *first_property_name, const gchar *val));
     MOCK_METHOD(void, gObjectSetBoolStub, (gpointer object, const gchar *first_property_name, gboolean val));
     MOCK_METHOD(void, gObjectSetIntStub, (gpointer object, const gchar *first_property_name, gint val));
     void gObjectGet(gpointer object, const gchar *first_property_name, ...) override

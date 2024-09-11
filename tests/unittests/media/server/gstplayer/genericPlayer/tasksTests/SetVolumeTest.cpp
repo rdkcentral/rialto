@@ -26,18 +26,35 @@ class SetVolumeTest : public GenericTasksTestsBase
 TEST_F(SetVolumeTest, shouldFailToSetVolumeWhenPipelineIsNull)
 {
     setPipelineToNull();
-    triggerSetVolume();
+    triggerSetVolumeEaseTypeLinear();
 }
 
 TEST_F(SetVolumeTest, shouldSetVolume)
 {
     shouldSetGstVolume();
-    triggerSetVolume();
+    triggerSetVolumeEaseTypeLinear();
 }
 
-// 
 TEST_F(SetVolumeTest, shouldSetVolumeWithAudioFadeWithEaseTypeLinear)
 {
     shouldSetAudioFadeAndEaseTypeLinear();
-    triggerSetVolume();
+    triggerSetVolumeEaseTypeLinear();
+}
+
+TEST_F(SetVolumeTest, shouldSetVolumeWithAudioFadeWithEaseTypeCubicIn)
+{
+    shouldSetAudioFadeAndEaseTypeCubicIn();
+    triggerSetVolumeEaseTypeCubicIn();
+}
+
+TEST_F(SetVolumeTest, shouldSetVolumeWithAudioFadeWithEaseTypeCubicOut)
+{
+    shouldSetAudioFadeAndEaseTypeCubicOut();
+    triggerSetVolumeEaseTypeCubicOut();
+}
+
+TEST_F(SetVolumeTest, shouldSetVolumeWithAudioFadeInSoc)
+{
+    shouldSetAudioFadeInSoc();
+    triggerSetVolumeEaseTypeLinear();
 }
