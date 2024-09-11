@@ -245,6 +245,13 @@ private:
      */
     bool setCodecData(GstCaps *caps, const std::shared_ptr<CodecData> &codecData) const;
 
+    /**
+     * @brief Gets the element from the pipeline that has type.
+     *
+     * @retval The element or nullptr if not found.
+     */
+    GstElement *getElementFromPipeline(GstElementFactoryListType type) const;
+
 private:
     /**
      * @brief The player context.

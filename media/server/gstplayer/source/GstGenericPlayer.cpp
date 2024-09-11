@@ -391,13 +391,16 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType)
 {
     const char *kSinkName{nullptr};
     GstElement *sink{nullptr};
+    GstElementFactoryListType type = GST_ELEMENT_FACTORY_TYPE_SINK;
     switch (mediaSourceType)
     {
     case MediaSourceType::AUDIO:
         kSinkName = "audio-sink";
+        type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO;
         break;
     case MediaSourceType::VIDEO:
         kSinkName = "video-sink";
+        type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO;
         break;
     default:
         break;
@@ -411,13 +414,35 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType)
         m_glibWrapper->gObjectGet(m_context.pipeline, kSinkName, &sink, nullptr);
         if (!sink)
         {
-            RIALTO_SERVER_LOG_WARN("%s could not be obtained", kSinkName);
+            RIALTO_SERVER_LOG_DEBUG("%s could not be obtained, try to find the sink using factory list type", kSinkName);
+
+            sink = getElementFromPipeline(type);
         }
     }
+
+    if (!sink)
+    {
+        RIALTO_SERVER_LOG_WARN("Could not find %s sink", mediaSourceType == MediaSourceType::AUDIO ? "audio" : "video");
+    }
+
     return sink;
 }
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
+{
+    GstElementFactoryListType type = GST_ELEMENT_FACTORY_TYPE_DECODER;
+    if (mediaSourceType == MediaSourceType::AUDIO)
+    {
+        type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO;
+    }
+    else if (mediaSourceType == MediaSourceType::VIDEO)
+    {
+        type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO;
+    }
+    return getElementFromPipeline(type);
+}
+
+GstElement *GstGenericPlayer::getElementFromPipeline(GstElementFactoryListType type) 
 {
     GstIterator *it = m_gstWrapper->gstBinIterateElements(GST_BIN(m_context.pipeline));
     GValue item = G_VALUE_INIT;
@@ -434,16 +459,6 @@ GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
 
             if (factory)
             {
-                GstElementFactoryListType type = GST_ELEMENT_FACTORY_TYPE_DECODER;
-                if (mediaSourceType == MediaSourceType::AUDIO)
-                {
-                    type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO;
-                }
-                else if (mediaSourceType == MediaSourceType::VIDEO)
-                {
-                    type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO;
-                }
-
                 if (m_gstWrapper->gstElementFactoryListIsType(factory, type))
                 {
                     m_glibWrapper->gValueUnset(&item);
@@ -465,7 +480,7 @@ GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
         }
     }
 
-    RIALTO_SERVER_LOG_WARN("Could not find decoder");
+    RIALTO_SERVER_LOG_WARN("Could not find element");
 
     m_glibWrapper->gValueUnset(&item);
     m_gstWrapper->gstIteratorFree(it);
