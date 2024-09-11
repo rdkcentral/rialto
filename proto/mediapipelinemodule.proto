@@ -437,16 +437,18 @@ message GetVolumeResponse {
 }
 
 /**
- * @fn void setMute(bool mute)
+ * @fn void setMute(bool mute, int32_t source_id)
  * @brief Set mute status of pipeline.
  *
  * @param[in] session_id  The id of the A/V session the request is for.
  * @param[in] mute        Desired mute state, true=muted, false=not muted
+*  @param[in] source_id   The media source ID.
  *
  */
 message SetMuteRequest {
     optional int32 session_id = 1 [default = -1];
     optional bool mute = 2;
+    optional int32 source_id = 3 [default = -1];
 }
 message SetMuteResponse {
 }
@@ -462,9 +464,132 @@ message SetMuteResponse {
  */
 message GetMuteRequest {
     optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
 }
 message GetMuteResponse {
     optional bool mute = 1;
+}
+
+/**
+ * @fn void setTextTrackIdentifier(const std::string &textTrackIdentifier)
+ * @brief Change Text Track Identifier
+ *
+ * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+ *
+ * @retval true on success false otherwise
+ *
+ */
+message SetTextTrackIdentifierRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional string text_track_identifier = 2;
+}
+message SetTextTrackIdentifierResponse {
+}
+
+/**
+ * @fn void getTextTrackIdentifier(std::string &textTrackIdentifier) 
+ * @brief Get Text Track Identifier
+ *
+ * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+ *
+ * @retval true on success false otherwise
+ */
+message GetTextTrackIdentifierRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetTextTrackIdentifierResponse {
+    optional string text_track_identifier = 1;
+}
+
+/**
+ * @fn void setLowLatency(bool lowLatency)
+ * @brief Set low latency property on the pipeline.
+ *
+ * @param[in] lowLatency : The low latency value to set.
+ *
+ */
+message SetLowLatencyRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool low_latency = 2;
+}
+message SetLowLatencyResponse {
+}
+
+/**
+ * @fn void setSync(bool sync)
+ * @brief Set sync property on the pipeline.
+ *
+ * @param[in] session_id  The id of the A/V session the request is for.
+ * @param[in] sync        The sync value to set.
+ *
+ */
+message SetSyncRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool sync = 2;
+}
+message SetSyncResponse {
+}
+
+/**
+ * @fn void getSync(bool &sync)
+ * @brief Get sync property on the pipeline.
+ *
+ * @param[in]  session_id  The id of the A/V session the request is for.
+ * @param[out] sync        Current sync value.
+ *
+ * @retval true on success false otherwise
+ */
+message GetSyncRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetSyncResponse {
+    optional bool sync = 1;
+}
+
+/**
+ * @fn void setSyncOff(bool sync_off)
+ * @brief Set sync off property on the pipeline.
+ *
+ * @param[in] session_id  The id of the A/V session the request is for.
+ * @param[in] sync_off    The sync off value to set.
+ *
+ */
+message SetSyncOffRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool sync_off = 2;
+}
+message SetSyncOffResponse {
+}
+
+/**
+ * @fn void setStreamSyncMode(int32 stream_sync_mode)
+ * @brief Set stream sync mode property on the pipeline.
+ *
+ * @param[in] session_id        The id of the A/V session the request is for.
+ * @param[in] stream_sync_mode  The stream sync mode value to set.
+ *
+ */
+message SetStreamSyncModeRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 stream_sync_mode = 2;
+}
+message SetStreamSyncModeResponse {
+}
+
+/**
+ * @fn void getStreamSyncMode(int32 &stream_sync_mode)
+ * @brief Get stream sync mode property on the pipeline.
+ *
+ * @param[in]  session_id       The id of the A/V session the request is for.
+ * @param[out] stream_sync_mode Current stream sync mode value.
+ *
+ * @retval true on success false otherwise
+ */
+message GetStreamSyncModeRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetStreamSyncModeResponse {
+    optional int32 stream_sync_mode = 1;
 }
 
 /**
@@ -894,7 +1019,7 @@ service MediaPipelineModule {
     rpc getVolume(GetVolumeRequest) returns (GetVolumeResponse) {
     }
 
-        /**
+    /**
      * @brief Set mute status of pipeline.
      * @see SetMuteRequest
      */
@@ -907,6 +1032,62 @@ service MediaPipelineModule {
      */
     rpc getMute(GetMuteRequest) returns (GetMuteResponse) {
     }
+
+    /**
+     * @brief Text Track Identifier
+     * @see SetTextTrackIdentifierRequest
+     */
+    rpc setTextTrackIdentifier(SetTextTrackIdentifierRequest) returns (SetTextTrackIdentifierResponse) {
+    } 
+
+    /**
+     * @brief Get Text Track Identifier
+     * @see GetTextTrackIdentifierRequest
+     */
+    rpc getTextTrackIdentifier(GetTextTrackIdentifierRequest) returns (GetTextTrackIdentifierResponse) {
+    }
+
+    /**
+     * @brief Set low latency property on the pipeline.
+     * @see SetLowLatencyRequest
+     */
+    rpc setLowLatency(SetLowLatencyRequest) returns (SetLowLatencyResponse) {
+    } 
+
+    /**
+     * @brief Set sync property on the pipeline.
+     * @see SetSyncRequest
+     */
+    rpc setSync(SetSyncRequest) returns (SetSyncResponse) {
+    } 
+
+    /**
+     * @brief Get sync property on the pipeline.
+     * @see GetSyncRequest
+     */
+    rpc getSync(GetSyncRequest) returns (GetSyncResponse) {
+    } 
+
+    /**
+     * @brief Set sync off property on the pipeline.
+     * @see SetSyncOffRequest
+     */
+    rpc setSyncOff(SetSyncOffRequest) returns (SetSyncOffResponse) {
+    } 
+
+    /**
+     * @brief Set stream sync mode property on the pipeline.
+     * @see SetStreamSyncModeRequest
+     */
+    rpc setStreamSyncMode(SetStreamSyncModeRequest) returns (SetStreamSyncModeResponse) {
+    } 
+
+    /**
+     * @brief Get stream sync mode property on the pipeline.
+     * @see GetStreamSyncModeRequest
+     */
+    rpc getStreamSyncMode(GetStreamSyncModeRequest) returns (GetStreamSyncModeResponse) {
+    } 
 
     /**
      * @brief Flush the media source.

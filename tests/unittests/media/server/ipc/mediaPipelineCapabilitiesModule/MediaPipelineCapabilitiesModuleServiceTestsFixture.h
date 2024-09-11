@@ -52,6 +52,7 @@ public:
     void sendGetSupportedPropertiesRequestWithSuccess();
     void sendGetSupportedPropertiesRequestAndExpectFailure();
     void expectInvalidControlFailure();
+    void expectCorrectMediaTypeConversion();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;

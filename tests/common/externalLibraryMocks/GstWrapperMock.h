@@ -180,7 +180,9 @@ public:
                 (GstStructure * structure, const gchar *firstname, GType type, const char *value), (const));
     MOCK_METHOD(void, gstMessageParseError, (GstMessage * message, GError **gerror, gchar **debug), (const));
     MOCK_METHOD(GstIterator *, gstBinIterateSinks, (GstBin * bin), (const, override));
+    MOCK_METHOD(GstIterator *, gstBinIterateElements, (GstBin * bin), (const, override));
     MOCK_METHOD(GstIteratorResult, gstIteratorNext, (GstIterator * it, GValue *elem), (const, override));
+    MOCK_METHOD(void, gstIteratorResync, (GstIterator * it), (const, override));
     MOCK_METHOD(void, gstIteratorFree, (GstIterator * it), (const, override));
     MOCK_METHOD(gboolean, gstElementPostMessage, (GstElement * element, GstMessage *message), (const, override));
     MOCK_METHOD(GstMessage *, gstMessageNewWarning, (GstObject * src, GError *error, const gchar *debug),
@@ -203,6 +205,8 @@ public:
     MOCK_METHOD(bool, gstStructureHasField, (const GstStructure *structure, const gchar *fieldname), (const, override));
     MOCK_METHOD(GstAudioClippingMeta *, gstBufferAddAudioClippingMeta,
                 (GstBuffer * buffer, GstFormat format, guint64 start, guint64 end), (const, override));
+    MOCK_METHOD(GstPad *, gstElementGetStaticPad, (GstElement * element, const gchar *name), (const, override));
+    MOCK_METHOD(GstPad *, gstBaseSinkPad, (GstElement * element), (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

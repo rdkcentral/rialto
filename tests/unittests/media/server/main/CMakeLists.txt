@@ -41,6 +41,7 @@ add_gtests (
         mediaPipeline/FlushTest.cpp
         mediaPipeline/SetSourcePositionTest.cpp
         mediaPipeline/ProcessAudioGapTest.cpp
+        mediaPipeline/TextTrackIdentifierTest.cpp
 
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
 
@@ -95,6 +96,10 @@ add_gtests (
         needMediaData/NeedMediaDataTests.cpp
 
         mainThread/MainThreadTest.cpp
+
+        textTrackAccessor/TextTrackAccessorTest.cpp
+
+        textTrackSession/TextTrackSessionTest.cpp
 
         webAudioPlayer/base/WebAudioPlayerTestBase.cpp
         webAudioPlayer/CreateTest.cpp

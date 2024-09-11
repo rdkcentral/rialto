@@ -481,16 +481,64 @@ bool MediaPipeline::getVolume(double &currentVolume)
     return m_mediaPipelineIpc->getVolume(currentVolume);
 }
 
-bool MediaPipeline::setMute(bool mute)
+bool MediaPipeline::setMute(int32_t sourceId, bool mute)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    return m_mediaPipelineIpc->setMute(mute);
+    return m_mediaPipelineIpc->setMute(sourceId, mute);
 }
 
-bool MediaPipeline::getMute(bool &mute)
+bool MediaPipeline::getMute(int32_t sourceId, bool &mute)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    return m_mediaPipelineIpc->getMute(mute);
+    return m_mediaPipelineIpc->getMute(sourceId, mute);
+}
+
+bool MediaPipeline::setTextTrackIdentifier(const std::string &textTrackIdentifier)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setTextTrackIdentifier(textTrackIdentifier);
+}
+
+bool MediaPipeline::getTextTrackIdentifier(std::string &textTrackIdentifier)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->getTextTrackIdentifier(textTrackIdentifier);
+}
+
+bool MediaPipeline::setLowLatency(bool lowLatency)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setLowLatency(lowLatency);
+}
+
+bool MediaPipeline::setSync(bool sync)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setSync(sync);
+}
+
+bool MediaPipeline::getSync(bool &sync)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->getSync(sync);
+}
+
+bool MediaPipeline::setSyncOff(bool syncOff)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setSyncOff(syncOff);
+}
+
+bool MediaPipeline::setStreamSyncMode(int32_t streamSyncMode)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setStreamSyncMode(streamSyncMode);
+}
+
+bool MediaPipeline::getStreamSyncMode(int32_t &streamSyncMode)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->getStreamSyncMode(streamSyncMode);
 }
 
 bool MediaPipeline::flush(int32_t sourceId, bool resetTime)

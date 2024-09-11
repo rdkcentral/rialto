@@ -46,12 +46,24 @@ void SetImmediateOutput::execute() const
     if (sink)
     {
         // For AutoVideoSink we use properties on the child sink
+        GstElement *actualSink{sink};
         if (MediaSourceType::VIDEO == m_type)
-            sink = m_player.getSinkChildIfAutoVideoSink(sink);
+            actualSink = m_player.getSinkChildIfAutoVideoSink(sink);
 
-        gboolean immediateOutput{m_immediateOutput};
-        m_glibWrapper->gObjectSet(sink, "immediate-output", immediateOutput, nullptr);
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "immediate-output"))
+        {
+            gboolean immediateOutput{m_immediateOutput};
+            m_glibWrapper->gObjectSet(actualSink, "immediate-output", immediateOutput, nullptr);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set immediate-output property on sink '%s'", GST_ELEMENT_NAME(actualSink));
+        }
         m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set immediate-output property, sink is NULL");
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

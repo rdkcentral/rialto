@@ -102,9 +102,37 @@ public:
 
     bool getVolume(double &currentVolume) override { return m_mediaPipeline->getVolume(currentVolume); }
 
-    bool setMute(bool mute) override { return m_mediaPipeline->setMute(mute); }
+    bool setMute(int32_t sourceId, bool mute) override { return m_mediaPipeline->setMute(sourceId, mute); }
 
-    bool getMute(bool &mute) override { return m_mediaPipeline->getMute(mute); }
+    bool getMute(int32_t sourceId, bool &mute) override { return m_mediaPipeline->getMute(sourceId, mute); }
+
+    bool setTextTrackIdentifier(const std::string &textTrackIdentifier) override
+    {
+        return m_mediaPipeline->setTextTrackIdentifier(textTrackIdentifier);
+    }
+
+    bool getTextTrackIdentifier(std::string &textTrackIdentifier) override
+    {
+        return m_mediaPipeline->getTextTrackIdentifier(textTrackIdentifier);
+    }
+
+    bool setLowLatency(bool lowLatency) override { return m_mediaPipeline->setLowLatency(lowLatency); }
+
+    bool setSync(bool sync) override { return m_mediaPipeline->setSync(sync); }
+
+    bool getSync(bool &sync) override { return m_mediaPipeline->getSync(sync); }
+
+    bool setSyncOff(bool syncOff) override { return m_mediaPipeline->setSyncOff(syncOff); }
+
+    bool setStreamSyncMode(int32_t streamSyncMode) override
+    {
+        return m_mediaPipeline->setStreamSyncMode(streamSyncMode);
+    }
+
+    bool getStreamSyncMode(int32_t &streamSyncMode) override
+    {
+        return m_mediaPipeline->getStreamSyncMode(streamSyncMode);
+    }
 
     bool flush(int32_t sourceId, bool resetTime) override { return m_mediaPipeline->flush(sourceId, resetTime); }
 

@@ -193,17 +193,55 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, setMute(true)).WillOnce(Return(true));
-    EXPECT_TRUE(proxy->setMute(true));
+    EXPECT_CALL(*mediaPipelineMock, setMute(kSourceId, true)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setMute(kSourceId, true));
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, getMute(_)).WillOnce(DoAll(SetArgReferee<0>(false), Return(true)));
+    EXPECT_CALL(*mediaPipelineMock, getMute(kSourceId, _)).WillOnce(DoAll(SetArgReferee<1>(false), Return(true)));
     {
         // The EXPECT_CALL above returns false
         bool mute;
-        EXPECT_TRUE(proxy->getMute(mute));
+        EXPECT_TRUE(proxy->getMute(kSourceId, mute));
         EXPECT_FALSE(mute);
+    }
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setLowLatency(true)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setLowLatency(true));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setSync(true)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setSync(true));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, getSync(_)).WillOnce(DoAll(SetArgReferee<0>(false), Return(true)));
+    {
+        bool sync;
+        EXPECT_TRUE(proxy->getSync(sync));
+        EXPECT_FALSE(sync);
+    }
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setSyncOff(true)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setSyncOff(true));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setStreamSyncMode(1)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setStreamSyncMode(1));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, getStreamSyncMode(_)).WillOnce(DoAll(SetArgReferee<0>(1), Return(true)));
+    {
+        int32_t streamSyncMode;
+        EXPECT_TRUE(proxy->getStreamSyncMode(streamSyncMode));
+        EXPECT_EQ(streamSyncMode, 1);
     }
 
     /////////////////////////////////////////////
@@ -221,6 +259,22 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     EXPECT_CALL(*mediaPipelineMock, processAudioGap(kPosition1, kDuration, kDiscontinuityGap, kIsAudioAac))
         .WillOnce(Return(true));
     EXPECT_TRUE(proxy->processAudioGap(kPosition1, kDuration, kDiscontinuityGap, kIsAudioAac));
+
+    /////////////////////////////////////////////
+
+    const std::string kTextTrackIdentifier{"Identifier"};
+    EXPECT_CALL(*mediaPipelineMock, setTextTrackIdentifier(kTextTrackIdentifier)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setTextTrackIdentifier(kTextTrackIdentifier));
+
+    /////////////////////////////////////////////
+
+    {
+        std::string textTrackIdentifier;
+        EXPECT_CALL(*mediaPipelineMock, getTextTrackIdentifier(_))
+            .WillOnce(DoAll(SetArgReferee<0>(kTextTrackIdentifier), Return(true)));
+        EXPECT_TRUE(proxy->getTextTrackIdentifier(textTrackIdentifier));
+        EXPECT_EQ(textTrackIdentifier, kTextTrackIdentifier);
+    }
 
     /////////////////////////////////////////////
 

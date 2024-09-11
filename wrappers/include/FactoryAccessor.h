@@ -37,6 +37,8 @@ public:
     std::shared_ptr<IOcdmFactory> &ocdmFactory() override;
     std::shared_ptr<IOcdmSystemFactory> &ocdmSystemFactory() override;
     std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory() override;
+    std::shared_ptr<ITextTrackPluginWrapperFactory> &textTrackPluginWrapperFactory() override;
+    std::shared_ptr<IThunderWrapperFactory> &thunderWrapperFactory() override;
 
 private:
     std::shared_ptr<IGlibWrapperFactory> m_glibWrapperFactory{nullptr};
@@ -45,6 +47,8 @@ private:
     std::shared_ptr<IOcdmFactory> m_ocdmFactory{nullptr};
     std::shared_ptr<IOcdmSystemFactory> m_ocdmSystemFactory{nullptr};
     std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> m_rdkGstreamerUtilsWrapperFactory{nullptr};
+    std::shared_ptr<ITextTrackPluginWrapperFactory> m_textTrackPluginWrapperFactory{nullptr};
+    std::shared_ptr<IThunderWrapperFactory> m_thunderWrapperFactory{nullptr};
 };
 } // namespace firebolt::rialto::wrappers
 

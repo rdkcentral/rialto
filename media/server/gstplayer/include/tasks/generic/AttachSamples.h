@@ -22,6 +22,7 @@
 
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerPrivate.h"
+#include "IGstWrapper.h"
 #include "IMediaPipeline.h"
 #include "IPlayerTask.h"
 #include <gst/gst.h>
@@ -33,12 +34,14 @@ namespace firebolt::rialto::server::tasks::generic
 class AttachSamples : public IPlayerTask
 {
 public:
-    AttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                  const IMediaPipeline::MediaSegmentVector &mediaSegments);
+    AttachSamples(GenericPlayerContext &context,
+                  const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                  IGstGenericPlayerPrivate &player, const IMediaPipeline::MediaSegmentVector &mediaSegments);
     ~AttachSamples() override;
     void execute() const override;
 
 private:
+    void attachData(const firebolt::rialto::MediaSourceType mediaType, GstBuffer *buffer) const;
     struct AudioData
     {
         GstBuffer *buffer;
@@ -58,9 +61,11 @@ private:
     };
 
     GenericPlayerContext &m_context;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     IGstGenericPlayerPrivate &m_player;
     std::vector<AudioData> m_audioData;
     std::vector<VideoData> m_videoData;
+    std::vector<GstBuffer *> m_subtitleData;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

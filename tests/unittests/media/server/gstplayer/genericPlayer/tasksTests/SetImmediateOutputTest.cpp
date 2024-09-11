@@ -29,6 +29,12 @@ TEST_F(SetImmediateOutputTest, shouldFailToSetImmediateOutputIfSinkIsNull)
     triggerSetImmediateOutput();
 }
 
+TEST_F(SetImmediateOutputTest, shouldFailToSetImmediateOutputIfPropertyDoesntExist)
+{
+    shouldFailToSetImmediateOutputIfPropertyDoesntExist();
+    triggerSetImmediateOutput();
+}
+
 TEST_F(SetImmediateOutputTest, shouldSetImmediateOutput)
 {
     shouldSetImmediateOutput();

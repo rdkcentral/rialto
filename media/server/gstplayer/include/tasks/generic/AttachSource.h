@@ -23,6 +23,7 @@
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
 #include "IGstGenericPlayerPrivate.h"
+#include "IGstTextTrackSinkFactory.h"
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
 #include "IPlayerTask.h"
@@ -36,9 +37,11 @@ namespace firebolt::rialto::server::tasks::generic
 class AttachSource : public IPlayerTask
 {
 public:
-    AttachSource(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                 std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
-                 const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+    AttachSource(GenericPlayerContext &context,
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                 const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+                 const std::shared_ptr<IGstTextTrackSinkFactory> &gstTextTrackSinkFactory,
                  IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source);
     ~AttachSource() override;
     void execute() const override;
@@ -53,6 +56,7 @@ private:
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
+    std::shared_ptr<IGstTextTrackSinkFactory> m_gstTextTrackSinkFactory;
     IGstGenericPlayerPrivate &m_player;
     std::unique_ptr<IMediaPipeline::MediaSource> m_attachedSource;
 };

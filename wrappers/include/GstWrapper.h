@@ -465,10 +465,14 @@ public:
 
     GstIterator *gstBinIterateSinks(GstBin *bin) const override { return gst_bin_iterate_sinks(bin); }
 
+    GstIterator *gstBinIterateElements(GstBin *bin) const override { return gst_bin_iterate_elements(bin); }
+
     GstIteratorResult gstIteratorNext(GstIterator *it, GValue *elem) const override
     {
         return gst_iterator_next(it, elem);
     }
+
+    void gstIteratorResync(GstIterator *it) const override { return gst_iterator_resync(it); }
 
     void gstIteratorFree(GstIterator *it) const override { return gst_iterator_free(it); }
 
@@ -543,11 +547,18 @@ public:
 
     void gstContextUnref(GstContext *context) const override { gst_context_unref(context); }
 
-    virtual GstAudioClippingMeta *gstBufferAddAudioClippingMeta(GstBuffer *buffer, GstFormat format, guint64 start,
-                                                                guint64 end) const
+    GstAudioClippingMeta *gstBufferAddAudioClippingMeta(GstBuffer *buffer, GstFormat format, guint64 start,
+                                                        guint64 end) const
     {
         return gst_buffer_add_audio_clipping_meta(buffer, format, start, end);
     }
+
+    GstPad *gstElementGetStaticPad(GstElement *element, const gchar *name) const override
+    {
+        return gst_element_get_static_pad(element, name);
+    }
+
+    GstPad *gstBaseSinkPad(GstElement *element) const override { return GST_BASE_SINK_PAD(element); }
 };
 
 }; // namespace firebolt::rialto::wrappers

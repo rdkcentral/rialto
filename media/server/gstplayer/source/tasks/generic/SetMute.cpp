@@ -19,13 +19,16 @@
 
 #include "tasks/generic/SetMute.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 #include <gst/gst.h>
 
 namespace firebolt::rialto::server::tasks::generic
 {
 SetMute::SetMute(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                 bool mute)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_mute{mute}
+                 std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                 const MediaSourceType &mediaSourceType, bool mute)
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
+      m_mediaSourceType{mediaSourceType}, m_mute{mute}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetMute");
 }
@@ -38,11 +41,28 @@ SetMute::~SetMute()
 void SetMute::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetMute");
-    if (!m_context.pipeline)
+    if (m_mediaSourceType == MediaSourceType::SUBTITLE)
     {
-        RIALTO_SERVER_LOG_ERROR("Setting mute failed. Pipeline is NULL");
-        return;
+        if (!m_context.subtitleSink)
+        {
+            RIALTO_SERVER_LOG_ERROR("There is no subtitle sink");
+            return;
+        }
+        m_glibWrapper->gObjectSet(m_context.subtitleSink, "mute", m_mute, nullptr);
     }
-    m_gstWrapper->gstStreamVolumeSetMute(GST_STREAM_VOLUME(m_context.pipeline), m_mute);
+    else if (m_mediaSourceType == MediaSourceType::AUDIO)
+    {
+        if (!m_context.pipeline)
+        {
+            RIALTO_SERVER_LOG_ERROR("Setting mute failed. Pipeline is NULL");
+            return;
+        }
+        m_gstWrapper->gstStreamVolumeSetMute(GST_STREAM_VOLUME(m_context.pipeline), m_mute);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Setting mute for type %s unsupported",
+                                common::convertMediaSourceType(m_mediaSourceType));
+    }
 }
 } // namespace firebolt::rialto::server::tasks::generic

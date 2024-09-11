@@ -38,6 +38,8 @@ constexpr auto kVideoMediaSourceType{firebolt::rialto::MediaSourceType::VIDEO};
 constexpr auto kVideoSourceId{static_cast<std::int32_t>(kVideoMediaSourceType)};
 constexpr auto kAudioMediaSourceType{firebolt::rialto::MediaSourceType::AUDIO};
 constexpr auto kAudioSourceId{static_cast<std::int32_t>(kAudioMediaSourceType)};
+constexpr auto kSubtitleMediaSourceType{firebolt::rialto::MediaSourceType::SUBTITLE};
+constexpr auto kSubtitleSourceId{static_cast<std::int32_t>(kSubtitleMediaSourceType)};
 constexpr int64_t kTimeStamp{4135000000000};
 constexpr int64_t kDuration{90000000000};
 constexpr int32_t kWidth{1024};
@@ -211,6 +213,14 @@ public:
         m_segment = std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, kTimeStamp, kDuration,
                                                                         kSampleRate, kNumberOfChannels, kClippingStart,
                                                                         kClippingEnd);
+        m_segment->setData(kMediaData.size(), kMediaData.data());
+        return *this;
+    }
+
+    Build &basicSubtitleSegment()
+    {
+        m_segment = std::make_unique<IMediaPipeline::MediaSegment>(kSubtitleSourceId, kSubtitleMediaSourceType,
+                                                                   kTimeStamp, kDuration);
         m_segment->setData(kMediaData.size(), kMediaData.data());
         return *this;
     }
@@ -422,4 +432,12 @@ TEST_F(DataReaderV2Tests, shouldReturnEmptyVectorWhenMetadataParsingFails)
     doSomeMessInMemory();
     auto resultSegment = readData(kAudioMediaSourceType);
     EXPECT_FALSE(resultSegment);
+}
+
+TEST_F(DataReaderV2Tests, shouldReadSubtitleData)
+{
+    auto inputSegment = Build().basicSubtitleSegment()();
+    writeBuffer(inputSegment);
+    auto resultSegment = readData(kSubtitleMediaSourceType);
+    Check(resultSegment).mandatoryDataPresent();
 }

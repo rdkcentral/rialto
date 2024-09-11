@@ -366,7 +366,7 @@ bool MediaPipelineService::getVolume(int sessionId, double &volume)
     return mediaPipelineIter->second->getVolume(volume);
 }
 
-bool MediaPipelineService::setMute(int sessionId, bool mute)
+bool MediaPipelineService::setMute(int sessionId, std::int32_t sourceId, bool mute)
 {
     RIALTO_SERVER_LOG_DEBUG("Set mute requested, session id: %d", sessionId);
 
@@ -377,10 +377,10 @@ bool MediaPipelineService::setMute(int sessionId, bool mute)
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->setMute(mute);
+    return mediaPipelineIter->second->setMute(sourceId, mute);
 }
 
-bool MediaPipelineService::getMute(int sessionId, bool &mute)
+bool MediaPipelineService::getMute(int sessionId, std::int32_t sourceId, bool &mute)
 {
     RIALTO_SERVER_LOG_DEBUG("Get mute requested, session id: %d", sessionId);
 
@@ -391,7 +391,119 @@ bool MediaPipelineService::getMute(int sessionId, bool &mute)
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->getMute(mute);
+    return mediaPipelineIter->second->getMute(sourceId, mute);
+}
+
+bool MediaPipelineService::setTextTrackIdentifier(int sessionId, const std::string &textTrackIdentifier)
+{
+    RIALTO_SERVER_LOG_DEBUG("Set text track identifier requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setTextTrackIdentifier(textTrackIdentifier);
+}
+
+bool MediaPipelineService::getTextTrackIdentifier(int sessionId, std::string &textTrackIdentifier)
+{
+    RIALTO_SERVER_LOG_DEBUG("Get text track identifier requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getTextTrackIdentifier(textTrackIdentifier);
+}
+
+bool MediaPipelineService::setLowLatency(int sessionId, bool lowLatency)
+{
+    RIALTO_SERVER_LOG_DEBUG("Set low latency requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setLowLatency(lowLatency);
+}
+
+bool MediaPipelineService::setSync(int sessionId, bool sync)
+{
+    RIALTO_SERVER_LOG_DEBUG("Set sync requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setSync(sync);
+}
+
+bool MediaPipelineService::getSync(int sessionId, bool &sync)
+{
+    RIALTO_SERVER_LOG_DEBUG("Get sync requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getSync(sync);
+}
+
+bool MediaPipelineService::setSyncOff(int sessionId, bool syncOff)
+{
+    RIALTO_SERVER_LOG_DEBUG("Set sync off requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setSyncOff(syncOff);
+}
+
+bool MediaPipelineService::setStreamSyncMode(int sessionId, int32_t streamSyncMode)
+{
+    RIALTO_SERVER_LOG_DEBUG("Set stream sync mode requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setStreamSyncMode(streamSyncMode);
+}
+
+bool MediaPipelineService::getStreamSyncMode(int sessionId, int32_t &streamSyncMode)
+{
+    RIALTO_SERVER_LOG_DEBUG("Get stream sync mode requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getStreamSyncMode(streamSyncMode);
 }
 
 bool MediaPipelineService::flush(int sessionId, std::int32_t sourceId, bool resetTime)

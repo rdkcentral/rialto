@@ -842,7 +842,7 @@ bool MediaPipelineIpc::getVolume(double &volume)
     return true;
 }
 
-bool MediaPipelineIpc::setMute(bool mute)
+bool MediaPipelineIpc::setMute(int32_t sourceId, bool mute)
 {
     if (!reattachChannelIfRequired())
     {
@@ -854,6 +854,7 @@ bool MediaPipelineIpc::setMute(bool mute)
 
     request.set_session_id(m_sessionId);
     request.set_mute(mute);
+    request.set_source_id(sourceId);
 
     firebolt::rialto::SetMuteResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -873,7 +874,7 @@ bool MediaPipelineIpc::setMute(bool mute)
     return true;
 }
 
-bool MediaPipelineIpc::getMute(bool &mute)
+bool MediaPipelineIpc::getMute(std::int32_t sourceId, bool &mute)
 {
     if (!reattachChannelIfRequired())
     {
@@ -884,6 +885,7 @@ bool MediaPipelineIpc::getMute(bool &mute)
     firebolt::rialto::GetMuteRequest request;
 
     request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
 
     firebolt::rialto::GetMuteResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -901,6 +903,256 @@ bool MediaPipelineIpc::getMute(bool &mute)
     }
 
     mute = response.mute();
+
+    return true;
+}
+
+bool MediaPipelineIpc::setTextTrackIdentifier(const std::string &textTrackIdentifier)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetTextTrackIdentifierRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_text_track_identifier(textTrackIdentifier);
+
+    firebolt::rialto::SetTextTrackIdentifierResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setTextTrackIdentifier(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // waiting for call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set text track identifier due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getTextTrackIdentifier(std::string &textTrackIdentifier)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetTextTrackIdentifierRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetTextTrackIdentifierResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getTextTrackIdentifier(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get mute due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    textTrackIdentifier = response.text_track_identifier();
+
+    return true;
+}
+
+bool MediaPipelineIpc::setLowLatency(bool lowLatency)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetLowLatencyRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_low_latency(lowLatency);
+
+    firebolt::rialto::SetLowLatencyResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setLowLatency(ipcController.get(), &request, &response, blockingClosure.get());
+    // waiting for call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set low-latency due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::setSync(bool sync)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetSyncRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_sync(sync);
+
+    firebolt::rialto::SetSyncResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setSync(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // waiting for call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set sync due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getSync(bool &sync)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetSyncRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetSyncResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getSync(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get sync due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    sync = response.sync();
+
+    return true;
+}
+
+bool MediaPipelineIpc::setSyncOff(bool syncOff)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetSyncOffRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_sync_off(syncOff);
+
+    firebolt::rialto::SetSyncOffResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setSyncOff(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // waiting for call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set sync-off due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::setStreamSyncMode(int32_t streamSyncMode)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetStreamSyncModeRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_stream_sync_mode(streamSyncMode);
+
+    firebolt::rialto::SetStreamSyncModeResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setStreamSyncMode(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // waiting for call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set stream-sync-mode due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getStreamSyncMode(int32_t &streamSyncMode)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetStreamSyncModeRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetStreamSyncModeResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getStreamSyncMode(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get stream-sync-mode due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    streamSyncMode = response.stream_sync_mode();
 
     return true;
 }

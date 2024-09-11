@@ -1130,27 +1130,102 @@ void MediaPipelineTestMethods::getVolume(const double expectedVolume)
 
 void MediaPipelineTestMethods::shouldSetMute(const bool expectedMute)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, setMute(_, setMuteRequestMatcher(kSessionId, expectedMute), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setMute(_, setMuteRequestMatcher(kSessionId, kAudioSourceId, expectedMute), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
 void MediaPipelineTestMethods::shouldGetMute(const bool mute)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, getMute(_, getMuteRequestMatcher(kSessionId), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getMute(_, getMuteRequestMatcher(kSessionId, kAudioSourceId), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getMuteResponse(mute)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
 }
 
 void MediaPipelineTestMethods::setMute(const bool mute)
 {
-    EXPECT_EQ(m_mediaPipeline->setMute(mute), true);
+    EXPECT_EQ(m_mediaPipeline->setMute(kAudioSourceId, mute), true);
 }
 
 void MediaPipelineTestMethods::getMute(const bool expectedMute)
 {
     bool returnMute;
-    EXPECT_EQ(m_mediaPipeline->getMute(returnMute), true);
+    EXPECT_EQ(m_mediaPipeline->getMute(kAudioSourceId, returnMute), true);
     EXPECT_EQ(returnMute, expectedMute);
+}
+
+void MediaPipelineTestMethods::shouldSetLowLatency(const bool expectedLowLatency)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setLowLatency(_, setLowLatencyRequestMatcher(kSessionId, expectedLowLatency), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setLowLatency(const bool lowLatency)
+{
+    EXPECT_EQ(m_mediaPipeline->setLowLatency(lowLatency), true);
+}
+
+void MediaPipelineTestMethods::shouldSetSync(const bool expectedSync)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setSync(_, setSyncRequestMatcher(kSessionId, expectedSync), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setSync(const bool sync)
+{
+    EXPECT_EQ(m_mediaPipeline->setSync(sync), true);
+}
+
+void MediaPipelineTestMethods::shouldGetSync(const bool sync)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getSync(_, getSyncRequestMatcher(kSessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getSyncResponse(sync)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getSync(const bool expectedSync)
+{
+    bool returnSync;
+    EXPECT_EQ(m_mediaPipeline->getSync(returnSync), true);
+    EXPECT_EQ(returnSync, expectedSync);
+}
+
+void MediaPipelineTestMethods::shouldSetSyncOff(const bool expectedSyncOff)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setSyncOff(_, setSyncOffRequestMatcher(kSessionId, expectedSyncOff), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setSyncOff(const bool syncOff)
+{
+    EXPECT_EQ(m_mediaPipeline->setSyncOff(syncOff), true);
+}
+
+void MediaPipelineTestMethods::shouldSetStreamSyncMode(const int32_t expectedStreamSyncMode)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setStreamSyncMode(_, setStreamSyncModeRequestMatcher(kSessionId, expectedStreamSyncMode), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setStreamSyncMode(const int32_t streamSyncMode)
+{
+    EXPECT_EQ(m_mediaPipeline->setStreamSyncMode(streamSyncMode), true);
+}
+
+void MediaPipelineTestMethods::shouldGetStreamSyncMode(const int32_t streamSyncMode)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getStreamSyncMode(_, getStreamSyncModeRequestMatcher(kSessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getStreamSyncModeResponse(streamSyncMode)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getStreamSyncMode(const int32_t expectedStreamSyncMode)
+{
+    int32_t returnStreamSyncMode;
+    EXPECT_EQ(m_mediaPipeline->getStreamSyncMode(returnStreamSyncMode), true);
+    EXPECT_EQ(returnStreamSyncMode, expectedStreamSyncMode);
 }
 
 void MediaPipelineTestMethods::shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY,

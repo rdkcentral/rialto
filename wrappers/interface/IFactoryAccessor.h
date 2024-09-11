@@ -26,6 +26,8 @@
 #include "IOcdm.h"
 #include "IOcdmSystem.h"
 #include "IRdkGstreamerUtilsWrapper.h"
+#include "ITextTrackPluginWrapper.h"
+#include "IThunderWrapper.h"
 #include <memory>
 
 namespace firebolt::rialto::wrappers
@@ -94,6 +96,19 @@ public:
      * @retval non-const (by purpose) reference to the factory instance ptr
      */
     virtual std::shared_ptr<IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory() = 0;
+
+    /**
+     * @brief Access the ITextTrackPluginWrapperFactory instance.
+     *
+     * @retval non-const (by purpose) reference to the factory instance ptr
+     */
+    virtual std::shared_ptr<ITextTrackPluginWrapperFactory> &textTrackPluginWrapperFactory() = 0;
+
+    /** @brief Access the IThunderWrapperFactory instance.
+     *
+     * @retval non-const (by purpose) reference to the factory instance ptr
+     */
+    virtual std::shared_ptr<IThunderWrapperFactory> &thunderWrapperFactory() = 0;
 
 protected:
     /**

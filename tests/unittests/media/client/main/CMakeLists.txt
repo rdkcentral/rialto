@@ -40,10 +40,17 @@ add_gtests (
         mediaPipeline/GetVolumeTest.cpp
         mediaPipeline/SetMuteTest.cpp
         mediaPipeline/GetMuteTest.cpp
+        mediaPipeline/SetLowLatencyTest.cpp
+        mediaPipeline/SetSyncTest.cpp
+        mediaPipeline/GetSyncTest.cpp
+        mediaPipeline/SetSyncOffTest.cpp
+        mediaPipeline/SetStreamSyncModeTest.cpp
+        mediaPipeline/GetStreamSyncModeTest.cpp
         mediaPipeline/FlushTest.cpp
         mediaPipeline/SetSourcePositionTest.cpp
         mediaPipeline/MediaPipelineProxyTest.cpp
         mediaPipeline/ProcessAudioGapTest.cpp
+        mediaPipeline/TextTrackIdentifierTest.cpp
 
         # MediaPipelineCapabilities tests
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp

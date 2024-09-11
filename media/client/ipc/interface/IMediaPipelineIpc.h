@@ -249,24 +249,96 @@ public:
     /**
      * @brief Set mute status of pipeline.
      *
-     * Muting does not change the underlying volume setting so when
-     * unmuted the user will hear audio at the same volume as previously
-     * set.
+     * Change mute status of media source
      *
+     * @param[in] sourceId Source, which mute status should be changed
      * @param[in] mute   Desired mute state, true=muted, false=not muted
      *
      * @retval true on success false otherwise
      */
-    virtual bool setMute(bool mute) = 0;
+    virtual bool setMute(int32_t sourceId, bool mute) = 0;
 
     /**
-     * @brief Get current mute status of the pipeline
+     * @brief Get current mute status of the media source
      *
+     * @param[in] sourceId Source, which mute status should be fetched
      * @param[out] mute   Current mute state
      *
      * @retval true on success false otherwise
      */
-    virtual bool getMute(bool &mute) = 0;
+    virtual bool getMute(int32_t sourceId, bool &mute) = 0;
+
+    /**
+     * @brief Change Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setTextTrackIdentifier(const std::string &textTrackIdentifier) = 0;
+
+    /**
+     * @brief Get Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getTextTrackIdentifier(std::string &textTrackIdentifier) = 0;
+
+    /**
+     * @brief Set low latency property on the pipeline. Default false.
+     *
+     * @param[in] lowLatency : The low latency value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setLowLatency(bool lowLatency) = 0;
+
+    /**
+     * @brief Set sync property on the pipeline. Default false.
+     *
+     * @param[in] sync : The sync value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setSync(bool sync) = 0;
+
+    /**
+     * @brief Get sync property on the pipeline.
+     *
+     * @param[out] sync : Current sync value.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getSync(bool &sync) = 0;
+
+    /**
+     * @brief Set sync off property on the pipeline. Default false.
+     *
+     * @param[in] syncOff : The sync off value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setSyncOff(bool syncOff) = 0;
+
+    /**
+     * @brief Set stream sync mode property on the pipeline. Default 0.
+     *
+     * @param[in] streamSyncMode : The stream sync mode value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setStreamSyncMode(int32_t streamSyncMode) = 0;
+
+    /**
+     * @brief Get stream sync mode property on the pipeline.
+     *
+     * @param[out] streamSyncMode : Current stream sync mode value.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getStreamSyncMode(int32_t &streamSyncMode) = 0;
 
     /**
      * @brief Flushes a source.

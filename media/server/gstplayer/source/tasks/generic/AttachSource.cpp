@@ -251,15 +251,18 @@ public:
 protected:
     const IMediaPipeline::MediaSourceVideoDolbyVision &m_attachedDolbySource;
 };
+
 }; // namespace
 
 AttachSource::AttachSource(
-    GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
-    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
-    IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
+    GenericPlayerContext &context, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+    const std::shared_ptr<IGstTextTrackSinkFactory> &gstTextTrackSinkFactory, IGstGenericPlayerPrivate &player,
+    const std::unique_ptr<IMediaPipeline::MediaSource> &source)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_player{player}, m_attachedSource{source->copy()}
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
+      m_gstTextTrackSinkFactory{gstTextTrackSinkFactory}, m_player{player}, m_attachedSource{source->copy()}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing AttachSource");
 }
@@ -271,17 +274,11 @@ AttachSource::~AttachSource()
 
 void AttachSource::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing AttachSource");
+    RIALTO_SERVER_LOG_DEBUG("Executing AttachSource %u", static_cast<uint32_t>(m_attachedSource->getType()));
 
     if (m_attachedSource->getType() == MediaSourceType::UNKNOWN)
     {
         RIALTO_SERVER_LOG_ERROR("Unknown media source type");
-        return;
-    }
-    else if (m_attachedSource->getType() == MediaSourceType::SUBTITLE)
-    {
-        // just stub for now
-        RIALTO_SERVER_LOG_DEBUG("Subtitle source attached");
         return;
     }
 
@@ -326,6 +323,19 @@ void AttachSource::addSource(GstCaps *caps, bool hasDrm) const
     {
         RIALTO_SERVER_LOG_MIL("Adding Video appsrc");
         appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "vidsrc");
+    }
+    else if (m_attachedSource->getType() == MediaSourceType::SUBTITLE)
+    {
+        RIALTO_SERVER_LOG_MIL("Adding Subtitle appsrc");
+        appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "subsrc");
+
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_context.pipeline), "text-sink"))
+        {
+            GstElement *elem = m_gstTextTrackSinkFactory->createGstTextTrackSink();
+            m_context.subtitleSink = elem;
+
+            m_glibWrapper->gObjectSet(m_context.pipeline, "text-sink", elem, nullptr);
+        }
     }
 
     m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), caps);
@@ -395,12 +405,12 @@ void AttachSource::reattachAudioSource(GstCaps *caps, const std::string &strCaps
     }
 
     // Restart audio sink
-    m_player.setAudioVideoFlags(true, true);
+    m_player.setPlaybinFlags(true);
 
-    m_context.audioNeedData = true;
+    m_context.streamInfo[m_attachedSource->getType()].isDataNeeded = true;
     m_context.audioSourceRemoved = false;
     m_context.lastAudioSampleTimestamps = currentDispPts;
-    m_player.notifyNeedMediaData(true, false);
+    m_player.notifyNeedMediaData(MediaSourceType::AUDIO);
 
     if (oldCaps)
         m_gstWrapper->gstCapsUnref(oldCaps);
@@ -452,6 +462,11 @@ GstCaps *AttachSource::createCapsFromMediaSource() const
             RIALTO_SERVER_LOG_ERROR("Failed to cast to dolby vision source!");
             return nullptr;
         }
+    }
+    else if (configType == firebolt::rialto::SourceConfigType::SUBTITLE)
+    {
+        // subtitle caps is just a simple type, without any extra parameters
+        return firebolt::rialto::server::createSimpleCapsFromMimeType(m_gstWrapper, *m_attachedSource.get());
     }
     else
     {

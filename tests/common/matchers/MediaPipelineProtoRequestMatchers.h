@@ -239,15 +239,55 @@ MATCHER_P(getVolumeRequestMatcher, sessionId, "")
     return ((kRequest->session_id() == sessionId));
 }
 
-MATCHER_P2(setMuteRequestMatcher, sessionId, mute, "")
+MATCHER_P3(setMuteRequestMatcher, sessionId, sourceId, mute, "")
 {
     const ::firebolt::rialto::SetMuteRequest *kRequest = dynamic_cast<const ::firebolt::rialto::SetMuteRequest *>(arg);
-    return ((kRequest->session_id() == sessionId) && (kRequest->mute() == mute));
+    return ((kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId) && (kRequest->mute() == mute));
 }
 
-MATCHER_P(getMuteRequestMatcher, sessionId, "")
+MATCHER_P2(getMuteRequestMatcher, sessionId, sourceId, "")
 {
     const ::firebolt::rialto::GetMuteRequest *kRequest = dynamic_cast<const ::firebolt::rialto::GetMuteRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId));
+}
+
+MATCHER_P2(setLowLatencyRequestMatcher, sessionId, lowLatency, "")
+{
+    const ::firebolt::rialto::SetLowLatencyRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetLowLatencyRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->low_latency() == lowLatency));
+}
+
+MATCHER_P2(setSyncRequestMatcher, sessionId, sync, "")
+{
+    const ::firebolt::rialto::SetSyncRequest *kRequest = dynamic_cast<const ::firebolt::rialto::SetSyncRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->sync() == sync));
+}
+
+MATCHER_P(getSyncRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetSyncRequest *kRequest = dynamic_cast<const ::firebolt::rialto::GetSyncRequest *>(arg);
+    return ((kRequest->session_id() == sessionId));
+}
+
+MATCHER_P2(setSyncOffRequestMatcher, sessionId, syncOff, "")
+{
+    const ::firebolt::rialto::SetSyncOffRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetSyncOffRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->sync_off() == syncOff));
+}
+
+MATCHER_P2(setStreamSyncModeRequestMatcher, sessionId, streamSyncMode, "")
+{
+    const ::firebolt::rialto::SetStreamSyncModeRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetStreamSyncModeRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->stream_sync_mode() == streamSyncMode));
+}
+
+MATCHER_P(getStreamSyncModeRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetStreamSyncModeRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetStreamSyncModeRequest *>(arg);
     return ((kRequest->session_id() == sessionId));
 }
 
@@ -332,4 +372,17 @@ MATCHER_P5(processAudioGapRequestMatcher, sessionId, position, duration, discont
             (kRequest->audio_aac() == isAudioAac));
 }
 
+MATCHER_P2(setTextTrackIdentifierRequestMatcher, sessionId, textTrackIdentifier, "")
+{
+    const ::firebolt::rialto::SetTextTrackIdentifierRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetTextTrackIdentifierRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->text_track_identifier() == textTrackIdentifier));
+}
+
+MATCHER_P(getTextTrackIdentifierRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetTextTrackIdentifierRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetTextTrackIdentifierRequest *>(arg);
+    return (kRequest->session_id() == sessionId);
+}
 #endif // MEDIA_PIPELINE_PROTO_REQUEST_MATCHERS_H_

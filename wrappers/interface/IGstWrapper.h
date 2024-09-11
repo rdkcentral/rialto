@@ -1085,6 +1085,15 @@ public:
     virtual GstIterator *gstBinIterateSinks(GstBin *bin) const = 0;
 
     /**
+     * @brief Gets an iterator for the bin that contains all the elements.
+     *
+     * @param[in]  bin  : the bin.
+     *
+     * @retval an iterator of elements.
+     */
+    virtual GstIterator *gstBinIterateElements(GstBin *bin) const = 0;
+
+    /**
      * @brief Gets the next item from the iterator.
      *
      * @param[in]  it   : the iterator to iterate.
@@ -1096,6 +1105,15 @@ public:
      *         GST_ITERATOR_ERROR if an error occured.
      */
     virtual GstIteratorResult gstIteratorNext(GstIterator *it, GValue *elem) const = 0;
+
+    /**
+     * @brief Rsync the iterator.
+     *
+     * To be used if the element list has been updated while iteration.
+     *
+     * @param[in]  it   : the iterator to resync.
+     */
+    virtual void gstIteratorResync(GstIterator *it) const = 0;
 
     /**
      * @brief Free the iterator.
@@ -1272,6 +1290,25 @@ public:
      */
     virtual GstAudioClippingMeta *gstBufferAddAudioClippingMeta(GstBuffer *buffer, GstFormat format, guint64 start,
                                                                 guint64 end) const = 0;
+
+    /**
+     * @brief Gets a pad of given \a element
+     *
+     * @param element element from which pad should be returned
+     * @param name name of the pad
+     *
+     * @return given pad or NULL if failed
+     */
+    virtual GstPad *gstElementGetStaticPad(GstElement *element, const gchar *name) const = 0;
+
+    /**
+     * @brief Gives the pointer to the GstPad object of the element.
+     *
+     * @param element element from which pad should be returned
+     *
+     * @return given pad or NULL if failed
+     */
+    virtual GstPad *gstBaseSinkPad(GstElement *element) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

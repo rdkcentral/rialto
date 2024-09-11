@@ -53,10 +53,15 @@ add_library(
         source/tasks/generic/RenderFrame.cpp
         source/tasks/generic/ReportPosition.cpp
         source/tasks/generic/SetImmediateOutput.cpp
+        source/tasks/generic/SetLowLatency.cpp
         source/tasks/generic/SetMute.cpp
         source/tasks/generic/SetPlaybackRate.cpp
         source/tasks/generic/SetPosition.cpp
         source/tasks/generic/SetSourcePosition.cpp
+        source/tasks/generic/SetStreamSyncMode.cpp
+        source/tasks/generic/SetSync.cpp
+        source/tasks/generic/SetSyncOff.cpp
+        source/tasks/generic/SetTextTrackIdentifier.cpp
         source/tasks/generic/SetVideoGeometry.cpp
         source/tasks/generic/SetVolume.cpp
         source/tasks/generic/SetupElement.cpp
@@ -89,6 +94,7 @@ add_library(
         source/WorkerThread.cpp
         source/GstCapabilities.cpp
         source/GstDecryptor.cpp
+        source/GstTextTrackSink.cpp
         source/GstLogForwarding.cpp
         )
 
@@ -130,5 +136,4 @@ target_link_libraries(
         RialtoCommon
         RialtoPlayerCommon
         ${GStreamerApp_LIBRARIES}
-
         )

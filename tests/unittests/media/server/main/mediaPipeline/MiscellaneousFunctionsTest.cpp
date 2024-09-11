@@ -503,21 +503,35 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeSuccess)
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetMuteFailureDueToUninitializedPlayer)
 {
     const bool kMute{false};
+    const int32_t kUnknownSourceId{-1};
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_FALSE(m_mediaPipeline->setMute(kMute));
+    EXPECT_FALSE(m_mediaPipeline->setMute(kUnknownSourceId, kMute));
 }
 
 /**
- * Test that SetMute returns failure if the gstreamer player is not initialized
+ * Test that SetMute returns failure if the source is not attached
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetMuteFailureDueToUnattachedSource)
+{
+    const bool kMute{false};
+    const int32_t kUnknownSourceId{-1};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setMute(kUnknownSourceId, kMute));
+}
+
+/**
+ * Test that SetMute returns success
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetMuteSuccess)
 {
     const bool kMute{false};
     loadGstPlayer();
-    mainThreadWillEnqueueTaskAndWait();
+    int audioSourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
 
-    EXPECT_CALL(*m_gstPlayerMock, setMute(kMute));
-    EXPECT_TRUE(m_mediaPipeline->setMute(kMute));
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setMute(firebolt::rialto::MediaSourceType::AUDIO, kMute));
+    EXPECT_TRUE(m_mediaPipeline->setMute(audioSourceId, kMute));
 }
 
 /**
@@ -525,9 +539,22 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetMuteSuccess)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteFailureDueToUninitializedPlayer)
 {
+    const int32_t kUnknownSourceId{-1};
     mainThreadWillEnqueueTaskAndWait();
     bool resultMute{};
-    EXPECT_FALSE(m_mediaPipeline->getMute(resultMute));
+    EXPECT_FALSE(m_mediaPipeline->getMute(kUnknownSourceId, resultMute));
+}
+
+/**
+ * Test that GetMute returns failure if the source is not attached
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteFailureDueToUnattachedSource)
+{
+    const int32_t kUnknownSourceId{-1};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    bool resultMute{};
+    EXPECT_FALSE(m_mediaPipeline->getMute(kUnknownSourceId, resultMute));
 }
 
 /**
@@ -537,9 +564,10 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteFailure)
 {
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
+    int audioSourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
     bool resultMute{};
-    EXPECT_CALL(*m_gstPlayerMock, getMute(_)).WillOnce(Return(false));
-    EXPECT_FALSE(m_mediaPipeline->getMute(resultMute));
+    EXPECT_CALL(*m_gstPlayerMock, getMute(MediaSourceType::AUDIO, _)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getMute(audioSourceId, resultMute));
 }
 
 /**
@@ -551,17 +579,233 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteSuccess)
     bool resultMute{};
 
     loadGstPlayer();
+    int audioSourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
+
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, getMute(_))
+    EXPECT_CALL(*m_gstPlayerMock, getMute(MediaSourceType::AUDIO, _))
         .WillOnce(Invoke(
-            [&](bool &mut)
+            [&](MediaSourceType, bool &mut)
             {
                 mut = kCurrentMute;
                 return true;
             }));
 
-    EXPECT_TRUE(m_mediaPipeline->getMute(resultMute));
+    EXPECT_TRUE(m_mediaPipeline->getMute(audioSourceId, resultMute));
     EXPECT_EQ(resultMute, kCurrentMute);
+}
+
+/**
+ * Test that SetLowLatency returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetLowLatencyFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    constexpr bool kLowLatency{true};
+    EXPECT_FALSE(m_mediaPipeline->setLowLatency(kLowLatency));
+}
+
+/**
+ * Test that SetLowLatency returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetLowLatencyFailure)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    constexpr bool kLowLatency{true};
+    EXPECT_CALL(*m_gstPlayerMock, setLowLatency(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->setLowLatency(kLowLatency));
+}
+
+/**
+ * Test that SetLowLatency returns success if the gstreamer API succeeds and gets mute
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetLowLatencySuccess)
+{
+    constexpr bool kLowLatency{true};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setLowLatency(kLowLatency)).WillOnce(Return(true));
+
+    EXPECT_TRUE(m_mediaPipeline->setLowLatency(kLowLatency));
+}
+
+/**
+ * Test that SetSync returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetSyncFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    constexpr bool kSync{true};
+    EXPECT_FALSE(m_mediaPipeline->setSync(kSync));
+}
+
+/**
+ * Test that SetSync returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetSyncFailure)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    constexpr bool kSync{true};
+    EXPECT_CALL(*m_gstPlayerMock, setSync(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->setSync(kSync));
+}
+
+/**
+ * Test that SetSync returns success if the gstreamer API succeeds and gets mute
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetSyncSuccess)
+{
+    constexpr bool kSync{true};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setSync(kSync)).WillOnce(Return(true));
+
+    EXPECT_TRUE(m_mediaPipeline->setSync(kSync));
+}
+
+/**
+ * Test that GetSync returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetSyncFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    bool resultSync{};
+    EXPECT_FALSE(m_mediaPipeline->getSync(resultSync));
+}
+
+/**
+ * Test that GetSync returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetSyncFailure)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    bool resultSync{};
+    EXPECT_CALL(*m_gstPlayerMock, getSync(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getSync(resultSync));
+}
+
+/**
+ * Test that GetSync returns success if the gstreamer API succeeds and gets mute
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetSyncSuccess)
+{
+    constexpr bool kSync{true};
+    bool resultSync{};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getSync(_)).WillOnce(DoAll(SetArgReferee<0>(kSync), Return(true)));
+
+    EXPECT_TRUE(m_mediaPipeline->getSync(resultSync));
+    EXPECT_EQ(resultSync, kSync);
+}
+
+/**
+ * Test that SetSyncOff returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetSyncOffFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    constexpr bool kSyncOff{true};
+    EXPECT_FALSE(m_mediaPipeline->setSyncOff(kSyncOff));
+}
+
+/**
+ * Test that SetSyncOff returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetSyncOffFailure)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    constexpr bool kSyncOff{true};
+    EXPECT_CALL(*m_gstPlayerMock, setSyncOff(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->setSyncOff(kSyncOff));
+}
+
+/**
+ * Test that SetSyncOff returns success if the gstreamer API succeeds and gets mute
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetSyncOffSuccess)
+{
+    constexpr bool kSyncOff{true};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setSyncOff(kSyncOff)).WillOnce(Return(true));
+
+    EXPECT_TRUE(m_mediaPipeline->setSyncOff(kSyncOff));
+}
+
+/**
+ * Test that SetStreamSyncMode returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    constexpr int32_t kStreamSyncMode{1};
+    EXPECT_FALSE(m_mediaPipeline->setStreamSyncMode(kStreamSyncMode));
+}
+
+/**
+ * Test that SetStreamSyncMode returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeFailure)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    constexpr int32_t kStreamSyncMode{1};
+    EXPECT_CALL(*m_gstPlayerMock, setStreamSyncMode(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->setStreamSyncMode(kStreamSyncMode));
+}
+
+/**
+ * Test that SetStreamSyncMode returns success if the gstreamer API succeeds and gets mute
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeSuccess)
+{
+    constexpr int32_t kStreamSyncMode{1};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setStreamSyncMode(kStreamSyncMode)).WillOnce(Return(true));
+
+    EXPECT_TRUE(m_mediaPipeline->setStreamSyncMode(kStreamSyncMode));
+}
+
+/**
+ * Test that GetStreamSyncMode returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStreamSyncModeFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    int32_t resultStreamSyncMode{};
+    EXPECT_FALSE(m_mediaPipeline->getStreamSyncMode(resultStreamSyncMode));
+}
+
+/**
+ * Test that GetStreamSyncMode returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStreamSyncModeFailure)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    int32_t resultStreamSyncMode{};
+    EXPECT_CALL(*m_gstPlayerMock, getStreamSyncMode(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getStreamSyncMode(resultStreamSyncMode));
+}
+
+/**
+ * Test that GetStreamSyncMode returns success if the gstreamer API succeeds and gets mute
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStreamSyncModeSuccess)
+{
+    constexpr int32_t kStreamSyncMode{1};
+    int32_t resultStreamSyncMode{};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getStreamSyncMode(_)).WillOnce(DoAll(SetArgReferee<0>(kStreamSyncMode), Return(true)));
+
+    EXPECT_TRUE(m_mediaPipeline->getStreamSyncMode(resultStreamSyncMode));
+    EXPECT_EQ(resultStreamSyncMode, kStreamSyncMode);
 }
 
 /**

@@ -41,10 +41,15 @@
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetImmediateOutput.h"
+#include "tasks/generic/SetLowLatency.h"
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
 #include "tasks/generic/SetSourcePosition.h"
+#include "tasks/generic/SetStreamSyncMode.h"
+#include "tasks/generic/SetSync.h"
+#include "tasks/generic/SetSyncOff.h"
+#include "tasks/generic/SetTextTrackIdentifier.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
@@ -74,6 +79,7 @@ constexpr firebolt::rialto::EaseType kEaseType{firebolt::rialto::EaseType::EASE_
 constexpr gulong kSignalId{123};
 constexpr auto kAudioSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::AUDIO)};
 constexpr auto kVideoSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::VIDEO)};
+constexpr auto kSubtitleSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::SUBTITLE)};
 constexpr gint64 kItHappenedInThePast = 1238450934;
 constexpr gint64 kItWillHappenInTheFuture = 3823530248;
 constexpr int64_t kDuration{9000000000};
@@ -89,6 +95,16 @@ constexpr int32_t kDolbyVisionProfile{5};
 constexpr gint64 kPosition{1234};
 constexpr gint64 kPositionOverUnderflowMargin{350 * 1000000 + 1};
 constexpr bool kMute{false};
+constexpr bool kImmediateOutput{true};
+const std::string kImmediateOutputStr{"immediate-output"};
+constexpr bool kLowLatency{true};
+const std::string kLowLatencyStr{"low-latency"};
+constexpr bool kSync{true};
+const std::string kSyncStr{"sync"};
+constexpr bool kSyncOff{true};
+const std::string kSyncOffStr{"sync-off"};
+constexpr int32_t kStreamSyncMode{1};
+const std::string kStreamSyncModeStr{"stream-sync-mode"};
 constexpr double kRate{1.5};
 constexpr guint kDataLength{7};
 constexpr guint64 kOffset{123};
@@ -101,6 +117,7 @@ const std::shared_ptr<firebolt::rialto::CodecData> kCodecDataStr{std::make_share
     firebolt::rialto::CodecData{{kCodecStr.begin(), kCodecStr.end()}, firebolt::rialto::CodecDataType::STRING})};
 const std::string kVidName{"vidsrc"};
 const std::string kAudName{"audsrc"};
+const std::string kSubtitleName{"subsrc"};
 const std::string kAutoVideoSinkTypeName{"GstAutoVideoSink"};
 const std::string kAutoAudioSinkTypeName{"GstAutoAudioSink"};
 const std::string kElementTypeName{"GenericSink"};
@@ -137,6 +154,34 @@ firebolt::rialto::IMediaPipeline::MediaSegmentVector buildVideoSamples()
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, kItWillHappenInTheFuture,
                                                                               kDuration, kWidth, kHeight, kFrameRate));
     dataVec.back()->setCodecData(kCodecDataBuffer);
+    return dataVec;
+}
+
+firebolt::rialto::IMediaPipeline::MediaSegmentVector buildSubtitleSamples()
+{
+    firebolt::rialto::IMediaPipeline::MediaSegmentVector dataVec;
+    dataVec.emplace_back(
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegment>(kSubtitleSourceId,
+                                                                         firebolt::rialto::MediaSourceType::SUBTITLE,
+                                                                         kItHappenedInThePast, kDuration));
+    dataVec.emplace_back(
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegment>(kSubtitleSourceId,
+                                                                         firebolt::rialto::MediaSourceType::SUBTITLE,
+                                                                         kItWillHappenInTheFuture, kDuration));
+    return dataVec;
+}
+
+firebolt::rialto::IMediaPipeline::MediaSegmentVector buildUnknownSamples()
+{
+    firebolt::rialto::IMediaPipeline::MediaSegmentVector dataVec;
+    dataVec.emplace_back(
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegment>(kSubtitleSourceId,
+                                                                         firebolt::rialto::MediaSourceType::UNKNOWN,
+                                                                         kItHappenedInThePast, kDuration));
+    dataVec.emplace_back(
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegment>(kSubtitleSourceId,
+                                                                         firebolt::rialto::MediaSourceType::UNKNOWN,
+                                                                         kItWillHappenInTheFuture, kDuration));
     return dataVec;
 }
 } // namespace
@@ -195,7 +240,6 @@ GenericTasksTestsBase::GenericTasksTestsBase()
     testContext->m_elementFactory = gst_element_factory_find("fakesrc");
     testContext->m_element = gst_element_factory_create(testContext->m_elementFactory, nullptr);
     testContext->m_context.pipeline = &testContext->m_pipeline;
-    testContext->m_context.audioAppSrc = &testContext->m_appSrcAudio;
     testContext->m_context.gstSrc = testContext->m_gstSrc;
     testContext->m_context.source = testContext->m_element;
     testContext->m_context.decryptionService = testContext->m_decryptionServiceMock.get();
@@ -211,9 +255,11 @@ GenericTasksTestsBase::~GenericTasksTestsBase()
 
 void GenericTasksTestsBase::setContextStreamInfo(firebolt::rialto::MediaSourceType sourceType)
 {
-    firebolt::rialto::server::StreamInfo &streamInfo = (sourceType == firebolt::rialto::MediaSourceType::AUDIO
-                                                            ? testContext->m_streamInfoAudio
-                                                            : testContext->m_streamInfoVideo);
+    firebolt::rialto::server::StreamInfo &streamInfo =
+        (sourceType == firebolt::rialto::MediaSourceType::AUDIO
+             ? testContext->m_streamInfoAudio
+             : (sourceType == firebolt::rialto::MediaSourceType::VIDEO ? testContext->m_streamInfoVideo
+                                                                       : testContext->m_streamInfoSubtitle));
     testContext->m_context.streamInfo.emplace(sourceType, streamInfo);
 }
 
@@ -224,23 +270,27 @@ void GenericTasksTestsBase::setContextPlaying()
 
 void GenericTasksTestsBase::setContextNeedData(bool doNeedData)
 {
-    testContext->m_context.audioNeedData = doNeedData;
-    testContext->m_context.videoNeedData = doNeedData;
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    audioStreamIt->second.isDataNeeded = doNeedData;
+    videoStreamIt->second.isDataNeeded = doNeedData;
 }
 
 void GenericTasksTestsBase::setContextAudioUnderflowOccured(bool isUnderflow)
 {
-    testContext->m_context.audioUnderflowOccured = isUnderflow;
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    audioStreamIt->second.underflowOccured = isUnderflow;
 }
 
 void GenericTasksTestsBase::setContextVideoUnderflowOccured(bool isUnderflow)
 {
-    testContext->m_context.videoUnderflowOccured = isUnderflow;
-}
-
-void GenericTasksTestsBase::setContextAudioAppSrc()
-{
-    testContext->m_context.audioAppSrc = &testContext->m_appSrcAudio;
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+    videoStreamIt->second.underflowOccured = isUnderflow;
 }
 
 void GenericTasksTestsBase::setContextEndOfStream(firebolt::rialto::MediaSourceType sourceType)
@@ -262,28 +312,43 @@ void GenericTasksTestsBase::setContextPipelineNull()
 
 void GenericTasksTestsBase::setContextNeedDataPending(bool isNeedDataPending)
 {
-    testContext->m_context.audioNeedDataPending = isNeedDataPending;
-    testContext->m_context.videoNeedDataPending = isNeedDataPending;
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    audioStreamIt->second.isNeedDataPending = isNeedDataPending;
+    videoStreamIt->second.isNeedDataPending = isNeedDataPending;
 }
 
 void GenericTasksTestsBase::setContextNeedDataPendingAudioOnly(bool isNeedDataPending)
 {
-    testContext->m_context.audioNeedDataPending = isNeedDataPending;
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+
+    audioStreamIt->second.isNeedDataPending = isNeedDataPending;
 }
 
 void GenericTasksTestsBase::setContextNeedDataPendingVideoOnly(bool isNeedDataPending)
 {
-    testContext->m_context.videoNeedDataPending = isNeedDataPending;
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    videoStreamIt->second.isNeedDataPending = isNeedDataPending;
 }
 
 void GenericTasksTestsBase::setContextAudioBuffer()
 {
-    testContext->m_context.audioBuffers.emplace_back(&testContext->m_audioBuffer);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    audioStreamIt->second.buffers.emplace_back(&testContext->m_audioBuffer);
 }
 
 void GenericTasksTestsBase::setContextVideoBuffer()
 {
-    testContext->m_context.videoBuffers.emplace_back(&testContext->m_videoBuffer);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+    videoStreamIt->second.buffers.emplace_back(&testContext->m_videoBuffer);
 }
 
 void GenericTasksTestsBase::setContextPlaybackRate()
@@ -308,7 +373,10 @@ void GenericTasksTestsBase::setContextStreamInfoEmpty()
 
 void GenericTasksTestsBase::setContextNeedDataAudioOnly()
 {
-    testContext->m_context.audioNeedData = true;
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+
+    audioStreamIt->second.isDataNeeded = true;
 }
 
 void GenericTasksTestsBase::setContextSetupSourceFinished()
@@ -749,17 +817,19 @@ void GenericTasksTestsBase::shouldAttachAllAudioSamples()
     EXPECT_CALL(testContext->m_gstPlayer,
                 addAudioClippingToBuffer(&testContext->m_audioBuffer, kClippingStart, kClippingEnd))
         .Times(2);
-    EXPECT_CALL(testContext->m_gstPlayer, attachAudioData()).Times(2);
-    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(true, false));
+    EXPECT_CALL(testContext->m_gstPlayer, attachData(MediaSourceType::AUDIO)).Times(2);
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::AUDIO));
 }
 
 void GenericTasksTestsBase::triggerAttachSamplesAudio()
 {
     auto samples = buildAudioSamples();
-    firebolt::rialto::server::tasks::generic::AttachSamples task{testContext->m_context, testContext->m_gstPlayer,
-                                                                 samples};
+    firebolt::rialto::server::tasks::generic::AttachSamples task{testContext->m_context, testContext->m_gstWrapper,
+                                                                 testContext->m_gstPlayer, samples};
     task.execute();
-    EXPECT_EQ(testContext->m_context.audioBuffers.size(), 2);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    EXPECT_EQ(audioStreamIt->second.buffers.size(), 2);
 }
 
 void GenericTasksTestsBase::shouldAttachAllVideoSamples()
@@ -768,17 +838,51 @@ void GenericTasksTestsBase::shouldAttachAllVideoSamples()
     EXPECT_CALL(testContext->m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&testContext->m_videoBuffer));
     EXPECT_CALL(testContext->m_gstPlayer, updateVideoCaps(kWidth, kHeight, kFrameRate, kNullCodecData));
     EXPECT_CALL(testContext->m_gstPlayer, updateVideoCaps(kWidth, kHeight, kFrameRate, kCodecDataBuffer));
-    EXPECT_CALL(testContext->m_gstPlayer, attachVideoData()).Times(2);
-    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(false, true));
+    EXPECT_CALL(testContext->m_gstPlayer, attachData(MediaSourceType::VIDEO)).Times(2);
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::VIDEO));
 }
 
 void GenericTasksTestsBase::triggerAttachSamplesVideo()
 {
     auto samples = buildVideoSamples();
-    firebolt::rialto::server::tasks::generic::AttachSamples task{testContext->m_context, testContext->m_gstPlayer,
-                                                                 samples};
+    firebolt::rialto::server::tasks::generic::AttachSamples task{testContext->m_context, testContext->m_gstWrapper,
+                                                                 testContext->m_gstPlayer, samples};
     task.execute();
-    EXPECT_EQ(testContext->m_context.videoBuffers.size(), 2);
+
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+    EXPECT_EQ(videoStreamIt->second.buffers.size(), 2);
+}
+
+void GenericTasksTestsBase::shouldAttachAllSubtitleSamples()
+{
+    std::shared_ptr<firebolt::rialto::CodecData> kNullCodecData{};
+    EXPECT_CALL(testContext->m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&testContext->m_subtitleBuffer));
+    EXPECT_CALL(testContext->m_gstPlayer, attachData(MediaSourceType::SUBTITLE)).Times(2);
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::SUBTITLE));
+}
+
+void GenericTasksTestsBase::triggerAttachSamplesSubtitle()
+{
+    auto samples = buildSubtitleSamples();
+    firebolt::rialto::server::tasks::generic::AttachSamples task{testContext->m_context, testContext->m_gstWrapper,
+                                                                 testContext->m_gstPlayer, samples};
+    task.execute();
+}
+
+void GenericTasksTestsBase::checkSubtitleSamplesAttached()
+{
+    auto subtitleStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::SUBTITLE)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), subtitleStreamIt);
+    EXPECT_EQ(subtitleStreamIt->second.buffers.size(), 2);
+}
+
+void GenericTasksTestsBase::shouldSkipAttachingSubtitleSamples()
+{
+    std::shared_ptr<firebolt::rialto::CodecData> kNullCodecData{};
+    EXPECT_CALL(testContext->m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&testContext->m_subtitleBuffer));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_subtitleBuffer)).Times(2);
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::SUBTITLE));
 }
 
 void GenericTasksTestsBase::shouldAttachAudioSource()
@@ -798,6 +902,7 @@ void GenericTasksTestsBase::triggerAttachAudioSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -831,6 +936,7 @@ void GenericTasksTestsBase::triggerAttachAudioSourceWithChannelsAndRateAndDrm()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -863,6 +969,7 @@ void GenericTasksTestsBase::triggerAttachOpusAudioSourceWithAudioSpecificConf()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -887,6 +994,7 @@ void GenericTasksTestsBase::triggerAttachBwavAudioSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -911,6 +1019,7 @@ void GenericTasksTestsBase::triggerAttachXrawAudioSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -977,9 +1086,29 @@ void GenericTasksTestsBase::triggerAttachVideoSource(const std::string &mimeType
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
+}
+
+void GenericTasksTestsBase::shouldAttachSubtitleSource()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmpty()).WillOnce(Return(&testContext->m_gstCaps2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&(testContext->m_gstCaps2)))
+        .WillOnce(Return(&testContext->m_capsStr));
+    EXPECT_CALL(*testContext->m_glibWrapper, gFree(&testContext->m_capsStr));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryMake(_, StrEq(kSubtitleName.c_str())))
+        .WillOnce(Return(&testContext->m_appSrcSubtitle));
+    EXPECT_CALL(*testContext->m_gstTextTrackSinkFactoryMock, createGstTextTrackSink())
+        .WillOnce(Return(&testContext->m_textTrackSink));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_pipeline, StrEq("text-sink")));
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_pipeline), StrEq("text-sink")))
+        .WillOnce(Return(&testContext->m_paramSpec));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstAppSrcSetCaps(GST_APP_SRC(&testContext->m_appSrcSubtitle), &testContext->m_gstCaps2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps2));
 }
 
 void GenericTasksTestsBase::triggerAttachSubtitleSource()
@@ -991,6 +1120,7 @@ void GenericTasksTestsBase::triggerAttachSubtitleSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -1008,7 +1138,12 @@ void GenericTasksTestsBase::checkVideoSourceAttached()
 
 void GenericTasksTestsBase::checkSubtitleSourceAttached()
 {
-    EXPECT_EQ(0, testContext->m_context.streamInfo.size());
+    EXPECT_EQ(1, testContext->m_context.streamInfo.size());
+    EXPECT_NE(testContext->m_context.streamInfo.end(),
+              testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::SUBTITLE));
+    EXPECT_EQ(&testContext->m_appSrcSubtitle,
+              testContext->m_context.streamInfo.at(firebolt::rialto::MediaSourceType::SUBTITLE).appSrc);
+    EXPECT_EQ(testContext->m_context.subtitleSink, &testContext->m_textTrackSink);
 }
 
 void GenericTasksTestsBase::shouldAttachVideoSourceWithStringCodecData()
@@ -1035,6 +1170,7 @@ void GenericTasksTestsBase::triggerAttachVideoSourceWithStringCodecData()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -1088,6 +1224,7 @@ void GenericTasksTestsBase::triggerAttachVideoSourceWithEmptyCodecData()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -1127,6 +1264,7 @@ void GenericTasksTestsBase::triggerAttachVideoSourceWithDolbyVisionSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -1176,8 +1314,8 @@ void GenericTasksTestsBase::shouldSwitchAudioSource()
                 performAudioTrackCodecChannelSwitch(&testContext->m_context.playbackGroup, _, _, _, _, _, _, _, _, _, _,
                                                     _, _))
         .WillOnce(Return(true));
-    EXPECT_CALL(testContext->m_gstPlayer, setAudioVideoFlags(true, true));
-    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(true, false));
+    EXPECT_CALL(testContext->m_gstPlayer, setPlaybinFlags(true));
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::AUDIO));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps1));
 }
 
@@ -1202,8 +1340,8 @@ void GenericTasksTestsBase::shouldReattachAudioSource()
                 *cur = kPosition;
                 return TRUE;
             }));
-    EXPECT_CALL(testContext->m_gstPlayer, setAudioVideoFlags(true, true));
-    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(true, false));
+    EXPECT_CALL(testContext->m_gstPlayer, setPlaybinFlags(true));
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::AUDIO));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps1));
 }
 
@@ -1216,7 +1354,10 @@ void GenericTasksTestsBase::triggerReattachAudioSource()
 
 void GenericTasksTestsBase::checkNewAudioSourceAttached()
 {
-    EXPECT_TRUE(testContext->m_context.audioNeedData);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+
+    EXPECT_TRUE(audioStreamIt->second.isDataNeeded);
     EXPECT_FALSE(testContext->m_context.audioSourceRemoved);
     EXPECT_EQ(testContext->m_context.lastAudioSampleTimestamps, kPosition);
 }
@@ -1240,6 +1381,7 @@ void GenericTasksTestsBase::triggerReattachAudioSourceWithEmptyMimeType()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -1265,7 +1407,10 @@ void GenericTasksTestsBase::triggerCheckAudioUnderflowNoNotification()
                                                                        testContext->m_gstWrapper};
     task.execute();
 
-    EXPECT_FALSE(testContext->m_context.audioUnderflowOccured);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+
+    EXPECT_FALSE(audioStreamIt->second.underflowOccured);
 }
 
 void GenericTasksTestsBase::shouldNotifyAudioUnderflow()
@@ -1293,7 +1438,10 @@ void GenericTasksTestsBase::triggerCheckAudioUnderflow()
                                                                        testContext->m_gstWrapper};
     task.execute();
 
-    EXPECT_TRUE(testContext->m_context.audioUnderflowOccured);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+
+    EXPECT_TRUE(audioStreamIt->second.underflowOccured);
 }
 
 void GenericTasksTestsBase::shouldNotRegisterCallbackWhenPtrsAreNotEqual()
@@ -1610,8 +1758,13 @@ void GenericTasksTestsBase::checkPlaybackGroupAdded()
 
 void GenericTasksTestsBase::shouldStopGstPlayer()
 {
-    testContext->m_context.videoNeedData = true;
-    testContext->m_context.audioNeedData = true;
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    videoStreamIt->second.isDataNeeded = true;
+    audioStreamIt->second.isDataNeeded = true;
     EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_NULL));
 }
@@ -1624,8 +1777,13 @@ void GenericTasksTestsBase::triggerStop()
 
 void GenericTasksTestsBase::checkNoMoreNeedData()
 {
-    EXPECT_FALSE(testContext->m_context.videoNeedData);
-    EXPECT_FALSE(testContext->m_context.audioNeedData);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    EXPECT_FALSE(videoStreamIt->second.isDataNeeded);
+    EXPECT_FALSE(audioStreamIt->second.isDataNeeded);
 }
 
 void GenericTasksTestsBase::triggerEnoughDataAudio()
@@ -1644,20 +1802,35 @@ void GenericTasksTestsBase::triggerEnoughDataVideo()
 
 void GenericTasksTestsBase::checkNeedDataForBothSources()
 {
-    EXPECT_TRUE(testContext->m_context.audioNeedData);
-    EXPECT_TRUE(testContext->m_context.videoNeedData);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    EXPECT_TRUE(audioStreamIt->second.isDataNeeded);
+    EXPECT_TRUE(videoStreamIt->second.isDataNeeded);
 }
 
 void GenericTasksTestsBase::checkNeedDataForAudioOnly()
 {
-    EXPECT_TRUE(testContext->m_context.audioNeedData);
-    EXPECT_FALSE(testContext->m_context.videoNeedData);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    EXPECT_TRUE(audioStreamIt->second.isDataNeeded);
+    EXPECT_FALSE(videoStreamIt->second.isDataNeeded);
 }
 
 void GenericTasksTestsBase::checkNeedDataForVideoOnly()
 {
-    EXPECT_FALSE(testContext->m_context.audioNeedData);
-    EXPECT_TRUE(testContext->m_context.videoNeedData);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    EXPECT_FALSE(audioStreamIt->second.isDataNeeded);
+    EXPECT_TRUE(videoStreamIt->second.isDataNeeded);
 }
 
 void GenericTasksTestsBase::triggerEosAudio()
@@ -1686,15 +1859,9 @@ void GenericTasksTestsBase::shouldGstAppSrcEndOfStreamFailure()
     EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcEndOfStream(_)).WillOnce(Return(GST_FLOW_ERROR));
 }
 
-void GenericTasksTestsBase::shouldCancelUnderflow()
+void GenericTasksTestsBase::shouldCancelUnderflow(firebolt::rialto::MediaSourceType sourceType)
 {
-    bool underflow = true;
-    EXPECT_CALL(testContext->m_gstPlayer, cancelUnderflow(underflow));
-}
-
-void GenericTasksTestsBase::setUnderflowFlag(bool isUnderflowFlag)
-{
-    testContext->m_underflowFlag = isUnderflowFlag;
+    EXPECT_CALL(testContext->m_gstPlayer, cancelUnderflow(sourceType));
 }
 
 void GenericTasksTestsBase::setUnderflowEnabled(bool isUnderflowEnabled)
@@ -1705,18 +1872,10 @@ void GenericTasksTestsBase::setUnderflowEnabled(bool isUnderflowEnabled)
 void GenericTasksTestsBase::triggerVideoUnderflow()
 {
     firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::VIDEO};
-    firebolt::rialto::server::tasks::generic::Underflow task{testContext->m_context,
-                                                             testContext->m_gstPlayer,
+    firebolt::rialto::server::tasks::generic::Underflow task{testContext->m_context, testContext->m_gstPlayer,
                                                              &testContext->m_gstPlayerClient,
-                                                             testContext->m_underflowFlag,
-                                                             testContext->m_underflowEnabled,
-                                                             sourceType};
+                                                             testContext->m_underflowEnabled, sourceType};
     task.execute();
-}
-
-void GenericTasksTestsBase::checkUnderflowFlag(bool expected)
-{
-    EXPECT_EQ(testContext->m_underflowFlag, expected);
 }
 
 void GenericTasksTestsBase::shouldNotifyVideoUnderflow()
@@ -1735,16 +1894,41 @@ void GenericTasksTestsBase::triggerShutdown()
     task.execute();
 }
 
-void GenericTasksTestsBase::triggerSetMute()
+void GenericTasksTestsBase::triggerSetAudioMute()
 {
-    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context, testContext->m_gstWrapper, kMute};
+    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context, testContext->m_gstWrapper,
+                                                           testContext->m_glibWrapper, MediaSourceType::AUDIO, kMute};
     task.execute();
 }
 
-void GenericTasksTestsBase::shouldGstSetMute()
+void GenericTasksTestsBase::shouldSetAudioMute()
 {
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstStreamVolumeSetMute(GST_STREAM_VOLUME(testContext->m_context.pipeline), kMute));
+}
+
+void GenericTasksTestsBase::shouldSetSubtitleMute()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_textTrackSink, StrEq("mute")));
+}
+
+void GenericTasksTestsBase::triggerSetVideoMute()
+{
+    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context, testContext->m_gstWrapper,
+                                                           testContext->m_glibWrapper, MediaSourceType::VIDEO, kMute};
+    task.execute();
+}
+
+void GenericTasksTestsBase::triggerSetSubtitleMute()
+{
+    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context, testContext->m_gstWrapper,
+                                                           testContext->m_glibWrapper, MediaSourceType::SUBTITLE, kMute};
+    task.execute();
+}
+
+void GenericTasksTestsBase::setContextSubtitleSink()
+{
+    testContext->m_context.subtitleSink = &testContext->m_textTrackSink;
 }
 
 void GenericTasksTestsBase::triggerSetPositionNullClient()
@@ -1764,32 +1948,57 @@ void GenericTasksTestsBase::triggerSetPosition()
 
 void GenericTasksTestsBase::checkNeedDataPendingForBothSources()
 {
-    EXPECT_TRUE(testContext->m_context.audioNeedDataPending);
-    EXPECT_TRUE(testContext->m_context.videoNeedDataPending);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    EXPECT_TRUE(audioStreamIt->second.isNeedDataPending);
+    EXPECT_TRUE(videoStreamIt->second.isNeedDataPending);
 }
 
 void GenericTasksTestsBase::checkBuffersDoExist()
 {
-    EXPECT_FALSE(testContext->m_context.audioBuffers.empty());
-    EXPECT_FALSE(testContext->m_context.videoBuffers.empty());
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    EXPECT_FALSE(audioStreamIt->second.buffers.empty());
+    EXPECT_FALSE(videoStreamIt->second.buffers.empty());
 }
 
 void GenericTasksTestsBase::checkDoNotNeedDataForBothSources()
 {
-    EXPECT_FALSE(testContext->m_context.audioNeedData);
-    EXPECT_FALSE(testContext->m_context.videoNeedData);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    EXPECT_FALSE(audioStreamIt->second.isDataNeeded);
+    EXPECT_FALSE(videoStreamIt->second.isDataNeeded);
 }
 
 void GenericTasksTestsBase::checkNoNeedDataPendingForBothSources()
 {
-    EXPECT_FALSE(testContext->m_context.audioNeedDataPending);
-    EXPECT_FALSE(testContext->m_context.videoNeedDataPending);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    EXPECT_FALSE(audioStreamIt->second.isNeedDataPending);
+    EXPECT_FALSE(videoStreamIt->second.isNeedDataPending);
 }
 
 void GenericTasksTestsBase::checkBuffersEmpty()
 {
-    EXPECT_TRUE(testContext->m_context.audioBuffers.empty());
-    EXPECT_TRUE(testContext->m_context.videoBuffers.empty());
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    EXPECT_TRUE(audioStreamIt->second.buffers.empty());
+    EXPECT_TRUE(videoStreamIt->second.buffers.empty());
 }
 
 void GenericTasksTestsBase::shouldExtractBuffers()
@@ -1922,7 +2131,7 @@ void GenericTasksTestsBase::shouldFinishSetupSource()
                 testContext->m_audioCallbacks = *callbacks;
                 testContext->m_audioUserData = userData;
             }));
-    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(true, false));
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::AUDIO));
     EXPECT_CALL(*testContext->m_gstSrc,
                 setupAndAddAppArc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
                                       testContext->m_decryptionServiceMock)
@@ -1937,7 +2146,7 @@ void GenericTasksTestsBase::shouldFinishSetupSource()
                 testContext->m_videoCallbacks = *callbacks;
                 testContext->m_videoUserData = userData;
             }));
-    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(false, true));
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::VIDEO));
     EXPECT_CALL(*testContext->m_gstSrc, allAppSrcsAdded(testContext->m_element));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::IDLE));
 }
@@ -2070,16 +2279,32 @@ void GenericTasksTestsBase::shouldNotifyNeedVideoDataSuccess()
         .WillOnce(Return(true));
 }
 
+void GenericTasksTestsBase::shouldNotifyNeedSubtitleDataSuccess()
+{
+    EXPECT_CALL(testContext->m_gstPlayerClient, notifyNeedMediaData(firebolt::rialto::MediaSourceType::SUBTITLE))
+        .WillOnce(Return(true));
+}
+
 void GenericTasksTestsBase::checkNeedDataPendingForAudioOnly()
 {
-    EXPECT_TRUE(testContext->m_context.audioNeedDataPending);
-    EXPECT_FALSE(testContext->m_context.videoNeedDataPending);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    EXPECT_TRUE(audioStreamIt->second.isNeedDataPending);
+    EXPECT_FALSE(videoStreamIt->second.isNeedDataPending);
 }
 
 void GenericTasksTestsBase::checkNeedDataPendingForVideoOnly()
 {
-    EXPECT_FALSE(testContext->m_context.audioNeedDataPending);
-    EXPECT_TRUE(testContext->m_context.videoNeedDataPending);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+
+    EXPECT_FALSE(audioStreamIt->second.isNeedDataPending);
+    EXPECT_TRUE(videoStreamIt->second.isNeedDataPending);
 }
 
 void GenericTasksTestsBase::shouldNotifyNeedAudioDataFailure()
@@ -2298,7 +2523,7 @@ void GenericTasksTestsBase::shouldInvalidateActiveAudioRequests()
 
 void GenericTasksTestsBase::shouldDisableAudioFlag()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, setAudioVideoFlags(false, true));
+    EXPECT_CALL(testContext->m_gstPlayer, setPlaybinFlags(false));
 }
 
 void GenericTasksTestsBase::triggerRemoveSourceAudio()
@@ -2359,22 +2584,53 @@ void GenericTasksTestsBase::shouldReadVideoData()
     EXPECT_CALL(*testContext->m_dataReader, readData()).WillOnce(Invoke([&]() { return buildVideoSamples(); }));
 }
 
+void GenericTasksTestsBase::shouldReadSubtitleData()
+{
+    EXPECT_CALL(*testContext->m_dataReader, readData()).WillOnce(Invoke([&]() { return buildSubtitleSamples(); }));
+}
+
+void GenericTasksTestsBase::shouldReadUnknownData()
+{
+    EXPECT_CALL(*testContext->m_dataReader, readData()).WillOnce(Invoke([&]() { return buildUnknownSamples(); }));
+}
+
+void GenericTasksTestsBase::shouldNotAttachUnknownSamples()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::UNKNOWN));
+}
+
 void GenericTasksTestsBase::triggerReadShmDataAndAttachSamplesAudio()
 {
     firebolt::rialto::server::tasks::generic::ReadShmDataAndAttachSamples task{testContext->m_context,
+                                                                               testContext->m_gstWrapper,
                                                                                testContext->m_gstPlayer,
                                                                                testContext->m_dataReader};
     task.execute();
-    EXPECT_EQ(testContext->m_context.audioBuffers.size(), 2);
+
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    EXPECT_EQ(audioStreamIt->second.buffers.size(), 2);
 }
 
 void GenericTasksTestsBase::triggerReadShmDataAndAttachSamplesVideo()
 {
     firebolt::rialto::server::tasks::generic::ReadShmDataAndAttachSamples task{testContext->m_context,
+                                                                               testContext->m_gstWrapper,
                                                                                testContext->m_gstPlayer,
                                                                                testContext->m_dataReader};
     task.execute();
-    EXPECT_EQ(testContext->m_context.videoBuffers.size(), 2);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+    EXPECT_EQ(videoStreamIt->second.buffers.size(), 2);
+}
+
+void GenericTasksTestsBase::triggerReadShmDataAndAttachSamples()
+{
+    firebolt::rialto::server::tasks::generic::ReadShmDataAndAttachSamples task{testContext->m_context,
+                                                                               testContext->m_gstWrapper,
+                                                                               testContext->m_gstPlayer,
+                                                                               testContext->m_dataReader};
+    task.execute();
 }
 
 void GenericTasksTestsBase::shouldFlushAudio()
@@ -2400,12 +2656,16 @@ void GenericTasksTestsBase::triggerFlush(firebolt::rialto::MediaSourceType sourc
 
 void GenericTasksTestsBase::checkAudioFlushed()
 {
-    EXPECT_EQ(testContext->m_context.audioBuffers.size(), 0);
-    EXPECT_EQ(testContext->m_context.videoBuffers.size(), 1);
-    EXPECT_FALSE(testContext->m_context.audioNeedData);
-    EXPECT_FALSE(testContext->m_context.audioNeedDataPending);
-    EXPECT_TRUE(testContext->m_context.videoNeedData);
-    EXPECT_TRUE(testContext->m_context.videoNeedDataPending);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    EXPECT_EQ(audioStreamIt->second.buffers.size(), 0);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+    EXPECT_EQ(videoStreamIt->second.buffers.size(), 1);
+    EXPECT_FALSE(audioStreamIt->second.isDataNeeded);
+    EXPECT_FALSE(audioStreamIt->second.isNeedDataPending);
+    EXPECT_TRUE(videoStreamIt->second.isDataNeeded);
+    EXPECT_TRUE(videoStreamIt->second.isNeedDataPending);
     EXPECT_FALSE(testContext->m_context.eosNotified);
     EXPECT_EQ(testContext->m_context.endOfStreamInfo.find(firebolt::rialto::MediaSourceType::AUDIO),
               testContext->m_context.endOfStreamInfo.end());
@@ -2415,12 +2675,16 @@ void GenericTasksTestsBase::checkAudioFlushed()
 
 void GenericTasksTestsBase::checkVideoFlushed()
 {
-    EXPECT_EQ(testContext->m_context.audioBuffers.size(), 1);
-    EXPECT_EQ(testContext->m_context.videoBuffers.size(), 0);
-    EXPECT_TRUE(testContext->m_context.audioNeedData);
-    EXPECT_TRUE(testContext->m_context.audioNeedDataPending);
-    EXPECT_FALSE(testContext->m_context.videoNeedData);
-    EXPECT_FALSE(testContext->m_context.videoNeedDataPending);
+    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
+    EXPECT_EQ(audioStreamIt->second.buffers.size(), 1);
+    auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
+    EXPECT_EQ(videoStreamIt->second.buffers.size(), 0);
+    EXPECT_TRUE(audioStreamIt->second.isDataNeeded);
+    EXPECT_TRUE(audioStreamIt->second.isNeedDataPending);
+    EXPECT_FALSE(videoStreamIt->second.isDataNeeded);
+    EXPECT_FALSE(videoStreamIt->second.isNeedDataPending);
     EXPECT_FALSE(testContext->m_context.eosNotified);
     EXPECT_NE(testContext->m_context.endOfStreamInfo.find(firebolt::rialto::MediaSourceType::AUDIO),
               testContext->m_context.endOfStreamInfo.end());
@@ -2438,9 +2702,38 @@ void GenericTasksTestsBase::shouldFlushVideoSrcSuccess()
         .WillOnce(Return(TRUE));
 }
 
+void GenericTasksTestsBase::shouldSetSubtitleSourcePosition()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentNew()).WillOnce(Return(&testContext->m_segment));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentInit(&testContext->m_segment, GST_FORMAT_TIME));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstSegmentDoSeek(&testContext->m_segment, kRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE, GST_SEEK_TYPE_SET,
+                                 kPosition, GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewSegment(&testContext->m_segment))
+        .WillOnce(Return(&testContext->m_event));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBaseSinkPad(&testContext->m_textTrackSink))
+        .WillOnce(Return(&testContext->m_pad));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstPadSendEvent(&testContext->m_pad, &testContext->m_event))
+        .WillOnce(Return(false));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentFree(&testContext->m_segment));
+}
+
+void GenericTasksTestsBase::shouldFailToSetSubtitleSourcePosition()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentNew()).WillOnce(Return(&testContext->m_segment));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentInit(&testContext->m_segment, GST_FORMAT_TIME));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstSegmentDoSeek(&testContext->m_segment, kRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE, GST_SEEK_TYPE_SET,
+                                 kPosition, GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
+        .WillOnce(Return(false));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentFree(&testContext->m_segment));
+}
+
 void GenericTasksTestsBase::triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType)
 {
     firebolt::rialto::server::tasks::generic::SetSourcePosition task{testContext->m_context,
+                                                                     testContext->m_gstPlayer,
                                                                      &testContext->m_gstPlayerClient,
                                                                      testContext->m_gstWrapper,
                                                                      sourceType,
@@ -2486,6 +2779,20 @@ void GenericTasksTestsBase::shouldProcessAudioGap()
                                 kDiscontinuityGap, kIsAudioAac));
 }
 
+void GenericTasksTestsBase::shouldSetTextTrackIdentifier()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectSetStub(&testContext->m_textTrackSink, StrEq("text-track-identifier")));
+}
+
+void GenericTasksTestsBase::triggerSetTextTrackIdentifier()
+{
+    firebolt::rialto::server::tasks::generic::SetTextTrackIdentifier task{testContext->m_context,
+                                                                          testContext->m_glibWrapper,
+                                                                          testContext->m_textTrackIdentifier};
+    task.execute();
+}
+
 void GenericTasksTestsBase::triggerFailToCastAudioSource()
 {
     std::unique_ptr<IMediaPipeline::MediaSource> source =
@@ -2494,6 +2801,7 @@ void GenericTasksTestsBase::triggerFailToCastAudioSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -2510,6 +2818,7 @@ void GenericTasksTestsBase::triggerFailToCastVideoSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -2527,6 +2836,7 @@ void GenericTasksTestsBase::triggerFailToCastDolbyVisionSource()
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
                                                                 testContext->m_rdkGstreamerUtilsWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
                                                                 testContext->m_gstPlayer,
                                                                 source};
     task.execute();
@@ -2540,15 +2850,22 @@ void GenericTasksTestsBase::shouldFailToSetImmediateOutputIfSinkIsNull()
     EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(nullptr));
 }
 
+void GenericTasksTestsBase::shouldFailToSetImmediateOutputIfPropertyDoesntExist()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element))
+        .WillOnce(Return(testContext->m_element));
+
+    expectPropertyDoesntExist(kImmediateOutputStr);
+}
+
 void GenericTasksTestsBase::shouldSetImmediateOutput()
 {
-    GstElement *videoSink = testContext->m_element;
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(videoSink));
-    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element)).WillOnce(Return(videoSink));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoVideoSink(testContext->m_element))
+        .WillOnce(Return(testContext->m_element));
 
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(_, StrEq("immediate-output"))).Times(1);
-
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(videoSink)).Times(1);
+    expectSetProperty(kImmediateOutputStr, kImmediateOutput);
 }
 
 void GenericTasksTestsBase::triggerSetImmediateOutput()
@@ -2557,4 +2874,146 @@ void GenericTasksTestsBase::triggerSetImmediateOutput()
                                                                       testContext->m_glibWrapper,
                                                                       MediaSourceType::VIDEO, true};
     task.execute();
+}
+
+void GenericTasksTestsBase::shouldFailToSetLowLatencyIfSinkIsNull()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
+}
+
+void GenericTasksTestsBase::shouldFailToSetLowLatencyIfPropertyDoesntExist()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(testContext->m_element))
+        .WillOnce(Return(testContext->m_element));
+
+    expectPropertyDoesntExist(kLowLatencyStr);
+}
+
+void GenericTasksTestsBase::shouldSetLowLatency()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(testContext->m_element))
+        .WillOnce(Return(testContext->m_element));
+
+    expectSetProperty(kLowLatencyStr, kLowLatency);
+}
+
+void GenericTasksTestsBase::triggerSetLowLatency()
+{
+    firebolt::rialto::server::tasks::generic::SetLowLatency task{testContext->m_gstPlayer, testContext->m_gstWrapper,
+                                                                 testContext->m_glibWrapper, true};
+    task.execute();
+}
+
+void GenericTasksTestsBase::shouldFailToSetSyncIfSinkIsNull()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
+}
+
+void GenericTasksTestsBase::shouldFailToSetSyncIfPropertyDoesntExist()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(testContext->m_element))
+        .WillOnce(Return(testContext->m_element));
+
+    expectPropertyDoesntExist(kSyncStr);
+}
+
+void GenericTasksTestsBase::shouldSetSync()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(testContext->m_gstPlayer, getSinkChildIfAutoAudioSink(testContext->m_element))
+        .WillOnce(Return(testContext->m_element));
+
+    expectSetProperty(kSyncStr, kSync);
+}
+
+void GenericTasksTestsBase::triggerSetSync()
+{
+    firebolt::rialto::server::tasks::generic::SetSync task{testContext->m_gstPlayer, testContext->m_gstWrapper,
+                                                           testContext->m_glibWrapper, true};
+    task.execute();
+}
+
+void GenericTasksTestsBase::shouldFailToSetSyncOffIfDecoderIsNull()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
+}
+
+void GenericTasksTestsBase::shouldFailToSetSyncOffIfPropertyDoesntExist()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+
+    expectPropertyDoesntExist(kSyncOffStr);
+}
+
+void GenericTasksTestsBase::shouldSetSyncOff()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+
+    expectSetProperty(kSyncOffStr, kSyncOff);
+}
+
+void GenericTasksTestsBase::triggerSetSyncOff()
+{
+    firebolt::rialto::server::tasks::generic::SetSyncOff task{testContext->m_gstPlayer, testContext->m_gstWrapper,
+                                                              testContext->m_glibWrapper, true};
+    task.execute();
+}
+
+void GenericTasksTestsBase::shouldFailToSetStreamSyncModeIfDecoderIsNull()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
+}
+
+void GenericTasksTestsBase::shouldFailToSetStreamSyncModeIfPropertyDoesntExist()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+
+    expectPropertyDoesntExist(kStreamSyncModeStr);
+}
+
+void GenericTasksTestsBase::shouldSetStreamSyncMode()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+
+    expectSetProperty(kStreamSyncModeStr, kStreamSyncMode);
+}
+
+void GenericTasksTestsBase::triggerSetStreamSyncMode()
+{
+    firebolt::rialto::server::tasks::generic::SetStreamSyncMode task{testContext->m_gstPlayer, testContext->m_gstWrapper,
+                                                                     testContext->m_glibWrapper, true};
+    task.execute();
+}
+
+template <typename T> void GenericTasksTestsBase::expectSetProperty(const std::string &propertyName, const T &value)
+{
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq(propertyName.c_str())))
+        .WillOnce(Return(&(testContext->m_paramSpec)));
+
+    if constexpr (std::is_same_v<T, bool>)
+    {
+        EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetBoolStub(_, StrEq(propertyName.c_str()), value)).Times(1);
+    }
+    else if constexpr (std::is_same_v<T, int32_t>)
+    {
+        EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetIntStub(_, StrEq(propertyName.c_str()), value)).Times(1);
+    }
+    else
+    {
+        EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(_, StrEq(propertyName.c_str()))).Times(1);
+    }
+
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(testContext->m_element)).Times(1);
+}
+
+void GenericTasksTestsBase::expectPropertyDoesntExist(const std::string &propertyName)
+{
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq(propertyName.c_str())))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(testContext->m_element)).Times(1);
 }

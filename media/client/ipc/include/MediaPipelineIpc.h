@@ -105,9 +105,25 @@ public:
 
     bool getVolume(double &volume) override;
 
-    bool setMute(bool mute) override;
+    bool setMute(int32_t sourceId, bool mute) override;
 
-    bool getMute(bool &mute) override;
+    bool getMute(int32_t sourceId, bool &mute) override;
+
+    bool setTextTrackIdentifier(const std::string &textTrackIdentifier) override;
+
+    bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
+
+    bool setLowLatency(bool lowLatency) override;
+
+    bool setSync(bool sync) override;
+
+    bool getSync(bool &sync) override;
+
+    bool setSyncOff(bool syncOff) override;
+
+    bool setStreamSyncMode(int32_t streamSyncMode) override;
+
+    bool getStreamSyncMode(int32_t &streamSyncMode) override;
 
     bool flush(int32_t sourceId, bool resetTime) override;
 
