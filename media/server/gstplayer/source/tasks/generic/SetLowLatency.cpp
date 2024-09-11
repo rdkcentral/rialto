@@ -23,11 +23,11 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetLowLatency::SetLowLatency(IGstGenericPlayerPrivate &player,
+SetLowLatency::SetLowLatency(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                              const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                              bool lowLatency)
-    : m_player(player), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_lowLatency{lowLatency}
+    : m_context(context), m_player(player), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_lowLatency{lowLatency}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetLowLatency");
 }
@@ -57,7 +57,8 @@ void SetLowLatency::execute() const
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to set low-latency property, sink is NULL");
+        RIALTO_SERVER_LOG_DEBUG("No sink attahced to the pipeline, queueing low latency");
+        m_context.lowLatency = m_lowLatency;
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

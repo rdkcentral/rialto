@@ -2882,7 +2882,7 @@ void GenericTasksTestsBase::shouldSetLowLatency()
 
 void GenericTasksTestsBase::triggerSetLowLatency()
 {
-    firebolt::rialto::server::tasks::generic::SetLowLatency task{testContext->m_gstPlayer, testContext->m_gstWrapper,
+    firebolt::rialto::server::tasks::generic::SetLowLatency task{testContext->m_context, testContext->m_gstPlayer, testContext->m_gstWrapper,
                                                                  testContext->m_glibWrapper, true};
     task.execute();
 }
@@ -2912,7 +2912,7 @@ void GenericTasksTestsBase::shouldSetSync()
 
 void GenericTasksTestsBase::triggerSetSync()
 {
-    firebolt::rialto::server::tasks::generic::SetSync task{testContext->m_gstPlayer, testContext->m_gstWrapper,
+    firebolt::rialto::server::tasks::generic::SetSync task{testContext->m_context, testContext->m_gstPlayer, testContext->m_gstWrapper,
                                                            testContext->m_glibWrapper, true};
     task.execute();
 }

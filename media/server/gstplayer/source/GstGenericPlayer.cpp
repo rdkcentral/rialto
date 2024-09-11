@@ -391,16 +391,13 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType)
 {
     const char *kSinkName{nullptr};
     GstElement *sink{nullptr};
-    GstElementFactoryListType type = GST_ELEMENT_FACTORY_TYPE_SINK;
     switch (mediaSourceType)
     {
     case MediaSourceType::AUDIO:
         kSinkName = "audio-sink";
-        type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO;
         break;
     case MediaSourceType::VIDEO:
         kSinkName = "video-sink";
-        type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO;
         break;
     default:
         break;
@@ -414,35 +411,13 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType)
         m_glibWrapper->gObjectGet(m_context.pipeline, kSinkName, &sink, nullptr);
         if (!sink)
         {
-            RIALTO_SERVER_LOG_DEBUG("%s could not be obtained, try to find the sink using factory list type", kSinkName);
-
-            sink = getElementFromPipeline(type);
+            RIALTO_SERVER_LOG_WARN("%s could not be obtained", kSinkName);
         }
     }
-
-    if (!sink)
-    {
-        RIALTO_SERVER_LOG_WARN("Could not find %s sink", mediaSourceType == MediaSourceType::AUDIO ? "audio" : "video");
-    }
-
     return sink;
 }
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
-{
-    GstElementFactoryListType type = GST_ELEMENT_FACTORY_TYPE_DECODER;
-    if (mediaSourceType == MediaSourceType::AUDIO)
-    {
-        type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO;
-    }
-    else if (mediaSourceType == MediaSourceType::VIDEO)
-    {
-        type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO;
-    }
-    return getElementFromPipeline(type);
-}
-
-GstElement *GstGenericPlayer::getElementFromPipeline(GstElementFactoryListType type) const
 {
     GstIterator *it = m_gstWrapper->gstBinIterateElements(GST_BIN(m_context.pipeline));
     GValue item = G_VALUE_INIT;
@@ -459,6 +434,16 @@ GstElement *GstGenericPlayer::getElementFromPipeline(GstElementFactoryListType t
 
             if (factory)
             {
+                GstElementFactoryListType type = GST_ELEMENT_FACTORY_TYPE_DECODER;
+                if (mediaSourceType == MediaSourceType::AUDIO)
+                {
+                    type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO;
+                }
+                else if (mediaSourceType == MediaSourceType::VIDEO)
+                {
+                    type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO;
+                }
+
                 if (m_gstWrapper->gstElementFactoryListIsType(factory, type))
                 {
                     m_glibWrapper->gValueUnset(&item);
@@ -480,7 +465,7 @@ GstElement *GstGenericPlayer::getElementFromPipeline(GstElementFactoryListType t
         }
     }
 
-    RIALTO_SERVER_LOG_WARN("Could not find element");
+    RIALTO_SERVER_LOG_WARN("Could not find decoder");
 
     m_glibWrapper->gValueUnset(&item);
     m_gstWrapper->gstIteratorFree(it);
@@ -1203,7 +1188,7 @@ bool GstGenericPlayer::setLowLatency(bool lowLatency)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetLowLatency(*this, lowLatency));
+        m_workerThread->enqueueTask(m_taskFactory->createSetLowLatency(m_context, *this, lowLatency));
     }
     return true;
 }
@@ -1212,7 +1197,7 @@ bool GstGenericPlayer::setSync(bool sync)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetSync(*this, sync));
+        m_workerThread->enqueueTask(m_taskFactory->createSetSync(m_context, *this, sync));
     }
     return true;
 }
@@ -1235,9 +1220,16 @@ bool GstGenericPlayer::getSync(bool &sync)
         }
         m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
     }
+    else if (m_context.sync.has_value())
+    {
+        RIALTO_SERVER_LOG_DEBUG("Returning queued value");
+        sync = m_context.sync.value();
+        returnValue = true;
+    }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to get sync property, sink is NULL");
+        // We dont know the default setting on the sync, so return failure here
+        RIALTO_SERVER_LOG_WARN("No audio sink attached or queued value");
     }
 
     return returnValue;

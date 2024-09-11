@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_SYNC_H_
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_SYNC_H_
 
+#include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
@@ -32,13 +33,14 @@ namespace firebolt::rialto::server::tasks::generic
 class SetSync : public IPlayerTask
 {
 public:
-    explicit SetSync(IGstGenericPlayerPrivate &player,
+    explicit SetSync(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, bool sync);
     ~SetSync() override;
     void execute() const override;
 
 private:
+    GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;

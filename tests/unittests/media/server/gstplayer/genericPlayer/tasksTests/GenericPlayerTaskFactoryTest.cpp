@@ -239,7 +239,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetMute)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetLowLatency)
 {
     constexpr bool kLowLatency{true};
-    auto task = m_sut.createSetLowLatency(m_gstPlayer, kLowLatency);
+    auto task = m_sut.createSetLowLatency(m_context, m_gstPlayer, kLowLatency);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetLowLatency &>(*task));
 }
@@ -247,7 +247,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetLowLatency)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSync)
 {
     constexpr bool kSync{true};
-    auto task = m_sut.createSetSync(m_gstPlayer, kSync);
+    auto task = m_sut.createSetSync(m_context, m_gstPlayer, kSync);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetSync &>(*task));
 }

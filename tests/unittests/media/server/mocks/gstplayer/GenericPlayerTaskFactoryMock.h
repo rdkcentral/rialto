@@ -86,9 +86,9 @@ public:
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetMute,
                 (GenericPlayerContext & context, const MediaSourceType &mediaSourceType, bool mute), (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetLowLatency, (IGstGenericPlayerPrivate & player, bool lowLatency),
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetLowLatency, (GenericPlayerContext & context, IGstGenericPlayerPrivate & player, bool lowLatency),
                 (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSync, (IGstGenericPlayerPrivate & player, bool sync),
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSync, (GenericPlayerContext & context, IGstGenericPlayerPrivate & player, bool sync),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSyncOff, (IGstGenericPlayerPrivate & player, bool syncOff),
                 (const, override));

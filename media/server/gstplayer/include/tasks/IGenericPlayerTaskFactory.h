@@ -299,22 +299,24 @@ public:
     /**
      * @brief Creates a SetLowLatency task.
      *
+     * @param[in] context             : The GstGenericPlayer context
      * @param[in] player        : The GstGenericPlayer instance
      * @param[in] lowLatency    : The low latency value to set
      *
      * @retval the new SetLowLatency task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetLowLatency(IGstGenericPlayerPrivate &player, bool lowLatency) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetLowLatency(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool lowLatency) const = 0;
 
     /**
      * @brief Creates a SetSync task.
      *
+     * @param[in] context             : The GstGenericPlayer context
      * @param[in] player        : The GstGenericPlayer instance
      * @param[in] sync          : The sync value to set
      *
      * @retval the new SetSync task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetSync(IGstGenericPlayerPrivate &player, bool sync) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetSync(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool sync) const = 0;
 
     /**
      * @brief Creates a SetSyncOff task.

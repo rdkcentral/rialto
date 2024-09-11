@@ -658,7 +658,7 @@ TEST_F(GstGenericPlayerTest, shouldSetLowLatency)
     constexpr bool kLowLatency{true};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetLowLatency(_, kLowLatency)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createSetLowLatency(_, _, kLowLatency)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->setLowLatency(kLowLatency);
 }
@@ -668,7 +668,7 @@ TEST_F(GstGenericPlayerTest, shouldSetSync)
     constexpr bool kSync{true};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetSync(_, kSync)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createSetSync(_, _, kSync)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->setSync(kSync);
 }

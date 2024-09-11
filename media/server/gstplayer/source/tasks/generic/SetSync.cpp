@@ -23,10 +23,10 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetSync::SetSync(IGstGenericPlayerPrivate &player,
+SetSync::SetSync(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                  const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                  const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, bool sync)
-    : m_player(player), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_sync{sync}
+    : m_context(context), m_player(player), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_sync{sync}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetSync");
 }
@@ -57,6 +57,7 @@ void SetSync::execute() const
     else
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set sync property, sink is NULL");
+        m_context.sync = m_sync;
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

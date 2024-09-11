@@ -211,15 +211,15 @@ GenericPlayerTaskFactory::createSetTextTrackIdentifier(GenericPlayerContext &con
     return std::make_unique<tasks::generic::SetTextTrackIdentifier>(context, m_glibWrapper, textTrackIdentifier);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetLowLatency(IGstGenericPlayerPrivate &player,
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetLowLatency(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                                            bool lowLatency) const
 {
-    return std::make_unique<tasks::generic::SetLowLatency>(player, m_gstWrapper, m_glibWrapper, lowLatency);
+    return std::make_unique<tasks::generic::SetLowLatency>(context, player, m_gstWrapper, m_glibWrapper, lowLatency);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSync(IGstGenericPlayerPrivate &player, bool sync) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSync(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool sync) const
 {
-    return std::make_unique<tasks::generic::SetSync>(player, m_gstWrapper, m_glibWrapper, sync);
+    return std::make_unique<tasks::generic::SetSync>(context, player, m_gstWrapper, m_glibWrapper, sync);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSyncOff(IGstGenericPlayerPrivate &player, bool syncOff) const

@@ -241,6 +241,34 @@ void SetupElement::execute() const
                                           &m_player);
         }
     }
+    else if (isAudioSink(*m_gstWrapper, m_element))
+    {
+        GstElement *actualSink = m_player.getSinkChildIfAutoAudioSink(m_element);
+        if (m_context.lowLatency.has_value())
+        {
+            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "low-latency"))
+            {
+                m_glibWrapper->gObjectSet(actualSink, "low-latency", m_context.lowLatency.value(), nullptr);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_WARN("Failed to set low-latency property on sink '%s'", GST_ELEMENT_NAME(actualSink));
+            }
+            m_context.lowLatency.reset();
+        }
+        if (m_context.sync.has_value())
+        {
+            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "sync"))
+            {
+                m_glibWrapper->gObjectSet(actualSink, "sync", m_context.sync.value(), nullptr);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_WARN("Failed to set sync property on sink '%s'", GST_ELEMENT_NAME(actualSink));
+            }
+            m_context.sync.reset();
+        }
+    }
 
     m_gstWrapper->gstObjectUnref(m_element);
 }
