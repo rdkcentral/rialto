@@ -254,17 +254,6 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     std::map<GstElement *, std::vector<SegmentData>> initialPositions;
-
-    /**
-     * @brief The audio fade mechanism.
-     */
-    enum class AudioFadeMechanism
-    {
-        AUDIO_FADE_UNKNOWN,
-        AUDIO_FADE_UNSUPPORTED,
-        AUDIO_FADE_ON_GSTREAMER,
-        AUDIO_FADE_ON_SOC
-    };
 };
 } // namespace firebolt::rialto::server
 

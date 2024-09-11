@@ -712,15 +712,27 @@ void GenericTasksTestsBase::triggerSetupSource()
     EXPECT_EQ(testContext->m_context.source, testContext->m_element);
 }
 
+void GenericTasksTestsBase::shouldSetAudioFadeAndEaseTypeLinear()
+{
+
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq("audio-fade"))).WillOnce(Return(&testContext->m_paramSpec));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(testContext->m_element, StrEq("audio-fade")));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element)));
+}
 void GenericTasksTestsBase::shouldSetGstVolume()
 {
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_rdkGstreamerUtilsWrapper,isSocAudioFadeSupported()).WillOnce(Return(false));
     EXPECT_CALL(*testContext->m_gstWrapper, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
 }
 
 void GenericTasksTestsBase::triggerSetVolume()
 {
     firebolt::rialto::server::tasks::generic::SetVolume task{testContext->m_context,
+                                                             testContext->m_gstPlayer,
                                                              testContext->m_gstWrapper,
+                                                             testContext->m_glibWrapper,
                                                              testContext->m_rdkGstreamerUtilsWrapper,
                                                              kVolume,
                                                              kVolumeDuration,

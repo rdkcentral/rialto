@@ -96,7 +96,16 @@ public:
         IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
         IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
         IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = nullptr;
-        gst_object_unref(m_elementFactory);
+        if (m_elementFactory) 
+        {
+            GstObject *parent = gst_object_get_parent(GST_OBJECT(m_elementFactory));
+            if (parent) 
+            {
+                gst_object_unref(parent);
+            } 
+            gst_object_unref(m_elementFactory);
+            m_elementFactory = nullptr; 
+        }
     }
 
     void expectCapsToMimeMapping()
@@ -149,7 +158,7 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
             .WillOnce(Return(nullptr));
 
-        m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock);
+        m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock);
     }
 
     void expectGetSupportedPropertiesCommon()
@@ -348,9 +357,11 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported)
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
         .WillOnce(DoAll(SetArgPointee<1>(kNumParamsSupportedByServer), Return(dummySinkParamsPtr)));
     EXPECT_CALL(*m_glibWrapperMock, gFree(dummySinkParamsPtr)).Times(1);
+    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported())
+    .WillOnce(Return(true));  
 
     // Params that the caller is asking about...
-    std::vector<std::string> kParamNames{"test-name-123", "test2"};
+    std::vector<std::string> kParamNames{"test-name-123", "test2", "audio-fade"};
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
     // this time we should find all the properties...
     EXPECT_EQ(supportedProperties, kParamNames);
@@ -373,12 +384,13 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithNoPropertiesSupported)
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(kNumParamsSupportedByServer), Return(dummySinkParamsPtr)));
     EXPECT_CALL(*m_glibWrapperMock, gFree(dummySinkParamsPtr)).Times(1);
-
+    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(true));
     // Params that the caller is asking about...
     std::vector<std::string> kParamNames{"test-name-123", "test2"};
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
     // this time we will not find the properties...
-    EXPECT_TRUE(supportedProperties.empty());
+    // isAudioSupported is initialised as false, as it doesn't go into the if statement of the element class it remains false - which is expected
+    EXPECT_EQ(supportedProperties, std::vector<std::string>{"audio-fade"});  
 
     gst_plugin_feature_list_free(m_listOfFactories);
     m_listOfFactories = nullptr;

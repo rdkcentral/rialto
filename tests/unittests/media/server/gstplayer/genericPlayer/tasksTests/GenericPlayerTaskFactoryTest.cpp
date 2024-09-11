@@ -216,7 +216,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetVolume)
     constexpr double kVolume{0.7};
     constexpr uint32_t kVolumeDuration{1000};
     constexpr firebolt::rialto::EaseType kEaseType{firebolt::rialto::EaseType::EASE_LINEAR};
-    auto task = m_sut.createSetVolume(m_context, kVolume, kVolumeDuration, kEaseType);
+    auto task = m_sut.createSetVolume(m_context, m_gstPlayer, kVolume, kVolumeDuration, kEaseType);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetVolume &>(*task));
 }

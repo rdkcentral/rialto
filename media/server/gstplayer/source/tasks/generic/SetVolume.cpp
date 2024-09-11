@@ -25,10 +25,15 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetVolume::SetVolume(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                     std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
-                     double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
+SetVolume::SetVolume(GenericPlayerContext &context, 
+                    IGstGenericPlayerPrivate &player, 
+                    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                    std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+                    double targetVolume, 
+                    uint32_t volumeDuration, 
+                    firebolt::rialto::EaseType easeType)
+    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
       m_targetVolume{targetVolume}, m_volumeDuration{volumeDuration}, m_easeType{easeType}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetVolume");
@@ -42,62 +47,62 @@ SetVolume::~SetVolume()
 void SetVolume::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetVolume");
+
     if (!m_context.pipeline)
     {
         RIALTO_SERVER_LOG_ERROR("Setting volume failed. Pipeline is NULL");
         return;
     }
-    GenericPlayerContext::AudioFadeMechanism audioFadeMechanism =
-        GenericPlayerContext::AudioFadeMechanism::AUDIO_FADE_UNKNOWN;
-    if (audioFadeMechanism == GenericPlayerContext::AudioFadeMechanism::AUDIO_FADE_ON_GSTREAMER)
+
+    // Get the audio sink from the player
+    GstElement *audioSink = m_player.getSink(firebolt::rialto::MediaSourceType::AUDIO);
+
+    // Case 1: Handle GStreamer-based audio fade if the "audio-fade" property exists
+    if (audioSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(audioSink), "audio-fade"))
     {
-        RIALTO_SERVER_LOG_ERROR("Setting volume using gstreamer fade mechanism");
-        GstElement *audioSink = nullptr;
         gchar fadeStr[32];
         uint32_t scaledTarget = trunc(100 * m_targetVolume);
-        std::string easeString = "L";
-        g_object_get(m_context.pipeline, "audio-sink", &audioSink, nullptr);
+        std::string easeString = "L"; 
 
-        if (audioSink && m_rdkGstreamerUtilsWrapper->initialVolSettingNeeded())
+        switch (m_easeType)
         {
-            g_object_set(audioSink, "volume", 1.0f, nullptr);
+        default:
+        case firebolt::rialto::EaseType::EASE_LINEAR:
+            easeString = "L";
+            RIALTO_SERVER_LOG_DEBUG("Audio Easing function: Ease Linear");
+            break;
+        case firebolt::rialto::EaseType::EASE_IN_CUBIC:
+            easeString = "I";
+            RIALTO_SERVER_LOG_DEBUG("Audio Easing function: Ease In Cubic");
+            break;
+        case firebolt::rialto::EaseType::EASE_OUT_CUBIC:
+            easeString = "O";
+            RIALTO_SERVER_LOG_DEBUG("Audio Easing function: Ease Out Cubic");
+            break;
         }
 
-        if (audioSink)
-        {
-            switch (m_easeType)
-            {
-            default:
-            case firebolt::rialto::EaseType::EASE_LINEAR:
-                easeString = "L";
-                RIALTO_SERVER_LOG_ERROR("Audio Easing function: Ease Linear");
-                break;
-            case firebolt::rialto::EaseType::EASE_IN_CUBIC:
-                easeString = "I";
-                RIALTO_SERVER_LOG_ERROR("Audio Easing function: Ease In Cubic");
-                break;
-            case firebolt::rialto::EaseType::EASE_OUT_CUBIC:
-                easeString = "O";
-                RIALTO_SERVER_LOG_ERROR("Audio Easing function: Ease out Cubic");
-                break;
-            }
-            snprintf(reinterpret_cast<gchar *>(fadeStr), sizeof(fadeStr), "%u,%u,%s", scaledTarget, m_volumeDuration,
-                     easeString.c_str());
-            RIALTO_SERVER_LOG_ERROR("Fade String: %s", fadeStr);
-            g_object_set(audioSink, "audio-fade", fadeStr, nullptr);
-            gst_object_unref(audioSink);
-        }
+        snprintf(reinterpret_cast<gchar *>(fadeStr), sizeof(fadeStr), "%u,%u,%s", scaledTarget, m_volumeDuration, easeString.c_str());
+        RIALTO_SERVER_LOG_DEBUG("Fade String: %s", fadeStr);
+
+        m_glibWrapper->gObjectSet(audioSink, "audio-fade", fadeStr, nullptr);
+
+    
     }
-    else if (audioFadeMechanism == GenericPlayerContext::AudioFadeMechanism::AUDIO_FADE_ON_SOC)
+    else if (m_rdkGstreamerUtilsWrapper->isSocAudioFadeSupported())
     {
-        RIALTO_SERVER_LOG_ERROR("Do Audio Fade for SOC");
+        RIALTO_SERVER_LOG_DEBUG("SOC audio fading is supported, applying SOC audio fade");
         m_rdkGstreamerUtilsWrapper->doAudioEasingonSoc(m_targetVolume, m_volumeDuration,
                                                        static_cast<firebolt::rialto::wrappers::rgu_Ease>(m_easeType));
-    }
+    }    
     else
     {
-        m_gstWrapper->gstStreamVolumeSetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR,
-                                               m_targetVolume);
+        // Case 2: If no GStreamer audio-fade property, attempt SOC-based fading
+        RIALTO_SERVER_LOG_DEBUG("No audio-fade property found, trying SOC audio easing");
+        m_gstWrapper->gstStreamVolumeSetVolume(GST_STREAM_VOLUME(m_context.pipeline), 
+                                                GST_STREAM_VOLUME_FORMAT_LINEAR, m_targetVolume);   
     }
+
+    if(audioSink)
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(audioSink));
 }
 } // namespace firebolt::rialto::server::tasks::generic

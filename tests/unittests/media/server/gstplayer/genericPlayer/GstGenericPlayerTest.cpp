@@ -64,9 +64,9 @@ protected:
         firebolt::rialto::EaseType easeType{};
         std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
         EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-        EXPECT_CALL(m_taskFactoryMock, createSetVolume(_, targetVolume, volumeDuration, easeType))
+        EXPECT_CALL(m_taskFactoryMock, createSetVolume(_,_, targetVolume, volumeDuration, easeType))
             .WillOnce(Invoke(
-                [&](GenericPlayerContext &m_context, double targetVolume, uint32_t volumeDuration, EaseType easeType)
+                [&](GenericPlayerContext &m_context, IGstGenericPlayerPrivate &m_player  ,double targetVolume, uint32_t volumeDuration, EaseType easeType)
                 {
                     fun(m_context);
                     return std::move(task);

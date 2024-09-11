@@ -34,3 +34,10 @@ TEST_F(SetVolumeTest, shouldSetVolume)
     shouldSetGstVolume();
     triggerSetVolume();
 }
+
+// 
+TEST_F(SetVolumeTest, shouldSetVolumeWithAudioFadeWithEaseTypeLinear)
+{
+    shouldSetAudioFadeAndEaseTypeLinear();
+    triggerSetVolume();
+}

@@ -241,6 +241,10 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
                         RIALTO_SERVER_LOG_DEBUG("Found property '%s'", kPropName.c_str());
                         propertiesFound.push_back(kPropName);
                         propertiesToLookFor.erase(it);
+                        if(kPropName == "audio-fade")
+                        {
+                            isAudioFadeSupported = true;
+                        }
                     }
                 }
                 m_glibWrapper->gFree(props);
@@ -255,7 +259,6 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
         RIALTO_SERVER_LOG_ERROR("Is Soc-Implementation for Audio fade available ? = %s", socAudioFadeSupported ? "Yes" : "No");
         if (socAudioFadeSupported)
         {
-            RIALTO_SERVER_LOG_ERROR("asdfasdfsadfsadfsadfasdfasdfasdf");
             propertiesFound.push_back("audio-fade");  // Add "audio-fade" if supported by SoC
         }
     }

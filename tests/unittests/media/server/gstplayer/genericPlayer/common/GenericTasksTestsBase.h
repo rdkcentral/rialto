@@ -117,6 +117,7 @@ protected:
     // SetVolume test methods
     void shouldSetGstVolume();
     void triggerSetVolume();
+    void shouldSetAudioFadeAndEaseTypeLinear();
 
     // AttachSamples test methods
     void shouldAttachAllAudioSamples();

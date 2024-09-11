@@ -185,11 +185,11 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetVideoGeometry(Ge
     return std::make_unique<tasks::generic::SetVideoGeometry>(context, player, rectangle);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetVolume(GenericPlayerContext &context,
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetVolume(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                                        double targetVolume, uint32_t volumeDuration,
                                                                        firebolt::rialto::EaseType easeType) const
 {
-    return std::make_unique<tasks::generic::SetVolume>(context, m_gstWrapper, m_rdkGstreamerUtilsWrapper, targetVolume,
+    return std::make_unique<tasks::generic::SetVolume>(context, player,  m_gstWrapper, m_glibWrapper, m_rdkGstreamerUtilsWrapper, targetVolume,
                                                        volumeDuration, easeType);
 }
 

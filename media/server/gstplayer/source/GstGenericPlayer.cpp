@@ -1097,7 +1097,7 @@ void GstGenericPlayer::setVolume(double targetVolume, uint32_t volumeDuration, f
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetVolume(m_context, targetVolume, volumeDuration, easeType));
+        m_workerThread->enqueueTask(m_taskFactory->createSetVolume(m_context, *this, targetVolume, volumeDuration, easeType));
     }
 }
 
