@@ -442,7 +442,7 @@ GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
     return getElementFromPipeline(type);
 }
 
-GstElement *GstGenericPlayer::getElementFromPipeline(GstElementFactoryListType type) 
+GstElement *GstGenericPlayer::getElementFromPipeline(GstElementFactoryListType type) const
 {
     GstIterator *it = m_gstWrapper->gstBinIterateElements(GST_BIN(m_context.pipeline));
     GValue item = G_VALUE_INIT;
