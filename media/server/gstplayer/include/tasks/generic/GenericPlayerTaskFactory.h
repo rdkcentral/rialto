@@ -77,8 +77,8 @@ public:
                                                    GstElement *source) const override;
     std::unique_ptr<IPlayerTask> createSetVideoGeometry(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                         const Rectangle &rectangle) const override;
-    std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, double targetVolume,
-                                                 uint32_t volumeDuration,
+    std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                 double targetVolume, uint32_t volumeDuration,
                                                  firebolt::rialto::EaseType easeType) const override;
     std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, const MediaSourceType &mediaSourceType,
                                                bool mute) const override;

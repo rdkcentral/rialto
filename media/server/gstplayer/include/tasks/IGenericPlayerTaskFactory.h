@@ -271,8 +271,8 @@ public:
      *
      * @retval the new SetVolume task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, double targetVolume,
-                                                         uint32_t volumeDuration,
+    virtual std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                         double targetVolume, uint32_t volumeDuration,
                                                          firebolt::rialto::EaseType easeType) const = 0;
 
     /**

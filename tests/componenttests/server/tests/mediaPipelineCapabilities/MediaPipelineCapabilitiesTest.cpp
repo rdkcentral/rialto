@@ -35,6 +35,7 @@ constexpr int kNumPropertiesOnSink{3};
 const char *kPropertyName1 = "test-name-5";
 const char *kPropertyName2 = "test2";
 const char *kPropertyName3 = "prop";
+const char *kPropertyName4 = "audio-fade";
 const GstElementFactoryListType kExpectedFactoryListType{
     GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
 }; // namespace
@@ -70,6 +71,7 @@ public:
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
             .WillRepeatedly(DoAll(SetArgPointee<1>(kNumPropertiesOnSink), Return(m_dummyParamsPtr)));
+        EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(true));
         EXPECT_CALL(*m_glibWrapperMock, gFree(m_dummyParamsPtr)).Times(1);
         EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
     }
@@ -93,7 +95,7 @@ private:
     GList *m_listOfFactories{nullptr};
     GParamSpec m_dummyParams[kNumPropertiesOnSink];
     GParamSpec *m_dummyParamsPtr[kNumPropertiesOnSink];
-    std::vector<std::string> m_kParamNames{kPropertyName1, kPropertyName2};
+    std::vector<std::string> m_kParamNames{kPropertyName1, kPropertyName3, kPropertyName2, kPropertyName4};
     GstElement m_object;
     GstElementFactory *m_elementFactory;
 };

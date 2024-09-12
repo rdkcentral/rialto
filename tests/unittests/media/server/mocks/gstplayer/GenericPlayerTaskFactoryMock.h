@@ -83,7 +83,8 @@ public:
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, const Rectangle &rectangle),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetVolume,
-                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, double targetVolume, uint32_t volumeDuration, EaseType easeType),
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, double targetVolume,
+                 uint32_t volumeDuration, EaseType easeType),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetMute,
                 (GenericPlayerContext & context, const MediaSourceType &mediaSourceType, bool mute), (const, override));

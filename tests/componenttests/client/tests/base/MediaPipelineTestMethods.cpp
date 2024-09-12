@@ -1103,9 +1103,11 @@ void MediaPipelineTestMethods::writeVideoFramesSecondary()
     MediaPipelineTestMethods::haveDataOkSecondary();
 }
 
-void MediaPipelineTestMethods::shouldSetVolume(const double expectedVolume)
+void MediaPipelineTestMethods::shouldSetVolume(const double targetVolume, const uint32_t volumeDuration,
+                                               firebolt::rialto::EaseType easeType)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, setVolume(_, setVolumeRequestMatcher(kSessionId, expectedVolume), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setVolume(_, setVolumeRequestMatcher(kSessionId, targetVolume, volumeDuration, easeType), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 

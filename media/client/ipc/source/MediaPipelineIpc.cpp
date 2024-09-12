@@ -789,7 +789,7 @@ bool MediaPipelineIpc::setVolume(double targetVolume, uint32_t volumeDuration, E
     firebolt::rialto::SetVolumeRequest request;
 
     request.set_session_id(m_sessionId);
-    request.set_target_volume(targetVolume);
+    request.set_volume(targetVolume);
     request.set_volume_duration(volumeDuration);
     request.set_ease_type(convertEaseType(easeType));
 

@@ -121,7 +121,9 @@ protected:
     void shouldSetAudioFadeAndEaseTypeLinear();
     void shouldSetAudioFadeAndEaseTypeCubicIn();
     void shouldSetAudioFadeAndEaseTypeCubicOut();
-    void shouldSetAudioFadeInSoc();
+    void shouldSetAudioFadeInSocWithLinearEaseType();
+    void shouldSetAudioFadeInSocWithCubicInEaseType();
+    void shouldSetAudioFadeInSocWithCubicOutEaseType();
 
     // AttachSamples test methods
     void shouldAttachAllAudioSamples();

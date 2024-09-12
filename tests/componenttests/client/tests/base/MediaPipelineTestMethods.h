@@ -111,7 +111,7 @@ protected:
     void shouldSetPlaybackRateNegative2x();
     void shouldSetPlaybackRateFailure();
     void shouldSetPosition(const int64_t expectedPosition);
-    void shouldSetVolume(const double expectedVolume);
+    void shouldSetVolume(const double targetVolume, const uint32_t volumeDuration, firebolt::rialto::EaseType easeType);
     void shouldGetVolume(const double volume);
     void shouldSetMute(const bool expectedMute);
     void shouldGetMute(const bool mute);

@@ -24,9 +24,9 @@
 #include "GstCapabilitiesMock.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
-#include "RdkGstreamerUtilsWrapperMock.h"
-#include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include "IFactoryAccessor.h"
+#include "RdkGstreamerUtilsWrapperFactoryMock.h"
+#include "RdkGstreamerUtilsWrapperMock.h"
 
 #include <gtest/gtest.h>
 
@@ -62,7 +62,6 @@ public:
         IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
         IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
         IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = nullptr;
-
     }
 
     void createMediaPipelineCapabilities()
@@ -106,7 +105,8 @@ TEST_F(MediaPipelineCapabilitiesTest, FactoryCreatesObject)
 {
     EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
     EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
-    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperFactoryMock, createRdkGstreamerUtilsWrapper()).WillOnce(Return(m_rdkGstreamerUtilsWrapperMock));
+    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperFactoryMock, createRdkGstreamerUtilsWrapper())
+        .WillOnce(Return(m_rdkGstreamerUtilsWrapperMock));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))

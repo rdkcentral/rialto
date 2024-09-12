@@ -227,7 +227,7 @@ MATCHER_P4(setVolumeRequestMatcher, sessionId, targetVolume, volumeDuration, eas
 {
     const ::firebolt::rialto::SetVolumeRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::SetVolumeRequest *>(arg);
-    return ((kRequest->session_id() == sessionId) && (kRequest->target_volume() == targetVolume) &&
+    return ((kRequest->session_id() == sessionId) && (kRequest->volume() == targetVolume) &&
             (kRequest->volume_duration() == volumeDuration) &&
             (kRequest->ease_type() == static_cast<firebolt::rialto::SetVolumeRequest_EaseType>(easeType)));
 }

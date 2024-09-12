@@ -715,7 +715,7 @@ void MediaPipelineModuleService::setVolume(::google::protobuf::RpcController *co
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (!m_mediaPipelineService.setVolume(request->session_id(), request->target_volume(), request->volume_duration(),
+    if (!m_mediaPipelineService.setVolume(request->session_id(), request->volume(), request->volume_duration(),
                                           convertEaseType(request->ease_type())))
     {
         RIALTO_SERVER_LOG_ERROR("Set volume failed.");

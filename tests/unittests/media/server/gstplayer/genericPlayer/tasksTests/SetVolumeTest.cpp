@@ -53,8 +53,20 @@ TEST_F(SetVolumeTest, shouldSetVolumeWithAudioFadeWithEaseTypeCubicOut)
     triggerSetVolumeEaseTypeCubicOut();
 }
 
-TEST_F(SetVolumeTest, shouldSetVolumeWithAudioFadeInSoc)
+TEST_F(SetVolumeTest, shouldSetVolumeWithAudioFadeInSocWithLinearEaseType)
 {
-    shouldSetAudioFadeInSoc();
+    shouldSetAudioFadeInSocWithLinearEaseType();
     triggerSetVolumeEaseTypeLinear();
+}
+
+TEST_F(SetVolumeTest, shouldSetVolumeWithAudioFadeInSocWithCubicInType)
+{
+    shouldSetAudioFadeInSocWithCubicInEaseType();
+    triggerSetVolumeEaseTypeCubicIn();
+}
+
+TEST_F(SetVolumeTest, shouldSetVolumeWithAudioFadeInSocWithCubicOutType)
+{
+    shouldSetAudioFadeInSocWithCubicOutEaseType();
+    triggerSetVolumeEaseTypeCubicOut();
 }

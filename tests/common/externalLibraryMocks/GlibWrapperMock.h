@@ -60,9 +60,9 @@ public:
                 gint val = va_arg(args, gint);
                 gObjectSetIntStub(object, kProperty, val);
             }
-            else if(g_strcmp0(kProperty, "audio-fade") == 0)
+            else if (g_strcmp0(kProperty, "audio-fade") == 0)
             {
-                const gchar* val = va_arg(args, const gchar*);
+                const gchar *val = va_arg(args, const gchar *);
                 gObjectSetStrStub(object, kProperty, val);
             }
             else

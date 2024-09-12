@@ -22,9 +22,9 @@
 #include "GlibWrapperMock.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
+#include "IFactoryAccessor.h"
 #include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
-#include "IFactoryAccessor.h"
 
 #include <gtest/gtest.h>
 #include <unordered_map>
@@ -96,15 +96,15 @@ public:
         IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
         IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
         IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = nullptr;
-        if (m_elementFactory) 
+        if (m_elementFactory)
         {
             GstObject *parent = gst_object_get_parent(GST_OBJECT(m_elementFactory));
-            if (parent) 
+            if (parent)
             {
                 gst_object_unref(parent);
-            } 
+            }
             gst_object_unref(m_elementFactory);
-            m_elementFactory = nullptr; 
+            m_elementFactory = nullptr;
         }
     }
 
@@ -185,7 +185,8 @@ public:
     std::unordered_map<std::string, GstCaps> m_capsMap;
     std::unique_ptr<GstCapabilities> m_sut;
     std::shared_ptr<StrictMock<GlibWrapperMock>> m_glibWrapperMock{std::make_shared<StrictMock<GlibWrapperMock>>()};
-    std::shared_ptr<StrictMock<RdkGstreamerUtilsWrapperMock>> m_rdkGstreamerUtilsWrapperMock{std::make_shared<StrictMock<RdkGstreamerUtilsWrapperMock>>()};
+    std::shared_ptr<StrictMock<RdkGstreamerUtilsWrapperMock>> m_rdkGstreamerUtilsWrapperMock{
+        std::make_shared<StrictMock<RdkGstreamerUtilsWrapperMock>>()};
 
     // Common sink factory type variables to be used in tests
     char m_dummySink = 0;
@@ -235,7 +236,8 @@ TEST_F(GstCapabilitiesTest, FactoryCreatesObject)
 {
     EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
     EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
-    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperFactoryMock, createRdkGstreamerUtilsWrapper()).WillOnce(Return(m_rdkGstreamerUtilsWrapperMock));
+    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperFactoryMock, createRdkGstreamerUtilsWrapper())
+        .WillOnce(Return(m_rdkGstreamerUtilsWrapperMock));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
 
@@ -357,8 +359,7 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported)
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
         .WillOnce(DoAll(SetArgPointee<1>(kNumParamsSupportedByServer), Return(dummySinkParamsPtr)));
     EXPECT_CALL(*m_glibWrapperMock, gFree(dummySinkParamsPtr)).Times(1);
-    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported())
-    .WillOnce(Return(true));  
+    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(true));
 
     // Params that the caller is asking about...
     std::vector<std::string> kParamNames{"test-name-123", "test2", "audio-fade"};
@@ -389,8 +390,9 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithNoPropertiesSupported)
     std::vector<std::string> kParamNames{"test-name-123", "test2"};
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
     // this time we will not find the properties...
-    // isAudioSupported is initialised as false, as it doesn't go into the if statement of the element class it remains false - which is expected
-    EXPECT_EQ(supportedProperties, std::vector<std::string>{"audio-fade"});  
+    // isAudioSupported is initialised as false, as it doesn't go into the if statement of the element class it remains
+    // false - which is expected
+    EXPECT_EQ(supportedProperties, std::vector<std::string>{"audio-fade"});
 
     gst_plugin_feature_list_free(m_listOfFactories);
     m_listOfFactories = nullptr;

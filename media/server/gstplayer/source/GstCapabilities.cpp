@@ -140,7 +140,8 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
             firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory::getFactory();
         std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper;
 
-        if ((!rdkGstreamerUtilsWrapperFactory) || (!(rdkGstreamerUtilsWrapper = rdkGstreamerUtilsWrapperFactory->createRdkGstreamerUtilsWrapper())))
+        if ((!rdkGstreamerUtilsWrapperFactory) ||
+            (!(rdkGstreamerUtilsWrapper = rdkGstreamerUtilsWrapperFactory->createRdkGstreamerUtilsWrapper())))
         {
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
@@ -155,9 +156,10 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
     return gstCapabilities;
 }
 
-GstCapabilities::GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                                 const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper)
+GstCapabilities::GstCapabilities(
+    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper)
     : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}
 {
     fillSupportedMimeTypes();
@@ -245,7 +247,11 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
                         RIALTO_SERVER_LOG_DEBUG("Found property '%s'", kPropName.c_str());
                         propertiesFound.push_back(kPropName);
                         propertiesToLookFor.erase(it);
-                        if(kPropName == "audio-fade")
+
+                        // Specifically checks if the "audio-fade" property is supported in the gstreamer element
+                        // If the "audio-fade" property is found among the element's properties, the flag `isAudioFadeSupported`
+                        // is set to true This flag is used later in the function to decide to check the property in SOC
+                        if (kPropName == "audio-fade")
                         {
                             isAudioFadeSupported = true;
                         }
@@ -260,10 +266,9 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
     if (!isAudioFadeSupported)
     {
         bool socAudioFadeSupported = m_rdkGstreamerUtilsWrapper->isSocAudioFadeSupported();
-        RIALTO_SERVER_LOG_ERROR("Is Soc-Implementation for Audio fade available ? = %s", socAudioFadeSupported ? "Yes" : "No");
         if (socAudioFadeSupported)
         {
-            propertiesFound.push_back("audio-fade");  // Add "audio-fade" if supported by SoC
+            propertiesFound.push_back("audio-fade"); // Add "audio-fade" if supported by SoC
         }
     }
     // Cleanup

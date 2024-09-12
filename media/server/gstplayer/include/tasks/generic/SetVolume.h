@@ -21,9 +21,9 @@
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_VOLUME_H_
 
 #include "GenericPlayerContext.h"
+#include "IGlibWrapper.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
-#include "IGlibWrapper.h"
 #include "IPlayerTask.h"
 #include <memory>
 
@@ -32,14 +32,11 @@ namespace firebolt::rialto::server::tasks::generic
 class SetVolume : public IPlayerTask
 {
 public:
-    SetVolume(GenericPlayerContext &context, 
-              IGstGenericPlayerPrivate &player, 
+    SetVolume(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
               std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
               std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
               std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
-              double targetVolume, 
-              uint32_t volumeDuration, 
-              firebolt::rialto::EaseType easeType);
+              double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType);
     ~SetVolume() override;
     void execute() const override;
 
@@ -52,7 +49,6 @@ private:
     double m_targetVolume;
     uint32_t m_volumeDuration;
     firebolt::rialto::EaseType m_easeType;
-    
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

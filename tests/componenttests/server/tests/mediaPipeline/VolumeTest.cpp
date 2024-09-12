@@ -24,18 +24,39 @@
 #include "MessageBuilders.h"
 
 using testing::_;
+using testing::Invoke;
 using testing::Return;
+using testing::StrEq;
 
 namespace firebolt::rialto::server::ct
 {
 class VolumeTest : public MediaPipelineTest
 {
 public:
-    VolumeTest() = default;
+    // VolumeTest() = default;
+    VolumeTest()
+    {
+        GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
+        m_audioSink = gst_element_factory_create(elementFactory, nullptr);
+        gst_object_unref(elementFactory);
+    }
     ~VolumeTest() override = default;
 
     void willSetVolume()
     {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
+            .WillOnce(Invoke(
+                [&](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                    *elementPtr = m_audioSink;
+                }));
+
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("audio-fade"))).WillOnce(Return(nullptr));
+
+        EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(false));
+
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink));
         EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
     }
 
@@ -57,6 +78,10 @@ public:
             .expectSuccess()
             .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.volume(), kVolume); });
     }
+
+private:
+    GstElement *m_audioSink{nullptr};
+    GParamSpec m_paramSpec{};
 };
 
 /*
