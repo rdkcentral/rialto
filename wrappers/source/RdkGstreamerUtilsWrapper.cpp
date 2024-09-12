@@ -54,14 +54,9 @@ void RdkGstreamerUtilsWrapper::processAudioGap(GstElement *pipeline, gint64 gaps
 }
 
 void RdkGstreamerUtilsWrapper::doAudioEasingonSoc(double targetVolume, uint32_t volumeDuration,
-                                                  rdk_gstreamer_utils::rgu_Ease easeType)
+                                                  rdk_gstreamer_utils::rgu_Ease easeType) const
 {
     return rdk_gstreamer_utils::doAudioEasingonSoc(targetVolume, volumeDuration, easeType);
-}
-
-bool RdkGstreamerUtilsWrapper::initialVolSettingNeeded() const
-{
-    return rdk_gstreamer_utils::initialVolSettingNeeded();
 }
 
 bool RdkGstreamerUtilsWrapper::isSocAudioFadeSupported() const

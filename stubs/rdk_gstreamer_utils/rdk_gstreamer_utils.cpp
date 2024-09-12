@@ -36,11 +36,6 @@ void processAudioGap(GstElement *pipeline, gint64 gapstartpts, gint32 gapduratio
 
 void doAudioEasingonSoc(double targetVolume, uint32_t volumeDuration, rdk_gstreamer_utils::rgu_Ease easeType) {}
 
-bool initialVolSettingNeeded()
-{
-    return true;
-}
-
 bool isSocAudioFadeSupported()
 {
     return true;

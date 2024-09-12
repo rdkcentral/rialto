@@ -40,7 +40,6 @@ public:
                 (const, override));
     MOCK_METHOD(void, doAudioEasingonSoc, (double targetVolume, uint32_t volumeDuration, rgu_Ease easeType),
                 (const, override));
-    MOCK_METHOD(bool, initialVolSettingNeeded, (), (const, override));
     MOCK_METHOD(bool, isSocAudioFadeSupported, (), (const, override));
 };
 } // namespace firebolt::rialto::wrappers

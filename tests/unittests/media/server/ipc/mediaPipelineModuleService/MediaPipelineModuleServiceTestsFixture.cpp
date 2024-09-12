@@ -1106,7 +1106,7 @@ void MediaPipelineModuleServiceTests::sendSetVolumeRequestAndReceiveResponse()
     firebolt::rialto::SetVolumeResponse response;
 
     request.set_session_id(kHardcodedSessionId);
-    request.set_target_volume(kVolume);
+    request.set_volume(kVolume);
     request.set_volume_duration(kVolumeDuration);
     request.set_ease_type(convertEaseType(kEaseType));
 
