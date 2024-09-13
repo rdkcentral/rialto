@@ -82,7 +82,7 @@ protected:
         EXPECT_CALL(m_taskFactoryMock, createSetVolume(_, _, targetVolume, volumeDuration, easeType))
             .WillOnce(Invoke(
                 [&](GenericPlayerContext &m_context, IGstGenericPlayerPrivate &m_player, double targetVolume,
-                    uint32_t volumeDuration, EaseType easeType)
+                    uint32_t volumeDuration, firebolt::rialto::EaseType easeType)
                 {
                     fun(m_context);
                     return std::move(task);
