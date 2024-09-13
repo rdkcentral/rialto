@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_GENERIC_PLAYER_PRIVATE_MOCK_H_
 
 #include "IGstGenericPlayerPrivate.h"
+
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
@@ -37,6 +38,7 @@ public:
     MOCK_METHOD(void, scheduleVideoUnderflow, (), (override));
     MOCK_METHOD(void, scheduleAllSourcesAttached, (), (override));
     MOCK_METHOD(bool, setVideoSinkRectangle, (), (override));
+    MOCK_METHOD(bool, setImmediateOutput, (), (override));
     MOCK_METHOD(void, notifyNeedMediaData, (const MediaSourceType mediaSource), (override));
     MOCK_METHOD(GstBuffer *, createBuffer, (const IMediaPipeline::MediaSegment &mediaSegment), (const, override));
     MOCK_METHOD(void, attachData, (const firebolt::rialto::MediaSourceType mediaType), (override));

@@ -138,6 +138,7 @@ private:
     void scheduleVideoUnderflow() override;
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
+    bool setImmediateOutput() override;
     void notifyNeedMediaData(const MediaSourceType mediaSource) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachData(const firebolt::rialto::MediaSourceType mediaType) override;
@@ -167,6 +168,8 @@ private:
     GstElement *getDecoder(const MediaSourceType &mediaSourceType) override;
 
 private:
+    friend class ActualSink;
+
     /**
      * @brief Initialises the player pipeline for MSE playback.
      */
@@ -303,6 +306,24 @@ private:
      * @brief The protection metadata wrapper
      */
     std::unique_ptr<IGstProtectionMetadataHelper> m_protectionMetadataWrapper;
+};
+
+/**
+ * @brief The definition of ActualSink
+ */
+class ActualSink
+{
+public:
+    ActualSink(GstGenericPlayer &player, const firebolt::rialto::MediaSourceType &mediaSourceType,
+               const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper);
+    virtual ~ActualSink();
+
+    GstElement *get() const { return m_actualSink; }
+
+private:
+    GstElement *m_sink;
+    GstElement *m_actualSink{nullptr};
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 };
 } // namespace firebolt::rialto::server
 

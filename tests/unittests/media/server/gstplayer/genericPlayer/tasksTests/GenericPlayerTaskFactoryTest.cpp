@@ -334,7 +334,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateProcessAudioGap)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetImmediateOutput)
 {
-    auto task = m_sut.createSetImmediateOutput(m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
+    auto task = m_sut.createSetImmediateOutput(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetImmediateOutput &>(*task));
 }

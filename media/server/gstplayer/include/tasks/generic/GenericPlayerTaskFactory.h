@@ -105,7 +105,7 @@ public:
     std::unique_ptr<IPlayerTask> createProcessAudioGap(GenericPlayerContext &context, std::int64_t position,
                                                        std::uint32_t duration, std::int64_t discontinuityGap,
                                                        bool audioAac) const override;
-    std::unique_ptr<IPlayerTask> createSetImmediateOutput(IGstGenericPlayerPrivate &player,
+    std::unique_ptr<IPlayerTask> createSetImmediateOutput(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                           const firebolt::rialto::MediaSourceType &type,
                                                           bool immediateOutput) const override;
 

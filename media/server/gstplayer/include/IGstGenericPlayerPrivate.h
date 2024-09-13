@@ -73,6 +73,13 @@ public:
     virtual bool setVideoSinkRectangle() = 0;
 
     /**
+     * @brief Sets immediate output. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setImmediateOutput() = 0;
+
+    /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
      */
     virtual void notifyNeedMediaData(const MediaSourceType mediaSource) = 0;

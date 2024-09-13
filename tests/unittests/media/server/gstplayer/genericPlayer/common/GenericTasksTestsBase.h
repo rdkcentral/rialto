@@ -77,6 +77,7 @@ protected:
     // SetupElement test methods
     void shouldSetupVideoElementOnly();
     void shouldSetupVideoElementWithPendingGeometry();
+    void shouldSetupVideoElementWithPendingImmediateOutput();
     void shouldSetupVideoElementAmlhalasink();
     void shouldSetupAudioElementBrcmAudioSink();
     void shouldSetupVideoElementAutoVideoSink();
@@ -241,8 +242,6 @@ protected:
 
     // immediate-output sink property test methods
     void shouldSetImmediateOutput();
-    void shouldFailToSetImmediateOutputIfSinkIsNull();
-    void shouldFailToSetImmediateOutputIfPropertyDoesntExist();
     void triggerSetImmediateOutput();
 
     // low-latency sink property test methods
