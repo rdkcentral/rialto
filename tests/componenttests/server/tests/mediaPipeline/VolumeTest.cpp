@@ -33,14 +33,13 @@ namespace firebolt::rialto::server::ct
 class VolumeTest : public MediaPipelineTest
 {
 public:
-    // VolumeTest() = default;
     VolumeTest()
     {
         GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
         m_audioSink = gst_element_factory_create(elementFactory, nullptr);
         gst_object_unref(elementFactory);
     }
-    ~VolumeTest() override = default;
+    ~VolumeTest() override { gst_object_unref(m_audioSink); }
 
     void willSetVolume()
     {

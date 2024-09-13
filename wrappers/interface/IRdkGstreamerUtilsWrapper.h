@@ -58,6 +58,13 @@ enum rgu_Ease
     EaseCount
 };
 
+enum class EaseType
+{
+    EASE_LINEAR,
+    EASE_IN_CUBIC,
+    EASE_OUT_CUBIC
+};
+
 class IRdkGstreamerUtilsWrapper;
 class IRdkGstreamerUtilsWrapperFactory
 {
@@ -93,7 +100,7 @@ public:
         GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled, GstElement *aSrc, bool *ret) const = 0;
     virtual void processAudioGap(GstElement *pipeline, gint64 gapstartpts, gint32 gapduration, gint64 gapdiscontinuity,
                                  bool audioaac) const = 0;
-    virtual void doAudioEasingonSoc(double targetVolume, uint32_t volumeDuration, rgu_Ease easeType) const = 0;
+    virtual void doAudioEasingonSoc(double target, uint32_t duration, rgu_Ease ease) const = 0;
     virtual bool isSocAudioFadeSupported() const = 0;
 };
 } // namespace firebolt::rialto::wrappers

@@ -43,7 +43,7 @@ public:
         GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled, GstElement *aSrc, bool *ret) const override;
     void processAudioGap(GstElement *pipeline, gint64 gapstartpts, gint32 gapduration, gint64 gapdiscontinuity,
                          bool audioaac) const override;
-    void doAudioEasingonSoc(double targetVolume, uint32_t volumeDuration, rgu_Ease easeType) const override;
+    void doAudioEasingonSoc(double target, uint32_t duration, rgu_Ease ease) const override;
     bool isSocAudioFadeSupported() const override;
 };
 } // namespace firebolt::rialto::wrappers
