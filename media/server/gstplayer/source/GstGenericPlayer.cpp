@@ -481,7 +481,7 @@ bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType
 bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
     bool returnValue{false};
-    std::shared_ptr<ISinkPtr> sink{getSink(mediaSourceType)};
+    auto sink{getSink(mediaSourceType)};
     if (sink->getSink())
     {
         GstStructure *stats{nullptr};
@@ -906,7 +906,7 @@ void GstGenericPlayer::setEos(const firebolt::rialto::MediaSourceType &type)
 bool GstGenericPlayer::setVideoSinkRectangle()
 {
     bool result = false;
-    std::shared_ptr<ISinkPtr> videoSink{getSink(MediaSourceType::VIDEO)};
+    auto videoSink{getSink(MediaSourceType::VIDEO)};
     if (videoSink->getSink())
     {
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink->getSink()), "rectangle"))
@@ -932,7 +932,7 @@ bool GstGenericPlayer::setImmediateOutput()
     bool result{false};
     if (m_context.pendingImmediateOutputForVideo.has_value())
     {
-        std::shared_ptr<ISinkPtr> sink{getSink(MediaSourceType::VIDEO)};
+        auto sink{getSink(MediaSourceType::VIDEO)};
         if (sink->getSink())
         {
             bool immediateOutput{m_context.pendingImmediateOutputForVideo.value()};
@@ -1188,7 +1188,7 @@ bool GstGenericPlayer::setSync(bool sync)
 bool GstGenericPlayer::getSync(bool &sync)
 {
     bool returnValue{false};
-    std::shared_ptr<ISinkPtr> sink{getSink(MediaSourceType::AUDIO)};
+    auto sink{getSink(MediaSourceType::AUDIO)};
     if (sink->getSink())
     {
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink->getSink()), "sync"))
