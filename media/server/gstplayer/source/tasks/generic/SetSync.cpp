@@ -18,6 +18,7 @@
  */
 
 #include "SetSync.h"
+#include "GstGenericPlayer.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
 
@@ -39,20 +40,17 @@ SetSync::~SetSync()
 void SetSync::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetSync");
-
-    GstElement *sink = m_player.getSink(MediaSourceType::AUDIO);
-    if (sink)
+    auto sink{m_player.getSink(MediaSourceType::AUDIO)};
+    if (sink->getSink())
     {
-        GstElement *actualSink = m_player.getSinkChildIfAutoAudioSink(sink);
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "sync"))
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink->getSink()), "sync"))
         {
-            m_glibWrapper->gObjectSet(actualSink, "sync", m_sync, nullptr);
+            m_glibWrapper->gObjectSet(sink->getSink(), "sync", m_sync, nullptr);
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to set sync property on sink '%s'", GST_ELEMENT_NAME(actualSink));
+            RIALTO_SERVER_LOG_ERROR("Failed to set sync property on sink '%s'", GST_ELEMENT_NAME(sink->getSink()));
         }
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
     }
     else
     {

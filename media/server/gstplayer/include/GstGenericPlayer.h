@@ -130,6 +130,7 @@ public:
     void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime) override;
     void processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
+    std::shared_ptr<ISinkPtr> getSink(const MediaSourceType &mediaSourceType) override;
 
 private:
     void scheduleNeedMediaData(GstAppSrc *src) override;
@@ -160,16 +161,11 @@ private:
     void addAutoAudioSinkChild(GObject *object) override;
     void removeAutoVideoSinkChild(GObject *object) override;
     void removeAutoAudioSinkChild(GObject *object) override;
-    GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) override;
-    GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) override;
     void setPlaybinFlags(bool enableAudio = true) override;
     void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
-    GstElement *getSink(const MediaSourceType &mediaSourceType) override;
     GstElement *getDecoder(const MediaSourceType &mediaSourceType) override;
 
 private:
-    friend class ActualSink;
-
     /**
      * @brief Initialises the player pipeline for MSE playback.
      */
@@ -308,23 +304,6 @@ private:
     std::unique_ptr<IGstProtectionMetadataHelper> m_protectionMetadataWrapper;
 };
 
-/**
- * @brief The definition of ActualSink
- */
-class ActualSink
-{
-public:
-    ActualSink(GstGenericPlayer &player, const firebolt::rialto::MediaSourceType &mediaSourceType,
-               const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper);
-    virtual ~ActualSink();
-
-    GstElement *get() const { return m_actualSink; }
-
-private:
-    GstElement *m_sink;
-    GstElement *m_actualSink{nullptr};
-    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
-};
 } // namespace firebolt::rialto::server
 
 #endif // FIREBOLT_RIALTO_SERVER_GST_GENERIC_PLAYER_H_

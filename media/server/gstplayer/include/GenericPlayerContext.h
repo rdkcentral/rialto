@@ -34,12 +34,6 @@
 namespace firebolt::rialto::server
 {
 constexpr double kNoPendingPlaybackRate{0.0};
-enum class PendingBool
-{
-    NOT_PENDING,
-    PENDING_TRUE,
-    PENDING_FALSE
-};
 
 /**
  * @brief Structure used for video geometry
@@ -140,7 +134,7 @@ struct GenericPlayerContext
      * @brief Pending immediate output for MediaSourceType::VIDEO, it's possible we'll have to add
      *        a "pendingImmediateOutputForAudio" in the future.
      */
-    PendingBool pendingImmediateOutputForVideo{PendingBool::NOT_PENDING};
+    std::optional<bool> pendingImmediateOutputForVideo{};
 
     /**
      * @brief Last audio sample timestamps

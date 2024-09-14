@@ -41,8 +41,7 @@ void SetImmediateOutput::execute() const
 
     if (m_type == MediaSourceType::VIDEO)
     {
-        m_context.pendingImmediateOutputForVideo = m_immediateOutput ? PendingBool::PENDING_TRUE
-                                                                     : PendingBool::PENDING_FALSE;
+        m_context.pendingImmediateOutputForVideo = m_immediateOutput;
     }
     else
     {

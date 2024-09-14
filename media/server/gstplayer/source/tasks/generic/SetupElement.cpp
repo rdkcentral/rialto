@@ -206,7 +206,7 @@ void SetupElement::execute() const
             m_player.setVideoSinkRectangle();
         }
 
-        if (m_context.pendingImmediateOutputForVideo != PendingBool::NOT_PENDING)
+        if (m_context.pendingImmediateOutputForVideo.has_value())
         {
             m_player.setImmediateOutput();
         }
