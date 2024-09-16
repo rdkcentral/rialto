@@ -21,10 +21,12 @@
 #define GENERIC_TASKS_TESTS_BASE_H_
 
 #include "MediaCommon.h"
-#include <string>
 
 #include <gmock/gmock.h>
+#include <gst/gst.h>
 #include <gtest/gtest.h>
+
+#include <string>
 
 using ::testing::_;
 using ::testing::A;

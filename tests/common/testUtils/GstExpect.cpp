@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2024 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,8 +50,6 @@ void expectSetProperty(std::shared_ptr<firebolt::rialto::wrappers::GlibWrapperMo
     {
         EXPECT_CALL(*glibWrapperMock, gObjectSetStub(_, StrEq(propertyName.c_str()))).Times(1);
     }
-
-    EXPECT_CALL(*gstWrapperMock, gstObjectUnref(element)).Times(1);
 }
 
 template void expectSetProperty<bool>(std::shared_ptr<firebolt::rialto::wrappers::GlibWrapperMock> glibWrapperMock,
@@ -67,7 +65,6 @@ void expectPropertyDoesntExist(std::shared_ptr<firebolt::rialto::wrappers::GlibW
 {
     EXPECT_CALL(*glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(element), StrEq(propertyName.c_str())))
         .WillOnce(Return(nullptr));
-    EXPECT_CALL(*gstWrapperMock, gstObjectUnref(element)).Times(1);
 }
 
 } // namespace firebolt::rialto::server::testcommon

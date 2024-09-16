@@ -21,7 +21,6 @@
 #define FIREBOLT_RIALTO_SERVER_I_GST_GENERIC_PLAYER_PRIVATE_H_
 
 #include "IMediaPipeline.h"
-#include "ISinkPtr.h"
 
 #include <gst/app/gstappsrc.h>
 #include <gst/gst.h>
@@ -189,13 +188,45 @@ public:
     virtual void removeAutoAudioSinkChild(GObject *object) = 0;
 
     /**
+     * @brief Gets the video sink element child sink if present.
+     *        Only gets children for GstAutoVideoSink's.
+     *
+     * @param[in] sink    : Sink element to check.
+     *
+     * @retval Underlying child video sink or 'sink' if there are no children.
+     */
+    virtual GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) const = 0;
+
+    /**
+     * @brief Gets the audio sink element child sink if present.
+     *        Only gets children for GstAutoAudioSink's.
+     *
+     * @param[in] sink    : Sink element to check.
+     *
+     * @retval Underlying child audio sink or 'sink' if there are no children.
+     */
+    virtual GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) const = 0;
+
+    /**
      * @brief Gets the sink element for source type.
      *
+     * @param[out] pointerToUnref : When the user has finished with the returned sink
+     *                              then pointerToUnref should be unref'd by calling
+     *                              gstObjectUnref. However, only do this if the returned
+     *                              sink wasn't null...
+     *
+     *                              GstObject *pointerToUnref;
+     *                              GstElement *sink = getSink(pointerToUnref, mediaSourceType);
+     *                              if (sink)
+     *                              {
+     *                                // Make use of sink here, and then...
+     *                                gstObjectUnref(pointerToUnref);
+     *                              }
      * @param[in] mediaSourceType : the source type to obtain the sink for
      *
-     * @retval The sink, NULL if not found
+     * @retval The sink, NULL if not found. Do NOT unref this object
      */
-    virtual std::shared_ptr<ISinkPtr> getSink(const MediaSourceType &mediaSourceType) = 0;
+    virtual GstElement *getSink(GstObject *&pointerToUnref, const MediaSourceType &mediaSourceType) const = 0;
 
     /**
      * @brief Gets the decoder element for source type.

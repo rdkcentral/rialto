@@ -83,7 +83,6 @@ add_library(
         source/tasks/webAudio/WebAudioPlayerTaskFactory.cpp
         source/tasks/webAudio/WriteBuffer.cpp
 
-        source/SinkPtr.cpp
         source/GstCapabilities.cpp
         source/GstDecryptor.cpp
         source/GstDispatcherThread.cpp

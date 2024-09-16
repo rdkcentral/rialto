@@ -40,17 +40,19 @@ SetSync::~SetSync()
 void SetSync::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetSync");
-    auto sink{m_player.getSink(MediaSourceType::AUDIO)};
-    if (sink->getSink())
+    GstObject *objectToUnref;
+    GstElement *sink{m_player.getSink(objectToUnref, MediaSourceType::AUDIO)};
+    if (sink)
     {
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink->getSink()), "sync"))
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "sync"))
         {
-            m_glibWrapper->gObjectSet(sink->getSink(), "sync", m_sync, nullptr);
+            m_glibWrapper->gObjectSet(sink, "sync", m_sync, nullptr);
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to set sync property on sink '%s'", GST_ELEMENT_NAME(sink->getSink()));
+            RIALTO_SERVER_LOG_ERROR("Failed to set sync property on sink '%s'", GST_ELEMENT_NAME(sink));
         }
+        m_gstWrapper->gstObjectUnref(objectToUnref);
     }
     else
     {

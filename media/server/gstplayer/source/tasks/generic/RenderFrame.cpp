@@ -39,25 +39,26 @@ RenderFrame::RenderFrame(GenericPlayerContext &context,
 void RenderFrame::execute() const
 {
     static const std::string kStepOnPrerollPropertyName = "frame-step-on-preroll";
-    auto videoSink{m_player.getSink(MediaSourceType::VIDEO)};
+    GstObject *objectToUnref;
+    GstElement *videoSink{m_player.getSink(objectToUnref, MediaSourceType::VIDEO)};
 
-    if (videoSink->getSink())
+    if (videoSink)
     {
         // For AutoVideoSink we set properties on the child sink
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink->getSink()),
-                                                    kStepOnPrerollPropertyName.c_str()))
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), kStepOnPrerollPropertyName.c_str()))
         {
             RIALTO_SERVER_LOG_INFO("Rendering preroll");
 
-            m_glibWrapper->gObjectSet(videoSink->getSink(), kStepOnPrerollPropertyName.c_str(), 1, nullptr);
-            m_gstWrapper->gstElementSendEvent(videoSink->getSink(),
+            m_glibWrapper->gObjectSet(videoSink, kStepOnPrerollPropertyName.c_str(), 1, nullptr);
+            m_gstWrapper->gstElementSendEvent(videoSink,
                                               m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true, false));
-            m_glibWrapper->gObjectSet(videoSink->getSink(), kStepOnPrerollPropertyName.c_str(), 0, nullptr);
+            m_glibWrapper->gObjectSet(videoSink, kStepOnPrerollPropertyName.c_str(), 0, nullptr);
         }
         else
         {
             RIALTO_SERVER_LOG_ERROR("Video sink doesn't have property `%s`", kStepOnPrerollPropertyName.c_str());
         }
+        m_gstWrapper->gstObjectUnref(objectToUnref);
     }
     else
     {
