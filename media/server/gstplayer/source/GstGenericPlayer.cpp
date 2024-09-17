@@ -574,17 +574,21 @@ GstBuffer *GstGenericPlayer::createBuffer(const IMediaPipeline::MediaSegment &me
         GstBuffer *initVector = m_gstWrapper->gstBufferNewAllocate(nullptr, mediaSegment.getInitVector().size(), nullptr);
         m_gstWrapper->gstBufferFill(initVector, 0, mediaSegment.getInitVector().data(),
                                     mediaSegment.getInitVector().size());
-        auto subsamplesRawSize = mediaSegment.getSubSamples().size() * (sizeof(guint16) + sizeof(guint32));
-        guint8 *subsamplesRaw = static_cast<guint8 *>(m_glibWrapper->gMalloc(subsamplesRawSize));
-        GstByteWriter writer;
-        m_gstWrapper->gstByteWriterInitWithData(&writer, subsamplesRaw, subsamplesRawSize, FALSE);
-
-        for (const auto &subSample : mediaSegment.getSubSamples())
+        GstBuffer *subsamples{nullptr};
+        if (!mediaSegment.getSubSamples().empty())
         {
-            m_gstWrapper->gstByteWriterPutUint16Be(&writer, subSample.numClearBytes);
-            m_gstWrapper->gstByteWriterPutUint32Be(&writer, subSample.numEncryptedBytes);
+            auto subsamplesRawSize = mediaSegment.getSubSamples().size() * (sizeof(guint16) + sizeof(guint32));
+            guint8 *subsamplesRaw = static_cast<guint8 *>(m_glibWrapper->gMalloc(subsamplesRawSize));
+            GstByteWriter writer;
+            m_gstWrapper->gstByteWriterInitWithData(&writer, subsamplesRaw, subsamplesRawSize, FALSE);
+
+            for (const auto &subSample : mediaSegment.getSubSamples())
+            {
+                m_gstWrapper->gstByteWriterPutUint16Be(&writer, subSample.numClearBytes);
+                m_gstWrapper->gstByteWriterPutUint32Be(&writer, subSample.numEncryptedBytes);
+            }
+            subsamples = m_gstWrapper->gstBufferNewWrapped(subsamplesRaw, subsamplesRawSize);
         }
-        GstBuffer *subsamples = m_gstWrapper->gstBufferNewWrapped(subsamplesRaw, subsamplesRawSize);
 
         uint32_t crypt = 0;
         uint32_t skip = 0;
