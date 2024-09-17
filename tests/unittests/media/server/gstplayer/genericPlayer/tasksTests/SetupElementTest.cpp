@@ -41,6 +41,30 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingImmediateOutput)
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingLowLatency)
+{
+    shouldSetupAudioSinkElementWithPendingLowLatency();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingSync)
+{
+    shouldSetupAudioSinkElementWithPendingSync();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingSyncOff)
+{
+    shouldSetupAudioDecoderElementWithPendingSyncOff();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingStreamSyncMode)
+{
+    shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupVideoElementForAmlhalasink)
 {
     shouldSetupVideoElementAmlhalasink();

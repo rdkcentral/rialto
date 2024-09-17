@@ -80,6 +80,10 @@ protected:
     void shouldSetupVideoElementOnly();
     void shouldSetupVideoElementWithPendingGeometry();
     void shouldSetupVideoElementWithPendingImmediateOutput();
+    void shouldSetupAudioSinkElementWithPendingLowLatency();
+    void shouldSetupAudioSinkElementWithPendingSync();
+    void shouldSetupAudioDecoderElementWithPendingSyncOff();
+    void shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
     void shouldSetupVideoElementAmlhalasink();
     void shouldSetupAudioElementBrcmAudioSink();
     void shouldSetupVideoElementAutoVideoSink();

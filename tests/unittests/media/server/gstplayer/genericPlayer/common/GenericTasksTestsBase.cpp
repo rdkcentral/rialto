@@ -495,6 +495,66 @@ void GenericTasksTestsBase::shouldSetupVideoElementWithPendingImmediateOutput()
     expectSetupVideoElement();
 }
 
+void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingLowLatency()
+{
+    testContext->m_context.pendingLowLatency = true;
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillOnce(Return(TRUE));
+
+    // This is the extra EXPECT caused by setting pendingLowLatency...
+    EXPECT_CALL(testContext->m_gstPlayer, setLowLatency());
+    expectSetupAudioElement();
+}
+
+void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingSync()
+{
+    testContext->m_context.pendingSync = true;
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillOnce(Return(TRUE));
+
+    // This is the extra EXPECT caused by setting pendingSync...
+    EXPECT_CALL(testContext->m_gstPlayer, setSync());
+    expectSetupAudioElement();
+}
+
+void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingSyncOff()
+{
+    testContext->m_context.pendingSyncOff = true;
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillOnce(Return(TRUE));
+
+    // This is the extra EXPECT caused by setting pendingSyncOff...
+    EXPECT_CALL(testContext->m_gstPlayer, setSyncOff());
+    expectSetupAudioElement();
+}
+
+void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingStreamSyncMode()
+{
+    testContext->m_context.pendingStreamSyncMode = true;
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillOnce(Return(TRUE));
+
+    // This is the extra EXPECT caused by setting pendingStreamSyncMode...
+    EXPECT_CALL(testContext->m_gstPlayer, setStreamSyncMode());
+    expectSetupAudioElement();
+}
+
 void GenericTasksTestsBase::shouldSetupVideoElementAmlhalasink()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
