@@ -130,6 +130,7 @@ public:
     void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime) override;
     void processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
+    GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
 
 private:
     void scheduleNeedMediaData(GstAppSrc *src) override;
@@ -138,6 +139,7 @@ private:
     void scheduleVideoUnderflow() override;
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
+    bool setImmediateOutput() override;
     void notifyNeedMediaData(const MediaSourceType mediaSource) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachData(const firebolt::rialto::MediaSourceType mediaType) override;
@@ -159,11 +161,10 @@ private:
     void addAutoAudioSinkChild(GObject *object) override;
     void removeAutoVideoSinkChild(GObject *object) override;
     void removeAutoAudioSinkChild(GObject *object) override;
-    GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) override;
-    GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) override;
+    GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) const override;
+    GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) const override;
     void setPlaybinFlags(bool enableAudio = true) override;
     void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
-    GstElement *getSink(const MediaSourceType &mediaSourceType) override;
     GstElement *getDecoder(const MediaSourceType &mediaSourceType) override;
 
 private:
@@ -304,6 +305,7 @@ private:
      */
     std::unique_ptr<IGstProtectionMetadataHelper> m_protectionMetadataWrapper;
 };
+
 } // namespace firebolt::rialto::server
 
 #endif // FIREBOLT_RIALTO_SERVER_GST_GENERIC_PLAYER_H_

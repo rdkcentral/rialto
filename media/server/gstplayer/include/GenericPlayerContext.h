@@ -131,6 +131,11 @@ struct GenericPlayerContext
     double pendingPlaybackRate{kNoPendingPlaybackRate};
 
     /**
+     * @brief Pending immediate output for MediaSourceType::VIDEO
+     */
+    std::optional<bool> pendingImmediateOutputForVideo{};
+
+    /**
      * @brief Last audio sample timestamps
      * TODO(LLDEV-31012) Needed to detect audio stream underflow
      */

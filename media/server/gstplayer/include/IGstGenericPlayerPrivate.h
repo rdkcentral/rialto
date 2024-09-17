@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_I_GST_GENERIC_PLAYER_PRIVATE_H_
 
 #include "IMediaPipeline.h"
+
 #include <gst/app/gstappsrc.h>
 #include <gst/gst.h>
 #include <memory>
@@ -71,6 +72,13 @@ public:
      * @retval true on success.
      */
     virtual bool setVideoSinkRectangle() = 0;
+
+    /**
+     * @brief Sets immediate output. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setImmediateOutput() = 0;
 
     /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
@@ -187,7 +195,7 @@ public:
      *
      * @retval Underlying child video sink or 'sink' if there are no children.
      */
-    virtual GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) = 0;
+    virtual GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) const = 0;
 
     /**
      * @brief Gets the audio sink element child sink if present.
@@ -197,16 +205,16 @@ public:
      *
      * @retval Underlying child audio sink or 'sink' if there are no children.
      */
-    virtual GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) = 0;
+    virtual GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) const = 0;
 
     /**
      * @brief Gets the sink element for source type.
      *
      * @param[in] mediaSourceType : the source type to obtain the sink for
      *
-     * @retval The sink, NULL if not found
+     * @retval The sink, NULL if not found. Please call getObjectUnref() if it's non-null
      */
-    virtual GstElement *getSink(const MediaSourceType &mediaSourceType) = 0;
+    virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
 
     /**
      * @brief Gets the decoder element for source type.

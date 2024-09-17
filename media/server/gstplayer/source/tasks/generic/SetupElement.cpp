@@ -205,6 +205,11 @@ void SetupElement::execute() const
         {
             m_player.setVideoSinkRectangle();
         }
+
+        if (m_context.pendingImmediateOutputForVideo.has_value())
+        {
+            m_player.setImmediateOutput();
+        }
     }
 
     if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "amlhalasink"))

@@ -18,6 +18,7 @@
  */
 
 #include "SetLowLatency.h"
+#include "GstGenericPlayer.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
 
@@ -41,19 +42,18 @@ void SetLowLatency::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetLowLatency");
 
-    GstElement *sink = m_player.getSink(MediaSourceType::AUDIO);
+    GstElement *sink{m_player.getSink(MediaSourceType::AUDIO)};
     if (sink)
     {
-        GstElement *actualSink = m_player.getSinkChildIfAutoAudioSink(sink);
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "low-latency"))
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "low-latency"))
         {
-            m_glibWrapper->gObjectSet(actualSink, "low-latency", m_lowLatency, nullptr);
+            m_glibWrapper->gObjectSet(sink, "low-latency", m_lowLatency, nullptr);
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to set low-latency property on sink '%s'", GST_ELEMENT_NAME(actualSink));
+            RIALTO_SERVER_LOG_ERROR("Failed to set low-latency property on sink '%s'", GST_ELEMENT_NAME(sink));
         }
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+        m_gstWrapper->gstObjectUnref(sink);
     }
     else
     {

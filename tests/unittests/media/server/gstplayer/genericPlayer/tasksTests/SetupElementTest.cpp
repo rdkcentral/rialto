@@ -35,6 +35,12 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometry)
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingImmediateOutput)
+{
+    shouldSetupVideoElementWithPendingImmediateOutput();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupVideoElementForAmlhalasink)
 {
     shouldSetupVideoElementAmlhalasink();

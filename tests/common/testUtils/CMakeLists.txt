@@ -27,6 +27,7 @@ add_library(
         STATIC
 
         WebAudioTestCommon.cpp
+        GstExpect.cpp
     )
 
 target_include_directories(
@@ -36,4 +37,15 @@ target_include_directories(
         .
 
         PRIVATE
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:ExternalLibraryMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        ${GStreamerApp_INCLUDE_DIRS}
     )
+
+target_link_libraries (
+        RialtoTestCommonUtils
+
+        PRIVATE
+        GoogleTest::gtest
+        GoogleTest::gmock
+)

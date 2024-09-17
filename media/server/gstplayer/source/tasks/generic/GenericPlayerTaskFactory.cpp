@@ -297,10 +297,11 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createProcessAudioGap(Gen
                                                              discontinuityGap, audioAac);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetImmediateOutput(
-    IGstGenericPlayerPrivate &player, const firebolt::rialto::MediaSourceType &type, bool immediateOutput) const
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createSetImmediateOutput(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                   const firebolt::rialto::MediaSourceType &type,
+                                                   bool immediateOutput) const
 {
-    return std::make_unique<tasks::generic::SetImmediateOutput>(player, m_gstWrapper, m_glibWrapper, type,
-                                                                immediateOutput);
+    return std::make_unique<tasks::generic::SetImmediateOutput>(context, player, type, immediateOutput);
 }
 } // namespace firebolt::rialto::server
