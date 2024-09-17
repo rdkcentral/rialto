@@ -17,11 +17,13 @@
  * limitations under the License.
  */
 
+#include "GstExpect.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "Matchers.h"
 #include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
 #include "TimerMock.h"
+
 #include <gst/audio/audio.h>
 
 using testing::_;
@@ -29,6 +31,9 @@ using testing::ByMove;
 using testing::Invoke;
 using testing::Return;
 using testing::StrEq;
+
+using ::firebolt::rialto::server::testcommon::expectPropertyDoesntExist;
+using ::firebolt::rialto::server::testcommon::expectSetProperty;
 
 namespace
 {
@@ -64,6 +69,7 @@ const std::string kAutoVideoSinkTypeName{"GstAutoVideoSink"};
 const std::string kAutoAudioSinkTypeName{"GstAutoAudioSink"};
 const std::string kElementTypeName{"GenericSink"};
 constexpr bool kResetTime{true};
+const std::string kImmediateOutputStr{"immediate-output"};
 } // namespace
 
 bool operator==(const GstRialtoProtectionData &lhs, const GstRialtoProtectionData &rhs)
@@ -302,35 +308,86 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangleAutoVideoSink)
         .WillOnce(Return(kAutoVideoSinkTypeName.c_str()));
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("rectangle"))).WillOnce(Return(&m_rectangleSpec));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(autoVideoSinkChild, StrEq("rectangle")));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(GST_OBJECT(autoVideoSinkChild))).WillOnce(Return(autoVideoSinkChild));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_OBJECT(autoVideoSinkChild)));
     EXPECT_TRUE(m_sut->setVideoSinkRectangle());
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldGetSink)
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetImmediateOutputIfSinkIsNull)
 {
-    GstElement *videoSink{setAutoVideoSinkChild()};
-
+    modifyContext([&](GenericPlayerContext &context) { context.pendingImmediateOutputForVideo = true; });
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *element)
             {
                 GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                *elementPtr = videoSink;
+                *elementPtr = nullptr;
             }));
-    EXPECT_EQ(videoSink, m_sut->getSink(MediaSourceType::VIDEO));
-    gst_object_unref(videoSink);
+    EXPECT_FALSE(m_sut->setImmediateOutput());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetImmediateOutputIfPropertyDoesntExist)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.pendingImmediateOutputForVideo = true; });
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = m_realElement;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
+        .WillOnce(Return("testsink")); // Return any string except GstAutoVideoSink
+
+    expectPropertyDoesntExist(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kImmediateOutputStr);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
+    EXPECT_FALSE(m_sut->setImmediateOutput());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldSetImmediateOutput)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.pendingImmediateOutputForVideo = true; });
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = m_realElement;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
+        .WillOnce(Return("testsink")); // Return any string except GstAutoVideoSink
+
+    expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kImmediateOutputStr, true);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
+    EXPECT_TRUE(m_sut->setImmediateOutput());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldGetSink)
+{
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("video-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = m_realElement;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
+        .WillOnce(Return("testsink")); // Return any string except GstAutoVideoSink
+
+    EXPECT_EQ(m_realElement, m_sut->getSink(MediaSourceType::VIDEO));
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldFailToGetSinkForUnknownMediaSourceType)
 {
-    EXPECT_EQ(0, m_sut->getSink(MediaSourceType::UNKNOWN));
+    EXPECT_EQ(nullptr, m_sut->getSink(MediaSourceType::UNKNOWN));
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldFailToGetSinkIfStubNull)
 {
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _)).Times(1);
 
-    EXPECT_FALSE(m_sut->getSink(MediaSourceType::AUDIO));
+    EXPECT_EQ(nullptr, m_sut->getSink(MediaSourceType::AUDIO));
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldGetSinkChildAutoVideoSink)

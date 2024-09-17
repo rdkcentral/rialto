@@ -36,6 +36,7 @@
 #include "TimerFactoryMock.h"
 #include "WorkerThreadFactoryMock.h"
 #include "WorkerThreadMock.h"
+
 #include <gtest/gtest.h>
 #include <memory>
 

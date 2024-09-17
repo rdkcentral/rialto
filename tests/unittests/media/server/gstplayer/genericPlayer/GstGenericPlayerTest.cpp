@@ -354,7 +354,7 @@ TEST_F(GstGenericPlayerTest, shouldSetImmediateOutput)
     // (that would use the sink) is tested elsewhere.
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetImmediateOutput(_, MediaSourceType::VIDEO, true))
+    EXPECT_CALL(m_taskFactoryMock, createSetImmediateOutput(_, _, MediaSourceType::VIDEO, true))
         .WillOnce(Return(ByMove(std::move(task))));
 
     EXPECT_TRUE(m_sut->setImmediateOutput(MediaSourceType::VIDEO, true));

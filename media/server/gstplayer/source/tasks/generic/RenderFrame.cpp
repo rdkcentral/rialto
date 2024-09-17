@@ -19,9 +19,11 @@
 
 #include "tasks/generic/RenderFrame.h"
 #include "GenericPlayerContext.h"
+#include "GstGenericPlayer.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
+
 #include <gst/gst.h>
 
 namespace firebolt::rialto::server::tasks::generic
@@ -37,29 +39,25 @@ RenderFrame::RenderFrame(GenericPlayerContext &context,
 void RenderFrame::execute() const
 {
     static const std::string kStepOnPrerollPropertyName = "frame-step-on-preroll";
-    GstElement *videoSink = nullptr;
+    GstElement *videoSink{m_player.getSink(MediaSourceType::VIDEO)};
 
-    m_glibWrapper->gObjectGet(m_context.pipeline, "video-sink", &videoSink, nullptr);
     if (videoSink)
     {
         // For AutoVideoSink we set properties on the child sink
-        GstElement *actualVideoSink = m_player.getSinkChildIfAutoVideoSink(videoSink);
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualVideoSink),
-                                                    kStepOnPrerollPropertyName.c_str()))
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), kStepOnPrerollPropertyName.c_str()))
         {
             RIALTO_SERVER_LOG_INFO("Rendering preroll");
 
-            m_glibWrapper->gObjectSet(actualVideoSink, kStepOnPrerollPropertyName.c_str(), 1, nullptr);
-            m_gstWrapper->gstElementSendEvent(actualVideoSink,
+            m_glibWrapper->gObjectSet(videoSink, kStepOnPrerollPropertyName.c_str(), 1, nullptr);
+            m_gstWrapper->gstElementSendEvent(videoSink,
                                               m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true, false));
-            m_glibWrapper->gObjectSet(actualVideoSink, kStepOnPrerollPropertyName.c_str(), 0, nullptr);
+            m_glibWrapper->gObjectSet(videoSink, kStepOnPrerollPropertyName.c_str(), 0, nullptr);
         }
         else
         {
             RIALTO_SERVER_LOG_ERROR("Video sink doesn't have property `%s`", kStepOnPrerollPropertyName.c_str());
         }
-
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
+        m_gstWrapper->gstObjectUnref(videoSink);
     }
     else
     {

@@ -441,13 +441,15 @@ public:
     /**
      * @brief Creates a SetImmediateOutput task.
      *
+     * @param[in] context         : The GstPlayer context
      * @param[in] player          : The GstPlayer instance
      * @param[in] type            : The media source type
      * @param[in] immediateOutput : the value to set for immediate-output
      *
      * @retval the new ProcessAudioGap task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetImmediateOutput(IGstGenericPlayerPrivate &player,
+    virtual std::unique_ptr<IPlayerTask> createSetImmediateOutput(GenericPlayerContext &context,
+                                                                  IGstGenericPlayerPrivate &player,
                                                                   const firebolt::rialto::MediaSourceType &type,
                                                                   bool immediateOutput) const = 0;
 };
