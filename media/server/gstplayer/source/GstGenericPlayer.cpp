@@ -1017,6 +1017,136 @@ bool GstGenericPlayer::setWesterossinkSecondaryVideo()
     return result;
 }
 
+bool GstGenericPlayer::setLowLatency()
+{
+    bool result{false};
+    if (m_context.pendingLowLatency.has_value())
+    {
+        GstElement *sink{getSink(MediaSourceType::AUDIO)};
+        if (sink)
+        {
+            bool lowLatency{m_context.pendingLowLatency.value()};
+            RIALTO_SERVER_LOG_DEBUG("Set low-latency to %s", lowLatency ? "TRUE" : "FALSE");
+
+            GstElement *actualSink = getSinkChildIfAutoAudioSink(sink);
+            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "low-latency"))
+            {
+                gboolean lowLatencyGboolean{lowLatency ? TRUE : FALSE};
+                m_glibWrapper->gObjectSet(actualSink, "low-latency", m_lowLatency, nullptr);
+                result = true;
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to set low-latency property on sink '%s'", GST_ELEMENT_NAME(actualSink));
+            }
+            m_context.pendingLowLatency.reset();
+            m_gstWrapper->gstObjectUnref(sink);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending low-latency, sink is NULL");
+        }
+    }
+    return result;
+}
+
+bool GstGenericPlayer::setSync()
+{
+    bool result{false};
+    if (m_context.pendingSync.has_value())
+    {
+        GstElement *sink{getSink(MediaSourceType::AUDIO)};
+        if (sink)
+        {
+            bool sync{m_context.pendingSync.value()};
+            RIALTO_SERVER_LOG_DEBUG("Set sync to %s", sync ? "TRUE" : "FALSE");
+
+            GstElement *actualSink = getSinkChildIfAutoAudioSink(sink);
+            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "sync"))
+            {
+                gboolean syncGboolean{sync ? TRUE : FALSE};
+                m_glibWrapper->gObjectSet(actualSink, "sync", m_sync, nullptr);
+                result = true;
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to set sync property on sink '%s'", GST_ELEMENT_NAME(actualSink));
+            }
+            m_context.pendingSync.reset();
+            m_gstWrapper->gstObjectUnref(sink);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending sync, sink is NULL");
+        }
+    }
+    return result;
+}
+
+bool GstGenericPlayer::setSyncOff()
+{
+    bool result{false};
+    if (m_context.pendingSyncOff.has_value())
+    {
+        GstElement *decoder = getDecoder(MediaSourceType::AUDIO);
+        if (decoder)
+        {
+            bool syncOff{m_context.pendingSyncOff.value()};
+            RIALTO_SERVER_LOG_DEBUG("Set sync-off to %s", syncOff ? "TRUE" : "FALSE");
+
+            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "sync-off"))
+            {
+                gboolean syncOffGboolean{decoder ? TRUE : FALSE};
+                m_glibWrapper->gObjectSet(decoder, "sync-off", syncOff, nullptr);
+                result = true;
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to set sync-off property on decoder '%s'", GST_ELEMENT_NAME(decoder));
+            }
+            m_context.pendingSyncOff.reset();
+            m_gstWrapper->gstObjectUnref(decoder);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending sync-off, decoder is NULL");
+        }
+    }
+    return result;
+}
+
+bool GstGenericPlayer::setStreamSyncMode()
+{
+    bool result{false};
+    if (m_context.pendingStreamSyncMode.has_value())
+    {
+        GstElement *decoder = getDecoder(MediaSourceType::AUDIO);
+        if (decoder)
+        {
+            bool streamSyncMode{m_context.pendingStreamSyncMode.value()};
+            RIALTO_SERVER_LOG_DEBUG("Set stream-sync-mode to %s", streamSyncMode ? "TRUE" : "FALSE");
+
+            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "stream-sync-mode"))
+            {
+                gboolean streamSyncModeGboolean{decoder ? TRUE : FALSE};
+                m_glibWrapper->gObjectSet(decoder, "stream-sync-mode", streamSyncMode, nullptr);
+                result = true;
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to set stream-sync-mode property on decoder '%s'", GST_ELEMENT_NAME(decoder));
+            }
+            m_context.pendingStreamSyncMode.reset();
+            m_gstWrapper->gstObjectUnref(decoder);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending stream-sync-mode, decoder is NULL");
+        }
+    }
+    return result;
+}
+
 bool GstGenericPlayer::setErmContext()
 {
     bool result = false;

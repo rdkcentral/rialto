@@ -73,6 +73,34 @@ public:
     virtual bool setVideoSinkRectangle() = 0;
 
     /**
+     * @brief Sets the low latency property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setLowLatency() = 0;
+
+    /**
+     * @brief Sets the sync property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setSync() = 0;
+
+    /**
+     * @brief Sets the sync off property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setSyncOff() = 0;
+
+    /**
+     * @brief Sets the stream sync mode property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setStreamSyncMode() = 0;
+
+    /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
      */
     virtual void notifyNeedMediaData(const MediaSourceType mediaSource) = 0;

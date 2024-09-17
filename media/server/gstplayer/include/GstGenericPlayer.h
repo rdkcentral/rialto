@@ -138,6 +138,10 @@ private:
     void scheduleVideoUnderflow() override;
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
+    bool setLowLatency() override;
+    bool setSync() override;
+    bool setSyncOff() override;
+    bool setStreamSyncMode() override;
     void notifyNeedMediaData(const MediaSourceType mediaSource) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachData(const firebolt::rialto::MediaSourceType mediaType) override;
