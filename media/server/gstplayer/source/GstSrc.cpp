@@ -398,7 +398,7 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
     m_gstWrapper->gstAppSrcSetCallbacks(GST_APP_SRC(streamInfo.appSrc), callbacks, userData, nullptr);
 
     const std::unordered_map<firebolt::rialto::MediaSourceType, uint32_t> queueSize =
-        {{firebolt::rialto::MediaSourceType::VIDEO, 8 * 1024 * 1024},
+        {{firebolt::rialto::MediaSourceType::VIDEO, 16 * 1024 * 1024},
          {firebolt::rialto::MediaSourceType::AUDIO, 512 * 1024},
          {firebolt::rialto::MediaSourceType::SUBTITLE, 256 * 1024}};
 

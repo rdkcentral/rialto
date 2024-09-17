@@ -664,10 +664,12 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
             m_context.lastAudioSampleTimestamps = static_cast<int64_t>(GST_BUFFER_PTS(streamInfo.buffers.back()));
         }
 
+        const std::string kTypeStr{common::convertMediaSourceType(mediaType)};
         for (GstBuffer *buffer : streamInfo.buffers)
         {
             m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(streamInfo.appSrc), buffer);
         }
+        RIALTO_SERVER_LOG_INFO("Last pushed %s buffer pts: %ld", kTypeStr.c_str(), static_cast<int64_t>(GST_BUFFER_PTS(streamInfo.buffers.back())));
         streamInfo.buffers.clear();
         streamInfo.isDataPushed = true;
 
