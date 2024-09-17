@@ -90,10 +90,10 @@ public:
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSync, (GenericPlayerContext & context, IGstGenericPlayerPrivate & player, bool sync),
                 (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSyncOff, (IGstGenericPlayerPrivate & player, bool syncOff),
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSyncOff, (GenericPlayerContext & context, IGstGenericPlayerPrivate & player, bool syncOff),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetStreamSyncMode,
-                (IGstGenericPlayerPrivate & player, int32_t streamSyncMode), (const, override));
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate & player, int32_t streamSyncMode), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createShutdown, (IGstGenericPlayerPrivate & player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createStop,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));

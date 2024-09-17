@@ -310,7 +310,7 @@ public:
     /**
      * @brief Creates a SetSync task.
      *
-     * @param[in] context             : The GstGenericPlayer context
+     * @param[in] context       : The GstGenericPlayer context
      * @param[in] player        : The GstGenericPlayer instance
      * @param[in] sync          : The sync value to set
      *
@@ -321,22 +321,24 @@ public:
     /**
      * @brief Creates a SetSyncOff task.
      *
+     * @param[in] context       : The GstGenericPlayer context
      * @param[in] player        : The GstGenericPlayer instance
      * @param[in] syncOff       : The syncOff value to set
      *
      * @retval the new SetSyncOff task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetSyncOff(IGstGenericPlayerPrivate &player, bool syncOff) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetSyncOff(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool syncOff) const = 0;
 
     /**
      * @brief Creates a SetStreamSyncMode task.
      *
+     * @param[in] context           : The GstGenericPlayer context
      * @param[in] player            : The GstGenericPlayer instance
      * @param[in] streamSyncMode    : The streamSyncMode value to set
      *
      * @retval the new SetStreamSyncMode task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetStreamSyncMode(IGstGenericPlayerPrivate &player,
+    virtual std::unique_ptr<IPlayerTask> createSetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                                  int32_t streamSyncMode) const = 0;
 
     /**
@@ -383,6 +385,14 @@ public:
     virtual std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context, GstElement *typefind,
                                                                    const GstCaps *caps) const = 0;
 
+    /**
+     * @brief Creates an RenderFrame task.
+     *
+     * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player           : The GstPlayer instance
+     *
+     * @retval the new RenderFrame task instance.
+     */
     virtual std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context,
                                                            IGstGenericPlayerPrivate &player) const = 0;
 

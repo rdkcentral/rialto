@@ -17,51 +17,31 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/RenderFrame.h"
-#include "GenericPlayerContext.h"
-#include "GstGenericPlayer.h"
-#include "IGstGenericPlayerClient.h"
-#include "IGstWrapper.h"
+#include "RenderFrame.h"
 #include "RialtoServerLogging.h"
-
-#include <gst/gst.h>
 
 namespace firebolt::rialto::server::tasks::generic
 {
 RenderFrame::RenderFrame(GenericPlayerContext &context,
-                         std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                         std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                          IGstGenericPlayerPrivate &player)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper(glibWrapper), m_player{player}
+    : m_context{context}, m_player{player}
 {
+    RIALTO_SERVER_LOG_DEBUG("Constructing RenderFrame");
+}
+
+RenderFrame::~RenderFrame()
+{
+    RIALTO_SERVER_LOG_DEBUG("RenderFrame finished");
 }
 
 void RenderFrame::execute() const
 {
-    static const std::string kStepOnPrerollPropertyName = "frame-step-on-preroll";
-    GstElement *videoSink{m_player.getSink(MediaSourceType::VIDEO)};
+    RIALTO_SERVER_LOG_DEBUG("Executing RenderFrame");
 
-    if (videoSink)
+    m_context.pendingRenderFrame = true;
+    if (m_context.pipeline)
     {
-        // For AutoVideoSink we set properties on the child sink
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), kStepOnPrerollPropertyName.c_str()))
-        {
-            RIALTO_SERVER_LOG_INFO("Rendering preroll");
-
-            m_glibWrapper->gObjectSet(videoSink, kStepOnPrerollPropertyName.c_str(), 1, nullptr);
-            m_gstWrapper->gstElementSendEvent(videoSink,
-                                              m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true, false));
-            m_glibWrapper->gObjectSet(videoSink, kStepOnPrerollPropertyName.c_str(), 0, nullptr);
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_ERROR("Video sink doesn't have property `%s`", kStepOnPrerollPropertyName.c_str());
-        }
-        m_gstWrapper->gstObjectUnref(videoSink);
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_ERROR("There's no video sink");
+        m_player.setRenderFrame();
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

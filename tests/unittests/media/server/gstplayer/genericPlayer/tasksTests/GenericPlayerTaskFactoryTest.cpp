@@ -255,7 +255,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSync)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSyncOff)
 {
     constexpr bool kSyncOff{true};
-    auto task = m_sut.createSetSyncOff(m_gstPlayer, kSyncOff);
+    auto task = m_sut.createSetSyncOff(m_context, m_gstPlayer, kSyncOff);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetSyncOff &>(*task));
 }
@@ -263,7 +263,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSyncOff)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetStreamSyncMode)
 {
     constexpr int32_t kStreamSyncMode{1};
-    auto task = m_sut.createSetStreamSyncMode(m_gstPlayer, kStreamSyncMode);
+    auto task = m_sut.createSetStreamSyncMode(m_context, m_gstPlayer, kStreamSyncMode);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetStreamSyncMode &>(*task));
 }

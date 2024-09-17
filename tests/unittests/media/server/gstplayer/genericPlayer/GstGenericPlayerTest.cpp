@@ -710,7 +710,7 @@ TEST_F(GstGenericPlayerTest, shouldSetSyncOff)
     constexpr bool kSyncOff{true};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetSyncOff(_, kSyncOff)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createSetSyncOff(_, _, kSyncOff)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->setSyncOff(kSyncOff);
 }
@@ -720,7 +720,7 @@ TEST_F(GstGenericPlayerTest, shouldSetStreamSyncMode)
     constexpr int32_t kStreamSyncMode{1};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetStreamSyncMode(_, kStreamSyncMode)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createSetStreamSyncMode(_, _, kStreamSyncMode)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->setStreamSyncMode(kStreamSyncMode);
 }

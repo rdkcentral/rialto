@@ -109,6 +109,13 @@ public:
     virtual bool setStreamSyncMode() = 0;
 
     /**
+     * @brief Renders the frame. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setRenderFrame() = 0;
+
+    /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
      */
     virtual void notifyNeedMediaData(const MediaSourceType mediaSource) = 0;

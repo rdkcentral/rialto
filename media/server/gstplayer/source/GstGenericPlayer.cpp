@@ -1026,7 +1026,7 @@ bool GstGenericPlayer::setLowLatency()
             if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "low-latency"))
             {
                 gboolean lowLatencyGboolean{lowLatency ? TRUE : FALSE};
-                m_glibWrapper->gObjectSet(sink, "low-latency", lowLatency, nullptr);
+                m_glibWrapper->gObjectSet(sink, "low-latency", lowLatencyGboolean, nullptr);
                 result = true;
             }
             else
@@ -1058,7 +1058,7 @@ bool GstGenericPlayer::setSync()
             if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "sync"))
             {
                 gboolean syncGboolean{sync ? TRUE : FALSE};
-                m_glibWrapper->gObjectSet(sink, "sync", sync, nullptr);
+                m_glibWrapper->gObjectSet(sink, "sync", syncGboolean, nullptr);
                 result = true;
             }
             else
@@ -1090,7 +1090,7 @@ bool GstGenericPlayer::setSyncOff()
             if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "sync-off"))
             {
                 gboolean syncOffGboolean{decoder ? TRUE : FALSE};
-                m_glibWrapper->gObjectSet(decoder, "sync-off", syncOff, nullptr);
+                m_glibWrapper->gObjectSet(decoder, "sync-off", syncOffGboolean, nullptr);
                 result = true;
             }
             else
@@ -1116,13 +1116,13 @@ bool GstGenericPlayer::setStreamSyncMode()
         GstElement *decoder = getDecoder(MediaSourceType::AUDIO);
         if (decoder)
         {
-            bool streamSyncMode{m_context.pendingStreamSyncMode.value()};
-            RIALTO_SERVER_LOG_DEBUG("Set stream-sync-mode to %s", streamSyncMode ? "TRUE" : "FALSE");
+            int32_t streamSyncMode{m_context.pendingStreamSyncMode.value()};
+            RIALTO_SERVER_LOG_DEBUG("Set stream-sync-mode to %d", streamSyncMode);
 
             if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "stream-sync-mode"))
             {
-                gboolean streamSyncModeGboolean{decoder ? TRUE : FALSE};
-                m_glibWrapper->gObjectSet(decoder, "stream-sync-mode", streamSyncMode, nullptr);
+                gint streamSyncModeGint{static_cast<gint>(streamSyncMode)};
+                m_glibWrapper->gObjectSet(decoder, "stream-sync-mode", streamSyncModeGint, nullptr);
                 result = true;
             }
             else
@@ -1135,6 +1135,40 @@ bool GstGenericPlayer::setStreamSyncMode()
         else
         {
             RIALTO_SERVER_LOG_DEBUG("Pending stream-sync-mode, decoder is NULL");
+        }
+    }
+    return result;
+}
+
+bool GstGenericPlayer::setRenderFrame()
+{
+    bool result{false};
+    if (m_context.pendingRenderFrame)
+    {
+        static const std::string kStepOnPrerollPropertyName = "frame-step-on-preroll";
+        GstElement *sink{getSink(MediaSourceType::VIDEO)};
+        if (sink)
+        {
+            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), kStepOnPrerollPropertyName.c_str()))
+            {
+                RIALTO_SERVER_LOG_INFO("Rendering preroll");
+
+                m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 1, nullptr);
+                m_gstWrapper->gstElementSendEvent(sink,
+                                                m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true, false));
+                m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 0, nullptr);
+                result = true;
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Video sink doesn't have property `%s`", kStepOnPrerollPropertyName.c_str());
+            }
+            m_gstWrapper->gstObjectUnref(sink);
+            m_context.pendingRenderFrame = false;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending render frame, sink is NULL");
         }
     }
     return result;
@@ -1402,7 +1436,7 @@ bool GstGenericPlayer::setSyncOff(bool syncOff)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetSyncOff(*this, syncOff));
+        m_workerThread->enqueueTask(m_taskFactory->createSetSyncOff(m_context, *this, syncOff));
     }
     return true;
 }
@@ -1411,7 +1445,7 @@ bool GstGenericPlayer::setStreamSyncMode(int32_t streamSyncMode)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetStreamSyncMode(*this, streamSyncMode));
+        m_workerThread->enqueueTask(m_taskFactory->createSetStreamSyncMode(m_context, *this, streamSyncMode));
     }
     return true;
 }

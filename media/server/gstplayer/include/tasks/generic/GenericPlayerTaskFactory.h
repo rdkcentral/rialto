@@ -84,8 +84,8 @@ public:
                                                               const std::string &textTrackIdentifier) const override;
     std::unique_ptr<IPlayerTask> createSetLowLatency(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool lowLatency) const override;
     std::unique_ptr<IPlayerTask> createSetSync(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool sync) const override;
-    std::unique_ptr<IPlayerTask> createSetSyncOff(IGstGenericPlayerPrivate &player, bool syncOff) const override;
-    std::unique_ptr<IPlayerTask> createSetStreamSyncMode(IGstGenericPlayerPrivate &player,
+    std::unique_ptr<IPlayerTask> createSetSyncOff(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool syncOff) const override;
+    std::unique_ptr<IPlayerTask> createSetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                          int32_t streamSyncMode) const override;
     std::unique_ptr<IPlayerTask> createShutdown(IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createStop(GenericPlayerContext &context,

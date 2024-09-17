@@ -2470,8 +2470,7 @@ void GenericTasksTestsBase::shouldRenderFrame()
 
 void GenericTasksTestsBase::triggerRenderFrame()
 {
-    firebolt::rialto::server::tasks::generic::RenderFrame task{testContext->m_context, testContext->m_gstWrapper,
-                                                               testContext->m_glibWrapper, testContext->m_gstPlayer};
+    firebolt::rialto::server::tasks::generic::RenderFrame task{testContext->m_context, testContext->m_gstPlayer};
     task.execute();
 }
 
@@ -2853,8 +2852,7 @@ void GenericTasksTestsBase::shouldSetLowLatency()
 
 void GenericTasksTestsBase::triggerSetLowLatency()
 {
-    firebolt::rialto::server::tasks::generic::SetLowLatency task{testContext->m_context, testContext->m_gstPlayer, testContext->m_gstWrapper,
-                                                                 testContext->m_glibWrapper, true};
+    firebolt::rialto::server::tasks::generic::SetLowLatency task{testContext->m_context, testContext->m_gstPlayer, true};
     task.execute();
 }
 
@@ -2880,8 +2878,7 @@ void GenericTasksTestsBase::shouldSetSync()
 
 void GenericTasksTestsBase::triggerSetSync()
 {
-    firebolt::rialto::server::tasks::generic::SetSync task{testContext->m_context, testContext->m_gstPlayer, testContext->m_gstWrapper,
-                                                           testContext->m_glibWrapper, true};
+    firebolt::rialto::server::tasks::generic::SetSync task{testContext->m_context, testContext->m_gstPlayer, true};
     task.execute();
 }
 
@@ -2908,8 +2905,7 @@ void GenericTasksTestsBase::shouldSetSyncOff()
 
 void GenericTasksTestsBase::triggerSetSyncOff()
 {
-    firebolt::rialto::server::tasks::generic::SetSyncOff task{testContext->m_gstPlayer, testContext->m_gstWrapper,
-                                                              testContext->m_glibWrapper, true};
+    firebolt::rialto::server::tasks::generic::SetSyncOff task{testContext->m_context, testContext->m_gstPlayer, true};
     task.execute();
 }
 
@@ -2936,8 +2932,7 @@ void GenericTasksTestsBase::shouldSetStreamSyncMode()
 
 void GenericTasksTestsBase::triggerSetStreamSyncMode()
 {
-    firebolt::rialto::server::tasks::generic::SetStreamSyncMode task{testContext->m_gstPlayer, testContext->m_gstWrapper,
-                                                                     testContext->m_glibWrapper, true};
+    firebolt::rialto::server::tasks::generic::SetStreamSyncMode task{testContext->m_context, testContext->m_gstPlayer, true};
     task.execute();
 }
 

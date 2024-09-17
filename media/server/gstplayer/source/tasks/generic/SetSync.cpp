@@ -18,16 +18,12 @@
  */
 
 #include "SetSync.h"
-#include "GstGenericPlayer.h"
 #include "RialtoServerLogging.h"
-#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetSync::SetSync(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, bool sync)
-    : m_context(context), m_player(player), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_sync{sync}
+SetSync::SetSync(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool sync)
+    : m_context(context), m_player(player), m_sync{sync}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetSync");
 }
@@ -39,24 +35,10 @@ SetSync::~SetSync()
 
 void SetSync::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing SetSync");
-    GstElement *sink{m_player.getSink(MediaSourceType::AUDIO)};
-    if (sink)
+    m_context.pendingSync = m_sync;
+    if (m_context.pipeline)
     {
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "sync"))
-        {
-            m_glibWrapper->gObjectSet(sink, "sync", m_sync, nullptr);
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to set sync property on sink '%s'", GST_ELEMENT_NAME(sink));
-        }
-        m_gstWrapper->gstObjectUnref(sink);
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to set sync property, sink is NULL");
-        m_context.sync = m_sync;
+        m_player.setLowLatency();
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

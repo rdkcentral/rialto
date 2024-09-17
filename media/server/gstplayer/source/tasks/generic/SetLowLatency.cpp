@@ -18,17 +18,13 @@
  */
 
 #include "SetLowLatency.h"
-#include "GstGenericPlayer.h"
 #include "RialtoServerLogging.h"
-#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
 SetLowLatency::SetLowLatency(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                             const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                             const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                              bool lowLatency)
-    : m_context(context), m_player(player), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_lowLatency{lowLatency}
+    : m_context(context), m_player(player), m_lowLatency{lowLatency}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetLowLatency");
 }
@@ -42,23 +38,10 @@ void SetLowLatency::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetLowLatency");
 
-    GstElement *sink{m_player.getSink(MediaSourceType::AUDIO)};
-    if (sink)
+    m_context.pendingLowLatency = m_lowLatency;
+    if (m_context.pipeline)
     {
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "low-latency"))
-        {
-            m_glibWrapper->gObjectSet(sink, "low-latency", m_lowLatency, nullptr);
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to set low-latency property on sink '%s'", GST_ELEMENT_NAME(sink));
-        }
-        m_gstWrapper->gstObjectUnref(sink);
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_DEBUG("No sink attahced to the pipeline, queueing low latency");
-        m_context.lowLatency = m_lowLatency;
+        m_player.setLowLatency();
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic
