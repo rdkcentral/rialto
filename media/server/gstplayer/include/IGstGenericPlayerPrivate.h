@@ -210,23 +210,11 @@ public:
     /**
      * @brief Gets the sink element for source type.
      *
-     * @param[out] pointerToUnref : When the user has finished with the returned sink
-     *                              then pointerToUnref should be unref'd by calling
-     *                              gstObjectUnref. However, only do this if the returned
-     *                              sink wasn't null...
-     *
-     *                              GstObject *pointerToUnref;
-     *                              GstElement *sink = getSink(pointerToUnref, mediaSourceType);
-     *                              if (sink)
-     *                              {
-     *                                // Make use of sink here, and then...
-     *                                gstObjectUnref(pointerToUnref);
-     *                              }
      * @param[in] mediaSourceType : the source type to obtain the sink for
      *
-     * @retval The sink, NULL if not found. Do NOT unref this object
+     * @retval The sink, NULL if not found. Please call getObjectUnref() if it's non-null
      */
-    virtual GstElement *getSink(GstObject *&pointerToUnref, const MediaSourceType &mediaSourceType) const = 0;
+    virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
 
     /**
      * @brief Gets the decoder element for source type.

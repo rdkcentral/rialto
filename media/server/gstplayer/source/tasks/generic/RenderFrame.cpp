@@ -39,8 +39,7 @@ RenderFrame::RenderFrame(GenericPlayerContext &context,
 void RenderFrame::execute() const
 {
     static const std::string kStepOnPrerollPropertyName = "frame-step-on-preroll";
-    GstObject *objectToUnref;
-    GstElement *videoSink{m_player.getSink(objectToUnref, MediaSourceType::VIDEO)};
+    GstElement *videoSink{m_player.getSink(MediaSourceType::VIDEO)};
 
     if (videoSink)
     {
@@ -58,7 +57,7 @@ void RenderFrame::execute() const
         {
             RIALTO_SERVER_LOG_ERROR("Video sink doesn't have property `%s`", kStepOnPrerollPropertyName.c_str());
         }
-        m_gstWrapper->gstObjectUnref(objectToUnref);
+        m_gstWrapper->gstObjectUnref(videoSink);
     }
     else
     {

@@ -69,8 +69,6 @@
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
 
-using ::testing::SetArgReferee;
-
 namespace
 {
 std::shared_ptr<GenericTasksTestsContext> testContext;
@@ -2457,9 +2455,7 @@ void GenericTasksTestsBase::checkSegmentInfo()
 
 void GenericTasksTestsBase::shouldRenderFrame()
 {
-    GstObject *objectToUnref{GST_OBJECT(testContext->m_element)};
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(_, MediaSourceType::VIDEO))
-        .WillOnce(DoAll(SetArgReferee<0>(objectToUnref), Return(&testContext->m_childElement)));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(&testContext->m_childElement));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_childElement),
                                                                       StrEq("frame-step-on-preroll")))
         .WillOnce(Return(&testContext->m_paramSpec));
@@ -2469,7 +2465,7 @@ void GenericTasksTestsBase::shouldRenderFrame()
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true, false))
         .WillOnce(Return(&testContext->m_event));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_childElement, &testContext->m_event));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(objectToUnref));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(&testContext->m_childElement)));
 }
 
 void GenericTasksTestsBase::triggerRenderFrame()
@@ -2481,19 +2477,16 @@ void GenericTasksTestsBase::triggerRenderFrame()
 
 void GenericTasksTestsBase::shouldGetVideoSinkFailure()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(_, MediaSourceType::VIDEO))
-        .WillOnce(DoAll(SetArgReferee<0>(nullptr), Return(nullptr)));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(nullptr));
 }
 
 void GenericTasksTestsBase::shouldFindPropertyFailure()
 {
-    GstObject *objectToUnref{GST_OBJECT(testContext->m_element)};
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(_, MediaSourceType::VIDEO))
-        .WillOnce(DoAll(SetArgReferee<0>(objectToUnref), Return(testContext->m_element)));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(testContext->m_element));
     EXPECT_CALL(*testContext->m_glibWrapper,
                 gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq("frame-step-on-preroll")))
         .WillOnce(Return(nullptr));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(objectToUnref));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element)));
 }
 
 void GenericTasksTestsBase::shouldInvalidateActiveAudioRequests()
@@ -2839,26 +2832,21 @@ void GenericTasksTestsBase::triggerSetImmediateOutput()
 
 void GenericTasksTestsBase::shouldFailToSetLowLatencyIfSinkIsNull()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(_, MediaSourceType::AUDIO))
-        .WillOnce(DoAll(SetArgReferee<0>(nullptr), Return(nullptr)));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
 }
 
 void GenericTasksTestsBase::shouldFailToSetLowLatencyIfPropertyDoesntExist()
 {
-    GstObject *objectToUnref{GST_OBJECT(testContext->m_element)};
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(_, MediaSourceType::AUDIO))
-        .WillOnce(DoAll(SetArgReferee<0>(objectToUnref), Return(testContext->m_element)));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(objectToUnref)).Times(1);
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element))).Times(1);
 
     expectPropertyDoesntExist(kLowLatencyStr);
 }
 
 void GenericTasksTestsBase::shouldSetLowLatency()
 {
-    GstObject *objectToUnref{GST_OBJECT(testContext->m_element)};
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(_, MediaSourceType::AUDIO))
-        .WillOnce(DoAll(SetArgReferee<0>(objectToUnref), Return(testContext->m_element)));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(objectToUnref)).Times(1);
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element))).Times(1);
 
     expectSetProperty(kLowLatencyStr, kLowLatency);
 }
@@ -2872,26 +2860,22 @@ void GenericTasksTestsBase::triggerSetLowLatency()
 
 void GenericTasksTestsBase::shouldFailToSetSyncIfSinkIsNull()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(_, MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
 }
 
 void GenericTasksTestsBase::shouldFailToSetSyncIfPropertyDoesntExist()
 {
-    GstObject *objectToUnref{GST_OBJECT(testContext->m_element)};
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(_, MediaSourceType::AUDIO))
-        .WillOnce(DoAll(SetArgReferee<0>(objectToUnref), Return(testContext->m_element)));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(objectToUnref)).Times(1);
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element))).Times(1);
 
     expectPropertyDoesntExist(kSyncStr);
 }
 
 void GenericTasksTestsBase::shouldSetSync()
 {
-    GstObject *objectToUnref{GST_OBJECT(testContext->m_element)};
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(_, MediaSourceType::AUDIO))
-        .WillOnce(DoAll(SetArgReferee<0>(objectToUnref), Return(testContext->m_element)));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
     expectSetProperty(kSyncStr, kSync);
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(objectToUnref)).Times(1);
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element))).Times(1);
 }
 
 void GenericTasksTestsBase::triggerSetSync()

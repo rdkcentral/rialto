@@ -130,7 +130,7 @@ public:
     void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime) override;
     void processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
-    GstElement *getSink(GstObject *&pointerToUnref, const MediaSourceType &mediaSourceType) const override;
+    GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
 
 private:
     void scheduleNeedMediaData(GstAppSrc *src) override;

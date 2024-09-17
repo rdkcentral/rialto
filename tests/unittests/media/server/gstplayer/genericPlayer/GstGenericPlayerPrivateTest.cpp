@@ -308,7 +308,9 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangleAutoVideoSink)
         .WillOnce(Return(kAutoVideoSinkTypeName.c_str()));
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("rectangle"))).WillOnce(Return(&m_rectangleSpec));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(autoVideoSinkChild, StrEq("rectangle")));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(GST_OBJECT(autoVideoSinkChild))).WillOnce(Return(autoVideoSinkChild));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_OBJECT(autoVideoSinkChild)));
     EXPECT_TRUE(m_sut->setVideoSinkRectangle());
 }
 
@@ -373,23 +375,19 @@ TEST_F(GstGenericPlayerPrivateTest, shouldGetSink)
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
         .WillOnce(Return("testsink")); // Return any string except GstAutoVideoSink
 
-    GstObject *objectToUnref;
-    EXPECT_EQ(m_realElement, m_sut->getSink(objectToUnref, MediaSourceType::VIDEO));
-    EXPECT_EQ(GST_OBJECT(m_realElement), objectToUnref);
+    EXPECT_EQ(m_realElement, m_sut->getSink(MediaSourceType::VIDEO));
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldFailToGetSinkForUnknownMediaSourceType)
 {
-    GstObject *objectToUnref;
-    EXPECT_EQ(nullptr, m_sut->getSink(objectToUnref, MediaSourceType::UNKNOWN));
+    EXPECT_EQ(nullptr, m_sut->getSink(MediaSourceType::UNKNOWN));
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldFailToGetSinkIfStubNull)
 {
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _)).Times(1);
 
-    GstObject *objectToUnref;
-    EXPECT_EQ(nullptr, m_sut->getSink(objectToUnref, MediaSourceType::AUDIO));
+    EXPECT_EQ(nullptr, m_sut->getSink(MediaSourceType::AUDIO));
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldGetSinkChildAutoVideoSink)

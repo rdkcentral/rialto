@@ -131,8 +131,7 @@ struct GenericPlayerContext
     double pendingPlaybackRate{kNoPendingPlaybackRate};
 
     /**
-     * @brief Pending immediate output for MediaSourceType::VIDEO, it's possible we'll have to add
-     *        a "pendingImmediateOutputForAudio" in the future.
+     * @brief Pending immediate output for MediaSourceType::VIDEO
      */
     std::optional<bool> pendingImmediateOutputForVideo{};
 

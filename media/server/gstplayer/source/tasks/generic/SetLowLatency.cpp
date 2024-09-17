@@ -42,8 +42,7 @@ void SetLowLatency::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetLowLatency");
 
-    GstObject *objectToUnref;
-    GstElement *sink{m_player.getSink(objectToUnref, MediaSourceType::AUDIO)};
+    GstElement *sink{m_player.getSink(MediaSourceType::AUDIO)};
     if (sink)
     {
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "low-latency"))
@@ -54,7 +53,7 @@ void SetLowLatency::execute() const
         {
             RIALTO_SERVER_LOG_ERROR("Failed to set low-latency property on sink '%s'", GST_ELEMENT_NAME(sink));
         }
-        m_gstWrapper->gstObjectUnref(objectToUnref);
+        m_gstWrapper->gstObjectUnref(sink);
     }
     else
     {

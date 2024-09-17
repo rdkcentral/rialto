@@ -387,11 +387,10 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
     return true;
 }
 
-GstElement *GstGenericPlayer::getSink(GstObject *&pointerToUnref, const MediaSourceType &mediaSourceType) const
+GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) const
 {
     const char *kSinkName{nullptr};
     GstElement *sink{nullptr};
-    pointerToUnref = nullptr;
     switch (mediaSourceType)
     {
     case MediaSourceType::AUDIO:
@@ -412,11 +411,20 @@ GstElement *GstGenericPlayer::getSink(GstObject *&pointerToUnref, const MediaSou
         m_glibWrapper->gObjectGet(m_context.pipeline, kSinkName, &sink, nullptr);
         if (sink)
         {
-            pointerToUnref = GST_OBJECT(sink);
+            GstElement *autoSink{sink};
             if (firebolt::rialto::MediaSourceType::VIDEO == mediaSourceType)
-                sink = getSinkChildIfAutoVideoSink(sink);
+                autoSink = getSinkChildIfAutoVideoSink(sink);
             else if (firebolt::rialto::MediaSourceType::AUDIO == mediaSourceType)
-                sink = getSinkChildIfAutoAudioSink(sink);
+                autoSink = getSinkChildIfAutoAudioSink(sink);
+
+            // Is this an auto-sink?...
+            if (autoSink != sink)
+            {
+                m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+
+                // increase the reference count of the auto sink
+                sink = GST_ELEMENT(m_gstWrapper->gstObjectRef(GST_OBJECT(autoSink)));
+            }
         }
         else
         {
@@ -495,8 +503,7 @@ bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType
 bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutputRef)
 {
     bool returnValue{false};
-    GstObject *objectToUnref;
-    GstElement *sink{getSink(objectToUnref, mediaSourceType)};
+    GstElement *sink{getSink(mediaSourceType)};
     if (sink)
     {
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "immediate-output"))
@@ -508,7 +515,7 @@ bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType
         {
             RIALTO_SERVER_LOG_ERROR("immediate-output not supported in element %s", GST_ELEMENT_NAME(sink));
         }
-        m_gstWrapper->gstObjectUnref(objectToUnref); // Don't use sink again after this
+        m_gstWrapper->gstObjectUnref(sink);
     }
     else
     {
@@ -521,8 +528,7 @@ bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType
 bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
     bool returnValue{false};
-    GstObject *objectToUnref;
-    GstElement *sink{getSink(objectToUnref, mediaSourceType)};
+    GstElement *sink{getSink(mediaSourceType)};
     if (sink)
     {
         GstStructure *stats{nullptr};
@@ -549,7 +555,7 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
             }
             m_gstWrapper->gstStructureFree(stats);
         }
-        m_gstWrapper->gstObjectUnref(objectToUnref);
+        m_gstWrapper->gstObjectUnref(sink);
     }
 
     return returnValue;
@@ -948,8 +954,7 @@ void GstGenericPlayer::setEos(const firebolt::rialto::MediaSourceType &type)
 bool GstGenericPlayer::setVideoSinkRectangle()
 {
     bool result = false;
-    GstObject *objectToUnref;
-    GstElement *videoSink{getSink(objectToUnref, MediaSourceType::VIDEO)};
+    GstElement *videoSink{getSink(MediaSourceType::VIDEO)};
     if (videoSink)
     {
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
@@ -965,7 +970,7 @@ bool GstGenericPlayer::setVideoSinkRectangle()
         {
             RIALTO_SERVER_LOG_ERROR("Failed to set the video rectangle");
         }
-        m_gstWrapper->gstObjectUnref(objectToUnref);
+        m_gstWrapper->gstObjectUnref(videoSink);
     }
 
     return result;
@@ -976,8 +981,7 @@ bool GstGenericPlayer::setImmediateOutput()
     bool result{false};
     if (m_context.pendingImmediateOutputForVideo.has_value())
     {
-        GstObject *objectToUnref;
-        GstElement *sink{getSink(objectToUnref, MediaSourceType::VIDEO)};
+        GstElement *sink{getSink(MediaSourceType::VIDEO)};
         if (sink)
         {
             bool immediateOutput{m_context.pendingImmediateOutputForVideo.value()};
@@ -994,7 +998,7 @@ bool GstGenericPlayer::setImmediateOutput()
                 RIALTO_SERVER_LOG_ERROR("Failed to set immediate-output property on sink '%s'", GST_ELEMENT_NAME(sink));
             }
             m_context.pendingImmediateOutputForVideo.reset();
-            m_gstWrapper->gstObjectUnref(objectToUnref);
+            m_gstWrapper->gstObjectUnref(sink);
         }
         else
         {
@@ -1233,8 +1237,7 @@ bool GstGenericPlayer::setSync(bool sync)
 bool GstGenericPlayer::getSync(bool &sync)
 {
     bool returnValue{false};
-    GstObject *objectToUnref;
-    GstElement *sink{getSink(objectToUnref, MediaSourceType::AUDIO)};
+    GstElement *sink{getSink(MediaSourceType::AUDIO)};
     if (sink)
     {
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "sync"))
@@ -1246,7 +1249,7 @@ bool GstGenericPlayer::getSync(bool &sync)
         {
             RIALTO_SERVER_LOG_ERROR("Sync not supported in sink '%s'", GST_ELEMENT_NAME(sink));
         }
-        m_gstWrapper->gstObjectUnref(objectToUnref);
+        m_gstWrapper->gstObjectUnref(sink);
     }
     else
     {
