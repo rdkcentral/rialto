@@ -167,6 +167,7 @@ private:
     void removeAutoAudioSinkChild(GObject *object) override;
     void setPlaybinFlags(bool enableAudio = true) override;
     void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
+    GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
 
 private:
     /**
@@ -266,15 +267,6 @@ private:
      * @retval Underlying child audio sink or 'sink' if there are no children.
      */
     GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) const;
-
-    /**
-     * @brief Gets the sink element for source type.
-     *
-     * @param[in] mediaSourceType : the source type to obtain the sink for
-     *
-     * @retval The sink, NULL if not found. Please call getObjectUnref() if it's non-null
-     */
-    GstElement *getSink(const MediaSourceType &mediaSourceType) const;
 
     /**
      * @brief Gets the decoder element for source type.

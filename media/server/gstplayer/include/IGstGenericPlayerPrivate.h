@@ -223,6 +223,15 @@ public:
     virtual void removeAutoAudioSinkChild(GObject *object) = 0;
 
     /**
+     * @brief Gets the sink element for source type.
+     *
+     * @param[in] mediaSourceType : the source type to obtain the sink for
+     *
+     * @retval The sink, NULL if not found. Please call getObjectUnref() if it's non-null
+     */
+    virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
+
+    /**
      * @brief Sets the audio and video flags on the pipeline based on the input.
      *
      * @param[in] enableAudio : Whether to enable audio flags.
