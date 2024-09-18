@@ -2551,15 +2551,6 @@ void GenericTasksTestsBase::triggerRenderFrame()
     task.execute();
 }
 
-void GenericTasksTestsBase::shouldFindPropertyFailure()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(testContext->m_element));
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq("frame-step-on-preroll")))
-        .WillOnce(Return(nullptr));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element)));
-}
-
 void GenericTasksTestsBase::shouldInvalidateActiveAudioRequests()
 {
     EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::AUDIO));
@@ -2888,7 +2879,7 @@ void GenericTasksTestsBase::triggerFailToCastDolbyVisionSource()
     EXPECT_EQ(testContext->m_context.streamInfo.end(),
               testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO));
 }
-
+// TODO: PIPELINE NULL
 void GenericTasksTestsBase::shouldSetImmediateOutput()
 {
     EXPECT_CALL(testContext->m_gstPlayer, setImmediateOutput()).WillOnce(Return(true));
@@ -2899,123 +2890,58 @@ void GenericTasksTestsBase::triggerSetImmediateOutput()
     firebolt::rialto::server::tasks::generic::SetImmediateOutput task{testContext->m_context, testContext->m_gstPlayer,
                                                                       MediaSourceType::VIDEO, true};
     task.execute();
-}
 
-void GenericTasksTestsBase::shouldFailToSetLowLatencyIfSinkIsNull()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
-}
-
-void GenericTasksTestsBase::shouldFailToSetLowLatencyIfPropertyDoesntExist()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element))).Times(1);
-
-    expectPropertyDoesntExist(kLowLatencyStr);
+    EXPECT_EQ(testContext->m_context.pendingImmediateOutputForVideo, true);
 }
 
 void GenericTasksTestsBase::shouldSetLowLatency()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element))).Times(1);
-
-    expectSetProperty(kLowLatencyStr, kLowLatency);
+    EXPECT_CALL(testContext->m_gstPlayer, setLowLatency()).WillOnce(Return(true));
 }
 
 void GenericTasksTestsBase::triggerSetLowLatency()
 {
     firebolt::rialto::server::tasks::generic::SetLowLatency task{testContext->m_context, testContext->m_gstPlayer, true};
     task.execute();
-}
 
-void GenericTasksTestsBase::shouldFailToSetSyncIfSinkIsNull()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
-}
-
-void GenericTasksTestsBase::shouldFailToSetSyncIfPropertyDoesntExist()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element))).Times(1);
-
-    expectPropertyDoesntExist(kSyncStr);
+    EXPECT_EQ(testContext->m_context.pendingLowLatency, true);
 }
 
 void GenericTasksTestsBase::shouldSetSync()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
-    expectSetProperty(kSyncStr, kSync);
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element))).Times(1);
+    EXPECT_CALL(testContext->m_gstPlayer, setSync()).WillOnce(Return(true));
 }
 
 void GenericTasksTestsBase::triggerSetSync()
 {
     firebolt::rialto::server::tasks::generic::SetSync task{testContext->m_context, testContext->m_gstPlayer, true};
     task.execute();
-}
 
-void GenericTasksTestsBase::shouldFailToSetSyncOffIfDecoderIsNull()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
-}
-
-void GenericTasksTestsBase::shouldFailToSetSyncOffIfPropertyDoesntExist()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element))).Times(1);
-
-    expectPropertyDoesntExist(kSyncOffStr);
+    EXPECT_EQ(testContext->m_context.pendingSync, true);
 }
 
 void GenericTasksTestsBase::shouldSetSyncOff()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element))).Times(1);
-
-    expectSetProperty(kSyncOffStr, kSyncOff);
+    EXPECT_CALL(testContext->m_gstPlayer, setSyncOff()).WillOnce(Return(true));
 }
 
 void GenericTasksTestsBase::triggerSetSyncOff()
 {
     firebolt::rialto::server::tasks::generic::SetSyncOff task{testContext->m_context, testContext->m_gstPlayer, true};
     task.execute();
-}
 
-void GenericTasksTestsBase::shouldFailToSetStreamSyncModeIfDecoderIsNull()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
-}
-
-void GenericTasksTestsBase::shouldFailToSetStreamSyncModeIfPropertyDoesntExist()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element))).Times(1);
-
-    expectPropertyDoesntExist(kStreamSyncModeStr);
+    EXPECT_EQ(testContext->m_context.pendingSyncOff, true);
 }
 
 void GenericTasksTestsBase::shouldSetStreamSyncMode()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(testContext->m_element));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element))).Times(1);
-
-    expectSetProperty(kStreamSyncModeStr, kStreamSyncMode);
+    EXPECT_CALL(testContext->m_gstPlayer, setStreamSyncMode()).WillOnce(Return(true));
 }
 
 void GenericTasksTestsBase::triggerSetStreamSyncMode()
 {
-    firebolt::rialto::server::tasks::generic::SetStreamSyncMode task{testContext->m_context, testContext->m_gstPlayer, true};
+    firebolt::rialto::server::tasks::generic::SetStreamSyncMode task{testContext->m_context, testContext->m_gstPlayer, 1};
     task.execute();
-}
 
-template <typename T> void GenericTasksTestsBase::expectSetProperty(const std::string &propertyName, const T &value)
-{
-    firebolt::rialto::server::testcommon::expectSetProperty<T>(testContext->m_glibWrapper, testContext->m_gstWrapper,
-                                                               testContext->m_element, propertyName, value);
-}
-
-void GenericTasksTestsBase::expectPropertyDoesntExist(const std::string &propertyName)
-{
-    firebolt::rialto::server::testcommon::expectPropertyDoesntExist(testContext->m_glibWrapper, testContext->m_gstWrapper,
-                                                                    testContext->m_element, propertyName);
+    EXPECT_EQ(testContext->m_context.pendingStreamSyncMode, 1);
 }

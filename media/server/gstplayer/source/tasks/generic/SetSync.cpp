@@ -38,7 +38,7 @@ void SetSync::execute() const
     m_context.pendingSync = m_sync;
     if (m_context.pipeline)
     {
-        m_player.setLowLatency();
+        m_player.setSync();
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic
