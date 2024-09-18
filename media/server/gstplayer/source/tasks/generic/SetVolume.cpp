@@ -56,8 +56,6 @@ firebolt::rialto::wrappers::rgu_Ease convertEaseTypeToRguEase(EaseType easeType)
     default:
         throw std::invalid_argument("Unknown EaseType");
     }
-
-    return firebolt::rialto::wrappers::rgu_Ease::EaseLinear;
 }
 
 void SetVolume::execute() const
@@ -69,9 +67,11 @@ void SetVolume::execute() const
         RIALTO_SERVER_LOG_ERROR("Setting volume failed. Pipeline is NULL");
         return;
     }
+    bool isNormalVolumeChange = (m_volumeDuration == 0);
     GstElement *audioSink = m_player.getSink(firebolt::rialto::MediaSourceType::AUDIO);
 
-    if (audioSink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(audioSink), "audio-fade"))
+    if (!isNormalVolumeChange && audioSink &&
+        m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(audioSink), "audio-fade"))
     {
         gchar fadeStr[32];
         uint32_t scaledTarget = trunc(100 * m_targetVolume);
@@ -97,7 +97,7 @@ void SetVolume::execute() const
 
         m_glibWrapper->gObjectSet(audioSink, "audio-fade", fadeStr, nullptr);
     }
-    else if (m_rdkGstreamerUtilsWrapper->isSocAudioFadeSupported())
+    else if (!isNormalVolumeChange && m_rdkGstreamerUtilsWrapper->isSocAudioFadeSupported())
     {
         RIALTO_SERVER_LOG_DEBUG("SOC audio fading is supported, applying SOC audio fade");
         auto rguEaseType = convertEaseTypeToRguEase(m_easeType);

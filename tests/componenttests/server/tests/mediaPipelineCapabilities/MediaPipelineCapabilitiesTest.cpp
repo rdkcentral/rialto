@@ -35,7 +35,7 @@ constexpr int kNumPropertiesOnSink{3};
 const char *kPropertyName1 = "test-name-5";
 const char *kPropertyName2 = "test2";
 const char *kPropertyName3 = "prop";
-const char *kPropertyName4 = "audio-fade";
+const char *kAudioFade = "audio-fade";
 const GstElementFactoryListType kExpectedFactoryListType{
     GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
 }; // namespace
@@ -95,7 +95,7 @@ private:
     GList *m_listOfFactories{nullptr};
     GParamSpec m_dummyParams[kNumPropertiesOnSink];
     GParamSpec *m_dummyParamsPtr[kNumPropertiesOnSink];
-    std::vector<std::string> m_kParamNames{kPropertyName1, kPropertyName3, kPropertyName2, kPropertyName4};
+    std::vector<std::string> m_kParamNames{kPropertyName1, kPropertyName3, kPropertyName2, kAudioFade};
     GstElement m_object;
     GstElementFactory *m_elementFactory;
 };

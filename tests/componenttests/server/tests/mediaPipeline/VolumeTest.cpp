@@ -51,12 +51,24 @@ public:
                     *elementPtr = m_audioSink;
                 }));
 
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("audio-fade"))).WillOnce(Return(nullptr));
+        // Normal volume change when volumeDuration == 0
+        if (m_volumeDuration == 0)
+        {
+            EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).Times(0);
+            EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("audio-fade"))).Times(0);
 
-        EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(false));
+            EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
+        }
+        else
+        {
+            // Fade functionality when volumeDuration > 0
+            EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("audio-fade"))).WillOnce(Return(nullptr));
 
+            EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(false));
+
+            EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
+        }
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink));
-        EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
     }
 
     void willGetVolume()
@@ -81,6 +93,7 @@ public:
 private:
     GstElement *m_audioSink{nullptr};
     GParamSpec m_paramSpec{};
+    int m_volumeDuration{0};
 };
 
 /*

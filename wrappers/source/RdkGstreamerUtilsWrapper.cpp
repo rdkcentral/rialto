@@ -54,25 +54,24 @@ void RdkGstreamerUtilsWrapper::processAudioGap(GstElement *pipeline, gint64 gaps
     return rdk_gstreamer_utils::processAudioGap(pipeline, gapstartpts, gapduration, gapdiscontinuity, audioaac);
 }
 
-rdk_gstreamer_utils::rgu_Ease convertEaseType(firebolt::rialto::wrappers::EaseType ease)
+rdk_gstreamer_utils::rgu_Ease convertEaseType(firebolt::rialto::wrappers::rgu_Ease ease)
 {
     switch (ease)
     {
-    case firebolt::rialto::wrappers::EaseType::EASE_LINEAR:
+    case firebolt::rialto::wrappers::rgu_Ease::EaseLinear:
         return rdk_gstreamer_utils::rgu_Ease::EaseLinear;
-    case firebolt::rialto::wrappers::EaseType::EASE_IN_CUBIC:
+    case firebolt::rialto::wrappers::rgu_Ease::EaseInCubic:
         return rdk_gstreamer_utils::rgu_Ease::EaseInCubic;
-    case firebolt::rialto::wrappers::EaseType::EASE_OUT_CUBIC:
+    case firebolt::rialto::wrappers::rgu_Ease::EaseOutCubic:
         return rdk_gstreamer_utils::rgu_Ease::EaseOutCubic;
     default:
-        throw std::invalid_argument("Unknown EaseType");
+        throw std::invalid_argument("Unknown rgu_Ease");
     }
 }
 
 void RdkGstreamerUtilsWrapper::doAudioEasingonSoc(double target, uint32_t duration, rgu_Ease ease) const
 {
-    rdk_gstreamer_utils::rgu_Ease convertedEaseType =
-        convertEaseType(static_cast<firebolt::rialto::wrappers::EaseType>(ease));
+    rdk_gstreamer_utils::rgu_Ease convertedEaseType = convertEaseType(ease);
     return rdk_gstreamer_utils::doAudioEasingonSoc(target, duration, convertedEaseType);
 }
 

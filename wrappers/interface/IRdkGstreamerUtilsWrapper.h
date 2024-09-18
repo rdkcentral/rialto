@@ -58,13 +58,6 @@ enum rgu_Ease
     EaseCount
 };
 
-enum class EaseType
-{
-    EASE_LINEAR,
-    EASE_IN_CUBIC,
-    EASE_OUT_CUBIC
-};
-
 class IRdkGstreamerUtilsWrapper;
 class IRdkGstreamerUtilsWrapperFactory
 {

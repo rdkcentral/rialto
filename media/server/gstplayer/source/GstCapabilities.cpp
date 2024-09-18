@@ -221,7 +221,6 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
     // Scan all returned elements for the specified properties...
     std::unordered_set<std::string> propertiesToLookFor{propertyNames.begin(), propertyNames.end()};
     std::vector<std::string> propertiesFound;
-    bool isAudioFadeSupported{false};
     for (GList *iter = factories; iter != nullptr && !propertiesToLookFor.empty(); iter = iter->next)
     {
         GstElementFactory *factory = GST_ELEMENT_FACTORY(iter->data);
@@ -247,14 +246,6 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
                         RIALTO_SERVER_LOG_DEBUG("Found property '%s'", kPropName.c_str());
                         propertiesFound.push_back(kPropName);
                         propertiesToLookFor.erase(it);
-
-                        // Specifically checks if the "audio-fade" property is supported in the gstreamer element
-                        // If the "audio-fade" property is found among the element's properties, the flag `isAudioFadeSupported`
-                        // is set to true This flag is used later in the function to decide to check the property in SOC
-                        if (kPropName == "audio-fade")
-                        {
-                            isAudioFadeSupported = true;
-                        }
                     }
                 }
                 m_glibWrapper->gFree(props);
@@ -263,11 +254,14 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
         }
     }
 
-    if (!isAudioFadeSupported)
+    // Some sinks do not specifically support the "audio-fade" property, but the mechanism is supported through the use
+    // of the rdk_gstreamer_utils library. Check for audio fade support if the property is required and we haven't found it in the sinks.
+    if (propertiesToLookFor.find("audio-fade") != propertiesToLookFor.end())
     {
         bool socAudioFadeSupported = m_rdkGstreamerUtilsWrapper->isSocAudioFadeSupported();
         if (socAudioFadeSupported)
         {
+            RIALTO_SERVER_LOG_DEBUG("Audio fade property is supported by the SoC");
             propertiesFound.push_back("audio-fade"); // Add "audio-fade" if supported by SoC
         }
     }

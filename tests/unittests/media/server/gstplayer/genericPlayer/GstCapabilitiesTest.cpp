@@ -96,16 +96,6 @@ public:
         IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
         IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
         IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = nullptr;
-        if (m_elementFactory)
-        {
-            GstObject *parent = gst_object_get_parent(GST_OBJECT(m_elementFactory));
-            if (parent)
-            {
-                gst_object_unref(parent);
-            }
-            gst_object_unref(m_elementFactory);
-            m_elementFactory = nullptr;
-        }
     }
 
     void expectCapsToMimeMapping()
@@ -349,7 +339,29 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported)
 {
     expectGetSupportedPropertiesCommon();
 
-    // Params suppoted by the sink...
+    const int kNumParamsSupportedByServer{2};
+    GParamSpec dummySinkParams[kNumParamsSupportedByServer];
+    dummySinkParams[0].name = "test-name-123";
+    dummySinkParams[1].name = "test2";
+    GParamSpec *dummySinkParamsPtr[] = {&dummySinkParams[0], &dummySinkParams[1]};
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
+        .WillOnce(DoAll(SetArgPointee<1>(kNumParamsSupportedByServer), Return(dummySinkParamsPtr)));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(dummySinkParamsPtr)).Times(1);
+
+    std::vector<std::string> kParamNames{"test-name-123", "test2"};
+    std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
+
+    EXPECT_EQ(supportedProperties, kParamNames);
+
+    gst_plugin_feature_list_free(m_listOfFactories);
+    m_listOfFactories = nullptr;
+}
+
+TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithAudioFadeProperty)
+{
+    expectGetSupportedPropertiesCommon();
+
     const int kNumParamsSupportedByServer{2};
     GParamSpec dummySinkParams[kNumParamsSupportedByServer];
     dummySinkParams[0].name = "test-name-123";
@@ -361,10 +373,9 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported)
     EXPECT_CALL(*m_glibWrapperMock, gFree(dummySinkParamsPtr)).Times(1);
     EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(true));
 
-    // Params that the caller is asking about...
     std::vector<std::string> kParamNames{"test-name-123", "test2", "audio-fade"};
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
-    // this time we should find all the properties...
+
     EXPECT_EQ(supportedProperties, kParamNames);
 
     gst_plugin_feature_list_free(m_listOfFactories);
@@ -375,7 +386,6 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithNoPropertiesSupported)
 {
     expectGetSupportedPropertiesCommon();
 
-    // Params suppoted by the sink...
     const int kNumParamsSupportedByServer{2};
     GParamSpec dummySinkParams[kNumParamsSupportedByServer];
     dummySinkParams[0].name = "test3";
@@ -385,14 +395,12 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithNoPropertiesSupported)
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(kNumParamsSupportedByServer), Return(dummySinkParamsPtr)));
     EXPECT_CALL(*m_glibWrapperMock, gFree(dummySinkParamsPtr)).Times(1);
-    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(true));
-    // Params that the caller is asking about...
-    std::vector<std::string> kParamNames{"test-name-123", "test2"};
+    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(false));
+
+    std::vector<std::string> kParamNames{"test-name-123", "test2", "audio-fade"};
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
-    // this time we will not find the properties...
-    // isAudioSupported is initialised as false, as it doesn't go into the if statement of the element class it remains
-    // false - which is expected
-    EXPECT_EQ(supportedProperties, std::vector<std::string>{"audio-fade"});
+
+    EXPECT_EQ(supportedProperties, std::vector<std::string>{});
 
     gst_plugin_feature_list_free(m_listOfFactories);
     m_listOfFactories = nullptr;

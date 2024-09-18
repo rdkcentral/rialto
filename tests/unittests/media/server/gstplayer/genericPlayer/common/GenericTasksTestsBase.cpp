@@ -856,7 +856,8 @@ firebolt::rialto::wrappers::rgu_Ease convertEaseType(firebolt::rialto::EaseType 
     case EaseType::EASE_OUT_CUBIC:
         return firebolt::rialto::wrappers::rgu_Ease::EaseOutCubic;
     default:
-        throw std::invalid_argument("Invalid EaseType provided");
+        ADD_FAILURE() << "Invalid EaseType provided: " << static_cast<int>(easeType);
+        return firebolt::rialto::wrappers::rgu_Ease::EaseLinear;
     }
 }
 

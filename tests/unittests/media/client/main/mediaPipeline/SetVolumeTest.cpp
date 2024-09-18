@@ -52,6 +52,16 @@ TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeSuccess)
 }
 
 /**
+ * Test that setVolume returns success when only volume is passed, and ease type and duration are default.
+ */
+TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeWithNoEaseTypeAndDuration)
+{
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kTargetVolume, m_kVolumeDuration, m_kEaseType)).WillOnce(Return(true));
+
+    EXPECT_EQ(m_mediaPipeline->setVolume(m_kTargetVolume), true);
+}
+
+/**
  * Test that setVolume returns failure if the IPC API fails.
  */
 TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeFailure)
