@@ -22,8 +22,7 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetLowLatency::SetLowLatency(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                             bool lowLatency)
+SetLowLatency::SetLowLatency(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool lowLatency)
     : m_context(context), m_player(player), m_lowLatency{lowLatency}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetLowLatency");

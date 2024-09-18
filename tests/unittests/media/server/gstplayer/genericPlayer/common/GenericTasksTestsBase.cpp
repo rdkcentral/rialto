@@ -613,7 +613,8 @@ void GenericTasksTestsBase::shouldSetupAudioElementBrcmAudioSink()
                                             GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
         .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectType(testContext->m_element)).WillRepeatedly(Return(G_TYPE_PARAM));
     EXPECT_CALL(*testContext->m_glibWrapper, gSignalListIds(_, _))

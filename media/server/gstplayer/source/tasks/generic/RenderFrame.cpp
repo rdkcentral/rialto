@@ -22,8 +22,7 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-RenderFrame::RenderFrame(GenericPlayerContext &context,
-                         IGstGenericPlayerPrivate &player)
+RenderFrame::RenderFrame(GenericPlayerContext &context, IGstGenericPlayerPrivate &player)
     : m_context{context}, m_player{player}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing RenderFrame");

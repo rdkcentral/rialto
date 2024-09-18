@@ -29,8 +29,7 @@ namespace firebolt::rialto::server::tasks::generic
 class SetStreamSyncMode : public IPlayerTask
 {
 public:
-    SetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                               int32_t streamSyncMode);
+    SetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, int32_t streamSyncMode);
     ~SetStreamSyncMode() override;
     void execute() const override;
 

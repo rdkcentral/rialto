@@ -210,16 +210,6 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     std::map<GstElement *, std::vector<SegmentData>> initialPositions;
-
-    /**
-     * @brief Set if low latency is queued on the pipeline.
-     */
-    std::optional<bool> lowLatency{std::nullopt};
-
-    /**
-     * @brief Set if sync is queued on the pipeline.
-     */
-    std::optional<bool> sync{std::nullopt};
 };
 } // namespace firebolt::rialto::server
 

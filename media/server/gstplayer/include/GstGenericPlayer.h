@@ -130,7 +130,6 @@ public:
     void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime) override;
     void processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
-    GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
 
 private:
     void scheduleNeedMediaData(GstAppSrc *src) override;
@@ -166,11 +165,8 @@ private:
     void addAutoAudioSinkChild(GObject *object) override;
     void removeAutoVideoSinkChild(GObject *object) override;
     void removeAutoAudioSinkChild(GObject *object) override;
-    GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) const override;
-    GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) const override;
     void setPlaybinFlags(bool enableAudio = true) override;
     void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
-    GstElement *getDecoder(const MediaSourceType &mediaSourceType) override;
 
 private:
     /**
@@ -252,11 +248,42 @@ private:
     bool setCodecData(GstCaps *caps, const std::shared_ptr<CodecData> &codecData) const;
 
     /**
-     * @brief Gets the element from the pipeline that has type.
+     * @brief Gets the video sink element child sink if present.
+     *        Only gets children for GstAutoVideoSink's.
      *
-     * @retval The element or nullptr if not found.
+     * @param[in] sink    : Sink element to check.
+     *
+     * @retval Underlying child video sink or 'sink' if there are no children.
      */
-    GstElement *getElementFromPipeline(GstElementFactoryListType type) const;
+    GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) const;
+
+    /**
+     * @brief Gets the audio sink element child sink if present.
+     *        Only gets children for GstAutoAudioSink's.
+     *
+     * @param[in] sink    : Sink element to check.
+     *
+     * @retval Underlying child audio sink or 'sink' if there are no children.
+     */
+    GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) const;
+
+    /**
+     * @brief Gets the sink element for source type.
+     *
+     * @param[in] mediaSourceType : the source type to obtain the sink for
+     *
+     * @retval The sink, NULL if not found. Please call getObjectUnref() if it's non-null
+     */
+    GstElement *getSink(const MediaSourceType &mediaSourceType) const;
+
+    /**
+     * @brief Gets the decoder element for source type.
+     *
+     * @param[in] mediaSourceType : the source type to obtain the decoder for
+     *
+     * @retval The decoder, NULL if not found
+     */
+    GstElement *getDecoder(const MediaSourceType &mediaSourceType);
 
 private:
     /**

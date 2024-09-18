@@ -203,14 +203,12 @@ void GstGenericPlayerTestCommon::expectSetMessageCallback()
 
 void GstGenericPlayerTestCommon::expectGetDecoder(GstElement *element)
 {
-    //getContext([&](const GenericPlayerContext &m_context) { m_pipeline = m_context.pipeline; });
-
     EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
     EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(element));
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(element)).WillOnce(Return(m_factory));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                                            GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
+                                                                           GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
         .WillOnce(Return(TRUE));
     EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
@@ -225,7 +223,7 @@ void GstGenericPlayerTestCommon::expectGetSink(const std::string &sinkName, GstE
                 GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                 *elementPtr = elementObj;
             }));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(elementObj))).WillOnce(Return(m_kElementTypeName.c_str()));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(elementObj))).WillOnce(Return(kElementTypeName.c_str()));
 }
 
 void GstGenericPlayerTestCommon::expectNoDecoder()

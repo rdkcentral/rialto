@@ -299,13 +299,14 @@ public:
     /**
      * @brief Creates a SetLowLatency task.
      *
-     * @param[in] context             : The GstGenericPlayer context
+     * @param[in] context       : The GstGenericPlayer context
      * @param[in] player        : The GstGenericPlayer instance
      * @param[in] lowLatency    : The low latency value to set
      *
      * @retval the new SetLowLatency task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetLowLatency(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool lowLatency) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetLowLatency(GenericPlayerContext &context,
+                                                             IGstGenericPlayerPrivate &player, bool lowLatency) const = 0;
 
     /**
      * @brief Creates a SetSync task.
@@ -316,7 +317,8 @@ public:
      *
      * @retval the new SetSync task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetSync(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool sync) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetSync(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                       bool sync) const = 0;
 
     /**
      * @brief Creates a SetSyncOff task.
@@ -327,7 +329,8 @@ public:
      *
      * @retval the new SetSyncOff task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetSyncOff(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool syncOff) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetSyncOff(GenericPlayerContext &context,
+                                                          IGstGenericPlayerPrivate &player, bool syncOff) const = 0;
 
     /**
      * @brief Creates a SetStreamSyncMode task.
@@ -338,7 +341,8 @@ public:
      *
      * @retval the new SetStreamSyncMode task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+    virtual std::unique_ptr<IPlayerTask> createSetStreamSyncMode(GenericPlayerContext &context,
+                                                                 IGstGenericPlayerPrivate &player,
                                                                  int32_t streamSyncMode) const = 0;
 
     /**
@@ -386,10 +390,10 @@ public:
                                                                    const GstCaps *caps) const = 0;
 
     /**
-     * @brief Creates an RenderFrame task.
+     * @brief Creates a RenderFrame task.
      *
      * @param[in] context       : The GstGenericPlayer context
-     * @param[in] player           : The GstPlayer instance
+     * @param[in] player        : The GstPlayer instance
      *
      * @retval the new RenderFrame task instance.
      */

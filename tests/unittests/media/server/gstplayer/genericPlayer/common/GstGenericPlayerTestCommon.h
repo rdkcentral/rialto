@@ -48,11 +48,11 @@ using ::testing::StrictMock;
 
 namespace
 {
-    // Test constants
-    const std::string m_kElementTypeName{"GenericSink"};
-    const std::string m_kAudioSinkStr{"audio-sink"};
-    const std::string m_kVideoSinkStr{"video-sink"};
-}
+// Test constants
+const std::string kElementTypeName{"GenericSink"};
+const std::string kAudioSinkStr{"audio-sink"};
+const std::string kVideoSinkStr{"video-sink"};
+} // namespace
 
 class GstGenericPlayerTestCommon : public ::testing::Test
 {

@@ -63,11 +63,7 @@ public:
     MOCK_METHOD(void, addAutoAudioSinkChild, (GObject * object), (override));
     MOCK_METHOD(void, removeAutoVideoSinkChild, (GObject * object), (override));
     MOCK_METHOD(void, removeAutoAudioSinkChild, (GObject * object), (override));
-    MOCK_METHOD(GstElement *, getSinkChildIfAutoVideoSink, (GstElement * sink), (const, override));
-    MOCK_METHOD(GstElement *, getSinkChildIfAutoAudioSink, (GstElement * sink), (const, override));
-    MOCK_METHOD(GstElement *, getSink, (const MediaSourceType &mediaSourceType), (const, override));
     MOCK_METHOD(void, setPlaybinFlags, (bool enableAudio), (override));
-    MOCK_METHOD(GstElement *, getDecoder, (const MediaSourceType &mediaSourceType), (override));
 
     MOCK_METHOD(void, addAudioClippingToBuffer, (GstBuffer * buffer, uint64_t clippingStart, uint64_t clippingEnd),
                 (const, override));

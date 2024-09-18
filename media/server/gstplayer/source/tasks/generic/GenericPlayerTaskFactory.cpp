@@ -211,23 +211,28 @@ GenericPlayerTaskFactory::createSetTextTrackIdentifier(GenericPlayerContext &con
     return std::make_unique<tasks::generic::SetTextTrackIdentifier>(context, m_glibWrapper, textTrackIdentifier);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetLowLatency(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetLowLatency(GenericPlayerContext &context,
+                                                                           IGstGenericPlayerPrivate &player,
                                                                            bool lowLatency) const
 {
     return std::make_unique<tasks::generic::SetLowLatency>(context, player, lowLatency);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSync(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool sync) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSync(GenericPlayerContext &context,
+                                                                     IGstGenericPlayerPrivate &player, bool sync) const
 {
     return std::make_unique<tasks::generic::SetSync>(context, player, sync);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSyncOff(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool syncOff) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSyncOff(GenericPlayerContext &context,
+                                                                        IGstGenericPlayerPrivate &player,
+                                                                        bool syncOff) const
 {
     return std::make_unique<tasks::generic::SetSyncOff>(context, player, syncOff);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetStreamSyncMode(GenericPlayerContext &context,
+                                                                               IGstGenericPlayerPrivate &player,
                                                                                int32_t streamSyncMode) const
 {
     return std::make_unique<tasks::generic::SetStreamSyncMode>(context, player, streamSyncMode);

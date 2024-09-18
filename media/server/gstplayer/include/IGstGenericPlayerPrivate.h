@@ -109,7 +109,7 @@ public:
     virtual bool setStreamSyncMode() = 0;
 
     /**
-     * @brief Renders the frame. Called by the worker thread.
+     * @brief Sets frame rendering. Called by the worker thread.
      *
      * @retval true on success.
      */
@@ -221,44 +221,6 @@ public:
      * @param[in] object    : Element removed from the autoaudiosink.
      */
     virtual void removeAutoAudioSinkChild(GObject *object) = 0;
-
-    /**
-     * @brief Gets the video sink element child sink if present.
-     *        Only gets children for GstAutoVideoSink's.
-     *
-     * @param[in] sink    : Sink element to check.
-     *
-     * @retval Underlying child video sink or 'sink' if there are no children.
-     */
-    virtual GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) const = 0;
-
-    /**
-     * @brief Gets the audio sink element child sink if present.
-     *        Only gets children for GstAutoAudioSink's.
-     *
-     * @param[in] sink    : Sink element to check.
-     *
-     * @retval Underlying child audio sink or 'sink' if there are no children.
-     */
-    virtual GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) const = 0;
-
-    /**
-     * @brief Gets the sink element for source type.
-     *
-     * @param[in] mediaSourceType : the source type to obtain the sink for
-     *
-     * @retval The sink, NULL if not found. Please call getObjectUnref() if it's non-null
-     */
-    virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
-
-    /**
-     * @brief Gets the decoder element for source type.
-     *
-     * @param[in] mediaSourceType : the source type to obtain the decoder for
-     *
-     * @retval The decoder, NULL if not found
-     */
-    virtual GstElement *getDecoder(const MediaSourceType &mediaSourceType) = 0;
 
     /**
      * @brief Sets the audio and video flags on the pipeline based on the input.

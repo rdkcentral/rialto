@@ -1127,7 +1127,8 @@ bool GstGenericPlayer::setStreamSyncMode()
             }
             else
             {
-                RIALTO_SERVER_LOG_ERROR("Failed to set stream-sync-mode property on decoder '%s'", GST_ELEMENT_NAME(decoder));
+                RIALTO_SERVER_LOG_ERROR("Failed to set stream-sync-mode property on decoder '%s'",
+                                        GST_ELEMENT_NAME(decoder));
             }
             m_context.pendingStreamSyncMode.reset();
             m_gstWrapper->gstObjectUnref(decoder);
@@ -1154,8 +1155,8 @@ bool GstGenericPlayer::setRenderFrame()
                 RIALTO_SERVER_LOG_INFO("Rendering preroll");
 
                 m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 1, nullptr);
-                m_gstWrapper->gstElementSendEvent(sink,
-                                                m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true, false));
+                m_gstWrapper->gstElementSendEvent(sink, m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true,
+                                                                                      false));
                 m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 0, nullptr);
                 result = true;
             }
@@ -1417,10 +1418,10 @@ bool GstGenericPlayer::getSync(bool &sync)
         }
         m_gstWrapper->gstObjectUnref(sink);
     }
-    else if (m_context.sync.has_value())
+    else if (m_context.pendingSync.has_value())
     {
         RIALTO_SERVER_LOG_DEBUG("Returning queued value");
-        sync = m_context.sync.value();
+        sync = m_context.pendingSync.value();
         returnValue = true;
     }
     else
@@ -1457,6 +1458,12 @@ bool GstGenericPlayer::getStreamSyncMode(int32_t &streamSyncMode)
     if (decoder && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "stream-sync-mode"))
     {
         m_glibWrapper->gObjectGet(decoder, "stream-sync-mode", &streamSyncMode, nullptr);
+        returnValue = true;
+    }
+    else if (m_context.pendingStreamSyncMode.has_value())
+    {
+        RIALTO_SERVER_LOG_DEBUG("Returning queued value");
+        streamSyncMode = m_context.pendingStreamSyncMode.value();
         returnValue = true;
     }
     else
