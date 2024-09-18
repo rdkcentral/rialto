@@ -296,7 +296,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoRectangleAutoVideoSink)
                 *elementPtr = m_realElement;
             }));
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
-        .WillOnce(Return(kAutoAudioSinkTypeName.c_str()));
+        .WillOnce(Return(kAutoVideoSinkTypeName.c_str()));
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("rectangle"))).WillOnce(Return(&m_rectangleSpec));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(autoVideoSinkChild, StrEq("rectangle")));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(GST_OBJECT(autoVideoSinkChild))).WillOnce(Return(autoVideoSinkChild));
@@ -379,8 +379,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetLowLatencyAutoAudioSink)
 {
     modifyContext([&](GenericPlayerContext &context) { context.pendingLowLatency = true; });
 
-    GstElement *autoVideoSinkChild = setAutoAudioSinkChild();
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kVideoSinkStr), _))
+    GstElement *autoAudioSinkChild = setAutoAudioSinkChild();
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _))
         .WillOnce(Invoke(
             [&](gpointer object, const gchar *first_property_name, void *element)
             {
@@ -388,10 +388,12 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetLowLatencyAutoAudioSink)
                 *elementPtr = m_realElement;
             }));
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_realElement)))
-        .WillOnce(Return(kAutoVideoSinkTypeName.c_str()));
+        .WillOnce(Return(kAutoAudioSinkTypeName.c_str()));
 
-    expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, autoVideoSinkChild, kLowLatencyStr, true);
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(autoVideoSinkChild)).Times(1);
+    expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, autoAudioSinkChild, kLowLatencyStr, true);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(GST_OBJECT(autoAudioSinkChild))).WillOnce(Return(autoAudioSinkChild));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(autoAudioSinkChild));
     EXPECT_TRUE(m_sut->setLowLatency());
 }
 
