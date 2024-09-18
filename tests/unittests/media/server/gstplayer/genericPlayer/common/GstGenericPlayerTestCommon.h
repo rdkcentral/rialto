@@ -39,6 +39,7 @@
 
 #include <gtest/gtest.h>
 #include <memory>
+#include <string>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;

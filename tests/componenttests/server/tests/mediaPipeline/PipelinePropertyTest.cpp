@@ -168,16 +168,42 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
+    void willFailToSetSinkProperty()
+    {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, _, _))
+            .WillOnce(Invoke(
+                [&](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                    *elementPtr = m_element;
+                }));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element))).WillOnce(Return(kElementTypeName.c_str()));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, _)).WillOnce(Return(nullptr));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+    }
+
+    void willFailToSetDecoderProperty()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
+        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, _)).WillOnce(Return(TRUE));
+        EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
+        EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
+
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, _)).WillOnce(Return(nullptr));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+    }
+
     void willFailToGetSink()
     {
-        // Failure to get the sink will cause setting of sink properties to fail
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, _, _))
             .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     void willFailToGetDecoder()
     {
-        // Failure to get the decoder will cause setting of decoder properties to fail
         EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_ERROR));
         EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
@@ -604,7 +630,7 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetFailures)
     indicateAllSourcesAttached();
 
     // Step 4: Fail to set Immediate Output
-    willFailToGetSink();
+    willFailToSetSinkProperty();
     setImmediateOutputFailure();
 
     // Step 5: Fail to get Immediate Output
@@ -612,11 +638,11 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetFailures)
     getImmediateOutputFailure();
 
     // Step 6: Fail to set Low Latency
-    willFailToGetSink();
+    willFailToSetSinkProperty();
     setLowLatencyFailure();
 
     // Step 7: Fail to set Sync
-    willFailToGetSink();
+    willFailToSetSinkProperty();
     setSyncFailure();
 
     // Step 8: Fail to get Sync
@@ -624,11 +650,11 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetFailures)
     getSyncFailure();
 
     // Step 9: Fail to set Sync Off
-    willFailToGetDecoder();
+    willFailToSetDecoderProperty();
     setSyncOffFailure();
 
     // Step 10: Fail to set Stream Sync Mode
-    willFailToGetDecoder();
+    willFailToSetDecoderProperty();
     setStreamSyncModeFailure();
 
     // Step 11: Fail to get Stream Sync Mode

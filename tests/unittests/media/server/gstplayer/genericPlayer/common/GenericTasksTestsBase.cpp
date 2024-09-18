@@ -2880,7 +2880,7 @@ void GenericTasksTestsBase::triggerFailToCastDolbyVisionSource()
     EXPECT_EQ(testContext->m_context.streamInfo.end(),
               testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO));
 }
-// TODO: PIPELINE NULL
+
 void GenericTasksTestsBase::shouldSetImmediateOutput()
 {
     EXPECT_CALL(testContext->m_gstPlayer, setImmediateOutput()).WillOnce(Return(true));

@@ -21,6 +21,7 @@
 #include "Matchers.h"
 #include "PlayerTaskMock.h"
 #include <memory>
+#include <string>
 #include <utility>
 
 using ::testing::_;
