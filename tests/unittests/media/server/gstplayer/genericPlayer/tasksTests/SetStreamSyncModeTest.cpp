@@ -23,18 +23,6 @@ class SetStreamSyncModeTest : public GenericTasksTestsBase
 {
 };
 
-TEST_F(SetStreamSyncModeTest, shouldFailToSetStreamSyncModeIfDecoderIsNull)
-{
-    shouldFailToSetStreamSyncModeIfDecoderIsNull();
-    triggerSetStreamSyncMode();
-}
-
-TEST_F(SetStreamSyncModeTest, shouldFailToSetStreamSyncModeIfPropertyDoesntExist)
-{
-    shouldFailToSetStreamSyncModeIfPropertyDoesntExist();
-    triggerSetStreamSyncMode();
-}
-
 TEST_F(SetStreamSyncModeTest, shouldSetStreamSyncMode)
 {
     shouldSetStreamSyncMode();

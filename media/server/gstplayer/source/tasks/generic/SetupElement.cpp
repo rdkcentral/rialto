@@ -218,10 +218,13 @@ void SetupElement::execute() const
         {
             m_player.setVideoSinkRectangle();
         }
-
         if (m_context.pendingImmediateOutputForVideo.has_value())
         {
             m_player.setImmediateOutput();
+        }
+        if (m_context.pendingRenderFrame)
+        {
+            m_player.setRenderFrame();
         }
     }
     else if (isVideoDecoder(*m_gstWrapper, m_element))

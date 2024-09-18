@@ -381,14 +381,26 @@ void GenericTasksTestsBase::setContextSetupSourceFinished()
     testContext->m_context.setupSourceFinished = true;
 }
 
-void GenericTasksTestsBase::expectSetupVideoElement()
+void GenericTasksTestsBase::expectSetupVideoSinkElement()
 {
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
     EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
+}
+
+void GenericTasksTestsBase::expectSetupVideoDecoderElement()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
     EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectType(testContext->m_element)).WillRepeatedly(Return(G_TYPE_PARAM));
     EXPECT_CALL(*testContext->m_glibWrapper, gSignalListIds(_, _))
@@ -411,23 +423,46 @@ void GenericTasksTestsBase::expectSetupVideoElement()
     EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
 }
 
-void GenericTasksTestsBase::expectSetupAudioElement()
+void GenericTasksTestsBase::expectSetupAudioSinkElement()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-        .WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
     EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
-        .WillRepeatedly(Return(TRUE));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
+}
+
+void GenericTasksTestsBase::expectSetupAudioDecoderElement()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
         .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectType(testContext->m_element)).WillRepeatedly(Return(G_TYPE_PARAM));
     EXPECT_CALL(*testContext->m_glibWrapper, gSignalListIds(_, _))
@@ -450,17 +485,22 @@ void GenericTasksTestsBase::expectSetupAudioElement()
     EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
 }
 
-void GenericTasksTestsBase::shouldSetupVideoElementOnly()
+void GenericTasksTestsBase::shouldSetupVideoSinkElementOnly()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-        .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    expectSetupVideoElement();
+    expectSetupVideoSinkElement();
+}
+
+void GenericTasksTestsBase::shouldSetupVideoDecoderElementOnly()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
+    expectSetupVideoDecoderElement();
 }
 
 void GenericTasksTestsBase::shouldSetupVideoElementWithPendingGeometry()
@@ -468,15 +508,11 @@ void GenericTasksTestsBase::shouldSetupVideoElementWithPendingGeometry()
     testContext->m_context.pendingGeometry = kRectangle;
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-        .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     // This is the extra EXPECT caused by setting pendingGeometry...
     EXPECT_CALL(testContext->m_gstPlayer, setVideoSinkRectangle());
-    expectSetupVideoElement();
+    expectSetupVideoSinkElement();
 }
 
 void GenericTasksTestsBase::shouldSetupVideoElementWithPendingImmediateOutput()
@@ -484,15 +520,11 @@ void GenericTasksTestsBase::shouldSetupVideoElementWithPendingImmediateOutput()
     testContext->m_context.pendingImmediateOutputForVideo = true;
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-        .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     // This is the extra EXPECT caused by setting pendingImmediateOutputForVideo...
     EXPECT_CALL(testContext->m_gstPlayer, setImmediateOutput());
-    expectSetupVideoElement();
+    expectSetupVideoSinkElement();
 }
 
 void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingLowLatency()
@@ -500,14 +532,10 @@ void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingLowLatency()
     testContext->m_context.pendingLowLatency = true;
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-        .WillOnce(Return(TRUE));
 
     // This is the extra EXPECT caused by setting pendingLowLatency...
     EXPECT_CALL(testContext->m_gstPlayer, setLowLatency());
-    expectSetupAudioElement();
+    expectSetupAudioSinkElement();
 }
 
 void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingSync()
@@ -515,14 +543,10 @@ void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingSync()
     testContext->m_context.pendingSync = true;
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-        .WillOnce(Return(TRUE));
 
     // This is the extra EXPECT caused by setting pendingSync...
     EXPECT_CALL(testContext->m_gstPlayer, setSync());
-    expectSetupAudioElement();
+    expectSetupAudioSinkElement();
 }
 
 void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingSyncOff()
@@ -530,14 +554,10 @@ void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingSyncOff()
     testContext->m_context.pendingSyncOff = true;
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-        .WillOnce(Return(TRUE));
 
     // This is the extra EXPECT caused by setting pendingSyncOff...
     EXPECT_CALL(testContext->m_gstPlayer, setSyncOff());
-    expectSetupAudioElement();
+    expectSetupAudioDecoderElement();
 }
 
 void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingStreamSyncMode()
@@ -545,52 +565,55 @@ void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingStreamSyncM
     testContext->m_context.pendingStreamSyncMode = true;
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-        .WillOnce(Return(TRUE));
 
     // This is the extra EXPECT caused by setting pendingStreamSyncMode...
     EXPECT_CALL(testContext->m_gstPlayer, setStreamSyncMode());
-    expectSetupAudioElement();
+    expectSetupAudioDecoderElement();
+}
+
+void GenericTasksTestsBase::shouldSetupVideoSinkElementWithPendingRenderFrame()
+{
+    testContext->m_context.pendingRenderFrame = true;
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
+
+    // This is the extra EXPECT caused by setting pendingRenderFrame...
+    EXPECT_CALL(testContext->m_gstPlayer, setRenderFrame());
+    expectSetupVideoSinkElement();
 }
 
 void GenericTasksTestsBase::shouldSetupVideoElementAmlhalasink()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-        .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("wait-video")));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("a-wait-timeout")));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("disable-xrun")));
-    expectSetupVideoElement();
+    expectSetupVideoSinkElement();
 }
 
 void GenericTasksTestsBase::shouldSetupAudioElementBrcmAudioSink()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-        .WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("async")));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
     EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
-        .WillRepeatedly(Return(TRUE));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
         .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectType(testContext->m_element)).WillRepeatedly(Return(G_TYPE_PARAM));
     EXPECT_CALL(*testContext->m_glibWrapper, gSignalListIds(_, _))
@@ -651,12 +674,8 @@ void GenericTasksTestsBase::shouldSetupVideoElementAutoVideoSink()
         .WillOnce(Return(&testContext->m_iterator));
     EXPECT_CALL(*testContext->m_glibWrapper, gValueUnset(_));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIteratorFree(&testContext->m_iterator));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-        .WillOnce(Return(TRUE));
 
-    expectSetupVideoElement();
+    expectSetupVideoSinkElement();
 }
 
 void GenericTasksTestsBase::shouldSetupAudioElementAutoAudioSink()
@@ -685,15 +704,23 @@ void GenericTasksTestsBase::shouldSetupAudioElementAutoAudioSink()
     EXPECT_CALL(*testContext->m_glibWrapper, gValueUnset(_));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIteratorFree(&testContext->m_iterator));
 
-    expectSetupAudioElement();
+    expectSetupAudioSinkElement();
 }
 
-void GenericTasksTestsBase::shouldSetupAudioElementOnly()
+void GenericTasksTestsBase::shouldSetupAudioSinkElementOnly()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
 
-    expectSetupAudioElement();
+    expectSetupAudioSinkElement();
+}
+
+void GenericTasksTestsBase::shouldSetupAudioDecoderElementOnly()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+
+    expectSetupAudioDecoderElement();
 }
 
 void GenericTasksTestsBase::shouldSetVideoUnderflowCallback()
@@ -2515,28 +2542,13 @@ void GenericTasksTestsBase::checkSegmentInfo()
 
 void GenericTasksTestsBase::shouldRenderFrame()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(&testContext->m_childElement));
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_childElement),
-                                                                      StrEq("frame-step-on-preroll")))
-        .WillOnce(Return(&testContext->m_paramSpec));
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectSetStub(&testContext->m_childElement, StrEq("frame-step-on-preroll")))
-        .Times(2);
-    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true, false))
-        .WillOnce(Return(&testContext->m_event));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_childElement, &testContext->m_event));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(&testContext->m_childElement)));
+    EXPECT_CALL(testContext->m_gstPlayer, setRenderFrame()).WillOnce(Return(true));
 }
 
 void GenericTasksTestsBase::triggerRenderFrame()
 {
     firebolt::rialto::server::tasks::generic::RenderFrame task{testContext->m_context, testContext->m_gstPlayer};
     task.execute();
-}
-
-void GenericTasksTestsBase::shouldGetVideoSinkFailure()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::VIDEO)).WillOnce(Return(nullptr));
 }
 
 void GenericTasksTestsBase::shouldFindPropertyFailure()

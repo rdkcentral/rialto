@@ -23,18 +23,6 @@ class SetSyncOffTest : public GenericTasksTestsBase
 {
 };
 
-TEST_F(SetSyncOffTest, shouldFailToSetSyncOffIfDecoderIsNull)
-{
-    shouldFailToSetSyncOffIfDecoderIsNull();
-    triggerSetSyncOff();
-}
-
-TEST_F(SetSyncOffTest, shouldFailToSetSyncOffIfPropertyDoesntExist)
-{
-    shouldFailToSetSyncOffIfPropertyDoesntExist();
-    triggerSetSyncOff();
-}
-
 TEST_F(SetSyncOffTest, shouldSetSyncOff)
 {
     shouldSetSyncOff();

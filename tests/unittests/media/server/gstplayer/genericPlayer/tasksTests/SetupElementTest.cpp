@@ -25,7 +25,7 @@ class SetupElementTest : public GenericTasksTestsBase
 
 TEST_F(SetupElementTest, shouldSetupVideoElement)
 {
-    shouldSetupVideoElementOnly();
+    shouldSetupVideoSinkElementOnly();
     triggerSetupElement();
 }
 
@@ -62,6 +62,12 @@ TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingSyncOff)
 TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingStreamSyncMode)
 {
     shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingRenderFrame)
+{
+    shouldSetupVideoSinkElementWithPendingRenderFrame();
     triggerSetupElement();
 }
 
@@ -121,13 +127,13 @@ TEST_F(SetupElementTest, shouldSetupAudioElementWithMultpileChildSinkForAutoAudi
 
 TEST_F(SetupElementTest, shouldSetupAudioElement)
 {
-    shouldSetupAudioElementOnly();
+    shouldSetupAudioSinkElementOnly();
     triggerSetupElement();
 }
 
 TEST_F(SetupElementTest, shouldReportVideoUnderflow)
 {
-    shouldSetupVideoElementOnly();
+    shouldSetupVideoDecoderElementOnly();
     triggerSetupElement();
 
     shouldSetVideoUnderflowCallback();
@@ -136,7 +142,7 @@ TEST_F(SetupElementTest, shouldReportVideoUnderflow)
 
 TEST_F(SetupElementTest, shouldReportAudioUnderflow)
 {
-    shouldSetupAudioElementOnly();
+    shouldSetupAudioDecoderElementOnly();
     triggerSetupElement();
 
     shouldSetAudioUnderflowCallback();
