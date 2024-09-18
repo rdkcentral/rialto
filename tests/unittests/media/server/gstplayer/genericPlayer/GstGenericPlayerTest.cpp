@@ -652,6 +652,18 @@ TEST_F(GstGenericPlayerTest, shouldGetSync)
     EXPECT_EQ(sync, kSyncValue);
 }
 
+TEST_F(GstGenericPlayerTest, shouldGetPendingSyncIfNoSinkAvailable)
+{
+    const bool kSyncValue{true};
+
+    getContext([&](GenericPlayerContext &m_context) { m_context.pendingSync = kSyncValue; });
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _)).Times(1);
+
+    bool sync;
+    EXPECT_TRUE(m_sut->getSync(sync));
+    EXPECT_EQ(sync, kSyncValue);
+}
+
 TEST_F(GstGenericPlayerTest, shouldFailToGetSyncIfStubNull)
 {
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _)).Times(1);
@@ -698,6 +710,18 @@ TEST_F(GstGenericPlayerTest, shouldGetStreamSyncMode)
 
     expectGetDecoder(m_element);
     willGetElementProperty(kPropertyStr, kStreamSyncModeValue);
+
+    int32_t streamSyncMode;
+    EXPECT_TRUE(m_sut->getStreamSyncMode(streamSyncMode));
+    EXPECT_EQ(streamSyncMode, kStreamSyncModeValue);
+}
+
+TEST_F(GstGenericPlayerTest, shouldGetPendingStreamSyncModeIfNoSinkAvailable)
+{
+    constexpr int32_t kStreamSyncModeValue{1};
+
+    getContext([&](GenericPlayerContext &m_context) { m_context.pendingStreamSyncMode = kStreamSyncModeValue; });
+    expectNoDecoder();
 
     int32_t streamSyncMode;
     EXPECT_TRUE(m_sut->getStreamSyncMode(streamSyncMode));
