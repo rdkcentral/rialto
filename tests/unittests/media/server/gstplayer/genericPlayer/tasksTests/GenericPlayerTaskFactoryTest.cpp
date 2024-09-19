@@ -241,7 +241,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetMute)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetLowLatency)
 {
     constexpr bool kLowLatency{true};
-    auto task = m_sut.createSetLowLatency(m_gstPlayer, kLowLatency);
+    auto task = m_sut.createSetLowLatency(m_context, m_gstPlayer, kLowLatency);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetLowLatency &>(*task));
 }
@@ -249,7 +249,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetLowLatency)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSync)
 {
     constexpr bool kSync{true};
-    auto task = m_sut.createSetSync(m_gstPlayer, kSync);
+    auto task = m_sut.createSetSync(m_context, m_gstPlayer, kSync);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetSync &>(*task));
 }
@@ -257,7 +257,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSync)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSyncOff)
 {
     constexpr bool kSyncOff{true};
-    auto task = m_sut.createSetSyncOff(m_gstPlayer, kSyncOff);
+    auto task = m_sut.createSetSyncOff(m_context, m_gstPlayer, kSyncOff);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetSyncOff &>(*task));
 }
@@ -265,7 +265,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSyncOff)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetStreamSyncMode)
 {
     constexpr int32_t kStreamSyncMode{1};
-    auto task = m_sut.createSetStreamSyncMode(m_gstPlayer, kStreamSyncMode);
+    auto task = m_sut.createSetStreamSyncMode(m_context, m_gstPlayer, kStreamSyncMode);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetStreamSyncMode &>(*task));
 }
@@ -336,7 +336,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateProcessAudioGap)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetImmediateOutput)
 {
-    auto task = m_sut.createSetImmediateOutput(m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
+    auto task = m_sut.createSetImmediateOutput(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetImmediateOutput &>(*task));
 }

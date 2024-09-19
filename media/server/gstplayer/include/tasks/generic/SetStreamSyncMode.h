@@ -20,29 +20,22 @@
 #ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_STREAM_SYNC_MODE_H_
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_STREAM_SYNC_MODE_H_
 
-#include "IGlibWrapper.h"
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerPrivate.h"
-#include "IGstWrapper.h"
 #include "IPlayerTask.h"
-
-#include <memory>
 
 namespace firebolt::rialto::server::tasks::generic
 {
 class SetStreamSyncMode : public IPlayerTask
 {
 public:
-    explicit SetStreamSyncMode(IGstGenericPlayerPrivate &player,
-                               const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                               const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                               int32_t streamSyncMode);
+    SetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, int32_t streamSyncMode);
     ~SetStreamSyncMode() override;
     void execute() const override;
 
 private:
+    GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
-    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
-    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     int32_t m_streamSyncMode;
 };
 } // namespace firebolt::rialto::server::tasks::generic

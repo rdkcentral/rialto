@@ -20,28 +20,22 @@
 #ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_LOW_LATENCY_H_
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_LOW_LATENCY_H_
 
-#include "IGlibWrapper.h"
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerPrivate.h"
-#include "IGstWrapper.h"
 #include "IPlayerTask.h"
-
-#include <memory>
 
 namespace firebolt::rialto::server::tasks::generic
 {
 class SetLowLatency : public IPlayerTask
 {
 public:
-    explicit SetLowLatency(IGstGenericPlayerPrivate &player,
-                           const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                           const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, bool lowLatency);
+    SetLowLatency(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool lowLatency);
     ~SetLowLatency() override;
     void execute() const override;
 
 private:
+    GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
-    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
-    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     bool m_lowLatency;
 };
 } // namespace firebolt::rialto::server::tasks::generic

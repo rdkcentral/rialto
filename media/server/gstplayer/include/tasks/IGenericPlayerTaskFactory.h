@@ -301,42 +301,50 @@ public:
     /**
      * @brief Creates a SetLowLatency task.
      *
+     * @param[in] context       : The GstGenericPlayer context
      * @param[in] player        : The GstGenericPlayer instance
      * @param[in] lowLatency    : The low latency value to set
      *
      * @retval the new SetLowLatency task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetLowLatency(IGstGenericPlayerPrivate &player, bool lowLatency) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetLowLatency(GenericPlayerContext &context,
+                                                             IGstGenericPlayerPrivate &player, bool lowLatency) const = 0;
 
     /**
      * @brief Creates a SetSync task.
      *
+     * @param[in] context       : The GstGenericPlayer context
      * @param[in] player        : The GstGenericPlayer instance
      * @param[in] sync          : The sync value to set
      *
      * @retval the new SetSync task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetSync(IGstGenericPlayerPrivate &player, bool sync) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetSync(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                       bool sync) const = 0;
 
     /**
      * @brief Creates a SetSyncOff task.
      *
+     * @param[in] context       : The GstGenericPlayer context
      * @param[in] player        : The GstGenericPlayer instance
      * @param[in] syncOff       : The syncOff value to set
      *
      * @retval the new SetSyncOff task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetSyncOff(IGstGenericPlayerPrivate &player, bool syncOff) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetSyncOff(GenericPlayerContext &context,
+                                                          IGstGenericPlayerPrivate &player, bool syncOff) const = 0;
 
     /**
      * @brief Creates a SetStreamSyncMode task.
      *
+     * @param[in] context           : The GstGenericPlayer context
      * @param[in] player            : The GstGenericPlayer instance
      * @param[in] streamSyncMode    : The streamSyncMode value to set
      *
      * @retval the new SetStreamSyncMode task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetStreamSyncMode(IGstGenericPlayerPrivate &player,
+    virtual std::unique_ptr<IPlayerTask> createSetStreamSyncMode(GenericPlayerContext &context,
+                                                                 IGstGenericPlayerPrivate &player,
                                                                  int32_t streamSyncMode) const = 0;
 
     /**
@@ -383,6 +391,14 @@ public:
     virtual std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context, GstElement *typefind,
                                                                    const GstCaps *caps) const = 0;
 
+    /**
+     * @brief Creates a RenderFrame task.
+     *
+     * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstPlayer instance
+     *
+     * @retval the new RenderFrame task instance.
+     */
     virtual std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context,
                                                            IGstGenericPlayerPrivate &player) const = 0;
 
@@ -441,13 +457,15 @@ public:
     /**
      * @brief Creates a SetImmediateOutput task.
      *
+     * @param[in] context         : The GstPlayer context
      * @param[in] player          : The GstPlayer instance
      * @param[in] type            : The media source type
      * @param[in] immediateOutput : the value to set for immediate-output
      *
      * @retval the new ProcessAudioGap task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetImmediateOutput(IGstGenericPlayerPrivate &player,
+    virtual std::unique_ptr<IPlayerTask> createSetImmediateOutput(GenericPlayerContext &context,
+                                                                  IGstGenericPlayerPrivate &player,
                                                                   const firebolt::rialto::MediaSourceType &type,
                                                                   bool immediateOutput) const = 0;
 };

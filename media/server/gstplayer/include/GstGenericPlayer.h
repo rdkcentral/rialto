@@ -138,6 +138,12 @@ private:
     void scheduleVideoUnderflow() override;
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
+    bool setImmediateOutput() override;
+    bool setLowLatency() override;
+    bool setSync() override;
+    bool setSyncOff() override;
+    bool setStreamSyncMode() override;
+    bool setRenderFrame() override;
     void notifyNeedMediaData(const MediaSourceType mediaSource) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachData(const firebolt::rialto::MediaSourceType mediaType) override;
@@ -159,12 +165,9 @@ private:
     void addAutoAudioSinkChild(GObject *object) override;
     void removeAutoVideoSinkChild(GObject *object) override;
     void removeAutoAudioSinkChild(GObject *object) override;
-    GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) override;
-    GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) override;
     void setPlaybinFlags(bool enableAudio = true) override;
     void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
-    GstElement *getSink(const MediaSourceType &mediaSourceType) override;
-    GstElement *getDecoder(const MediaSourceType &mediaSourceType) override;
+    GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
 
 private:
     /**
@@ -245,6 +248,35 @@ private:
      */
     bool setCodecData(GstCaps *caps, const std::shared_ptr<CodecData> &codecData) const;
 
+    /**
+     * @brief Gets the video sink element child sink if present.
+     *        Only gets children for GstAutoVideoSink's.
+     *
+     * @param[in] sink    : Sink element to check.
+     *
+     * @retval Underlying child video sink or 'sink' if there are no children.
+     */
+    GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) const;
+
+    /**
+     * @brief Gets the audio sink element child sink if present.
+     *        Only gets children for GstAutoAudioSink's.
+     *
+     * @param[in] sink    : Sink element to check.
+     *
+     * @retval Underlying child audio sink or 'sink' if there are no children.
+     */
+    GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) const;
+
+    /**
+     * @brief Gets the decoder element for source type.
+     *
+     * @param[in] mediaSourceType : the source type to obtain the decoder for
+     *
+     * @retval The decoder, NULL if not found
+     */
+    GstElement *getDecoder(const MediaSourceType &mediaSourceType);
+
 private:
     /**
      * @brief The player context.
@@ -304,6 +336,7 @@ private:
      */
     std::unique_ptr<IGstProtectionMetadataHelper> m_protectionMetadataWrapper;
 };
+
 } // namespace firebolt::rialto::server
 
 #endif // FIREBOLT_RIALTO_SERVER_GST_GENERIC_PLAYER_H_

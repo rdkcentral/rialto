@@ -216,26 +216,31 @@ GenericPlayerTaskFactory::createSetTextTrackIdentifier(GenericPlayerContext &con
     return std::make_unique<tasks::generic::SetTextTrackIdentifier>(context, m_glibWrapper, textTrackIdentifier);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetLowLatency(IGstGenericPlayerPrivate &player,
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetLowLatency(GenericPlayerContext &context,
+                                                                           IGstGenericPlayerPrivate &player,
                                                                            bool lowLatency) const
 {
-    return std::make_unique<tasks::generic::SetLowLatency>(player, m_gstWrapper, m_glibWrapper, lowLatency);
+    return std::make_unique<tasks::generic::SetLowLatency>(context, player, lowLatency);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSync(IGstGenericPlayerPrivate &player, bool sync) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSync(GenericPlayerContext &context,
+                                                                     IGstGenericPlayerPrivate &player, bool sync) const
 {
-    return std::make_unique<tasks::generic::SetSync>(player, m_gstWrapper, m_glibWrapper, sync);
+    return std::make_unique<tasks::generic::SetSync>(context, player, sync);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSyncOff(IGstGenericPlayerPrivate &player, bool syncOff) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSyncOff(GenericPlayerContext &context,
+                                                                        IGstGenericPlayerPrivate &player,
+                                                                        bool syncOff) const
 {
-    return std::make_unique<tasks::generic::SetSyncOff>(player, m_gstWrapper, m_glibWrapper, syncOff);
+    return std::make_unique<tasks::generic::SetSyncOff>(context, player, syncOff);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetStreamSyncMode(IGstGenericPlayerPrivate &player,
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetStreamSyncMode(GenericPlayerContext &context,
+                                                                               IGstGenericPlayerPrivate &player,
                                                                                int32_t streamSyncMode) const
 {
-    return std::make_unique<tasks::generic::SetStreamSyncMode>(player, m_gstWrapper, m_glibWrapper, streamSyncMode);
+    return std::make_unique<tasks::generic::SetStreamSyncMode>(context, player, streamSyncMode);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createShutdown(IGstGenericPlayerPrivate &player) const
@@ -267,7 +272,7 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUpdatePlaybackGroup
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createRenderFrame(GenericPlayerContext &context,
                                                                          IGstGenericPlayerPrivate &player) const
 {
-    return std::make_unique<tasks::generic::RenderFrame>(context, m_gstWrapper, m_glibWrapper, player);
+    return std::make_unique<tasks::generic::RenderFrame>(context, player);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const
@@ -302,10 +307,11 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createProcessAudioGap(Gen
                                                              discontinuityGap, audioAac);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetImmediateOutput(
-    IGstGenericPlayerPrivate &player, const firebolt::rialto::MediaSourceType &type, bool immediateOutput) const
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createSetImmediateOutput(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                   const firebolt::rialto::MediaSourceType &type,
+                                                   bool immediateOutput) const
 {
-    return std::make_unique<tasks::generic::SetImmediateOutput>(player, m_gstWrapper, m_glibWrapper, type,
-                                                                immediateOutput);
+    return std::make_unique<tasks::generic::SetImmediateOutput>(context, player, type, immediateOutput);
 }
 } // namespace firebolt::rialto::server

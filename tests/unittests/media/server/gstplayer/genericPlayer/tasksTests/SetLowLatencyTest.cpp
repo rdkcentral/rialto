@@ -23,18 +23,6 @@ class SetLowLatencyTest : public GenericTasksTestsBase
 {
 };
 
-TEST_F(SetLowLatencyTest, shouldFailToSetLowLatencyIfSinkIsNull)
-{
-    shouldFailToSetLowLatencyIfSinkIsNull();
-    triggerSetLowLatency();
-}
-
-TEST_F(SetLowLatencyTest, shouldFailToSetLowLatencyIfPropertyDoesntExist)
-{
-    shouldFailToSetLowLatencyIfPropertyDoesntExist();
-    triggerSetLowLatency();
-}
-
 TEST_F(SetLowLatencyTest, shouldSetLowLatency)
 {
     shouldSetLowLatency();

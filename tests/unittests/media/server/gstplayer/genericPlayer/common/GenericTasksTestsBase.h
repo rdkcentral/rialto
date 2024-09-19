@@ -21,10 +21,12 @@
 #define GENERIC_TASKS_TESTS_BASE_H_
 
 #include "MediaCommon.h"
-#include <string>
 
 #include <gmock/gmock.h>
+#include <gst/gst.h>
 #include <gtest/gtest.h>
+
+#include <string>
 
 using ::testing::_;
 using ::testing::A;
@@ -75,15 +77,23 @@ protected:
     void setContextSetupSourceFinished();
 
     // SetupElement test methods
-    void shouldSetupVideoElementOnly();
+    void shouldSetupVideoSinkElementOnly();
+    void shouldSetupVideoDecoderElementOnly();
     void shouldSetupVideoElementWithPendingGeometry();
+    void shouldSetupVideoElementWithPendingImmediateOutput();
+    void shouldSetupAudioSinkElementWithPendingLowLatency();
+    void shouldSetupAudioSinkElementWithPendingSync();
+    void shouldSetupAudioDecoderElementWithPendingSyncOff();
+    void shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
+    void shouldSetupVideoSinkElementWithPendingRenderFrame();
     void shouldSetupVideoElementAmlhalasink();
     void shouldSetupAudioElementBrcmAudioSink();
     void shouldSetupVideoElementAutoVideoSink();
     void shouldSetupAudioElementAutoAudioSink();
     void shouldSetupVideoElementAutoVideoSinkWithMultipleChildren();
     void shouldSetupAudioElementAutoAudioSinkWithMultipleChildren();
-    void shouldSetupAudioElementOnly();
+    void shouldSetupAudioSinkElementOnly();
+    void shouldSetupAudioDecoderElementOnly();
     void shouldSetVideoUnderflowCallback();
     void triggerSetupElement();
     void triggerVideoUnderflowCallback();
@@ -249,32 +259,22 @@ protected:
 
     // immediate-output sink property test methods
     void shouldSetImmediateOutput();
-    void shouldFailToSetImmediateOutputIfSinkIsNull();
-    void shouldFailToSetImmediateOutputIfPropertyDoesntExist();
     void triggerSetImmediateOutput();
 
     // low-latency sink property test methods
     void shouldSetLowLatency();
-    void shouldFailToSetLowLatencyIfSinkIsNull();
-    void shouldFailToSetLowLatencyIfPropertyDoesntExist();
     void triggerSetLowLatency();
 
     // sync sink property test methods
     void shouldSetSync();
-    void shouldFailToSetSyncIfSinkIsNull();
-    void shouldFailToSetSyncIfPropertyDoesntExist();
     void triggerSetSync();
 
     // sync-off decoder property test methods
     void shouldSetSyncOff();
-    void shouldFailToSetSyncOffIfDecoderIsNull();
-    void shouldFailToSetSyncOffIfPropertyDoesntExist();
     void triggerSetSyncOff();
 
     // stream-sync-mode decoder property test methods
     void shouldSetStreamSyncMode();
-    void shouldFailToSetStreamSyncModeIfDecoderIsNull();
-    void shouldFailToSetStreamSyncModeIfPropertyDoesntExist();
     void triggerSetStreamSyncMode();
 
     // SetPosition test methods
@@ -356,8 +356,6 @@ protected:
     // RenderFrame test methods
     void shouldRenderFrame();
     void triggerRenderFrame();
-    void shouldGetVideoSinkFailure();
-    void shouldFindPropertyFailure();
     void shouldFlushAudioSrcSuccess();
     void shouldFlushAudioSrcFailure();
 
@@ -404,8 +402,10 @@ protected:
 
 private:
     // SetupElement helper methods
-    void expectSetupVideoElement();
-    void expectSetupAudioElement();
+    void expectSetupVideoSinkElement();
+    void expectSetupVideoDecoderElement();
+    void expectSetupAudioSinkElement();
+    void expectSetupAudioDecoderElement();
 
     // AttachSource helper methods
     void expectSetGenericVideoCaps();

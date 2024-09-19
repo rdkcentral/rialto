@@ -84,10 +84,13 @@ public:
                                                bool mute) const override;
     std::unique_ptr<IPlayerTask> createSetTextTrackIdentifier(GenericPlayerContext &context,
                                                               const std::string &textTrackIdentifier) const override;
-    std::unique_ptr<IPlayerTask> createSetLowLatency(IGstGenericPlayerPrivate &player, bool lowLatency) const override;
-    std::unique_ptr<IPlayerTask> createSetSync(IGstGenericPlayerPrivate &player, bool sync) const override;
-    std::unique_ptr<IPlayerTask> createSetSyncOff(IGstGenericPlayerPrivate &player, bool syncOff) const override;
-    std::unique_ptr<IPlayerTask> createSetStreamSyncMode(IGstGenericPlayerPrivate &player,
+    std::unique_ptr<IPlayerTask> createSetLowLatency(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                     bool lowLatency) const override;
+    std::unique_ptr<IPlayerTask> createSetSync(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                               bool sync) const override;
+    std::unique_ptr<IPlayerTask> createSetSyncOff(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                  bool syncOff) const override;
+    std::unique_ptr<IPlayerTask> createSetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                          int32_t streamSyncMode) const override;
     std::unique_ptr<IPlayerTask> createShutdown(IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createStop(GenericPlayerContext &context,
@@ -107,7 +110,7 @@ public:
     std::unique_ptr<IPlayerTask> createProcessAudioGap(GenericPlayerContext &context, std::int64_t position,
                                                        std::uint32_t duration, std::int64_t discontinuityGap,
                                                        bool audioAac) const override;
-    std::unique_ptr<IPlayerTask> createSetImmediateOutput(IGstGenericPlayerPrivate &player,
+    std::unique_ptr<IPlayerTask> createSetImmediateOutput(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                           const firebolt::rialto::MediaSourceType &type,
                                                           bool immediateOutput) const override;
 

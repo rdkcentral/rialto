@@ -36,14 +36,24 @@
 #include "TimerFactoryMock.h"
 #include "WorkerThreadFactoryMock.h"
 #include "WorkerThreadMock.h"
+
 #include <gtest/gtest.h>
 #include <memory>
+#include <string>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::wrappers;
 
 using ::testing::StrictMock;
+
+namespace
+{
+// Test constants
+const std::string kElementTypeName{"GenericSink"};
+const std::string kAudioSinkStr{"audio-sink"};
+const std::string kVideoSinkStr{"video-sink"};
+} // namespace
 
 class GstGenericPlayerTestCommon : public ::testing::Test
 {
@@ -100,6 +110,9 @@ protected:
     void expectSetUri();
     void expectCheckPlaySink();
     void expectSetMessageCallback();
+    void expectGetDecoder(GstElement *element);
+    void expectGetSink(const std::string &sinkName, GstElement *elementObj);
+    void expectNoDecoder();
 
 private:
     GstElement m_pipeline{};
@@ -123,6 +136,9 @@ private:
     GCallback m_deepElementAddedFunc;
     gulong m_deepElementAddedSignalId{2};
     GstObject m_sinkFactory{}; // GstElementFactory is an opaque data structure
+    GstIterator m_it{};
+    char m_dummy{0};
+    GstElementFactory *m_factory = reinterpret_cast<GstElementFactory *>(&m_dummy);
 };
 
 #endif // GST_GENERIC_PLAYER_TEST_COMMON_H_

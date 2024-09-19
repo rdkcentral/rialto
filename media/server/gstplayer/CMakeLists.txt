@@ -71,31 +71,31 @@ add_library(
         source/tasks/generic/Underflow.cpp
         source/tasks/generic/UpdatePlaybackGroup.cpp
 
-        source/tasks/webAudio/WebAudioPlayerTaskFactory.cpp
-        source/tasks/webAudio/Shutdown.cpp
-        source/tasks/webAudio/Stop.cpp
+        source/tasks/webAudio/Eos.cpp
+        source/tasks/webAudio/HandleBusMessage.cpp
         source/tasks/webAudio/Pause.cpp
         source/tasks/webAudio/Ping.cpp
         source/tasks/webAudio/Play.cpp
-        source/tasks/webAudio/Eos.cpp
         source/tasks/webAudio/SetCaps.cpp
         source/tasks/webAudio/SetVolume.cpp
+        source/tasks/webAudio/Shutdown.cpp
+        source/tasks/webAudio/Stop.cpp
+        source/tasks/webAudio/WebAudioPlayerTaskFactory.cpp
         source/tasks/webAudio/WriteBuffer.cpp
-        source/tasks/webAudio/HandleBusMessage.cpp
 
-        source/GstInit.cpp
+        source/GstCapabilities.cpp
+        source/GstDecryptor.cpp
         source/GstDispatcherThread.cpp
         source/GstGenericPlayer.cpp
-        source/GstWebAudioPlayer.cpp
+        source/GstInit.cpp
+        source/GstLogForwarding.cpp
         source/GstProtectionMetadata.cpp
         source/GstProtectionMetadataHelper.cpp
         source/GstSrc.cpp
+        source/GstTextTrackSink.cpp
+        source/GstWebAudioPlayer.cpp
         source/Utils.cpp
         source/WorkerThread.cpp
-        source/GstCapabilities.cpp
-        source/GstDecryptor.cpp
-        source/GstTextTrackSink.cpp
-        source/GstLogForwarding.cpp
         )
 
 target_include_directories(

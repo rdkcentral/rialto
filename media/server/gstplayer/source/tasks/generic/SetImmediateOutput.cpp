@@ -23,12 +23,9 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetImmediateOutput::SetImmediateOutput(IGstGenericPlayerPrivate &player,
-                                       const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                       const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+SetImmediateOutput::SetImmediateOutput(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                        const MediaSourceType &type, bool immediateOutput)
-    : m_player(player), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_type{type}, m_immediateOutput{
-                                                                                                immediateOutput}
+    : m_context{context}, m_player(player), m_type{type}, m_immediateOutput{immediateOutput}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetImmediateOutput");
 }
@@ -42,28 +39,18 @@ void SetImmediateOutput::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetImmediateOutput for %s source", common::convertMediaSourceType(m_type));
 
-    GstElement *sink = m_player.getSink(m_type);
-    if (sink)
+    if (m_type == MediaSourceType::VIDEO)
     {
-        // For AutoVideoSink we use properties on the child sink
-        GstElement *actualSink{sink};
-        if (MediaSourceType::VIDEO == m_type)
-            actualSink = m_player.getSinkChildIfAutoVideoSink(sink);
-
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(actualSink), "immediate-output"))
-        {
-            gboolean immediateOutput{m_immediateOutput};
-            m_glibWrapper->gObjectSet(actualSink, "immediate-output", immediateOutput, nullptr);
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to set immediate-output property on sink '%s'", GST_ELEMENT_NAME(actualSink));
-        }
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(sink));
+        m_context.pendingImmediateOutputForVideo = m_immediateOutput;
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to set immediate-output property, sink is NULL");
+        RIALTO_SERVER_LOG_ERROR("SetImmediateOutput not currently supported for non-video");
+    }
+
+    if (m_context.pipeline)
+    {
+        m_player.setImmediateOutput();
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

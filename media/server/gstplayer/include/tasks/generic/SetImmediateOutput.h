@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_IMMEDIATE_OUTPUT_H_
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_IMMEDIATE_OUTPUT_H_
 
+#include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
@@ -32,17 +33,14 @@ namespace firebolt::rialto::server::tasks::generic
 class SetImmediateOutput : public IPlayerTask
 {
 public:
-    explicit SetImmediateOutput(IGstGenericPlayerPrivate &player,
-                                const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+    explicit SetImmediateOutput(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                 const MediaSourceType &type, bool immediateOutput);
     ~SetImmediateOutput() override;
     void execute() const override;
 
 private:
+    GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
-    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
-    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     const MediaSourceType m_type;
     bool m_immediateOutput;
 };

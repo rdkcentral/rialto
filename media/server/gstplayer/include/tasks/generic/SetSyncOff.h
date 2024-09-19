@@ -20,28 +20,22 @@
 #ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_SYNC_OFF_H_
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_SYNC_OFF_H_
 
-#include "IGlibWrapper.h"
+#include "GenericPlayerContext.h"
 #include "IGstGenericPlayerPrivate.h"
-#include "IGstWrapper.h"
 #include "IPlayerTask.h"
-
-#include <memory>
 
 namespace firebolt::rialto::server::tasks::generic
 {
 class SetSyncOff : public IPlayerTask
 {
 public:
-    explicit SetSyncOff(IGstGenericPlayerPrivate &player,
-                        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                        const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, bool syncOff);
+    SetSyncOff(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool syncOff);
     ~SetSyncOff() override;
     void execute() const override;
 
 private:
+    GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
-    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
-    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     bool m_syncOff;
 };
 } // namespace firebolt::rialto::server::tasks::generic
