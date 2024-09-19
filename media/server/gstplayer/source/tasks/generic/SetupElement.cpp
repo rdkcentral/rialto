@@ -196,22 +196,6 @@ void SetupElement::execute() const
             m_gstWrapper->gstIteratorFree(sinks);
     }
 
-    GstElementFactory *elementFactory = m_gstWrapper->gstElementGetFactory(m_element);
-    if (elementFactory &&
-        m_gstWrapper->gstElementFactoryListIsType(elementFactory,
-                                                  GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-    {
-        if (!m_context.pendingGeometry.empty())
-        {
-            m_player.setVideoSinkRectangle();
-        }
-
-        if (m_context.pendingImmediateOutputForVideo.has_value())
-        {
-            m_player.setImmediateOutput();
-        }
-    }
-
     if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "amlhalasink"))
     {
         // Wait for video so that the audio aligns at the starting point with timeout of 4000ms.
@@ -228,7 +212,22 @@ void SetupElement::execute() const
         m_glibWrapper->gObjectSet(m_element, "async", TRUE, nullptr);
     }
 
-    if (isVideoDecoder(*m_gstWrapper, m_element))
+    if (isVideoSink(*m_gstWrapper, m_element))
+    {
+        if (!m_context.pendingGeometry.empty())
+        {
+            m_player.setVideoSinkRectangle();
+        }
+        if (m_context.pendingImmediateOutputForVideo.has_value())
+        {
+            m_player.setImmediateOutput();
+        }
+        if (m_context.pendingRenderFrame)
+        {
+            m_player.setRenderFrame();
+        }
+    }
+    else if (isVideoDecoder(*m_gstWrapper, m_element))
     {
         std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
         if (!underflowSignalName.empty())
@@ -244,6 +243,26 @@ void SetupElement::execute() const
         {
             m_glibWrapper->gSignalConnect(m_element, underflowSignalName.c_str(), G_CALLBACK(audioUnderflowCallback),
                                           &m_player);
+        }
+
+        if (m_context.pendingSyncOff.has_value())
+        {
+            m_player.setSyncOff();
+        }
+        if (m_context.pendingStreamSyncMode.has_value())
+        {
+            m_player.setStreamSyncMode();
+        }
+    }
+    else if (isAudioSink(*m_gstWrapper, m_element))
+    {
+        if (m_context.pendingLowLatency.has_value())
+        {
+            m_player.setLowLatency();
+        }
+        if (m_context.pendingSync.has_value())
+        {
+            m_player.setSync();
         }
     }
 

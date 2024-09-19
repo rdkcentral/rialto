@@ -19,14 +19,11 @@
 
 #include "SetSyncOff.h"
 #include "RialtoServerLogging.h"
-#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetSyncOff::SetSyncOff(IGstGenericPlayerPrivate &player,
-                       const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                       const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, bool syncOff)
-    : m_player(player), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_syncOff{syncOff}
+SetSyncOff::SetSyncOff(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool syncOff)
+    : m_context(context), m_player(player), m_syncOff{syncOff}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetSyncOff");
 }
@@ -40,18 +37,10 @@ void SetSyncOff::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetSyncOff");
 
-    GstElement *decoder = m_player.getDecoder(MediaSourceType::AUDIO);
-    if (decoder && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "sync-off"))
+    m_context.pendingSyncOff = m_syncOff;
+    if (m_context.pipeline)
     {
-        m_glibWrapper->gObjectSet(decoder, "sync-off", m_syncOff, nullptr);
+        m_player.setSyncOff();
     }
-    else
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to set sync-off property on decoder '%s'",
-                                (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
-    }
-
-    if (decoder)
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(decoder));
 }
 } // namespace firebolt::rialto::server::tasks::generic

@@ -77,16 +77,23 @@ protected:
     void setContextSetupSourceFinished();
 
     // SetupElement test methods
-    void shouldSetupVideoElementOnly();
+    void shouldSetupVideoSinkElementOnly();
+    void shouldSetupVideoDecoderElementOnly();
     void shouldSetupVideoElementWithPendingGeometry();
     void shouldSetupVideoElementWithPendingImmediateOutput();
+    void shouldSetupAudioSinkElementWithPendingLowLatency();
+    void shouldSetupAudioSinkElementWithPendingSync();
+    void shouldSetupAudioDecoderElementWithPendingSyncOff();
+    void shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
+    void shouldSetupVideoSinkElementWithPendingRenderFrame();
     void shouldSetupVideoElementAmlhalasink();
     void shouldSetupAudioElementBrcmAudioSink();
     void shouldSetupVideoElementAutoVideoSink();
     void shouldSetupAudioElementAutoAudioSink();
     void shouldSetupVideoElementAutoVideoSinkWithMultipleChildren();
     void shouldSetupAudioElementAutoAudioSinkWithMultipleChildren();
-    void shouldSetupAudioElementOnly();
+    void shouldSetupAudioSinkElementOnly();
+    void shouldSetupAudioDecoderElementOnly();
     void shouldSetVideoUnderflowCallback();
     void triggerSetupElement();
     void triggerVideoUnderflowCallback();
@@ -248,26 +255,18 @@ protected:
 
     // low-latency sink property test methods
     void shouldSetLowLatency();
-    void shouldFailToSetLowLatencyIfSinkIsNull();
-    void shouldFailToSetLowLatencyIfPropertyDoesntExist();
     void triggerSetLowLatency();
 
     // sync sink property test methods
     void shouldSetSync();
-    void shouldFailToSetSyncIfSinkIsNull();
-    void shouldFailToSetSyncIfPropertyDoesntExist();
     void triggerSetSync();
 
     // sync-off decoder property test methods
     void shouldSetSyncOff();
-    void shouldFailToSetSyncOffIfDecoderIsNull();
-    void shouldFailToSetSyncOffIfPropertyDoesntExist();
     void triggerSetSyncOff();
 
     // stream-sync-mode decoder property test methods
     void shouldSetStreamSyncMode();
-    void shouldFailToSetStreamSyncModeIfDecoderIsNull();
-    void shouldFailToSetStreamSyncModeIfPropertyDoesntExist();
     void triggerSetStreamSyncMode();
 
     // SetPosition test methods
@@ -349,8 +348,6 @@ protected:
     // RenderFrame test methods
     void shouldRenderFrame();
     void triggerRenderFrame();
-    void shouldGetVideoSinkFailure();
-    void shouldFindPropertyFailure();
     void shouldFlushAudioSrcSuccess();
     void shouldFlushAudioSrcFailure();
 
@@ -397,8 +394,10 @@ protected:
 
 private:
     // SetupElement helper methods
-    void expectSetupVideoElement();
-    void expectSetupAudioElement();
+    void expectSetupVideoSinkElement();
+    void expectSetupVideoDecoderElement();
+    void expectSetupAudioSinkElement();
+    void expectSetupAudioDecoderElement();
 
     // AttachSource helper methods
     void expectSetGenericVideoCaps();
@@ -406,10 +405,6 @@ private:
     void expectAddChannelAndRateAudioToCaps();
     void expectAddRawAudioDataToCaps();
     void expectSetCaps();
-
-    // Set property helpers
-    template <typename T> void expectSetProperty(const std::string &propertyName, const T &value);
-    void expectPropertyDoesntExist(const std::string &propertyName);
 };
 
 #endif // GENERIC_TASKS_TESTS_BASE_H_

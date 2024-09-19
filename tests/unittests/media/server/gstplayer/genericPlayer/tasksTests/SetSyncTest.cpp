@@ -23,18 +23,6 @@ class SetSyncTest : public GenericTasksTestsBase
 {
 };
 
-TEST_F(SetSyncTest, shouldFailToSetSyncIfSinkIsNull)
-{
-    shouldFailToSetSyncIfSinkIsNull();
-    triggerSetSync();
-}
-
-TEST_F(SetSyncTest, shouldFailToSetSyncIfPropertyDoesntExist)
-{
-    shouldFailToSetSyncIfPropertyDoesntExist();
-    triggerSetSync();
-}
-
 TEST_F(SetSyncTest, shouldSetSync)
 {
     shouldSetSync();

@@ -136,6 +136,31 @@ struct GenericPlayerContext
     std::optional<bool> pendingImmediateOutputForVideo{};
 
     /**
+     * @brief Pending low latency
+     */
+    std::optional<bool> pendingLowLatency{};
+
+    /**
+     * @brief Pending sync
+     */
+    std::optional<bool> pendingSync{};
+
+    /**
+     * @brief Pending sync off
+     */
+    std::optional<bool> pendingSyncOff{};
+
+    /**
+     * @brief Pending stream sync mode
+     */
+    std::optional<int32_t> pendingStreamSyncMode{};
+
+    /**
+     * @brief Pending render frame
+     */
+    bool pendingRenderFrame{false};
+
+    /**
      * @brief Last audio sample timestamps
      * TODO(LLDEV-31012) Needed to detect audio stream underflow
      */

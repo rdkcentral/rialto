@@ -81,6 +81,41 @@ public:
     virtual bool setImmediateOutput() = 0;
 
     /**
+     * @brief Sets the low latency property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setLowLatency() = 0;
+
+    /**
+     * @brief Sets the sync property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setSync() = 0;
+
+    /**
+     * @brief Sets the sync off property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setSyncOff() = 0;
+
+    /**
+     * @brief Sets the stream sync mode property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setStreamSyncMode() = 0;
+
+    /**
+     * @brief Sets frame rendering. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setRenderFrame() = 0;
+
+    /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
      */
     virtual void notifyNeedMediaData(const MediaSourceType mediaSource) = 0;
@@ -188,26 +223,6 @@ public:
     virtual void removeAutoAudioSinkChild(GObject *object) = 0;
 
     /**
-     * @brief Gets the video sink element child sink if present.
-     *        Only gets children for GstAutoVideoSink's.
-     *
-     * @param[in] sink    : Sink element to check.
-     *
-     * @retval Underlying child video sink or 'sink' if there are no children.
-     */
-    virtual GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) const = 0;
-
-    /**
-     * @brief Gets the audio sink element child sink if present.
-     *        Only gets children for GstAutoAudioSink's.
-     *
-     * @param[in] sink    : Sink element to check.
-     *
-     * @retval Underlying child audio sink or 'sink' if there are no children.
-     */
-    virtual GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) const = 0;
-
-    /**
      * @brief Gets the sink element for source type.
      *
      * @param[in] mediaSourceType : the source type to obtain the sink for
@@ -215,15 +230,6 @@ public:
      * @retval The sink, NULL if not found. Please call getObjectUnref() if it's non-null
      */
     virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
-
-    /**
-     * @brief Gets the decoder element for source type.
-     *
-     * @param[in] mediaSourceType : the source type to obtain the decoder for
-     *
-     * @retval The decoder, NULL if not found
-     */
-    virtual GstElement *getDecoder(const MediaSourceType &mediaSourceType) = 0;
 
     /**
      * @brief Sets the audio and video flags on the pipeline based on the input.
