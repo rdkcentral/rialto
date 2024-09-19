@@ -58,9 +58,11 @@ TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeWithNoEaseTypeAndDuratio
 {
     EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kTargetVolume, m_kVolumeDuration, m_kEaseType)).WillOnce(Return(true));
 
-    EXPECT_EQ(m_mediaPipeline->setVolume(m_kTargetVolume), true);
-}
+    auto mediaPipeline = dynamic_cast<IMediaPipeline*>(m_mediaPipeline.get());
+    ASSERT_NE(mediaPipeline, nullptr);
 
+    EXPECT_EQ(mediaPipeline->setVolume(m_kTargetVolume), true);
+}
 /**
  * Test that setVolume returns failure if the IPC API fails.
  */

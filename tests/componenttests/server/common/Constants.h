@@ -44,7 +44,7 @@ constexpr int kAllLogs{RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR | RIA
                        RIALTO_DEBUG_LEVEL_MILESTONE | RIALTO_DEBUG_LEVEL_INFO | RIALTO_DEBUG_LEVEL_DEBUG};
 constexpr double kPlaybackRate{0.5};
 constexpr std::int64_t kCurrentPosition{1234};
-constexpr double kVolume{0.7};
+constexpr double kVolume{10};
 constexpr QosInfo kQosInfo{234, 567};
 constexpr std::uint64_t kPosition{1234};
 constexpr double kRate{1.0};

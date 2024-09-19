@@ -54,7 +54,8 @@ firebolt::rialto::wrappers::rgu_Ease convertEaseTypeToRguEase(EaseType easeType)
     case EaseType::EASE_OUT_CUBIC:
         return firebolt::rialto::wrappers::rgu_Ease::EaseOutCubic;
     default:
-        throw std::invalid_argument("Unknown EaseType");
+        RIALTO_SERVER_LOG_ERROR("Unknown EaseType, defaulting to EaseLinear");
+        return firebolt::rialto::wrappers::rgu_Ease::EaseLinear;
     }
 }
 
@@ -105,7 +106,7 @@ void SetVolume::execute() const
     }
     else
     {
-        RIALTO_SERVER_LOG_DEBUG("No audio-fade property found, trying SOC audio easing");
+        RIALTO_SERVER_LOG_DEBUG("No audio-fade property found in audio sink or SOC, setting volume directly");
         m_gstWrapper->gstStreamVolumeSetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR,
                                                m_targetVolume);
     }

@@ -41,7 +41,7 @@ public:
     }
     ~VolumeTest() override { gst_object_unref(m_audioSink); }
 
-    void willSetVolume()
+    void mockAudioSink()
     {
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
             .WillOnce(Invoke(
@@ -50,25 +50,29 @@ public:
                     GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                     *elementPtr = m_audioSink;
                 }));
+    }
 
-        // Normal volume change when volumeDuration == 0
-        if (m_volumeDuration == 0)
-        {
-            EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).Times(0);
-            EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("audio-fade"))).Times(0);
+    void willSetVolumeWhenVolumeDurationIsZero()
+    {
+        mockAudioSink();
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("audio-fade"))).Times(0);
+        EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+    }
 
-            EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
-        }
-        else
-        {
-            // Fade functionality when volumeDuration > 0
-            EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("audio-fade"))).WillOnce(Return(nullptr));
+    void willSetVolumeWhenVolumeDurationMoreThanZero()
+    {
+        m_volumeDuration = 10;
+        m_easeType = firebolt::rialto::EaseType::EASE_LINEAR;
+        mockAudioSink();
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("audio-fade"))).WillOnce(Return(nullptr));
+        EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(true));
 
-            EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(false));
+        // Convert m_easeType to the expected type
+        firebolt::rialto::wrappers::rgu_Ease convertedEaseType = static_cast<firebolt::rialto::wrappers::rgu_Ease>(m_easeType);
 
-            EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
-        }
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink));
+        EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, doAudioEasingonSoc(kVolume, m_volumeDuration, convertedEaseType));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     void willGetVolume()
@@ -77,9 +81,16 @@ public:
             .WillOnce(Return(kVolume));
     }
 
-    void setVolume()
+    void setVolumeNormal()
+    {   
+        ConfigureAction<SetVolume>(m_clientStub).send(createSetVolumeNormalRequest(m_sessionId)).expectSuccess();
+        waitWorker();
+    }
+
+    void setVolumeWithFade()
     {
-        ConfigureAction<SetVolume>(m_clientStub).send(createSetVolumeRequest(m_sessionId)).expectSuccess();
+        ConfigureAction<SetVolume>(m_clientStub).send(createSetVolumeWithFadeRequest(m_sessionId)).expectSuccess();
+        waitWorker();
     }
 
     void getVolume()
@@ -94,6 +105,7 @@ private:
     GstElement *m_audioSink{nullptr};
     GParamSpec m_paramSpec{};
     int m_volumeDuration{0};
+    EaseType m_easeType{firebolt::rialto::EaseType::EASE_LINEAR};
 };
 
 /*
@@ -196,8 +208,11 @@ TEST_F(VolumeTest, Volume)
     pause();
 
     // Step 5: Set Volume
-    willSetVolume();
-    setVolume();
+    willSetVolumeWhenVolumeDurationIsZero();
+    setVolumeNormal();
+
+    willSetVolumeWhenVolumeDurationMoreThanZero();
+    setVolumeWithFade();
 
     // Step 6: Get Volume
     willGetVolume();
