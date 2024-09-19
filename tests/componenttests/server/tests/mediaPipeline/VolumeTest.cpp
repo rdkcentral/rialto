@@ -50,6 +50,8 @@ public:
                     GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                     *elementPtr = m_audioSink;
                 }));
+
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(_)).WillRepeatedly(Return("GstStreamVolume"));
     }
 
     void willSetVolumeWhenVolumeDurationIsZero()
@@ -57,7 +59,8 @@ public:
         mockAudioSink();
         EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("audio-fade"))).Times(0);
         EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink))
+            .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     void willSetVolumeWhenVolumeDurationMoreThanZero()
@@ -69,10 +72,12 @@ public:
         EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(true));
 
         // Convert m_easeType to the expected type
-        firebolt::rialto::wrappers::rgu_Ease convertedEaseType = static_cast<firebolt::rialto::wrappers::rgu_Ease>(m_easeType);
+        firebolt::rialto::wrappers::rgu_Ease convertedEaseType =
+            static_cast<firebolt::rialto::wrappers::rgu_Ease>(m_easeType);
 
         EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, doAudioEasingonSoc(kVolume, m_volumeDuration, convertedEaseType));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink))
+            .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     void willGetVolume()
@@ -82,7 +87,7 @@ public:
     }
 
     void setVolumeNormal()
-    {   
+    {
         ConfigureAction<SetVolume>(m_clientStub).send(createSetVolumeNormalRequest(m_sessionId)).expectSuccess();
         waitWorker();
     }
