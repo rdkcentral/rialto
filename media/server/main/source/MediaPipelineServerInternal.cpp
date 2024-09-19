@@ -1214,6 +1214,31 @@ bool MediaPipelineServerInternal::processAudioGapInternal(int64_t position, uint
     return true;
 }
 
+bool MediaPipelineServerInternal::setStreamingSyncMode(bool enabled)
+{
+    return false;
+}
+
+bool MediaPipelineServerInternal::setBufferingLimit(uint32_t limitBufferingMs)
+{
+    return false;
+}
+
+bool MediaPipelineServerInternal::getBufferingLimit(uint32_t &limitBufferingMs)
+{
+    return false;
+}
+
+bool MediaPipelineServerInternal::setUseBuffering(bool useBuffering)
+{
+    return false;
+}
+
+bool MediaPipelineServerInternal::getUseBuffering(bool &useBuffering)
+{
+    return false;
+}
+
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
                                                          const std::unique_ptr<MediaSegment> &mediaSegment)
 {

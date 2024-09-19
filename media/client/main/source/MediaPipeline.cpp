@@ -583,6 +583,41 @@ bool MediaPipeline::processAudioGap(int64_t position, uint32_t duration, int64_t
     return m_mediaPipelineIpc->processAudioGap(position, duration, discontinuityGap, audioAac);
 }
 
+bool MediaPipeline::setStreamingSyncMode(bool enabled)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->setStreamingSyncMode(enabled);
+}
+
+bool MediaPipeline::setBufferingLimit(uint32_t limitBufferingMs)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->setBufferingLimit(limitBufferingMs);
+}
+
+bool MediaPipeline::getBufferingLimit(uint32_t &limitBufferingMs)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->getBufferingLimit(limitBufferingMs);
+}
+
+bool MediaPipeline::setUseBuffering(bool useBuffering)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->setUseBuffering(useBuffering);
+}
+
+bool MediaPipeline::getUseBuffering(bool &useBuffering)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->getUseBuffering(useBuffering);
+}
+
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 {
     // Find the needDataRequest for this needDataRequestId

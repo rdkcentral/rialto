@@ -131,6 +131,16 @@ public:
 
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
+    bool setStreamingSyncMode(bool enabled) override;
+
+    bool setBufferingLimit(uint32_t limitBufferingMs) override;
+
+    bool getBufferingLimit(uint32_t &limitBufferingMs) override;
+
+    bool setUseBuffering(bool useBuffering) override;
+
+    bool getUseBuffering(bool &useBuffering) override;
+
 private:
     /**
      * @brief The media player client ipc.

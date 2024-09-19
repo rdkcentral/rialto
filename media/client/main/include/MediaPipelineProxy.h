@@ -146,6 +146,22 @@ public:
         return m_mediaPipeline->processAudioGap(position, duration, discontinuityGap, audioAac);
     }
 
+    bool setStreamingSyncMode(bool enabled) override { return m_mediaPipeline->setStreamingSyncMode(enabled); }
+
+    bool setBufferingLimit(uint32_t limitBufferingMs) override
+    {
+        return m_mediaPipeline->setBufferingLimit(limitBufferingMs);
+    }
+
+    bool getBufferingLimit(uint32_t &limitBufferingMs) override
+    {
+        return m_mediaPipeline->getBufferingLimit(limitBufferingMs);
+    }
+
+    bool setUseBuffering(bool useBuffering) override { return m_mediaPipeline->setUseBuffering(useBuffering); }
+
+    bool getUseBuffering(bool &useBuffering) override { return m_mediaPipeline->getUseBuffering(useBuffering); }
+
     void notifyApplicationState(ApplicationState state) override { m_mediaPipeline->notifyApplicationState(state); }
 
 private:

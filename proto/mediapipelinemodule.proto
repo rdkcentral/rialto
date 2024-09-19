@@ -711,6 +711,94 @@ message ProcessAudioGapResponse {
 }
 
 /**
+ * @fn void setStreamingSyncMode(bool enabled)
+ * @brief Set streaming sync mode
+ *
+ * @param[in] session_id        The id of the A/V session.
+ * @param[in] enabled           true, if passthrough enabled
+ *
+ * This method enables/disables OTT streaming sync mode
+ *
+ */
+message SetStreamingSyncModeRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool enabled = 2 [default = false];
+}
+message SetStreamingSyncModeResponse {
+}
+
+/**
+ * @fn void setBufferingLimit(uint32_t limitBufferingMs)
+ * @brief Set buffering limit
+ *
+ * @param[in] session_id        The id of the A/V session.
+ * @param[in] limitBufferingMs  buffering limit in ms
+ *
+ * This method sets millisecond threshold used if limit_buffering is set.
+ * Changing this value does not enable/disable limit_buffering
+ *
+ */
+message SetBufferingLimitRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional uint32 limit_buffering_ms = 2 [default = 0];
+}
+message SetBufferingLimitResponse {
+}
+
+/**
+ * @fn void getBufferingLimit(uint32_t &limitBufferingMs)
+ * @brief Get buffering limit
+ *
+ * @param[in] session_id        The id of the A/V session.
+ * @param[out] limitBufferingMs buffering limit in ms
+ *
+ * This method returns current value of buffering limit in milliseconds
+ * Method will return kInvalidLimitBuffering limit buffering is disabled
+ *
+ */
+message GetBufferingLimitRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetBufferingLimitResponse {
+    optional uint32 limit_buffering_ms = 1 [default = 0];
+}
+
+/**
+ * @fn void setUseBuffering(bool useBuffering)
+ * @brief Enables/disables the buffering option
+ *
+ * @param[in] session_id        The id of the A/V session.
+ * @param[in] useBuffering      true if buffering option enabled.
+ *
+ * This method enables the buffering option so that BUFFERING messages are
+ * emitted based on low-/high-percent thresholds.
+ *
+ */
+message SetUseBufferingRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool use_buffering = 2 [default = false];
+}
+message SetUseBufferingResponse {
+}
+
+/**
+ * @fn void bool getBufferingLimit(uint32_t &limitBufferingMs)
+ * @brief Checks, if buffering is enabled
+ *
+ * @param[in] session_id        The id of the A/V session.
+ * @param[out] useBuffering     true if buffering option enabled.
+ *
+ * This method returns true, if buffering is enabled
+ *
+ */
+message GetUseBufferingRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetUseBufferingResponse {
+    optional bool use_buffering = 1 [default = false];
+}
+
+/**
  * @brief Event sent the playback state has changed.
  *
  * @param session_id   The id of the A/V session the status is for.
@@ -1110,5 +1198,41 @@ service MediaPipelineModule {
      * @see ProcessAudioGapRequest
      */
     rpc processAudioGap(ProcessAudioGapRequest) returns (ProcessAudioGapResponse) {
+    }
+
+    /**
+     * @brief This method enables/disables OTT streaming sync mode
+     * @see SetStreamingSyncModeRequest
+     */
+    rpc setStreamingSyncMode(SetStreamingSyncModeRequest) returns (SetStreamingSyncModeResponse) {
+    }
+
+    /**
+     * @brief This method sets millisecond threshold used if limit_buffering is set.
+     * @see SetBufferingLimitRequest
+     */
+    rpc setBufferingLimit(SetBufferingLimitRequest) returns (SetBufferingLimitResponse) {
+    }
+
+    /**
+     * @brief Get buffering limit
+     * @see GetBufferingLimitRequest
+     */
+    rpc getBufferingLimit(GetBufferingLimitRequest) returns (GetBufferingLimitResponse) {
+    }
+
+    /**
+     * @brief This method enables the buffering option so that BUFFERING messages are
+     *        emitted based on low-/high-percent thresholds.
+     * @see SetUseBufferingRequest
+     */
+    rpc setUseBuffering(SetUseBufferingRequest) returns (SetUseBufferingResponse) {
+    }
+
+    /**
+     * @brief Checks, if buffering is enabled
+     * @see GetUseBufferingRequest
+     */
+    rpc getUseBuffering(GetUseBufferingRequest) returns (GetUseBufferingResponse) {
     }
 }

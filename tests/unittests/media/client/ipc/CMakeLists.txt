@@ -53,6 +53,9 @@ add_gtests (
         mediaPipelineIpc/SetSourcePositionTest.cpp
         mediaPipelineIpc/ProcessAudioGapTest.cpp
         mediaPipelineIpc/TextTrackIdentifierTests.cpp
+        mediaPipelineIpc/StreamingSyncModeTest.cpp
+        mediaPipelineIpc/BufferingLimitTest.cpp
+        mediaPipelineIpc/UseBufferingTest.cpp
 
         # MediaPipelineCapabilitiesIpc tests
         mediaPipelineCapabilitiesIpc/MediaPipelineCapabilitiesIpcTest.cpp
