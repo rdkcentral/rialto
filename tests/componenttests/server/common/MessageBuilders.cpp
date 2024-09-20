@@ -242,8 +242,8 @@ namespace firebolt::rialto::server::ct
 {
     ::firebolt::rialto::SetVolumeRequest request;
     request.set_session_id(sessionId);
-    request.set_volume(10.0);
-    request.set_volume_duration(0);
+    request.set_volume(kVolume);
+    request.set_volume_duration(kNoVolumeDuration);
     request.set_ease_type(::firebolt::rialto::SetVolumeRequest_EaseType_EASE_LINEAR);
     return request;
 }
@@ -252,8 +252,8 @@ namespace firebolt::rialto::server::ct
 {
     ::firebolt::rialto::SetVolumeRequest request;
     request.set_session_id(sessionId);
-    request.set_volume(10.0);
-    request.set_volume_duration(10);
+    request.set_volume(kVolume);
+    request.set_volume_duration(kVolumeDuration);
     request.set_ease_type(::firebolt::rialto::SetVolumeRequest_EaseType_EASE_LINEAR);
     return request;
 }
