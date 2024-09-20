@@ -583,13 +583,6 @@ bool MediaPipeline::processAudioGap(int64_t position, uint32_t duration, int64_t
     return m_mediaPipelineIpc->processAudioGap(position, duration, discontinuityGap, audioAac);
 }
 
-bool MediaPipeline::setStreamingSyncMode(bool enabled)
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    return m_mediaPipelineIpc->setStreamingSyncMode(enabled);
-}
-
 bool MediaPipeline::setBufferingLimit(uint32_t limitBufferingMs)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");

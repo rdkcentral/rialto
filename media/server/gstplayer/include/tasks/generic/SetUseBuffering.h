@@ -30,8 +30,7 @@ namespace firebolt::rialto::server::tasks::generic
 class SetUseBuffering : public IPlayerTask
 {
 public:
-    SetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                    bool useBuffering);
+    SetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool useBuffering);
     ~SetUseBuffering() override;
     void execute() const override;
 

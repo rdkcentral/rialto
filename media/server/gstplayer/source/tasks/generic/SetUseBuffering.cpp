@@ -23,8 +23,7 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetUseBuffering::SetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                     bool useBuffering)
+SetUseBuffering::SetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool useBuffering)
     : m_context{context}, m_player(player), m_useBuffering{useBuffering}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetUseBuffering");

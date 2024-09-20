@@ -84,7 +84,6 @@ public:
     MOCK_METHOD(void, notifyApplicationState, (ApplicationState state), (override));
     MOCK_METHOD(bool, processAudioGap, (int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
                 (override));
-    MOCK_METHOD(bool, setStreamingSyncMode, (bool enabled), (override));
     MOCK_METHOD(bool, setBufferingLimit, (uint32_t limitBufferingMs), (override));
     MOCK_METHOD(bool, getBufferingLimit, (uint32_t & limitBufferingMs), (override));
     MOCK_METHOD(bool, setUseBuffering, (bool useBuffering), (override));

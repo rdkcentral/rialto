@@ -1444,17 +1444,6 @@ public:
     virtual bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) = 0;
 
     /**
-     * @brief Set streaming sync mode
-     *
-     * This method enables/disables OTT streaming sync mode
-     *
-     * @param[in] enabled         : true, if passthrough enabled
-     *
-     * @retval true on success.
-     */
-    virtual bool setStreamingSyncMode(bool enabled) = 0;
-
-    /**
      * @brief Set buffering limit
      *
      * This method enables/disables limit buffering and sets millisecond threshold used.

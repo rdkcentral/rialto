@@ -23,8 +23,7 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetBufferingLimit::SetBufferingLimit(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                     std::uint32_t limit)
+SetBufferingLimit::SetBufferingLimit(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, std::uint32_t limit)
     : m_context{context}, m_player(player), m_limit{limit}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetBufferingLimit");

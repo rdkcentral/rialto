@@ -146,8 +146,6 @@ public:
         return m_mediaPipeline->processAudioGap(position, duration, discontinuityGap, audioAac);
     }
 
-    bool setStreamingSyncMode(bool enabled) override { return m_mediaPipeline->setStreamingSyncMode(enabled); }
-
     bool setBufferingLimit(uint32_t limitBufferingMs) override
     {
         return m_mediaPipeline->setBufferingLimit(limitBufferingMs);

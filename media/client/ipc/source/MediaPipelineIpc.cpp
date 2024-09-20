@@ -1257,37 +1257,6 @@ bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, int6
     return true;
 }
 
-bool MediaPipelineIpc::setStreamingSyncMode(bool enabled)
-{
-    if (!reattachChannelIfRequired())
-    {
-        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
-        return false;
-    }
-
-    firebolt::rialto::SetStreamingSyncModeRequest request;
-
-    request.set_session_id(m_sessionId);
-    request.set_enabled(enabled);
-
-    firebolt::rialto::SetStreamingSyncModeResponse response;
-    auto ipcController = m_ipc.createRpcController();
-    auto blockingClosure = m_ipc.createBlockingClosure();
-    m_mediaPipelineStub->setStreamingSyncMode(ipcController.get(), &request, &response, blockingClosure.get());
-
-    // wait for the call to complete
-    blockingClosure->wait();
-
-    // check the result
-    if (ipcController->Failed())
-    {
-        RIALTO_CLIENT_LOG_ERROR("failed to set streaming sync mode due to '%s'", ipcController->ErrorText().c_str());
-        return false;
-    }
-
-    return true;
-}
-
 bool MediaPipelineIpc::setBufferingLimit(uint32_t limitBufferingMs)
 {
     if (!reattachChannelIfRequired())

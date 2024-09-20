@@ -1214,11 +1214,6 @@ bool MediaPipelineServerInternal::processAudioGapInternal(int64_t position, uint
     return true;
 }
 
-bool MediaPipelineServerInternal::setStreamingSyncMode(bool enabled)
-{
-    return false;
-}
-
 bool MediaPipelineServerInternal::setBufferingLimit(uint32_t limitBufferingMs)
 {
     return false;

@@ -711,23 +711,6 @@ message ProcessAudioGapResponse {
 }
 
 /**
- * @fn void setStreamingSyncMode(bool enabled)
- * @brief Set streaming sync mode
- *
- * @param[in] session_id        The id of the A/V session.
- * @param[in] enabled           true, if passthrough enabled
- *
- * This method enables/disables OTT streaming sync mode
- *
- */
-message SetStreamingSyncModeRequest {
-    optional int32 session_id = 1 [default = -1];
-    optional bool enabled = 2 [default = false];
-}
-message SetStreamingSyncModeResponse {
-}
-
-/**
  * @fn void setBufferingLimit(uint32_t limitBufferingMs)
  * @brief Set buffering limit
  *
@@ -1198,13 +1181,6 @@ service MediaPipelineModule {
      * @see ProcessAudioGapRequest
      */
     rpc processAudioGap(ProcessAudioGapRequest) returns (ProcessAudioGapResponse) {
-    }
-
-    /**
-     * @brief This method enables/disables OTT streaming sync mode
-     * @see SetStreamingSyncModeRequest
-     */
-    rpc setStreamingSyncMode(SetStreamingSyncModeRequest) returns (SetStreamingSyncModeResponse) {
     }
 
     /**

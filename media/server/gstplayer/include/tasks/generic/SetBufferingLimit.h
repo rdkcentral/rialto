@@ -31,8 +31,7 @@ namespace firebolt::rialto::server::tasks::generic
 class SetBufferingLimit : public IPlayerTask
 {
 public:
-    SetBufferingLimit(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                      std::uint32_t limit);
+    SetBufferingLimit(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, std::uint32_t limit);
     ~SetBufferingLimit() override;
     void execute() const override;
 

@@ -52,7 +52,6 @@ add_gtests (
         mediaPipeline/ProcessAudioGapTest.cpp
         mediaPipeline/TextTrackIdentifierTest.cpp
         mediaPipeline/BufferingLimitTest.cpp
-        mediaPipeline/StreamingSyncModeTest.cpp
         mediaPipeline/UseBufferingTest.cpp
 
         # MediaPipelineCapabilities tests

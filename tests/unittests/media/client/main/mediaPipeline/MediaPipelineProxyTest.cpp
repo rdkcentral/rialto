@@ -266,11 +266,6 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, setStreamingSyncMode(kEnabled)).WillOnce(Return(true));
-    EXPECT_TRUE(proxy->setStreamingSyncMode(kEnabled));
-
-    /////////////////////////////////////////////
-
     EXPECT_CALL(*mediaPipelineMock, setBufferingLimit(kBufferingLimit)).WillOnce(Return(true));
     EXPECT_TRUE(proxy->setBufferingLimit(kBufferingLimit));
 

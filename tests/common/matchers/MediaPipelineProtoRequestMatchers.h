@@ -387,13 +387,6 @@ MATCHER_P(getTextTrackIdentifierRequestMatcher, sessionId, "")
     return (kRequest->session_id() == sessionId);
 }
 
-MATCHER_P2(setStreamingSyncModeRequestMatcher, sessionId, enabled, "")
-{
-    const ::firebolt::rialto::SetStreamingSyncModeRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::SetStreamingSyncModeRequest *>(arg);
-    return ((kRequest->session_id() == sessionId) && (kRequest->enabled() == enabled));
-}
-
 MATCHER_P2(setBufferingLimitRequestMatcher, sessionId, limitBufferingMs, "")
 {
     const ::firebolt::rialto::SetBufferingLimitRequest *kRequest =
