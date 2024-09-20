@@ -110,6 +110,15 @@ public:
     void mediaPipelineServiceWillFailToSetTextTrackIdentifier();
     void mediaPipelineServiceWillGetTextTrackIdentifier();
     void mediaPipelineServiceWillFailToGetTextTrackIdentifier();
+    void mediaPipelineServiceWillSetBufferingLimit();
+    void mediaPipelineServiceWillFailToSetBufferingLimit();
+    void mediaPipelineServiceWillGetBufferingLimit();
+    void mediaPipelineServiceWillFailToGetBufferingLimit();
+    void mediaPipelineServiceWillSetUseBuffering();
+    void mediaPipelineServiceWillFailToSetUseBuffering();
+    void mediaPipelineServiceWillGetUseBuffering();
+    void mediaPipelineServiceWillFailToGetUseBuffering();
+
     void mediaClientWillSendPlaybackStateChangedEvent();
     void mediaClientWillSendNetworkStateChangedEvent();
     void mediaClientWillSendNeedMediaDataEvent(int sessionId);
@@ -166,6 +175,13 @@ public:
     void sendSetTextTrackIdentifierRequestAndReceiveResponse();
     void sendGetTextTrackIdentifierRequestAndReceiveResponse();
     void sendGetTextTrackIdentifierRequestAndReceiveResponseWithoutMatch();
+    void sendSetBufferingLimitRequestAndReceiveResponse();
+    void sendGetBufferingLimitRequestAndReceiveResponse();
+    void sendGetBufferingLimitRequestAndReceiveResponseWithoutMatch();
+    void sendSetUseBufferingRequestAndReceiveResponse();
+    void sendGetUseBufferingRequestAndReceiveResponse();
+    void sendGetUseBufferingRequestAndReceiveResponseWithoutMatch();
+
     void sendPlaybackStateChangedEvent();
     void sendNetworkStateChangedEvent();
     void sendNeedMediaDataEvent();

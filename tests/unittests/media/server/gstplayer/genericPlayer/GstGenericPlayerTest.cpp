@@ -839,3 +839,37 @@ TEST_F(GstGenericPlayerTest, shouldResetSourceAndSubtitleSinkOnTeardownWhenSet)
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&source));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&subtitleSink));
 }
+
+TEST_F(GstGenericPlayerTest, shouldSetBufferingLimit)
+{
+    constexpr std::uint32_t kBufferingLimit{123};
+
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetBufferingLimit(_, _, kBufferingLimit)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->setBufferingLimit(kBufferingLimit);
+}
+
+TEST_F(GstGenericPlayerTest, shouldGetBufferingLimit)
+{
+    std::uint32_t bufferingLimit{0};
+    EXPECT_FALSE(m_sut->getBufferingLimit(bufferingLimit));
+}
+
+TEST_F(GstGenericPlayerTest, shouldSetUseBuffering)
+{
+    constexpr bool kUseBuffering{true};
+
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetUseBuffering(_, _, kUseBuffering)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->setUseBuffering(kUseBuffering);
+}
+
+TEST_F(GstGenericPlayerTest, shouldGetUseBuffering)
+{
+    bool useBuffering{false};
+    EXPECT_FALSE(m_sut->getUseBuffering(useBuffering));
+}

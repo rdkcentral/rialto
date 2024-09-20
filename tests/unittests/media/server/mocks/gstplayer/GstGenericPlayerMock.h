@@ -71,6 +71,10 @@ public:
                 (override));
     MOCK_METHOD(void, processAudioGap, (int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
                 (override));
+    MOCK_METHOD(void, setBufferingLimit, (uint32_t limitBufferingMs), (override));
+    MOCK_METHOD(bool, getBufferingLimit, (uint32_t & limitBufferingMs), (override));
+    MOCK_METHOD(void, setUseBuffering, (bool useBuffering), (override));
+    MOCK_METHOD(bool, getUseBuffering, (bool &useBuffering), (override));
 };
 } // namespace firebolt::rialto::server
 

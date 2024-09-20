@@ -470,6 +470,31 @@ public:
                                                                   IGstGenericPlayerPrivate &player,
                                                                   const firebolt::rialto::MediaSourceType &type,
                                                                   bool immediateOutput) const = 0;
+
+    /**
+     * @brief Creates a SetBufferingLimit task.
+     *
+     * @param[in] context         : The GstPlayer context
+     * @param[in] player          : The GstPlayer instance
+     * @param[in] limit           : the value to set for buffering limit
+     *
+     * @retval the new ProcessAudioGap task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetBufferingLimit(GenericPlayerContext &context,
+                                                                 IGstGenericPlayerPrivate &player,
+                                                                 std::uint32_t limit) const = 0;
+
+    /**
+     * @brief Creates a SetUseBuffering task.
+     *
+     * @param[in] context         : The GstPlayer context
+     * @param[in] player          : The GstPlayer instance
+     * @param[in] useBuffering    : the value to set for use buffering
+     *
+     * @retval the new ProcessAudioGap task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask>
+    createSetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool useBuffering) const = 0;
 };
 
 } // namespace firebolt::rialto::server

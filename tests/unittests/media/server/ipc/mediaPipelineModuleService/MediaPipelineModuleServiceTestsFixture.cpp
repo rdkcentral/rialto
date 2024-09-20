@@ -86,6 +86,8 @@ constexpr bool kImmediateOutputVal1{false};
 constexpr bool kImmediateOutputVal2{true};
 constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
+constexpr uint32_t kBufferingLimit{12341};
+constexpr bool kUseBuffering{true};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -733,6 +735,56 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetTextTrack
     EXPECT_CALL(m_mediaPipelineServiceMock, getTextTrackIdentifier(kHardcodedSessionId, _)).WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetBufferingLimit()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setBufferingLimit(kHardcodedSessionId, kBufferingLimit)).WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetBufferingLimit()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setBufferingLimit(kHardcodedSessionId, kBufferingLimit)).WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetBufferingLimit()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getBufferingLimit(kHardcodedSessionId, _))
+        .WillOnce(DoAll(SetArgReferee<1>(kBufferingLimit), Return(true)));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetBufferingLimit()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getBufferingLimit(kHardcodedSessionId, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetUseBuffering()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setUseBuffering(kHardcodedSessionId, kUseBuffering)).WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetUseBuffering()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setUseBuffering(kHardcodedSessionId, kUseBuffering)).WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetUseBuffering()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getUseBuffering(kHardcodedSessionId, _))
+        .WillOnce(DoAll(SetArgReferee<1>(kUseBuffering), Return(true)));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetUseBuffering()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getUseBuffering(kHardcodedSessionId, _)).WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackStateChangedEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(PlaybackStateChangeEventMatcher(convertPlaybackState(kPlaybackState))));
@@ -1333,6 +1385,72 @@ void MediaPipelineModuleServiceTests::sendGetTextTrackIdentifierRequestAndReceiv
     request.set_session_id(kHardcodedSessionId);
 
     m_service->getTextTrackIdentifier(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetBufferingLimitRequestAndReceiveResponse()
+{
+    firebolt::rialto::SetBufferingLimitRequest request;
+    firebolt::rialto::SetBufferingLimitResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_limit_buffering_ms(kBufferingLimit);
+
+    m_service->setBufferingLimit(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendGetBufferingLimitRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetBufferingLimitRequest request;
+    firebolt::rialto::GetBufferingLimitResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getBufferingLimit(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(kBufferingLimit, response.limit_buffering_ms());
+}
+
+void MediaPipelineModuleServiceTests::sendGetBufferingLimitRequestAndReceiveResponseWithoutMatch()
+{
+    firebolt::rialto::GetBufferingLimitRequest request;
+    firebolt::rialto::GetBufferingLimitResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getBufferingLimit(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetUseBufferingRequestAndReceiveResponse()
+{
+    firebolt::rialto::SetUseBufferingRequest request;
+    firebolt::rialto::SetUseBufferingResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_use_buffering(kUseBuffering);
+
+    m_service->setUseBuffering(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendGetUseBufferingRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetUseBufferingRequest request;
+    firebolt::rialto::GetUseBufferingResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getUseBuffering(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(kUseBuffering, response.use_buffering());
+}
+
+void MediaPipelineModuleServiceTests::sendGetUseBufferingRequestAndReceiveResponseWithoutMatch()
+{
+    firebolt::rialto::GetUseBufferingRequest request;
+    firebolt::rialto::GetUseBufferingResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getUseBuffering(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendPlaybackStateChangedEvent()

@@ -79,6 +79,10 @@ public:
                                    double appliedRate) = 0;
     virtual bool processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,
                                  bool audioAac) = 0;
+    virtual bool setBufferingLimit(int sessionId, uint32_t limitBufferingMs) = 0;
+    virtual bool getBufferingLimit(int sessionId, uint32_t &limitBufferingMs) = 0;
+    virtual bool setUseBuffering(int sessionId, bool useBuffering) = 0;
+    virtual bool getUseBuffering(int sessionId, bool &useBuffering) = 0;
     virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) = 0;
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
     virtual std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,

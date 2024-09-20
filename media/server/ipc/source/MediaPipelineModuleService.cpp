@@ -966,4 +966,74 @@ void MediaPipelineModuleService::processAudioGap(::google::protobuf::RpcControll
     }
     done->Run();
 }
+
+void MediaPipelineModuleService::setBufferingLimit(::google::protobuf::RpcController *controller,
+                                                   const ::firebolt::rialto::SetBufferingLimitRequest *request,
+                                                   ::firebolt::rialto::SetBufferingLimitResponse *response,
+                                                   ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setBufferingLimit(request->session_id(), request->limit_buffering_ms()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set buffering limit failed.");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getBufferingLimit(::google::protobuf::RpcController *controller,
+                                                   const ::firebolt::rialto::GetBufferingLimitRequest *request,
+                                                   ::firebolt::rialto::GetBufferingLimitResponse *response,
+                                                   ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    uint32_t bufferingLimit{};
+
+    if (!m_mediaPipelineService.getBufferingLimit(request->session_id(), bufferingLimit))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get buffering limit failed.");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_limit_buffering_ms(bufferingLimit);
+    }
+
+    done->Run();
+}
+
+void MediaPipelineModuleService::setUseBuffering(::google::protobuf::RpcController *controller,
+                                                 const ::firebolt::rialto::SetUseBufferingRequest *request,
+                                                 ::firebolt::rialto::SetUseBufferingResponse *response,
+                                                 ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setUseBuffering(request->session_id(), request->use_buffering()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set use buffering failed.");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getUseBuffering(::google::protobuf::RpcController *controller,
+                                                 const ::firebolt::rialto::GetUseBufferingRequest *request,
+                                                 ::firebolt::rialto::GetUseBufferingResponse *response,
+                                                 ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    bool useBuffering{};
+
+    if (!m_mediaPipelineService.getUseBuffering(request->session_id(), useBuffering))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get use buffering failed.");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_use_buffering(useBuffering);
+    }
+
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc

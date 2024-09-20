@@ -719,6 +719,86 @@ TEST_F(MediaPipelineServiceTests, shouldGetTextTrackIdentifier)
     getTextTrackIdentifierShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToSetBufferingLimitForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setBufferingLimitShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetBufferingLimit)
+{
+    initSession();
+    mediaPipelineWillFailToSetBufferingLimit();
+    setBufferingLimitShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetBufferingLimit)
+{
+    initSession();
+    mediaPipelineWillSetBufferingLimit();
+    setBufferingLimitShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetBufferingLimitForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getBufferingLimitShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetBufferingLimit)
+{
+    initSession();
+    mediaPipelineWillFailToGetBufferingLimit();
+    getBufferingLimitShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetBufferingLimit)
+{
+    initSession();
+    mediaPipelineWillGetBufferingLimit();
+    getBufferingLimitShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetUseBufferingForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setUseBufferingShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetUseBuffering)
+{
+    initSession();
+    mediaPipelineWillFailToSetUseBuffering();
+    setUseBufferingShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetUseBuffering)
+{
+    initSession();
+    mediaPipelineWillSetUseBuffering();
+    setUseBufferingShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetUseBufferingForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getUseBufferingShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetUseBuffering)
+{
+    initSession();
+    mediaPipelineWillFailToGetUseBuffering();
+    getUseBufferingShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetUseBuffering)
+{
+    initSession();
+    mediaPipelineWillGetUseBuffering();
+    getUseBufferingShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldPing)
 {
     initSession();

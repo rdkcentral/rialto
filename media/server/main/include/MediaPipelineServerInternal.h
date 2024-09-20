@@ -620,6 +620,53 @@ protected:
      * @retval true on success.
      */
     bool processAudioGapInternal(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac);
+
+    /**
+     * @brief Set buffering limit
+     *
+     * This method enables/disables limit buffering and sets millisecond threshold used.
+     * Use kInvalidLimitBuffering to disable limit buffering
+     *
+     * @param[in] limitBufferingMs         : buffering limit in ms
+     *
+     * @retval true on success.
+     */
+    bool setBufferingLimitInternal(uint32_t limitBufferingMs);
+
+    /**
+     * @brief Get buffering limit
+     *
+     * This method returns current value of buffering limit in milliseconds
+     * Method will return kInvalidLimitBuffering limit buffering is disabled
+     *
+     * @param[out] limitBufferingMs         : buffering limit in ms
+     *
+     * @retval true on success.
+     */
+    bool getBufferingLimitInternal(uint32_t &limitBufferingMs);
+
+    /**
+     * @brief Enables/disables the buffering option
+     *
+     * This method enables the buffering option so that BUFFERING messages are
+     * emitted based on low-/high-percent thresholds.
+     *
+     * @param[in] useBuffering         : true if buffering option enabled.
+     *
+     * @retval true on success.
+     */
+    bool setUseBufferingInternal(bool useBuffering);
+
+    /**
+     * @brief Checks, if buffering is enabled
+     *
+     * This method returns true, if buffering is enabled
+     *
+     * @param[out] useBuffering         : true if buffering option is enabled.
+     *
+     * @retval true on success.
+     */
+    bool getUseBufferingInternal(bool &useBuffering);
 };
 
 }; // namespace firebolt::rialto::server

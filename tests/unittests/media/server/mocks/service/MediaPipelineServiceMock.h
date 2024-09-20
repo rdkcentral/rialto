@@ -71,6 +71,10 @@ public:
     MOCK_METHOD(bool, processAudioGap,
                 (int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
                 (override));
+    MOCK_METHOD(bool, setBufferingLimit, (int sessionId, uint32_t limitBufferingMs), (override));
+    MOCK_METHOD(bool, getBufferingLimit, (int sessionId, uint32_t &limitBufferingMs), (override));
+    MOCK_METHOD(bool, setUseBuffering, (int sessionId, bool useBuffering), (override));
+    MOCK_METHOD(bool, getUseBuffering, (int sessionId, bool &useBuffering), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedMimeTypes, (MediaSourceType type), (override));
     MOCK_METHOD(bool, isMimeTypeSupported, (const std::string &mimeType), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedProperties,

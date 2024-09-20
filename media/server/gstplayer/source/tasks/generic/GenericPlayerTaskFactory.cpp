@@ -36,6 +36,7 @@
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
+#include "tasks/generic/SetBufferingLimit.h"
 #include "tasks/generic/SetImmediateOutput.h"
 #include "tasks/generic/SetLowLatency.h"
 #include "tasks/generic/SetMute.h"
@@ -46,6 +47,7 @@
 #include "tasks/generic/SetSync.h"
 #include "tasks/generic/SetSyncOff.h"
 #include "tasks/generic/SetTextTrackIdentifier.h"
+#include "tasks/generic/SetUseBuffering.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
@@ -313,5 +315,19 @@ GenericPlayerTaskFactory::createSetImmediateOutput(GenericPlayerContext &context
                                                    bool immediateOutput) const
 {
     return std::make_unique<tasks::generic::SetImmediateOutput>(context, player, type, immediateOutput);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetBufferingLimit(GenericPlayerContext &context,
+                                                                               IGstGenericPlayerPrivate &player,
+                                                                               std::uint32_t limit) const
+{
+    return std::make_unique<tasks::generic::SetBufferingLimit>(context, player, limit);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetUseBuffering(GenericPlayerContext &context,
+                                                                             IGstGenericPlayerPrivate &player,
+                                                                             bool useBuffering) const
+{
+    return std::make_unique<tasks::generic::SetUseBuffering>(context, player, useBuffering);
 }
 } // namespace firebolt::rialto::server

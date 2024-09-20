@@ -1523,6 +1523,32 @@ void GstGenericPlayer::processAudioGap(int64_t position, uint32_t duration, int6
     }
 }
 
+void GstGenericPlayer::setBufferingLimit(uint32_t limitBufferingMs)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetBufferingLimit(m_context, *this, limitBufferingMs));
+    }
+}
+
+bool GstGenericPlayer::getBufferingLimit(uint32_t &limitBufferingMs)
+{
+    return false;
+}
+
+void GstGenericPlayer::setUseBuffering(bool useBuffering)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetUseBuffering(m_context, *this, useBuffering));
+    }
+}
+
+bool GstGenericPlayer::getUseBuffering(bool &useBuffering)
+{
+    return false;
+}
+
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));
