@@ -76,6 +76,7 @@ std::shared_ptr<GenericTasksTestsContext> testContext;
 constexpr firebolt::rialto::server::Rectangle kRectangle{1, 2, 3, 4};
 constexpr double kVolume{0.7};
 constexpr uint32_t kVolumeDuration{1000};
+constexpr uint32_t kNoVolumeDuration{0};
 constexpr firebolt::rialto::EaseType kEaseLinearType{firebolt::rialto::EaseType::EASE_LINEAR};
 constexpr firebolt::rialto::EaseType kEaseInCubicType{firebolt::rialto::EaseType::EASE_IN_CUBIC};
 constexpr firebolt::rialto::EaseType kEaseOutCubicType{firebolt::rialto::EaseType::EASE_OUT_CUBIC};
@@ -995,8 +996,20 @@ void GenericTasksTestsBase::shouldSetAudioFadeInSocWithCubicOutEaseType()
 void GenericTasksTestsBase::shouldSetGstVolume()
 {
     EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
-    EXPECT_CALL(*testContext->m_rdkGstreamerUtilsWrapper, isSocAudioFadeSupported()).WillOnce(Return(false));
     EXPECT_CALL(*testContext->m_gstWrapper, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
+}
+
+void GenericTasksTestsBase::triggerSetVolume()
+{
+    firebolt::rialto::server::tasks::generic::SetVolume task{testContext->m_context,
+                                                             testContext->m_gstPlayer,
+                                                             testContext->m_gstWrapper,
+                                                             testContext->m_glibWrapper,
+                                                             testContext->m_rdkGstreamerUtilsWrapper,
+                                                             kVolume,
+                                                             kNoVolumeDuration,
+                                                             kEaseLinearType};
+    task.execute();
 }
 
 void GenericTasksTestsBase::triggerSetVolumeEaseTypeLinear()

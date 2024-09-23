@@ -32,7 +32,7 @@ TEST_F(SetVolumeTest, shouldFailToSetVolumeWhenPipelineIsNull)
 TEST_F(SetVolumeTest, shouldSetVolume)
 {
     shouldSetGstVolume();
-    triggerSetVolumeEaseTypeLinear();
+    triggerSetVolume();
 }
 
 TEST_F(SetVolumeTest, shouldSetVolumeWithAudioFadeWithEaseTypeLinear)

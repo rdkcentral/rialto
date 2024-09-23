@@ -125,6 +125,7 @@ protected:
 
     // SetVolume test methods
     void shouldSetGstVolume();
+    void triggerSetVolume();
     void triggerSetVolumeEaseTypeLinear();
     void triggerSetVolumeEaseTypeCubicIn();
     void triggerSetVolumeEaseTypeCubicOut();
