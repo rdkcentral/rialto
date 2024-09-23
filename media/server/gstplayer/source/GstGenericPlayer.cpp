@@ -1452,11 +1452,12 @@ bool GstGenericPlayer::setSyncOff(bool syncOff)
     return true;
 }
 
-bool GstGenericPlayer::setStreamSyncMode(int32_t streamSyncMode)
+bool GstGenericPlayer::setStreamSyncMode(const MediaSourceType &mediaSourceType, int32_t streamSyncMode)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetStreamSyncMode(m_context, *this, streamSyncMode));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createSetStreamSyncMode(m_context, *this, mediaSourceType, streamSyncMode));
     }
     return true;
 }

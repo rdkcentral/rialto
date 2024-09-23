@@ -332,11 +332,12 @@ public:
     /**
      * @brief Set stream sync mode property on the pipeline. Default 0.
      *
+     * @param[in] mediaSourceType : The media source type to set stream sync mode.
      * @param[in] streamSyncMode : The stream sync mode value to set.
      *
      * @retval true on success false otherwise
      */
-    virtual bool setStreamSyncMode(int32_t streamSyncMode) = 0;
+    virtual bool setStreamSyncMode(const MediaSourceType &mediaSourceType, int32_t streamSyncMode) = 0;
 
     /**
      * @brief Get stream sync mode property on the pipeline.

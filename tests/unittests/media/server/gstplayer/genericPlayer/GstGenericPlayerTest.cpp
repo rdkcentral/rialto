@@ -701,9 +701,10 @@ TEST_F(GstGenericPlayerTest, shouldSetStreamSyncMode)
     constexpr int32_t kStreamSyncMode{1};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetStreamSyncMode(_, _, kStreamSyncMode)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createSetStreamSyncMode(_, _, MediaSourceType::AUDIO, kStreamSyncMode))
+        .WillOnce(Return(ByMove(std::move(task))));
 
-    m_sut->setStreamSyncMode(kStreamSyncMode);
+    m_sut->setStreamSyncMode(MediaSourceType::AUDIO, kStreamSyncMode);
 }
 
 TEST_F(GstGenericPlayerTest, shouldGetStreamSyncMode)

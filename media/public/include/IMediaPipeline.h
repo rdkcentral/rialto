@@ -1382,16 +1382,17 @@ public:
     virtual bool setSyncOff(bool syncOff) = 0;
 
     /**
-     * @brief Set stream sync mode property on the audio decoder. Default 0.
+     * @brief Set stream sync mode property on the audio decoder or video filter. Default 0.
      *
      * 1 - Frame to decode frame will immediately proceed next frame sync.
      * 0 - Frame decoded with no frame sync.
      *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
      * @param[in] streamSyncMode : The stream sync mode value to set.
      *
      * @retval true on success false otherwise
      */
-    virtual bool setStreamSyncMode(int32_t streamSyncMode) = 0;
+    virtual bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) = 0;
 
     /**
      * @brief Get stream sync mode property on the audio decoder.

@@ -73,7 +73,7 @@ public:
     MOCK_METHOD(bool, setSync, (bool sync), (override));
     MOCK_METHOD(bool, getSync, (bool &sync), (override));
     MOCK_METHOD(bool, setSyncOff, (bool syncOff), (override));
-    MOCK_METHOD(bool, setStreamSyncMode, (int32_t streamSyncMode), (override));
+    MOCK_METHOD(bool, setStreamSyncMode, (int32_t sourceId, int32_t streamSyncMode), (override));
     MOCK_METHOD(bool, getStreamSyncMode, (int32_t & streamSyncMode), (override));
     MOCK_METHOD(bool, flush, (int32_t sourceId, bool resetTime), (override));
 

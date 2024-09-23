@@ -22,6 +22,7 @@
 class RialtoClientMediaPipelineSetStreamSyncModeTest : public MediaPipelineTestBase
 {
 protected:
+    const int32_t m_kSourceId{7};
     const int32_t m_kStreamSyncMode{1};
 
     virtual void SetUp()
@@ -44,9 +45,9 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineSetStreamSyncModeTest, setStreamSyncModeSuccess)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setStreamSyncMode(m_kStreamSyncMode)).WillOnce(Return(true));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setStreamSyncMode(m_kSourceId, m_kStreamSyncMode)).WillOnce(Return(true));
 
-    EXPECT_EQ(m_mediaPipeline->setStreamSyncMode(m_kStreamSyncMode), true);
+    EXPECT_EQ(m_mediaPipeline->setStreamSyncMode(m_kSourceId, m_kStreamSyncMode), true);
 }
 
 /**
@@ -54,7 +55,7 @@ TEST_F(RialtoClientMediaPipelineSetStreamSyncModeTest, setStreamSyncModeSuccess)
  */
 TEST_F(RialtoClientMediaPipelineSetStreamSyncModeTest, setStreamSyncModeFailure)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setStreamSyncMode(m_kStreamSyncMode)).WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setStreamSyncMode(m_kSourceId, m_kStreamSyncMode)).WillOnce(Return(false));
 
-    EXPECT_EQ(m_mediaPipeline->setStreamSyncMode(m_kStreamSyncMode), false);
+    EXPECT_EQ(m_mediaPipeline->setStreamSyncMode(m_kSourceId, m_kStreamSyncMode), false);
 }

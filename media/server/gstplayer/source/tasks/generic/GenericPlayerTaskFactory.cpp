@@ -238,11 +238,12 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSyncOff(GenericP
     return std::make_unique<tasks::generic::SetSyncOff>(context, player, syncOff);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetStreamSyncMode(GenericPlayerContext &context,
-                                                                               IGstGenericPlayerPrivate &player,
-                                                                               int32_t streamSyncMode) const
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createSetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                  const firebolt::rialto::MediaSourceType &type,
+                                                  int32_t streamSyncMode) const
 {
-    return std::make_unique<tasks::generic::SetStreamSyncMode>(context, player, streamSyncMode);
+    return std::make_unique<tasks::generic::SetStreamSyncMode>(context, player, type, streamSyncMode);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createShutdown(IGstGenericPlayerPrivate &player) const

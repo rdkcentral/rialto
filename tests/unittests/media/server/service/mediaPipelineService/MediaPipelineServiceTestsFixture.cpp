@@ -346,12 +346,12 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToSetSyncOff()
 
 void MediaPipelineServiceTests::mediaPipelineWillSetStreamSyncMode()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setStreamSyncMode(_)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, setStreamSyncMode(kSourceId, _)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToSetStreamSyncMode()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setStreamSyncMode(_)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, setStreamSyncMode(kSourceId, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillGetStreamSyncMode()
@@ -848,12 +848,12 @@ void MediaPipelineServiceTests::setSyncOffShouldFail()
 
 void MediaPipelineServiceTests::setStreamSyncModeShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->setStreamSyncMode(kSessionId, true));
+    EXPECT_TRUE(m_sut->setStreamSyncMode(kSessionId, kSourceId, true));
 }
 
 void MediaPipelineServiceTests::setStreamSyncModeShouldFail()
 {
-    EXPECT_FALSE(m_sut->setStreamSyncMode(kSessionId, true));
+    EXPECT_FALSE(m_sut->setStreamSyncMode(kSessionId, kSourceId, true));
 }
 
 void MediaPipelineServiceTests::getStreamSyncModeShouldSucceed()

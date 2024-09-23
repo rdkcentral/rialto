@@ -124,7 +124,7 @@ public:
     bool setSync(bool sync) override;
     bool getSync(bool &sync) override;
     bool setSyncOff(bool syncOff) override;
-    bool setStreamSyncMode(int32_t streamSyncMode) override;
+    bool setStreamSyncMode(const MediaSourceType &mediaSourceType, int32_t streamSyncMode) override;
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
     void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;

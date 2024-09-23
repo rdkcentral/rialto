@@ -23,8 +23,8 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 SetStreamSyncMode::SetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                     int32_t streamSyncMode)
-    : m_context(context), m_player(player), m_streamSyncMode{streamSyncMode}
+                                     const MediaSourceType &type, int32_t streamSyncMode)
+    : m_context(context), m_player(player), m_type{type}, m_streamSyncMode{streamSyncMode}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetStreamSyncMode");
 }

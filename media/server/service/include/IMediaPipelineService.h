@@ -72,7 +72,7 @@ public:
     virtual bool setSync(int sessionId, bool sync) = 0;
     virtual bool getSync(int sessionId, bool &sync) = 0;
     virtual bool setSyncOff(int sessionId, bool syncOff) = 0;
-    virtual bool setStreamSyncMode(int sessionId, int32_t streamSyncMode) = 0;
+    virtual bool setStreamSyncMode(int sessionId, int32_t sourceId, int32_t streamSyncMode) = 0;
     virtual bool getStreamSyncMode(int sessionId, int32_t &streamSyncMode) = 0;
     virtual bool flush(int sessionId, std::int32_t sourceId, bool resetTime) = 0;
     virtual bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime,

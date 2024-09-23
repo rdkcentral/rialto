@@ -23,6 +23,7 @@
 class RialtoClientMediaPipelineIpcSetStreamSyncModeTest : public MediaPipelineIpcTestBase
 {
 protected:
+    int32_t m_sourceId{7};
     int32_t m_streamSyncMode{1};
 
     virtual void SetUp()
@@ -48,10 +49,10 @@ TEST_F(RialtoClientMediaPipelineIpcSetStreamSyncModeTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setStreamSyncMode"), m_controllerMock.get(),
-                                           setStreamSyncModeRequestMatcher(m_sessionId, m_streamSyncMode), _,
-                                           m_blockingClosureMock.get()));
+                                           setStreamSyncModeRequestMatcher(m_sessionId, m_sourceId, m_streamSyncMode),
+                                           _, m_blockingClosureMock.get()));
 
-    EXPECT_EQ(m_mediaPipelineIpc->setStreamSyncMode(m_streamSyncMode), true);
+    EXPECT_EQ(m_mediaPipelineIpc->setStreamSyncMode(m_sourceId, m_streamSyncMode), true);
 }
 
 /**
@@ -62,7 +63,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetStreamSyncModeTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaPipelineIpc->setStreamSyncMode(m_streamSyncMode), false);
+    EXPECT_EQ(m_mediaPipelineIpc->setStreamSyncMode(m_sourceId, m_streamSyncMode), false);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -80,7 +81,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetStreamSyncModeTest, ReconnectChannel)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setStreamSyncMode"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->setStreamSyncMode(m_streamSyncMode), true);
+    EXPECT_EQ(m_mediaPipelineIpc->setStreamSyncMode(m_sourceId, m_streamSyncMode), true);
 }
 
 /**
@@ -92,5 +93,5 @@ TEST_F(RialtoClientMediaPipelineIpcSetStreamSyncModeTest, SetStreamSyncModeFailu
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setStreamSyncMode"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->setStreamSyncMode(m_streamSyncMode), false);
+    EXPECT_EQ(m_mediaPipelineIpc->setStreamSyncMode(m_sourceId, m_streamSyncMode), false);
 }

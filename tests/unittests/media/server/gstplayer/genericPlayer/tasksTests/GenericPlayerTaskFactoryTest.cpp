@@ -267,7 +267,8 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSyncOff)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetStreamSyncMode)
 {
     constexpr int32_t kStreamSyncMode{1};
-    auto task = m_sut.createSetStreamSyncMode(m_context, m_gstPlayer, kStreamSyncMode);
+    auto task = m_sut.createSetStreamSyncMode(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO,
+                                              kStreamSyncMode);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetStreamSyncMode &>(*task));
 }

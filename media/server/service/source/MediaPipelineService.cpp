@@ -478,7 +478,7 @@ bool MediaPipelineService::setSyncOff(int sessionId, bool syncOff)
     return mediaPipelineIter->second->setSyncOff(syncOff);
 }
 
-bool MediaPipelineService::setStreamSyncMode(int sessionId, int32_t streamSyncMode)
+bool MediaPipelineService::setStreamSyncMode(int sessionId, int32_t sourceId, int32_t streamSyncMode)
 {
     RIALTO_SERVER_LOG_DEBUG("Set stream sync mode requested, session id: %d", sessionId);
 
@@ -489,7 +489,7 @@ bool MediaPipelineService::setStreamSyncMode(int sessionId, int32_t streamSyncMo
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->setStreamSyncMode(streamSyncMode);
+    return mediaPipelineIter->second->setStreamSyncMode(sourceId, streamSyncMode);
 }
 
 bool MediaPipelineService::getStreamSyncMode(int sessionId, int32_t &streamSyncMode)

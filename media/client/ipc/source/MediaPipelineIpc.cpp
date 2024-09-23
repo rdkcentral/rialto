@@ -1094,7 +1094,7 @@ bool MediaPipelineIpc::setSyncOff(bool syncOff)
     return true;
 }
 
-bool MediaPipelineIpc::setStreamSyncMode(int32_t streamSyncMode)
+bool MediaPipelineIpc::setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode)
 {
     if (!reattachChannelIfRequired())
     {
@@ -1105,6 +1105,7 @@ bool MediaPipelineIpc::setStreamSyncMode(int32_t streamSyncMode)
     firebolt::rialto::SetStreamSyncModeRequest request;
 
     request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
     request.set_stream_sync_mode(streamSyncMode);
 
     firebolt::rialto::SetStreamSyncModeResponse response;

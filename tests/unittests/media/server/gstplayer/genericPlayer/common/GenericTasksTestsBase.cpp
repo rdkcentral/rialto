@@ -3101,7 +3101,8 @@ void GenericTasksTestsBase::shouldSetStreamSyncMode()
 
 void GenericTasksTestsBase::triggerSetStreamSyncMode()
 {
-    firebolt::rialto::server::tasks::generic::SetStreamSyncMode task{testContext->m_context, testContext->m_gstPlayer, 1};
+    firebolt::rialto::server::tasks::generic::SetStreamSyncMode task{testContext->m_context, testContext->m_gstPlayer,
+                                                                     MediaSourceType::VIDEO, 1};
     task.execute();
 
     EXPECT_EQ(testContext->m_context.pendingStreamSyncMode, 1);

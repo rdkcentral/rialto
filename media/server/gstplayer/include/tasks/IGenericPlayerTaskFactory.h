@@ -339,12 +339,14 @@ public:
      *
      * @param[in] context           : The GstGenericPlayer context
      * @param[in] player            : The GstGenericPlayer instance
+     * @param[in] type              : The media source type to set stream sync mode
      * @param[in] streamSyncMode    : The streamSyncMode value to set
      *
      * @retval the new SetStreamSyncMode task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createSetStreamSyncMode(GenericPlayerContext &context,
                                                                  IGstGenericPlayerPrivate &player,
+                                                                 const firebolt::rialto::MediaSourceType &type,
                                                                  int32_t streamSyncMode) const = 0;
 
     /**

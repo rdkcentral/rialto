@@ -1078,18 +1078,18 @@ bool MediaPipelineServerInternal::setSyncOffInternal(bool syncOff)
     return m_gstPlayer->setSyncOff(syncOff);
 }
 
-bool MediaPipelineServerInternal::setStreamSyncMode(int32_t streamSyncMode)
+bool MediaPipelineServerInternal::setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = setStreamSyncModeInternal(streamSyncMode); };
+    auto task = [&]() { result = setStreamSyncModeInternal(sourceId, streamSyncMode); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::setStreamSyncModeInternal(int32_t streamSyncMode)
+bool MediaPipelineServerInternal::setStreamSyncModeInternal(int32_t sourceId, int32_t streamSyncMode)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -1098,7 +1098,16 @@ bool MediaPipelineServerInternal::setStreamSyncModeInternal(int32_t streamSyncMo
         RIALTO_SERVER_LOG_ERROR("Failed to set stream sync mode - Gstreamer player has not been loaded");
         return false;
     }
-    return m_gstPlayer->setStreamSyncMode(streamSyncMode);
+
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set stream sync mode - Source with id: %d not found", sourceId);
+        return false;
+    }
+
+    return m_gstPlayer->setStreamSyncMode(sourceIter->first, streamSyncMode);
 }
 
 bool MediaPipelineServerInternal::getStreamSyncMode(int32_t &streamSyncMode)

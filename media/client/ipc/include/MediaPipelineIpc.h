@@ -121,7 +121,7 @@ public:
 
     bool setSyncOff(bool syncOff) override;
 
-    bool setStreamSyncMode(int32_t streamSyncMode) override;
+    bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) override;
 
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
 

@@ -892,7 +892,8 @@ void MediaPipelineModuleService::setStreamSyncMode(::google::protobuf::RpcContro
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (!m_mediaPipelineService.setStreamSyncMode(request->session_id(), request->stream_sync_mode()))
+    if (!m_mediaPipelineService.setStreamSyncMode(request->session_id(), request->source_id(),
+                                                  request->stream_sync_mode()))
     {
         RIALTO_SERVER_LOG_ERROR("Set stream sync mode failed.");
         controller->SetFailed("Operation failed");

@@ -124,9 +124,9 @@ public:
 
     bool setSyncOff(bool syncOff) override { return m_mediaPipeline->setSyncOff(syncOff); }
 
-    bool setStreamSyncMode(int32_t streamSyncMode) override
+    bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) override
     {
-        return m_mediaPipeline->setStreamSyncMode(streamSyncMode);
+        return m_mediaPipeline->setStreamSyncMode(sourceId, streamSyncMode);
     }
 
     bool getStreamSyncMode(int32_t &streamSyncMode) override

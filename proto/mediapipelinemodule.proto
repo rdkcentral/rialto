@@ -566,12 +566,14 @@ message SetSyncOffResponse {
  * @brief Set stream sync mode property on the pipeline.
  *
  * @param[in] session_id        The id of the A/V session the request is for.
+ * @param[in] sourceId          The source id. Value should be set to the MediaSource.id returned after attachSource()
  * @param[in] stream_sync_mode  The stream sync mode value to set.
  *
  */
 message SetStreamSyncModeRequest {
     optional int32 session_id = 1 [default = -1];
-    optional int32 stream_sync_mode = 2;
+    optional int32 source_id = 2 [default = -1];
+    optional int32 stream_sync_mode = 3;
 }
 message SetStreamSyncModeResponse {
 }

@@ -278,11 +278,12 @@ MATCHER_P2(setSyncOffRequestMatcher, sessionId, syncOff, "")
     return ((kRequest->session_id() == sessionId) && (kRequest->sync_off() == syncOff));
 }
 
-MATCHER_P2(setStreamSyncModeRequestMatcher, sessionId, streamSyncMode, "")
+MATCHER_P3(setStreamSyncModeRequestMatcher, sessionId, sourceId, streamSyncMode, "")
 {
     const ::firebolt::rialto::SetStreamSyncModeRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::SetStreamSyncModeRequest *>(arg);
-    return ((kRequest->session_id() == sessionId) && (kRequest->stream_sync_mode() == streamSyncMode));
+    return ((kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId) &&
+            (kRequest->stream_sync_mode() == streamSyncMode));
 }
 
 MATCHER_P(getStreamSyncModeRequestMatcher, sessionId, "")

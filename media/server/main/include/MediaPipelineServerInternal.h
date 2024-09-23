@@ -146,7 +146,7 @@ public:
 
     bool setSyncOff(bool syncOff) override;
 
-    bool setStreamSyncMode(int32_t streamSyncMode) override;
+    bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) override;
 
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
 
@@ -561,11 +561,12 @@ protected:
     /**
      * @brief Set stream sync mode internally, only to be called on the main thread.
      *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
      * @param[in] streamSyncMode : The stream sync mode value to set.
      *
      * @retval true on success false otherwise
      */
-    bool setStreamSyncModeInternal(int32_t streamSyncMode);
+    bool setStreamSyncModeInternal(int32_t sourceId, int32_t streamSyncMode);
 
     /**
      * @brief Get stream sync mode internally, only to be called on the main thread.

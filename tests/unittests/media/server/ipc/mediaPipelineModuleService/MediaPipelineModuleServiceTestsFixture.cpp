@@ -637,13 +637,15 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetSyncOff()
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetStreamSyncMode()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setStreamSyncMode(kHardcodedSessionId, kStreamSyncMode)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setStreamSyncMode(kHardcodedSessionId, kSourceId, kStreamSyncMode))
+        .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetStreamSyncMode()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setStreamSyncMode(kHardcodedSessionId, kStreamSyncMode)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setStreamSyncMode(kHardcodedSessionId, kSourceId, kStreamSyncMode))
+        .WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetStreamSyncMode()
@@ -1287,6 +1289,7 @@ void MediaPipelineModuleServiceTests::sendSetStreamSyncModeRequestAndReceiveResp
     firebolt::rialto::SetStreamSyncModeResponse response;
 
     request.set_session_id(kHardcodedSessionId);
+    request.set_source_id(kSourceId);
     request.set_stream_sync_mode(kStreamSyncMode);
 
     m_service->setStreamSyncMode(m_controllerMock.get(), &request, &response, m_closureMock.get());

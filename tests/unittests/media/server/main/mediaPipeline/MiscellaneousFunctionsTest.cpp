@@ -743,7 +743,18 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeFai
 {
     mainThreadWillEnqueueTaskAndWait();
     constexpr int32_t kStreamSyncMode{1};
-    EXPECT_FALSE(m_mediaPipeline->setStreamSyncMode(kStreamSyncMode));
+    EXPECT_FALSE(m_mediaPipeline->setStreamSyncMode(m_kDummySourceId, kStreamSyncMode));
+}
+
+/**
+ * Test that SetStreamSyncMode returns failure if source is not attached
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeFailureNoSourceAttached)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    constexpr int32_t kStreamSyncMode{1};
+    EXPECT_FALSE(m_mediaPipeline->setStreamSyncMode(m_kDummySourceId, kStreamSyncMode));
 }
 
 /**
@@ -752,10 +763,11 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeFai
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeFailure)
 {
     loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
     mainThreadWillEnqueueTaskAndWait();
     constexpr int32_t kStreamSyncMode{1};
-    EXPECT_CALL(*m_gstPlayerMock, setStreamSyncMode(_)).WillOnce(Return(false));
-    EXPECT_FALSE(m_mediaPipeline->setStreamSyncMode(kStreamSyncMode));
+    EXPECT_CALL(*m_gstPlayerMock, setStreamSyncMode(firebolt::rialto::MediaSourceType::VIDEO, _)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->setStreamSyncMode(videoSourceId, kStreamSyncMode));
 }
 
 /**
@@ -765,10 +777,12 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeSuc
 {
     constexpr int32_t kStreamSyncMode{1};
     loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, setStreamSyncMode(kStreamSyncMode)).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstPlayerMock, setStreamSyncMode(firebolt::rialto::MediaSourceType::VIDEO, kStreamSyncMode))
+        .WillOnce(Return(true));
 
-    EXPECT_TRUE(m_mediaPipeline->setStreamSyncMode(kStreamSyncMode));
+    EXPECT_TRUE(m_mediaPipeline->setStreamSyncMode(videoSourceId, kStreamSyncMode));
 }
 
 /**
