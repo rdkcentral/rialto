@@ -50,7 +50,7 @@ public:
     MOCK_METHOD(bool, getStats, (int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames), (override));
     MOCK_METHOD(bool, setPlaybackRate, (double rate), (override));
     MOCK_METHOD(bool, renderFrame, (), (override));
-    MOCK_METHOD(bool, setVolume, (double volume), (override));
+    MOCK_METHOD(bool, setVolume, (double targetVolume, uint32_t volumeDuration, EaseType easeType), (override));
     MOCK_METHOD(bool, getVolume, (double &volume), (override));
     MOCK_METHOD(bool, setMute, (int32_t sourceId, bool mute), (override));
     MOCK_METHOD(bool, getMute, (int32_t sourceId, bool &mute), (override));

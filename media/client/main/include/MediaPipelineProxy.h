@@ -95,9 +95,12 @@ public:
 
     bool renderFrame() override { return m_mediaPipeline->renderFrame(); }
 
-    bool setVolume(double volume) override { return m_mediaPipeline->setVolume(volume); }
+    bool setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType) override
+    {
+        return m_mediaPipeline->setVolume(targetVolume, volumeDuration, easeType);
+    }
 
-    bool getVolume(double &volume) override { return m_mediaPipeline->getVolume(volume); }
+    bool getVolume(double &currentVolume) override { return m_mediaPipeline->getVolume(currentVolume); }
 
     bool setMute(int32_t sourceId, bool mute) override { return m_mediaPipeline->setMute(sourceId, mute); }
 

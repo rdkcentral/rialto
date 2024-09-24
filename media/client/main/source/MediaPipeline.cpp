@@ -469,16 +469,16 @@ bool MediaPipeline::renderFrame()
     return m_mediaPipelineIpc->renderFrame();
 }
 
-bool MediaPipeline::setVolume(double volume)
+bool MediaPipeline::setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    return m_mediaPipelineIpc->setVolume(volume);
+    return m_mediaPipelineIpc->setVolume(targetVolume, volumeDuration, easeType);
 }
 
-bool MediaPipeline::getVolume(double &volume)
+bool MediaPipeline::getVolume(double &currentVolume)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    return m_mediaPipelineIpc->getVolume(volume);
+    return m_mediaPipelineIpc->getVolume(currentVolume);
 }
 
 bool MediaPipeline::setMute(int32_t sourceId, bool mute)

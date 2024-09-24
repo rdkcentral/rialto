@@ -101,7 +101,7 @@ public:
 
     bool renderFrame() override;
 
-    bool setVolume(double volume) override;
+    bool setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType) override;
 
     bool getVolume(double &volume) override;
 
@@ -268,6 +268,11 @@ private:
      * @brief Converts the Layout enum to protobuf AttachSourceRequest Layout.
      */
     firebolt::rialto::AttachSourceRequest_AudioConfig_Layout convertLayout(const firebolt::rialto::Layout &layout);
+
+    /**
+     * @brief Converts the EaseType enum to protobuf SetVolumeRequest EaseType.
+     */
+    firebolt::rialto::SetVolumeRequest_EaseType convertEaseType(const firebolt::rialto::EaseType &easeType);
 };
 
 }; // namespace firebolt::rialto::client

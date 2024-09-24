@@ -66,6 +66,8 @@ constexpr firebolt::rialto::NetworkState kNetworkState{firebolt::rialto::Network
 constexpr firebolt::rialto::QosInfo kQosInfo{5u, 2u};
 constexpr double kRate{1.5};
 constexpr double kVolume{0.7};
+constexpr uint32_t kVolumeDuration{1000};
+const firebolt::rialto::EaseType kEaseType{firebolt::rialto::EaseType::EASE_LINEAR};
 constexpr bool kMute{false};
 constexpr bool kLowLatency{true};
 constexpr bool kSync{true};
@@ -516,13 +518,15 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToRenderFrame(
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetVolume()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setVolume(kHardcodedSessionId, kVolume)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setVolume(kHardcodedSessionId, kVolume, kVolumeDuration, kEaseType))
+        .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetVolume()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setVolume(kHardcodedSessionId, kVolume)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, setVolume(kHardcodedSessionId, kVolume, kVolumeDuration, kEaseType))
+        .WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetVolume()
@@ -1103,6 +1107,8 @@ void MediaPipelineModuleServiceTests::sendSetVolumeRequestAndReceiveResponse()
 
     request.set_session_id(kHardcodedSessionId);
     request.set_volume(kVolume);
+    request.set_volume_duration(kVolumeDuration);
+    request.set_ease_type(convertEaseType(kEaseType));
 
     m_service->setVolume(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

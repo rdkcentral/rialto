@@ -75,6 +75,11 @@ std::shared_ptr<GenericTasksTestsContext> testContext;
 
 constexpr firebolt::rialto::server::Rectangle kRectangle{1, 2, 3, 4};
 constexpr double kVolume{0.7};
+constexpr uint32_t kVolumeDuration{1000};
+constexpr uint32_t kNoVolumeDuration{0};
+constexpr firebolt::rialto::EaseType kEaseLinearType{firebolt::rialto::EaseType::EASE_LINEAR};
+constexpr firebolt::rialto::EaseType kEaseInCubicType{firebolt::rialto::EaseType::EASE_IN_CUBIC};
+constexpr firebolt::rialto::EaseType kEaseOutCubicType{firebolt::rialto::EaseType::EASE_OUT_CUBIC};
 constexpr gulong kSignalId{123};
 constexpr auto kAudioSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::AUDIO)};
 constexpr auto kVideoSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::VIDEO)};
@@ -881,18 +886,170 @@ void GenericTasksTestsBase::triggerSetupSource()
     task.execute();
     EXPECT_EQ(testContext->m_context.source, testContext->m_element);
 }
+std::string GenericTasksTestsBase::getFadeString(double targetVolume, uint32_t volumeDuration,
+                                                 firebolt::rialto::EaseType easeType)
+{
+    gchar fadeStr[32];
+    uint32_t scaledTarget = trunc(100 * targetVolume);
+    std::string easeString = "L";
+
+    switch (easeType)
+    {
+    default:
+    case firebolt::rialto::EaseType::EASE_LINEAR:
+        easeString = "L";
+        break;
+    case firebolt::rialto::EaseType::EASE_IN_CUBIC:
+        easeString = "I";
+        break;
+    case firebolt::rialto::EaseType::EASE_OUT_CUBIC:
+        easeString = "O";
+        break;
+    }
+
+    snprintf(reinterpret_cast<gchar *>(fadeStr), sizeof(fadeStr), "%u,%u,%s", scaledTarget, volumeDuration,
+             easeString.c_str());
+    return std::string(fadeStr);
+}
+
+void GenericTasksTestsBase::shouldSetAudioFadeAndEaseTypeLinear()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::AUDIO))
+        .WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq("audio-fade")))
+        .WillOnce(Return(&testContext->m_paramSpec));
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectSetStrStub(testContext->m_element, StrEq("audio-fade"),
+                                  StrEq(getFadeString(kVolume, kVolumeDuration, kEaseLinearType).c_str())));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element)));
+}
+
+void GenericTasksTestsBase::shouldSetAudioFadeAndEaseTypeCubicIn()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::AUDIO))
+        .WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq("audio-fade")))
+        .WillOnce(Return(&testContext->m_paramSpec));
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectSetStrStub(testContext->m_element, StrEq("audio-fade"),
+                                  StrEq(getFadeString(kVolume, kVolumeDuration, kEaseInCubicType).c_str())));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element)));
+}
+void GenericTasksTestsBase::shouldSetAudioFadeAndEaseTypeCubicOut()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::AUDIO))
+        .WillOnce(Return(testContext->m_element));
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq("audio-fade")))
+        .WillOnce(Return(&testContext->m_paramSpec));
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectSetStrStub(testContext->m_element, StrEq("audio-fade"),
+                                  StrEq(getFadeString(kVolume, kVolumeDuration, kEaseOutCubicType).c_str())));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(GST_OBJECT(testContext->m_element)));
+}
+
+firebolt::rialto::wrappers::rgu_Ease convertEaseType(firebolt::rialto::EaseType easeType)
+{
+    switch (easeType)
+    {
+    case EaseType::EASE_LINEAR:
+        return firebolt::rialto::wrappers::rgu_Ease::EaseLinear;
+    case EaseType::EASE_IN_CUBIC:
+        return firebolt::rialto::wrappers::rgu_Ease::EaseInCubic;
+    case EaseType::EASE_OUT_CUBIC:
+        return firebolt::rialto::wrappers::rgu_Ease::EaseOutCubic;
+    default:
+        ADD_FAILURE() << "Invalid EaseType provided: " << static_cast<int>(easeType);
+        return firebolt::rialto::wrappers::rgu_Ease::EaseLinear;
+    }
+}
+
+void GenericTasksTestsBase::shouldSetAudioFadeInSocWithLinearEaseType()
+{
+    firebolt::rialto::wrappers::rgu_Ease convertedEaseType = convertEaseType(kEaseLinearType);
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_rdkGstreamerUtilsWrapper, isSocAudioFadeSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_rdkGstreamerUtilsWrapper,
+                doAudioEasingonSoc(kVolume, kVolumeDuration, convertedEaseType));
+}
+
+void GenericTasksTestsBase::shouldSetAudioFadeInSocWithCubicInEaseType()
+{
+    firebolt::rialto::wrappers::rgu_Ease convertedEaseType = convertEaseType(kEaseInCubicType);
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_rdkGstreamerUtilsWrapper, isSocAudioFadeSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_rdkGstreamerUtilsWrapper,
+                doAudioEasingonSoc(kVolume, kVolumeDuration, convertedEaseType));
+}
+
+void GenericTasksTestsBase::shouldSetAudioFadeInSocWithCubicOutEaseType()
+{
+    firebolt::rialto::wrappers::rgu_Ease convertedEaseType = convertEaseType(kEaseOutCubicType);
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_rdkGstreamerUtilsWrapper, isSocAudioFadeSupported()).WillOnce(Return(true));
+    EXPECT_CALL(*testContext->m_rdkGstreamerUtilsWrapper,
+                doAudioEasingonSoc(kVolume, kVolumeDuration, convertedEaseType));
+}
 
 void GenericTasksTestsBase::shouldSetGstVolume()
 {
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
     EXPECT_CALL(*testContext->m_gstWrapper, gstStreamVolumeSetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR, kVolume));
 }
 
 void GenericTasksTestsBase::triggerSetVolume()
 {
-    firebolt::rialto::server::tasks::generic::SetVolume task{testContext->m_context, testContext->m_gstWrapper, kVolume};
+    firebolt::rialto::server::tasks::generic::SetVolume task{testContext->m_context,
+                                                             testContext->m_gstPlayer,
+                                                             testContext->m_gstWrapper,
+                                                             testContext->m_glibWrapper,
+                                                             testContext->m_rdkGstreamerUtilsWrapper,
+                                                             kVolume,
+                                                             kNoVolumeDuration,
+                                                             kEaseLinearType};
     task.execute();
 }
 
+void GenericTasksTestsBase::triggerSetVolumeEaseTypeLinear()
+{
+    firebolt::rialto::server::tasks::generic::SetVolume task{testContext->m_context,
+                                                             testContext->m_gstPlayer,
+                                                             testContext->m_gstWrapper,
+                                                             testContext->m_glibWrapper,
+                                                             testContext->m_rdkGstreamerUtilsWrapper,
+                                                             kVolume,
+                                                             kVolumeDuration,
+                                                             kEaseLinearType};
+    task.execute();
+}
+
+void GenericTasksTestsBase::triggerSetVolumeEaseTypeCubicIn()
+{
+    firebolt::rialto::server::tasks::generic::SetVolume task{testContext->m_context,
+                                                             testContext->m_gstPlayer,
+                                                             testContext->m_gstWrapper,
+                                                             testContext->m_glibWrapper,
+                                                             testContext->m_rdkGstreamerUtilsWrapper,
+                                                             kVolume,
+                                                             kVolumeDuration,
+                                                             kEaseInCubicType};
+    task.execute();
+}
+
+void GenericTasksTestsBase::triggerSetVolumeEaseTypeCubicOut()
+{
+    firebolt::rialto::server::tasks::generic::SetVolume task{testContext->m_context,
+                                                             testContext->m_gstPlayer,
+                                                             testContext->m_gstWrapper,
+                                                             testContext->m_glibWrapper,
+                                                             testContext->m_rdkGstreamerUtilsWrapper,
+                                                             kVolume,
+                                                             kVolumeDuration,
+                                                             kEaseOutCubicType};
+    task.execute();
+}
 void GenericTasksTestsBase::shouldAttachAllAudioSamples()
 {
     std::shared_ptr<firebolt::rialto::CodecData> kNullCodecData{};

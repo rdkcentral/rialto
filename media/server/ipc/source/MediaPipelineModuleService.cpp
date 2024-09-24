@@ -51,6 +51,26 @@ firebolt::rialto::MediaType convertMediaType(const firebolt::rialto::LoadRequest
     return firebolt::rialto::MediaType::UNKNOWN;
 }
 
+firebolt::rialto::EaseType convertEaseType(const firebolt::rialto::SetVolumeRequest_EaseType &easeType)
+{
+    switch (easeType)
+    {
+    case firebolt::rialto::SetVolumeRequest_EaseType::SetVolumeRequest_EaseType_EASE_LINEAR:
+    {
+        return firebolt::rialto::EaseType::EASE_LINEAR;
+    }
+    case firebolt::rialto::SetVolumeRequest_EaseType::SetVolumeRequest_EaseType_EASE_IN_CUBIC:
+    {
+        return firebolt::rialto::EaseType::EASE_IN_CUBIC;
+    }
+    case firebolt::rialto::SetVolumeRequest_EaseType::SetVolumeRequest_EaseType_EASE_OUT_CUBIC:
+    {
+        return firebolt::rialto::EaseType::EASE_OUT_CUBIC;
+    }
+    }
+    return firebolt::rialto::EaseType::EASE_LINEAR;
+}
+
 firebolt::rialto::MediaSourceStatus
 convertMediaSourceStatus(const firebolt::rialto::HaveDataRequest_MediaSourceStatus &status)
 {
@@ -695,7 +715,8 @@ void MediaPipelineModuleService::setVolume(::google::protobuf::RpcController *co
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (!m_mediaPipelineService.setVolume(request->session_id(), request->volume()))
+    if (!m_mediaPipelineService.setVolume(request->session_id(), request->volume(), request->volume_duration(),
+                                          convertEaseType(request->ease_type())))
     {
         RIALTO_SERVER_LOG_ERROR("Set volume failed.");
         controller->SetFailed("Operation failed");

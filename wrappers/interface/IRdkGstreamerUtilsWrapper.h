@@ -50,6 +50,14 @@ struct AudioAttributesPrivate
     std::uint32_t m_codecSpecificDataLen{0};
 };
 
+enum rgu_Ease
+{
+    EaseLinear = 0,
+    EaseInCubic,
+    EaseOutCubic,
+    EaseCount
+};
+
 class IRdkGstreamerUtilsWrapper;
 class IRdkGstreamerUtilsWrapperFactory
 {
@@ -85,6 +93,8 @@ public:
         GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled, GstElement *aSrc, bool *ret) const = 0;
     virtual void processAudioGap(GstElement *pipeline, gint64 gapstartpts, gint32 gapduration, gint64 gapdiscontinuity,
                                  bool audioaac) const = 0;
+    virtual void doAudioEasingonSoc(double target, uint32_t duration, rgu_Ease ease) const = 0;
+    virtual bool isSocAudioFadeSupported() const = 0;
 };
 } // namespace firebolt::rialto::wrappers
 

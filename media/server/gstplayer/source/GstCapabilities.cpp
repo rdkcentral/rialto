@@ -135,7 +135,18 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
         {
             throw std::runtime_error("Cannot create GlibWrapper");
         }
-        gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper);
+
+        std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> rdkGstreamerUtilsWrapperFactory =
+            firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory::getFactory();
+        std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper;
+
+        if ((!rdkGstreamerUtilsWrapperFactory) ||
+            (!(rdkGstreamerUtilsWrapper = rdkGstreamerUtilsWrapperFactory->createRdkGstreamerUtilsWrapper())))
+        {
+            throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
+        }
+
+        gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper, rdkGstreamerUtilsWrapper);
     }
     catch (const std::exception &e)
     {
@@ -145,9 +156,11 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
     return gstCapabilities;
 }
 
-GstCapabilities::GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
-    : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
+GstCapabilities::GstCapabilities(
+    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper)
+    : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}
 {
     fillSupportedMimeTypes();
 }
@@ -241,6 +254,18 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
         }
     }
 
+    // Some sinks do not specifically support the "audio-fade" property, but the mechanism is supported through the use
+    // of the rdk_gstreamer_utils library. Check for audio fade support if the property is required and we haven't found it in the sinks.
+    if (propertiesToLookFor.find("audio-fade") != propertiesToLookFor.end())
+    {
+        bool socAudioFadeSupported = m_rdkGstreamerUtilsWrapper->isSocAudioFadeSupported();
+        if (socAudioFadeSupported)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Audio fade property is supported by the SoC");
+            propertiesFound.push_back("audio-fade"); // Add "audio-fade" if supported by SoC
+        }
+    }
+    // Cleanup
     m_gstWrapper->gstPluginFeatureListFree(factories);
     return propertiesFound;
 }

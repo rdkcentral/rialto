@@ -64,7 +64,7 @@ protected:
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock;
 
     // MediaPipeline object
-    std::unique_ptr<MediaPipeline> m_mediaPipeline;
+    std::shared_ptr<MediaPipeline> m_mediaPipeline;
 
     void SetUp();
     void TearDown();

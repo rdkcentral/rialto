@@ -126,6 +126,15 @@ protected:
     // SetVolume test methods
     void shouldSetGstVolume();
     void triggerSetVolume();
+    void triggerSetVolumeEaseTypeLinear();
+    void triggerSetVolumeEaseTypeCubicIn();
+    void triggerSetVolumeEaseTypeCubicOut();
+    void shouldSetAudioFadeAndEaseTypeLinear();
+    void shouldSetAudioFadeAndEaseTypeCubicIn();
+    void shouldSetAudioFadeAndEaseTypeCubicOut();
+    void shouldSetAudioFadeInSocWithLinearEaseType();
+    void shouldSetAudioFadeInSocWithCubicInEaseType();
+    void shouldSetAudioFadeInSocWithCubicOutEaseType();
 
     // AttachSamples test methods
     void shouldAttachAllAudioSamples();
@@ -405,6 +414,11 @@ private:
     void expectAddChannelAndRateAudioToCaps();
     void expectAddRawAudioDataToCaps();
     void expectSetCaps();
+
+    // Set property helpers
+    template <typename T> void expectSetProperty(const std::string &propertyName, const T &value);
+    void expectPropertyDoesntExist(const std::string &propertyName);
+    std::string getFadeString(double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType);
 };
 
 #endif // GENERIC_TASKS_TESTS_BASE_H_

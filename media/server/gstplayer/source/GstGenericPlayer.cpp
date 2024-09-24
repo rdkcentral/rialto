@@ -408,6 +408,14 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
     }
     else
     {
+        if (m_context.pipeline == nullptr)
+        {
+            RIALTO_SERVER_LOG_WARN("Pipeline is NULL!");
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pipeline is valid: %p", m_context.pipeline);
+        }
         m_glibWrapper->gObjectGet(m_context.pipeline, kSinkName, &sink, nullptr);
         if (sink)
         {
@@ -1290,11 +1298,12 @@ void GstGenericPlayer::renderFrame()
     }
 }
 
-void GstGenericPlayer::setVolume(double volume)
+void GstGenericPlayer::setVolume(double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetVolume(m_context, volume));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createSetVolume(m_context, *this, targetVolume, volumeDuration, easeType));
     }
 }
 

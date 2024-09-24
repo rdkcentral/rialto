@@ -55,6 +55,8 @@ constexpr firebolt::rialto::MediaSourceStatus kStatus{firebolt::rialto::MediaSou
 constexpr std::uint32_t kNeedDataRequestId{17};
 constexpr std::uint32_t kNumFrames{1};
 constexpr double kVolume{0.7};
+constexpr uint32_t kVolumeDuration{1000};
+constexpr firebolt::rialto::EaseType kEaseType{firebolt::rialto::EaseType::EASE_LINEAR};
 constexpr bool kMute{false};
 constexpr bool kResetTime{true};
 constexpr uint64_t kRenderedFrames{987654};
@@ -265,12 +267,12 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToRenderFrame()
 
 void MediaPipelineServiceTests::mediaPipelineWillSetVolume()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setVolume(_)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, setVolume(_, _, _)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToSetVolume()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setVolume(_)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, setVolume(_, _, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillGetVolume()
@@ -712,25 +714,25 @@ void MediaPipelineServiceTests::renderFrameShouldFail()
 
 void MediaPipelineServiceTests::setVolumeShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->setVolume(kSessionId, kVolume));
+    EXPECT_TRUE(m_sut->setVolume(kSessionId, kVolume, kVolumeDuration, kEaseType));
 }
 
 void MediaPipelineServiceTests::setVolumeShouldFail()
 {
-    EXPECT_FALSE(m_sut->setVolume(kSessionId, kVolume));
+    EXPECT_FALSE(m_sut->setVolume(kSessionId, kVolume, kVolumeDuration, kEaseType));
 }
 
 void MediaPipelineServiceTests::getVolumeShouldSucceed()
 {
-    double targetVolume{};
-    EXPECT_TRUE(m_sut->getVolume(kSessionId, targetVolume));
-    EXPECT_EQ(targetVolume, kVolume);
+    double currentVolume{};
+    EXPECT_TRUE(m_sut->getVolume(kSessionId, currentVolume));
+    EXPECT_EQ(currentVolume, kVolume);
 }
 
 void MediaPipelineServiceTests::getVolumeShouldFail()
 {
-    double targetVolume{};
-    EXPECT_FALSE(m_sut->getVolume(kSessionId, targetVolume));
+    double currentVolume{};
+    EXPECT_FALSE(m_sut->getVolume(kSessionId, currentVolume));
 }
 
 void MediaPipelineServiceTests::setMuteShouldSucceed()

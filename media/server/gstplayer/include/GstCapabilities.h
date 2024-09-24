@@ -23,6 +23,7 @@
 #include "IGlibWrapper.h"
 #include "IGstCapabilities.h"
 #include "IGstWrapper.h"
+#include "IRdkGstreamerUtilsWrapper.h"
 
 #include <memory>
 #include <string>
@@ -53,8 +54,10 @@ public:
 class GstCapabilities : public IGstCapabilities
 {
 public:
-    explicit GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                             const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper);
+    explicit GstCapabilities(
+        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+        const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+        const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper);
     ~GstCapabilities() = default;
 
     GstCapabilities(const GstCapabilities &) = delete;
@@ -132,6 +135,7 @@ private:
      */
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
 };
 
 }; // namespace firebolt::rialto::server

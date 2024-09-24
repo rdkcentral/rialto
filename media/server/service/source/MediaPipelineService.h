@@ -73,7 +73,7 @@ public:
     bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
                   std::uint32_t needDataRequestId) override;
     bool renderFrame(int sessionId) override;
-    bool setVolume(int sessionId, double volume) override;
+    bool setVolume(int sessionId, double targetVolume, uint32_t volumeDuration, EaseType easeType) override;
     bool getVolume(int sessionId, double &volume) override;
     bool setMute(int sessionId, std::int32_t sourceId, bool mute) override;
     bool getMute(int sessionId, std::int32_t sourceId, bool &mute) override;

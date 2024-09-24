@@ -22,7 +22,9 @@
 class RialtoClientMediaPipelineSetVolumeTest : public MediaPipelineTestBase
 {
 protected:
-    const double m_kVolume{0.7};
+    const double m_kTargetVolume{0.7};
+    const uint32_t m_kVolumeDuration = 0;
+    const firebolt::rialto::EaseType m_kEaseType = firebolt::rialto::EaseType::EASE_LINEAR;
 
     virtual void SetUp()
     {
@@ -44,17 +46,29 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeSuccess)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kVolume)).WillOnce(Return(true));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kTargetVolume, m_kVolumeDuration, m_kEaseType)).WillOnce(Return(true));
 
-    EXPECT_EQ(m_mediaPipeline->setVolume(m_kVolume), true);
+    EXPECT_EQ(m_mediaPipeline->setVolume(m_kTargetVolume, m_kVolumeDuration, m_kEaseType), true);
 }
 
+/**
+ * Test that setVolume returns success when only volume is passed, and ease type and duration are default.
+ */
+TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeWithNoEaseTypeAndDuration)
+{
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kTargetVolume, m_kVolumeDuration, m_kEaseType)).WillOnce(Return(true));
+
+    auto mediaPipeline = std::dynamic_pointer_cast<IMediaPipeline>(m_mediaPipeline);
+    ASSERT_NE(mediaPipeline, nullptr);
+
+    EXPECT_EQ(mediaPipeline->setVolume(m_kTargetVolume), true);
+}
 /**
  * Test that setVolume returns failure if the IPC API fails.
  */
 TEST_F(RialtoClientMediaPipelineSetVolumeTest, setVolumeFailure)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kVolume)).WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setVolume(m_kTargetVolume, m_kVolumeDuration, m_kEaseType)).WillOnce(Return(false));
 
-    EXPECT_EQ(m_mediaPipeline->setVolume(m_kVolume), false);
+    EXPECT_EQ(m_mediaPipeline->setVolume(m_kTargetVolume, m_kVolumeDuration, m_kEaseType), false);
 }

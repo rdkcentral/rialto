@@ -51,7 +51,8 @@ public:
     MOCK_METHOD(bool, setVideoWindow, (int, std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t), (override));
     MOCK_METHOD(bool, haveData, (int, MediaSourceStatus, std::uint32_t, std::uint32_t), (override));
     MOCK_METHOD(bool, renderFrame, (int), (override));
-    MOCK_METHOD(bool, setVolume, (int sessionId, double volume), (override));
+    MOCK_METHOD(bool, setVolume, (int sessionId, double targetVolume, uint32_t volumeDuration, EaseType easeType),
+                (override));
     MOCK_METHOD(bool, getVolume, (int sessionId, double &volume), (override));
 
     MOCK_METHOD(bool, setMute, (int sessionId, std::int32_t sourceId, bool mute), (override));

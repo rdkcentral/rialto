@@ -67,17 +67,20 @@ protected:
     void getContext(const std::function<void(GenericPlayerContext &)> &fun)
     {
         // Call any method to modify GstGenericPlayer context
-        double volume{};
+        double targetVolume{};
+        uint32_t volumeDuration{};
+        firebolt::rialto::EaseType easeType{};
         std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
         EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-        EXPECT_CALL(m_taskFactoryMock, createSetVolume(_, volume))
+        EXPECT_CALL(m_taskFactoryMock, createSetVolume(_, _, targetVolume, volumeDuration, easeType))
             .WillOnce(Invoke(
-                [&](GenericPlayerContext &m_context, double volume)
+                [&](GenericPlayerContext &m_context, IGstGenericPlayerPrivate &m_player, double targetVolume,
+                    uint32_t volumeDuration, firebolt::rialto::EaseType easeType)
                 {
                     fun(m_context);
                     return std::move(task);
                 }));
-        m_sut->setVolume(volume);
+        m_sut->setVolume(targetVolume, volumeDuration, easeType);
     }
 
     GstElement *fakeElement()

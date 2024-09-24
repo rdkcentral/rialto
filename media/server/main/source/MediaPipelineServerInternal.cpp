@@ -812,18 +812,18 @@ bool MediaPipelineServerInternal::renderFrameInternal()
     return true;
 }
 
-bool MediaPipelineServerInternal::setVolume(double volume)
+bool MediaPipelineServerInternal::setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = setVolumeInternal(volume); };
+    auto task = [&]() { result = setVolumeInternal(targetVolume, volumeDuration, easeType); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::setVolumeInternal(double volume)
+bool MediaPipelineServerInternal::setVolumeInternal(double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -832,22 +832,22 @@ bool MediaPipelineServerInternal::setVolumeInternal(double volume)
         RIALTO_SERVER_LOG_ERROR("Failed to set volume - Gstreamer player has not been loaded");
         return false;
     }
-    m_gstPlayer->setVolume(volume);
+    m_gstPlayer->setVolume(targetVolume, volumeDuration, easeType);
     return true;
 }
 
-bool MediaPipelineServerInternal::getVolume(double &volume)
+bool MediaPipelineServerInternal::getVolume(double &currentVolume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = getVolumeInternal(volume); };
+    auto task = [&]() { result = getVolumeInternal(currentVolume); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::getVolumeInternal(double &volume)
+bool MediaPipelineServerInternal::getVolumeInternal(double &currentVolume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -856,7 +856,7 @@ bool MediaPipelineServerInternal::getVolumeInternal(double &volume)
         RIALTO_SERVER_LOG_ERROR("Failed to get volume - Gstreamer player has not been loaded");
         return false;
     }
-    return m_gstPlayer->getVolume(volume);
+    return m_gstPlayer->getVolume(currentVolume);
 }
 
 bool MediaPipelineServerInternal::setMute(std::int32_t sourceId, bool mute)
