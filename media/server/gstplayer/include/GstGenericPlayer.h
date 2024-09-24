@@ -147,8 +147,10 @@ private:
     bool setLowLatency() override;
     bool setSync() override;
     bool setSyncOff() override;
-    bool setStreamSyncMode() override;
+    bool setStreamSyncMode(const MediaSourceType &type) override;
     bool setRenderFrame() override;
+    bool setBufferingLimit() override;
+    bool setUseBuffering() override;
     void notifyNeedMediaData(const MediaSourceType mediaSource) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachData(const firebolt::rialto::MediaSourceType mediaType) override;
@@ -281,6 +283,15 @@ private:
      * @retval The decoder, NULL if not found
      */
     GstElement *getDecoder(const MediaSourceType &mediaSourceType);
+
+    /**
+     * @brief Gets the filter element for source type.
+     *
+     * @param[in] mediaSourceType : the source type to obtain the filter for
+     *
+     * @retval The filter, NULL if not found
+     */
+    GstElement *getFilter(const MediaSourceType &mediaSourceType);
 
 private:
     /**

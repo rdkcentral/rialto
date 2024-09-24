@@ -37,5 +37,11 @@ SetBufferingLimit::~SetBufferingLimit()
 void SetBufferingLimit::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetBufferingLimit");
+
+    m_context.pendingBufferingLimit = m_limit;
+    if (m_context.pipeline)
+    {
+        m_player.setBufferingLimit();
+    }
 }
 } // namespace firebolt::rialto::server::tasks::generic

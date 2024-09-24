@@ -215,6 +215,32 @@ void GstGenericPlayerTestCommon::expectGetDecoder(GstElement *element)
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
 }
 
+void GstGenericPlayerTestCommon::expectGetAudioFilter(GstElement *element)
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
+    EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(element));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(element)).WillOnce(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_PARSER |
+                                                                           GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
+}
+
+void GstGenericPlayerTestCommon::expectGetVideoFilter(GstElement *element)
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
+    EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(element));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(element)).WillOnce(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_PARSER |
+                                                                           GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO)))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
+}
+
 void GstGenericPlayerTestCommon::expectGetSink(const std::string &sinkName, GstElement *elementObj)
 {
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(sinkName.c_str()), _))
@@ -233,4 +259,9 @@ void GstGenericPlayerTestCommon::expectNoDecoder()
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_DONE));
     EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
+}
+
+void GstGenericPlayerTestCommon::expectNoFilter()
+{
+    expectNoDecoder();
 }

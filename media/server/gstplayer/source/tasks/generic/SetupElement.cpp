@@ -249,9 +249,13 @@ void SetupElement::execute() const
         {
             m_player.setSyncOff();
         }
-        if (m_context.pendingStreamSyncMode.has_value())
+        if (m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) != m_context.pendingStreamSyncMode.end())
         {
-            m_player.setStreamSyncMode();
+            m_player.setStreamSyncMode(MediaSourceType::AUDIO);
+        }
+        if (m_context.pendingBufferingLimit.has_value())
+        {
+            m_player.setBufferingLimit();
         }
     }
     else if (isAudioSink(*m_gstWrapper, m_element))
@@ -263,6 +267,20 @@ void SetupElement::execute() const
         if (m_context.pendingSync.has_value())
         {
             m_player.setSync();
+        }
+    }
+    else if (isVideoFilter(*m_gstWrapper, m_element))
+    {
+        if (m_context.pendingStreamSyncMode.find(MediaSourceType::VIDEO) != m_context.pendingStreamSyncMode.end())
+        {
+            m_player.setStreamSyncMode(MediaSourceType::VIDEO);
+        }
+    }
+    else if (isAudioFilter(*m_gstWrapper, m_element))
+    {
+        if (m_context.pendingUseBuffering.has_value())
+        {
+            m_player.setUseBuffering();
         }
     }
 

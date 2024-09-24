@@ -65,6 +65,24 @@ TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingStreamSyncMode)
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingStreamSyncMode)
+{
+    shouldSetupVideoFilterElementWithPendingStreamSyncMode();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingBufferingLimit)
+{
+    shouldSetupAudioDecoderElementWithPendingBufferingLimit();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingUseBuffering)
+{
+    shouldSetupAudioFilterElementWithPendingUseBuffering();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingRenderFrame)
 {
     shouldSetupVideoSinkElementWithPendingRenderFrame();

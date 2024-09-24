@@ -38,10 +38,10 @@ void SetStreamSyncMode::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetStreamSyncMode");
 
-    m_context.pendingStreamSyncMode = m_streamSyncMode;
+    m_context.pendingStreamSyncMode.emplace(m_type, m_streamSyncMode);
     if (m_context.pipeline)
     {
-        m_player.setStreamSyncMode();
+        m_player.setStreamSyncMode(m_type);
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

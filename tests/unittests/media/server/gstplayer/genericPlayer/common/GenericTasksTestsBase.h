@@ -85,6 +85,9 @@ protected:
     void shouldSetupAudioSinkElementWithPendingSync();
     void shouldSetupAudioDecoderElementWithPendingSyncOff();
     void shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
+    void shouldSetupVideoFilterElementWithPendingStreamSyncMode();
+    void shouldSetupAudioDecoderElementWithPendingBufferingLimit();
+    void shouldSetupAudioFilterElementWithPendingUseBuffering();
     void shouldSetupVideoSinkElementWithPendingRenderFrame();
     void shouldSetupVideoElementAmlhalasink();
     void shouldSetupAudioElementBrcmAudioSink();
@@ -278,6 +281,14 @@ protected:
     void shouldSetStreamSyncMode();
     void triggerSetStreamSyncMode();
 
+    // buffering limit property test methods
+    void shouldSetBufferingLimit();
+    void triggerSetBufferingLimit();
+
+    // use buffering property test methods
+    void shouldSetUseBuffering();
+    void triggerSetUseBuffering();
+
     // SetPosition test methods
     void triggerSetPositionNullClient();
     void triggerSetPosition();
@@ -407,6 +418,8 @@ private:
     void expectSetupVideoDecoderElement();
     void expectSetupAudioSinkElement();
     void expectSetupAudioDecoderElement();
+    void expectSetupVideoFilterElement();
+    void expectSetupAudioFilterElement();
 
     // AttachSource helper methods
     void expectSetGenericVideoCaps();

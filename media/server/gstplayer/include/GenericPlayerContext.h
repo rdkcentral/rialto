@@ -152,9 +152,19 @@ struct GenericPlayerContext
     std::optional<bool> pendingSyncOff{};
 
     /**
+     * @brief Pending buffering limit
+     */
+    std::optional<uint32_t> pendingBufferingLimit{};
+
+    /**
+     * @brief Pending use buffering
+     */
+    std::optional<bool> pendingUseBuffering{};
+
+    /**
      * @brief Pending stream sync mode
      */
-    std::optional<int32_t> pendingStreamSyncMode{};
+    std::map<MediaSourceType, int32_t> pendingStreamSyncMode{};
 
     /**
      * @brief Pending render frame

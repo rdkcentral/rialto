@@ -59,6 +59,36 @@ bool isAudioDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, G
                                                                GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
 }
 
+bool isVideoFilter(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
+{
+    if (!element)
+    {
+        return false;
+    }
+    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
+    if (!factory)
+    {
+        return false;
+    }
+    return gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_PARSER |
+                                                               GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
+}
+
+bool isAudioFilter(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
+{
+    if (!element)
+    {
+        return false;
+    }
+    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
+    if (!factory)
+    {
+        return false;
+    }
+    return gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_PARSER |
+                                                               GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
+}
+
 bool isVideoSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
     if (!element)
