@@ -44,7 +44,8 @@ using ::testing::UnorderedElementsAre;
 namespace
 {
 const GstElementFactoryListType kExpectedFactoryListType{
-    GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+    GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_PARSER |
+    GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
 }; // namespace
 template <typename T> class GListWrapper
 {
