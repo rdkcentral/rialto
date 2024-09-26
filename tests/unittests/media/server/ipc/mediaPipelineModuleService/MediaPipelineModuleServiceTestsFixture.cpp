@@ -75,6 +75,7 @@ constexpr bool kSyncOff{true};
 constexpr int32_t kStreamSyncMode{1};
 constexpr firebolt::rialto::PlaybackError kPlaybackError{firebolt::rialto::PlaybackError::DECRYPTION};
 constexpr bool kResetTime{true};
+constexpr double kAppliedRate{2.0};
 constexpr firebolt::rialto::Layout kLayout{firebolt::rialto::Layout::INTERLEAVED};
 constexpr firebolt::rialto::Format kFormat{firebolt::rialto::Format::S16LE};
 constexpr uint64_t kChannelMask{0x0000000000000003};
@@ -676,14 +677,16 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToFlush()
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetSourcePosition()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setSourcePosition(kHardcodedSessionId, kSourceId, kPosition, kResetTime))
+    EXPECT_CALL(m_mediaPipelineServiceMock,
+                setSourcePosition(kHardcodedSessionId, kSourceId, kPosition, kResetTime, kAppliedRate))
         .WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetSourcePosition()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, setSourcePosition(kHardcodedSessionId, kSourceId, kPosition, kResetTime))
+    EXPECT_CALL(m_mediaPipelineServiceMock,
+                setSourcePosition(kHardcodedSessionId, kSourceId, kPosition, kResetTime, kAppliedRate))
         .WillOnce(Return(false));
 }
 
@@ -1280,6 +1283,7 @@ void MediaPipelineModuleServiceTests::sendSetSourcePositionRequestAndReceiveResp
     request.set_source_id(kSourceId);
     request.set_position(kPosition);
     request.set_reset_time(kResetTime);
+    request.set_applied_rate(kAppliedRate);
 
     m_service->setSourcePosition(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

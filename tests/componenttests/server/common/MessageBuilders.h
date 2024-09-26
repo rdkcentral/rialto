@@ -72,8 +72,8 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::GetStreamSyncModeRequest createGetStreamSyncModeRequest(int sessionId);
 ::firebolt::rialto::SetVideoWindowRequest createSetVideoWindowRequest(int sessionId);
 ::firebolt::rialto::FlushRequest createFlushRequest(int sessionId, int sourceId, bool resetTime);
-::firebolt::rialto::SetSourcePositionRequest createSetSourcePositionRequest(int sessionId, int sourceId,
-                                                                            std::int64_t position, bool resetTime);
+::firebolt::rialto::SetSourcePositionRequest
+createSetSourcePositionRequest(int sessionId, int sourceId, std::int64_t position, bool resetTime, double appliedRate);
 ::firebolt::rialto::ProcessAudioGapRequest createProcessAudioGapRequest(int sessionId, std::int64_t position,
                                                                         unsigned duration,
                                                                         std::int64_t discontinuityGap, bool audioAac);

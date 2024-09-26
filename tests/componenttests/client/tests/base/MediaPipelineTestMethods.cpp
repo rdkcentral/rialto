@@ -85,6 +85,7 @@ const std::vector<std::string> kAudioMimeType{"audio/mp4", "audio/aac", "audio/x
 const std::vector<std::string> kVideoMimeType{"video/h264", "video/h265", "video/x-av1", "video/x-vp9", "video/mp4"};
 const std::vector<std::string> kUnknownMimeType{};
 constexpr bool kResetTime{true};
+constexpr double kAppliedRate{2.0};
 constexpr double kPosition{1234};
 constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
@@ -1445,27 +1446,31 @@ void MediaPipelineTestMethods::flushFailure()
 void MediaPipelineTestMethods::shouldSetSourcePosition()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition, kResetTime),
+                setSourcePosition(_,
+                                  setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition, kResetTime,
+                                                                  kAppliedRate),
                                   _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
 void MediaPipelineTestMethods::setSourcePosition()
 {
-    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime));
+    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime, kAppliedRate));
 }
 
 void MediaPipelineTestMethods::shouldFailToSetSourcePosition()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition, kResetTime),
+                setSourcePosition(_,
+                                  setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition, kResetTime,
+                                                                  kAppliedRate),
                                   _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
 }
 
 void MediaPipelineTestMethods::setSourcePositionFailure()
 {
-    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime));
+    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime, kAppliedRate));
 }
 
 void MediaPipelineTestMethods::shouldProcessAudioGap()
