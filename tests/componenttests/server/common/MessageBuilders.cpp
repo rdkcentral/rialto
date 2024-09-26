@@ -330,6 +330,36 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::SetBufferingLimitRequest createSetBufferingLimitRequest(int sessionId, uint32_t bufferingLimit)
+{
+    ::firebolt::rialto::SetBufferingLimitRequest request;
+    request.set_session_id(sessionId);
+    request.set_limit_buffering_ms(bufferingLimit);
+    return request;
+}
+
+::firebolt::rialto::GetBufferingLimitRequest createGetBufferingLimitRequest(int sessionId)
+{
+    ::firebolt::rialto::GetBufferingLimitRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::SetUseBufferingRequest createSetUseBufferingRequest(int sessionId, bool useBuffering)
+{
+    ::firebolt::rialto::SetUseBufferingRequest request;
+    request.set_session_id(sessionId);
+    request.set_use_buffering(useBuffering);
+    return request;
+}
+
+::firebolt::rialto::GetUseBufferingRequest createGetUseBufferingRequest(int sessionId)
+{
+    ::firebolt::rialto::GetUseBufferingRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
 ::firebolt::rialto::SetVideoWindowRequest createSetVideoWindowRequest(int sessionId)
 {
     ::firebolt::rialto::SetVideoWindowRequest request;

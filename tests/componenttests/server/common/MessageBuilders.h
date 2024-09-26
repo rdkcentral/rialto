@@ -71,6 +71,10 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::SetStreamSyncModeRequest createSetStreamSyncModeRequest(int sessionId, int sourceId,
                                                                             bool streamSyncMode);
 ::firebolt::rialto::GetStreamSyncModeRequest createGetStreamSyncModeRequest(int sessionId);
+::firebolt::rialto::SetBufferingLimitRequest createSetBufferingLimitRequest(int sessionId, uint32_t bufferingLimit);
+::firebolt::rialto::GetBufferingLimitRequest createGetBufferingLimitRequest(int sessionId);
+::firebolt::rialto::SetUseBufferingRequest createSetUseBufferingRequest(int sessionId, bool useBuffering);
+::firebolt::rialto::GetUseBufferingRequest createGetUseBufferingRequest(int sessionId);
 ::firebolt::rialto::SetVideoWindowRequest createSetVideoWindowRequest(int sessionId);
 ::firebolt::rialto::FlushRequest createFlushRequest(int sessionId, int sourceId, bool resetTime);
 ::firebolt::rialto::SetSourcePositionRequest
