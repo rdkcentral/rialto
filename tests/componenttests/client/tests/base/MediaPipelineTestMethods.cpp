@@ -1208,13 +1208,14 @@ void MediaPipelineTestMethods::setSyncOff(const bool syncOff)
 void MediaPipelineTestMethods::shouldSetStreamSyncMode(const int32_t expectedStreamSyncMode)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                setStreamSyncMode(_, setStreamSyncModeRequestMatcher(kSessionId, expectedStreamSyncMode), _, _))
+                setStreamSyncMode(_, setStreamSyncModeRequestMatcher(kSessionId, kAudioSourceId, expectedStreamSyncMode),
+                                  _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
 void MediaPipelineTestMethods::setStreamSyncMode(const int32_t streamSyncMode)
 {
-    EXPECT_EQ(m_mediaPipeline->setStreamSyncMode(streamSyncMode), true);
+    EXPECT_EQ(m_mediaPipeline->setStreamSyncMode(kAudioSourceId, streamSyncMode), true);
 }
 
 void MediaPipelineTestMethods::shouldGetStreamSyncMode(const int32_t streamSyncMode)

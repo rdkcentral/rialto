@@ -313,10 +313,12 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::SetStreamSyncModeRequest createSetStreamSyncModeRequest(int sessionId, bool streamSyncMode)
+::firebolt::rialto::SetStreamSyncModeRequest createSetStreamSyncModeRequest(int sessionId, int sourceId,
+                                                                            bool streamSyncMode)
 {
     ::firebolt::rialto::SetStreamSyncModeRequest request;
     request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
     request.set_stream_sync_mode(streamSyncMode);
     return request;
 }

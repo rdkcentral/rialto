@@ -260,7 +260,7 @@ public:
 
     void setStreamSyncMode()
     {
-        auto req{createSetStreamSyncModeRequest(m_sessionId, kStreamSyncMode)};
+        auto req{createSetStreamSyncModeRequest(m_sessionId, m_audioSourceId, kStreamSyncMode)};
         ConfigureAction<SetStreamSyncMode>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
         waitWorker();
     }
@@ -320,7 +320,7 @@ public:
 
     void setStreamSyncModeFailure()
     {
-        auto req{createSetStreamSyncModeRequest(m_sessionId, kStreamSyncMode)};
+        auto req{createSetStreamSyncModeRequest(m_sessionId, m_videoSourceId, kStreamSyncMode)};
         ConfigureAction<SetStreamSyncMode>(m_clientStub).send(req).expectSuccess();
         waitWorker();
     }
