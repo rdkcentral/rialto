@@ -1218,7 +1218,6 @@ bool GstGenericPlayer::setStreamSyncMode(const MediaSourceType &type)
 
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(filter), "syncmode-streaming"))
         {
-
             m_glibWrapper->gObjectSet(filter, "syncmode-streaming", streamSyncMode, nullptr);
             result = true;
         }
