@@ -92,6 +92,21 @@ public:
  *   GetStreamSyncMode
  *   Expect that GetStreamSyncMode propagated to the server and gets the property
  *
+ *  Step 9: Set BufferingLimit
+ *   SetBufferingLimit
+ *   Expect that SetBufferingLimit propagated to the server and sets the property
+ *
+ *  Step 10: Get BufferingLimit
+ *   GetBufferingLimit
+ *   Expect that GetBufferingLimit propagated to the server and gets the property
+ *
+ *  Step 11: Set UseBuffering
+ *   SetUseBuffering
+ *   Expect that SetUseBuffering propagated to the server and sets the property
+ *
+ *  Step 12: Get UseBuffering
+ *   GetUseBuffering
+ *   Expect that GetUseBuffering propagated to the server and gets the property
  *
  * Test Teardown:
  *  Terminate the media session.
@@ -141,5 +156,23 @@ TEST_F(PipelinePropertyTest, setAndGetPipelineProperties)
     // Step 8: Get StreamSyncMode
     MediaPipelineTestMethods::shouldGetStreamSyncMode(streamSyncMode);
     MediaPipelineTestMethods::getStreamSyncMode(streamSyncMode);
+
+    // Step 9: Set BufferingLimit
+    uint32_t bufferingLimit{32};
+    MediaPipelineTestMethods::shouldSetBufferingLimit(bufferingLimit);
+    MediaPipelineTestMethods::setBufferingLimit(bufferingLimit);
+
+    // Step 10: Get BufferingLimit
+    MediaPipelineTestMethods::shouldGetBufferingLimit(bufferingLimit);
+    MediaPipelineTestMethods::getBufferingLimit(bufferingLimit);
+
+    // Step 11: Set UseBuffering
+    bool useBuffering{true};
+    MediaPipelineTestMethods::shouldSetUseBuffering(useBuffering);
+    MediaPipelineTestMethods::setUseBuffering(useBuffering);
+
+    // Step 12: Get UseBuffering
+    MediaPipelineTestMethods::shouldGetUseBuffering(useBuffering);
+    MediaPipelineTestMethods::getUseBuffering(useBuffering);
 }
 } // namespace firebolt::rialto::client::ct

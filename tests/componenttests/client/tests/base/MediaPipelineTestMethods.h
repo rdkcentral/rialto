@@ -121,6 +121,10 @@ protected:
     void shouldSetSyncOff(const bool expectedSyncOff);
     void shouldSetStreamSyncMode(const int32_t expectedStreamSyncMode);
     void shouldGetStreamSyncMode(const int32_t streamSyncMode);
+    void shouldSetBufferingLimit(const uint32_t expectedBufferingLimit);
+    void shouldGetBufferingLimit(const uint32_t bufferingLimit);
+    void shouldSetUseBuffering(const bool expectedUseBuffering);
+    void shouldGetUseBuffering(const bool useBuffering);
     void shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY, const uint32_t expectedWidth,
                               const uint32_t expectedHeight);
     void shouldRenderFrame();
@@ -233,6 +237,10 @@ protected:
     void setSyncOff(const bool syncOff);
     void setStreamSyncMode(const int32_t streamSyncMode);
     void getStreamSyncMode(const int32_t expectedStreamSyncMode);
+    void setBufferingLimit(const uint32_t bufferingLimit);
+    void getBufferingLimit(const uint32_t expectedBufferingLimit);
+    void setUseBuffering(const bool useBuffering);
+    void getUseBuffering(const bool expectedUseBuffering);
     void setSetVideoWindow(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height);
     void renderFrame();
     void renderFrameFailure();
