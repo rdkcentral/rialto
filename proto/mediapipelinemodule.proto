@@ -617,6 +617,7 @@ message FlushResponse {
  * @param[in]  source_id    The id of the media source.
  * @param[in]  position     The position in nanoseconds.
  * @param[in]  reset_time   True if time should be reset
+ * @param[in]  applied_rate The applied rate after seek
  *
  * This method sets the start position for a source.
  *
@@ -626,6 +627,7 @@ message SetSourcePositionRequest {
     optional int32 source_id = 2 [default = -1];
     optional int64 position = 3 [default = -1];
     optional bool reset_time = 4 [default = false];
+    optional double applied_rate = 5 [default = 1];
 }
 message SetSourcePositionResponse {
 }

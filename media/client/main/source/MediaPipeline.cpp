@@ -569,11 +569,11 @@ bool MediaPipeline::flush(int32_t sourceId, bool resetTime)
     return false;
 }
 
-bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime)
+bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaPipelineIpc->setSourcePosition(sourceId, position, resetTime);
+    return m_mediaPipelineIpc->setSourcePosition(sourceId, position, resetTime, appliedRate);
 }
 
 bool MediaPipeline::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)

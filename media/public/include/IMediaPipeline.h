@@ -1422,10 +1422,12 @@ public:
      * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
      * @param[in] position  : The position in nanoseconds.
      * @param[in] resetTime : True if time should be reset
+     * @param[in] appliedRate The applied rate after seek
      *
      * @retval true on success.
      */
-    virtual bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime = false) = 0;
+    virtual bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime = false,
+                                   double appliedRate = 1.0) = 0;
 
     /**
      * @brief Process audio gap
