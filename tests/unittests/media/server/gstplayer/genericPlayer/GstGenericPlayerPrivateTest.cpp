@@ -554,32 +554,23 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetBufferingLimit)
     EXPECT_TRUE(m_sut->setBufferingLimit());
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetUseBufferingIfAudioFilterIsNull)
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetUseBufferingIfDecodebinIsNull)
 {
     modifyContext([&](GenericPlayerContext &context) { context.pendingUseBuffering = kUseBuffering; });
-    expectNoFilter();
-    EXPECT_FALSE(m_sut->setUseBuffering());
-}
-
-TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetUseBufferingIfPropertyDoesntExist)
-{
-    modifyContext([&](GenericPlayerContext &context) { context.pendingUseBuffering = kUseBuffering; });
-
-    expectGetAudioFilter(m_realElement);
-
-    expectPropertyDoesntExist(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kUseBufferingStr);
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
     EXPECT_FALSE(m_sut->setUseBuffering());
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldSetUseBuffering)
 {
-    modifyContext([&](GenericPlayerContext &context) { context.pendingUseBuffering = kUseBuffering; });
+    GstElement decoder{};
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.pendingUseBuffering = kUseBuffering;
+            context.playbackGroup.m_curAudioDecodeBin = &decoder;
+        });
 
-    expectGetAudioFilter(m_realElement);
-
-    expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kUseBufferingStr, kUseBuffering);
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetBoolStub(_, StrEq(kUseBufferingStr.c_str()), kUseBuffering));
     EXPECT_TRUE(m_sut->setUseBuffering());
 }
 
@@ -1564,7 +1555,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdatePlaybackGroup)
     GstCaps caps;
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createUpdatePlaybackGroup(_, &typefind, &caps)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createUpdatePlaybackGroup(_, _, &typefind, &caps))
+        .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->updatePlaybackGroup(&typefind, &caps);
 }

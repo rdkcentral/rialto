@@ -87,7 +87,6 @@ protected:
     void shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
     void shouldSetupVideoFilterElementWithPendingStreamSyncMode();
     void shouldSetupAudioDecoderElementWithPendingBufferingLimit();
-    void shouldSetupAudioFilterElementWithPendingUseBuffering();
     void shouldSetupVideoSinkElementWithPendingRenderFrame();
     void shouldSetupVideoElementAmlhalasink();
     void shouldSetupAudioElementBrcmAudioSink();
@@ -224,6 +223,8 @@ protected:
     void shouldDoNothingWhenElementOtherThanDecodebin();
     void shouldSuccessfullyFindTypefindAndParent();
     void checkPlaybackGroupAdded();
+    void setUseBufferingPending();
+    void shouldTriggerSetUseBuffering();
 
     // Stop test methods
     void shouldStopGstPlayer();
@@ -419,7 +420,6 @@ private:
     void expectSetupAudioSinkElement();
     void expectSetupAudioDecoderElement();
     void expectSetupVideoFilterElement();
-    void expectSetupAudioFilterElement();
 
     // AttachSource helper methods
     void expectSetGenericVideoCaps();

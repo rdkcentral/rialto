@@ -521,38 +521,6 @@ void GenericTasksTestsBase::expectSetupVideoFilterElement()
     EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
 }
 
-void GenericTasksTestsBase::expectSetupAudioFilterElement()
-{
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-        .WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-        .WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-        .WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-        .WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-        .WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementFactoryListIsType(testContext->m_elementFactory,
-                                            GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-        .WillOnce(Return(TRUE));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
-}
-
 void GenericTasksTestsBase::shouldSetupVideoSinkElementOnly()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
@@ -659,17 +627,6 @@ void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingBufferingLi
     // This is the extra EXPECT caused by setting pendingBufferingLimit...
     EXPECT_CALL(testContext->m_gstPlayer, setBufferingLimit());
     expectSetupAudioDecoderElement();
-}
-
-void GenericTasksTestsBase::shouldSetupAudioFilterElementWithPendingUseBuffering()
-{
-    testContext->m_context.pendingUseBuffering = true;
-    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
-        .WillOnce(Return(kElementTypeName.c_str()));
-
-    // This is the extra EXPECT caused by setting pendingUseBuffering...
-    EXPECT_CALL(testContext->m_gstPlayer, setUseBuffering());
-    expectSetupAudioFilterElement();
 }
 
 void GenericTasksTestsBase::shouldSetupVideoSinkElementWithPendingRenderFrame()
@@ -2008,9 +1965,12 @@ void GenericTasksTestsBase::checkAudioSinkPlaybackGroupAdded()
 
 void GenericTasksTestsBase::triggerUpdatePlaybackGroupNoCaps()
 {
-    firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup task{testContext->m_context, testContext->m_gstWrapper,
+    firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup task{testContext->m_context,
+                                                                       testContext->m_gstPlayer,
+                                                                       testContext->m_gstWrapper,
                                                                        testContext->m_glibWrapper,
-                                                                       testContext->m_element, nullptr};
+                                                                       testContext->m_element,
+                                                                       nullptr};
     task.execute();
 }
 
@@ -2027,9 +1987,12 @@ void GenericTasksTestsBase::shouldReturnNullCaps()
 
 void GenericTasksTestsBase::triggerUpdatePlaybackGroup()
 {
-    firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup task{testContext->m_context, testContext->m_gstWrapper,
+    firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup task{testContext->m_context,
+                                                                       testContext->m_gstPlayer,
+                                                                       testContext->m_gstWrapper,
                                                                        testContext->m_glibWrapper,
-                                                                       testContext->m_element, &testContext->m_gstCaps1};
+                                                                       testContext->m_element,
+                                                                       &testContext->m_gstCaps1};
     task.execute();
 }
 
@@ -2092,6 +2055,16 @@ void GenericTasksTestsBase::checkPlaybackGroupAdded()
 {
     EXPECT_EQ(testContext->m_context.playbackGroup.m_curAudioDecodeBin, &testContext->m_audioParentSink);
     EXPECT_EQ(testContext->m_context.playbackGroup.m_curAudioTypefind, testContext->m_element);
+}
+
+void GenericTasksTestsBase::setUseBufferingPending()
+{
+    testContext->m_context.pendingUseBuffering = true;
+}
+
+void GenericTasksTestsBase::shouldTriggerSetUseBuffering()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, setUseBuffering()).WillOnce(Return(true));
 }
 
 void GenericTasksTestsBase::shouldStopGstPlayer()

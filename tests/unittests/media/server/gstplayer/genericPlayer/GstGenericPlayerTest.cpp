@@ -949,69 +949,40 @@ TEST_F(GstGenericPlayerTest, shouldGetUseBuffering)
 {
     const bool kUseBuffering{true};
     const std::string kPropertyStr{"use-buffering"};
+    GstElement decodebin{};
 
-    expectGetAudioFilter(m_element);
-    willGetElementProperty(kPropertyStr, kUseBuffering);
+    getContext(
+        [&](GenericPlayerContext &m_context)
+        {
+            m_context.pendingUseBuffering = kUseBuffering;
+            m_context.playbackGroup.m_curAudioDecodeBin = &decodebin;
+        });
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&decodebin, StrEq(kPropertyStr.c_str()), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *val)
+            {
+                gint *returnVal = reinterpret_cast<gint *>(val);
+                *returnVal = kUseBuffering;
+            }));
 
     bool useBuffering{false};
     EXPECT_TRUE(m_sut->getUseBuffering(useBuffering));
     EXPECT_EQ(useBuffering, kUseBuffering);
 }
 
-TEST_F(GstGenericPlayerTest, shouldGetPendingUseBufferingIfNoSinkAvailable)
+TEST_F(GstGenericPlayerTest, shouldGetPendingUseBufferingIfNoDecodebinAvailable)
 {
     constexpr bool kUseBufferingValue{true};
 
     getContext([&](GenericPlayerContext &m_context) { m_context.pendingUseBuffering = kUseBufferingValue; });
-    expectNoFilter();
 
     bool useBuffering{false};
     EXPECT_TRUE(m_sut->getUseBuffering(useBuffering));
     EXPECT_EQ(useBuffering, kUseBufferingValue);
 }
 
-TEST_F(GstGenericPlayerTest, shouldGetUseBufferingWithIteratorResync)
+TEST_F(GstGenericPlayerTest, shouldFailToGetUseBufferingIfNoDecodebin)
 {
-    const bool kUseBufferingValue{true};
-    const std::string kPropertyStr{"use-buffering"};
-
-    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
-    EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(_, _))
-        .WillOnce(Return(GST_ITERATOR_RESYNC))
-        .WillOnce(Return(GST_ITERATOR_OK));
-    EXPECT_CALL(*m_gstWrapperMock, gstIteratorResync(&m_it));
-    EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).WillOnce(Return(m_factory));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
-        .WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
-    EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(_));
-
-    willGetElementProperty(kPropertyStr, kUseBufferingValue);
-
-    bool useBuffering{false};
-    EXPECT_TRUE(m_sut->getUseBuffering(useBuffering));
-    EXPECT_EQ(useBuffering, kUseBufferingValue);
-}
-
-TEST_F(GstGenericPlayerTest, shouldFailToGetUseBufferingIfNoFilter)
-{
-    getContext([&](const GenericPlayerContext &m_context) { m_pipeline = m_context.pipeline; });
-
-    expectNoFilter();
-
-    bool useBuffering{false};
-    EXPECT_FALSE(m_sut->getUseBuffering(useBuffering));
-}
-
-TEST_F(GstGenericPlayerTest, shouldFailToGetUseBufferingIfPropertyDoesntExist)
-{
-    expectGetAudioFilter(m_element);
-
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("use-buffering"))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
-
     bool useBuffering{false};
     EXPECT_FALSE(m_sut->getUseBuffering(useBuffering));
 }

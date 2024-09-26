@@ -1300,34 +1300,18 @@ bool GstGenericPlayer::setBufferingLimit()
 
 bool GstGenericPlayer::setUseBuffering()
 {
-    bool result{false};
     if (m_context.pendingUseBuffering.has_value())
     {
-        GstElement *filter = getFilter(MediaSourceType::AUDIO);
-        if (filter)
+        if (m_context.playbackGroup.m_curAudioDecodeBin)
         {
-            bool useBuffering{m_context.pendingUseBuffering.value()};
-            RIALTO_SERVER_LOG_DEBUG("Set use-buffering to %s", useBuffering ? "TRUE" : "FALSE");
-
-            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(filter), "use-buffering"))
-            {
-                gboolean useBufferingGboolean{filter ? TRUE : FALSE};
-                m_glibWrapper->gObjectSet(filter, "use-buffering", useBufferingGboolean, nullptr);
-                result = true;
-            }
-            else
-            {
-                RIALTO_SERVER_LOG_ERROR("Failed to set use-buffering property on filter '%s'", GST_ELEMENT_NAME(filter));
-            }
+            gboolean useBufferingGboolean{m_context.pendingUseBuffering.value() ? TRUE : FALSE};
+            m_glibWrapper->gObjectSet(m_context.playbackGroup.m_curAudioDecodeBin, "use-buffering",
+                                      useBufferingGboolean, nullptr);
             m_context.pendingUseBuffering.reset();
-            m_gstWrapper->gstObjectUnref(filter);
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_DEBUG("Pending use-buffering, filter is NULL");
+            return true;
         }
     }
-    return result;
+    return false;
 }
 
 bool GstGenericPlayer::setWesterossinkSecondaryVideo()
@@ -1715,29 +1699,18 @@ void GstGenericPlayer::setUseBuffering(bool useBuffering)
 
 bool GstGenericPlayer::getUseBuffering(bool &useBuffering)
 {
-    bool returnValue{false};
-    GstElement *filter = getFilter(MediaSourceType::AUDIO);
-    if (filter && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(filter), "use-buffering"))
+    if (m_context.playbackGroup.m_curAudioDecodeBin)
     {
-        m_glibWrapper->gObjectGet(filter, "use-buffering", &useBuffering, nullptr);
-        returnValue = true;
+        m_glibWrapper->gObjectGet(m_context.playbackGroup.m_curAudioDecodeBin, "use-buffering", &useBuffering, nullptr);
+        return true;
     }
     else if (m_context.pendingUseBuffering.has_value())
     {
         RIALTO_SERVER_LOG_DEBUG("Returning queued value");
         useBuffering = m_context.pendingUseBuffering.value();
-        returnValue = true;
+        return true;
     }
-    else
-    {
-        RIALTO_SERVER_LOG_ERROR("use buffering not supported in filter '%s'",
-                                (filter ? GST_ELEMENT_NAME(filter) : "null"));
-    }
-
-    if (filter)
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(filter));
-
-    return returnValue;
+    return false;
 }
 
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
@@ -1747,7 +1720,7 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
-    m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
+    m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, caps));
 }
 
 void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)

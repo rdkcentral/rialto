@@ -106,7 +106,9 @@ public:
                  MediaSourceType sourceType),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUpdatePlaybackGroup,
-                (GenericPlayerContext & context, GstElement *typefind, const GstCaps *caps), (const, override));
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, GstElement *typefind,
+                 const GstCaps *caps),
+                (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createRenderFrame,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPing, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler),

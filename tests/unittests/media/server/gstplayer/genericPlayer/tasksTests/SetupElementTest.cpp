@@ -77,12 +77,6 @@ TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingBufferingLimit)
     triggerSetupElement();
 }
 
-TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingUseBuffering)
-{
-    shouldSetupAudioFilterElementWithPendingUseBuffering();
-    triggerSetupElement();
-}
-
 TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingRenderFrame)
 {
     shouldSetupVideoSinkElementWithPendingRenderFrame();

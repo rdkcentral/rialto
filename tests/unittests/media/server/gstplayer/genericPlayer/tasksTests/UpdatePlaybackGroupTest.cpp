@@ -63,3 +63,12 @@ TEST_F(UpdatePlaybackGroupTest, shouldSuccessfullyFindTypefindAndParent)
     triggerUpdatePlaybackGroup();
     checkPlaybackGroupAdded();
 }
+
+TEST_F(UpdatePlaybackGroupTest, shouldTriggerUseBuffering)
+{
+    setUseBufferingPending();
+    shouldSuccessfullyFindTypefindAndParent();
+    shouldTriggerSetUseBuffering();
+    triggerUpdatePlaybackGroup();
+    checkPlaybackGroupAdded();
+}

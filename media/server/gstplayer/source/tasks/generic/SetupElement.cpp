@@ -276,13 +276,6 @@ void SetupElement::execute() const
             m_player.setStreamSyncMode(MediaSourceType::VIDEO);
         }
     }
-    else if (isAudioFilter(*m_gstWrapper, m_element))
-    {
-        if (m_context.pendingUseBuffering.has_value())
-        {
-            m_player.setUseBuffering();
-        }
-    }
 
     m_gstWrapper->gstObjectUnref(m_element);
 }

@@ -266,10 +266,12 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(GenericPl
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUpdatePlaybackGroup(GenericPlayerContext &context,
+                                                                                 IGstGenericPlayerPrivate &player,
                                                                                  GstElement *typefind,
                                                                                  const GstCaps *caps) const
 {
-    return std::make_unique<tasks::generic::UpdatePlaybackGroup>(context, m_gstWrapper, m_glibWrapper, typefind, caps);
+    return std::make_unique<tasks::generic::UpdatePlaybackGroup>(context, player, m_gstWrapper, m_glibWrapper, typefind,
+                                                                 caps);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createRenderFrame(GenericPlayerContext &context,

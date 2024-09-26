@@ -304,7 +304,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetPlaybackRate)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUpdatePlaybackGroup)
 {
-    auto task = m_sut.createUpdatePlaybackGroup(m_context, nullptr, nullptr);
+    auto task = m_sut.createUpdatePlaybackGroup(m_context, m_gstPlayer, nullptr, nullptr);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup &>(*task));
 }
