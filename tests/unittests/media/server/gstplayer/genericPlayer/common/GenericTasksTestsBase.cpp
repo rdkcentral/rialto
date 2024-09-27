@@ -493,7 +493,7 @@ void GenericTasksTestsBase::expectSetupAudioDecoderElement()
     EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
 }
 
-void GenericTasksTestsBase::expectSetupVideoFilterElement()
+void GenericTasksTestsBase::expectSetupVideoParserElement()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
@@ -607,7 +607,7 @@ void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingStreamSyncM
     expectSetupAudioDecoderElement();
 }
 
-void GenericTasksTestsBase::shouldSetupVideoFilterElementWithPendingStreamSyncMode()
+void GenericTasksTestsBase::shouldSetupVideoParserElementWithPendingStreamSyncMode()
 {
     testContext->m_context.pendingStreamSyncMode[MediaSourceType::VIDEO] = true;
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
@@ -615,7 +615,7 @@ void GenericTasksTestsBase::shouldSetupVideoFilterElementWithPendingStreamSyncMo
 
     // This is the extra EXPECT caused by setting pendingStreamSyncMode...
     EXPECT_CALL(testContext->m_gstPlayer, setStreamSyncMode(MediaSourceType::VIDEO));
-    expectSetupVideoFilterElement();
+    expectSetupVideoParserElement();
 }
 
 void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingBufferingLimit()

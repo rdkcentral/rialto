@@ -215,7 +215,7 @@ void GstGenericPlayerTestCommon::expectGetDecoder(GstElement *element)
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
 }
 
-void GstGenericPlayerTestCommon::expectGetVideoFilter(GstElement *element)
+void GstGenericPlayerTestCommon::expectGetVideoParser(GstElement *element)
 {
     EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
@@ -248,7 +248,7 @@ void GstGenericPlayerTestCommon::expectNoDecoder()
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
 }
 
-void GstGenericPlayerTestCommon::expectNoFilter()
+void GstGenericPlayerTestCommon::expectNoParser()
 {
     expectNoDecoder();
 }

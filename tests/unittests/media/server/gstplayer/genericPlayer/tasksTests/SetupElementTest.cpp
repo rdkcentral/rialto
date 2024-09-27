@@ -67,7 +67,7 @@ TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingStreamSyncMode)
 
 TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingStreamSyncMode)
 {
-    shouldSetupVideoFilterElementWithPendingStreamSyncMode();
+    shouldSetupVideoParserElementWithPendingStreamSyncMode();
     triggerSetupElement();
 }
 

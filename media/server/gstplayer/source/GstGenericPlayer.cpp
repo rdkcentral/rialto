@@ -498,7 +498,7 @@ GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
     return nullptr;
 }
 
-GstElement *GstGenericPlayer::getFilter(const MediaSourceType &mediaSourceType)
+GstElement *GstGenericPlayer::getParser(const MediaSourceType &mediaSourceType)
 {
     GstIterator *it = m_gstWrapper->gstBinIterateElements(GST_BIN(m_context.pipeline));
     GValue item = G_VALUE_INIT;
@@ -546,7 +546,7 @@ GstElement *GstGenericPlayer::getFilter(const MediaSourceType &mediaSourceType)
         }
     }
 
-    RIALTO_SERVER_LOG_WARN("Could not find filter");
+    RIALTO_SERVER_LOG_WARN("Could not find parser");
 
     m_glibWrapper->gValueUnset(&item);
     m_gstWrapper->gstIteratorFree(it);
@@ -1206,26 +1206,26 @@ bool GstGenericPlayer::setStreamSyncMode(const MediaSourceType &type)
     }
     else if (MediaSourceType::VIDEO == type)
     {
-        GstElement *filter = getFilter(MediaSourceType::VIDEO);
-        if (!filter)
+        GstElement *parser = getParser(MediaSourceType::VIDEO);
+        if (!parser)
         {
-            RIALTO_SERVER_LOG_DEBUG("Pending syncmode-streaming, filter is NULL");
+            RIALTO_SERVER_LOG_DEBUG("Pending syncmode-streaming, parser is NULL");
             return false;
         }
 
         gboolean streamSyncMode{static_cast<gboolean>(m_context.pendingStreamSyncMode[type])};
         RIALTO_SERVER_LOG_DEBUG("Set syncmode-streaming to %d", streamSyncMode);
 
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(filter), "syncmode-streaming"))
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(parser), "syncmode-streaming"))
         {
-            m_glibWrapper->gObjectSet(filter, "syncmode-streaming", streamSyncMode, nullptr);
+            m_glibWrapper->gObjectSet(parser, "syncmode-streaming", streamSyncMode, nullptr);
             result = true;
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to set syncmode-streaming property on filter '%s'", GST_ELEMENT_NAME(filter));
+            RIALTO_SERVER_LOG_ERROR("Failed to set syncmode-streaming property on parser '%s'", GST_ELEMENT_NAME(parser));
         }
-        m_gstWrapper->gstObjectUnref(filter);
+        m_gstWrapper->gstObjectUnref(parser);
     }
     m_context.pendingStreamSyncMode.erase(type);
     return result;

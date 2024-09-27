@@ -269,7 +269,7 @@ void SetupElement::execute() const
             m_player.setSync();
         }
     }
-    else if (isVideoFilter(*m_gstWrapper, m_element))
+    else if (isVideoParser(*m_gstWrapper, m_element))
     {
         if (m_context.pendingStreamSyncMode.find(MediaSourceType::VIDEO) != m_context.pendingStreamSyncMode.end())
         {

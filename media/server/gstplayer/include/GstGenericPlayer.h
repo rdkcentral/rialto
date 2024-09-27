@@ -285,13 +285,13 @@ private:
     GstElement *getDecoder(const MediaSourceType &mediaSourceType);
 
     /**
-     * @brief Gets the filter element for source type.
+     * @brief Gets the parser element for source type.
      *
-     * @param[in] mediaSourceType : the source type to obtain the filter for
+     * @param[in] mediaSourceType : the source type to obtain the parser for
      *
-     * @retval The filter, NULL if not found
+     * @retval The parser, NULL if not found
      */
-    GstElement *getFilter(const MediaSourceType &mediaSourceType);
+    GstElement *getParser(const MediaSourceType &mediaSourceType);
 
 private:
     /**

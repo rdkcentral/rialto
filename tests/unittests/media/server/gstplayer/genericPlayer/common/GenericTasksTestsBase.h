@@ -85,7 +85,7 @@ protected:
     void shouldSetupAudioSinkElementWithPendingSync();
     void shouldSetupAudioDecoderElementWithPendingSyncOff();
     void shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
-    void shouldSetupVideoFilterElementWithPendingStreamSyncMode();
+    void shouldSetupVideoParserElementWithPendingStreamSyncMode();
     void shouldSetupAudioDecoderElementWithPendingBufferingLimit();
     void shouldSetupVideoSinkElementWithPendingRenderFrame();
     void shouldSetupVideoElementAmlhalasink();
@@ -419,7 +419,7 @@ private:
     void expectSetupVideoDecoderElement();
     void expectSetupAudioSinkElement();
     void expectSetupAudioDecoderElement();
-    void expectSetupVideoFilterElement();
+    void expectSetupVideoParserElement();
 
     // AttachSource helper methods
     void expectSetGenericVideoCaps();

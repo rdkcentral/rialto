@@ -495,10 +495,10 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetAudioStreamSyncMode)
     EXPECT_TRUE(m_sut->setStreamSyncMode(MediaSourceType::AUDIO));
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetVideoStreamSyncModeIfFilterIsNull)
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetVideoStreamSyncModeIfParserIsNull)
 {
     modifyContext([&](GenericPlayerContext &context) { context.pendingStreamSyncMode[MediaSourceType::VIDEO] = 1; });
-    expectNoFilter();
+    expectNoParser();
     EXPECT_FALSE(m_sut->setStreamSyncMode(MediaSourceType::VIDEO));
 }
 
@@ -506,7 +506,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetVideoStreamSyncModeIfProperty
 {
     modifyContext([&](GenericPlayerContext &context) { context.pendingStreamSyncMode[MediaSourceType::VIDEO] = 1; });
 
-    expectGetVideoFilter(m_realElement);
+    expectGetVideoParser(m_realElement);
 
     expectPropertyDoesntExist(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kSyncModeStreamingStr);
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
@@ -517,7 +517,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetVideoStreamSyncMode)
 {
     modifyContext([&](GenericPlayerContext &context) { context.pendingStreamSyncMode[MediaSourceType::VIDEO] = 1; });
 
-    expectGetVideoFilter(m_realElement);
+    expectGetVideoParser(m_realElement);
 
     expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kSyncModeStreamingStr, true);
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);

@@ -59,7 +59,7 @@ bool isAudioDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, G
                                                                GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
 }
 
-bool isVideoFilter(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
+bool isVideoParser(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
     if (!element)
     {
