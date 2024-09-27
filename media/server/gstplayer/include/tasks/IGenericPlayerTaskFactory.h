@@ -431,7 +431,7 @@ public:
      * @param[in] type      : The media source type to set position
      * @param[in] position  : The new source position
      * @param[in] resetTime : True if time should be reset
-     * @param[in] appliedRate The applied rate after seek
+     * @param[in] appliedRate : The applied rate after seek
      *
      * @retval the new SetSourcePosition task instance.
      */

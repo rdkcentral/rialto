@@ -372,7 +372,7 @@ public:
      * @param[in] mediaSourceType : The media source type to flush.
      * @param[in] position : The position in nanoseconds.
      * @param[in] resetTime : True if time should be reset
-     * @param[in] appliedRate The applied rate after seek
+     * @param[in] appliedRate : The applied rate after seek
      */
     virtual void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime,
                                    double appliedRate) = 0;

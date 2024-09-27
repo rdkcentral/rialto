@@ -357,10 +357,10 @@ public:
      *
      * This method sets the start position for a source.
      *
-     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
-     * @param[in] position : The position in nanoseconds.
-     * @param[in] resetTime : True if time should be reset
-     * @param[in] appliedRate The applied rate after seek
+     * @param[in] sourceId    : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] position    : The position in nanoseconds.
+     * @param[in] resetTime   : True if time should be reset
+     * @param[in] appliedRate : The applied rate after seek
      *
      * @retval true on success.
      */
