@@ -794,7 +794,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAttachAudioSample)
             context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].isDataNeeded = true;
             context.playbackRate = kRate;
             context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
-            context.initialPositions[GST_ELEMENT(&audioSrc)].emplace_back(SegmentData{kPosition, kDoNotResetTime, kAppliedRate});
+            context.initialPositions[GST_ELEMENT(&audioSrc)].emplace_back(
+                SegmentData{kPosition, kDoNotResetTime, kAppliedRate});
             context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&audioSrc)).WillOnce(Return(&caps));
@@ -891,7 +892,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAttachVideoSample)
             context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].isDataNeeded = true;
             context.playbackRate = kRate;
             context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
-            context.initialPositions[GST_ELEMENT(&videoSrc)].emplace_back(SegmentData{kPosition, kResetTime, kAppliedRate});
+            context.initialPositions[GST_ELEMENT(&videoSrc)].emplace_back(
+                SegmentData{kPosition, kResetTime, kAppliedRate});
             context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
         });
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&videoSrc)).WillOnce(Return(&caps));
