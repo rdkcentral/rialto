@@ -152,7 +152,7 @@ public:
 
     bool flush(int32_t sourceId, bool resetTime) override;
 
-    bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime) override;
+    bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate) override;
 
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
@@ -593,10 +593,11 @@ protected:
      * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
      * @param[in] position : The position in nanoseconds.
      * @param[in] resetTime : True if time should be reset
+     * @param[in] appliedRate : The applied rate after seek
      *
      * @retval true on success.
      */
-    bool setSourcePositionInternal(int32_t sourceId, int64_t position, bool resetTime);
+    bool setSourcePositionInternal(int32_t sourceId, int64_t position, bool resetTime, double appliedRate);
 
     /**
      * @brief Process audio gap

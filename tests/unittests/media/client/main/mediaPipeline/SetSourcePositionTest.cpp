@@ -25,6 +25,7 @@ protected:
     const int32_t m_kSourceId{1};
     const int64_t m_kPosition{1234};
     const bool m_kResetTime{false};
+    const double m_kAppliedRate{2.0};
 
     virtual void SetUp()
     {
@@ -46,9 +47,10 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineSetSourcePositionTest, Success)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime)).WillOnce(Return(true));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime, m_kAppliedRate))
+        .WillOnce(Return(true));
 
-    EXPECT_EQ(m_mediaPipeline->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime), true);
+    EXPECT_EQ(m_mediaPipeline->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime, m_kAppliedRate), true);
 }
 
 /**
@@ -56,7 +58,8 @@ TEST_F(RialtoClientMediaPipelineSetSourcePositionTest, Success)
  */
 TEST_F(RialtoClientMediaPipelineSetSourcePositionTest, Failure)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime)).WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime, m_kAppliedRate))
+        .WillOnce(Return(false));
 
-    EXPECT_EQ(m_mediaPipeline->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime), false);
+    EXPECT_EQ(m_mediaPipeline->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime, m_kAppliedRate), false);
 }

@@ -59,6 +59,7 @@ constexpr uint32_t kVolumeDuration{1000};
 constexpr firebolt::rialto::EaseType kEaseType{firebolt::rialto::EaseType::EASE_LINEAR};
 constexpr bool kMute{false};
 constexpr bool kResetTime{true};
+constexpr double kAppliedRate{2.0};
 constexpr uint64_t kRenderedFrames{987654};
 constexpr uint64_t kDroppedFrames{321};
 constexpr uint32_t kDuration{35};
@@ -389,12 +390,14 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToFlush()
 
 void MediaPipelineServiceTests::mediaPipelineWillSetSourcePosition()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition, kResetTime)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition, kResetTime, kAppliedRate))
+        .WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToSetSourcePosition()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition, kResetTime)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition, kResetTime, kAppliedRate))
+        .WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillProcessAudioGap()
@@ -836,12 +839,12 @@ void MediaPipelineServiceTests::flushShouldFail()
 
 void MediaPipelineServiceTests::setSourcePositionShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition, kResetTime));
+    EXPECT_TRUE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition, kResetTime, kAppliedRate));
 }
 
 void MediaPipelineServiceTests::setSourcePositionShouldFail()
 {
-    EXPECT_FALSE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition, kResetTime));
+    EXPECT_FALSE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition, kResetTime, kAppliedRate));
 }
 
 void MediaPipelineServiceTests::processAudioGapShouldSucceed()

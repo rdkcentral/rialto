@@ -431,13 +431,15 @@ public:
      * @param[in] type      : The media source type to set position
      * @param[in] position  : The new source position
      * @param[in] resetTime : True if time should be reset
+     * @param[in] appliedRate : The applied rate after seek
      *
      * @retval the new SetSourcePosition task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context,
                                                                  IGstGenericPlayerPrivate &player,
                                                                  const firebolt::rialto::MediaSourceType &type,
-                                                                 std::int64_t position, bool resetTime) const = 0;
+                                                                 std::int64_t position, bool resetTime,
+                                                                 double appliedRate) const = 0;
 
     /**
      * @brief Creates a ProcessAudioGap task.

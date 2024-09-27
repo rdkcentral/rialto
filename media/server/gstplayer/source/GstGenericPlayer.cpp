@@ -812,7 +812,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         // Sending initial sample not needed
         return;
     }
-    for (const auto &[position, resetTime] : initialPosition->second)
+    for (const auto &[position, resetTime, appliedRate] : initialPosition->second)
     {
         GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
         RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
@@ -826,10 +826,11 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
             m_context.initialPositions.erase(initialPosition);
             return;
         }
-
-        RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT "], rate: %f reset_time: %d\n",
+        segment->applied_rate = appliedRate;
+        RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT
+                              "], rate: %f, appliedRate %f, reset_time: %d\n",
                               typeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
-                              segment->rate, resetTime);
+                              segment->rate, segment->applied_rate, resetTime);
 
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
         // We can't pass buffer in GstSample, because implementation of gst_app_src_push_sample
@@ -1503,12 +1504,13 @@ void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetT
     }
 }
 
-void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime)
+void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime,
+                                         double appliedRate)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(
-            m_taskFactory->createSetSourcePosition(m_context, *this, mediaSourceType, position, resetTime));
+        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, *this, mediaSourceType, position,
+                                                                           resetTime, appliedRate));
     }
 }
 

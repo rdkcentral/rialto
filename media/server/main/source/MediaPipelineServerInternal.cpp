@@ -1151,18 +1151,19 @@ bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime
     return true;
 }
 
-bool MediaPipelineServerInternal::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime)
+bool MediaPipelineServerInternal::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = setSourcePositionInternal(sourceId, position, resetTime); };
+    auto task = [&]() { result = setSourcePositionInternal(sourceId, position, resetTime, appliedRate); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, int64_t position, bool resetTime)
+bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, int64_t position, bool resetTime,
+                                                            double appliedRate)
 {
     if (!m_gstPlayer)
     {
@@ -1177,7 +1178,7 @@ bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, in
         return false;
     }
 
-    m_gstPlayer->setSourcePosition(sourceIter->first, position, resetTime);
+    m_gstPlayer->setSourcePosition(sourceIter->first, position, resetTime, appliedRate);
 
     // Reset Eos on seek
     auto it = m_isMediaTypeEosMap.find(sourceIter->first);

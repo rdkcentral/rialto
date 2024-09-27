@@ -124,6 +124,7 @@ const std::string kAutoVideoSinkTypeName{"GstAutoVideoSink"};
 const std::string kAutoAudioSinkTypeName{"GstAutoAudioSink"};
 const std::string kElementTypeName{"GenericSink"};
 constexpr bool kResetTime{false};
+constexpr double kAppliedRate{2.0};
 constexpr int32_t kId{0};
 constexpr firebolt::rialto::Layout kLayout{firebolt::rialto::Layout::INTERLEAVED};
 constexpr firebolt::rialto::Format kFormat{firebolt::rialto::Format::S16LE};
@@ -2931,7 +2932,8 @@ void GenericTasksTestsBase::triggerSetSourcePosition(firebolt::rialto::MediaSour
                                                                      testContext->m_gstWrapper,
                                                                      sourceType,
                                                                      kPosition,
-                                                                     kResetTime};
+                                                                     kResetTime,
+                                                                     kAppliedRate};
     task.execute();
 }
 
@@ -2943,6 +2945,7 @@ void GenericTasksTestsBase::checkInitialPositionSet(firebolt::rialto::MediaSourc
     ASSERT_EQ(testContext->m_context.initialPositions.at(source).size(), 1);
     EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].position, kPosition);
     EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].resetTime, kResetTime);
+    EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].appliedRate, kAppliedRate);
 }
 
 void GenericTasksTestsBase::checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType)

@@ -73,6 +73,7 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     const std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSegment> kMediaSegment;
     const std::shared_ptr<IMediaPipelineClient> kIMediaPipelineClient;
     constexpr bool kResetTime{false};
+    constexpr double kAppliedRate{2.0};
 
     /////////////////////////////////////////////
 
@@ -251,8 +252,9 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, setSourcePosition(kSourceId, kPosition1, kResetTime)).WillOnce(Return(true));
-    EXPECT_TRUE(proxy->setSourcePosition(kSourceId, kPosition1, kResetTime));
+    EXPECT_CALL(*mediaPipelineMock, setSourcePosition(kSourceId, kPosition1, kResetTime, kAppliedRate))
+        .WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setSourcePosition(kSourceId, kPosition1, kResetTime, kAppliedRate));
 
     /////////////////////////////////////////////
 

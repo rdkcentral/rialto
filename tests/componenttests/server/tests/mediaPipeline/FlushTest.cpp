@@ -30,6 +30,7 @@ namespace
 constexpr unsigned kFramesToPush{1};
 constexpr int kFrameCount{3};
 constexpr bool kResetTime{false};
+constexpr double kAppliedRate{2.0};
 } // namespace
 
 using testing::Return;
@@ -82,7 +83,7 @@ public:
                                         { return event.source_id() == m_audioSourceId; });
 
         // Send SetSourcePositionRequest and expect success
-        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition, kResetTime)};
+        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition, kResetTime, kAppliedRate)};
         ConfigureAction<SetSourcePosition>(m_clientStub).send(request).expectSuccess();
 
         // Check received NeedDataReqs
