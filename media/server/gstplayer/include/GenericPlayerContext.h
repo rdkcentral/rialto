@@ -28,6 +28,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 
@@ -221,6 +222,13 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     std::map<GstElement *, std::vector<SegmentData>> initialPositions;
+
+    /**
+     * @brief The mutex, which protects properties, which are read/written by main/worker thread.
+     *        This mutex should be removed in future, when we find out better solution for
+     *        property read-write.
+     */
+    std::mutex propertyMutex;
 };
 } // namespace firebolt::rialto::server
 

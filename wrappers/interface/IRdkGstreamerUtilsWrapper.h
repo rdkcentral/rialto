@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_WRAPPERS_I_RDK_GSTREAMER_UTILS_WRAPPER_H_
 #define FIREBOLT_RIALTO_WRAPPERS_I_RDK_GSTREAMER_UTILS_WRAPPER_H_
 
+#include <atomic>
 #include <cstdint>
 #include <gst/gst.h>
 #include <memory>
@@ -31,7 +32,7 @@ struct PlaybackGroupPrivate
 {
     GstElement *m_gstPipeline{nullptr};
     GstElement *m_curAudioPlaysinkBin{nullptr};
-    GstElement *m_curAudioDecodeBin{nullptr};
+    std::atomic<GstElement *> m_curAudioDecodeBin{nullptr};
     GstElement *m_curAudioDecoder{nullptr};
     GstElement *m_curAudioParse{nullptr};
     GstElement *m_curAudioTypefind{nullptr};

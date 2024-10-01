@@ -1176,9 +1176,14 @@ bool GstGenericPlayer::setSyncOff()
 bool GstGenericPlayer::setStreamSyncMode(const MediaSourceType &type)
 {
     bool result{false};
-    if (m_context.pendingStreamSyncMode.find(type) == m_context.pendingStreamSyncMode.end())
+    int32_t streamSyncMode{0};
     {
-        return false;
+        std::unique_lock lock{m_context.propertyMutex};
+        if (m_context.pendingStreamSyncMode.find(type) == m_context.pendingStreamSyncMode.end())
+        {
+            return false;
+        }
+        streamSyncMode = m_context.pendingStreamSyncMode[type];
     }
     if (MediaSourceType::AUDIO == type)
     {
@@ -1189,7 +1194,6 @@ bool GstGenericPlayer::setStreamSyncMode(const MediaSourceType &type)
             return false;
         }
 
-        int32_t streamSyncMode{m_context.pendingStreamSyncMode[type]};
         RIALTO_SERVER_LOG_DEBUG("Set stream-sync-mode to %d", streamSyncMode);
 
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "stream-sync-mode"))
@@ -1203,6 +1207,8 @@ bool GstGenericPlayer::setStreamSyncMode(const MediaSourceType &type)
             RIALTO_SERVER_LOG_ERROR("Failed to set stream-sync-mode property on decoder '%s'", GST_ELEMENT_NAME(decoder));
         }
         m_gstWrapper->gstObjectUnref(decoder);
+        std::unique_lock lock{m_context.propertyMutex};
+        m_context.pendingStreamSyncMode.erase(type);
     }
     else if (MediaSourceType::VIDEO == type)
     {
@@ -1213,12 +1219,12 @@ bool GstGenericPlayer::setStreamSyncMode(const MediaSourceType &type)
             return false;
         }
 
-        gboolean streamSyncMode{static_cast<gboolean>(m_context.pendingStreamSyncMode[type])};
+        gboolean streamSyncModeBoolean{static_cast<gboolean>(streamSyncMode)};
         RIALTO_SERVER_LOG_DEBUG("Set syncmode-streaming to %d", streamSyncMode);
 
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(parser), "syncmode-streaming"))
         {
-            m_glibWrapper->gObjectSet(parser, "syncmode-streaming", streamSyncMode, nullptr);
+            m_glibWrapper->gObjectSet(parser, "syncmode-streaming", streamSyncModeBoolean, nullptr);
             result = true;
         }
         else
@@ -1226,8 +1232,9 @@ bool GstGenericPlayer::setStreamSyncMode(const MediaSourceType &type)
             RIALTO_SERVER_LOG_ERROR("Failed to set syncmode-streaming property on parser '%s'", GST_ELEMENT_NAME(parser));
         }
         m_gstWrapper->gstObjectUnref(parser);
+        std::unique_lock lock{m_context.propertyMutex};
+        m_context.pendingStreamSyncMode.erase(type);
     }
-    m_context.pendingStreamSyncMode.erase(type);
     return result;
 }
 
@@ -1268,37 +1275,42 @@ bool GstGenericPlayer::setRenderFrame()
 bool GstGenericPlayer::setBufferingLimit()
 {
     bool result{false};
-    if (m_context.pendingBufferingLimit.has_value())
+    guint bufferingLimit{0};
     {
-        GstElement *decoder{getDecoder(MediaSourceType::AUDIO)};
-        if (decoder)
+        std::unique_lock lock{m_context.propertyMutex};
+        if (!m_context.pendingBufferingLimit.has_value())
         {
-            guint bufferingLimit{static_cast<guint>(m_context.pendingBufferingLimit.value())};
-            RIALTO_SERVER_LOG_DEBUG("Set limit-buffering-ms to %u", bufferingLimit);
+            RIALTO_SERVER_LOG_DEBUG("Pending limit-buffering-ms, decoder is NULL");
+            return false;
+        }
+        bufferingLimit = static_cast<guint>(m_context.pendingBufferingLimit.value());
+    }
 
-            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "limit-buffering-ms"))
-            {
-                m_glibWrapper->gObjectSet(decoder, "limit-buffering-ms", bufferingLimit, nullptr);
-                result = true;
-            }
-            else
-            {
-                RIALTO_SERVER_LOG_ERROR("Failed to set limit-buffering-ms property on decoder '%s'",
-                                        GST_ELEMENT_NAME(decoder));
-            }
-            m_context.pendingBufferingLimit.reset();
-            m_gstWrapper->gstObjectUnref(decoder);
+    GstElement *decoder{getDecoder(MediaSourceType::AUDIO)};
+    if (decoder)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Set limit-buffering-ms to %u", bufferingLimit);
+
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "limit-buffering-ms"))
+        {
+            m_glibWrapper->gObjectSet(decoder, "limit-buffering-ms", bufferingLimit, nullptr);
+            result = true;
         }
         else
         {
-            RIALTO_SERVER_LOG_DEBUG("Pending limit-buffering-ms, decoder is NULL");
+            RIALTO_SERVER_LOG_ERROR("Failed to set limit-buffering-ms property on decoder '%s'",
+                                    GST_ELEMENT_NAME(decoder));
         }
+        m_gstWrapper->gstObjectUnref(decoder);
+        std::unique_lock lock{m_context.propertyMutex};
+        m_context.pendingBufferingLimit.reset();
     }
     return result;
 }
 
 bool GstGenericPlayer::setUseBuffering()
 {
+    std::unique_lock lock{m_context.propertyMutex};
     if (m_context.pendingUseBuffering.has_value())
     {
         if (m_context.playbackGroup.m_curAudioDecodeBin)
@@ -1600,16 +1612,20 @@ bool GstGenericPlayer::getStreamSyncMode(int32_t &streamSyncMode)
         m_glibWrapper->gObjectGet(decoder, "stream-sync-mode", &streamSyncMode, nullptr);
         returnValue = true;
     }
-    else if (m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) != m_context.pendingStreamSyncMode.end())
-    {
-        RIALTO_SERVER_LOG_DEBUG("Returning queued value");
-        streamSyncMode = m_context.pendingStreamSyncMode[MediaSourceType::AUDIO];
-        returnValue = true;
-    }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Stream sync mode not supported in decoder '%s'",
-                                (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
+        std::unique_lock lock{m_context.propertyMutex};
+        if (m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) != m_context.pendingStreamSyncMode.end())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Returning queued value");
+            streamSyncMode = m_context.pendingStreamSyncMode[MediaSourceType::AUDIO];
+            returnValue = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Stream sync mode not supported in decoder '%s'",
+                                    (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
+        }
     }
 
     if (decoder)
@@ -1670,16 +1686,20 @@ bool GstGenericPlayer::getBufferingLimit(uint32_t &limitBufferingMs)
         m_glibWrapper->gObjectGet(decoder, "limit-buffering-ms", &limitBufferingMs, nullptr);
         returnValue = true;
     }
-    else if (m_context.pendingBufferingLimit.has_value())
-    {
-        RIALTO_SERVER_LOG_DEBUG("Returning queued value");
-        limitBufferingMs = m_context.pendingBufferingLimit.value();
-        returnValue = true;
-    }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("buffering limit not supported in decoder '%s'",
-                                (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
+        std::unique_lock lock{m_context.propertyMutex};
+        if (m_context.pendingBufferingLimit.has_value())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Returning queued value");
+            limitBufferingMs = m_context.pendingBufferingLimit.value();
+            returnValue = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("buffering limit not supported in decoder '%s'",
+                                    (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
+        }
     }
 
     if (decoder)
@@ -1703,11 +1723,15 @@ bool GstGenericPlayer::getUseBuffering(bool &useBuffering)
         m_glibWrapper->gObjectGet(m_context.playbackGroup.m_curAudioDecodeBin, "use-buffering", &useBuffering, nullptr);
         return true;
     }
-    else if (m_context.pendingUseBuffering.has_value())
+    else
     {
-        RIALTO_SERVER_LOG_DEBUG("Returning queued value");
-        useBuffering = m_context.pendingUseBuffering.value();
-        return true;
+        std::unique_lock lock{m_context.propertyMutex};
+        if (m_context.pendingUseBuffering.has_value())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Returning queued value");
+            useBuffering = m_context.pendingUseBuffering.value();
+            return true;
+        }
     }
     return false;
 }
