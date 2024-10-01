@@ -22,6 +22,7 @@
 
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
+#include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include <gst/gst.h>
@@ -32,7 +33,7 @@ namespace firebolt::rialto::server::tasks::generic
 class UpdatePlaybackGroup : public IPlayerTask
 {
 public:
-    UpdatePlaybackGroup(GenericPlayerContext &context,
+    UpdatePlaybackGroup(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                         std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                         std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, GstElement *typefind,
                         const GstCaps *caps);
@@ -41,6 +42,7 @@ public:
 
 private:
     GenericPlayerContext &m_context;
+    IGstGenericPlayerPrivate &m_player;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     GstElement *m_typefind;

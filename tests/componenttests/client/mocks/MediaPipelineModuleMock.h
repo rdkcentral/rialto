@@ -116,6 +116,20 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::GetStreamSyncModeRequest *request,
                  ::firebolt::rialto::GetStreamSyncModeResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setBufferingLimit,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::SetBufferingLimitRequest *request,
+                 ::firebolt::rialto::SetBufferingLimitResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getBufferingLimit,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::GetBufferingLimitRequest *request,
+                 ::firebolt::rialto::GetBufferingLimitResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setUseBuffering,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::SetUseBufferingRequest *request,
+                 ::firebolt::rialto::SetUseBufferingResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getUseBuffering,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetUseBufferingRequest *request,
+                 ::firebolt::rialto::GetUseBufferingResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, flush,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::FlushRequest *request,
                  ::firebolt::rialto::FlushResponse *response, ::google::protobuf::Closure *done));
@@ -177,6 +191,20 @@ public:
     {
         firebolt::rialto::GetStreamSyncModeResponse response;
         response.set_stream_sync_mode(streamSyncMode);
+        return response;
+    }
+
+    ::firebolt::rialto::GetBufferingLimitResponse getBufferingLimitResponse(const uint32_t bufferingLimit)
+    {
+        firebolt::rialto::GetBufferingLimitResponse response;
+        response.set_limit_buffering_ms(bufferingLimit);
+        return response;
+    }
+
+    ::firebolt::rialto::GetUseBufferingResponse getUseBufferingResponse(const bool useBuffering)
+    {
+        firebolt::rialto::GetUseBufferingResponse response;
+        response.set_use_buffering(useBuffering);
         return response;
     }
 

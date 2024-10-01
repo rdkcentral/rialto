@@ -1208,13 +1208,14 @@ void MediaPipelineTestMethods::setSyncOff(const bool syncOff)
 void MediaPipelineTestMethods::shouldSetStreamSyncMode(const int32_t expectedStreamSyncMode)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                setStreamSyncMode(_, setStreamSyncModeRequestMatcher(kSessionId, expectedStreamSyncMode), _, _))
+                setStreamSyncMode(_, setStreamSyncModeRequestMatcher(kSessionId, kAudioSourceId, expectedStreamSyncMode),
+                                  _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
 void MediaPipelineTestMethods::setStreamSyncMode(const int32_t streamSyncMode)
 {
-    EXPECT_EQ(m_mediaPipeline->setStreamSyncMode(streamSyncMode), true);
+    EXPECT_EQ(m_mediaPipeline->setStreamSyncMode(kAudioSourceId, streamSyncMode), true);
 }
 
 void MediaPipelineTestMethods::shouldGetStreamSyncMode(const int32_t streamSyncMode)
@@ -1229,6 +1230,58 @@ void MediaPipelineTestMethods::getStreamSyncMode(const int32_t expectedStreamSyn
     int32_t returnStreamSyncMode;
     EXPECT_EQ(m_mediaPipeline->getStreamSyncMode(returnStreamSyncMode), true);
     EXPECT_EQ(returnStreamSyncMode, expectedStreamSyncMode);
+}
+
+void MediaPipelineTestMethods::shouldSetBufferingLimit(const uint32_t expectedBufferingLimit)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setBufferingLimit(_, setBufferingLimitRequestMatcher(kSessionId, expectedBufferingLimit), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setBufferingLimit(const uint32_t bufferingLimit)
+{
+    EXPECT_EQ(m_mediaPipeline->setBufferingLimit(bufferingLimit), true);
+}
+
+void MediaPipelineTestMethods::shouldGetBufferingLimit(const uint32_t bufferingLimit)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getBufferingLimit(_, getBufferingLimitRequestMatcher(kSessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getBufferingLimitResponse(bufferingLimit)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getBufferingLimit(const uint32_t expectedBufferingLimit)
+{
+    uint32_t returnBufferingLimit;
+    EXPECT_EQ(m_mediaPipeline->getBufferingLimit(returnBufferingLimit), true);
+    EXPECT_EQ(returnBufferingLimit, expectedBufferingLimit);
+}
+
+void MediaPipelineTestMethods::shouldSetUseBuffering(const bool expectedUseBuffering)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setUseBuffering(_, setUseBufferingRequestMatcher(kSessionId, expectedUseBuffering), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setUseBuffering(const bool useBuffering)
+{
+    EXPECT_EQ(m_mediaPipeline->setUseBuffering(useBuffering), true);
+}
+
+void MediaPipelineTestMethods::shouldGetUseBuffering(const bool useBuffering)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getUseBuffering(_, getUseBufferingRequestMatcher(kSessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getUseBufferingResponse(useBuffering)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getUseBuffering(const bool expectedUseBuffering)
+{
+    bool returnUseBuffering;
+    EXPECT_EQ(m_mediaPipeline->getUseBuffering(returnUseBuffering), true);
+    EXPECT_EQ(returnUseBuffering, expectedUseBuffering);
 }
 
 void MediaPipelineTestMethods::shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY,

@@ -74,6 +74,8 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     const std::shared_ptr<IMediaPipelineClient> kIMediaPipelineClient;
     constexpr bool kResetTime{false};
     constexpr double kAppliedRate{2.0};
+    constexpr bool kEnabled{true};
+    constexpr uint32_t kBufferingLimit{5326};
 
     /////////////////////////////////////////////
 
@@ -233,8 +235,8 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, setStreamSyncMode(1)).WillOnce(Return(true));
-    EXPECT_TRUE(proxy->setStreamSyncMode(1));
+    EXPECT_CALL(*mediaPipelineMock, setStreamSyncMode(kSourceId, 1)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setStreamSyncMode(kSourceId, 1));
 
     /////////////////////////////////////////////
 
@@ -261,6 +263,28 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     EXPECT_CALL(*mediaPipelineMock, processAudioGap(kPosition1, kDuration, kDiscontinuityGap, kIsAudioAac))
         .WillOnce(Return(true));
     EXPECT_TRUE(proxy->processAudioGap(kPosition1, kDuration, kDiscontinuityGap, kIsAudioAac));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setBufferingLimit(kBufferingLimit)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setBufferingLimit(kBufferingLimit));
+
+    /////////////////////////////////////////////
+
+    uint32_t bufferingLimit{0};
+    EXPECT_CALL(*mediaPipelineMock, getBufferingLimit(bufferingLimit)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->getBufferingLimit(bufferingLimit));
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, setUseBuffering(kEnabled)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->setUseBuffering(kEnabled));
+
+    /////////////////////////////////////////////
+
+    bool useBuffering{false};
+    EXPECT_CALL(*mediaPipelineMock, getUseBuffering(useBuffering)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->getUseBuffering(useBuffering));
 
     /////////////////////////////////////////////
 

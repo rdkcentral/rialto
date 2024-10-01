@@ -1382,16 +1382,17 @@ public:
     virtual bool setSyncOff(bool syncOff) = 0;
 
     /**
-     * @brief Set stream sync mode property on the audio decoder. Default 0.
+     * @brief Set stream sync mode property on the audio decoder or video filter. Default 0.
      *
      * 1 - Frame to decode frame will immediately proceed next frame sync.
      * 0 - Frame decoded with no frame sync.
      *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
      * @param[in] streamSyncMode : The stream sync mode value to set.
      *
      * @retval true on success false otherwise
      */
-    virtual bool setStreamSyncMode(int32_t streamSyncMode) = 0;
+    virtual bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) = 0;
 
     /**
      * @brief Get stream sync mode property on the audio decoder.
@@ -1442,6 +1443,53 @@ public:
      * @retval true on success.
      */
     virtual bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) = 0;
+
+    /**
+     * @brief Set buffering limit
+     *
+     * This method enables/disables limit buffering and sets millisecond threshold used.
+     * Use kInvalidLimitBuffering to disable limit buffering
+     *
+     * @param[in] limitBufferingMs         : buffering limit in ms
+     *
+     * @retval true on success.
+     */
+    virtual bool setBufferingLimit(uint32_t limitBufferingMs) = 0;
+
+    /**
+     * @brief Get buffering limit
+     *
+     * This method returns current value of buffering limit in milliseconds
+     * Method will return kInvalidLimitBuffering limit buffering is disabled
+     *
+     * @param[out] limitBufferingMs         : buffering limit in ms
+     *
+     * @retval true on success.
+     */
+    virtual bool getBufferingLimit(uint32_t &limitBufferingMs) = 0;
+
+    /**
+     * @brief Enables/disables the buffering option
+     *
+     * This method enables the buffering option so that BUFFERING messages are
+     * emitted based on low-/high-percent thresholds.
+     *
+     * @param[in] useBuffering         : true if buffering option enabled.
+     *
+     * @retval true on success.
+     */
+    virtual bool setUseBuffering(bool useBuffering) = 0;
+
+    /**
+     * @brief Checks, if buffering is enabled
+     *
+     * This method returns true, if buffering is enabled
+     *
+     * @param[out] useBuffering         : true if buffering option is enabled.
+     *
+     * @retval true on success.
+     */
+    virtual bool getUseBuffering(bool &useBuffering) = 0;
 };
 
 }; // namespace firebolt::rialto

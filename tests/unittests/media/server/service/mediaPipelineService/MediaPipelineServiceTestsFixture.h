@@ -102,6 +102,15 @@ public:
     void mediaPipelineWillFailToSetTextTrackIdentifier();
     void mediaPipelineWillGetTextTrackIdentifier();
     void mediaPipelineWillFailToGetTextTrackIdentifier();
+    void mediaPipelineWillSetBufferingLimit();
+    void mediaPipelineWillFailToSetBufferingLimit();
+    void mediaPipelineWillGetBufferingLimit();
+    void mediaPipelineWillFailToGetBufferingLimit();
+    void mediaPipelineWillSetUseBuffering();
+    void mediaPipelineWillFailToSetUseBuffering();
+    void mediaPipelineWillGetUseBuffering();
+    void mediaPipelineWillFailToGetUseBuffering();
+
     void mediaPipelineWillPing();
 
     void mediaPipelineFactoryWillCreateMediaPipeline();
@@ -184,6 +193,15 @@ public:
     void setTextTrackIdentifierShouldFail();
     void getTextTrackIdentifierShouldSucceed();
     void getTextTrackIdentifierShouldFail();
+    void setBufferingLimitShouldSucceed();
+    void setBufferingLimitShouldFail();
+    void getBufferingLimitShouldSucceed();
+    void getBufferingLimitShouldFail();
+    void setUseBufferingShouldSucceed();
+    void setUseBufferingShouldFail();
+    void getUseBufferingShouldSucceed();
+    void getUseBufferingShouldFail();
+
     void clearMediaPipelines();
     void initSession();
     void triggerPing();

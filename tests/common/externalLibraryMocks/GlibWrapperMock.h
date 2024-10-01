@@ -50,12 +50,14 @@ public:
         while (NULL != kProperty)
         {
             if (g_strcmp0(kProperty, "immediate-output") == 0 || g_strcmp0(kProperty, "low-latency") == 0 ||
-                g_strcmp0(kProperty, "sync") == 0 || g_strcmp0(kProperty, "sync-off") == 0)
+                g_strcmp0(kProperty, "sync") == 0 || g_strcmp0(kProperty, "sync-off") == 0 ||
+                g_strcmp0(kProperty, "syncmode-streaming") == 0 || g_strcmp0(kProperty, "use-buffering") == 0)
             {
                 gboolean val = va_arg(args, gboolean);
                 gObjectSetBoolStub(object, kProperty, val);
             }
-            else if (g_strcmp0(kProperty, "stream-sync-mode") == 0 || g_strcmp0(kProperty, "frame-step-on-preroll") == 0)
+            else if (g_strcmp0(kProperty, "stream-sync-mode") == 0 || g_strcmp0(kProperty, "frame-step-on-preroll") == 0 ||
+                     g_strcmp0(kProperty, "limit-buffering-ms") == 0)
             {
                 gint val = va_arg(args, gint);
                 gObjectSetIntStub(object, kProperty, val);

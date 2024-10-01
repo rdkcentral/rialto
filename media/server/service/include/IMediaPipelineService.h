@@ -72,13 +72,17 @@ public:
     virtual bool setSync(int sessionId, bool sync) = 0;
     virtual bool getSync(int sessionId, bool &sync) = 0;
     virtual bool setSyncOff(int sessionId, bool syncOff) = 0;
-    virtual bool setStreamSyncMode(int sessionId, int32_t streamSyncMode) = 0;
+    virtual bool setStreamSyncMode(int sessionId, int32_t sourceId, int32_t streamSyncMode) = 0;
     virtual bool getStreamSyncMode(int sessionId, int32_t &streamSyncMode) = 0;
     virtual bool flush(int sessionId, std::int32_t sourceId, bool resetTime) = 0;
     virtual bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime,
                                    double appliedRate) = 0;
     virtual bool processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,
                                  bool audioAac) = 0;
+    virtual bool setBufferingLimit(int sessionId, uint32_t limitBufferingMs) = 0;
+    virtual bool getBufferingLimit(int sessionId, uint32_t &limitBufferingMs) = 0;
+    virtual bool setUseBuffering(int sessionId, bool useBuffering) = 0;
+    virtual bool getUseBuffering(int sessionId, bool &useBuffering) = 0;
     virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) = 0;
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
     virtual std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,

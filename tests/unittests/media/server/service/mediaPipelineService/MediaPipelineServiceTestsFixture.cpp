@@ -66,6 +66,8 @@ constexpr uint32_t kDuration{35};
 constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
 const std::string kTextTrackIdentifier{"TextTrackIdentifier"};
+constexpr uint32_t kBufferingLimit{4324};
+constexpr bool kUseBuffering{true};
 } // namespace
 
 namespace firebolt::rialto
@@ -344,12 +346,12 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToSetSyncOff()
 
 void MediaPipelineServiceTests::mediaPipelineWillSetStreamSyncMode()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setStreamSyncMode(_)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, setStreamSyncMode(kSourceId, _)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToSetStreamSyncMode()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setStreamSyncMode(_)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, setStreamSyncMode(kSourceId, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillGetStreamSyncMode()
@@ -431,6 +433,46 @@ void MediaPipelineServiceTests::mediaPipelineWillGetTextTrackIdentifier()
 void MediaPipelineServiceTests::mediaPipelineWillFailToGetTextTrackIdentifier()
 {
     EXPECT_CALL(m_mediaPipelineMock, getTextTrackIdentifier(_)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillSetBufferingLimit()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setBufferingLimit(kBufferingLimit)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetBufferingLimit()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setBufferingLimit(kBufferingLimit)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetBufferingLimit()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getBufferingLimit(_)).WillOnce(DoAll(SetArgReferee<0>(kBufferingLimit), Return(true)));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetBufferingLimit()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getBufferingLimit(_)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillSetUseBuffering()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setUseBuffering(kUseBuffering)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetUseBuffering()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setUseBuffering(kUseBuffering)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetUseBuffering()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getUseBuffering(_)).WillOnce(DoAll(SetArgReferee<0>(kUseBuffering), Return(true)));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetUseBuffering()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getUseBuffering(_)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillPing()
@@ -806,12 +848,12 @@ void MediaPipelineServiceTests::setSyncOffShouldFail()
 
 void MediaPipelineServiceTests::setStreamSyncModeShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->setStreamSyncMode(kSessionId, true));
+    EXPECT_TRUE(m_sut->setStreamSyncMode(kSessionId, kSourceId, true));
 }
 
 void MediaPipelineServiceTests::setStreamSyncModeShouldFail()
 {
-    EXPECT_FALSE(m_sut->setStreamSyncMode(kSessionId, true));
+    EXPECT_FALSE(m_sut->setStreamSyncMode(kSessionId, kSourceId, true));
 }
 
 void MediaPipelineServiceTests::getStreamSyncModeShouldSucceed()
@@ -878,6 +920,52 @@ void MediaPipelineServiceTests::getTextTrackIdentifierShouldFail()
 {
     std::string textTrackIdentifier;
     EXPECT_FALSE(m_sut->getTextTrackIdentifier(kSessionId, textTrackIdentifier));
+}
+
+void MediaPipelineServiceTests::setBufferingLimitShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setBufferingLimit(kSessionId, kBufferingLimit));
+}
+
+void MediaPipelineServiceTests::setBufferingLimitShouldFail()
+{
+    EXPECT_FALSE(m_sut->setBufferingLimit(kSessionId, kBufferingLimit));
+}
+
+void MediaPipelineServiceTests::getBufferingLimitShouldSucceed()
+{
+    uint32_t bufferingLimit{0};
+    EXPECT_TRUE(m_sut->getBufferingLimit(kSessionId, bufferingLimit));
+    EXPECT_EQ(kBufferingLimit, bufferingLimit);
+}
+
+void MediaPipelineServiceTests::getBufferingLimitShouldFail()
+{
+    uint32_t bufferingLimit{0};
+    EXPECT_FALSE(m_sut->getBufferingLimit(kSessionId, bufferingLimit));
+}
+
+void MediaPipelineServiceTests::setUseBufferingShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setUseBuffering(kSessionId, kUseBuffering));
+}
+
+void MediaPipelineServiceTests::setUseBufferingShouldFail()
+{
+    EXPECT_FALSE(m_sut->setUseBuffering(kSessionId, kUseBuffering));
+}
+
+void MediaPipelineServiceTests::getUseBufferingShouldSucceed()
+{
+    bool useBuffering{false};
+    EXPECT_TRUE(m_sut->getUseBuffering(kSessionId, useBuffering));
+    EXPECT_EQ(kUseBuffering, useBuffering);
+}
+
+void MediaPipelineServiceTests::getUseBufferingShouldFail()
+{
+    bool useBuffering{false};
+    EXPECT_FALSE(m_sut->getUseBuffering(kSessionId, useBuffering));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()

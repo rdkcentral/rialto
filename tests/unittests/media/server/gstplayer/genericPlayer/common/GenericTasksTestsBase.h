@@ -85,6 +85,8 @@ protected:
     void shouldSetupAudioSinkElementWithPendingSync();
     void shouldSetupAudioDecoderElementWithPendingSyncOff();
     void shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
+    void shouldSetupVideoParserElementWithPendingStreamSyncMode();
+    void shouldSetupAudioDecoderElementWithPendingBufferingLimit();
     void shouldSetupVideoSinkElementWithPendingRenderFrame();
     void shouldSetupVideoElementAmlhalasink();
     void shouldSetupAudioElementBrcmAudioSink();
@@ -221,6 +223,8 @@ protected:
     void shouldDoNothingWhenElementOtherThanDecodebin();
     void shouldSuccessfullyFindTypefindAndParent();
     void checkPlaybackGroupAdded();
+    void setUseBufferingPending();
+    void shouldTriggerSetUseBuffering();
 
     // Stop test methods
     void shouldStopGstPlayer();
@@ -277,6 +281,14 @@ protected:
     // stream-sync-mode decoder property test methods
     void shouldSetStreamSyncMode();
     void triggerSetStreamSyncMode();
+
+    // buffering limit property test methods
+    void shouldSetBufferingLimit();
+    void triggerSetBufferingLimit();
+
+    // use buffering property test methods
+    void shouldSetUseBuffering();
+    void triggerSetUseBuffering();
 
     // SetPosition test methods
     void triggerSetPositionNullClient();
@@ -407,6 +419,7 @@ private:
     void expectSetupVideoDecoderElement();
     void expectSetupAudioSinkElement();
     void expectSetupAudioDecoderElement();
+    void expectSetupVideoParserElement();
 
     // AttachSource helper methods
     void expectSetGenericVideoCaps();

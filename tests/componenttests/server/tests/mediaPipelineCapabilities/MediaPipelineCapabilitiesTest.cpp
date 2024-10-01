@@ -37,7 +37,8 @@ const char *kPropertyName2 = "test2";
 const char *kPropertyName3 = "prop";
 const char *kAudioFade = "audio-fade";
 const GstElementFactoryListType kExpectedFactoryListType{
-    GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+    GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_PARSER |
+    GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
 }; // namespace
 namespace firebolt::rialto::server::ct
 {

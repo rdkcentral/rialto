@@ -106,7 +106,7 @@ public:
      *
      * @retval true on success.
      */
-    virtual bool setStreamSyncMode() = 0;
+    virtual bool setStreamSyncMode(const MediaSourceType &type) = 0;
 
     /**
      * @brief Sets frame rendering. Called by the worker thread.
@@ -114,6 +114,20 @@ public:
      * @retval true on success.
      */
     virtual bool setRenderFrame() = 0;
+
+    /**
+     * @brief Sets buffering limit. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setBufferingLimit() = 0;
+
+    /**
+     * @brief Sets use buffering. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setUseBuffering() = 0;
 
     /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.

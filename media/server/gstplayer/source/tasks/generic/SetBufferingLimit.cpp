@@ -17,31 +17,31 @@
  * limitations under the License.
  */
 
-#include "SetStreamSyncMode.h"
+#include "SetBufferingLimit.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetStreamSyncMode::SetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                     const MediaSourceType &type, int32_t streamSyncMode)
-    : m_context(context), m_player(player), m_type{type}, m_streamSyncMode{streamSyncMode}
+SetBufferingLimit::SetBufferingLimit(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, std::uint32_t limit)
+    : m_context{context}, m_player(player), m_limit{limit}
 {
-    RIALTO_SERVER_LOG_DEBUG("Constructing SetStreamSyncMode");
+    RIALTO_SERVER_LOG_DEBUG("Constructing SetBufferingLimit");
 }
 
-SetStreamSyncMode::~SetStreamSyncMode()
+SetBufferingLimit::~SetBufferingLimit()
 {
-    RIALTO_SERVER_LOG_DEBUG("SetStreamSyncMode finished");
+    RIALTO_SERVER_LOG_DEBUG("SetBufferingLimit finished");
 }
 
-void SetStreamSyncMode::execute() const
+void SetBufferingLimit::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing SetStreamSyncMode");
+    RIALTO_SERVER_LOG_DEBUG("Executing SetBufferingLimit");
 
-    m_context.pendingStreamSyncMode.emplace(m_type, m_streamSyncMode);
+    m_context.pendingBufferingLimit = m_limit;
     if (m_context.pipeline)
     {
-        m_player.setStreamSyncMode(m_type);
+        m_player.setBufferingLimit();
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

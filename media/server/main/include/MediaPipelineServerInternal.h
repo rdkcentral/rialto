@@ -146,7 +146,7 @@ public:
 
     bool setSyncOff(bool syncOff) override;
 
-    bool setStreamSyncMode(int32_t streamSyncMode) override;
+    bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) override;
 
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
 
@@ -155,6 +155,14 @@ public:
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate) override;
 
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
+
+    bool setBufferingLimit(uint32_t limitBufferingMs) override;
+
+    bool getBufferingLimit(uint32_t &limitBufferingMs) override;
+
+    bool setUseBuffering(bool useBuffering) override;
+
+    bool getUseBuffering(bool &useBuffering) override;
 
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
@@ -553,11 +561,12 @@ protected:
     /**
      * @brief Set stream sync mode internally, only to be called on the main thread.
      *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
      * @param[in] streamSyncMode : The stream sync mode value to set.
      *
      * @retval true on success false otherwise
      */
-    bool setStreamSyncModeInternal(int32_t streamSyncMode);
+    bool setStreamSyncModeInternal(int32_t sourceId, int32_t streamSyncMode);
 
     /**
      * @brief Get stream sync mode internally, only to be called on the main thread.
@@ -612,6 +621,53 @@ protected:
      * @retval true on success.
      */
     bool processAudioGapInternal(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac);
+
+    /**
+     * @brief Set buffering limit
+     *
+     * This method enables/disables limit buffering and sets millisecond threshold used.
+     * Use kInvalidLimitBuffering to disable limit buffering
+     *
+     * @param[in] limitBufferingMs         : buffering limit in ms
+     *
+     * @retval true on success.
+     */
+    bool setBufferingLimitInternal(uint32_t limitBufferingMs);
+
+    /**
+     * @brief Get buffering limit
+     *
+     * This method returns current value of buffering limit in milliseconds
+     * Method will return kInvalidLimitBuffering limit buffering is disabled
+     *
+     * @param[out] limitBufferingMs         : buffering limit in ms
+     *
+     * @retval true on success.
+     */
+    bool getBufferingLimitInternal(uint32_t &limitBufferingMs);
+
+    /**
+     * @brief Enables/disables the buffering option
+     *
+     * This method enables the buffering option so that BUFFERING messages are
+     * emitted based on low-/high-percent thresholds.
+     *
+     * @param[in] useBuffering         : true if buffering option enabled.
+     *
+     * @retval true on success.
+     */
+    bool setUseBufferingInternal(bool useBuffering);
+
+    /**
+     * @brief Checks, if buffering is enabled
+     *
+     * This method returns true, if buffering is enabled
+     *
+     * @param[out] useBuffering         : true if buffering option is enabled.
+     *
+     * @retval true on success.
+     */
+    bool getUseBufferingInternal(bool &useBuffering);
 };
 
 }; // namespace firebolt::rialto::server

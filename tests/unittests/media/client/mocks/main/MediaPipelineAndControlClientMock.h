@@ -73,7 +73,7 @@ public:
     MOCK_METHOD(bool, setSync, (bool sync), (override));
     MOCK_METHOD(bool, getSync, (bool &sync), (override));
     MOCK_METHOD(bool, setSyncOff, (bool syncOff), (override));
-    MOCK_METHOD(bool, setStreamSyncMode, (int32_t streamSyncMode), (override));
+    MOCK_METHOD(bool, setStreamSyncMode, (int32_t sourceId, int32_t streamSyncMode), (override));
     MOCK_METHOD(bool, getStreamSyncMode, (int32_t & streamSyncMode), (override));
     MOCK_METHOD(bool, flush, (int32_t sourceId, bool resetTime), (override));
 
@@ -84,6 +84,10 @@ public:
     MOCK_METHOD(void, notifyApplicationState, (ApplicationState state), (override));
     MOCK_METHOD(bool, processAudioGap, (int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
                 (override));
+    MOCK_METHOD(bool, setBufferingLimit, (uint32_t limitBufferingMs), (override));
+    MOCK_METHOD(bool, getBufferingLimit, (uint32_t & limitBufferingMs), (override));
+    MOCK_METHOD(bool, setUseBuffering, (bool useBuffering), (override));
+    MOCK_METHOD(bool, getUseBuffering, (bool &useBuffering), (override));
 };
 } // namespace firebolt::rialto::client
 

@@ -278,11 +278,12 @@ MATCHER_P2(setSyncOffRequestMatcher, sessionId, syncOff, "")
     return ((kRequest->session_id() == sessionId) && (kRequest->sync_off() == syncOff));
 }
 
-MATCHER_P2(setStreamSyncModeRequestMatcher, sessionId, streamSyncMode, "")
+MATCHER_P3(setStreamSyncModeRequestMatcher, sessionId, sourceId, streamSyncMode, "")
 {
     const ::firebolt::rialto::SetStreamSyncModeRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::SetStreamSyncModeRequest *>(arg);
-    return ((kRequest->session_id() == sessionId) && (kRequest->stream_sync_mode() == streamSyncMode));
+    return ((kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId) &&
+            (kRequest->stream_sync_mode() == streamSyncMode));
 }
 
 MATCHER_P(getStreamSyncModeRequestMatcher, sessionId, "")
@@ -384,6 +385,34 @@ MATCHER_P(getTextTrackIdentifierRequestMatcher, sessionId, "")
 {
     const ::firebolt::rialto::GetTextTrackIdentifierRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::GetTextTrackIdentifierRequest *>(arg);
+    return (kRequest->session_id() == sessionId);
+}
+
+MATCHER_P2(setBufferingLimitRequestMatcher, sessionId, limitBufferingMs, "")
+{
+    const ::firebolt::rialto::SetBufferingLimitRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetBufferingLimitRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->limit_buffering_ms() == limitBufferingMs));
+}
+
+MATCHER_P(getBufferingLimitRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetBufferingLimitRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetBufferingLimitRequest *>(arg);
+    return (kRequest->session_id() == sessionId);
+}
+
+MATCHER_P2(setUseBufferingRequestMatcher, sessionId, useBuffering, "")
+{
+    const ::firebolt::rialto::SetUseBufferingRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetUseBufferingRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->use_buffering() == useBuffering));
+}
+
+MATCHER_P(getUseBufferingRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetUseBufferingRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetUseBufferingRequest *>(arg);
     return (kRequest->session_id() == sessionId);
 }
 #endif // MEDIA_PIPELINE_PROTO_REQUEST_MATCHERS_H_

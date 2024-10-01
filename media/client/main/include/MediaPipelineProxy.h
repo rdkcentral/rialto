@@ -124,9 +124,9 @@ public:
 
     bool setSyncOff(bool syncOff) override { return m_mediaPipeline->setSyncOff(syncOff); }
 
-    bool setStreamSyncMode(int32_t streamSyncMode) override
+    bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) override
     {
-        return m_mediaPipeline->setStreamSyncMode(streamSyncMode);
+        return m_mediaPipeline->setStreamSyncMode(sourceId, streamSyncMode);
     }
 
     bool getStreamSyncMode(int32_t &streamSyncMode) override
@@ -145,6 +145,20 @@ public:
     {
         return m_mediaPipeline->processAudioGap(position, duration, discontinuityGap, audioAac);
     }
+
+    bool setBufferingLimit(uint32_t limitBufferingMs) override
+    {
+        return m_mediaPipeline->setBufferingLimit(limitBufferingMs);
+    }
+
+    bool getBufferingLimit(uint32_t &limitBufferingMs) override
+    {
+        return m_mediaPipeline->getBufferingLimit(limitBufferingMs);
+    }
+
+    bool setUseBuffering(bool useBuffering) override { return m_mediaPipeline->setUseBuffering(useBuffering); }
+
+    bool getUseBuffering(bool &useBuffering) override { return m_mediaPipeline->getUseBuffering(useBuffering); }
 
     void notifyApplicationState(ApplicationState state) override { m_mediaPipeline->notifyApplicationState(state); }
 

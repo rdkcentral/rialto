@@ -536,3 +536,51 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetTextTrackIdentifier)
     mediaPipelineServiceWillFailToGetTextTrackIdentifier();
     sendGetTextTrackIdentifierRequestAndReceiveResponseWithoutMatch();
 }
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetBufferingLimit)
+{
+    mediaPipelineServiceWillSetBufferingLimit();
+    sendSetBufferingLimitRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetBufferingLimit)
+{
+    mediaPipelineServiceWillFailToSetBufferingLimit();
+    sendSetBufferingLimitRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetBufferingLimit)
+{
+    mediaPipelineServiceWillGetBufferingLimit();
+    sendGetBufferingLimitRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetBufferingLimit)
+{
+    mediaPipelineServiceWillFailToGetBufferingLimit();
+    sendGetBufferingLimitRequestAndReceiveResponseWithoutMatch();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetUseBuffering)
+{
+    mediaPipelineServiceWillSetUseBuffering();
+    sendSetUseBufferingRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetUseBuffering)
+{
+    mediaPipelineServiceWillFailToSetUseBuffering();
+    sendSetUseBufferingRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetUseBuffering)
+{
+    mediaPipelineServiceWillGetUseBuffering();
+    sendGetUseBufferingRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetUseBuffering)
+{
+    mediaPipelineServiceWillFailToGetUseBuffering();
+    sendGetUseBufferingRequestAndReceiveResponseWithoutMatch();
+}

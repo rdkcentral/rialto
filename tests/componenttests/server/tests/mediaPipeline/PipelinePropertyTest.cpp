@@ -37,6 +37,8 @@ constexpr bool kLowLatency{true};
 constexpr bool kSync{true};
 constexpr bool kSyncOff{true};
 constexpr int32_t kStreamSyncMode{1};
+constexpr int32_t kBufferingLimit{4321};
+constexpr bool kUseBuffering{true};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -260,7 +262,7 @@ public:
 
     void setStreamSyncMode()
     {
-        auto req{createSetStreamSyncModeRequest(m_sessionId, kStreamSyncMode)};
+        auto req{createSetStreamSyncModeRequest(m_sessionId, m_audioSourceId, kStreamSyncMode)};
         ConfigureAction<SetStreamSyncMode>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
         waitWorker();
     }
@@ -273,6 +275,38 @@ public:
             .expectSuccess()
             .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.stream_sync_mode(), kStreamSyncMode); });
         waitWorker();
+    }
+
+    void setBufferingLimit()
+    {
+        auto req{createSetBufferingLimitRequest(m_sessionId, kBufferingLimit)};
+        ConfigureAction<SetBufferingLimit>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
+        waitWorker();
+    }
+
+    void getBufferingLimit()
+    {
+        auto req{createGetBufferingLimitRequest(m_sessionId)};
+        ConfigureAction<GetBufferingLimit>(m_clientStub)
+            .send(req)
+            .expectSuccess()
+            .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.limit_buffering_ms(), kBufferingLimit); });
+        waitWorker();
+    }
+
+    void setUseBuffering()
+    {
+        auto req{createSetUseBufferingRequest(m_sessionId, kUseBuffering)};
+        ConfigureAction<SetUseBuffering>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
+    }
+
+    void getUseBuffering()
+    {
+        auto req{createGetUseBufferingRequest(m_sessionId)};
+        ConfigureAction<GetUseBuffering>(m_clientStub)
+            .send(req)
+            .expectSuccess()
+            .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.use_buffering(), kUseBuffering); });
     }
 
     void setImmediateOutputFailure()
@@ -320,7 +354,7 @@ public:
 
     void setStreamSyncModeFailure()
     {
-        auto req{createSetStreamSyncModeRequest(m_sessionId, kStreamSyncMode)};
+        auto req{createSetStreamSyncModeRequest(m_sessionId, m_videoSourceId, kStreamSyncMode)};
         ConfigureAction<SetStreamSyncMode>(m_clientStub).send(req).expectSuccess();
         waitWorker();
     }
@@ -330,6 +364,32 @@ public:
         auto req{createGetStreamSyncModeRequest(m_sessionId)};
         ConfigureAction<GetStreamSyncMode>(m_clientStub).send(req).expectFailure();
         waitWorker();
+    }
+
+    void setBufferingLimitFailure()
+    {
+        auto req{createSetBufferingLimitRequest(m_sessionId, kBufferingLimit)};
+        ConfigureAction<SetBufferingLimit>(m_clientStub).send(req).expectSuccess();
+        waitWorker();
+    }
+
+    void getBufferingLimitFailure()
+    {
+        auto req{createGetBufferingLimitRequest(m_sessionId)};
+        ConfigureAction<GetBufferingLimit>(m_clientStub).send(req).expectFailure();
+        waitWorker();
+    }
+
+    void setUseBufferingFailure()
+    {
+        auto req{createSetUseBufferingRequest(m_sessionId + 1, kUseBuffering)};
+        ConfigureAction<SetUseBuffering>(m_clientStub).send(req).expectFailure();
+    }
+
+    void getUseBufferingFailure()
+    {
+        auto req{createGetUseBufferingRequest(m_sessionId)};
+        ConfigureAction<GetUseBuffering>(m_clientStub).send(req).expectFailure();
     }
 
 private:
@@ -410,18 +470,32 @@ private:
  *  Step 11: Get Stream Sync Mode
  *   Will get the StreamSyncMode property of the decoder on the Rialto Server
  *
- *  Step 12: Remove sources
+ *  Step 12: Set Buffering Limit
+ *   Rialto client sends SetBufferingLimit request and wait for response.
+ *   the property should be set by the RialtoServer.
+ *
+ *  Step 13: Get Buffering Limit
+ *   Will get the BufferingLimit property of the decoder on the Rialto Server
+ *
+ *  Step 14: Set Use Buffering
+ *   Rialto client sends SetUseBuffering request and wait for response.
+ *   the property should be cached by the RialtoServer.
+ *
+ *  Step 15: Get Use Buffering
+ *   Will get the UseBuffering property of the decodebin on the Rialto Server
+ *
+ *  Step 16: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 13: Stop
+ *  Step 17: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 14: Destroy media session
+ *  Step 18: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -487,16 +561,30 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
     willGetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "stream-sync-mode", kStreamSyncMode);
     getStreamSyncMode();
 
-    // Step 12: Remove sources
+    // Step 12: Set Buffering Limit
+    willSetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "limit-buffering-ms", kBufferingLimit);
+    setBufferingLimit();
+
+    // Step 13: Get Buffering Limit
+    willGetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "limit-buffering-ms", kBufferingLimit);
+    getBufferingLimit();
+
+    // Step 14: Set Use Buffering
+    setUseBuffering();
+
+    // Step 15: Get Use Buffering
+    getUseBuffering();
+
+    // Step 16: Remove sources
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 13: Stop
+    // Step 17: Stop
     willStop();
     stop();
 
-    // Step 14: Destroy media session
+    // Step 18: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }
@@ -584,18 +672,36 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
  *   Rialto client sends GetStreamSyncMode request and waits for response
  *   GetStreamSyncModeResponse is false because the server couldn't process it
  *
- *  Step 12: Remove sources
+ *  Step 12: Fail to Set Buffering Limit
+ *   Rialto client sends BufferingLimitRequest and waits for response
+ *   BufferingLimitResponse is true because the server processes
+ *   the request asyncronusly, but the RialtoServer fails gracefully to
+ *   process the request (it doesn't crash)
+ *
+ *  Step 13: Fail to Get Buffering Limit
+ *   Rialto client sends GetBufferingLimitRequest and waits for response
+ *   GetBufferingLimitResponse is false because the server couldn't process it
+ *
+ *  Step 14: Fail to Get Use Buffering
+ *   Rialto client sends GetUseBufferingRequest and waits for response
+ *   GetUseBufferingResponse is false because the server couldn't process it
+ *
+ *  Step 15: Fail to Set Use Buffering
+ *   Rialto client sends UseBufferingRequest and waits for response
+ *   UseBufferingResponse is false because the sessionId is wrong
+ *
+ *  Step 16: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 13: Stop
+ *  Step 17: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 14: Destroy media session
+ *  Step 18: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -661,16 +767,30 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetFailures)
     willFailToGetDecoder();
     getStreamSyncModeFailure();
 
-    // Step 12: Remove sources
+    // Step 12: Fail to Set Buffering Limit
+    willFailToSetDecoderProperty();
+    setBufferingLimitFailure();
+
+    // Step 13: Fail to Get Buffering Limit
+    willFailToGetDecoder();
+    getBufferingLimitFailure();
+
+    // Step 14: Fail to Get Use Buffering
+    getUseBufferingFailure();
+
+    // Step 15: Fail to Set Use Buffering
+    setUseBufferingFailure();
+
+    // Step 16: Remove sources
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 13: Stop
+    // Step 17: Stop
     willStop();
     stop();
 
-    // Step 14: Destroy media session
+    // Step 18: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

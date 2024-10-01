@@ -339,12 +339,14 @@ public:
      *
      * @param[in] context           : The GstGenericPlayer context
      * @param[in] player            : The GstGenericPlayer instance
+     * @param[in] type              : The media source type to set stream sync mode
      * @param[in] streamSyncMode    : The streamSyncMode value to set
      *
      * @retval the new SetStreamSyncMode task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createSetStreamSyncMode(GenericPlayerContext &context,
                                                                  IGstGenericPlayerPrivate &player,
+                                                                 const firebolt::rialto::MediaSourceType &type,
                                                                  int32_t streamSyncMode) const = 0;
 
     /**
@@ -383,13 +385,15 @@ public:
      * @brief Creates an UpdatePlaybackGroup task.
      *
      * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
      * @param[in] typefind      : The typefind element.
      * @param[in] caps          : The GstCaps of added element
      *
      * @retval the new UpdatePlaybackGroup task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context, GstElement *typefind,
-                                                                   const GstCaps *caps) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context,
+                                                                   IGstGenericPlayerPrivate &player,
+                                                                   GstElement *typefind, const GstCaps *caps) const = 0;
 
     /**
      * @brief Creates a RenderFrame task.
@@ -470,6 +474,31 @@ public:
                                                                   IGstGenericPlayerPrivate &player,
                                                                   const firebolt::rialto::MediaSourceType &type,
                                                                   bool immediateOutput) const = 0;
+
+    /**
+     * @brief Creates a SetBufferingLimit task.
+     *
+     * @param[in] context         : The GstPlayer context
+     * @param[in] player          : The GstPlayer instance
+     * @param[in] limit           : the value to set for buffering limit
+     *
+     * @retval the new ProcessAudioGap task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetBufferingLimit(GenericPlayerContext &context,
+                                                                 IGstGenericPlayerPrivate &player,
+                                                                 std::uint32_t limit) const = 0;
+
+    /**
+     * @brief Creates a SetUseBuffering task.
+     *
+     * @param[in] context         : The GstPlayer context
+     * @param[in] player          : The GstPlayer instance
+     * @param[in] useBuffering    : the value to set for use buffering
+     *
+     * @retval the new ProcessAudioGap task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask>
+    createSetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool useBuffering) const = 0;
 };
 
 } // namespace firebolt::rialto::server

@@ -36,6 +36,7 @@
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
+#include "tasks/generic/SetBufferingLimit.h"
 #include "tasks/generic/SetImmediateOutput.h"
 #include "tasks/generic/SetLowLatency.h"
 #include "tasks/generic/SetMute.h"
@@ -46,6 +47,7 @@
 #include "tasks/generic/SetSync.h"
 #include "tasks/generic/SetSyncOff.h"
 #include "tasks/generic/SetTextTrackIdentifier.h"
+#include "tasks/generic/SetUseBuffering.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
@@ -236,11 +238,12 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSyncOff(GenericP
     return std::make_unique<tasks::generic::SetSyncOff>(context, player, syncOff);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetStreamSyncMode(GenericPlayerContext &context,
-                                                                               IGstGenericPlayerPrivate &player,
-                                                                               int32_t streamSyncMode) const
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createSetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                  const firebolt::rialto::MediaSourceType &type,
+                                                  int32_t streamSyncMode) const
 {
-    return std::make_unique<tasks::generic::SetStreamSyncMode>(context, player, streamSyncMode);
+    return std::make_unique<tasks::generic::SetStreamSyncMode>(context, player, type, streamSyncMode);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createShutdown(IGstGenericPlayerPrivate &player) const
@@ -263,10 +266,12 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(GenericPl
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUpdatePlaybackGroup(GenericPlayerContext &context,
+                                                                                 IGstGenericPlayerPrivate &player,
                                                                                  GstElement *typefind,
                                                                                  const GstCaps *caps) const
 {
-    return std::make_unique<tasks::generic::UpdatePlaybackGroup>(context, m_gstWrapper, m_glibWrapper, typefind, caps);
+    return std::make_unique<tasks::generic::UpdatePlaybackGroup>(context, player, m_gstWrapper, m_glibWrapper, typefind,
+                                                                 caps);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createRenderFrame(GenericPlayerContext &context,
@@ -313,5 +318,19 @@ GenericPlayerTaskFactory::createSetImmediateOutput(GenericPlayerContext &context
                                                    bool immediateOutput) const
 {
     return std::make_unique<tasks::generic::SetImmediateOutput>(context, player, type, immediateOutput);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetBufferingLimit(GenericPlayerContext &context,
+                                                                               IGstGenericPlayerPrivate &player,
+                                                                               std::uint32_t limit) const
+{
+    return std::make_unique<tasks::generic::SetBufferingLimit>(context, player, limit);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetUseBuffering(GenericPlayerContext &context,
+                                                                             IGstGenericPlayerPrivate &player,
+                                                                             bool useBuffering) const
+{
+    return std::make_unique<tasks::generic::SetUseBuffering>(context, player, useBuffering);
 }
 } // namespace firebolt::rialto::server

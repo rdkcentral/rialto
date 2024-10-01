@@ -182,7 +182,7 @@ public:
 
     bool setSyncOff(bool syncOff) override;
 
-    bool setStreamSyncMode(int32_t streamSyncMode) override;
+    bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) override;
 
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
 
@@ -191,6 +191,14 @@ public:
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate) override;
 
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
+
+    bool setBufferingLimit(uint32_t limitBufferingMs) override;
+
+    bool getBufferingLimit(uint32_t &limitBufferingMs) override;
+
+    bool setUseBuffering(bool useBuffering) override;
+
+    bool getUseBuffering(bool &useBuffering) override;
 
     void notifyApplicationState(ApplicationState state) override;
 

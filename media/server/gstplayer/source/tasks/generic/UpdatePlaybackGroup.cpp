@@ -22,11 +22,12 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-UpdatePlaybackGroup::UpdatePlaybackGroup(GenericPlayerContext &context,
+UpdatePlaybackGroup::UpdatePlaybackGroup(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                          std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                                          std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                                          GstElement *typefind, const GstCaps *caps)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_typefind{typefind}, m_caps{caps}
+    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
+      m_typefind{typefind}, m_caps{caps}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing UpdatePlaybackGroup");
 }
@@ -63,6 +64,10 @@ void UpdatePlaybackGroup::execute() const
                     RIALTO_SERVER_LOG_DEBUG("onTypeFound(): m_context.playbackGroup.curAudioTypefind %s", typefindName);
                     m_glibWrapper->gFree(typefindName);
                     m_context.playbackGroup.m_curAudioTypefind = m_typefind;
+                    if (m_context.pendingUseBuffering.has_value())
+                    {
+                        m_player.setUseBuffering();
+                    }
                 }
                 m_glibWrapper->gFree(elementName);
                 m_gstWrapper->gstObjectUnref(typeFindParent);

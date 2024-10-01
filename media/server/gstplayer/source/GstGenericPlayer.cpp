@@ -498,6 +498,62 @@ GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
     return nullptr;
 }
 
+GstElement *GstGenericPlayer::getParser(const MediaSourceType &mediaSourceType)
+{
+    GstIterator *it = m_gstWrapper->gstBinIterateElements(GST_BIN(m_context.pipeline));
+    GValue item = G_VALUE_INIT;
+    gboolean done = FALSE;
+
+    while (!done)
+    {
+        switch (m_gstWrapper->gstIteratorNext(it, &item))
+        {
+        case GST_ITERATOR_OK:
+        {
+            GstElement *element = GST_ELEMENT(m_glibWrapper->gValueGetObject(&item));
+            GstElementFactory *factory = m_gstWrapper->gstElementGetFactory(element);
+
+            if (factory)
+            {
+                GstElementFactoryListType type = GST_ELEMENT_FACTORY_TYPE_PARSER;
+                if (mediaSourceType == MediaSourceType::AUDIO)
+                {
+                    type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO;
+                }
+                else if (mediaSourceType == MediaSourceType::VIDEO)
+                {
+                    type |= GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO;
+                }
+
+                if (m_gstWrapper->gstElementFactoryListIsType(factory, type))
+                {
+                    m_glibWrapper->gValueUnset(&item);
+                    m_gstWrapper->gstIteratorFree(it);
+                    return element;
+                }
+            }
+
+            m_glibWrapper->gValueUnset(&item);
+            break;
+        }
+        case GST_ITERATOR_RESYNC:
+            m_gstWrapper->gstIteratorResync(it);
+            break;
+        case GST_ITERATOR_ERROR:
+        case GST_ITERATOR_DONE:
+            done = TRUE;
+            break;
+        }
+    }
+
+    RIALTO_SERVER_LOG_WARN("Could not find parser");
+
+    m_glibWrapper->gValueUnset(&item);
+    m_gstWrapper->gstIteratorFree(it);
+
+    return nullptr;
+}
+
 bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutputParam)
 {
     if (!m_workerThread)
@@ -1117,35 +1173,67 @@ bool GstGenericPlayer::setSyncOff()
     return result;
 }
 
-bool GstGenericPlayer::setStreamSyncMode()
+bool GstGenericPlayer::setStreamSyncMode(const MediaSourceType &type)
 {
     bool result{false};
-    if (m_context.pendingStreamSyncMode.has_value())
+    int32_t streamSyncMode{0};
+    {
+        std::unique_lock lock{m_context.propertyMutex};
+        if (m_context.pendingStreamSyncMode.find(type) == m_context.pendingStreamSyncMode.end())
+        {
+            return false;
+        }
+        streamSyncMode = m_context.pendingStreamSyncMode[type];
+    }
+    if (MediaSourceType::AUDIO == type)
     {
         GstElement *decoder = getDecoder(MediaSourceType::AUDIO);
-        if (decoder)
+        if (!decoder)
         {
-            int32_t streamSyncMode{m_context.pendingStreamSyncMode.value()};
-            RIALTO_SERVER_LOG_DEBUG("Set stream-sync-mode to %d", streamSyncMode);
+            RIALTO_SERVER_LOG_DEBUG("Pending stream-sync-mode, decoder is NULL");
+            return false;
+        }
 
-            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "stream-sync-mode"))
-            {
-                gint streamSyncModeGint{static_cast<gint>(streamSyncMode)};
-                m_glibWrapper->gObjectSet(decoder, "stream-sync-mode", streamSyncModeGint, nullptr);
-                result = true;
-            }
-            else
-            {
-                RIALTO_SERVER_LOG_ERROR("Failed to set stream-sync-mode property on decoder '%s'",
-                                        GST_ELEMENT_NAME(decoder));
-            }
-            m_context.pendingStreamSyncMode.reset();
-            m_gstWrapper->gstObjectUnref(decoder);
+        RIALTO_SERVER_LOG_DEBUG("Set stream-sync-mode to %d", streamSyncMode);
+
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "stream-sync-mode"))
+        {
+            gint streamSyncModeGint{static_cast<gint>(streamSyncMode)};
+            m_glibWrapper->gObjectSet(decoder, "stream-sync-mode", streamSyncModeGint, nullptr);
+            result = true;
         }
         else
         {
-            RIALTO_SERVER_LOG_DEBUG("Pending stream-sync-mode, decoder is NULL");
+            RIALTO_SERVER_LOG_ERROR("Failed to set stream-sync-mode property on decoder '%s'", GST_ELEMENT_NAME(decoder));
         }
+        m_gstWrapper->gstObjectUnref(decoder);
+        std::unique_lock lock{m_context.propertyMutex};
+        m_context.pendingStreamSyncMode.erase(type);
+    }
+    else if (MediaSourceType::VIDEO == type)
+    {
+        GstElement *parser = getParser(MediaSourceType::VIDEO);
+        if (!parser)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending syncmode-streaming, parser is NULL");
+            return false;
+        }
+
+        gboolean streamSyncModeBoolean{static_cast<gboolean>(streamSyncMode)};
+        RIALTO_SERVER_LOG_DEBUG("Set syncmode-streaming to %d", streamSyncMode);
+
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(parser), "syncmode-streaming"))
+        {
+            m_glibWrapper->gObjectSet(parser, "syncmode-streaming", streamSyncModeBoolean, nullptr);
+            result = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set syncmode-streaming property on parser '%s'", GST_ELEMENT_NAME(parser));
+        }
+        m_gstWrapper->gstObjectUnref(parser);
+        std::unique_lock lock{m_context.propertyMutex};
+        m_context.pendingStreamSyncMode.erase(type);
     }
     return result;
 }
@@ -1182,6 +1270,59 @@ bool GstGenericPlayer::setRenderFrame()
         }
     }
     return result;
+}
+
+bool GstGenericPlayer::setBufferingLimit()
+{
+    bool result{false};
+    guint bufferingLimit{0};
+    {
+        std::unique_lock lock{m_context.propertyMutex};
+        if (!m_context.pendingBufferingLimit.has_value())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending limit-buffering-ms, decoder is NULL");
+            return false;
+        }
+        bufferingLimit = static_cast<guint>(m_context.pendingBufferingLimit.value());
+    }
+
+    GstElement *decoder{getDecoder(MediaSourceType::AUDIO)};
+    if (decoder)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Set limit-buffering-ms to %u", bufferingLimit);
+
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "limit-buffering-ms"))
+        {
+            m_glibWrapper->gObjectSet(decoder, "limit-buffering-ms", bufferingLimit, nullptr);
+            result = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set limit-buffering-ms property on decoder '%s'",
+                                    GST_ELEMENT_NAME(decoder));
+        }
+        m_gstWrapper->gstObjectUnref(decoder);
+        std::unique_lock lock{m_context.propertyMutex};
+        m_context.pendingBufferingLimit.reset();
+    }
+    return result;
+}
+
+bool GstGenericPlayer::setUseBuffering()
+{
+    std::unique_lock lock{m_context.propertyMutex};
+    if (m_context.pendingUseBuffering.has_value())
+    {
+        if (m_context.playbackGroup.m_curAudioDecodeBin)
+        {
+            gboolean useBufferingGboolean{m_context.pendingUseBuffering.value() ? TRUE : FALSE};
+            m_glibWrapper->gObjectSet(m_context.playbackGroup.m_curAudioDecodeBin, "use-buffering",
+                                      useBufferingGboolean, nullptr);
+            m_context.pendingUseBuffering.reset();
+            return true;
+        }
+    }
+    return false;
 }
 
 bool GstGenericPlayer::setWesterossinkSecondaryVideo()
@@ -1452,11 +1593,12 @@ bool GstGenericPlayer::setSyncOff(bool syncOff)
     return true;
 }
 
-bool GstGenericPlayer::setStreamSyncMode(int32_t streamSyncMode)
+bool GstGenericPlayer::setStreamSyncMode(const MediaSourceType &mediaSourceType, int32_t streamSyncMode)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetStreamSyncMode(m_context, *this, streamSyncMode));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createSetStreamSyncMode(m_context, *this, mediaSourceType, streamSyncMode));
     }
     return true;
 }
@@ -1470,16 +1612,20 @@ bool GstGenericPlayer::getStreamSyncMode(int32_t &streamSyncMode)
         m_glibWrapper->gObjectGet(decoder, "stream-sync-mode", &streamSyncMode, nullptr);
         returnValue = true;
     }
-    else if (m_context.pendingStreamSyncMode.has_value())
-    {
-        RIALTO_SERVER_LOG_DEBUG("Returning queued value");
-        streamSyncMode = m_context.pendingStreamSyncMode.value();
-        returnValue = true;
-    }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Stream sync mode not supported in decoder '%s'",
-                                (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
+        std::unique_lock lock{m_context.propertyMutex};
+        if (m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) != m_context.pendingStreamSyncMode.end())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Returning queued value");
+            streamSyncMode = m_context.pendingStreamSyncMode[MediaSourceType::AUDIO];
+            returnValue = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Stream sync mode not supported in decoder '%s'",
+                                    (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
+        }
     }
 
     if (decoder)
@@ -1523,6 +1669,73 @@ void GstGenericPlayer::processAudioGap(int64_t position, uint32_t duration, int6
     }
 }
 
+void GstGenericPlayer::setBufferingLimit(uint32_t limitBufferingMs)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetBufferingLimit(m_context, *this, limitBufferingMs));
+    }
+}
+
+bool GstGenericPlayer::getBufferingLimit(uint32_t &limitBufferingMs)
+{
+    bool returnValue{false};
+    GstElement *decoder = getDecoder(MediaSourceType::AUDIO);
+    if (decoder && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "limit-buffering-ms"))
+    {
+        m_glibWrapper->gObjectGet(decoder, "limit-buffering-ms", &limitBufferingMs, nullptr);
+        returnValue = true;
+    }
+    else
+    {
+        std::unique_lock lock{m_context.propertyMutex};
+        if (m_context.pendingBufferingLimit.has_value())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Returning queued value");
+            limitBufferingMs = m_context.pendingBufferingLimit.value();
+            returnValue = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("buffering limit not supported in decoder '%s'",
+                                    (decoder ? GST_ELEMENT_NAME(decoder) : "null"));
+        }
+    }
+
+    if (decoder)
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(decoder));
+
+    return returnValue;
+}
+
+void GstGenericPlayer::setUseBuffering(bool useBuffering)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetUseBuffering(m_context, *this, useBuffering));
+    }
+}
+
+bool GstGenericPlayer::getUseBuffering(bool &useBuffering)
+{
+    if (m_context.playbackGroup.m_curAudioDecodeBin)
+    {
+        m_glibWrapper->gObjectGet(m_context.playbackGroup.m_curAudioDecodeBin, "use-buffering", &useBuffering, nullptr);
+        return true;
+    }
+    else
+    {
+        std::unique_lock lock{m_context.propertyMutex};
+        if (m_context.pendingUseBuffering.has_value())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Returning queued value");
+            useBuffering = m_context.pendingUseBuffering.value();
+            return true;
+        }
+    }
+    return false;
+}
+
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));
@@ -1530,7 +1743,7 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
-    m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, typefind, caps));
+    m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, caps));
 }
 
 void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)

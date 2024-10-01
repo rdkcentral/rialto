@@ -139,6 +139,22 @@ public:
                          const ::firebolt::rialto::ProcessAudioGapRequest *request,
                          ::firebolt::rialto::ProcessAudioGapResponse *response,
                          ::google::protobuf::Closure *done) override;
+    void setBufferingLimit(::google::protobuf::RpcController *controller,
+                           const ::firebolt::rialto::SetBufferingLimitRequest *request,
+                           ::firebolt::rialto::SetBufferingLimitResponse *response,
+                           ::google::protobuf::Closure *done) override;
+    void getBufferingLimit(::google::protobuf::RpcController *controller,
+                           const ::firebolt::rialto::GetBufferingLimitRequest *request,
+                           ::firebolt::rialto::GetBufferingLimitResponse *response,
+                           ::google::protobuf::Closure *done) override;
+    void setUseBuffering(::google::protobuf::RpcController *controller,
+                         const ::firebolt::rialto::SetUseBufferingRequest *request,
+                         ::firebolt::rialto::SetUseBufferingResponse *response,
+                         ::google::protobuf::Closure *done) override;
+    void getUseBuffering(::google::protobuf::RpcController *controller,
+                         const ::firebolt::rialto::GetUseBufferingRequest *request,
+                         ::firebolt::rialto::GetUseBufferingResponse *response,
+                         ::google::protobuf::Closure *done) override;
 
 private:
     service::IMediaPipelineService &m_mediaPipelineService;

@@ -42,8 +42,10 @@ public:
     MOCK_METHOD(bool, setLowLatency, (), (override));
     MOCK_METHOD(bool, setSync, (), (override));
     MOCK_METHOD(bool, setSyncOff, (), (override));
-    MOCK_METHOD(bool, setStreamSyncMode, (), (override));
+    MOCK_METHOD(bool, setStreamSyncMode, (const MediaSourceType &type), (override));
     MOCK_METHOD(bool, setRenderFrame, (), (override));
+    MOCK_METHOD(bool, setBufferingLimit, (), (override));
+    MOCK_METHOD(bool, setUseBuffering, (), (override));
     MOCK_METHOD(void, notifyNeedMediaData, (const MediaSourceType mediaSource), (override));
     MOCK_METHOD(GstBuffer *, createBuffer, (const IMediaPipeline::MediaSegment &mediaSegment), (const, override));
     MOCK_METHOD(void, attachData, (const firebolt::rialto::MediaSourceType mediaType), (override));

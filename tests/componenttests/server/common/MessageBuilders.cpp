@@ -313,10 +313,12 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::SetStreamSyncModeRequest createSetStreamSyncModeRequest(int sessionId, bool streamSyncMode)
+::firebolt::rialto::SetStreamSyncModeRequest createSetStreamSyncModeRequest(int sessionId, int sourceId,
+                                                                            bool streamSyncMode)
 {
     ::firebolt::rialto::SetStreamSyncModeRequest request;
     request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
     request.set_stream_sync_mode(streamSyncMode);
     return request;
 }
@@ -324,6 +326,36 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::GetStreamSyncModeRequest createGetStreamSyncModeRequest(int sessionId)
 {
     ::firebolt::rialto::GetStreamSyncModeRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::SetBufferingLimitRequest createSetBufferingLimitRequest(int sessionId, uint32_t bufferingLimit)
+{
+    ::firebolt::rialto::SetBufferingLimitRequest request;
+    request.set_session_id(sessionId);
+    request.set_limit_buffering_ms(bufferingLimit);
+    return request;
+}
+
+::firebolt::rialto::GetBufferingLimitRequest createGetBufferingLimitRequest(int sessionId)
+{
+    ::firebolt::rialto::GetBufferingLimitRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::SetUseBufferingRequest createSetUseBufferingRequest(int sessionId, bool useBuffering)
+{
+    ::firebolt::rialto::SetUseBufferingRequest request;
+    request.set_session_id(sessionId);
+    request.set_use_buffering(useBuffering);
+    return request;
+}
+
+::firebolt::rialto::GetUseBufferingRequest createGetUseBufferingRequest(int sessionId)
+{
+    ::firebolt::rialto::GetUseBufferingRequest request;
     request.set_session_id(sessionId);
     return request;
 }

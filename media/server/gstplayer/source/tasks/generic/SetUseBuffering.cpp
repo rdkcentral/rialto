@@ -17,31 +17,31 @@
  * limitations under the License.
  */
 
-#include "SetStreamSyncMode.h"
+#include "SetUseBuffering.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetStreamSyncMode::SetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                     const MediaSourceType &type, int32_t streamSyncMode)
-    : m_context(context), m_player(player), m_type{type}, m_streamSyncMode{streamSyncMode}
+SetUseBuffering::SetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool useBuffering)
+    : m_context{context}, m_player(player), m_useBuffering{useBuffering}
 {
-    RIALTO_SERVER_LOG_DEBUG("Constructing SetStreamSyncMode");
+    RIALTO_SERVER_LOG_DEBUG("Constructing SetUseBuffering");
 }
 
-SetStreamSyncMode::~SetStreamSyncMode()
+SetUseBuffering::~SetUseBuffering()
 {
-    RIALTO_SERVER_LOG_DEBUG("SetStreamSyncMode finished");
+    RIALTO_SERVER_LOG_DEBUG("SetUseBuffering finished");
 }
 
-void SetStreamSyncMode::execute() const
+void SetUseBuffering::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing SetStreamSyncMode");
+    RIALTO_SERVER_LOG_DEBUG("Executing SetUseBuffering");
 
-    m_context.pendingStreamSyncMode.emplace(m_type, m_streamSyncMode);
+    m_context.pendingUseBuffering = m_useBuffering;
     if (m_context.pipeline)
     {
-        m_player.setStreamSyncMode(m_type);
+        m_player.setUseBuffering();
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

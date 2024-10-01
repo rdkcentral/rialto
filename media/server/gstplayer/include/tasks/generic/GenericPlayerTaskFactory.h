@@ -91,13 +91,15 @@ public:
     std::unique_ptr<IPlayerTask> createSetSyncOff(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                   bool syncOff) const override;
     std::unique_ptr<IPlayerTask> createSetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                         const firebolt::rialto::MediaSourceType &type,
                                                          int32_t streamSyncMode) const override;
     std::unique_ptr<IPlayerTask> createShutdown(IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createStop(GenericPlayerContext &context,
                                             IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                  bool underflowEnable, MediaSourceType sourceType) const override;
-    std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context, GstElement *typefind,
+    std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context,
+                                                           IGstGenericPlayerPrivate &player, GstElement *typefind,
                                                            const GstCaps *caps) const override;
     std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context,
                                                    IGstGenericPlayerPrivate &player) const override;
@@ -114,6 +116,10 @@ public:
     std::unique_ptr<IPlayerTask> createSetImmediateOutput(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                           const firebolt::rialto::MediaSourceType &type,
                                                           bool immediateOutput) const override;
+    std::unique_ptr<IPlayerTask> createSetBufferingLimit(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                         std::uint32_t limit) const override;
+    std::unique_ptr<IPlayerTask> createSetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                       bool useBuffering) const override;
 
 private:
     IGstGenericPlayerClient *m_client;

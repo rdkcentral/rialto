@@ -124,13 +124,17 @@ public:
     bool setSync(bool sync) override;
     bool getSync(bool &sync) override;
     bool setSyncOff(bool syncOff) override;
-    bool setStreamSyncMode(int32_t streamSyncMode) override;
+    bool setStreamSyncMode(const MediaSourceType &mediaSourceType, int32_t streamSyncMode) override;
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
     void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime,
                            double appliedRate) override;
     void processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
+    void setBufferingLimit(uint32_t limitBufferingMs) override;
+    bool getBufferingLimit(uint32_t &limitBufferingMs) override;
+    void setUseBuffering(bool useBuffering) override;
+    bool getUseBuffering(bool &useBuffering) override;
 
 private:
     void scheduleNeedMediaData(GstAppSrc *src) override;
@@ -143,8 +147,10 @@ private:
     bool setLowLatency() override;
     bool setSync() override;
     bool setSyncOff() override;
-    bool setStreamSyncMode() override;
+    bool setStreamSyncMode(const MediaSourceType &type) override;
     bool setRenderFrame() override;
+    bool setBufferingLimit() override;
+    bool setUseBuffering() override;
     void notifyNeedMediaData(const MediaSourceType mediaSource) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachData(const firebolt::rialto::MediaSourceType mediaType) override;
@@ -277,6 +283,15 @@ private:
      * @retval The decoder, NULL if not found
      */
     GstElement *getDecoder(const MediaSourceType &mediaSourceType);
+
+    /**
+     * @brief Gets the parser element for source type.
+     *
+     * @param[in] mediaSourceType : the source type to obtain the parser for
+     *
+     * @retval The parser, NULL if not found
+     */
+    GstElement *getParser(const MediaSourceType &mediaSourceType);
 
 private:
     /**

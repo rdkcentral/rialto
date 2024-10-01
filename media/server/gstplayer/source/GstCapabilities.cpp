@@ -203,7 +203,8 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
 {
     // Get gstreamer element factories. The following flag settings will fetch both SINK and DECODER types
     // of gstreamer classes...
-    GstElementFactoryListType factoryListType{GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER};
+    GstElementFactoryListType factoryListType{GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                              GST_ELEMENT_FACTORY_TYPE_PARSER};
     {
         // If MediaSourceType::AUDIO is specified then adjust the flag so that we
         // restrict the list to gstreamer AUDIO element types (and likewise for video and subtitle)...

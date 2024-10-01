@@ -47,6 +47,7 @@
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
+#include "tasks/generic/SetBufferingLimit.h"
 #include "tasks/generic/SetImmediateOutput.h"
 #include "tasks/generic/SetLowLatency.h"
 #include "tasks/generic/SetMute.h"
@@ -57,6 +58,7 @@
 #include "tasks/generic/SetSync.h"
 #include "tasks/generic/SetSyncOff.h"
 #include "tasks/generic/SetTextTrackIdentifier.h"
+#include "tasks/generic/SetUseBuffering.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
@@ -265,7 +267,8 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSyncOff)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetStreamSyncMode)
 {
     constexpr int32_t kStreamSyncMode{1};
-    auto task = m_sut.createSetStreamSyncMode(m_context, m_gstPlayer, kStreamSyncMode);
+    auto task = m_sut.createSetStreamSyncMode(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO,
+                                              kStreamSyncMode);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetStreamSyncMode &>(*task));
 }
@@ -301,7 +304,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetPlaybackRate)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUpdatePlaybackGroup)
 {
-    auto task = m_sut.createUpdatePlaybackGroup(m_context, nullptr, nullptr);
+    auto task = m_sut.createUpdatePlaybackGroup(m_context, m_gstPlayer, nullptr, nullptr);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup &>(*task));
 }
@@ -354,4 +357,18 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateRenderFrame)
     auto task = m_sut.createRenderFrame(m_context, m_gstPlayer);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::RenderFrame &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetBufferingLimit)
+{
+    auto task = m_sut.createSetBufferingLimit(m_context, m_gstPlayer, 0);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetBufferingLimit &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetUseBuffering)
+{
+    auto task = m_sut.createSetUseBuffering(m_context, m_gstPlayer, true);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetUseBuffering &>(*task));
 }

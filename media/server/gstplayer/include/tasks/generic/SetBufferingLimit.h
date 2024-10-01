@@ -17,29 +17,29 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_STREAM_SYNC_MODE_H_
-#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_STREAM_SYNC_MODE_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_BUFFERING_LIMIT_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_BUFFERING_LIMIT_H_
 
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
+#include <cstdint>
+#include <memory>
 
 namespace firebolt::rialto::server::tasks::generic
 {
-class SetStreamSyncMode : public IPlayerTask
+class SetBufferingLimit : public IPlayerTask
 {
 public:
-    SetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, const MediaSourceType &type,
-                      int32_t streamSyncMode);
-    ~SetStreamSyncMode() override;
+    SetBufferingLimit(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, std::uint32_t limit);
+    ~SetBufferingLimit() override;
     void execute() const override;
 
 private:
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
-    MediaSourceType m_type;
-    int32_t m_streamSyncMode;
+    std::uint32_t m_limit;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_STREAM_SYNC_MODE_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_BUFFERING_LIMIT_H_

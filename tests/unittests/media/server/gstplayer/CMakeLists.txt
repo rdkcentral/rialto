@@ -47,6 +47,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/RemoveSourceTest.cpp
     genericPlayer/tasksTests/RenderFrameTest.cpp
     genericPlayer/tasksTests/ReportPositionTest.cpp
+    genericPlayer/tasksTests/SetBufferingLimitTest.cpp
     genericPlayer/tasksTests/SetLowLatencyTest.cpp
     genericPlayer/tasksTests/SetImmediateOutputTest.cpp
     genericPlayer/tasksTests/SetMuteTest.cpp
@@ -57,6 +58,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/SetSyncTest.cpp
     genericPlayer/tasksTests/SetSyncOffTest.cpp
     genericPlayer/tasksTests/SetTextTrackIdentifierTest.cpp
+    genericPlayer/tasksTests/SetUseBufferingTest.cpp
     genericPlayer/tasksTests/SetVideoGeometryTest.cpp
     genericPlayer/tasksTests/SetVolumeTest.cpp
     genericPlayer/tasksTests/SetupElementTest.cpp

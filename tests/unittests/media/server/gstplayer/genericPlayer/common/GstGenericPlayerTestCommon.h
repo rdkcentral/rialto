@@ -111,8 +111,10 @@ protected:
     void expectCheckPlaySink();
     void expectSetMessageCallback();
     void expectGetDecoder(GstElement *element);
+    void expectGetVideoParser(GstElement *element);
     void expectGetSink(const std::string &sinkName, GstElement *elementObj);
     void expectNoDecoder();
+    void expectNoParser();
 
 private:
     GstElement m_pipeline{};

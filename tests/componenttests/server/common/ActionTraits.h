@@ -280,6 +280,38 @@ struct GetStreamSyncMode
     static constexpr auto m_kFunction{&Stub::getStreamSyncMode};
 };
 
+struct SetBufferingLimit
+{
+    using RequestType = ::firebolt::rialto::SetBufferingLimitRequest;
+    using ResponseType = ::firebolt::rialto::SetBufferingLimitResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setBufferingLimit};
+};
+
+struct GetBufferingLimit
+{
+    using RequestType = ::firebolt::rialto::GetBufferingLimitRequest;
+    using ResponseType = ::firebolt::rialto::GetBufferingLimitResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getBufferingLimit};
+};
+
+struct SetUseBuffering
+{
+    using RequestType = ::firebolt::rialto::SetUseBufferingRequest;
+    using ResponseType = ::firebolt::rialto::SetUseBufferingResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setUseBuffering};
+};
+
+struct GetUseBuffering
+{
+    using RequestType = ::firebolt::rialto::GetUseBufferingRequest;
+    using ResponseType = ::firebolt::rialto::GetUseBufferingResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getUseBuffering};
+};
+
 struct SetVideoWindow
 {
     using RequestType = ::firebolt::rialto::SetVideoWindowRequest;

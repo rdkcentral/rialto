@@ -28,6 +28,7 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <unordered_map>
 #include <vector>
 
@@ -152,9 +153,19 @@ struct GenericPlayerContext
     std::optional<bool> pendingSyncOff{};
 
     /**
+     * @brief Pending buffering limit
+     */
+    std::optional<uint32_t> pendingBufferingLimit{};
+
+    /**
+     * @brief Pending use buffering
+     */
+    std::optional<bool> pendingUseBuffering{};
+
+    /**
      * @brief Pending stream sync mode
      */
-    std::optional<int32_t> pendingStreamSyncMode{};
+    std::map<MediaSourceType, int32_t> pendingStreamSyncMode{};
 
     /**
      * @brief Pending render frame
@@ -211,6 +222,13 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     std::map<GstElement *, std::vector<SegmentData>> initialPositions;
+
+    /**
+     * @brief The mutex, which protects properties, which are read/written by main/worker thread.
+     *        This mutex should be removed in future, when we find out better solution for
+     *        property read-write.
+     */
+    std::mutex propertyMutex;
 };
 } // namespace firebolt::rialto::server
 

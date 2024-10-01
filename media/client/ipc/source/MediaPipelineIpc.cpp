@@ -1094,7 +1094,7 @@ bool MediaPipelineIpc::setSyncOff(bool syncOff)
     return true;
 }
 
-bool MediaPipelineIpc::setStreamSyncMode(int32_t streamSyncMode)
+bool MediaPipelineIpc::setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode)
 {
     if (!reattachChannelIfRequired())
     {
@@ -1105,6 +1105,7 @@ bool MediaPipelineIpc::setStreamSyncMode(int32_t streamSyncMode)
     firebolt::rialto::SetStreamSyncModeRequest request;
 
     request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
     request.set_stream_sync_mode(streamSyncMode);
 
     firebolt::rialto::SetStreamSyncModeResponse response;
@@ -1253,6 +1254,132 @@ bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, int6
         RIALTO_CLIENT_LOG_ERROR("failed to process audio gap due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
+
+    return true;
+}
+
+bool MediaPipelineIpc::setBufferingLimit(uint32_t limitBufferingMs)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetBufferingLimitRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_limit_buffering_ms(limitBufferingMs);
+
+    firebolt::rialto::SetBufferingLimitResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setBufferingLimit(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set buffering limit due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getBufferingLimit(uint32_t &limitBufferingMs)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetBufferingLimitRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetBufferingLimitResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getBufferingLimit(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get buffering limit due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    limitBufferingMs = response.limit_buffering_ms();
+
+    return true;
+}
+
+bool MediaPipelineIpc::setUseBuffering(bool useBuffering)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetUseBufferingRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_use_buffering(useBuffering);
+
+    firebolt::rialto::SetUseBufferingResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setUseBuffering(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set use buffering due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getUseBuffering(bool &useBuffering)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetUseBufferingRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetUseBufferingResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getUseBuffering(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get use buffering due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    useBuffering = response.use_buffering();
 
     return true;
 }

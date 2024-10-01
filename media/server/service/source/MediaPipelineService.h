@@ -83,12 +83,16 @@ public:
     bool setSync(int sessionId, bool sync) override;
     bool getSync(int sessionId, bool &sync) override;
     bool setSyncOff(int sessionId, bool syncOff) override;
-    bool setStreamSyncMode(int sessionId, int32_t streamSyncMode) override;
+    bool setStreamSyncMode(int sessionId, int32_t sourceId, int32_t streamSyncMode) override;
     bool getStreamSyncMode(int sessionId, int32_t &streamSyncMode) override;
     bool flush(int sessionId, std::int32_t sourceId, bool resetTime) override;
     bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime, double appliedRate) override;
     bool processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,
                          bool audioAac) override;
+    bool setBufferingLimit(int sessionId, uint32_t limitBufferingMs) override;
+    bool getBufferingLimit(int sessionId, uint32_t &limitBufferingMs) override;
+    bool setUseBuffering(int sessionId, bool useBuffering) override;
+    bool getUseBuffering(int sessionId, bool &useBuffering) override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
     std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,

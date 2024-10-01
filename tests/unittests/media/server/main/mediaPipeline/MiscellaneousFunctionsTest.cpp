@@ -743,7 +743,18 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeFai
 {
     mainThreadWillEnqueueTaskAndWait();
     constexpr int32_t kStreamSyncMode{1};
-    EXPECT_FALSE(m_mediaPipeline->setStreamSyncMode(kStreamSyncMode));
+    EXPECT_FALSE(m_mediaPipeline->setStreamSyncMode(m_kDummySourceId, kStreamSyncMode));
+}
+
+/**
+ * Test that SetStreamSyncMode returns failure if source is not attached
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeFailureNoSourceAttached)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    constexpr int32_t kStreamSyncMode{1};
+    EXPECT_FALSE(m_mediaPipeline->setStreamSyncMode(m_kDummySourceId, kStreamSyncMode));
 }
 
 /**
@@ -752,23 +763,26 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeFai
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeFailure)
 {
     loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
     mainThreadWillEnqueueTaskAndWait();
     constexpr int32_t kStreamSyncMode{1};
-    EXPECT_CALL(*m_gstPlayerMock, setStreamSyncMode(_)).WillOnce(Return(false));
-    EXPECT_FALSE(m_mediaPipeline->setStreamSyncMode(kStreamSyncMode));
+    EXPECT_CALL(*m_gstPlayerMock, setStreamSyncMode(firebolt::rialto::MediaSourceType::VIDEO, _)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->setStreamSyncMode(videoSourceId, kStreamSyncMode));
 }
 
 /**
- * Test that SetStreamSyncMode returns success if the gstreamer API succeeds and gets mute
+ * Test that SetStreamSyncMode returns success if the gstreamer API succeeds
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeSuccess)
 {
     constexpr int32_t kStreamSyncMode{1};
     loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, setStreamSyncMode(kStreamSyncMode)).WillOnce(Return(true));
+    EXPECT_CALL(*m_gstPlayerMock, setStreamSyncMode(firebolt::rialto::MediaSourceType::VIDEO, kStreamSyncMode))
+        .WillOnce(Return(true));
 
-    EXPECT_TRUE(m_mediaPipeline->setStreamSyncMode(kStreamSyncMode));
+    EXPECT_TRUE(m_mediaPipeline->setStreamSyncMode(videoSourceId, kStreamSyncMode));
 }
 
 /**
@@ -794,7 +808,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStreamSyncModeFai
 }
 
 /**
- * Test that GetStreamSyncMode returns success if the gstreamer API succeeds and gets mute
+ * Test that GetStreamSyncMode returns success if the gstreamer API succeeds
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStreamSyncModeSuccess)
 {
@@ -806,6 +820,124 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStreamSyncModeSuc
 
     EXPECT_TRUE(m_mediaPipeline->getStreamSyncMode(resultStreamSyncMode));
     EXPECT_EQ(resultStreamSyncMode, kStreamSyncMode);
+}
+
+/**
+ * Test that SetBufferingLimit returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetBufferingLimitFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    constexpr int32_t kBufferingLimit{1};
+    EXPECT_FALSE(m_mediaPipeline->setBufferingLimit(kBufferingLimit));
+}
+
+/**
+ * Test that SetBufferingLimit returns success if the gstreamer API succeeds
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetBufferingLimitSuccess)
+{
+    constexpr int32_t kBufferingLimit{1};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setBufferingLimit(kBufferingLimit));
+    EXPECT_TRUE(m_mediaPipeline->setBufferingLimit(kBufferingLimit));
+}
+
+/**
+ * Test that GetBufferingLimit returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetBufferingLimitFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    uint32_t resultBufferingLimit{};
+    EXPECT_FALSE(m_mediaPipeline->getBufferingLimit(resultBufferingLimit));
+}
+
+/**
+ * Test that GetBufferingLimit returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetBufferingLimitFailure)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    uint32_t resultBufferingLimit{};
+    EXPECT_CALL(*m_gstPlayerMock, getBufferingLimit(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getBufferingLimit(resultBufferingLimit));
+}
+
+/**
+ * Test that GetBufferingLimit returns success if the gstreamer API succeeds
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetBufferingLimitSuccess)
+{
+    constexpr uint32_t kBufferingLimit{1};
+    uint32_t resultBufferingLimit{};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getBufferingLimit(_)).WillOnce(DoAll(SetArgReferee<0>(kBufferingLimit), Return(true)));
+
+    EXPECT_TRUE(m_mediaPipeline->getBufferingLimit(resultBufferingLimit));
+    EXPECT_EQ(resultBufferingLimit, kBufferingLimit);
+}
+
+/**
+ * Test that SetUseBuffering returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetUseBufferingFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    constexpr int32_t kUseBuffering{1};
+    EXPECT_FALSE(m_mediaPipeline->setUseBuffering(kUseBuffering));
+}
+
+/**
+ * Test that SetUseBuffering returns success if the gstreamer API succeeds
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetUseBufferingSuccess)
+{
+    constexpr int32_t kUseBuffering{1};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setUseBuffering(kUseBuffering));
+    EXPECT_TRUE(m_mediaPipeline->setUseBuffering(kUseBuffering));
+}
+
+/**
+ * Test that GetUseBuffering returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetUseBufferingFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    bool resultUseBuffering{};
+    EXPECT_FALSE(m_mediaPipeline->getUseBuffering(resultUseBuffering));
+}
+
+/**
+ * Test that GetUseBuffering returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetUseBufferingFailure)
+{
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    bool resultUseBuffering{};
+    EXPECT_CALL(*m_gstPlayerMock, getUseBuffering(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getUseBuffering(resultUseBuffering));
+}
+
+/**
+ * Test that GetUseBuffering returns success if the gstreamer API succeeds
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetUseBufferingSuccess)
+{
+    constexpr bool kUseBuffering{true};
+    bool resultUseBuffering{};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getUseBuffering(_)).WillOnce(DoAll(SetArgReferee<0>(kUseBuffering), Return(true)));
+
+    EXPECT_TRUE(m_mediaPipeline->getUseBuffering(resultUseBuffering));
+    EXPECT_EQ(resultUseBuffering, kUseBuffering);
 }
 
 /**
