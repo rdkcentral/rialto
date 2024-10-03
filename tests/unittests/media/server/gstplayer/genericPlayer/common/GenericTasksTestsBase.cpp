@@ -133,6 +133,7 @@ constexpr firebolt::rialto::Format kFormat{firebolt::rialto::Format::S16LE};
 constexpr uint64_t kChannelMask{0x0000000000000003};
 constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
+constexpr uint64_t kRunningTime{4523};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 {
@@ -3001,7 +3002,8 @@ void GenericTasksTestsBase::triggerSetSourcePosition(firebolt::rialto::MediaSour
                                                                      sourceType,
                                                                      kPosition,
                                                                      kResetTime,
-                                                                     kAppliedRate};
+                                                                     kAppliedRate,
+                                                                     kRunningTime};
     task.execute();
 }
 
@@ -3014,6 +3016,7 @@ void GenericTasksTestsBase::checkInitialPositionSet(firebolt::rialto::MediaSourc
     EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].position, kPosition);
     EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].resetTime, kResetTime);
     EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].appliedRate, kAppliedRate);
+    EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].runningTime, kRunningTime);
 }
 
 void GenericTasksTestsBase::checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType)

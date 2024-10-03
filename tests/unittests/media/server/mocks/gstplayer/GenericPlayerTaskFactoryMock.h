@@ -118,7 +118,8 @@ public:
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSourcePosition,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
-                 const firebolt::rialto::MediaSourceType &type, std::int64_t position, bool resetTime, double appliedRate),
+                 const firebolt::rialto::MediaSourceType &type, std::int64_t position, bool resetTime,
+                 double appliedRate, uint64_t runningTime),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createProcessAudioGap,
                 (GenericPlayerContext & context, std::int64_t position, std::uint32_t duration,

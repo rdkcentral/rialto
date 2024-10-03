@@ -945,7 +945,7 @@ void MediaPipelineModuleService::setSourcePosition(::google::protobuf::RpcContro
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_mediaPipelineService.setSourcePosition(request->session_id(), request->source_id(), request->position(),
-                                                  request->reset_time(), request->applied_rate()))
+                                                  request->reset_time(), request->applied_rate(), request->running_time()))
     {
         RIALTO_SERVER_LOG_ERROR("Set Source Position failed.");
         controller->SetFailed("Operation failed");

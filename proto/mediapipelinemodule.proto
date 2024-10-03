@@ -620,6 +620,7 @@ message FlushResponse {
  * @param[in]  position     The position in nanoseconds.
  * @param[in]  reset_time   True if time should be reset
  * @param[in]  applied_rate The applied rate after seek
+ * @param[in]  running_time The running time of the segment
  *
  * This method sets the start position for a source.
  *
@@ -630,6 +631,7 @@ message SetSourcePositionRequest {
     optional int64 position = 3 [default = -1];
     optional bool reset_time = 4 [default = false];
     optional double applied_rate = 5 [default = 1];
+    optional uint64 running_time = 6 [default = 0];
 }
 message SetSourcePositionResponse {
 }

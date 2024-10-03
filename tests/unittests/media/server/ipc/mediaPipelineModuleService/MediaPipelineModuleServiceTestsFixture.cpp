@@ -88,6 +88,7 @@ constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
 constexpr uint32_t kBufferingLimit{12341};
 constexpr bool kUseBuffering{true};
+constexpr uint64_t kRunningTime{2423};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -682,7 +683,7 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetSourcePosition(
 {
     expectRequestSuccess();
     EXPECT_CALL(m_mediaPipelineServiceMock,
-                setSourcePosition(kHardcodedSessionId, kSourceId, kPosition, kResetTime, kAppliedRate))
+                setSourcePosition(kHardcodedSessionId, kSourceId, kPosition, kResetTime, kAppliedRate, kRunningTime))
         .WillOnce(Return(true));
 }
 
@@ -690,7 +691,7 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetSourcePos
 {
     expectRequestFailure();
     EXPECT_CALL(m_mediaPipelineServiceMock,
-                setSourcePosition(kHardcodedSessionId, kSourceId, kPosition, kResetTime, kAppliedRate))
+                setSourcePosition(kHardcodedSessionId, kSourceId, kPosition, kResetTime, kAppliedRate, kRunningTime))
         .WillOnce(Return(false));
 }
 
@@ -1339,6 +1340,7 @@ void MediaPipelineModuleServiceTests::sendSetSourcePositionRequestAndReceiveResp
     request.set_position(kPosition);
     request.set_reset_time(kResetTime);
     request.set_applied_rate(kAppliedRate);
+    request.set_running_time(kRunningTime);
 
     m_service->setSourcePosition(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

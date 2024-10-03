@@ -57,6 +57,7 @@ struct SegmentData
     int64_t position;
     bool resetTime;
     double appliedRate;
+    uint64_t runningTime;
 };
 
 struct GenericPlayerContext

@@ -86,7 +86,8 @@ public:
     bool setStreamSyncMode(int sessionId, int32_t sourceId, int32_t streamSyncMode) override;
     bool getStreamSyncMode(int sessionId, int32_t &streamSyncMode) override;
     bool flush(int sessionId, std::int32_t sourceId, bool resetTime) override;
-    bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime, double appliedRate) override;
+    bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
+                           uint64_t runningTime) override;
     bool processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,
                          bool audioAac) override;
     bool setBufferingLimit(int sessionId, uint32_t limitBufferingMs) override;

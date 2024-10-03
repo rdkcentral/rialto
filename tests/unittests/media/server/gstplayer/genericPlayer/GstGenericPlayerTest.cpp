@@ -814,13 +814,14 @@ TEST_F(GstGenericPlayerTest, shouldSetSourcePosition)
     constexpr int64_t kPosition{1234};
     constexpr bool kResetTime{true};
     constexpr double kAppliedRate{2.0};
+    constexpr uint64_t kRunningTime{2352};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock,
-                createSetSourcePosition(_, _, MediaSourceType::AUDIO, kPosition, kResetTime, kAppliedRate))
+                createSetSourcePosition(_, _, MediaSourceType::AUDIO, kPosition, kResetTime, kAppliedRate, kRunningTime))
         .WillOnce(Return(ByMove(std::move(task))));
 
-    m_sut->setSourcePosition(MediaSourceType::AUDIO, kPosition, kResetTime, kAppliedRate);
+    m_sut->setSourcePosition(MediaSourceType::AUDIO, kPosition, kResetTime, kAppliedRate, kRunningTime);
 }
 
 TEST_F(GstGenericPlayerTest, shouldProcessAudioGap)

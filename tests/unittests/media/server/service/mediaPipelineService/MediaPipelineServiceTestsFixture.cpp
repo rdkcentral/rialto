@@ -68,6 +68,7 @@ constexpr bool kIsAudioAac{false};
 const std::string kTextTrackIdentifier{"TextTrackIdentifier"};
 constexpr uint32_t kBufferingLimit{4324};
 constexpr bool kUseBuffering{true};
+constexpr uint64_t kRunningTime{23412};
 } // namespace
 
 namespace firebolt::rialto
@@ -392,13 +393,13 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToFlush()
 
 void MediaPipelineServiceTests::mediaPipelineWillSetSourcePosition()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition, kResetTime, kAppliedRate))
+    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition, kResetTime, kAppliedRate, kRunningTime))
         .WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToSetSourcePosition()
 {
-    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition, kResetTime, kAppliedRate))
+    EXPECT_CALL(m_mediaPipelineMock, setSourcePosition(kSourceId, kPosition, kResetTime, kAppliedRate, kRunningTime))
         .WillOnce(Return(false));
 }
 
@@ -881,12 +882,12 @@ void MediaPipelineServiceTests::flushShouldFail()
 
 void MediaPipelineServiceTests::setSourcePositionShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition, kResetTime, kAppliedRate));
+    EXPECT_TRUE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition, kResetTime, kAppliedRate, kRunningTime));
 }
 
 void MediaPipelineServiceTests::setSourcePositionShouldFail()
 {
-    EXPECT_FALSE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition, kResetTime, kAppliedRate));
+    EXPECT_FALSE(m_sut->setSourcePosition(kSessionId, kSourceId, kPosition, kResetTime, kAppliedRate, kRunningTime));
 }
 
 void MediaPipelineServiceTests::processAudioGapShouldSucceed()

@@ -127,7 +127,8 @@ public:
 
     bool flush(int32_t sourceId, bool resetTime) override;
 
-    bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate) override;
+    bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
+                           uint64_t runningTime) override;
 
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
