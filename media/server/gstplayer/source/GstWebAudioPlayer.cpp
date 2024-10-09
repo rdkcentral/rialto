@@ -239,37 +239,43 @@ GstElement *GstWebAudioPlayer::createAutoSink()
 
 bool GstWebAudioPlayer::linkElementsToSrc(GstElement *sink)
 {
-    GstElement *convert = NULL;
-    GstElement *resample = NULL;
-
-    convert = m_gstWrapper->gstElementFactoryMake("audioconvert", NULL);
+    GstElement *convert = m_gstWrapper->gstElementFactoryMake("audioconvert", NULL);
     if (!convert)
     {
         RIALTO_SERVER_LOG_ERROR("Failed create the audioconvert");
         return false;
     }
-    resample = m_gstWrapper->gstElementFactoryMake("audioresample", NULL);
+    GstElement *resample = m_gstWrapper->gstElementFactoryMake("audioresample", NULL);
     if (!resample)
     {
         RIALTO_SERVER_LOG_ERROR("Failed create the audioresample");
+        return false;
+    }
+    GstElement *volume = m_gstWrapper->gstElementFactoryMake("volume", NULL);
+    if (!volume)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed create the volume");
         return false;
     }
 
     if ((!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), m_context.source)) ||
         (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), convert)) ||
         (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), resample)) ||
+        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), volume)) ||
         (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), sink)))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to add elements to the bin");
         return false;
     }
 
-    if ((!m_gstWrapper->gstElementLink(m_context.source, convert)) ||
-        (!m_gstWrapper->gstElementLink(convert, resample)) || (!m_gstWrapper->gstElementLink(resample, sink)))
+    if ((!m_gstWrapper->gstElementLink(m_context.source, convert)) || (!m_gstWrapper->gstElementLink(convert, resample)) ||
+        (!m_gstWrapper->gstElementLink(resample, volume)) || (!m_gstWrapper->gstElementLink(volume, sink)))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to link elements");
         return false;
     }
+
+    m_context.gstVolumeElement = GST_STREAM_VOLUME(volume);
 
     return true;
 }
@@ -278,7 +284,9 @@ void GstWebAudioPlayer::termWebAudioPipeline()
 {
     if (m_context.pipeline)
     {
-        m_taskFactory->createStop(*this)->execute();
+        auto xx = m_taskFactory->createStop(*this);
+        if (xx)
+            xx->execute();
         GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
         if (bus)
         {
@@ -320,8 +328,7 @@ void GstWebAudioPlayer::setVolume(double volume)
 bool GstWebAudioPlayer::getVolume(double &volume)
 {
     // Must be called on the main thread, otherwise the pipeline can be destroyed during the query.
-    volume =
-        m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR);
+    volume = m_gstWrapper->gstStreamVolumeGetVolume(m_context.gstVolumeElement, GST_STREAM_VOLUME_FORMAT_LINEAR);
     return true;
 }
 
