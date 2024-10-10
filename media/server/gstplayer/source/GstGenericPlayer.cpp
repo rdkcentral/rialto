@@ -868,14 +868,14 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         // Sending initial sample not needed
         return;
     }
-    for (const auto &[position, resetTime, appliedRate] : initialPosition->second)
+    for (const auto &[position, resetTime, appliedRate, stopPosition] : initialPosition->second)
     {
         GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
         RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
         GstSegment *segment{m_gstWrapper->gstSegmentNew()};
         m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
         if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, seekFlag,
-                                            GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
+                                            GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_SET, stopPosition, nullptr))
         {
             RIALTO_SERVER_LOG_WARN("Segment seek failed.");
             m_gstWrapper->gstSegmentFree(segment);
@@ -1651,12 +1651,12 @@ void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetT
 }
 
 void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime,
-                                         double appliedRate)
+                                         double appliedRate, uint64_t stopPosition)
 {
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, *this, mediaSourceType, position,
-                                                                           resetTime, appliedRate));
+                                                                           resetTime, appliedRate, stopPosition));
     }
 }
 

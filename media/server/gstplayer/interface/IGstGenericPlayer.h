@@ -374,9 +374,10 @@ public:
      * @param[in] position : The position in nanoseconds.
      * @param[in] resetTime : True if time should be reset
      * @param[in] appliedRate : The applied rate after seek
+     * @param[in] stopPosition : The position of last pushed buffer
      */
     virtual void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime,
-                                   double appliedRate) = 0;
+                                   double appliedRate, uint64_t stopPosition) = 0;
 
     /**
      * @brief Process audio gap

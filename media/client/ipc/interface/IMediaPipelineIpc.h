@@ -362,10 +362,12 @@ public:
      * @param[in] position    : The position in nanoseconds.
      * @param[in] resetTime   : True if time should be reset
      * @param[in] appliedRate : The applied rate after seek
+     * @param[in] stopPosition : The position of last pushed buffer
      *
      * @retval true on success.
      */
-    virtual bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate) = 0;
+    virtual bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
+                                   uint64_t stopPosition) = 0;
 
     /**
      * @brief Process audio gap

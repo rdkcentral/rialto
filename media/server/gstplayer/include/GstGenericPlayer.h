@@ -128,8 +128,8 @@ public:
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
     void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
-    void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime,
-                           double appliedRate) override;
+    void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime, double appliedRate,
+                           uint64_t stopPosition) override;
     void processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
     void setBufferingLimit(uint32_t limitBufferingMs) override;
     bool getBufferingLimit(uint32_t &limitBufferingMs) override;
