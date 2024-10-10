@@ -76,7 +76,7 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     constexpr double kAppliedRate{2.0};
     constexpr bool kEnabled{true};
     constexpr uint32_t kBufferingLimit{5326};
-    constexpr uint64_t kRunningTime{4234};
+    constexpr uint64_t kStopPosition{4234};
 
     /////////////////////////////////////////////
 
@@ -255,9 +255,9 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, setSourcePosition(kSourceId, kPosition1, kResetTime, kAppliedRate, kRunningTime))
+    EXPECT_CALL(*mediaPipelineMock, setSourcePosition(kSourceId, kPosition1, kResetTime, kAppliedRate, kStopPosition))
         .WillOnce(Return(true));
-    EXPECT_TRUE(proxy->setSourcePosition(kSourceId, kPosition1, kResetTime, kAppliedRate, kRunningTime));
+    EXPECT_TRUE(proxy->setSourcePosition(kSourceId, kPosition1, kResetTime, kAppliedRate, kStopPosition));
 
     /////////////////////////////////////////////
 

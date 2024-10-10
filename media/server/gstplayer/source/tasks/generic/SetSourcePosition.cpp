@@ -28,9 +28,9 @@ SetSourcePosition::SetSourcePosition(GenericPlayerContext &context, IGstGenericP
                                      IGstGenericPlayerClient *client,
                                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                                      const MediaSourceType &type, std::int64_t position, bool resetTime,
-                                     double appliedRate, uint64_t runningTime)
+                                     double appliedRate, uint64_t stopPosition)
     : m_context{context}, m_player(player), m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type},
-      m_position{position}, m_resetTime{resetTime}, m_appliedRate{appliedRate}, m_runningTime{runningTime}
+      m_position{position}, m_resetTime{resetTime}, m_appliedRate{appliedRate}, m_stopPosition{stopPosition}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetSourcePosition");
 }
@@ -67,7 +67,7 @@ void SetSourcePosition::execute() const
     if (MediaSourceType::VIDEO == m_type || MediaSourceType::AUDIO == m_type)
     {
         m_context.initialPositions[source].emplace_back(
-            SegmentData{m_position, m_resetTime, m_appliedRate, m_runningTime});
+            SegmentData{m_position, m_resetTime, m_appliedRate, m_stopPosition});
     }
 
     if (m_context.setupSourceFinished)

@@ -36,7 +36,7 @@ public:
     SetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
                       const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                       const MediaSourceType &type, std::int64_t position, bool resetTime, double appliedRate,
-                      uint64_t runningTime);
+                      uint64_t stopPosition);
     ~SetSourcePosition() override;
     void execute() const override;
 
@@ -50,7 +50,7 @@ private:
     std::int64_t m_position;
     bool m_resetTime;
     double m_appliedRate;
-    uint64_t m_runningTime;
+    uint64_t m_stopPosition;
 };
 
 } // namespace firebolt::rialto::server::tasks::generic

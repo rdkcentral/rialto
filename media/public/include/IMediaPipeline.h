@@ -1424,12 +1424,12 @@ public:
      * @param[in] position    : The position in nanoseconds.
      * @param[in] resetTime   : True if time should be reset
      * @param[in] appliedRate : The applied rate after seek. Default value is 1.0.
-     * @param[in] runningTime : The running time of the segment
+     * @param[in] stopPosition : The position of last pushed buffer
      *
      * @retval true on success.
      */
     virtual bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime = false, double appliedRate = 1.0,
-                                   uint64_t runningTime = 0) = 0;
+                                   uint64_t stopPosition = kUndefinedPosition) = 0;
 
     /**
      * @brief Process audio gap

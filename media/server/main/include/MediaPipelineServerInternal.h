@@ -153,7 +153,7 @@ public:
     bool flush(int32_t sourceId, bool resetTime) override;
 
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
-                           uint64_t runningTime) override;
+                           uint64_t stopPosition) override;
 
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
@@ -604,12 +604,12 @@ protected:
      * @param[in] position : The position in nanoseconds.
      * @param[in] resetTime : True if time should be reset
      * @param[in] appliedRate : The applied rate after seek
-     * @param[in] runningTime : The running time of the segment
+     * @param[in] stopPosition : The position of last pushed buffer
      *
      * @retval true on success.
      */
     bool setSourcePositionInternal(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
-                                   uint64_t runningTime);
+                                   uint64_t stopPosition);
 
     /**
      * @brief Process audio gap

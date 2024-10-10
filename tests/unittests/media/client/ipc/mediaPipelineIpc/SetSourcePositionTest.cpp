@@ -27,7 +27,7 @@ protected:
     const int32_t m_kSourceId{1};
     const bool m_kResetTime{false};
     const double m_kAppliedRate{2.0};
-    const uint64_t m_kRunningTime{2342};
+    const uint64_t m_kStopPosition{2342};
 
     virtual void SetUp()
     {
@@ -57,7 +57,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetSourcePositionTest, Success)
                                            _, m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime, m_kAppliedRate,
-                                                    m_kRunningTime),
+                                                    m_kStopPosition),
               true);
 }
 
@@ -70,7 +70,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetSourcePositionTest, ChannelDisconnected)
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime, m_kAppliedRate,
-                                                    m_kRunningTime),
+                                                    m_kStopPosition),
               false);
 
     // Reattach channel on destroySession
@@ -90,7 +90,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetSourcePositionTest, ReconnectChannel)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setSourcePosition"), _, _, _, _));
 
     EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime, m_kAppliedRate,
-                                                    m_kRunningTime),
+                                                    m_kStopPosition),
               true);
 }
 
@@ -104,6 +104,6 @@ TEST_F(RialtoClientMediaPipelineIpcSetSourcePositionTest, SetSourcePositionFailu
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setSourcePosition"), _, _, _, _));
 
     EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime, m_kAppliedRate,
-                                                    m_kRunningTime),
+                                                    m_kStopPosition),
               false);
 }

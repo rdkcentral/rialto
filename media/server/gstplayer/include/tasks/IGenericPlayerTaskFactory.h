@@ -436,7 +436,7 @@ public:
      * @param[in] position  : The new source position
      * @param[in] resetTime : True if time should be reset
      * @param[in] appliedRate : The applied rate after seek
-     * @param[in] runningTime : The running time of the segment
+     * @param[in] stopPosition : The position of last pushed buffer
      *
      * @retval the new SetSourcePosition task instance.
      */
@@ -444,7 +444,7 @@ public:
                                                                  IGstGenericPlayerPrivate &player,
                                                                  const firebolt::rialto::MediaSourceType &type,
                                                                  std::int64_t position, bool resetTime,
-                                                                 double appliedRate, uint64_t runningTime) const = 0;
+                                                                 double appliedRate, uint64_t stopPosition) const = 0;
 
     /**
      * @brief Creates a ProcessAudioGap task.

@@ -68,7 +68,7 @@ public:
     MOCK_METHOD(void, flush, (const MediaSourceType &mediaSourceType, bool resetTime), (override));
     MOCK_METHOD(void, setSourcePosition,
                 (const MediaSourceType &mediaSourceType, int64_t position, bool resetTime, double appliedRate,
-                 uint64_t runningTime),
+                 uint64_t stopPosition),
                 (override));
     MOCK_METHOD(void, processAudioGap, (int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
                 (override));
