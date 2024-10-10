@@ -62,6 +62,11 @@ constexpr int32_t kUndefinedSize{0};
 constexpr uint32_t kInvalidLimitBuffering{std::numeric_limits<uint32_t>::max()};
 
 /**
+ * @brief The value of undefined position
+ */
+constexpr uint64_t kUndefinedPosition{std::numeric_limits<uint64_t>::max()};
+
+/**
  * @brief The supported types of media source.
  */
 enum class MediaSourceType

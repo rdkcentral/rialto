@@ -56,4 +56,4 @@ bool UTF16ToCodePoint(const uint16_t lowPart, const uint16_t highPart, uint32_t 
 }
 } // namespace Thunder::Core
 
-void DumpCallStack(const ThreadId threadId, std::list<Thunder::Core::callstack_info> &stack) {}
+void DumpCallStack(const Thunder::Core::thread_id threadId, std::list<Thunder::Core::callstack_info> &stack) {}

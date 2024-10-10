@@ -30,6 +30,7 @@ protected:
     const int m_kDummySourceId{123};
     const bool m_kResetTime{false};
     const double m_kAppliedRate{2.0};
+    const uint64_t m_kStopPosition{4534};
 
     RialtoServerMediaPipelineSetSourcePositionTest() { createMediaPipeline(); }
 
@@ -52,8 +53,8 @@ TEST_F(RialtoServerMediaPipelineSetSourcePositionTest, SetSourcePositionSuccess)
     std::int32_t sourceId{mediaSource->getId()};
 
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, setSourcePosition(m_kType, m_kPosition, m_kResetTime, m_kAppliedRate));
-    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(sourceId, m_kPosition, m_kResetTime, m_kAppliedRate));
+    EXPECT_CALL(*m_gstPlayerMock, setSourcePosition(m_kType, m_kPosition, m_kResetTime, m_kAppliedRate, m_kStopPosition));
+    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(sourceId, m_kPosition, m_kResetTime, m_kAppliedRate, m_kStopPosition));
 }
 
 /**
@@ -62,7 +63,8 @@ TEST_F(RialtoServerMediaPipelineSetSourcePositionTest, SetSourcePositionSuccess)
 TEST_F(RialtoServerMediaPipelineSetSourcePositionTest, SetSourcePositionNoGstPlayerFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(m_kDummySourceId, m_kPosition, m_kResetTime, m_kAppliedRate));
+    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(m_kDummySourceId, m_kPosition, m_kResetTime, m_kAppliedRate,
+                                                    m_kStopPosition));
 }
 
 /**
@@ -73,7 +75,8 @@ TEST_F(RialtoServerMediaPipelineSetSourcePositionTest, SetSourcePositionNoSource
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
 
-    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(m_kDummySourceId, m_kPosition, m_kResetTime, m_kAppliedRate));
+    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(m_kDummySourceId, m_kPosition, m_kResetTime, m_kAppliedRate,
+                                                    m_kStopPosition));
 }
 
 /**
@@ -94,8 +97,8 @@ TEST_F(RialtoServerMediaPipelineSetSourcePositionTest, SetSourcePositionResetEos
 
     mainThreadWillEnqueueTaskAndWait();
 
-    EXPECT_CALL(*m_gstPlayerMock, setSourcePosition(m_kType, m_kPosition, m_kResetTime, m_kAppliedRate));
-    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(sourceId, m_kPosition, m_kResetTime, m_kAppliedRate));
+    EXPECT_CALL(*m_gstPlayerMock, setSourcePosition(m_kType, m_kPosition, m_kResetTime, m_kAppliedRate, m_kStopPosition));
+    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(sourceId, m_kPosition, m_kResetTime, m_kAppliedRate, m_kStopPosition));
 
     // Expect need data notified to client
     expectNotifyNeedData(firebolt::rialto::MediaSourceType::VIDEO, sourceId, 3);

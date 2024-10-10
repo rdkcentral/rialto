@@ -620,6 +620,7 @@ message FlushResponse {
  * @param[in]  position     The position in nanoseconds.
  * @param[in]  reset_time   True if time should be reset
  * @param[in]  applied_rate The applied rate after seek
+ * @param[in]  stop_position The position of last pushed buffer
  *
  * This method sets the start position for a source.
  *
@@ -630,6 +631,7 @@ message SetSourcePositionRequest {
     optional int64 position = 3 [default = -1];
     optional bool reset_time = 4 [default = false];
     optional double applied_rate = 5 [default = 1];
+    optional uint64 stop_position = 6 [default = 18446744073709551615];
 }
 message SetSourcePositionResponse {
 }
