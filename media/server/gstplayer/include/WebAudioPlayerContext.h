@@ -20,12 +20,15 @@
 #ifndef FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_CONTEXT_H_
 #define FIREBOLT_RIALTO_SERVER_WEB_AUDIO_PLAYER_CONTEXT_H_
 
-#include "IGstSrc.h"
-#include <condition_variable>
 #include <gst/gst.h>
+#include <gst/pbutils/pbutils.h>
+
+#include <condition_variable>
 #include <list>
 #include <memory>
 #include <mutex>
+
+#include "IGstSrc.h"
 
 namespace firebolt::rialto::server
 {
@@ -67,6 +70,11 @@ struct WebAudioPlayerContext
      * @brief The number of bytes per sample.
      */
     uint32_t bytesPerSample{};
+
+    /**
+     * @brief Pointer to the gstremer volume element
+     */
+    GstStreamVolume *gstVolumeElement{nullptr};
 };
 } // namespace firebolt::rialto::server
 

@@ -20,12 +20,14 @@
 #ifndef FIREBOLT_RIALTO_WRAPPERS_GST_WRAPPER_H_
 #define FIREBOLT_RIALTO_WRAPPERS_GST_WRAPPER_H_
 
-#include "IGstWrapper.h"
 #include <cassert>
-#include <gst/pbutils/pbutils.h>
 #include <memory>
 #include <mutex>
 #include <string>
+
+#include <gst/pbutils/pbutils.h>
+
+#include "IGstWrapper.h"
 
 namespace firebolt::rialto::wrappers
 {
