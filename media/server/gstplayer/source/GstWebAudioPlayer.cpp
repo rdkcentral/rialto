@@ -284,9 +284,7 @@ void GstWebAudioPlayer::termWebAudioPipeline()
 {
     if (m_context.pipeline)
     {
-        auto xx = m_taskFactory->createStop(*this);
-        if (xx)
-            xx->execute();
+        m_taskFactory->createStop(*this)->execute();
         GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
         if (bus)
         {
