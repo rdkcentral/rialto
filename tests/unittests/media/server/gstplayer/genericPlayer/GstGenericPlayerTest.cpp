@@ -748,7 +748,7 @@ TEST_F(GstGenericPlayerTest, shouldGetStreamSyncModeWithIteratorResync)
     const int32_t kStreamSyncModeValue{1};
     const std::string kPropertyStr{"stream-sync-mode"};
 
-    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(_)).WillOnce(Return(&m_it));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(_, _))
         .WillOnce(Return(GST_ITERATOR_RESYNC))
         .WillOnce(Return(GST_ITERATOR_OK));
@@ -894,7 +894,7 @@ TEST_F(GstGenericPlayerTest, shouldGetBufferingLimitWithIteratorResync)
     const uint32_t kBufferingLimitValue{1};
     const std::string kPropertyStr{"limit-buffering-ms"};
 
-    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(_)).WillOnce(Return(&m_it));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(_, _))
         .WillOnce(Return(GST_ITERATOR_RESYNC))
         .WillOnce(Return(GST_ITERATOR_OK));

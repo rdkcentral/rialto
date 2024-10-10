@@ -444,7 +444,7 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
 {
-    GstIterator *it = m_gstWrapper->gstBinIterateElements(GST_BIN(m_context.pipeline));
+    GstIterator *it = m_gstWrapper->gstBinIterateRecurse(GST_BIN(m_context.pipeline));
     GValue item = G_VALUE_INIT;
     gboolean done = FALSE;
 
@@ -500,7 +500,7 @@ GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
 
 GstElement *GstGenericPlayer::getParser(const MediaSourceType &mediaSourceType)
 {
-    GstIterator *it = m_gstWrapper->gstBinIterateElements(GST_BIN(m_context.pipeline));
+    GstIterator *it = m_gstWrapper->gstBinIterateRecurse(GST_BIN(m_context.pipeline));
     GValue item = G_VALUE_INIT;
     gboolean done = FALSE;
 
@@ -1280,7 +1280,6 @@ bool GstGenericPlayer::setBufferingLimit()
         std::unique_lock lock{m_context.propertyMutex};
         if (!m_context.pendingBufferingLimit.has_value())
         {
-            RIALTO_SERVER_LOG_DEBUG("Pending limit-buffering-ms, decoder is NULL");
             return false;
         }
         bufferingLimit = static_cast<guint>(m_context.pendingBufferingLimit.value());
@@ -1305,6 +1304,10 @@ bool GstGenericPlayer::setBufferingLimit()
         std::unique_lock lock{m_context.propertyMutex};
         m_context.pendingBufferingLimit.reset();
     }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Pending limit-buffering-ms, decoder is NULL");
+    }
     return result;
 }
 
@@ -1316,10 +1319,15 @@ bool GstGenericPlayer::setUseBuffering()
         if (m_context.playbackGroup.m_curAudioDecodeBin)
         {
             gboolean useBufferingGboolean{m_context.pendingUseBuffering.value() ? TRUE : FALSE};
+            RIALTO_SERVER_LOG_DEBUG("Set use-buffering to %d", useBufferingGboolean);
             m_glibWrapper->gObjectSet(m_context.playbackGroup.m_curAudioDecodeBin, "use-buffering",
                                       useBufferingGboolean, nullptr);
             m_context.pendingUseBuffering.reset();
             return true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending use-buffering, decodebin is NULL");
         }
     }
     return false;
