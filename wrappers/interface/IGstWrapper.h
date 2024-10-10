@@ -1085,13 +1085,13 @@ public:
     virtual GstIterator *gstBinIterateSinks(GstBin *bin) const = 0;
 
     /**
-     * @brief Gets an iterator for the bin that contains all the elements.
+     * @brief Gets an iterator for the elements in this bin. This iterator recurses into GstBin children.
      *
      * @param[in]  bin  : the bin.
      *
      * @retval an iterator of elements.
      */
-    virtual GstIterator *gstBinIterateElements(GstBin *bin) const = 0;
+    virtual GstIterator *gstBinIterateRecurse(GstBin *bin) const = 0;
 
     /**
      * @brief Gets the next item from the iterator.

@@ -180,7 +180,7 @@ public:
                 (GstStructure * structure, const gchar *firstname, GType type, const char *value), (const));
     MOCK_METHOD(void, gstMessageParseError, (GstMessage * message, GError **gerror, gchar **debug), (const));
     MOCK_METHOD(GstIterator *, gstBinIterateSinks, (GstBin * bin), (const, override));
-    MOCK_METHOD(GstIterator *, gstBinIterateElements, (GstBin * bin), (const, override));
+    MOCK_METHOD(GstIterator *, gstBinIterateRecurse, (GstBin * bin), (const, override));
     MOCK_METHOD(GstIteratorResult, gstIteratorNext, (GstIterator * it, GValue *elem), (const, override));
     MOCK_METHOD(void, gstIteratorResync, (GstIterator * it), (const, override));
     MOCK_METHOD(void, gstIteratorFree, (GstIterator * it), (const, override));

@@ -108,7 +108,7 @@ public:
     template <typename T>
     void willSetDecoderProperty(GstElementFactoryListType type, const std::string &propertyName, const T &value)
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(_)).WillOnce(Return(&m_it));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
         EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
@@ -136,7 +136,7 @@ public:
     template <typename T>
     void willGetDecoderProperty(GstElementFactoryListType type, const std::string &propertyName, const T &value)
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(_)).WillOnce(Return(&m_it));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
         EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
@@ -186,7 +186,7 @@ public:
 
     void willFailToSetDecoderProperty()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(_)).WillOnce(Return(&m_it));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
         EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
@@ -206,7 +206,7 @@ public:
 
     void willFailToGetDecoder()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(_)).WillOnce(Return(&m_it));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_ERROR));
         EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
