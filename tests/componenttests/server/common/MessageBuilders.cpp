@@ -380,8 +380,9 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::SetSourcePositionRequest
-createSetSourcePositionRequest(int sessionId, int sourceId, std::int64_t position, bool resetTime, double appliedRate)
+::firebolt::rialto::SetSourcePositionRequest createSetSourcePositionRequest(int sessionId, int sourceId,
+                                                                            std::int64_t position, bool resetTime,
+                                                                            double appliedRate, uint64_t stopPosition)
 {
     ::firebolt::rialto::SetSourcePositionRequest request;
     request.set_session_id(sessionId);
@@ -389,6 +390,7 @@ createSetSourcePositionRequest(int sessionId, int sourceId, std::int64_t positio
     request.set_position(position);
     request.set_reset_time(resetTime);
     request.set_applied_rate(appliedRate);
+    request.set_stop_position(stopPosition);
     return request;
 }
 

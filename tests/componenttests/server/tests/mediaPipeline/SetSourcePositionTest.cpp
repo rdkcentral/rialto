@@ -46,13 +46,15 @@ public:
     void setSourcePosition(int sourceId)
     {
         // Send SetSourcePositionRequest and expect success
-        auto request{createSetSourcePositionRequest(m_sessionId, sourceId, kPosition, kResetTime, kAppliedRate)};
+        auto request{
+            createSetSourcePositionRequest(m_sessionId, sourceId, kPosition, kResetTime, kAppliedRate, kStopPosition)};
         ConfigureAction<SetSourcePosition>(m_clientStub).send(request).expectSuccess();
     }
 
     void setSourcePositionFailure()
     {
-        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition, kResetTime, kAppliedRate)};
+        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition, kResetTime, kAppliedRate,
+                                                    kStopPosition)};
         ConfigureAction<SetSourcePosition>(m_clientStub).send(request).expectFailure();
     }
 };

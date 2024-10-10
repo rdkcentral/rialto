@@ -83,7 +83,8 @@ public:
                                         { return event.source_id() == m_audioSourceId; });
 
         // Send SetSourcePositionRequest and expect success
-        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition, kResetTime, kAppliedRate)};
+        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition, kResetTime, kAppliedRate,
+                                                    kStopPosition)};
         ConfigureAction<SetSourcePosition>(m_clientStub).send(request).expectSuccess();
 
         // Check received NeedDataReqs

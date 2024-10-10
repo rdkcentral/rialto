@@ -53,7 +53,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetSourcePositionTest, Success)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setSourcePosition"), m_controllerMock.get(),
                                            setSourcePositionRequestMatcher(m_sessionId, m_kSourceId, m_kPosition,
-                                                                           m_kResetTime, m_kAppliedRate),
+                                                                           m_kResetTime, m_kAppliedRate, m_kStopPosition),
                                            _, m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime, m_kAppliedRate,
