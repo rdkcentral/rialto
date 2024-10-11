@@ -108,6 +108,7 @@ protected:
     GstCaps m_gstCaps2;
     GstElement m_convert;
     GstElement m_resample;
+    GstElement m_volume;
     GstBuffer m_buffer;
     gchar m_capsStr;
 
