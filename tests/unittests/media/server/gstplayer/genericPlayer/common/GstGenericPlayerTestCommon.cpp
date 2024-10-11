@@ -204,7 +204,7 @@ void GstGenericPlayerTestCommon::expectSetMessageCallback()
 
 void GstGenericPlayerTestCommon::expectGetDecoder(GstElement *element)
 {
-    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
     EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(element));
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(element)).WillOnce(Return(m_factory));
@@ -217,7 +217,7 @@ void GstGenericPlayerTestCommon::expectGetDecoder(GstElement *element)
 
 void GstGenericPlayerTestCommon::expectGetVideoParser(GstElement *element)
 {
-    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
     EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(element));
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(element)).WillOnce(Return(m_factory));
@@ -242,7 +242,7 @@ void GstGenericPlayerTestCommon::expectGetSink(const std::string &sinkName, GstE
 
 void GstGenericPlayerTestCommon::expectNoDecoder()
 {
-    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_DONE));
     EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
