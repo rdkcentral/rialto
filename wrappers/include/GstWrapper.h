@@ -467,7 +467,7 @@ public:
 
     GstIterator *gstBinIterateSinks(GstBin *bin) const override { return gst_bin_iterate_sinks(bin); }
 
-    GstIterator *gstBinIterateElements(GstBin *bin) const override { return gst_bin_iterate_elements(bin); }
+    GstIterator *gstBinIterateRecurse(GstBin *bin) const override { return gst_bin_iterate_recurse(bin); }
 
     GstIteratorResult gstIteratorNext(GstIterator *it, GValue *elem) const override
     {
