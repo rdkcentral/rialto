@@ -217,8 +217,10 @@ void GstWebAudioPlayerTestCommon::expectLinkElementsExceptVolume()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioconvert"), _)).WillOnce(Return(&convert));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioresample"), _)).WillOnce(Return(&resample));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("volume"), _)).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&convert)).Times(1);
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&resample)).Times(1);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&convert));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&resample));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_sink));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_appSrc));
 }
 
 void GstWebAudioPlayerTestCommon::expectAddBinFailure()
