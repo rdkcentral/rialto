@@ -249,21 +249,39 @@ bool GstWebAudioPlayer::linkElementsToSrc(GstElement *sink)
     if (!resample)
     {
         RIALTO_SERVER_LOG_ERROR("Failed create the audioresample");
+        m_gstWrapper->gstObjectUnref(convert);
         return false;
     }
     GstElement *volume = m_gstWrapper->gstElementFactoryMake("volume", NULL);
     if (!volume)
     {
         RIALTO_SERVER_LOG_ERROR("Failed create the volume");
+        m_gstWrapper->gstObjectUnref(convert);
+        m_gstWrapper->gstObjectUnref(resample);
         return false;
     }
-
-    if ((!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), m_context.source)) ||
-        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), convert)) ||
-        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), resample)) ||
-        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), volume)) ||
-        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), sink)))
+    bool errorInAddElements{false};
+    std::queue<GstElement *> elementsToAdd;
+    elementsToAdd.push(m_context.source);
+    elementsToAdd.push(convert);
+    elementsToAdd.push(resample);
+    elementsToAdd.push(volume);
+    elementsToAdd.push(sink);
+    GstBin *pipelineBin = GST_BIN(m_context.pipeline);
+    while (!elementsToAdd.empty() && !errorInAddElements)
     {
+        if (m_gstWrapper->gstBinAdd(pipelineBin, elementsToAdd.front()))
+            elementsToAdd.pop();
+        else
+            errorInAddElements = true;
+    }
+    if (errorInAddElements)
+    {
+        while (!elementsToAdd.empty())
+        {
+            m_gstWrapper->gstObjectUnref(elementsToAdd.front());
+            elementsToAdd.pop();
+        }
         RIALTO_SERVER_LOG_ERROR("Failed to add elements to the bin");
         return false;
     }

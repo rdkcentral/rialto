@@ -80,6 +80,7 @@ protected:
     void gstPlayerWillBeDestroyed();
     void executeTaskWhenEnqueued();
     void expectInitRialtoSrc();
+    void expectInitWorkerThread();
     void expectInitThreads();
     void expectCreatePipeline();
     void expectInitAppSrc();
@@ -93,6 +94,7 @@ protected:
     void expectMakeAutoAudioSink();
     void expectInitAutoAudioSink();
     void expectLinkElements();
+    void expectLinkElementsExceptVolume();
     void expectAddBinFailure();
     void expectLinkElementFailure();
     void expectTermPipeline();
