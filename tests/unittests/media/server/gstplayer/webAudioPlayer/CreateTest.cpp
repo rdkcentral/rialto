@@ -256,6 +256,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAmlhalaSinkFailure)
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_PLUGIN_FEATURE(&m_feature)));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("amlhalasink"), StrEq("webaudiosink")))
         .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_appSrc));
 
     // Reset worker thread and pipeline on failure
     gstPlayerWillBeDestroyed();
@@ -285,6 +286,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createRtkAudioSinkFailure)
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("rtkaudiosink"), StrEq("webaudiosink")))
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_PLUGIN_FEATURE(&m_feature)));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_appSrc));
 
     // Reset worker thread and pipeline on failure
     gstPlayerWillBeDestroyed();
@@ -421,6 +423,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAutoAudioSinkFailure)
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("autoaudiosink"), StrEq("webaudiosink")))
         .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_appSrc));
 
     // Reset worker thread and pipeline on failure
     gstPlayerWillBeDestroyed();

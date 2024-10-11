@@ -195,6 +195,11 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
     {
         return linkElementsToSrc(sink);
     }
+    else
+    {
+        m_gstWrapper->gstObjectUnref(m_context.source);
+        m_context.source = nullptr;
+    }
     return false;
 }
 
