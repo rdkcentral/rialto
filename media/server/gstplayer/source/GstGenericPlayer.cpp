@@ -473,7 +473,7 @@ GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
                 {
                     m_glibWrapper->gValueUnset(&item);
                     m_gstWrapper->gstIteratorFree(it);
-                    return element;
+                    return GST_ELEMENT(m_gstWrapper->gstObjectRef(element));
                 }
             }
 
@@ -529,7 +529,7 @@ GstElement *GstGenericPlayer::getParser(const MediaSourceType &mediaSourceType)
                 {
                     m_glibWrapper->gValueUnset(&item);
                     m_gstWrapper->gstIteratorFree(it);
-                    return element;
+                    return GST_ELEMENT(m_gstWrapper->gstObjectRef(element));
                 }
             }
 

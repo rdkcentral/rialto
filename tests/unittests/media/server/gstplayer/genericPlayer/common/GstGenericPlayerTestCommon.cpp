@@ -211,6 +211,7 @@ void GstGenericPlayerTestCommon::expectGetDecoder(GstElement *element)
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_DECODER |
                                                                            GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
         .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(element)).WillOnce(Return(element));
     EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
 }
@@ -224,6 +225,7 @@ void GstGenericPlayerTestCommon::expectGetVideoParser(GstElement *element)
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_PARSER |
                                                                            GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO)))
         .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(element)).WillOnce(Return(element));
     EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
 }
