@@ -89,6 +89,7 @@ public:
     GstElement m_childElement{};
     GstQuery m_query{};
     GstElement m_textTrackSink{};
+    GstElement m_videoSink{};
     GstPad m_pad{};
 
     // Glib members

@@ -24,10 +24,11 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetMute::SetMute(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+SetMute::SetMute(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                 std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                  std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                  const MediaSourceType &mediaSourceType, bool mute)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
+    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
       m_mediaSourceType{mediaSourceType}, m_mute{mute}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetMute");
@@ -58,6 +59,17 @@ void SetMute::execute() const
             return;
         }
         m_gstWrapper->gstStreamVolumeSetMute(GST_STREAM_VOLUME(m_context.pipeline), m_mute);
+    }
+    else if (m_mediaSourceType == MediaSourceType::VIDEO)
+    {
+        GstElement *videoSink{m_player.getSink(MediaSourceType::VIDEO)};
+        if (!videoSink)
+        {
+            RIALTO_SERVER_LOG_ERROR("Setting mute failed. Video sink is NULL");
+            return;
+        }
+        m_glibWrapper->gObjectSet(videoSink, "show-video-window", m_mute, nullptr);
+        m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
     }
     else
     {

@@ -2206,10 +2206,24 @@ void GenericTasksTestsBase::triggerShutdown()
     task.execute();
 }
 
+void GenericTasksTestsBase::shouldSetVideoMute()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO))
+        .WillOnce(Return(&testContext->m_videoSink));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_videoSink, StrEq("show-video-window")));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(&testContext->m_videoSink));
+}
+
+void GenericTasksTestsBase::shouldFailToSetVideoMute()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO)).WillOnce(Return(nullptr));
+}
+
 void GenericTasksTestsBase::triggerSetAudioMute()
 {
-    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context, testContext->m_gstWrapper,
-                                                           testContext->m_glibWrapper, MediaSourceType::AUDIO, kMute};
+    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context,    testContext->m_gstPlayer,
+                                                           testContext->m_gstWrapper, testContext->m_glibWrapper,
+                                                           MediaSourceType::AUDIO,    kMute};
     task.execute();
 }
 
@@ -2226,15 +2240,25 @@ void GenericTasksTestsBase::shouldSetSubtitleMute()
 
 void GenericTasksTestsBase::triggerSetVideoMute()
 {
-    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context, testContext->m_gstWrapper,
-                                                           testContext->m_glibWrapper, MediaSourceType::VIDEO, kMute};
+    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context,    testContext->m_gstPlayer,
+                                                           testContext->m_gstWrapper, testContext->m_glibWrapper,
+                                                           MediaSourceType::VIDEO,    kMute};
     task.execute();
 }
 
 void GenericTasksTestsBase::triggerSetSubtitleMute()
 {
-    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context, testContext->m_gstWrapper,
-                                                           testContext->m_glibWrapper, MediaSourceType::SUBTITLE, kMute};
+    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context,    testContext->m_gstPlayer,
+                                                           testContext->m_gstWrapper, testContext->m_glibWrapper,
+                                                           MediaSourceType::SUBTITLE, kMute};
+    task.execute();
+}
+
+void GenericTasksTestsBase::triggerSetUnknownMute()
+{
+    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context,    testContext->m_gstPlayer,
+                                                           testContext->m_gstWrapper, testContext->m_glibWrapper,
+                                                           MediaSourceType::UNKNOWN,  kMute};
     task.execute();
 }
 

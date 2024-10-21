@@ -22,6 +22,7 @@
 
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
+#include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include <memory>
@@ -31,7 +32,8 @@ namespace firebolt::rialto::server::tasks::generic
 class SetMute : public IPlayerTask
 {
 public:
-    SetMute(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+    SetMute(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+            std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
             std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
             const MediaSourceType &mediaSourceType, bool mute);
     ~SetMute() override;
@@ -39,6 +41,7 @@ public:
 
 private:
     GenericPlayerContext &m_context;
+    IGstGenericPlayerPrivate &m_player;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     const MediaSourceType &m_mediaSourceType;

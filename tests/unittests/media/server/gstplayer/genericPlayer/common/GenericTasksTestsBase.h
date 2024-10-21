@@ -258,8 +258,11 @@ protected:
     void triggerSetAudioMute();
     void triggerSetVideoMute();
     void triggerSetSubtitleMute();
+    void triggerSetUnknownMute();
     void setContextSubtitleSink();
     void shouldSetAudioMute();
+    void shouldFailToSetVideoMute();
+    void shouldSetVideoMute();
     void shouldSetSubtitleMute();
 
     // immediate-output sink property test methods
