@@ -2210,13 +2210,26 @@ void GenericTasksTestsBase::shouldSetVideoMute()
 {
     EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO))
         .WillOnce(Return(&testContext->m_videoSink));
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_videoSink), StrEq("show-video-window")))
+        .WillOnce(Return(&testContext->m_paramSpec));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_videoSink, StrEq("show-video-window")));
     EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(&testContext->m_videoSink));
 }
 
-void GenericTasksTestsBase::shouldFailToSetVideoMute()
+void GenericTasksTestsBase::shouldFailToSetVideoMuteNoSink()
 {
     EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO)).WillOnce(Return(nullptr));
+}
+
+void GenericTasksTestsBase::shouldFailToSetVideoMuteNoProperty()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO))
+        .WillOnce(Return(&testContext->m_videoSink));
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_videoSink), StrEq("show-video-window")))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(&testContext->m_videoSink));
 }
 
 void GenericTasksTestsBase::triggerSetAudioMute()

@@ -34,9 +34,15 @@ TEST_F(SetMuteTest, shouldSetVideoMute)
     triggerSetVideoMute();
 }
 
-TEST_F(SetMuteTest, shouldFailToSetVideoMute)
+TEST_F(SetMuteTest, shouldFailToSetVideoMuteNoSink)
 {
-    shouldFailToSetVideoMute();
+    shouldFailToSetVideoMuteNoSink();
+    triggerSetVideoMute();
+}
+
+TEST_F(SetMuteTest, shouldFailToSetVideoMuteNoProperty)
+{
+    shouldFailToSetVideoMuteNoProperty();
     triggerSetVideoMute();
 }
 
