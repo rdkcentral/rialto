@@ -832,9 +832,7 @@ bool MediaPipelineServerInternal::setVolumeInternal(double targetVolume, uint32_
         RIALTO_SERVER_LOG_ERROR("Failed to set volume - Gstreamer player has not been loaded");
         return false;
     }
-
-    
-
+    m_gstPlayer->setVolume(targetVolume, volumeDuration, easeType);
     return true;
 }
 
@@ -849,18 +847,6 @@ bool MediaPipelineServerInternal::getVolume(double &currentVolume)
     return result;
 }
 
-// bool MediaPipelineServerInternal::getVolumeInternal(double &currentVolume)
-// {
-//     RIALTO_SERVER_LOG_DEBUG("entry:");
-
-//     if (!m_gstPlayer)
-//     {
-//         RIALTO_SERVER_LOG_ERROR("Failed to get volume - Gstreamer player has not been loaded");
-//         return false;
-//     }
-//     return m_gstPlayer->getVolume(currentVolume);
-// }
-
 bool MediaPipelineServerInternal::getVolumeInternal(double &currentVolume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -870,25 +856,7 @@ bool MediaPipelineServerInternal::getVolumeInternal(double &currentVolume)
         RIALTO_SERVER_LOG_ERROR("Failed to get volume - Gstreamer player has not been loaded");
         return false;
     }
-
-    // // Get fade volume
-    // GstElement *sink{getSink(mediaSourceType)};
-    // int fadeVolume = -100;
-    // m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "fade-volume")
-
-    // if (fadeVolume < 0)
-    // {
-    //     // Goes back tto the current volume
-    //     m_gstPlayer->getVolume(currentVolume);
-    // }
-    // else
-    // {
-    //     // rmr to convert fade-volume to double
-    //     currentVolume = fadeVolume / 100.0;
-    // }
-
-    RIALTO_SERVER_LOG_DEBUG("Retrieved volume: %lf", currentVolume);
-    return true;
+    return m_gstPlayer->getVolume(currentVolume);
 }
 
 bool MediaPipelineServerInternal::setMute(std::int32_t sourceId, bool mute)
