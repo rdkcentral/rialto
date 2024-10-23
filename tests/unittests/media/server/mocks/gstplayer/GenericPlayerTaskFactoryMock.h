@@ -87,7 +87,9 @@ public:
                  uint32_t volumeDuration, EaseType easeType),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetMute,
-                (GenericPlayerContext & context, const MediaSourceType &mediaSourceType, bool mute), (const, override));
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
+                 const MediaSourceType &mediaSourceType, bool mute),
+                (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetLowLatency,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, bool lowLatency), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSync,

@@ -114,6 +114,7 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER | type)))
             .WillOnce(Return(TRUE));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element)).WillOnce(Return(m_element));
         EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
 
@@ -142,6 +143,7 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER | type)))
             .WillOnce(Return(TRUE));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element)).WillOnce(Return(m_element));
         EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
 
@@ -191,6 +193,7 @@ public:
         EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(m_element));
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillOnce(Return(m_factory));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, _)).WillOnce(Return(TRUE));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element)).WillOnce(Return(m_element));
         EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
 
