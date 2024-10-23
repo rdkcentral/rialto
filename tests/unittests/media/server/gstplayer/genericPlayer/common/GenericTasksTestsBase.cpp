@@ -133,6 +133,7 @@ constexpr firebolt::rialto::Format kFormat{firebolt::rialto::Format::S16LE};
 constexpr uint64_t kChannelMask{0x0000000000000003};
 constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
+constexpr uint64_t kStopPosition{4523};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 {
@@ -2205,10 +2206,37 @@ void GenericTasksTestsBase::triggerShutdown()
     task.execute();
 }
 
+void GenericTasksTestsBase::shouldSetVideoMute()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO))
+        .WillOnce(Return(&testContext->m_videoSink));
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_videoSink), StrEq("show-video-window")))
+        .WillOnce(Return(&testContext->m_paramSpec));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_videoSink, StrEq("show-video-window")));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(&testContext->m_videoSink));
+}
+
+void GenericTasksTestsBase::shouldFailToSetVideoMuteNoSink()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO)).WillOnce(Return(nullptr));
+}
+
+void GenericTasksTestsBase::shouldFailToSetVideoMuteNoProperty()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO))
+        .WillOnce(Return(&testContext->m_videoSink));
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_videoSink), StrEq("show-video-window")))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(&testContext->m_videoSink));
+}
+
 void GenericTasksTestsBase::triggerSetAudioMute()
 {
-    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context, testContext->m_gstWrapper,
-                                                           testContext->m_glibWrapper, MediaSourceType::AUDIO, kMute};
+    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context,    testContext->m_gstPlayer,
+                                                           testContext->m_gstWrapper, testContext->m_glibWrapper,
+                                                           MediaSourceType::AUDIO,    kMute};
     task.execute();
 }
 
@@ -2225,15 +2253,25 @@ void GenericTasksTestsBase::shouldSetSubtitleMute()
 
 void GenericTasksTestsBase::triggerSetVideoMute()
 {
-    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context, testContext->m_gstWrapper,
-                                                           testContext->m_glibWrapper, MediaSourceType::VIDEO, kMute};
+    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context,    testContext->m_gstPlayer,
+                                                           testContext->m_gstWrapper, testContext->m_glibWrapper,
+                                                           MediaSourceType::VIDEO,    kMute};
     task.execute();
 }
 
 void GenericTasksTestsBase::triggerSetSubtitleMute()
 {
-    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context, testContext->m_gstWrapper,
-                                                           testContext->m_glibWrapper, MediaSourceType::SUBTITLE, kMute};
+    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context,    testContext->m_gstPlayer,
+                                                           testContext->m_gstWrapper, testContext->m_glibWrapper,
+                                                           MediaSourceType::SUBTITLE, kMute};
+    task.execute();
+}
+
+void GenericTasksTestsBase::triggerSetUnknownMute()
+{
+    firebolt::rialto::server::tasks::generic::SetMute task{testContext->m_context,    testContext->m_gstPlayer,
+                                                           testContext->m_gstWrapper, testContext->m_glibWrapper,
+                                                           MediaSourceType::UNKNOWN,  kMute};
     task.execute();
 }
 
@@ -3001,7 +3039,8 @@ void GenericTasksTestsBase::triggerSetSourcePosition(firebolt::rialto::MediaSour
                                                                      sourceType,
                                                                      kPosition,
                                                                      kResetTime,
-                                                                     kAppliedRate};
+                                                                     kAppliedRate,
+                                                                     kStopPosition};
     task.execute();
 }
 
@@ -3014,6 +3053,7 @@ void GenericTasksTestsBase::checkInitialPositionSet(firebolt::rialto::MediaSourc
     EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].position, kPosition);
     EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].resetTime, kResetTime);
     EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].appliedRate, kAppliedRate);
+    EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].stopPosition, kStopPosition);
 }
 
 void GenericTasksTestsBase::checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType)

@@ -90,6 +90,7 @@ constexpr double kPosition{1234};
 constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
 const std::vector<std::string> kSupportedProperties{"immediate-output", "testProp2"};
+constexpr uint64_t kStopPosition{452345};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -1501,14 +1502,14 @@ void MediaPipelineTestMethods::shouldSetSourcePosition()
     EXPECT_CALL(*m_mediaPipelineModuleMock,
                 setSourcePosition(_,
                                   setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition, kResetTime,
-                                                                  kAppliedRate),
+                                                                  kAppliedRate, kStopPosition),
                                   _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
 void MediaPipelineTestMethods::setSourcePosition()
 {
-    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime, kAppliedRate));
+    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime, kAppliedRate, kStopPosition));
 }
 
 void MediaPipelineTestMethods::shouldFailToSetSourcePosition()
@@ -1516,14 +1517,14 @@ void MediaPipelineTestMethods::shouldFailToSetSourcePosition()
     EXPECT_CALL(*m_mediaPipelineModuleMock,
                 setSourcePosition(_,
                                   setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition, kResetTime,
-                                                                  kAppliedRate),
+                                                                  kAppliedRate, kStopPosition),
                                   _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
 }
 
 void MediaPipelineTestMethods::setSourcePositionFailure()
 {
-    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime, kAppliedRate));
+    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime, kAppliedRate, kStopPosition));
 }
 
 void MediaPipelineTestMethods::shouldProcessAudioGap()

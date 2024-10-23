@@ -444,7 +444,7 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
 {
-    GstIterator *it = m_gstWrapper->gstBinIterateElements(GST_BIN(m_context.pipeline));
+    GstIterator *it = m_gstWrapper->gstBinIterateRecurse(GST_BIN(m_context.pipeline));
     GValue item = G_VALUE_INIT;
     gboolean done = FALSE;
 
@@ -473,7 +473,7 @@ GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
                 {
                     m_glibWrapper->gValueUnset(&item);
                     m_gstWrapper->gstIteratorFree(it);
-                    return element;
+                    return GST_ELEMENT(m_gstWrapper->gstObjectRef(element));
                 }
             }
 
@@ -500,7 +500,7 @@ GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
 
 GstElement *GstGenericPlayer::getParser(const MediaSourceType &mediaSourceType)
 {
-    GstIterator *it = m_gstWrapper->gstBinIterateElements(GST_BIN(m_context.pipeline));
+    GstIterator *it = m_gstWrapper->gstBinIterateRecurse(GST_BIN(m_context.pipeline));
     GValue item = G_VALUE_INIT;
     gboolean done = FALSE;
 
@@ -529,7 +529,7 @@ GstElement *GstGenericPlayer::getParser(const MediaSourceType &mediaSourceType)
                 {
                     m_glibWrapper->gValueUnset(&item);
                     m_gstWrapper->gstIteratorFree(it);
-                    return element;
+                    return GST_ELEMENT(m_gstWrapper->gstObjectRef(element));
                 }
             }
 
@@ -868,14 +868,14 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         // Sending initial sample not needed
         return;
     }
-    for (const auto &[position, resetTime, appliedRate] : initialPosition->second)
+    for (const auto &[position, resetTime, appliedRate, stopPosition] : initialPosition->second)
     {
         GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
         RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
         GstSegment *segment{m_gstWrapper->gstSegmentNew()};
         m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
         if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, seekFlag,
-                                            GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
+                                            GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_SET, stopPosition, nullptr))
         {
             RIALTO_SERVER_LOG_WARN("Segment seek failed.");
             m_gstWrapper->gstSegmentFree(segment);
@@ -1280,7 +1280,6 @@ bool GstGenericPlayer::setBufferingLimit()
         std::unique_lock lock{m_context.propertyMutex};
         if (!m_context.pendingBufferingLimit.has_value())
         {
-            RIALTO_SERVER_LOG_DEBUG("Pending limit-buffering-ms, decoder is NULL");
             return false;
         }
         bufferingLimit = static_cast<guint>(m_context.pendingBufferingLimit.value());
@@ -1305,6 +1304,10 @@ bool GstGenericPlayer::setBufferingLimit()
         std::unique_lock lock{m_context.propertyMutex};
         m_context.pendingBufferingLimit.reset();
     }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Pending limit-buffering-ms, decoder is NULL");
+    }
     return result;
 }
 
@@ -1316,10 +1319,15 @@ bool GstGenericPlayer::setUseBuffering()
         if (m_context.playbackGroup.m_curAudioDecodeBin)
         {
             gboolean useBufferingGboolean{m_context.pendingUseBuffering.value() ? TRUE : FALSE};
+            RIALTO_SERVER_LOG_DEBUG("Set use-buffering to %d", useBufferingGboolean);
             m_glibWrapper->gObjectSet(m_context.playbackGroup.m_curAudioDecodeBin, "use-buffering",
                                       useBufferingGboolean, nullptr);
             m_context.pendingUseBuffering.reset();
             return true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending use-buffering, decodebin is NULL");
         }
     }
     return false;
@@ -1466,7 +1474,7 @@ void GstGenericPlayer::setMute(const MediaSourceType &mediaSourceType, bool mute
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetMute(m_context, mediaSourceType, mute));
+        m_workerThread->enqueueTask(m_taskFactory->createSetMute(m_context, *this, mediaSourceType, mute));
     }
 }
 
@@ -1651,12 +1659,12 @@ void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetT
 }
 
 void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime,
-                                         double appliedRate)
+                                         double appliedRate, uint64_t stopPosition)
 {
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, *this, mediaSourceType, position,
-                                                                           resetTime, appliedRate));
+                                                                           resetTime, appliedRate, stopPosition));
     }
 }
 

@@ -235,7 +235,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetVolume)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetMute)
 {
     constexpr bool kMute{false};
-    auto task = m_sut.createSetMute(m_context, firebolt::rialto::MediaSourceType::AUDIO, kMute);
+    auto task = m_sut.createSetMute(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, kMute);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetMute &>(*task));
 }
@@ -325,8 +325,8 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateFlush)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSourcePosition)
 {
-    auto task =
-        m_sut.createSetSourcePosition(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, 0, false, 2.0);
+    auto task = m_sut.createSetSourcePosition(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, 0,
+                                              false, 2.0, 324);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetSourcePosition &>(*task));
 }

@@ -575,7 +575,7 @@ TEST_F(GstGenericPlayerTest, shouldMute)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetMute(_, MediaSourceType::AUDIO, _)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createSetMute(_, _, MediaSourceType::AUDIO, _)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->setMute(MediaSourceType::AUDIO, true);
 }
@@ -748,7 +748,7 @@ TEST_F(GstGenericPlayerTest, shouldGetStreamSyncModeWithIteratorResync)
     const int32_t kStreamSyncModeValue{1};
     const std::string kPropertyStr{"stream-sync-mode"};
 
-    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(_)).WillOnce(Return(&m_it));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(_, _))
         .WillOnce(Return(GST_ITERATOR_RESYNC))
         .WillOnce(Return(GST_ITERATOR_OK));
@@ -758,6 +758,7 @@ TEST_F(GstGenericPlayerTest, shouldGetStreamSyncModeWithIteratorResync)
     EXPECT_CALL(*m_gstWrapperMock,
                 gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
         .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element)).WillOnce(Return(m_element));
     EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(_));
 
@@ -814,13 +815,14 @@ TEST_F(GstGenericPlayerTest, shouldSetSourcePosition)
     constexpr int64_t kPosition{1234};
     constexpr bool kResetTime{true};
     constexpr double kAppliedRate{2.0};
+    constexpr uint64_t kStopPosition{2352};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock,
-                createSetSourcePosition(_, _, MediaSourceType::AUDIO, kPosition, kResetTime, kAppliedRate))
+    EXPECT_CALL(m_taskFactoryMock, createSetSourcePosition(_, _, MediaSourceType::AUDIO, kPosition, kResetTime,
+                                                           kAppliedRate, kStopPosition))
         .WillOnce(Return(ByMove(std::move(task))));
 
-    m_sut->setSourcePosition(MediaSourceType::AUDIO, kPosition, kResetTime, kAppliedRate);
+    m_sut->setSourcePosition(MediaSourceType::AUDIO, kPosition, kResetTime, kAppliedRate, kStopPosition);
 }
 
 TEST_F(GstGenericPlayerTest, shouldProcessAudioGap)
@@ -893,7 +895,7 @@ TEST_F(GstGenericPlayerTest, shouldGetBufferingLimitWithIteratorResync)
     const uint32_t kBufferingLimitValue{1};
     const std::string kPropertyStr{"limit-buffering-ms"};
 
-    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateElements(_)).WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(_)).WillOnce(Return(&m_it));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(_, _))
         .WillOnce(Return(GST_ITERATOR_RESYNC))
         .WillOnce(Return(GST_ITERATOR_OK));
@@ -903,6 +905,7 @@ TEST_F(GstGenericPlayerTest, shouldGetBufferingLimitWithIteratorResync)
     EXPECT_CALL(*m_gstWrapperMock,
                 gstElementFactoryListIsType(_, (GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
         .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element)).WillOnce(Return(m_element));
     EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(_));
 

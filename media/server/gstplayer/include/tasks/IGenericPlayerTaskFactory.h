@@ -279,12 +279,13 @@ public:
      * @brief Creates a SetMute task.
      *
      * @param[in] context         : The GstGenericPlayer context
+     * @param[in] player          : The GstGenericPlayer instance
      * @param[in] mediaSourceType : The media source type to set mute
      * @param[in] mute            : The mute state to be set
      *
      * @retval the new SetMute task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context,
+    virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                        const MediaSourceType &mediaSourceType, bool mute) const = 0;
 
     /**
@@ -436,6 +437,7 @@ public:
      * @param[in] position  : The new source position
      * @param[in] resetTime : True if time should be reset
      * @param[in] appliedRate : The applied rate after seek
+     * @param[in] stopPosition : The position of last pushed buffer
      *
      * @retval the new SetSourcePosition task instance.
      */
@@ -443,7 +445,7 @@ public:
                                                                  IGstGenericPlayerPrivate &player,
                                                                  const firebolt::rialto::MediaSourceType &type,
                                                                  std::int64_t position, bool resetTime,
-                                                                 double appliedRate) const = 0;
+                                                                 double appliedRate, uint64_t stopPosition) const = 0;
 
     /**
      * @brief Creates a ProcessAudioGap task.
