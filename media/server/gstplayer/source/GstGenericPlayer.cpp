@@ -1455,9 +1455,35 @@ void GstGenericPlayer::setVolume(double targetVolume, uint32_t volumeDuration, f
         m_workerThread->enqueueTask(
             m_taskFactory->createSetVolume(m_context, *this, targetVolume, volumeDuration, easeType));
     }
+    if (volumeDuration != 0)
+    {
+        // Set fade-volume if the duration is not zero
+        GstElement *sink{getSink(MediaSourceType::AUDIO)};
+        if (sink)
+        {
+            // rmr to convert targetVolume to appropriate scale
+            g_object_set(sink, "fade-volume", targetVolume * 100.0, NULL); 
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set fade-volume property, sink is NULL");
+        }
+    }
+    else
+    {
+       if (m_context.pipeline)
+        {
+            m_gstWrapper->gstStreamVolumeSetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR, targetVolume);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set volume, pipeline is NULL");
+        }
+    }
 }
 
-bool GstGenericPlayer::getVolume(double &volume)
+
+bool GstGenericPlayer::getVolume(double &currentVolume)
 {
     // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
     // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
@@ -1465,9 +1491,29 @@ bool GstGenericPlayer::getVolume(double &volume)
     {
         return false;
     }
-    volume =
-        m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR);
-    return true;
+    // Get fade volume
+    GstElement *sink{getSink(MediaSourceType::AUDIO)};
+    if (sink)
+    {
+        GParamSpec *paramSpec = m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "fade-volume");
+        if (paramSpec)
+        {
+            gdouble fadeVolume;
+            g_object_get(sink, "fade-volume", &fadeVolume, NULL);
+            currentVolume = fadeVolume / 100.0; // Convert fade-volume to double
+        }
+        else
+        {
+            // Fallback to the current volume
+            currentVolume = m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR);
+        }
+        return true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set immediate-output property, sink is NULL");
+        return false;
+    }
 }
 
 void GstGenericPlayer::setMute(const MediaSourceType &mediaSourceType, bool mute)
