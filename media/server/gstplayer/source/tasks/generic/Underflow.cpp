@@ -23,12 +23,14 @@
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
 #include "tasks/generic/Pause.h"
+#include "GstSrc.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
-Underflow::Underflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
+Underflow::Underflow(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, 
+                     IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
                      bool underflowEnabled, MediaSourceType sourceType)
-    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_underflowEnabled{underflowEnabled},
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_player{player}, m_gstPlayerClient{client}, m_underflowEnabled{underflowEnabled},
       m_sourceType{sourceType}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Underflow");
@@ -38,6 +40,33 @@ Underflow::~Underflow()
 {
     RIALTO_SERVER_LOG_DEBUG("Underflow finished");
 }
+
+// void Underflow::execute() const
+// {
+//     RIALTO_SERVER_LOG_DEBUG("Executing Underflow for %s source", common::convertMediaSourceType(m_sourceType));
+//     if (!m_underflowEnabled)
+//     {
+//         return;
+//     }
+// //  check in gstreamer if there are any more frames, if there aren't create a timer that triggers underflow check 
+
+//     auto elem = m_context.streamInfo.find(m_sourceType);
+//     if (elem != m_context.streamInfo.end())
+//     {
+//         StreamInfo &streamInfo = elem->second;
+//         if (streamInfo.underflowOccured)
+//         {
+//             return;
+//         }
+
+//         streamInfo.underflowOccured = true;
+
+//         if (m_gstPlayerClient)
+//         {
+//             m_gstPlayerClient->notifyBufferUnderflow(m_sourceType);
+//         }
+//     }
+// }
 
 void Underflow::execute() const
 {
@@ -56,13 +85,30 @@ void Underflow::execute() const
             return;
         }
 
-        streamInfo.underflowOccured = true;
+        // We need to check if there are any more frames in the appsrc element
+        gsize bufferSize = m_gstWrapper->gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(streamInfo.appSrc));
 
-        if (m_gstPlayerClient)
+        if (bufferSize == 0)
         {
-            m_gstPlayerClient->notifyBufferUnderflow(m_sourceType);
+            streamInfo.underflowOccured = true;
+
+            if (m_gstPlayerClient)
+            {
+                m_gstPlayerClient->notifyBufferUnderflow(m_sourceType);
+            }
+        }
+        else
+        {    
+            // create a timer if the buffer size == 0 to recheck underflow after a delay
+            RIALTO_SERVER_LOG_DEBUG("Buffer size is not zero, setting up a timer to re-check underflow.");
+            g_timeout_add_seconds(1, [](gpointer data) -> gboolean {
+                Underflow *underflow = static_cast<Underflow *>(data);
+                underflow->execute();
+                return G_SOURCE_REMOVE;
+            }, const_cast<Underflow *>(this));
         }
     }
 }
+
 
 } // namespace firebolt::rialto::server::tasks::generic

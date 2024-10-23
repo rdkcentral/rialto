@@ -2183,7 +2183,7 @@ void GenericTasksTestsBase::setUnderflowEnabled(bool isUnderflowEnabled)
 void GenericTasksTestsBase::triggerVideoUnderflow()
 {
     firebolt::rialto::MediaSourceType sourceType{firebolt::rialto::MediaSourceType::VIDEO};
-    firebolt::rialto::server::tasks::generic::Underflow task{testContext->m_context, testContext->m_gstPlayer,
+    firebolt::rialto::server::tasks::generic::Underflow task{testContext->m_context, testContext->m_gstWrapper, testContext->m_gstPlayer,
                                                              &testContext->m_gstPlayerClient,
                                                              testContext->m_underflowEnabled, sourceType};
     task.execute();

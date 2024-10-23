@@ -24,6 +24,7 @@
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
+#include "IGstWrapper.h"
 #include <gst/gst.h>
 
 namespace firebolt::rialto::server::tasks::generic
@@ -31,13 +32,14 @@ namespace firebolt::rialto::server::tasks::generic
 class Underflow : public IPlayerTask
 {
 public:
-    Underflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
+    Underflow(GenericPlayerContext &context,std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
               bool underflowEnabled, MediaSourceType sourceType);
     ~Underflow() override;
     void execute() const override;
 
 private:
     GenericPlayerContext &m_context;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
     bool m_underflowEnabled;
