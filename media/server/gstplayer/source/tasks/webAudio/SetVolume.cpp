@@ -38,8 +38,7 @@ SetVolume::~SetVolume()
 
 void SetVolume::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing SetVolume");
-    m_gstWrapper->gstStreamVolumeSetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR,
-                                           m_volume);
+    RIALTO_SERVER_LOG_DEBUG("WebAudio Executing SetVolume %f", m_volume);
+    m_gstWrapper->gstStreamVolumeSetVolume(m_context.gstVolumeElement, GST_STREAM_VOLUME_FORMAT_LINEAR, m_volume);
 }
 } // namespace firebolt::rialto::server::tasks::webaudio
