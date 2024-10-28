@@ -1457,7 +1457,6 @@ void GstGenericPlayer::setVolume(double targetVolume, uint32_t volumeDuration, f
     }
 }
 
-// can definetly make this code cleaner!!!!!!!
 bool GstGenericPlayer::getVolume(double &currentVolume)
 {
     // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
@@ -1466,36 +1465,35 @@ bool GstGenericPlayer::getVolume(double &currentVolume)
     {
         return false;
     }
-    // Get fade volume
-    GstElement *sink{getSink(MediaSourceType::AUDIO)};
-    if (sink)
-    { 
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "fade-volume"))
-        {
-            gdouble fadeVolume;
-            m_glibWrapper->gObjectGet(sink, "fade-volume", &fadeVolume, NULL);
 
-            if(fadeVolume < 0)
-            {
-                currentVolume = m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR);
-            }
-            else
-            {
-                currentVolume = fadeVolume / 100.0; // Convert fade-volume to double
-            } 
-        }
-        else
-        {
-            // Fallback to the current volume
-            currentVolume = m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR);
-        }
-        return true;
-    }
-    else
+    GstElement *sink{getSink(MediaSourceType::AUDIO)};
+    if (!sink)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get fade volume property, sink is NULL");
         return false;
     }
+
+    if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "fade-volume"))
+    {
+        gdouble fadeVolume;
+        m_glibWrapper->gObjectGet(sink, "fade-volume", &fadeVolume, NULL);
+        if (fadeVolume < 0)
+        {
+            currentVolume = m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline),
+                                                                   GST_STREAM_VOLUME_FORMAT_LINEAR);
+        }
+        else
+        {
+            currentVolume = fadeVolume / 100.0;
+        }
+        m_gstWrapper->gstObjectUnref(sink);
+    }
+    else
+    {
+        currentVolume = m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline),
+                                                               GST_STREAM_VOLUME_FORMAT_LINEAR);
+    }
+    return true;
 }
 
 void GstGenericPlayer::setMute(const MediaSourceType &mediaSourceType, bool mute)
