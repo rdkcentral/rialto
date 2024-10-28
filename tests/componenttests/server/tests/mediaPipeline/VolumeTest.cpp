@@ -79,8 +79,15 @@ public:
 
     void willGetVolume()
     {
+        mockAudioSink();
+
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("fade-volume"))).WillOnce(Return(nullptr));
+
         EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR))
             .WillOnce(Return(kVolume));
+
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink))
+            .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     void setVolumeNormal()

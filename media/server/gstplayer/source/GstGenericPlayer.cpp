@@ -1486,13 +1486,13 @@ bool GstGenericPlayer::getVolume(double &currentVolume)
         {
             currentVolume = fadeVolume / 100.0;
         }
-        m_gstWrapper->gstObjectUnref(sink);
     }
     else
     {
         currentVolume = m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline),
                                                                GST_STREAM_VOLUME_FORMAT_LINEAR);
     }
+    m_gstWrapper->gstObjectUnref(sink);
     return true;
 }
 

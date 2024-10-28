@@ -546,14 +546,16 @@ TEST_F(GstGenericPlayerTest, shouldGetVolumeWithNonNegativeFadeVolume)
 TEST_F(GstGenericPlayerTest, shouldGetVolumeWithoutFadeVolumeProperty)
 {
     setPipelineState(GST_STATE_PLAYING);
-    GstElement *sink = m_element;
 
-    expectGetSink(kAudioSinkStr, sink);
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), StrEq("fade-volume")))
+    expectGetSink(kAudioSinkStr, m_element);
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_element), StrEq("fade-volume")))
         .WillOnce(Return(nullptr));
 
     constexpr double kVolume{0.5};
     EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR)).WillOnce(Return(kVolume));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
 
     double currentVolume;
     EXPECT_TRUE(m_sut->getVolume(currentVolume));
