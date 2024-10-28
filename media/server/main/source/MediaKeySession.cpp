@@ -152,7 +152,7 @@ void MediaKeySession::getChallenge()
     {
         uint32_t challengeSize = 0;
         MediaKeyErrorStatus status = m_ocdmSession->getChallengeData(m_kIsLDL, nullptr, &challengeSize);
-        if (MediaKeyErrorStatus::OK != status || challengeSize == 0)
+        if (challengeSize == 0)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to get the challenge data size, no onLicenseRequest will be generated");
             return;

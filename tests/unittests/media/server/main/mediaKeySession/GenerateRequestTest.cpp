@@ -89,26 +89,6 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessNetflix)
 }
 
 /**
- * Test that GenerateRequest fails when get challenge data size fails
- */
-TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, FailNetflixWhenGettingChallengeDataSizeFails)
-{
-    createKeySession(kNetflixKeySystem);
-
-    EXPECT_CALL(*m_ocdmSessionMock,
-                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
-        .WillOnce(Return(MediaKeyErrorStatus::OK));
-    mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, nullptrMatcher(), _))
-        .WillOnce(Return(MediaKeyErrorStatus::FAIL));
-
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData));
-
-    // Close ocdm before destroying
-    expectCloseKeySession(kNetflixKeySystem);
-}
-
-/**
  * Test that GenerateRequest fails when returned challenge data size is zero
  */
 TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, FailNetflixWhenChallengeDataSizeIsZero)
