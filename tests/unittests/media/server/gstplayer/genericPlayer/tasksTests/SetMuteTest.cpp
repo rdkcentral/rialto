@@ -23,8 +23,26 @@ class SetMuteTest : public GenericTasksTestsBase
 {
 };
 
-TEST_F(SetMuteTest, shouldFailToSetVideoMute)
+TEST_F(SetMuteTest, shouldFailToSetMuteForUnknownSource)
 {
+    triggerSetUnknownMute();
+}
+
+TEST_F(SetMuteTest, shouldSetVideoMute)
+{
+    shouldSetVideoMute();
+    triggerSetVideoMute();
+}
+
+TEST_F(SetMuteTest, shouldFailToSetVideoMuteNoSink)
+{
+    shouldFailToSetVideoMuteNoSink();
+    triggerSetVideoMute();
+}
+
+TEST_F(SetMuteTest, shouldFailToSetVideoMuteNoProperty)
+{
+    shouldFailToSetVideoMuteNoProperty();
     triggerSetVideoMute();
 }
 
