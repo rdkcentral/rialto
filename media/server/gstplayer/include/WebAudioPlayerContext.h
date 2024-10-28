@@ -72,7 +72,7 @@ struct WebAudioPlayerContext
     uint32_t bytesPerSample{};
 
     /**
-     * @brief Pointer to the gstremer volume element
+     * @brief Pointer to the gstreamer volume element
      */
     GstStreamVolume *gstVolumeElement{nullptr};
 };
