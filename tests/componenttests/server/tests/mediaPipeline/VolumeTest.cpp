@@ -77,7 +77,24 @@ public:
             .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
-    void willGetVolume()
+    void willGetFadeVolume()
+    {
+        mockAudioSink();
+
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("fade-volume"))).WillOnce(Return(&m_paramSpec));
+
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("fade-volume"), _))
+            .WillOnce(Invoke(
+                [](gpointer object, const gchar *first_property_name, void *val)
+                {
+                    gint *returnVal = reinterpret_cast<gint *>(val);
+                    *returnVal = 50;
+                }));
+
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink));
+    }
+
+    void willGetVolumeFromPipeline()
     {
         mockAudioSink();
 
@@ -86,8 +103,7 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR))
             .WillOnce(Return(kVolume));
 
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink))
-            .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink));
     }
 
     void setVolumeNormal()
@@ -163,25 +179,28 @@ private:
  *   Set the volume when the volume duration is zero
  *   Send SetVolumeReq and expect successful response
  *
- *  Step 6: Set volume with fade
+ *  Step 6: Get Volume from pipeline
+ *   Send GetVolumeReq and expect successful response and volume level from pipeline
+ *
+ *  Step 7: Set volume with fade
  *   Set the volume when the volume duration is more than zero
  *   Send SetVolumeReq and expect successful response
  *
- *  Step 7: Get Volume
- *   Send GetVolumeReq and expect successful response and current volume level
+ *  Step 8: Get Fade Volume
+ *   Send GetVolumeReq and expect successful response and fade volume level
  *
- *  Step 8: Remove sources
+ *  Step 9: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 9: Stop
+ *  Step 10: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 10: Destroy media session
+ *  Step 11: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -219,28 +238,32 @@ TEST_F(VolumeTest, Volume)
     willPause();
     pause();
 
-    // Step 5: Set Volume with no fade
+    // Step 5: Set volume with no fade
     willSetVolumeWhenVolumeDurationIsZero();
     setVolumeNormal();
 
-    // Step 6: Set volume with fade
+    // Step 6: Get volume from pipeline
+    willGetVolumeFromPipeline();
+    getVolume();
+
+    // Step 7: Set volume with fade
     willSetVolumeWhenVolumeDurationMoreThanZero();
     setVolumeWithFade();
 
-    // Step 7: Get Volume
-    willGetVolume();
+    // Step 8: Get fade volume
+    willGetFadeVolume();
     getVolume();
 
-    // Step 8: Remove sources
+    // Step 9: Remove sources
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 9: Stop
+    // Step 10: Stop
     willStop();
     stop();
 
-    // Step 10: Destroy media session
+    // Step 11: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

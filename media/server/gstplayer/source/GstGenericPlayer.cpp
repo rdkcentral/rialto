@@ -1467,32 +1467,32 @@ bool GstGenericPlayer::getVolume(double &currentVolume)
     }
 
     GstElement *sink{getSink(MediaSourceType::AUDIO)};
-    if (!sink)
+    if (sink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "fade-volume"))
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to get fade volume property, sink is NULL");
-        return false;
-    }
-
-    if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "fade-volume"))
-    {
-        gdouble fadeVolume;
+        gint fadeVolume{-100};
         m_glibWrapper->gObjectGet(sink, "fade-volume", &fadeVolume, NULL);
         if (fadeVolume < 0)
         {
             currentVolume = m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline),
                                                                    GST_STREAM_VOLUME_FORMAT_LINEAR);
+            RIALTO_SERVER_LOG_INFO("Fade volume is negative, using volume from pipeline: %f", currentVolume);
         }
         else
         {
-            currentVolume = fadeVolume / 100.0;
+            currentVolume = static_cast<double>(fadeVolume) / 100.0;
+            RIALTO_SERVER_LOG_INFO("Fade volume is supported: %f", currentVolume);
         }
     }
     else
     {
         currentVolume = m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline),
                                                                GST_STREAM_VOLUME_FORMAT_LINEAR);
+        RIALTO_SERVER_LOG_INFO("Fade volume is not supported, using volume from pipeline: %f", currentVolume);
     }
-    m_gstWrapper->gstObjectUnref(sink);
+
+    if (sink)
+        m_gstWrapper->gstObjectUnref(sink);
+
     return true;
 }
 
