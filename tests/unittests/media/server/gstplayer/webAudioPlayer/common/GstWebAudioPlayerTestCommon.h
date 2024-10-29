@@ -80,6 +80,7 @@ protected:
     void gstPlayerWillBeDestroyed();
     void executeTaskWhenEnqueued();
     void expectInitRialtoSrc();
+    void expectInitWorkerThread();
     void expectInitThreads();
     void expectCreatePipeline();
     void expectInitAppSrc();
@@ -93,6 +94,7 @@ protected:
     void expectMakeAutoAudioSink();
     void expectInitAutoAudioSink();
     void expectLinkElements();
+    void expectLinkElementsExceptVolume();
     void expectAddBinFailure();
     void expectLinkElementFailure();
     void expectTermPipeline();
@@ -106,6 +108,7 @@ protected:
     GstElement m_sink{};
     GstBus m_bus{};
     const uint32_t m_priority{5};
+    GstElement m_volume{};
 };
 
 #endif // GST_WEB_AUDIO_PLAYER_TEST_COMMON_H_
