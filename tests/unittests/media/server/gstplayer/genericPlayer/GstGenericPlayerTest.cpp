@@ -490,7 +490,7 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetStatsInPlayingStateIfStructIncomplet
     EXPECT_FALSE(m_sut->getStats(MediaSourceType::VIDEO, returnedRenderedFrames, returnedDroppedFrames));
 }
 
-TEST_F(GstGenericPlayerTest, shouldFailToGetFadeVolumeWhenAudioSinkIsNull)
+TEST_F(GstGenericPlayerTest, ShouldGetVolumeWhenAudioSinkIsNull)
 {
     setPipelineState(GST_STATE_PLAYING);
 
