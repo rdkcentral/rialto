@@ -41,33 +41,6 @@ Underflow::~Underflow()
     RIALTO_SERVER_LOG_DEBUG("Underflow finished");
 }
 
-// void Underflow::execute() const
-// {
-//     RIALTO_SERVER_LOG_DEBUG("Executing Underflow for %s source", common::convertMediaSourceType(m_sourceType));
-//     if (!m_underflowEnabled)
-//     {
-//         return;
-//     }
-// //  check in gstreamer if there are any more frames, if there aren't create a timer that triggers underflow check 
-
-//     auto elem = m_context.streamInfo.find(m_sourceType);
-//     if (elem != m_context.streamInfo.end())
-//     {
-//         StreamInfo &streamInfo = elem->second;
-//         if (streamInfo.underflowOccured)
-//         {
-//             return;
-//         }
-
-//         streamInfo.underflowOccured = true;
-
-//         if (m_gstPlayerClient)
-//         {
-//             m_gstPlayerClient->notifyBufferUnderflow(m_sourceType);
-//         }
-//     }
-// }
-
 void Underflow::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing Underflow for %s source", common::convertMediaSourceType(m_sourceType));
@@ -87,7 +60,7 @@ void Underflow::execute() const
 
         // We need to check if there are any more frames in the appsrc element
         gsize bufferSize = m_gstWrapper->gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(streamInfo.appSrc));
-
+        RIALTO_SERVER_LOG_ERROR("Buffer size: %d", bufferSize);
         if (bufferSize == 0)
         {
             streamInfo.underflowOccured = true;
@@ -96,11 +69,12 @@ void Underflow::execute() const
             {
                 m_gstPlayerClient->notifyBufferUnderflow(m_sourceType);
             }
+            RIALTO_SERVER_LOG_ERROR("Buffer size is zero, underflow occured.");
         }
         else
         {    
             // create a timer if the buffer size == 0 to recheck underflow after a delay
-            RIALTO_SERVER_LOG_DEBUG("Buffer size is not zero, setting up a timer to re-check underflow.");
+            RIALTO_SERVER_LOG_ERROR("Buffer size is not zero, setting up a timer to re-check underflow.");
             g_timeout_add_seconds(1, [](gpointer data) -> gboolean {
                 Underflow *underflow = static_cast<Underflow *>(data);
                 underflow->execute();
@@ -109,6 +83,5 @@ void Underflow::execute() const
         }
     }
 }
-
 
 } // namespace firebolt::rialto::server::tasks::generic
