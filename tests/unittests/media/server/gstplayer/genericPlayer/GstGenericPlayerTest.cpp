@@ -490,6 +490,52 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetStatsInPlayingStateIfStructIncomplet
     EXPECT_FALSE(m_sut->getStats(MediaSourceType::VIDEO, returnedRenderedFrames, returnedDroppedFrames));
 }
 
+TEST_F(GstGenericPlayerTest, ShouldGetVolumeWhenAudioSinkIsNull)
+{
+    setPipelineState(GST_STATE_PLAYING);
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kAudioSinkStr), _)).Times(1);
+
+    constexpr double kVolume{0.5};
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR)).WillOnce(Return(kVolume));
+
+    double currentVolume;
+    EXPECT_TRUE(m_sut->getVolume(currentVolume));
+}
+
+TEST_F(GstGenericPlayerTest, shouldGetVolumeWithNegativeFadeVolume)
+{
+    setPipelineState(GST_STATE_PLAYING);
+    const gint kNegativeFadeVolume{-100};
+    const std::string kPropertyStr{"fade-volume"};
+
+    expectGetSink(kAudioSinkStr, m_element);
+    willGetElementProperty(kPropertyStr, kNegativeFadeVolume);
+
+    constexpr double kVolume{0.5};
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR)).WillOnce(Return(kVolume));
+
+    double currentVolume;
+    EXPECT_TRUE(m_sut->getVolume(currentVolume));
+    EXPECT_EQ(currentVolume, kVolume);
+}
+
+TEST_F(GstGenericPlayerTest, shouldGetVolumeWithPositiveFadeVolume)
+{
+    setPipelineState(GST_STATE_PLAYING);
+
+    const gint kFadeVolume{70};
+    const std::string kPropertyStr{"fade-volume"};
+
+    expectGetSink(kAudioSinkStr, m_element);
+
+    willGetElementProperty(kPropertyStr, kFadeVolume);
+
+    double currentVolume;
+    EXPECT_TRUE(m_sut->getVolume(currentVolume));
+    EXPECT_DOUBLE_EQ(currentVolume, kFadeVolume / 100.0);
+}
+
 TEST_F(GstGenericPlayerTest, shouldRenderFrame)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
@@ -497,15 +543,6 @@ TEST_F(GstGenericPlayerTest, shouldRenderFrame)
     EXPECT_CALL(m_taskFactoryMock, createRenderFrame(_, _)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->renderFrame();
-}
-
-TEST_F(GstGenericPlayerTest, shouldReturnVolume)
-{
-    constexpr double kVolume{0.7};
-    double resultVolume{};
-    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR)).WillOnce(Return(kVolume));
-    EXPECT_TRUE(m_sut->getVolume(resultVolume));
-    EXPECT_EQ(resultVolume, kVolume);
 }
 
 TEST_F(GstGenericPlayerTest, shouldFailToReturnVideoMute)
