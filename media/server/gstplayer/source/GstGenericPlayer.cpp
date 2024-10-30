@@ -1457,7 +1457,7 @@ void GstGenericPlayer::setVolume(double targetVolume, uint32_t volumeDuration, f
     }
 }
 
-bool GstGenericPlayer::getVolume(double &volume)
+bool GstGenericPlayer::getVolume(double &currentVolume)
 {
     // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
     // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
@@ -1465,8 +1465,34 @@ bool GstGenericPlayer::getVolume(double &volume)
     {
         return false;
     }
-    volume =
-        m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR);
+
+    GstElement *sink{getSink(MediaSourceType::AUDIO)};
+    if (sink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "fade-volume"))
+    {
+        gint fadeVolume{-100};
+        m_glibWrapper->gObjectGet(sink, "fade-volume", &fadeVolume, NULL);
+        if (fadeVolume < 0)
+        {
+            currentVolume = m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline),
+                                                                   GST_STREAM_VOLUME_FORMAT_LINEAR);
+            RIALTO_SERVER_LOG_INFO("Fade volume is negative, using volume from pipeline: %f", currentVolume);
+        }
+        else
+        {
+            currentVolume = static_cast<double>(fadeVolume) / 100.0;
+            RIALTO_SERVER_LOG_INFO("Fade volume is supported: %f", currentVolume);
+        }
+    }
+    else
+    {
+        currentVolume = m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline),
+                                                               GST_STREAM_VOLUME_FORMAT_LINEAR);
+        RIALTO_SERVER_LOG_INFO("Fade volume is not supported, using volume from pipeline: %f", currentVolume);
+    }
+
+    if (sink)
+        m_gstWrapper->gstObjectUnref(sink);
+
     return true;
 }
 

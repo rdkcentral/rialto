@@ -44,7 +44,7 @@ constexpr int kAllLogs{RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR | RIA
                        RIALTO_DEBUG_LEVEL_MILESTONE | RIALTO_DEBUG_LEVEL_INFO | RIALTO_DEBUG_LEVEL_DEBUG};
 constexpr double kPlaybackRate{0.5};
 constexpr std::int64_t kCurrentPosition{1234};
-constexpr double kVolume{10};
+constexpr double kVolume{0.5};
 constexpr uint32_t kNoVolumeDuration{0};
 constexpr uint32_t kVolumeDuration{10};
 constexpr firebolt::rialto::EaseType kEaseType{firebolt::rialto::EaseType::EASE_LINEAR};
