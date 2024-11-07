@@ -23,10 +23,11 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-Flush::Flush(GenericPlayerContext &context, IGstGenericPlayerClient *client,
+Flush::Flush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
              std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, const MediaSourceType &type,
              bool resetTime)
-    : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}, m_resetTime{resetTime}
+    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type},
+      m_resetTime{resetTime}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Flush");
 }
@@ -73,6 +74,7 @@ void Flush::execute() const
 
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
     {
+        m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
         // Flush source
         GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
         if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
