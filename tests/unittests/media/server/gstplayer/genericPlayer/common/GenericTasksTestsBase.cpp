@@ -668,7 +668,6 @@ void GenericTasksTestsBase::shouldSetupAudioElementAmlhalasinkWhenNoVideo()
     expectSetupAudioSinkElement();
 }
 
-
 void GenericTasksTestsBase::shouldSetupAudioElementBrcmAudioSink()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
