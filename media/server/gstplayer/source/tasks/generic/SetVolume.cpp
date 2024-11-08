@@ -102,6 +102,7 @@ void SetVolume::execute() const
         RIALTO_SERVER_LOG_DEBUG("Fade String: %s", fadeStr);
 
         m_glibWrapper->gObjectSet(audioSink, "audio-fade", fadeStr, nullptr);
+        m_context.fadeVolumeSet = true;
     }
     else if (m_rdkGstreamerUtilsWrapper->isSocAudioFadeSupported())
     {

@@ -1467,7 +1467,8 @@ bool GstGenericPlayer::getVolume(double &currentVolume)
     }
 
     GstElement *sink{getSink(MediaSourceType::AUDIO)};
-    if (sink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "fade-volume"))
+    if (m_context.fadeVolumeSet && sink &&
+        m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "fade-volume"))
     {
         gint fadeVolume{-100};
         m_glibWrapper->gObjectGet(sink, "fade-volume", &fadeVolume, NULL);
