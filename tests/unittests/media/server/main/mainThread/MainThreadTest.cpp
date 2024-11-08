@@ -44,6 +44,13 @@ protected:
         m_mainThread->enqueueTaskAndWait(clientId, task);
     }
 
+    void enqueuePriorityTaskAndWaitOnDummyMock(uint32_t clientId, const std::shared_ptr<DummyMock> &dummyMock)
+    {
+        auto task = [&, dummyMock]() { dummyMock->mockMethod(); };
+
+        m_mainThread->enqueuePriorityTaskAndWait(clientId, task);
+    }
+
     void enqueueTaskOnDummyMock(uint32_t clientId, const std::shared_ptr<DummyMock> &dummyMock)
     {
         auto task = [&, dummyMock]() { dummyMock->mockMethod(); };
@@ -100,6 +107,7 @@ TEST_F(MainThreadTests, MultipleClients)
     uint32_t clientId1 = m_mainThread->registerClient();
     uint32_t clientId2 = m_mainThread->registerClient();
     uint32_t clientId3 = m_mainThread->registerClient();
+    uint32_t clientId4 = m_mainThread->registerClient();
 
     // Test that the tasks are called in the right order
     InSequence s;
@@ -107,13 +115,16 @@ TEST_F(MainThreadTests, MultipleClients)
     std::shared_ptr<DummyMock> dummyMock1 = std::make_shared<DummyMock>();
     std::shared_ptr<DummyMock> dummyMock2 = std::make_shared<DummyMock>();
     std::shared_ptr<DummyMock> dummyMock3 = std::make_shared<DummyMock>();
+    std::shared_ptr<DummyMock> dummyMock4 = std::make_shared<DummyMock>();
     EXPECT_CALL(*dummyMock2, mockMethod());
     EXPECT_CALL(*dummyMock1, mockMethod());
     EXPECT_CALL(*dummyMock3, mockMethod());
+    EXPECT_CALL(*dummyMock4, mockMethod());
 
     enqueueTaskOnDummyMock(clientId2, dummyMock2);
     enqueueTaskOnDummyMock(clientId1, dummyMock1);
     enqueueTaskAndWaitOnDummyMock(clientId3, dummyMock3);
+    enqueuePriorityTaskAndWaitOnDummyMock(clientId4, dummyMock4);
 
     unregisterClient(clientId3);
     unregisterClient(clientId1);
@@ -130,6 +141,7 @@ TEST_F(MainThreadTests, IgnoreUnregisteredClients)
     uint32_t clientId1 = m_mainThread->registerClient();
     uint32_t clientId2 = m_mainThread->registerClient();
     uint32_t clientId3 = m_mainThread->registerClient();
+    uint32_t clientId4 = m_mainThread->registerClient();
 
     unregisterClient(clientId3);
     unregisterClient(clientId1);
@@ -137,11 +149,13 @@ TEST_F(MainThreadTests, IgnoreUnregisteredClients)
     std::shared_ptr<DummyMock> dummyMock1 = std::make_shared<DummyMock>();
     std::shared_ptr<DummyMock> dummyMock2 = std::make_shared<DummyMock>();
     std::shared_ptr<DummyMock> dummyMock3 = std::make_shared<DummyMock>();
+    std::shared_ptr<DummyMock> dummyMock4 = std::make_shared<DummyMock>();
     EXPECT_CALL(*dummyMock2, mockMethod());
 
     enqueueTaskOnDummyMock(clientId2, dummyMock2);
     enqueueTaskOnDummyMock(clientId1, dummyMock1);
     enqueueTaskAndWaitOnDummyMock(clientId3, dummyMock3);
+    enqueuePriorityTaskAndWaitOnDummyMock(clientId4, dummyMock4);
 
     unregisterClient(clientId2);
 }

@@ -23,10 +23,10 @@
 #include "IMainThread.h"
 #include <atomic>
 #include <condition_variable>
+#include <deque>
 #include <map>
 #include <memory>
 #include <mutex>
-#include <queue>
 #include <set>
 #include <string>
 #include <thread>
@@ -70,6 +70,7 @@ public:
 
     void enqueueTask(uint32_t clientId, Task task) override;
     void enqueueTaskAndWait(uint32_t clientId, Task task) override;
+    void enqueuePriorityTaskAndWait(uint32_t clientId, Task task) override;
 
 private:
     /**
@@ -118,7 +119,7 @@ private:
     /**
      * @brief The queue of tasks and there infomation.
      */
-    std::queue<std::shared_ptr<TaskInfo>> m_taskQueue;
+    std::deque<std::shared_ptr<TaskInfo>> m_taskQueue;
 
     /**
      * @brief The main thread objects client id, for registering new clients.

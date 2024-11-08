@@ -62,7 +62,7 @@ TEST_F(RialtoServerMediaPipelineTextTrackIdentifierTest, GetTextTrackIdentifierS
     std::string textTrackIdentifier;
     loadGstPlayer();
 
-    mainThreadWillEnqueueTaskAndWait();
+    mainThreadWillEnqueuePriorityTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getTextTrackIdentifier(_))
         .WillOnce(DoAll(SetArgReferee<0>(m_kTextTrackIdentifier), Return(true)));
     EXPECT_TRUE(m_mediaPipeline->getTextTrackIdentifier(textTrackIdentifier));
@@ -77,7 +77,7 @@ TEST_F(RialtoServerMediaPipelineTextTrackIdentifierTest, GetTextTrackIdentifierF
     std::string textTrackIdentifier;
     loadGstPlayer();
 
-    mainThreadWillEnqueueTaskAndWait();
+    mainThreadWillEnqueuePriorityTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getTextTrackIdentifier(_)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getTextTrackIdentifier(textTrackIdentifier));
 }
@@ -88,6 +88,6 @@ TEST_F(RialtoServerMediaPipelineTextTrackIdentifierTest, GetTextTrackIdentifierF
 TEST_F(RialtoServerMediaPipelineTextTrackIdentifierTest, GetTextTrackIdentifierNoGstPlayerFailure)
 {
     std::string textTrackIdentifier;
-    mainThreadWillEnqueueTaskAndWait();
+    mainThreadWillEnqueuePriorityTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->getTextTrackIdentifier(textTrackIdentifier));
 }
