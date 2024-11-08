@@ -434,8 +434,6 @@ void GenericTasksTestsBase::expectSetupVideoDecoderElement()
 
 void GenericTasksTestsBase::expectSetupAudioSinkElement()
 {
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstElementFactoryListIsType(testContext->m_elementFactory,
@@ -572,6 +570,8 @@ void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingLowLatency()
 
     // This is the extra EXPECT caused by setting pendingLowLatency...
     EXPECT_CALL(testContext->m_gstPlayer, setLowLatency());
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     expectSetupAudioSinkElement();
 }
 
@@ -583,6 +583,8 @@ void GenericTasksTestsBase::shouldSetupAudioSinkElementWithPendingSync()
 
     // This is the extra EXPECT caused by setting pendingSync...
     EXPECT_CALL(testContext->m_gstPlayer, setSync());
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     expectSetupAudioSinkElement();
 }
 
@@ -643,8 +645,9 @@ void GenericTasksTestsBase::shouldSetupVideoSinkElementWithPendingRenderFrame()
     expectSetupVideoSinkElement();
 }
 
-void GenericTasksTestsBase::shouldSetupVideoElementAmlhalasink()
+void GenericTasksTestsBase::shouldSetupAudioElementAmlhalasinkWhenVideoExists()
 {
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(TRUE));
@@ -652,7 +655,17 @@ void GenericTasksTestsBase::shouldSetupVideoElementAmlhalasink()
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("wait-video")));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("a-wait-timeout")));
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("disable-xrun")));
-    expectSetupVideoSinkElement();
+    expectSetupAudioSinkElement();
+}
+
+void GenericTasksTestsBase::shouldSetupAudioElementAmlhalasinkWhenNoVideo()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(TRUE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("disable-xrun")));
+    expectSetupAudioSinkElement();
 }
 
 void GenericTasksTestsBase::shouldSetupAudioElementBrcmAudioSink()
@@ -763,7 +776,8 @@ void GenericTasksTestsBase::shouldSetupAudioElementAutoAudioSink()
         .WillOnce(Return(&testContext->m_iterator));
     EXPECT_CALL(*testContext->m_glibWrapper, gValueUnset(_));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIteratorFree(&testContext->m_iterator));
-
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     expectSetupAudioSinkElement();
 }
 
@@ -771,7 +785,8 @@ void GenericTasksTestsBase::shouldSetupAudioSinkElementOnly()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
         .WillOnce(Return(kElementTypeName.c_str()));
-
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
     expectSetupAudioSinkElement();
 }
 

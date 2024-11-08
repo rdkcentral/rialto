@@ -83,9 +83,15 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingRenderFrame)
     triggerSetupElement();
 }
 
-TEST_F(SetupElementTest, shouldSetupVideoElementForAmlhalasink)
+TEST_F(SetupElementTest, shouldSetupAudioElementAmlhalasinkWhenNoVideo)
 {
-    shouldSetupVideoElementAmlhalasink();
+    shouldSetupAudioElementAmlhalasinkWhenNoVideo();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementAmlhalasinkWhenVideoExists)
+{
+    shouldSetupAudioElementAmlhalasinkWhenVideoExists();
     triggerSetupElement();
 }
 
