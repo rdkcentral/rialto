@@ -109,6 +109,7 @@ void SetVolume::execute() const
         RIALTO_SERVER_LOG_DEBUG("SOC audio fading is supported, applying SOC audio fade");
         auto rguEaseType = convertEaseTypeToRguEase(m_easeType);
         m_rdkGstreamerUtilsWrapper->doAudioEasingonSoc(m_targetVolume, m_volumeDuration, rguEaseType);
+        m_context.fadeVolumeSet = true;
     }
     else
     {
