@@ -232,11 +232,11 @@ struct GenericPlayerContext
     std::mutex propertyMutex;
 
     /**
-     * @brief Flag used to check if fade-volume is set
+     * @brief Flag used to check if audio fade is enabled
      *
      * Attribute can be used only in worker thread
      */
-    std::atomic_bool fadeVolumeSet{false};
+    std::atomic_bool audioFadeEnabled{false};
 };
 } // namespace firebolt::rialto::server
 
