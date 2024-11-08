@@ -22,6 +22,7 @@
 
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
+#include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include <memory>
@@ -31,7 +32,7 @@ namespace firebolt::rialto::server::tasks::generic
 class Flush : public IPlayerTask
 {
 public:
-    Flush(GenericPlayerContext &context, IGstGenericPlayerClient *client,
+    Flush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
           std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, const MediaSourceType &type,
           bool resetTime);
     ~Flush() override;
@@ -39,6 +40,7 @@ public:
 
 private:
     GenericPlayerContext &m_context;
+    IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     MediaSourceType m_type;

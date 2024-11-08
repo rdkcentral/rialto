@@ -201,6 +201,7 @@ if (NOT NUM_OF_PINGS_BEFORE_RECOVERY)
 endif()
 
 if( NATIVE_BUILD )
+    add_compile_options(-Wno-error=attributes)
     add_subdirectory( stubs/rdk_gstreamer_utils )
     add_subdirectory( stubs/opencdm )
     add_subdirectory( stubs/wpeframework-core )

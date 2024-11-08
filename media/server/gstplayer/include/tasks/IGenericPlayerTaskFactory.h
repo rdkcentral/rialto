@@ -425,8 +425,9 @@ public:
      *
      * @retval the new Flush task instance.
      */
-    virtual std::unique_ptr<IPlayerTask>
-    createFlush(GenericPlayerContext &context, const firebolt::rialto::MediaSourceType &type, bool resetTime) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createFlush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                     const firebolt::rialto::MediaSourceType &type,
+                                                     bool resetTime) const = 0;
 
     /**
      * @brief Creates a SetSourcePosition task.

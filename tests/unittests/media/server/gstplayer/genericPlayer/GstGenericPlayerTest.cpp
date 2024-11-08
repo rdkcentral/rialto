@@ -841,7 +841,7 @@ TEST_F(GstGenericPlayerTest, shouldFlush)
     constexpr bool kResetTime{true};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createFlush(_, MediaSourceType::AUDIO, kResetTime))
+    EXPECT_CALL(m_taskFactoryMock, createFlush(_, _, MediaSourceType::AUDIO, kResetTime))
         .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->flush(MediaSourceType::AUDIO, kResetTime);

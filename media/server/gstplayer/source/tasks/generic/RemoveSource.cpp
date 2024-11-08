@@ -61,6 +61,7 @@ void RemoveSource::execute() const
     sourceElem->second.buffers.clear();
     sourceElem->second.isDataNeeded = false;
     sourceElem->second.isNeedDataPending = false;
+    m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
     GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
     if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
     {

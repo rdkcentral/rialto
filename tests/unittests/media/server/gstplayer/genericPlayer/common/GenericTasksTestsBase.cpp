@@ -2871,6 +2871,7 @@ void GenericTasksTestsBase::checkAudioSourceNotRemoved()
 
 void GenericTasksTestsBase::shouldFlushAudioSrcSuccess()
 {
+    EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcAudio, &testContext->m_event))
         .WillOnce(Return(TRUE));
@@ -2881,6 +2882,7 @@ void GenericTasksTestsBase::shouldFlushAudioSrcSuccess()
 
 void GenericTasksTestsBase::shouldFlushAudioSrcFailure()
 {
+    EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcAudio, &testContext->m_event))
         .WillOnce(Return(FALSE));
@@ -2964,8 +2966,12 @@ void GenericTasksTestsBase::shouldFlushVideo()
 
 void GenericTasksTestsBase::triggerFlush(firebolt::rialto::MediaSourceType sourceType)
 {
-    firebolt::rialto::server::tasks::generic::Flush task{testContext->m_context, &testContext->m_gstPlayerClient,
-                                                         testContext->m_gstWrapper, sourceType, kResetTime};
+    firebolt::rialto::server::tasks::generic::Flush task{testContext->m_context,
+                                                         testContext->m_gstPlayer,
+                                                         &testContext->m_gstPlayerClient,
+                                                         testContext->m_gstWrapper,
+                                                         sourceType,
+                                                         kResetTime};
     task.execute();
 }
 
@@ -3009,6 +3015,7 @@ void GenericTasksTestsBase::checkVideoFlushed()
 
 void GenericTasksTestsBase::shouldFlushVideoSrcSuccess()
 {
+    EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcVideo, &testContext->m_event))
         .WillOnce(Return(TRUE));
