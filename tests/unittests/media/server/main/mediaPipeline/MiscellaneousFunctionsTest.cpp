@@ -300,7 +300,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputSu
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputFailureDueToUninitializedPlayer)
 {
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     bool immediateOutputState;
     EXPECT_FALSE(m_mediaPipeline->getImmediateOutput(m_kDummySourceId, immediateOutputState));
 }
@@ -312,7 +312,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputFa
 {
     loadGstPlayer();
     int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getImmediateOutput(_, _)).WillOnce(Return(false));
     bool immediateOutputState;
     EXPECT_FALSE(m_mediaPipeline->getImmediateOutput(videoSourceId, immediateOutputState));
@@ -325,7 +325,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputNo
 {
     loadGstPlayer();
     // No attachment of source
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
 
     bool immediateOutputState;
     EXPECT_FALSE(m_mediaPipeline->getImmediateOutput(m_kDummySourceId, immediateOutputState));
@@ -340,12 +340,12 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputSu
     int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
 
     bool immediateOutputState;
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getImmediateOutput(_, _)).WillOnce(DoAll(SetArgReferee<1>(true), Return(true)));
     EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(videoSourceId, immediateOutputState));
     EXPECT_EQ(immediateOutputState, true);
 
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getImmediateOutput(_, _)).WillOnce(DoAll(SetArgReferee<1>(false), Return(true)));
     EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(videoSourceId, immediateOutputState));
     EXPECT_EQ(immediateOutputState, false);
@@ -356,7 +356,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputSu
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsFailureDueToUninitializedPlayer)
 {
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     uint64_t renderedFrames;
     uint64_t droppedFrames;
     EXPECT_FALSE(m_mediaPipeline->getStats(m_kDummySourceId, renderedFrames, droppedFrames));
@@ -369,7 +369,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsFailure)
 {
     loadGstPlayer();
     int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     uint64_t renderedFrames;
     uint64_t droppedFrames;
     EXPECT_CALL(*m_gstPlayerMock, getStats(_, _, _)).WillOnce(Return(false));
@@ -383,7 +383,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsNoSourcePres
 {
     loadGstPlayer();
     // No attachment of source
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
 
     uint64_t renderedFrames;
     uint64_t droppedFrames;
@@ -397,7 +397,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStatsSuccess)
 {
     loadGstPlayer();
     int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getStats(_, _, _))
         .WillOnce(Invoke(
             [&](const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames)
@@ -459,7 +459,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVolumeSuccess)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeFailureDueToUninitializedPlayer)
 {
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     double resultVolume{};
     EXPECT_FALSE(m_mediaPipeline->getVolume(resultVolume));
 }
@@ -470,7 +470,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeFailureDueT
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeFailure)
 {
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     double resultVolume{};
     EXPECT_CALL(*m_gstPlayerMock, getVolume(_)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getVolume(resultVolume));
@@ -485,7 +485,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeSuccess)
     double resultVolume{};
 
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getVolume(_))
         .WillOnce(Invoke(
             [&](double &vol)
@@ -540,7 +540,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetMuteSuccess)
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteFailureDueToUninitializedPlayer)
 {
     const int32_t kUnknownSourceId{-1};
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     bool resultMute{};
     EXPECT_FALSE(m_mediaPipeline->getMute(kUnknownSourceId, resultMute));
 }
@@ -552,7 +552,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteFailureDueToU
 {
     const int32_t kUnknownSourceId{-1};
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     bool resultMute{};
     EXPECT_FALSE(m_mediaPipeline->getMute(kUnknownSourceId, resultMute));
 }
@@ -563,7 +563,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteFailureDueToU
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteFailure)
 {
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     int audioSourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
     bool resultMute{};
     EXPECT_CALL(*m_gstPlayerMock, getMute(MediaSourceType::AUDIO, _)).WillOnce(Return(false));
@@ -581,7 +581,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetMuteSuccess)
     loadGstPlayer();
     int audioSourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
 
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getMute(MediaSourceType::AUDIO, _))
         .WillOnce(Invoke(
             [&](MediaSourceType, bool &mut)
@@ -669,7 +669,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetSyncSuccess)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetSyncFailureDueToUninitializedPlayer)
 {
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     bool resultSync{};
     EXPECT_FALSE(m_mediaPipeline->getSync(resultSync));
 }
@@ -680,7 +680,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetSyncFailureDueToU
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetSyncFailure)
 {
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     bool resultSync{};
     EXPECT_CALL(*m_gstPlayerMock, getSync(_)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getSync(resultSync));
@@ -694,7 +694,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetSyncSuccess)
     constexpr bool kSync{true};
     bool resultSync{};
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getSync(_)).WillOnce(DoAll(SetArgReferee<0>(kSync), Return(true)));
 
     EXPECT_TRUE(m_mediaPipeline->getSync(resultSync));
@@ -790,7 +790,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetStreamSyncModeSuc
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStreamSyncModeFailureDueToUninitializedPlayer)
 {
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     int32_t resultStreamSyncMode{};
     EXPECT_FALSE(m_mediaPipeline->getStreamSyncMode(resultStreamSyncMode));
 }
@@ -801,7 +801,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStreamSyncModeFai
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStreamSyncModeFailure)
 {
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     int32_t resultStreamSyncMode{};
     EXPECT_CALL(*m_gstPlayerMock, getStreamSyncMode(_)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getStreamSyncMode(resultStreamSyncMode));
@@ -815,7 +815,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetStreamSyncModeSuc
     constexpr int32_t kStreamSyncMode{1};
     int32_t resultStreamSyncMode{};
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getStreamSyncMode(_)).WillOnce(DoAll(SetArgReferee<0>(kStreamSyncMode), Return(true)));
 
     EXPECT_TRUE(m_mediaPipeline->getStreamSyncMode(resultStreamSyncMode));
@@ -849,7 +849,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetBufferingLimitSuc
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetBufferingLimitFailureDueToUninitializedPlayer)
 {
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     uint32_t resultBufferingLimit{};
     EXPECT_FALSE(m_mediaPipeline->getBufferingLimit(resultBufferingLimit));
 }
@@ -860,7 +860,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetBufferingLimitFai
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetBufferingLimitFailure)
 {
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     uint32_t resultBufferingLimit{};
     EXPECT_CALL(*m_gstPlayerMock, getBufferingLimit(_)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getBufferingLimit(resultBufferingLimit));
@@ -874,7 +874,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetBufferingLimitSuc
     constexpr uint32_t kBufferingLimit{1};
     uint32_t resultBufferingLimit{};
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getBufferingLimit(_)).WillOnce(DoAll(SetArgReferee<0>(kBufferingLimit), Return(true)));
 
     EXPECT_TRUE(m_mediaPipeline->getBufferingLimit(resultBufferingLimit));
@@ -908,7 +908,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetUseBufferingSucce
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetUseBufferingFailureDueToUninitializedPlayer)
 {
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     bool resultUseBuffering{};
     EXPECT_FALSE(m_mediaPipeline->getUseBuffering(resultUseBuffering));
 }
@@ -919,7 +919,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetUseBufferingFailu
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetUseBufferingFailure)
 {
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     bool resultUseBuffering{};
     EXPECT_CALL(*m_gstPlayerMock, getUseBuffering(_)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getUseBuffering(resultUseBuffering));
@@ -933,7 +933,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetUseBufferingSucce
     constexpr bool kUseBuffering{true};
     bool resultUseBuffering{};
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getUseBuffering(_)).WillOnce(DoAll(SetArgReferee<0>(kUseBuffering), Return(true)));
 
     EXPECT_TRUE(m_mediaPipeline->getUseBuffering(resultUseBuffering));

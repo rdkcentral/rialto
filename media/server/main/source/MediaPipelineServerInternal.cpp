@@ -493,7 +493,7 @@ bool MediaPipelineServerInternal::getStats(int32_t sourceId, uint64_t &renderedF
     bool result;
     auto task = [&]() { result = getStatsInternal(sourceId, renderedFrames, droppedFrames); };
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -549,7 +549,7 @@ bool MediaPipelineServerInternal::getImmediateOutput(int32_t sourceId, bool &imm
     bool result;
     auto task = [&]() { result = getImmediateOutputInternal(sourceId, immediateOutput); };
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -843,7 +843,7 @@ bool MediaPipelineServerInternal::getVolume(double &currentVolume)
     bool result;
     auto task = [&]() { result = getVolumeInternal(currentVolume); };
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -900,7 +900,7 @@ bool MediaPipelineServerInternal::getMute(std::int32_t sourceId, bool &mute)
     bool result;
     auto task = [&]() { result = getMuteInternal(sourceId, mute); };
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -958,7 +958,7 @@ bool MediaPipelineServerInternal::getTextTrackIdentifier(std::string &textTrackI
     bool result;
     auto task = [&]() { result = getTextTrackIdentifierInternal(textTrackIdentifier); };
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1039,7 +1039,7 @@ bool MediaPipelineServerInternal::getSync(bool &sync)
     bool result;
     auto task = [&]() { result = getSyncInternal(sync); };
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1117,7 +1117,7 @@ bool MediaPipelineServerInternal::getStreamSyncMode(int32_t &streamSyncMode)
     bool result;
     auto task = [&]() { result = getStreamSyncModeInternal(streamSyncMode); };
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1249,7 +1249,7 @@ bool MediaPipelineServerInternal::getBufferingLimit(uint32_t &limitBufferingMs)
     bool result;
     auto task = [&]() { result = getBufferingLimitInternal(limitBufferingMs); };
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -1288,7 +1288,7 @@ bool MediaPipelineServerInternal::getUseBuffering(bool &useBuffering)
     bool result;
     auto task = [&]() { result = getUseBufferingInternal(useBuffering); };
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
