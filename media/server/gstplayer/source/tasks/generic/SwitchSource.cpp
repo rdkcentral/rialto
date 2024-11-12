@@ -52,9 +52,9 @@ void SwitchSource::execute() const
     long long currentDispPts = currentDispPts64b; // NOLINT(runtime/int)
     unsigned int audioChangeStage{0}; // Output param. Set to AUDCHG_ALIGN in rdk_gstreamer_utils function stub
     GstCaps *caps =
-        nullptr; // createCapsFromMediaSource() w attach source, pewnie trzeba przeniesc ten generator do commona
-    GstAppSrc *appSrc{nullptr}; // {GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].appSrc)}; wiec wziac z
-                                // MEDIASOURCE typ i sobie to sciagnac
+        nullptr; // UZUPELNIJ TO createCapsFromMediaSource() w attach source, pewnie trzeba przeniesc ten generator do commona
+    GstAppSrc *appSrc{nullptr}; // UZUPELNIJ TO {GST_APP_SRC(m_context.streamInfo[m_attachedSource->getType()].appSrc)};
+                                // wiec wziac z MEDIASOURCE typ i sobie to sciagnac
     GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
     gchar *oldCapsCStr = m_gstWrapper->gstCapsToString(oldCaps);
     std::string oldCapsStr = std::string(oldCapsCStr);
