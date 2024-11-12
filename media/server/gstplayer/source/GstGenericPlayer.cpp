@@ -1467,23 +1467,26 @@ bool GstGenericPlayer::getVolume(double &currentVolume)
     }
 
     GstElement *sink{getSink(MediaSourceType::AUDIO)};
+    // Check if the fade-volume property exists, and is supported. Some platforms support fade volume, while the other platforms may not
     if (sink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "fade-volume"))
     {
         gint fadeVolume{-100};
         m_glibWrapper->gObjectGet(sink, "fade-volume", &fadeVolume, NULL);
+
+        // If the fade-volume is negative, assume that audio-fade is inactive - therefore we fallback and use the volume in the pipeline
         if (fadeVolume < 0)
         {
             currentVolume = m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline),
                                                                    GST_STREAM_VOLUME_FORMAT_LINEAR);
             RIALTO_SERVER_LOG_INFO("Fade volume is negative, using volume from pipeline: %f", currentVolume);
         }
-        else
+        else // If the fade-volume has a valid volume, assume that audio-fade is active - therefore use the normalised fade-volume as the currentVolume
         {
             currentVolume = static_cast<double>(fadeVolume) / 100.0;
             RIALTO_SERVER_LOG_INFO("Fade volume is supported: %f", currentVolume);
         }
     }
-    else
+    else // If the fade-volume is not supported on the platform - default to using the volume in the pipeline
     {
         currentVolume = m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline),
                                                                GST_STREAM_VOLUME_FORMAT_LINEAR);
