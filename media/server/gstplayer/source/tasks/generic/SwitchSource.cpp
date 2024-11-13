@@ -25,9 +25,10 @@ namespace firebolt::rialto::server::tasks::generic
 SwitchSource::SwitchSource(
     GenericPlayerContext &context, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper)
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+    const std::unique_ptr<IMediaPipeline::MediaSource> &source)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_source{source->copy()}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SwitchSource");
 }
