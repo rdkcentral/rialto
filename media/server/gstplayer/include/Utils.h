@@ -22,7 +22,9 @@
 
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
+#include "IMediaPipeline.h"
 #include <gst/gst.h>
+#include <memory>
 #include <string>
 
 namespace firebolt::rialto::server
@@ -33,6 +35,9 @@ bool isVideoParser(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, Gs
 bool isVideoSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element);
 bool isAudioSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element);
 std::string getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper, GstElement *element);
+GstCaps *createCapsFromMediaSource(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                   const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                                   const std::unique_ptr<IMediaPipeline::MediaSource> &source);
 } // namespace firebolt::rialto::server
 
 #endif // FIREBOLT_RIALTO_SERVER_UTILS_H_
