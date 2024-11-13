@@ -1476,7 +1476,8 @@ bool GstGenericPlayer::getVolume(double &currentVolume)
     //      directly returns the current volume level 0=min to 100=max (and the pipeline's current volume level is
     //      meaningless and doesn't contribute in this case).
     GstElement *sink{getSink(MediaSourceType::AUDIO)};
-    if (sink && m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "fade-volume"))
+    if (m_context.audioFadeEnabled && sink &&
+        m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), "fade-volume"))
     {
         gint fadeVolume{-100};
         m_glibWrapper->gObjectGet(sink, "fade-volume", &fadeVolume, NULL);
