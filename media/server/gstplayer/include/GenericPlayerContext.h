@@ -230,6 +230,13 @@ struct GenericPlayerContext
      *        property read-write.
      */
     std::mutex propertyMutex;
+
+    /**
+     * @brief Flag used to check if audio fade is enabled
+     *
+     * Attribute can be used only in worker thread
+     */
+    std::atomic_bool audioFadeEnabled{false};
 };
 } // namespace firebolt::rialto::server
 

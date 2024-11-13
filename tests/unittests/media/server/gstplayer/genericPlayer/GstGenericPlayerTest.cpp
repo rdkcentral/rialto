@@ -505,6 +505,7 @@ TEST_F(GstGenericPlayerTest, ShouldGetVolumeWhenAudioSinkIsNull)
 
 TEST_F(GstGenericPlayerTest, shouldGetVolumeWithNegativeFadeVolume)
 {
+    getContext([&](GenericPlayerContext &m_context) { m_context.audioFadeEnabled = true; });
     setPipelineState(GST_STATE_PLAYING);
     const gint kNegativeFadeVolume{-100};
     const std::string kPropertyStr{"fade-volume"};
@@ -522,6 +523,7 @@ TEST_F(GstGenericPlayerTest, shouldGetVolumeWithNegativeFadeVolume)
 
 TEST_F(GstGenericPlayerTest, shouldGetVolumeWithPositiveFadeVolume)
 {
+    getContext([&](GenericPlayerContext &m_context) { m_context.audioFadeEnabled = true; });
     setPipelineState(GST_STATE_PLAYING);
 
     const gint kFadeVolume{70};
