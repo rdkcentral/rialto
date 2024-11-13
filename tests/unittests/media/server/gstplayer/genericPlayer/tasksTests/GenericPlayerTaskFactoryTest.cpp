@@ -65,6 +65,7 @@
 #include "tasks/generic/SetupSource.h"
 #include "tasks/generic/Shutdown.h"
 #include "tasks/generic/Stop.h"
+#include "tasks/generic/SwitchSource.h"
 #include "tasks/generic/Underflow.h"
 #include "tasks/generic/UpdatePlaybackGroup.h"
 
@@ -371,4 +372,13 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetUseBuffering)
     auto task = m_sut.createSetUseBuffering(m_context, m_gstPlayer, true);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetUseBuffering &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSwitchSource)
+{
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/mpeg");
+    auto task = m_sut.createSwitchSource(m_context, source);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SwitchSource &>(*task));
 }

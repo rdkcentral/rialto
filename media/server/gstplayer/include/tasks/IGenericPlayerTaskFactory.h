@@ -504,6 +504,18 @@ public:
      */
     virtual std::unique_ptr<IPlayerTask>
     createSetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool useBuffering) const = 0;
+
+    /**
+     * @brief Creates a SwitchSource task.
+     *
+     * @param[in] context   : The GstGenericPlayer context
+     * @param[in] source    : The source to switch.
+     *
+     * @retval the new SwitchSource task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask>
+    createSwitchSource(GenericPlayerContext &context,
+                       const std::unique_ptr<IMediaPipeline::MediaSource> &source) const = 0;
 };
 
 } // namespace firebolt::rialto::server

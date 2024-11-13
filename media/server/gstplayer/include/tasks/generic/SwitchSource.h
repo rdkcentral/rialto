@@ -28,6 +28,7 @@
 #include "IRdkGstreamerUtilsWrapper.h"
 #include <cstdint>
 #include <memory>
+#include <optional>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -41,6 +42,9 @@ public:
                  const std::unique_ptr<IMediaPipeline::MediaSource> &source);
     ~SwitchSource() override;
     void execute() const override;
+
+private:
+    std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate> createAudioAttributes() const;
 
 private:
     GenericPlayerContext &m_context;

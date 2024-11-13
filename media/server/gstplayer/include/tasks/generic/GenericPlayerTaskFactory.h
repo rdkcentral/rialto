@@ -122,6 +122,9 @@ public:
                                                          std::uint32_t limit) const override;
     std::unique_ptr<IPlayerTask> createSetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                        bool useBuffering) const override;
+    std::unique_ptr<IPlayerTask>
+    createSwitchSource(GenericPlayerContext &context,
+                       const std::unique_ptr<IMediaPipeline::MediaSource> &source) const override;
 
 private:
     IGstGenericPlayerClient *m_client;

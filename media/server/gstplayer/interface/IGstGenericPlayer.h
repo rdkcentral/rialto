@@ -435,6 +435,14 @@ public:
      * @retval true on success.
      */
     virtual bool getUseBuffering(bool &useBuffering) = 0;
+
+    /**
+     * @brief Switches a source.
+     *
+     * @param[in] mediaSource : The media source.
+     *
+     */
+    virtual void switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) = 0;
 };
 
 }; // namespace firebolt::rialto::server
