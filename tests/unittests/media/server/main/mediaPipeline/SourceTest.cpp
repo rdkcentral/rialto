@@ -203,3 +203,31 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AllSourcesAttachedCalledTwiceFailure
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_EQ(m_mediaPipeline->allSourcesAttached(), false);
 }
+
+/**
+ * Test that SwitchSource returns success if the gstreamer player API succeeds and sets the source id.
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, SwitchSourceSuccess)
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
+
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(*m_gstPlayerMock, switchSource(Ref(mediaSource)));
+
+    EXPECT_EQ(m_mediaPipeline->switchSource(mediaSource), true);
+}
+
+/**
+ * Test that SwitchSource fails if load has not been called (no gstreamer player).
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, SwitchSourceNoGstPlayerFailure)
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_EQ(m_mediaPipeline->switchSource(mediaSource), false);
+}

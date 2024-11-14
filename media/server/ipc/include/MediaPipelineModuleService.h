@@ -155,6 +155,9 @@ public:
                          const ::firebolt::rialto::GetUseBufferingRequest *request,
                          ::firebolt::rialto::GetUseBufferingResponse *response,
                          ::google::protobuf::Closure *done) override;
+    void switchSource(::google::protobuf::RpcController *controller,
+                      const ::firebolt::rialto::SwitchSourceRequest *request,
+                      ::firebolt::rialto::SwitchSourceResponse *response, ::google::protobuf::Closure *done) override;
 
 private:
     service::IMediaPipelineService &m_mediaPipelineService;

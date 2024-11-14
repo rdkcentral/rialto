@@ -1038,4 +1038,97 @@ void MediaPipelineModuleService::getUseBuffering(::google::protobuf::RpcControll
 
     done->Run();
 }
+
+void MediaPipelineModuleService::switchSource(::google::protobuf::RpcController *controller,
+                                              const ::firebolt::rialto::SwitchSourceRequest *request,
+                                              ::firebolt::rialto::SwitchSourceResponse *response,
+                                              ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("mime_type: %s", request->mime_type().c_str());
+
+    std::shared_ptr<CodecData> codecData{};
+    if (request->has_codec_data())
+    {
+        auto codecDataProto = request->codec_data();
+        codecData = std::make_shared<CodecData>();
+        codecData->data = std::vector<std::uint8_t>(codecDataProto.data().begin(), codecDataProto.data().end());
+        // codecData->type = convertCodecDataType(codecDataProto.type());
+    }
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource;
+    // firebolt::rialto::SourceConfigType configType = convertConfigType(request->config_type());
+    // bool hasDrm = request->has_drm();
+
+    // if (configType == firebolt::rialto::SourceConfigType::AUDIO)
+    // {
+    //     const auto &kConfig = request->audio_config();
+    //     uint32_t numberofchannels = kConfig.number_of_channels();
+    //     uint32_t sampleRate = kConfig.sample_rate();
+
+    //     std::vector<uint8_t> codecSpecificConfig;
+    //     if (kConfig.has_codec_specific_config())
+    //     {
+    //         auto codecSpecificConfigStr = kConfig.codec_specific_config();
+    //         codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
+    //     }
+    //     std::optional<firebolt::rialto::Format> format{std::nullopt};
+    //     if (kConfig.has_format())
+    //     {
+    //         format = convertFormat(kConfig.format());
+    //     }
+    //     std::optional<firebolt::rialto::Layout> layout{std::nullopt};
+    //     if (kConfig.has_layout())
+    //     {
+    //         layout = convertLayout(kConfig.layout());
+    //     }
+    //     std::optional<uint64_t> channelMask{std::nullopt};
+    //     if (kConfig.has_channel_mask())
+    //     {
+    //         channelMask = kConfig.channel_mask();
+    //     }
+    //     AudioConfig audioConfig{numberofchannels, sampleRate, codecSpecificConfig, format, layout, channelMask};
+
+    //     mediaSource =
+    //         std::make_unique<IMediaPipeline::MediaSourceAudio>(request->mime_type(), hasDrm, audioConfig,
+    //                                                            convertSegmentAlignment(request->segment_alignment()),
+    //                                                            convertStreamFormat(request->stream_format()), codecData);
+    // }
+    // else if (configType == firebolt::rialto::SourceConfigType::VIDEO)
+    // {
+    //     mediaSource =
+    //         std::make_unique<IMediaPipeline::MediaSourceVideo>(request->mime_type().c_str(), hasDrm, request->width(),
+    //                                                            request->height(),
+    //                                                            convertSegmentAlignment(request->segment_alignment()),
+    //                                                            convertStreamFormat(request->stream_format()), codecData);
+    // }
+    // else if (configType == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
+    // {
+    //     mediaSource =
+    //         std::make_unique<IMediaPipeline::MediaSourceVideoDolbyVision>(request->mime_type().c_str(),
+    //                                                                       request->dolby_vision_profile(), hasDrm,
+    //                                                                       request->width(), request->height(),
+    //                                                                       convertSegmentAlignment(
+    //                                                                           request->segment_alignment()),
+    //                                                                       convertStreamFormat(request->stream_format()),
+    //                                                                       codecData);
+    // }
+    // else if (configType == firebolt::rialto::SourceConfigType::SUBTITLE)
+    // {
+    //     mediaSource = std::make_unique<IMediaPipeline::MediaSourceSubtitle>(request->mime_type().c_str(),
+    //                                                                         request->text_track_identifier());
+    // }
+    // else
+    // {
+    //     RIALTO_SERVER_LOG_ERROR("Unknown source type");
+    //     controller->SetFailed("Operation failed");
+    //     done->Run();
+    //     return;
+    // }
+
+    if (!m_mediaPipelineService.switchSource(request->session_id(), mediaSource))
+    {
+        RIALTO_SERVER_LOG_ERROR("Switch source failed");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc

@@ -161,6 +161,11 @@ public:
 
     bool getUseBuffering(bool &useBuffering) override { return m_mediaPipeline->getUseBuffering(useBuffering); }
 
+    bool switchSource(const std::unique_ptr<MediaSource> &source) override
+    {
+        return m_mediaPipeline->switchSource(source);
+    }
+
     void notifyApplicationState(ApplicationState state) override { m_mediaPipeline->notifyApplicationState(state); }
 
 private:

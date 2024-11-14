@@ -312,4 +312,9 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     EXPECT_CALL(*mediaPipelineMock, notifyApplicationState(ApplicationState::RUNNING));
     proxy->notifyApplicationState(ApplicationState::RUNNING);
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, switchSource(_)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->switchSource(kMediaSource));
 }

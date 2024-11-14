@@ -612,6 +612,13 @@ bool MediaPipeline::getUseBuffering(bool &useBuffering)
     return m_mediaPipelineIpc->getUseBuffering(useBuffering);
 }
 
+bool MediaPipeline::switchSource(const std::unique_ptr<MediaSource> &source)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return false;
+}
+
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 {
     // Find the needDataRequest for this needDataRequestId

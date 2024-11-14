@@ -476,6 +476,16 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToGetUseBuffering()
     EXPECT_CALL(m_mediaPipelineMock, getUseBuffering(_)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillSwitchSource()
+{
+    EXPECT_CALL(m_mediaPipelineMock, switchSource(_)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSwitchSource()
+{
+    EXPECT_CALL(m_mediaPipelineMock, switchSource(_)).WillOnce(Return(false));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillPing()
 {
     EXPECT_CALL(*m_heartbeatProcedureMock, createHandler())
@@ -967,6 +977,20 @@ void MediaPipelineServiceTests::getUseBufferingShouldFail()
 {
     bool useBuffering{false};
     EXPECT_FALSE(m_sut->getUseBuffering(kSessionId, useBuffering));
+}
+
+void MediaPipelineServiceTests::switchSourceShouldSucceed()
+{
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264");
+    EXPECT_TRUE(m_sut->switchSource(kSessionId, mediaSource));
+}
+
+void MediaPipelineServiceTests::switchSourceShouldFail()
+{
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264");
+    EXPECT_FALSE(m_sut->switchSource(kSessionId, mediaSource));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()
