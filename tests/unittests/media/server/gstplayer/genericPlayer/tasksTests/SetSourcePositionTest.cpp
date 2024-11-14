@@ -87,6 +87,7 @@ TEST_F(SetSourcePositionTest, ShouldSetSubtitleSourcePositionWithNeedData)
     shouldSetSubtitleSourcePosition();
     triggerSetSourcePosition(firebolt::rialto::MediaSourceType::SUBTITLE);
     checkNoEos();
+    checkInitialPositionSet(firebolt::rialto::MediaSourceType::SUBTITLE);
 }
 
 TEST_F(SetSourcePositionTest, ShouldFailToSetSubtitleSourcePositionWithNeedData)

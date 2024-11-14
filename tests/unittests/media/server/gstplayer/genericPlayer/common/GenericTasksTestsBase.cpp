@@ -3068,8 +3068,29 @@ void GenericTasksTestsBase::triggerSetSourcePosition(firebolt::rialto::MediaSour
 
 void GenericTasksTestsBase::checkInitialPositionSet(firebolt::rialto::MediaSourceType sourceType)
 {
-    GstElement *source = sourceType == firebolt::rialto::MediaSourceType::AUDIO ? &testContext->m_appSrcAudio
-                                                                                : &testContext->m_appSrcVideo;
+    GstElement *source{nullptr};
+    switch (sourceType)
+    {
+    case firebolt::rialto::MediaSourceType::AUDIO:
+    {
+        source = &testContext->m_appSrcAudio;
+        break;
+    }
+    case firebolt::rialto::MediaSourceType::VIDEO:
+    {
+        source = &testContext->m_appSrcVideo;
+        break;
+    }
+    case firebolt::rialto::MediaSourceType::SUBTITLE:
+    {
+        source = &testContext->m_appSrcSubtitle;
+        break;
+    }
+    default:
+    {
+        break;
+    }
+    }
     ASSERT_NE(testContext->m_context.initialPositions.end(), testContext->m_context.initialPositions.find(source));
     ASSERT_EQ(testContext->m_context.initialPositions.at(source).size(), 1);
     EXPECT_EQ(testContext->m_context.initialPositions.at(source)[0].position, kPosition);
