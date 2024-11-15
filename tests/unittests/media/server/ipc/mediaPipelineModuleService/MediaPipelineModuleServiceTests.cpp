@@ -119,6 +119,12 @@ TEST_F(MediaPipelineModuleServiceTests, shouldAttachAudioSourceWithAdditionalDat
     sendAttachAudioSourceWithAdditionalDataRequestAndReceiveResponse();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldSwitchSource)
+{
+    mediaPipelineServiceWillSwitchSource();
+    sendAttachSourceRequestWithSwitchSourceAndReceiveResponse();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToAttachSource)
 {
     mediaPipelineServiceWillFailToAttachSource();

@@ -499,10 +499,23 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         return;
     }
 
-    if (!m_mediaPipelineService.attachSource(request->session_id(), mediaSource))
+    if (!request->has_switch_source() || !request->switch_source())
     {
-        RIALTO_SERVER_LOG_ERROR("Attach source failed");
-        controller->SetFailed("Operation failed");
+        RIALTO_SERVER_LOG_DEBUG("Attaching source");
+        if (!m_mediaPipelineService.attachSource(request->session_id(), mediaSource))
+        {
+            RIALTO_SERVER_LOG_ERROR("Attach source failed");
+            controller->SetFailed("Operation failed");
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Switching source");
+        if (!m_mediaPipelineService.switchSource(request->session_id(), mediaSource))
+        {
+            RIALTO_SERVER_LOG_ERROR("Switch source failed");
+            controller->SetFailed("Operation failed");
+        }
     }
     response->set_source_id(mediaSource->getId());
     done->Run();
