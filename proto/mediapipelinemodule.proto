@@ -955,109 +955,6 @@ message SourceFlushedEvent {
     optional int32 source_id = 2 [default = -1];
 }
 
-/**
- * @fn int switchSource(int session_id, MediaSourceType media_type, string caps)
- * @brief Switch a media source on a session with the given capabilities.
- *
- * @param[in]  session_id   The id of the A/V session.
- * @param[in]  media_type   The media source type.
- * @param[in]  caps         The capabilities of the source.
- */
-message SwitchSourceRequest {
-    enum SegmentAlignment {
-        ALIGNMENT_UNDEFINED = 0;
-        ALIGNMENT_NAL       = 1;
-        ALIGNMENT_AU        = 2;
-    }
-
-    enum StreamFormat {
-        STREAM_FORMAT_UNDEFINED   = 0;
-        STREAM_FORMAT_RAW         = 1;
-        STREAM_FORMAT_AVC         = 2;
-        STREAM_FORMAT_BYTE_STREAM = 3;
-        STREAM_FORMAT_HVC1        = 4;
-        STREAM_FORMAT_HEV1        = 5;
-    }
-
-    enum ConfigType {
-        CONFIG_TYPE_UNKNOWN            = 0;
-        CONFIG_TYPE_AUDIO              = 1;
-        CONFIG_TYPE_VIDEO              = 2;
-        CONFIG_TYPE_VIDEO_DOLBY_VISION = 3;
-    }
-
-    message AudioConfig {
-        enum Format {
-            S8 = 0;
-            U8 = 1;
-            S16LE = 2;
-            S16BE = 3;
-            U16LE = 4;
-            U16BE = 5;
-            S24_32LE = 6;
-            S24_32BE = 7;
-            U24_32LE = 8;
-            U24_32BE = 9;
-            S32LE = 10;
-            S32BE = 11;
-            U32LE = 12;
-            U32BE = 13;
-            S24LE = 14;
-            S24BE = 15;
-            U24LE = 16;
-            U24BE = 17;
-            S20LE = 18;
-            S20BE = 19;
-            U20LE = 20;
-            U20BE = 21;
-            S18LE = 22;
-            S18BE = 23;
-            U18LE = 24;
-            U18BE = 25;
-            F32LE = 26;
-            F32BE = 27;
-            F64LE = 28;
-            F64BE = 29;
-        }
-
-        enum Layout {
-            INTERLEAVED = 0;
-            NON_INTERLEAVED = 1;
-        }
-
-        optional uint32 number_of_channels = 1;   ///< The number of channels.
-        optional uint32 sample_rate = 2;         ///< The sampling rate.
-        optional bytes codec_specific_config = 3; ///The audio specific config. Zero length if no specific config
-        optional Format format = 4; ///< The Format of the audio samples.
-        optional Layout layout = 5; ///< The layout of channels within a buffer.
-        optional uint64 channel_mask = 6; ///< Bitmask of channel positions present.
-    }
-
-    message CodecData {
-        enum Type {
-            BUFFER = 1;
-            STRING = 2;
-        }
-        optional bytes data = 1; /* Buffer containing updated codec data for video segments */
-        optional Type type = 2;  /* Type of data */
-    }
-
-    optional int32 session_id = 1 [default = -1];
-    optional ConfigType config_type = 2;
-    optional string mime_type = 3;
-    optional bool has_drm = 4;
-    optional int32 width = 5;
-    optional int32 height = 6;
-    optional SegmentAlignment segment_alignment = 7; /* Segment alignment can be specified for H264/H265, will use NAL if not set */
-    optional AudioConfig audio_config = 8;
-    optional CodecData codec_data = 9;
-    optional StreamFormat stream_format = 10;
-    optional uint32 dolby_vision_profile = 11;
-
-}
-message SwitchSourceResponse {
-}
-
 service MediaPipelineModule {
     /**
      * @brief Creates a new playback session.
@@ -1317,12 +1214,5 @@ service MediaPipelineModule {
      * @see GetUseBufferingRequest
      */
     rpc getUseBuffering(GetUseBufferingRequest) returns (GetUseBufferingResponse) {
-    }
-
-    /**
-     * @brief Switch a new audio or video media source.
-     * @see SwitchSourceRequest
-     */
-    rpc switchSource(SwitchSourceRequest) returns (SwitchSourceResponse) {
     }
 }
