@@ -434,11 +434,10 @@ public:
      * @brief Request to switch the source to the server backend.
      *
      * @param[in] source    : The source.
-     * @param[out] sourceId : The unique id of the media source.
      *
      * @retval true on success.
      */
-    virtual bool switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source, int32_t &sourceId) = 0;
+    virtual bool switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
 };
 
 }; // namespace firebolt::rialto::client

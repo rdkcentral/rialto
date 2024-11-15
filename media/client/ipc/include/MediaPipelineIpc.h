@@ -140,7 +140,7 @@ public:
 
     bool getUseBuffering(bool &useBuffering) override;
 
-    bool switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source, int32_t &sourceId) override;
+    bool switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
 
 private:
     /**

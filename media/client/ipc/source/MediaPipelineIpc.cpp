@@ -1294,7 +1294,7 @@ bool MediaPipelineIpc::getUseBuffering(bool &useBuffering)
     return true;
 }
 
-bool MediaPipelineIpc::switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source, int32_t &sourceId)
+bool MediaPipelineIpc::switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source)
 {
     if (!reattachChannelIfRequired())
     {
@@ -1326,8 +1326,6 @@ bool MediaPipelineIpc::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
         RIALTO_CLIENT_LOG_ERROR("failed to attach source due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
-
-    sourceId = response.source_id();
 
     return true;
 }

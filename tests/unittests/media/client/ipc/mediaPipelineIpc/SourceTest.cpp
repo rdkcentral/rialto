@@ -240,7 +240,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, SwitchAudioSourceSuccess)
         std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, true, audioConfig, m_kAlignment,
                                                            m_kStreamFormat, m_kCodecData);
 
-    EXPECT_EQ(m_mediaPipelineIpc->switchSource(mediaSource, m_id), true);
+    EXPECT_EQ(m_mediaPipelineIpc->switchSource(mediaSource), true);
 }
 
 /**
@@ -301,7 +301,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, SwitchAudioSourceFailure)
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
         std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
 
-    EXPECT_EQ(m_mediaPipelineIpc->switchSource(mediaSource, m_id), false);
+    EXPECT_EQ(m_mediaPipelineIpc->switchSource(mediaSource), false);
 }
 
 /**
@@ -314,7 +314,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, SwitchAudioSourceChannelDisconnec
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
         std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
-    EXPECT_EQ(m_mediaPipelineIpc->switchSource(mediaSource, m_id), false);
+    EXPECT_EQ(m_mediaPipelineIpc->switchSource(mediaSource), false);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -334,7 +334,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, SwitchSourceReconnectChannel)
 
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
         std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
-    EXPECT_EQ(m_mediaPipelineIpc->switchSource(mediaSource, m_id), true);
+    EXPECT_EQ(m_mediaPipelineIpc->switchSource(mediaSource), true);
 }
 
 /**
@@ -526,7 +526,7 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, SwitchSourceWithInvalidMediaSourc
     std::unique_ptr<IMediaPipeline::MediaSource> source =
         std::make_unique<MediaSourceVideoDolbyVideoAudioTest>(SourceConfigType::AUDIO, m_id);
 
-    bool result = m_mediaPipelineIpc->switchSource(source, m_id);
+    bool result = m_mediaPipelineIpc->switchSource(source);
 
     EXPECT_EQ(result, false);
 }
