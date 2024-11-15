@@ -218,6 +218,32 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSubtitleSourceWithSuccess)
 }
 
 /**
+ * Test switch audio source
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, SwitchAudioSourceSuccess)
+{
+    expectIpcApiCallSuccess();
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("attachSource"), m_controllerMock.get(),
+                           attachSourceRequestMatcherSwitchSource(m_sessionId, m_kMimeType, true, m_kAlignment,
+                                                                  m_kNumberOfChannels, m_kSampleRate,
+                                                                  m_kCodecSpecificConfigStr, m_kCodecData,
+                                                                  convertStreamFormat(m_kStreamFormat)),
+                           _, m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaPipelineIpcSourceTest::setAttachSourceResponse)));
+
+    std::vector<uint8_t> codecSpecificConfig;
+    codecSpecificConfig.assign(m_kCodecSpecificConfigStr.begin(), m_kCodecSpecificConfigStr.end());
+    AudioConfig audioConfig{m_kNumberOfChannels, m_kSampleRate, codecSpecificConfig};
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType, true, audioConfig, m_kAlignment,
+                                                           m_kStreamFormat, m_kCodecData);
+
+    EXPECT_EQ(m_mediaPipelineIpc->switchSource(mediaSource, m_id), true);
+}
+
+/**
  * Test that Load fails when ipc fails.
  */
 TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceFailure)
@@ -262,6 +288,53 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceReconnectChannel)
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
         std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
     EXPECT_EQ(m_mediaPipelineIpc->attachSource(mediaSource, m_id), true);
+}
+
+/**
+ * Test that switch audio source fails when ipc fails.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, SwitchAudioSourceFailure)
+{
+    expectIpcApiCallFailure();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("attachSource"), _, _, _, _));
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
+
+    EXPECT_EQ(m_mediaPipelineIpc->switchSource(mediaSource, m_id), false);
+}
+
+/**
+ * Test that switch audio source fails if the ipc channel disconnected.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, SwitchAudioSourceChannelDisconnected)
+{
+    expectIpcApiCallDisconnected();
+    expectUnsubscribeEvents();
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
+    EXPECT_EQ(m_mediaPipelineIpc->switchSource(mediaSource, m_id), false);
+
+    // Reattach channel on destroySession
+    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
+    expectSubscribeEvents();
+}
+
+/**
+ * Test that switch audio source fails if the ipc channel disconnected and succeeds if the channel is reconnected.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, SwitchSourceReconnectChannel)
+{
+    expectIpcApiCallReconnected();
+    expectUnsubscribeEvents();
+    expectSubscribeEvents();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("attachSource"), _, _, _, _));
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
+    EXPECT_EQ(m_mediaPipelineIpc->switchSource(mediaSource, m_id), true);
 }
 
 /**
@@ -440,6 +513,20 @@ TEST_F(RialtoClientMediaPipelineIpcSourceTest, AttachSourceWithInvalidMediaSourc
         std::make_unique<MediaSourceTest>(SourceConfigType::SUBTITLE, m_id);
 
     bool result = m_mediaPipelineIpc->attachSource(source, m_id);
+
+    EXPECT_EQ(result, false);
+}
+
+/**
+ * Test that switch source fails if the media source audio is invalid.
+ */
+TEST_F(RialtoClientMediaPipelineIpcSourceTest, SwitchSourceWithInvalidMediaSourceAudio)
+{
+    EXPECT_CALL(*m_channelMock, isConnected()).InSequence(m_isConnectedSeq).WillOnce(Return(true)).RetiresOnSaturation();
+    std::unique_ptr<IMediaPipeline::MediaSource> source =
+        std::make_unique<MediaSourceVideoDolbyVideoAudioTest>(SourceConfigType::AUDIO, m_id);
+
+    bool result = m_mediaPipelineIpc->switchSource(source, m_id);
 
     EXPECT_EQ(result, false);
 }

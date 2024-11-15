@@ -429,6 +429,16 @@ public:
      * @retval true on success.
      */
     virtual bool getUseBuffering(bool &useBuffering) = 0;
+
+    /**
+     * @brief Request to switch the source to the server backend.
+     *
+     * @param[in] source    : The source.
+     * @param[out] sourceId : The unique id of the media source.
+     *
+     * @retval true on success.
+     */
+    virtual bool switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source, int32_t &sourceId) = 0;
 };
 
 }; // namespace firebolt::rialto::client
