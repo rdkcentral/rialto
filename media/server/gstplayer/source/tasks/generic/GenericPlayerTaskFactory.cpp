@@ -120,7 +120,9 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createHandleBusMessage(Ge
                                                               message);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createNeedData(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, GstAppSrc *src) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createNeedData(GenericPlayerContext &context,
+                                                                      IGstGenericPlayerPrivate &player,
+                                                                      GstAppSrc *src) const
 {
     return std::make_unique<tasks::generic::NeedData>(context, player, m_client, src);
 }

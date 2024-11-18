@@ -26,7 +26,8 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-NeedData::NeedData(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, GstAppSrc *src)
+NeedData::NeedData(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
+                   GstAppSrc *src)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_src{src}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing NeedData");
@@ -52,8 +53,7 @@ void NeedData::execute() const
 
             if (!elem.second.buffers.empty())
             {
-                RIALTO_SERVER_LOG_INFO("Attaching cached data for %s",
-                                       common::convertMediaSourceType(sourceType));
+                RIALTO_SERVER_LOG_INFO("Attaching cached data for %s", common::convertMediaSourceType(sourceType));
                 m_player.attachData(sourceType);
             }
 

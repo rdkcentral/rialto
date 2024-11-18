@@ -31,7 +31,8 @@ namespace firebolt::rialto::server::tasks::generic
 class NeedData : public IPlayerTask
 {
 public:
-    NeedData(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client, GstAppSrc *src);
+    NeedData(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
+             GstAppSrc *src);
     ~NeedData() override;
     void execute() const override;
 
