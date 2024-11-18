@@ -301,7 +301,7 @@ void GenericTasksTestsBase::setContextVideoUnderflowOccured(bool isUnderflow)
 
 void GenericTasksTestsBase::setContextEndOfStream(firebolt::rialto::MediaSourceType sourceType, bool state)
 {
-    testContext->m_context.endOfStreamInfo.emplace(sourceType, state);
+    testContext->m_context.endOfStreamInfo.emplace(sourceType, state ? EosState::SET : EosState::PENDING);
 }
 
 void GenericTasksTestsBase::setContextEndOfStreamNotified()
@@ -2197,13 +2197,13 @@ void GenericTasksTestsBase::shouldCancelUnderflow(firebolt::rialto::MediaSourceT
 void GenericTasksTestsBase::shouldSetEos(firebolt::rialto::MediaSourceType sourceType)
 {
     auto eosIt{testContext->m_context.endOfStreamInfo.find(sourceType)};
-    EXPECT_TRUE(eosIt != testContext->m_context.endOfStreamInfo.end() && eosIt->second);
+    EXPECT_TRUE(eosIt != testContext->m_context.endOfStreamInfo.end() && eosIt->second == EosState::SET);
 }
 
 void GenericTasksTestsBase::shouldSetEosPending(firebolt::rialto::MediaSourceType sourceType)
 {
     auto eosIt{testContext->m_context.endOfStreamInfo.find(sourceType)};
-    EXPECT_TRUE(eosIt != testContext->m_context.endOfStreamInfo.end() && !eosIt->second);
+    EXPECT_TRUE(eosIt != testContext->m_context.endOfStreamInfo.end() && eosIt->second == EosState::PENDING);
 }
 
 void GenericTasksTestsBase::setUnderflowEnabled(bool isUnderflowEnabled)

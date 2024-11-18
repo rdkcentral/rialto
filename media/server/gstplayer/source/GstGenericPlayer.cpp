@@ -751,7 +751,7 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
         cancelUnderflow(mediaType);
 
         const auto eosInfoIt = m_context.endOfStreamInfo.find(mediaType);
-        if (eosInfoIt != m_context.endOfStreamInfo.end() && !eosInfoIt->second)
+        if (eosInfoIt != m_context.endOfStreamInfo.end() && eosInfoIt->second == EosState::PENDING)
         {
             setEos(mediaType);
         }

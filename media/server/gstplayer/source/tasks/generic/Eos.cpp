@@ -52,7 +52,7 @@ void Eos::execute() const
     }
 
     const auto eosInfoIt = m_context.endOfStreamInfo.find(m_type);
-    if (eosInfoIt != m_context.endOfStreamInfo.end() && eosInfoIt->second)
+    if (eosInfoIt != m_context.endOfStreamInfo.end() && eosInfoIt->second == EosState::SET)
     {
         RIALTO_SERVER_LOG_DEBUG("Eos already set for source %s", common::convertMediaSourceType(m_type));
         return;
@@ -62,7 +62,7 @@ void Eos::execute() const
     if (!streamInfo.buffers.empty())
     {
         RIALTO_SERVER_LOG_INFO("There are pending buffers; delaying sending EOS");
-        m_context.endOfStreamInfo[m_type] = false;
+        m_context.endOfStreamInfo[m_type] = EosState::PENDING;
     }
     else if (m_gstWrapper->gstAppSrcEndOfStream(GST_APP_SRC(elem->second.appSrc)) != GST_FLOW_OK)
     {
@@ -71,7 +71,7 @@ void Eos::execute() const
     else
     {
         RIALTO_SERVER_LOG_MIL("Successfully set EOS for source %s", common::convertMediaSourceType(m_type));
-        m_context.endOfStreamInfo[m_type] = true;
+        m_context.endOfStreamInfo[m_type] = EosState::SET;
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

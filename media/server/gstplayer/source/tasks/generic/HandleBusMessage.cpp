@@ -250,7 +250,7 @@ bool HandleBusMessage::allSourcesEos() const
     for (const auto &streamInfo : m_context.streamInfo)
     {
         const auto eosInfoIt = m_context.endOfStreamInfo.find(streamInfo.first);
-        if (eosInfoIt == m_context.endOfStreamInfo.end() || !eosInfoIt->second)
+        if (eosInfoIt == m_context.endOfStreamInfo.end() || eosInfoIt->second != EosState::SET)
         {
             return false;
         }

@@ -36,6 +36,12 @@ namespace firebolt::rialto::server
 {
 constexpr double kNoPendingPlaybackRate{0.0};
 
+enum class EosState
+{
+    PENDING,
+    SET
+};
+
 /**
  * @brief Structure used for video geometry
  */
@@ -201,7 +207,7 @@ struct GenericPlayerContext
     /**
      * @brief A map of streams that have ended.
      */
-    std::unordered_map<MediaSourceType, bool> endOfStreamInfo{};
+    std::unordered_map<MediaSourceType, EosState> endOfStreamInfo{};
 
     /**
      * @brief Flag used to check if client already notified server that all sources were attached
