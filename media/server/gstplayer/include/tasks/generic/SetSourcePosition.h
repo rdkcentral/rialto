@@ -41,7 +41,7 @@ public:
     void execute() const override;
 
 private:
-    void setSubtitlePosition() const;
+    void setSubtitlePosition(GstElement *source) const;
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;

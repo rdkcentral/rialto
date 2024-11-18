@@ -76,7 +76,7 @@ void SetSourcePosition::execute() const
         {
             // in case of subtitles, all data might be already in the sink and we might not get any data anymore,
             // so send the new segment here and to not depend on any following buffers
-            setSubtitlePosition();
+            setSubtitlePosition(source);
         }
 
         // Reset Eos info
@@ -89,7 +89,7 @@ void SetSourcePosition::execute() const
     }
 }
 
-void SetSourcePosition::setSubtitlePosition() const
+void SetSourcePosition::setSubtitlePosition(GstElement *source) const
 {
     GstSegment *segment{m_gstWrapper->gstSegmentNew()};
     m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
@@ -104,7 +104,9 @@ void SetSourcePosition::setSubtitlePosition() const
     if (!m_gstWrapper->gstPadSendEvent(m_gstWrapper->gstBaseSinkPad(m_context.subtitleSink),
                                        m_gstWrapper->gstEventNewSegment(segment)))
     {
-        RIALTO_SERVER_LOG_WARN("Failed to new segment to subtitle sink");
+        RIALTO_SERVER_LOG_INFO("Pad not ready to receive events. Postpone sending segment");
+        m_context.initialPositions[source].emplace_back(
+            SegmentData{m_position, m_resetTime, m_appliedRate, m_stopPosition});
     }
 
     m_gstWrapper->gstSegmentFree(segment);

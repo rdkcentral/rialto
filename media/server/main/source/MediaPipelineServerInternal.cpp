@@ -470,7 +470,7 @@ bool MediaPipelineServerInternal::getPosition(int64_t &position)
     bool result;
     auto task = [&]() { result = getPositionInternal(position); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 

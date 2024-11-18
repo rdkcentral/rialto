@@ -209,7 +209,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPlaybackRateSucce
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionFailureDueToUninitializedPlayer)
 {
-    mainThreadWillEnqueueTaskAndWait();
+    mainThreadWillEnqueuePriorityTaskAndWait();
     int64_t targetPosition{};
     EXPECT_FALSE(m_mediaPipeline->getPosition(targetPosition));
 }
@@ -220,7 +220,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionFailureDu
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionFailure)
 {
     loadGstPlayer();
-    mainThreadWillEnqueueTaskAndWait();
+    mainThreadWillEnqueuePriorityTaskAndWait();
     int64_t targetPosition{};
     EXPECT_CALL(*m_gstPlayerMock, getPosition(_)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getPosition(targetPosition));
@@ -232,7 +232,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionFailure)
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
 {
     loadGstPlayer();
-    mainThreadWillEnqueueTaskAndWait();
+    mainThreadWillEnqueuePriorityTaskAndWait();
     int64_t targetPosition{};
     EXPECT_CALL(*m_gstPlayerMock, getPosition(_))
         .WillOnce(Invoke(
