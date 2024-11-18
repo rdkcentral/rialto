@@ -201,7 +201,7 @@ struct GenericPlayerContext
     /**
      * @brief A map of streams that have ended.
      */
-    StreamInfoMap endOfStreamInfo{};
+    std::unordered_map<MediaSourceType, bool> endOfStreamInfo{};
 
     /**
      * @brief Flag used to check if client already notified server that all sources were attached

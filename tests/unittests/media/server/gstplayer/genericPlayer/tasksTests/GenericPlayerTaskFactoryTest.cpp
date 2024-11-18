@@ -147,7 +147,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateHandleBusMessage)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateNeedData)
 {
-    auto task = m_sut.createNeedData(m_context, nullptr);
+    auto task = m_sut.createNeedData(m_context, m_gstPlayer, nullptr);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::NeedData &>(*task));
 }

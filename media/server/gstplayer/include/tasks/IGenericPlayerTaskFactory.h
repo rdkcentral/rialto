@@ -132,11 +132,12 @@ public:
      * @brief Creates a NeedData task.
      *
      * @param[in] context : The GstGenericPlayer context
+     * @param[in] player  : The GstGenericPlayer instance
      * @param[in] src     : The source, which reports need data.
      *
      * @retval the new NeedData task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createNeedData(GenericPlayerContext &context, GstAppSrc *src) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createNeedData(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, GstAppSrc *src) const = 0;
 
     /**
      * @brief Creates a Pause task.

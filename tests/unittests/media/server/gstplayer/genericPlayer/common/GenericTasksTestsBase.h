@@ -61,7 +61,7 @@ protected:
     void setContextNeedData(bool doNeedData);
     void setContextAudioUnderflowOccured(bool isUnderflow);
     void setContextVideoUnderflowOccured(bool isUnderflow);
-    void setContextEndOfStream(firebolt::rialto::MediaSourceType sourceType);
+    void setContextEndOfStream(firebolt::rialto::MediaSourceType sourceType, bool state = true);
     void setContextEndOfStreamNotified();
     void setContextPipelineNull();
     void setContextNeedDataPending(bool isNeedDataPending);
@@ -141,6 +141,7 @@ protected:
 
     // AttachSamples test methods
     void shouldAttachAllAudioSamples();
+    void shouldAttachData(firebolt::rialto::MediaSourceType sourceType);
     void triggerAttachSamplesAudio();
     void shouldAttachAllVideoSamples();
     void triggerAttachSamplesVideo();
@@ -245,6 +246,8 @@ protected:
     void shouldGstAppSrcEndOfStreamSuccess();
     void shouldGstAppSrcEndOfStreamFailure();
     void shouldCancelUnderflow(firebolt::rialto::MediaSourceType sourceType);
+    void shouldSetEos(firebolt::rialto::MediaSourceType sourceType);
+    void shouldSetEosPending(firebolt::rialto::MediaSourceType sourceType);
 
     // Underflow test methods
     void setUnderflowEnabled(bool isUnderflowEnabled);

@@ -40,6 +40,7 @@ public:
 
 private:
     GenericPlayerContext &m_context;
+    IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::int64_t m_position;

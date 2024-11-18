@@ -749,6 +749,12 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
             m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
         }
         cancelUnderflow(mediaType);
+
+        const auto eosInfoIt = m_context.endOfStreamInfo.find(mediaType);
+        if (eosInfoIt != m_context.endOfStreamInfo.end() && !eosInfoIt->second)
+        {
+            setEos(mediaType);
+        }
     }
 }
 
@@ -907,7 +913,7 @@ void GstGenericPlayer::scheduleNeedMediaData(GstAppSrc *src)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createNeedData(m_context, src));
+        m_workerThread->enqueueTask(m_taskFactory->createNeedData(m_context, *this, src));
     }
 }
 
