@@ -52,8 +52,8 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createHandleBusMessage,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, GstMessage *message),
                 (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createNeedData, (GenericPlayerContext & context, GstAppSrc *src),
-                (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createNeedData,
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, GstAppSrc *src), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPause,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPlay, (IGstGenericPlayerPrivate & player), (const, override));

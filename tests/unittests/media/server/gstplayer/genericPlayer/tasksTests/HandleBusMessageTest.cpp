@@ -397,8 +397,8 @@ TEST_F(HandleBusMessageTest, shouldHandleErrorMessageWhenEosAllSources)
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT_CAST(&m_videoSrc);
     m_err.domain = GST_CORE_ERROR;
 
-    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));
-    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, GST_ELEMENT(&m_videoSrc));
+    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, firebolt::rialto::server::EosState::SET);
+    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, firebolt::rialto::server::EosState::SET);
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&m_message, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
@@ -438,7 +438,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosSingleSource)
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT_CAST(&m_videoSrc);
     m_err.domain = GST_STREAM_ERROR;
 
-    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));
+    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, firebolt::rialto::server::EosState::SET);
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&m_message, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
@@ -459,8 +459,8 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSources)
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT_CAST(&m_videoSrc);
     m_err.domain = GST_STREAM_ERROR;
 
-    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));
-    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, GST_ELEMENT(&m_videoSrc));
+    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, firebolt::rialto::server::EosState::SET);
+    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, firebolt::rialto::server::EosState::SET);
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&m_message, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
@@ -484,8 +484,8 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSourcesAndE
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT_CAST(&m_videoSrc);
     m_err.domain = GST_STREAM_ERROR;
 
-    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));
-    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, GST_ELEMENT(&m_videoSrc));
+    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, firebolt::rialto::server::EosState::SET);
+    m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, firebolt::rialto::server::EosState::SET);
     m_context.eosNotified = true;
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&m_message, _, _))

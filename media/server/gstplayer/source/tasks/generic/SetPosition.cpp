@@ -29,7 +29,7 @@ namespace firebolt::rialto::server::tasks::generic
 {
 SetPosition::SetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
                          std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, std::int64_t position)
-    : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_position{position}
+    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_position{position}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetPosition");
 }
@@ -95,7 +95,7 @@ void SetPosition::execute() const
     {
         if (streamInfo.second.appSrc)
         {
-            NeedData task{m_context, m_gstPlayerClient, GST_APP_SRC(streamInfo.second.appSrc)};
+            NeedData task{m_context, m_player, m_gstPlayerClient, GST_APP_SRC(streamInfo.second.appSrc)};
             task.execute();
         }
     }

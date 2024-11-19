@@ -127,9 +127,9 @@ protected:
         GstAppSrc appSrc{};
         std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
         EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-        EXPECT_CALL(m_taskFactoryMock, createNeedData(_, &appSrc))
+        EXPECT_CALL(m_taskFactoryMock, createNeedData(_, _, &appSrc))
             .WillOnce(Invoke(
-                [&](GenericPlayerContext &context, GstAppSrc *src)
+                [&](GenericPlayerContext &context, IGstGenericPlayerPrivate &player, GstAppSrc *src)
                 {
                     fun(context);
                     std::unique_lock<std::mutex> lock{m_waitMutex};
@@ -177,7 +177,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleNeedData)
     GstAppSrc appSrc{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createNeedData(_, &appSrc)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createNeedData(_, _, &appSrc)).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleNeedMediaData(&appSrc);
 }

@@ -84,7 +84,7 @@ void SetSourcePosition::execute() const
         m_context.eosNotified = false;
 
         // Trigger NeedData for source
-        NeedData task{m_context, m_gstPlayerClient, GST_APP_SRC(source)};
+        NeedData task{m_context, m_player, m_gstPlayerClient, GST_APP_SRC(source)};
         task.execute();
     }
 }

@@ -299,11 +299,9 @@ void GenericTasksTestsBase::setContextVideoUnderflowOccured(bool isUnderflow)
     videoStreamIt->second.underflowOccured = isUnderflow;
 }
 
-void GenericTasksTestsBase::setContextEndOfStream(firebolt::rialto::MediaSourceType sourceType)
+void GenericTasksTestsBase::setContextEndOfStream(firebolt::rialto::MediaSourceType sourceType, bool state)
 {
-    GstElement *appSrc = (sourceType == firebolt::rialto::MediaSourceType::AUDIO ? &testContext->m_appSrcAudio
-                                                                                 : &testContext->m_appSrcVideo);
-    testContext->m_context.endOfStreamInfo.emplace(sourceType, appSrc);
+    testContext->m_context.endOfStreamInfo.emplace(sourceType, state ? EosState::SET : EosState::PENDING);
 }
 
 void GenericTasksTestsBase::setContextEndOfStreamNotified()
@@ -1130,6 +1128,11 @@ void GenericTasksTestsBase::shouldAttachAllAudioSamples()
         .Times(2);
     EXPECT_CALL(testContext->m_gstPlayer, attachData(MediaSourceType::AUDIO)).Times(2);
     EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::AUDIO));
+}
+
+void GenericTasksTestsBase::shouldAttachData(firebolt::rialto::MediaSourceType sourceType)
+{
+    EXPECT_CALL(testContext->m_gstPlayer, attachData(sourceType)).Times(1);
 }
 
 void GenericTasksTestsBase::triggerAttachSamplesAudio()
@@ -2191,6 +2194,18 @@ void GenericTasksTestsBase::shouldCancelUnderflow(firebolt::rialto::MediaSourceT
     EXPECT_CALL(testContext->m_gstPlayer, cancelUnderflow(sourceType));
 }
 
+void GenericTasksTestsBase::shouldSetEos(firebolt::rialto::MediaSourceType sourceType)
+{
+    auto eosIt{testContext->m_context.endOfStreamInfo.find(sourceType)};
+    EXPECT_TRUE(eosIt != testContext->m_context.endOfStreamInfo.end() && eosIt->second == EosState::SET);
+}
+
+void GenericTasksTestsBase::shouldSetEosPending(firebolt::rialto::MediaSourceType sourceType)
+{
+    auto eosIt{testContext->m_context.endOfStreamInfo.find(sourceType)};
+    EXPECT_TRUE(eosIt != testContext->m_context.endOfStreamInfo.end() && eosIt->second == EosState::PENDING);
+}
+
 void GenericTasksTestsBase::setUnderflowEnabled(bool isUnderflowEnabled)
 {
     testContext->m_underflowEnabled = isUnderflowEnabled;
@@ -2611,14 +2626,16 @@ void GenericTasksTestsBase::checkSetupSourceUnfinished()
 
 void GenericTasksTestsBase::triggerNeedDataAudio()
 {
-    firebolt::rialto::server::tasks::generic::NeedData task{testContext->m_context, &testContext->m_gstPlayerClient,
+    firebolt::rialto::server::tasks::generic::NeedData task{testContext->m_context, testContext->m_gstPlayer,
+                                                            &testContext->m_gstPlayerClient,
                                                             GST_APP_SRC(&testContext->m_appSrcAudio)};
     task.execute();
 }
 
 void GenericTasksTestsBase::triggerNeedDataVideo()
 {
-    firebolt::rialto::server::tasks::generic::NeedData task{testContext->m_context, &testContext->m_gstPlayerClient,
+    firebolt::rialto::server::tasks::generic::NeedData task{testContext->m_context, testContext->m_gstPlayer,
+                                                            &testContext->m_gstPlayerClient,
                                                             GST_APP_SRC(&testContext->m_appSrcVideo)};
     task.execute();
 }
@@ -2626,8 +2643,8 @@ void GenericTasksTestsBase::triggerNeedDataVideo()
 void GenericTasksTestsBase::triggerNeedDataUnknownSrc()
 {
     GstAppSrc unknownSrc{};
-    firebolt::rialto::server::tasks::generic::NeedData task{testContext->m_context, &testContext->m_gstPlayerClient,
-                                                            &unknownSrc};
+    firebolt::rialto::server::tasks::generic::NeedData task{testContext->m_context, testContext->m_gstPlayer,
+                                                            &testContext->m_gstPlayerClient, &unknownSrc};
     task.execute();
 }
 
