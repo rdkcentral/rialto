@@ -31,6 +31,7 @@ class ConfigReaderMock : public IConfigReader
 public:
     MOCK_METHOD(bool, read, (), (override));
     MOCK_METHOD(std::list<std::string>, getEnvironmentVariables, (), (override));
+    MOCK_METHOD(std::list<std::string>, getExtraEnvVariables, (), (override));
     MOCK_METHOD(std::optional<std::string>, getSessionServerPath, (), (override));
     MOCK_METHOD(std::optional<std::chrono::milliseconds>, getSessionServerStartupTimeout, (), (override));
     MOCK_METHOD(std::optional<std::chrono::seconds>, getHealthcheckInterval, (), (override));

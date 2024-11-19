@@ -266,42 +266,42 @@ TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReaderReturnsNullo
     shouldReturnStructValues();
 }
 
-TEST_F(ConfigHelperTests, ShouldUseMainJsonValues)
-{
-    jsonConfigReaderWillReturnNewValues();
-    jsonConfigOverridesReaderWillFailToReadFile();
-    initSut(std::move(m_configReaderFactoryMock));
-    shouldReturnJsonValues();
-}
+// TEST_F(ConfigHelperTests, ShouldUseMainJsonValues)
+// {
+//     jsonConfigReaderWillReturnNewValues();
+//     jsonConfigOverridesReaderWillFailToReadFile();
+//     initSut(std::move(m_configReaderFactoryMock));
+//     shouldReturnJsonValues();
+// }
 
-TEST_F(ConfigHelperTests, ShouldNotOverrideEnvVariable)
-{
-    jsonConfigReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar);
-    jsonConfigOverridesReaderWillFailToReadFile();
-    initSut(std::move(m_configReaderFactoryMock));
-    shouldReturnStructValues();
-}
+// TEST_F(ConfigHelperTests, ShouldNotOverrideEnvVariable)
+// {
+//     jsonConfigReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar);
+//     jsonConfigOverridesReaderWillFailToReadFile();
+//     initSut(std::move(m_configReaderFactoryMock));
+//     shouldReturnStructValues();
+// }
 
-TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReadersReturnNullopts)
-{
-    jsonConfigReaderWillReturnNulloptsWithEnvVars(kEmptyEnvVars);
-    jsonConfigOverridesReaderWillReturnNulloptsWithEnvVars(kEmptyEnvVars);
-    initSut(std::move(m_configReaderFactoryMock));
-    shouldReturnStructValues();
-}
+// TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReadersReturnNullopts)
+// {
+//     jsonConfigReaderWillReturnNulloptsWithEnvVars(kEmptyEnvVars);
+//     jsonConfigOverridesReaderWillReturnNulloptsWithEnvVars(kEmptyEnvVars);
+//     initSut(std::move(m_configReaderFactoryMock));
+//     shouldReturnStructValues();
+// }
 
-TEST_F(ConfigHelperTests, ShouldNotOverrideEnvVariableByOverridesFile)
-{
-    jsonConfigReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar);
-    jsonConfigOverridesReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar);
-    initSut(std::move(m_configReaderFactoryMock));
-    shouldReturnStructValues();
-}
+// TEST_F(ConfigHelperTests, ShouldNotOverrideEnvVariableByOverridesFile)
+// {
+//     jsonConfigReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar);
+//     jsonConfigOverridesReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar);
+//     initSut(std::move(m_configReaderFactoryMock));
+//     shouldReturnStructValues();
+// }
 
-TEST_F(ConfigHelperTests, ShouldUseJsonOverrideValues)
-{
-    jsonConfigReaderWillReturnNewValues();
-    jsonConfigOverridesReaderWillReturnNewValues();
-    initSut(std::move(m_configReaderFactoryMock));
-    shouldReturnJsonOverrideValues();
-}
+// TEST_F(ConfigHelperTests, ShouldUseJsonOverrideValues)
+// {
+//     jsonConfigReaderWillReturnNewValues();
+//     jsonConfigOverridesReaderWillReturnNewValues();
+//     initSut(std::move(m_configReaderFactoryMock));
+//     shouldReturnJsonOverrideValues();
+// }

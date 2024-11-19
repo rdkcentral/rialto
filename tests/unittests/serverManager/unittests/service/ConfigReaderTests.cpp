@@ -139,7 +139,7 @@ TEST_F(ConfigReaderTests, thereWillBeNothing)
     EXPECT_EQ(m_sut->getNumOfPreloadedServers().has_value(), false);
 }
 
-TEST_F(ConfigReaderTests, envVariablesNotArray)
+TEST_F(ConfigReaderTests, envVariablesNotArraySnakeCase)
 {
     expectSuccessfulParsing();
 
@@ -153,7 +153,21 @@ TEST_F(ConfigReaderTests, envVariablesNotArray)
     EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0);
 }
 
-TEST_F(ConfigReaderTests, envVariablesEmptyArray)
+TEST_F(ConfigReaderTests, envVariablesNotArray)
+{
+    expectSuccessfulParsing();
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember("environmentVariables")).WillOnce(Return(true));
+    EXPECT_CALL(*m_rootJsonValueMock, at("environmentVariables")).WillOnce(Return(m_objectJsonValueMock));
+    EXPECT_CALL(*m_objectJsonValueMock, isArray()).WillOnce(Return(false));
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("environmentVariables"))).WillRepeatedly(Return(false));
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0);
+}
+
+TEST_F(ConfigReaderTests, envVariablesEmptyArraySnakeCase)
 {
     expectSuccessfulParsing();
 
@@ -168,7 +182,22 @@ TEST_F(ConfigReaderTests, envVariablesEmptyArray)
     EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0);
 }
 
-TEST_F(ConfigReaderTests, envVariablesOneElementArrayNotString)
+TEST_F(ConfigReaderTests, envVariablesEmptyArray)
+{
+    expectSuccessfulParsing();
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember("environmentVariables")).WillOnce(Return(true));
+    EXPECT_CALL(*m_rootJsonValueMock, at("environmentVariables")).WillRepeatedly(Return(m_objectJsonValueMock));
+    EXPECT_CALL(*m_objectJsonValueMock, isArray()).WillOnce(Return(true));
+    EXPECT_CALL(*m_objectJsonValueMock, size()).WillOnce(Return(0));
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("environmentVariables"))).WillRepeatedly(Return(false));
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0);
+}
+
+TEST_F(ConfigReaderTests, envVariablesOneElementArrayNotStringSnakeCase)
 {
     std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>> object1JsonValueMock =
         std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
@@ -188,7 +217,27 @@ TEST_F(ConfigReaderTests, envVariablesOneElementArrayNotString)
     EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0);
 }
 
-TEST_F(ConfigReaderTests, envVariablesMultipleElementArray)
+TEST_F(ConfigReaderTests, envVariablesOneElementArrayNotString)
+{
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>> object1JsonValueMock =
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+
+    expectSuccessfulParsing();
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember("environmentVariables")).WillOnce(Return(true));
+    EXPECT_CALL(*m_rootJsonValueMock, at("environmentVariables")).WillRepeatedly(Return(m_objectJsonValueMock));
+    EXPECT_CALL(*m_objectJsonValueMock, isArray()).WillOnce(Return(true));
+    EXPECT_CALL(*m_objectJsonValueMock, size()).WillOnce(Return(1));
+    EXPECT_CALL(*m_objectJsonValueMock, at(Matcher<Json::ArrayIndex>(0u))).WillOnce(Return(object1JsonValueMock));
+    EXPECT_CALL(*object1JsonValueMock, isString()).WillOnce(Return(false));
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("environmentVariables"))).WillRepeatedly(Return(false));
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0);
+}
+
+TEST_F(ConfigReaderTests, envVariablesMultipleElementArraySnakeCase)
 {
     std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>> object1JsonValueMock =
         std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
@@ -214,7 +263,33 @@ TEST_F(ConfigReaderTests, envVariablesMultipleElementArray)
     EXPECT_THAT(m_sut->getEnvironmentVariables(), UnorderedElementsAre("ELEM_1", "ELEM_2"));
 }
 
-TEST_F(ConfigReaderTests, sessionServerPathNotString)
+TEST_F(ConfigReaderTests, envVariablesMultipleElementArray)
+{
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>> object1JsonValueMock =
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>> object2JsonValueMock =
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+
+    expectSuccessfulParsing();
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember("environmentVariables")).WillOnce(Return(true));
+    EXPECT_CALL(*m_rootJsonValueMock, at("environmentVariables")).WillRepeatedly(Return(m_objectJsonValueMock));
+    EXPECT_CALL(*m_objectJsonValueMock, isArray()).WillOnce(Return(true));
+    EXPECT_CALL(*m_objectJsonValueMock, size()).WillOnce(Return(2));
+    EXPECT_CALL(*m_objectJsonValueMock, at(Matcher<Json::ArrayIndex>(0u))).WillRepeatedly(Return(object1JsonValueMock));
+    EXPECT_CALL(*object1JsonValueMock, isString()).WillOnce(Return(true));
+    EXPECT_CALL(*object1JsonValueMock, asString()).WillOnce(Return("ELEM_1"));
+    EXPECT_CALL(*m_objectJsonValueMock, at(Matcher<Json::ArrayIndex>(1u))).WillRepeatedly(Return(object2JsonValueMock));
+    EXPECT_CALL(*object2JsonValueMock, isString()).WillOnce(Return(true));
+    EXPECT_CALL(*object2JsonValueMock, asString()).WillOnce(Return("ELEM_2"));
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("environmentVariables"))).WillRepeatedly(Return(false));
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_THAT(m_sut->getEnvironmentVariables(), UnorderedElementsAre("ELEM_1", "ELEM_2"));
+}
+
+TEST_F(ConfigReaderTests, sessionServerPathNotStringSnakeCase)
 {
     expectSuccessfulParsing();
     expectNotString("session_server_path");
@@ -223,7 +298,16 @@ TEST_F(ConfigReaderTests, sessionServerPathNotString)
     EXPECT_EQ(m_sut->getSessionServerPath().has_value(), false);
 }
 
-TEST_F(ConfigReaderTests, sessionServerPathExists)
+TEST_F(ConfigReaderTests, sessionServerPathNotString)
+{
+    expectSuccessfulParsing();
+    expectNotString("sessionServerPath");
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSessionServerPath().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, sessionServerPathExistsSnakeCase)
 {
     expectSuccessfulParsing();
     expectReturnString("session_server_path", "/usr/bin/RialtoServer");
@@ -232,7 +316,16 @@ TEST_F(ConfigReaderTests, sessionServerPathExists)
     EXPECT_EQ(m_sut->getSessionServerPath(), "/usr/bin/RialtoServer");
 }
 
-TEST_F(ConfigReaderTests, startupTimerNotUint)
+TEST_F(ConfigReaderTests, sessionServerPathExists)
+{
+    expectSuccessfulParsing();
+    expectReturnString("sessionServerPath", "/usr/bin/RialtoServer");
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSessionServerPath(), "/usr/bin/RialtoServer");
+}
+
+TEST_F(ConfigReaderTests, startupTimerNotUintSnakeCase)
 {
     expectSuccessfulParsing();
     expectNotUint("startup_timeout_ms");
@@ -241,7 +334,16 @@ TEST_F(ConfigReaderTests, startupTimerNotUint)
     EXPECT_EQ(m_sut->getSessionServerStartupTimeout().has_value(), false);
 }
 
-TEST_F(ConfigReaderTests, startupTimerExists)
+TEST_F(ConfigReaderTests, startupTimerNotUint)
+{
+    expectSuccessfulParsing();
+    expectNotUint("startupTimeoutMs");
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSessionServerStartupTimeout().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, startupTimerExistsSnakeCase)
 {
     expectSuccessfulParsing();
     expectReturnUint("startup_timeout_ms", 5000);
@@ -250,7 +352,16 @@ TEST_F(ConfigReaderTests, startupTimerExists)
     EXPECT_EQ(m_sut->getSessionServerStartupTimeout(), std::chrono::milliseconds(5000));
 }
 
-TEST_F(ConfigReaderTests, healthCheckIntervalNotUint)
+TEST_F(ConfigReaderTests, startupTimerExists)
+{
+    expectSuccessfulParsing();
+    expectReturnUint("startupTimeoutMs", 5000);
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSessionServerStartupTimeout(), std::chrono::milliseconds(5000));
+}
+
+TEST_F(ConfigReaderTests, healthCheckIntervalNotUintSnakeCase)
 {
     expectSuccessfulParsing();
     expectNotUint("healthcheck_interval_s");
@@ -259,7 +370,16 @@ TEST_F(ConfigReaderTests, healthCheckIntervalNotUint)
     EXPECT_EQ(m_sut->getHealthcheckInterval().has_value(), false);
 }
 
-TEST_F(ConfigReaderTests, healthCheckIntervalExists)
+TEST_F(ConfigReaderTests, healthCheckIntervalNotUint)
+{
+    expectSuccessfulParsing();
+    expectNotUint("healthcheckIntervalInSeconds");
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getHealthcheckInterval().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, healthCheckIntervalExistsSnakeCase)
 {
     expectSuccessfulParsing();
     expectReturnUint("healthcheck_interval_s", 1);
@@ -268,7 +388,16 @@ TEST_F(ConfigReaderTests, healthCheckIntervalExists)
     EXPECT_EQ(m_sut->getHealthcheckInterval(), std::chrono::seconds(1));
 }
 
-TEST_F(ConfigReaderTests, socketPermissionsNotUint)
+TEST_F(ConfigReaderTests, healthCheckIntervalExists)
+{
+    expectSuccessfulParsing();
+    expectReturnUint("healthcheckIntervalInSeconds", 1);
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getHealthcheckInterval(), std::chrono::seconds(1));
+}
+
+TEST_F(ConfigReaderTests, socketPermissionsNotUintSnakeCase)
 {
     expectSuccessfulParsing();
     expectNotUint("socket_permissions");
@@ -277,7 +406,16 @@ TEST_F(ConfigReaderTests, socketPermissionsNotUint)
     EXPECT_EQ(m_sut->getSocketPermissions().has_value(), false);
 }
 
-TEST_F(ConfigReaderTests, socketPermissionsExists)
+TEST_F(ConfigReaderTests, socketPermissionsNotUint)
+{
+    expectSuccessfulParsing();
+    expectNotUint("socketPermissions");
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSocketPermissions().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, socketPermissionsExistsSnakeCase)
 {
     expectSuccessfulParsing();
     expectReturnUint("socket_permissions", 666);
@@ -289,7 +427,19 @@ TEST_F(ConfigReaderTests, socketPermissionsExists)
     EXPECT_EQ(m_sut->getSocketPermissions().value().otherPermissions, expectedPermissions.otherPermissions);
 }
 
-TEST_F(ConfigReaderTests, socketOwnerNotString)
+TEST_F(ConfigReaderTests, socketPermissionsExists)
+{
+    expectSuccessfulParsing();
+    expectReturnUint("socketPermissions", 666);
+
+    EXPECT_TRUE(m_sut->read());
+    firebolt::rialto::common::SocketPermissions expectedPermissions{6, 6, 6};
+    EXPECT_EQ(m_sut->getSocketPermissions().value().ownerPermissions, expectedPermissions.ownerPermissions);
+    EXPECT_EQ(m_sut->getSocketPermissions().value().groupPermissions, expectedPermissions.groupPermissions);
+    EXPECT_EQ(m_sut->getSocketPermissions().value().otherPermissions, expectedPermissions.otherPermissions);
+}
+
+TEST_F(ConfigReaderTests, socketOwnerNotStringSnakeCase)
 {
     expectSuccessfulParsing();
     expectNotString("socket_owner");
@@ -297,7 +447,15 @@ TEST_F(ConfigReaderTests, socketOwnerNotString)
     EXPECT_EQ(m_sut->getSocketOwner().has_value(), false);
 }
 
-TEST_F(ConfigReaderTests, socketOwnerExists)
+TEST_F(ConfigReaderTests, socketOwnerNotString)
+{
+    expectSuccessfulParsing();
+    expectNotString("socketOwner");
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSocketOwner().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, socketOwnerExistsSnakeCase)
 {
     const char *kTestValue = "root";
     expectSuccessfulParsing();
@@ -306,7 +464,16 @@ TEST_F(ConfigReaderTests, socketOwnerExists)
     EXPECT_EQ(m_sut->getSocketOwner().value(), kTestValue);
 }
 
-TEST_F(ConfigReaderTests, socketGroupNotString)
+TEST_F(ConfigReaderTests, socketOwnerExists)
+{
+    const char *kTestValue = "root";
+    expectSuccessfulParsing();
+    expectReturnString("socketOwner", kTestValue);
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSocketOwner().value(), kTestValue);
+}
+
+TEST_F(ConfigReaderTests, socketGroupNotStringSnakeCase)
 {
     expectSuccessfulParsing();
     expectNotString("socket_group");
@@ -314,7 +481,15 @@ TEST_F(ConfigReaderTests, socketGroupNotString)
     EXPECT_EQ(m_sut->getSocketGroup().has_value(), false);
 }
 
-TEST_F(ConfigReaderTests, socketGroupExists)
+TEST_F(ConfigReaderTests, socketGroupNotString)
+{
+    expectSuccessfulParsing();
+    expectNotString("socketGroup");
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSocketGroup().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, socketGroupExistsSnakeCase)
 {
     const char *kTestValue = "root";
     expectSuccessfulParsing();
@@ -323,7 +498,16 @@ TEST_F(ConfigReaderTests, socketGroupExists)
     EXPECT_EQ(m_sut->getSocketGroup().value(), kTestValue);
 }
 
-TEST_F(ConfigReaderTests, numOfPreloadedServersNotUint)
+TEST_F(ConfigReaderTests, socketGroupExists)
+{
+    const char *kTestValue = "root";
+    expectSuccessfulParsing();
+    expectReturnString("socketGroup", kTestValue);
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSocketGroup().value(), kTestValue);
+}
+
+TEST_F(ConfigReaderTests, numOfPreloadedServersNotUintSnakeCase)
 {
     expectSuccessfulParsing();
     expectNotUint("num_of_preloaded_servers");
@@ -332,7 +516,16 @@ TEST_F(ConfigReaderTests, numOfPreloadedServersNotUint)
     EXPECT_EQ(m_sut->getNumOfPreloadedServers().has_value(), false);
 }
 
-TEST_F(ConfigReaderTests, numOfPreloadedServersExists)
+TEST_F(ConfigReaderTests, numOfPreloadedServersNotUint)
+{
+    expectSuccessfulParsing();
+    expectNotUint("numOfPreloadedServers");
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getNumOfPreloadedServers().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, numOfPreloadedServersExistsSnakeCase)
 {
     expectSuccessfulParsing();
     expectReturnUint("num_of_preloaded_servers", 2);
@@ -341,7 +534,16 @@ TEST_F(ConfigReaderTests, numOfPreloadedServersExists)
     EXPECT_EQ(m_sut->getNumOfPreloadedServers(), 2);
 }
 
-TEST_F(ConfigReaderTests, logLevelNotUint)
+TEST_F(ConfigReaderTests, numOfPreloadedServersExists)
+{
+    expectSuccessfulParsing();
+    expectReturnUint("numOfPreloadedServers", 2);
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getNumOfPreloadedServers(), 2);
+}
+
+TEST_F(ConfigReaderTests, logLevelNotUintSnakeCase)
 {
     expectSuccessfulParsing();
     expectNotUint("log_level");
@@ -350,7 +552,16 @@ TEST_F(ConfigReaderTests, logLevelNotUint)
     EXPECT_EQ(m_sut->getLoggingLevels().has_value(), false);
 }
 
-TEST_F(ConfigReaderTests, logLevelSuccessfulParsing)
+TEST_F(ConfigReaderTests, logLevelNotUint)
+{
+    expectSuccessfulParsing();
+    expectNotUint("logLevel");
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getLoggingLevels().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, logLevelSuccessfulParsingSnakeCase)
 {
     expectSuccessfulParsing();
     expectReturnUint("log_level", 3);
@@ -371,7 +582,28 @@ TEST_F(ConfigReaderTests, logLevelSuccessfulParsing)
     EXPECT_EQ(m_sut->getLoggingLevels().value().commonLoggingLevel, loggingLevel.commonLoggingLevel);
 }
 
-TEST_F(ConfigReaderTests, numOfPingsBeforeRecoveryNotUint)
+TEST_F(ConfigReaderTests, logLevelSuccessfulParsing)
+{
+    expectSuccessfulParsing();
+    expectReturnUint("logLevel", 3);
+
+    EXPECT_TRUE(m_sut->read());
+    rialto::servermanager::service::LoggingLevels loggingLevel{rialto::servermanager::service::LoggingLevel::MILESTONE,
+                                                               rialto::servermanager::service::LoggingLevel::MILESTONE,
+                                                               rialto::servermanager::service::LoggingLevel::MILESTONE,
+                                                               rialto::servermanager::service::LoggingLevel::MILESTONE,
+                                                               rialto::servermanager::service::LoggingLevel::MILESTONE,
+                                                               rialto::servermanager::service::LoggingLevel::MILESTONE};
+
+    EXPECT_EQ(m_sut->getLoggingLevels().value().defaultLoggingLevel, loggingLevel.defaultLoggingLevel);
+    EXPECT_EQ(m_sut->getLoggingLevels().value().clientLoggingLevel, loggingLevel.clientLoggingLevel);
+    EXPECT_EQ(m_sut->getLoggingLevels().value().sessionServerLoggingLevel, loggingLevel.sessionServerLoggingLevel);
+    EXPECT_EQ(m_sut->getLoggingLevels().value().ipcLoggingLevel, loggingLevel.ipcLoggingLevel);
+    EXPECT_EQ(m_sut->getLoggingLevels().value().serverManagerLoggingLevel, loggingLevel.serverManagerLoggingLevel);
+    EXPECT_EQ(m_sut->getLoggingLevels().value().commonLoggingLevel, loggingLevel.commonLoggingLevel);
+}
+
+TEST_F(ConfigReaderTests, numOfPingsBeforeRecoveryNotUintSnakeCase)
 {
     expectSuccessfulParsing();
     expectNotUint("num_of_pings_before_recovery");
@@ -380,10 +612,28 @@ TEST_F(ConfigReaderTests, numOfPingsBeforeRecoveryNotUint)
     EXPECT_EQ(m_sut->getNumOfPreloadedServers().has_value(), false);
 }
 
-TEST_F(ConfigReaderTests, numOfPingsBeforeRecoveryExists)
+TEST_F(ConfigReaderTests, numOfPingsBeforeRecoveryNotUint)
+{
+    expectSuccessfulParsing();
+    expectNotUint("numOfPingsBeforeRecovery");
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getNumOfPreloadedServers().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, numOfPingsBeforeRecoveryExistsSnakeCase)
 {
     expectSuccessfulParsing();
     expectReturnUint("num_of_pings_before_recovery", 3);
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getNumOfPingsBeforeRecovery(), 3);
+}
+
+TEST_F(ConfigReaderTests, numOfPingsBeforeRecoveryExists)
+{
+    expectSuccessfulParsing();
+    expectReturnUint("numOfPingsBeforeRecovery", 3);
 
     EXPECT_TRUE(m_sut->read());
     EXPECT_EQ(m_sut->getNumOfPingsBeforeRecovery(), 3);
@@ -418,4 +668,79 @@ TEST_F(ConfigReaderTests, defaultConfigValuesAreSet)
     EXPECT_EQ(config.sessionManagementSocketPermissions.groupPermissions, kDefaultPermissions);
     EXPECT_EQ(config.sessionManagementSocketPermissions.otherPermissions, kDefaultPermissions);
     EXPECT_EQ(config.numOfFailedPingsBeforeRecovery, kNumOfFailedPingsBeforeRecovery);
+}
+
+TEST_F(ConfigReaderTests, extraEnvVariablesNotArray)
+{
+    expectSuccessfulParsing();
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember("extraEnvVariables")).WillOnce(Return(true));
+    EXPECT_CALL(*m_rootJsonValueMock, at("extraEnvVariables")).WillOnce(Return(m_objectJsonValueMock));
+    EXPECT_CALL(*m_objectJsonValueMock, isArray()).WillOnce(Return(false));
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("extraEnvVariables"))).WillRepeatedly(Return(false));
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getExtraEnvVariables().size(), 0);
+}
+
+TEST_F(ConfigReaderTests, extraEnvVariablesEmptyArray)
+{
+    expectSuccessfulParsing();
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember("extraEnvVariables")).WillOnce(Return(true));
+    EXPECT_CALL(*m_rootJsonValueMock, at("extraEnvVariables")).WillRepeatedly(Return(m_objectJsonValueMock));
+    EXPECT_CALL(*m_objectJsonValueMock, isArray()).WillOnce(Return(true));
+    EXPECT_CALL(*m_objectJsonValueMock, size()).WillOnce(Return(0));
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("extraEnvVariables"))).WillRepeatedly(Return(false));
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getExtraEnvVariables().size(), 0);
+}
+
+TEST_F(ConfigReaderTests, extraEnvVariablesOneElementArrayNotString)
+{
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>> object1JsonValueMock =
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+
+    expectSuccessfulParsing();
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember("extraEnvVariables")).WillOnce(Return(true));
+    EXPECT_CALL(*m_rootJsonValueMock, at("extraEnvVariables")).WillRepeatedly(Return(m_objectJsonValueMock));
+    EXPECT_CALL(*m_objectJsonValueMock, isArray()).WillOnce(Return(true));
+    EXPECT_CALL(*m_objectJsonValueMock, size()).WillOnce(Return(1));
+    EXPECT_CALL(*m_objectJsonValueMock, at(Matcher<Json::ArrayIndex>(0u))).WillOnce(Return(object1JsonValueMock));
+    EXPECT_CALL(*object1JsonValueMock, isString()).WillOnce(Return(false));
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("extraEnvVariables"))).WillRepeatedly(Return(false));
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getExtraEnvVariables().size(), 0);
+}
+
+TEST_F(ConfigReaderTests, extraEnvVariablesMultipleElementArray)
+{
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>> object1JsonValueMock =
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>> object2JsonValueMock =
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::JsonValueWrapperMock>>();
+
+    expectSuccessfulParsing();
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember("extraEnvVariables")).WillOnce(Return(true));
+    EXPECT_CALL(*m_rootJsonValueMock, at("extraEnvVariables")).WillRepeatedly(Return(m_objectJsonValueMock));
+    EXPECT_CALL(*m_objectJsonValueMock, isArray()).WillOnce(Return(true));
+    EXPECT_CALL(*m_objectJsonValueMock, size()).WillOnce(Return(2));
+    EXPECT_CALL(*m_objectJsonValueMock, at(Matcher<Json::ArrayIndex>(0u))).WillRepeatedly(Return(object1JsonValueMock));
+    EXPECT_CALL(*object1JsonValueMock, isString()).WillOnce(Return(true));
+    EXPECT_CALL(*object1JsonValueMock, asString()).WillOnce(Return("ELEM_1"));
+    EXPECT_CALL(*m_objectJsonValueMock, at(Matcher<Json::ArrayIndex>(1u))).WillRepeatedly(Return(object2JsonValueMock));
+    EXPECT_CALL(*object2JsonValueMock, isString()).WillOnce(Return(true));
+    EXPECT_CALL(*object2JsonValueMock, asString()).WillOnce(Return("ELEM_2"));
+
+    EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("extraEnvVariables"))).WillRepeatedly(Return(false));
+
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_THAT(m_sut->getExtraEnvVariables(), UnorderedElementsAre("ELEM_1", "ELEM_2"));
 }

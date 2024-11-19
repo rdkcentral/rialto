@@ -35,6 +35,7 @@ public:
     virtual bool read() = 0;
 
     virtual std::list<std::string> getEnvironmentVariables() = 0;
+    virtual std::list<std::string> getExtraEnvVariables() = 0;
     virtual std::optional<std::string> getSessionServerPath() = 0;
     virtual std::optional<std::chrono::milliseconds> getSessionServerStartupTimeout() = 0;
     virtual std::optional<std::chrono::seconds> getHealthcheckInterval() = 0;

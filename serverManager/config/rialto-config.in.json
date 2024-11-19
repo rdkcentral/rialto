@@ -21,14 +21,14 @@
     // with fields that mimic the structure of this file, but with
     // alternative values
 
-    "environment_variables" : [@ENVIRONMENT_VARIABLES@],
-    "session_server_path" : @SESSION_SERVER_PATH@,
-    "startup_timeout_ms" : @STARTUP_TIMEOUT_MS@,
-    "healthcheck_interval_s" : @HEALTHCHECK_INTERVAL_S@,
-    "socket_permissions" : @SOCKET_PERMISSIONS@,
-    "socket_owner" : @SOCKET_OWNER@,
-    "socket_group" : @SOCKET_GROUP@,
-    "num_of_preloaded_servers" : @NUM_OF_PRELOADED_SERVERS@,
-    "log_level" : @LOG_LEVEL@,
-    "num_of_pings_before_recovery" : @NUM_OF_PINGS_BEFORE_RECOVERY@
+    "environmentVariables" : [@ENVIRONMENT_VARIABLES@],
+    "sessionServerPath" : @SESSION_SERVER_PATH@,
+    "startupTimeoutMs" : @STARTUP_TIMEOUT_MS@,
+    "healthcheckIntervalInSeconds" : @HEALTHCHECK_INTERVAL_S@,
+    "socketPermissions" : @SOCKET_PERMISSIONS@,
+    "socketOwner" : @SOCKET_OWNER@,
+    "socketGroup" : @SOCKET_GROUP@,
+    "numOfPreloadedServers" : @NUM_OF_PRELOADED_SERVERS@,
+    "logLevel" : @LOG_LEVEL@,
+    "numOfPingsBeforeRecovery" : @NUM_OF_PINGS_BEFORE_RECOVERY@
 }

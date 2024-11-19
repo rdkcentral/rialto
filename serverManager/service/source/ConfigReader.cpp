@@ -46,6 +46,7 @@ bool ConfigReader::read()
     }
 
     parseEnvironmentVariables(root);
+    parseExtraEnvVariables(root);
     parseSessionServerPath(root);
     parseSessionServerStartupTimeout(root);
     parseHealthcheckInterval(root);
@@ -61,7 +62,19 @@ bool ConfigReader::read()
 
 void ConfigReader::parseEnvironmentVariables(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
-    if (root->isMember("environment_variables") && root->at("environment_variables")->isArray())
+    if (root->isMember("environmentVariables") && root->at("environmentVariables")->isArray())
+    {
+        std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> envVarsJson = root->at("environmentVariables");
+        Json::ArrayIndex size = envVarsJson->size();
+        for (Json::ArrayIndex index = 0; index < size; ++index)
+        {
+            if (envVarsJson->at(index)->isString())
+            {
+                m_envVars.emplace_back(envVarsJson->at(index)->asString());
+            }
+        }
+    }
+    else if (root->isMember("environment_variables") && root->at("environment_variables")->isArray())
     {
         std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> envVarsJson = root->at("environment_variables");
         Json::ArrayIndex size = envVarsJson->size();
@@ -75,9 +88,29 @@ void ConfigReader::parseEnvironmentVariables(std::shared_ptr<firebolt::rialto::w
     }
 }
 
+void ConfigReader::parseExtraEnvVariables(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+{
+    if (root->isMember("extraEnvVariables") && root->at("extraEnvVariables")->isArray())
+    {
+        std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> envVarsJson = root->at("extraEnvVariables");
+        Json::ArrayIndex size = envVarsJson->size();
+        for (Json::ArrayIndex index = 0; index < size; ++index)
+        {
+            if (envVarsJson->at(index)->isString())
+            {
+                m_extraEnvVars.emplace_back(envVarsJson->at(index)->asString());
+            }
+        }
+    }
+}
+
 void ConfigReader::parseSessionServerPath(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
-    if (root->isMember("session_server_path") && root->at("session_server_path")->isString())
+    if (root->isMember("sessionServerPath") && root->at("sessionServerPath")->isString())
+    {
+        m_sessionServerPath = root->at("sessionServerPath")->asString();
+    }
+    else if (root->isMember("session_server_path") && root->at("session_server_path")->isString())
     {
         m_sessionServerPath = root->at("session_server_path")->asString();
     }
@@ -85,7 +118,11 @@ void ConfigReader::parseSessionServerPath(std::shared_ptr<firebolt::rialto::wrap
 
 void ConfigReader::parseSessionServerStartupTimeout(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
-    if (root->isMember("startup_timeout_ms") && root->at("startup_timeout_ms")->isUInt())
+    if (root->isMember("startupTimeoutMs") && root->at("startupTimeoutMs")->isUInt())
+    {
+        m_sessionServerStartupTimeout = std::chrono::milliseconds(root->at("startupTimeoutMs")->asUInt());
+    }
+    else if (root->isMember("startup_timeout_ms") && root->at("startup_timeout_ms")->isUInt())
     {
         m_sessionServerStartupTimeout = std::chrono::milliseconds(root->at("startup_timeout_ms")->asUInt());
     }
@@ -93,7 +130,11 @@ void ConfigReader::parseSessionServerStartupTimeout(std::shared_ptr<firebolt::ri
 
 void ConfigReader::parseHealthcheckInterval(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
-    if (root->isMember("healthcheck_interval_s") && root->at("healthcheck_interval_s")->isUInt())
+    if (root->isMember("healthcheckIntervalInSeconds") && root->at("healthcheckIntervalInSeconds")->isUInt())
+    {
+        m_healthcheckInterval = std::chrono::seconds(root->at("healthcheckIntervalInSeconds")->asUInt());
+    }
+    else if (root->isMember("healthcheck_interval_s") && root->at("healthcheck_interval_s")->isUInt())
     {
         m_healthcheckInterval = std::chrono::seconds(root->at("healthcheck_interval_s")->asUInt());
     }
@@ -101,7 +142,17 @@ void ConfigReader::parseHealthcheckInterval(std::shared_ptr<firebolt::rialto::wr
 
 void ConfigReader::parseSocketPermissions(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
-    if (root->isMember("socket_permissions") && root->at("socket_permissions")->isUInt())
+    if (root->isMember("socketPermissions") && root->at("socketPermissions")->isUInt())
+    {
+        unsigned permissions = root->at("socketPermissions")->asUInt();
+
+        firebolt::rialto::common::SocketPermissions socketPermissions;
+        socketPermissions.ownerPermissions = (permissions / 100) % 10;
+        socketPermissions.groupPermissions = (permissions / 10) % 10;
+        socketPermissions.otherPermissions = (permissions) % 10;
+        m_socketPermissions = socketPermissions;
+    }
+    else if (root->isMember("socket_permissions") && root->at("socket_permissions")->isUInt())
     {
         unsigned permissions = root->at("socket_permissions")->asUInt();
 
@@ -115,25 +166,35 @@ void ConfigReader::parseSocketPermissions(std::shared_ptr<firebolt::rialto::wrap
 
 void ConfigReader::parseSocketOwner(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
-    const char *kFieldString = "socket_owner";
-    if (root->isMember(kFieldString) && root->at(kFieldString)->isString())
+    if (root->isMember("socketOwner") && root->at("socketOwner")->isString())
     {
-        m_socketOwner = root->at(kFieldString)->asString();
+        m_socketOwner = root->at("socketOwner")->asString();
+    }
+    else if (root->isMember("socket_owner") && root->at("socket_owner")->isString())
+    {
+        m_socketOwner = root->at("socket_owner")->asString();
     }
 }
 
 void ConfigReader::parseSocketGroup(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
-    const char *kFieldString = "socket_group";
-    if (root->isMember(kFieldString) && root->at(kFieldString)->isString())
+    if (root->isMember("socketGroup") && root->at("socketGroup")->isString())
     {
-        m_socketGroup = root->at(kFieldString)->asString();
+        m_socketGroup = root->at("socketGroup")->asString();
+    }
+    else if (root->isMember("socket_group") && root->at("socket_group")->isString())
+    {
+        m_socketGroup = root->at("socket_group")->asString();
     }
 }
 
 void ConfigReader::parseNumOfPreloadedServers(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
-    if (root->isMember("num_of_preloaded_servers") && root->at("num_of_preloaded_servers")->isUInt())
+    if (root->isMember("numOfPreloadedServers") && root->at("numOfPreloadedServers")->isUInt())
+    {
+        m_numOfPreloadedServers = root->at("numOfPreloadedServers")->asUInt();
+    }
+    else if (root->isMember("num_of_preloaded_servers") && root->at("num_of_preloaded_servers")->isUInt())
     {
         m_numOfPreloadedServers = root->at("num_of_preloaded_servers")->asUInt();
     }
@@ -141,12 +202,21 @@ void ConfigReader::parseNumOfPreloadedServers(std::shared_ptr<firebolt::rialto::
 
 void ConfigReader::parseLogLevel(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
-    if (root->isMember("log_level") && root->at("log_level")->isUInt())
+    std::optional<unsigned> loggingLevel{std::nullopt};
+    if (root->isMember("logLevel") && root->at("logLevel")->isUInt())
     {
-        unsigned loggingLevel = root->at("log_level")->asUInt();
+        loggingLevel = root->at("logLevel")->asUInt();
+    }
+    else if (root->isMember("log_level") && root->at("log_level")->isUInt())
+    {
+        loggingLevel = root->at("log_level")->asUInt();
+    }
+
+    if (loggingLevel)
+    {
         rialto::servermanager::service::LoggingLevel newLevel{rialto::servermanager::service::LoggingLevel::UNCHANGED};
 
-        switch (loggingLevel)
+        switch (*loggingLevel)
         {
         case 0:
             newLevel = rialto::servermanager::service::LoggingLevel::FATAL;
@@ -176,7 +246,11 @@ void ConfigReader::parseLogLevel(std::shared_ptr<firebolt::rialto::wrappers::IJs
 
 void ConfigReader::parseNumOfPingsBeforeRecovery(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
-    if (root->isMember("num_of_pings_before_recovery") && root->at("num_of_pings_before_recovery")->isUInt())
+    if (root->isMember("numOfPingsBeforeRecovery") && root->at("numOfPingsBeforeRecovery")->isUInt())
+    {
+        m_numOfPingsBeforeRecovery = root->at("numOfPingsBeforeRecovery")->asUInt();
+    }
+    else if (root->isMember("num_of_pings_before_recovery") && root->at("num_of_pings_before_recovery")->isUInt())
     {
         m_numOfPingsBeforeRecovery = root->at("num_of_pings_before_recovery")->asUInt();
     }
@@ -185,6 +259,11 @@ void ConfigReader::parseNumOfPingsBeforeRecovery(std::shared_ptr<firebolt::rialt
 std::list<std::string> ConfigReader::getEnvironmentVariables()
 {
     return m_envVars;
+}
+
+std::list<std::string> ConfigReader::getExtraEnvVariables()
+{
+    return m_extraEnvVars;
 }
 
 std::optional<std::string> ConfigReader::getSessionServerPath()
