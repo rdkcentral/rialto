@@ -130,11 +130,12 @@ void ConfigHelper::readConfigFile(const std::string &filePath)
     }
 
     // Always override env variables when present in "more important" file
-    // (envVariables from less important file will be wiped if envVariables are present)
+    // (envVariables + extraEnvVariables from less important file will be wiped if envVariables are present)
     const std::map<std::string, std::string> envVariables{convertToMap(configReader->getEnvironmentVariables())};
     if (!envVariables.empty())
     {
         m_jsonEnvVars = envVariables;
+        m_jsonExtraEnvVars.clear();
     }
     const std::map<std::string, std::string> extraEnvVariables{convertToMap(configReader->getExtraEnvVariables())};
     if (!extraEnvVariables.empty())
