@@ -66,8 +66,11 @@ ConfigHelper::ConfigHelper(std::unique_ptr<IConfigReaderFactory> &&configReaderF
       m_numOfFailedPingsBeforeRecovery{config.numOfFailedPingsBeforeRecovery}, m_loggingLevels{}
 {
 #ifdef RIALTO_ENABLE_CONFIG_FILE
+    // Read from least to most important file
     readConfigFile(RIALTO_CONFIG_PATH);
+    readConfigFile(RIALTO_CONFIG_SOC_PATH);
     readConfigFile(RIALTO_CONFIG_OVERRIDES_PATH);
+    mergeEnvVariables();
 #endif // RIALTO_ENABLE_CONFIG_FILE
 }
 
@@ -126,14 +129,17 @@ void ConfigHelper::readConfigFile(const std::string &filePath)
         return;
     }
 
-    std::map<std::string, std::string> envVariables{convertToMap(configReader->getEnvironmentVariables())};
-    for (const auto &[name, value] : envVariables)
+    // Always override env variables when present in "more important" file
+    // (envVariables from less important file will be wiped if envVariables are present)
+    const std::map<std::string, std::string> envVariables{convertToMap(configReader->getEnvironmentVariables())};
+    if (!envVariables.empty())
     {
-        // If environment variable exists in ServerManagerConfig, do not overwrite it
-        if (m_sessionServerEnvVars.end() == m_sessionServerEnvVars.find(name))
-        {
-            m_sessionServerEnvVars.emplace(name, value);
-        }
+        m_jsonEnvVars = envVariables;
+    }
+    const std::map<std::string, std::string> extraEnvVariables{convertToMap(configReader->getExtraEnvVariables())};
+    if (!extraEnvVariables.empty())
+    {
+        m_jsonExtraEnvVars = extraEnvVariables;
     }
 
     if (configReader->getSessionServerPath())
@@ -162,6 +168,20 @@ void ConfigHelper::readConfigFile(const std::string &filePath)
 
     if (configReader->getLoggingLevels())
         m_loggingLevels = configReader->getLoggingLevels().value();
+}
+
+void ConfigHelper::mergeEnvVariables()
+{
+    // Env vars from json are more important than values from config struct
+    if (!m_jsonEnvVars.empty())
+    {
+        m_sessionServerEnvVars = m_jsonEnvVars;
+    }
+    for (const auto &[name, value] : m_jsonExtraEnvVars)
+    {
+        // If env variable exists both in envVariables and extraEnvVariables, overwrite it.
+        m_sessionServerEnvVars[name] = value;
+    }
 }
 #endif // RIALTO_ENABLE_CONFIG_FILE
 } // namespace rialto::servermanager::service

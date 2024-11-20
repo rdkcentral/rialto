@@ -35,6 +35,7 @@ using testing::StrictMock;
 namespace
 {
 const std::string kRialtoConfigPath{"/etc/rialto-config.json"};
+const std::string kRialtoConfigSocPath{"/etc/rialto_soc.json"};
 const std::string kRialtoConfigOverridesPath{"/opt/persistent/sky/rialto-config-overrides.json"};
 const ServerManagerConfig kServerManagerConfig{{"env1=var1"},
                                                2,
@@ -147,11 +148,13 @@ public:
         EXPECT_CALL(*m_configReaderMock, read()).WillOnce(Return(false));
     }
 
-    void jsonConfigReaderWillReturnNulloptsWithEnvVars(const std::list<std::string> &envVars)
+    void jsonConfigReaderWillReturnNulloptsWithEnvVars(const std::list<std::string> &envVars,
+                                                       const std::list<std::string> &extraEnvVars)
     {
         EXPECT_CALL(*m_configReaderFactoryMock, createConfigReader(kRialtoConfigPath)).WillOnce(Return(m_configReaderMock));
         EXPECT_CALL(*m_configReaderMock, read()).WillOnce(Return(true));
         EXPECT_CALL(*m_configReaderMock, getEnvironmentVariables()).WillOnce(Return(envVars));
+        EXPECT_CALL(*m_configReaderMock, getExtraEnvVariables()).WillOnce(Return(extraEnvVars));
         EXPECT_CALL(*m_configReaderMock, getSessionServerPath()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configReaderMock, getSessionServerStartupTimeout()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configReaderMock, getHealthcheckInterval()).WillOnce(Return(std::nullopt));
@@ -230,6 +233,13 @@ public:
             .WillRepeatedly(Return(kJsonOverrideNumOfFailedPingsBeforeRecovery));
     }
 
+    void jsonConfigSocReaderWillFailToReadFile()
+    {
+        EXPECT_CALL(*m_configReaderFactoryMock, createConfigReader(kRialtoConfigSocPath))
+            .WillOnce(Return(m_configSocReaderMock));
+        EXPECT_CALL(*m_configSocReaderMock, read()).WillOnce(Return(false));
+    }
+
     void initSut(std::unique_ptr<StrictMock<ConfigReaderFactoryMock>> &&configReaderFactory)
     {
         m_sut = std::make_unique<ConfigHelper>(std::move(configReaderFactory), kServerManagerConfig);
@@ -242,6 +252,7 @@ protected:
     std::shared_ptr<StrictMock<ConfigReaderMock>> m_configReaderMock{std::make_shared<StrictMock<ConfigReaderMock>>()};
     std::shared_ptr<StrictMock<ConfigReaderMock>> m_configOverridesReaderMock{
         std::make_shared<StrictMock<ConfigReaderMock>>()};
+    std::shared_ptr<StrictMock<ConfigReaderMock>> m_configSocReaderMock{std::make_shared<StrictMock<ConfigReaderMock>>()};
 };
 
 TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenFactoryIsNull)
@@ -253,6 +264,7 @@ TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenFactoryIsNull)
 TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReaderIsNull)
 {
     jsonConfigReaderWillFailToReadFile();
+    jsonConfigSocReaderWillFailToReadFile();
     jsonConfigOverridesReaderWillFailToReadFile();
     initSut(std::move(m_configReaderFactoryMock));
     shouldReturnStructValues();
@@ -260,7 +272,8 @@ TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReaderIsNull)
 
 TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReaderReturnsNullopts)
 {
-    jsonConfigReaderWillReturnNulloptsWithEnvVars(kEmptyEnvVars);
+    jsonConfigReaderWillReturnNulloptsWithEnvVars(kEmptyEnvVars, kEmptyEnvVars);
+    jsonConfigSocReaderWillFailToReadFile();
     jsonConfigOverridesReaderWillFailToReadFile();
     initSut(std::move(m_configReaderFactoryMock));
     shouldReturnStructValues();
