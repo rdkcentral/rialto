@@ -22,6 +22,7 @@
     // alternative values
 
     "environmentVariables" : [@ENVIRONMENT_VARIABLES@],
+    "extraEnvVariables" : [@EXTRA_ENV_VARIABLES@],
     "sessionServerPath" : @SESSION_SERVER_PATH@,
     "startupTimeoutMs" : @STARTUP_TIMEOUT_MS@,
     "healthcheckIntervalInSeconds" : @HEALTHCHECK_INTERVAL_S@,
