@@ -69,9 +69,9 @@ const LoggingLevels kJsonOverrideLoggingLevels{LoggingLevel::INFO, LoggingLevel:
 class ConfigHelperTests : public testing::Test
 {
 public:
-    void shouldReturnStructValues()
+    void shouldReturnStructValuesWithEnvVars(const std::list<std::string> &expectedEnvVars)
     {
-        EXPECT_EQ(m_sut->getSessionServerEnvVars(), kServerManagerConfig.sessionServerEnvVars);
+        EXPECT_EQ(m_sut->getSessionServerEnvVars(), expectedEnvVars);
         EXPECT_EQ(m_sut->getSessionServerPath(), kServerManagerConfig.sessionServerPath);
         EXPECT_EQ(m_sut->getSessionServerStartupTimeout(), kServerManagerConfig.sessionServerStartupTimeout);
         EXPECT_EQ(m_sut->getHealthcheckInterval(), kServerManagerConfig.healthcheckInterval);
@@ -95,8 +95,7 @@ public:
 
     void shouldReturnJsonValues()
     {
-        const std::list<std::string> kExpectedEnvVars{kServerManagerConfig.sessionServerEnvVars.front(),
-                                                      kJsonSessionServerEnvVars.front()};
+        const std::list<std::string> kExpectedEnvVars{kJsonSessionServerEnvVars.front()};
         EXPECT_EQ(m_sut->getSessionServerEnvVars(), kExpectedEnvVars);
         EXPECT_EQ(m_sut->getSessionServerPath(), kJsonSessionServerPath);
         EXPECT_EQ(m_sut->getSessionServerStartupTimeout(), kJsonStartupTimeout);
@@ -118,9 +117,7 @@ public:
 
     void shouldReturnJsonOverrideValues()
     {
-        const std::list<std::string> kExpectedEnvVars{kServerManagerConfig.sessionServerEnvVars.front(),
-                                                      kJsonSessionServerEnvVars.front(),
-                                                      kJsonOverrideSessionServerEnvVars.front()};
+        const std::list<std::string> kExpectedEnvVars{kJsonOverrideSessionServerEnvVars.front()};
         EXPECT_EQ(m_sut->getSessionServerEnvVars(), kExpectedEnvVars);
         EXPECT_EQ(m_sut->getSessionServerPath(), kJsonOverrideSessionServerPath);
         EXPECT_EQ(m_sut->getSessionServerStartupTimeout(), kJsonOverrideStartupTimeout);
@@ -171,6 +168,7 @@ public:
         EXPECT_CALL(*m_configReaderFactoryMock, createConfigReader(kRialtoConfigPath)).WillOnce(Return(m_configReaderMock));
         EXPECT_CALL(*m_configReaderMock, read()).WillOnce(Return(true));
         EXPECT_CALL(*m_configReaderMock, getEnvironmentVariables()).WillRepeatedly(Return(kJsonSessionServerEnvVars));
+        EXPECT_CALL(*m_configReaderMock, getExtraEnvVariables()).WillOnce(Return(kEmptyEnvVars));
         EXPECT_CALL(*m_configReaderMock, getSessionServerPath()).WillRepeatedly(Return(kJsonSessionServerPath));
         EXPECT_CALL(*m_configReaderMock, getSessionServerStartupTimeout()).WillRepeatedly(Return(kJsonStartupTimeout));
         EXPECT_CALL(*m_configReaderMock, getHealthcheckInterval()).WillRepeatedly(Return(kJsonHealthcheckInterval));
@@ -190,12 +188,14 @@ public:
         EXPECT_CALL(*m_configOverridesReaderMock, read()).WillOnce(Return(false));
     }
 
-    void jsonConfigOverridesReaderWillReturnNulloptsWithEnvVars(const std::list<std::string> &envVars)
+    void jsonConfigOverridesReaderWillReturnNulloptsWithEnvVars(const std::list<std::string> &envVars,
+                                                                const std::list<std::string> &extraEnvVars)
     {
         EXPECT_CALL(*m_configReaderFactoryMock, createConfigReader(kRialtoConfigOverridesPath))
             .WillOnce(Return(m_configOverridesReaderMock));
         EXPECT_CALL(*m_configOverridesReaderMock, read()).WillOnce(Return(true));
         EXPECT_CALL(*m_configOverridesReaderMock, getEnvironmentVariables()).WillOnce(Return(envVars));
+        EXPECT_CALL(*m_configOverridesReaderMock, getExtraEnvVariables()).WillOnce(Return(extraEnvVars));
         EXPECT_CALL(*m_configOverridesReaderMock, getSessionServerPath()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configOverridesReaderMock, getSessionServerStartupTimeout()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configOverridesReaderMock, getHealthcheckInterval()).WillOnce(Return(std::nullopt));
@@ -214,6 +214,7 @@ public:
         EXPECT_CALL(*m_configOverridesReaderMock, read()).WillOnce(Return(true));
         EXPECT_CALL(*m_configOverridesReaderMock, getEnvironmentVariables())
             .WillRepeatedly(Return(kJsonOverrideSessionServerEnvVars));
+        EXPECT_CALL(*m_configOverridesReaderMock, getExtraEnvVariables()).WillOnce(Return(kEmptyEnvVars));
         EXPECT_CALL(*m_configOverridesReaderMock, getSessionServerPath())
             .WillRepeatedly(Return(kJsonOverrideSessionServerPath));
         EXPECT_CALL(*m_configOverridesReaderMock, getSessionServerStartupTimeout())
@@ -258,7 +259,7 @@ protected:
 TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenFactoryIsNull)
 {
     initSut(nullptr);
-    shouldReturnStructValues();
+    shouldReturnStructValuesWithEnvVars(kServerManagerConfig.sessionServerEnvVars);
 }
 
 TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReaderIsNull)
@@ -267,7 +268,7 @@ TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReaderIsNull)
     jsonConfigSocReaderWillFailToReadFile();
     jsonConfigOverridesReaderWillFailToReadFile();
     initSut(std::move(m_configReaderFactoryMock));
-    shouldReturnStructValues();
+    shouldReturnStructValuesWithEnvVars(kServerManagerConfig.sessionServerEnvVars);
 }
 
 TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReaderReturnsNullopts)
@@ -276,45 +277,50 @@ TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReaderReturnsNullo
     jsonConfigSocReaderWillFailToReadFile();
     jsonConfigOverridesReaderWillFailToReadFile();
     initSut(std::move(m_configReaderFactoryMock));
-    shouldReturnStructValues();
+    shouldReturnStructValuesWithEnvVars(kServerManagerConfig.sessionServerEnvVars);
 }
 
-// TEST_F(ConfigHelperTests, ShouldUseMainJsonValues)
-// {
-//     jsonConfigReaderWillReturnNewValues();
-//     jsonConfigOverridesReaderWillFailToReadFile();
-//     initSut(std::move(m_configReaderFactoryMock));
-//     shouldReturnJsonValues();
-// }
+TEST_F(ConfigHelperTests, ShouldUseMainJsonValues)
+{
+    jsonConfigReaderWillReturnNewValues();
+    jsonConfigSocReaderWillFailToReadFile();
+    jsonConfigOverridesReaderWillFailToReadFile();
+    initSut(std::move(m_configReaderFactoryMock));
+    shouldReturnJsonValues();
+}
 
-// TEST_F(ConfigHelperTests, ShouldNotOverrideEnvVariable)
-// {
-//     jsonConfigReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar);
-//     jsonConfigOverridesReaderWillFailToReadFile();
-//     initSut(std::move(m_configReaderFactoryMock));
-//     shouldReturnStructValues();
-// }
+TEST_F(ConfigHelperTests, ShouldOverrideEnvVariable)
+{
+    jsonConfigReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar, kEmptyEnvVars);
+    jsonConfigSocReaderWillFailToReadFile();
+    jsonConfigOverridesReaderWillFailToReadFile();
+    initSut(std::move(m_configReaderFactoryMock));
+    shouldReturnStructValuesWithEnvVars(kOverwrittenEnvVar);
+}
 
-// TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReadersReturnNullopts)
-// {
-//     jsonConfigReaderWillReturnNulloptsWithEnvVars(kEmptyEnvVars);
-//     jsonConfigOverridesReaderWillReturnNulloptsWithEnvVars(kEmptyEnvVars);
-//     initSut(std::move(m_configReaderFactoryMock));
-//     shouldReturnStructValues();
-// }
+TEST_F(ConfigHelperTests, ShouldNotUseMainJsonValuesWhenConfigReadersReturnNullopts)
+{
+    jsonConfigReaderWillReturnNulloptsWithEnvVars(kEmptyEnvVars, kEmptyEnvVars);
+    jsonConfigSocReaderWillFailToReadFile();
+    jsonConfigOverridesReaderWillReturnNulloptsWithEnvVars(kEmptyEnvVars, kEmptyEnvVars);
+    initSut(std::move(m_configReaderFactoryMock));
+    shouldReturnStructValuesWithEnvVars(kServerManagerConfig.sessionServerEnvVars);
+}
 
-// TEST_F(ConfigHelperTests, ShouldNotOverrideEnvVariableByOverridesFile)
-// {
-//     jsonConfigReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar);
-//     jsonConfigOverridesReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar);
-//     initSut(std::move(m_configReaderFactoryMock));
-//     shouldReturnStructValues();
-// }
+TEST_F(ConfigHelperTests, ShouldOverrideEnvVariableByOverridesFile)
+{
+    jsonConfigReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar, kEmptyEnvVars);
+    jsonConfigSocReaderWillFailToReadFile();
+    jsonConfigOverridesReaderWillReturnNulloptsWithEnvVars(kOverwrittenEnvVar, kEmptyEnvVars);
+    initSut(std::move(m_configReaderFactoryMock));
+    shouldReturnStructValuesWithEnvVars(kOverwrittenEnvVar);
+}
 
-// TEST_F(ConfigHelperTests, ShouldUseJsonOverrideValues)
-// {
-//     jsonConfigReaderWillReturnNewValues();
-//     jsonConfigOverridesReaderWillReturnNewValues();
-//     initSut(std::move(m_configReaderFactoryMock));
-//     shouldReturnJsonOverrideValues();
-// }
+TEST_F(ConfigHelperTests, ShouldUseJsonOverrideValues)
+{
+    jsonConfigReaderWillReturnNewValues();
+    jsonConfigSocReaderWillFailToReadFile();
+    jsonConfigOverridesReaderWillReturnNewValues();
+    initSut(std::move(m_configReaderFactoryMock));
+    shouldReturnJsonOverrideValues();
+}
