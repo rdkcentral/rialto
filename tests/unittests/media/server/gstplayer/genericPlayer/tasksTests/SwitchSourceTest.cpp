@@ -23,18 +23,17 @@ class SwitchSourceTest : public GenericTasksTestsBase
 {
 };
 
-// TEST_F(SwitchSourceTest, shouldSwitchAudioSource)
-// {
-//     shouldSwitchAudioSource();
-//     triggerReattachAudioSource();
-//     checkNewAudioSourceAttached();
-// }
+TEST_F(SwitchSourceTest, shouldSwitchAudioSource)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    shouldSwitchSource();
+    triggerSwitchSource();
+}
 
 // TEST_F(SwitchSourceTest, shouldReattachAudioSource)
 // {
 //     shouldReattachAudioSource();
 //     triggerReattachAudioSource();
-//     checkNewAudioSourceAttached();
 // }
 
 // TEST_F(SwitchSourceTest, shouldNotReattachAudioSourceWhenMimeTypeIsEmpty)

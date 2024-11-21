@@ -421,6 +421,10 @@ protected:
     void shouldSetTextTrackIdentifier();
     void triggerSetTextTrackIdentifier();
 
+    // SwitchSource test methods
+    void shouldSwitchSource();
+    void triggerSwitchSource();
+
 private:
     // SetupElement helper methods
     void expectSetupVideoSinkElement();
