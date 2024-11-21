@@ -56,8 +56,8 @@ private:
 private:
     std::unique_ptr<IConfigReaderFactory> m_configReaderFactory;
     std::map<std::string, std::string> m_sessionServerEnvVars;
-    std::map<std::string, std::string> m_jsonEnvVars;
-    std::map<std::string, std::string> m_jsonExtraEnvVars;
+    std::map<std::string, std::string> m_envVarsFromConfigFile;
+    std::map<std::string, std::string> m_extraEnvVarsFromConfigFile;
     std::string m_sessionServerPath;
     std::chrono::milliseconds m_sessionServerStartupTimeout;
     std::chrono::seconds m_healthcheckInterval;

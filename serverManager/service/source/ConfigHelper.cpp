@@ -134,13 +134,13 @@ void ConfigHelper::readConfigFile(const std::string &filePath)
     const std::map<std::string, std::string> envVariables{convertToMap(configReader->getEnvironmentVariables())};
     if (!envVariables.empty())
     {
-        m_jsonEnvVars = envVariables;
-        m_jsonExtraEnvVars.clear();
+        m_envVarsFromConfigFile = envVariables;
+        m_extraEnvVarsFromConfigFile.clear();
     }
     const std::map<std::string, std::string> extraEnvVariables{convertToMap(configReader->getExtraEnvVariables())};
     if (!extraEnvVariables.empty())
     {
-        m_jsonExtraEnvVars = extraEnvVariables;
+        m_extraEnvVarsFromConfigFile = extraEnvVariables;
     }
 
     if (configReader->getSessionServerPath())
@@ -174,11 +174,11 @@ void ConfigHelper::readConfigFile(const std::string &filePath)
 void ConfigHelper::mergeEnvVariables()
 {
     // Env vars from json are more important than values from config struct
-    if (!m_jsonEnvVars.empty())
+    if (!m_envVarsFromConfigFile.empty())
     {
-        m_sessionServerEnvVars = m_jsonEnvVars;
+        m_sessionServerEnvVars = m_envVarsFromConfigFile;
     }
-    for (const auto &[name, value] : m_jsonExtraEnvVars)
+    for (const auto &[name, value] : m_extraEnvVarsFromConfigFile)
     {
         // If env variable exists both in envVariables and extraEnvVariables, overwrite it.
         m_sessionServerEnvVars[name] = value;
