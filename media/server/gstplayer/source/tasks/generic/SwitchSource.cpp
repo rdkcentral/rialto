@@ -125,11 +125,15 @@ std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate> SwitchSource::
                                                                    audioConfig.codecSpecificConfig.size())};
         if (m_source->getMimeType() == "audio/mp4" || m_source->getMimeType() == "audio/aac")
         {
-            audioAttributes->m_codecParam = "mp4a.40.2, mp4a.40.5";
+            audioAttributes->m_codecParam = "mp4a";
         }
         else if (m_source->getMimeType() == "audio/x-eac3")
         {
-            audioAttributes->m_codecParam = std::string("ec-3.A") + std::to_string(audioConfig.numberOfChannels);
+            audioAttributes->m_codecParam = "ec-3";
+        }
+        else if (m_source->getMimeType() == "audio/b-wav" || m_source->getMimeType() == "audio/x-raw")
+        {
+            audioAttributes->m_codecParam = "lpcm";
         }
     }
     else

@@ -55,6 +55,13 @@ TEST_F(SwitchSourceTest, shouldSwitchEac3AudioSource)
     triggerSwitchEac3Source();
 }
 
+TEST_F(SwitchSourceTest, shouldSwitchRawAudioSource)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    shouldSwitchRawAudioSource();
+    triggerSwitchRawAudioSource();
+}
+
 TEST_F(SwitchSourceTest, shouldNotSwitchVideoSource)
 {
     setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
