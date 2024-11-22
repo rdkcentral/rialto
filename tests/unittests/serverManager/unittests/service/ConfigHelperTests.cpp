@@ -35,7 +35,7 @@ using testing::StrictMock;
 namespace
 {
 const std::string kRialtoConfigPath{"/etc/rialto-config.json"};
-const std::string kRialtoConfigSocPath{"/etc/rialto_soc.json"};
+const std::string kRialtoConfigSocPath{"/etc/rialto-soc.json"};
 const std::string kRialtoConfigOverridesPath{"/opt/persistent/sky/rialto-config-overrides.json"};
 const std::list<std::string> kEmptyEnvVars{};
 const std::list<std::string> kOverwrittenEnvVar{"env1=var2"};
