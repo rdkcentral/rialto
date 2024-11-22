@@ -58,7 +58,7 @@ void SwitchSource::execute() const
         RIALTO_SERVER_LOG_ERROR("Failed to create audio attributes");
         return;
     }
-    std::int64_t currentDispPts64b;     // In netflix code it's currentDisplayPosition + offset
+    std::int64_t currentDispPts64b; // In netflix code it's currentDisplayPosition + offset
     m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &currentDispPts64b);
     long long currentDispPts = currentDispPts64b; // NOLINT(runtime/int)
     GstCaps *caps{createCapsFromMediaSource(m_gstWrapper, m_glibWrapper, m_source)};
