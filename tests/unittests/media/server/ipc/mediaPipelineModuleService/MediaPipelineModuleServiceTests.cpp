@@ -125,6 +125,12 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSwitchSource)
     sendAttachSourceRequestWithSwitchSourceAndReceiveResponse();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSwitchSource)
+{
+    mediaPipelineServiceWillFailToSwitchSource();
+    sendAttachSourceRequestWithSwitchSourceAndReceiveResponse();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToAttachSource)
 {
     mediaPipelineServiceWillFailToAttachSource();

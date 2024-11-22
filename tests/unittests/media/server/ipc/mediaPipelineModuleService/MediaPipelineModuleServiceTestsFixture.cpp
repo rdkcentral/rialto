@@ -338,6 +338,14 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSwitchSource()
         .WillOnce(Return(true));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSwitchSource()
+{
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(kMimeType);
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, switchSource(kHardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+        .WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToAttachSource()
 {
     m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(kMimeType);

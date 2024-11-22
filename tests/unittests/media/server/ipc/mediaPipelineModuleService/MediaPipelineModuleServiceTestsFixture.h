@@ -53,6 +53,7 @@ public:
     void mediaPipelineServiceWillAttachSubtitleSource();
     void mediaPipelineServiceWillAttachAudioSourceWithAdditionaldata();
     void mediaPipelineServiceWillSwitchSource();
+    void mediaPipelineServiceWillFailToSwitchSource();
     void mediaPipelineServiceWillFailToAttachSource();
     void mediaPipelineServiceWillFailToAttachUnknownSource();
     void mediaPipelineServiceWillSucceedAllSourcesAttached();
