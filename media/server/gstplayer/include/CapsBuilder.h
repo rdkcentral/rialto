@@ -17,6 +17,9 @@
  * limitations under the License.
  */
 
+#ifndef FIREBOLT_RIALTO_SERVER_CAPS_BUILDER_H_
+#define FIREBOLT_RIALTO_SERVER_CAPS_BUILDER_H_
+
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
@@ -90,3 +93,5 @@ protected:
     const IMediaPipeline::MediaSourceVideoDolbyVision &m_attachedDolbySource;
 };
 } // namespace firebolt::rialto::server
+
+#endif // FIREBOLT_RIALTO_SERVER_CAPS_BUILDER_H_

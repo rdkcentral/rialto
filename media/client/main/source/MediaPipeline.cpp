@@ -617,7 +617,6 @@ bool MediaPipeline::switchSource(const std::unique_ptr<MediaSource> &source)
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->switchSource(source);
-    ;
 }
 
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
