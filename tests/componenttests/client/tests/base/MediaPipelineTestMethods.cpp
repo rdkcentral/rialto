@@ -1557,6 +1557,56 @@ void MediaPipelineTestMethods::processAudioGapFailure()
     EXPECT_FALSE(m_mediaPipeline->processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac));
 }
 
+void MediaPipelineTestMethods::shouldSwitchSourceEacs()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                attachSource(_,
+                             attachSourceRequestMatcherSwitchSource(kSessionId, kAudioEacs, kHasNoDrm, kAlignment,
+                                                                    kNumberOfChannelsEacs, kSampleRateEacs,
+                                                                    kCodecSpecificConfigStr, kCodecData,
+                                                                    convertStreamFormat(kStreamFormatRaw)),
+                             _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->attachSourceResponse(kAudioSourceId)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::switchSourceEac()
+{
+    std::vector<uint8_t> codecSpecificConfig;
+    codecSpecificConfig.assign(kCodecSpecificConfigStr.begin(), kCodecSpecificConfigStr.end());
+    AudioConfig audioConfig{kNumberOfChannelsEacs, kSampleRateEacs, codecSpecificConfig};
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(kAudioEacs.c_str(), kHasNoDrm, audioConfig, kAlignment,
+                                                           kStreamFormatRaw, kCodecData);
+    EXPECT_EQ(m_mediaPipeline->switchSource(mediaSource), true);
+}
+
+void MediaPipelineTestMethods::shouldSwitchSourceMpeg()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                attachSource(_,
+                             attachSourceRequestMatcherSwitchSource(kSessionId, kAudioMpeg, kHasNoDrm, kAlignment,
+                                                                    kNumberOfChannelsMpeg, kSampleRateMpeg,
+                                                                    kCodecSpecificConfigStr, kCodecData,
+                                                                    convertStreamFormat(kStreamFormatRaw)),
+                             _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->attachSourceResponse(kAudioSourceId)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::switchSourceMpeg()
+{
+    std::vector<uint8_t> codecSpecificConfig;
+    codecSpecificConfig.assign(kCodecSpecificConfigStr.begin(), kCodecSpecificConfigStr.end());
+    AudioConfig audioConfig{kNumberOfChannelsMpeg, kSampleRateMpeg, codecSpecificConfig};
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(kAudioMpeg.c_str(), kHasNoDrm, audioConfig, kAlignment,
+                                                           kStreamFormatRaw, kCodecData);
+    EXPECT_EQ(m_mediaPipeline->switchSource(mediaSource), true);
+}
+
 /*************************** Private methods ********************************/
 
 void MediaPipelineTestMethods::resetWriteLocation(uint32_t partitionId)
