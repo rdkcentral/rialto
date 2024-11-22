@@ -63,10 +63,6 @@ bool ConfigReader::read()
 void ConfigReader::parseEnvironmentVariables(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     m_envVars = getListOfStrings(root, "environmentVariables");
-    if (m_envVars.empty())
-    {
-        m_envVars = getListOfStrings(root, "environment_variables");
-    }
 }
 
 void ConfigReader::parseExtraEnvVariables(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
@@ -77,19 +73,11 @@ void ConfigReader::parseExtraEnvVariables(std::shared_ptr<firebolt::rialto::wrap
 void ConfigReader::parseSessionServerPath(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     m_sessionServerPath = getString(root, "sessionServerPath");
-    if (!m_sessionServerPath.has_value())
-    {
-        m_sessionServerPath = getString(root, "session_server_path");
-    }
 }
 
 void ConfigReader::parseSessionServerStartupTimeout(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     auto timeout{getUInt(root, "startupTimeoutMs")};
-    if (!timeout.has_value())
-    {
-        timeout = getUInt(root, "startup_timeout_ms");
-    }
     if (timeout.has_value())
     {
         m_sessionServerStartupTimeout = std::chrono::milliseconds{timeout.value()};
@@ -99,10 +87,6 @@ void ConfigReader::parseSessionServerStartupTimeout(std::shared_ptr<firebolt::ri
 void ConfigReader::parseHealthcheckInterval(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     auto interval{getUInt(root, "healthcheckIntervalInSeconds")};
-    if (!interval.has_value())
-    {
-        interval = getUInt(root, "healthcheck_interval_s");
-    }
     if (interval.has_value())
     {
         m_healthcheckInterval = std::chrono::seconds{*interval};
@@ -112,10 +96,6 @@ void ConfigReader::parseHealthcheckInterval(std::shared_ptr<firebolt::rialto::wr
 void ConfigReader::parseSocketPermissions(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     auto permissions{getUInt(root, "socketPermissions")};
-    if (!permissions.has_value())
-    {
-        permissions = getUInt(root, "socket_permissions");
-    }
     if (permissions.has_value())
     {
         firebolt::rialto::common::SocketPermissions socketPermissions;
@@ -129,37 +109,21 @@ void ConfigReader::parseSocketPermissions(std::shared_ptr<firebolt::rialto::wrap
 void ConfigReader::parseSocketOwner(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     m_socketOwner = getString(root, "socketOwner");
-    if (!m_socketOwner.has_value())
-    {
-        m_socketOwner = getString(root, "socket_owner");
-    }
 }
 
 void ConfigReader::parseSocketGroup(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     m_socketGroup = getString(root, "socketGroup");
-    if (!m_socketGroup.has_value())
-    {
-        m_socketGroup = getString(root, "socket_group");
-    }
 }
 
 void ConfigReader::parseNumOfPreloadedServers(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     m_numOfPreloadedServers = getUInt(root, "numOfPreloadedServers");
-    if (!m_numOfPreloadedServers.has_value())
-    {
-        m_numOfPreloadedServers = getUInt(root, "num_of_preloaded_servers");
-    }
 }
 
 void ConfigReader::parseLogLevel(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     std::optional<unsigned> loggingLevel{getUInt(root, "logLevel")};
-    if (!loggingLevel.has_value())
-    {
-        loggingLevel = getUInt(root, "log_level");
-    }
 
     if (loggingLevel)
     {
@@ -196,10 +160,6 @@ void ConfigReader::parseLogLevel(std::shared_ptr<firebolt::rialto::wrappers::IJs
 void ConfigReader::parseNumOfPingsBeforeRecovery(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
 {
     m_numOfPingsBeforeRecovery = getUInt(root, "numOfPingsBeforeRecovery");
-    if (!m_numOfPingsBeforeRecovery.has_value())
-    {
-        m_numOfPingsBeforeRecovery = getUInt(root, "num_of_pings_before_recovery");
-    }
 }
 
 std::list<std::string> ConfigReader::getEnvironmentVariables()
