@@ -96,7 +96,7 @@ void SwitchSource::execute() const
     }
     else
     {
-        RIALTO_SERVER_LOG_DEBUG("Reattaching identical audio source.");
+        RIALTO_SERVER_LOG_DEBUG("Skip switching audio source - caps are the same.");
     }
 
     m_context.lastAudioSampleTimestamps = currentDispPts;
@@ -134,7 +134,7 @@ std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate> SwitchSource::
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to cast to dolby vision source");
+        RIALTO_SERVER_LOG_ERROR("Failed to cast source");
     }
 
     return audioAttributes;

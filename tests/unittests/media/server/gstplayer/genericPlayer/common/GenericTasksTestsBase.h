@@ -422,8 +422,13 @@ protected:
     void triggerSetTextTrackIdentifier();
 
     // SwitchSource test methods
-    void shouldSwitchSource();
-    void triggerSwitchSource();
+    void shouldSwitchMpegSource();
+    void shouldSwitchEac3Source();
+    void shouldSkipSwitchingSource();
+    void triggerSwitchMpegSource();
+    void triggerSwitchEac3Source();
+    void triggerSwitchUnknownSource();
+    void triggerSwitchVideoSource();
 
 private:
     // SetupElement helper methods
