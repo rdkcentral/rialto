@@ -29,6 +29,7 @@
 #include "ITimer.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
+#include "Utils.h"
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 
@@ -96,7 +97,7 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
         }
         gstPlayer = std::make_unique<
             GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper, glibWrapper,
-                              IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
+                              rdkGstreamerUtilsWrapper, IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
                                                                          rdkGstreamerUtilsWrapper,
                                                                          IGstTextTrackSinkFactory::createFactory()),
@@ -111,17 +112,18 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
     return gstPlayer;
 }
 
-GstGenericPlayer::GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService,
-                                   MediaType type, const VideoRequirements &videoRequirements,
-                                   const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                   const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                                   const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
-                                   std::shared_ptr<common::ITimerFactory> timerFactory,
-                                   std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
-                                   std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
-                                   std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
-                                   std::shared_ptr<IGstProtectionMetadataHelperFactory> gstProtectionMetadataFactory)
-    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_timerFactory{timerFactory},
+GstGenericPlayer::GstGenericPlayer(
+    IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+    const VideoRequirements &videoRequirements,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+    const std::shared_ptr<IGstSrcFactory> &gstSrcFactory, std::shared_ptr<common::ITimerFactory> timerFactory,
+    std::unique_ptr<IGenericPlayerTaskFactory> taskFactory, std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
+    std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
+    std::shared_ptr<IGstProtectionMetadataHelperFactory> gstProtectionMetadataFactory)
+    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_timerFactory{timerFactory},
       m_taskFactory{std::move(taskFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is constructed.");
@@ -554,6 +556,45 @@ GstElement *GstGenericPlayer::getParser(const MediaSourceType &mediaSourceType)
     return nullptr;
 }
 
+std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate>
+GstGenericPlayer::createAudioAttributes(const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
+{
+    std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate> audioAttributes;
+    const IMediaPipeline::MediaSourceAudio *kSource = dynamic_cast<IMediaPipeline::MediaSourceAudio *>(source.get());
+    if (kSource)
+    {
+        firebolt::rialto::AudioConfig audioConfig = kSource->getAudioConfig();
+        audioAttributes =
+            firebolt::rialto::wrappers::AudioAttributesPrivate{"", // param set below.
+                                                               audioConfig.numberOfChannels, audioConfig.sampleRate,
+                                                               0, // used only in one of logs in rdk_gstreamer_utils, no
+                                                                  // need to set this param.
+                                                               0, // used only in one of logs in rdk_gstreamer_utils, no
+                                                                  // need to set this param.
+                                                               audioConfig.codecSpecificConfig.data(),
+                                                               static_cast<std::uint32_t>(
+                                                                   audioConfig.codecSpecificConfig.size())};
+        if (source->getMimeType() == "audio/mp4" || source->getMimeType() == "audio/aac")
+        {
+            audioAttributes->m_codecParam = "mp4a";
+        }
+        else if (source->getMimeType() == "audio/x-eac3")
+        {
+            audioAttributes->m_codecParam = "ec-3";
+        }
+        else if (source->getMimeType() == "audio/b-wav" || source->getMimeType() == "audio/x-raw")
+        {
+            audioAttributes->m_codecParam = "lpcm";
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to cast source");
+    }
+
+    return audioAttributes;
+}
+
 bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutputParam)
 {
     if (!m_workerThread)
@@ -907,6 +948,74 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
     }
     m_context.initialPositions.erase(initialPosition);
     return;
+}
+
+bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source)
+{
+    if (m_context.streamInfo.find(source->getType()) == m_context.streamInfo.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Unable to switch source, type does not exist");
+        return false;
+    }
+    if (source->getMimeType().empty())
+    {
+        RIALTO_SERVER_LOG_WARN("Skip switch audio source. Unknown mime type");
+        return false;
+    }
+    std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate> audioAttributes{createAudioAttributes(source)};
+    if (!audioAttributes)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create audio attributes");
+        return false;
+    }
+    std::int64_t currentDispPts64b; // In netflix code it's currentDisplayPosition + offset
+    m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &currentDispPts64b);
+    long long currentDispPts = currentDispPts64b; // NOLINT(runtime/int)
+    GstCaps *caps{createCapsFromMediaSource(m_gstWrapper, m_glibWrapper, source)};
+    GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[source->getType()].appSrc)};
+    GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
+    if ((!oldCaps) || (!m_gstWrapper->gstCapsIsEqual(caps, oldCaps)))
+    {
+        RIALTO_SERVER_LOG_DEBUG("Caps not equal. Perform audio track codec channel switch.");
+        int sampleAttributes{
+            0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
+        std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work
+        unsigned int ui32Delay{0}; // output param
+        long long audioChangeTargetPts{-1}; // NOLINT(runtime/int) output param. Set audioChangeTargetPts =
+                                            // currentDispPts in rdk_gstreamer_utils function stub
+        unsigned int audioChangeStage{0};   // Output param. Set to AUDCHG_ALIGN in rdk_gstreamer_utils function stub
+        gchar *oldCapsCStr = m_gstWrapper->gstCapsToString(oldCaps);
+        std::string oldCapsStr = std::string(oldCapsCStr);
+        m_glibWrapper->gFree(oldCapsCStr);
+        bool audioAac{oldCapsStr.find("audio/mpeg") != std::string::npos};
+        bool svpEnabled{true}; // assume always true
+        bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
+        bool result =
+            m_rdkGstreamerUtilsWrapper
+                ->performAudioTrackCodecChannelSwitch(&m_context.playbackGroup, &sampleAttributes, &(*audioAttributes),
+                                                      &status, &ui32Delay, &audioChangeTargetPts, &currentDispPts,
+                                                      &audioChangeStage,
+                                                      &caps, // may fail for amlogic - that implementation changes
+                                                             // this parameter, it's probably used by Netflix later
+                                                      &audioAac, svpEnabled, GST_ELEMENT(appSrc), &retVal);
+
+        if (!result || !retVal)
+        {
+            RIALTO_SERVER_LOG_WARN("performAudioTrackCodecChannelSwitch failed! Result: %d, retval %d", result, retVal);
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Skip switching audio source - caps are the same.");
+    }
+
+    m_context.lastAudioSampleTimestamps = currentDispPts;
+    if (caps)
+        m_gstWrapper->gstCapsUnref(caps);
+    if (oldCaps)
+        m_gstWrapper->gstCapsUnref(oldCaps);
+
+    return true;
 }
 
 void GstGenericPlayer::scheduleNeedMediaData(GstAppSrc *src)
@@ -1790,7 +1899,7 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSwitchSource(m_context, mediaSource));
+        m_workerThread->enqueueTask(m_taskFactory->createSwitchSource(*this, mediaSource));
     }
 }
 

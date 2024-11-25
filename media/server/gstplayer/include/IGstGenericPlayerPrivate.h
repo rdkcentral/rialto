@@ -259,6 +259,15 @@ public:
      * @param[in] typeStr         : The media source type string
      */
     virtual void pushSampleIfRequired(GstElement *source, const std::string &typeStr) = 0;
+
+    /**
+     * @brief Reattaches source (or switches it)
+     *
+     * @param[in] source          : The new media source
+     *
+     * @retval True on success
+     */
+    virtual bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
 };
 } // namespace firebolt::rialto::server
 

@@ -86,6 +86,7 @@ public:
                      const VideoRequirements &videoRequirements,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory,
                      std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
@@ -175,6 +176,7 @@ private:
     void removeAutoAudioSinkChild(GObject *object) override;
     void setPlaybinFlags(bool enableAudio = true) override;
     void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
+    bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
 
 private:
@@ -294,6 +296,17 @@ private:
      */
     GstElement *getParser(const MediaSourceType &mediaSourceType);
 
+    /**
+     * @brief Constructs new Audio Attributes structure based on MediaSource
+     *        Called by worker thread only!
+     *
+     * @param[in] source : the media source, which contains params needed by Audio Attributes struct
+     *
+     * @retval The Audio Attributes structure on success, std::nullopt on failure
+     */
+    std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate>
+    createAudioAttributes(const std::unique_ptr<IMediaPipeline::MediaSource> &source) const;
+
 private:
     /**
      * @brief The player context.
@@ -314,6 +327,11 @@ private:
      * @brief The glib wrapper object.
      */
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
+
+    /**
+     * @brief The rdk gstreamer utils wrapper object
+     */
+    std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
 
     /**
      * @brief Thread for handling player tasks.

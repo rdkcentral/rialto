@@ -22,6 +22,7 @@
 
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
+#include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IMediaPipeline.h"
 #include "IPlayerTask.h"
@@ -35,22 +36,12 @@ namespace firebolt::rialto::server::tasks::generic
 class SwitchSource : public IPlayerTask
 {
 public:
-    SwitchSource(GenericPlayerContext &context,
-                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                 const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
-                 const std::unique_ptr<IMediaPipeline::MediaSource> &source);
+    SwitchSource(IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source);
     ~SwitchSource() override;
     void execute() const override;
 
 private:
-    std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate> createAudioAttributes() const;
-
-private:
-    GenericPlayerContext &m_context;
-    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
-    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
-    std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
+    IGstGenericPlayerPrivate &m_player;
     std::unique_ptr<IMediaPipeline::MediaSource> m_source;
 };
 } // namespace firebolt::rialto::server::tasks::generic

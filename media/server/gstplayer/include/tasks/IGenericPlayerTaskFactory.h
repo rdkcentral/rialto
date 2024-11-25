@@ -508,13 +508,13 @@ public:
     /**
      * @brief Creates a SwitchSource task.
      *
-     * @param[in] context   : The GstGenericPlayer context
+     * @param[in] player    : The GstGenericPlayer instance
      * @param[in] source    : The source to switch.
      *
      * @retval the new SwitchSource task instance.
      */
     virtual std::unique_ptr<IPlayerTask>
-    createSwitchSource(GenericPlayerContext &context,
+    createSwitchSource(IGstGenericPlayerPrivate &player,
                        const std::unique_ptr<IMediaPipeline::MediaSource> &source) const = 0;
 };
 
