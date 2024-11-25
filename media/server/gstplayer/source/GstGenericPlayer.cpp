@@ -1786,6 +1786,14 @@ bool GstGenericPlayer::getUseBuffering(bool &useBuffering)
     return false;
 }
 
+void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSwitchSource(m_context, mediaSource));
+    }
+}
+
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));

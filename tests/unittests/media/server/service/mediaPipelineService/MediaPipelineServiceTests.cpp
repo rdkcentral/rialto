@@ -799,6 +799,26 @@ TEST_F(MediaPipelineServiceTests, shouldGetUseBuffering)
     getUseBufferingShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToSwitchSourceForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    switchSourceShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSwitchSource)
+{
+    initSession();
+    mediaPipelineWillFailToSwitchSource();
+    switchSourceShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSwitchSource)
+{
+    initSession();
+    mediaPipelineWillSwitchSource();
+    switchSourceShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldPing)
 {
     initSession();

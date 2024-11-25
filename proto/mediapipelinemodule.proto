@@ -94,9 +94,10 @@ message LoadResponse {
  * @fn int attachSource(int session_id, MediaSourceType media_type, string caps)
  * @brief Attaches a new media source on a session with the given capabilities.
  *
- * @param[in]  session_id   The id of the A/V session.
- * @param[in]  media_type   The media source type.
- * @param[in]  caps         The capabilities of the source.
+ * @param[in]  session_id    The id of the A/V session.
+ * @param[in]  media_type    The media source type.
+ * @param[in]  caps          The capabilities of the source.
+ * @param[in]  switch_source The flag indicating if source is switched (reattached)
  *
  * A client will typically create a single audio and video media source on a given session.
  *
@@ -198,6 +199,7 @@ message AttachSourceRequest {
     optional StreamFormat stream_format = 10;
     optional uint32 dolby_vision_profile = 11;
     optional string text_track_identifier = 12;
+    optional bool switch_source = 13;
 
 }
 message AttachSourceResponse {

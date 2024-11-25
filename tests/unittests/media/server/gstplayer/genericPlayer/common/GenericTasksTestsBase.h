@@ -421,6 +421,17 @@ protected:
     void shouldSetTextTrackIdentifier();
     void triggerSetTextTrackIdentifier();
 
+    // SwitchSource test methods
+    void shouldSwitchMpegSource();
+    void shouldSwitchEac3Source();
+    void shouldSwitchRawAudioSource();
+    void shouldSkipSwitchingSource();
+    void triggerSwitchMpegSource();
+    void triggerSwitchEac3Source();
+    void triggerSwitchRawAudioSource();
+    void triggerSwitchUnknownSource();
+    void triggerSwitchVideoSource();
+
 private:
     // SetupElement helper methods
     void expectSetupVideoSinkElement();

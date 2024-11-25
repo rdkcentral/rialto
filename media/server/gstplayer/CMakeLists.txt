@@ -70,6 +70,7 @@ add_library(
         source/tasks/generic/SetupSource.cpp
         source/tasks/generic/Shutdown.cpp
         source/tasks/generic/Stop.cpp
+        source/tasks/generic/SwitchSource.cpp
         source/tasks/generic/Underflow.cpp
         source/tasks/generic/UpdatePlaybackGroup.cpp
 
@@ -85,6 +86,7 @@ add_library(
         source/tasks/webAudio/WebAudioPlayerTaskFactory.cpp
         source/tasks/webAudio/WriteBuffer.cpp
 
+        source/CapsBuilder.cpp
         source/GstCapabilities.cpp
         source/GstDecryptor.cpp
         source/GstDispatcherThread.cpp

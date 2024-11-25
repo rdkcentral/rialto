@@ -18,8 +18,11 @@
  */
 
 #include "Utils.h"
+#include "CapsBuilder.h"
+#include "GstMimeMapping.h"
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
+#include "RialtoServerLogging.h"
 #include <string.h>
 
 namespace
@@ -132,5 +135,66 @@ std::string getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrappe
         glibWrapper.gFree(signals);
     }
     return "";
+}
+
+GstCaps *createCapsFromMediaSource(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                   const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                                   const std::unique_ptr<IMediaPipeline::MediaSource> &source)
+{
+    std::unique_ptr<MediaSourceCapsBuilder> capsBuilder;
+
+    firebolt::rialto::SourceConfigType configType = source->getConfigType();
+    if (configType == firebolt::rialto::SourceConfigType::AUDIO)
+    {
+        const IMediaPipeline::MediaSourceAudio *kSource = dynamic_cast<IMediaPipeline::MediaSourceAudio *>(source.get());
+        if (kSource)
+        {
+            capsBuilder = std::make_unique<MediaSourceAudioCapsBuilder>(gstWrapper, glibWrapper, *kSource);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to cast to audio source");
+            return nullptr;
+        }
+    }
+    else if (configType == firebolt::rialto::SourceConfigType::VIDEO)
+    {
+        const IMediaPipeline::MediaSourceVideo *kSource = dynamic_cast<IMediaPipeline::MediaSourceVideo *>(source.get());
+        if (kSource)
+        {
+            capsBuilder = std::make_unique<MediaSourceVideoCapsBuilder>(gstWrapper, glibWrapper, *kSource);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to cast to video source");
+            return nullptr;
+        }
+    }
+    else if (configType == firebolt::rialto::SourceConfigType::VIDEO_DOLBY_VISION)
+    {
+        const IMediaPipeline::MediaSourceVideoDolbyVision *kSource =
+            dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision *>(source.get());
+        if (kSource)
+        {
+            capsBuilder = std::make_unique<MediaSourceVideoDolbyVisionCapsBuilder>(gstWrapper, glibWrapper, *kSource);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to cast to dolby vision source!");
+            return nullptr;
+        }
+    }
+    else if (configType == firebolt::rialto::SourceConfigType::SUBTITLE)
+    {
+        // subtitle caps is just a simple type, without any extra parameters
+        return firebolt::rialto::server::createSimpleCapsFromMimeType(gstWrapper, *source.get());
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Invalid config type %u", static_cast<uint32_t>(configType));
+        return nullptr;
+    }
+
+    return capsBuilder->buildCaps();
 }
 } // namespace firebolt::rialto::server

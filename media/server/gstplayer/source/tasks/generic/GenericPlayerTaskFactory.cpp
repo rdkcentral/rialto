@@ -54,6 +54,7 @@
 #include "tasks/generic/SetupSource.h"
 #include "tasks/generic/Shutdown.h"
 #include "tasks/generic/Stop.h"
+#include "tasks/generic/SwitchSource.h"
 #include "tasks/generic/Underflow.h"
 #include "tasks/generic/UpdatePlaybackGroup.h"
 
@@ -336,5 +337,13 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetUseBuffering(Gen
                                                                              bool useBuffering) const
 {
     return std::make_unique<tasks::generic::SetUseBuffering>(context, player, useBuffering);
+}
+
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createSwitchSource(GenericPlayerContext &context,
+                                             const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
+{
+    return std::make_unique<tasks::generic::SwitchSource>(context, m_gstWrapper, m_glibWrapper,
+                                                          m_rdkGstreamerUtilsWrapper, source);
 }
 } // namespace firebolt::rialto::server

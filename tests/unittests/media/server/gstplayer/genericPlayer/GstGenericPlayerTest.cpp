@@ -1028,3 +1028,15 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetUseBufferingIfNoDecodebin)
     bool useBuffering{false};
     EXPECT_FALSE(m_sut->getUseBuffering(useBuffering));
 }
+
+TEST_F(GstGenericPlayerTest, shouldSwitchSource)
+{
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/mpeg");
+
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSwitchSource(_, Ref(source))).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->switchSource(source);
+}

@@ -1302,6 +1302,26 @@ bool MediaPipelineServerInternal::getUseBufferingInternal(bool &useBuffering)
     return m_gstPlayer->getUseBuffering(useBuffering);
 }
 
+bool MediaPipelineServerInternal::switchSource(const std::unique_ptr<MediaSource> &source)
+{
+    bool result;
+    auto task = [&]() { result = switchSourceInternal(source); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::switchSourceInternal(const std::unique_ptr<MediaSource> &source)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to switch source - Gstreamer player has not been loaded");
+        return false;
+    }
+    m_gstPlayer->switchSource(source);
+    return true;
+}
+
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
                                                          const std::unique_ptr<MediaSegment> &mediaSegment)
 {

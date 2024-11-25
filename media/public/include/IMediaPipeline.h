@@ -1491,6 +1491,17 @@ public:
      * @retval true on success.
      */
     virtual bool getUseBuffering(bool &useBuffering) = 0;
+
+    /**
+     * @brief Switches a source stream.
+     *
+     * This method is called to switch a media source stream.
+     *
+     * @param[in] source : The source.
+     *
+     * @retval true on success.
+     */
+    virtual bool switchSource(const std::unique_ptr<MediaSource> &source) = 0;
 };
 
 }; // namespace firebolt::rialto

@@ -139,6 +139,8 @@ protected:
     void shouldFailToSetSourcePosition();
     void shouldProcessAudioGap();
     void shouldFailToProcessAudioGap();
+    void shouldSwitchSourceEacs();
+    void shouldSwitchSourceMpeg();
 
     // MediaPipelineClient Expect methods
     void shouldNotifyNetworkStateBuffering();
@@ -263,6 +265,8 @@ protected:
     void setSourcePositionFailure();
     void processAudioGap();
     void processAudioGapFailure();
+    void switchSourceEac();
+    void switchSourceMpeg();
 
     // Event methods
     void sendNotifyNetworkStateBuffering();

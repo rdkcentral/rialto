@@ -330,6 +330,22 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachAudioSourceW
         .WillOnce(Return(true));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSwitchSource()
+{
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(kMimeType);
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, switchSource(kHardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+        .WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSwitchSource()
+{
+    m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(kMimeType);
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, switchSource(kHardcodedSessionId, AttachedSourceMatcher(ByRef(m_source))))
+        .WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToAttachSource()
 {
     m_source = std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>(kMimeType);
@@ -976,6 +992,20 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithAdditionalDataReq
     request.mutable_codec_data()->set_data(kCodecData->data.data(), kCodecData->data.size());
     request.mutable_codec_data()->set_type(firebolt::rialto::AttachSourceRequest_CodecData_Type_BUFFER);
     request.set_stream_format(convertStreamFormat(firebolt::rialto::StreamFormat::RAW));
+
+    m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendAttachSourceRequestWithSwitchSourceAndReceiveResponse()
+{
+    firebolt::rialto::AttachSourceRequest request;
+    firebolt::rialto::AttachSourceResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_config_type(firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_AUDIO);
+    request.set_mime_type(kMimeType);
+    request.set_has_drm(true);
+    request.set_switch_source(true);
 
     m_service->attachSource(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

@@ -165,6 +165,8 @@ public:
 
     bool getUseBuffering(bool &useBuffering) override;
 
+    bool switchSource(const std::unique_ptr<MediaSource> &source) override;
+
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
     std::weak_ptr<IMediaPipelineClient> getClient() override;
@@ -671,6 +673,14 @@ protected:
      * @retval true on success.
      */
     bool getUseBufferingInternal(bool &useBuffering);
+
+    /**
+     * @brief Switches a source.
+     *
+     * @param[in] mediaSource : The media source.
+     *
+     */
+    bool switchSourceInternal(const std::unique_ptr<MediaSource> &source);
 };
 
 }; // namespace firebolt::rialto::server

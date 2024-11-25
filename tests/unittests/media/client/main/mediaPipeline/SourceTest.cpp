@@ -115,3 +115,29 @@ TEST_F(RialtoClientMediaPipelineSourceTest, AllSourcesAttachedFailure)
 
     EXPECT_EQ(m_mediaPipeline->allSourcesAttached(), false);
 }
+
+/**
+ * Test that SwitchSource returns success if the IPC API succeeds
+ */
+TEST_F(RialtoClientMediaPipelineSourceTest, SwitchSourceSuccess)
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
+
+    EXPECT_CALL(*m_mediaPipelineIpcMock, switchSource(Ref(mediaSource))).WillOnce(Return(true));
+
+    EXPECT_EQ(m_mediaPipeline->switchSource(mediaSource), true);
+}
+
+/**
+ * Test that SwitchSource returns failure if the IPC API fail
+ */
+TEST_F(RialtoClientMediaPipelineSourceTest, SwitchSourceFailure)
+{
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
+
+    EXPECT_CALL(*m_mediaPipelineIpcMock, switchSource(Ref(mediaSource))).WillOnce(Return(false));
+
+    EXPECT_EQ(m_mediaPipeline->switchSource(mediaSource), false);
+}

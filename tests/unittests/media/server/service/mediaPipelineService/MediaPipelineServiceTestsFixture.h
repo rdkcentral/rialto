@@ -110,6 +110,8 @@ public:
     void mediaPipelineWillFailToSetUseBuffering();
     void mediaPipelineWillGetUseBuffering();
     void mediaPipelineWillFailToGetUseBuffering();
+    void mediaPipelineWillSwitchSource();
+    void mediaPipelineWillFailToSwitchSource();
 
     void mediaPipelineWillPing();
 
@@ -201,6 +203,8 @@ public:
     void setUseBufferingShouldFail();
     void getUseBufferingShouldSucceed();
     void getUseBufferingShouldFail();
+    void switchSourceShouldSucceed();
+    void switchSourceShouldFail();
 
     void clearMediaPipelines();
     void initSession();

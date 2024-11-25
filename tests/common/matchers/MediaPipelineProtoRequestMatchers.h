@@ -110,7 +110,8 @@ MATCHER_P9(attachSourceRequestMatcherAudio, sessionId, mimeType, hasDrm, alignme
     }
 
     return ((kRequest->session_id() == sessionId) && (kRequest->mime_type() == mimeType) &&
-            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec && checkAudio);
+            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec &&
+            checkAudio && !kRequest->switch_source());
 }
 
 MATCHER_P8(attachSourceRequestMatcherVideo, sessionId, mimeType, hasDrm, width, height, alignment, codecData,
@@ -132,7 +133,8 @@ MATCHER_P8(attachSourceRequestMatcherVideo, sessionId, mimeType, hasDrm, width, 
     }
 
     return ((kRequest->session_id() == sessionId) && (kRequest->mime_type() == mimeType) &&
-            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec && checkVideo);
+            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec &&
+            checkVideo && !kRequest->switch_source());
 }
 
 MATCHER_P9(attachSourceRequestMatcherDolby, sessionId, mimeType, hasDrm, width, height, alignment, codecData,
@@ -155,7 +157,8 @@ MATCHER_P9(attachSourceRequestMatcherDolby, sessionId, mimeType, hasDrm, width, 
     }
 
     return ((kRequest->session_id() == sessionId) && (kRequest->mime_type() == mimeType) &&
-            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec && checkDolby);
+            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec &&
+            checkDolby && !kRequest->switch_source());
 }
 
 MATCHER_P4(attachSourceRequestMatcherSubtitle, sessionId, mimeType, hasDrm, textTrackIdentifier, "")
@@ -164,7 +167,33 @@ MATCHER_P4(attachSourceRequestMatcherSubtitle, sessionId, mimeType, hasDrm, text
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
 
     return ((kRequest->session_id() == sessionId) && (kRequest->mime_type() == mimeType) &&
-            (kRequest->has_drm() == hasDrm) && (kRequest->text_track_identifier() == textTrackIdentifier));
+            (kRequest->has_drm() == hasDrm) && (kRequest->text_track_identifier() == textTrackIdentifier) &&
+            !kRequest->switch_source());
+}
+
+MATCHER_P9(attachSourceRequestMatcherSwitchSource, sessionId, mimeType, hasDrm, alignment, numberOfChannels, sampleRate,
+           codecSpecificConfig, codecData, streamFormat, "")
+{
+    const ::firebolt::rialto::AttachSourceRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
+    bool checkCodec = checkAttachSourceCodecData(kRequest, codecData);
+
+    // Only check optional parameters if the config type is correct
+    bool checkAudio = false;
+    if (static_cast<const unsigned int>(kRequest->config_type()) ==
+        static_cast<const unsigned int>(SourceConfigType::AUDIO))
+    {
+        if ((kRequest->has_audio_config()) && (kRequest->audio_config().number_of_channels() == numberOfChannels) &&
+            (kRequest->audio_config().sample_rate() == sampleRate) &&
+            (kRequest->audio_config().codec_specific_config() == codecSpecificConfig))
+        {
+            checkAudio = true;
+        }
+    }
+
+    return ((kRequest->session_id() == sessionId) && (kRequest->mime_type() == mimeType) &&
+            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec &&
+            checkAudio && kRequest->switch_source());
 }
 
 MATCHER_P2(removeSourceRequestMatcher, sessionId, sourceId, "")
