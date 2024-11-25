@@ -1495,7 +1495,7 @@ public:
     /**
      * @brief Switches a source stream.
      *
-     * This method is called by Rialto Client to switch a media source stream.
+     * This method is called to switch a media source stream.
      *
      * @param[in] source : The source.
      *
