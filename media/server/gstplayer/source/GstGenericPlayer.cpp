@@ -1466,7 +1466,7 @@ void GstGenericPlayer::setMute(const MediaSourceType &mediaSourceType, bool mute
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetMute(m_context, mediaSourceType, mute));
+        m_workerThread->enqueueTask(m_taskFactory->createSetMute(m_context, *this, mediaSourceType, mute));
     }
 }
 

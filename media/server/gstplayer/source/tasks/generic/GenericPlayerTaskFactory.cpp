@@ -205,10 +205,11 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetVolume(GenericPl
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetMute(GenericPlayerContext &context,
+                                                                     IGstGenericPlayerPrivate &player,
                                                                      const MediaSourceType &mediaSourceType,
                                                                      bool mute) const
 {
-    return std::make_unique<tasks::generic::SetMute>(context, m_gstWrapper, m_glibWrapper, mediaSourceType, mute);
+    return std::make_unique<tasks::generic::SetMute>(context, player, m_gstWrapper, m_glibWrapper, mediaSourceType, mute);
 }
 
 std::unique_ptr<IPlayerTask>

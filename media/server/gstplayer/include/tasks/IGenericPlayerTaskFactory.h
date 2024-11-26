@@ -279,12 +279,13 @@ public:
      * @brief Creates a SetMute task.
      *
      * @param[in] context         : The GstGenericPlayer context
+     * @param[in] player          : The GstGenericPlayer instance
      * @param[in] mediaSourceType : The media source type to set mute
      * @param[in] mute            : The mute state to be set
      *
      * @retval the new SetMute task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context,
+    virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                        const MediaSourceType &mediaSourceType, bool mute) const = 0;
 
     /**
