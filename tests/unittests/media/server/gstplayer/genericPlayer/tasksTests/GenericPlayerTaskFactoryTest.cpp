@@ -378,7 +378,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSwitchSource)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/mpeg");
-    auto task = m_sut.createSwitchSource(m_context, source);
+    auto task = m_sut.createSwitchSource(m_gstPlayer, source);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SwitchSource &>(*task));
 }

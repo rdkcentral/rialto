@@ -166,6 +166,7 @@ protected:
     void shouldAttachVideoSource(const std::string &mime, const std::string &alignment, const std::string &format);
     void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
                                   firebolt::rialto::StreamFormat streamFormat);
+    void triggerAttachUnknownSource();
     void checkVideoSourceAttached();
     void shouldAttachSubtitleSource();
     void checkSubtitleSourceAttached();
@@ -177,12 +178,11 @@ protected:
     void triggerAttachVideoSourceWithEmptyCodecData();
     void shouldAttachVideoSourceWithDolbyVisionSource();
     void triggerAttachVideoSourceWithDolbyVisionSource();
-    void shouldSwitchAudioSource();
     void shouldReattachAudioSource();
+    void shouldEnableAudioFlagsAndSendNeedData();
+    void shouldFailToReattachAudioSource();
     void triggerReattachAudioSource();
     void checkNewAudioSourceAttached();
-    void shouldNotSwitchAudioSourceWhenMimeTypeIsEmpty();
-    void triggerReattachAudioSourceWithEmptyMimeType();
     void triggerFailToCastAudioSource();
     void triggerFailToCastVideoSource();
     void triggerFailToCastDolbyVisionSource();
@@ -422,15 +422,7 @@ protected:
     void triggerSetTextTrackIdentifier();
 
     // SwitchSource test methods
-    void shouldSwitchMpegSource();
-    void shouldSwitchEac3Source();
-    void shouldSwitchRawAudioSource();
-    void shouldSkipSwitchingSource();
     void triggerSwitchMpegSource();
-    void triggerSwitchEac3Source();
-    void triggerSwitchRawAudioSource();
-    void triggerSwitchUnknownSource();
-    void triggerSwitchVideoSource();
 
 private:
     // SetupElement helper methods
