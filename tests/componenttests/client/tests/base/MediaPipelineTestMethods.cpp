@@ -241,17 +241,6 @@ void MediaPipelineTestMethods::shouldAttachAudioSourceMpeg()
                                     kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw);
 }
 
-void MediaPipelineTestMethods::shouldAttachAudioSourceMp4()
-{
-    shouldAttachAudioSource();
-}
-
-void MediaPipelineTestMethods::shouldAttachAudioSourceEacs()
-{
-    shouldAttachAudioSourceInternal(kAudioEacs, kHasNoDrm, kAlignment, kNumberOfChannelsEacs, kSampleRateEacs,
-                                    kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw);
-}
-
 void MediaPipelineTestMethods::attachSourceAudio()
 {
     attachSourceAudioInternal(kAudioMp4, kHasNoDrm, kAlignment, kNumberOfChannels, kSampleRate, kCodecSpecificConfigStr,
@@ -261,17 +250,6 @@ void MediaPipelineTestMethods::attachSourceAudio()
 void MediaPipelineTestMethods::attachSourceAudioMpeg()
 {
     attachSourceAudioInternal(kAudioMpeg, kHasNoDrm, kAlignment, kNumberOfChannelsMpeg, kSampleRateMpeg,
-                              kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw, true);
-}
-
-void MediaPipelineTestMethods::attachSourceAudioMp4()
-{
-    attachSourceAudio();
-}
-
-void MediaPipelineTestMethods::attachSourceAudioEacs()
-{
-    attachSourceAudioInternal(kAudioEacs, kHasNoDrm, kAlignment, kNumberOfChannelsEacs, kSampleRateEacs,
                               kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw, true);
 }
 

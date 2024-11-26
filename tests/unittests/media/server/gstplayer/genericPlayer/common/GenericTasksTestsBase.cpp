@@ -196,14 +196,14 @@ firebolt::rialto::IMediaPipeline::MediaSegmentVector buildUnknownSamples()
 /**
  * Class to test the unknown type source
  */
-class MediaSourceTest : public IMediaPipeline::MediaSource
+class UnknownMediaSourceTest : public IMediaPipeline::MediaSource
 {
 public:
-    MediaSourceTest() {}
-    ~MediaSourceTest() {}
+    UnknownMediaSourceTest() {}
+    ~UnknownMediaSourceTest() {}
 
     MediaSourceType getType() const override { return MediaSourceType::UNKNOWN; }
-    std::unique_ptr<MediaSource> copy() const override { return std::make_unique<MediaSourceTest>(*this); }
+    std::unique_ptr<MediaSource> copy() const override { return std::make_unique<UnknownMediaSourceTest>(*this); }
 };
 
 /**
@@ -1413,7 +1413,7 @@ void GenericTasksTestsBase::triggerAttachVideoSource(const std::string &mimeType
 
 void GenericTasksTestsBase::triggerAttachUnknownSource()
 {
-    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source = std::make_unique<MediaSourceTest>();
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source = std::make_unique<UnknownMediaSourceTest>();
     firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
                                                                 testContext->m_gstWrapper,
                                                                 testContext->m_glibWrapper,
