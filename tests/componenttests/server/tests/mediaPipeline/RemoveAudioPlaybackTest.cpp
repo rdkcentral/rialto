@@ -50,8 +50,6 @@ public:
         EXPECT_CALL(*m_gstWrapperMock,
                     gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("rate"), G_TYPE_INT, kSampleRate));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_audioCaps)).WillOnce(Return(&m_audioCapsStr));
-        EXPECT_CALL(*m_glibWrapperMock, gFree(&m_audioCapsStr));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_audioAppSrc)).WillOnce(Return(&m_oldCaps));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_audioCaps, &m_oldCaps)).WillOnce(Return(TRUE));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_oldCaps));

@@ -23,47 +23,14 @@ class SwitchSourceTest : public GenericTasksTestsBase
 {
 };
 
-TEST_F(SwitchSourceTest, shouldFailToSwitchSourceWhenSourceIsNotPresent)
+TEST_F(SwitchSourceTest, shouldSwitchSource)
 {
+    shouldReattachAudioSource();
     triggerSwitchMpegSource();
 }
 
-TEST_F(SwitchSourceTest, shouldFailToSwitchAudioSourceWithEmptyMimeType)
+TEST_F(SwitchSourceTest, shouldFailToSwitchSource)
 {
-    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
-    triggerSwitchUnknownSource();
-}
-
-TEST_F(SwitchSourceTest, shouldSwitchMpegAudioSource)
-{
-    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
-    shouldSwitchMpegSource();
+    shouldFailToReattachAudioSource();
     triggerSwitchMpegSource();
-}
-
-TEST_F(SwitchSourceTest, shouldReattachAudioSource)
-{
-    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
-    shouldSkipSwitchingSource();
-    triggerSwitchMpegSource();
-}
-
-TEST_F(SwitchSourceTest, shouldSwitchEac3AudioSource)
-{
-    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
-    shouldSwitchEac3Source();
-    triggerSwitchEac3Source();
-}
-
-TEST_F(SwitchSourceTest, shouldSwitchRawAudioSource)
-{
-    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
-    shouldSwitchRawAudioSource();
-    triggerSwitchRawAudioSource();
-}
-
-TEST_F(SwitchSourceTest, shouldNotSwitchVideoSource)
-{
-    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
-    triggerSwitchVideoSource();
 }

@@ -83,8 +83,6 @@ protected:
     void shouldAttachVideoSourceSecondary();
     void shouldAttachAudioSource();
     void shouldAttachAudioSourceMpeg();
-    void shouldAttachAudioSourceMp4();
-    void shouldAttachAudioSourceEacs();
     void shouldAllSourcesAttached();
     void shouldAllSourcesAttachedSecondary();
     void shouldPlay();
@@ -194,8 +192,6 @@ protected:
     void attachSourceVideo();
     void attachSourceAudio();
     void attachSourceAudioMpeg();
-    void attachSourceAudioMp4();
-    void attachSourceAudioEacs();
     void attachSourceVideoSecondary();
     void allSourcesAttached();
     void allSourcesAttachedSecondary();

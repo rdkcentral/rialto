@@ -82,8 +82,7 @@ GenericPlayerTaskFactory::createAttachSource(GenericPlayerContext &context, IGst
                                              const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
 {
     return std::make_unique<tasks::generic::AttachSource>(context, m_gstWrapper, m_glibWrapper,
-                                                          m_rdkGstreamerUtilsWrapper, m_gstTextTrackSinkFactory, player,
-                                                          source);
+                                                          m_gstTextTrackSinkFactory, player, source);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createDeepElementAdded(GenericPlayerContext &context,
@@ -340,10 +339,9 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetUseBuffering(Gen
 }
 
 std::unique_ptr<IPlayerTask>
-GenericPlayerTaskFactory::createSwitchSource(GenericPlayerContext &context,
+GenericPlayerTaskFactory::createSwitchSource(IGstGenericPlayerPrivate &player,
                                              const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
 {
-    return std::make_unique<tasks::generic::SwitchSource>(context, m_gstWrapper, m_glibWrapper,
-                                                          m_rdkGstreamerUtilsWrapper, source);
+    return std::make_unique<tasks::generic::SwitchSource>(player, source);
 }
 } // namespace firebolt::rialto::server

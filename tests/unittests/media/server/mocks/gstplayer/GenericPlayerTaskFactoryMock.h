@@ -140,7 +140,7 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetUseBuffering,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, bool useBuffering), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSwitchSource,
-                (GenericPlayerContext & context, const std::unique_ptr<IMediaPipeline::MediaSource> &source),
+                (IGstGenericPlayerPrivate & player, const std::unique_ptr<IMediaPipeline::MediaSource> &source),
                 (const, override));
 };
 } // namespace firebolt::rialto::server

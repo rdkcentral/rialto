@@ -40,21 +40,18 @@ public:
     AttachSource(GenericPlayerContext &context,
                  const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                  const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                 const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
                  const std::shared_ptr<IGstTextTrackSinkFactory> &gstTextTrackSinkFactory,
                  IGstGenericPlayerPrivate &player, const std::unique_ptr<IMediaPipeline::MediaSource> &source);
     ~AttachSource() override;
     void execute() const override;
 
 private:
-    void addSource(GstCaps *caps, bool isDrm) const;
-    void reattachAudioSource(GstCaps *caps, const std::string &strCaps) const;
-    std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate> createAudioAttributes() const;
+    void addSource() const;
+    void reattachAudioSource() const;
 
     GenericPlayerContext &m_context;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
-    std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
     std::shared_ptr<IGstTextTrackSinkFactory> m_gstTextTrackSinkFactory;
     IGstGenericPlayerPrivate &m_player;
     std::unique_ptr<IMediaPipeline::MediaSource> m_attachedSource;
