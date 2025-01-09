@@ -87,29 +87,16 @@ void SetSourcePosition::execute() const
         NeedData task{m_context, m_player, m_gstPlayerClient, GST_APP_SRC(source)};
         task.execute();
     }
+    else
+    {
+        m_context.initialPositions[source].emplace_back(
+            SegmentData{m_position, m_resetTime, m_appliedRate, m_stopPosition});
+    }
 }
 
 void SetSourcePosition::setSubtitlePosition(GstElement *source) const
 {
-    GstSegment *segment{m_gstWrapper->gstSegmentNew()};
-    m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
-    if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE,
-                                        GST_SEEK_TYPE_SET, m_position, GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
-    {
-        RIALTO_SERVER_LOG_WARN("Segment seek failed.");
-        m_gstWrapper->gstSegmentFree(segment);
-        return;
-    }
-
-    if (!m_gstWrapper->gstPadSendEvent(m_gstWrapper->gstBaseSinkPad(m_context.subtitleSink),
-                                       m_gstWrapper->gstEventNewSegment(segment)))
-    {
-        RIALTO_SERVER_LOG_INFO("Pad not ready to receive events. Postpone sending segment");
-        m_context.initialPositions[source].emplace_back(
-            SegmentData{m_position, m_resetTime, m_appliedRate, m_stopPosition});
-    }
-
-    m_gstWrapper->gstSegmentFree(segment);
+    g_object_set(m_context.subtitleSink, "position", static_cast<guint64>(m_position), nullptr);
 }
 
 } // namespace firebolt::rialto::server::tasks::generic

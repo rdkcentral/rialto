@@ -307,6 +307,13 @@ private:
     std::optional<firebolt::rialto::wrappers::AudioAttributesPrivate>
     createAudioAttributes(const std::unique_ptr<IMediaPipeline::MediaSource> &source) const;
 
+    /**
+     * @brief Sets text track position before pushing data
+     *
+     * @param[in] source : the subtitle media source
+     */
+    void setTextTrackPositionIfRequired(GstElement *source);
+
 private:
     /**
      * @brief The player context.
