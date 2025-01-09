@@ -139,8 +139,9 @@ bool IpcTests::triggerPerformSetConfiguration()
     // socket being owned by the user executing the code (and the group would be their primary group)
     const std::string kSocketOwner{};
     const std::string kSocketGroup{};
+    const std::string kAppId{"app"};
     return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketName, kClientSocketName, kMaxResource,
-                                          kSocketPermissions, kSocketOwner, kSocketGroup);
+                                          kSocketPermissions, kSocketOwner, kSocketGroup, kAppId);
 }
 
 bool IpcTests::triggerPerformPing()
