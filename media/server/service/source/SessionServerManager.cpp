@@ -110,7 +110,8 @@ void SessionServerManager::stopService()
 bool SessionServerManager::setConfiguration(const std::string &socketName, const common::SessionServerState &state,
                                             const common::MaxResourceCapabilitites &maxResource,
                                             const std::string &clientDisplayName, unsigned int socketPermissions,
-                                            const std::string &socketOwner, const std::string &socketGroup, const std::string &appName)
+                                            const std::string &socketOwner, const std::string &socketGroup,
+                                            const std::string &appName)
 {
     if (!m_sessionManagementServer->initialize(socketName, socketPermissions, socketOwner, socketGroup))
     {
