@@ -966,8 +966,8 @@ void GstGenericPlayer::setTextTrackPositionIfRequired(GstElement *source)
         return;
     }
 
-    g_object_set(m_context.subtitleSink, "position", static_cast<guint64>(initialPosition->second.back().position),
-                 nullptr);
+    m_glibWrapper->gObjectSet(m_context.subtitleSink, "position",
+                              static_cast<guint64>(initialPosition->second.back().position), nullptr);
 
     m_context.initialPositions.erase(initialPosition);
 }

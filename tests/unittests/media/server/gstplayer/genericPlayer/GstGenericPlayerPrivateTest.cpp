@@ -943,6 +943,47 @@ TEST_F(GstGenericPlayerPrivateTest, undefinedStopPositionInSetSourcePosition)
     m_sut->attachData(firebolt::rialto::MediaSourceType::AUDIO);
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldPushSubtitleBuffer)
+{
+    GstBuffer buffer{};
+    GstAppSrc subSrc{};
+    GstAppSrc videoSrc{};
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.streamInfo[firebolt::rialto::MediaSourceType::SUBTITLE].buffers.emplace_back(&buffer);
+            context.streamInfo[firebolt::rialto::MediaSourceType::SUBTITLE].isDataNeeded = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::SUBTITLE].appSrc = GST_ELEMENT(&subSrc);
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
+        });
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
+    m_sut->attachData(firebolt::rialto::MediaSourceType::SUBTITLE);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldPushSubtitleBufferAndSetPosition)
+{
+    constexpr std::int64_t kPosition{124};
+    constexpr bool kDoNotResetTime{false};
+    constexpr double kAppliedRate{1.0};
+    constexpr uint64_t kStopPosition{3453425};
+    GstBuffer buffer{};
+    GstAppSrc subSrc{};
+    GstAppSrc videoSrc{};
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.streamInfo[firebolt::rialto::MediaSourceType::SUBTITLE].buffers.emplace_back(&buffer);
+            context.streamInfo[firebolt::rialto::MediaSourceType::SUBTITLE].isDataNeeded = true;
+            context.streamInfo[firebolt::rialto::MediaSourceType::SUBTITLE].appSrc = GST_ELEMENT(&subSrc);
+            context.initialPositions[GST_ELEMENT(&subSrc)].emplace_back(
+                SegmentData{kPosition, kDoNotResetTime, kAppliedRate, kStopPosition});
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
+        });
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(_, StrEq("position")));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
+    m_sut->attachData(firebolt::rialto::MediaSourceType::SUBTITLE);
+}
+
 TEST_F(GstGenericPlayerPrivateTest, shouldCancelAudioUnderflowAndResume)
 {
     GstBuffer buffer{};

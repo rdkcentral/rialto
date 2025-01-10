@@ -301,7 +301,7 @@ GenericPlayerTaskFactory::createSetSourcePosition(GenericPlayerContext &context,
                                                   const firebolt::rialto::MediaSourceType &type, std::int64_t position,
                                                   bool resetTime, double appliedRate, uint64_t stopPosition) const
 {
-    return std::make_unique<tasks::generic::SetSourcePosition>(context, player, m_client, m_gstWrapper, type, position,
+    return std::make_unique<tasks::generic::SetSourcePosition>(context, player, m_client, m_glibWrapper, type, position,
                                                                resetTime, appliedRate, stopPosition);
 }
 

@@ -2976,19 +2976,7 @@ void GenericTasksTestsBase::shouldFlushVideoSrcSuccess()
 
 void GenericTasksTestsBase::shouldSetSubtitleSourcePosition()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentNew()).WillOnce(Return(&testContext->m_segment));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentInit(&testContext->m_segment, GST_FORMAT_TIME));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstSegmentDoSeek(&testContext->m_segment, kRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE, GST_SEEK_TYPE_SET,
-                                 kPosition, GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
-        .WillOnce(Return(true));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewSegment(&testContext->m_segment))
-        .WillOnce(Return(&testContext->m_event));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstBaseSinkPad(&testContext->m_textTrackSink))
-        .WillOnce(Return(&testContext->m_pad));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstPadSendEvent(&testContext->m_pad, &testContext->m_event))
-        .WillOnce(Return(false));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentFree(&testContext->m_segment));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_textTrackSink, StrEq("position")));
 }
 
 void GenericTasksTestsBase::shouldFailToSetSubtitleSourcePosition()
@@ -3007,7 +2995,7 @@ void GenericTasksTestsBase::triggerSetSourcePosition(firebolt::rialto::MediaSour
     firebolt::rialto::server::tasks::generic::SetSourcePosition task{testContext->m_context,
                                                                      testContext->m_gstPlayer,
                                                                      &testContext->m_gstPlayerClient,
-                                                                     testContext->m_gstWrapper,
+                                                                     testContext->m_glibWrapper,
                                                                      sourceType,
                                                                      kPosition,
                                                                      kResetTime,
