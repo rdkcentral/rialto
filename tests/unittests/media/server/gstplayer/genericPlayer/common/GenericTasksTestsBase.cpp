@@ -2979,17 +2979,6 @@ void GenericTasksTestsBase::shouldSetSubtitleSourcePosition()
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_textTrackSink, StrEq("position")));
 }
 
-void GenericTasksTestsBase::shouldFailToSetSubtitleSourcePosition()
-{
-    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentNew()).WillOnce(Return(&testContext->m_segment));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentInit(&testContext->m_segment, GST_FORMAT_TIME));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstSegmentDoSeek(&testContext->m_segment, kRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE, GST_SEEK_TYPE_SET,
-                                 kPosition, GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
-        .WillOnce(Return(false));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstSegmentFree(&testContext->m_segment));
-}
-
 void GenericTasksTestsBase::triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType)
 {
     firebolt::rialto::server::tasks::generic::SetSourcePosition task{testContext->m_context,

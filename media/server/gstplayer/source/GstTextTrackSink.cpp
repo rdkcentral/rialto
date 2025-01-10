@@ -399,7 +399,7 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
     }
 }
 
-static gboolean gst_rialto_text_track_sink_query(GstElement *element, GstQuery *query)
+static gboolean gst_rialto_text_track_sink_query(GstElement *element, GstQuery *query) // NOLINT(build/function_format)
 {
     GstRialtoTextTrackSink *sink = GST_RIALTO_TEXT_TRACK_SINK(element);
     GST_DEBUG_OBJECT(sink, "handling query '%s'", GST_QUERY_TYPE_NAME(query));
