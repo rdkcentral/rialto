@@ -92,6 +92,7 @@ message SetConfigurationRequest {
     optional string clientDisplayName = 6;
     optional string socketOwner = 7;
     optional string socketGroup = 8;
+    optional string appName = 9;
 }
 message SetConfigurationResponse {
 }

@@ -186,7 +186,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
                                      const std::string &socketName, const std::string &clientDisplayName,
                                      const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                      const unsigned int socketPermissions, const std::string &socketOwner,
-                                     const std::string &socketGroup) const
+                                     const std::string &socketGroup, const std::string &appName) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
@@ -203,6 +203,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     request.set_socketpermissions(socketPermissions);
     request.set_socketowner(socketOwner);
     request.set_socketgroup(socketGroup);
+    request.set_appname(appName);
     *(request.mutable_loglevels()) = getCurrentLogLevels();
     request.set_initialsessionserverstate(convert(initialState));
     auto ipcController = m_ipcLoop->createRpcController();

@@ -36,6 +36,7 @@ constexpr int kPingId{29};
 // socket being owned by the user executing the code (and the group would be their primary group)
 const std::string kSocketOwner{};
 const std::string kSocketGroup{};
+const std::string kAppId{"app"};
 
 rialto::SessionServerState convertSessionServerState(const firebolt::rialto::common::SessionServerState &state)
 {
@@ -79,7 +80,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
 {
     EXPECT_CALL(m_sessionServerManagerMock,
                 setConfiguration(kSocketName, state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers),
-                                 kClientDisplayName, kSocketPermissions, kSocketOwner, kSocketGroup))
+                                 kClientDisplayName, kSocketPermissions, kSocketOwner, kSocketGroup, kAppId))
         .WillOnce(Return(true));
 }
 
@@ -101,7 +102,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
 {
     EXPECT_CALL(m_sessionServerManagerMock,
                 setConfiguration(kSocketName, state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers),
-                                 kClientDisplayName, kSocketPermissions, kSocketOwner, kSocketGroup))
+                                 kClientDisplayName, kSocketPermissions, kSocketOwner, kSocketGroup, kAppId))
         .WillOnce(Return(false));
 }
 
@@ -142,6 +143,7 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
     request.set_socketpermissions(kSocketPermissions);
     request.set_socketowner(kSocketOwner);
     request.set_socketgroup(kSocketGroup);
+    request.set_appname(kAppId);
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

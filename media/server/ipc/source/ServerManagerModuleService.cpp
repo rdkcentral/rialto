@@ -98,7 +98,7 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
         m_sessionServerManager.setConfiguration(request->sessionmanagementsocketname(),
                                                 convertSessionServerState(request->initialsessionserverstate()),
                                                 maxResource, kClientDisplayName, request->socketpermissions(),
-                                                request->socketowner(), request->socketgroup());
+                                                request->socketowner(), request->socketgroup(), request->appname());
     m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().clientloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().sessionserverloglevels()),
