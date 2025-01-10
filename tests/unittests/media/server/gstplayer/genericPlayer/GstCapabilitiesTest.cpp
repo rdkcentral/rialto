@@ -359,6 +359,32 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithPropertiesSupported)
     m_listOfFactories = nullptr;
 }
 
+TEST_F(GstCapabilitiesTest, getSupportedPropertiesForBlacklistedFactories)
+{
+    createSutWithNoDecoderAndNoSink();
+
+    // the code needs a real factory, so take the factory that exist on system and change its name
+    GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
+    GST_OBJECT(elementFactory)->name = "rtkv1sink";
+
+    GList * listOfFactories = nullptr;
+    listOfFactories = g_list_append(listOfFactories, elementFactory);
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(kExpectedFactoryListType, GST_RANK_NONE))
+        .WillOnce(Return(listOfFactories));
+    EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(listOfFactories)).Times(1);
+
+    // element will never be created from blacklisted factory list
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(_, nullptr)).Times(0);
+
+    std::vector<std::string> kParamNames{"test-name-123", "test2"};
+    std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
+
+    EXPECT_TRUE(supportedProperties.empty());
+
+    gst_plugin_feature_list_free(listOfFactories);
+    m_listOfFactories = nullptr;
+}
+
 TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithAudioFadeProperty)
 {
     expectGetSupportedPropertiesCommon();
