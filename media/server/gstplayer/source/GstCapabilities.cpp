@@ -226,8 +226,8 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
     {
         GstElementFactory *factory = GST_ELEMENT_FACTORY(iter->data);
 
-        //WORKAROUND: initialising element "rtkv1sink" causes that another playback's video goes black
-        //we don't need to scan this element, so ignore it
+        // WORKAROUND: initialising element "rtkv1sink" causes that another playback's video goes black
+        // we don't need to scan this element, so ignore it
         if (std::string{GST_OBJECT_NAME(GST_OBJECT(factory))} == "rtkv1sink")
         {
             RIALTO_SERVER_LOG_DEBUG("Ignoring rtkv1sink element");

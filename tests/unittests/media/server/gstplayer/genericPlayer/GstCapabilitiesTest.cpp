@@ -367,7 +367,7 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesForBlacklistedFactories)
     GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
     GST_OBJECT(elementFactory)->name = "rtkv1sink";
 
-    GList * listOfFactories = nullptr;
+    GList *listOfFactories = nullptr;
     listOfFactories = g_list_append(listOfFactories, elementFactory);
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(kExpectedFactoryListType, GST_RANK_NONE))
         .WillOnce(Return(listOfFactories));
