@@ -383,6 +383,9 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesForBlacklistedFactories)
 
     gst_plugin_feature_list_free(listOfFactories);
     m_listOfFactories = nullptr;
+
+    // it changes name of global element factory, so it should be restored
+    GST_OBJECT(elementFactory)->name = "fakesrc";
 }
 
 TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithAudioFadeProperty)
