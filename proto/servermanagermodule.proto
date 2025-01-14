@@ -20,6 +20,7 @@
 syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
+import "rialtoipc.proto";
 
 package rialto;
 
@@ -72,6 +73,7 @@ message Resources {
 
 /**
  * @brief Contains all initial parameters for RialtoSessionServer
+ *        with socket name (socket owned by rialto server)
  *
  * @param[in]  sessionManagementSocketName  Name of socket used for SessionServer <-> Application communication
  * @param[in]  initialSessionServerState    Initial session server state
@@ -95,6 +97,28 @@ message SetConfigurationRequest {
     optional string appName = 9;
 }
 message SetConfigurationResponse {
+}
+
+/**
+ * @brief Contains all initial parameters for RialtoSessionServer
+ *        with socket file descriptor (socket owned by rialto server manager)
+ *
+ * @param[in]  sessionManagementSocketFd    File descriptor of socket used for SessionServer <-> Application communication
+ * @param[in]  initialSessionServerState    Initial session server state
+ * @param[in]  resources                    Application resources
+ * @param[in]  logLevels                    Initial log levels
+ * @param[in]  clientDisplayName            Socket name that Rialto client should connect to
+ *
+ */
+message SetConfigurationWithFdRequest {
+    optional int32 sessionManagementSocketFd = 1 [(firebolt.rialto.ipc.field_is_fd) = true, default = -1];
+    optional SessionServerState initialSessionServerState = 2;
+    optional Resources resources = 3;
+    optional LogLevels logLevels = 4;
+    optional string clientDisplayName = 5;
+    optional string appName = 6;
+}
+message SetConfigurationWithFdResponse {
 }
 
 /**
@@ -159,9 +183,16 @@ message SetLogLevelsResponse {
 service ServerManagerModule {
     /**
      * @brief Provides initialization data for RialtoSessionServer
-     *
+     *        with socket name (socket owned by rialto server)
      */
     rpc setConfiguration(SetConfigurationRequest) returns (SetConfigurationResponse) {
+    }
+
+    /**
+     * @brief Provides initialization data for RialtoSessionServer
+     *        with socket file descriptor (socket owned by rialto server manager)
+     */
+    rpc setConfigurationWithFd(SetConfigurationWithFdRequest) returns (SetConfigurationWithFdResponse) {
     }
 
     /**

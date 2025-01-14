@@ -113,6 +113,33 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     done->Run();
 }
 
+void ServerManagerModuleService::setConfigurationWithFd(::google::protobuf::RpcController *controller,
+                                                        const ::rialto::SetConfigurationWithFdRequest *request,
+                                                        ::rialto::SetConfigurationWithFdResponse *response,
+                                                        ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("SetConfiguration with Fd received from ServerManager");
+    common::MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(),
+                                                 request->resources().maxwebaudioplayers()};
+    const auto kClientDisplayName = request->has_clientdisplayname() ? request->clientdisplayname() : "";
+    bool success =
+        m_sessionServerManager.setConfiguration(request->sessionmanagementsocketfd(),
+                                                convertSessionServerState(request->initialsessionserverstate()),
+                                                maxResource, kClientDisplayName, request->appname());
+    m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),
+                                        static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().clientloglevels()),
+                                        static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().sessionserverloglevels()),
+                                        static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().ipcloglevels()),
+                                        static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().servermanagerloglevels()),
+                                        static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().commonloglevels()));
+    if (!success)
+    {
+        RIALTO_SERVER_LOG_ERROR("SetConfigurationWithFd operation failed");
+        controller->SetFailed("SetConfigurationWithFd failed");
+    }
+    done->Run();
+}
+
 void ServerManagerModuleService::setState(::google::protobuf::RpcController *controller,
                                           const ::rialto::SetStateRequest *request,
                                           ::rialto::SetStateResponse *response, ::google::protobuf::Closure *done)

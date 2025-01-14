@@ -26,6 +26,7 @@ using testing::Return;
 
 namespace
 {
+constexpr int kSocketFd{17};
 const std::string kSocketName{"/tmp/rialtotest-0"};
 const std::string kClientDisplayName{"westeros-rialto"};
 constexpr unsigned int kSocketPermissions{0666};
@@ -84,6 +85,15 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
         .WillOnce(Return(true));
 }
 
+void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWithFd(
+    const firebolt::rialto::common::SessionServerState &state)
+{
+    EXPECT_CALL(m_sessionServerManagerMock,
+                setConfiguration(kSocketFd, state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers),
+                                 kClientDisplayName, kAppId))
+        .WillOnce(Return(true));
+}
+
 void ServerManagerModuleServiceTests::sessionServerManagerWillSetState(
     const firebolt::rialto::common::SessionServerState &state)
 {
@@ -103,6 +113,15 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
     EXPECT_CALL(m_sessionServerManagerMock,
                 setConfiguration(kSocketName, state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers),
                                  kClientDisplayName, kSocketPermissions, kSocketOwner, kSocketGroup, kAppId))
+        .WillOnce(Return(false));
+}
+
+void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigurationWithFd(
+    const firebolt::rialto::common::SessionServerState &state)
+{
+    EXPECT_CALL(m_sessionServerManagerMock,
+                setConfiguration(kSocketFd, state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers),
+                                 kClientDisplayName, kAppId))
         .WillOnce(Return(false));
 }
 
@@ -146,6 +165,27 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
     request.set_appname(kAppId);
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void ServerManagerModuleServiceTests::sendSetConfigurationWithFd(const firebolt::rialto::common::SessionServerState &state)
+{
+    rialto::SetConfigurationWithFdRequest request;
+    rialto::SetConfigurationWithFdResponse response;
+
+    request.set_sessionmanagementsocketfd(kSocketFd);
+    request.mutable_resources()->set_maxplaybacks(kMaxSessions);
+    request.mutable_resources()->set_maxwebaudioplayers(kMaxWebAudioPlayers);
+    request.mutable_loglevels()->set_defaultloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_clientloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_sessionserverloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_ipcloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_servermanagerloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_commonloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.set_initialsessionserverstate(convertSessionServerState(state));
+    request.set_clientdisplayname(kClientDisplayName);
+    request.set_appname(kAppId);
+
+    m_sut->setConfigurationWithFd(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void ServerManagerModuleServiceTests::sendSetState(const firebolt::rialto::common::SessionServerState &state)
