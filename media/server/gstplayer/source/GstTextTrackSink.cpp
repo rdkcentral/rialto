@@ -413,7 +413,6 @@ static gboolean gst_rialto_text_track_sink_query(GstElement *element, GstQuery *
         {
         case GST_FORMAT_TIME:
         {
-            // Thunder ITextTrack does not provide getPosition API so we are unable to determine current position
             // GST_CLOCK_TIME_NONE has to be returned here, because otherwise whole pipeline returns incorrect position
             gst_query_set_position(query, fmt, GST_CLOCK_TIME_NONE);
             break;
