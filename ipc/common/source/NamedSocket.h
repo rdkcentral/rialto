@@ -37,10 +37,14 @@ public:
     ~NamedSocket() override;
 
     int getFd() const override;
+    bool setSocketPermissions(unsigned int socketPermissions) const override;
+    bool setSocketOwnership(const std::string &socketOwner, const std::string &socketGroup) const override;
 
 private:
     void closeListeningSocket();
     bool getSocketLock();
+    uid_t getSocketOwnerId(const std::string &socketOwner) const;
+    gid_t getSocketGroupId(const std::string &socketGroup) const;
 
 private:
     int m_sockFd{-1};
