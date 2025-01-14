@@ -48,6 +48,8 @@ public:
 
     void serverWillInitialize();
     void serverWillFailToInitialize();
+    void serverWillInitializeWithFd();
+    void serverWillFailToInitializeWithFd();
     void serverWillStart();
     void clientWillConnect();
     void clientWillDisconnect();
@@ -56,6 +58,8 @@ public:
     void sendServerInitialize();
     void sendServerInitializeWithTestSocketOwnerAndGroup();
     void sendServerInitializeAndExpectFailure();
+    void sendServerInitializeWithFd();
+    void sendServerInitializeWithFdAndExpectFailure();
     void sendServerStart();
     void serverWillInitializeWithValidSocketOwnerAndGroup();
     void serverWillInitializeWithValidSocketOwnerAndInvalidGroup();

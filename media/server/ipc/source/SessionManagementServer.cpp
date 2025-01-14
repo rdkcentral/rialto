@@ -164,6 +164,28 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
     return true;
 }
 
+bool SessionManagementServer::initialize(int32_t socketFd)
+{
+    RIALTO_SERVER_LOG_INFO("Initializing Session Management Server. Socket fd: %d", socketFd);
+    if (!m_ipcServer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - Ipc server instance is NULL");
+        return false;
+    }
+
+    // add a socket for clients and associate with a streamer object
+    if (!m_ipcServer->addSocket(socketFd,
+                                std::bind(&SessionManagementServer::onClientConnected, this, std::placeholders::_1),
+                                std::bind(&SessionManagementServer::onClientDisconnected, this, std::placeholders::_1)))
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - can't add socket fd %d to the ipc "
+                                "server",
+                                socketFd);
+        return false;
+    }
+    return true;
+}
+
 void SessionManagementServer::start()
 {
     if (m_isRunning.load())

@@ -46,6 +46,9 @@ public:
                                   const std::string &clientDisplayName, unsigned int socketPermissions,
                                   const std::string &socketOwner, const std::string &socketGroup,
                                   const std::string &appName) = 0;
+    virtual bool setConfiguration(int32_t socketFd, const common::SessionServerState &state,
+                                  const common::MaxResourceCapabilitites &maxResource,
+                                  const std::string &clientDisplayName, const std::string &appName) = 0;
     virtual bool setState(const common::SessionServerState &state) = 0;
     virtual void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                               RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,

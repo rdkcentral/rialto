@@ -43,6 +43,7 @@ using testing::SetArgReferee;
 namespace
 {
 const std::string kSocketName{"/tmp/sessionmanagementservertest-0"};
+constexpr int kSocketFd{234};
 constexpr unsigned int kSocketPermissions{0666};
 // Empty strings for socket owner and group means that chown() won't be called. This will leave the created
 // socket being owned by the user executing the code (and the group would be their primary group)
@@ -152,6 +153,16 @@ void SessionManagementServerTests::serverWillFailToInitialize()
     EXPECT_CALL(*m_serverMock, addSocket(kSocketName, _, _)).WillOnce(Return(false));
 }
 
+void SessionManagementServerTests::serverWillInitializeWithFd()
+{
+    EXPECT_CALL(*m_serverMock, addSocket(kSocketFd, _, _)).WillOnce(Return(true));
+}
+
+void SessionManagementServerTests::serverWillFailToInitializeWithFd()
+{
+    EXPECT_CALL(*m_serverMock, addSocket(kSocketFd, _, _)).WillOnce(Return(false));
+}
+
 void SessionManagementServerTests::serverWillStart()
 {
     EXPECT_CALL(*m_serverMock, process()).WillOnce(Return(false));
@@ -258,6 +269,16 @@ void SessionManagementServerTests::sendServerInitializeWithTestSocketOwnerAndGro
 void SessionManagementServerTests::sendServerInitializeAndExpectFailure()
 {
     EXPECT_FALSE(m_sut->initialize(kSocketName, kSocketPermissions, kSocketOwnerEmpty, kSocketGroupEmpty));
+}
+
+void SessionManagementServerTests::sendServerInitializeWithFd()
+{
+    EXPECT_TRUE(m_sut->initialize(kSocketFd));
+}
+
+void SessionManagementServerTests::sendServerInitializeWithFdAndExpectFailure()
+{
+    EXPECT_FALSE(m_sut->initialize(kSocketFd));
 }
 
 void SessionManagementServerTests::sendServerStart()
