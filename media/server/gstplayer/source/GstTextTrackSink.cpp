@@ -34,6 +34,7 @@ enum
     PROP_0,
     PROP_MUTE,
     PROP_TEXT_TRACK_IDENTIFIER,
+    PROP_POSITION,
     PROP_LAST
 };
 
@@ -85,6 +86,7 @@ static void gst_rialto_text_track_sink_get_property(GObject *object, guint propI
                                                     GValue *value, GParamSpec *pspec);
 static void gst_rialto_text_track_sink_set_property(GObject *object, guint propId, // NOLINT(build/function_format)
                                                     const GValue *value, GParamSpec *pspec);
+static gboolean gst_rialto_text_track_sink_query(GstElement *element, GstQuery *query); // NOLINT(build/function_format)
 
 static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *klass) // NOLINT(build/function_format)
 {
@@ -104,6 +106,7 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
     baseSinkClass->set_caps = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_set_caps);
     baseSinkClass->event = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_event);
     elementClass->change_state = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_change_state);
+    elementClass->query = GST_DEBUG_FUNCPTR(gst_rialto_text_track_sink_query);
 
     g_object_class_install_property(gobjectClass, PROP_MUTE,
                                     g_param_spec_boolean("mute", "Mute", "Mute subtitles", FALSE, G_PARAM_READWRITE));
@@ -111,6 +114,9 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
     g_object_class_install_property(gobjectClass, PROP_TEXT_TRACK_IDENTIFIER,
                                     g_param_spec_string("text-track-identifier", "Text Track Identifier",
                                                         "Identifier of text track", nullptr,
+                                                        GParamFlags(G_PARAM_READWRITE)));
+    g_object_class_install_property(gobjectClass, PROP_POSITION,
+                                    g_param_spec_uint64("position", "Position", "Position", 0, G_MAXUINT64, 0,
                                                         GParamFlags(G_PARAM_READWRITE)));
 
     gst_element_class_add_pad_template(elementClass, gst_static_pad_template_get(&sinkTemplate));
@@ -226,6 +232,14 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
 
     textTrackSink->priv->m_textTrackSession->mute(textTrackSink->priv->m_isMuted);
 
+    std::unique_lock lock{textTrackSink->priv->m_mutex};
+    textTrackSink->priv->m_capsSet = true;
+    if (textTrackSink->priv->m_queuedPosition.has_value())
+    {
+        textTrackSink->priv->m_textTrackSession->setPosition(textTrackSink->priv->m_queuedPosition.value() / GST_MSECOND);
+        textTrackSink->priv->m_queuedPosition.reset();
+    }
+
     return TRUE;
 }
 
@@ -236,15 +250,6 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
 
     switch (GST_EVENT_TYPE(event))
     {
-    case GST_EVENT_SEGMENT:
-    {
-        const GstSegment *segment;
-        gst_event_parse_segment(event, &segment);
-
-        GST_DEBUG_OBJECT(textTrackSink, "setting position to %" GST_TIME_FORMAT, GST_TIME_ARGS(segment->start));
-        textTrackSink->priv->m_textTrackSession->setPosition(segment->start / GST_MSECOND);
-        break;
-    }
     case GST_EVENT_FLUSH_START:
     {
         break;
@@ -330,6 +335,12 @@ static void gst_rialto_text_track_sink_get_property(GObject *object, guint propI
         g_value_set_string(value, priv->m_textTrackIdentifier.c_str());
         break;
     }
+    case PROP_POSITION:
+    {
+        // Thunder ITextTrack does not provide getPosition API so we are unable to determine current position
+        g_value_set_uint64(value, GST_CLOCK_TIME_NONE);
+        break;
+    }
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID(object, propId, pspec);
         break;
@@ -368,10 +379,54 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
 
         break;
     }
+    case PROP_POSITION:
+    {
+        guint64 position = g_value_get_uint64(value);
+        std::unique_lock lock{priv->m_mutex};
+        if (priv->m_textTrackSession && priv->m_capsSet)
+        {
+            priv->m_textTrackSession->setPosition(position / GST_MSECOND);
+        }
+        else
+        {
+            priv->m_queuedPosition = position;
+        }
+        break;
+    }
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID(object, propId, pspec);
         break;
     }
+}
+
+static gboolean gst_rialto_text_track_sink_query(GstElement *element, GstQuery *query) // NOLINT(build/function_format)
+{
+    GstRialtoTextTrackSink *sink = GST_RIALTO_TEXT_TRACK_SINK(element);
+    GST_DEBUG_OBJECT(sink, "handling query '%s'", GST_QUERY_TYPE_NAME(query));
+    switch (GST_QUERY_TYPE(query))
+    {
+    case GST_QUERY_POSITION:
+    {
+        GstFormat fmt;
+        gst_query_parse_position(query, &fmt, NULL);
+        switch (fmt)
+        {
+        case GST_FORMAT_TIME:
+        {
+            // GST_CLOCK_TIME_NONE has to be returned here, because otherwise whole pipeline returns incorrect position
+            gst_query_set_position(query, fmt, GST_CLOCK_TIME_NONE);
+            break;
+        }
+        default:
+            break;
+        }
+        return TRUE;
+    }
+    default:
+        break;
+    }
+    GstElement *parent = GST_ELEMENT(&sink->parent);
+    return GST_ELEMENT_CLASS(parent_class)->query(parent, query);
 }
 
 namespace firebolt::rialto::server

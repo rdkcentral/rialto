@@ -26,10 +26,10 @@ namespace firebolt::rialto::server::tasks::generic
 {
 SetSourcePosition::SetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                      IGstGenericPlayerClient *client,
-                                     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                     const std::shared_ptr<wrappers::IGlibWrapper> &glibWrapper,
                                      const MediaSourceType &type, std::int64_t position, bool resetTime,
                                      double appliedRate, uint64_t stopPosition)
-    : m_context{context}, m_player(player), m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type},
+    : m_context{context}, m_player(player), m_gstPlayerClient{client}, m_glibWrapper{glibWrapper}, m_type{type},
       m_position{position}, m_resetTime{resetTime}, m_appliedRate{appliedRate}, m_stopPosition{stopPosition}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetSourcePosition");
@@ -69,16 +69,13 @@ void SetSourcePosition::execute() const
         m_context.initialPositions[source].emplace_back(
             SegmentData{m_position, m_resetTime, m_appliedRate, m_stopPosition});
     }
+    else if (MediaSourceType::SUBTITLE == m_type)
+    {
+        setSubtitlePosition(source);
+    }
 
     if (m_context.setupSourceFinished)
     {
-        if (MediaSourceType::SUBTITLE == m_type)
-        {
-            // in case of subtitles, all data might be already in the sink and we might not get any data anymore,
-            // so send the new segment here and to not depend on any following buffers
-            setSubtitlePosition(source);
-        }
-
         // Reset Eos info
         m_context.endOfStreamInfo.erase(m_type);
         m_context.eosNotified = false;
@@ -91,25 +88,17 @@ void SetSourcePosition::execute() const
 
 void SetSourcePosition::setSubtitlePosition(GstElement *source) const
 {
-    GstSegment *segment{m_gstWrapper->gstSegmentNew()};
-    m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
-    if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE,
-                                        GST_SEEK_TYPE_SET, m_position, GST_SEEK_TYPE_SET, GST_CLOCK_TIME_NONE, nullptr))
+    // in case of subtitles, all data might be already in the sink and we might not get any data anymore,
+    // so set position here and to not depend on any following buffers
+    if (m_context.setupSourceFinished)
     {
-        RIALTO_SERVER_LOG_WARN("Segment seek failed.");
-        m_gstWrapper->gstSegmentFree(segment);
-        return;
+        m_glibWrapper->gObjectSet(m_context.subtitleSink, "position", static_cast<guint64>(m_position), nullptr);
     }
-
-    if (!m_gstWrapper->gstPadSendEvent(m_gstWrapper->gstBaseSinkPad(m_context.subtitleSink),
-                                       m_gstWrapper->gstEventNewSegment(segment)))
+    else
     {
-        RIALTO_SERVER_LOG_INFO("Pad not ready to receive events. Postpone sending segment");
         m_context.initialPositions[source].emplace_back(
             SegmentData{m_position, m_resetTime, m_appliedRate, m_stopPosition});
     }
-
-    m_gstWrapper->gstSegmentFree(segment);
 }
 
 } // namespace firebolt::rialto::server::tasks::generic

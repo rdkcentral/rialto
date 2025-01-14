@@ -765,7 +765,14 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
             return;
         }
 
-        pushSampleIfRequired(streamInfo.appSrc, common::convertMediaSourceType(mediaType));
+        if (firebolt::rialto::MediaSourceType::SUBTITLE == mediaType)
+        {
+            setTextTrackPositionIfRequired(streamInfo.appSrc);
+        }
+        else
+        {
+            pushSampleIfRequired(streamInfo.appSrc, common::convertMediaSourceType(mediaType));
+        }
         if (mediaType == firebolt::rialto::MediaSourceType::AUDIO)
         {
             // This needs to be done before gstAppSrcPushBuffer() is
@@ -948,6 +955,21 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
     }
     m_context.initialPositions.erase(initialPosition);
     return;
+}
+
+void GstGenericPlayer::setTextTrackPositionIfRequired(GstElement *source)
+{
+    auto initialPosition = m_context.initialPositions.find(source);
+    if (m_context.initialPositions.end() == initialPosition)
+    {
+        // Sending initial sample not needed
+        return;
+    }
+
+    m_glibWrapper->gObjectSet(m_context.subtitleSink, "position",
+                              static_cast<guint64>(initialPosition->second.back().position), nullptr);
+
+    m_context.initialPositions.erase(initialPosition);
 }
 
 bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source)
