@@ -19,12 +19,20 @@
 
 #include "NamedSocket.h"
 #include "IpcLogging.h"
+#include <grp.h>
+#include <pwd.h>
 #include <stdexcept>
 #include <sys/file.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/un.h>
 #include <unistd.h>
+
+namespace
+{
+constexpr uid_t kNoOwnerChange = -1; // -1 means chown() won't change the owner
+constexpr gid_t kNoGroupChange = -1; // -1 means chown() won't change the group
+} // namespace
 
 namespace firebolt::rialto::ipc
 {
@@ -98,6 +106,33 @@ int NamedSocket::getFd() const
     return m_sockFd;
 }
 
+bool NamedSocket::setSocketPermissions(unsigned int socketPermissions) const
+{
+    errno = 0;
+    if (chmod(m_sockPath.c_str(), socketPermissions) != 0)
+    {
+        RIALTO_IPC_LOG_SYS_WARN(errno, "Failed to change the permissions on the IPC socket");
+        return false;
+    }
+    return true;
+}
+
+bool NamedSocket::setSocketOwnership(const std::string &socketOwner, const std::string &socketGroup) const
+{
+    uid_t ownerId = getSocketOwnerId(socketOwner);
+    gid_t groupId = getSocketGroupId(socketGroup);
+
+    if (ownerId != kNoOwnerChange || groupId != kNoGroupChange)
+    {
+        errno = 0;
+        if (chown(m_sockPath.c_str(), ownerId, groupId) != 0)
+        {
+            RIALTO_IPC_LOG_SYS_WARN(errno, "Failed to change the owner/group for the IPC socket");
+        }
+    }
+    return true;
+}
+
 void NamedSocket::closeListeningSocket()
 {
     if (!m_sockPath.empty() && (unlink(m_sockPath.c_str()) != 0) && (errno != ENOENT))
@@ -154,5 +189,51 @@ bool NamedSocket::getSocketLock()
     m_lockPath = std::move(lockPath);
 
     return true;
+}
+
+uid_t NamedSocket::getSocketOwnerId(const std::string &socketOwner) const
+{
+    uid_t ownerId = kNoOwnerChange;
+    const size_t kBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (!socketOwner.empty() && kBufferSize > 0)
+    {
+        errno = 0;
+        passwd passwordStruct{};
+        passwd *passwordResult = nullptr;
+        char buffer[kBufferSize];
+        int result = getpwnam_r(socketOwner.c_str(), &passwordStruct, buffer, kBufferSize, &passwordResult);
+        if (result == 0 && passwordResult)
+        {
+            ownerId = passwordResult->pw_uid;
+        }
+        else
+        {
+            RIALTO_IPC_LOG_SYS_WARN(errno, "Failed to determine ownerId for '%s'", socketOwner.c_str());
+        }
+    }
+    return ownerId;
+}
+
+gid_t NamedSocket::getSocketGroupId(const std::string &socketGroup) const
+{
+    gid_t groupId = kNoGroupChange;
+    const size_t kBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (!socketGroup.empty() && kBufferSize > 0)
+    {
+        errno = 0;
+        group groupStruct{};
+        group *groupResult = nullptr;
+        char buffer[kBufferSize];
+        int result = getgrnam_r(socketGroup.c_str(), &groupStruct, buffer, kBufferSize, &groupResult);
+        if (result == 0 && groupResult)
+        {
+            groupId = groupResult->gr_gid;
+        }
+        else
+        {
+            RIALTO_IPC_LOG_SYS_WARN(errno, "Failed to determine groupId for '%s'", socketGroup.c_str());
+        }
+    }
+    return groupId;
 }
 } // namespace firebolt::rialto::ipc

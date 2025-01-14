@@ -41,6 +41,8 @@ class INamedSocket
 public:
     virtual ~INamedSocket() = default;
     virtual int getFd() const = 0;
+    virtual bool setSocketPermissions(unsigned int socketPermissions) const = 0;
+    virtual bool setSocketOwnership(const std::string &socketOwner, const std::string &socketGroup) const = 0;
 };
 } // namespace firebolt::rialto::ipc
 
