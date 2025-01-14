@@ -38,6 +38,11 @@ public:
                  unsigned int socketPermissions, const std::string &socketOwner, const std::string &socketGroup,
                  const std::string &appName),
                 (override));
+    MOCK_METHOD(bool, setConfiguration,
+                (int32_t socketFd, const common::SessionServerState &state,
+                 const common::MaxResourceCapabilitites &maxResource, const std::string &clientDisplayName,
+                 const std::string &appName),
+                (override));
     MOCK_METHOD(bool, setState, (const common::SessionServerState &state), (override));
     MOCK_METHOD(void, setLogLevels,
                 (RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,

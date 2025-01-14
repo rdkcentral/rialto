@@ -41,6 +41,7 @@ constexpr int kAppManagementSocket{3};
 constexpr int kMaxPlaybacks{2};
 constexpr int kMaxWebAudioPlayers{1};
 constexpr int kPingId{12};
+constexpr int kFd{2523};
 constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kMaxPlaybacks, kMaxWebAudioPlayers};
 constexpr RIALTO_DEBUG_LEVEL kLogLvl{RIALTO_DEBUG_LEVEL_DEFAULT};
 const std::string kSessionManagementSocket{"/tmp/rialtosessionservermanagertests-0"};
@@ -198,6 +199,46 @@ void SessionServerManagerTests::willSetConfiguration()
     EXPECT_TRUE(m_sut->setConfiguration(kSessionManagementSocket, SessionServerState::INACTIVE, kMaxResource,
                                         kClientDisplayName, kSessionManagementSocketPermissions, kSocketOwner,
                                         kSocketGroup, kAppId));
+}
+
+void SessionServerManagerTests::willFailToSetConfigurationWithFdWhenSessionManagementServerFailsToInit()
+{
+    EXPECT_CALL(m_sessionManagementServerMock, initialize(kFd)).WillOnce(Return(false));
+    EXPECT_TRUE(m_sut);
+    EXPECT_FALSE(m_sut->setConfiguration(kFd, SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId));
+}
+
+void SessionServerManagerTests::willFailToSetConfigurationWithFdWhenSessionManagementServerFailsToSetInitialState()
+{
+    EXPECT_CALL(m_sessionManagementServerMock, initialize(kFd)).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionManagementServerMock, start());
+    EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(kMaxPlaybacks));
+    EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(kMaxWebAudioPlayers));
+    EXPECT_CALL(m_playbackServiceMock, setClientDisplayName(kClientDisplayName));
+    EXPECT_CALL(m_playbackServiceMock, setResourceManagerAppName(kAppId));
+    EXPECT_CALL(m_playbackServiceMock, switchToInactive());
+    EXPECT_CALL(m_cdmServiceMock, switchToInactive());
+    EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::INACTIVE))
+        .WillOnce(Return(false));
+    EXPECT_TRUE(m_sut);
+    EXPECT_FALSE(m_sut->setConfiguration(kFd, SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId));
+}
+
+void SessionServerManagerTests::willSetConfigurationWithFd()
+{
+    EXPECT_CALL(m_sessionManagementServerMock, initialize(kFd)).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionManagementServerMock, start());
+    EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(kMaxPlaybacks));
+    EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(kMaxWebAudioPlayers));
+    EXPECT_CALL(m_playbackServiceMock, setClientDisplayName(kClientDisplayName));
+    EXPECT_CALL(m_playbackServiceMock, setResourceManagerAppName(kAppId));
+    EXPECT_CALL(m_playbackServiceMock, switchToInactive());
+    EXPECT_CALL(m_cdmServiceMock, switchToInactive());
+    EXPECT_CALL(m_controlServiceMock, setApplicationState(ApplicationState::INACTIVE));
+    EXPECT_CALL(m_applicationManagementServerMock, sendStateChangedEvent(SessionServerState::INACTIVE))
+        .WillOnce(Return(true));
+    EXPECT_TRUE(m_sut);
+    EXPECT_TRUE(m_sut->setConfiguration(kFd, SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId));
 }
 
 void SessionServerManagerTests::willFailToSetUnsupportedState()

@@ -126,6 +126,23 @@ bool SessionServerManager::setConfiguration(const std::string &socketName, const
     return setState(state);
 }
 
+bool SessionServerManager::setConfiguration(int32_t socketFd, const common::SessionServerState &state,
+                                            const common::MaxResourceCapabilitites &maxResource,
+                                            const std::string &clientDisplayName, const std::string &appName)
+{
+    if (!m_sessionManagementServer->initialize(socketFd))
+    {
+        RIALTO_SERVER_LOG_ERROR("SetConfiguration failed - SessionManagementServer failed to initialize");
+        return false;
+    }
+    m_sessionManagementServer->start();
+    m_playbackService.setMaxPlaybacks(maxResource.maxPlaybacks);
+    m_playbackService.setMaxWebAudioPlayers(maxResource.maxWebAudioPlayers);
+    m_playbackService.setClientDisplayName(clientDisplayName);
+    m_playbackService.setResourceManagerAppName(appName);
+    return setState(state);
+}
+
 bool SessionServerManager::setState(const common::SessionServerState &state)
 {
     switch (state)
