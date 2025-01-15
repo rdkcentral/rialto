@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_SOURCE_POSITION_H_
 
 #include "GenericPlayerContext.h"
+#include "IGlibWrapper.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
@@ -34,9 +35,8 @@ class SetSourcePosition : public IPlayerTask
 {
 public:
     SetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                      const MediaSourceType &type, std::int64_t position, bool resetTime, double appliedRate,
-                      uint64_t stopPosition);
+                      const std::shared_ptr<wrappers::IGlibWrapper> &glibWrapper, const MediaSourceType &type,
+                      std::int64_t position, bool resetTime, double appliedRate, uint64_t stopPosition);
     ~SetSourcePosition() override;
     void execute() const override;
 
@@ -45,7 +45,7 @@ private:
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
-    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<wrappers::IGlibWrapper> m_glibWrapper;
     MediaSourceType m_type;
     std::int64_t m_position;
     bool m_resetTime;

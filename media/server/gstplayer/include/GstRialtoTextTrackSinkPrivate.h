@@ -23,6 +23,8 @@
 #include "ITextTrackSession.h"
 #include <atomic>
 #include <memory>
+#include <mutex>
+#include <optional>
 #include <string>
 
 namespace firebolt::rialto::server
@@ -32,7 +34,9 @@ struct GstRialtoTextTrackSinkPrivate
     std::unique_ptr<ITextTrackSession> m_textTrackSession;
     std::atomic<bool> m_isMuted{false};
     std::string m_textTrackIdentifier;
-    // std::mutex m_mutex;
+    bool m_capsSet{false};
+    std::optional<uint64_t> m_queuedPosition;
+    std::mutex m_mutex;
 };
 }; // namespace firebolt::rialto::server
 

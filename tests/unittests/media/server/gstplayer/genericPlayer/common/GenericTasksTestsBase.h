@@ -408,7 +408,7 @@ protected:
 
     // Set Source Position test methods
     void shouldSetSubtitleSourcePosition();
-    void shouldFailToSetSubtitleSourcePosition();
+
     void triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionSet(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType);

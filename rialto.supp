@@ -142,3 +142,12 @@
    fun:*protobuf*FileOptions*_InternalParse*
    ...
 }
+{
+   ignore_g_option_context_parse_definitly_lost
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:gst_update_registry
+   ...
+   fun:g_option_context_parse
+}
