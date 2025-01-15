@@ -50,13 +50,11 @@ public:
 
     bool initialize(int argc, char *argv[]) override;
     void startService() override;
-    bool setConfiguration(const std::string &socketName, const common::SessionServerState &state,
-                          const common::MaxResourceCapabilitites &maxResource, const std::string &clientDisplayName,
-                          unsigned int socketPermissions, const std::string &socketOwner,
-                          const std::string &socketGroup, const std::string &appName) override;
-    bool setConfiguration(int32_t socketFd, const common::SessionServerState &state,
-                          const common::MaxResourceCapabilitites &maxResource, const std::string &clientDisplayName,
-                          const std::string &appName) override;
+    bool configureIpc(const std::string &socketName, unsigned int socketPermissions, const std::string &socketOwner,
+                      const std::string &socketGroup) override;
+    bool configureIpc(int32_t socketFd) override;
+    bool configureServices(const common::SessionServerState &state, const common::MaxResourceCapabilitites &maxResource,
+                           const std::string &clientDisplayName, const std::string &appName) override;
     bool setState(const common::SessionServerState &state) override;
     void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                       RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,

@@ -107,34 +107,31 @@ void SessionServerManager::stopService()
     }
 }
 
-bool SessionServerManager::setConfiguration(const std::string &socketName, const common::SessionServerState &state,
-                                            const common::MaxResourceCapabilitites &maxResource,
-                                            const std::string &clientDisplayName, unsigned int socketPermissions,
-                                            const std::string &socketOwner, const std::string &socketGroup,
-                                            const std::string &appName)
+bool SessionServerManager::configureIpc(const std::string &socketName, unsigned int socketPermissions,
+                                        const std::string &socketOwner, const std::string &socketGroup)
 {
     if (!m_sessionManagementServer->initialize(socketName, socketPermissions, socketOwner, socketGroup))
     {
-        RIALTO_SERVER_LOG_ERROR("SetConfiguration failed - SessionManagementServer failed to initialize");
+        RIALTO_SERVER_LOG_ERROR("configureIpc failed - SessionManagementServer failed to initialize");
         return false;
     }
-    m_sessionManagementServer->start();
-    m_playbackService.setMaxPlaybacks(maxResource.maxPlaybacks);
-    m_playbackService.setMaxWebAudioPlayers(maxResource.maxWebAudioPlayers);
-    m_playbackService.setClientDisplayName(clientDisplayName);
-    m_playbackService.setResourceManagerAppName(appName);
-    return setState(state);
+    return true;
 }
 
-bool SessionServerManager::setConfiguration(int32_t socketFd, const common::SessionServerState &state,
-                                            const common::MaxResourceCapabilitites &maxResource,
-                                            const std::string &clientDisplayName, const std::string &appName)
+bool SessionServerManager::configureIpc(int32_t socketFd)
 {
     if (!m_sessionManagementServer->initialize(socketFd))
     {
-        RIALTO_SERVER_LOG_ERROR("SetConfiguration failed - SessionManagementServer failed to initialize");
+        RIALTO_SERVER_LOG_ERROR("configureIpc failed - SessionManagementServer failed to initialize");
         return false;
     }
+    return true;
+}
+
+bool SessionServerManager::configureServices(const common::SessionServerState &state,
+                                             const common::MaxResourceCapabilitites &maxResource,
+                                             const std::string &clientDisplayName, const std::string &appName)
+{
     m_sessionManagementServer->start();
     m_playbackService.setMaxPlaybacks(maxResource.maxPlaybacks);
     m_playbackService.setMaxWebAudioPlayers(maxResource.maxWebAudioPlayers);

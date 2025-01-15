@@ -79,18 +79,21 @@ ServerManagerModuleServiceTests::~ServerManagerModuleServiceTests() {}
 void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
     const firebolt::rialto::common::SessionServerState &state)
 {
+    EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketName, kSocketPermissions, kSocketOwner, kSocketGroup))
+        .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
-                setConfiguration(kSocketName, state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers),
-                                 kClientDisplayName, kSocketPermissions, kSocketOwner, kSocketGroup, kAppId))
+                configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
+                                  kAppId))
         .WillOnce(Return(true));
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWithFd(
     const firebolt::rialto::common::SessionServerState &state)
 {
+    EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
-                setConfiguration(kSocketFd, state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers),
-                                 kClientDisplayName, kAppId))
+                configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
+                                  kAppId))
         .WillOnce(Return(true));
 }
 
@@ -110,18 +113,21 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetLogLevels()
 void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfiguration(
     const firebolt::rialto::common::SessionServerState &state)
 {
+    EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketName, kSocketPermissions, kSocketOwner, kSocketGroup))
+        .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
-                setConfiguration(kSocketName, state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers),
-                                 kClientDisplayName, kSocketPermissions, kSocketOwner, kSocketGroup, kAppId))
+                configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
+                                  kAppId))
         .WillOnce(Return(false));
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigurationWithFd(
     const firebolt::rialto::common::SessionServerState &state)
 {
+    EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
-                setConfiguration(kSocketFd, state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers),
-                                 kClientDisplayName, kAppId))
+                configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
+                                  kAppId))
         .WillOnce(Return(false));
 }
 
@@ -169,8 +175,8 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
 
 void ServerManagerModuleServiceTests::sendSetConfigurationWithFd(const firebolt::rialto::common::SessionServerState &state)
 {
-    rialto::SetConfigurationWithFdRequest request;
-    rialto::SetConfigurationWithFdResponse response;
+    rialto::SetConfigurationRequest request;
+    rialto::SetConfigurationResponse response;
 
     request.set_sessionmanagementsocketfd(kSocketFd);
     request.mutable_resources()->set_maxplaybacks(kMaxSessions);
@@ -185,7 +191,7 @@ void ServerManagerModuleServiceTests::sendSetConfigurationWithFd(const firebolt:
     request.set_clientdisplayname(kClientDisplayName);
     request.set_appname(kAppId);
 
-    m_sut->setConfigurationWithFd(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void ServerManagerModuleServiceTests::sendSetState(const firebolt::rialto::common::SessionServerState &state)

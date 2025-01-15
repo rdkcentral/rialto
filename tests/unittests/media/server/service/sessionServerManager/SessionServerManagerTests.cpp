@@ -69,11 +69,6 @@ TEST_F(SessionServerManagerTests, shouldFailToSetConfigurationWithFdWhenSessionM
     willFailToSetConfigurationWithFdWhenSessionManagementServerFailsToInit();
 }
 
-TEST_F(SessionServerManagerTests, shouldFailToSetConfigurationWithFdWhenSessionManagementServerFailsToSetInitialState)
-{
-    willFailToSetConfigurationWithFdWhenSessionManagementServerFailsToSetInitialState();
-}
-
 TEST_F(SessionServerManagerTests, shouldSetConfigurationWithFd)
 {
     willSetConfigurationWithFd();

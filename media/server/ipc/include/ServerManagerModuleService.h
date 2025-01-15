@@ -45,10 +45,6 @@ public:
 
     void setConfiguration(::google::protobuf::RpcController *controller, const ::rialto::SetConfigurationRequest *request,
                           ::rialto::SetConfigurationResponse *response, ::google::protobuf::Closure *done) override;
-    void setConfigurationWithFd(::google::protobuf::RpcController *controller,
-                                const ::rialto::SetConfigurationWithFdRequest *request,
-                                ::rialto::SetConfigurationWithFdResponse *response,
-                                ::google::protobuf::Closure *done) override;
     void setState(::google::protobuf::RpcController *controller, const ::rialto::SetStateRequest *request,
                   ::rialto::SetStateResponse *response, ::google::protobuf::Closure *done) override;
     void setLogLevels(::google::protobuf::RpcController *controller, const ::rialto::SetLogLevelsRequest *request,
