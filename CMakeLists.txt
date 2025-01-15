@@ -97,9 +97,11 @@ if ( RIALTO_LOG_DEBUG_ENABLED )
     add_compile_definitions( RIALTO_LOG_DEBUG_ENABLED )
 endif()
 
-if ( RIALTO_ENABLE_TEXT_TRACK )
-    message("RIALTO_ENABLE_TEXT_TRACK IS ENABLED")
-    add_compile_definitions( RIALTO_ENABLE_TEXT_TRACK )
+#check if TextTrack plugin exists in Thunder
+find_path( TEXT_TRACK_INCLUDE_DIR NAMES WPEFramework/interfaces/ITextTrack.h )
+if (TEXT_TRACK_INCLUDE_DIR)
+    message("ENABLE RIALTO_ENABLE_TEXT_TRACK")
+    add_compile_definitions(RIALTO_ENABLE_TEXT_TRACK)
 endif()
 
 # Retrieve the commit ID 
