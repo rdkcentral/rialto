@@ -21,6 +21,7 @@
 #define SESSION_SERVER_APP_TESTS_FIXTURE_H_
 
 #include "LinuxWrapperMock.h"
+#include "NamedSocketMock.h"
 #include "SessionServerApp.h"
 #include "SessionServerAppManagerMock.h"
 #include "TimerFactoryMock.h"
@@ -45,6 +46,7 @@ public:
     void willStartTimer();
     void willKillAppOnDestruction() const;
     void willCancelStartupTimer() const;
+    void willConfigurePreloadedServer();
     void timerWillBeInactive() const;
     void timerWillBeActive() const;
 
@@ -60,6 +62,10 @@ private:
         std::make_unique<testing::StrictMock<firebolt::rialto::server::TimerMock>>()};
     testing::StrictMock<firebolt::rialto::server::TimerMock> &m_timerMock{*m_timer};
     testing::StrictMock<rialto::servermanager::common::SessionServerAppManagerMock> m_sessionServerAppManagerMock;
+    testing::StrictMock<firebolt::rialto::ipc::NamedSocketFactoryMock> m_namedSocketFactoryMock;
+    std::unique_ptr<testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock>> m_namedSocket{
+        std::make_unique<testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock>>()};
+    testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock> &m_namedSocketMock{*m_namedSocket};
 
 protected:
     std::unique_ptr<rialto::servermanager::common::SessionServerApp> m_sut;

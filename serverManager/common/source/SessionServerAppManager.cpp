@@ -241,26 +241,11 @@ bool SessionServerAppManager::configureSessionServer(const std::unique_ptr<ISess
         RIALTO_SERVER_MANAGER_LOG_ERROR("Unable to configure Session Server - pointer is null!");
         return false;
     }
-    const auto kInitialState{kSessionServer->getInitialState()};
-    const auto kSocketName{kSessionServer->getSessionManagementSocketName()};
-    const auto kClientDisplayName{kSessionServer->getClientDisplayName()};
-    const auto kSocketPermissions{kSessionServer->getSessionManagementSocketPermissions()};
-    const auto kSocketOwner{kSessionServer->getSessionManagementSocketOwner()};
-    const auto kSocketGroup{kSessionServer->getSessionManagementSocketGroup()};
-    const auto kAppName{kSessionServer->getAppName()};
-
-    const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
-                                                                          kSessionServer->getMaxWebAudioPlayers()};
-    if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketName,
-                                                  kClientDisplayName, kMaxResource, kSocketPermissions, kSocketOwner,
-                                                  kSocketGroup, kAppName))
+    if (kSessionServer->isNamedSocketInitialized())
     {
-        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
-                                        kSessionServer->getServerId());
-        return false;
+        return configureSessionServerWithSocketFd(kSessionServer);
     }
-    RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of server with id %d succeeded.", kSessionServer->getServerId());
-    return true;
+    return configureSessionServerWithSocketName(kSessionServer);
 }
 
 bool SessionServerAppManager::configurePreloadedSessionServer(const std::unique_ptr<ISessionServerApp> &kSessionServer,
@@ -452,5 +437,51 @@ void SessionServerAppManager::handleStateChangeFailure(const std::unique_ptr<ISe
         handleSessionServerStateChange(kSessionServer->getServerId(),
                                        firebolt::rialto::common::SessionServerState::ERROR);
     }
+}
+
+bool SessionServerAppManager::configureSessionServerWithSocketName(const std::unique_ptr<ISessionServerApp> &kSessionServer)
+{
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Configuring Session Server using socket name");
+    const auto kInitialState{kSessionServer->getInitialState()};
+    const auto kSocketName{kSessionServer->getSessionManagementSocketName()};
+    const auto kClientDisplayName{kSessionServer->getClientDisplayName()};
+    const auto kSocketPermissions{kSessionServer->getSessionManagementSocketPermissions()};
+    const auto kSocketOwner{kSessionServer->getSessionManagementSocketOwner()};
+    const auto kSocketGroup{kSessionServer->getSessionManagementSocketGroup()};
+    const auto kAppName{kSessionServer->getAppName()};
+
+    const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
+                                                                          kSessionServer->getMaxWebAudioPlayers()};
+    if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketName,
+                                                  kClientDisplayName, kMaxResource, kSocketPermissions, kSocketOwner,
+                                                  kSocketGroup, kAppName))
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
+                                        kSessionServer->getServerId());
+        return false;
+    }
+    RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of server with id %d succeeded.", kSessionServer->getServerId());
+    return true;
+}
+
+bool SessionServerAppManager::configureSessionServerWithSocketFd(const std::unique_ptr<ISessionServerApp> &kSessionServer)
+{
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Configuring Session Server using socket fd");
+    const auto kInitialState{kSessionServer->getInitialState()};
+    const auto kSocketFd{kSessionServer->getSessionManagementSocketFd()};
+    const auto kClientDisplayName{kSessionServer->getClientDisplayName()};
+    const auto kAppName{kSessionServer->getAppName()};
+
+    const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
+                                                                          kSessionServer->getMaxWebAudioPlayers()};
+    if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketFd,
+                                                  kClientDisplayName, kMaxResource, kAppName))
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
+                                        kSessionServer->getServerId());
+        return false;
+    }
+    RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of server with id %d succeeded.", kSessionServer->getServerId());
+    return true;
 }
 } // namespace rialto::servermanager::common

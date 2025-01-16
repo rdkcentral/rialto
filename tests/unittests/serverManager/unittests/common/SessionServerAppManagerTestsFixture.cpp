@@ -65,7 +65,7 @@ const std::string kClientDisplayName{"westeros-rialto"};
 constexpr unsigned int kSocketPermissions{0777};
 const std::string kSocketOwner;
 const std::string kSocketGroup;
-
+constexpr int kSessionServerSocketFd{342};
 } // namespace
 
 MATCHER_P2(MaxResourceMatcher, maxPlaybacks, maxWebAudioPlayers, "")
@@ -207,6 +207,7 @@ void SessionServerAppManagerTests::sessionServerWillChangeState(const firebolt::
 
 void SessionServerAppManagerTests::sessionServerWillChangeStateToUninitialized()
 {
+    EXPECT_CALL(m_sessionServerAppMock, isNamedSocketInitialized()).WillOnce(Return(false));
     EXPECT_CALL(m_sessionServerAppMock, cancelStartupTimer());
     EXPECT_CALL(m_sessionServerAppMock, getInitialState())
         .WillOnce(Return(firebolt::rialto::common::SessionServerState::INACTIVE));
@@ -242,6 +243,7 @@ void SessionServerAppManagerTests::sessionServerWillChangeStateToInactive()
 
 void SessionServerAppManagerTests::preloadedSessionServerWillSetConfiguration()
 {
+    EXPECT_CALL(m_sessionServerAppMock, isNamedSocketInitialized()).WillOnce(Return(false));
     m_secondSessionServerApp = std::make_unique<StrictMock<rialto::servermanager::common::SessionServerAppMock>>();
     auto &secondSessionServerAppMock{
         dynamic_cast<StrictMock<rialto::servermanager::common::SessionServerAppMock> &>(*m_secondSessionServerApp)};
@@ -267,8 +269,33 @@ void SessionServerAppManagerTests::preloadedSessionServerWillSetConfiguration()
     EXPECT_CALL(secondSessionServerAppMock, launch()).WillOnce(Return(false));
 }
 
+void SessionServerAppManagerTests::preloadedSessionServerWillSetConfigurationWithFd()
+{
+    EXPECT_CALL(m_sessionServerAppMock, isNamedSocketInitialized()).WillOnce(Return(true));
+    m_secondSessionServerApp = std::make_unique<StrictMock<rialto::servermanager::common::SessionServerAppMock>>();
+    auto &secondSessionServerAppMock{
+        dynamic_cast<StrictMock<rialto::servermanager::common::SessionServerAppMock> &>(*m_secondSessionServerApp)};
+    EXPECT_CALL(m_sessionServerAppMock, isPreloaded()).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerAppMock, isConnected()).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerAppMock, getAppName()).WillRepeatedly(ReturnRef(kEmptyAppName));
+    EXPECT_CALL(m_sessionServerAppMock, getInitialState())
+        .WillOnce(Return(firebolt::rialto::common::SessionServerState::INACTIVE));
+    EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketFd()).WillOnce(Return(kSessionServerSocketFd));
+    EXPECT_CALL(m_sessionServerAppMock, getClientDisplayName()).WillOnce(Return(kClientDisplayName));
+    EXPECT_CALL(m_sessionServerAppMock, getMaxPlaybackSessions()).WillOnce(Return(kMaxSessions));
+    EXPECT_CALL(m_sessionServerAppMock, getMaxWebAudioPlayers()).WillOnce(Return(kMaxWebAudioPlayers));
+    EXPECT_CALL(m_controllerMock,
+                performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
+                                        kSessionServerSocketFd, kClientDisplayName,
+                                        MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kEmptyAppName))
+        .WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerAppFactoryMock, create(_)).WillOnce(Return(ByMove(std::move(m_secondSessionServerApp))));
+    EXPECT_CALL(secondSessionServerAppMock, launch()).WillOnce(Return(false));
+}
+
 void SessionServerAppManagerTests::sessionServerWillFailToSetConfiguration()
 {
+    EXPECT_CALL(m_sessionServerAppMock, isNamedSocketInitialized()).WillOnce(Return(false));
     EXPECT_CALL(m_sessionServerAppMock, cancelStartupTimer());
     EXPECT_CALL(m_sessionServerAppMock, getInitialState())
         .WillOnce(Return(firebolt::rialto::common::SessionServerState::INACTIVE));
@@ -292,6 +319,7 @@ void SessionServerAppManagerTests::sessionServerWillFailToSetConfiguration()
 
 void SessionServerAppManagerTests::preloadedSessionServerWillFailToSetConfiguration()
 {
+    EXPECT_CALL(m_sessionServerAppMock, isNamedSocketInitialized()).WillOnce(Return(false));
     EXPECT_CALL(m_sessionServerAppMock, getInitialState())
         .WillOnce(Return(firebolt::rialto::common::SessionServerState::INACTIVE));
     EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketName()).WillOnce(Return(kSessionServerSocketName));

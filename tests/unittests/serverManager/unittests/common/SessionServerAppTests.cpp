@@ -30,6 +30,7 @@ const std::string kClientDisplayName{"displayname"};
 TEST_F(SessionServerAppTests, ShouldConfigurePreloadedSut)
 {
     createPreloadedAppSut();
+    willConfigurePreloadedServer();
     EXPECT_TRUE(triggerConfigure(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName}));
     EXPECT_EQ(kClientDisplayName, m_sut->getClientDisplayName());
 }
@@ -37,6 +38,7 @@ TEST_F(SessionServerAppTests, ShouldConfigurePreloadedSut)
 TEST_F(SessionServerAppTests, ShouldFailConfigurePreloadedSutTwice)
 {
     createPreloadedAppSut();
+    willConfigurePreloadedServer();
     EXPECT_TRUE(triggerConfigure(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName}));
     EXPECT_FALSE(triggerConfigure(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName}));
 }

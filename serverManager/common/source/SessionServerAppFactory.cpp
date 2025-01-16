@@ -18,6 +18,7 @@
  */
 
 #include "SessionServerAppFactory.h"
+#include "INamedSocket.h"
 #include "ITimer.h"
 #include "SessionServerApp.h"
 #include <memory>
@@ -44,6 +45,7 @@ std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(
     return std::make_unique<SessionServerApp>(appName, initialState, appConfig,
                                               m_linuxWrapperFactory->createLinuxWrapper(),
                                               firebolt::rialto::common::ITimerFactory::getFactory(),
+                                              firebolt::rialto::ipc::INamedSocketFactory::getFactory(),
                                               sessionServerAppManager, m_kEnvironmentVariables, m_kSessionServerPath,
                                               m_kSessionServerStartupTimeout, m_kSocketPermissions, m_kSocketOwner,
                                               m_kSocketGroup);
@@ -53,6 +55,7 @@ std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(SessionServer
 {
     return std::make_unique<SessionServerApp>(m_linuxWrapperFactory->createLinuxWrapper(),
                                               firebolt::rialto::common::ITimerFactory::getFactory(),
+                                              firebolt::rialto::ipc::INamedSocketFactory::getFactory(),
                                               sessionServerAppManager, m_kEnvironmentVariables, m_kSessionServerPath,
                                               m_kSessionServerStartupTimeout, m_kSocketPermissions, m_kSocketOwner,
                                               m_kSocketGroup);

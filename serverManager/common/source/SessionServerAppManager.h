@@ -84,6 +84,8 @@ private:
     bool handleInitiateApplication(const std::string &appName, const firebolt::rialto::common::SessionServerState &state,
                                    const firebolt::rialto::common::AppConfig &appConfig);
     void handleRestartServer(int serverId);
+    bool configureSessionServerWithSocketName(const std::unique_ptr<ISessionServerApp> &kSessionServer);
+    bool configureSessionServerWithSocketFd(const std::unique_ptr<ISessionServerApp> &kSessionServer);
 
 private:
     std::unique_ptr<ipc::IController> &m_ipcController;

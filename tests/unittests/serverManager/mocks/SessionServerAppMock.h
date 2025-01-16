@@ -54,6 +54,8 @@ public:
     MOCK_METHOD(void, kill, (), (const, override));
     MOCK_METHOD(void, setExpectedState, (const firebolt::rialto::common::SessionServerState &state), (override));
     MOCK_METHOD(firebolt::rialto::common::SessionServerState, getExpectedState, (), (const, override));
+    MOCK_METHOD(bool, isNamedSocketInitialized, (), (const, override));
+    MOCK_METHOD(int, getSessionManagementSocketFd, (), (const, override));
 };
 } // namespace rialto::servermanager::common
 
