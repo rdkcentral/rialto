@@ -91,7 +91,7 @@ add_library(
         source/GstDecryptor.cpp
         source/GstDispatcherThread.cpp
         source/GstGenericPlayer.cpp
-        source/GstInit.cpp
+        source/GstInitialiser.cpp
         source/GstLogForwarding.cpp
         source/GstProtectionMetadata.cpp
         source/GstProtectionMetadataHelper.cpp

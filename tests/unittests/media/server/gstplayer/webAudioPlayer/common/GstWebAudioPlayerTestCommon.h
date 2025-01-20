@@ -23,6 +23,7 @@
 #include "GlibWrapperMock.h"
 #include "GstDispatcherThreadFactoryMock.h"
 #include "GstDispatcherThreadMock.h"
+#include "GstInitialiserMock.h"
 #include "GstSrcFactoryMock.h"
 #include "GstSrcMock.h"
 #include "GstWebAudioPlayer.h"
@@ -72,6 +73,7 @@ public:
     std::unique_ptr<IGstDispatcherThread> gstDispatcherThread{std::make_unique<StrictMock<GstDispatcherThreadMock>>()};
     StrictMock<GstDispatcherThreadMock> &m_gstDispatcherThreadMock{
         dynamic_cast<StrictMock<GstDispatcherThreadMock> &>(*gstDispatcherThread)};
+    StrictMock<GstInitialiserMock> m_gstInitialiserMock;
 
 protected:
     void gstPlayerWillBeCreatedForLlama();

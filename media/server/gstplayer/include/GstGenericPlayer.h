@@ -26,6 +26,7 @@
 #include "IGstDispatcherThreadClient.h"
 #include "IGstGenericPlayer.h"
 #include "IGstGenericPlayerPrivate.h"
+#include "IGstInitialiser.h"
 #include "IGstProtectionMetadataHelperFactory.h"
 #include "IGstSrc.h"
 #include "IGstWrapper.h"
@@ -76,6 +77,7 @@ public:
      * @param[in] videoRequirements            : The video requirements for the playback.
      * @param[in] gstWrapper                   : The gstreamer wrapper.
      * @param[in] glibWrapper                  : The glib wrapper.
+     * @param[in] gstInitialiser               : The gst initialiser
      * @param[in] gstSrcFactory                : The gstreamer rialto src factory.
      * @param[in] timerFactory                 : The Timer factory
      * @param[in] taskFactory                  : The task factory
@@ -87,7 +89,7 @@ public:
                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
-                     const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+                     const IGstInitialiser &gstInitialiser, const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory,
                      std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,

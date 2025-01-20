@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#include "GstInit.h"
 #include "IApplicationSessionServer.h"
+#include "IGstInitialiser.h"
 #include "RialtoServerLogging.h"
 #include <cstring>
 
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
         RIALTO_SERVER_LOG_WARN("Failed to get git commit ID!");
     }
 
-    firebolt::rialto::server::gstInitalise(argc, argv);
+    firebolt::rialto::server::IGstInitialiser::instance().initialise(&argc, &argv);
 
     auto appSessionServer =
         firebolt::rialto::server::IApplicationSessionServerFactory::getFactory()->createApplicationSessionServer();

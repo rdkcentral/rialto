@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2025 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,11 +17,10 @@
  * limitations under the License.
  */
 
-#include "GstInitialiser.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "IFactoryAccessor.h"
-#include <gst/gst.h>
+#include "IGstInitialiser.h"
 #include <gtest/gtest.h>
 
 void initialiseGstreamer()
@@ -30,8 +29,6 @@ void initialiseGstreamer()
     using testing::Return;
     using testing::StrictMock;
     using namespace firebolt::rialto::wrappers;
-
-    gst_init(nullptr, nullptr);
 
     std::shared_ptr<StrictMock<GstWrapperFactoryMock>> gstWrapperFactoryMock{
         std::make_shared<StrictMock<GstWrapperFactoryMock>>()};
@@ -53,6 +50,5 @@ int main(int argc, char **argv) // NOLINT(build/filename_format)
     ::testing::InitGoogleTest(&argc, argv);
     initialiseGstreamer();
     int status = RUN_ALL_TESTS();
-    gst_deinit();
     return status;
 }

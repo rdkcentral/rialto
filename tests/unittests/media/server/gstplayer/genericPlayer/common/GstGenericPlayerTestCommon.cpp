@@ -32,6 +32,7 @@ using ::testing::StrEq;
 
 void GstGenericPlayerTestCommon::gstPlayerWillBeCreated()
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     initFactories();
     expectMakePlaybin();
     expectSetFlags();

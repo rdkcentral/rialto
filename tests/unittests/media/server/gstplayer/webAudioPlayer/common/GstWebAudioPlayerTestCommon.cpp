@@ -25,6 +25,7 @@
 
 void GstWebAudioPlayerTestCommon::gstPlayerWillBeCreatedForLlama()
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectInitThreads();
     expectCreatePipeline();
@@ -34,6 +35,7 @@ void GstWebAudioPlayerTestCommon::gstPlayerWillBeCreatedForLlama()
 
 void GstWebAudioPlayerTestCommon::gstPlayerWillBeCreatedForXiOne()
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectInitThreads();
     expectCreatePipeline();
@@ -43,6 +45,7 @@ void GstWebAudioPlayerTestCommon::gstPlayerWillBeCreatedForXiOne()
 
 void GstWebAudioPlayerTestCommon::gstPlayerWillBeCreatedForGenericPlatform()
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectInitThreads();
     expectCreatePipeline();

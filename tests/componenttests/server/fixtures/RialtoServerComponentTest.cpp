@@ -23,6 +23,7 @@
 #include "Constants.h"
 #include "ExpectMessage.h"
 #include "IFactoryAccessor.h"
+#include "IGstInitialiser.h"
 #include "Matchers.h"
 #include "MessageBuilders.h"
 #include "servermanagermodule.pb.h"
@@ -65,6 +66,7 @@ namespace firebolt::rialto::server::ct
 RialtoServerComponentTest::RialtoServerComponentTest()
 {
     configureWrappers();
+    initializeGstreamer();
     startSut();
     initializeSut();
 }
@@ -221,5 +223,18 @@ void RialtoServerComponentTest::initializeSut()
     auto receivedMessage = expectedMessage.getMessage();
     ASSERT_TRUE(receivedMessage);
     EXPECT_EQ(receivedMessage->sessionserverstate(), ::rialto::SessionServerState::UNINITIALIZED);
+}
+
+void RialtoServerComponentTest::initializeGstreamer()
+{
+    static std::once_flag onceFlag;
+    std::call_once(onceFlag,
+                   [this]()
+                   {
+                       EXPECT_CALL(*m_gstWrapperMock, gstInit(nullptr, nullptr));
+                       EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(nullptr));
+                       EXPECT_CALL(*m_gstWrapperMock, gstRegistryFindPlugin(nullptr, _)).WillOnce(Return(nullptr));
+                       firebolt::rialto::server::IGstInitialiser::instance().initialise(nullptr, nullptr);
+                   });
 }
 } // namespace firebolt::rialto::server::ct
