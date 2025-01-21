@@ -74,7 +74,7 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
             throw std::runtime_error("Cannot create GlibWrapper");
         }
         gstPlayer = std::make_unique<GstWebAudioPlayer>(client, priority, gstWrapper, glibWrapper,
-                                                        IGstSrcFactory::getFactory(),
+                                                        IGstInitialiser::instance(), IGstSrcFactory::getFactory(),
                                                         std::make_unique<WebAudioPlayerTaskFactory>(client, gstWrapper,
                                                                                                     glibWrapper),
                                                         std::make_unique<WorkerThreadFactory>(),
@@ -91,6 +91,7 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
 GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority,
                                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                                      const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                                     const IGstInitialiser &gstInitialiser,
                                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                                      std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
                                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
@@ -99,6 +100,8 @@ GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uin
                                                                                            std::move(taskFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstWebAudioPlayer is constructed.");
+
+    gstInitialiser.waitForInitialisation();
 
     if ((!gstSrcFactory) || (!(m_context.gstSrc = gstSrcFactory->getGstSrc())))
     {

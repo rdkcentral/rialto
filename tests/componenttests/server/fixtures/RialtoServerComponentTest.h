@@ -62,7 +62,8 @@ public:
 private:
     void configureWrappers() const;
     void startSut();
-    void initializeSut();
+    void initialiseSut();
+    void initialiseGstreamer();
 
 protected:
     ServerManagerStub m_serverManagerStub;

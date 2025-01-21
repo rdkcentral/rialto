@@ -20,6 +20,8 @@
 add_gtests (
         RialtoServerMainUnitTests
 
+        main.cpp
+
         # gtest code
         activeRequests/ActiveRequestsTests.cpp
 

@@ -41,8 +41,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, CreateDestroyLlamaSuccess)
     gstPlayerWillBeCreatedForLlama();
 
     EXPECT_NO_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                      m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                      std::move(m_taskFactory),
+                                                                      m_glibWrapperMock, m_gstInitialiserMock,
+                                                                      m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                       std::move(workerThreadFactory),
                                                                       std::move(gstDispatcherThreadFactory)));
     EXPECT_NE(m_gstPlayer, nullptr);
@@ -111,8 +111,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, CreateDestroyXiOneSuccess)
     gstPlayerWillBeCreatedForXiOne();
 
     EXPECT_NO_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                      m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                      std::move(m_taskFactory),
+                                                                      m_glibWrapperMock, m_gstInitialiserMock,
+                                                                      m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                       std::move(workerThreadFactory),
                                                                       std::move(gstDispatcherThreadFactory)));
     EXPECT_NE(m_gstPlayer, nullptr);
@@ -129,8 +129,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, CreateDestroyGenericPlatformsSuc
     gstPlayerWillBeCreatedForGenericPlatform();
 
     EXPECT_NO_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                      m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                      std::move(m_taskFactory),
+                                                                      m_glibWrapperMock, m_gstInitialiserMock,
+                                                                      m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                       std::move(workerThreadFactory),
                                                                       std::move(gstDispatcherThreadFactory)));
     EXPECT_NE(m_gstPlayer, nullptr);
@@ -144,11 +144,12 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, CreateDestroyGenericPlatformsSuc
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, getGstSrcFailure)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     EXPECT_CALL(*m_gstSrcFactoryMock, getGstSrc()).WillOnce(Return(nullptr));
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);
@@ -160,12 +161,13 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, getGstSrcFailure)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createWorkerThreadFailure)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(nullptr));
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);
@@ -177,6 +179,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createWorkerThreadFailure)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createPipelineFailure)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectInitWorkerThread();
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineNew(_)).WillOnce(Return(nullptr));
@@ -185,8 +188,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createPipelineFailure)
     expectResetWorkerThread();
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);
@@ -198,6 +201,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createPipelineFailure)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAppSrcFailure)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectCreatePipeline();
     EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
@@ -210,8 +214,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAppSrcFailure)
     expectResetWorkerThread();
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);
@@ -223,6 +227,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAppSrcFailure)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, getRegistryFailure)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectCreatePipeline();
     expectInitAppSrc();
@@ -233,8 +238,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, getRegistryFailure)
     gstPlayerWillBeDestroyed();
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);
@@ -246,6 +251,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, getRegistryFailure)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAmlhalaSinkFailure)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectCreatePipeline();
     expectInitAppSrc();
@@ -262,8 +268,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAmlhalaSinkFailure)
     gstPlayerWillBeDestroyed();
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);
@@ -275,6 +281,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAmlhalaSinkFailure)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createRtkAudioSinkFailure)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectCreatePipeline();
     expectInitAppSrc();
@@ -292,8 +299,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createRtkAudioSinkFailure)
     gstPlayerWillBeDestroyed();
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);
@@ -305,6 +312,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createRtkAudioSinkFailure)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAudioConvertFailure)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectCreatePipeline();
     expectInitAppSrc();
@@ -320,8 +328,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAudioConvertFailure)
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_appSrc));
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);
@@ -333,6 +341,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAudioConvertFailure)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAudioResampleFailure)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectMakeRtkAudioSink();
     expectCreatePipeline();
@@ -352,8 +361,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAudioResampleFailure)
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_appSrc));
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);
@@ -365,6 +374,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAudioResampleFailure)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, linkAudioSinkBinFailure)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectCreatePipeline();
     expectInitAppSrc();
@@ -376,8 +386,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, linkAudioSinkBinFailure)
     gstPlayerWillBeDestroyed();
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);
@@ -389,6 +399,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, linkAudioSinkBinFailure)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, linkElementFailure)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectCreatePipeline();
     expectInitAppSrc();
@@ -400,8 +411,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, linkElementFailure)
     gstPlayerWillBeDestroyed();
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);
@@ -413,6 +424,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, linkElementFailure)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAutoAudioSinkFailure)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectCreatePipeline();
     expectInitAppSrc();
@@ -429,8 +441,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAutoAudioSinkFailure)
     gstPlayerWillBeDestroyed();
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);
@@ -442,6 +454,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAutoAudioSinkFailure)
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createGstDispatcherThreadFailure)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectCreatePipeline();
     expectInitAppSrc();
@@ -453,8 +466,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createGstDispatcherThreadFailure
     gstPlayerWillBeDestroyed();
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);
@@ -466,6 +479,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createGstDispatcherThreadFailure
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createGstDispatcherAfterFailureToCreateVolume)
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     expectInitRialtoSrc();
     expectInitWorkerThread();
     expectCreatePipeline();
@@ -479,8 +493,8 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createGstDispatcherAfterFailureT
     expectResetWorkerThread();
 
     EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
-                                                                   m_glibWrapperMock, m_gstSrcFactoryMock,
-                                                                   std::move(m_taskFactory),
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
                                                                    std::move(workerThreadFactory),
                                                                    std::move(gstDispatcherThreadFactory)),
                  std::runtime_error);

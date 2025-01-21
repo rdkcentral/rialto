@@ -27,6 +27,7 @@
 #include "GstDispatcherThreadMock.h"
 #include "GstGenericPlayer.h"
 #include "GstGenericPlayerClientMock.h"
+#include "GstInitialiserMock.h"
 #include "GstProtectionMetadataHelperFactoryMock.h"
 #include "GstProtectionMetadataHelperMock.h"
 #include "GstSrcFactoryMock.h"
@@ -94,6 +95,7 @@ public:
     std::unique_ptr<StrictMock<GstProtectionMetadataHelperMock>> m_gstProtectionMetadataWrapper{
         std::make_unique<StrictMock<GstProtectionMetadataHelperMock>>()};
     StrictMock<GstProtectionMetadataHelperMock> *m_gstProtectionMetadataWrapperMock{m_gstProtectionMetadataWrapper.get()};
+    StrictMock<GstInitialiserMock> m_gstInitialiserMock;
 
 public:
     void setPipelineState(const GstState &state);
