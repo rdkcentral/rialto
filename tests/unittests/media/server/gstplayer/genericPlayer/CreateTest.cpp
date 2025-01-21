@@ -17,9 +17,13 @@
  * limitations under the License.
  */
 
+#include "GlibWrapperFactoryMock.h"
 #include "GstGenericPlayerTestCommon.h"
+#include "GstWrapperFactoryMock.h"
+#include "IFactoryAccessor.h"
 #include "Matchers.h"
 #include "PlayerTaskMock.h"
+#include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -109,6 +113,55 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstContextUnref(reinterpret_cast<GstContext *>(&m_dummyContext)));
     }
 };
+
+/**
+ * Test the factory
+ */
+TEST_F(RialtoServerCreateGstGenericPlayerTest, FactoryCreatesObject)
+{
+    // Testcase setup
+    std::shared_ptr<StrictMock<GstWrapperFactoryMock>> m_gstWrapperFactoryMock{
+        std::make_shared<StrictMock<GstWrapperFactoryMock>>()};
+    std::shared_ptr<StrictMock<GlibWrapperFactoryMock>> m_glibWrapperFactoryMock{
+        std::make_shared<StrictMock<GlibWrapperFactoryMock>>()};
+    std::shared_ptr<StrictMock<RdkGstreamerUtilsWrapperFactoryMock>> m_rdkGstreamerUtilsWrapperFactoryMock{
+        std::make_shared<StrictMock<RdkGstreamerUtilsWrapperFactoryMock>>()};
+    IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock;
+    IFactoryAccessor::instance().glibWrapperFactory() = m_glibWrapperFactoryMock;
+    IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = m_rdkGstreamerUtilsWrapperFactoryMock;
+
+    // Create expectations
+    EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillRepeatedly(Return(m_gstWrapperMock));
+    EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillRepeatedly(Return(m_glibWrapperMock));
+    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperFactoryMock, createRdkGstreamerUtilsWrapper())
+        .WillOnce(Return(m_rdkGstreamerUtilsWrapperMock));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("rialtosrc"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementRegister(0, StrEq("rialtosrc"), _, _));
+    EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(_)).WillRepeatedly(Return(nullptr));
+    expectMakePlaybin();
+    expectSetFlags();
+    expectSetSignalCallbacks();
+    expectSetUri();
+    expectCheckPlaySink();
+
+    std::shared_ptr<firebolt::rialto::server::IGstGenericPlayerFactory> factory =
+        firebolt::rialto::server::IGstGenericPlayerFactory::getFactory();
+    ASSERT_NE(factory, nullptr);
+    auto player{factory->createGstGenericPlayer(&m_gstPlayerClient, m_decryptionServiceMock, m_type, m_videoReq,
+                                                m_rdkGstreamerUtilsWrapperFactoryMock)};
+    EXPECT_NE(player, nullptr);
+
+    // Destroy expectations
+    EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(nullptr, nullptr, nullptr, nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(_, GST_STATE_NULL)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(_)).Times(2);
+    player.reset();
+
+    // Cleanup
+    IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
+    IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
+    IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = nullptr;
+}
 
 /**
  * Test that a GstGenericPlayer object can be created successfully if the video requirements are equal to or greater

@@ -39,9 +39,14 @@ void initialiseGstreamer()
     EXPECT_CALL(*gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(gstWrapperMock));
     IFactoryAccessor::instance().gstWrapperFactory() = gstWrapperFactoryMock;
 
+    // Hack to mock GstPlugin to cover one of ifs in code
+    uint8_t dummyMemory;
+    GstPlugin *plugin{reinterpret_cast<GstPlugin *>(&dummyMemory)};
     EXPECT_CALL(*gstWrapperMock, gstInit(nullptr, nullptr));
-    EXPECT_CALL(*gstWrapperMock, gstRegistryGet()).WillOnce(Return(nullptr));
-    EXPECT_CALL(*gstWrapperMock, gstRegistryFindPlugin(nullptr, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*gstWrapperMock, gstRegistryGet()).WillRepeatedly(Return(nullptr));
+    EXPECT_CALL(*gstWrapperMock, gstRegistryFindPlugin(nullptr, _)).WillOnce(Return(plugin));
+    EXPECT_CALL(*gstWrapperMock, gstRegistryRemovePlugin(nullptr, plugin));
+    EXPECT_CALL(*gstWrapperMock, gstObjectUnref(plugin));
     firebolt::rialto::server::IGstInitialiser::instance().initialise(nullptr, nullptr);
     firebolt::rialto::server::IGstInitialiser::instance().waitForInitialisation();
 

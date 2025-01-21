@@ -66,9 +66,9 @@ namespace firebolt::rialto::server::ct
 RialtoServerComponentTest::RialtoServerComponentTest()
 {
     configureWrappers();
-    initializeGstreamer();
+    initialiseGstreamer();
     startSut();
-    initializeSut();
+    initialiseSut();
 }
 
 RialtoServerComponentTest::~RialtoServerComponentTest()
@@ -210,7 +210,7 @@ void RialtoServerComponentTest::startSut()
     m_sut = IApplicationSessionServerFactory::getFactory()->createApplicationSessionServer();
 }
 
-void RialtoServerComponentTest::initializeSut()
+void RialtoServerComponentTest::initialiseSut()
 {
     constexpr int kArgc{2};
     std::string binaryName{"RialtoServer"};
@@ -225,7 +225,7 @@ void RialtoServerComponentTest::initializeSut()
     EXPECT_EQ(receivedMessage->sessionserverstate(), ::rialto::SessionServerState::UNINITIALIZED);
 }
 
-void RialtoServerComponentTest::initializeGstreamer()
+void RialtoServerComponentTest::initialiseGstreamer()
 {
     static std::once_flag onceFlag;
     std::call_once(onceFlag,
