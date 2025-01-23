@@ -783,8 +783,8 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
             GstBuffer* buffer = streamInfo.buffers.back();
             if (buffer)
             {
-                RIALTO_SERVER_LOG_ERROR("===================GST_BUFFER_PTS: " + std::to_string(GST_BUFFER_PTS(buffer)));
-                RIALTO_SERVER_LOG_ERROR("===================GST_BUFFER_SIZE: " + std::to_string(gst_buffer_get_size(buffer)));
+                RIALTO_SERVER_LOG_ERROR("===================GST_BUFFER_PTS: %lu", GST_BUFFER_PTS(buffer));
+                RIALTO_SERVER_LOG_ERROR("===================GST_BUFFER_SIZE: %zu", gst_buffer_get_size(buffer));
 
                 // Update last audio sample timestamps
                 m_context.lastAudioSampleTimestamps = static_cast<int64_t>(GST_BUFFER_PTS(buffer));
