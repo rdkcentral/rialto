@@ -779,21 +779,25 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
         }
         if (mediaType == firebolt::rialto::MediaSourceType::AUDIO)
         {
+            // This needs to be done before gstAppSrcPushBuffer() is
+            // called because it can free the memory
+            m_context.lastAudioSampleTimestamps = static_cast<int64_t>(GST_BUFFER_PTS(streamInfo.buffers.back()));
+        }
+        if (mediaType == firebolt::rialto::MediaSourceType::VIDEO)
+        {
             // Ensure the buffer exists and log PTS and size
             GstBuffer* buffer = streamInfo.buffers.back();
             if (buffer)
             {
-                RIALTO_SERVER_LOG_ERROR("===================GST_BUFFER_PTS: %llu", GST_BUFFER_PTS(buffer));
+                RIALTO_SERVER_LOG_ERROR("===================GST_BUFFER_PTS: %lu", GST_BUFFER_PTS(buffer));
                 RIALTO_SERVER_LOG_ERROR("===================GST_BUFFER_SIZE: %zu", gst_buffer_get_size(buffer));
-
-                // Update last audio sample timestamps
-                m_context.lastAudioSampleTimestamps = static_cast<int64_t>(GST_BUFFER_PTS(buffer));
             }
             else
             {
                 RIALTO_SERVER_LOG_ERROR("Buffer is null. Cannot log PTS or size.");
             }
         }
+        
 
         for (GstBuffer *buffer : streamInfo.buffers)
         {
