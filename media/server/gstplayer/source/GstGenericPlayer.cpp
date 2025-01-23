@@ -789,7 +789,7 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
             GstBuffer* buffer = streamInfo.buffers.back();
             if (buffer)
             {
-                RIALTO_SERVER_LOG_ERROR("===================GST_BUFFER_PTS: %lu", GST_BUFFER_PTS(buffer));
+                RIALTO_SERVER_LOG_ERROR("===================GST_BUFFER_PTS: %llu", static_cast<unsigned long long>(GST_BUFFER_PTS(buffer)));
                 RIALTO_SERVER_LOG_ERROR("===================GST_BUFFER_SIZE: %zu", gst_buffer_get_size(buffer));
             }
             else
