@@ -35,5 +35,6 @@ public:
     MOCK_METHOD(bool, setSocketPermissions, (unsigned int socketPermissions), (const, override));
     MOCK_METHOD(bool, setSocketOwnership, (const std::string &socketOwner, const std::string &socketGroup),
                 (const, override));
+    MOCK_METHOD(bool, blockNewConnections, (), (const, override));
 };
 } // namespace firebolt::rialto::ipc

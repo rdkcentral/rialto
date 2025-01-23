@@ -55,6 +55,7 @@ catch (const std::runtime_error &error)
 
 NamedSocket::NamedSocket(const std::string &socketPath)
 {
+    RIALTO_IPC_LOG_MIL("Creating named socket with name: %s", socketPath.c_str());
     m_sockPath = socketPath;
 
     // Create the socket
@@ -86,18 +87,12 @@ NamedSocket::NamedSocket(const std::string &socketPath)
         throw std::runtime_error("bind error");
     }
 
-    // put in listening mode
-    if (listen(m_sockFd, 1) == -1)
-    {
-        RIALTO_IPC_LOG_SYS_ERROR(errno, "listen error");
-
-        closeListeningSocket();
-        throw std::runtime_error("listen error");
-    }
+    RIALTO_IPC_LOG_MIL("Named socket with name: %s created, fd: %d", m_sockPath.c_str(), m_sockFd);
 }
 
 NamedSocket::~NamedSocket()
 {
+    RIALTO_IPC_LOG_MIL("Close named socket with name: %s, fd: %d", m_sockPath.c_str(), m_sockFd);
     closeListeningSocket();
 }
 
@@ -129,6 +124,17 @@ bool NamedSocket::setSocketOwnership(const std::string &socketOwner, const std::
         {
             RIALTO_IPC_LOG_SYS_WARN(errno, "Failed to change the owner/group for the IPC socket");
         }
+    }
+    return true;
+}
+
+bool NamedSocket::blockNewConnections() const
+{
+    RIALTO_IPC_LOG_INFO("Block new connections for: %s", m_sockPath.c_str());
+    if (listen(m_sockFd, 0) == -1)
+    {
+        RIALTO_IPC_LOG_SYS_ERROR(errno, "blockNewConnections: listen error");
+        return false;
     }
     return true;
 }

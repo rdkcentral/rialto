@@ -297,6 +297,13 @@ bool ServerImpl::addSocket(int fd, std::function<void(const std::shared_ptr<ICli
     socket.isOwned = false;
     socket.sockFd = fd;
 
+    // put in listening mode
+    if (listen(socket.sockFd, 1) == -1)
+    {
+        RIALTO_IPC_LOG_SYS_ERROR(errno, "listen error");
+        return false;
+    }
+
     // create an id for the listening socket
     const uint64_t kSocketId = m_socketIdCounter++;
     if (kSocketId >= FIRST_CLIENT_ID)

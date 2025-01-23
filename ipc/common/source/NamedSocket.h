@@ -39,6 +39,7 @@ public:
     int getFd() const override;
     bool setSocketPermissions(unsigned int socketPermissions) const override;
     bool setSocketOwnership(const std::string &socketOwner, const std::string &socketGroup) const override;
+    bool blockNewConnections() const override;
 
 private:
     void closeListeningSocket();
