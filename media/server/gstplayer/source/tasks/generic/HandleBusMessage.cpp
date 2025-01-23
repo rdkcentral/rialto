@@ -48,14 +48,16 @@ void HandleBusMessage::execute() const
     {
     case GST_MESSAGE_STATE_CHANGED:
     {
+        RIALTO_SERVER_LOG_INFO("===================State changed (old: %s, new: %s, pending: %s)",
+                                   m_gstWrapper->gstElementStateGetName(oldState),
+                                   m_gstWrapper->gstElementStateGetName(newState),
+                                   m_gstWrapper->gstElementStateGetName(pending));
+
         if (m_context.pipeline && GST_MESSAGE_SRC(m_message) == GST_OBJECT(m_context.pipeline))
         {
             GstState oldState, newState, pending;
             m_gstWrapper->gstMessageParseStateChanged(m_message, &oldState, &newState, &pending);
-            RIALTO_SERVER_LOG_INFO("State changed (old: %s, new: %s, pending: %s)",
-                                   m_gstWrapper->gstElementStateGetName(oldState),
-                                   m_gstWrapper->gstElementStateGetName(newState),
-                                   m_gstWrapper->gstElementStateGetName(pending));
+            
 
             std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +
                                    std::string(m_gstWrapper->gstElementStateGetName(newState));
