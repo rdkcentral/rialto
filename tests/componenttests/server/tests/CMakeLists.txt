@@ -66,10 +66,10 @@ add_gtests (
         mediaPipeline/VolumeTest.cpp
         mediaPipeline/WriteSegmentsTest.cpp
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
+        recovery/RecoveryTest.cpp
         sessionServer/SessionServerHealthCheckTest.cpp
         sessionServer/SessionServerLogLevelTest.cpp
         sessionServer/SessionServerStateChangeTest.cpp
-        setConfigurationWithFd/SetConfigurationWithFdTest.cpp
         webAudio/WebAudioFailuresTest.cpp
         webAudio/WebAudioTest.cpp
         webAudio/WebAudioTestMethods.cpp

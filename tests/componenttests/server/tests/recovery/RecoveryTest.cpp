@@ -33,15 +33,15 @@ constexpr int kPingId{1};
 
 namespace firebolt::rialto::server::ct
 {
-class SetConfigurationWithFdTest : public RialtoServerComponentTest
+class RecoveryTest : public RialtoServerComponentTest
 {
 public:
-    SetConfigurationWithFdTest() : m_namedSocket{ipc::INamedSocketFactory::getFactory().createNamedSocket(kSocketName)}
+    RecoveryTest() : m_namedSocket{ipc::INamedSocketFactory::getFactory().createNamedSocket(kSocketName)}
     {
         EXPECT_TRUE(m_namedSocket);
     }
 
-    ~SetConfigurationWithFdTest() override { m_namedSocket.reset(); }
+    ~RecoveryTest() override { m_namedSocket.reset(); }
 
     void configureSutWithFdInActiveState()
     {
@@ -98,6 +98,18 @@ public:
         EXPECT_EQ(receivedAck->success(), true);
     }
 
+    void simulateCrashAndRecovery()
+    {
+        m_sut.reset();
+        m_serverManagerStub.reset();
+        m_clientStub.disconnect();
+
+        configureWrappers();
+        initialiseGstreamer();
+        startSut();
+        initialiseSut();
+    }
+
 private:
     std::unique_ptr<ipc::INamedSocket> m_namedSocket;
     int m_controlHandle{-1};
@@ -144,6 +156,30 @@ private:
  *   Rialto Client stub sends Ack message to Rialto Server
  *   Expect that Rialto Server sends Ack to Server Manager Stub
  *
+ *  Step 5: Simulate server crash and recovery
+ *   Close server service without cleanup
+ *   Reset all connections
+ *   Restart service
+ *
+ *  Step 6: Configure recovered server with the same configuration data
+ *   ServerManager stub requests the server to configure.
+ *   Expect that server is configured correctly
+ *
+ *  Step 7: Connect Rialto Client stub
+ *   Rialto Client tries to connect to socket provided by Rialto Server
+ *   Expect that rialto client can be connected successfully
+ *
+ *  Step 8: Register Rialto Client Stub in RUNNING state
+ *   Rialto Client sends a request to register to Rialto Server
+ *   Expect that rialto client can be registered successfully
+ *
+ *  Step 9: Perform healthcheck procedure to test if connection is stable
+ *   ServerManager stub requests the server to check state of all its components
+ *   Expect that all server services are not deadlocked.
+ *   Expect that PingEvent is received by connected Rialto Client stub.
+ *   Rialto Client stub sends Ack message to Rialto Server
+ *   Expect that Rialto Server sends Ack to Server Manager Stub
+ *
  * Test Teardown:
  *  Server is terminated.
  *
@@ -153,7 +189,7 @@ private:
  *
  * Code:
  */
-TEST_F(SetConfigurationWithFdTest, ConnectUsingSocketFdFromSetConfiguration)
+TEST_F(RecoveryTest, RecoverServerAfterCrash)
 {
     // Step 1: Send SetConfiguration message with socket file descriptor
     configureSutWithFdInActiveState();
@@ -165,6 +201,21 @@ TEST_F(SetConfigurationWithFdTest, ConnectUsingSocketFdFromSetConfiguration)
     registerClient();
 
     // Step 4: Perform healthcheck procedure to test if connection is stable
+    performHealthcheckProcedure();
+
+    // Step 5: Simulate server crash and recovery
+    simulateCrashAndRecovery();
+
+    // Step 6: Configure recovered server with the same configuration data
+    configureSutWithFdInActiveState();
+
+    // Step 7: Connect Rialto Client stub
+    connectClient();
+
+    // Step 8: Register Rialto Client Stub in RUNNING state
+    registerClient();
+
+    // Step 9: Perform healthcheck procedure to test if connection is stable
     performHealthcheckProcedure();
 }
 } // namespace firebolt::rialto::server::ct

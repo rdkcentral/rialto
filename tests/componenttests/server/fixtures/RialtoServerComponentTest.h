@@ -59,7 +59,7 @@ public:
     void setStateActive();
     void setStateInactive();
 
-private:
+protected:
     void configureWrappers() const;
     void startSut();
     void initialiseSut();
@@ -102,8 +102,6 @@ protected:
         std::make_shared<testing::StrictMock<wrappers::ThunderWrapperFactoryMock>>()};
     std::shared_ptr<testing::StrictMock<wrappers::ThunderWrapperMock>> m_thunderWrapperMock{
         std::make_shared<testing::StrictMock<wrappers::ThunderWrapperMock>>()};
-
-private:
     std::unique_ptr<IApplicationSessionServer> m_sut;
 };
 } // namespace firebolt::rialto::server::ct
