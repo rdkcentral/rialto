@@ -215,6 +215,12 @@ void SetupElement::execute() const
         m_glibWrapper->gObjectSet(m_element, "async", TRUE, nullptr);
     }
 
+    // in cannot be set during construction, because playsink overwrites "sync" value of text-sink during setup
+    if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "rialtotexttracksink"))
+    {
+        m_glibWrapper->gObjectSet(m_element, "sync", FALSE, nullptr);
+    }
+
     if (isVideoSink(*m_gstWrapper, m_element))
     {
         if (!m_context.pendingGeometry.empty())
