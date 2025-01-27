@@ -62,7 +62,6 @@ private:
         std::make_unique<testing::StrictMock<firebolt::rialto::server::TimerMock>>()};
     testing::StrictMock<firebolt::rialto::server::TimerMock> &m_timerMock{*m_timer};
     testing::StrictMock<rialto::servermanager::common::SessionServerAppManagerMock> m_sessionServerAppManagerMock;
-    testing::StrictMock<firebolt::rialto::ipc::NamedSocketFactoryMock> m_namedSocketFactoryMock;
     std::unique_ptr<testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock>> m_namedSocket{
         std::make_unique<testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock>>()};
     testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock> &m_namedSocketMock{*m_namedSocket};

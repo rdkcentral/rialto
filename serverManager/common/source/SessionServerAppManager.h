@@ -24,6 +24,7 @@
 #include "IEventThread.h"
 #include "IHealthcheckService.h"
 #include "IHealthcheckServiceFactory.h"
+#include "INamedSocket.h"
 #include "ISessionServerApp.h"
 #include "ISessionServerAppManager.h"
 #include "IStateObserver.h"
@@ -41,7 +42,8 @@ public:
                             const std::shared_ptr<service::IStateObserver> &stateObserver,
                             std::unique_ptr<ISessionServerAppFactory> &&sessionServerAppFactory,
                             std::unique_ptr<IHealthcheckServiceFactory> &&healthcheckServiceFactory,
-                            const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory);
+                            const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory,
+                            const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory);
     virtual ~SessionServerAppManager();
     SessionServerAppManager(const SessionServerAppManager &) = delete;
     SessionServerAppManager(SessionServerAppManager &&) = delete;
@@ -94,6 +96,7 @@ private:
     std::unique_ptr<ISessionServerAppFactory> m_sessionServerAppFactory;
     std::shared_ptr<service::IStateObserver> m_stateObserver;
     std::unique_ptr<IHealthcheckService> m_healthcheckService;
+    const firebolt::rialto::ipc::INamedSocketFactory &m_namedSocketFactory;
 };
 } // namespace rialto::servermanager::common
 

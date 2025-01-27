@@ -35,11 +35,13 @@ SessionServerAppManager::SessionServerAppManager(
     std::unique_ptr<ipc::IController> &ipcController, const std::shared_ptr<service::IStateObserver> &stateObserver,
     std::unique_ptr<ISessionServerAppFactory> &&sessionServerAppFactory,
     std::unique_ptr<IHealthcheckServiceFactory> &&healthcheckServiceFactory,
-    const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory)
+    const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory,
+    const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory)
     : m_ipcController{ipcController}, m_eventThread{eventThreadFactory->createEventThread(
                                           "rialtoservermanager-appmanager")},
       m_sessionServerAppFactory{std::move(sessionServerAppFactory)}, m_stateObserver{stateObserver},
-      m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)}
+      m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)}, m_namedSocketFactory{
+                                                                                            namedSocketFactory}
 {
 }
 
@@ -197,6 +199,7 @@ void SessionServerAppManager::handleRestartServer(int serverId)
     const firebolt::rialto::common::SessionServerState kState{kSessionServer->getExpectedState()};
     const firebolt::rialto::common::AppConfig kAppConfig{kSessionServer->getSessionManagementSocketName(),
                                                          kSessionServer->getClientDisplayName()};
+    std::unique_ptr<firebolt::rialto::ipc::INamedSocket> namedSocket{std::move(kSessionServer->releaseNamedSocket())};
     if (firebolt::rialto::common::SessionServerState::INACTIVE != kState &&
         firebolt::rialto::common::SessionServerState::ACTIVE != kState)
     {
@@ -208,8 +211,15 @@ void SessionServerAppManager::handleRestartServer(int serverId)
     kSessionServer->kill();
     handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::NOT_RUNNING);
 
-    // Finally, spawn the new app with old settings
-    handleInitiateApplication(kAppName, kState, kAppConfig);
+    // Finally, spawn the new app with old settings and set named socket if present
+    if (handleInitiateApplication(kAppName, kState, kAppConfig) && namedSocket)
+    {
+        const auto &respawnedServer{getServerByAppName(kAppName)};
+        if (respawnedServer)
+        {
+            respawnedServer->acquireNamedSocket(std::move(namedSocket));
+        }
+    }
 }
 
 bool SessionServerAppManager::connectSessionServer(const std::unique_ptr<ISessionServerApp> &kSessionServer)
@@ -240,6 +250,17 @@ bool SessionServerAppManager::configureSessionServer(const std::unique_ptr<ISess
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Unable to configure Session Server - pointer is null!");
         return false;
+    }
+    if (!kSessionServer->isNamedSocketInitialized())
+    {
+        auto namedSocket{m_namedSocketFactory.createNamedSocket(kSessionServer->getSessionManagementSocketName())};
+        if (namedSocket)
+        {
+            namedSocket->setSocketOwnership(kSessionServer->getSessionManagementSocketOwner(),
+                                            kSessionServer->getSessionManagementSocketGroup());
+            namedSocket->setSocketPermissions(kSessionServer->getSessionManagementSocketPermissions());
+            kSessionServer->acquireNamedSocket(std::move(namedSocket));
+        }
     }
     if (kSessionServer->isNamedSocketInitialized())
     {

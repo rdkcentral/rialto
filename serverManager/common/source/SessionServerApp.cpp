@@ -77,14 +77,13 @@ namespace rialto::servermanager::common
 {
 SessionServerApp::SessionServerApp(const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
                                    const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
-                                   const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory,
                                    ISessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables,
                                    const std::string &sessionServerPath,
                                    std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
                                    const std::string &socketOwner, const std::string &socketGroup)
     : m_kServerId{generateServerId()}, m_initialState{firebolt::rialto::common::SessionServerState::UNINITIALIZED},
-      m_socks{-1, -1}, m_linuxWrapper{linuxWrapper}, m_timerFactory{timerFactory}, m_namedSocketFactory{namedSocketFactory},
+      m_socks{-1, -1}, m_linuxWrapper{linuxWrapper}, m_timerFactory{timerFactory},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{true},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_kSessionManagementSocketOwner{socketOwner},
@@ -102,7 +101,6 @@ SessionServerApp::SessionServerApp(const std::string &appName,
                                    const firebolt::rialto::common::AppConfig &appConfig,
                                    const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
                                    const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
-                                   const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory,
                                    ISessionServerAppManager &sessionServerAppManager,
                                    const std::list<std::string> &environmentVariables,
                                    const std::string &sessionServerPath,
@@ -111,22 +109,15 @@ SessionServerApp::SessionServerApp(const std::string &appName,
     : m_kServerId{generateServerId()}, m_appName{appName}, m_initialState{initialState},
       m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)},
       m_clientDisplayName{appConfig.clientDisplayName}, m_socks{-1, -1}, m_linuxWrapper{linuxWrapper},
-      m_timerFactory{timerFactory}, m_namedSocketFactory{namedSocketFactory},
-      m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
+      m_timerFactory{timerFactory}, m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{false},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_kSessionManagementSocketOwner{socketOwner},
-      m_kSessionManagementSocketGroup{socketGroup}, m_childInitialized{false}, m_expectedState{initialState},
-      m_namedSocket{m_namedSocketFactory.createNamedSocket(m_sessionManagementSocketName)}
+      m_kSessionManagementSocketGroup{socketGroup}, m_childInitialized{false}, m_expectedState{initialState} //,
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating SessionServerApp for app: %s with appId: %d", appName.c_str(), m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
                    [this](const std::string &str) { return strdup(addAppSuffixToLogFile(str).c_str()); });
     m_environmentVariables.push_back(nullptr);
-    if (m_namedSocket)
-    {
-        m_namedSocket->setSocketPermissions(m_kSessionManagementSocketPermissions);
-        m_namedSocket->setSocketOwnership(m_kSessionManagementSocketOwner, m_kSessionManagementSocketGroup);
-    }
 }
 
 SessionServerApp::~SessionServerApp()
@@ -193,12 +184,6 @@ bool SessionServerApp::configure(const std::string &appName,
     m_sessionManagementSocketName = getSessionManagementSocketPath(appConfig);
     m_clientDisplayName = appConfig.clientDisplayName;
     m_isPreloaded = false;
-    m_namedSocket = m_namedSocketFactory.createNamedSocket(m_sessionManagementSocketName);
-    if (m_namedSocket)
-    {
-        m_namedSocket->setSocketPermissions(m_kSessionManagementSocketPermissions);
-        m_namedSocket->setSocketOwnership(m_kSessionManagementSocketOwner, m_kSessionManagementSocketGroup);
-    }
     return true;
 }
 
@@ -441,5 +426,19 @@ int SessionServerApp::getSessionManagementSocketFd() const
         return m_namedSocket->getFd();
     }
     return -1;
+}
+
+void SessionServerApp::acquireNamedSocket(std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket)
+{
+    m_namedSocket = std::move(namedSocket);
+}
+
+std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&SessionServerApp::releaseNamedSocket()
+{
+    if (m_namedSocket)
+    {
+        m_namedSocket->blockNewConnections();
+    }
+    return std::move(m_namedSocket);
 }
 } // namespace rialto::servermanager::common

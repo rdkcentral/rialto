@@ -26,6 +26,7 @@
 #include "HealthcheckServiceFactoryMock.h"
 #include "HealthcheckServiceMock.h"
 #include "ISessionServerAppManager.h"
+#include "NamedSocketMock.h"
 #include "SessionServerAppFactoryMock.h"
 #include "SessionServerAppMock.h"
 #include "StateObserverMock.h"
@@ -98,6 +99,8 @@ private:
     StrictMock<rialto::servermanager::common::SessionServerAppFactoryMock> &m_sessionServerAppFactoryMock;
     StrictMock<rialto::servermanager::common::HealthcheckServiceFactoryMock> &m_healthcheckServiceFactoryMock;
     StrictMock<rialto::servermanager::common::HealthcheckServiceMock> &m_healthcheckServiceMock;
+    StrictMock<firebolt::rialto::ipc::NamedSocketFactoryMock> m_namedSocketFactoryMock;
+    std::unique_ptr<firebolt::rialto::ipc::INamedSocket> m_namedSocket;
     std::unique_ptr<rialto::servermanager::common::ISessionServerAppManager> m_sut;
 };
 

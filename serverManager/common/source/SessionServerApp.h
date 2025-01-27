@@ -21,7 +21,6 @@
 #define RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_H_
 
 #include "ILinuxWrapper.h"
-#include "INamedSocket.h"
 #include "ISessionServerApp.h"
 #include "ITimer.h"
 #include "SessionServerAppManager.h"
@@ -42,7 +41,6 @@ class SessionServerApp : public ISessionServerApp
 public:
     SessionServerApp(const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
                      const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
-                     const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory,
                      ISessionServerAppManager &sessionServerAppManager,
                      const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                      std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
@@ -51,7 +49,6 @@ public:
                      const firebolt::rialto::common::AppConfig &appConfig,
                      const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
                      const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
-                     const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory,
                      ISessionServerAppManager &sessionServerAppManager,
                      const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                      std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
@@ -80,6 +77,8 @@ public:
     firebolt::rialto::common::SessionServerState getExpectedState() const override;
     bool isNamedSocketInitialized() const override;
     int getSessionManagementSocketFd() const override;
+    void acquireNamedSocket(std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket) override;
+    std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&releaseNamedSocket() override;
 
 private:
     bool initializeSockets();
@@ -98,7 +97,6 @@ private:
     std::array<int, 2> m_socks;
     std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> m_linuxWrapper;
     std::shared_ptr<firebolt::rialto::common::ITimerFactory> m_timerFactory;
-    const firebolt::rialto::ipc::INamedSocketFactory &m_namedSocketFactory;
     ISessionServerAppManager &m_sessionServerAppManager;
     pid_t m_pid;
     bool m_isPreloaded;
