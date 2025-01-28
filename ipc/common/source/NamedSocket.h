@@ -27,12 +27,14 @@ namespace firebolt::rialto::ipc
 class NamedSocketFactory : public INamedSocketFactory
 {
 public:
+    std::unique_ptr<INamedSocket> createNamedSocket() const override;
     std::unique_ptr<INamedSocket> createNamedSocket(const std::string &socketPath) const override;
 };
 
 class NamedSocket : public INamedSocket
 {
 public:
+    NamedSocket();
     NamedSocket(const std::string &socketPath);
     ~NamedSocket() override;
 
@@ -40,6 +42,7 @@ public:
     bool setSocketPermissions(unsigned int socketPermissions) const override;
     bool setSocketOwnership(const std::string &socketOwner, const std::string &socketGroup) const override;
     bool blockNewConnections() const override;
+    bool bind(const std::string &socketPath) override;
 
 private:
     void closeListeningSocket();

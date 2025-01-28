@@ -33,6 +33,7 @@ public:
     virtual ~INamedSocketFactory() = default;
 
     static INamedSocketFactory &getFactory();
+    virtual std::unique_ptr<INamedSocket> createNamedSocket() const = 0;
     virtual std::unique_ptr<INamedSocket> createNamedSocket(const std::string &socketPath) const = 0;
 };
 
@@ -44,6 +45,7 @@ public:
     virtual bool setSocketPermissions(unsigned int socketPermissions) const = 0;
     virtual bool setSocketOwnership(const std::string &socketOwner, const std::string &socketGroup) const = 0;
     virtual bool blockNewConnections() const = 0;
+    virtual bool bind(const std::string &socketPath) = 0;
 };
 } // namespace firebolt::rialto::ipc
 

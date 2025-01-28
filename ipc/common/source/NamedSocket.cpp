@@ -42,6 +42,17 @@ INamedSocketFactory &INamedSocketFactory::getFactory()
     return factory;
 }
 
+std::unique_ptr<INamedSocket> NamedSocketFactory::createNamedSocket() const
+try
+{
+    return std::make_unique<NamedSocket>();
+}
+catch (const std::runtime_error &error)
+{
+    RIALTO_IPC_LOG_ERROR("Failed to create named socket: %s", error.what());
+    return nullptr;
+}
+
 std::unique_ptr<INamedSocket> NamedSocketFactory::createNamedSocket(const std::string &socketPath) const
 try
 {
@@ -51,6 +62,21 @@ catch (const std::runtime_error &error)
 {
     RIALTO_IPC_LOG_ERROR("Failed to create named socket: %s", error.what());
     return nullptr;
+}
+
+NamedSocket::NamedSocket()
+{
+    RIALTO_IPC_LOG_MIL("Creating new socket without binding");
+
+    // Create the socket
+    m_sockFd = ::socket(AF_UNIX, SOCK_SEQPACKET | SOCK_NONBLOCK, 0);
+    if (m_sockFd == -1)
+    {
+        RIALTO_IPC_LOG_SYS_ERROR(errno, "socket error");
+        throw std::runtime_error("socket error");
+    }
+
+    RIALTO_IPC_LOG_MIL("Socket created, fd: %d", m_sockFd);
 }
 
 NamedSocket::NamedSocket(const std::string &socketPath)
@@ -79,7 +105,7 @@ NamedSocket::NamedSocket(const std::string &socketPath)
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
 
-    if (bind(m_sockFd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+    if (::bind(m_sockFd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "bind error");
 
@@ -136,6 +162,37 @@ bool NamedSocket::blockNewConnections() const
         RIALTO_IPC_LOG_SYS_ERROR(errno, "blockNewConnections: listen error");
         return false;
     }
+    return true;
+}
+
+bool NamedSocket::bind(const std::string &socketPath)
+{
+    RIALTO_IPC_LOG_MIL("Binding socket with fd: %d with name: %s", m_sockFd, socketPath.c_str());
+    m_sockPath = socketPath;
+
+    // get the socket lock
+    if (!getSocketLock())
+    {
+        closeListeningSocket();
+        return false;
+    }
+
+    // bind to the given path
+    struct sockaddr_un addr = {0};
+    memset(&addr, 0x00, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
+
+    if (::bind(m_sockFd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+    {
+        RIALTO_IPC_LOG_SYS_ERROR(errno, "bind error");
+
+        closeListeningSocket();
+        return false;
+    }
+
+    RIALTO_IPC_LOG_MIL("Named socket with fd: %d bound with path: %s", m_sockFd, m_sockPath.c_str());
+
     return true;
 }
 

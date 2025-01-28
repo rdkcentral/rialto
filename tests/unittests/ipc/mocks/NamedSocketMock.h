@@ -25,6 +25,7 @@ namespace firebolt::rialto::ipc
 class NamedSocketFactoryMock : public INamedSocketFactory
 {
 public:
+    MOCK_METHOD(std::unique_ptr<INamedSocket>, createNamedSocket, (), (const, override));
     MOCK_METHOD(std::unique_ptr<INamedSocket>, createNamedSocket, (const std::string &socketPath), (const, override));
 };
 
@@ -36,5 +37,6 @@ public:
     MOCK_METHOD(bool, setSocketOwnership, (const std::string &socketOwner, const std::string &socketGroup),
                 (const, override));
     MOCK_METHOD(bool, blockNewConnections, (), (const, override));
+    MOCK_METHOD(bool, bind, (const std::string &socketPath), (override));
 };
 } // namespace firebolt::rialto::ipc
