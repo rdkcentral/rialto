@@ -209,15 +209,13 @@ void SetupElement::execute() const
         // ultimately hangs waiting for pipeline termination.
         m_glibWrapper->gObjectSet(m_element, "disable-xrun", TRUE, nullptr);
     }
-
-    if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "brcmaudiosink"))
+    else if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "brcmaudiosink"))
     {
         m_glibWrapper->gObjectSet(m_element, "async", TRUE, nullptr);
     }
-
-    // in cannot be set during construction, because playsink overwrites "sync" value of text-sink during setup
-    if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "rialtotexttracksink"))
+    else if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "rialtotexttracksink"))
     {
+        // in cannot be set during construction, because playsink overwrites "sync" value of text-sink during setup
         m_glibWrapper->gObjectSet(m_element, "sync", FALSE, nullptr);
     }
 

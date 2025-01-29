@@ -114,6 +114,7 @@ protected:
     void shouldRemoveAutoAudioSinkChildCallback();
     void triggerAutoVideoSinkChildRemovedCallback();
     void triggerAutoAudioSinkChildRemovedCallback();
+    void shouldSetupTextTrackSink();
 
     // SetVideoGeometry test methods
     void setPipelineToNull();
