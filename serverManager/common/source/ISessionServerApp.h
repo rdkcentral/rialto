@@ -60,7 +60,6 @@ public:
     virtual firebolt::rialto::common::SessionServerState getExpectedState() const = 0;
     virtual bool isNamedSocketInitialized() const = 0;
     virtual int getSessionManagementSocketFd() const = 0;
-    virtual void acquireNamedSocket(std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket) = 0;
     virtual std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&releaseNamedSocket() = 0;
 };
 } // namespace rialto::servermanager::common

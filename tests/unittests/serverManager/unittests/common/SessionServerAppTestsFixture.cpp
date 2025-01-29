@@ -61,7 +61,7 @@ void SessionServerAppTests::createPreloadedAppSut()
                                                                               kEnvironmentVariables, kSessionServerPath,
                                                                               kSessionServerStartupTimeout,
                                                                               kSocketPermissions, kSocketOwner,
-                                                                              kSocketGroup);
+                                                                              kSocketGroup, std::move(m_namedSocket));
     ASSERT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -75,6 +75,7 @@ void SessionServerAppTests::createPreloadedAppSut()
 
 void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConfig &appConfig)
 {
+    EXPECT_CALL(m_namedSocketMock, bind(_)).WillOnce(Return(true));
     m_sut = std::make_unique<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
                                                                               std::move(m_linuxWrapper),
                                                                               m_timerFactoryMock,
@@ -83,7 +84,7 @@ void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConf
                                                                               kSessionServerPath,
                                                                               kSessionServerStartupTimeout,
                                                                               kSocketPermissions, kSocketOwner,
-                                                                              kSocketGroup);
+                                                                              kSocketGroup, std::move(m_namedSocket));
     ASSERT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -96,6 +97,7 @@ void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConf
 
 void SessionServerAppTests::createAppSutWithDisabledTimer(const firebolt::rialto::common::AppConfig &appConfig)
 {
+    EXPECT_CALL(m_namedSocketMock, bind(_)).WillOnce(Return(true));
     m_sut = std::make_unique<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
                                                                               std::move(m_linuxWrapper),
                                                                               m_timerFactoryMock,
@@ -104,7 +106,7 @@ void SessionServerAppTests::createAppSutWithDisabledTimer(const firebolt::rialto
                                                                               kSessionServerPath,
                                                                               std::chrono::milliseconds{0},
                                                                               kSocketPermissions, kSocketOwner,
-                                                                              kSocketGroup);
+                                                                              kSocketGroup, std::move(m_namedSocket));
     ASSERT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -182,7 +184,10 @@ void SessionServerAppTests::willCancelStartupTimer() const
     EXPECT_CALL(m_timerMock, cancel());
 }
 
-void SessionServerAppTests::willConfigurePreloadedServer() {}
+void SessionServerAppTests::willConfigurePreloadedServer()
+{
+    EXPECT_CALL(m_namedSocketMock, bind(_)).WillOnce(Return(true));
+}
 
 void SessionServerAppTests::timerWillBeInactive() const
 {

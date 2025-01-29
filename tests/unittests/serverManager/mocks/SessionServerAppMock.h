@@ -56,8 +56,6 @@ public:
     MOCK_METHOD(firebolt::rialto::common::SessionServerState, getExpectedState, (), (const, override));
     MOCK_METHOD(bool, isNamedSocketInitialized, (), (const, override));
     MOCK_METHOD(int, getSessionManagementSocketFd, (), (const, override));
-    MOCK_METHOD(void, acquireNamedSocket, (std::unique_ptr<firebolt::rialto::ipc::INamedSocket> && namedSocket),
-                (override));
     MOCK_METHOD(std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &, releaseNamedSocketRef, ());
     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&releaseNamedSocket() override
     {

@@ -167,6 +167,11 @@ bool NamedSocket::blockNewConnections() const
 
 bool NamedSocket::bind(const std::string &socketPath)
 {
+    if (!m_sockPath.empty())
+    {
+        RIALTO_IPC_LOG_DEBUG("no need to bind again");
+        return true;
+    }
     RIALTO_IPC_LOG_MIL("Binding socket with fd: %d with name: %s", m_sockFd, socketPath.c_str());
     m_sockPath = socketPath;
 

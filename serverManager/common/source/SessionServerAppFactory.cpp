@@ -39,22 +39,25 @@ SessionServerAppFactory::SessionServerAppFactory(const std::list<std::string> &e
 
 std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(
     const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
-    const firebolt::rialto::common::AppConfig &appConfig, SessionServerAppManager &sessionServerAppManager) const
+    const firebolt::rialto::common::AppConfig &appConfig, SessionServerAppManager &sessionServerAppManager,
+    std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket) const
 {
     return std::make_unique<SessionServerApp>(appName, initialState, appConfig,
                                               m_linuxWrapperFactory->createLinuxWrapper(),
                                               firebolt::rialto::common::ITimerFactory::getFactory(),
                                               sessionServerAppManager, m_kEnvironmentVariables, m_kSessionServerPath,
                                               m_kSessionServerStartupTimeout, m_kSocketPermissions, m_kSocketOwner,
-                                              m_kSocketGroup);
+                                              m_kSocketGroup, std::move(namedSocket));
 }
 
-std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(SessionServerAppManager &sessionServerAppManager) const
+std::unique_ptr<ISessionServerApp>
+SessionServerAppFactory::create(SessionServerAppManager &sessionServerAppManager,
+                                std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket) const
 {
     return std::make_unique<SessionServerApp>(m_linuxWrapperFactory->createLinuxWrapper(),
                                               firebolt::rialto::common::ITimerFactory::getFactory(),
                                               sessionServerAppManager, m_kEnvironmentVariables, m_kSessionServerPath,
                                               m_kSessionServerStartupTimeout, m_kSocketPermissions, m_kSocketOwner,
-                                              m_kSocketGroup);
+                                              m_kSocketGroup, std::move(namedSocket));
 }
 } // namespace rialto::servermanager::common

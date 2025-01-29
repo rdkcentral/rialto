@@ -212,13 +212,18 @@ void SessionServerAppManager::handleRestartServer(int serverId)
     handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::NOT_RUNNING);
 
     // Finally, spawn the new app with old settings and set named socket if present
-    if (handleInitiateApplication(kAppName, kState, kAppConfig) && namedSocket)
+    auto app = m_sessionServerAppFactory->create(kAppName, kState, kAppConfig, *this, std::move(namedSocket));
+    if (app->launch())
     {
-        const auto &respawnedServer{getServerByAppName(kAppName)};
-        if (respawnedServer)
+        auto result = m_sessionServerApps.emplace(std::move(app));
+        if (result.second)
         {
-            respawnedServer->acquireNamedSocket(std::move(namedSocket));
+            connectSessionServer(*result.first);
         }
+    }
+    else
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Failed to restart server");
     }
 }
 
@@ -250,17 +255,6 @@ bool SessionServerAppManager::configureSessionServer(const std::unique_ptr<ISess
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Unable to configure Session Server - pointer is null!");
         return false;
-    }
-    if (!kSessionServer->isNamedSocketInitialized())
-    {
-        auto namedSocket{m_namedSocketFactory.createNamedSocket(kSessionServer->getSessionManagementSocketName())};
-        if (namedSocket)
-        {
-            namedSocket->setSocketOwnership(kSessionServer->getSessionManagementSocketOwner(),
-                                            kSessionServer->getSessionManagementSocketGroup());
-            namedSocket->setSocketPermissions(kSessionServer->getSessionManagementSocketPermissions());
-            kSessionServer->acquireNamedSocket(std::move(namedSocket));
-        }
     }
     if (kSessionServer->isNamedSocketInitialized())
     {
@@ -384,7 +378,8 @@ SessionServerAppManager::launchSessionServer(const std::string &appName,
                                              const firebolt::rialto::common::AppConfig &appConfig)
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Launching Rialto Session Server for %s", appName.c_str());
-    auto app = m_sessionServerAppFactory->create(appName, kInitialState, appConfig, *this);
+    auto app = m_sessionServerAppFactory->create(appName, kInitialState, appConfig, *this,
+                                                 m_namedSocketFactory.createNamedSocket());
     if (app->launch())
     {
         auto result = m_sessionServerApps.emplace(std::move(app));
@@ -399,7 +394,7 @@ SessionServerAppManager::launchSessionServer(const std::string &appName,
 const std::unique_ptr<ISessionServerApp> &SessionServerAppManager::preloadSessionServer()
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Preloading new Rialto Session Server");
-    auto app = m_sessionServerAppFactory->create(*this);
+    auto app = m_sessionServerAppFactory->create(*this, m_namedSocketFactory.createNamedSocket());
     if (app->launch())
     {
         auto result = m_sessionServerApps.emplace(std::move(app));
