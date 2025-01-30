@@ -124,6 +124,8 @@ SessionServerApp::SessionServerApp(const std::string &appName,
     if (m_namedSocket)
     {
         m_namedSocket->bind(m_sessionManagementSocketName);
+        m_namedSocket->setSocketOwnership(m_kSessionManagementSocketOwner, m_kSessionManagementSocketGroup);
+        m_namedSocket->setSocketPermissions(m_kSessionManagementSocketPermissions);
     }
 }
 
@@ -194,6 +196,8 @@ bool SessionServerApp::configure(const std::string &appName,
     if (m_namedSocket)
     {
         m_namedSocket->bind(m_sessionManagementSocketName);
+        m_namedSocket->setSocketOwnership(m_kSessionManagementSocketOwner, m_kSessionManagementSocketGroup);
+        m_namedSocket->setSocketPermissions(m_kSessionManagementSocketPermissions);
     }
     return true;
 }
