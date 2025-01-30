@@ -193,6 +193,7 @@ bool SessionServerApp::configure(const std::string &appName,
     m_sessionManagementSocketName = getSessionManagementSocketPath(appConfig);
     m_clientDisplayName = appConfig.clientDisplayName;
     m_isPreloaded = false;
+    m_expectedState = initialState;
     if (m_namedSocket)
     {
         m_namedSocket->bind(m_sessionManagementSocketName);

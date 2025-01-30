@@ -156,6 +156,11 @@ bool NamedSocket::setSocketOwnership(const std::string &socketOwner, const std::
 
 bool NamedSocket::blockNewConnections() const
 {
+    if (m_sockPath.empty())
+    {
+        RIALTO_IPC_LOG_DEBUG("No need to block new connections - socket not configured");
+        return true;
+    }
     RIALTO_IPC_LOG_INFO("Block new connections for: %s", m_sockPath.c_str());
     if (listen(m_sockFd, 0) == -1)
     {
