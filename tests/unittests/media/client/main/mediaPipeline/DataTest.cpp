@@ -338,6 +338,25 @@ TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventAfterFlushingSource)
 }
 
 /**
+ * Test that a need data notification is handled when flush is finished in EOS state
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventAfterFlushingSourceInEos)
+{
+    setPlaybackState(PlaybackState::END_OF_STREAM);
+
+    // Flush source
+    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime), true);
+
+    // Finish flush
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifySourceFlushed(m_sourceId));
+    m_mediaPipelineCallback->notifySourceFlushed(m_sourceId);
+
+    // Need data should be handled here.
+    needDataGeneric();
+}
+
+/**
  * Test that a have data call without a paired need data notification returns success.
  */
 TEST_F(RialtoClientMediaPipelineDataTest, HaveDataNoNeedData)

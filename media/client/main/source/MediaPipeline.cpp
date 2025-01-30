@@ -886,6 +886,9 @@ void MediaPipeline::notifySourceFlushed(int32_t sourceId)
     {
         client->notifySourceFlushed(sourceId);
     }
+
+    State expected = State::END_OF_STREAM;
+    m_currentState.compare_exchange_strong(expected, State::BUFFERING);
 }
 
 }; // namespace firebolt::rialto::client
