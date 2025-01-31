@@ -100,10 +100,11 @@ public:
 
     void simulateCrashAndRecovery()
     {
+        m_clientStub.disconnect();
+
         m_sut.reset();
         m_namedSocket->blockNewConnections();
         m_serverManagerStub.reset();
-        m_clientStub.disconnect();
 
         configureWrappers();
         initialiseGstreamer();
