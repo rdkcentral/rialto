@@ -41,6 +41,7 @@ constexpr int kMaxWebAudioPlayers{1};
 const std::array<int, 2> kSocketPair{1, 2};
 const int kDuplicatedSocket{3};
 constexpr pid_t kPid{123};
+constexpr int kSessionManagementSocketFd{234};
 } // namespace
 
 using testing::_;
@@ -65,6 +66,8 @@ void SessionServerAppTests::createPreloadedAppSut()
     ASSERT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
+    EXPECT_EQ(kSocketOwner, m_sut->getSessionManagementSocketOwner());
+    EXPECT_EQ(kSocketGroup, m_sut->getSessionManagementSocketGroup());
     EXPECT_TRUE(m_sut->getClientDisplayName().empty());
     EXPECT_EQ(firebolt::rialto::common::SessionServerState::UNINITIALIZED, m_sut->getInitialState());
     EXPECT_TRUE(m_sut->getAppName().empty());
@@ -90,11 +93,14 @@ void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConf
     ASSERT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
+    EXPECT_EQ(kSocketOwner, m_sut->getSessionManagementSocketOwner());
+    EXPECT_EQ(kSocketGroup, m_sut->getSessionManagementSocketGroup());
     EXPECT_EQ(kInitialState, m_sut->getInitialState());
     EXPECT_EQ(kAppName, m_sut->getAppName());
     EXPECT_EQ(-1, m_sut->getAppManagementSocketName());
     EXPECT_EQ(kMaxPlaybackSessions, m_sut->getMaxPlaybackSessions());
     EXPECT_EQ(kMaxWebAudioPlayers, m_sut->getMaxWebAudioPlayers());
+    EXPECT_TRUE(m_sut->isNamedSocketInitialized());
 }
 
 void SessionServerAppTests::createAppSutWithDisabledTimer(const firebolt::rialto::common::AppConfig &appConfig)
@@ -210,4 +216,23 @@ bool SessionServerAppTests::triggerConfigure(const firebolt::rialto::common::App
     const bool kRet = m_sut->configure(kAppName, kInitialState, appConfig);
     EXPECT_EQ(kInitialState, m_sut->getInitialState());
     return kRet;
+}
+
+void SessionServerAppTests::willGetSessionManagementSocketFd() const
+{
+    EXPECT_CALL(m_namedSocketMock, getFd()).WillOnce(Return(kSessionManagementSocketFd));
+}
+
+void SessionServerAppTests::triggerGetSessionManagementSocketFd() const
+{
+    EXPECT_EQ(kSessionManagementSocketFd, m_sut->getSessionManagementSocketFd());
+}
+
+void SessionServerAppTests::triggerReleaseNamedSocket() const
+{
+    EXPECT_CALL(m_namedSocketMock, blockNewConnections()).WillOnce(Return(true));
+    auto namedSocket = m_sut->releaseNamedSocket();
+    EXPECT_EQ(namedSocket.get(), &m_namedSocketMock);
+    EXPECT_FALSE(m_sut->isNamedSocketInitialized());
+    EXPECT_EQ(-1, m_sut->getSessionManagementSocketFd());
 }

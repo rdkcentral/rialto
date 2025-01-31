@@ -246,6 +246,18 @@ TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldConfigureWithS
     sessionServerWillKillRunningApplication();
 }
 
+TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldRemoveApplicationWhenSetConfigurationWithFdFails)
+{
+    sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
+    ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
+    sessionServerWillFailToSetConfigurationWithFd();
+    sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::ERROR);
+    clientWillBeRemoved();
+    sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    sessionServerWillKillRunningApplication();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::UNINITIALIZED);
+}
+
 TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldHandleAck)
 {
     constexpr bool kSuccess{true};

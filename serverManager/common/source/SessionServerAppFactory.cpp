@@ -22,6 +22,7 @@
 #include "SessionServerApp.h"
 #include <memory>
 #include <string>
+#include <utility>
 
 namespace rialto::servermanager::common
 {

@@ -17,8 +17,13 @@
  * limitations under the License.
  */
 
+#ifndef FIREBOLT_RIALTO_IPC_NAMED_SOCKET_MOCK_H_
+#define FIREBOLT_RIALTO_IPC_NAMED_SOCKET_MOCK_H_
+
 #include "INamedSocket.h"
 #include <gmock/gmock.h>
+#include <memory>
+#include <string>
 
 namespace firebolt::rialto::ipc
 {
@@ -40,3 +45,5 @@ public:
     MOCK_METHOD(bool, bind, (const std::string &socketPath), (override));
 };
 } // namespace firebolt::rialto::ipc
+
+#endif // FIREBOLT_RIALTO_IPC_NAMED_SOCKET_MOCK_H_

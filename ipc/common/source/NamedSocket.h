@@ -21,6 +21,8 @@
 #define FIREBOLT_RIALTO_IPC_NAMED_SOCKET_H_
 
 #include "INamedSocket.h"
+#include <memory>
+#include <string>
 
 namespace firebolt::rialto::ipc
 {
@@ -35,7 +37,7 @@ class NamedSocket : public INamedSocket
 {
 public:
     NamedSocket();
-    NamedSocket(const std::string &socketPath);
+    explicit NamedSocket(const std::string &socketPath);
     ~NamedSocket() override;
 
     int getFd() const override;

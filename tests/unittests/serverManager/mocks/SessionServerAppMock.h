@@ -22,7 +22,9 @@
 
 #include "ISessionServerApp.h"
 #include <gmock/gmock.h>
+#include <memory>
 #include <string>
+#include <utility>
 
 namespace rialto::servermanager::common
 {

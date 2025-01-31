@@ -61,6 +61,7 @@ public:
     void sessionServerWillChangeStateToInactive();
     void preloadedSessionServerWillSetConfiguration();
     void preloadedSessionServerWillSetConfigurationWithFd();
+    void sessionServerWillFailToSetConfigurationWithFd();
     void sessionServerWillFailToSetConfiguration();
     void preloadedSessionServerWillFailToSetConfiguration();
     void sessionServerWillSetLogLevels();

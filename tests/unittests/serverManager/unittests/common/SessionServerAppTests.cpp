@@ -137,3 +137,18 @@ TEST_F(SessionServerAppTests, ShouldStoreExpectedSessionServerState)
     EXPECT_EQ(firebolt::rialto::common::SessionServerState::ACTIVE, m_sut->getExpectedState());
     m_sut.reset();
 }
+
+TEST_F(SessionServerAppTests, ShouldSessionManagementSocketFd)
+{
+    createAppSutWithDisabledTimer(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName});
+    willGetSessionManagementSocketFd();
+    triggerGetSessionManagementSocketFd();
+    m_sut.reset();
+}
+
+TEST_F(SessionServerAppTests, ShouldReleaseNamedSocket)
+{
+    createAppSutWithDisabledTimer(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName});
+    triggerReleaseNamedSocket();
+    m_sut.reset();
+}
