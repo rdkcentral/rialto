@@ -79,8 +79,6 @@ void SessionServerAppTests::createPreloadedAppSut()
 void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConfig &appConfig)
 {
     EXPECT_CALL(m_namedSocketMock, bind(_)).WillOnce(Return(true));
-    EXPECT_CALL(m_namedSocketMock, setSocketOwnership(kSocketOwner, kSocketGroup)).WillOnce(Return(true));
-    EXPECT_CALL(m_namedSocketMock, setSocketPermissions(kSocketPermissions)).WillOnce(Return(true));
     m_sut = std::make_unique<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
                                                                               std::move(m_linuxWrapper),
                                                                               m_timerFactoryMock,
@@ -106,8 +104,6 @@ void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConf
 void SessionServerAppTests::createAppSutWithDisabledTimer(const firebolt::rialto::common::AppConfig &appConfig)
 {
     EXPECT_CALL(m_namedSocketMock, bind(_)).WillOnce(Return(true));
-    EXPECT_CALL(m_namedSocketMock, setSocketOwnership(kSocketOwner, kSocketGroup)).WillOnce(Return(true));
-    EXPECT_CALL(m_namedSocketMock, setSocketPermissions(kSocketPermissions)).WillOnce(Return(true));
     m_sut = std::make_unique<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
                                                                               std::move(m_linuxWrapper),
                                                                               m_timerFactoryMock,
@@ -197,8 +193,6 @@ void SessionServerAppTests::willCancelStartupTimer() const
 void SessionServerAppTests::willConfigurePreloadedServer()
 {
     EXPECT_CALL(m_namedSocketMock, bind(_)).WillOnce(Return(true));
-    EXPECT_CALL(m_namedSocketMock, setSocketOwnership(kSocketOwner, kSocketGroup)).WillOnce(Return(true));
-    EXPECT_CALL(m_namedSocketMock, setSocketPermissions(kSocketPermissions)).WillOnce(Return(true));
 }
 
 void SessionServerAppTests::timerWillBeInactive() const

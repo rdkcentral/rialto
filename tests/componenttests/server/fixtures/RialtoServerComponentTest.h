@@ -52,7 +52,6 @@ public:
     RialtoServerComponentTest();
     ~RialtoServerComponentTest() override;
 
-    void willConfigureSocket();
     void configureSutInActiveState();
     void connectClient();
     void disconnectClient();

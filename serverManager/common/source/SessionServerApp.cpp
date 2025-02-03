@@ -18,6 +18,7 @@
  */
 
 #include "SessionServerApp.h"
+#include "LinuxUtils.h"
 #include "RialtoLogging.h"
 #include "RialtoServerManagerLogging.h"
 #include "SessionServerAppManager.h"
@@ -124,8 +125,10 @@ SessionServerApp::SessionServerApp(const std::string &appName,
     if (m_namedSocket)
     {
         m_namedSocket->bind(m_sessionManagementSocketName);
-        m_namedSocket->setSocketOwnership(m_kSessionManagementSocketOwner, m_kSessionManagementSocketGroup);
-        m_namedSocket->setSocketPermissions(m_kSessionManagementSocketPermissions);
+        firebolt::rialto::common::setFileOwnership(m_sessionManagementSocketName, m_kSessionManagementSocketOwner,
+                                                   m_kSessionManagementSocketGroup);
+        firebolt::rialto::common::setFilePermissions(m_sessionManagementSocketName,
+                                                     m_kSessionManagementSocketPermissions);
     }
 }
 
@@ -197,8 +200,10 @@ bool SessionServerApp::configure(const std::string &appName,
     if (m_namedSocket)
     {
         m_namedSocket->bind(m_sessionManagementSocketName);
-        m_namedSocket->setSocketOwnership(m_kSessionManagementSocketOwner, m_kSessionManagementSocketGroup);
-        m_namedSocket->setSocketPermissions(m_kSessionManagementSocketPermissions);
+        firebolt::rialto::common::setFileOwnership(m_sessionManagementSocketName, m_kSessionManagementSocketOwner,
+                                                   m_kSessionManagementSocketGroup);
+        firebolt::rialto::common::setFilePermissions(m_sessionManagementSocketName,
+                                                     m_kSessionManagementSocketPermissions);
     }
     return true;
 }
