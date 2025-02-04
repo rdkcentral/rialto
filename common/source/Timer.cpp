@@ -60,7 +60,7 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
             do
             {
                 std::unique_lock<std::mutex> lock{m_mutex};
-                if (!m_cv.wait_until(lock, std::chrono::system_clock::now() + m_timeout, [this]() { return !m_active; }))
+                if (!m_cv.wait_until(lock, std::chrono::steady_clock::now() + m_timeout, [this]() { return !m_active; }))
                 {
                     if (m_active && m_callback)
                     {
