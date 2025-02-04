@@ -41,7 +41,7 @@ jobs:
     name: Build and test servermain unittests
 
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Timeout after
     timeout-minutes: 10
@@ -82,7 +82,7 @@ jobs:
     name: Build and test servergstplayer unittests
 
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Timeout after
     timeout-minutes: 20
@@ -123,7 +123,7 @@ jobs:
     name: Build and test serveripc unittests
 
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Timeout after
     timeout-minutes: 10
@@ -164,7 +164,7 @@ jobs:
     name: Build and test serverservice unittests
 
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Timeout after
     timeout-minutes: 10
@@ -205,7 +205,7 @@ jobs:
     name: Build and test client unittests
 
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Timeout after
     timeout-minutes: 10
@@ -246,7 +246,7 @@ jobs:
     name: Build and test clientipc unittests
 
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Timeout after
     timeout-minutes: 10
@@ -287,7 +287,7 @@ jobs:
     name: Build and test playercommon unittests
 
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Timeout after
     timeout-minutes: 10
@@ -328,7 +328,7 @@ jobs:
     name: Build and test common unittests
 
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Timeout after
     timeout-minutes: 10
@@ -369,7 +369,7 @@ jobs:
     name: Build and test logging unittests
 
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Timeout after
     timeout-minutes: 10
@@ -411,7 +411,7 @@ jobs:
     name: Build and test manager unittests
 
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Timeout after
     timeout-minutes: 10
@@ -452,7 +452,7 @@ jobs:
     name: Build and test ipc unittests
 
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Timeout after
     timeout-minutes: 10
@@ -493,7 +493,7 @@ jobs:
     name: Generates Coverage Report
 
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Timeout after
     timeout-minutes: 10
@@ -653,7 +653,7 @@ jobs:
     name: Checks the Coverage Report
 
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     # Timeout after
     timeout-minutes: 2
