@@ -85,24 +85,22 @@ void GstGenericPlayerTestCommon::executeTaskWhenEnqueued()
 void GstGenericPlayerTestCommon::triggerSetupSource(GstElement *element)
 {
     ASSERT_TRUE(m_setupSourceFunc);
-    ((void (*)(GstElement *, GstElement *, GstGenericPlayer *))m_setupSourceFunc)(&m_pipeline, element,
-                                                                                  reinterpret_cast<GstGenericPlayer *>(
-                                                                                      m_setupSourceUserData));
+    reinterpret_cast<void (*)(GstElement *, GstElement *, GstGenericPlayer *)>(
+        m_setupSourceFunc)(&m_pipeline, element, reinterpret_cast<GstGenericPlayer *>(m_setupSourceUserData));
 }
 
 void GstGenericPlayerTestCommon::triggerSetupElement(GstElement *element)
 {
     ASSERT_TRUE(m_setupElementFunc);
-    ((void (*)(GstElement *, GstElement *, GstGenericPlayer *))m_setupElementFunc)(&m_pipeline, element,
-                                                                                   reinterpret_cast<GstGenericPlayer *>(
-                                                                                       m_setupElementUserData));
+    reinterpret_cast<void (*)(GstElement *, GstElement *, GstGenericPlayer *)>(
+        m_setupElementFunc)(&m_pipeline, element, reinterpret_cast<GstGenericPlayer *>(m_setupElementUserData));
 }
 
 void GstGenericPlayerTestCommon::triggerDeepElementAdded(GstElement *element)
 {
     ASSERT_TRUE(m_deepElementAddedFunc);
-    ((void (*)(GstBin * pipeline, GstBin * bin, GstElement * element, GstGenericPlayer * self))
-         m_deepElementAddedFunc)(&m_bin, &m_bin, element, reinterpret_cast<GstGenericPlayer *>(m_setupElementUserData));
+    reinterpret_cast<void (*)(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self)>(
+        m_deepElementAddedFunc)(&m_bin, &m_bin, element, reinterpret_cast<GstGenericPlayer *>(m_setupElementUserData));
 }
 
 void GstGenericPlayerTestCommon::setPipelineState(const GstState &state)

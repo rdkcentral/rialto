@@ -125,8 +125,8 @@ GstGenericPlayer::GstGenericPlayer(
     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
     std::shared_ptr<IGstProtectionMetadataHelperFactory> gstProtectionMetadataFactory)
     : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_timerFactory{timerFactory}, m_taskFactory{
-                                                                                              std::move(taskFactory)}
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_timerFactory{timerFactory},
+      m_taskFactory{std::move(taskFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is constructed.");
 

@@ -173,7 +173,7 @@ bool ChannelImpl::createConnectedSocket(const std::string &socketPath)
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
 
-    if (::connect(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+    if (::connect(sock, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == -1)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to connect to %s", socketPath.c_str());
         close(sock);
@@ -454,14 +454,12 @@ bool ChannelImpl::unsubscribe(int eventTag)
     std::lock_guard<std::mutex> locker(m_eventsLock);
     bool success = false;
 
-    for (auto it = m_eventHandlers.begin(); it != m_eventHandlers.end(); it++)
+    auto it = std::find_if(m_eventHandlers.begin(), m_eventHandlers.end(),
+                           [&](const auto &item) { return item.second.id == eventTag; });
+    if (m_eventHandlers.end() != it)
     {
-        if (it->second.id == eventTag)
-        {
-            m_eventHandlers.erase(it);
-            success = true;
-            break;
-        }
+        m_eventHandlers.erase(it);
+        success = true;
     }
 
     return success;
@@ -641,8 +639,7 @@ void ChannelImpl::updateTimeoutTimer()
         // otherwise, find the next soonest timeout
         std::chrono::steady_clock::time_point nextTimeout = std::chrono::steady_clock::time_point::max();
         auto nextTimeoutCall =
-            std::min_element(m_methodCalls.begin(), m_methodCalls.end(),
-                             [](const auto &elem, const auto &currentMin)
+            std::min_element(m_methodCalls.begin(), m_methodCalls.end(), [](const auto &elem, const auto &currentMin)
                              { return elem.second.timeoutDeadline < currentMin.second.timeoutDeadline; });
         if (nextTimeoutCall != m_methodCalls.end())
         {
@@ -874,7 +871,8 @@ std::vector<FileDescriptor> ChannelImpl::readMessageFds(const struct msghdr *msg
 {
     std::vector<FileDescriptor> fds;
 
-    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg); cmsg != nullptr; cmsg = CMSG_NXTHDR((struct msghdr *)msg, cmsg))
+    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg); cmsg != nullptr;
+         cmsg = CMSG_NXTHDR(const_cast<struct msghdr *>(msg), cmsg))
     {
         if ((cmsg->cmsg_level == SOL_SOCKET) && (cmsg->cmsg_type == SCM_RIGHTS))
         {
@@ -902,14 +900,14 @@ std::vector<FileDescriptor> ChannelImpl::readMessageFds(const struct msghdr *msg
                     }
                     else
                     {
-                        firebolt::rialto::ipc::FileDescriptor fd(kFds[i]);
-                        if (!fd.isValid())
+                        firebolt::rialto::ipc::FileDescriptor fileDescriptor(kFds[i]);
+                        if (!fileDescriptor.isValid())
                         {
                             RIALTO_IPC_LOG_ERROR("received invalid fd (couldn't dup)");
                         }
                         else
                         {
-                            fds.emplace_back(std::move(fd));
+                            fds.emplace_back(std::move(fileDescriptor));
                         }
                     }
 
@@ -1061,8 +1059,8 @@ std::vector<int> ChannelImpl::getMessageFds(const google::protobuf::Message &mes
             else
             {
                 auto reflection = message.GetReflection();
-                int fd = reflection->GetInt32(message, fieldDescriptor);
-                fds.emplace_back(fd);
+                int fileDescriptor = reflection->GetInt32(message, fieldDescriptor);
+                fds.emplace_back(fileDescriptor);
             }
         }
     }

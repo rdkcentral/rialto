@@ -31,21 +31,21 @@ std::shared_ptr<IpcLoop> IpcLoop::create(int socket, const Client &client)
     GOOGLE_PROTOBUF_VERIFY_VERSION;
 
     auto factory = firebolt::rialto::ipc::IChannelFactory::createFactory();
-    auto channel = factory->createChannel(socket);
-    if (!channel)
+    auto newChannel = factory->createChannel(socket);
+    if (!newChannel)
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Connection failed");
         return nullptr;
     }
 
     // Wrap the channel in an object that runs the thread loop
-    return std::shared_ptr<IpcLoop>(new IpcLoop(std::move(channel), client));
+    return std::shared_ptr<IpcLoop>(new IpcLoop(std::move(newChannel), client));
 }
 
 IpcLoop::IpcLoop(std::shared_ptr<::firebolt::rialto::ipc::IChannel> channel, const Client &client)
     : m_ipcChannel(std::move(channel)),
-      m_ipcControllerFactory(firebolt::rialto::ipc::IControllerFactory::createFactory()),
-      m_kClient(client), m_isClosing{false}
+      m_ipcControllerFactory(firebolt::rialto::ipc::IControllerFactory::createFactory()), m_kClient(client),
+      m_isClosing{false}
 {
     // spin up the thread that runs the IPC event loop
     m_ipcThread = std::thread(&IpcLoop::ipcThread, this);

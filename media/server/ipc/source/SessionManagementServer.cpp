@@ -48,8 +48,8 @@ SessionManagementServer::SessionManagementServer(
     const std::shared_ptr<IWebAudioPlayerModuleServiceFactory> &webAudioPlayerModuleFactory,
     const std::shared_ptr<IControlModuleServiceFactory> &controlModuleFactory, service::IPlaybackService &playbackService,
     service::ICdmService &cdmService, service::IControlService &controlService)
-    : m_isRunning{false}, m_mediaPipelineModule{mediaPipelineModuleFactory->create(
-                              playbackService.getMediaPipelineService())},
+    : m_isRunning{false},
+      m_mediaPipelineModule{mediaPipelineModuleFactory->create(playbackService.getMediaPipelineService())},
       m_mediaPipelineCapabilitiesModule{
           mediaPipelineCapabilitiesModuleFactory->create(playbackService.getMediaPipelineService())},
       m_mediaKeysModule{mediaKeysModuleFactory->create(cdmService)},
