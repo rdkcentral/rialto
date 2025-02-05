@@ -66,4 +66,8 @@
         <id>unusedFunction</id>
         <fileName>ipc/client/source/IpcClientControllerImpl.h</fileName>
     </suppress>
+    <suppress>
+        <id>toomanyconfigs</id>
+        <fileName>stubs/wpeframework-core/third-party/Source/core/JSON.cpp</fileName>
+    </suppress>
 </suppressions>
