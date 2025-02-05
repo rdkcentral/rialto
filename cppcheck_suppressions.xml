@@ -35,14 +35,6 @@
     </suppress>
     <suppress>
         <id>unusedFunction</id>
-        <fileName>tests/componenttests/server/common/MessageBuilders.cpp</fileName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
-        <fileName>*TestMethods.cpp</fileName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
         <symbolName>gst_rialto_text_track_sink_class_init</symbolName>
     </suppress>
     <suppress>
@@ -69,17 +61,10 @@
         <id>unusedStructMember</id>
         <fileName>tests/*</fileName>
     </suppress>
-    <suppress>
+    <suppress> <!--Suppress all TEST and TEST_F googletest declarations as there use is not detected properly -->
         <id>unusedFunction</id>
-        <fileName>tests/componenttests/client/tests/base/ClientComponentTest.cpp</fileName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
-        <fileName>tests/componenttests/server/fixtures/MediaPipelineTest.cpp</fileName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
-        <fileName>tests/componenttests/server/stubs/GstreamerStub.cpp</fileName>
+        <fileName>tests/*</fileName>
+        <symbolName>__*</symbolName>
     </suppress>
     <suppress>
         <id>unusedFunction</id>

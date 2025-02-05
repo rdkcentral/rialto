@@ -1649,7 +1649,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdatePlaybackGroup)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldAddAutoVideoSinkChildSink)
 {
-    GenericPlayerContext *context = getPlayerContext();
+    const GenericPlayerContext *context = getPlayerContext();
 
     GST_OBJECT_FLAG_SET(GST_OBJECT(m_realElement), GST_ELEMENT_FLAG_SINK);
 
@@ -1659,7 +1659,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAddAutoVideoSinkChildSink)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldAddAutoAudioSinkChildSink)
 {
-    GenericPlayerContext *context = getPlayerContext();
+    const GenericPlayerContext *context = getPlayerContext();
 
     GST_OBJECT_FLAG_SET(GST_OBJECT(m_realElement), GST_ELEMENT_FLAG_SINK);
 
@@ -1669,7 +1669,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAddAutoAudioSinkChildSink)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotAddAutoVideoSinkChildIfNotASink)
 {
-    GenericPlayerContext *context = getPlayerContext();
+    const GenericPlayerContext *context = getPlayerContext();
 
     m_sut->addAutoVideoSinkChild(G_OBJECT(m_realElement));
     EXPECT_EQ(context->autoVideoChildSink, nullptr);
@@ -1677,7 +1677,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotAddAutoVideoSinkChildIfNotASink)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotAddAutoAudioSinkChildIfNotASink)
 {
-    GenericPlayerContext *context = getPlayerContext();
+    const GenericPlayerContext *context = getPlayerContext();
 
     m_sut->addAutoAudioSinkChild(G_OBJECT(m_realElement));
     EXPECT_EQ(context->autoAudioChildSink, nullptr);
@@ -1767,7 +1767,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoAudioSinkChildIfDifferent
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoVideoSinkChildIfNotAdded)
 {
-    GenericPlayerContext *context = getPlayerContext();
+    const GenericPlayerContext *context = getPlayerContext();
 
     GST_OBJECT_FLAG_SET(GST_OBJECT(m_realElement), GST_ELEMENT_FLAG_SINK);
 
@@ -1777,7 +1777,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoVideoSinkChildIfNotAdded)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotRemoveAutoAudioSinkChildIfNotAdded)
 {
-    GenericPlayerContext *context = getPlayerContext();
+    const GenericPlayerContext *context = getPlayerContext();
 
     GST_OBJECT_FLAG_SET(GST_OBJECT(m_realElement), GST_ELEMENT_FLAG_SINK);
 
