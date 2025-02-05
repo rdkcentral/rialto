@@ -53,10 +53,6 @@
         <id>unknownMacro</id>
         <fileName>media/server/gstplayer/*</fileName>
     </suppress>
-    <suppress>
-        <id>unknownMacro</id>
-        <fileName>stubs/wpeframework-core/*</fileName>
-    </suppress>
     <suppress> <!-- unusedStructMember doesn't work correctly with gtest -->
         <id>unusedStructMember</id>
         <fileName>tests/*</fileName>
