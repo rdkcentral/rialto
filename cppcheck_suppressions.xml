@@ -7,9 +7,6 @@
         <id>missingIncludeSystem</id>
     </suppress>
     <suppress>
-        <id>syntaxError</id>
-    </suppress>
-    <suppress>
         <id>unusedFunction</id>
         <fileName>logging/source/RialtoLogging.cpp</fileName>
     </suppress>
