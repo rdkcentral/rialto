@@ -34,6 +34,7 @@ public:
                 (const std::string &socketName, unsigned int socketPermissions, const std::string &socketOwner,
                  const std::string &socketGroup),
                 (override));
+    MOCK_METHOD(bool, initialize, (int32_t socketFd), (override));
     MOCK_METHOD(void, start, (), (override));
     MOCK_METHOD(void, stop, (), (override));
     MOCK_METHOD(void, setLogLevels,

@@ -51,6 +51,8 @@ public:
     void willFailToSetConfigurationWhenSessionManagementServerFailsToInit();
     void willFailToSetConfigurationWhenSessionManagementServerFailsToSetInitialState();
     void willSetConfiguration();
+    void willFailToSetConfigurationWithFdWhenSessionManagementServerFailsToInit();
+    void willSetConfigurationWithFd();
     void willFailToSetUnsupportedState();
     void willFailToSetStateActiveDueToPlaybackServiceError();
     void willFailToSetStateActiveDueToCdmServiceError();

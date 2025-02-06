@@ -75,13 +75,10 @@ public:
  *      starts the application server running in its own thread
  *
  * Test Steps:
- *  Step 1: monitor socket creation
- *      sets up the Linux Wrapper so that socket creation is expected and monitored
- *
- *  Step 2: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
+ *  Step 1: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
  *      There doesn't seem to be a sequence diagram for this
  *
- *  Step 3: Perform log level test
+ *  Step 2: Perform log level test
  *      - Check that the default log levels are used initially by
  *          calling getLogLevels() since RialtoServerManager is running in a different thread
  *          within this process. This is a slightly "backdoor" method of obtaining the information
@@ -99,12 +96,9 @@ public:
  */
 TEST_F(SessionServerLogLevelTest, ShouldSetLogLevels)
 {
-    // Step 1: monitor socket creation
-    willConfigureSocket();
-
-    // Step 2: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
+    // Step 1: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
     configureSutInActiveState();
 
-    // Step 3: Perform log level test
+    // Step 2: Perform log level test
     setLogLevels();
 }

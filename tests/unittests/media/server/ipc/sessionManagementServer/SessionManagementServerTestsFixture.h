@@ -26,7 +26,6 @@
 #include "ControlServiceMock.h"
 #include "ISessionManagementServer.h"
 #include "IpcServerMock.h"
-#include "LinuxWrapperMock.h"
 #include "MediaKeysCapabilitiesModuleServiceMock.h"
 #include "MediaKeysModuleServiceMock.h"
 #include "MediaPipelineCapabilitiesModuleServiceMock.h"
@@ -48,6 +47,8 @@ public:
 
     void serverWillInitialize();
     void serverWillFailToInitialize();
+    void serverWillInitializeWithFd();
+    void serverWillFailToInitializeWithFd();
     void serverWillStart();
     void clientWillConnect();
     void clientWillDisconnect();
@@ -56,17 +57,14 @@ public:
     void sendServerInitialize();
     void sendServerInitializeWithTestSocketOwnerAndGroup();
     void sendServerInitializeAndExpectFailure();
+    void sendServerInitializeWithFd();
+    void sendServerInitializeWithFdAndExpectFailure();
     void sendServerStart();
-    void serverWillInitializeWithValidSocketOwnerAndGroup();
-    void serverWillInitializeWithValidSocketOwnerAndInvalidGroup();
-    void serverWillInitializeWithInvalidSocketOwnerAndValidGroup();
-    void serverWillInitializeWithInvalidSocketOwnerAndGroup();
     void sendConnectClient();
     void sendDisconnectClient();
     void sendSetLogLevels();
 
 private:
-    std::shared_ptr<firebolt::rialto::wrappers::LinuxWrapperMock> m_linuxWrapperMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
     StrictMock<firebolt::rialto::server::service::PlaybackServiceMock> m_playbackServiceMock;
     StrictMock<firebolt::rialto::server::service::MediaPipelineServiceMock> m_mediaPipelineServiceMock;
@@ -83,8 +81,6 @@ private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::WebAudioPlayerModuleServiceMock>> m_webAudioPlayerModuleMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::ControlModuleServiceMock>> m_controlModuleMock;
     std::unique_ptr<firebolt::rialto::server::ipc::ISessionManagementServer> m_sut;
-    passwd m_passwordStruct{};
-    group m_groupStruct{};
 
     std::function<void(const std::shared_ptr<firebolt::rialto::ipc::IClient> &)> m_clientConnectedCb;
     std::function<void(const std::shared_ptr<firebolt::rialto::ipc::IClient> &)> m_clientDisconnectedCb;

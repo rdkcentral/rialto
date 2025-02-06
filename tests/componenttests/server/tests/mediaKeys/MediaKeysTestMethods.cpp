@@ -34,7 +34,6 @@ namespace firebolt::rialto::server::ct
 {
 MediaKeysTestMethods::MediaKeysTestMethods()
 {
-    willConfigureSocket();
     configureSutInActiveState();
     connectClient();
 }

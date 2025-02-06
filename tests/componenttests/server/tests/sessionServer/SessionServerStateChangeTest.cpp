@@ -65,16 +65,13 @@ public:
  *
  *
  * Test Steps:
- *  Step A1: monitor socket creation
- *      sets up the Linux Wrapper so that socket creation is expected and monitored
- *
- *  Step A2: send a SetConfiguration message to make server inactive; and then expect a StateChangedEvent message
+ *  Step A1: send a SetConfiguration message to make server inactive; and then expect a StateChangedEvent message
  *      - send a SetConfiguration message
  *        within sequence diagram "Unitialized to Inactive" this implements steps 2 and 3
  *      - expect a StateChangedEvent message
  *        within sequence diagram "Unitialized to Inactive" this implements step 7
  *
- *  Step A3: send a SetStateRequest message to make server active; and then expect StateChangedEvent message
+ *  Step A2: send a SetStateRequest message to make server active; and then expect StateChangedEvent message
  *      - send a SetStateRequest message
  *        within sequence diagram "Inactive to Active" this implements steps 2 and 3
  *      - expect StateChangedEvent message
@@ -90,13 +87,10 @@ public:
  */
 TEST_F(SessionServerStateChangeTest, ShouldChangeFromInactiveToActive)
 {
-    // Step A1: monitor socket creation
-    willConfigureSocket();
-
-    // Step A2: send a SetConfiguration message to make server inactive; and then expect a StateChangedEvent message
+    // Step A1: send a SetConfiguration message to make server inactive; and then expect a StateChangedEvent message
     configureSutInInactiveState();
 
-    // Step A3: send a SetStateRequest message to make server active; and then expect StateChangedEvent message
+    // Step A2: send a SetStateRequest message to make server active; and then expect StateChangedEvent message
     setStateActive();
 }
 
@@ -117,13 +111,10 @@ TEST_F(SessionServerStateChangeTest, ShouldChangeFromInactiveToActive)
  *      starts the application server running in its own thread
  *
  * Test Steps:
- *  Step B1: monitor socket creation
- *      sets up the Linux Wrapper so that socket creation is expected and monitored
- *
- *  Step B2: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
+ *  Step B1: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
  *      There doesn't seem to be a sequence diagram for this
  *
- *  Step B3: send a SetStateRequest message to make server inactive; and then expect StateChangedEvent message
+ *  Step B2: send a SetStateRequest message to make server inactive; and then expect StateChangedEvent message
  *      - send a SetStateRequest message
  *        within sequence diagram "Active to Inactive" this implements steps 2 and 3
  *      - expect StateChangedEvent message
@@ -139,12 +130,9 @@ TEST_F(SessionServerStateChangeTest, ShouldChangeFromInactiveToActive)
  */
 TEST_F(SessionServerStateChangeTest, ShouldChangeFromActiveToInactive)
 {
-    // Step B1: monitor socket creation
-    willConfigureSocket();
-
-    // Step B2: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
+    // Step B1: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
     configureSutInActiveState();
 
-    // Step B3: send a SetStateRequest message to make server inactive; and then expect StateChangedEvent message
+    // Step B2: send a SetStateRequest message to make server inactive; and then expect StateChangedEvent message
     setStateInactive();
 }

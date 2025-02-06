@@ -28,7 +28,6 @@ namespace firebolt::rialto::server::ct
 {
 ControlTest::ControlTest()
 {
-    willConfigureSocket();
     configureSutInActiveState();
     connectClient();
     registerClient();
