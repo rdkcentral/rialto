@@ -162,14 +162,33 @@ GstCapabilities::GstCapabilities(
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
     const IGstInitialiser &gstInitialiser)
-    : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}
+    : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
+      m_gstInitialiser{gstInitialiser}
 {
-    gstInitialiser.waitForInitialisation();
-    fillSupportedMimeTypes();
+    m_initialisationThread = std::thread(
+        [this]()
+        {
+            std::unique_lock lock{m_initialisationMutex};
+
+            m_gstInitialiser.waitForInitialisation();
+            fillSupportedMimeTypes();
+            m_isInitialised = true;
+            m_initialisationCv.notify_all();
+        });
+}
+
+GstCapabilities::~GstCapabilities()
+{
+    if (m_initialisationThread.joinable())
+    {
+        m_initialisationThread.join();
+    }
 }
 
 std::vector<std::string> GstCapabilities::getSupportedMimeTypes(MediaSourceType sourceType)
 {
+    waitForInitialisation();
+
     std::vector<std::string> supportedMimeTypesSource;
     std::string type;
     if (sourceType == MediaSourceType::VIDEO)
@@ -198,12 +217,15 @@ std::vector<std::string> GstCapabilities::getSupportedMimeTypes(MediaSourceType 
 
 bool GstCapabilities::isMimeTypeSupported(const std::string &mimeType)
 {
+    waitForInitialisation();
     return m_supportedMimeTypes.find(mimeType) != m_supportedMimeTypes.end();
 }
 
 std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType mediaType,
                                                                  const std::vector<std::string> &propertyNames)
 {
+    waitForInitialisation();
+
     // Get gstreamer element factories. The following flag settings will fetch both SINK and DECODER types
     // of gstreamer classes...
     GstElementFactoryListType factoryListType{GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER |
@@ -410,6 +432,12 @@ bool GstCapabilities::isCapsInVector(const std::vector<GstCaps *> &capsVector, G
     return std::find_if(capsVector.begin(), capsVector.end(),
                         [&](const GstCaps *comparedCaps)
                         { return m_gstWrapper->gstCapsIsStrictlyEqual(caps, comparedCaps); }) != capsVector.end();
+}
+
+void GstCapabilities::waitForInitialisation()
+{
+    std::unique_lock lock{m_initialisationMutex};
+    m_initialisationCv.wait(lock, [this]() { return m_isInitialised; });
 }
 
 } // namespace firebolt::rialto::server

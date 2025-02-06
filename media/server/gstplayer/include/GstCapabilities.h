@@ -26,8 +26,11 @@
 #include "IGstWrapper.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 #include <string>
+#include <thread>
 #include <unordered_set>
 #include <vector>
 
@@ -60,7 +63,7 @@ public:
         const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
         const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
         const IGstInitialiser &gstInitialiser);
-    ~GstCapabilities() = default;
+    ~GstCapabilities();
 
     GstCapabilities(const GstCapabilities &) = delete;
     GstCapabilities &operator=(const GstCapabilities &) = delete;
@@ -128,6 +131,11 @@ private:
     bool isCapsInVector(const std::vector<GstCaps *> &capsVector, GstCaps *caps) const;
 
     /**
+     * @brief Waits for supportd mime types initialisation
+     */
+    void waitForInitialisation();
+
+    /**
      * @brief Set of mime types which are supported by gstreamer
      */
     std::unordered_set<std::string> m_supportedMimeTypes;
@@ -138,6 +146,11 @@ private:
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
+    const IGstInitialiser &m_gstInitialiser;
+    std::thread m_initialisationThread;
+    std::mutex m_initialisationMutex;
+    std::condition_variable m_initialisationCv;
+    bool m_isInitialised{false};
 };
 
 }; // namespace firebolt::rialto::server
