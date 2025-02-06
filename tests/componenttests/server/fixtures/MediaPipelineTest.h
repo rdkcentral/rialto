@@ -107,8 +107,6 @@ protected:
     GFlagsValue m_videoFlag{2, "video", "video"};
     GFlagsValue m_nativeVideoFlag{3, "native-video", "native-video"};
     GFlagsValue m_subtitleFlag{4, "subtitle", "subtitle"};
-    GstCaps m_audioCaps{};
-    GstCaps m_videoCaps{};
     gchar m_audioCapsStr{};
     gchar m_videoCapsStr{};
     std::string m_sourceName{"src_0"};
