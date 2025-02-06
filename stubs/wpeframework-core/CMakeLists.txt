@@ -37,7 +37,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third-party/Source/websocket)
 ExternalProject_Add(
   thunder-repo-core
   GIT_REPOSITORY https://github.com/rdkcentral/Thunder.git
-  GIT_TAG ${WPEFRAMEWORK_TAG}
+  GIT_TAG ${THUNDER_TAG}
   PREFIX "git"
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
@@ -105,7 +105,6 @@ ExternalProject_Add(
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-core/Source/core/SystemInfo.h
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-core/Source/core/TextFragment.h
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-core/Source/core/TextReader.h
-  ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-core/Source/core/TextStreamRedirectType.h
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-core/Source/core/Thread.h
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-core/Source/core/ThreadPool.h
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-core/Source/core/Time.h
@@ -131,7 +130,7 @@ ExternalProject_Add(
 ExternalProject_Add(
   thunder-repo-cryptalgo
   GIT_REPOSITORY https://github.com/rdkcentral/Thunder.git
-  GIT_TAG ${WPEFRAMEWORK_TAG}
+  GIT_TAG ${THUNDER_TAG}
   PREFIX "git"
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
@@ -150,7 +149,7 @@ ExternalProject_Add(
 ExternalProject_Add(
   thunder-repo-plugins
   GIT_REPOSITORY https://github.com/rdkcentral/Thunder.git
-  GIT_TAG ${WPEFRAMEWORK_TAG}
+  GIT_TAG ${THUNDER_TAG}
   PREFIX "git"
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
@@ -166,7 +165,7 @@ ExternalProject_Add(
 ExternalProject_Add(
   thunder-repo-messaging
   GIT_REPOSITORY https://github.com/rdkcentral/Thunder.git
-  GIT_TAG ${WPEFRAMEWORK_TAG}
+  GIT_TAG ${THUNDER_TAG}
   PREFIX "git"
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
@@ -181,8 +180,6 @@ ExternalProject_Add(
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-messaging/Source/messaging/Control.h
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-messaging/Source/messaging/TraceFactory.h
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-messaging/Source/messaging/TextMessage.h
-  ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-messaging/Source/messaging/ConsoleStreamRedirect.h
-  ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-messaging/Source/messaging/OperationalCategories.h
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-messaging/Source/messaging/Module.h
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-messaging/Source/messaging/MessageUnit.h
   ${CMAKE_CURRENT_BINARY_DIR}/git/src/thunder-repo-messaging/Source/messaging/MessageDispatcher.h
@@ -193,7 +190,7 @@ ExternalProject_Add(
 ExternalProject_Add(
   thunder-repo-websocket
   GIT_REPOSITORY https://github.com/rdkcentral/Thunder.git
-  GIT_TAG ${WPEFRAMEWORK_TAG}
+  GIT_TAG ${THUNDER_TAG}
   PREFIX "git"
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""
