@@ -152,3 +152,10 @@ TEST_F(SessionServerAppTests, ShouldReleaseNamedSocket)
     triggerReleaseNamedSocket();
     m_sut.reset();
 }
+
+TEST_F(SessionServerAppTests, ShouldSetSuspendOngoing)
+{
+    createAppSutWithDisabledTimer(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName});
+    triggerSetSuspendOngoing();
+    m_sut.reset();
+}

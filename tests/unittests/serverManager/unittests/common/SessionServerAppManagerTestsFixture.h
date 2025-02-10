@@ -77,6 +77,7 @@ public:
     void sessionServerWillIndicateStateChange(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillBeRestarted(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillRestartWillBeSkipped();
+    void sessionServerWillSuspend();
 
     void triggerPreloadSessionServers();
     bool triggerInitiateApplication(const firebolt::rialto::common::SessionServerState &state);
@@ -87,6 +88,7 @@ public:
     bool triggerSetLogLevel();
     void triggerSendPingEvents();
     void triggerRestartServer();
+    bool triggerSuspendServer();
 
 private:
     std::unique_ptr<rialto::servermanager::ipc::IController> m_controller;

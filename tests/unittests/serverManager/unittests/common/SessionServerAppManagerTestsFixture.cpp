@@ -482,6 +482,35 @@ void SessionServerAppManagerTests::sessionServerWillRestartWillBeSkipped()
     EXPECT_CALL(m_sessionServerAppMock, releaseNamedSocketRef()).WillOnce(ReturnRef(m_namedSocket));
 }
 
+void SessionServerAppManagerTests::sessionServerWillSuspend()
+{
+    m_namedSocket = std::make_unique<StrictMock<firebolt::rialto::ipc::NamedSocketMock>>();
+
+    EXPECT_CALL(m_sessionServerAppMock, getAppName()).WillRepeatedly(ReturnRef(kAppName));
+    EXPECT_CALL(m_sessionServerAppMock, setSuspendOngoing());
+    EXPECT_CALL(m_controllerMock, performSetState(kServerId, firebolt::rialto::common::SessionServerState::NOT_RUNNING))
+        .WillOnce(Return(false));
+    EXPECT_CALL(m_sessionServerAppMock, kill());
+    EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, firebolt::rialto::common::SessionServerState::NOT_RUNNING));
+    EXPECT_CALL(m_sessionServerAppMock, isSuspendOngoing()).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerAppMock, getExpectedState())
+        .WillOnce(Return(firebolt::rialto::common::SessionServerState::INACTIVE));
+    EXPECT_CALL(m_sessionServerAppMock, getSessionManagementSocketName()).WillOnce(Return(kSessionServerSocketName));
+    EXPECT_CALL(m_sessionServerAppMock, getClientDisplayName()).WillOnce(Return(kClientDisplayName));
+    EXPECT_CALL(m_sessionServerAppMock, releaseNamedSocketRef()).WillOnce(ReturnRef(m_namedSocket));
+    clientWillBeRemoved();
+    auto restartedSessionServer{std::make_unique<StrictMock<rialto::servermanager::common::SessionServerAppMock>>()};
+    EXPECT_CALL(*restartedSessionServer, launch()).WillOnce(Return(true));
+    EXPECT_CALL(*restartedSessionServer, getAppName()).WillRepeatedly(ReturnRef(kAppName));
+    EXPECT_CALL(*restartedSessionServer, getAppManagementSocketName()).WillOnce(Return(kAppMgmtSocket));
+    EXPECT_CALL(*restartedSessionServer, getServerId()).WillRepeatedly(Return(kServerId));
+    EXPECT_CALL(*restartedSessionServer, kill());
+    EXPECT_CALL(m_sessionServerAppFactoryMock,
+                create(kAppName, firebolt::rialto::common::SessionServerState::INACTIVE, kAppConfig, _, _))
+        .WillOnce(Return(ByMove(std::move(restartedSessionServer))));
+    EXPECT_CALL(m_controllerMock, createClient(kServerId, kAppMgmtSocket)).WillOnce(Return(true));
+}
+
 void SessionServerAppManagerTests::triggerPreloadSessionServers()
 {
     EXPECT_TRUE(m_sut);
@@ -534,4 +563,9 @@ void SessionServerAppManagerTests::triggerSendPingEvents()
 void SessionServerAppManagerTests::triggerRestartServer()
 {
     m_sut->restartServer(kServerId);
+}
+
+bool SessionServerAppManagerTests::triggerSuspendServer()
+{
+    return m_sut->suspendSessionServer(kAppName);
 }

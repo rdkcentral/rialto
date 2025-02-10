@@ -322,3 +322,20 @@ TEST_F(SessionServerAppManagerTests, SessionServerShouldSkipRestart)
     triggerRestartServer();
     sessionServerWillKillRunningApplication();
 }
+
+TEST_F(SessionServerAppManagerTests, ShouldSkipSuspendWhenServerIsNotLaunched)
+{
+    EXPECT_FALSE(triggerSuspendServer());
+}
+
+TEST_F(SessionServerAppManagerTests, SessionServerShouldSuspend)
+{
+    sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
+    ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
+    sessionServerWillChangeStateToUninitialized();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::UNINITIALIZED);
+    sessionServerWillChangeStateToInactive();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::INACTIVE);
+    sessionServerWillSuspend();
+    EXPECT_TRUE(triggerSuspendServer());
+}

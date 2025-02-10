@@ -261,7 +261,7 @@ void SessionServerAppManager::resurrectSuspendedServer(const std::unique_ptr<ISe
     const firebolt::rialto::common::AppConfig kAppConfig{kSessionServer->getSessionManagementSocketName(),
                                                          kSessionServer->getClientDisplayName()};
     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> namedSocket{std::move(kSessionServer->releaseNamedSocket())};
-    RIALTO_SERVER_MANAGER_LOG_DEBUG("Resurrecting server for app: %s", kAppName.c_str());
+    RIALTO_SERVER_MANAGER_LOG_INFO("Resurrecting server for app: %s", kAppName.c_str());
 
     m_ipcController->removeClient(kSessionServer->getServerId());
     m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
