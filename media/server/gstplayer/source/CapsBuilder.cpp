@@ -84,11 +84,13 @@ void MediaSourceCapsBuilder::addStreamFormatToCaps(GstCaps *caps) const
          {firebolt::rialto::StreamFormat::HVC1, "hvc1"},
          {firebolt::rialto::StreamFormat::HEV1, "hev1"}};
 
-    auto formatMapIt = formatMap.find(m_attachedSource.getStreamFormat());
-    if (formatMapIt != formatMap.end())
-    {
-        m_gstWrapper->gstCapsSetSimple(caps, "stream-format", G_TYPE_STRING, formatMapIt->second.c_str(), nullptr);
-    }
+    // auto formatMapIt = formatMap.find(m_attachedSource.getStreamFormat());
+    // if (formatMapIt != formatMap.end())
+    // {
+    //     m_gstWrapper->gstCapsSetSimple(caps, "stream-format", G_TYPE_STRING, formatMapIt->second.c_str(), nullptr);
+    // }
+    m_gstWrapper->gstCapsSetSimple(caps, "stream-format", G_TYPE_STRING, "avc", nullptr);
+    RIALTO_SERVER_LOG_ERROR("Forcing stream-format=avc in MediaSourceCapsBuilder");
 }
 
 MediaSourceAudioCapsBuilder::MediaSourceAudioCapsBuilder(

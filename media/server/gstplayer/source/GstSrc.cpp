@@ -378,9 +378,9 @@ void GstSrc::setDefaultStreamFormatIfNeeded(GstElement *appSrc)
                 GstCaps *newCaps = m_gstWrapper->gstCapsCopy(currentCaps);
                 if (newCaps)
                 {
-                    m_gstWrapper->gstCapsSetSimple(newCaps, "stream-format", G_TYPE_STRING, "avc", nullptr);
+                    m_gstWrapper->gstCapsSetSimple(newCaps, "stream-format", G_TYPE_STRING, "byte-stream", nullptr);
                     m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), newCaps);
-                    GST_INFO("Added stream-format=avc to caps %" GST_PTR_FORMAT, newCaps);
+                    GST_INFO("Added stream-format=byte-stream to caps %" GST_PTR_FORMAT, newCaps);
                     m_gstWrapper->gstCapsUnref(newCaps);
                 }
             }
