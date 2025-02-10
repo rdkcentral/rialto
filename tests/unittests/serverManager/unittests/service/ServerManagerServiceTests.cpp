@@ -53,6 +53,18 @@ TEST_F(ServerManagerServiceTests, setStateShouldReturnFalseIfOperationFailed)
     ASSERT_FALSE(triggerChangeSessionServerState(kAppName, kAppState));
 }
 
+TEST_F(ServerManagerServiceTests, suspendShouldReturnTrueIfOperationSucceeded)
+{
+    suspendSessionServerWillBeCalled(kAppName, true);
+    ASSERT_TRUE(triggerSuspendSessionServer(kAppName));
+}
+
+TEST_F(ServerManagerServiceTests, suspendShouldReturnFalseIfOperationFailed)
+{
+    suspendSessionServerWillBeCalled(kAppName, false);
+    ASSERT_FALSE(triggerSuspendSessionServer(kAppName));
+}
+
 TEST_F(ServerManagerServiceTests, getSessionServerInfoShouldReturnAppSocket)
 {
     getAppConnectionInfoWillBeCalled(kAppName, kAppSocket);

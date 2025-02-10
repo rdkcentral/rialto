@@ -109,6 +109,14 @@ bool SessionServerAppManager::setSessionServerState(const std::string &appName,
     return f.get();
 }
 
+bool SessionServerAppManager::suspendSessionServer(const std::string &appId)
+{
+    std::promise<bool> p;
+    std::future<bool> f{p.get_future()};
+    m_eventThread->add([&]() { return p.set_value(handleSuspendSessionServer(appId)); });
+    return f.get();
+}
+
 void SessionServerAppManager::onSessionServerStateChanged(int serverId,
                                                           const firebolt::rialto::common::SessionServerState &newState)
 {
@@ -224,6 +232,54 @@ void SessionServerAppManager::handleRestartServer(int serverId)
     else
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Failed to restart server");
+    }
+}
+
+bool SessionServerAppManager::handleSuspendSessionServer(const std::string &appName)
+{
+    RIALTO_SERVER_MANAGER_LOG_INFO("RialtoServerManager requests to suspend %s", appName.c_str());
+    const auto &kSessionServer{getServerByAppName(appName)};
+    if (!kSessionServer)
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Suspend %s failed - session server not found.", appName.c_str());
+        return false;
+    }
+    kSessionServer->setSuspendOngoing();
+    if (!m_ipcController->performSetState(kSessionServer->getServerId(),
+                                          firebolt::rialto::common::SessionServerState::NOT_RUNNING))
+    {
+        handleStateChangeFailure(kSessionServer, firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    }
+    RIALTO_SERVER_MANAGER_LOG_INFO("Session server %s suspended. Waiting for notification to restart", appName.c_str());
+    return true;
+}
+
+void SessionServerAppManager::resurrectSuspendedServer(const std::unique_ptr<ISessionServerApp> &kSessionServer)
+{
+    const std::string kAppName{kSessionServer->getAppName()};
+    const firebolt::rialto::common::SessionServerState kState{firebolt::rialto::common::SessionServerState::INACTIVE};
+    const firebolt::rialto::common::AppConfig kAppConfig{kSessionServer->getSessionManagementSocketName(),
+                                                         kSessionServer->getClientDisplayName()};
+    std::unique_ptr<firebolt::rialto::ipc::INamedSocket> namedSocket{std::move(kSessionServer->releaseNamedSocket())};
+    RIALTO_SERVER_MANAGER_LOG_DEBUG("Resurrecting server for app: %s", kAppName.c_str());
+
+    m_ipcController->removeClient(kSessionServer->getServerId());
+    m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
+    m_sessionServerApps.erase(kSessionServer);
+
+    // Finally, spawn the new app with old settings and set named socket if present
+    auto app = m_sessionServerAppFactory->create(kAppName, kState, kAppConfig, *this, std::move(namedSocket));
+    if (app->launch())
+    {
+        auto result = m_sessionServerApps.emplace(std::move(app));
+        if (result.second)
+        {
+            connectSessionServer(*result.first);
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Failed to resurrect suspended server for %s", kAppName.c_str());
     }
 }
 
@@ -344,6 +400,12 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
     }
     else if (newState == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
     {
+        if (kSessionServer->isSuspendOngoing() &&
+            kSessionServer->getExpectedState() != firebolt::rialto::common::SessionServerState::NOT_RUNNING)
+        {
+            resurrectSuspendedServer(kSessionServer);
+            return;
+        }
         m_ipcController->removeClient(serverId);
         m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
         m_sessionServerApps.erase(kSessionServer);

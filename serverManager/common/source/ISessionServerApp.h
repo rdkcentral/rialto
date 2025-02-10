@@ -61,6 +61,8 @@ public:
     virtual bool isNamedSocketInitialized() const = 0;
     virtual int getSessionManagementSocketFd() const = 0;
     virtual std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&releaseNamedSocket() = 0;
+    virtual void setSuspendOngoing() = 0;
+    virtual bool isSuspendOngoing() const = 0;
 };
 } // namespace rialto::servermanager::common
 

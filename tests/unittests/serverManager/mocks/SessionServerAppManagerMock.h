@@ -39,6 +39,7 @@ public:
                 (override));
     MOCK_METHOD(bool, setSessionServerState,
                 (const std::string &, const firebolt::rialto::common::SessionServerState &), (override));
+    MOCK_METHOD(bool, suspendSessionServer, (const std::string &appId), (override));
     MOCK_METHOD(void, onSessionServerStateChanged, (int, const firebolt::rialto::common::SessionServerState &),
                 (override));
     MOCK_METHOD(void, sendPingEvents, (int pingId), (override));

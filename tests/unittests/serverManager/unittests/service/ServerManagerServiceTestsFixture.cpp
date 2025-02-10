@@ -68,6 +68,11 @@ void ServerManagerServiceTests::setSessionServerStateWillBeCalled(
     EXPECT_CALL(m_appManager, setSessionServerState(appId, state)).WillOnce(Return(returnValue));
 }
 
+void ServerManagerServiceTests::suspendSessionServerWillBeCalled(const std::string &appId, bool returnValue)
+{
+    EXPECT_CALL(m_appManager, suspendSessionServer(appId)).WillOnce(Return(returnValue));
+}
+
 void ServerManagerServiceTests::getAppConnectionInfoWillBeCalled(const std::string &appId, const std::string &returnValue)
 {
     EXPECT_CALL(m_appManager, getAppConnectionInfo(appId)).WillOnce(Return(returnValue));
@@ -101,6 +106,12 @@ bool ServerManagerServiceTests::triggerChangeSessionServerState(const std::strin
 {
     EXPECT_TRUE(m_sut);
     return m_sut->changeSessionServerState(appId, state);
+}
+
+bool ServerManagerServiceTests::triggerSuspendSessionServer(const std::string &appId)
+{
+    EXPECT_TRUE(m_sut);
+    return m_sut->suspendSessionServer(appId);
 }
 
 std::string ServerManagerServiceTests::triggerGetAppConnectionInfo(const std::string &appId)

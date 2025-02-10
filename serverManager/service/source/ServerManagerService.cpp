@@ -79,6 +79,11 @@ bool ServerManagerService::changeSessionServerState(const std::string &appId,
     return m_kContext->getSessionServerAppManager().setSessionServerState(appId, state);
 }
 
+bool ServerManagerService::suspendSessionServer(const std::string &appId)
+{
+    return m_kContext->getSessionServerAppManager().suspendSessionServer(appId);
+}
+
 std::string ServerManagerService::getAppConnectionInfo(const std::string &appId) const
 {
     return m_kContext->getSessionServerAppManager().getAppConnectionInfo(appId);

@@ -42,6 +42,7 @@ public:
                              const firebolt::rialto::common::AppConfig &appConfig) override;
     bool changeSessionServerState(const std::string &appId,
                                   const firebolt::rialto::common::SessionServerState &state) override;
+    bool suspendSessionServer(const std::string &appId) override;
     std::string getAppConnectionInfo(const std::string &appId) const override;
     bool setLogLevels(const LoggingLevels &logLevels) const override;
     bool registerLogHandler(const std::shared_ptr<ILogHandler> &handler) override;

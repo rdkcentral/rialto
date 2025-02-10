@@ -90,7 +90,8 @@ SessionServerApp::SessionServerApp(const std::shared_ptr<firebolt::rialto::wrapp
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_kSessionManagementSocketOwner{socketOwner},
       m_kSessionManagementSocketGroup{socketGroup}, m_childInitialized{false},
-      m_expectedState{firebolt::rialto::common::SessionServerState::UNINITIALIZED}, m_namedSocket{std::move(namedSocket)}
+      m_expectedState{firebolt::rialto::common::SessionServerState::UNINITIALIZED},
+      m_namedSocket{std::move(namedSocket)}, m_suspendOngoing{false}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with serverId: %d", m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -116,7 +117,7 @@ SessionServerApp::SessionServerApp(const std::string &appName,
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_kSessionManagementSocketOwner{socketOwner},
       m_kSessionManagementSocketGroup{socketGroup}, m_childInitialized{false}, m_expectedState{initialState},
-      m_namedSocket{std::move(namedSocket)}
+      m_namedSocket{std::move(namedSocket)}, m_suspendOngoing{false}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating SessionServerApp for app: %s with appId: %d", appName.c_str(), m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -456,5 +457,15 @@ std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&SessionServerApp::release
         m_namedSocket->blockNewConnections();
     }
     return std::move(m_namedSocket);
+}
+
+void SessionServerApp::setSuspendOngoing()
+{
+    m_suspendOngoing = true;
+}
+
+bool SessionServerApp::isSuspendOngoing() const
+{
+    return m_suspendOngoing;
 }
 } // namespace rialto::servermanager::common

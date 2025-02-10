@@ -63,6 +63,8 @@ public:
     {
         return std::move(releaseNamedSocketRef());
     }
+    MOCK_METHOD(void, setSuspendOngoing, (), (override));
+    MOCK_METHOD(bool, isSuspendOngoing, (), (const, override));
 };
 } // namespace rialto::servermanager::common
 

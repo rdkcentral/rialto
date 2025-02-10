@@ -44,6 +44,7 @@ public:
                                      const firebolt::rialto::common::AppConfig &appConfig) = 0;
     virtual bool setSessionServerState(const std::string &appName,
                                        const firebolt::rialto::common::SessionServerState &newState) = 0;
+    virtual bool suspendSessionServer(const std::string &appId) = 0;
     virtual void onSessionServerStateChanged(int serverId,
                                              const firebolt::rialto::common::SessionServerState &newState) = 0;
     virtual void sendPingEvents(int pingId) = 0;

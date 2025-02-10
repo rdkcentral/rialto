@@ -92,6 +92,7 @@ TEST_F(SessionServerAppManagerTests, SetSessionServerStateToNotRunningShouldRetu
     sessionServerChangeStateWillFail(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
     sessionServerWillKillRunningApplication();
     sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    sessionServerWontBeSuspended();
     clientWillBeRemoved();
     ASSERT_FALSE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::NOT_RUNNING));
 }
@@ -122,6 +123,7 @@ TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldRemoveApplicat
     ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
     sessionServerWillFailToSetConfiguration();
     sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::ERROR);
+    sessionServerWontBeSuspended();
     clientWillBeRemoved();
     sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
     sessionServerWillKillRunningApplication();
@@ -132,6 +134,7 @@ TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldRemoveApplicat
 {
     sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
     ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
+    sessionServerWontBeSuspended();
     clientWillBeRemoved();
     sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
     triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
@@ -252,6 +255,7 @@ TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldRemoveApplicat
     ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
     sessionServerWillFailToSetConfigurationWithFd();
     sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::ERROR);
+    sessionServerWontBeSuspended();
     clientWillBeRemoved();
     sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
     sessionServerWillKillRunningApplication();

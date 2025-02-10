@@ -81,6 +81,20 @@ public:
                                           const firebolt::rialto::common::SessionServerState &state) = 0;
 
     /**
+     * @brief Suspends session server
+     *
+     * This method suspends an session server. As a result of this call, requested server goes to
+     * NOT_RUNNING state and restarts in INACTIVE state. This API will return an error if the application is
+     * currently in the NOT_RUNNING state (in this scenario the initApplication() API should be used otherwise SetState
+     * request is sent to RialtoSessionServer for the app.
+     *
+     * @param[in]     appId     : The ID of the application
+     *
+     * @retval true on success.
+     */
+    virtual bool suspendSessionServer(const std::string &appId) = 0;
+
+    /**
      * @brief Returns the name of a socket, which is used for RialtoSessionServer <-> Application communication
      *
      * This method returns the name of a socket, which is used for RialtoSessionServer <-> Application communication.
