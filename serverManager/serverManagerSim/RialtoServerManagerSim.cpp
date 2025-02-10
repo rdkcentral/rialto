@@ -118,6 +118,10 @@ int main(int argc, char *argv[])
     fprintf(stderr, "== For example:                                                          ==\n");
     fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/SetLog/client/error                  ==\n");
     fprintf(stderr, "==                                                                       ==\n");
+    fprintf(stderr, "== To suspend server, send POST HttpRequest: /Suspend/AppName            ==\n");
+    fprintf(stderr, "== For example:                                                          ==\n");
+    fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/Suspend/YouTube                      ==\n");
+    fprintf(stderr, "==                                                                       ==\n");
     fprintf(stderr, "== To shutdown Test Service, send POST HttpRequest: /Quit                ==\n");
     fprintf(stderr, "== For example:                                                          ==\n");
     fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/Quit                                 ==\n");

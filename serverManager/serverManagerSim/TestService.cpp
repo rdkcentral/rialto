@@ -89,4 +89,9 @@ bool TestService::setLogLevels(const service::LoggingLevels &logLevels)
 {
     return m_serverManagerService->setLogLevels(logLevels);
 }
+
+bool TestService::suspendSessionServer(const std::string &appName)
+{
+    return m_serverManagerService->suspendSessionServer(appName);
+}
 } // namespace rialto::servermanager

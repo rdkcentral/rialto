@@ -46,6 +46,7 @@ public:
     firebolt::rialto::common::SessionServerState getState(const std::string &appName);
     std::string getAppInfo(const std::string &appName);
     bool setLogLevels(const service::LoggingLevels &logLevels);
+    bool suspendSessionServer(const std::string &appName);
 
 private:
     std::shared_ptr<StateObserver> m_stateObserver;

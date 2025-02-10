@@ -24,6 +24,7 @@
 #include "Quit.h"
 #include "SetLog.h"
 #include "SetState.h"
+#include "Suspend.h"
 #include "Unknown.h"
 
 namespace rialto::servermanager
@@ -33,6 +34,10 @@ std::unique_ptr<Command> createCommand(TestService &service, const HttpRequest &
     if ("POST" == request.getMethod() && "SetState" == request.getCommand())
     {
         return std::make_unique<SetState>(service, request);
+    }
+    else if ("POST" == request.getMethod() && "Suspend" == request.getCommand())
+    {
+        return std::make_unique<Suspend>(service, request);
     }
     else if ("GET" == request.getMethod() && "GetState" == request.getCommand())
     {

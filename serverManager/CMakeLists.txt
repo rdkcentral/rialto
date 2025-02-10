@@ -48,6 +48,7 @@ add_executable (
         serverManagerSim/commands/Quit.cpp
         serverManagerSim/commands/SetLog.cpp
         serverManagerSim/commands/SetState.cpp
+        serverManagerSim/commands/Suspend.cpp
         serverManagerSim/commands/Unknown.cpp
 
         serverManagerSim/HttpRequest.cpp
