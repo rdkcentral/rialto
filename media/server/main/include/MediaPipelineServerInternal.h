@@ -278,6 +278,16 @@ protected:
     bool m_wasAllSourcesAttachedCalled;
 
     /**
+     * @brief Flag used to check if low latency is set for video source
+     */
+    bool m_IsLowLatencyVideoPlayer{false};
+
+    /**
+     * @brief Flag used to check if low latency is set for audio source
+     */
+    bool m_IsLowLatencyAudioPlayer{false};
+
+    /**
      * @brief Map of flags used to check if Eos has been set on the media type for this playback
      */
     std::map<MediaSourceType, bool> m_isMediaTypeEosMap;
@@ -681,6 +691,16 @@ protected:
      *
      */
     bool switchSourceInternal(const std::unique_ptr<MediaSource> &source);
+
+    /**
+     * @brief Returns how long should we wait to send next NeedMediaData
+     *        if rialto client returns NO_AVAILABLE_SAMPLES
+     *
+     * @param[in] mediaSourceType : The media source type.
+     *
+     * @retval NeedMediaData timeout
+     */
+    std::chrono::milliseconds getNeedMediaDataTimeout(MediaSourceType mediaSourceType) const;
 };
 
 }; // namespace firebolt::rialto::server
