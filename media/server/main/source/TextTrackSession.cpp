@@ -60,6 +60,11 @@ TextTrackSession::~TextTrackSession()
     m_textTrackAccessor->closeSession(m_sessionId);
 }
 
+bool TextTrackSession::resetSession()
+{
+    return m_textTrackAccessor->resetSession(m_sessionId);
+}
+
 bool TextTrackSession::pause()
 {
     return m_textTrackAccessor->pause(m_sessionId);

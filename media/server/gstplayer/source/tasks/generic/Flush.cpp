@@ -39,7 +39,8 @@ Flush::~Flush()
 
 void Flush::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing Flush for %s source", common::convertMediaSourceType(m_type));
+    // RIALTO_SERVER_LOG_DEBUG("Executing Flush for %s source", common::convertMediaSourceType(m_type));
+    RIALTO_SERVER_LOG_DEBUG("KLOPS Executing Flush for %s source", common::convertMediaSourceType(m_type));
 
     // Get source first
     GstElement *source{nullptr};
@@ -50,13 +51,15 @@ void Flush::execute() const
     }
     if (!source)
     {
-        RIALTO_SERVER_LOG_WARN("failed to flush %s - source is NULL", common::convertMediaSourceType(m_type));
+        // RIALTO_SERVER_LOG_WARN("failed to flush %s - source is NULL", common::convertMediaSourceType(m_type));
+        RIALTO_SERVER_LOG_WARN("KLOPS failed to flush %s - source is NULL", common::convertMediaSourceType(m_type));
         return;
     }
 
     if (m_type == MediaSourceType::UNKNOWN)
     {
-        RIALTO_SERVER_LOG_WARN("Flush failed: Media source type not supported.");
+        // RIALTO_SERVER_LOG_WARN("Flush failed: Media source type not supported.");
+        RIALTO_SERVER_LOG_WARN("KLOPS Flush failed: Media source type not supported.");
         return;
     }
 
@@ -81,17 +84,27 @@ void Flush::execute() const
         {
             RIALTO_SERVER_LOG_WARN("failed to send flush-start event for %s", common::convertMediaSourceType(m_type));
         }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("KLOPS Flush-Start for %s source", common::convertMediaSourceType(m_type));
+        }
 
         GstEvent *flushStop = m_gstWrapper->gstEventNewFlushStop(m_resetTime);
         if (!m_gstWrapper->gstElementSendEvent(source, flushStop))
         {
             RIALTO_SERVER_LOG_WARN("failed to send flush-stop event for %s", common::convertMediaSourceType(m_type));
         }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("KLOPS Flush-Stop for %s source", common::convertMediaSourceType(m_type));
+        }
     }
     else
     {
-        RIALTO_SERVER_LOG_DEBUG("Skip sending flush event for %s - pipeline below paused",
-                                common::convertMediaSourceType(m_type));
+        // RIALTO_SERVER_LOG_DEBUG("Skip sending flush event for %s - pipeline below paused",
+        //                         common::convertMediaSourceType(m_type));
+        RIALTO_SERVER_LOG_ERROR("KLOPS Skip sending flush event for %s - pipeline below paused",
+                                   common::convertMediaSourceType(m_type));
     }
 
     // Reset Eos info

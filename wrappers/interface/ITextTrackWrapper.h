@@ -99,6 +99,7 @@ public:
      * @retval the error code
      */
     virtual std::uint32_t unmuteSession(std::uint32_t sessionId) const = 0;
+    virtual std::uint32_t resetSession(std::uint32_t sessionId) const = 0;
 
     /**
      * @brief Sends the current timestamp from a media player to a render session.

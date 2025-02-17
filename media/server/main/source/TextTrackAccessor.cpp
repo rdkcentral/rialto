@@ -20,7 +20,9 @@
 #include "TextTrackAccessor.h"
 
 #include <cinttypes>
+#include <fstream>
 #include <stdexcept>
+#include <string>
 
 namespace firebolt::rialto::server
 {
@@ -177,6 +179,20 @@ bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, Da
         RIALTO_SERVER_LOG_ERROR("Unknown data type");
         return false;
     }
+    // Dump data to separate files in /tmp directory
+    static int fileCounter = 0;
+    std::string filePath = "/tmp/texttrack_data_" + std::to_string(fileCounter++) + ".txt";
+    std::ofstream outFile(filePath);
+    if (outFile.is_open())
+    {
+        outFile << data;
+        outFile.close();
+        RIALTO_SERVER_LOG_DEBUG("Data dumped to file: %s", filePath.c_str());
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to open file for dumping data: %s", filePath.c_str());
+    }
 
     const uint32_t result = m_textTrackWrapper->sendSessionData(sessionId, wrapperDataType, displayOffsetMs, data);
     if (m_thunderWrapper->isSuccessful(result))
@@ -187,6 +203,19 @@ bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, Da
 
     RIALTO_SERVER_LOG_ERROR("Failed to send data to TextTrack session %u; error %s", sessionId,
                             m_thunderWrapper->errorToString(result));
+    return false;
+}
+
+bool TextTrackAccessor::resetSession(uint32_t sessionId)
+{
+    uint32_t result = m_textTrackWrapper->resetSession(sessionId);
+    if (m_thunderWrapper->isSuccessful(result))
+    {
+        RIALTO_SERVER_LOG_ERROR("KLOPS501 %d", m_textTrackWrapper->setSessionWebVTTSelection(sessionId));
+        return true;
+    }
+
+    RIALTO_SERVER_LOG_ERROR("KLOPS502");
     return false;
 }
 

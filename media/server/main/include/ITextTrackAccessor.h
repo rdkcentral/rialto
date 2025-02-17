@@ -60,6 +60,7 @@ public:
     virtual bool setSessionWebVTTSelection(uint32_t sessionId) = 0;
     virtual bool setSessionTTMLSelection(uint32_t sessionId) = 0;
     virtual bool setSessionCCSelection(uint32_t sessionId, const std::string &service) = 0;
+    virtual bool resetSession(uint32_t sessionId) = 0;
 };
 
 } // namespace firebolt::rialto::server
