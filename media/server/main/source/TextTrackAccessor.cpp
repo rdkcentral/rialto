@@ -20,7 +20,6 @@
 #include "TextTrackAccessor.h"
 
 #include <cinttypes>
-#include <fstream>
 #include <stdexcept>
 #include <string>
 
@@ -237,7 +236,7 @@ bool TextTrackAccessor::setSessionWebVTTSelection(uint32_t sessionId)
 
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_MIL("Setting WebVTT selection for session %u was successful", sessionId);
+        RIALTO_SERVER_LOG_DEBUG("Setting WebVTT selection for session %u was successful", sessionId);
         return true;
     }
 
