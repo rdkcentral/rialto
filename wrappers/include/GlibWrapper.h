@@ -115,45 +115,21 @@ public:
 #endif
     }
 
-    gboolean gOnceInitEnter(gsize *location) const override
-    {
-        return g_once_init_enter(location);
-    }
+    gboolean gOnceInitEnter(gsize *location) const override { return g_once_init_enter(location); }
 
-    void gOnceInitLeave(gsize *location, gsize result) const override
-    {
-        g_once_init_leave(location, result);
-    }
+    void gOnceInitLeave(gsize *location, gsize result) const override { g_once_init_leave(location, result); }
 
-    gchar *gStrrstr(const gchar *haystack, const gchar *needle) const override
-    {
-        return g_strrstr(haystack, needle);
-    }
+    gchar *gStrrstr(const gchar *haystack, const gchar *needle) const override { return g_strrstr(haystack, needle); }
 
-    void gErrorFree(GError *error) const override
-    {
-        g_error_free(error);
-    }
+    void gErrorFree(GError *error) const override { g_error_free(error); }
 
-    const gchar *gTypeName(GType type) const override
-    {
-        return g_type_name(type);
-    }
+    const gchar *gTypeName(GType type) const override { return g_type_name(type); }
 
-    int gStrcmp0(const char *str1, const char *str2) const override
-    {
-        return g_strcmp0(str1, str2);
-    }
+    int gStrcmp0(const char *str1, const char *str2) const override { return g_strcmp0(str1, str2); }
 
-    gpointer gValueGetObject(const GValue *value) const override
-    {
-        return g_value_get_object(value);
-    }
+    gpointer gValueGetObject(const GValue *value) const override { return g_value_get_object(value); }
 
-    void gValueUnset(GValue *value) const override
-    {
-        return g_value_unset(value);
-    }
+    void gValueUnset(GValue *value) const override { return g_value_unset(value); }
 
     GError *gErrorNewLiteral(GQuark domain, gint code, const gchar *message) const override
     {
