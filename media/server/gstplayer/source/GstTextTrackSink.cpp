@@ -252,6 +252,7 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
     {
     case GST_EVENT_FLUSH_START:
     {
+        textTrackSink->priv->m_textTrackSession->resetSession();
         break;
     }
     case GST_EVENT_FLUSH_STOP:

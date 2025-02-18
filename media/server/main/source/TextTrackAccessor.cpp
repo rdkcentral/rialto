@@ -20,7 +20,9 @@
 #include "TextTrackAccessor.h"
 
 #include <cinttypes>
+#include <fstream>
 #include <stdexcept>
+#include <string>
 
 namespace firebolt::rialto::server
 {
@@ -235,7 +237,7 @@ bool TextTrackAccessor::setSessionWebVTTSelection(uint32_t sessionId)
 
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_DEBUG("Setting WebVTT selection for session %u was successful", sessionId);
+        RIALTO_SERVER_LOG_MIL("Setting WebVTT selection for session %u was successful", sessionId);
         return true;
     }
 
@@ -272,4 +274,18 @@ bool TextTrackAccessor::setSessionCCSelection(uint32_t sessionId, const std::str
                             sessionId, m_thunderWrapper->errorToString(result));
     return false;
 }
+
+ bool TextTrackAccessor::resetSession(uint32_t sessionId)
+{
+    uint32_t result = m_textTrackWrapper->resetSession(sessionId);
+    if (m_thunderWrapper->isSuccessful(result))
+    {
+        RIALTO_SERVER_LOG_MIL("Resseting session %u was successful", sessionId);
+        return true;
+    }
+
+    RIALTO_SERVER_LOG_ERROR("Failed to reset session %u; error %s", sessionId, m_thunderWrapper->errorToString(result));
+    return false;
+}
+
 } // namespace firebolt::rialto::server
