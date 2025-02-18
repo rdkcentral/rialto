@@ -40,6 +40,7 @@ public:
     std::uint32_t resumeSession(std::uint32_t sessionId) const override;
     std::uint32_t muteSession(std::uint32_t sessionId) const override;
     std::uint32_t unmuteSession(std::uint32_t sessionId) const override;
+    std::uint32_t resetSession(std::uint32_t sessionId) const override;
     std::uint32_t sendSessionTimestamp(std::uint32_t sessionId, std::uint64_t mediaTimestampMs) const override;
     std::uint32_t sendSessionData(std::uint32_t sessionId, ITextTrackWrapper::DataType type,
                                   std::int32_t displayOffsetMs, const std::string &data) const override;

@@ -34,6 +34,8 @@ public:
     MOCK_METHOD(std::uint32_t, closeSession, (std::uint32_t sessionId), (const, override));
     MOCK_METHOD(std::uint32_t, pauseSession, (std::uint32_t sessionId), (const, override));
     MOCK_METHOD(std::uint32_t, resumeSession, (std::uint32_t sessionId), (const, override));
+    MOCK_METHOD(std::uint32_t, resetSession, (std::uint32_t sessionId), (const, override));
+
     MOCK_METHOD(std::uint32_t, muteSession, (std::uint32_t sessionId), (const, override));
     MOCK_METHOD(std::uint32_t, unmuteSession, (std::uint32_t sessionId), (const, override));
     MOCK_METHOD(std::uint32_t, sendSessionTimestamp, (std::uint32_t sessionId, std::uint64_t mediaTimestampMs),
