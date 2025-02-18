@@ -46,6 +46,7 @@ public:
     ~TextTrackAccessor() override;
     std::optional<uint32_t> openSession(const std::string &displayName) override;
     bool closeSession(uint32_t sessionId) override;
+    bool resetSession(uint32_t sessionId) override;
     bool pause(uint32_t sessionId) override;
     bool play(uint32_t sessionId) override;
     bool mute(uint32_t sessionId, bool mute) override;
@@ -54,7 +55,6 @@ public:
     bool setSessionWebVTTSelection(uint32_t sessionId) override;
     bool setSessionTTMLSelection(uint32_t sessionId) override;
     bool setSessionCCSelection(uint32_t sessionId, const std::string &service) override;
-    bool resetSession(uint32_t sessionId) override;
 
 private:
     bool createTextTrackControlInterface();
