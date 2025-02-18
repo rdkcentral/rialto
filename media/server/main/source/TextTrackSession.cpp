@@ -62,19 +62,19 @@ TextTrackSession::~TextTrackSession()
 
 bool TextTrackSession::resetSession()
 {
-    if(m_textTrackAccessor->resetSession(m_sessionId))
+    if (m_textTrackAccessor->resetSession(m_sessionId))
     {
-        if(m_dataType == ITextTrackAccessor::DataType::WebVTT)
+        if (m_dataType == ITextTrackAccessor::DataType::WebVTT)
         {
             return setSessionWebVTTSelection();
         }
-        else if(m_dataType == ITextTrackAccessor::DataType::TTML)
+        else if (m_dataType == ITextTrackAccessor::DataType::TTML)
         {
             return setSessionTTMLSelection();
         }
-        else if(m_dataType == ITextTrackAccessor::DataType::CC)
+        else if (m_dataType == ITextTrackAccessor::DataType::CC)
         {
-            if(m_ccService.has_value())
+            if (m_ccService.has_value())
             {
                 return setSessionCCSelection(m_ccService.value());
             }

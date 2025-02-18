@@ -275,7 +275,7 @@ bool TextTrackAccessor::setSessionCCSelection(uint32_t sessionId, const std::str
     return false;
 }
 
- bool TextTrackAccessor::resetSession(uint32_t sessionId)
+bool TextTrackAccessor::resetSession(uint32_t sessionId)
 {
     uint32_t result = m_textTrackWrapper->resetSession(sessionId);
     if (m_thunderWrapper->isSuccessful(result))
