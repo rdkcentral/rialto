@@ -62,30 +62,33 @@ TextTrackSession::~TextTrackSession()
 
 bool TextTrackSession::resetSession()
 {
-    if (m_textTrackAccessor->resetSession(m_sessionId))
+    if (!m_textTrackAccessor->resetSession(m_sessionId))
     {
-        if (m_dataType == ITextTrackAccessor::DataType::WebVTT)
+        return false;
+    }
+
+    if (m_dataType == ITextTrackAccessor::DataType::WebVTT)
+    {
+        return setSessionWebVTTSelection();
+    }
+    else if (m_dataType == ITextTrackAccessor::DataType::TTML)
+    {
+        return setSessionTTMLSelection();
+    }
+    else if (m_dataType == ITextTrackAccessor::DataType::CC)
+    {
+        if (m_ccService.has_value())
         {
-            return setSessionWebVTTSelection();
+            return setSessionCCSelection(m_ccService.value());
         }
-        else if (m_dataType == ITextTrackAccessor::DataType::TTML)
+        else
         {
-            return setSessionTTMLSelection();
-        }
-        else if (m_dataType == ITextTrackAccessor::DataType::CC)
-        {
-            if (m_ccService.has_value())
-            {
-                return setSessionCCSelection(m_ccService.value());
-            }
-            else
-            {
-                RIALTO_SERVER_LOG_ERROR("CC service not set");
-            }
+            RIALTO_SERVER_LOG_ERROR("CC service not set");
+            return false;
         }
     }
 
-    return false;
+    return true;
 }
 
 bool TextTrackSession::pause()
