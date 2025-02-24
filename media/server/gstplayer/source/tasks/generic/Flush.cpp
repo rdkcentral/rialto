@@ -71,6 +71,8 @@ void Flush::execute() const
     streamInfo.buffers.clear();
 
     m_gstPlayerClient->invalidateActiveRequests(m_type);
+    GstDebugLevel defaultLevel = gst_debug_get_default_threshold();
+    gst_debug_set_default_threshold(GST_LEVEL_DEBUG);
 
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
     {
@@ -93,7 +95,8 @@ void Flush::execute() const
         RIALTO_SERVER_LOG_DEBUG("Skip sending flush event for %s - pipeline below paused",
                                 common::convertMediaSourceType(m_type));
     }
-
+    
+    gst_debug_set_default_threshold(defaultLevel);
     // Reset Eos info
     m_context.endOfStreamInfo.erase(m_type);
     m_context.eosNotified = false;

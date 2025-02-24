@@ -34,7 +34,12 @@ ReportPosition::ReportPosition(GenericPlayerContext &context, IGstGenericPlayerC
 void ReportPosition::execute() const
 {
     gint64 position = -1;
+    GstDebugLevel defaultLevel = gst_debug_get_default_threshold();
+    gst_debug_set_default_threshold(GST_LEVEL_DEBUG);
+
     m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position);
+    gst_debug_set_default_threshold(defaultLevel);
+    
     if (position >= 0)
     {
         if (m_gstPlayerClient)

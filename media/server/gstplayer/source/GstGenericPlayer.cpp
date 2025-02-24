@@ -386,10 +386,14 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
         RIALTO_SERVER_LOG_WARN("GetPosition failed. Pipeline is null or state < PAUSED");
         return false;
     }
+    GstDebugLevel defaultLevel = gst_debug_get_default_threshold();
+    gst_debug_set_default_threshold(GST_LEVEL_DEBUG);
     if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
     {
+        gst_debug_set_default_threshold(defaultLevel);
         return false;
     }
+    gst_debug_set_default_threshold(defaultLevel);
     return true;
 }
 
