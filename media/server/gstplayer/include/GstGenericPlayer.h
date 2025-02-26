@@ -316,6 +316,15 @@ private:
      */
     void setTextTrackPositionIfRequired(GstElement *source);
 
+    /**
+     * @brief GstAppSrc does not replace segment, if it's the same as previous one.
+     *        It causes problems with position reporing in amlogic devices, so we need to push
+     *        two segments with different reset time value.
+     *
+     * @param[in] source : the media source
+     */
+    void pushAdditionalSegmentIfRequired(GstElement *source);
+
 private:
     /**
      * @brief The player context.
