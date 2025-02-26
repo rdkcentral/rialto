@@ -41,6 +41,12 @@ namespace
  *        whenever the session moves to another playback state.
  */
 constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
+
+bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)
+{
+    return (lhs.position == rhs.position) && (lhs.resetTime == rhs.resetTime) && (lhs.appliedRate == rhs.appliedRate) &&
+           (lhs.stopPosition == rhs.stopPosition);
+}
 } // namespace
 
 namespace firebolt::rialto::server
@@ -926,6 +932,11 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         // Sending initial sample not needed
         return;
     }
+    // GstAppSrc does not replace segment, if it's the same as previous one.
+    // It causes problems with position reporing in amlogic devices, so we need to push
+    // two segments with different reset time value.
+    pushAdditionalSegmentIfRequired(source);
+
     for (const auto &[position, resetTime, appliedRate, stopPosition] : initialPosition->second)
     {
         GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
@@ -957,8 +968,30 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
 
         m_gstWrapper->gstSegmentFree(segment);
     }
+    m_context.currentPosition[source] = initialPosition->second.back();
     m_context.initialPositions.erase(initialPosition);
     return;
+}
+
+void GstGenericPlayer::pushAdditionalSegmentIfRequired(GstElement *source)
+{
+    auto currentPosition = m_context.currentPosition.find(source);
+    if (m_context.currentPosition.end() == currentPosition)
+    {
+        return;
+    }
+    auto initialPosition = m_context.initialPositions.find(source);
+    if (m_context.initialPositions.end() == initialPosition)
+    {
+        return;
+    }
+    if (initialPosition->second.size() == 1 && initialPosition->second.back().resetTime &&
+        currentPosition->second == initialPosition->second.back())
+    {
+        SegmentData additionalSegment = initialPosition->second.back();
+        additionalSegment.resetTime = false;
+        initialPosition->second.push_back(additionalSegment);
+    }
 }
 
 void GstGenericPlayer::setTextTrackPositionIfRequired(GstElement *source)
