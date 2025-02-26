@@ -20,7 +20,9 @@
 #ifndef RIALTO_SERVERMANAGER_COMMON_I_SESSION_SERVER_APP_H_
 #define RIALTO_SERVERMANAGER_COMMON_I_SESSION_SERVER_APP_H_
 
+#include "INamedSocket.h"
 #include "SessionServerCommon.h"
+#include <memory>
 #include <string>
 
 namespace rialto::servermanager::common
@@ -56,6 +58,9 @@ public:
     virtual void kill() const = 0;
     virtual void setExpectedState(const firebolt::rialto::common::SessionServerState &state) = 0;
     virtual firebolt::rialto::common::SessionServerState getExpectedState() const = 0;
+    virtual bool isNamedSocketInitialized() const = 0;
+    virtual int getSessionManagementSocketFd() const = 0;
+    virtual std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&releaseNamedSocket() = 0;
 };
 } // namespace rialto::servermanager::common
 

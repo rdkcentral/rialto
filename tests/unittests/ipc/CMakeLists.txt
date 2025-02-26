@@ -35,6 +35,7 @@ add_gtests (
 
         main.cpp
         IpcTest.cpp
+        NamedSocketTest.cpp
         )
 
 add_subdirectory(mocks)

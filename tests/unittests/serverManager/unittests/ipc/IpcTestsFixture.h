@@ -53,6 +53,7 @@ public:
     bool triggerCreateClient();
     void triggerRemoveClient();
     bool triggerPerformSetConfiguration();
+    bool triggerPerformSetConfigurationWithFd();
     bool triggerPerformPing();
     bool triggerPerformSetState(const firebolt::rialto::common::SessionServerState &state);
     bool triggerSetLogLevels();

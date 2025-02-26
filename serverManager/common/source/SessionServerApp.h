@@ -44,7 +44,8 @@ public:
                      ISessionServerAppManager &sessionServerAppManager,
                      const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                      std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
-                     const std::string &socketOwner, const std::string &socketGroup);
+                     const std::string &socketOwner, const std::string &socketGroup,
+                     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket);
     SessionServerApp(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                      const firebolt::rialto::common::AppConfig &appConfig,
                      const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
@@ -52,7 +53,8 @@ public:
                      ISessionServerAppManager &sessionServerAppManager,
                      const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                      std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
-                     const std::string &socketOwner, const std::string &socketGroup);
+                     const std::string &socketOwner, const std::string &socketGroup,
+                     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket);
     virtual ~SessionServerApp();
 
     bool launch() override;
@@ -75,6 +77,9 @@ public:
     void kill() const override;
     void setExpectedState(const firebolt::rialto::common::SessionServerState &state) override;
     firebolt::rialto::common::SessionServerState getExpectedState() const override;
+    bool isNamedSocketInitialized() const override;
+    int getSessionManagementSocketFd() const override;
+    std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&releaseNamedSocket() override;
 
 private:
     bool initializeSockets();
@@ -108,6 +113,7 @@ private:
     std::condition_variable m_processStartupCv;
     bool m_childInitialized;
     firebolt::rialto::common::SessionServerState m_expectedState;
+    std::unique_ptr<firebolt::rialto::ipc::INamedSocket> m_namedSocket;
 };
 } // namespace rialto::servermanager::common
 
