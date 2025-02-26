@@ -30,7 +30,8 @@ class RialtoServerMediaPipelineHaveDataTest : public MediaPipelineTestBase
 protected:
     const uint32_t m_kNumFrames{3};
     const uint32_t m_kNeedDataRequestId{0};
-    const std::chrono::milliseconds m_kNeedMediaDataResendTimeout{100};
+    const std::chrono::milliseconds m_kDefaultNeedMediaDataResendTimeout{100};
+    const std::chrono::milliseconds m_kLowLatencyNeedMediaDataResendTimeout{5};
 
     RialtoServerMediaPipelineHaveDataTest() { createMediaPipeline(); }
 
@@ -66,9 +67,56 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, CommonHaveDataSuccessWithSchedulin
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_timerMock, isActive()).WillOnce(Return(true));
     EXPECT_CALL(*m_timerMock, cancel());
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kNeedMediaDataResendTimeout, _, _))
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kDefaultNeedMediaDataResendTimeout, _, _))
         .WillOnce(Return(ByMove(std::move(m_timerMock))));
     EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNeedDataRequestId));
+}
+
+TEST_F(RialtoServerMediaPipelineHaveDataTest, LowLatencyVideoHaveDataSuccessWithSchedulingNeedMediaDataResend)
+{
+    constexpr auto kStatus = firebolt::rialto::MediaSourceStatus::NO_AVAILABLE_SAMPLES;
+    constexpr auto kMediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    loadGstPlayer();
+
+    // Set LowLatency for video source
+    const int kVideoSourceId = attachSource(kMediaSourceType, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setImmediateOutput(_, true)).WillOnce(Return(true));
+    EXPECT_TRUE(m_mediaPipeline->setImmediateOutput(kVideoSourceId, true));
+
+    // Send haveData with NO_AVAILABLE_SAMPLES
+    mainThreadWillEnqueueTaskAndWait();
+    ASSERT_TRUE(m_activeRequestsMock);
+    EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId)).WillOnce(Return(kMediaSourceType));
+    EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
+    EXPECT_CALL(*m_timerMock, isActive()).WillOnce(Return(true));
+    EXPECT_CALL(*m_timerMock, cancel());
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kLowLatencyNeedMediaDataResendTimeout, _, _))
+        .WillOnce(Return(ByMove(std::move(m_timerMock))));
+    EXPECT_TRUE(m_mediaPipeline->haveData(kStatus, m_kNeedDataRequestId));
+}
+
+TEST_F(RialtoServerMediaPipelineHaveDataTest, LowLatencyAudioHaveDataSuccessWithSchedulingNeedMediaDataResend)
+{
+    auto kStatus = firebolt::rialto::MediaSourceStatus::NO_AVAILABLE_SAMPLES;
+    auto kMediaSourceType = firebolt::rialto::MediaSourceType::AUDIO;
+    loadGstPlayer();
+
+    // Set LowLatency for audio source
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setLowLatency(true)).WillOnce(Return(true));
+    EXPECT_TRUE(m_mediaPipeline->setLowLatency(true));
+
+    // Send haveData with NO_AVAILABLE_SAMPLES
+    mainThreadWillEnqueueTaskAndWait();
+    ASSERT_TRUE(m_activeRequestsMock);
+    EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId)).WillOnce(Return(kMediaSourceType));
+    EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
+    EXPECT_CALL(*m_timerMock, isActive()).WillOnce(Return(true));
+    EXPECT_CALL(*m_timerMock, cancel());
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kLowLatencyNeedMediaDataResendTimeout, _, _))
+        .WillOnce(Return(ByMove(std::move(m_timerMock))));
+    EXPECT_TRUE(m_mediaPipeline->haveData(kStatus, m_kNeedDataRequestId));
 }
 
 TEST_F(RialtoServerMediaPipelineHaveDataTest, CommonHaveDataGettingSamplesThrows)
@@ -176,7 +224,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithS
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_timerMock, isActive()).WillOnce(Return(true));
     EXPECT_CALL(*m_timerMock, cancel());
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kNeedMediaDataResendTimeout, _, _))
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kDefaultNeedMediaDataResendTimeout, _, _))
         .WillOnce(Return(ByMove(std::move(m_timerMock))));
     EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNumFrames, m_kNeedDataRequestId));
 }
@@ -193,7 +241,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithS
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_timerMock, isActive()).Times(2).WillRepeatedly(Return(true));
     EXPECT_CALL(*m_timerMock, cancel());
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kNeedMediaDataResendTimeout, _, _))
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kDefaultNeedMediaDataResendTimeout, _, _))
         .WillOnce(Return(ByMove(std::move(m_timerMock))));
     EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNumFrames, m_kNeedDataRequestId));
     mainThreadWillEnqueueTaskAndWait();
@@ -222,7 +270,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithR
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId)).WillOnce(Return(mediaSourceType));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kNeedMediaDataResendTimeout, _, _))
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kDefaultNeedMediaDataResendTimeout, _, _))
         .WillOnce(Invoke(
             [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback,
                 firebolt::rialto::common::TimerType timerType)
