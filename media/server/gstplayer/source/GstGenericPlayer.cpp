@@ -988,6 +988,7 @@ void GstGenericPlayer::pushAdditionalSegmentIfRequired(GstElement *source)
     if (initialPosition->second.size() == 1 && initialPosition->second.back().resetTime &&
         currentPosition->second == initialPosition->second.back())
     {
+        RIALTO_SERVER_LOG_INFO("Adding additional segment with reset_time = false");
         SegmentData additionalSegment = initialPosition->second.back();
         additionalSegment.resetTime = false;
         initialPosition->second.push_back(additionalSegment);
