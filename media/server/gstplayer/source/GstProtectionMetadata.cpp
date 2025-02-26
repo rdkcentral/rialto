@@ -26,7 +26,7 @@ static gboolean rialto_eme_protection_metadata_init(GstMeta *meta, gpointer para
                                                     GstBuffer *buffer)
 {
     GstRialtoProtectionMetadata *emeta = reinterpret_cast<GstRialtoProtectionMetadata *>(meta);
-    GstRialtoProtectionData *data = static_cast<GstRialtoProtectionData *>(params);
+    const GstRialtoProtectionData *data = static_cast<GstRialtoProtectionData *>(params);
     emeta->data = *data;
 
     if (emeta->data.decryptionService)

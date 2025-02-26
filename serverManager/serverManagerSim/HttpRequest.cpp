@@ -26,10 +26,9 @@ std::vector<std::string> splitUri(std::string uri)
 {
     std::vector<std::string> result;
     size_t pos = 0;
-    std::string token;
     while ((pos = uri.find("/")) != std::string::npos)
     {
-        token = uri.substr(0, pos);
+        const std::string token = uri.substr(0, pos);
         if (!token.empty())
         {
             result.push_back(token);
@@ -47,9 +46,8 @@ std::vector<std::string> splitUri(std::string uri)
 namespace rialto::servermanager
 {
 HttpRequest::HttpRequest(mg_connection *conn, const mg_request_info *request_info)
-    : m_connection{conn}, m_method{request_info->request_method}, m_postData{request_info->post_data
-                                                                                 ? request_info->post_data
-                                                                                 : ""}
+    : m_connection{conn}, m_method{request_info->request_method},
+      m_postData{request_info->post_data ? request_info->post_data : ""}
 {
     auto uri = splitUri(request_info->uri);
     if (uri.size() > 0)

@@ -58,9 +58,9 @@ namespace rialto::servermanager::service
 {
 ConfigHelper::ConfigHelper(std::unique_ptr<IConfigReaderFactory> &&configReaderFactory,
                            const firebolt::rialto::common::ServerManagerConfig &config)
-    : m_configReaderFactory{std::move(configReaderFactory)}, m_sessionServerEnvVars{convertToMap(
-                                                                 config.sessionServerEnvVars)},
-      m_sessionServerPath{config.sessionServerPath}, m_sessionServerStartupTimeout{config.sessionServerStartupTimeout},
+    : m_configReaderFactory{std::move(configReaderFactory)},
+      m_sessionServerEnvVars{convertToMap(config.sessionServerEnvVars)}, m_sessionServerPath{config.sessionServerPath},
+      m_sessionServerStartupTimeout{config.sessionServerStartupTimeout},
       m_healthcheckInterval{config.healthcheckInterval}, m_socketPermissions{config.sessionManagementSocketPermissions},
       m_numOfPreloadedServers{config.numOfPreloadedServers},
       m_numOfFailedPingsBeforeRecovery{config.numOfFailedPingsBeforeRecovery}, m_loggingLevels{}

@@ -389,18 +389,24 @@ TEST_F(SharedMemoryBufferTests, shouldGetDataPtrForGenericPlaybackSessions)
     initialize(kMaxPlaybacks);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession2);
-    uint8_t *session1Video = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
-                                              kSession1, firebolt::rialto::MediaSourceType::VIDEO);
-    uint8_t *session1Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
-                                              kSession1, firebolt::rialto::MediaSourceType::AUDIO);
-    uint8_t *session1Subtitle = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
-                                                 kSession1, firebolt::rialto::MediaSourceType::SUBTITLE);
-    uint8_t *session2Video = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
-                                              kSession2, firebolt::rialto::MediaSourceType::VIDEO);
-    uint8_t *session2Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
-                                              kSession2, firebolt::rialto::MediaSourceType::AUDIO);
-    uint8_t *session2Subtitle = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
-                                                 kSession2, firebolt::rialto::MediaSourceType::SUBTITLE);
+    const uint8_t *session1Video =
+        shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1,
+                         firebolt::rialto::MediaSourceType::VIDEO);
+    const uint8_t *session1Audio =
+        shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1,
+                         firebolt::rialto::MediaSourceType::AUDIO);
+    const uint8_t *session1Subtitle =
+        shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession1,
+                         firebolt::rialto::MediaSourceType::SUBTITLE);
+    const uint8_t *session2Video =
+        shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession2,
+                         firebolt::rialto::MediaSourceType::VIDEO);
+    const uint8_t *session2Audio =
+        shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession2,
+                         firebolt::rialto::MediaSourceType::AUDIO);
+    const uint8_t *session2Subtitle =
+        shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSession2,
+                         firebolt::rialto::MediaSourceType::SUBTITLE);
     EXPECT_NE(nullptr, session1Video);
     EXPECT_NE(nullptr, session1Audio);
     EXPECT_NE(nullptr, session1Subtitle);
@@ -422,10 +428,12 @@ TEST_F(SharedMemoryBufferTests, shouldGetAudioDataPtrForWebAudioPlayers)
     initialize(kMaxPlaybacks, kMaxWebAudioPlayers);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle1);
     mapPartitionShouldSucceed(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle2);
-    uint8_t *handle1Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
-                                             kHandle1, firebolt::rialto::MediaSourceType::AUDIO);
-    uint8_t *handle2Audio = shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO,
-                                             kHandle2, firebolt::rialto::MediaSourceType::AUDIO);
+    const uint8_t *handle1Audio =
+        shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle1,
+                         firebolt::rialto::MediaSourceType::AUDIO);
+    const uint8_t *handle2Audio =
+        shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, kHandle2,
+                         firebolt::rialto::MediaSourceType::AUDIO);
     EXPECT_NE(nullptr, handle1Audio);
     EXPECT_NE(nullptr, handle2Audio);
     EXPECT_EQ((handle2Audio - handle1Audio), (m_webAudioBufferLen));

@@ -118,9 +118,9 @@ void FileDescriptor::clear()
 
 int FileDescriptor::release()
 {
-    int fd = m_fd;
+    int descriptor = m_fd;
     m_fd = -1;
-    return fd;
+    return descriptor;
 }
 
 } // namespace firebolt::rialto::ipc

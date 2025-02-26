@@ -82,7 +82,7 @@ protected:
     {
         for (auto it = m_dataVec.begin(); it != m_dataVec.end(); it++)
         {
-            delete[](*it)->getData();
+            delete[] (*it)->getData();
         }
         m_dataVec.clear();
     }
