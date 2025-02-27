@@ -942,11 +942,13 @@ void MediaPipelineModuleService::flush(::google::protobuf::RpcController *contro
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (!m_mediaPipelineService.flush(request->session_id(), request->source_id(), request->reset_time()))
+    bool isAsync{false};
+    if (!m_mediaPipelineService.flush(request->session_id(), request->source_id(), request->reset_time(), isAsync))
     {
         RIALTO_SERVER_LOG_ERROR("Flush failed.");
         controller->SetFailed("Operation failed");
     }
+    response->set_async(isAsync);
 
     done->Run();
 }
