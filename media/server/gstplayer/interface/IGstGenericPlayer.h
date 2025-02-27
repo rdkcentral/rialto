@@ -276,6 +276,15 @@ public:
     virtual bool getMute(const MediaSourceType &mediaSourceType, bool &mute) = 0;
 
     /**
+     * @brief Checks if given source is asyncronous
+     *
+     * @param[in]  mediaSourceType : The media source type
+     *
+     * @retval True if source is asynchronous.
+     */
+    virtual bool isAsync(const MediaSourceType &mediaSourceType) const = 0;
+
+    /**
      * @brief Change Text Track Identifier
      *
      * @param[in] textTrackIdentifier Text track identifier of subtitle stream

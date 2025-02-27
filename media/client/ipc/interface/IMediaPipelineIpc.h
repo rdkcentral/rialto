@@ -346,12 +346,13 @@ public:
      *
      * This method is called by Rialto Client to flush out all queued data for a media source stream.
      *
-     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
-     * @param[in] resetTime : True if time should be reset
+     * @param[in]  sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in]  resetTime : True if time should be reset
+     * @param[out] async     : True if flushed source is asynchronous (will preroll after flush)
      *
      * @retval true on success.
      */
-    virtual bool flush(int32_t sourceId, bool resetTime) = 0;
+    virtual bool flush(int32_t sourceId, bool resetTime, bool &async) = 0;
 
     /**
      * @brief Set the source position in nanoseconds.

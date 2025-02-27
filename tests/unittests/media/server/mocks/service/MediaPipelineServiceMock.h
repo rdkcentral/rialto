@@ -65,7 +65,7 @@ public:
     MOCK_METHOD(bool, setSyncOff, (int sessionId, bool syncOff), (override));
     MOCK_METHOD(bool, setStreamSyncMode, (int sessionId, int32_t sourceId, int32_t streamSyncMode), (override));
     MOCK_METHOD(bool, getStreamSyncMode, (int sessionId, int32_t &streamSyncMode), (override));
-    MOCK_METHOD(bool, flush, (int, std::int32_t, bool), (override));
+    MOCK_METHOD(bool, flush, (int, std::int32_t, bool, bool &isAsync), (override));
     MOCK_METHOD(bool, setSourcePosition,
                 (int sessionId, int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                  uint64_t stopPosition),
