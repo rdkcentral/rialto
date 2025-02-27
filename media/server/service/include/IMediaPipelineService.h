@@ -74,7 +74,7 @@ public:
     virtual bool setSyncOff(int sessionId, bool syncOff) = 0;
     virtual bool setStreamSyncMode(int sessionId, int32_t sourceId, int32_t streamSyncMode) = 0;
     virtual bool getStreamSyncMode(int sessionId, int32_t &streamSyncMode) = 0;
-    virtual bool flush(int sessionId, std::int32_t sourceId, bool resetTime) = 0;
+    virtual bool flush(int sessionId, std::int32_t sourceId, bool resetTime, bool &isAsync) = 0;
     virtual bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime,
                                    double appliedRate, uint64_t stopPosition) = 0;
     virtual bool processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,

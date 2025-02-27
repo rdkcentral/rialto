@@ -125,7 +125,7 @@ public:
 
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
 
-    bool flush(int32_t sourceId, bool resetTime) override;
+    bool flush(int32_t sourceId, bool resetTime, bool &async) override;
 
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;

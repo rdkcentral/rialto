@@ -686,13 +686,13 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetStreamSyn
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFlush()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, flush(kHardcodedSessionId, kSourceId, kResetTime)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, flush(kHardcodedSessionId, kSourceId, kResetTime, _)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToFlush()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, flush(kHardcodedSessionId, kSourceId, kResetTime)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, flush(kHardcodedSessionId, kSourceId, kResetTime, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetSourcePosition()

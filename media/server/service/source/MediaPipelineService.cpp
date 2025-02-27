@@ -506,7 +506,7 @@ bool MediaPipelineService::getStreamSyncMode(int sessionId, int32_t &streamSyncM
     return mediaPipelineIter->second->getStreamSyncMode(streamSyncMode);
 }
 
-bool MediaPipelineService::flush(int sessionId, std::int32_t sourceId, bool resetTime)
+bool MediaPipelineService::flush(int sessionId, std::int32_t sourceId, bool resetTime, bool &isAsync)
 {
     RIALTO_SERVER_LOG_DEBUG("Flush requested, session id: %d", sessionId);
 
@@ -517,7 +517,7 @@ bool MediaPipelineService::flush(int sessionId, std::int32_t sourceId, bool rese
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->flush(sourceId, resetTime);
+    return mediaPipelineIter->second->flush(sourceId, resetTime, isAsync);
 }
 
 bool MediaPipelineService::setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime,

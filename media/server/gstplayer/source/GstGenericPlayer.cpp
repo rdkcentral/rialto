@@ -1721,6 +1721,19 @@ bool GstGenericPlayer::getMute(const MediaSourceType &mediaSourceType, bool &mut
     return true;
 }
 
+bool GstGenericPlayer::isAsync(const MediaSourceType &mediaSourceType) const
+{
+    GstElement *sink = getSink(mediaSourceType);
+    if (!sink)
+    {
+        RIALTO_SERVER_LOG_WARN("Sink not found for %s", common::convertMediaSourceType(mediaSourceType));
+        return true; // Our sinks are async by default
+    }
+    gboolean returnValue{TRUE};
+    m_glibWrapper->gObjectGet(sink, "async", &returnValue, nullptr);
+    return returnValue == TRUE;
+}
+
 void GstGenericPlayer::setTextTrackIdentifier(const std::string &textTrackIdentifier)
 {
     if (m_workerThread)

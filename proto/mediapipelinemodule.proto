@@ -603,6 +603,7 @@ message GetStreamSyncModeResponse {
  * @param[in]  session_id   The id of the A/V session.
  * @param[in]  source_id    The id of the media source to flush.
  * @param[in]  reset_time   True if time should be reset
+ * @param[out] async        True if flushed source is asynchronous (will preroll after flush)
  *
  */
 message FlushRequest {
@@ -611,6 +612,7 @@ message FlushRequest {
   optional bool reset_time = 3 [default = false];
 }
 message FlushResponse {
+    optional bool async = 1 [default = true];
 }
 
 /**

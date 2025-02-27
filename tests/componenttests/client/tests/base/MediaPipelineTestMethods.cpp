@@ -1461,7 +1461,8 @@ void MediaPipelineTestMethods::shouldFlush()
 
 void MediaPipelineTestMethods::flush()
 {
-    EXPECT_TRUE(m_mediaPipeline->flush(kAudioSourceId, kResetTime));
+    bool isAsync{false};
+    EXPECT_TRUE(m_mediaPipeline->flush(kAudioSourceId, kResetTime, isAsync));
 }
 
 void MediaPipelineTestMethods::shouldFailToFlush()
@@ -1472,7 +1473,8 @@ void MediaPipelineTestMethods::shouldFailToFlush()
 
 void MediaPipelineTestMethods::flushFailure()
 {
-    EXPECT_FALSE(m_mediaPipeline->flush(kAudioSourceId, kResetTime));
+    bool isAsync{false};
+    EXPECT_FALSE(m_mediaPipeline->flush(kAudioSourceId, kResetTime, isAsync));
 }
 
 void MediaPipelineTestMethods::shouldSetSourcePosition()

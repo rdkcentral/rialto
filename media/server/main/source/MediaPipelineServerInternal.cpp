@@ -976,12 +976,12 @@ bool MediaPipelineServerInternal::getTextTrackIdentifierInternal(std::string &te
     return m_gstPlayer->getTextTrackIdentifier(textTrackIdentifier);
 }
 
-bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime)
+bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime, bool &async)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = flushInternal(sourceId, resetTime); };
+    auto task = [&]() { result = flushInternal(sourceId, resetTime, async); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
@@ -1136,7 +1136,7 @@ bool MediaPipelineServerInternal::getStreamSyncModeInternal(int32_t &streamSyncM
     return m_gstPlayer->getStreamSyncMode(streamSyncMode);
 }
 
-bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime)
+bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime, bool &async)
 {
     if (!m_gstPlayer)
     {
@@ -1151,6 +1151,7 @@ bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime
         return false;
     }
 
+    async = m_gstPlayer->isAsync(sourceIter->first);
     m_gstPlayer->flush(sourceIter->first, resetTime);
 
     // Reset Eos on flush
