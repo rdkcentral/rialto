@@ -56,6 +56,7 @@ public:
     MOCK_METHOD(bool, getVolume, (double &volume), (override));
     MOCK_METHOD(void, setMute, (const MediaSourceType &mediaSourceType, bool mute), (override));
     MOCK_METHOD(bool, getMute, (const MediaSourceType &mediaSourceType, bool &mute), (override));
+    MOCK_METHOD(bool, isAsync, (const MediaSourceType &mediaSourceType), (const, override));
     MOCK_METHOD(void, setTextTrackIdentifier, (const std::string &textTrackIdentifier), (override));
     MOCK_METHOD(bool, getTextTrackIdentifier, (std::string & textTrackIdentifier), (override));
     MOCK_METHOD(bool, setLowLatency, (bool lowLatency), (override));

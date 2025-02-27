@@ -121,6 +121,7 @@ public:
     bool getVolume(double &volume) override;
     void setMute(const MediaSourceType &mediaSourceType, bool mute) override;
     bool getMute(const MediaSourceType &mediaSourceType, bool &mute) override;
+    bool isAsync(const MediaSourceType &mediaSourceType) const override;
     void setTextTrackIdentifier(const std::string &textTrackIdentifier) override;
     bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
     bool setLowLatency(bool lowLatency) override;
