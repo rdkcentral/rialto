@@ -48,4 +48,4 @@ jobs:
         uses: bufbuild/buf-breaking-action@v1
         with:
           input: proto
-          against: ${{ github.server_url }}/${{ github.repository }}#branch=${{ steps.set-branch.outputs.branch }},subdir=proto
+          against: "${{ github.server_url }}/${{ github.repository }}#branch=${{ steps.set-branch.outputs.branch }},subdir=proto"
