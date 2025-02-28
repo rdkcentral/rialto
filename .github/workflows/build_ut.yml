@@ -672,16 +672,16 @@ jobs:
           name: coverage_report_stats
           path: build
         
-      # Download current master coverage statistics
+      # Download current master coverage statistics. Should be triggered only for PRs to master
       - name: Download Master Coverage Statistics
         uses: dawidd6/action-download-artifact@v3
-        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        if: ${{ success() && github.event_name == 'pull_request' && github.base_ref == 'master' }}
         with:
           workflow_conclusion: success
           branch: master
           name: coverage_report_stats
           path: master_artifacts
-      
+
       # Run the process_coverage_stats script
       - name: Process Coverage Statistics
         if: ${{ success() && github.ref != 'refs/heads/master' }}
