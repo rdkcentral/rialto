@@ -25,7 +25,7 @@ name: valgrind_ut
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "master" branch
+  # Triggers the workflow on push or pull request events but only for the "master" and "release/*" branches
   push:
     branches: ["master", "release/*"]
   pull_request:

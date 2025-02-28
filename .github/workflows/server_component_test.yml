@@ -25,7 +25,7 @@ name: server_component_tests
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "master" branch
+  # Triggers the workflow on push or pull request events but only for the "master" and "release/*" branches
   push:
     branches: ["master", "release/*"]
   pull_request:
@@ -122,19 +122,19 @@ jobs:
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: checkout repo
-        if: ${{ github.ref != 'refs/heads/master' }}
+        if: ${{ github.event_name == 'pull_request' && github.base_ref == 'master' }}
         uses: actions/checkout@v4
 
       # Get cached lcov server component tests interface api stats
       - name: Get server component tests interface api stats
         id: cache-server-component-coverage-stats
         uses: actions/cache@v4
-        if: ${{ github.ref != 'refs/heads/master' }}
+        if: ${{ success() && github.event_name == 'pull_request' && github.base_ref == 'master' }}
         with:
           path: build/coverage_statistics_public_apis.txt
           key: ${{ runner.os }}-server-component-coverage-stats-${{ github.run_id }}-${{ github.run_number }}
 
       # Run the check_coverage_stats script
       - name: Process Coverage Statistics
-        if: ${{ success() && github.ref != 'refs/heads/master' }}
+        if: ${{ success() && github.event_name == 'pull_request' && github.base_ref == 'master' }}
         run: python scripts/coverage/check_coverage_stats.py build/coverage_statistics_public_apis.txt 8

@@ -21,7 +21,7 @@ name: cppcheck
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "master" branch
+  # Triggers the workflow on push or pull request events but only for the "master" and "release/*" branches
   push:
     branches: ["master", "release/*"]
   pull_request:
@@ -59,9 +59,9 @@ jobs:
           path: |
             cppcheck_report.txt
 
-      # Get process_coverage_stats script output
+      # Get cppcheck script output
       - id: get-comment-body
-        if: ${{ failure() && github.ref != 'refs/heads/master' }}
+        if: ${{ failure() && && github.event_name == 'pull_request' && github.base_ref == 'master' }}
         run: |
           body="$(cat cppcheck_report.txt)"
           body="${body//'%'/'%25'}"
@@ -69,9 +69,9 @@ jobs:
           body="${body//$'\r'/'%0D'}"
           echo "::set-output name=body::$body"
 
-      # Create comment with coverage info
+      # Create comment with cppcheck info
       - name: Create Comment
-        if: ${{ failure() && github.ref != 'refs/heads/master' }}
+        if: ${{ failure() && github.event_name == 'pull_request' && github.base_ref == 'master' }}
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}

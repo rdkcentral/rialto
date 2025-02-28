@@ -21,7 +21,7 @@ name: commit-message-format
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on pull request to master branch
+  # Triggers the workflow on pull request to master and release/* branches
   pull_request:
     branches: ["master", "release/*"]
 
