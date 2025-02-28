@@ -21,7 +21,7 @@ name: Protobuf breaking change detection
 
 on:
   pull_request:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: ["master", "release/*"]
   workflow_dispatch:
 
 jobs:

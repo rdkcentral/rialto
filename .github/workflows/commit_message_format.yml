@@ -23,7 +23,7 @@ name: commit-message-format
 on:
   # Triggers the workflow on pull request to master branch
   pull_request:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: ["master", "release/*"]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
