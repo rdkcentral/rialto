@@ -35,8 +35,17 @@ jobs:
       - name: Setup
         uses: bufbuild/buf-setup-action@v1.31.0
 
-      - name: Breaking change detection against `master`
+      - name: Set target branch
+        id: set-branch
+        run: |
+          if [ -n "${{ github.base_ref }}" ]; then
+            echo "branch=${{ github.base_ref }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=master" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Breaking change detection against base branch
         uses: bufbuild/buf-breaking-action@v1
         with:
           input: proto
-          against: https://github.com/rdkcentral/rialto.git#branch=master,subdir=proto
+          against: "${{ github.server_url }}/${{ github.repository }}.git#branch=${{ steps.set-branch.outputs.branch }},subdir=proto"
