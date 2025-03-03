@@ -61,7 +61,7 @@ jobs:
 
       # Get cppcheck script output
       - id: get-comment-body
-        if: ${{ failure() && github.event_name == 'pull_request' && github.base_ref == 'master' }}
+        if: ${{ failure() && github.event_name == 'pull_request' }}
         run: |
           body="$(cat cppcheck_report.txt)"
           body="${body//'%'/'%25'}"
@@ -71,7 +71,7 @@ jobs:
 
       # Create comment with cppcheck info
       - name: Create Comment
-        if: ${{ failure() && github.event_name == 'pull_request' && github.base_ref == 'master' }}
+        if: ${{ failure() && github.event_name == 'pull_request' }}
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
