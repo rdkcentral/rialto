@@ -88,7 +88,7 @@ public:
     }
 
 private:
-    GstObject *m_src;
+    GstObject *m_src{nullptr};
     GError m_err{};
     gchar m_debug[14]{"Error message"};
 };

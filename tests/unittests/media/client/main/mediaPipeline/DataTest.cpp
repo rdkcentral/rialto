@@ -98,7 +98,7 @@ protected:
 
     void needDataGeneric() { needData(m_sourceId, m_frameCount, m_requestId, m_shmInfo); }
 
-    void addFrames(MediaSourceType sourceType, uint32_t numberOfFrames, std::vector<uint8_t> &data)
+    void addFrames(MediaSourceType sourceType, uint32_t numberOfFrames, const std::vector<uint8_t> &data)
     {
         int64_t timestamp = 0;
 
@@ -139,7 +139,7 @@ protected:
     {
         for (auto it = m_dataVec.begin(); it != m_dataVec.end(); it++)
         {
-            delete[](*it)->getData();
+            delete[] (*it)->getData();
         }
         m_dataVec.clear();
     }

@@ -96,8 +96,8 @@ GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uin
                                      std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
                                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
                                      std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory)
-    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_taskFactory{
-                                                                                           std::move(taskFactory)}
+    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
+      m_taskFactory{std::move(taskFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstWebAudioPlayer is constructed.");
 

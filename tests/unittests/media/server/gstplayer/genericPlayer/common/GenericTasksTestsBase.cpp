@@ -828,9 +828,8 @@ void GenericTasksTestsBase::shouldSetVideoUnderflowCallback()
 
 void GenericTasksTestsBase::triggerVideoUnderflowCallback()
 {
-    ((void (*)(GstElement *, guint, gpointer, gpointer))testContext->m_videoUnderflowCallback)(testContext->m_element,
-                                                                                               0, nullptr,
-                                                                                               &testContext->m_gstPlayer);
+    reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+        testContext->m_videoUnderflowCallback)(testContext->m_element, 0, nullptr, &testContext->m_gstPlayer);
 }
 
 void GenericTasksTestsBase::shouldSetAudioUnderflowCallback()
@@ -841,9 +840,8 @@ void GenericTasksTestsBase::shouldSetAudioUnderflowCallback()
 
 void GenericTasksTestsBase::triggerAudioUnderflowCallback()
 {
-    ((void (*)(GstElement *, guint, gpointer, gpointer))testContext->m_audioUnderflowCallback)(testContext->m_element,
-                                                                                               0, nullptr,
-                                                                                               &testContext->m_gstPlayer);
+    reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+        testContext->m_audioUnderflowCallback)(testContext->m_element, 0, nullptr, &testContext->m_gstPlayer);
 }
 
 void GenericTasksTestsBase::shouldAddAutoVideoSinkChildCallback()
@@ -859,17 +857,17 @@ void GenericTasksTestsBase::shouldAddAutoAudioSinkChildCallback()
 void GenericTasksTestsBase::triggerAutoVideoSinkChildAddedCallback()
 {
     ASSERT_TRUE(testContext->m_childAddedCallback);
-    ((void (*)(GstChildProxy * obj, GObject * object, gchar * name, gpointer self))
-         testContext->m_childAddedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element),
-                                            &testContext->m_gObj, "GstAutoVideoSink", &testContext->m_gstPlayer);
+    reinterpret_cast<void (*)(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)>(
+        testContext->m_childAddedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element),
+                                           &testContext->m_gObj, "GstAutoVideoSink", &testContext->m_gstPlayer);
 }
 
 void GenericTasksTestsBase::triggerAutoAudioSinkChildAddedCallback()
 {
     ASSERT_TRUE(testContext->m_childAddedCallback);
-    ((void (*)(GstChildProxy * obj, GObject * object, gchar * name, gpointer self))
-         testContext->m_childAddedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element),
-                                            &testContext->m_gObj, "GstAutoAudioSink", &testContext->m_gstPlayer);
+    reinterpret_cast<void (*)(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)>(
+        testContext->m_childAddedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element),
+                                           &testContext->m_gObj, "GstAutoAudioSink", &testContext->m_gstPlayer);
 }
 
 void GenericTasksTestsBase::shouldRemoveAutoVideoSinkChildCallback()
@@ -885,17 +883,17 @@ void GenericTasksTestsBase::shouldRemoveAutoAudioSinkChildCallback()
 void GenericTasksTestsBase::triggerAutoVideoSinkChildRemovedCallback()
 {
     ASSERT_TRUE(testContext->m_childRemovedCallback);
-    ((void (*)(GstChildProxy * obj, GObject * object, gchar * name, gpointer self))
-         testContext->m_childRemovedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element),
-                                              &testContext->m_gObj, "GstAutoVideoSink", &testContext->m_gstPlayer);
+    reinterpret_cast<void (*)(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)>(
+        testContext->m_childRemovedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element),
+                                             &testContext->m_gObj, "GstAutoVideoSink", &testContext->m_gstPlayer);
 }
 
 void GenericTasksTestsBase::triggerAutoAudioSinkChildRemovedCallback()
 {
     ASSERT_TRUE(testContext->m_childRemovedCallback);
-    ((void (*)(GstChildProxy * obj, GObject * object, gchar * name, gpointer self))
-         testContext->m_childRemovedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element),
-                                              &testContext->m_gObj, "GstAutoAudioSink", &testContext->m_gstPlayer);
+    reinterpret_cast<void (*)(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)>(
+        testContext->m_childRemovedCallback)(reinterpret_cast<GstChildProxy *>(testContext->m_element),
+                                             &testContext->m_gObj, "GstAutoAudioSink", &testContext->m_gstPlayer);
 }
 
 void GenericTasksTestsBase::triggerSetupElement()
@@ -1765,9 +1763,8 @@ void GenericTasksTestsBase::shouldUpdatePlaybackGroupWhenCallbackIsCalled()
         .WillOnce(Invoke(
             [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
             {
-                ((void (*)(GstElement *, guint, const GstCaps *, gpointer))c_handler)(testContext->m_element, 0,
-                                                                                      &testContext->m_gstCaps1,
-                                                                                      &testContext->m_gstPlayer);
+                reinterpret_cast<void (*)(GstElement *, guint, const GstCaps *, gpointer)>(
+                    c_handler)(testContext->m_element, 0, &testContext->m_gstCaps1, &testContext->m_gstPlayer);
                 return kSignalId;
             }));
     EXPECT_CALL(testContext->m_gstPlayer, updatePlaybackGroup(testContext->m_element, &testContext->m_gstCaps1));
@@ -2489,9 +2486,9 @@ void GenericTasksTestsBase::triggerAudioCallbackNeedData()
 {
     ASSERT_TRUE(testContext->m_audioCallbacks.need_data);
     ASSERT_TRUE(testContext->m_audioUserData);
-    ((void (*)(GstAppSrc *, guint,
-               gpointer))testContext->m_audioCallbacks.need_data)(GST_APP_SRC(&testContext->m_appSrcAudio), kDataLength,
-                                                                  testContext->m_audioUserData);
+    reinterpret_cast<void (*)(GstAppSrc *, guint, gpointer)>(
+        testContext->m_audioCallbacks.need_data)(GST_APP_SRC(&testContext->m_appSrcAudio), kDataLength,
+                                                 testContext->m_audioUserData);
 }
 
 void GenericTasksTestsBase::shouldScheduleNeedMediaDataVideo()
@@ -2503,9 +2500,9 @@ void GenericTasksTestsBase::triggerVideoCallbackNeedData()
 {
     ASSERT_TRUE(testContext->m_videoCallbacks.need_data);
     ASSERT_TRUE(testContext->m_videoUserData);
-    ((void (*)(GstAppSrc *, guint,
-               gpointer))testContext->m_videoCallbacks.need_data)(GST_APP_SRC(&testContext->m_appSrcVideo), kDataLength,
-                                                                  testContext->m_videoUserData);
+    reinterpret_cast<void (*)(GstAppSrc *, guint, gpointer)>(
+        testContext->m_videoCallbacks.need_data)(GST_APP_SRC(&testContext->m_appSrcVideo), kDataLength,
+                                                 testContext->m_videoUserData);
 }
 
 void GenericTasksTestsBase::shouldScheduleEnoughDataAudio()
@@ -2517,8 +2514,9 @@ void GenericTasksTestsBase::triggerAudioCallbackEnoughData()
 {
     ASSERT_TRUE(testContext->m_audioCallbacks.enough_data);
     ASSERT_TRUE(testContext->m_audioUserData);
-    ((void (*)(GstAppSrc *, gpointer))testContext->m_audioCallbacks.enough_data)(GST_APP_SRC(&testContext->m_appSrcAudio),
-                                                                                 testContext->m_audioUserData);
+    reinterpret_cast<void (*)(GstAppSrc *, gpointer)>(
+        testContext->m_audioCallbacks.enough_data)(GST_APP_SRC(&testContext->m_appSrcAudio),
+                                                   testContext->m_audioUserData);
 }
 
 void GenericTasksTestsBase::shouldScheduleEnoughDataVideo()
@@ -2530,26 +2528,27 @@ void GenericTasksTestsBase::triggerVideoCallbackEnoughData()
 {
     ASSERT_TRUE(testContext->m_videoCallbacks.enough_data);
     ASSERT_TRUE(testContext->m_videoUserData);
-    ((void (*)(GstAppSrc *, gpointer))testContext->m_videoCallbacks.enough_data)(GST_APP_SRC(&testContext->m_appSrcVideo),
-                                                                                 testContext->m_videoUserData);
+    reinterpret_cast<void (*)(GstAppSrc *, gpointer)>(
+        testContext->m_videoCallbacks.enough_data)(GST_APP_SRC(&testContext->m_appSrcVideo),
+                                                   testContext->m_videoUserData);
 }
 
 void GenericTasksTestsBase::triggerAudioCallbackSeekData()
 {
     EXPECT_TRUE(testContext->m_audioCallbacks.seek_data);
     EXPECT_TRUE(testContext->m_audioUserData);
-    ((gboolean(*)(GstAppSrc *, guint64,
-                  gpointer))testContext->m_audioCallbacks.seek_data)(GST_APP_SRC(&testContext->m_appSrcAudio), kOffset,
-                                                                     testContext->m_audioUserData);
+    reinterpret_cast<gboolean (*)(GstAppSrc *, guint64, gpointer)>(
+        testContext->m_audioCallbacks.seek_data)(GST_APP_SRC(&testContext->m_appSrcAudio), kOffset,
+                                                 testContext->m_audioUserData);
 }
 
 void GenericTasksTestsBase::triggerVideoCallbackSeekData()
 {
     EXPECT_TRUE(testContext->m_videoCallbacks.seek_data);
     EXPECT_TRUE(testContext->m_videoUserData);
-    ((gboolean(*)(GstAppSrc *, guint64,
-                  gpointer))testContext->m_videoCallbacks.seek_data)(GST_APP_SRC(&testContext->m_appSrcVideo), kOffset,
-                                                                     testContext->m_videoUserData);
+    reinterpret_cast<gboolean (*)(GstAppSrc *, guint64, gpointer)>(
+        testContext->m_videoCallbacks.seek_data)(GST_APP_SRC(&testContext->m_appSrcVideo), kOffset,
+                                                 testContext->m_videoUserData);
 }
 
 void GenericTasksTestsBase::checkSourcesAttached()

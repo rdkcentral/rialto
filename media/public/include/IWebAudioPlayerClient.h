@@ -59,8 +59,6 @@ public:
      * called the player will be END_OF_STREAM.
      *
      * @param[in] state : The new playback state.
-     *
-     * @retval true on success.
      */
     virtual void notifyState(WebAudioPlayerState state) = 0;
 };

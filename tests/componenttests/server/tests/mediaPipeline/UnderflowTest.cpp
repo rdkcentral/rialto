@@ -149,8 +149,8 @@ public:
 
         ASSERT_TRUE(m_audioUnderflowCallback);
         ASSERT_TRUE(m_audioUnderflowData);
-        ((void (*)(GstElement *, guint, gpointer, gpointer))m_audioUnderflowCallback)(m_audioDecoder, 0, nullptr,
-                                                                                      m_audioUnderflowData);
+        reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+            m_audioUnderflowCallback)(m_audioDecoder, 0, nullptr, m_audioUnderflowData);
 
         auto receivedBufferUnderflow{expectedBufferUnderflow.getMessage()};
         ASSERT_TRUE(receivedBufferUnderflow);
@@ -165,8 +165,8 @@ public:
 
         ASSERT_TRUE(m_videoUnderflowCallback);
         ASSERT_TRUE(m_videoUnderflowData);
-        ((void (*)(GstElement *, guint, gpointer, gpointer))m_videoUnderflowCallback)(m_audioDecoder, 0, nullptr,
-                                                                                      m_videoUnderflowData);
+        reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+            m_videoUnderflowCallback)(m_audioDecoder, 0, nullptr, m_videoUnderflowData);
 
         auto receivedBufferUnderflow{expectedBufferUnderflow.getMessage()};
         ASSERT_TRUE(receivedBufferUnderflow);
