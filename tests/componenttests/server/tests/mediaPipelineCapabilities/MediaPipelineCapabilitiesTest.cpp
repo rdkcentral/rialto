@@ -47,7 +47,6 @@ class MediaPipelineCapabilitiesTest : public RialtoServerComponentTest
 public:
     MediaPipelineCapabilitiesTest()
     {
-        willConfigureSocket();
         configureSutInActiveState();
         connectClient();
 

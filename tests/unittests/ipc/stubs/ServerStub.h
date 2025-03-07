@@ -37,6 +37,9 @@ public:
     explicit ServerStub(std::shared_ptr<::firebolt::rialto::TestModule> moduleMock);
     ~ServerStub();
 
+    void init();
+    void initWithFd(int fd);
+
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
 
@@ -53,8 +56,6 @@ private:
     std::atomic<bool> m_clientConnected;
     std::mutex m_clientConnectMutex;
     std::condition_variable m_clientConnectCond;
-
-    void init();
 };
 
 #endif // SERVER_STUB_H_

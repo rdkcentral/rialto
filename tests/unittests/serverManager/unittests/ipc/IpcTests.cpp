@@ -139,3 +139,17 @@ TEST_F(IpcTests, ShouldFailToSetConfiguration)
     ASSERT_TRUE(triggerCreateClient());
     ASSERT_FALSE(triggerPerformSetConfiguration());
 }
+
+TEST_F(IpcTests, ShouldSuccessfullySetConfigurationWithFd)
+{
+    configureServerToSendOkResponses();
+    ASSERT_TRUE(triggerCreateClient());
+    ASSERT_TRUE(triggerPerformSetConfigurationWithFd());
+}
+
+TEST_F(IpcTests, ShouldFailToSetConfigurationWithFd)
+{
+    configureServerToSendFailResponses();
+    ASSERT_TRUE(triggerCreateClient());
+    ASSERT_FALSE(triggerPerformSetConfigurationWithFd());
+}

@@ -20,6 +20,7 @@
 #ifndef RIALTO_SERVERMANAGER_COMMON_I_SESSION_SERVER_APP_FACTORY_H_
 #define RIALTO_SERVERMANAGER_COMMON_I_SESSION_SERVER_APP_FACTORY_H_
 
+#include "INamedSocket.h"
 #include "ISessionServerApp.h"
 #include "SessionServerCommon.h"
 #include <memory>
@@ -35,11 +36,13 @@ public:
     ISessionServerAppFactory() = default;
     virtual ~ISessionServerAppFactory() = default;
 
-    virtual std::unique_ptr<ISessionServerApp> create(const std::string &appName,
-                                                      const firebolt::rialto::common::SessionServerState &initialState,
-                                                      const firebolt::rialto::common::AppConfig &appConfig,
-                                                      SessionServerAppManager &sessionServerAppManager) const = 0;
-    virtual std::unique_ptr<ISessionServerApp> create(SessionServerAppManager &sessionServerAppManager) const = 0;
+    virtual std::unique_ptr<ISessionServerApp>
+    create(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
+           const firebolt::rialto::common::AppConfig &appConfig, SessionServerAppManager &sessionServerAppManager,
+           std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket) const = 0;
+    virtual std::unique_ptr<ISessionServerApp>
+    create(SessionServerAppManager &sessionServerAppManager,
+           std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket) const = 0;
 };
 } // namespace rialto::servermanager::common
 

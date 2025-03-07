@@ -35,9 +35,12 @@ public:
 
     MOCK_METHOD(std::unique_ptr<ISessionServerApp>, create,
                 (const std::string &appId, const firebolt::rialto::common::SessionServerState &initialState,
-                 const firebolt::rialto::common::AppConfig &appConfig, SessionServerAppManager &sessionServerAppManager),
+                 const firebolt::rialto::common::AppConfig &appConfig, SessionServerAppManager &sessionServerAppManager,
+                 std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket),
                 (const, override));
-    MOCK_METHOD(std::unique_ptr<ISessionServerApp>, create, (SessionServerAppManager & sessionServerAppManager),
+    MOCK_METHOD(std::unique_ptr<ISessionServerApp>, create,
+                (SessionServerAppManager & sessionServerAppManager,
+                 std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket),
                 (const, override));
 };
 } // namespace rialto::servermanager::common

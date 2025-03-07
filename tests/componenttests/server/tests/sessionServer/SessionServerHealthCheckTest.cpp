@@ -67,13 +67,10 @@ public:
  *      starts the application server running in its own thread
  *
  * Test Steps:
- *  Step 1: monitor socket creation
- *      sets up the Linux Wrapper so that socket creation is expected and monitored
- *
- *  Step 2: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
+ *  Step 1: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
  *      There doesn't seem to be a sequence diagram for this
  *
- *  Step 3: Perform ping test
+ *  Step 2: Perform ping test
  *      In the sequence diagram "Ping/Ack" this implements steps 1 and 6
  *
  * Test Teardown:
@@ -86,12 +83,9 @@ public:
  */
 TEST_F(SessionServerHealthCheckTest, ShouldAcknowledgePing)
 {
-    // Step 1: monitor socket creation
-    willConfigureSocket();
-
-    // Step 2: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
+    // Step 1: send a SetConfiguration message to make server active; and then expect StateChangedEvent message
     configureSutInActiveState();
 
-    // Step 3: Perform ping test
+    // Step 2: Perform ping test
     sendAndRecievePing();
 }

@@ -64,6 +64,7 @@ protected:
         m_testClientMock = std::make_shared<StrictMock<TestClientMock>>();
 
         m_serverStub = std::make_shared<ServerStub>(m_testModuleMock);
+        m_serverStub->init();
 
         m_clientStub = std::make_shared<ClientStub>(m_testClientMock, m_socketName);
         m_clientStub->connect();

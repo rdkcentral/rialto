@@ -30,6 +30,7 @@ const std::string kClientDisplayName{"displayname"};
 TEST_F(SessionServerAppTests, ShouldConfigurePreloadedSut)
 {
     createPreloadedAppSut();
+    willConfigurePreloadedServer();
     EXPECT_TRUE(triggerConfigure(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName}));
     EXPECT_EQ(kClientDisplayName, m_sut->getClientDisplayName());
 }
@@ -37,6 +38,7 @@ TEST_F(SessionServerAppTests, ShouldConfigurePreloadedSut)
 TEST_F(SessionServerAppTests, ShouldFailConfigurePreloadedSutTwice)
 {
     createPreloadedAppSut();
+    willConfigurePreloadedServer();
     EXPECT_TRUE(triggerConfigure(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName}));
     EXPECT_FALSE(triggerConfigure(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName}));
 }
@@ -133,5 +135,20 @@ TEST_F(SessionServerAppTests, ShouldStoreExpectedSessionServerState)
     createAppSutWithDisabledTimer(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName});
     m_sut->setExpectedState(firebolt::rialto::common::SessionServerState::ACTIVE);
     EXPECT_EQ(firebolt::rialto::common::SessionServerState::ACTIVE, m_sut->getExpectedState());
+    m_sut.reset();
+}
+
+TEST_F(SessionServerAppTests, ShouldSessionManagementSocketFd)
+{
+    createAppSutWithDisabledTimer(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName});
+    willGetSessionManagementSocketFd();
+    triggerGetSessionManagementSocketFd();
+    m_sut.reset();
+}
+
+TEST_F(SessionServerAppTests, ShouldReleaseNamedSocket)
+{
+    createAppSutWithDisabledTimer(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName});
+    triggerReleaseNamedSocket();
     m_sut.reset();
 }

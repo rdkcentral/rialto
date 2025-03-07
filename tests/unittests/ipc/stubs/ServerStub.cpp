@@ -60,10 +60,7 @@ ServerStub::ServerStub()
     init();
 }
 
-ServerStub::ServerStub(std::shared_ptr<::firebolt::rialto::TestModule> moduleMock) : m_testMock{moduleMock}
-{
-    init();
-}
+ServerStub::ServerStub(std::shared_ptr<::firebolt::rialto::TestModule> moduleMock) : m_testMock{moduleMock} {}
 
 void ServerStub::init()
 {
@@ -74,6 +71,26 @@ void ServerStub::init()
 
     const char *kRialtoPath = getenv("RIALTO_SOCKET_PATH");
     m_server->addSocket(kRialtoPath, std::bind(&ServerStub::clientConnected, this, std::placeholders::_1),
+                        std::bind(&ServerStub::clientDisconnected, this, std::placeholders::_1));
+
+    m_serverThread = std::thread(
+        [this]()
+        {
+            while (m_server->process() && m_running)
+            {
+                m_server->wait(1);
+            }
+        });
+}
+
+void ServerStub::initWithFd(int fd)
+{
+    m_clientConnected = false;
+    m_running = true;
+    auto factory = ::firebolt::rialto::ipc::IServerFactory::createFactory();
+    m_server = factory->create();
+
+    m_server->addSocket(fd, std::bind(&ServerStub::clientConnected, this, std::placeholders::_1),
                         std::bind(&ServerStub::clientDisconnected, this, std::placeholders::_1));
 
     m_serverThread = std::thread(

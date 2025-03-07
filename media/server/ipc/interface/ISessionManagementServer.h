@@ -39,6 +39,7 @@ public:
 
     virtual bool initialize(const std::string &socketName, unsigned int socketPermissions,
                             const std::string &socketOwner, const std::string &socketGroup) = 0;
+    virtual bool initialize(int32_t socketFd) = 0;
     virtual void start() = 0;
     virtual void stop() = 0;
     virtual void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,

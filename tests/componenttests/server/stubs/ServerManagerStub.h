@@ -39,6 +39,7 @@ public:
 
     int getServerSocket() const;
     std::shared_ptr<::firebolt::rialto::ipc::IChannel> getChannel() override;
+    void reset();
 
 private:
     void ipcThread();

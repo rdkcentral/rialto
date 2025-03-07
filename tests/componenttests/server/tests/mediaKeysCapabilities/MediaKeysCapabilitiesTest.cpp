@@ -37,7 +37,6 @@ class MediaKeysCapabilitiesTest : public RialtoServerComponentTest
 public:
     MediaKeysCapabilitiesTest()
     {
-        willConfigureSocket();
         configureSutInActiveState();
         connectClient();
     }
