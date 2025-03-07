@@ -231,6 +231,13 @@ struct GenericPlayerContext
     std::map<GstElement *, std::vector<SegmentData>> initialPositions;
 
     /**
+     * @brief Currently set position of a source. Used to check, if additional segment should be pushed.
+     *
+     * Attribute can be used only in worker thread
+     */
+    std::map<GstElement *, SegmentData> currentPosition;
+
+    /**
      * @brief The mutex, which protects properties, which are read/written by main/worker thread.
      *        This mutex should be removed in future, when we find out better solution for
      *        property read-write.

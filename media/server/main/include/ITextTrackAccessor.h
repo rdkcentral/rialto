@@ -45,13 +45,15 @@ public:
     {
         UNKNOWN,
         WebVTT,
-        TTML
+        TTML,
+        CC
     };
 
     ITextTrackAccessor() = default;
     virtual ~ITextTrackAccessor() = default;
     virtual std::optional<uint32_t> openSession(const std::string &displayName) = 0;
     virtual bool closeSession(uint32_t sessionId) = 0;
+    virtual bool resetSession(uint32_t sessionId) = 0;
     virtual bool pause(uint32_t sessionId) = 0;
     virtual bool play(uint32_t sessionId) = 0;
     virtual bool mute(uint32_t sessionId, bool mute) = 0;
