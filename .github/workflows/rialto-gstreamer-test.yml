@@ -19,9 +19,7 @@ name: Rialto GStreamer Test
 
 on:
   pull_request:
-    branches:
-      - "master"
-      - "rdkcentral:master"
+    branches: ["master", "release/*"]
 
   workflow_dispatch:
 
@@ -34,7 +32,7 @@ jobs:
         id: check-branch
         shell: sh +e {0}
         run: |
-          branch=master
+          branch="${{ github.base_ref }}"
           git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-gstreamer.git" ${{ github.event.pull_request.head.ref }} > /dev/null
           if [ $? -eq 0 ]; then
             branch="${{ github.event.pull_request.head.ref }}"
