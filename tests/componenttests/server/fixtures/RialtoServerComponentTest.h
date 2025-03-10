@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_RIALTO_SERVER_COMPONENT_TEST_H_
 #define FIREBOLT_RIALTO_SERVER_CT_RIALTO_SERVER_COMPONENT_TEST_H_
 
+#include <gst/gst.h>
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -48,6 +49,23 @@ namespace firebolt::rialto::server::ct
 {
 class RialtoServerComponentTest : public ::testing::Test
 {
+    template <typename T> class GListWrapper
+    {
+    public:
+        explicit GListWrapper(std::initializer_list<T> elements)
+        {
+            for (T element : elements)
+            {
+                m_list = g_list_append(m_list, element);
+            }
+        }
+        ~GListWrapper() { g_list_free(m_list); }
+        GList *get() { return m_list; }
+
+    private:
+        GList *m_list = nullptr;
+    };
+
 public:
     RialtoServerComponentTest();
     ~RialtoServerComponentTest() override;
@@ -101,6 +119,20 @@ protected:
         std::make_shared<testing::StrictMock<wrappers::ThunderWrapperFactoryMock>>()};
     std::shared_ptr<testing::StrictMock<wrappers::ThunderWrapperMock>> m_thunderWrapperMock{
         std::make_shared<testing::StrictMock<wrappers::ThunderWrapperMock>>()};
+
+    // GstCapabilities data
+    GstCaps m_audioCaps;
+    GstCaps m_videoCaps;
+    GstCaps m_supportedCaps;
+    GstCaps m_unsupportedCaps;
+    GstStaticPadTemplate m_audioSinkPadTemplate;
+    GstStaticPadTemplate m_videoSinkPadTemplate;
+    char m_dummy{0};
+    GstElementFactory *m_decoderFactory{
+        reinterpret_cast<GstElementFactory *>(&m_dummy)}; // just dummy address is needed, will not be dereferenced
+    GListWrapper<GstStaticPadTemplate *> m_listPadTemplates;
+    GListWrapper<GstElementFactory *> m_listDecoders;
+
     std::unique_ptr<IApplicationSessionServer> m_sut;
 };
 } // namespace firebolt::rialto::server::ct
