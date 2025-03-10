@@ -32,7 +32,6 @@
 
 namespace
 {
-constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMs{100};
 const char *toString(const firebolt::rialto::MediaSourceStatus &status)
 {
     switch (status)
@@ -539,6 +538,8 @@ bool MediaPipelineServerInternal::setImmediateOutputInternal(int32_t sourceId, b
         RIALTO_SERVER_LOG_ERROR("Failed - Source not found");
         return false;
     }
+
+    m_IsLowLatencyVideoPlayer = immediateOutput;
     return m_gstPlayer->setImmediateOutput(sourceIter->first, immediateOutput);
 }
 
@@ -1006,6 +1007,8 @@ bool MediaPipelineServerInternal::setLowLatencyInternal(bool lowLatency)
         RIALTO_SERVER_LOG_ERROR("Failed to set low latency - Gstreamer player has not been loaded");
         return false;
     }
+    m_IsLowLatencyAudioPlayer = lowLatency;
+
     return m_gstPlayer->setLowLatency(lowLatency);
 }
 
@@ -1562,9 +1565,10 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
                                 common::convertMediaSourceType(mediaSourceType));
         return;
     }
+
     m_needMediaDataTimers[mediaSourceType] =
         m_timerFactory
-            ->createTimer(kNeedMediaDataResendTimeMs,
+            ->createTimer(getNeedMediaDataTimeout(mediaSourceType),
                           [this, mediaSourceType]()
                           {
                               m_mainThread
@@ -1582,5 +1586,17 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
                                                     }
                                                 });
                           });
+}
+
+std::chrono::milliseconds MediaPipelineServerInternal::getNeedMediaDataTimeout(MediaSourceType mediaSourceType) const
+{
+    constexpr std::chrono::milliseconds kDefaultNeedMediaDataResendTimeMs{100};
+    constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMsForLowLatency{5};
+    if ((mediaSourceType == MediaSourceType::VIDEO && m_IsLowLatencyVideoPlayer) ||
+        (mediaSourceType == MediaSourceType::AUDIO && m_IsLowLatencyAudioPlayer))
+    {
+        return kNeedMediaDataResendTimeMsForLowLatency;
+    }
+    return kDefaultNeedMediaDataResendTimeMs;
 }
 }; // namespace firebolt::rialto::server
