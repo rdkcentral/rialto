@@ -106,7 +106,7 @@ NamedSocket::NamedSocket(const std::string &socketPath)
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
 
-    if (::bind(m_sockFd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+    if (::bind(m_sockFd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == -1)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "bind error");
 
@@ -194,7 +194,7 @@ bool NamedSocket::bind(const std::string &socketPath)
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
 
-    if (::bind(m_sockFd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+    if (::bind(m_sockFd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == -1)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "bind error");
 
