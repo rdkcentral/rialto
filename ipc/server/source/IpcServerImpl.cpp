@@ -73,8 +73,8 @@ std::shared_ptr<IServer> ServerFactory::create()
 }
 
 ServerImpl::ServerImpl()
-    : m_pollFd(-1), m_wakeEventFd(-1), m_socketIdCounter(FIRST_LISTENING_SOCKET_ID),
-      m_clientIdCounter(FIRST_CLIENT_ID), m_recvDataBuf{0}, m_recvCtrlBuf{0}
+    : m_pollFd(-1), m_wakeEventFd(-1), m_socketIdCounter(FIRST_LISTENING_SOCKET_ID), m_clientIdCounter(FIRST_CLIENT_ID),
+      m_recvDataBuf{0}, m_recvCtrlBuf{0}
 {
     // create the eventfd use to wake the poll loop
     m_wakeEventFd = eventfd(0, EFD_CLOEXEC);
@@ -136,18 +136,18 @@ ServerImpl::~ServerImpl()
 bool ServerImpl::getSocketLock(Socket *socket)
 {
     std::string lockPath = socket->sockPath + ".lock";
-    int fd = open(lockPath.c_str(), O_CREAT | O_CLOEXEC, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
-    if (fd < 0)
+    int fileDescriptor = open(lockPath.c_str(), O_CREAT | O_CLOEXEC, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
+    if (fileDescriptor < 0)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to create / open lockfile @ '%s' (check permissions)", lockPath.c_str());
         return false;
     }
 
-    if (flock(fd, LOCK_EX | LOCK_NB) < 0)
+    if (flock(fileDescriptor, LOCK_EX | LOCK_NB) < 0)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to lock lockfile @ '%s', maybe another server is running",
                                  lockPath.c_str());
-        close(fd);
+        close(fileDescriptor);
         return false;
     }
 
@@ -157,7 +157,7 @@ bool ServerImpl::getSocketLock(Socket *socket)
         if (errno != ENOENT)
         {
             RIALTO_IPC_LOG_SYS_ERROR(errno, "did not manage to stat existing socket @ '%s'", socket->sockPath.c_str());
-            close(fd);
+            close(fileDescriptor);
             return false;
         }
     }
@@ -166,7 +166,7 @@ bool ServerImpl::getSocketLock(Socket *socket)
         unlink(socket->sockPath.c_str());
     }
 
-    socket->lockFd = fd;
+    socket->lockFd = fileDescriptor;
     socket->lockPath = std::move(lockPath);
 
     return true;
@@ -229,7 +229,7 @@ bool ServerImpl::addSocket(const std::string &socketPath,
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
 
-    if (bind(socket.sockFd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+    if (bind(socket.sockFd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == -1)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "bind error");
 
@@ -621,7 +621,8 @@ static std::vector<FileDescriptor> readMessageFds(const struct msghdr *msg, size
 {
     std::vector<FileDescriptor> fds;
 
-    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg); cmsg != nullptr; cmsg = CMSG_NXTHDR((struct msghdr *)msg, cmsg))
+    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg); cmsg != nullptr;
+         cmsg = CMSG_NXTHDR(const_cast<struct msghdr *>(msg), cmsg))
     {
         if ((cmsg->cmsg_level == SOL_SOCKET) && (cmsg->cmsg_type == SCM_RIGHTS))
         {

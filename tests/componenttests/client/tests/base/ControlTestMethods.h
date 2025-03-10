@@ -63,7 +63,6 @@ protected:
     void shouldNotifyApplicationStateUnknown();
     void shouldNotifyApplicationStateRunning();
     void sendNotifyApplicationStateRunning();
-    void disconnectServer();
 
     // Component test helpers
     virtual void notifyEvent() = 0;
