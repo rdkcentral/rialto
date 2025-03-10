@@ -407,8 +407,7 @@ void GstCapabilities::addAllUniqueSinkPadsCapsToVector(std::vector<GstCaps *> &c
 
 bool GstCapabilities::isCapsInVector(const std::vector<GstCaps *> &capsVector, GstCaps *caps) const
 {
-    return std::find_if(capsVector.begin(), capsVector.end(),
-                        [&](const GstCaps *comparedCaps)
+    return std::find_if(capsVector.begin(), capsVector.end(), [&](const GstCaps *comparedCaps)
                         { return m_gstWrapper->gstCapsIsStrictlyEqual(caps, comparedCaps); }) != capsVector.end();
 }
 

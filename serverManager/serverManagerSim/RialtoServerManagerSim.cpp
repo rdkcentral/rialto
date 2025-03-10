@@ -83,7 +83,7 @@ try
     }
     return 0;
 }
-catch (std::exception &e)
+catch (const std::exception &e)
 {
     return 0;
 }

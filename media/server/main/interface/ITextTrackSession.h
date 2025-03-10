@@ -41,6 +41,7 @@ public:
     ITextTrackSession() = default;
     virtual ~ITextTrackSession() = default;
 
+    virtual bool resetSession() = 0;
     virtual bool pause() = 0;
     virtual bool play() = 0;
     virtual bool mute(bool mute) = 0;

@@ -46,6 +46,7 @@ public:
     ~TextTrackAccessor() override;
     std::optional<uint32_t> openSession(const std::string &displayName) override;
     bool closeSession(uint32_t sessionId) override;
+    bool resetSession(uint32_t sessionId) override;
     bool pause(uint32_t sessionId) override;
     bool play(uint32_t sessionId) override;
     bool mute(uint32_t sessionId, bool mute) override;

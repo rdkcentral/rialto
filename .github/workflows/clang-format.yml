@@ -25,11 +25,11 @@ name: clang-format
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "master" branch
+  # Triggers the workflow on push or pull request events but only for the "master" and "release/*" branches
   push:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: ["master", "release/*"]
   pull_request:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: ["master", "release/*"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -41,7 +41,7 @@ jobs:
   run-clang-format:
     name: Run clang-format
     # Runs on ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     # Timeout after
     timeout-minutes: 2
 
@@ -61,12 +61,12 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install clang-format-12
+          sudo apt-get install clang-format-18
 
       # Run the prgram with rialto config
       - name: Run clang-format
         run: |
-              find . -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec clang-format-12 -style=file -n --Werror {} \; &> clang-format_errors.log
+              find . -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec clang-format-18 -style=file -n --Werror {} \; &> clang-format_errors.log
 
       # Process the clang-format errors and generate a junit xml file
       # Generate a failure if errors detected
