@@ -64,6 +64,16 @@ TEST_F(SessionServerManagerTests, shouldSetConfiguration)
     willSetConfiguration();
 }
 
+TEST_F(SessionServerManagerTests, shouldFailToSetConfigurationWithFdWhenSessionManagementServerFailsToInit)
+{
+    willFailToSetConfigurationWithFdWhenSessionManagementServerFailsToInit();
+}
+
+TEST_F(SessionServerManagerTests, shouldSetConfigurationWithFd)
+{
+    willSetConfigurationWithFd();
+}
+
 TEST_F(SessionServerManagerTests, shouldFailToSetUnsupportedState)
 {
     willFailToSetUnsupportedState();

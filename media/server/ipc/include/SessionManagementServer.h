@@ -44,7 +44,6 @@ class SessionManagementServer : public ISessionManagementServer
 {
 public:
     SessionManagementServer(
-        std::weak_ptr<firebolt::rialto::wrappers::ILinuxWrapper> linuxWrapper,
         const std::shared_ptr<firebolt::rialto::ipc::IServerFactory> &serverFactory,
         const std::shared_ptr<IMediaPipelineModuleServiceFactory> &mediaPipelineModuleFactory,
         const std::shared_ptr<IMediaPipelineCapabilitiesModuleServiceFactory> &mediaPipelineCapabilitiesModuleFactory,
@@ -62,6 +61,7 @@ public:
 
     bool initialize(const std::string &socketName, unsigned int socketPermissions, const std::string &socketOwner,
                     const std::string &socketGroup) override;
+    bool initialize(int32_t socketFd) override;
     void start() override;
     void stop() override;
     void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
@@ -71,8 +71,6 @@ private:
     void onClientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
     void onClientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
     size_t getBufferSizeForPasswordStructureCalls() const;
-    uid_t getSocketOwnerId(const std::string &kSocketOwner) const;
-    gid_t getSocketGroupId(const std::string &kSocketGroup) const;
 
 private:
     std::atomic<bool> m_isRunning;
@@ -84,7 +82,6 @@ private:
     std::shared_ptr<IMediaKeysCapabilitiesModuleService> m_mediaKeysCapabilitiesModule;
     std::shared_ptr<IWebAudioPlayerModuleService> m_webAudioPlayerModule;
     std::shared_ptr<IControlModuleService> m_controlModule;
-    std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> m_linuxWrapper;
     SetLogLevelsService m_setLogLevelsService;
 };
 } // namespace firebolt::rialto::server::ipc

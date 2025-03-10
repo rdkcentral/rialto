@@ -79,6 +79,20 @@ bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::c
     return false;
 }
 
+bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
+                                         int socketFd, const std::string &clientDisplayName,
+                                         const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
+                                         const std::string &appName)
+{
+    std::unique_lock<std::mutex> lock{m_clientMutex};
+    auto client = m_clients.find(serverId);
+    if (client != m_clients.end())
+    {
+        return client->second->performSetConfiguration(initialState, socketFd, clientDisplayName, maxResource, appName);
+    }
+    return false;
+}
+
 bool Controller::performPing(int serverId, int pingId)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};

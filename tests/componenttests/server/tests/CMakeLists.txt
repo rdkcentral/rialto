@@ -66,6 +66,7 @@ add_gtests (
         mediaPipeline/VolumeTest.cpp
         mediaPipeline/WriteSegmentsTest.cpp
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
+        recovery/RecoveryTest.cpp
         sessionServer/SessionServerHealthCheckTest.cpp
         sessionServer/SessionServerLogLevelTest.cpp
         sessionServer/SessionServerStateChangeTest.cpp
@@ -79,6 +80,7 @@ target_include_directories(
 
         PRIVATE
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoIpcCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerComponentTestsFixtures,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcServerStub,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcServer,INTERFACE_INCLUDE_DIRECTORIES>
@@ -90,6 +92,7 @@ target_include_directories(
 target_link_libraries(
         RialtoServerComponentTests
         RialtoCommon
+        RialtoIpcCommon
         RialtoProtobuf
         RialtoServerComponentTestsFixtures
         RialtoTestCommonUtils

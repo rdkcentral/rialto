@@ -20,6 +20,7 @@
 #include "SessionServerAppManagerFactory.h"
 #include "HealthcheckServiceFactory.h"
 #include "IEventThread.h"
+#include "INamedSocket.h"
 #include "SessionServerAppFactory.h"
 #include "SessionServerAppManager.h"
 #include <memory>
@@ -40,6 +41,7 @@ std::unique_ptr<ISessionServerAppManager> createSessionServerAppManager(
                                                                            socketPermissions, socketOwner, socketGroup),
                                  std::make_unique<HealthcheckServiceFactory>(healthcheckInterval,
                                                                              numOfFailedPingsBeforeRecovery),
-                                 firebolt::rialto::common::IEventThreadFactory::createFactory());
+                                 firebolt::rialto::common::IEventThreadFactory::createFactory(),
+                                 firebolt::rialto::ipc::INamedSocketFactory::getFactory());
 }
 } // namespace rialto::servermanager::common

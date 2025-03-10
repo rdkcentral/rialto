@@ -37,6 +37,10 @@ public:
                 (const std::string &socketPath, std::function<void(const std::shared_ptr<IClient> &)> clientConnectedCb,
                  std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb),
                 (override));
+    MOCK_METHOD(bool, addSocket,
+                (int fd, std::function<void(const std::shared_ptr<IClient> &)> clientConnectedCb,
+                 std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb),
+                (override));
     MOCK_METHOD(std::shared_ptr<IClient>, addClient,
                 (int socketFd, std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb), (override));
     MOCK_METHOD(int, fd, (), (override, const));

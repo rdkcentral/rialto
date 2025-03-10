@@ -68,7 +68,6 @@ WebAudioTestMethods::WebAudioTestMethods()
     memset(&m_buffer, 0x00, sizeof(m_buffer));
     memset(&m_capsStr, 0x00, sizeof(m_capsStr));
 
-    willConfigureSocket();
     configureSutInActiveState();
     connectClient();
 }

@@ -112,15 +112,18 @@ ServerImpl::~ServerImpl()
     {
         const Socket &kSocket = entry.second;
 
-        if (unlink(kSocket.sockPath.c_str()) != 0)
-            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket @ '%s'", kSocket.sockPath.c_str());
-        if (close(kSocket.sockFd) != 0)
-            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close listening socket");
+        if (kSocket.isOwned)
+        {
+            if (unlink(kSocket.sockPath.c_str()) != 0)
+                RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket @ '%s'", kSocket.sockPath.c_str());
+            if (close(kSocket.sockFd) != 0)
+                RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close listening socket");
 
-        if (unlink(kSocket.lockPath.c_str()) != 0)
-            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket lock file @ '%s'", kSocket.lockPath.c_str());
-        if (close(kSocket.lockFd) != 0)
-            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close socket lock file");
+            if (unlink(kSocket.lockPath.c_str()) != 0)
+                RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket lock file @ '%s'", kSocket.lockPath.c_str());
+            if (close(kSocket.lockFd) != 0)
+                RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close socket lock file");
+        }
     }
 }
 
@@ -183,6 +186,11 @@ bool ServerImpl::getSocketLock(Socket *socket)
  */
 void ServerImpl::closeListeningSocket(Socket *socket)
 {
+    if (!socket->isOwned)
+    {
+        return;
+    }
+
     if (!socket->sockPath.empty() && (unlink(socket->sockPath.c_str()) != 0) && (errno != ENOENT))
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket @ '%s'", socket->sockPath.c_str());
     if ((socket->sockFd >= 0) && (close(socket->sockFd) != 0))
@@ -277,6 +285,52 @@ bool ServerImpl::addSocket(const std::string &socketPath,
     m_sockets.emplace(kSocketId, std::move(socket));
 
     RIALTO_IPC_LOG_INFO("added listening socket '%s' to server", socketPath.c_str());
+
+    return true;
+}
+
+bool ServerImpl::addSocket(int fd, std::function<void(const std::shared_ptr<IClient> &)> clientConnectedCb,
+                           std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb)
+{
+    // store the path
+    Socket socket;
+    socket.isOwned = false;
+    socket.sockFd = fd;
+
+    // put in listening mode
+    if (listen(socket.sockFd, 1) == -1)
+    {
+        RIALTO_IPC_LOG_SYS_ERROR(errno, "listen error");
+        return false;
+    }
+
+    // create an id for the listening socket
+    const uint64_t kSocketId = m_socketIdCounter++;
+    if (kSocketId >= FIRST_CLIENT_ID)
+    {
+        // should never happen, we'd run out of file descriptors before
+        // we hit the 10k limit on listening sockets
+        RIALTO_IPC_LOG_ERROR("too many listening sockets");
+        return false;
+    }
+
+    // add the socket to epoll
+    epoll_event event = {.events = EPOLLIN, .data = {.u64 = kSocketId}};
+    if (epoll_ctl(m_pollFd, EPOLL_CTL_ADD, socket.sockFd, &event) != 0)
+    {
+        RIALTO_IPC_LOG_SYS_ERROR(errno, "epoll_ctl failed to add listening socket");
+        return false;
+    }
+
+    // store the client connected / disconnected callbacks
+    socket.connectedCb = clientConnectedCb;
+    socket.disconnectedCb = clientDisconnectedCb;
+
+    // add to the internal map
+    std::lock_guard<std::mutex> locker(m_socketsLock);
+    m_sockets.emplace(kSocketId, std::move(socket));
+
+    RIALTO_IPC_LOG_INFO("added listening socket with fd: %d to server", fd);
 
     return true;
 }

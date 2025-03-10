@@ -23,6 +23,7 @@
 #include "IMediaKeysModuleService.h"
 #include "IMediaPipelineModuleService.h"
 #include "IWebAudioPlayerModuleService.h"
+#include "LinuxUtils.h"
 #include "RialtoServerLogging.h"
 #include <IIpcServerFactory.h>
 #include <grp.h>
@@ -39,7 +40,6 @@ constexpr gid_t kNoGroupChange = -1; // -1 means chown() won't change the group
 namespace firebolt::rialto::server::ipc
 {
 SessionManagementServer::SessionManagementServer(
-    std::weak_ptr<firebolt::rialto::wrappers::ILinuxWrapper> linuxWrapper,
     const std::shared_ptr<firebolt::rialto::ipc::IServerFactory> &ipcFactory,
     const std::shared_ptr<IMediaPipelineModuleServiceFactory> &mediaPipelineModuleFactory,
     const std::shared_ptr<IMediaPipelineCapabilitiesModuleServiceFactory> &mediaPipelineCapabilitiesModuleFactory,
@@ -55,7 +55,7 @@ SessionManagementServer::SessionManagementServer(
       m_mediaKeysModule{mediaKeysModuleFactory->create(cdmService)},
       m_mediaKeysCapabilitiesModule{mediaKeysCapabilitiesModuleFactory->create(cdmService)},
       m_webAudioPlayerModule{webAudioPlayerModuleFactory->create(playbackService.getWebAudioPlayerService())},
-      m_controlModule{controlModuleFactory->create(playbackService, controlService)}, m_linuxWrapper{linuxWrapper.lock()}
+      m_controlModule{controlModuleFactory->create(playbackService, controlService)}
 {
     m_ipcServer = ipcFactory->create();
 }
@@ -73,53 +73,6 @@ size_t SessionManagementServer::getBufferSizeForPasswordStructureCalls() const
 {
     // Can return -1 on error
     return sysconf(_SC_GETPW_R_SIZE_MAX);
-}
-
-uid_t SessionManagementServer::getSocketOwnerId(const std::string &kSocketOwner) const
-{
-    uid_t ownerId = kNoOwnerChange;
-    const size_t kBufferSize = getBufferSizeForPasswordStructureCalls();
-    if (!kSocketOwner.empty() && kBufferSize > 0)
-    {
-        errno = 0;
-        passwd passwordStruct{};
-        passwd *passwordResult = nullptr;
-        char buffer[kBufferSize];
-        int result =
-            m_linuxWrapper->getpwnam_r(kSocketOwner.c_str(), &passwordStruct, buffer, kBufferSize, &passwordResult);
-        if (result == 0 && passwordResult)
-        {
-            ownerId = passwordResult->pw_uid;
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine ownerId for '%s'", kSocketOwner.c_str());
-        }
-    }
-    return ownerId;
-}
-
-gid_t SessionManagementServer::getSocketGroupId(const std::string &kSocketGroup) const
-{
-    gid_t groupId = kNoGroupChange;
-    const size_t kBufferSize = getBufferSizeForPasswordStructureCalls();
-    if (!kSocketGroup.empty() && kBufferSize > 0)
-    {
-        errno = 0;
-        group groupStruct{};
-        group *groupResult = nullptr;
-        char buffer[kBufferSize];
-        int result = m_linuxWrapper->getgrnam_r(kSocketGroup.c_str(), &groupStruct, buffer, kBufferSize, &groupResult);
-        if (result == 0 && groupResult)
-        {
-            groupId = groupResult->gr_gid;
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to determine groupId for '%s'", kSocketGroup.c_str());
-        }
-    }
-    return groupId;
 }
 
 bool SessionManagementServer::initialize(const std::string &socketName, unsigned int socketPermissions,
@@ -143,24 +96,31 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
         return false;
     }
 
-    errno = 0;
-    if (m_linuxWrapper->chmod(socketName.c_str(), socketPermissions) != 0)
+    common::setFilePermissions(socketName, socketPermissions);
+    common::setFileOwnership(socketName, socketOwner, socketGroup);
+
+    return true;
+}
+
+bool SessionManagementServer::initialize(int32_t socketFd)
+{
+    RIALTO_SERVER_LOG_INFO("Initializing Session Management Server. Socket fd: %d", socketFd);
+    if (!m_ipcServer)
     {
-        RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the permissions on the IPC socket");
+        RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - Ipc server instance is NULL");
+        return false;
     }
 
-    uid_t ownerId = getSocketOwnerId(socketOwner);
-    gid_t groupId = getSocketGroupId(socketGroup);
-
-    if (ownerId != kNoOwnerChange || groupId != kNoGroupChange)
+    // add a socket for clients and associate with a streamer object
+    if (!m_ipcServer->addSocket(socketFd,
+                                std::bind(&SessionManagementServer::onClientConnected, this, std::placeholders::_1),
+                                std::bind(&SessionManagementServer::onClientDisconnected, this, std::placeholders::_1)))
     {
-        errno = 0;
-        if (m_linuxWrapper->chown(socketName.c_str(), ownerId, groupId) != 0)
-        {
-            RIALTO_SERVER_LOG_SYS_WARN(errno, "Failed to change the owner/group for the IPC socket");
-        }
+        RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - can't add socket fd %d to the ipc "
+                                "server",
+                                socketFd);
+        return false;
     }
-
     return true;
 }
 
