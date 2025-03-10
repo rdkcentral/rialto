@@ -40,8 +40,8 @@ SessionServerAppManager::SessionServerAppManager(
     : m_ipcController{ipcController},
       m_eventThread{eventThreadFactory->createEventThread("rialtoservermanager-appmanager")},
       m_sessionServerAppFactory{std::move(sessionServerAppFactory)}, m_stateObserver{stateObserver},
-      m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)}, m_namedSocketFactory{
-                                                                                            namedSocketFactory}
+      m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)},
+      m_namedSocketFactory{namedSocketFactory}
 {
 }
 
