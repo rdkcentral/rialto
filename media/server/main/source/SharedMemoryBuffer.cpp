@@ -392,8 +392,7 @@ std::uint8_t *SharedMemoryBuffer::getBuffer() const
 size_t SharedMemoryBuffer::calculateBufferSize() const
 {
     size_t genericSum =
-        std::accumulate(m_genericPartitions.begin(), m_genericPartitions.end(), 0,
-                        [](size_t sum, const Partition &p)
+        std::accumulate(m_genericPartitions.begin(), m_genericPartitions.end(), 0, [](size_t sum, const Partition &p)
                         { return sum + p.dataBufferAudioLen + p.dataBufferVideoLen + p.dataBufferSubtitleLen; });
     size_t webAudioSum = std::accumulate(m_webAudioPartitions.begin(), m_webAudioPartitions.end(), 0,
                                          [](size_t sum, const Partition &p)

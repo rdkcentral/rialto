@@ -31,6 +31,7 @@ class TextTrackAccessorMock : public ITextTrackAccessor
 public:
     MOCK_METHOD(std::optional<uint32_t>, openSession, (const std::string &displayName), (override));
     MOCK_METHOD(bool, closeSession, (uint32_t sessionId), (override));
+    MOCK_METHOD(bool, resetSession, (uint32_t sessionId), (override));
     MOCK_METHOD(bool, pause, (uint32_t sessionId), (override));
     MOCK_METHOD(bool, play, (uint32_t sessionId), (override));
     MOCK_METHOD(bool, mute, (uint32_t sessionId, bool mute), (override));

@@ -353,7 +353,7 @@ int32_t MediaPipelineTestMethods::addSegmentMseAudio()
         std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount),
                                                             kDuration, kSampleRate, kNumberOfChannels);
     mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
-                     (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kAudioSegments[m_audioSegmentCount].c_str()));
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
 
     // Store where the segment should be written so we can check the data
@@ -446,7 +446,7 @@ int32_t MediaPipelineTestMethods::addSegmentEncryptedAudio(int32_t keyIndex)
         std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount),
                                                             kDuration, kSampleRate, kNumberOfChannels);
     mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
-                     (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kAudioSegments[m_audioSegmentCount].c_str()));
     addEncryptedDataToSegment(mseData, keyIndex);
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
 
@@ -485,7 +485,7 @@ int32_t MediaPipelineTestMethods::addSegmentEncryptedVideo(int32_t keyIndex)
         std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount),
                                                             kDuration, kWidth720p, kHeight720p, kFrameRateEmpty);
     mseData->setData(kVideoSegments[m_videoSegmentCount].size(),
-                     (const uint8_t *)kVideoSegments[m_videoSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kVideoSegments[m_videoSegmentCount].c_str()));
     addEncryptedDataToSegment(mseData, keyIndex);
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
 
@@ -1064,7 +1064,7 @@ void MediaPipelineTestMethods::addSegmentFailure()
         std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount),
                                                             kDuration, kSampleRate, kNumberOfChannels);
     mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
-                     (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kAudioSegments[m_audioSegmentCount].c_str()));
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::ERROR);
 }
 
@@ -1974,7 +1974,7 @@ int32_t MediaPipelineTestMethods::addSegmentMseVideoInternal(const std::unique_p
         std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount), duration,
                                                             width, height, frameRate);
     mseData->setData(kVideoSegments[m_videoSegmentCount].size(),
-                     (const uint8_t *)kVideoSegments[m_videoSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kVideoSegments[m_videoSegmentCount].c_str()));
     EXPECT_EQ(mediaPipeline->addSegment(m_needDataRequestId, mseData), status);
 
     // Store where the segment should be written so we can check the data

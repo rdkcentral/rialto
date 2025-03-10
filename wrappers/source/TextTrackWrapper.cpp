@@ -110,6 +110,11 @@ std::uint32_t TextTrackWrapper::setSessionClosedCaptionsService(std::uint32_t se
 {
     return m_textTrackControlInterface->SetSessionClosedCaptionsService(sessionId, service);
 }
+
+std::uint32_t TextTrackWrapper::resetSession(std::uint32_t sessionId) const
+{
+    return m_textTrackControlInterface->ResetSession(sessionId);
+}
 } // namespace firebolt::rialto::wrappers
 
 #endif // RIALTO_ENABLE_TEXT_TRACK
