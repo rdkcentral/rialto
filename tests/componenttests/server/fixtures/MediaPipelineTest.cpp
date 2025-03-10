@@ -56,7 +56,6 @@ namespace firebolt::rialto::server::ct
 {
 MediaPipelineTest::MediaPipelineTest()
 {
-    willConfigureSocket();
     configureSutInActiveState();
     connectClient();
     initShm();

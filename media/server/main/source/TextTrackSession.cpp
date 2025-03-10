@@ -60,6 +60,37 @@ TextTrackSession::~TextTrackSession()
     m_textTrackAccessor->closeSession(m_sessionId);
 }
 
+bool TextTrackSession::resetSession()
+{
+    if (!m_textTrackAccessor->resetSession(m_sessionId))
+    {
+        return false;
+    }
+
+    if (m_dataType == ITextTrackAccessor::DataType::WebVTT)
+    {
+        return setSessionWebVTTSelection();
+    }
+    else if (m_dataType == ITextTrackAccessor::DataType::TTML)
+    {
+        return setSessionTTMLSelection();
+    }
+    else if (m_dataType == ITextTrackAccessor::DataType::CC)
+    {
+        if (m_ccService.has_value())
+        {
+            return setSessionCCSelection(m_ccService.value());
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("CC service not set");
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool TextTrackSession::pause()
 {
     return m_textTrackAccessor->pause(m_sessionId);
@@ -88,17 +119,21 @@ bool TextTrackSession::sendData(const std::string &data, int32_t displayOffsetMs
 bool TextTrackSession::setSessionWebVTTSelection()
 {
     m_dataType = ITextTrackAccessor::DataType::WebVTT;
+    m_ccService = std::optional<std::string>();
     return m_textTrackAccessor->setSessionWebVTTSelection(m_sessionId);
 }
 
 bool TextTrackSession::setSessionTTMLSelection()
 {
     m_dataType = ITextTrackAccessor::DataType::TTML;
+    m_ccService = std::optional<std::string>();
     return m_textTrackAccessor->setSessionTTMLSelection(m_sessionId);
 }
 
 bool TextTrackSession::setSessionCCSelection(const std::string &service)
 {
+    m_dataType = ITextTrackAccessor::DataType::CC;
+    m_ccService = service;
     return m_textTrackAccessor->setSessionCCSelection(m_sessionId, service);
 }
 } // namespace firebolt::rialto::server

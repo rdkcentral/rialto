@@ -119,7 +119,7 @@ endif()
 
 # Retrieve release tag
 execute_process(
-    COMMAND bash -c "git tag --list --contains ${SRCREV} | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$'"
+    COMMAND bash -c "git tag --points-at ${SRCREV} | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$'"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}  
     OUTPUT_VARIABLE TAGS
     OUTPUT_STRIP_TRAILING_WHITESPACE 

@@ -72,6 +72,7 @@ message Resources {
 
 /**
  * @brief Contains all initial parameters for RialtoSessionServer
+ *        with socket name (socket owned by rialto server)
  *
  * @param[in]  sessionManagementSocketName  Name of socket used for SessionServer <-> Application communication
  * @param[in]  initialSessionServerState    Initial session server state
@@ -81,6 +82,8 @@ message Resources {
  * @param[in]  socketPermissions            Socket permissions that Rialto client should connect to
  * @param[in]  socketOwner                  Socket file created with this owner
  * @param[in]  socketGroup                  Socket file created with this group
+ * @param[in]  sessionManagementSocketFd    File descriptor of socket used for SessionServer <-> Application communication
+ *                                          (optional, sessionManagementSocketName will be used if fd not present)
  *
  */
 message SetConfigurationRequest {
@@ -93,6 +96,7 @@ message SetConfigurationRequest {
     optional string socketOwner = 7;
     optional string socketGroup = 8;
     optional string appName = 9;
+    optional int32 sessionManagementSocketFd = 10;
 }
 message SetConfigurationResponse {
 }

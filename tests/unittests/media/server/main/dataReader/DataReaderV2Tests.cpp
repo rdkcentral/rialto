@@ -321,7 +321,7 @@ protected:
     }
 
 private:
-    uint8_t m_shm[kMetaDataSize + kDataSize];
+    uint8_t m_shm[kMetaDataSize + kDataSize]{};
     std::unique_ptr<DataReaderV2> m_sut;
 };
 

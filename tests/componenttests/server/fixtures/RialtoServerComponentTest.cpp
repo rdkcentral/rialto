@@ -70,13 +70,6 @@ RialtoServerComponentTest::~RialtoServerComponentTest()
     wrappers::IFactoryAccessor::instance().thunderWrapperFactory() = nullptr;
 }
 
-void RialtoServerComponentTest::willConfigureSocket()
-{
-    EXPECT_CALL(*m_linuxWrapperMock, chmod(StrEq(kSocketName), kDefaultPermissions)).WillOnce(Return(0));
-    EXPECT_CALL(*m_linuxWrapperMock, getpwnam_r(StrEq(kOwnerName), _, _, _, _)).WillOnce(Return(0));
-    EXPECT_CALL(*m_linuxWrapperMock, getgrnam_r(StrEq(kOwnerName), _, _, _, _)).WillOnce(Return(0));
-}
-
 void RialtoServerComponentTest::configureSutInActiveState()
 {
     ::rialto::SetConfigurationRequest request{createGenericSetConfigurationReq()};

@@ -23,6 +23,7 @@
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
+#include <algorithm>
 #include <string.h>
 
 namespace
@@ -123,13 +124,13 @@ std::string getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrappe
         {
             GSignalQuery query;
             glibWrapper.gSignalQuery(signals[i], &query);
-            for (const char *signalName : underflowSignals)
+            const auto signalNameIt = std::find_if(std::begin(underflowSignals), std::end(underflowSignals),
+                                                   [&](const auto *signalName)
+                                                   { return strcmp(signalName, query.signal_name) == 0; });
+            if (std::end(underflowSignals) != signalNameIt)
             {
-                if (strcmp(signalName, query.signal_name) == 0)
-                {
-                    glibWrapper.gFree(signals);
-                    return std::string(signalName);
-                }
+                glibWrapper.gFree(signals);
+                return std::string(*signalNameIt);
             }
         }
         glibWrapper.gFree(signals);

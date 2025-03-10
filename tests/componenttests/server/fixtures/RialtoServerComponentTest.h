@@ -70,14 +70,13 @@ public:
     RialtoServerComponentTest();
     ~RialtoServerComponentTest() override;
 
-    void willConfigureSocket();
     void configureSutInActiveState();
     void connectClient();
     void disconnectClient();
     void setStateActive();
     void setStateInactive();
 
-private:
+protected:
     void configureWrappers() const;
     void startSut();
     void initialiseSut();
@@ -134,7 +133,6 @@ protected:
     GListWrapper<GstStaticPadTemplate *> m_listPadTemplates;
     GListWrapper<GstElementFactory *> m_listDecoders;
 
-private:
     std::unique_ptr<IApplicationSessionServer> m_sut;
 };
 } // namespace firebolt::rialto::server::ct

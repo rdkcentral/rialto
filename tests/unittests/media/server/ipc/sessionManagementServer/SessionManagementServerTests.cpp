@@ -35,6 +35,18 @@ TEST_F(SessionManagementServerTests, shouldFailToInitializeServer)
     sendServerInitializeAndExpectFailure();
 }
 
+TEST_F(SessionManagementServerTests, shouldInitializeServerWithFd)
+{
+    serverWillInitializeWithFd();
+    sendServerInitializeWithFd();
+}
+
+TEST_F(SessionManagementServerTests, shouldFailToInitializeServerWithFd)
+{
+    serverWillFailToInitializeWithFd();
+    sendServerInitializeWithFdAndExpectFailure();
+}
+
 TEST_F(SessionManagementServerTests, shouldStartServer)
 {
     serverWillStart();
@@ -52,28 +64,6 @@ TEST_F(SessionManagementServerTests, shouldEstablishConnection)
 TEST_F(SessionManagementServerTests, serverWillInitializeWithValidSocketOwnerAndGroup)
 {
     serverWillInitialize();
-    serverWillInitializeWithValidSocketOwnerAndGroup();
-    sendServerInitializeWithTestSocketOwnerAndGroup();
-}
-
-TEST_F(SessionManagementServerTests, serverWillInitializeWithValidSocketOwnerAndInvalidGroup)
-{
-    serverWillInitialize();
-    serverWillInitializeWithValidSocketOwnerAndInvalidGroup();
-    sendServerInitializeWithTestSocketOwnerAndGroup();
-}
-
-TEST_F(SessionManagementServerTests, serverWillInitializeWithInvalidSocketOwnerAndValidGroup)
-{
-    serverWillInitialize();
-    serverWillInitializeWithInvalidSocketOwnerAndValidGroup();
-    sendServerInitializeWithTestSocketOwnerAndGroup();
-}
-
-TEST_F(SessionManagementServerTests, serverWillInitializeWithInvalidSocketOwnerAndGroup)
-{
-    serverWillInitialize();
-    serverWillInitializeWithInvalidSocketOwnerAndGroup();
     sendServerInitializeWithTestSocketOwnerAndGroup();
 }
 

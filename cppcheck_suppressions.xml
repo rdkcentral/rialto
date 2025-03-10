@@ -4,7 +4,7 @@
         <id>missingInclude</id>
     </suppress>
     <suppress>
-        <id>ConfigurationNotChecked</id>
+        <id>missingIncludeSystem</id>
     </suppress>
     <suppress>
         <id>unusedFunction</id>
@@ -12,19 +12,7 @@
     </suppress>
     <suppress>
         <id>unusedFunction</id>
-        <fileName>media/server/gstplayer/source/GstSrc.cpp</fileName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
-        <fileName>ipc/server/source/IpcServerControllerImpl.cpp</fileName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
         <fileName>ipc/client/source/IpcClientControllerImpl.cpp</fileName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
-        <fileName>media/server/gstplayer/source/GstDecryptor.cpp</fileName>
     </suppress>
     <suppress>
         <id>unusedFunction</id>
@@ -43,15 +31,6 @@
         <fileName>tests/unittests/media/client/main/mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp</fileName>
     </suppress>
     <suppress>
-        <id>unassignedVariable</id>
-        <fileName>serverManager/service/source/ConfigHelper.cpp</fileName>
-    </suppress>
-    <suppress> // Suppress all TEST and TEST_F googletest declarations as there use is not detected properly
-        <id>unusedFunction</id>
-        <fileName>tests/*</fileName>
-        <symbolName>__*</symbolName>
-    </suppress>
-    <suppress>
         <id>unusedFunction</id>
         <symbolName>gst_rialto_text_track_sink_class_init</symbolName>
     </suppress>
@@ -62,5 +41,30 @@
     <suppress>
         <id>unusedFunction</id>
         <fileName>stubs/wpeframework-core/core.cpp</fileName>
+    </suppress>
+    <suppress>
+        <id>knownConditionTrueFalse</id>
+        <fileName>logging/source/RialtoLogging.cpp</fileName>
+    </suppress>
+    <suppress>
+        <id>unknownMacro</id>
+        <fileName>media/server/gstplayer/*</fileName>
+    </suppress>
+    <suppress> <!-- unusedStructMember doesn't work correctly with gtest -->
+        <id>unusedStructMember</id>
+        <fileName>tests/*</fileName>
+    </suppress>
+    <suppress> <!--Suppress all TEST and TEST_F googletest declarations as there use is not detected properly -->
+        <id>unusedFunction</id>
+        <fileName>tests/*</fileName>
+        <symbolName>__*</symbolName>
+    </suppress>
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>ipc/client/source/IpcClientControllerImpl.h</fileName>
+    </suppress>
+    <suppress>
+        <id>toomanyconfigs</id>
+        <fileName>stubs/wpeframework-core/third-party/Source/core/JSON.cpp</fileName>
     </suppress>
 </suppressions>

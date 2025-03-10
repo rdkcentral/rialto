@@ -36,8 +36,8 @@ DeepElementAdded::DeepElementAdded(GenericPlayerContext &context, IGstGenericPla
                                    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                                    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                                    GstBin *pipeline, GstBin *bin, GstElement *element)
-    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_pipeline{pipeline}, m_bin{bin}, m_element{element}, m_elementName{nullptr}, m_callbackRegistered{false}
+    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_pipeline{pipeline},
+      m_bin{bin}, m_element{element}, m_elementName{nullptr}, m_callbackRegistered{false}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing DeepElementAdded");
     // Signal connection has to happen immediately (we cannot wait for thread switch)
