@@ -233,22 +233,20 @@ void SetupElement::execute() const
         {
             m_player.setRenderFrame();
         }
-    }
-    else if (isVideoDecoder(*m_gstWrapper, m_element))
-    {
-        std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
-        if (!underflowSignalName.empty())
+
+        std::optional<std::string> underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
+        if (underflowSignalName)
         {
-            m_glibWrapper->gSignalConnect(m_element, underflowSignalName.c_str(), G_CALLBACK(videoUnderflowCallback),
+            m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value.c_str(), G_CALLBACK(videoUnderflowCallback),
                                           &m_player);
         }
     }
     else if (isAudioDecoder(*m_gstWrapper, m_element))
     {
-        std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
-        if (!underflowSignalName.empty())
+        std::optional<std::string> underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
+        if (underflowSignalName)
         {
-            m_glibWrapper->gSignalConnect(m_element, underflowSignalName.c_str(), G_CALLBACK(audioUnderflowCallback),
+            m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value.c_str(), G_CALLBACK(audioUnderflowCallback),
                                           &m_player);
         }
 

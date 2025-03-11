@@ -129,12 +129,12 @@ jobs:
       - name: Get client component tests interface api stats
         id: cache-client-component-coverage-stats
         uses: actions/cache@v4
-        if: ${{ success() && github.event_name == 'pull_request' && github.base_ref == 'master' }}
+        if: ${{ github.event_name == 'pull_request' && github.base_ref == 'master' }}
         with:
           path: build/coverage_statistics_public_apis.txt
           key: ${{ runner.os }}-client-component-coverage-stats-${{ github.run_id }}-${{ github.run_number }}
 
       # Run the check_coverage_stats script
       - name: Process Coverage Statistics
-        if: ${{ success() && github.event_name == 'pull_request' && github.base_ref == 'master' }}
+        if: ${{ github.event_name == 'pull_request' && github.base_ref == 'master' }}
         run: python scripts/coverage/check_coverage_stats.py build/coverage_statistics_public_apis.txt 98

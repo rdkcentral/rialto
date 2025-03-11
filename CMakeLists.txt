@@ -134,6 +134,9 @@ endif()
 add_compile_definitions(SRCREV="${SRCREV}")
 add_compile_definitions(TAGS="${TAGS}")
 
+message("Git commit ID: ${SRCREV}")
+message("Release tags: ${TAGS}")
+
 # Add our local cmake directory to search for components
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
 

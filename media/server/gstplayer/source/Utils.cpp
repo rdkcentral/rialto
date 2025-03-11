@@ -28,7 +28,7 @@
 
 namespace
 {
-const char *underflowSignals[]{"buffer-underflow-callback", "vidsink-underflow-callback"};
+const char *underflowSignals[]{"buffer-underflow-callback", "vidsink-underflow-callback", "underrun-callback"};
 } // namespace
 
 namespace firebolt::rialto::server
@@ -108,19 +108,17 @@ bool isAudioSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstE
                                                   GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
 }
 
-std::string getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper, GstElement *element)
+std::optional<std::string> getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper, GstElement *element)
 {
-    for (GType type = glibWrapper.gObjectType(element); type; type = glibWrapper.gTypeParent(type))
+    GType type = glibWrapper.gObjectType(element);
+    guint numberOfSignals{0};
+    guint *signals = glibWrapper.gSignalListIds(type, &numberOfSignals);
+
+    for (guint i = 0; i < nsignals; ++i)
     {
-        if (type == GST_TYPE_ELEMENT || type == GST_TYPE_OBJECT)
-            break;
-
-        if (type == GST_TYPE_BIN && glibWrapper.gObjectType(element) != GST_TYPE_BIN)
-            continue;
-
-        guint nsignals{0};
-        guint *signals = glibWrapper.gSignalListIds(type, &nsignals);
-        for (guint i = 0; i < nsignals; i++)
+        GSignalQuery query;
+        glibWrapper.gSignalQuery(signals[i], &query);
+        for (const char *signalName : underflowSignals)
         {
             GSignalQuery query;
             glibWrapper.gSignalQuery(signals[i], &query);
@@ -133,9 +131,10 @@ std::string getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrappe
                 return std::string(*signalNameIt);
             }
         }
-        glibWrapper.gFree(signals);
     }
-    return "";
+    glibWrapper.gFree(signals);
+
+    return std::nullopt;
 }
 
 GstCaps *createCapsFromMediaSource(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
