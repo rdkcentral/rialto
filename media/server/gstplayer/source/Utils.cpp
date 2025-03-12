@@ -110,26 +110,23 @@ bool isAudioSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstE
 
 std::optional<std::string> getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper, GstElement *element)
 {
-    GType type = glibWrapper.gObjectType(element);
-    guint numberOfSignals{0};
-    guint *signals = glibWrapper.gSignalListIds(type, &numberOfSignals);
 
-    for (guint i = 0; i < nsignals; ++i)
+    GType type = glibWrapper.gObjectType(element);
+    guint nsignals{0};
+    guint *signals = glibWrapper.gSignalListIds(type, &nsignals);
+
+    for (guint i = 0; i < nsignals; i++)
     {
         GSignalQuery query;
         glibWrapper.gSignalQuery(signals[i], &query);
-        for (const char *signalName : underflowSignals)
+        const auto signalNameIt = std::find_if(std::begin(underflowSignals), std::end(underflowSignals),
+                                               [&](const auto *signalName)
+                                               { return strcmp(signalName, query.signal_name) == 0; });
+
+        if (std::end(underflowSignals) != signalNameIt)
         {
-            GSignalQuery query;
-            glibWrapper.gSignalQuery(signals[i], &query);
-            const auto signalNameIt = std::find_if(std::begin(underflowSignals), std::end(underflowSignals),
-                                                   [&](const auto *signalName)
-                                                   { return strcmp(signalName, query.signal_name) == 0; });
-            if (std::end(underflowSignals) != signalNameIt)
-            {
-                glibWrapper.gFree(signals);
-                return std::string(*signalNameIt);
-            }
+            glibWrapper.gFree(signals);
+            return std::string(*signalNameIt);
         }
     }
     glibWrapper.gFree(signals);

@@ -237,7 +237,7 @@ void SetupElement::execute() const
         std::optional<std::string> underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
         if (underflowSignalName)
         {
-            m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value.c_str(), G_CALLBACK(videoUnderflowCallback),
+            m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(), G_CALLBACK(videoUnderflowCallback),
                                           &m_player);
         }
     }
@@ -246,7 +246,7 @@ void SetupElement::execute() const
         std::optional<std::string> underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
         if (underflowSignalName)
         {
-            m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value.c_str(), G_CALLBACK(audioUnderflowCallback),
+            m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(), G_CALLBACK(audioUnderflowCallback),
                                           &m_player);
         }
 
