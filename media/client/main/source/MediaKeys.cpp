@@ -234,4 +234,11 @@ MediaKeyErrorStatus MediaKeys::releaseKeySession(int32_t keySessionId)
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaKeysIpc->releaseKeySession(keySessionId);
 }
+
+MediaKeyErrorStatus MediaKeys::getMetricSystemData(std::vector<uint8_t> &buffer)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaKeysIpc->getMetricSystemData(buffer);
+}
 }; // namespace firebolt::rialto::client

@@ -470,4 +470,21 @@ void MediaKeysModuleService::releaseKeySession(::google::protobuf::RpcController
     done->Run();
 }
 
+void MediaKeysModuleService::getMetricSystemData(::google::protobuf::RpcController *controller,
+                                        const ::firebolt::rialto::GetMetricSystemDataRequest *request,
+                                        ::firebolt::rialto::GetMetricSystemDataResponse *response,
+                                        ::google::protobuf::Closure *done)
+{
+    std::vector<uint8_t> buffer;
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    MediaKeyErrorStatus status = m_cdmService.getMetricSystemData(request->media_keys_handle(), buffer);
+    response->set_error_status(convertMediaKeyErrorStatus(status));
+    for (const auto &buf : buffer)
+    {
+        response->add_buffer(buf);
+    }
+    done->Run();
+}
+
 } // namespace firebolt::rialto::server::ipc

@@ -691,4 +691,24 @@ void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbea
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
+
+MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
+{
+    // RIALTO_SERVER_LOG_DEBUG("entry:");
+    // constexpr size_t kBuffer{256};
+    // buffer.resize(kBuffer);
+    // MediaKeyErrorStatus status;
+    // auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&buffer.size(), kBuffer); };
+    // m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    // return status;
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    constexpr size_t kBuffer{256};
+    buffer.resize(kBuffer);
+    uint32_t bufferLength = static_cast<uint32_t>(buffer.size());
+    MediaKeyErrorStatus status;
+    auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer); };
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
+
+}
 }; // namespace firebolt::rialto::server

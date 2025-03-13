@@ -145,6 +145,15 @@ public:
      * @retval true if server certificate is supported
      */
     virtual bool supportsServerCertificate() const = 0;
+
+    /**
+     * @brief Get the metric system data
+     *
+     * @param[out]  buffer       : the buffer to store the data
+     *
+     * @retval the return status value.
+     */
+     virtual MediaKeyErrorStatus getMetricSystemData(uint32_t *bufferLength, std::vector<uint8_t> *buffer) = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

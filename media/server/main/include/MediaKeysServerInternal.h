@@ -119,6 +119,8 @@ public:
 
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
 
+    MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) override;
+
     bool hasSession(int32_t keySessionId) const override;
 
     bool isNetflixPlayreadyKeySystem(int32_t keySessionId) const override;
