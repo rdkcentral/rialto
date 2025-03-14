@@ -18,7 +18,7 @@
  */
 
 #include <stdexcept>
-
+#include <iostream>
 #include "OcdmCommon.h"
 #include "OcdmSession.h"
 #include "OcdmSystem.h"
@@ -117,6 +117,15 @@ std::unique_ptr<IOcdmSession> OcdmSystem::createSession(IOcdmSessionClient *clie
 bool OcdmSystem::supportsServerCertificate() const
 {
     return OpenCDMBool::OPENCDM_BOOL_TRUE == opencdm_system_supports_server_certificate(m_systemHandle);
+}
+
+MediaKeyErrorStatus OcdmSystem::getMetricSystemData(uint32_t *bufferLength, std::vector<uint8_t> *buffer)
+{
+    OpenCDMError status = opencdm_get_metric_system_data(m_systemHandle, bufferLength, buffer->data());
+
+    std::cerr << "OpenCDM Error: " << status << ", bufferLength: " << *bufferLength;
+
+    return convertOpenCdmError(status);
 }
 
 }; // namespace firebolt::rialto::wrappers

@@ -887,4 +887,34 @@ MediaKeysIpc::getMediaKeyErrorStatusFromResponse(const std::string methodName,
     return returnStatus;
 }
 
+MediaKeyErrorStatus MediaKeysIpc::getMetricSystemData(std::vector<uint8_t> &buffer)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return MediaKeyErrorStatus::FAIL;
+    }
+
+    firebolt::rialto::GetMetricSystemDataRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+    
+    firebolt::rialto::GetMetricSystemDataResponse response;
+    // Default error status to FAIL
+    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
+
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaKeysStub->getMetricSystemData(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    if (ProtoMediaKeyErrorStatus::OK == response.error_status())
+    {
+        buffer = std::vector<uint8_t>(response.buffer().begin(), response.buffer().end());
+    }
+
+    return getMediaKeyErrorStatusFromResponse("getMetricSystemData", ipcController, response.error_status());
+}
+
 }; // namespace firebolt::rialto::client

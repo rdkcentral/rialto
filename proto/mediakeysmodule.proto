@@ -393,6 +393,22 @@ message GetDrmStoreHashResponse {
 }
 
 /**
+ * @fn ProtoMediaKeyErrorStatus, vector<uint8> getMetricSystemData(int32 media_keys_handle)
+ * @brief Gets the buffer size and buffer of system metric data
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ *
+ * @retval an error status & buffer of system metric data
+ */
+message GetMetricSystemDataRequest {
+  optional int32 media_keys_handle = 1 [default = -1];
+}
+message GetMetricSystemDataResponse {
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
+  repeated uint32 buffer = 2;
+}
+
+/**
  * @fn ProtoMediaKeyErrorStatus, vector<uint32> getKeyStoreHash(int32 media_keys_handle)
  * @brief Gets a hash of the Key store for the object's key system.
  *
@@ -592,6 +608,13 @@ service MediaKeysModule {
      * @see GetDrmStoreHashRequest
      */
     rpc getDrmStoreHash(GetDrmStoreHashRequest) returns (GetDrmStoreHashResponse) {
+    }
+
+    /**
+     * @brief Gets the buffer data of the system.
+     * @see GetMetricSystemDataRequest
+     */
+    rpc getMetricSystemData(GetMetricSystemDataRequest) returns (GetMetricSystemDataResponse) {
     }
 
     /**

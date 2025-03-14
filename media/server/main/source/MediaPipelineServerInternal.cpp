@@ -1356,7 +1356,7 @@ std::weak_ptr<IMediaPipelineClient> MediaPipelineServerInternal::getClient()
 
 void MediaPipelineServerInternal::notifyPlaybackState(PlaybackState state)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
+    RIALTO_SERVER_LOG_DEBUG("!!entry:");
 
     auto task = [&, state]()
     {
