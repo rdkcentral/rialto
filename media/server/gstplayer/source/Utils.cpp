@@ -29,83 +29,69 @@
 namespace
 {
 const char *underflowSignals[]{"buffer-underflow-callback", "vidsink-underflow-callback", "underrun-callback"};
+
+bool isType(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element, GstElementFactoryListType type)
+{
+    if (!element)
+    {
+        return false;
+    }
+
+    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
+    if (!factory)
+    {
+        return false;
+    }
+    return gstWrapper.gstElementFactoryListIsType(factory, type);
+}
 } // namespace
 
 namespace firebolt::rialto::server
 {
+
 bool isVideoDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
-    if (!element)
-    {
-        return false;
-    }
-    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
-    if (!factory)
-    {
-        return false;
-    }
-    return gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                               GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
 }
 
 bool isAudioDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
-    if (!element)
-    {
-        return false;
-    }
-    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
-    if (!factory)
-    {
-        return false;
-    }
-    return gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                               GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
 }
 
 bool isVideoParser(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
-    if (!element)
-    {
-        return false;
-    }
-    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
-    if (!factory)
-    {
-        return false;
-    }
-    return gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_PARSER |
-                                                               GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
 }
 
 bool isVideoSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
-    if (!element)
-    {
-        return false;
-    }
-    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
-    if (!factory)
-    {
-        return false;
-    }
-    return gstWrapper.gstElementFactoryListIsType(factory,
-                                                  GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
 }
 
 bool isAudioSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
-    if (!element)
-    {
-        return false;
-    }
-    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
-    if (!factory)
-    {
-        return false;
-    }
-    return gstWrapper.gstElementFactoryListIsType(factory,
-                                                  GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
+}
+
+bool isSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
+{
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_SINK);
+}
+
+bool isDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
+{
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_DECODER);
+}
+
+bool isAudio(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
+{
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
+}
+
+bool isVideo(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
+{
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
 }
 
 std::optional<std::string> getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper, GstElement *element)
