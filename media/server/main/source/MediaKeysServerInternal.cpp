@@ -692,23 +692,51 @@ void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbea
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 
+// MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
+// {
+//     RIALTO_SERVER_LOG_DEBUG("entry:");
+//     constexpr size_t kBuffer{256};
+//     buffer.resize(kBuffer);
+//     uint32_t bufferLength = static_cast<uint32_t>(buffer.size());
+//     MediaKeyErrorStatus status;
+//     auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer); };
+//     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+
+//     if(status == MediaKeyErrorStatus::OK)
+//     {
+//         buffer.resize(bufferLength);
+//     }
+//     return status;
+// }
+
 MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
 {
-    // RIALTO_SERVER_LOG_DEBUG("entry:");
-    // constexpr size_t kBuffer{256};
-    // buffer.resize(kBuffer);
-    // MediaKeyErrorStatus status;
-    // auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&buffer.size(), kBuffer); };
-    // m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    // return status;
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    constexpr size_t kBuffer{256};
-    buffer.resize(kBuffer);
+    constexpr size_t kSmallSizeBuffer{1};
+    buffer.resize(kSmallSizeBuffer);
     uint32_t bufferLength = static_cast<uint32_t>(buffer.size());
+    
+    RIALTO_SERVER_LOG_ERROR("Before call: buffer size = %u", bufferLength);
+
     MediaKeyErrorStatus status;
     auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer); };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
 
+    RIALTO_SERVER_LOG_ERROR("After call: buffer size = %u", bufferLength);
+
+    if (status == MediaKeyErrorStatus::FAIL)
+    {
+        RIALTO_SERVER_LOG_ERROR("GETMETRICSYSTEMDATA FAILED");
+        return status;
+    }
+
+    if(status == MediaKeyErrorStatus::OK)
+    {
+        RIALTO_SERVER_LOG_ERROR("Before MediaKeyErrorStatus is OK: buffer size = %u", bufferLength);
+        buffer.resize(bufferLength);
+        RIALTO_SERVER_LOG_ERROR("After MediaKeyErrorStatus is OK: buffer size = %u", bufferLength);
+    }
+    return status;
 }
+
 }; // namespace firebolt::rialto::server
