@@ -18,7 +18,7 @@
  */
 
 #include <stdexcept>
-
+#include <iostream>
 #include "OcdmCommon.h"
 #include "OcdmSession.h"
 #include "OcdmSystem.h"
@@ -123,7 +123,7 @@ MediaKeyErrorStatus OcdmSystem::getMetricSystemData(uint32_t *bufferLength, std:
 {
     OpenCDMError status = opencdm_get_metric_system_data(m_systemHandle, bufferLength, buffer.data());
 
-    RIALTO_SERVER_LOG_ERROR("opencdm_get_metric_system_data returned status: %d, bufferLength: %u", status, *bufferLength);
+    std::cerr << "OpenCDM Error: " << status << ", bufferLength: " << *bufferLength;
 
     return convertOpenCdmError(status);
 }
