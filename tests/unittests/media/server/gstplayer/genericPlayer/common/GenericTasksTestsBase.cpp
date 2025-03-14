@@ -498,7 +498,7 @@ void GenericTasksTestsBase::expectSetupVideoDecoderElement()
 void GenericTasksTestsBase::expectSetupAudioSinkElement()
 {
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
-  
+
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
         .WillOnce(Return(FALSE));

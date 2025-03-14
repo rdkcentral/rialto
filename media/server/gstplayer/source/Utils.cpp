@@ -94,7 +94,8 @@ bool isVideo(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstEleme
     return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
 }
 
-std::optional<std::string> getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper, GstElement *element)
+std::optional<std::string> getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper,
+                                                  GstElement *element)
 {
 
     GType type = glibWrapper.gObjectType(element);

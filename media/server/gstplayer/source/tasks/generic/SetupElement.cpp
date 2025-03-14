@@ -219,21 +219,24 @@ void SetupElement::execute() const
         m_glibWrapper->gObjectSet(m_element, "sync", FALSE, nullptr);
     }
 
-
-    if(isDecoder(*m_gstWrapper, m_element) || isSink(*m_gstWrapper, m_element))
+    if (isDecoder(*m_gstWrapper, m_element) || isSink(*m_gstWrapper, m_element))
     {
         std::optional<std::string> underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
-        if(underflowSignalName)
+        if (underflowSignalName)
         {
-            if(isAudio(*m_gstWrapper, m_element))
+            if (isAudio(*m_gstWrapper, m_element))
             {
-                RIALTO_SERVER_LOG_INFO("Connecting audio underflow callback for signal: %s", underflowSignalName.value().c_str());
-                m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(), G_CALLBACK(audioUnderflowCallback), &m_player);
+                RIALTO_SERVER_LOG_INFO("Connecting audio underflow callback for signal: %s",
+                                       underflowSignalName.value().c_str());
+                m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(),
+                                              G_CALLBACK(audioUnderflowCallback), &m_player);
             }
-            else if(isVideo(*m_gstWrapper, m_element))
+            else if (isVideo(*m_gstWrapper, m_element))
             {
-                RIALTO_SERVER_LOG_INFO("Connecting video underflow callback for signal: %s", underflowSignalName.value().c_str());
-                m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(), G_CALLBACK(videoUnderflowCallback), &m_player);
+                RIALTO_SERVER_LOG_INFO("Connecting video underflow callback for signal: %s",
+                                       underflowSignalName.value().c_str());
+                m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(),
+                                              G_CALLBACK(videoUnderflowCallback), &m_player);
             }
         }
     }
