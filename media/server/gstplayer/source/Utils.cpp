@@ -49,11 +49,6 @@ bool isType(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElemen
 namespace firebolt::rialto::server
 {
 
-bool isVideoDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
-{
-    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
-}
-
 bool isAudioDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
     return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
