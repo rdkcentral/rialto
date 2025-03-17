@@ -97,7 +97,6 @@ bool isVideo(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstEleme
 std::optional<std::string> getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper,
                                                   GstElement *element)
 {
-
     GType type = glibWrapper.gObjectType(element);
     guint nsignals{0};
     guint *signals = glibWrapper.gSignalListIds(type, &nsignals);
