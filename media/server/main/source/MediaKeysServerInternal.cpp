@@ -715,11 +715,11 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     constexpr size_t kSmallSizeBuffer{1};
     buffer.resize(kSmallSizeBuffer);
     uint32_t bufferLength = static_cast<uint32_t>(buffer.size());
-    OpenCDMError error; 
+    int error{0}; 
     RIALTO_SERVER_LOG_ERROR("Before call: buffer size = %u", bufferLength);
 
     MediaKeyErrorStatus status;
-    auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer); };
+    auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer, error); };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 
     RIALTO_SERVER_LOG_ERROR("After call: buffer size = %u", bufferLength);
@@ -739,26 +739,4 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     RIALTO_SERVER_LOG_ERROR("opencdm_get_metric_system_data returned status: %d, bufferLength: %zu", error, buffer.size());
     return status;
 }
-MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    constexpr size_t kBuffer{256};
-    buffer.resize(kBuffer);
-    MediaKeyErrorStatus status;
-    OpenCDMError error;  // Capture error
-
-    auto task = [&]()
-    { 
-        status = m_ocdmSystem->getMetricSystemData(&kBuffer, &buffer, error);
-    };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-
-    // Log the error here instead of OcdmSystem
-    RIALTO_SERVER_LOG_ERROR("opencdm_get_metric_system_data returned status: %d, bufferLength: %zu", error, buffer.size());
-
-    return status;
-}
-
 }; // namespace firebolt::rialto::server

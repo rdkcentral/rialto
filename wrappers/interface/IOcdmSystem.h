@@ -22,6 +22,7 @@
 
 #include "IOcdmSession.h"
 #include "IOcdmSessionClient.h"
+
 #include <MediaCommon.h>
 #include <memory>
 #include <stdint.h>
@@ -153,7 +154,7 @@ public:
      *
      * @retval the return status value.
      */
-     virtual MediaKeyErrorStatus getMetricSystemData(uint32_t *bufferLength, std::vector<uint8_t> *buffer) = 0;
+     virtual MediaKeyErrorStatus getMetricSystemData(uint32_t *bufferLength, std::vector<uint8_t> *buffer, int &error) = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers
