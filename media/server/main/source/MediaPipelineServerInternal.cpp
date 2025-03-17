@@ -1359,7 +1359,7 @@ void MediaPipelineServerInternal::notifyPlaybackState(PlaybackState state)
     RIALTO_SERVER_LOG_DEBUG(":D!!entry:");
 
     auto task = [&, state]()
-
+    {
         m_currentPlaybackState = state;
         if (m_mediaPipelineClient)
         {
