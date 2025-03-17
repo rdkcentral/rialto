@@ -122,9 +122,6 @@ bool OcdmSystem::supportsServerCertificate() const
 MediaKeyErrorStatus OcdmSystem::getMetricSystemData(uint32_t *bufferLength, std::vector<uint8_t> *buffer)
 {
     OpenCDMError status = opencdm_get_metric_system_data(m_systemHandle, bufferLength, buffer->data());
-
-    std::cerr << "OpenCDM Error: " << status << ", bufferLength: " << *bufferLength;
-
     return convertOpenCdmError(status);
 }
 

@@ -715,7 +715,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     constexpr size_t kSmallSizeBuffer{1};
     buffer.resize(kSmallSizeBuffer);
     uint32_t bufferLength = static_cast<uint32_t>(buffer.size());
-    
+    OpenCDMError error; 
     RIALTO_SERVER_LOG_ERROR("Before call: buffer size = %u", bufferLength);
 
     MediaKeyErrorStatus status;
@@ -736,6 +736,28 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
         buffer.resize(bufferLength);
         RIALTO_SERVER_LOG_ERROR("After MediaKeyErrorStatus is OK: buffer size = %u", bufferLength);
     }
+    RIALTO_SERVER_LOG_ERROR("opencdm_get_metric_system_data returned status: %d, bufferLength: %zu", error, buffer.size());
+    return status;
+}
+MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    constexpr size_t kBuffer{256};
+    buffer.resize(kBuffer);
+    MediaKeyErrorStatus status;
+    OpenCDMError error;  // Capture error
+
+    auto task = [&]()
+    { 
+        status = m_ocdmSystem->getMetricSystemData(&kBuffer, &buffer, error);
+    };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+
+    // Log the error here instead of OcdmSystem
+    RIALTO_SERVER_LOG_ERROR("opencdm_get_metric_system_data returned status: %d, bufferLength: %zu", error, buffer.size());
+
     return status;
 }
 
