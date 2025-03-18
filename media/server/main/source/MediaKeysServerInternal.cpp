@@ -727,7 +727,6 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     if (status == MediaKeyErrorStatus::FAIL)
     {
         RIALTO_SERVER_LOG_ERROR("GETMETRICSYSTEMDATA FAILED");
-        return status;
     }
 
     if(status == MediaKeyErrorStatus::OK)
