@@ -695,12 +695,16 @@ void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbea
 
 MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
 {
+    RIALTO_SERVER_LOG_ERROR("entry:");
+
     size_t bufferLength{256};
     int error{0};
     MediaKeyErrorStatus status;
 
+    RIALTO_SERVER_LOG_ERROR("Set buffer length to 256, error to 0, status values and entering the while loop");
     while (true)
     {
+        RIALTO_SERVER_LOG_ERROR("Entering the while loop");
         auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer, error); };
         m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
         
@@ -714,7 +718,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
         if (ocdmError == OpenCDMError::ERROR_BUFFER_TOO_SMALL)
         {
-            RIALTO_SERVER_LOG_ERROR("Buffer  is too small. Buffer Size: %zu", bufferLength);
+            RIALTO_SERVER_LOG_ERROR("Buffer is too small. Buffer Size: %zu", bufferLength);
             bufferLength *= 2;
             buffer.resize(bufferLength);
             RIALTO_SERVER_LOG_ERROR("Buffer has been resized. Buffer Size: %zu", bufferLength);
@@ -724,12 +728,16 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
         break;
     }
 
+    RIALTO_SERVER_LOG_ERROR("Out of while loop, and now to check if status is OK or not")
     if (status == MediaKeyErrorStatus::OK)
     {
         buffer.resize(bufferLength);
         RIALTO_SERVER_LOG_ERROR("Status is OK. Final Buffer Size: %zu", bufferLength);
     }
-
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Status is not OK. Buffer Size: %zu", bufferLength);
+    }
     return status;
 }
 }; // namespace firebolt::rialto::server
