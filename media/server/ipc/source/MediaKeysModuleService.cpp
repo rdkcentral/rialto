@@ -46,6 +46,14 @@ convertMediaKeyErrorStatus(const firebolt::rialto::MediaKeyErrorStatus &errorSta
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::BAD_SESSION_ID;
     }
+    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED;
+    }
+    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::BUFFER_TOO_SMALL;
+    }
     case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::NOT_SUPPORTED;
