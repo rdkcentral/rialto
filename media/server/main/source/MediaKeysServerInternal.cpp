@@ -704,12 +704,15 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     RIALTO_SERVER_LOG_ERROR("Set buffer length to 256, error to 0, status values and entering the while loop");
     while (true)
     {
-        RIALTO_SERVER_LOG_ERROR("Entering the while loop");
-        auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer, error); };
-        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-        
-        OpenCDMError ocdmError = static_cast<OpenCDMError>(error);
+        RIALTO_SERVER_LOG_ERROR("Buffer size before calling getMetricSystemData: %zu", buffer.size());;
 
+        auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer, error);
+                            RIALTO_SERVER_LOG_ERROR("getMetricSystemData returned error code: %d", error); };
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+
+        RIALTO_SERVER_LOG_ERROR("Buffer size after calling getMetricSystemData: %zu", buffer.size());
+
+        OpenCDMError ocdmError = static_cast<OpenCDMError>(error);
         if (ocdmError == OpenCDMError::ERROR_INTERFACE_NOT_IMPLEMENTED)
         {
             RIALTO_SERVER_LOG_ERROR("ERROR_INTERFACE_NOT_IMPLEMENTED: Going to continue, to display other logs");
@@ -719,12 +722,16 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
         if (ocdmError == OpenCDMError::ERROR_BUFFER_TOO_SMALL)
         {
             RIALTO_SERVER_LOG_ERROR("Buffer is too small. Buffer Size: %zu", bufferLength);
+
+            size_t oldSize = bufferLength;
             bufferLength *= 2;
             buffer.resize(bufferLength);
-            RIALTO_SERVER_LOG_ERROR("Buffer has been resized. Buffer Size: %zu", bufferLength);
+
+            RIALTO_SERVER_LOG_ERROR("Buffer resized from %zu to %zu", oldSize, bufferLength);
+
             continue;
         }
-
+        RIALTO_SERVER_LOG_ERROR("Breaking out of while loop, with a buffer size of %zu", bufferLength);
         break;
     }
 
