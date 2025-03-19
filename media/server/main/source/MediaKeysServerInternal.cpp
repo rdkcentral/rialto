@@ -21,7 +21,7 @@
 
 #include "MediaKeysServerInternal.h"
 #include "RialtoServerLogging.h"
-#include "OcdmCommon.h"
+#include "opencdm/open_cdm.h"
 
 namespace firebolt::rialto
 {
