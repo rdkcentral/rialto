@@ -728,7 +728,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
         break;
     }
 
-    RIALTO_SERVER_LOG_ERROR("Out of while loop, and now to check if status is OK or not")
+    RIALTO_SERVER_LOG_ERROR("Out of while loop, and now to check if status is OK or not");
     if (status == MediaKeyErrorStatus::OK)
     {
         buffer.resize(bufferLength);
