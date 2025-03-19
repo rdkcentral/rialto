@@ -697,7 +697,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 {
     RIALTO_SERVER_LOG_ERROR("entry:");
 
-    size_t bufferLength{256};
+    size_t bufferLength{512};
     int error{0};
     MediaKeyErrorStatus status;
 
