@@ -701,6 +701,8 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     int error{0};
     MediaKeyErrorStatus status;
 
+    buffer.resize(bufferLength);
+    
     RIALTO_SERVER_LOG_ERROR("Set buffer length to 256, error to 0, status values and entering the while loop");
     while (true)
     {
