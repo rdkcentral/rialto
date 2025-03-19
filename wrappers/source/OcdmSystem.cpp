@@ -125,5 +125,4 @@ MediaKeyErrorStatus OcdmSystem::getMetricSystemData(uint32_t *bufferLength, std:
     return convertOpenCdmError(static_cast<OpenCDMError>(error));
 }
 
-
 }; // namespace firebolt::rialto::wrappers

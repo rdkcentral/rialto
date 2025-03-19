@@ -21,6 +21,7 @@
 
 #include "MediaKeysServerInternal.h"
 #include "RialtoServerLogging.h"
+#include "OcdmCommon.h"
 
 namespace firebolt::rialto
 {
@@ -692,50 +693,43 @@ void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbea
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 
-// MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
-// {
-//     RIALTO_SERVER_LOG_DEBUG("entry:");
-//     constexpr size_t kBuffer{256};
-//     buffer.resize(kBuffer);
-//     uint32_t bufferLength = static_cast<uint32_t>(buffer.size());
-//     MediaKeyErrorStatus status;
-//     auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer); };
-//     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-
-//     if(status == MediaKeyErrorStatus::OK)
-//     {
-//         buffer.resize(bufferLength);
-//     }
-//     return status;
-// }
-
 MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    constexpr size_t kSmallSizeBuffer{1};
-    buffer.resize(kSmallSizeBuffer);
-    uint32_t bufferLength = static_cast<uint32_t>(buffer.size());
-    int error{0}; 
-    RIALTO_SERVER_LOG_ERROR("Before call: buffer size = %u", bufferLength);
-
+    size_t bufferLength{256};
+    int error{0};
     MediaKeyErrorStatus status;
-    auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer, error); };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 
-    RIALTO_SERVER_LOG_ERROR("After call: buffer size = %u", bufferLength);
-
-    if (status == MediaKeyErrorStatus::FAIL)
+    while (true)
     {
-        RIALTO_SERVER_LOG_ERROR("GETMETRICSYSTEMDATA FAILED");
+        auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer, error); };
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        
+        OpenCDMError ocdmError = static_cast<OpenCDMError>(error);
+
+        if (ocdmError == OpenCDMError::ERROR_INTERFACE_NOT_IMPLEMENTED)
+        {
+            RIALTO_SERVER_LOG_ERROR("ERROR_INTERFACE_NOT_IMPLEMENTED: Going to continue, to display other logs");
+            // return convertOpenCdmError(ocdmError);
+        }
+
+        if (ocdmError == OpenCDMError::ERROR_BUFFER_TOO_SMALL)
+        {
+            RIALTO_SERVER_LOG_ERROR("Buffer  is too small. Buffer Size: %zu", bufferLength);
+            bufferLength *= 2;
+            buffer.resize(bufferLength);
+            RIALTO_SERVER_LOG_ERROR("Buffer has been resized. Buffer Size: %zu", bufferLength);
+            continue;
+        }
+
+        break;
     }
 
-    if(status == MediaKeyErrorStatus::OK)
+    if (status == MediaKeyErrorStatus::OK)
     {
-        RIALTO_SERVER_LOG_ERROR("Before MediaKeyErrorStatus is OK: buffer size = %u", bufferLength);
         buffer.resize(bufferLength);
-        RIALTO_SERVER_LOG_ERROR("After MediaKeyErrorStatus is OK: buffer size = %u", bufferLength);
+        RIALTO_SERVER_LOG_ERROR("Status is OK. Final Buffer Size: %zu", bufferLength);
     }
-    RIALTO_SERVER_LOG_ERROR("opencdm_get_metric_system_data returned status: %d, bufferLength: %zu", error, buffer.size());
+
     return status;
 }
 }; // namespace firebolt::rialto::server
