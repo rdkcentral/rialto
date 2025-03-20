@@ -21,7 +21,6 @@
 
 #include "MediaKeysServerInternal.h"
 #include "RialtoServerLogging.h"
-#include "opencdm/open_cdm.h"
 
 namespace firebolt::rialto
 {
@@ -697,8 +696,8 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 {
     RIALTO_SERVER_LOG_ERROR("entry:");
 
-    size_t bufferLength{1024};
-    const size_t kMaxBufferLength{65536};
+    uint32_t bufferLength{1024};
+    const uint32_t kMaxBufferLength{65536};
     MediaKeyErrorStatus status;
     buffer.resize(bufferLength);
     
