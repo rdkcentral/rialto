@@ -699,24 +699,21 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
     size_t bufferLength{1024};
     const size_t kMaxBufferLength{65536};
-    int error{0};
     MediaKeyErrorStatus status;
     buffer.resize(bufferLength);
     
     for(int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
     {
-        auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer, error);
-        RIALTO_SERVER_LOG_ERROR("Failed to get metric system data. Error code: %d", error);};
+        auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer);};
         m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
         
-        OpenCDMError ocdmError = static_cast<OpenCDMError>(error);
-        if (ocdmError == OpenCDMError::ERROR_INTERFACE_NOT_IMPLEMENTED)
+        if (status == MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED)
         {
             RIALTO_SERVER_LOG_ERROR("Interface not implemented");
-            return convertOpenCdmError(ocdmError);
+            return status;
         }
 
-        if (ocdmError == OpenCDMError::ERROR_BUFFER_TOO_SMALL)
+        if (status == MediaKeyErrorStatus::BUFFER_TOO_SMALL)
         {
             RIALTO_SERVER_LOG_ERROR("Buffer size is too small");
             if(bufferLength >= kMaxBufferLength)
