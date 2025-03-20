@@ -33,10 +33,10 @@ enum ProtoMediaKeyErrorStatus {
     OK = 0;                         ///< No error. */
     FAIL = 1;                       ///< An unspecified error occurred. */
     BAD_SESSION_ID = 2;             ///< The session id is not recognised. */
-    INTERFACE_NOT_IMPLEMENTED = 3;  ///< The interface is not implemented. */
-    BUFFER_TOO_SMALL = 4;           ///< The buffer size is too small. */
-    NOT_SUPPORTED = 5;              ///< The request parameters are not supported. */
-    INVALID_STATE = 6;              ///< The object is in an invalid state for the operation. */
+    NOT_SUPPORTED = 3;              ///< The request parameters are not supported. */
+    INVALID_STATE = 4;              ///< The object is in an invalid state for the operation. */
+    INTERFACE_NOT_IMPLEMENTED = 5;  ///< The interface is not implemented. */
+    BUFFER_TOO_SMALL = 6;           ///< The buffer size is too small. */
 };
 
 /**
