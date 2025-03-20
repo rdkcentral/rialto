@@ -697,55 +697,38 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 {
     RIALTO_SERVER_LOG_ERROR("entry:");
 
-    size_t bufferLength{512};
+    size_t bufferLength{1024};
+    const size_t kMaxBufferLength{65536};
     int error{0};
     MediaKeyErrorStatus status;
-
     buffer.resize(bufferLength);
     
-    RIALTO_SERVER_LOG_ERROR("Set buffer length to 256, error to 0, status values and entering the while loop");
-    while (true)
+    for(int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
     {
-        RIALTO_SERVER_LOG_ERROR("Buffer size before calling getMetricSystemData: %zu", buffer.size());;
-
         auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer, error);
-                            RIALTO_SERVER_LOG_ERROR("getMetricSystemData returned error code: %d", error); };
+        RIALTO_SERVER_LOG_ERROR("Failed to get metric system data. Error code: %d", error);};
         m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-
-        RIALTO_SERVER_LOG_ERROR("Buffer size after calling getMetricSystemData: %zu", buffer.size());
-
+        
         OpenCDMError ocdmError = static_cast<OpenCDMError>(error);
         if (ocdmError == OpenCDMError::ERROR_INTERFACE_NOT_IMPLEMENTED)
         {
-            RIALTO_SERVER_LOG_ERROR("ERROR_INTERFACE_NOT_IMPLEMENTED: Going to continue, to display other logs");
-            // return convertOpenCdmError(ocdmError);
+            RIALTO_SERVER_LOG_ERROR("Interface not implemented");
+            return convertOpenCdmError(ocdmError);
         }
 
         if (ocdmError == OpenCDMError::ERROR_BUFFER_TOO_SMALL)
         {
-            RIALTO_SERVER_LOG_ERROR("Buffer is too small. Buffer Size: %zu", bufferLength);
-
-            size_t oldSize = bufferLength;
+            RIALTO_SERVER_LOG_ERROR("Buffer size is too small");
+            if(bufferLength >= kMaxBufferLength)
+            {
+                RIALTO_SERVER_LOG_ERROR("Buffer size exceeds the maximum allowed size");
+                return MediaKeyErrorStatus::FAIL;
+            }
             bufferLength *= 2;
             buffer.resize(bufferLength);
-
-            RIALTO_SERVER_LOG_ERROR("Buffer resized from %zu to %zu", oldSize, bufferLength);
-
             continue;
         }
-        RIALTO_SERVER_LOG_ERROR("Breaking out of while loop, with a buffer size of %zu", bufferLength);
         break;
-    }
-
-    RIALTO_SERVER_LOG_ERROR("Out of while loop, and now to check if status is OK or not");
-    if (status == MediaKeyErrorStatus::OK)
-    {
-        buffer.resize(bufferLength);
-        RIALTO_SERVER_LOG_ERROR("Status is OK. Final Buffer Size: %zu", bufferLength);
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_ERROR("Status is not OK. Buffer Size: %zu", bufferLength);
     }
     return status;
 }
