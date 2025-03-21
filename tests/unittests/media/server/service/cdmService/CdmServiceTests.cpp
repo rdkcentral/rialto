@@ -771,3 +771,29 @@ TEST_F(CdmServiceTests, shouldPing)
     triggerPing();
     destroyMediaKeysShouldSucceed();
 }
+
+TEST_F(CdmServiceTests, shouldGetMetricSystemData)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillGetMetricSystemDataWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    getMetricSystemDataShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldFailToGetMetricSystemDataWhenNoMediaKeys)
+{
+    triggerSwitchToActiveSuccess();
+    getMetricSystemDataShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+}
+
+TEST_F(CdmServiceTests, shouldFailToGetMetricSystemDataWhenMediaKeysFails)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillGetMetricSystemDataWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    getMetricSystemDataShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    destroyMediaKeysShouldSucceed();
+}
