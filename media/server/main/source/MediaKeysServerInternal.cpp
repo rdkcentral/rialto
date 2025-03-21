@@ -700,7 +700,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     const uint32_t kMaxBufferLength{65536};
     MediaKeyErrorStatus status;
     buffer.resize(bufferLength);
-    
+    RIALTO_SERVER_LOG_ERROR("Initial buffer size: %d", bufferLength);
     for(int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
     {
         auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer);};
@@ -721,11 +721,14 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
                 return MediaKeyErrorStatus::FAIL;
             }
             bufferLength *= 2;
+            RIALTO_SERVER_LOG_ERROR("Current buffer size: %d", bufferLength);
             buffer.resize(bufferLength);
             continue;
         }
         break;
     }
+    RIALTO_SERVER_LOG_ERROR("Returning status: %d", static_cast<int>(status));
+
     return status;
 }
 }; // namespace firebolt::rialto::server

@@ -76,6 +76,7 @@ protected:
     void destroyMediaKeys();
     void createKeySession(std::string keySystem);
     void mainThreadWillEnqueueTaskAndWait();
+    void mainThreadWillEnqueueTaskAndWaitMultiple(int numberOfTimes);
 };
 
 #endif // MEDIA_KEYS_TEST_BASE_H_
