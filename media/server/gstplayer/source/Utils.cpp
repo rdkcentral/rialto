@@ -28,114 +28,91 @@
 
 namespace
 {
-const char *underflowSignals[]{"buffer-underflow-callback", "vidsink-underflow-callback"};
+const char *underflowSignals[]{"buffer-underflow-callback", "vidsink-underflow-callback", "underrun-callback"};
+
+bool isType(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element, GstElementFactoryListType type)
+{
+    if (!element)
+    {
+        return false;
+    }
+
+    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
+    if (!factory)
+    {
+        return false;
+    }
+    return gstWrapper.gstElementFactoryListIsType(factory, type);
+}
 } // namespace
 
 namespace firebolt::rialto::server
 {
-bool isVideoDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
-{
-    if (!element)
-    {
-        return false;
-    }
-    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
-    if (!factory)
-    {
-        return false;
-    }
-    return gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                               GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
-}
 
 bool isAudioDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
-    if (!element)
-    {
-        return false;
-    }
-    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
-    if (!factory)
-    {
-        return false;
-    }
-    return gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                               GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
 }
 
 bool isVideoParser(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
-    if (!element)
-    {
-        return false;
-    }
-    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
-    if (!factory)
-    {
-        return false;
-    }
-    return gstWrapper.gstElementFactoryListIsType(factory, GST_ELEMENT_FACTORY_TYPE_PARSER |
-                                                               GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
 }
 
 bool isVideoSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
-    if (!element)
-    {
-        return false;
-    }
-    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
-    if (!factory)
-    {
-        return false;
-    }
-    return gstWrapper.gstElementFactoryListIsType(factory,
-                                                  GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
 }
 
 bool isAudioSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
-    if (!element)
-    {
-        return false;
-    }
-    GstElementFactory *factory{gstWrapper.gstElementGetFactory(element)};
-    if (!factory)
-    {
-        return false;
-    }
-    return gstWrapper.gstElementFactoryListIsType(factory,
-                                                  GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
 }
 
-std::string getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper, GstElement *element)
+bool isSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
-    for (GType type = glibWrapper.gObjectType(element); type; type = glibWrapper.gTypeParent(type))
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_SINK);
+}
+
+bool isDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
+{
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_DECODER);
+}
+
+bool isAudio(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
+{
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
+}
+
+bool isVideo(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
+{
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
+}
+
+std::optional<std::string> getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper,
+                                                  GstElement *element)
+{
+    GType type = glibWrapper.gObjectType(element);
+    guint nsignals{0};
+    guint *signals = glibWrapper.gSignalListIds(type, &nsignals);
+
+    for (guint i = 0; i < nsignals; i++)
     {
-        if (type == GST_TYPE_ELEMENT || type == GST_TYPE_OBJECT)
-            break;
+        GSignalQuery query;
+        glibWrapper.gSignalQuery(signals[i], &query);
+        const auto signalNameIt = std::find_if(std::begin(underflowSignals), std::end(underflowSignals),
+                                               [&](const auto *signalName)
+                                               { return strcmp(signalName, query.signal_name) == 0; });
 
-        if (type == GST_TYPE_BIN && glibWrapper.gObjectType(element) != GST_TYPE_BIN)
-            continue;
-
-        guint nsignals{0};
-        guint *signals = glibWrapper.gSignalListIds(type, &nsignals);
-        for (guint i = 0; i < nsignals; i++)
+        if (std::end(underflowSignals) != signalNameIt)
         {
-            GSignalQuery query;
-            glibWrapper.gSignalQuery(signals[i], &query);
-            const auto signalNameIt = std::find_if(std::begin(underflowSignals), std::end(underflowSignals),
-                                                   [&](const auto *signalName)
-                                                   { return strcmp(signalName, query.signal_name) == 0; });
-            if (std::end(underflowSignals) != signalNameIt)
-            {
-                glibWrapper.gFree(signals);
-                return std::string(*signalNameIt);
-            }
+            glibWrapper.gFree(signals);
+            return std::string(*signalNameIt);
         }
-        glibWrapper.gFree(signals);
     }
-    return "";
+    glibWrapper.gFree(signals);
+
+    return std::nullopt;
 }
 
 GstCaps *createCapsFromMediaSource(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
