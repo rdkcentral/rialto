@@ -239,6 +239,11 @@ void CdmServiceTests::mediaKeysWillPing()
     EXPECT_CALL(m_mediaKeysMock, ping(_));
 }
 
+void CdmServiceTests::mediaKeysWillGetMetricSystemDataWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_CALL(m_mediaKeysMock, getMetricSystemData(_)).WillOnce(Return(status));
+}
+
 void CdmServiceTests::createMediaKeysShouldSucceed()
 {
     EXPECT_TRUE(m_sut.createMediaKeys(kMediaKeysHandle, kKeySystems[0]));
@@ -445,4 +450,10 @@ void CdmServiceTests::decrementSessionIdUsageCounterFails()
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(false));
     m_sut.decrementSessionIdUsageCounter(kKeySessionId);
+}
+
+void CdmServiceTests::getMetricSystemDataShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    std::vector<uint8_t> buffer;
+    EXPECT_EQ(status, m_sut.getMetricSystemData(kMediaKeysHandle, buffer));
 }
