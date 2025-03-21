@@ -427,6 +427,8 @@ protected:
 
 private:
     // SetupElement helper methods
+    void expectVideoUnderflowSignalConnection();
+    void expectAudioUnderflowSignalConnection();
     void expectSetupVideoSinkElement();
     void expectSetupVideoDecoderElement();
     void expectSetupAudioSinkElement();
