@@ -100,6 +100,7 @@ TEST_F(GetMetricSystemDataTest, getApi)
     MediaKeysTestMethods::getMetricSystemDataFailure();
 
     // Step 3: Get the metric system data (interface not implemented)
-
+    MediaKeysTestMethods::shouldFailToGetMetricSystemDataInterfaceNotImplemented();
+    MediaKeysTestMethods::getMetricSystemDataInterfaceNotImplemented();
 }
 } // namespace firebolt::rialto::client::ct

@@ -91,6 +91,7 @@ protected:
     void shouldReleaseKeySession();
     void shouldGetMetricSystemData();
     void shouldFailToGetMetricSystemData();
+    void shouldFailToGetMetricSystemDataInterfaceNotImplemented();
 
     // MediaPipelineClient Expect methods
     void shouldNotifyLicenseRequest();
@@ -148,6 +149,7 @@ protected:
     void releaseKeySession();
     void getMetricSystemData();
     void getMetricSystemDataFailure();
+    void getMetricSystemDataInterfaceNotImplemented();
 
     // Event methods
     void sendNotifyLicenseRequest();
