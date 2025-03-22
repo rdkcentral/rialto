@@ -74,3 +74,10 @@ void MediaKeysTestBase::mainThreadWillEnqueueTaskAndWait()
         .WillOnce(Invoke([](uint32_t clientId, firebolt::rialto::server::IMainThread::Task task) { task(); }))
         .RetiresOnSaturation();
 }
+
+void MediaKeysTestBase::mainThreadWillEnqueueTaskAndWaitMultiple(int numberOfTimes)
+{
+    EXPECT_CALL(*m_mainThreadMock, enqueueTaskAndWait(m_kMainThreadClientId, _))
+        .Times(numberOfTimes) 
+        .WillRepeatedly(Invoke([](uint32_t clientId, firebolt::rialto::server::IMainThread::Task task) { task();}));
+}

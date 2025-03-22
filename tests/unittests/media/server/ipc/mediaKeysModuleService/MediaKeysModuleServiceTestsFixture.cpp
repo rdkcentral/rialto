@@ -366,6 +366,19 @@ void MediaKeysModuleServiceTests::cdmServiceWillFailToReleaseKeySession()
     EXPECT_CALL(m_cdmServiceMock, releaseKeySession(kHardcodedMediaKeysHandle, kKeySessionId)).WillOnce(Return(kErrorStatus));
 }
 
+void MediaKeysModuleServiceTests::cdmServiceWillGetMetricSystemData()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getMetricSystemData(kHardcodedMediaKeysHandle, _))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillFailToGetMetricSystemData()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getMetricSystemData(kHardcodedMediaKeysHandle, _)).WillOnce(Return(kErrorStatus));
+}
+
 void MediaKeysModuleServiceTests::mediaClientWillSendLicenseRequestEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(LicenseRequestEventMatcher(kKeySessionId, kHardcodedMediaKeysHandle,
@@ -951,4 +964,26 @@ void MediaKeysModuleServiceTests::testFactoryCreatesObject()
         firebolt::rialto::server::ipc::IMediaKeysModuleServiceFactory::createFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_NE(factory->create(m_cdmServiceMock), nullptr);
+}
+
+void MediaKeysModuleServiceTests::sendGetMetricSystemDataRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetMetricSystemDataRequest request;
+    firebolt::rialto::GetMetricSystemDataResponse response;
+
+    request.set_media_keys_handle(kHardcodedMediaKeysHandle);
+
+    m_service->getMetricSystemData(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendGetMetricSystemDataRequestAndReceiveErrorResponse()
+{
+    firebolt::rialto::GetMetricSystemDataRequest request;
+    firebolt::rialto::GetMetricSystemDataResponse response;
+
+    request.set_media_keys_handle(kHardcodedMediaKeysHandle);
+
+    m_service->getMetricSystemData(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(kErrorStatus, convertMediaKeyErrorStatus(response.error_status()));
 }

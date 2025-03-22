@@ -92,6 +92,7 @@ add_gtests (
         mediaKeysIpc/GetLastDrmErrorTest.cpp
         mediaKeysIpc/GetDrmTimeTest.cpp
         mediaKeysIpc/ReleaseKeySessionTest.cpp
+        mediaKeysIpc/GetMetricSystemDataTest.cpp
 
         # MediaKeysCapabilitiesIpc tests
         mediaKeysCapabilitiesIpc/CreateTest.cpp

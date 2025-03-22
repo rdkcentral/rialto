@@ -691,4 +691,44 @@ void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbea
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
+
+MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
+{
+    RIALTO_SERVER_LOG_ERROR("entry:");
+
+    uint32_t bufferLength{1024};
+    const uint32_t kMaxBufferLength{65536};
+    MediaKeyErrorStatus status;
+    buffer.resize(bufferLength);
+    RIALTO_SERVER_LOG_ERROR("Initial buffer size: %d", bufferLength);
+    for(int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
+    {
+        auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer);};
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        
+        if (status == MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED)
+        {
+            RIALTO_SERVER_LOG_ERROR("Interface not implemented");
+            return status;
+        }
+
+        if (status == MediaKeyErrorStatus::BUFFER_TOO_SMALL)
+        {
+            RIALTO_SERVER_LOG_ERROR("Buffer size is too small");
+            if(bufferLength >= kMaxBufferLength)
+            {
+                RIALTO_SERVER_LOG_ERROR("Buffer size exceeds the maximum allowed size");
+                return MediaKeyErrorStatus::FAIL;
+            }
+            bufferLength *= 2;
+            RIALTO_SERVER_LOG_ERROR("Current buffer size: %d", bufferLength);
+            buffer.resize(bufferLength);
+            continue;
+        }
+        break;
+    }
+    RIALTO_SERVER_LOG_ERROR("Returning status: %d", static_cast<int>(status));
+
+    return status;
+}
 }; // namespace firebolt::rialto::server

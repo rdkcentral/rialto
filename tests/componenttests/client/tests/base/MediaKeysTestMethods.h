@@ -89,6 +89,9 @@ protected:
     void shouldgetLdlSessionsLimit();
     void shouldGetDrmTime();
     void shouldReleaseKeySession();
+    void shouldGetMetricSystemData();
+    void shouldFailToGetMetricSystemData();
+    void shouldFailToGetMetricSystemDataInterfaceNotImplemented();
 
     // MediaPipelineClient Expect methods
     void shouldNotifyLicenseRequest();
@@ -144,6 +147,9 @@ protected:
     void supportsServerCertificate();
     void doesNotSupportServerCertificate();
     void releaseKeySession();
+    void getMetricSystemData();
+    void getMetricSystemDataFailure();
+    void getMetricSystemDataInterfaceNotImplemented();
 
     // Event methods
     void sendNotifyLicenseRequest();

@@ -70,6 +70,7 @@ public:
     virtual MediaKeyErrorStatus getLastDrmError(int mediaKeysHandle, int32_t keySessionId, uint32_t &errorCode) = 0;
     virtual MediaKeyErrorStatus getDrmTime(int mediaKeysHandle, uint64_t &drmTime) = 0;
     virtual MediaKeyErrorStatus releaseKeySession(int mediaKeysHandle, int32_t keySessionId) = 0;
+    virtual MediaKeyErrorStatus getMetricSystemData(int mediaKeysHandle, std::vector<uint8_t> &buffer) = 0;
 
     virtual std::vector<std::string> getSupportedKeySystems() = 0;
     virtual bool supportsKeySystem(const std::string &keySystem) = 0;
