@@ -100,61 +100,61 @@ void GetMetricSystemDataTest::getMetricSystemDataFails()
                        { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::FAIL); });
 }
 
-// void GetMetricSystemDataTest::willResizeBufferAndSucceed()
-// {
-//     EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_,_))
-//         .WillOnce(testing::Invoke([&](uint32_t* bufferLength, std::vector<uint8_t>* buffer) -> MediaKeyErrorStatus {
-//             *bufferLength = m_kBuffer.size();
-//             *buffer = m_kBuffer;
-//             return MediaKeyErrorStatus::BUFFER_TOO_SMALL;
-//         }))
-//         .WillOnce(testing::Invoke([&](uint32_t* bufferLength, std::vector<uint8_t>* buffer) -> MediaKeyErrorStatus {
-//             *bufferLength = m_kBuffer.size();
-//             *buffer = m_kBuffer;
-//             return MediaKeyErrorStatus::OK;
-//         }));
-// }
+void GetMetricSystemDataTest::willResizeBufferAndSucceed()
+{
+    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_,_))
+        .WillOnce(testing::Invoke([&](uint32_t* bufferLength, std::vector<uint8_t>* buffer) -> MediaKeyErrorStatus {
+            *bufferLength = m_kBuffer.size();
+            *buffer = m_kBuffer;
+            return MediaKeyErrorStatus::BUFFER_TOO_SMALL;
+        }))
+        .WillOnce(testing::Invoke([&](uint32_t* bufferLength, std::vector<uint8_t>* buffer) -> MediaKeyErrorStatus {
+            *bufferLength = m_kBuffer.size();
+            *buffer = m_kBuffer;
+            return MediaKeyErrorStatus::OK;
+        }));
+}
 
-// void GetMetricSystemDataTest::getMetricSystemDataAfterResize()
-// {
-//     auto request{createGetMetricSystemDataRequest(m_mediaKeysHandle)};
+void GetMetricSystemDataTest::getMetricSystemDataAfterResize()
+{
+    auto request{createGetMetricSystemDataRequest(m_mediaKeysHandle)};
 
-//     ConfigureAction<GetMetricSystemData>(m_clientStub)
-//         .send(request)
-//         .expectSuccess()
-//         .matchResponse(
-//             [&](const firebolt::rialto::GetMetricSystemDataResponse &resp)
-//             {  
-//                 EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
-//                 ASSERT_EQ(resp.buffer_size(), m_kBuffer.size());
-//                 for (size_t i = 0; i < m_kBuffer.size(); ++i)
-//                 {
-//                     EXPECT_EQ(resp.buffer(i), m_kBuffer[i]);
-//                 }
-//             });
-// }
+    ConfigureAction<GetMetricSystemData>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse(
+            [&](const firebolt::rialto::GetMetricSystemDataResponse &resp)
+            {  
+                EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
+                ASSERT_EQ(resp.buffer_size(), m_kBuffer.size());
+                for (size_t i = 0; i < m_kBuffer.size(); ++i)
+                {
+                    EXPECT_EQ(resp.buffer(i), m_kBuffer[i]);
+                }
+            });
+}
 
-// void GetMetricSystemDataTest::willGetMetricSystemDataInterfaceNotImplemented()
-// {
-//     EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_,_))
-//         .WillOnce(testing::Invoke([&](uint32_t* bufferLength, std::vector<uint8_t>* buffer) -> MediaKeyErrorStatus {
-//             *bufferLength = m_kBuffer.size();
-//             *buffer = m_kBuffer;
-//             return MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED;
-//         }));
-// }
+void GetMetricSystemDataTest::willGetMetricSystemDataInterfaceNotImplemented()
+{
+    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_,_))
+        .WillOnce(testing::Invoke([&](uint32_t* bufferLength, std::vector<uint8_t>* buffer) -> MediaKeyErrorStatus {
+            *bufferLength = m_kBuffer.size();
+            *buffer = m_kBuffer;
+            return MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED;
+        }));
+}
 
-// void GetMetricSystemDataTest::getMetricSystemDataInterfaceNotImplemented()
-// {
-//     auto request{createGetMetricSystemDataRequest(m_mediaKeysHandle)};
+void GetMetricSystemDataTest::getMetricSystemDataInterfaceNotImplemented()
+{
+    auto request{createGetMetricSystemDataRequest(m_mediaKeysHandle)};
 
-//     ConfigureAction<GetMetricSystemData>(m_clientStub)
-//         .send(request)
-//         .expectSuccess()
-//         .matchResponse([&](const firebolt::rialto::GetMetricSystemDataResponse &resp)
-//                        { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED); });
+    ConfigureAction<GetMetricSystemData>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::GetMetricSystemDataResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED); });
 
-// }
+}
 
 /** 
  * Component Test: Drm Store APIs.
@@ -200,10 +200,10 @@ TEST_F(GetMetricSystemDataTest, shouldGetMetricSystemData)
     willFailGetMetricSystemData();
     getMetricSystemDataFails();
 
-    // willResizeBufferAndSucceed();
-    // getMetricSystemDataAfterResize();
+    willResizeBufferAndSucceed();
+    getMetricSystemDataAfterResize();
 
-    // willGetMetricSystemDataInterfaceNotImplemented();
-    // getMetricSystemDataInterfaceNotImplemented();
+    willGetMetricSystemDataInterfaceNotImplemented();
+    getMetricSystemDataInterfaceNotImplemented();
 } 
 };// namespace firebolt::rialto::server::ct
