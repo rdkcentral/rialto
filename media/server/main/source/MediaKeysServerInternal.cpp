@@ -708,7 +708,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
         
         if (status == MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED)
         {
-            RIALTO_SERVER_LOG_ERROR("Interface not implemented");
+            RIALTO_SERVER_LOG_ERROR("Interface not implemented, returning status: %d", static_cast<int>(status));
             return status;
         }
 
@@ -725,6 +725,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
             buffer.resize(bufferLength);
             continue;
         }
+        RIALTO_SERVER_LOG_ERROR("Buffer Size just before the break: %d", bufferLength);
         break;
     }
     RIALTO_SERVER_LOG_ERROR("Returning status: %d", static_cast<int>(status));
