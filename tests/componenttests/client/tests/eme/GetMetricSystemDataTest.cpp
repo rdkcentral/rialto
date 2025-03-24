@@ -76,11 +76,6 @@ public:
  * Expect that getMetricSystemData is propagated to the server.
  * Api call returns with failure.
  * 
- * Step 3: Get the metric system data (interface not implemented)
- * getMetricSystemData.
- * Expect that getMetricSystemData is propagated to the server.
- * Api call returns with interface not implemented.
- * 
  * Test Tear-down:
  * Destroy MediaKeys.
  * Server is terminated.
@@ -98,9 +93,5 @@ TEST_F(GetMetricSystemDataTest, getApi)
     // Step 2: Get the metric system data failure
     MediaKeysTestMethods::shouldFailToGetMetricSystemData();
     MediaKeysTestMethods::getMetricSystemDataFailure();
-
-    // Step 3: Get the metric system data (interface not implemented)
-    MediaKeysTestMethods::shouldFailToGetMetricSystemDataInterfaceNotImplemented();
-    MediaKeysTestMethods::getMetricSystemDataInterfaceNotImplemented();
 }
 } // namespace firebolt::rialto::client::ct

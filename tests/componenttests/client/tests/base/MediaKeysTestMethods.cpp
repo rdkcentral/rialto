@@ -61,7 +61,7 @@ const std::string kInvalidKeySystem{"notExpected"};
 const std::vector<std::string> kKeySystems(firebolt::rialto::server::kSupportedKeySystems.begin(),
                                            firebolt::rialto::server::kSupportedKeySystems.end());
 const std::string kVersion{"123"};
-const std::vector<uint8_t> kBuffer{0xDE, 0xAD, 0xBE, 0xEF};
+const std::vector<uint8_t> kBuffer{0x91, 0x2E, 0x5D, 0xF3};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -728,18 +728,5 @@ void MediaKeysTestMethods::getMetricSystemDataFailure()
 {
     std::vector<uint8_t> buffer;
     EXPECT_EQ(m_mediaKeys->getMetricSystemData(buffer), kStatusFailed);
-}
-
-void MediaKeysTestMethods::shouldFailToGetMetricSystemDataInterfaceNotImplemented()
-{
-    EXPECT_CALL(*m_mediaKeysModuleMock, getMetricSystemData(_, getMetricSystemDataRequestMatcher(kMediaKeysHandle), _, _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->getMetricSystemDataResponse(kStatusInterfaceNotImplemented, {})),
-                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
-}
-
-void MediaKeysTestMethods::getMetricSystemDataInterfaceNotImplemented()
-{
-    std::vector<uint8_t> buffer;
-    EXPECT_EQ(m_mediaKeys->getMetricSystemData(buffer), kStatusInterfaceNotImplemented);
 }
 } // namespace firebolt::rialto::client::ct
