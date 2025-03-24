@@ -43,11 +43,11 @@ public:
     void willFailGetMetricSystemData();
     void getMetricSystemDataFails();
 
-    // void willResizeBufferAndSucceed();
-    // void getMetricSystemDataAfterResize();
+    void willResizeBufferAndSucceed();
+    void getMetricSystemDataAfterResize();
 
-    // void willGetMetricSystemDataInterfaceNotImplemented();
-    // void getMetricSystemDataInterfaceNotImplemented();
+    void willGetMetricSystemDataInterfaceNotImplemented();
+    void getMetricSystemDataInterfaceNotImplemented();
 
     const std::vector<uint8_t> m_kBuffer{0x91, 0x2E, 0x5D, 0xF3};
 };
