@@ -696,7 +696,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 {
     RIALTO_SERVER_LOG_ERROR("entry:");
 
-    uint32_t bufferLength{1024};
+    uint32_t bufferLength{256};
     const uint32_t kMaxBufferLength{65536};
     MediaKeyErrorStatus status;
     buffer.resize(bufferLength);
@@ -725,7 +725,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
             buffer.resize(bufferLength);
             continue;
         }
-        RIALTO_SERVER_LOG_ERROR("Buffer Size just before the break: %d", bufferLength);
+        RIALTO_SERVER_LOG_ERROR("Buffer Size just before the: %d", bufferLength);
         break;
     }
     RIALTO_SERVER_LOG_ERROR("Returning status: %d", static_cast<int>(status));
