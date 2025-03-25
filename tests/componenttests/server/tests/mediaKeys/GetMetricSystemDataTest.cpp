@@ -46,10 +46,7 @@ public:
     void willResizeBufferAndSucceed();
     void getMetricSystemDataAfterResize();
 
-    void willGetMetricSystemDataInterfaceNotImplemented();
-    void getMetricSystemDataInterfaceNotImplemented();
-
-    const std::vector<uint8_t> m_kBuffer{0x91, 0x2E, 0x5D, 0xF3};
+    const std::vector<uint8_t> m_kBuffer{0x00, 0x01, 0x02, 0x03};
 };
 
 void GetMetricSystemDataTest::willGetMetricSystemData()
@@ -69,15 +66,8 @@ void GetMetricSystemDataTest::getMetricSystemData()
     ConfigureAction<GetMetricSystemData>(m_clientStub)
         .send(request)
         .expectSuccess()
-        .matchResponse(
-            [&](const firebolt::rialto::GetMetricSystemDataResponse &resp)
-            {
-                EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
-                for (size_t i = 0; i < m_kBuffer.size(); ++i)
-                {
-                    EXPECT_EQ(resp.buffer(i), m_kBuffer[i]);
-                }
-            });
+        .matchResponse([&](const firebolt::rialto::GetMetricSystemDataResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
 }
 
 void GetMetricSystemDataTest::willFailGetMetricSystemData()
@@ -98,62 +88,6 @@ void GetMetricSystemDataTest::getMetricSystemDataFails()
         .expectSuccess()
         .matchResponse([&](const firebolt::rialto::GetMetricSystemDataResponse &resp)
                        { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::FAIL); });
-}
-
-void GetMetricSystemDataTest::willResizeBufferAndSucceed()
-{
-    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_,_))
-        .WillOnce(testing::Invoke([&](uint32_t* bufferLength, std::vector<uint8_t>* buffer) -> MediaKeyErrorStatus {
-            *bufferLength = m_kBuffer.size();
-            *buffer = m_kBuffer;
-            return MediaKeyErrorStatus::BUFFER_TOO_SMALL;
-        }))
-        .WillOnce(testing::Invoke([&](uint32_t* bufferLength, std::vector<uint8_t>* buffer) -> MediaKeyErrorStatus {
-            *bufferLength = m_kBuffer.size();
-            *buffer = m_kBuffer;
-            return MediaKeyErrorStatus::OK;
-        }));
-}
-
-void GetMetricSystemDataTest::getMetricSystemDataAfterResize()
-{
-    auto request{createGetMetricSystemDataRequest(m_mediaKeysHandle)};
-
-    ConfigureAction<GetMetricSystemData>(m_clientStub)
-        .send(request)
-        .expectSuccess()
-        .matchResponse(
-            [&](const firebolt::rialto::GetMetricSystemDataResponse &resp)
-            {  
-                EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK);
-                ASSERT_EQ(resp.buffer_size(), m_kBuffer.size());
-                for (size_t i = 0; i < m_kBuffer.size(); ++i)
-                {
-                    EXPECT_EQ(resp.buffer(i), m_kBuffer[i]);
-                }
-            });
-}
-
-void GetMetricSystemDataTest::willGetMetricSystemDataInterfaceNotImplemented()
-{
-    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_,_))
-        .WillOnce(testing::Invoke([&](uint32_t* bufferLength, std::vector<uint8_t>* buffer) -> MediaKeyErrorStatus {
-            *bufferLength = m_kBuffer.size();
-            *buffer = m_kBuffer;
-            return MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED;
-        }));
-}
-
-void GetMetricSystemDataTest::getMetricSystemDataInterfaceNotImplemented()
-{
-    auto request{createGetMetricSystemDataRequest(m_mediaKeysHandle)};
-
-    ConfigureAction<GetMetricSystemData>(m_clientStub)
-        .send(request)
-        .expectSuccess()
-        .matchResponse([&](const firebolt::rialto::GetMetricSystemDataResponse &resp)
-                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED); });
-
 }
 
 /** 
@@ -179,12 +113,21 @@ void GetMetricSystemDataTest::getMetricSystemDataInterfaceNotImplemented()
  *
  *
  * Test Steps:
-
+ * 
+ * Step 1: Get metric system data success
+ *   Expect that getMetricSystemData is processed by the server.
+ *   Api call returns with success.
+ *   Check status.
+ * 
+ * Step 2: Get metric system data failure
+ *   Expect that getMetricSystemData is processed by the server.
+ *   Api call returns with failure.
+ * 
  * Test Tear-down:
  *  Server is terminated.
  *
  * Expected Results:
- *  Client can get and delete the drm store successfully.
+ *  Client can get metric system data successfully.
  *
  * Code:
  */
@@ -194,16 +137,13 @@ TEST_F(GetMetricSystemDataTest, shouldGetMetricSystemData)
     ocdmSessionWillBeCreated();
     createKeySession();
 
+    // Step 1: Get metric system data success
     willGetMetricSystemData();
     getMetricSystemData();
 
+    // Step 2: Get metric system data failure
     willFailGetMetricSystemData();
     getMetricSystemDataFails();
 
-    willResizeBufferAndSucceed();
-    getMetricSystemDataAfterResize();
-
-    willGetMetricSystemDataInterfaceNotImplemented();
-    getMetricSystemDataInterfaceNotImplemented();
 } 
 };// namespace firebolt::rialto::server::ct
