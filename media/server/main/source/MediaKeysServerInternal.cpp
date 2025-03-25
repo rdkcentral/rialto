@@ -726,10 +726,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
         }
         break;
     }
-    
+
     if(status == MediaKeyErrorStatus::OK)
     {
-        RIALTO_SERVER_LOG_ERROR("Entered OK status to determine buffer test data:")
+        RIALTO_SERVER_LOG_ERROR("Entered OK status to determine buffer test data:");
         RIALTO_SERVER_LOG_ERROR("Buffer content (length: %d):", bufferLength);
         for (size_t i = 0; i < bufferLength && i < buffer.size(); ++i)
         {
