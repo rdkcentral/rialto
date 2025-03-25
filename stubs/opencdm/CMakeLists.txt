@@ -25,7 +25,7 @@ include( GNUInstallDirs )
 include(ExternalProject)
 
 if (NOT THUNDER_CLIENT_TAG)
-  set(THUNDER_CLIENT_TAG "e5231feeb559fc024d7c72789707c0eaa715a0b5")
+  set(THUNDER_CLIENT_TAG "50a850991d6e6208bbad7f0fa189f8c2c04429bf")
 endif()
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third-party/opencdm)

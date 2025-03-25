@@ -292,11 +292,11 @@ public:
     virtual MediaKeyErrorStatus releaseKeySession(int32_t keySessionId) = 0;
 
     /**
-     * @brief Get the metric system data
+     * @brief Get metrics for a DRM system
      *
-     * @param[out]  buffer : the buffer data
+     * @param[out]  buffer : Buffer that can hold the metric data
      *
-     * @retval the return status value.
+     * @retval an error status.
      */
     virtual MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) = 0;
 };

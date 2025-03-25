@@ -396,7 +396,7 @@ message GetDrmStoreHashResponse {
 
 /**
  * @fn ProtoMediaKeyErrorStatus, vector<uint8> getMetricSystemData(int32 media_keys_handle)
- * @brief Gets the buffer size and buffer of system metric data
+ * @brief Get metrics for a DRM system
  *
  * @param[in] media_keys_handle The handle of the media keys.
  *

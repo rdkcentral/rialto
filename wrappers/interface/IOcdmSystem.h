@@ -149,9 +149,14 @@ public:
     virtual bool supportsServerCertificate() const = 0;
 
     /**
-     * @brief Get the metric system data
+     * @brief Get metrics for a DRM system
      *
-     * @param[out]  buffer       : the buffer to store the data
+     * Some DRMs (e.g. WideVine) offer metric data that can be used for any
+     * analyses. This function retrieves the metric data of the passed in
+     * system. It is up to the callee to interpret the binary data correctly.
+     * 
+     * @param[out]  bufferLength : Actual buffer length of the buffer parameter
+     * @param[out]  buffer       : Buffer that can hold the metric data
      *
      * @retval the return status value.
      */
