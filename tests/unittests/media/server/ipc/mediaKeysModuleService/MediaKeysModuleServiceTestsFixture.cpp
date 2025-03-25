@@ -41,7 +41,7 @@ constexpr int kHardcodedMediaKeysHandle{2};
 constexpr firebolt::rialto::KeySessionType kKeySessionType{firebolt::rialto::KeySessionType::TEMPORARY};
 constexpr bool kIsLDL{false};
 constexpr int kKeySessionId{3};
-constexpr firebolt::rialto::MediaKeyErrorStatus kErrorStatus{firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE};
+constexpr firebolt::rialto::MediaKeyErrorStatus kErrorStatus{firebolt::rialto::MediaKeyErrorStatus::FAIL};
 constexpr firebolt::rialto::InitDataType kInitDataType{firebolt::rialto::InitDataType::CENC};
 const std::vector<std::uint8_t> kInitData{6, 7, 2};
 const std::vector<std::uint8_t> kResponseData{9, 7, 8};

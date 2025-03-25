@@ -253,10 +253,10 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, ReleaseKeySession)
 /**
  * Test that a GetMetricSystemData forwards the request to IPC and returns the error status.
  */
- TEST_F(RialtoClientMediaKeysKeySessionTest, GetMetricSystemData)
- {
-     std::vector<uint8_t> buffer;
-     EXPECT_CALL(*m_mediaKeysIpcMock, getMetricSystemData(buffer)).WillOnce(Return(m_mediaKeyErrorStatus));
- 
-     EXPECT_EQ(m_mediaKeys->getMetricSystemData(buffer), m_mediaKeyErrorStatus);
- }
+TEST_F(RialtoClientMediaKeysKeySessionTest, GetMetricSystemData)
+{
+    std::vector<uint8_t> buffer;
+    EXPECT_CALL(*m_mediaKeysIpcMock, getMetricSystemData(buffer)).WillOnce(Return(m_mediaKeyErrorStatus));
+
+    EXPECT_EQ(m_mediaKeys->getMetricSystemData(buffer), m_mediaKeyErrorStatus);
+}

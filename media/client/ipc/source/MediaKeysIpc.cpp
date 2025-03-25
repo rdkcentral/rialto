@@ -913,7 +913,7 @@ MediaKeyErrorStatus MediaKeysIpc::getMetricSystemData(std::vector<uint8_t> &buff
 
     firebolt::rialto::GetMetricSystemDataRequest request;
     request.set_media_keys_handle(m_mediaKeysHandle);
-    
+
     firebolt::rialto::GetMetricSystemDataResponse response;
     // Default error status to FAIL
     response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);

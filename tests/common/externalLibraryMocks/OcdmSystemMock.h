@@ -24,6 +24,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::wrappers
 {
@@ -40,7 +41,8 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, getDrmTime, (uint64_t * time), (override));
     MOCK_METHOD(std::unique_ptr<IOcdmSession>, createSession, (IOcdmSessionClient * client), (override, const));
     MOCK_METHOD(bool, supportsServerCertificate, (), (const, override));
-    MOCK_METHOD(MediaKeyErrorStatus, getMetricSystemData, (uint32_t *bufferLength, std::vector<uint8_t> *buffer), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getMetricSystemData, (uint32_t * bufferLength, std::vector<uint8_t> *buffer),
+                (override));
 };
 } // namespace firebolt::rialto::wrappers
 

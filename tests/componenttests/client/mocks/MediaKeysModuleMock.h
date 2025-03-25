@@ -92,7 +92,7 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::ReleaseKeySessionRequest *request,
                  ::firebolt::rialto::ReleaseKeySessionResponse *response, ::google::protobuf::Closure *done));
-     MOCK_METHOD(void, getMetricSystemData,
+    MOCK_METHOD(void, getMetricSystemData,
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::GetMetricSystemDataRequest *request,
                  ::firebolt::rialto::GetMetricSystemDataResponse *response, ::google::protobuf::Closure *done));
@@ -256,8 +256,8 @@ public:
         return response;
     }
 
-    ::firebolt::rialto::GetMetricSystemDataResponse getMetricSystemDataResponse(const firebolt::rialto::MediaKeyErrorStatus &status,
-                                                                        const std::vector<uint8_t> &buffer)
+    ::firebolt::rialto::GetMetricSystemDataResponse
+    getMetricSystemDataResponse(const firebolt::rialto::MediaKeyErrorStatus &status, const std::vector<uint8_t> &buffer)
     {
         firebolt::rialto::GetMetricSystemDataResponse response;
         response.set_error_status(convertMediaKeyErrorStatus(status));

@@ -479,9 +479,9 @@ void MediaKeysModuleService::releaseKeySession(::google::protobuf::RpcController
 }
 
 void MediaKeysModuleService::getMetricSystemData(::google::protobuf::RpcController *controller,
-                                        const ::firebolt::rialto::GetMetricSystemDataRequest *request,
-                                        ::firebolt::rialto::GetMetricSystemDataResponse *response,
-                                        ::google::protobuf::Closure *done)
+                                                 const ::firebolt::rialto::GetMetricSystemDataRequest *request,
+                                                 ::firebolt::rialto::GetMetricSystemDataResponse *response,
+                                                 ::google::protobuf::Closure *done)
 {
     std::vector<uint8_t> buffer;
     RIALTO_SERVER_LOG_DEBUG("entry:");

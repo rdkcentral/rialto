@@ -112,8 +112,10 @@ public:
                            const ::firebolt::rialto::ReleaseKeySessionRequest *request,
                            ::firebolt::rialto::ReleaseKeySessionResponse *response,
                            ::google::protobuf::Closure *done) override;
-    void getMetricSystemData(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetMetricSystemDataRequest *request,
-                            ::firebolt::rialto::GetMetricSystemDataResponse *response, ::google::protobuf::Closure *done) override;
+    void getMetricSystemData(::google::protobuf::RpcController *controller,
+                             const ::firebolt::rialto::GetMetricSystemDataRequest *request,
+                             ::firebolt::rialto::GetMetricSystemDataResponse *response,
+                             ::google::protobuf::Closure *done) override;
 
 private:
     service::ICdmService &m_cdmService;

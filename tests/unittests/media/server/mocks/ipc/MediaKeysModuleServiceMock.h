@@ -108,7 +108,8 @@ public:
                  ::firebolt::rialto::GetDrmTimeResponse *response, ::google::protobuf::Closure *done),
                 (override));
     MOCK_METHOD(void, getMetricSystemData,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetMetricSystemDataRequest *request,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::GetMetricSystemDataRequest *request,
                  ::firebolt::rialto::GetMetricSystemDataResponse *response, ::google::protobuf::Closure *done),
                 (override));
 };

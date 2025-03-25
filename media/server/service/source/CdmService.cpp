@@ -556,6 +556,6 @@ MediaKeyErrorStatus CdmService::getMetricSystemData(int mediaKeysHandle, std::ve
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
         return MediaKeyErrorStatus::FAIL;
     }
-    return mediaKeysIter->second->getMetricSystemData(buffer);  
+    return mediaKeysIter->second->getMetricSystemData(buffer);
 }
 } // namespace firebolt::rialto::server::service

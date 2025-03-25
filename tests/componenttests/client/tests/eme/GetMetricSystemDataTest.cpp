@@ -51,7 +51,7 @@ public:
  *
  * Sequence Diagrams:
  *  Get Metric System Data
- *   - 
+ *   -
  *
  * Test Setup:
  *  Language: C++
@@ -64,28 +64,27 @@ public:
  *  Create a MediaKeys object.
  *
  * Test Steps:
- * 
+ *
  * Step 1: Get the metric system data
  * getMetricSystemData.
  * Expect that getMetricSystemData is propagated to the server.
  * Api call returns with success.
  * Check metric system data.
- * 
+ *
  * Step 2: Get the metric system data failure
  * getMetricSystemData.
  * Expect that getMetricSystemData is propagated to the server.
  * Api call returns with failure.
- * 
+ *
  * Test Tear-down:
  * Destroy MediaKeys.
  * Server is terminated.
- *  
+ *
  * Expected Results:
  *  Client can get the metric system data successfully.
-*/
+ */
 TEST_F(GetMetricSystemDataTest, getApi)
 {
-
     // Step 1: Get the metric system data
     MediaKeysTestMethods::shouldGetMetricSystemData();
     MediaKeysTestMethods::getMetricSystemData();

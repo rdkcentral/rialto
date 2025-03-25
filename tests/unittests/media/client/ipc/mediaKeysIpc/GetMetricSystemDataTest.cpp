@@ -19,30 +19,29 @@
 
 #include "MediaKeysIpcTestBase.h"
 #include "MediaKeysProtoRequestMatchers.h"
- 
+
 class RialtoClientMediaKeysIpcGetMetricSystemDataTest : public MediaKeysIpcTestBase
 {
 protected:
     RialtoClientMediaKeysIpcGetMetricSystemDataTest() { createMediaKeysIpc(); }
 
     ~RialtoClientMediaKeysIpcGetMetricSystemDataTest() { destroyMediaKeysIpc(); }
- 
+
 public:
     void setGetMetricSystemDataResponseSuccess(google::protobuf::Message *response)
     {
-         firebolt::rialto::GetMetricSystemDataResponse *getMetricSystemDataResponse =
-        dynamic_cast<firebolt::rialto::GetMetricSystemDataResponse *>(response);
-            getMetricSystemDataResponse->set_error_status(
+        firebolt::rialto::GetMetricSystemDataResponse *getMetricSystemDataResponse =
+            dynamic_cast<firebolt::rialto::GetMetricSystemDataResponse *>(response);
+        getMetricSystemDataResponse->set_error_status(
             MediaKeysIpcTestBase::convertMediaKeyErrorStatus(MediaKeyErrorStatus::OK));
     }
- 
+
     void setGetMetricSystemDataResponseFailed(google::protobuf::Message *response)
     {
         firebolt::rialto::GetMetricSystemDataResponse *getMetricSystemDataResponse =
             dynamic_cast<firebolt::rialto::GetMetricSystemDataResponse *>(response);
-       getMetricSystemDataResponse->set_error_status(MediaKeysIpcTestBase::convertMediaKeyErrorStatus(m_errorStatus));
+        getMetricSystemDataResponse->set_error_status(MediaKeysIpcTestBase::convertMediaKeyErrorStatus(m_errorStatus));
     }
-    
 };
 
 /**
@@ -52,14 +51,14 @@ TEST_F(RialtoClientMediaKeysIpcGetMetricSystemDataTest, Success)
 {
     std::vector<uint8_t> buffer;
     expectIpcApiCallSuccess();
- 
+
     EXPECT_CALL(*m_channelMock,
-               CallMethod(methodMatcher("getMetricSystemData"), m_controllerMock.get(),
+                CallMethod(methodMatcher("getMetricSystemData"), m_controllerMock.get(),
                            getMetricSystemDataRequestMatcher(m_mediaKeysHandle), _, m_blockingClosureMock.get()))
-        .WillOnce(
-            WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcGetMetricSystemDataTest::setGetMetricSystemDataResponseSuccess)));
- 
-   EXPECT_EQ(m_mediaKeysIpc->getMetricSystemData(buffer), MediaKeyErrorStatus::OK);
+        .WillOnce(WithArgs<3>(
+            Invoke(this, &RialtoClientMediaKeysIpcGetMetricSystemDataTest::setGetMetricSystemDataResponseSuccess)));
+
+    EXPECT_EQ(m_mediaKeysIpc->getMetricSystemData(buffer), MediaKeyErrorStatus::OK);
 }
 
 /**
@@ -87,10 +86,11 @@ TEST_F(RialtoClientMediaKeysIpcGetMetricSystemDataTest, ReconnectChannel)
     expectIpcApiCallReconnected();
     expectUnsubscribeEvents();
     expectSubscribeEvents();
- 
+
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getMetricSystemData"), _, _, _, _))
-        .WillOnce(WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcGetMetricSystemDataTest::setGetMetricSystemDataResponseSuccess)));
- 
+        .WillOnce(WithArgs<3>(
+            Invoke(this, &RialtoClientMediaKeysIpcGetMetricSystemDataTest::setGetMetricSystemDataResponseSuccess)));
+
     EXPECT_EQ(m_mediaKeysIpc->getMetricSystemData(buffer), MediaKeyErrorStatus::OK);
 }
 
@@ -99,25 +99,25 @@ TEST_F(RialtoClientMediaKeysIpcGetMetricSystemDataTest, ReconnectChannel)
  */
 TEST_F(RialtoClientMediaKeysIpcGetMetricSystemDataTest, Failure)
 {
-   std::vector<uint8_t> buffer;
+    std::vector<uint8_t> buffer;
     expectIpcApiCallFailure();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getMetricSystemData"), _, _, _, _));
 
     EXPECT_EQ(m_mediaKeysIpc->getMetricSystemData(buffer), MediaKeyErrorStatus::FAIL);
 }
- 
+
 /**
  * Test that getMetricSystemData fails when api returns error.
  */
 TEST_F(RialtoClientMediaKeysIpcGetMetricSystemDataTest, ErrorReturn)
 {
-   std::vector<uint8_t> buffer;
+    std::vector<uint8_t> buffer;
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getMetricSystemData"), _, _, _, _))
-        .WillOnce(
-            WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcGetMetricSystemDataTest::setGetMetricSystemDataResponseFailed)));
+        .WillOnce(WithArgs<3>(
+            Invoke(this, &RialtoClientMediaKeysIpcGetMetricSystemDataTest::setGetMetricSystemDataResponseFailed)));
 
     EXPECT_EQ(m_mediaKeysIpc->getMetricSystemData(buffer), m_errorStatus);
 }

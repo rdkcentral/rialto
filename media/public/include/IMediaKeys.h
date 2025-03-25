@@ -298,7 +298,7 @@ public:
      *
      * @retval the return status value.
      */
-     virtual MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) = 0;
+    virtual MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) = 0;
 };
 
 }; // namespace firebolt::rialto

@@ -25,7 +25,7 @@ protected:
     std::vector<uint8_t> m_buffer{};
     uint32_t m_bufferLength{1024};
     const uint32_t kMaxBufferLength{65536};
-    
+
     RialtoServerMediaKeysGetMetricSystemDataTest()
     {
         createMediaKeys(kNetflixKeySystem);
@@ -35,8 +35,8 @@ protected:
 };
 
 /**
-* Test that GetMetricSystemData returns success.
-*/
+ * Test that GetMetricSystemData returns success.
+ */
 TEST_F(RialtoServerMediaKeysGetMetricSystemDataTest, Success)
 {
     mainThreadWillEnqueueTaskAndWait();
@@ -44,34 +44,35 @@ TEST_F(RialtoServerMediaKeysGetMetricSystemDataTest, Success)
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->getMetricSystemData(m_buffer));
 }
- 
+
 /**
-* Test that GetMetricSystemData interface not implemented returns failure.
+ * Test that GetMetricSystemData interface not implemented returns failure.
  */
 TEST_F(RialtoServerMediaKeysGetMetricSystemDataTest, InterfaceNotImplementedFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _)).WillOnce(Return(MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED));
+    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _))
+        .WillOnce(Return(MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED));
 
     EXPECT_EQ(MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED, m_mediaKeys->getMetricSystemData(m_buffer));
 }
 
 /**
-* Test that GetMetricSystemData buffer is too small and returns success after resizing the buffer.
+ * Test that GetMetricSystemData buffer is too small and returns success after resizing the buffer.
  */
 TEST_F(RialtoServerMediaKeysGetMetricSystemDataTest, BufferTooSmallSuccess)
 {
     mainThreadWillEnqueueTaskAndWaitMultiple(2);
 
     EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _))
-        .WillOnce(Return(MediaKeyErrorStatus::BUFFER_TOO_SMALL)) 
-        .WillOnce(Return(MediaKeyErrorStatus::OK));             
+        .WillOnce(Return(MediaKeyErrorStatus::BUFFER_TOO_SMALL))
+        .WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->getMetricSystemData(m_buffer));
 }
 
 /**
-* Test that GetMetricSystemData buffer is too small and returns failure after buffer size exceeding the maximum allowed size.
+ * Test that GetMetricSystemData buffer is too small and returns failure after buffer size exceeding the maximum allowed size.
  */
 TEST_F(RialtoServerMediaKeysGetMetricSystemDataTest, BufferTooSmallFailure)
 {
@@ -79,7 +80,7 @@ TEST_F(RialtoServerMediaKeysGetMetricSystemDataTest, BufferTooSmallFailure)
 
     EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _))
         .Times(7)
-        .WillRepeatedly(Return(MediaKeyErrorStatus::BUFFER_TOO_SMALL));             
+        .WillRepeatedly(Return(MediaKeyErrorStatus::BUFFER_TOO_SMALL));
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeys->getMetricSystemData(m_buffer));
 }

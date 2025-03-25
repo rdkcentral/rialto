@@ -24,6 +24,7 @@
 #include "opencdm/open_cdm.h"
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::wrappers
 {

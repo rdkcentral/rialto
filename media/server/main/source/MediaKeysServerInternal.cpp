@@ -701,11 +701,11 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     MediaKeyErrorStatus status;
     buffer.resize(bufferLength);
 
-    for(int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
+    for (int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
     {
-        auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer);};
+        auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer); };
         m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-        
+
         if (status == MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED)
         {
             RIALTO_SERVER_LOG_ERROR("Interface not implemented");
@@ -715,7 +715,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
         if (status == MediaKeyErrorStatus::BUFFER_TOO_SMALL)
         {
             RIALTO_SERVER_LOG_ERROR("Buffer size is too small");
-            if(bufferLength >= kMaxBufferLength)
+            if (bufferLength >= kMaxBufferLength)
             {
                 RIALTO_SERVER_LOG_ERROR("Buffer size exceeds the maximum allowed size");
                 return MediaKeyErrorStatus::FAIL;
@@ -725,16 +725,6 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
             continue;
         }
         break;
-    }
-
-    if(status == MediaKeyErrorStatus::OK)
-    {
-        RIALTO_SERVER_LOG_ERROR("Entered OK status to determine buffer test data:");
-        RIALTO_SERVER_LOG_ERROR("Buffer content (length: %d):", bufferLength);
-        for (size_t i = 0; i < bufferLength && i < buffer.size(); ++i)
-        {
-            RIALTO_SERVER_LOG_ERROR("  buffer[%zu] = 0x%02X", i, buffer[i]);
-        }
     }
     return status;
 }

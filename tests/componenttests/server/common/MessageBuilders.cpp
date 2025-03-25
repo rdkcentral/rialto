@@ -745,7 +745,6 @@ createCreateWebAudioPlayerRequest(uint32 pcmRate, uint32 pcmChannels, uint32 pcm
     return request;
 }
 
-
 ::firebolt::rialto::GetMetricSystemDataRequest createGetMetricSystemDataRequest(int mediaKeysHandle)
 {
     ::firebolt::rialto::GetMetricSystemDataRequest request;
