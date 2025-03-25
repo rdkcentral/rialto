@@ -111,7 +111,7 @@ extern "C"
         return OpenCDMBool::OPENCDM_BOOL_TRUE;
     }
 
-    OpenCDMError opencdm_get_metric_system_data(struct OpenCDMSystem *system, uint32_t *bufferLength, uint8_t *buffer);
+    OpenCDMError opencdm_get_metric_system_data(struct OpenCDMSystem *system, uint32_t *bufferLength, uint8_t *buffer)
     {
         return ERROR_NONE;
     }
