@@ -703,7 +703,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
     for (int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
     {
-        auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer); };
+        auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer); };
         m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 
         if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
@@ -714,11 +714,11 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
         if (bufferLength >= kMaxBufferLength)
         {
-            RIALTO_SERVER_LOG_ERROR("Buffer size exceeds the maximum allowed size");
+            RIALTO_SERVER_LOG_ERROR("Buffer size %u exceeds the maximum allowed size %u", bufferLength, kMaxBufferLength);
             return MediaKeyErrorStatus::BUFFER_TOO_SMALL;
         }
 
-        RIALTO_SERVER_LOG_WARN("Buffer too small, resizing to %u", bufferLength * 2);
+        RIALTO_SERVER_LOG_WARN("Buffer too small, resizing from %u to %u", bufferLength, bufferLength * 2);
         bufferLength *= 2;
         buffer.resize(bufferLength);
     }
@@ -726,11 +726,11 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     if (status == MediaKeyErrorStatus::OK)
     {
         buffer.resize(bufferLength);
-        RIALTO_SERVER_LOG_DEBUG("Successfully retrieved metric system data");
+        RIALTO_SERVER_LOG_DEBUG("Successfully retrieved metric system data, final buffer length: %u", bufferLength);
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to retrieve metric system data");
+        RIALTO_SERVER_LOG_ERROR("Failed to retrieve metric system data, status: %d, last buffer length tried: %u", static_cast<int>(status), bufferLength);
     }
     return status;
 }
