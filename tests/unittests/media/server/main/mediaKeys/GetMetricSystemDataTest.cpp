@@ -82,5 +82,5 @@ TEST_F(RialtoServerMediaKeysGetMetricSystemDataTest, BufferTooSmallFailure)
         .Times(7)
         .WillRepeatedly(Return(MediaKeyErrorStatus::BUFFER_TOO_SMALL));
 
-    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeys->getMetricSystemData(m_buffer));
+    EXPECT_EQ(MediaKeyErrorStatus::BUFFER_TOO_SMALL, m_mediaKeys->getMetricSystemData(m_buffer));
 }

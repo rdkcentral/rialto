@@ -706,25 +706,31 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
         auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(&bufferLength, &buffer); };
         m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 
-        if (status == MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED)
+        if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
         {
-            RIALTO_SERVER_LOG_ERROR("Interface not implemented");
-            return status;
+            RIALTO_SERVER_LOG_ERROR("Buffer too small");
+            break;
         }
 
-        if (status == MediaKeyErrorStatus::BUFFER_TOO_SMALL)
+        if (bufferLength >= kMaxBufferLength)
         {
-            RIALTO_SERVER_LOG_ERROR("Buffer size is too small");
-            if (bufferLength >= kMaxBufferLength)
-            {
-                RIALTO_SERVER_LOG_ERROR("Buffer size exceeds the maximum allowed size");
-                return MediaKeyErrorStatus::FAIL;
-            }
-            bufferLength *= 2;
-            buffer.resize(bufferLength);
-            continue;
+            RIALTO_SERVER_LOG_ERROR("Buffer size exceeds the maximum allowed size");
+            return MediaKeyErrorStatus::BUFFER_TOO_SMALL;
         }
-        break;
+
+        RIALTO_SERVER_LOG_WARN("Buffer too small, resizing to %u", bufferLength * 2);
+        bufferLength *= 2;
+        buffer.resize(bufferLength);
+    }
+
+    if (status == MediaKeyErrorStatus::OK)
+    {
+        buffer.resize(bufferLength);
+        RIALTO_SERVER_LOG_DEBUG("Successfully retrieved metric system data");
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to retrieve metric system data");
     }
     return status;
 }
