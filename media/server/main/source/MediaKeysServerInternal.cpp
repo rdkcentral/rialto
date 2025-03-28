@@ -756,7 +756,6 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     {
         RIALTO_SERVER_LOG_ERROR("Expected BUFFER_TOO_SMALL with valid size. Got status: %d, size: %u",
             static_cast<int>(status), bufferLength);
-        return status;
     }
 
     RIALTO_SERVER_LOG_ERROR("OCDM error status: %d (OpenCDMError), bufferLength: %u", error, bufferLength);
