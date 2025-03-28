@@ -40,7 +40,7 @@ protected:
 TEST_F(RialtoServerMediaKeysGetMetricSystemDataTest, Success)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _)).WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _,_)).WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeys->getMetricSystemData(m_buffer));
 }
@@ -51,7 +51,7 @@ TEST_F(RialtoServerMediaKeysGetMetricSystemDataTest, Success)
 TEST_F(RialtoServerMediaKeysGetMetricSystemDataTest, InterfaceNotImplementedFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _))
+    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _,_))
         .WillOnce(Return(MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED));
 
     EXPECT_EQ(MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED, m_mediaKeys->getMetricSystemData(m_buffer));
@@ -64,7 +64,7 @@ TEST_F(RialtoServerMediaKeysGetMetricSystemDataTest, BufferTooSmallSuccess)
 {
     mainThreadWillEnqueueTaskAndWaitMultiple(2);
 
-    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _))
+    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _,_))
         .WillOnce(Return(MediaKeyErrorStatus::BUFFER_TOO_SMALL))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
@@ -78,7 +78,7 @@ TEST_F(RialtoServerMediaKeysGetMetricSystemDataTest, BufferTooSmallFailure)
 {
     mainThreadWillEnqueueTaskAndWaitMultiple(7);
 
-    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _))
+    EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _,_))
         .Times(7)
         .WillRepeatedly(Return(MediaKeyErrorStatus::BUFFER_TOO_SMALL));
 

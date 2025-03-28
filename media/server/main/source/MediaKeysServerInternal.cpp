@@ -746,7 +746,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
     auto task = [&]() {
         std::vector<uint8_t> dummyBuffer;
-        status = m_ocdmSystem->getMetricSystemData(bufferLength, dummyBuffer);
+        status = m_ocdmSystem->getMetricSystemData(bufferLength, dummyBuffer, error);
     };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 
