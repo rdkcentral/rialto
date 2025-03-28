@@ -103,6 +103,8 @@ public:
 
     MediaKeyErrorStatus releaseKeySession(int32_t keySessionId) override;
 
+    MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) override;
+
 private:
     /**
      * @brief The ipc protobuf media keys stub.

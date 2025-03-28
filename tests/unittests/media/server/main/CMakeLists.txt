@@ -70,6 +70,7 @@ add_gtests (
         mediaKeys/IsNetflixPlayreadyKeySystemTest.cpp
         mediaKeys/PingTest.cpp
         mediaKeys/ReleaseKeySessionTest.cpp
+        mediaKeys/GetMetricSystemDataTest.cpp
 
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp

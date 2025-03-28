@@ -153,6 +153,14 @@ ProtoMediaKeyErrorStatus MediaKeysIpcTestBase::convertMediaKeyErrorStatus(firebo
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::NOT_SUPPORTED;
     }
+    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED;
+    }
+    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::BUFFER_TOO_SMALL;
+    }
     case firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE:
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::INVALID_STATE;

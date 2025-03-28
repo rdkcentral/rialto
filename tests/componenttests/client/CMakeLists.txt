@@ -85,6 +85,7 @@ add_gtests (
         tests/eme/SelectKeyIdTest.cpp
         tests/eme/SessionFailuresTest.cpp
         tests/eme/MediaKeysCapabilitiesTest.cpp
+        tests/eme/GetMetricSystemDataTest.cpp
         )
 
 add_subdirectory(mocks)

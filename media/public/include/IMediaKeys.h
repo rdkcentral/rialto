@@ -290,6 +290,15 @@ public:
      * @retval an error status.
      */
     virtual MediaKeyErrorStatus releaseKeySession(int32_t keySessionId) = 0;
+
+    /**
+     * @brief Get metrics for a DRM system
+     *
+     * @param[out]  buffer : Buffer that can hold the metric data
+     *
+     * @retval an error status.
+     */
+    virtual MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) = 0;
 };
 
 }; // namespace firebolt::rialto

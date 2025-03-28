@@ -307,3 +307,15 @@ TEST_F(MediaKeysModuleServiceTests, FactoryCreatesObject)
 {
     testFactoryCreatesObject();
 }
+
+TEST_F(MediaKeysModuleServiceTests, shouldGetMetricSystemData)
+{
+    cdmServiceWillGetMetricSystemData();
+    sendGetMetricSystemDataRequestAndReceiveResponse();
+}
+
+TEST_F(MediaKeysModuleServiceTests, shouldFailToGetMetricSystemData)
+{
+    cdmServiceWillFailToGetMetricSystemData();
+    sendGetMetricSystemDataRequestAndReceiveErrorResponse();
+}

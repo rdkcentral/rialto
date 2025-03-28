@@ -669,6 +669,14 @@ struct WebAudioGetVolume
     static constexpr auto m_kFunction{&Stub::getVolume};
 };
 
+struct GetMetricSystemData
+{
+    using RequestType = ::firebolt::rialto::GetMetricSystemDataRequest;
+    using ResponseType = ::firebolt::rialto::GetMetricSystemDataResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getMetricSystemData};
+};
+
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_ACTION_TRAITS_H_

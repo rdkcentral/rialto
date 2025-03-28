@@ -544,4 +544,18 @@ void CdmService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProce
         mediaKeys->ping(heartbeatProcedure->createHandler());
     }
 }
+
+MediaKeyErrorStatus CdmService::getMetricSystemData(int mediaKeysHandle, std::vector<uint8_t> &buffer)
+{
+    RIALTO_SERVER_LOG_DEBUG("CdmService requested to get metric system data: %d", mediaKeysHandle);
+
+    std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+    auto mediaKeysIter = m_mediaKeys.find(mediaKeysHandle);
+    if (mediaKeysIter == m_mediaKeys.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return mediaKeysIter->second->getMetricSystemData(buffer);
+}
 } // namespace firebolt::rialto::server::service

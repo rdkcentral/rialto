@@ -35,6 +35,8 @@ constexpr firebolt::rialto::KeySessionType kSessionTypeTemp{firebolt::rialto::Ke
 constexpr bool kIsNotLdl{false};
 constexpr firebolt::rialto::MediaKeyErrorStatus kStatusOk{firebolt::rialto::MediaKeyErrorStatus::OK};
 constexpr firebolt::rialto::MediaKeyErrorStatus kStatusFailed{firebolt::rialto::MediaKeyErrorStatus::FAIL};
+constexpr firebolt::rialto::MediaKeyErrorStatus kStatusInterfaceNotImplemented{
+    firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED};
 constexpr firebolt::rialto::InitDataType kInitDataTypeCenc{firebolt::rialto::InitDataType::CENC};
 const std::vector<unsigned char> kLicenseRequestMessage{'r', 'e', 'q', 'u', 'e', 's', 't'};
 const std::vector<unsigned char> kLicensRenewalMessage{'r', 'e', 'n', 'e', 'w', 'a', 'l'};
@@ -60,6 +62,7 @@ const std::string kInvalidKeySystem{"notExpected"};
 const std::vector<std::string> kKeySystems(firebolt::rialto::server::kSupportedKeySystems.begin(),
                                            firebolt::rialto::server::kSupportedKeySystems.end());
 const std::string kVersion{"123"};
+const std::vector<uint8_t> kBuffer{0x1, 0x2, 0x3, 0x4};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -699,5 +702,32 @@ void MediaKeysTestMethods::shouldNotSupportServerCertificate()
 void MediaKeysTestMethods::doesNotSupportServerCertificate()
 {
     EXPECT_FALSE(m_mediaKeysCapabilities->isServerCertificateSupported(kKeySystems[0]));
+}
+
+void MediaKeysTestMethods::shouldGetMetricSystemData()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock, getMetricSystemData(_, getMetricSystemDataRequestMatcher(kMediaKeysHandle), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->getMetricSystemDataResponse(kStatusOk, kBuffer)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::getMetricSystemData()
+{
+    std::vector<uint8_t> buffer;
+    EXPECT_EQ(m_mediaKeys->getMetricSystemData(buffer), kStatusOk);
+    EXPECT_EQ(kBuffer, buffer);
+}
+
+void MediaKeysTestMethods::shouldFailToGetMetricSystemData()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock, getMetricSystemData(_, getMetricSystemDataRequestMatcher(kMediaKeysHandle), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->getMetricSystemDataResponse(kStatusFailed, {})),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::getMetricSystemDataFailure()
+{
+    std::vector<uint8_t> buffer;
+    EXPECT_EQ(m_mediaKeys->getMetricSystemData(buffer), kStatusFailed);
 }
 } // namespace firebolt::rialto::client::ct
