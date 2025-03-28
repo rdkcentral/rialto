@@ -742,6 +742,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
     uint32_t bufferLength{0};
     MediaKeyErrorStatus status;
+    int error{0}; 
 
     auto task = [&]() {
         std::vector<uint8_t> dummyBuffer;
@@ -757,6 +758,8 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
             static_cast<int>(status), bufferLength);
         return status;
     }
+
+    RIALTO_SERVER_LOG_DEBUG("OCDM error status: %d (OpenCDMError), bufferLength: %u", error, bufferLength);
 
     return status;
 }
