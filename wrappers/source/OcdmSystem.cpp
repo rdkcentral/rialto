@@ -120,7 +120,7 @@ bool OcdmSystem::supportsServerCertificate() const
 
 MediaKeyErrorStatus OcdmSystem::getMetricSystemData(uint32_t &bufferLength, std::vector<uint8_t> &buffer, int &error)
 {
-    error = static_cast<int>(opencdm_get_metric_system_data(m_systemHandle, bufferLength, nullptr));
+    error = static_cast<int>(opencdm_get_metric_system_data(m_systemHandle, &bufferLength, nullptr));
     return convertOpenCdmError(static_cast<OpenCDMError>(error));
 }
 
