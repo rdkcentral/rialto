@@ -53,10 +53,10 @@ void GetMetricSystemDataTest::willGetMetricSystemData()
 {
     EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _))
         .WillOnce(testing::Invoke(
-            [&](uint32_t *bufferLength, std::vector<uint8_t> *buffer) -> MediaKeyErrorStatus
+            [&](uint32_t &bufferLength, std::vector<uint8_t> &buffer) -> MediaKeyErrorStatus
             {
-                *bufferLength = m_kBuffer.size();
-                *buffer = m_kBuffer;
+                bufferLength = m_kBuffer.size();
+                buffer = m_kBuffer;
                 return MediaKeyErrorStatus::OK;
             }));
 }
@@ -76,10 +76,10 @@ void GetMetricSystemDataTest::willFailGetMetricSystemData()
 {
     EXPECT_CALL(*m_ocdmSystemMock, getMetricSystemData(_, _))
         .WillOnce(testing::Invoke(
-            [&](uint32_t *bufferLength, std::vector<uint8_t> *buffer) -> MediaKeyErrorStatus
+            [&](uint32_t &bufferLength, std::vector<uint8_t> &buffer) -> MediaKeyErrorStatus
             {
-                *bufferLength = m_kBuffer.size();
-                *buffer = m_kBuffer;
+                bufferLength = m_kBuffer.size();
+                buffer = m_kBuffer;
                 return MediaKeyErrorStatus::FAIL;
             }));
 }

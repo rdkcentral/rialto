@@ -708,7 +708,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
         if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
         {
-            RIALTO_SERVER_LOG_ERROR("Buffer too small");
+            RIALTO_SERVER_LOG_ERROR("Buffer too small with a size of %u", bufferLength);
             break;
         }
 
@@ -718,7 +718,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
             return MediaKeyErrorStatus::BUFFER_TOO_SMALL;
         }
 
-        RIALTO_SERVER_LOG_WARN("Buffer too small, resizing from %u to %u", bufferLength, bufferLength * 2);
+        RIALTO_SERVER_LOG_WARN("Buffer is too small, resizing from %u to %u", bufferLength, bufferLength * 2);
         bufferLength *= 2;
         buffer.resize(bufferLength);
     }
@@ -730,7 +730,8 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to retrieve metric system data, status: %d, last buffer length tried: %u", static_cast<int>(status), bufferLength);
+        RIALTO_SERVER_LOG_ERROR("Failed to retrieve metric system data, status: %d, last buffer length tried: %u",
+                                static_cast<int>(status), bufferLength);
     }
     return status;
 }
