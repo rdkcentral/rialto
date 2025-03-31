@@ -24,6 +24,25 @@
 
 namespace firebolt::rialto
 {
+const char *toString(const MediaKeyErrorStatus &status)
+{
+    switch (status)
+    {
+    case firebolt::rialto::MediaKeyErrorStatus::OK:
+        return "OK";
+    case firebolt::rialto::MediaKeyErrorStatus::BAD_SESSION_ID:
+        return "BAD_SESSION_ID";
+    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+        return "INTERFACE_NOT_IMPLEMENTED";
+    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+        return "BUFFER_TOO_SMALL";
+    case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
+        return "NOT_SUPPORTED";
+    default:
+        return "FAIL";
+    }
+}
+
 std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
 {
     return server::IMediaKeysServerInternalFactory::createFactory();
@@ -708,7 +727,6 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
         if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
         {
-            RIALTO_SERVER_LOG_ERROR("Buffer too small with a size of %u", bufferLength);
             break;
         }
 
@@ -725,13 +743,16 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
     if (status == MediaKeyErrorStatus::OK)
     {
+        // If the buffer remains larger than bufferLength (e.g., due to a previous resize),
+        // the client may read beyond the valid data and have values in the extra space.
+        // So this resize would ensure the buffer is trimmed to the correct size.
         buffer.resize(bufferLength);
         RIALTO_SERVER_LOG_DEBUG("Successfully retrieved metric system data, final buffer length: %u", bufferLength);
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to retrieve metric system data, status: %d, last buffer length tried: %u",
-                                static_cast<int>(status), bufferLength);
+        RIALTO_SERVER_LOG_ERROR("Failed to retrieve metric system data, status: %s, last buffer length tried: %u",
+                                firebolt::rialto::toString(status), bufferLength);
     }
     return status;
 }
