@@ -711,59 +711,6 @@ void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbea
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 
-// MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
-// {
-//     RIALTO_SERVER_LOG_DEBUG("entry:");
-
-//     uint32_t bufferLength{1024};
-//     const uint32_t kMaxBufferLength{65536};
-//     MediaKeyErrorStatus status;
-//     int error{0}; 
-//     buffer.resize(bufferLength);
-    
-//     for (int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
-//     {
-//         RIALTO_SERVER_LOG_ERROR("Calling getMetricSystemData with buffer size: %u", bufferLength);
-        
-//         auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer, error); };
-//         m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-        
-//         RIALTO_SERVER_LOG_ERROR("Status after getMetricSystemData call: %s", firebolt::rialto::toString(status));
-//         RIALTO_SERVER_LOG_ERROR("Error value from getMetricSystemData: %d", error);
-
-//         if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
-//         {
-//             break;
-//         }
-
-//         if (bufferLength >= kMaxBufferLength)
-//         {
-//             RIALTO_SERVER_LOG_ERROR("Buffer size %u exceeds the maximum allowed size %u", bufferLength, kMaxBufferLength);
-//             return MediaKeyErrorStatus::BUFFER_TOO_SMALL;
-//         }
-
-//         // RIALTO_SERVER_LOG_WARN("Buffer is too small, resizing from %u to %u", bufferLength, bufferLength * 2);
-//         RIALTO_SERVER_LOG_ERROR("Buffer is too small, resizing from %u to %u", bufferLength, bufferLength * 2);
-//         bufferLength *= 2;
-//         buffer.resize(bufferLength);
-//     }
-
-//     if (status == MediaKeyErrorStatus::OK)
-//     {
-//         // If the buffer remains larger than bufferLength (e.g., due to a previous resize),
-//         // the client may read beyond the valid data and have values in the extra space.
-//         // So this resize would ensure the buffer is trimmed to the correct size.
-//         buffer.resize(bufferLength);
-//         RIALTO_SERVER_LOG_DEBUG("Successfully retrieved metric system data, final buffer length: %u", bufferLength);
-//     }
-//     else
-//     {
-//         RIALTO_SERVER_LOG_ERROR("Failed to retrieve metric system data, status: %s, last buffer length tried: %u, error: %d",
-//                                 firebolt::rialto::toString(status), bufferLength, error);
-//     }
-//     return status;
-// }
-
 MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -773,33 +720,19 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     MediaKeyErrorStatus status;
     int error{0}; 
     buffer.resize(bufferLength);
-
-    if (!m_ocdmSystem)
-    {
-        RIALTO_SERVER_LOG_ERROR("m_ocdmSystem is null — cannot call getMetricSystemData");
-        return MediaKeyErrorStatus::FAIL;
-    }
-
+    
     for (int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
     {
         RIALTO_SERVER_LOG_ERROR("Calling getMetricSystemData with buffer size: %u", bufferLength);
-
-        try
-        {
-            auto task = [&]() {
-                status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer, error);
-                RIALTO_SERVER_LOG_ERROR("BufferLength: %u, error: %d, status: %s", bufferLength, error, firebolt::rialto::toString(status));
-            };
-            m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-        }
-        catch (const std::exception &e)
-        {
-            RIALTO_SERVER_LOG_ERROR("Exception caught during getMetricSystemData: %s", e.what());
-            return MediaKeyErrorStatus::FAIL;
-        }
-
-        RIALTO_SERVER_LOG_DEBUG("Status after getMetricSystemData call: %s", firebolt::rialto::toString(status));
-        RIALTO_SERVER_LOG_DEBUG("Error value from getMetricSystemData: %d", error);
+        
+        auto task = [&]() { 
+            RIALTO_SERVER_LOG_ERROR("BEFORE: BufferLength: %u, error: %d, status: %s", bufferLength, error, firebolt::rialto::toString(status)); 
+            status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer, error);
+            RIALTO_SERVER_LOG_ERROR("AFTER: BufferLength: %u, error: %d, status: %s", bufferLength, error, firebolt::rialto::toString(status)); };
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        
+        RIALTO_SERVER_LOG_ERROR("Status after getMetricSystemData call: %s", firebolt::rialto::toString(status));
+        RIALTO_SERVER_LOG_ERROR("Error value from getMetricSystemData: %d", error);
 
         if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
         {
@@ -812,13 +745,17 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
             return MediaKeyErrorStatus::BUFFER_TOO_SMALL;
         }
 
-        RIALTO_SERVER_LOG_WARN("Buffer is too small, resizing from %u to %u", bufferLength, bufferLength * 2);
+        // RIALTO_SERVER_LOG_WARN("Buffer is too small, resizing from %u to %u", bufferLength, bufferLength * 2);
+        RIALTO_SERVER_LOG_ERROR("Buffer is too small, resizing from %u to %u", bufferLength, bufferLength * 2);
         bufferLength *= 2;
         buffer.resize(bufferLength);
     }
 
     if (status == MediaKeyErrorStatus::OK)
     {
+        // If the buffer remains larger than bufferLength (e.g., due to a previous resize),
+        // the client may read beyond the valid data and have values in the extra space.
+        // So this resize would ensure the buffer is trimmed to the correct size.
         buffer.resize(bufferLength);
         RIALTO_SERVER_LOG_DEBUG("Successfully retrieved metric system data, final buffer length: %u", bufferLength);
     }
@@ -827,9 +764,75 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
         RIALTO_SERVER_LOG_ERROR("Failed to retrieve metric system data, status: %s, last buffer length tried: %u, error: %d",
                                 firebolt::rialto::toString(status), bufferLength, error);
     }
-
     return status;
 }
+
+// MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
+// {
+//     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+//     uint32_t bufferLength{1024};
+//     const uint32_t kMaxBufferLength{65536};
+//     MediaKeyErrorStatus status;
+//     int error{0}; 
+//     buffer.resize(bufferLength);
+
+//     if (!m_ocdmSystem)
+//     {
+//         RIALTO_SERVER_LOG_ERROR("m_ocdmSystem is null — cannot call getMetricSystemData");
+//         return MediaKeyErrorStatus::FAIL;
+//     }
+
+//     for (int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
+//     {
+//         RIALTO_SERVER_LOG_ERROR("Calling getMetricSystemData with buffer size: %u", bufferLength);
+
+//         try
+//         {
+//             auto task = [&]() {
+//                 status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer, error);
+//                 RIALTO_SERVER_LOG_ERROR("BufferLength: %u, error: %d, status: %s", bufferLength, error, firebolt::rialto::toString(status));
+//             };
+//             m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+//         }
+//         catch (const std::exception &e)
+//         {
+//             RIALTO_SERVER_LOG_ERROR("Exception caught during getMetricSystemData: %s", e.what());
+//             return MediaKeyErrorStatus::FAIL;
+//         }
+
+//         RIALTO_SERVER_LOG_DEBUG("Status after getMetricSystemData call: %s", firebolt::rialto::toString(status));
+//         RIALTO_SERVER_LOG_DEBUG("Error value from getMetricSystemData: %d", error);
+
+//         if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
+//         {
+//             break;
+//         }
+
+//         if (bufferLength >= kMaxBufferLength)
+//         {
+//             RIALTO_SERVER_LOG_ERROR("Buffer size %u exceeds the maximum allowed size %u", bufferLength, kMaxBufferLength);
+//             return MediaKeyErrorStatus::BUFFER_TOO_SMALL;
+//         }
+
+//         RIALTO_SERVER_LOG_WARN("Buffer is too small, resizing from %u to %u", bufferLength, bufferLength * 2);
+//         bufferLength *= 2;
+//         buffer.resize(bufferLength);
+//     }
+
+//     if (status == MediaKeyErrorStatus::OK)
+//     {
+//         buffer.resize(bufferLength);
+//         RIALTO_SERVER_LOG_DEBUG("Successfully retrieved metric system data, final buffer length: %u", bufferLength);
+//     }
+//     else
+//     {
+//         RIALTO_SERVER_LOG_ERROR("Failed to retrieve metric system data, status: %s, last buffer length tried: %u, error: %d",
+//                                 firebolt::rialto::toString(status), bufferLength, error);
+//     }
+
+//     return status;
+// }
 
 
 // MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
