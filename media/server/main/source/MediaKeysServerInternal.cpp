@@ -788,6 +788,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
         {
             auto task = [&]() {
                 status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer, error);
+                RIALTO_SERVER_LOG_ERROR("BufferLength: %u, error: %d, status: %s", bufferLength, error, firebolt::rialto::toString(status));
             };
             m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
         }
