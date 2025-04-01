@@ -24,7 +24,7 @@
 
 namespace firebolt::rialto
 {
-const char *MediaKeyErrorStatustoString(const MediaKeyErrorStatus &status)
+const char *MediaKeyErrorStatusToString(const MediaKeyErrorStatus &status)
 {
     switch (status)
     {
@@ -727,15 +727,15 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
         auto task = [&]()
         {
             RIALTO_SERVER_LOG_ERROR("BEFORE: BufferLength: %u, status: %s", bufferLength,
-                                    firebolt::rialto::MediaKeyErrorStatustoString(status));
+                                    firebolt::rialto::MediaKeyErrorStatusToString(status));
             status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer);
             RIALTO_SERVER_LOG_ERROR("AFTER: BufferLength: %u, status: %s", bufferLength,
-                                    firebolt::rialto::MediaKeyErrorStatustoString(status));
+                                    firebolt::rialto::MediaKeyErrorStatusToString(status));
         };
         m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 
         RIALTO_SERVER_LOG_ERROR("Status after getMetricSystemData call: %s",
-                                firebolt::rialto::MediaKeyErrorStatustoString(status));
+                                firebolt::rialto::MediaKeyErrorStatusToString(status));
 
         if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
         {
@@ -764,7 +764,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
     else
     {
         RIALTO_SERVER_LOG_ERROR("Failed to retrieve metric system data, status: %s, last buffer length tried: %u",
-                                firebolt::rialto::MediaKeyErrorStatustoString(status), bufferLength);
+                                firebolt::rialto::MediaKeyErrorStatusToString(status), bufferLength);
     }
     return status;
 }
