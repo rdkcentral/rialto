@@ -118,16 +118,10 @@ bool OcdmSystem::supportsServerCertificate() const
     return OpenCDMBool::OPENCDM_BOOL_TRUE == opencdm_system_supports_server_certificate(m_systemHandle);
 }
 
-// MediaKeyErrorStatus OcdmSystem::getMetricSystemData(uint32_t &bufferLength, std::vector<uint8_t> &buffer)
-// {
-//     OpenCDMError status = opencdm_get_metric_system_data(m_systemHandle, &bufferLength, buffer.data());
-//     return convertOpenCdmError(status);
-// }
-
-MediaKeyErrorStatus OcdmSystem::getMetricSystemData(uint32_t &bufferLength, std::vector<uint8_t> &buffer, int &error)
+MediaKeyErrorStatus OcdmSystem::getMetricSystemData(uint32_t &bufferLength, std::vector<uint8_t> &buffer)
 {
-    error = static_cast<int>(opencdm_get_metric_system_data(m_systemHandle, &bufferLength, nullptr));
-    return convertOpenCdmError(static_cast<OpenCDMError>(error));
+    OpenCDMError status = opencdm_get_metric_system_data(m_systemHandle, &bufferLength, buffer.data());
+    return convertOpenCdmError(status);
 }
 
 }; // namespace firebolt::rialto::wrappers
