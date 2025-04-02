@@ -722,8 +722,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
     for (int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
     {
-        auto task = [&]()
-        { status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer); };
+        auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer); };
         m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 
         if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
