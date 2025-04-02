@@ -743,9 +743,8 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
     if (status == MediaKeyErrorStatus::OK)
     {
-        // If the buffer remains larger than bufferLength (e.g., due to a previous resize),
-        // the client may read beyond the valid data and have values in the extra space.
-        // So this resize would ensure the buffer is trimmed to the correct size.
+        // If the buffer remains larger than bufferLength (due to a previous resize),
+        // the client may have values in the extra space. So this resize would ensure the buffer is trimmed to the correct size.
         buffer.resize(bufferLength);
         RIALTO_SERVER_LOG_DEBUG("Successfully retrieved metric system data, final buffer length: %u", bufferLength);
     }
