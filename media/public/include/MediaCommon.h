@@ -286,10 +286,10 @@ enum class MediaKeyErrorStatus
     OK,                        /**< No error. */
     FAIL,                      /**< An unspecified error occurred. */
     BAD_SESSION_ID,            /**< The session id is not recognised. */
-    INTERFACE_NOT_IMPLEMENTED, /**< The interface is not implemented. */
-    BUFFER_TOO_SMALL,          /**< The size of the buffer is too small. */
     NOT_SUPPORTED,             /**< The request parameters are not supported. */
-    INVALID_STATE              /**< The object is in an invalid state for the operation. */
+    INVALID_STATE,             /**< The object is in an invalid state for the operation. */
+    INTERFACE_NOT_IMPLEMENTED, /**< The interface is not implemented. */
+    BUFFER_TOO_SMALL           /**< The size of the buffer is too small. */
 };
 
 /**
