@@ -722,20 +722,9 @@ MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uin
 
     for (int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
     {
-        RIALTO_SERVER_LOG_ERROR("Calling getMetricSystemData with buffer size: %u", bufferLength);
-
         auto task = [&]()
-        {
-            RIALTO_SERVER_LOG_ERROR("BEFORE: BufferLength: %u, status: %s", bufferLength,
-                                    firebolt::rialto::mediaKeyErrorStatusToString(status));
-            status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer);
-            RIALTO_SERVER_LOG_ERROR("AFTER: BufferLength: %u, status: %s", bufferLength,
-                                    firebolt::rialto::mediaKeyErrorStatusToString(status));
-        };
+        { status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer); };
         m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-
-        RIALTO_SERVER_LOG_ERROR("Status after getMetricSystemData call: %s",
-                                firebolt::rialto::mediaKeyErrorStatusToString(status));
 
         if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
         {
