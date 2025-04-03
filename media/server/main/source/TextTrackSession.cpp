@@ -91,7 +91,7 @@ bool TextTrackSession::resetSession(bool isMuted)
         }
     }
 
-    if(!wasDataTypeSelected)
+    if (!wasDataTypeSelected)
     {
         return false;
     }
