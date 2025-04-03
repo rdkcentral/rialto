@@ -60,26 +60,29 @@ TextTrackSession::~TextTrackSession()
     m_textTrackAccessor->closeSession(m_sessionId);
 }
 
-bool TextTrackSession::resetSession()
+bool TextTrackSession::resetSession(bool isMuted)
 {
+    // There is no explicit call to flush TextTrack's data. The only way to do that is by resetting the session, but it
+    // also requires resetting the data type and mute values
     if (!m_textTrackAccessor->resetSession(m_sessionId))
     {
         return false;
     }
 
+    bool wasDataTypeSelected = false;
     if (m_dataType == ITextTrackAccessor::DataType::WebVTT)
     {
-        return setSessionWebVTTSelection();
+        wasDataTypeSelected = setSessionWebVTTSelection();
     }
     else if (m_dataType == ITextTrackAccessor::DataType::TTML)
     {
-        return setSessionTTMLSelection();
+        wasDataTypeSelected = setSessionTTMLSelection();
     }
     else if (m_dataType == ITextTrackAccessor::DataType::CC)
     {
         if (m_ccService.has_value())
         {
-            return setSessionCCSelection(m_ccService.value());
+            wasDataTypeSelected = setSessionCCSelection(m_ccService.value());
         }
         else
         {
@@ -88,7 +91,13 @@ bool TextTrackSession::resetSession()
         }
     }
 
-    return true;
+    if(!wasDataTypeSelected)
+    {
+        return false;
+    }
+
+    // data type selection resets mute value in TextTrack to default (false), therefore we need to set it after data type selection
+    return mute(isMuted);
 }
 
 bool TextTrackSession::pause()

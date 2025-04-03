@@ -135,3 +135,15 @@ TEST_F(TextTrackSessionTest, shouldSendTTMLData)
         .WillOnce(Return(true));
     EXPECT_TRUE(m_sut->sendData(kData, kDisplayOffsetMs));
 }
+
+TEST_F(TextTrackSessionTest, shouldResetSession)
+{
+    createSut();
+    EXPECT_CALL(*m_accessorMock, setSessionTTMLSelection(kSessionId)).Times(2).WillRepeatedly(Return(true));
+    EXPECT_TRUE(m_sut->setSessionTTMLSelection());
+
+    EXPECT_CALL(*m_accessorMock, resetSession(kSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(*m_accessorMock, mute(kSessionId, true)).WillOnce(Return(true));
+
+    EXPECT_TRUE(m_sut->resetSession(true));
+}
