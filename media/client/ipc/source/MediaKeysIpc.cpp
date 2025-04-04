@@ -35,6 +35,14 @@ convertMediaKeyErrorStatus(const firebolt::rialto::ProtoMediaKeyErrorStatus &err
     {
         return firebolt::rialto::MediaKeyErrorStatus::BAD_SESSION_ID;
     }
+    case firebolt::rialto::ProtoMediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+    {
+        return firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED;
+    }
+    case firebolt::rialto::ProtoMediaKeyErrorStatus::BUFFER_TOO_SMALL:
+    {
+        return firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL;
+    }
     case firebolt::rialto::ProtoMediaKeyErrorStatus::NOT_SUPPORTED:
     {
         return firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED;
@@ -94,6 +102,14 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &errorStatus)
     case firebolt::rialto::MediaKeyErrorStatus::BAD_SESSION_ID:
     {
         return "BAD_SESSION_ID";
+    }
+    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+    {
+        return "INTERFACE_NOT_IMPLEMENTED";
+    }
+    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+    {
+        return "BUFFER_TOO_SMALL";
     }
     case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
     {
@@ -885,6 +901,36 @@ MediaKeysIpc::getMediaKeyErrorStatusFromResponse(const std::string methodName,
     }
 
     return returnStatus;
+}
+
+MediaKeyErrorStatus MediaKeysIpc::getMetricSystemData(std::vector<uint8_t> &buffer)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return MediaKeyErrorStatus::FAIL;
+    }
+
+    firebolt::rialto::GetMetricSystemDataRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+
+    firebolt::rialto::GetMetricSystemDataResponse response;
+    // Default error status to FAIL
+    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
+
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaKeysStub->getMetricSystemData(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    if (ProtoMediaKeyErrorStatus::OK == response.error_status())
+    {
+        buffer = std::vector<uint8_t>(response.buffer().begin(), response.buffer().end());
+    }
+
+    return getMediaKeyErrorStatusFromResponse("getMetricSystemData", ipcController, response.error_status());
 }
 
 }; // namespace firebolt::rialto::client

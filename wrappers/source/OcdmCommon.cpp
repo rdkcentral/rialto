@@ -33,6 +33,14 @@ firebolt::rialto::MediaKeyErrorStatus convertOpenCdmError(const OpenCDMError &st
     {
         return firebolt::rialto::MediaKeyErrorStatus::BAD_SESSION_ID;
     }
+    case OpenCDMError::ERROR_INTERFACE_NOT_IMPLEMENTED:
+    {
+        return firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED;
+    }
+    case OpenCDMError::ERROR_BUFFER_TOO_SMALL:
+    {
+        return firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL;
+    }
     case OpenCDMError::ERROR_KEYSYSTEM_NOT_SUPPORTED:
     {
         return firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED;

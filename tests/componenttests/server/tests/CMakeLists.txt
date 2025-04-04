@@ -38,6 +38,7 @@ add_gtests (
         mediaKeys/MediaKeysTestMethods.cpp
         mediaKeys/SessionReadyForDecryptionTest.cpp
         mediaKeys/SetDrmHeaderTest.cpp
+        mediaKeys/GetMetricSystemDataTest.cpp
         mediaKeysCapabilities/MediaKeysCapabilitiesTest.cpp
         mediaPipeline/AudioOnlyPlaybackTest.cpp
         mediaPipeline/AudioSourceSwitchTest.cpp
