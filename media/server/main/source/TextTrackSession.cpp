@@ -60,26 +60,29 @@ TextTrackSession::~TextTrackSession()
     m_textTrackAccessor->closeSession(m_sessionId);
 }
 
-bool TextTrackSession::resetSession()
+bool TextTrackSession::resetSession(bool isMuted)
 {
+    // There is no direct way to clear TextTrack's data. The only option is to reset the session, but that also resets
+    // the data type and mute values
     if (!m_textTrackAccessor->resetSession(m_sessionId))
     {
         return false;
     }
 
+    bool wasDataTypeSelected = false;
     if (m_dataType == ITextTrackAccessor::DataType::WebVTT)
     {
-        return setSessionWebVTTSelection();
+        wasDataTypeSelected = setSessionWebVTTSelection();
     }
     else if (m_dataType == ITextTrackAccessor::DataType::TTML)
     {
-        return setSessionTTMLSelection();
+        wasDataTypeSelected = setSessionTTMLSelection();
     }
     else if (m_dataType == ITextTrackAccessor::DataType::CC)
     {
         if (m_ccService.has_value())
         {
-            return setSessionCCSelection(m_ccService.value());
+            wasDataTypeSelected = setSessionCCSelection(m_ccService.value());
         }
         else
         {
@@ -88,7 +91,14 @@ bool TextTrackSession::resetSession()
         }
     }
 
-    return true;
+    if (!wasDataTypeSelected)
+    {
+        return false;
+    }
+
+    // changing the data type resets the mute value in TextTrack to its default (false), so we need to set mute
+    // after selecting the data type
+    return mute(isMuted);
 }
 
 bool TextTrackSession::pause()
