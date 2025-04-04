@@ -41,7 +41,7 @@ constexpr int kHardcodedMediaKeysHandle{2};
 constexpr firebolt::rialto::KeySessionType kKeySessionType{firebolt::rialto::KeySessionType::TEMPORARY};
 constexpr bool kIsLDL{false};
 constexpr int kKeySessionId{3};
-constexpr firebolt::rialto::MediaKeyErrorStatus kErrorStatus{firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE};
+constexpr firebolt::rialto::MediaKeyErrorStatus kErrorStatus{firebolt::rialto::MediaKeyErrorStatus::FAIL};
 constexpr firebolt::rialto::InitDataType kInitDataType{firebolt::rialto::InitDataType::CENC};
 const std::vector<std::uint8_t> kInitData{6, 7, 2};
 const std::vector<std::uint8_t> kResponseData{9, 7, 8};
@@ -364,6 +364,19 @@ void MediaKeysModuleServiceTests::cdmServiceWillFailToReleaseKeySession()
 {
     expectRequestSuccess();
     EXPECT_CALL(m_cdmServiceMock, releaseKeySession(kHardcodedMediaKeysHandle, kKeySessionId)).WillOnce(Return(kErrorStatus));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillGetMetricSystemData()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getMetricSystemData(kHardcodedMediaKeysHandle, _))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillFailToGetMetricSystemData()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getMetricSystemData(kHardcodedMediaKeysHandle, _)).WillOnce(Return(kErrorStatus));
 }
 
 void MediaKeysModuleServiceTests::mediaClientWillSendLicenseRequestEvent()
@@ -951,4 +964,26 @@ void MediaKeysModuleServiceTests::testFactoryCreatesObject()
         firebolt::rialto::server::ipc::IMediaKeysModuleServiceFactory::createFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_NE(factory->create(m_cdmServiceMock), nullptr);
+}
+
+void MediaKeysModuleServiceTests::sendGetMetricSystemDataRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetMetricSystemDataRequest request;
+    firebolt::rialto::GetMetricSystemDataResponse response;
+
+    request.set_media_keys_handle(kHardcodedMediaKeysHandle);
+
+    m_service->getMetricSystemData(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendGetMetricSystemDataRequestAndReceiveErrorResponse()
+{
+    firebolt::rialto::GetMetricSystemDataRequest request;
+    firebolt::rialto::GetMetricSystemDataResponse response;
+
+    request.set_media_keys_handle(kHardcodedMediaKeysHandle);
+
+    m_service->getMetricSystemData(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(kErrorStatus, convertMediaKeyErrorStatus(response.error_status()));
 }

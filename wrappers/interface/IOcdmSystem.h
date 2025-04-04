@@ -22,10 +22,12 @@
 
 #include "IOcdmSession.h"
 #include "IOcdmSessionClient.h"
+
 #include <MediaCommon.h>
 #include <memory>
 #include <stdint.h>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::wrappers
 {
@@ -145,6 +147,20 @@ public:
      * @retval true if server certificate is supported
      */
     virtual bool supportsServerCertificate() const = 0;
+
+    /**
+     * @brief Get metrics for a DRM system
+     *
+     * Some DRMs (e.g. WideVine) offer metric data that can be used for any
+     * analyses. This function retrieves the metric data of the passed in
+     * system. It is up to the callee to interpret the binary data correctly.
+     *
+     * @param[out]  bufferLength : Actual buffer length of the buffer parameter
+     * @param[out]  buffer       : Buffer that can hold the metric data
+     *
+     * @retval the return status value.
+     */
+    virtual MediaKeyErrorStatus getMetricSystemData(uint32_t &bufferLength, std::vector<uint8_t> &buffer) = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

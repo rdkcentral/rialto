@@ -65,6 +65,7 @@ public:
     void mediaKeysWillNotFindMediaKeySession();
     void mediaKeysWillCheckIfKeySystemIsPlayready(bool result);
     void mediaKeysWillPing();
+    void mediaKeysWillGetMetricSystemDataWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
 
     void mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
     void mediaKeysCapabilitiesFactoryWillReturnNullptr();
@@ -107,6 +108,7 @@ public:
     void decrementSessionIdUsageCounter();
     void incrementSessionIdUsageCounterFails();
     void decrementSessionIdUsageCounterFails();
+    void getMetricSystemDataShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
 
     void getSupportedKeySystemsShouldSucceed();
     void getSupportedKeySystemsReturnNon();

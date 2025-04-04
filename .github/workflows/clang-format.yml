@@ -67,7 +67,6 @@ jobs:
       - name: Run clang-format
         run: |
               find . -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec clang-format-18 -style=file -n --Werror {} \; &> clang-format_errors.log
-
       # Process the clang-format errors and generate a junit xml file
       # Generate a failure if errors detected
       - name: Process clang-format results
