@@ -62,8 +62,8 @@ TextTrackSession::~TextTrackSession()
 
 bool TextTrackSession::resetSession(bool isMuted)
 {
-    // There is no explicit call to flush TextTrack's data. The only way to do that is by resetting the session, but it
-    // also requires resetting the data type and mute values
+    // There is no direct way to clear TextTrack's data. The only option is to reset the session, but that also resets
+    // the data type and mute values
     if (!m_textTrackAccessor->resetSession(m_sessionId))
     {
         return false;
@@ -96,7 +96,8 @@ bool TextTrackSession::resetSession(bool isMuted)
         return false;
     }
 
-    // data type selection resets mute value in TextTrack to default (false), therefore we need to set it after data type selection
+    // changing the data type resets the mute value in TextTrack to its default (false), so we need to set mute
+    // after selecting the data type
     return mute(isMuted);
 }
 
