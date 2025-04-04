@@ -1041,3 +1041,18 @@ TEST_F(GstGenericPlayerTest, shouldSwitchSource)
 
     m_sut->switchSource(source);
 }
+
+TEST_F(GstGenericPlayerTest, shouldCheckIfSinkIsAsync)
+{
+    expectGetSink(kVideoSinkStr, m_element);
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("async"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *val)
+            {
+                gboolean *returnVal = reinterpret_cast<gboolean *>(val);
+                *returnVal = TRUE;
+            }));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element));
+
+    EXPECT_TRUE(m_sut->isAsync(MediaSourceType::VIDEO));
+}
