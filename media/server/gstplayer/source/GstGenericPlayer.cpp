@@ -1731,6 +1731,7 @@ bool GstGenericPlayer::isAsync(const MediaSourceType &mediaSourceType) const
     }
     gboolean returnValue{TRUE};
     m_glibWrapper->gObjectGet(sink, "async", &returnValue, nullptr);
+    m_gstWrapper->gstObjectUnref(sink);
     return returnValue == TRUE;
 }
 
