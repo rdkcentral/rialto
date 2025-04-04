@@ -39,7 +39,7 @@ class TextTrackSession : public ITextTrackSession
 public:
     TextTrackSession(const std::string &displayName, const ITextTrackAccessorFactory &textTrackAccessorFactory);
     ~TextTrackSession() override;
-    bool resetSession() override;
+    bool resetSession(bool isMuted) override;
     bool pause() override;
     bool play() override;
     bool mute(bool mute) override;
