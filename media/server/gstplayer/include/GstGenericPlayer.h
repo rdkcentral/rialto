@@ -165,6 +165,8 @@ private:
     bool changePipelineState(GstState newState) override;
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;
+    void startSubtitileClockResyncTimer() override;
+    void stopSubtitileClockResyncTimer() override;
     void stopWorkerThread() override;
     void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) override;
     void setPendingPlaybackRate() override;
@@ -378,6 +380,9 @@ private:
      * Variable can be used only in worker thread
      */
     std::unique_ptr<firebolt::rialto::common::ITimer> m_positionReportingAndCheckAudioUnderflowTimer{nullptr};
+
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_subtitileClockResyncTimer{nullptr};
+
 
     /**
      * @brief The GstGenericPlayer task factory

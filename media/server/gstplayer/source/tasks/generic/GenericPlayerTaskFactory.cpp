@@ -57,6 +57,7 @@
 #include "tasks/generic/SwitchSource.h"
 #include "tasks/generic/Underflow.h"
 #include "tasks/generic/UpdatePlaybackGroup.h"
+#include "tasks/generic/SynchroniseSubtitleClock.h"
 
 namespace firebolt::rialto::server
 {
@@ -343,5 +344,11 @@ GenericPlayerTaskFactory::createSwitchSource(IGstGenericPlayerPrivate &player,
                                              const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
 {
     return std::make_unique<tasks::generic::SwitchSource>(player, source);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSynchroniseSubtitleClock(GenericPlayerContext &context,
+                                                                    IGstGenericPlayerPrivate &player) const
+{
+    return std::make_unique<tasks::generic::SynchroniseSubtitleClock>(context, player, m_gstWrapper, m_glibWrapper);
 }
 } // namespace firebolt::rialto::server

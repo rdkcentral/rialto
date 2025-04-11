@@ -104,6 +104,11 @@ struct GenericPlayerContext
     GstElement *subtitleSink{nullptr};
 
     /**
+     * @brief The subtitle sink
+     */
+    GstElement *videoSink{nullptr};
+
+    /**
      * @brief Flag used to check, if BUFFERED notification has been sent.
      *
      * Flag can be used only in worker thread

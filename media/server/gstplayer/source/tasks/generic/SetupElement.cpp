@@ -243,6 +243,7 @@ void SetupElement::execute() const
 
     if (isVideoSink(*m_gstWrapper, m_element))
     {
+        m_context.videoSink = m_element;
         if (!m_context.pendingGeometry.empty())
         {
             m_player.setVideoSinkRectangle();

@@ -181,6 +181,8 @@ public:
      */
     virtual void stopPositionReportingAndCheckAudioUnderflowTimer() = 0;
 
+    virtual void startSubtitileClockResyncTimer() = 0;
+    virtual void stopSubtitileClockResyncTimer() = 0;
     /**
      * @brief Stops worker thread. Called by the worker thread.
      */

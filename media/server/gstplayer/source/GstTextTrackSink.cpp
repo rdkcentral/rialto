@@ -35,6 +35,7 @@ enum
     PROP_MUTE,
     PROP_TEXT_TRACK_IDENTIFIER,
     PROP_POSITION,
+    PROP_TEST,
     PROP_LAST
 };
 
@@ -117,6 +118,9 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
                                                         GParamFlags(G_PARAM_READWRITE)));
     g_object_class_install_property(gobjectClass, PROP_POSITION,
                                     g_param_spec_uint64("position", "Position", "Position", 0, G_MAXUINT64, 0,
+                                                        GParamFlags(G_PARAM_READWRITE)));
+    g_object_class_install_property(gobjectClass, PROP_TEST,
+                                    g_param_spec_uint64("test", "Position", "Position", 0, G_MAXUINT64, 0,
                                                         GParamFlags(G_PARAM_READWRITE)));
 
     gst_element_class_add_pad_template(elementClass, gst_static_pad_template_get(&sinkTemplate));
@@ -236,6 +240,8 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
     textTrackSink->priv->m_capsSet = true;
     if (textTrackSink->priv->m_queuedPosition.has_value())
     {
+        GST_ERROR_OBJECT(textTrackSink, "Caching position to %llu", textTrackSink->priv->m_position.value());
+        textTrackSink->priv->m_position = textTrackSink->priv->m_queuedPosition;
         textTrackSink->priv->m_textTrackSession->setPosition(textTrackSink->priv->m_queuedPosition.value() / GST_MSECOND);
         textTrackSink->priv->m_queuedPosition.reset();
     }
@@ -345,6 +351,12 @@ static void gst_rialto_text_track_sink_get_property(GObject *object, guint propI
         g_value_set_uint64(value, GST_CLOCK_TIME_NONE);
         break;
     }
+    case PROP_TEST:
+    {
+        // Thunder ITextTrack does not provide getPosition API so we are unable to determine current position
+        g_value_set_uint64(value, GST_CLOCK_TIME_NONE);
+        break;
+    }
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID(object, propId, pspec);
         break;
@@ -390,10 +402,24 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
         if (priv->m_textTrackSession && priv->m_capsSet)
         {
             priv->m_textTrackSession->setPosition(position / GST_MSECOND);
+            GST_ERROR_OBJECT(textTrackSink, "Caching position to %llu", textTrackSink->priv->m_position.value());
+            priv->m_position = position;
         }
         else
         {
             priv->m_queuedPosition = position;
+        }
+        break;
+    }
+    case PROP_TEST:
+    {
+        guint64 position = g_value_get_uint64(value);
+        std::unique_lock lock{priv->m_mutex};
+        guint64 offset = priv->m_position ? *priv->m_position : 0;
+        GST_ERROR_OBJECT(textTrackSink, "Setting position to %llu, %llu", position, offset);
+        if (priv->m_textTrackSession)
+        {
+            priv->m_textTrackSession->setPosition((offset + position) / GST_MSECOND);
         }
         break;
     }
