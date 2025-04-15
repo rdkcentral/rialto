@@ -235,8 +235,7 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
     textTrackSink->priv->m_capsSet = true;
     if (textTrackSink->priv->m_queuedPosition.has_value())
     {
-        GST_ERROR_OBJECT(textTrackSink, "Caching position to %llu", textTrackSink->priv->m_position.value());
-        textTrackSink->priv->m_position = textTrackSink->priv->m_queuedPosition;
+        textTrackSink->priv->m_offset = textTrackSink->priv->m_queuedPosition;
         textTrackSink->priv->m_textTrackSession->setPosition(textTrackSink->priv->m_queuedPosition.value() / GST_MSECOND);
         textTrackSink->priv->m_queuedPosition.reset();
     }
@@ -281,14 +280,14 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
                     }
 
                     std::unique_lock lock{textTrackSink->priv->m_mutex};
-                    uint64_t offset = textTrackSink->priv->m_position ? *textTrackSink->priv->m_position : 0;
+                    uint64_t offset = textTrackSink->priv->m_offset ? *textTrackSink->priv->m_offset : 0;
                     uint64_t position = offset + pts;
-                    GST_DEBUG_OBJECT(textTrackSink, "Setting position to %lld (offset %lld, pts %lld)", position,
+                    GST_DEBUG_OBJECT(textTrackSink, "Setting position to %llu (offset %llu, pts %llu)", position,
                                      offset, pts);
 
                     if (textTrackSink->priv->m_textTrackSession)
                     {
-                        textTrackSink->priv->m_textTrackSession->setPosition((position) / GST_MSECOND);
+                        textTrackSink->priv->m_textTrackSession->setPosition(position / GST_MSECOND);
                     }
                 }
                 else
@@ -433,8 +432,7 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
         if (priv->m_textTrackSession && priv->m_capsSet)
         {
             priv->m_textTrackSession->setPosition(position / GST_MSECOND);
-            GST_ERROR_OBJECT(textTrackSink, "Caching position to %llu", textTrackSink->priv->m_position.value());
-            priv->m_position = position;
+            priv->m_offset = position;
         }
         else
         {

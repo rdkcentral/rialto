@@ -118,7 +118,6 @@ bool TextTrackSession::mute(bool mute)
 
 bool TextTrackSession::setPosition(uint64_t mediaTimestampMs)
 {
-    RIALTO_SERVER_LOG_ERROR("KLOPS setting position to %llu", mediaTimestampMs);
     return m_textTrackAccessor->setPosition(m_sessionId, mediaTimestampMs);
 }
 

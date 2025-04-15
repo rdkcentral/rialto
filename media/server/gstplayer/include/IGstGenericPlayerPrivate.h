@@ -181,8 +181,16 @@ public:
      */
     virtual void stopPositionReportingAndCheckAudioUnderflowTimer() = 0;
 
+    /**
+     * @brief Starts subtitle clock resync. Called by the worker thread.
+     */
     virtual void startSubtitleClockResyncTimer() = 0;
+
+    /**
+     * @brief Stops subtitle clock resync. Called by the worker thread.
+     */
     virtual void stopSubtitleClockResyncTimer() = 0;
+
     /**
      * @brief Stops worker thread. Called by the worker thread.
      */

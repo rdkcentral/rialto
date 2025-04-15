@@ -104,7 +104,7 @@ struct GenericPlayerContext
     GstElement *subtitleSink{nullptr};
 
     /**
-     * @brief The subtitle sink
+     * @brief The video sink
      */
     GstElement *videoSink{nullptr};
 
