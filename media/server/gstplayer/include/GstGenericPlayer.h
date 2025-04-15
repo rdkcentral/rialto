@@ -384,7 +384,6 @@ private:
 
     std::unique_ptr<firebolt::rialto::common::ITimer> m_subtitleClockResyncTimer{nullptr};
 
-
     /**
      * @brief The GstGenericPlayer task factory
      */

@@ -283,7 +283,8 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
                     std::unique_lock lock{textTrackSink->priv->m_mutex};
                     uint64_t offset = textTrackSink->priv->m_position ? *textTrackSink->priv->m_position : 0;
                     uint64_t position = offset + pts;
-                    GST_DEBUG_OBJECT(textTrackSink, "Setting position to %lld (offset %lld, pts %lld)", position, offset, pts);
+                    GST_DEBUG_OBJECT(textTrackSink, "Setting position to %lld (offset %lld, pts %lld)", position,
+                                     offset, pts);
 
                     if (textTrackSink->priv->m_textTrackSession)
                     {
