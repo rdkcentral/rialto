@@ -84,7 +84,7 @@ void HandleBusMessage::execute() const
                 }
                 if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
                 {
-                    m_player.stopSubtitileClockResyncTimer();
+                    m_player.stopSubtitleClockResyncTimer();
                 }
                 break;
             }
@@ -97,7 +97,7 @@ void HandleBusMessage::execute() const
                 m_player.startPositionReportingAndCheckAudioUnderflowTimer();
                 if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
                 {
-                    m_player.startSubtitileClockResyncTimer();
+                    m_player.startSubtitleClockResyncTimer();
                 }
 
                 m_context.isPlaying = true;
