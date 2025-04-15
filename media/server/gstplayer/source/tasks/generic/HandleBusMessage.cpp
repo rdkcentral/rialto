@@ -82,6 +82,8 @@ void HandleBusMessage::execute() const
                     // indicate that the pipeline is prerolled and it reached GST_STATE_PAUSED state after seek.
                     m_gstPlayerClient->notifyPlaybackState(PlaybackState::PAUSED);
                 }
+                //todo, only when subtitle is there
+                m_player.stopSubtitileClockResyncTimer();
                 break;
             }
             case GST_STATE_PLAYING:
@@ -91,6 +93,7 @@ void HandleBusMessage::execute() const
                     m_player.setPendingPlaybackRate();
                 }
                 m_player.startPositionReportingAndCheckAudioUnderflowTimer();
+                m_player.startSubtitileClockResyncTimer();
 
                 m_context.isPlaying = true;
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::PLAYING);

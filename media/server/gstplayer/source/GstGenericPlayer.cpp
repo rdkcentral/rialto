@@ -41,8 +41,7 @@ namespace
  *        whenever the session moves to another playback state.
  */
 constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
-// constexpr std::chrono::seconds kSubtitileClockResyncInterval{30};
-constexpr std::chrono::seconds kSubtitileClockResyncInterval{3};
+constexpr std::chrono::seconds kSubtitileClockResyncInterval{10};
 
 bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)
 {
@@ -209,7 +208,6 @@ GstGenericPlayer::GstGenericPlayer(
 GstGenericPlayer::~GstGenericPlayer()
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is destructed.");
-
     m_gstDispatcherThread.reset();
 
     resetWorkerThread();
@@ -398,35 +396,6 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
     {
         return false;
     }
-
-    if (m_context.videoSink)
-    {
-        GstClockTime gstVideoPts = 0;
-        gint64 videoPts = 0;
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_context.videoSink), "video-pts"))
-        {
-            m_glibWrapper->gObjectGet(m_context.videoSink, "video-pts", &videoPts, nullptr);
-            gstVideoPts = GST_TIME_AS_NSECONDS(videoPts) * GST_SECOND / 90000;
-            RIALTO_SERVER_LOG_ERROR("KLOPS Raw Video PTS: %" PRIu64 ", Video PTS: %" GST_TIME_FORMAT, videoPts, GST_TIME_ARGS(gstVideoPts));
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_WARN("KLOPS video-pts property not found in video-sink");
-        }
-        std::int64_t position2 = 0;
-        if (m_gstWrapper->gstElementQueryPosition(m_context.videoSink, GST_FORMAT_TIME, &position2))
-        {
-            m_glibWrapper->gObjectSet(m_context.subtitleSink, "test", gstVideoPts, nullptr);
-            RIALTO_SERVER_LOG_ERROR("KLOPS Sink position: %" GST_TIME_FORMAT, GST_TIME_ARGS(position2));
-        }
-        RIALTO_SERVER_LOG_ERROR("KLOPS position and PTS equal: %d", (GstClockTime)position2 == gstVideoPts);
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_WARN("KLOPS video-sink is NULL");
-    }
-
-    RIALTO_SERVER_LOG_ERROR("KLOPS ************************************ KLOPS ************************************");
 
     return true;
 }
@@ -810,7 +779,6 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
         if (firebolt::rialto::MediaSourceType::SUBTITLE == mediaType)
         {
             setTextTrackPositionIfRequired(streamInfo.appSrc);
-            startSubtitileClockResyncTimer();
         }
         else
         {
