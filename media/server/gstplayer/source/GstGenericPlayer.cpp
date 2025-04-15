@@ -41,7 +41,7 @@ namespace
  *        whenever the session moves to another playback state.
  */
 constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
-constexpr std::chrono::seconds kSubtitileClockResyncInterval{10};
+constexpr std::chrono::seconds kSubtitleClockResyncInterval{30};
 
 bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)
 {
@@ -284,6 +284,13 @@ void GstGenericPlayer::termPipeline()
     if (m_context.subtitleSink)
     {
         m_gstWrapper->gstObjectUnref(m_context.subtitleSink);
+        m_context.subtitleSink = nullptr;
+    }
+
+    if (m_context.videoSink)
+    {
+        m_gstWrapper->gstObjectUnref(m_context.videoSink);
+        m_context.videoSink = nullptr;
     }
 
     // Delete the pipeline
@@ -1079,6 +1086,11 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
     return true;
 }
 
+bool GstGenericPlayer::hasSourceType(const MediaSourceType &mediaSourceType) const
+{
+    return m_context.streamInfo.find(mediaSourceType) != m_context.streamInfo.end();
+}
+
 void GstGenericPlayer::scheduleNeedMediaData(GstAppSrc *src)
 {
     if (m_workerThread)
@@ -1602,15 +1614,15 @@ void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
     }
 }
 
-void GstGenericPlayer::startSubtitileClockResyncTimer()
+void GstGenericPlayer::startSubtitleClockResyncTimer()
 {
-    if (m_subtitileClockResyncTimer && m_subtitileClockResyncTimer->isActive())
+    if (m_subtitleClockResyncTimer && m_subtitleClockResyncTimer->isActive())
     {
         return;
     }
 
-    m_subtitileClockResyncTimer = m_timerFactory->createTimer(
-        kSubtitileClockResyncInterval,
+    m_subtitleClockResyncTimer = m_timerFactory->createTimer(
+        kSubtitleClockResyncInterval,
         [this]()
         {
             if (m_workerThread)
@@ -1621,12 +1633,12 @@ void GstGenericPlayer::startSubtitileClockResyncTimer()
         firebolt::rialto::common::TimerType::PERIODIC);
 }
 
-void GstGenericPlayer::stopSubtitileClockResyncTimer()
+void GstGenericPlayer::stopSubtitleClockResyncTimer()
 {
-    if (m_subtitileClockResyncTimer && m_subtitileClockResyncTimer->isActive())
+    if (m_subtitleClockResyncTimer && m_subtitleClockResyncTimer->isActive())
     {
-        m_subtitileClockResyncTimer->cancel();
-        m_subtitileClockResyncTimer.reset();
+        m_subtitleClockResyncTimer->cancel();
+        m_subtitleClockResyncTimer.reset();
     }
 }
 

@@ -165,8 +165,8 @@ private:
     bool changePipelineState(GstState newState) override;
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;
-    void startSubtitileClockResyncTimer() override;
-    void stopSubtitileClockResyncTimer() override;
+    void startSubtitleClockResyncTimer() override;
+    void stopSubtitleClockResyncTimer() override;
     void stopWorkerThread() override;
     void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) override;
     void setPendingPlaybackRate() override;
@@ -181,6 +181,7 @@ private:
     void setPlaybinFlags(bool enableAudio = true) override;
     void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
     bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
+    bool hasSourceType(const MediaSourceType &mediaSourceType) const override;
     GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
 
 private:
@@ -381,7 +382,7 @@ private:
      */
     std::unique_ptr<firebolt::rialto::common::ITimer> m_positionReportingAndCheckAudioUnderflowTimer{nullptr};
 
-    std::unique_ptr<firebolt::rialto::common::ITimer> m_subtitileClockResyncTimer{nullptr};
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_subtitleClockResyncTimer{nullptr};
 
 
     /**

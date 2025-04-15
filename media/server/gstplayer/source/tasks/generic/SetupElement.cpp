@@ -243,7 +243,11 @@ void SetupElement::execute() const
 
     if (isVideoSink(*m_gstWrapper, m_element))
     {
-        m_context.videoSink = m_element; //TODO:KLOPS - bump ref count
+        if (!m_context.videoSink)
+        {
+            m_gstWrapper->gstObjectRef(m_element);
+            m_context.videoSink = m_element;
+        }
         if (!m_context.pendingGeometry.empty())
         {
             m_player.setVideoSinkRectangle();

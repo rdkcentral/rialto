@@ -181,8 +181,8 @@ public:
      */
     virtual void stopPositionReportingAndCheckAudioUnderflowTimer() = 0;
 
-    virtual void startSubtitileClockResyncTimer() = 0;
-    virtual void stopSubtitileClockResyncTimer() = 0;
+    virtual void startSubtitleClockResyncTimer() = 0;
+    virtual void stopSubtitleClockResyncTimer() = 0;
     /**
      * @brief Stops worker thread. Called by the worker thread.
      */
@@ -270,6 +270,15 @@ public:
      * @retval True on success
      */
     virtual bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
+
+    /**
+     * @brief Checks if the player has a source of the given type.
+     *
+     * @param[in] mediaSourceType : The source type to check
+     *
+     * @retval True if the player has a source of the given type, false otherwise
+     */
+    virtual bool hasSourceType(const MediaSourceType &mediaSourceType) const = 0;
 };
 } // namespace firebolt::rialto::server
 
