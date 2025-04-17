@@ -39,6 +39,7 @@ public:
     virtual std::optional<std::string> getSessionServerPath() = 0;
     virtual std::optional<std::chrono::milliseconds> getSessionServerStartupTimeout() = 0;
     virtual std::optional<std::chrono::seconds> getHealthcheckInterval() = 0;
+    virtual std::optional<std::chrono::seconds> getSubtitleResyncInterval() = 0;
     virtual std::optional<firebolt::rialto::common::SocketPermissions> getSocketPermissions() = 0;
     virtual std::optional<std::string> getSocketOwner() = 0;
     virtual std::optional<std::string> getSocketGroup() = 0;

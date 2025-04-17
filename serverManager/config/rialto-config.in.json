@@ -26,6 +26,7 @@
     "sessionServerPath" : @SESSION_SERVER_PATH@,
     "startupTimeoutMs" : @STARTUP_TIMEOUT_MS@,
     "healthcheckIntervalInSeconds" : @HEALTHCHECK_INTERVAL_S@,
+    "subtitleResyncIntervalInSeconds" : @SUBTITLE_RESYNC_INTERVAL_S@,
     "socketPermissions" : @SOCKET_PERMISSIONS@,
     "socketOwner" : @SOCKET_OWNER@,
     "socketGroup" : @SOCKET_GROUP@,

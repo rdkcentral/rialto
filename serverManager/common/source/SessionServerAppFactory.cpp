@@ -30,10 +30,10 @@ SessionServerAppFactory::SessionServerAppFactory(const std::list<std::string> &e
                                                  const std::string &sessionServerPath,
                                                  std::chrono::milliseconds sessionServerStartupTimeout,
                                                  unsigned int socketPermissions, const std::string &socketOwner,
-                                                 const std::string &socketGroup)
+                                                 const std::string &socketGroup, const std::chrono::seconds &subtitleResyncInterval)
     : m_kEnvironmentVariables{environmentVariables}, m_kSessionServerPath{sessionServerPath},
       m_kSessionServerStartupTimeout{sessionServerStartupTimeout}, m_kSocketPermissions{socketPermissions},
-      m_kSocketOwner{socketOwner}, m_kSocketGroup{socketGroup},
+      m_kSocketOwner{socketOwner}, m_kSocketGroup{socketGroup}, m_kSubtitleResyncInterval{subtitleResyncInterval}
       m_linuxWrapperFactory{firebolt::rialto::wrappers::ILinuxWrapperFactory::createFactory()}
 {
 }
@@ -48,7 +48,7 @@ std::unique_ptr<ISessionServerApp> SessionServerAppFactory::create(
                                               firebolt::rialto::common::ITimerFactory::getFactory(),
                                               sessionServerAppManager, m_kEnvironmentVariables, m_kSessionServerPath,
                                               m_kSessionServerStartupTimeout, m_kSocketPermissions, m_kSocketOwner,
-                                              m_kSocketGroup, std::move(namedSocket));
+                                              m_kSocketGroup, m_kSubtitleResyncInterval, std::move(namedSocket));
 }
 
 std::unique_ptr<ISessionServerApp>
@@ -59,6 +59,6 @@ SessionServerAppFactory::create(SessionServerAppManager &sessionServerAppManager
                                               firebolt::rialto::common::ITimerFactory::getFactory(),
                                               sessionServerAppManager, m_kEnvironmentVariables, m_kSessionServerPath,
                                               m_kSessionServerStartupTimeout, m_kSocketPermissions, m_kSocketOwner,
-                                              m_kSocketGroup, std::move(namedSocket));
+                                              m_kSocketGroup, m_kSubtitleResyncInterval, std::move(namedSocket));
 }
 } // namespace rialto::servermanager::common

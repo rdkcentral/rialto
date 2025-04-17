@@ -43,6 +43,7 @@ public:
     std::optional<std::string> getSessionServerPath() override;
     std::optional<std::chrono::milliseconds> getSessionServerStartupTimeout() override;
     std::optional<std::chrono::seconds> getHealthcheckInterval() override;
+    std::optional<std::chrono::seconds> getSubtitleResyncInterval() override;
     std::optional<firebolt::rialto::common::SocketPermissions> getSocketPermissions() override;
     std::optional<std::string> getSocketOwner() override;
     std::optional<std::string> getSocketGroup() override;
@@ -56,6 +57,7 @@ private:
     void parseSessionServerPath(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseSessionServerStartupTimeout(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseHealthcheckInterval(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseSubtitleResyncInterval(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseSocketPermissions(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseSocketOwner(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseSocketGroup(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
@@ -78,6 +80,7 @@ private:
     std::optional<std::string> m_sessionServerPath;
     std::optional<std::chrono::milliseconds> m_sessionServerStartupTimeout;
     std::optional<std::chrono::seconds> m_healthcheckInterval;
+    std::optional<std::chrono::seconds> m_subtitleResyncInterval;
     std::optional<firebolt::rialto::common::SocketPermissions> m_socketPermissions;
     std::optional<std::string> m_socketOwner;
     std::optional<std::string> m_socketGroup;
