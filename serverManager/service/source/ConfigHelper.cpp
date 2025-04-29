@@ -95,10 +95,7 @@ std::chrono::seconds ConfigHelper::getHealthcheckInterval() const
     return m_healthcheckInterval;
 }
 
-std::chrono::seconds ConfigHelper::getSubtitleResyncInterval() const
-{
-    return m_subtitleResyncInterval
-}
+std::chrono::seconds ConfigHelper::getSubtitleResyncInterval() const {return m_subtitleResyncInterval}
 
 firebolt::rialto::common::SocketPermissions ConfigHelper::getSocketPermissions() const
 {

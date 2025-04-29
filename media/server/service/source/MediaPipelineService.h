@@ -103,6 +103,7 @@ public:
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;
 
     void clearMediaPipelines();
+    void setSubtitleResyncInterval(const std::chrono::seconds &subtitleResyncInterval) override;
 
 private:
     IPlaybackService &m_playbackService;
@@ -111,6 +112,7 @@ private:
     IDecryptionService &m_decryptionService;
     std::map<int, std::unique_ptr<IMediaPipelineServerInternal>> m_mediaPipelines;
     std::mutex m_mediaPipelineMutex;
+    std::chrono::seconds m_subtitleResyncInterval{30};
 };
 } // namespace firebolt::rialto::server::service
 

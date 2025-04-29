@@ -62,6 +62,7 @@ public:
     void setMaxWebAudioPlayers(int maxWebAudio) override;
     void setClientDisplayName(const std::string &clientDisplayName) const override;
     void setResourceManagerAppName(const std::string &clientDisplayName) const override;
+    void setSubtitleResyncInterval(const std::chrono::seconds &subtitleResyncInterval) override;
 
     bool isActive() const override;
     bool getSharedMemory(int32_t &fd, uint32_t &size) const override;

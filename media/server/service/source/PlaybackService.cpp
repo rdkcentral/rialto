@@ -104,6 +104,12 @@ void PlaybackService::setResourceManagerAppName(const std::string &appName) cons
     }
 }
 
+void PlaybackService::setSubtitleResyncInterval(const std::chrono::seconds &subtitleResyncInterval)
+{
+    // Method called during initialization only (before setting any state), no need to execute it on a task thread.
+    m_mediaPipelineService->setSubtitleResyncInterval(subtitleResyncInterval);
+}
+
 bool PlaybackService::getSharedMemory(int32_t &fd, uint32_t &size) const
 {
     auto shmBuffer = m_shmBuffer;
