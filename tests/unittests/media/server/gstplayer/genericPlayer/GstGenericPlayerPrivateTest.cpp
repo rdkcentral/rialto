@@ -105,8 +105,9 @@ protected:
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
                                                    m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
                                                    m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
-                                                   m_gstSrcFactoryMock, m_timerFactoryMock, std::move(m_taskFactory),
-                                                   std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
+                                                   std::move(m_flushWatcher), m_gstSrcFactoryMock, m_timerFactoryMock,
+                                                   std::move(m_taskFactory), std::move(workerThreadFactory),
+                                                   std::move(gstDispatcherThreadFactory),
                                                    m_gstProtectionMetadataFactoryMock);
         m_realElement = initRealElement();
     }
@@ -1981,4 +1982,10 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachRawAudioSource)
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/x-raw", false);
     EXPECT_TRUE(m_sut->reattachSource(source));
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldSetSourceFlushed)
+{
+    EXPECT_CALL(m_flushWatcherMock, setFlushed(MediaSourceType::AUDIO));
+    m_sut->setSourceFlushed(MediaSourceType::AUDIO);
 }

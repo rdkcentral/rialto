@@ -29,9 +29,9 @@ HandleBusMessage::HandleBusMessage(GenericPlayerContext &context, IGstGenericPla
                                    IGstGenericPlayerClient *client,
                                    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                                    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
-                                   GstMessage *message)
+                                   GstMessage *message, bool isFlushOngoing)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper},
-      m_glibWrapper{glibWrapper}, m_message{message}
+      m_glibWrapper{glibWrapper}, m_message{message}, m_isFlushOngoing{isFlushOngoing}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing HandleBusMessage");
 }
@@ -107,6 +107,11 @@ void HandleBusMessage::execute() const
     }
     case GST_MESSAGE_EOS:
     {
+        if (m_isFlushOngoing)
+        {
+            RIALTO_SERVER_LOG_WARN("Skip EOS notification - flush is ongoing");
+            break;
+        }
         if (m_context.pipeline && GST_MESSAGE_SRC(m_message) == GST_OBJECT(m_context.pipeline))
         {
             RIALTO_SERVER_LOG_MIL("End of stream reached.");

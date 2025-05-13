@@ -2992,6 +2992,7 @@ void GenericTasksTestsBase::shouldFlushAudio()
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_audioBuffer));
     EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::AUDIO));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifySourceFlushed(firebolt::rialto::MediaSourceType::AUDIO));
+    EXPECT_CALL(testContext->m_gstPlayer, setSourceFlushed(firebolt::rialto::MediaSourceType::AUDIO));
 }
 
 void GenericTasksTestsBase::shouldFlushVideo()
@@ -2999,6 +3000,7 @@ void GenericTasksTestsBase::shouldFlushVideo()
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_videoBuffer));
     EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::VIDEO));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifySourceFlushed(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_CALL(testContext->m_gstPlayer, setSourceFlushed(firebolt::rialto::MediaSourceType::VIDEO));
 }
 
 void GenericTasksTestsBase::triggerFlush(firebolt::rialto::MediaSourceType sourceType)

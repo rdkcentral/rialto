@@ -21,6 +21,7 @@
 #include <cinttypes>
 #include <stdexcept>
 
+#include "FlushWatcher.h"
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
 #include "GstProtectionMetadata.h"
@@ -103,8 +104,8 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
         }
         gstPlayer = std::make_unique<
             GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper, glibWrapper,
-                              rdkGstreamerUtilsWrapper, IGstInitialiser::instance(), IGstSrcFactory::getFactory(),
-                              common::ITimerFactory::getFactory(),
+                              rdkGstreamerUtilsWrapper, IGstInitialiser::instance(), std::make_unique<FlushWatcher>(),
+                              IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
                                                                          rdkGstreamerUtilsWrapper,
                                                                          IGstTextTrackSinkFactory::createFactory()),
@@ -125,14 +126,14 @@ GstGenericPlayer::GstGenericPlayer(
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
-    const IGstInitialiser &gstInitialiser, const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
-    std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
-    std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
+    const IGstInitialiser &gstInitialiser, std::unique_ptr<IFlushWatcher> &&flushWatcher,
+    const std::shared_ptr<IGstSrcFactory> &gstSrcFactory, std::shared_ptr<common::ITimerFactory> timerFactory,
+    std::unique_ptr<IGenericPlayerTaskFactory> taskFactory, std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
     std::shared_ptr<IGstProtectionMetadataHelperFactory> gstProtectionMetadataFactory)
     : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
       m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_timerFactory{timerFactory},
-      m_taskFactory{std::move(taskFactory)}
+      m_taskFactory{std::move(taskFactory)}, m_flushWatcher{std::move(flushWatcher)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is constructed.");
 
@@ -452,6 +453,11 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
         }
     }
     return sink;
+}
+
+void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
+{
+    m_flushWatcher->setFlushed(mediaSourceType);
 }
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
@@ -1879,6 +1885,7 @@ void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetT
 {
     if (m_workerThread)
     {
+        m_flushWatcher->setFlushing(mediaSourceType);
         m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, *this, mediaSourceType, resetTime));
     }
 }
@@ -1979,7 +1986,8 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
 
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
-    m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));
+    m_workerThread->enqueueTask(
+        m_taskFactory->createHandleBusMessage(m_context, *this, message, m_flushWatcher->isFlushOngoing()));
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
