@@ -164,6 +164,8 @@ protected:
     void triggerAttachBwavAudioSource();
     void shouldAttachXrawAudioSource();
     void triggerAttachXrawAudioSource();
+    void shouldAttachFlacAudioSource();
+    void triggerAttachFlacAudioSource();
     void shouldAttachVideoSource(const std::string &mime, const std::string &alignment, const std::string &format);
     void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
                                   firebolt::rialto::StreamFormat streamFormat);
@@ -440,6 +442,8 @@ private:
     void expectSetChannelAndRateAudioCaps();
     void expectAddChannelAndRateAudioToCaps();
     void expectAddRawAudioDataToCaps();
+    void expectAddStreamHeaderToCaps();
+    void expectAddFramedToCaps();
     void expectSetCaps();
 
     // Set property helpers

@@ -225,6 +225,9 @@ struct AudioConfig
     std::optional<Format> format;             /**< The Format of the audio samples.*/
     std::optional<Layout> layout;             /**< The layout of channels within a buffer.*/
     std::optional<uint64_t> channelMask;      /**< Bitmask of channel positions present. */
+    std::vector<uint8_t> streamHeader;        /**< Stream header. Zero length if not present.*/
+    std::optional<bool>
+        framed; /**< True if each buffer passed through the pipeline contains a complete, self-contained media unit*/
 };
 
 /**

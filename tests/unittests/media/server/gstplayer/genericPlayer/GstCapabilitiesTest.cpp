@@ -75,6 +75,7 @@ public:
                     {"audio/x-opus", {}},
                     {"audio/x-opus, channel-mapping-family=(int)0", {}},
                     {"audio/b-wav", {}},
+                    {"audio/x-flac", {}},
                     {"audio/x-raw", {}},
                     {"video/x-av1", {}},
                     {"video/x-h264", {}},

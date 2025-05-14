@@ -176,6 +176,8 @@ message AttachSourceRequest {
         optional Format format = 4; ///< The Format of the audio samples.
         optional Layout layout = 5; ///< The layout of channels within a buffer.
         optional uint64 channel_mask = 6; ///< Bitmask of channel positions present.
+        optional bytes stream_header = 7; ///< Stream header. Zero length if not present.
+        optional bool framed = 8;  ///< True if each buffer passed through the pipeline contains a complete, self-contained media unit
     }
 
     message CodecData {

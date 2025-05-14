@@ -135,6 +135,8 @@ constexpr uint64_t kChannelMask{0x0000000000000003};
 constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
 constexpr uint64_t kStopPosition{4523};
+const std::vector<uint8_t> kStreamHeaderVector{1, 2, 3, 4};
+constexpr bool kFramed{true};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 {
@@ -1434,6 +1436,33 @@ void GenericTasksTestsBase::triggerAttachXrawAudioSource()
     task.execute();
 }
 
+void GenericTasksTestsBase::shouldAttachFlacAudioSource()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/x-flac")))
+        .WillOnce(Return(&testContext->m_gstCaps1));
+
+    expectAddChannelAndRateAudioToCaps();
+    expectAddStreamHeaderToCaps();
+    expectAddFramedToCaps();
+    expectSetCaps();
+}
+
+void GenericTasksTestsBase::triggerAttachFlacAudioSource()
+{
+    firebolt::rialto::AudioConfig audioConfig{kNumberOfChannels,   kSampleRate,  {},
+                                              std::nullopt,        std::nullopt, std::nullopt,
+                                              kStreamHeaderVector, kFramed};
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/x-flac", true, audioConfig);
+    firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
+                                                                testContext->m_gstWrapper,
+                                                                testContext->m_glibWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
+                                                                testContext->m_gstPlayer,
+                                                                source};
+    task.execute();
+}
+
 void GenericTasksTestsBase::expectAddChannelAndRateAudioToCaps()
 {
     EXPECT_CALL(*testContext->m_gstWrapper,
@@ -1450,6 +1479,24 @@ void GenericTasksTestsBase::expectAddRawAudioDataToCaps()
                                                                        G_TYPE_STRING, StrEq("interleaved")));
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleBitMaskStub(&testContext->m_gstCaps1, StrEq("channel-mask"),
                                                                         GST_TYPE_BITMASK, kChannelMask));
+}
+
+void GenericTasksTestsBase::expectAddStreamHeaderToCaps()
+{
+    gpointer memory = nullptr;
+    EXPECT_CALL(*testContext->m_glibWrapper, gMemdup(arrayMatcher(kStreamHeaderVector), kStreamHeaderVector.size()))
+        .WillOnce(Return(memory));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewWrapped(memory, kStreamHeaderVector.size()))
+        .WillOnce(Return(&(testContext->m_audioBuffer)));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleBufferStub(&testContext->m_gstCaps1, StrEq("streamheader"),
+                                                                       _, &(testContext->m_audioBuffer)));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&(testContext->m_audioBuffer)));
+}
+
+void GenericTasksTestsBase::expectAddFramedToCaps()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleBooleanStub(&testContext->m_gstCaps1, StrEq("framed"), _, kFramed));
 }
 
 void GenericTasksTestsBase::expectSetCaps()

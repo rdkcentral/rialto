@@ -115,6 +115,10 @@ GstCaps *MediaSourceAudioCapsBuilder::buildCaps()
     {
         addRawAudioData(caps);
     }
+    else if (mimeType == "audio/x-flac")
+    {
+        addFlacSpecificData(caps);
+    }
     addSampleRateAndChannelsToCaps(caps);
 
     return caps;
@@ -178,6 +182,22 @@ void MediaSourceAudioCapsBuilder::addRawAudioData(GstCaps *caps) const
                                        nullptr);
     if (audioConfig.channelMask.has_value())
         m_gstWrapper->gstCapsSetSimple(caps, "channel-mask", GST_TYPE_BITMASK, audioConfig.channelMask.value(), nullptr);
+}
+
+void MediaSourceAudioCapsBuilder::addFlacSpecificData(GstCaps *caps) const
+{
+    firebolt::rialto::AudioConfig audioConfig = m_attachedAudioSource.getAudioConfig();
+    if (audioConfig.streamHeader.size())
+    {
+        gpointer memory = m_glibWrapper->gMemdup(audioConfig.streamHeader.data(), audioConfig.streamHeader.size());
+        GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, audioConfig.streamHeader.size());
+        m_gstWrapper->gstCapsSetSimple(caps, "streamheader", GST_TYPE_BUFFER, buf, nullptr);
+        m_gstWrapper->gstBufferUnref(buf);
+    }
+    if (audioConfig.framed.has_value())
+    {
+        m_gstWrapper->gstCapsSetSimple(caps, "framed", G_TYPE_BOOLEAN, audioConfig.framed.value(), nullptr);
+    }
 }
 
 MediaSourceVideoCapsBuilder::MediaSourceVideoCapsBuilder(

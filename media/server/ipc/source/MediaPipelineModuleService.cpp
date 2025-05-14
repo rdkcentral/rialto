@@ -460,7 +460,19 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         {
             channelMask = kConfig.channel_mask();
         }
-        AudioConfig audioConfig{numberofchannels, sampleRate, codecSpecificConfig, format, layout, channelMask};
+        std::vector<uint8_t> streamHeader;
+        if (kConfig.has_stream_header())
+        {
+            auto streamHeaderStr = kConfig.stream_header();
+            streamHeader.assign(streamHeaderStr.begin(), streamHeaderStr.end());
+        }
+        std::optional<bool> framed;
+        if (kConfig.has_framed())
+        {
+            framed = kConfig.framed();
+        }
+        AudioConfig audioConfig{numberofchannels, sampleRate,  codecSpecificConfig, format,
+                                layout,           channelMask, streamHeader,        framed};
 
         mediaSource =
             std::make_unique<IMediaPipeline::MediaSourceAudio>(request->mime_type(), hasDrm, audioConfig,
