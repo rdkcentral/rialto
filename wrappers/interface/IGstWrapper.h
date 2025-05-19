@@ -1067,6 +1067,16 @@ public:
     virtual void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const = 0;
 
     /**
+     * @brief Sets the field with the given name field to value. If the field does not exist, it is created. If the
+     * field exists, the previous value is replaced and freed.
+     *
+     * @param[in] structure  : a GstStructure
+     * @param[in] fieldname  : the name of the field to set
+     * @param[in] fieldname  : the new value of the field
+     */
+    virtual void gstStructureSetValue(GstStructure *structure, const gchar *fieldname, const GValue *value) const = 0;
+
+    /**
      * @brief Gets the error and debug string from the message. Both gerror and debug must be freed by the caller once complete.
      *
      * @param[in]  message  : a gst error message.

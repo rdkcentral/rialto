@@ -1492,8 +1492,9 @@ void GenericTasksTestsBase::expectAddStreamHeaderToCaps()
     EXPECT_CALL(*testContext->m_glibWrapper, gValueInit(_, GST_TYPE_BUFFER));
     EXPECT_CALL(*testContext->m_gstWrapper, gstValueSetBuffer(_, &(testContext->m_audioBuffer)));
     EXPECT_CALL(*testContext->m_gstWrapper, gstValueArrayAppendValue(_, _));
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstCapsSetSimpleArrayStub(&testContext->m_gstCaps1, StrEq("streamheader"), _));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsGetStructure(&testContext->m_gstCaps1, 0))
+        .WillOnce(Return(&testContext->m_structure));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstStructureSetValue(&testContext->m_structure, StrEq("streamheader"), _));
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&(testContext->m_audioBuffer)));
     EXPECT_CALL(*testContext->m_glibWrapper, gValueUnset(_)).Times(2);
 }
