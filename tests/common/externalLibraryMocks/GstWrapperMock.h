@@ -110,6 +110,7 @@ public:
                 (GstCaps * caps, const gchar *field, GType type, const uint64_t value), (const));
     MOCK_METHOD(void, gstCapsSetSimpleFractionStub,
                 (GstCaps * caps, const gchar *field, GType type, int value1, int value2), (const));
+    MOCK_METHOD(void, gstCapsSetSimpleArrayStub, (GstCaps * caps, const gchar *field, GType type), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewSimpleIntStub,
                 (const char *media_type, const char *fieldname, GType type, int value), (const));
     MOCK_METHOD(void, gstMessageParseQos,
@@ -207,6 +208,8 @@ public:
                 (GstBuffer * buffer, GstFormat format, guint64 start, guint64 end), (const, override));
     MOCK_METHOD(GstPad *, gstElementGetStaticPad, (GstElement * element, const gchar *name), (const, override));
     MOCK_METHOD(GstPad *, gstBaseSinkPad, (GstElement * element), (const, override));
+    MOCK_METHOD(void, gstValueArrayAppendValue, (GValue * value, const GValue *appendValue), (const, override));
+    MOCK_METHOD(void, gstValueSetBuffer, (GValue * value, GstBuffer *buffer), (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
@@ -269,6 +272,10 @@ public:
                 int val1 = va_arg(args, int);
                 int val2 = va_arg(args, int);
                 gstCapsSetSimpleFractionStub(caps, kProperty, type, val1, val2);
+            }
+            else if (g_type_is_a(type, GST_TYPE_ARRAY))
+            {
+                gstCapsSetSimpleArrayStub(caps, kProperty, type);
             }
             kProperty = va_arg(args, const gchar *);
         }

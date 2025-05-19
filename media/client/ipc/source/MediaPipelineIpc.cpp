@@ -1847,10 +1847,9 @@ bool MediaPipelineIpc::buildAttachSourceRequest(firebolt::rialto::AttachSourceRe
             {
                 request.mutable_audio_config()->set_channel_mask(mediaSourceAudio->getAudioConfig().channelMask.value());
             }
-            if (!mediaSourceAudio->getAudioConfig().streamHeader.empty())
+            for (auto &header : mediaSourceAudio->getAudioConfig().streamHeader)
             {
-                request.mutable_audio_config()->set_stream_header(mediaSourceAudio->getAudioConfig().streamHeader.data(),
-                                                                  mediaSourceAudio->getAudioConfig().streamHeader.size());
+                request.mutable_audio_config()->add_stream_header(header.data(), header.size());
             }
             if (mediaSourceAudio->getAudioConfig().framed.has_value())
             {

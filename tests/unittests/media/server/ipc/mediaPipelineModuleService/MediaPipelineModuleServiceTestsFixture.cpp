@@ -320,8 +320,8 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillAttachAudioSourceW
 {
     std::vector<uint8_t> codecSpecificConfig;
     codecSpecificConfig.assign(kCodecSpecificConfigStr.begin(), kCodecSpecificConfigStr.end());
-    std::vector<uint8_t> streamHeader;
-    streamHeader.assign(kStreamHeaderStr.begin(), kStreamHeaderStr.end());
+    std::vector<std::vector<uint8_t>> streamHeader;
+    streamHeader.push_back(std::vector<uint8_t>{kStreamHeaderStr.begin(), kStreamHeaderStr.end()});
     firebolt::rialto::AudioConfig audioConfig{kNumberOfChannels, kSampleRate,  codecSpecificConfig, kFormat,
                                               kLayout,           kChannelMask, streamHeader,        kFramed};
     m_source =
@@ -993,7 +993,7 @@ void MediaPipelineModuleServiceTests::sendAttachAudioSourceWithAdditionalDataReq
     request.mutable_audio_config()->set_format(firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S16LE);
     request.mutable_audio_config()->set_layout(firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_INTERLEAVED);
     request.mutable_audio_config()->set_channel_mask(kChannelMask);
-    request.mutable_audio_config()->set_stream_header(kStreamHeaderStr);
+    request.mutable_audio_config()->add_stream_header(kStreamHeaderStr);
     request.mutable_audio_config()->set_framed(kFramed);
     request.mutable_codec_data()->set_data(kCodecData->data.data(), kCodecData->data.size());
     request.mutable_codec_data()->set_type(firebolt::rialto::AttachSourceRequest_CodecData_Type_BUFFER);

@@ -1309,6 +1309,22 @@ public:
      * @return given pad or NULL if failed
      */
     virtual GstPad *gstBaseSinkPad(GstElement *element) const = 0;
+
+    /**
+     * @brief Appends append_value to the GstValueArray in value.
+     *
+     * @param value : a GValue of type GST_TYPE_ARRAY
+     * @param appendValue : the value to append
+     */
+    virtual void gstValueArrayAppendValue(GValue *value, const GValue *appendValue) const = 0;
+
+    /**
+     * @brief Sets b as the value of v. Caller retains reference to buffer.
+     *
+     * @param value  : a GValue to receive the data
+     * @param buffer : a GstBuffer to assign to the GstValue
+     */
+    virtual void gstValueSetBuffer(GValue *value, GstBuffer *buffer) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

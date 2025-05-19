@@ -1449,9 +1449,9 @@ void GenericTasksTestsBase::shouldAttachFlacAudioSource()
 
 void GenericTasksTestsBase::triggerAttachFlacAudioSource()
 {
-    firebolt::rialto::AudioConfig audioConfig{kNumberOfChannels,   kSampleRate,  {},
-                                              std::nullopt,        std::nullopt, std::nullopt,
-                                              kStreamHeaderVector, kFramed};
+    firebolt::rialto::AudioConfig audioConfig{kNumberOfChannels,     kSampleRate,  {},
+                                              std::nullopt,          std::nullopt, std::nullopt,
+                                              {kStreamHeaderVector}, kFramed};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/x-flac", true, audioConfig);
     firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
@@ -1484,13 +1484,18 @@ void GenericTasksTestsBase::expectAddRawAudioDataToCaps()
 void GenericTasksTestsBase::expectAddStreamHeaderToCaps()
 {
     gpointer memory = nullptr;
+    EXPECT_CALL(*testContext->m_glibWrapper, gValueInit(_, GST_TYPE_ARRAY));
     EXPECT_CALL(*testContext->m_glibWrapper, gMemdup(arrayMatcher(kStreamHeaderVector), kStreamHeaderVector.size()))
         .WillOnce(Return(memory));
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferNewWrapped(memory, kStreamHeaderVector.size()))
         .WillOnce(Return(&(testContext->m_audioBuffer)));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsSetSimpleBufferStub(&testContext->m_gstCaps1, StrEq("streamheader"),
-                                                                       _, &(testContext->m_audioBuffer)));
+    EXPECT_CALL(*testContext->m_glibWrapper, gValueInit(_, GST_TYPE_BUFFER));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstValueSetBuffer(_, &(testContext->m_audioBuffer)));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstValueArrayAppendValue(_, _));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleArrayStub(&testContext->m_gstCaps1, StrEq("streamheader"), _));
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&(testContext->m_audioBuffer)));
+    EXPECT_CALL(*testContext->m_glibWrapper, gValueUnset(_)).Times(2);
 }
 
 void GenericTasksTestsBase::expectAddFramedToCaps()

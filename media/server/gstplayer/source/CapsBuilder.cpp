@@ -189,10 +189,21 @@ void MediaSourceAudioCapsBuilder::addFlacSpecificData(GstCaps *caps) const
     firebolt::rialto::AudioConfig audioConfig = m_attachedAudioSource.getAudioConfig();
     if (audioConfig.streamHeader.size())
     {
-        gpointer memory = m_glibWrapper->gMemdup(audioConfig.streamHeader.data(), audioConfig.streamHeader.size());
-        GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, audioConfig.streamHeader.size());
-        m_gstWrapper->gstCapsSetSimple(caps, "streamheader", GST_TYPE_BUFFER, buf, nullptr);
-        m_gstWrapper->gstBufferUnref(buf);
+        GValue streamHeaderArray = G_VALUE_INIT;
+        m_glibWrapper->gValueInit(&streamHeaderArray, GST_TYPE_ARRAY);
+        for (const auto &header : audioConfig.streamHeader)
+        {
+            gpointer memory = m_glibWrapper->gMemdup(header.data(), header.size());
+            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, header.size());
+            GValue value = G_VALUE_INIT;
+            m_glibWrapper->gValueInit(&value, GST_TYPE_BUFFER);
+            m_gstWrapper->gstValueSetBuffer(&value, buf);
+            m_gstWrapper->gstValueArrayAppendValue(&streamHeaderArray, &value);
+            m_glibWrapper->gValueUnset(&value);
+            m_gstWrapper->gstBufferUnref(buf);
+        }
+        m_gstWrapper->gstCapsSetSimple(caps, "streamheader", GST_TYPE_ARRAY, &streamHeaderArray, nullptr);
+        m_glibWrapper->gValueUnset(&streamHeaderArray);
     }
     if (audioConfig.framed.has_value())
     {

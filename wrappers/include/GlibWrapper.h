@@ -135,6 +135,8 @@ public:
     {
         return g_error_new_literal(domain, code, message);
     }
+
+    GValue *gValueInit(GValue *value, GType type) const override { return g_value_init(value, type); }
 };
 
 }; // namespace firebolt::rialto::wrappers

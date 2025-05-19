@@ -561,6 +561,13 @@ public:
     }
 
     GstPad *gstBaseSinkPad(GstElement *element) const override { return GST_BASE_SINK_PAD(element); }
+
+    void gstValueArrayAppendValue(GValue *value, const GValue *appendValue) const override
+    {
+        gst_value_array_append_value(value, appendValue);
+    }
+
+    void gstValueSetBuffer(GValue *value, GstBuffer *buffer) const override { gst_value_set_buffer(value, buffer); }
 };
 
 }; // namespace firebolt::rialto::wrappers

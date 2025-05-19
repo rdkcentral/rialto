@@ -221,11 +221,11 @@ struct AudioConfig
 {
     uint32_t numberOfChannels = kInvalidAudioChannels; /**< The number of channels. */
     uint32_t sampleRate = kInvalidAudioSampleRate;     /**< The sampling rate.*/
-    std::vector<uint8_t> codecSpecificConfig; /**< The audio specific config. Zero length if no specific config*/
-    std::optional<Format> format;             /**< The Format of the audio samples.*/
-    std::optional<Layout> layout;             /**< The layout of channels within a buffer.*/
-    std::optional<uint64_t> channelMask;      /**< Bitmask of channel positions present. */
-    std::vector<uint8_t> streamHeader;        /**< Stream header. Zero length if not present.*/
+    std::vector<uint8_t> codecSpecificConfig;       /**< The audio specific config. Zero length if no specific config*/
+    std::optional<Format> format;                   /**< The Format of the audio samples.*/
+    std::optional<Layout> layout;                   /**< The layout of channels within a buffer.*/
+    std::optional<uint64_t> channelMask;            /**< Bitmask of channel positions present. */
+    std::vector<std::vector<uint8_t>> streamHeader; /**< Stream header. Zero length if not present.*/
     std::optional<bool>
         framed; /**< True if each buffer passed through the pipeline contains a complete, self-contained media unit*/
 };
