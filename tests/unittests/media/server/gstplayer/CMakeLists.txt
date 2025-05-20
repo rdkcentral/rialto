@@ -116,6 +116,9 @@ add_gtests(RialtoServerGstPlayerUnitTests
     #WorkerThread unittests
     workerThread/WorkerThreadTest.cpp
 
+    #FlushWatcher unittests
+    flushWatcher/FlushWatcherTests.cpp
+
 )
 
 target_include_directories(RialtoServerGstPlayerUnitTests
