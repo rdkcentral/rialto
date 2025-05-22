@@ -120,13 +120,15 @@ public:
      * @brief Creates a HandleBusMessage task.
      *
      * @param[in] context    : The GstGenericPlayer context
+     * @param[in] player     : The GstGenericPlayer instance
      * @param[in] message    : The message to be handled.
+     * @param[in] isFlushing : Current flushing state. True if flush for any source is queued
      *
      * @retval the new HandleBusMessage task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createHandleBusMessage(GenericPlayerContext &context,
-                                                                IGstGenericPlayerPrivate &player,
-                                                                GstMessage *message) const = 0;
+                                                                IGstGenericPlayerPrivate &player, GstMessage *message,
+                                                                bool isFlushing) const = 0;
 
     /**
      * @brief Creates a NeedData task.

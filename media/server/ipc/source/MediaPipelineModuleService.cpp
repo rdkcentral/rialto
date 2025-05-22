@@ -460,7 +460,19 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         {
             channelMask = kConfig.channel_mask();
         }
-        AudioConfig audioConfig{numberofchannels, sampleRate, codecSpecificConfig, format, layout, channelMask};
+        std::vector<std::vector<uint8_t>> streamHeaders;
+        for (int i = 0; i < kConfig.stream_header_size(); ++i)
+        {
+            auto streamHeaderStr = kConfig.stream_header(i);
+            streamHeaders.push_back(std::vector<uint8_t>{streamHeaderStr.begin(), streamHeaderStr.end()});
+        }
+        std::optional<bool> framed;
+        if (kConfig.has_framed())
+        {
+            framed = kConfig.framed();
+        }
+        AudioConfig audioConfig{numberofchannels, sampleRate,  codecSpecificConfig, format,
+                                layout,           channelMask, streamHeaders,       framed};
 
         mediaSource =
             std::make_unique<IMediaPipeline::MediaSourceAudio>(request->mime_type(), hasDrm, audioConfig,
@@ -942,11 +954,13 @@ void MediaPipelineModuleService::flush(::google::protobuf::RpcController *contro
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (!m_mediaPipelineService.flush(request->session_id(), request->source_id(), request->reset_time()))
+    bool isAsync{false};
+    if (!m_mediaPipelineService.flush(request->session_id(), request->source_id(), request->reset_time(), isAsync))
     {
         RIALTO_SERVER_LOG_ERROR("Flush failed.");
         controller->SetFailed("Operation failed");
     }
+    response->set_async(isAsync);
 
     done->Run();
 }

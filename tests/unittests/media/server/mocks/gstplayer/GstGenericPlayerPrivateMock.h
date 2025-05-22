@@ -72,6 +72,7 @@ public:
                 (const, override));
     MOCK_METHOD(void, pushSampleIfRequired, (GstElement * source, const std::string &typeStr), (override));
     MOCK_METHOD(bool, reattachSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &source), (override));
+    MOCK_METHOD(void, setSourceFlushed, (const MediaSourceType &mediaSourceType), (override));
 };
 } // namespace firebolt::rialto::server
 

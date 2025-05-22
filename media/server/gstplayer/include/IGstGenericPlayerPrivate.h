@@ -268,6 +268,13 @@ public:
      * @retval True on success
      */
     virtual bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
+
+    /**
+     * @brief Sets source state flushed
+     *
+     * @param[in] mediaSourceType : the source type that has been flushed
+     */
+    virtual void setSourceFlushed(const MediaSourceType &mediaSourceType) = 0;
 };
 } // namespace firebolt::rialto::server
 

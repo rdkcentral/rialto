@@ -1067,6 +1067,16 @@ public:
     virtual void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const = 0;
 
     /**
+     * @brief Sets the field with the given name field to value. If the field does not exist, it is created. If the
+     * field exists, the previous value is replaced and freed.
+     *
+     * @param[in] structure  : a GstStructure
+     * @param[in] fieldname  : the name of the field to set
+     * @param[in] fieldname  : the new value of the field
+     */
+    virtual void gstStructureSetValue(GstStructure *structure, const gchar *fieldname, const GValue *value) const = 0;
+
+    /**
      * @brief Gets the error and debug string from the message. Both gerror and debug must be freed by the caller once complete.
      *
      * @param[in]  message  : a gst error message.
@@ -1309,6 +1319,22 @@ public:
      * @return given pad or NULL if failed
      */
     virtual GstPad *gstBaseSinkPad(GstElement *element) const = 0;
+
+    /**
+     * @brief Appends append_value to the GstValueArray in value.
+     *
+     * @param value : a GValue of type GST_TYPE_ARRAY
+     * @param appendValue : the value to append
+     */
+    virtual void gstValueArrayAppendValue(GValue *value, const GValue *appendValue) const = 0;
+
+    /**
+     * @brief Sets b as the value of v. Caller retains reference to buffer.
+     *
+     * @param value  : a GValue to receive the data
+     * @param buffer : a GstBuffer to assign to the GstValue
+     */
+    virtual void gstValueSetBuffer(GValue *value, GstBuffer *buffer) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

@@ -460,6 +460,11 @@ public:
 
     void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const override;
 
+    void gstStructureSetValue(GstStructure *structure, const gchar *fieldname, const GValue *value) const override
+    {
+        gst_structure_set_value(structure, fieldname, value);
+    }
+
     void gstMessageParseError(GstMessage *message, GError **gerror, gchar **debug) const override
     {
         return gst_message_parse_error(message, gerror, debug);
@@ -561,6 +566,13 @@ public:
     }
 
     GstPad *gstBaseSinkPad(GstElement *element) const override { return GST_BASE_SINK_PAD(element); }
+
+    void gstValueArrayAppendValue(GValue *value, const GValue *appendValue) const override
+    {
+        gst_value_array_append_value(value, appendValue);
+    }
+
+    void gstValueSetBuffer(GValue *value, GstBuffer *buffer) const override { gst_value_set_buffer(value, buffer); }
 };
 
 }; // namespace firebolt::rialto::wrappers

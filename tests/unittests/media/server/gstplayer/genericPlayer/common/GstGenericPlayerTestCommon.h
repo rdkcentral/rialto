@@ -21,6 +21,7 @@
 #define GST_GENERIC_PLAYER_TEST_COMMON_H_
 
 #include "DecryptionServiceMock.h"
+#include "FlushWatcherMock.h"
 #include "GenericPlayerTaskFactoryMock.h"
 #include "GlibWrapperMock.h"
 #include "GstDispatcherThreadFactoryMock.h"
@@ -96,6 +97,8 @@ public:
         std::make_unique<StrictMock<GstProtectionMetadataHelperMock>>()};
     StrictMock<GstProtectionMetadataHelperMock> *m_gstProtectionMetadataWrapperMock{m_gstProtectionMetadataWrapper.get()};
     StrictMock<GstInitialiserMock> m_gstInitialiserMock;
+    std::unique_ptr<IFlushWatcher> m_flushWatcher{std::make_unique<StrictMock<FlushWatcherMock>>()};
+    StrictMock<FlushWatcherMock> &m_flushWatcherMock{dynamic_cast<StrictMock<FlushWatcherMock> &>(*m_flushWatcher)};
 
 public:
     void setPipelineState(const GstState &state);

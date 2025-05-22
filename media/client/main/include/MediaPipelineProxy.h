@@ -134,7 +134,10 @@ public:
         return m_mediaPipeline->getStreamSyncMode(streamSyncMode);
     }
 
-    bool flush(int32_t sourceId, bool resetTime) override { return m_mediaPipeline->flush(sourceId, resetTime); }
+    bool flush(int32_t sourceId, bool resetTime, bool &async) override
+    {
+        return m_mediaPipeline->flush(sourceId, resetTime, async);
+    }
 
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override

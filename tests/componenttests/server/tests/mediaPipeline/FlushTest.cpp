@@ -31,9 +31,13 @@ constexpr unsigned kFramesToPush{1};
 constexpr int kFrameCount{3};
 constexpr bool kResetTime{false};
 constexpr double kAppliedRate{2.0};
+constexpr bool kAsync{true};
 } // namespace
 
+using testing::_;
+using testing::Invoke;
 using testing::Return;
+using testing::StrEq;
 
 namespace firebolt::rialto::server::ct
 {
@@ -42,13 +46,37 @@ class FlushTest : public MediaPipelineTest
     GstEvent m_flushStartEvent{};
     GstEvent m_flushStopEvent{};
     GstSegment m_segment{};
+    GstElement *m_audioSink{nullptr};
 
 public:
-    FlushTest() = default;
-    ~FlushTest() override = default;
+    FlushTest()
+    {
+        GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
+        m_audioSink = gst_element_factory_create(elementFactory, nullptr);
+        gst_object_unref(elementFactory);
+    }
+
+    ~FlushTest() override { gst_object_unref(m_audioSink); }
 
     void willFlush()
     {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
+            .WillOnce(Invoke(
+                [&](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                    *elementPtr = m_audioSink;
+                }));
+
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(_)).WillRepeatedly(Return("GstStreamVolume"));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(m_audioSink, StrEq("async"), _))
+            .WillOnce(Invoke(
+                [&](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    gboolean *asyncPtr = reinterpret_cast<gboolean *>(element);
+                    *asyncPtr = static_cast<gboolean>(kAsync);
+                }));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink));
         EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStart()).WillOnce(Return(&m_flushStartEvent));
         EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStartEvent))
             .WillOnce(Return(true));
@@ -66,7 +94,10 @@ public:
 
         // Send FlushRequest and expect success
         auto request{createFlushRequest(m_sessionId, m_audioSourceId, kResetTime)};
-        ConfigureAction<Flush>(m_clientStub).send(request).expectSuccess();
+        ConfigureAction<Flush>(m_clientStub)
+            .send(request)
+            .expectSuccess()
+            .matchResponse([&](const FlushResponse &response) { EXPECT_EQ(kAsync, response.async()); });
 
         // Check received SourceFlushedEvent events
         auto receivedSourceFlushed{expectedSourceFlushed.getMessage()};

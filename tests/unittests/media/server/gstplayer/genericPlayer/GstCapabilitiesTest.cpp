@@ -27,7 +27,9 @@
 #include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 
+#include <condition_variable>
 #include <gtest/gtest.h>
+#include <mutex>
 #include <unordered_map>
 
 using namespace firebolt::rialto;
@@ -36,6 +38,7 @@ using namespace firebolt::rialto::wrappers;
 
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
@@ -75,6 +78,7 @@ public:
                     {"audio/x-opus", {}},
                     {"audio/x-opus, channel-mapping-family=(int)0", {}},
                     {"audio/b-wav", {}},
+                    {"audio/x-flac", {}},
                     {"audio/x-raw", {}},
                     {"video/x-av1", {}},
                     {"video/x-h264", {}},
@@ -144,15 +148,30 @@ public:
 
     void createSutWithNoDecoderAndNoSink()
     {
+        // Some expectations are met in a thread in GstCapabilities constructor
+        // We have to wait for full object construction before adding new expectations
+        // Without that gtest may crash
+        std::mutex mutex;
+        std::condition_variable cv;
+        bool initialised{false};
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
             .WillOnce(Return(nullptr));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
-            .WillOnce(Return(nullptr));
+            .WillOnce(Invoke(
+                [&](auto type, auto rank)
+                {
+                    std::unique_lock lock{mutex};
+                    initialised = true;
+                    cv.notify_one();
+                    return nullptr;
+                }));
         EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
         m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
                                                   m_gstInitialiserMock);
+        std::unique_lock lock{mutex};
+        cv.wait_for(lock, std::chrono::milliseconds{200}, [&]() { return initialised; });
     }
 
     void expectGetSupportedPropertiesCommon()

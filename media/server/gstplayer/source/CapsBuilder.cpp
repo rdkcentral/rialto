@@ -115,6 +115,10 @@ GstCaps *MediaSourceAudioCapsBuilder::buildCaps()
     {
         addRawAudioData(caps);
     }
+    else if (mimeType == "audio/x-flac")
+    {
+        addFlacSpecificData(caps);
+    }
     addSampleRateAndChannelsToCaps(caps);
 
     return caps;
@@ -178,6 +182,37 @@ void MediaSourceAudioCapsBuilder::addRawAudioData(GstCaps *caps) const
                                        nullptr);
     if (audioConfig.channelMask.has_value())
         m_gstWrapper->gstCapsSetSimple(caps, "channel-mask", GST_TYPE_BITMASK, audioConfig.channelMask.value(), nullptr);
+}
+
+void MediaSourceAudioCapsBuilder::addFlacSpecificData(GstCaps *caps) const
+{
+    firebolt::rialto::AudioConfig audioConfig = m_attachedAudioSource.getAudioConfig();
+    if (audioConfig.streamHeader.size())
+    {
+        GValue streamHeaderArray = G_VALUE_INIT;
+        m_glibWrapper->gValueInit(&streamHeaderArray, GST_TYPE_ARRAY);
+        for (const auto &header : audioConfig.streamHeader)
+        {
+            gpointer memory = m_glibWrapper->gMemdup(header.data(), header.size());
+            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, header.size());
+            GST_BUFFER_FLAG_SET(buf, GST_BUFFER_FLAG_HEADER);
+
+            GValue value = G_VALUE_INIT;
+            m_glibWrapper->gValueInit(&value, GST_TYPE_BUFFER);
+            m_gstWrapper->gstValueSetBuffer(&value, buf);
+            m_gstWrapper->gstValueArrayAppendValue(&streamHeaderArray, &value);
+
+            m_glibWrapper->gValueUnset(&value);
+            m_gstWrapper->gstBufferUnref(buf);
+        }
+        m_gstWrapper->gstStructureSetValue(m_gstWrapper->gstCapsGetStructure(caps, 0), "streamheader",
+                                           &streamHeaderArray);
+        m_glibWrapper->gValueUnset(&streamHeaderArray);
+    }
+    if (audioConfig.framed.has_value())
+    {
+        m_gstWrapper->gstCapsSetSimple(caps, "framed", G_TYPE_BOOLEAN, audioConfig.framed.value(), nullptr);
+    }
 }
 
 MediaSourceVideoCapsBuilder::MediaSourceVideoCapsBuilder(

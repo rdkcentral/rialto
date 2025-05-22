@@ -141,7 +141,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateFinishSetupSource)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateHandleBusMessage)
 {
-    auto task = m_sut.createHandleBusMessage(m_context, m_gstPlayer, nullptr);
+    auto task = m_sut.createHandleBusMessage(m_context, m_gstPlayer, nullptr, false);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::HandleBusMessage &>(*task));
 }

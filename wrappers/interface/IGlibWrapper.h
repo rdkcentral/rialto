@@ -257,7 +257,7 @@ public:
      *
      * @param[in] haystack : A null-terminated string.
      * @param[in] needle   : The null-terminated string to search for.
-     *
+     *7
      * @retval A pointer to the found occurrence, or NULL if not found.
      */
     virtual gchar *gStrrstr(const gchar *haystack, const gchar *needle) const = 0;
@@ -313,6 +313,16 @@ public:
      * @param[in] message   : Error message.
      */
     virtual GError *gErrorNewLiteral(GQuark domain, gint code, const gchar *message) const = 0;
+
+    /**
+     * @brief Initializes value with the default value of type.
+     *
+     * @param[in] value : The value to initialize
+     * @param[in] type  : The type of a value
+     *
+     * @retval The GValue structure that has been passed in.
+     */
+    virtual GValue *gValueInit(GValue *value, GType type) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

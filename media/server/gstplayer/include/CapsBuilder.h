@@ -63,6 +63,7 @@ protected:
     void addSampleRateAndChannelsToCaps(GstCaps *caps) const;
     void addMpegVersionToCaps(GstCaps *caps) const;
     void addRawAudioData(GstCaps *caps) const;
+    void addFlacSpecificData(GstCaps *caps) const;
 
     const IMediaPipeline::MediaSourceAudio &m_attachedAudioSource;
 };
