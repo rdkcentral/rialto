@@ -148,7 +148,6 @@ public:
 
     void createSutWithNoDecoderAndNoSink()
     {
-
         // Some expectations are met in a thread in GstCapabilities constructor
         // We have to wait for full object construction before adding new expectations
         // Without that gtest may crash

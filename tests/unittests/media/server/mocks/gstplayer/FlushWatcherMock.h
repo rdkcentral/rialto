@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_I_FLUSH_WATCHER_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_I_FLUSH_WATCHER_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_FLUSH_WATCHER_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_FLUSH_WATCHER_MOCK_H_
 
 #include "IFlushWatcher.h"
 #include <gmock/gmock.h>
@@ -33,4 +33,4 @@ public:
     MOCK_METHOD(bool, isFlushOngoing, (), (const, override));
 };
 } // namespace firebolt::rialto::server
-#endif // FIREBOLT_RIALTO_SERVER_I_FLUSH_WATCHER_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_FLUSH_WATCHER_MOCK_H_
