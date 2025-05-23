@@ -61,7 +61,7 @@ std::shared_ptr<IServerFactory> IServerFactory::createFactory()
     }
     catch (const std::exception &e)
     {
-        RIALTO_IPC_LOG_ERROR("Failed to create the server factory, reason: %s", e.what());
+        RIALTO_IPC_LOG_ERROR("Failed to create the server factory, reason: %s");
     }
 
     return factory;
