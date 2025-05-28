@@ -62,7 +62,7 @@ void GstInitialiser::initialise(int *argc, char ***argv)
             gstWrapper->gstInit(argc, argv);
             
             GstPlugin *featurePlugin = gstWrapper->gstRegistryFindPlugin(gstWrapper->gstRegistryGet(), "omxh264dec");
-
+            RIALTO_SERVER_LOG_INFO("FEATURE PLUGIN: Gstreamer Plugin 'omxh264dec' is being checked for availability");
             if (featurePlugin)
             {
                 RIALTO_SERVER_LOG_ERROR("FEATURE PLUGIN: Gstreamer Plugin 'omxh264dec' is availble");
