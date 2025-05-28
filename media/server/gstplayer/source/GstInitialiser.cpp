@@ -61,16 +61,16 @@ void GstInitialiser::initialise(int *argc, char ***argv)
 
             gstWrapper->gstInit(argc, argv);
             
-            GstPlugin *featurePlugin = gstWrapper->gstRegistryFindPlugin(gstWrapper->gstRegistryGet(), "omxh264dec")
+            GstPlugin *featurePlugin = gstWrapper->gstRegistryFindPlugin(gstWrapper->gstRegistryGet(), "omxh264dec");
 
             if (featurePlugin)
             {
                 RIALTO_SERVER_LOG_ERROR("FEATURE PLUGIN: Gstreamer Plugin 'omxh264dec' is availble");
-                gstWrapper->gstObjectUnref(featurePlugin)
+                gstWrapper->gstObjectUnref(featurePlugin);
             }
             else
             {
-                RIALTO_SERVER_LOG_ERROR("FEATURE PLUGIN: Gstreamer Plugin 'omxh264dec' is not available. OMX.realtek.video.dec.avc might be unavailable ")
+                RIALTO_SERVER_LOG_ERROR("FEATURE PLUGIN: Gstreamer Plugin 'omxh264dec' is not available. OMX.realtek.video.dec.avc might be unavailable ");
             }
             // remove rialto sinks from the registry
             GstPlugin *rialtoPlugin = gstWrapper->gstRegistryFindPlugin(gstWrapper->gstRegistryGet(), "rialtosinks");
