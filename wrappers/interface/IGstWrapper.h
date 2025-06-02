@@ -23,6 +23,7 @@
 #include <gst/app/gstappsrc.h>
 #include <gst/audio/audio.h>
 #include <gst/audio/streamvolume.h>
+#include <gst/base/gstbaseparse.h>
 #include <gst/base/gstbasetransform.h>
 #include <gst/base/gstbytewriter.h>
 #include <gst/gst.h>
@@ -1335,6 +1336,25 @@ public:
      * @param buffer : a GstBuffer to assign to the GstValue
      */
     virtual void gstValueSetBuffer(GValue *value, GstBuffer *buffer) const = 0;
+
+    /**
+     * @brief Checks, if element is an instance of GstBaseParse
+     *
+     * @param element  : a GValue to receive the data
+     *
+     * @return TRUE if element is an instance of GstBaseParse
+     */
+    virtual gboolean gstIsBaseParse(GstElement *element) const = 0;
+
+    /**
+     * @brief By default, the base class will guess PTS timestamps using a simple interpolation (previous timestamp +
+     * duration), which is incorrect for data streams with reordering, where PTS can go backward. Sub-classes
+     * implementing such formats should disable PTS interpolation.
+     *
+     * @param parse           : a GstBaseParse
+     * @param ptsInterpolate  : TRUE if parser should interpolate PTS timestamps
+     */
+    virtual void gstBaseParseSetPtsInterpolation(GstBaseParse *parse, gboolean ptsInterpolate) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

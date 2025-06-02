@@ -211,6 +211,9 @@ public:
     MOCK_METHOD(void, gstValueSetBuffer, (GValue * value, GstBuffer *buffer), (const, override));
     MOCK_METHOD(void, gstStructureSetValue, (GstStructure * structure, const gchar *fieldname, const GValue *value),
                 (const, override));
+    MOCK_METHOD(gboolean, gstIsBaseParse, (GstElement * element), (const, override));
+    MOCK_METHOD(void, gstBaseParseSetPtsInterpolation, (GstBaseParse * parse, gboolean ptsInterpolate),
+                (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

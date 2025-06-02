@@ -290,6 +290,11 @@ void SetupElement::execute() const
         }
     }
 
+    if (m_gstWrapper->gstIsBaseParse(m_element))
+    {
+        m_gstWrapper->gstBaseParseSetPtsInterpolation(GST_BASE_PARSE(m_element), FALSE);
+    }
+
     m_gstWrapper->gstObjectUnref(m_element);
 }
 } // namespace firebolt::rialto::server::tasks::generic

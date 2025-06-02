@@ -212,3 +212,9 @@ TEST_F(SetupElementTest, shouldSetupTextTrackSink)
     shouldSetupTextTrackSink();
     triggerSetupElement();
 }
+
+TEST_F(SetupElementTest, shouldSetupBaseParse)
+{
+    shouldSetupBaseParse();
+    triggerSetupElement();
+}
