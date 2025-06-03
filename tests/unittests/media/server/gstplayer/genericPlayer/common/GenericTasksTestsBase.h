@@ -98,6 +98,7 @@ protected:
     void shouldSetupAudioSinkElementOnly();
     void shouldSetupAudioDecoderElementOnly();
     void shouldSetVideoUnderflowCallback();
+    void shouldSetupBaseParse();
     void triggerSetupElement();
     void triggerVideoUnderflowCallback();
     void shouldSetAudioUnderflowCallback();
@@ -436,6 +437,7 @@ private:
     void expectSetupAudioSinkElement();
     void expectSetupAudioDecoderElement();
     void expectSetupVideoParserElement();
+    void expectSetupBaseParseElement();
 
     // AttachSource helper methods
     void expectSetGenericVideoCaps();

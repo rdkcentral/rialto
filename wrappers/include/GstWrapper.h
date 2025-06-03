@@ -573,6 +573,13 @@ public:
     }
 
     void gstValueSetBuffer(GValue *value, GstBuffer *buffer) const override { gst_value_set_buffer(value, buffer); }
+
+    gboolean gstIsBaseParse(GstElement *element) const { return GST_IS_BASE_PARSE(element); }
+
+    void gstBaseParseSetPtsInterpolation(GstBaseParse *parse, gboolean ptsInterpolate) const override
+    {
+        gst_base_parse_set_pts_interpolation(parse, ptsInterpolate);
+    }
 };
 
 }; // namespace firebolt::rialto::wrappers
