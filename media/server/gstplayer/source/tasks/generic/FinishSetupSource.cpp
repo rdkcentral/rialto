@@ -109,7 +109,7 @@ void FinishSetupSource::execute() const
         }
 
         StreamInfo &streamInfo = elem.second;
-        m_context.gstSrc->setupAndAddAppArc(m_context.decryptionService, m_context.source, streamInfo, &callbacks,
+        m_context.gstSrc->setupAndAddAppSrc(m_context.decryptionService, m_context.source, streamInfo, &callbacks,
                                             &m_player, sourceType);
         m_player.notifyNeedMediaData(sourceType);
     }
