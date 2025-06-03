@@ -205,6 +205,32 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::SetImmediateOutputRequest createSetImmediateOutputRequest(int sessionId, int sourceId,
+                                                                              bool immediateOutput)
+{
+    ::firebolt::rialto::SetImmediateOutputRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    request.set_immediate_output(immediateOutput);
+    return request;
+}
+
+::firebolt::rialto::GetImmediateOutputRequest createGetImmediateOutputRequest(int sessionId, int sourceId)
+{
+    ::firebolt::rialto::GetImmediateOutputRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    return request;
+}
+
+::firebolt::rialto::GetStatsRequest createGetStatsRequest(int sessionId, int sourceId)
+{
+    ::firebolt::rialto::GetStatsRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    return request;
+}
+
 ::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId)
 {
     ::firebolt::rialto::RenderFrameRequest request;
@@ -212,11 +238,23 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::SetVolumeRequest createSetVolumeRequest(int sessionId)
+::firebolt::rialto::SetVolumeRequest createSetVolumeNormalRequest(int sessionId)
 {
     ::firebolt::rialto::SetVolumeRequest request;
     request.set_session_id(sessionId);
     request.set_volume(kVolume);
+    request.set_volume_duration(kNoVolumeDuration);
+    request.set_ease_type(::firebolt::rialto::SetVolumeRequest_EaseType_EASE_LINEAR);
+    return request;
+}
+
+::firebolt::rialto::SetVolumeRequest createSetVolumeWithFadeRequest(int sessionId)
+{
+    ::firebolt::rialto::SetVolumeRequest request;
+    request.set_session_id(sessionId);
+    request.set_volume(kVolume);
+    request.set_volume_duration(kVolumeDuration);
+    request.set_ease_type(::firebolt::rialto::SetVolumeRequest_EaseType_EASE_LINEAR);
     return request;
 }
 
@@ -227,17 +265,97 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::SetMuteRequest createSetMuteRequest(int sessionId)
+::firebolt::rialto::SetMuteRequest createSetMuteRequest(int sessionId, int sourceId)
 {
     ::firebolt::rialto::SetMuteRequest request;
     request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
     request.set_mute(true);
     return request;
 }
 
-::firebolt::rialto::GetMuteRequest createGetMuteRequest(int sessionId)
+::firebolt::rialto::GetMuteRequest createGetMuteRequest(int sessionId, int sourceId)
 {
     ::firebolt::rialto::GetMuteRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    return request;
+}
+
+::firebolt::rialto::SetLowLatencyRequest createSetLowLatencyRequest(int sessionId, bool lowLatency)
+{
+    ::firebolt::rialto::SetLowLatencyRequest request;
+    request.set_session_id(sessionId);
+    request.set_low_latency(lowLatency);
+    return request;
+}
+
+::firebolt::rialto::SetSyncRequest createSetSyncRequest(int sessionId, bool sync)
+{
+    ::firebolt::rialto::SetSyncRequest request;
+    request.set_session_id(sessionId);
+    request.set_sync(sync);
+    return request;
+}
+
+::firebolt::rialto::GetSyncRequest createGetSyncRequest(int sessionId)
+{
+    ::firebolt::rialto::GetSyncRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::SetSyncOffRequest createSetSyncOffRequest(int sessionId, bool syncOff)
+{
+    ::firebolt::rialto::SetSyncOffRequest request;
+    request.set_session_id(sessionId);
+    request.set_sync_off(syncOff);
+    return request;
+}
+
+::firebolt::rialto::SetStreamSyncModeRequest createSetStreamSyncModeRequest(int sessionId, int sourceId,
+                                                                            bool streamSyncMode)
+{
+    ::firebolt::rialto::SetStreamSyncModeRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    request.set_stream_sync_mode(streamSyncMode);
+    return request;
+}
+
+::firebolt::rialto::GetStreamSyncModeRequest createGetStreamSyncModeRequest(int sessionId)
+{
+    ::firebolt::rialto::GetStreamSyncModeRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::SetBufferingLimitRequest createSetBufferingLimitRequest(int sessionId, uint32_t bufferingLimit)
+{
+    ::firebolt::rialto::SetBufferingLimitRequest request;
+    request.set_session_id(sessionId);
+    request.set_limit_buffering_ms(bufferingLimit);
+    return request;
+}
+
+::firebolt::rialto::GetBufferingLimitRequest createGetBufferingLimitRequest(int sessionId)
+{
+    ::firebolt::rialto::GetBufferingLimitRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
+::firebolt::rialto::SetUseBufferingRequest createSetUseBufferingRequest(int sessionId, bool useBuffering)
+{
+    ::firebolt::rialto::SetUseBufferingRequest request;
+    request.set_session_id(sessionId);
+    request.set_use_buffering(useBuffering);
+    return request;
+}
+
+::firebolt::rialto::GetUseBufferingRequest createGetUseBufferingRequest(int sessionId)
+{
+    ::firebolt::rialto::GetUseBufferingRequest request;
     request.set_session_id(sessionId);
     return request;
 }
@@ -263,12 +381,29 @@ namespace firebolt::rialto::server::ct
 }
 
 ::firebolt::rialto::SetSourcePositionRequest createSetSourcePositionRequest(int sessionId, int sourceId,
-                                                                            std::int64_t position)
+                                                                            std::int64_t position, bool resetTime,
+                                                                            double appliedRate, uint64_t stopPosition)
 {
     ::firebolt::rialto::SetSourcePositionRequest request;
     request.set_session_id(sessionId);
     request.set_source_id(sourceId);
     request.set_position(position);
+    request.set_reset_time(resetTime);
+    request.set_applied_rate(appliedRate);
+    request.set_stop_position(stopPosition);
+    return request;
+}
+
+::firebolt::rialto::ProcessAudioGapRequest createProcessAudioGapRequest(int sessionId, std::int64_t position,
+                                                                        unsigned duration,
+                                                                        std::int64_t discontinuityGap, bool audioAac)
+{
+    ::firebolt::rialto::ProcessAudioGapRequest request;
+    request.set_session_id(sessionId);
+    request.set_position(position);
+    request.set_duration(duration);
+    request.set_discontinuity_gap(discontinuityGap);
+    request.set_audio_aac(audioAac);
     return request;
 }
 
@@ -510,6 +645,16 @@ createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType)
     return request;
 }
 
+::firebolt::rialto::GetSupportedPropertiesRequest
+createGetSupportedPropertiesRequest(const ProtoMediaSourceType &mediaType, const std::vector<std::string> &propertyNames)
+{
+    ::firebolt::rialto::GetSupportedPropertiesRequest request;
+    request.set_media_type(mediaType);
+    for (const std::string &prop : propertyNames)
+        request.add_property_names(prop.c_str());
+    return request;
+}
+
 ::firebolt::rialto::CreateWebAudioPlayerRequest
 createCreateWebAudioPlayerRequest(uint32 pcmRate, uint32 pcmChannels, uint32 pcmSampleSize, bool pcmIsBigEndian,
                                   bool pcmIsSigned, bool pcmIsFloat, const std::string &audioMimeType, uint32 priority)
@@ -597,6 +742,13 @@ createCreateWebAudioPlayerRequest(uint32 pcmRate, uint32 pcmChannels, uint32 pcm
 {
     ::firebolt::rialto::WebAudioGetVolumeRequest request;
     request.set_web_audio_player_handle(webAudioPlayerHandle);
+    return request;
+}
+
+::firebolt::rialto::GetMetricSystemDataRequest createGetMetricSystemDataRequest(int mediaKeysHandle)
+{
+    ::firebolt::rialto::GetMetricSystemDataRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
     return request;
 }
 

@@ -24,6 +24,25 @@
 
 namespace firebolt::rialto
 {
+const char *mediaKeyErrorStatusToString(const MediaKeyErrorStatus &status)
+{
+    switch (status)
+    {
+    case firebolt::rialto::MediaKeyErrorStatus::OK:
+        return "OK";
+    case firebolt::rialto::MediaKeyErrorStatus::BAD_SESSION_ID:
+        return "BAD_SESSION_ID";
+    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+        return "INTERFACE_NOT_IMPLEMENTED";
+    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+        return "BUFFER_TOO_SMALL";
+    case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
+        return "NOT_SUPPORTED";
+    default:
+        return "FAIL";
+    }
+}
+
 std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
 {
     return server::IMediaKeysServerInternalFactory::createFactory();
@@ -573,21 +592,6 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     return status;
 }
 
-// TODO(RIALTO-127): Remove
-MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstBuffer *subSample,
-                                                     const uint32_t subSampleCount, GstBuffer *IV, GstBuffer *keyId,
-                                                     uint32_t initWithLast15, GstCaps *caps)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    MediaKeyErrorStatus status;
-    auto task = [&]()
-    { status = decryptInternal(keySessionId, encrypted, subSample, subSampleCount, IV, keyId, initWithLast15, caps); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return status;
-}
-
 MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
@@ -598,30 +602,6 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
     }
 
     MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->decrypt(encrypted, caps);
-    if (MediaKeyErrorStatus::OK != status)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");
-        return status;
-    }
-
-    return status;
-}
-
-// TODO(RIALTO-127): Remove
-MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionId, GstBuffer *encrypted,
-                                                             GstBuffer *subSample, const uint32_t subSampleCount,
-                                                             GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15,
-                                                             GstCaps *caps)
-{
-    auto sessionIter = m_mediaKeySessions.find(keySessionId);
-    if (sessionIter == m_mediaKeySessions.end())
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
-        return MediaKeyErrorStatus::BAD_SESSION_ID;
-    }
-
-    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->decrypt(encrypted, subSample, subSampleCount, IV,
-                                                                              keyId, initWithLast15, caps);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");
@@ -730,4 +710,50 @@ void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbea
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
+
+MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    uint32_t bufferLength{1024};
+    const uint32_t kMaxBufferLength{65536};
+    MediaKeyErrorStatus status;
+    buffer.resize(bufferLength);
+
+    for (int attempts = 0; bufferLength <= kMaxBufferLength; ++attempts)
+    {
+        auto task = [&]() { status = m_ocdmSystem->getMetricSystemData(bufferLength, buffer); };
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+
+        if (status != MediaKeyErrorStatus::BUFFER_TOO_SMALL)
+        {
+            break;
+        }
+
+        if (bufferLength >= kMaxBufferLength)
+        {
+            RIALTO_SERVER_LOG_ERROR("Buffer size %u exceeds the maximum allowed size %u", bufferLength, kMaxBufferLength);
+            return MediaKeyErrorStatus::BUFFER_TOO_SMALL;
+        }
+
+        RIALTO_SERVER_LOG_WARN("Buffer is too small, resizing from %u to %u", bufferLength, bufferLength * 2);
+        bufferLength *= 2;
+        buffer.resize(bufferLength);
+    }
+
+    if (status == MediaKeyErrorStatus::OK)
+    {
+        // If the buffer remains larger than bufferLength (due to a previous resize),
+        // the client may have values in the extra space. So this resize would ensure the buffer is trimmed to the correct size.
+        buffer.resize(bufferLength);
+        RIALTO_SERVER_LOG_DEBUG("Successfully retrieved metric system data, final buffer length: %u", bufferLength);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to retrieve metric system data, status: %s, last buffer length tried: %u",
+                                firebolt::rialto::mediaKeyErrorStatusToString(status), bufferLength);
+    }
+    return status;
+}
+
 }; // namespace firebolt::rialto::server

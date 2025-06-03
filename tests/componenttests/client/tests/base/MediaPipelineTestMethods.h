@@ -83,8 +83,6 @@ protected:
     void shouldAttachVideoSourceSecondary();
     void shouldAttachAudioSource();
     void shouldAttachAudioSourceMpeg();
-    void shouldAttachAudioSourceMp4();
-    void shouldAttachAudioSourceEacs();
     void shouldAllSourcesAttached();
     void shouldAllSourcesAttachedSecondary();
     void shouldPlay();
@@ -111,19 +109,36 @@ protected:
     void shouldSetPlaybackRateNegative2x();
     void shouldSetPlaybackRateFailure();
     void shouldSetPosition(const int64_t expectedPosition);
-    void shouldSetVolume(const double expectedVolume);
+    void shouldSetVolume(const double targetVolume, const uint32_t volumeDuration, firebolt::rialto::EaseType easeType);
     void shouldGetVolume(const double volume);
     void shouldSetMute(const bool expectedMute);
     void shouldGetMute(const bool mute);
+    void shouldSetLowLatency(const bool expectedLowLatency);
+    void shouldSetSync(const bool expectedSync);
+    void shouldGetSync(const bool sync);
+    void shouldSetSyncOff(const bool expectedSyncOff);
+    void shouldSetStreamSyncMode(const int32_t expectedStreamSyncMode);
+    void shouldGetStreamSyncMode(const int32_t streamSyncMode);
+    void shouldSetBufferingLimit(const uint32_t expectedBufferingLimit);
+    void shouldGetBufferingLimit(const uint32_t bufferingLimit);
+    void shouldSetUseBuffering(const bool expectedUseBuffering);
+    void shouldGetUseBuffering(const bool useBuffering);
     void shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY, const uint32_t expectedWidth,
                               const uint32_t expectedHeight);
     void shouldRenderFrame();
     void shouldRenderFrameFailure();
     void shouldGetPosition(const int64_t position);
+    void shouldSetImmediateOutput(bool immediateOutput);
+    void shouldGetImmediateOutput(bool immediateOutput);
+    void shouldGetStats(uint64_t renderedFrames, uint64_t droppedFrames);
     void shouldFlush();
     void shouldFailToFlush();
     void shouldSetSourcePosition();
     void shouldFailToSetSourcePosition();
+    void shouldProcessAudioGap();
+    void shouldFailToProcessAudioGap();
+    void shouldSwitchSourceEacs();
+    void shouldSwitchSourceMpeg();
 
     // MediaPipelineClient Expect methods
     void shouldNotifyNetworkStateBuffering();
@@ -164,6 +179,8 @@ protected:
     void shouldGetSupportedUnknownMimeTypes();
     void shouldCheckIsMimeTypeSupported();
     void shouldCheckIsMimeTypeNotSupported();
+    void shouldGetSupportedProperties();
+    void shouldGetSupportedPropertiesFailure();
 
     // Api methods
     void createMediaPipeline();
@@ -175,8 +192,6 @@ protected:
     void attachSourceVideo();
     void attachSourceAudio();
     void attachSourceAudioMpeg();
-    void attachSourceAudioMp4();
-    void attachSourceAudioEacs();
     void attachSourceVideoSecondary();
     void allSourcesAttached();
     void allSourcesAttachedSecondary();
@@ -214,21 +229,40 @@ protected:
     void getVolume(const double expectedVolume);
     void setMute(const bool mute);
     void getMute(const bool expectedMute);
+    void setLowLatency(const bool lowLatency);
+    void setSync(const bool sync);
+    void getSync(const bool expectedSync);
+    void setSyncOff(const bool syncOff);
+    void setStreamSyncMode(const int32_t streamSyncMode);
+    void getStreamSyncMode(const int32_t expectedStreamSyncMode);
+    void setBufferingLimit(const uint32_t bufferingLimit);
+    void getBufferingLimit(const uint32_t expectedBufferingLimit);
+    void setUseBuffering(const bool useBuffering);
+    void getUseBuffering(const bool expectedUseBuffering);
     void setSetVideoWindow(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height);
     void renderFrame();
     void renderFrameFailure();
     void getPosition(const int64_t expectedPosition);
+    void setImmediateOutput(bool immediateOutput);
+    void getImmediateOutput(bool immediateOutput);
+    void getStats(uint64_t expectedFrames, uint64_t expectedDropped);
     void createMediaPipelineCapabilitiesObject();
     void destroyMediaPipelineCapabilitiesObject();
     void getSupportedAudioMimeTypes();
     void getSupportedVideoMimeTypes();
     void getUnknownMimeTypes();
     void isMimeTypeSupported();
+    void getSupportedProperties();
+    void getSupportedPropertiesFailure();
     void isMimeTypeNotSupported();
     void flush();
     void flushFailure();
     void setSourcePosition();
     void setSourcePositionFailure();
+    void processAudioGap();
+    void processAudioGapFailure();
+    void switchSourceEac();
+    void switchSourceMpeg();
 
     // Event methods
     void sendNotifyNetworkStateBuffering();

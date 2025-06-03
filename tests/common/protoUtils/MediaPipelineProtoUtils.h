@@ -39,6 +39,26 @@ inline firebolt::rialto::LoadRequest_MediaType convertMediaType(const firebolt::
     return firebolt::rialto::LoadRequest_MediaType::LoadRequest_MediaType_UNKNOWN;
 }
 
+inline firebolt::rialto::SetVolumeRequest_EaseType convertEaseType(const firebolt::rialto::EaseType &easeType)
+{
+    switch (easeType)
+    {
+    case firebolt::rialto::EaseType::EASE_LINEAR:
+    {
+        return firebolt::rialto::SetVolumeRequest_EaseType::SetVolumeRequest_EaseType_EASE_LINEAR;
+    }
+    case firebolt::rialto::EaseType::EASE_IN_CUBIC:
+    {
+        return firebolt::rialto::SetVolumeRequest_EaseType::SetVolumeRequest_EaseType_EASE_IN_CUBIC;
+    }
+    case firebolt::rialto::EaseType::EASE_OUT_CUBIC:
+    {
+        return firebolt::rialto::SetVolumeRequest_EaseType::SetVolumeRequest_EaseType_EASE_OUT_CUBIC;
+    }
+    }
+    return firebolt::rialto::SetVolumeRequest_EaseType::SetVolumeRequest_EaseType_EASE_LINEAR;
+}
+
 inline firebolt::rialto::AttachSourceRequest_StreamFormat
 convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat)
 {

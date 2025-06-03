@@ -78,7 +78,7 @@ public:
      *
      * @param[in] object                : Pointer to the object.
      * @param[in] first_property_name   : Name of the first property to get.
-     * @param[in] ...                   : Return location for the first property, followed optionally by more
+     * @param[out] ...                   : Return location for the first property, followed optionally by more
      * name/return location pairs
      */
     virtual void gObjectGet(gpointer object, const gchar *first_property_name, ...) = 0;
@@ -92,6 +92,16 @@ public:
      * @retval the GParamSpec for the property, or NULL if the class doesn't have a property of that name.
      */
     virtual GParamSpec *gObjectClassFindProperty(GObjectClass *oclass, const gchar *property_name) = 0;
+
+    /**
+     * @brief returns all the GParamSpec for the properties of a class.
+     *
+     * @param[in] oclass        : a GObjectClass
+     * @param[out] nProps : the number of properties returned
+     *
+     * @retval an array of GParamSpec for the oclass
+     */
+    virtual GParamSpec **gObjectClassListProperties(GObjectClass *oclass, guint *nProps) = 0;
 
     /**
      * @brief Increments the reference count of the class. Creates the class if it does not exist.
@@ -139,35 +149,6 @@ public:
      * @retval the handler ID, of type gulong (always greater than 0 for successful connections)
      */
     virtual gulong gSignalConnect(gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data) = 0;
-
-    /**
-     * @brief Disconnects a handler from an instance so it will not be called during any future or currently ongoing
-     * emissions of the signal it has been connected to. The handler_id becomes invalid and may be reused.
-     *
-     * @param[in] instance     : The instance to remove the signal handler from.
-     * @param[in] handler_id   : Handler id of the handler to be disconnected.
-     */
-    virtual void gSignalHandlerDisconnect(GObject *instance, gulong handler_id) const = 0;
-
-    /**
-     * @brief Sets a function to be called at every interval.
-     *
-     * @param[in] interval  : The time interval to call the function.
-     * @param[in] function  : Function to call.
-     * @param[in] data      : Data to pass into function.
-     *
-     * @retval The Id of the event source.
-     */
-    virtual guint gTimeoutAdd(guint interval, GSourceFunc function, gpointer data) = 0;
-
-    /**
-     * @brief Remove the source with Id.
-     *
-     * @param[in] tag  : Id of the source.
-     *
-     * @retval TRUE on success, FALSE otherwise.
-     */
-    virtual gboolean gSourceRemove(guint tag) = 0;
 
     /**
      * @brief Similar to sprintf. Returning string should be freed using gFree.
@@ -276,7 +257,7 @@ public:
      *
      * @param[in] haystack : A null-terminated string.
      * @param[in] needle   : The null-terminated string to search for.
-     *
+     *7
      * @retval A pointer to the found occurrence, or NULL if not found.
      */
     virtual gchar *gStrrstr(const gchar *haystack, const gchar *needle) const = 0;
@@ -332,6 +313,16 @@ public:
      * @param[in] message   : Error message.
      */
     virtual GError *gErrorNewLiteral(GQuark domain, gint code, const gchar *message) const = 0;
+
+    /**
+     * @brief Initializes value with the default value of type.
+     *
+     * @param[in] value : The value to initialize
+     * @param[in] type  : The type of a value
+     *
+     * @retval The GValue structure that has been passed in.
+     */
+    virtual GValue *gValueInit(GValue *value, GType type) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

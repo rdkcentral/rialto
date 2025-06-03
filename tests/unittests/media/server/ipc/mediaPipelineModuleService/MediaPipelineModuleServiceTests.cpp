@@ -119,6 +119,18 @@ TEST_F(MediaPipelineModuleServiceTests, shouldAttachAudioSourceWithAdditionalDat
     sendAttachAudioSourceWithAdditionalDataRequestAndReceiveResponse();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldSwitchSource)
+{
+    mediaPipelineServiceWillSwitchSource();
+    sendAttachSourceRequestWithSwitchSourceAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSwitchSource)
+{
+    mediaPipelineServiceWillFailToSwitchSource();
+    sendAttachSourceRequestWithSwitchSourceAndReceiveResponse();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldFailToAttachSource)
 {
     mediaPipelineServiceWillFailToAttachSource();
@@ -235,6 +247,54 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetPosition)
     sendCreateSessionRequestAndReceiveResponse();
     mediaPipelineServiceWillFailToGetPosition();
     sendGetPositionRequestAndReceiveResponseWithoutPositionMatch();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetImmediateOutput)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillSetImmediateOutput();
+    sendSetImmediateOutputRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetImmediateOutput)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToSetImmediateOutput();
+    sendSetImmediateOutputRequestAndReceiveFail();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetImmediateOutput)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillGetImmediateOutput();
+    sendGetImmediateOutputRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetImmediateOutput)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToGetImmediateOutput();
+    sendGetImmediateOutputRequestAndReceiveFail();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetStats)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillGetStats();
+    sendGetStatsRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetStats)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToGetStats();
+    sendGetStatsRequestAndReceiveResponseWithoutStatsMatch();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackStateChangedEvent)
@@ -357,6 +417,78 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetMute)
     sendGetMuteRequestAndReceiveResponseWithoutMuteMatch();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldSetLowLatency)
+{
+    mediaPipelineServiceWillSetLowLatency();
+    sendSetLowLatencyRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetLowLatency)
+{
+    mediaPipelineServiceWillFailToSetLowLatency();
+    sendSetLowLatencyRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetSync)
+{
+    mediaPipelineServiceWillSetSync();
+    sendSetSyncRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetSync)
+{
+    mediaPipelineServiceWillFailToSetSync();
+    sendSetSyncRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetSync)
+{
+    mediaPipelineServiceWillGetSync();
+    sendGetSyncRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetSync)
+{
+    mediaPipelineServiceWillFailToGetSync();
+    sendGetSyncRequestAndReceiveResponseWithoutSyncMatch();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetSyncOff)
+{
+    mediaPipelineServiceWillSetSyncOff();
+    sendSetSyncOffRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetSyncOff)
+{
+    mediaPipelineServiceWillFailToSetSyncOff();
+    sendSetSyncOffRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetStreamSyncMode)
+{
+    mediaPipelineServiceWillSetStreamSyncMode();
+    sendSetStreamSyncModeRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetStreamSyncMode)
+{
+    mediaPipelineServiceWillFailToSetStreamSyncMode();
+    sendSetStreamSyncModeRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetStreamSyncMode)
+{
+    mediaPipelineServiceWillGetStreamSyncMode();
+    sendGetStreamSyncModeRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetStreamSyncMode)
+{
+    mediaPipelineServiceWillFailToGetStreamSyncMode();
+    sendGetStreamSyncModeRequestAndReceiveResponseWithoutStreamSyncModeMatch();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldFlush)
 {
     mediaPipelineServiceWillFlush();
@@ -379,4 +511,88 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetSourcePosition)
 {
     mediaPipelineServiceWillFailToSetSourcePosition();
     sendSetSourcePositionRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldProcessAudioGap)
+{
+    mediaPipelineServiceWillProcessAudioGap();
+    sendProcessAudioGapRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToProcessAudioGap)
+{
+    mediaPipelineServiceWillFailToProcessAudioGap();
+    sendProcessAudioGapRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetTextTrackIdentifier)
+{
+    mediaPipelineServiceWillSetTextTrackIdentifier();
+    sendSetTextTrackIdentifierRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetTextTrackIdentifier)
+{
+    mediaPipelineServiceWillFailToSetTextTrackIdentifier();
+    sendSetTextTrackIdentifierRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetTextTrackIdentifier)
+{
+    mediaPipelineServiceWillGetTextTrackIdentifier();
+    sendGetTextTrackIdentifierRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetTextTrackIdentifier)
+{
+    mediaPipelineServiceWillFailToGetTextTrackIdentifier();
+    sendGetTextTrackIdentifierRequestAndReceiveResponseWithoutMatch();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetBufferingLimit)
+{
+    mediaPipelineServiceWillSetBufferingLimit();
+    sendSetBufferingLimitRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetBufferingLimit)
+{
+    mediaPipelineServiceWillFailToSetBufferingLimit();
+    sendSetBufferingLimitRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetBufferingLimit)
+{
+    mediaPipelineServiceWillGetBufferingLimit();
+    sendGetBufferingLimitRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetBufferingLimit)
+{
+    mediaPipelineServiceWillFailToGetBufferingLimit();
+    sendGetBufferingLimitRequestAndReceiveResponseWithoutMatch();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetUseBuffering)
+{
+    mediaPipelineServiceWillSetUseBuffering();
+    sendSetUseBufferingRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetUseBuffering)
+{
+    mediaPipelineServiceWillFailToSetUseBuffering();
+    sendSetUseBufferingRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetUseBuffering)
+{
+    mediaPipelineServiceWillGetUseBuffering();
+    sendGetUseBufferingRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetUseBuffering)
+{
+    mediaPipelineServiceWillFailToGetUseBuffering();
+    sendGetUseBufferingRequestAndReceiveResponseWithoutMatch();
 }

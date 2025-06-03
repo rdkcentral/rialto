@@ -24,12 +24,12 @@ class FlushTest : public GenericTasksTestsBase
 protected:
     FlushTest()
     {
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
         setContextNeedData(true);
         setContextNeedDataPending(true);
         setContextAudioBuffer();
         setContextVideoBuffer();
-        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
-        setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
         setContextEndOfStream(firebolt::rialto::MediaSourceType::AUDIO);
         setContextEndOfStream(firebolt::rialto::MediaSourceType::VIDEO);
         setContextEndOfStreamNotified();
@@ -53,6 +53,14 @@ TEST_F(FlushTest, ShouldFlushAudio)
 {
     shouldFlushAudio();
     shouldFlushAudioSrcSuccess();
+    setPipelinePlaying();
+    triggerFlush(firebolt::rialto::MediaSourceType::AUDIO);
+    checkAudioFlushed();
+}
+
+TEST_F(FlushTest, ShouldFlushAudioWithoutSendingEventBelowPaused)
+{
+    shouldFlushAudio();
     triggerFlush(firebolt::rialto::MediaSourceType::AUDIO);
     checkAudioFlushed();
 }
@@ -61,6 +69,7 @@ TEST_F(FlushTest, ShouldFlushAudioEvenIfEventSendingFails)
 {
     shouldFlushAudio();
     shouldFlushAudioSrcFailure();
+    setPipelinePlaying();
     triggerFlush(firebolt::rialto::MediaSourceType::AUDIO);
     checkAudioFlushed();
 }
@@ -69,6 +78,7 @@ TEST_F(FlushTest, ShouldFlushVideo)
 {
     shouldFlushVideo();
     shouldFlushVideoSrcSuccess();
+    setPipelinePlaying();
     triggerFlush(firebolt::rialto::MediaSourceType::VIDEO);
     checkVideoFlushed();
 }

@@ -25,6 +25,7 @@
 #include <IIpcController.h>
 #include <algorithm>
 #include <cstdint>
+#include <unordered_map>
 
 namespace
 {
@@ -48,6 +49,26 @@ firebolt::rialto::MediaType convertMediaType(const firebolt::rialto::LoadRequest
     }
     }
     return firebolt::rialto::MediaType::UNKNOWN;
+}
+
+firebolt::rialto::EaseType convertEaseType(const firebolt::rialto::SetVolumeRequest_EaseType &easeType)
+{
+    switch (easeType)
+    {
+    case firebolt::rialto::SetVolumeRequest_EaseType::SetVolumeRequest_EaseType_EASE_LINEAR:
+    {
+        return firebolt::rialto::EaseType::EASE_LINEAR;
+    }
+    case firebolt::rialto::SetVolumeRequest_EaseType::SetVolumeRequest_EaseType_EASE_IN_CUBIC:
+    {
+        return firebolt::rialto::EaseType::EASE_IN_CUBIC;
+    }
+    case firebolt::rialto::SetVolumeRequest_EaseType::SetVolumeRequest_EaseType_EASE_OUT_CUBIC:
+    {
+        return firebolt::rialto::EaseType::EASE_OUT_CUBIC;
+    }
+    }
+    return firebolt::rialto::EaseType::EASE_LINEAR;
 }
 
 firebolt::rialto::MediaSourceStatus
@@ -169,6 +190,63 @@ firebolt::rialto::CodecDataType convertCodecDataType(const firebolt::rialto::Att
         return firebolt::rialto::CodecDataType::STRING;
     }
     return firebolt::rialto::CodecDataType::BUFFER;
+}
+
+firebolt::rialto::Format convertFormat(const firebolt::rialto::AttachSourceRequest_AudioConfig_Format &format)
+{
+    static const std::unordered_map<firebolt::rialto::AttachSourceRequest_AudioConfig_Format, firebolt::rialto::Format>
+        kFormatConversionMap{
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S8, firebolt::rialto::Format::S8},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U8, firebolt::rialto::Format::U8},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S16LE, firebolt::rialto::Format::S16LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S16BE, firebolt::rialto::Format::S16BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U16LE, firebolt::rialto::Format::U16LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U16BE, firebolt::rialto::Format::U16BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24_32LE, firebolt::rialto::Format::S24_32LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24_32BE, firebolt::rialto::Format::S24_32BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24_32LE, firebolt::rialto::Format::U24_32LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24_32BE, firebolt::rialto::Format::U24_32BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S32LE, firebolt::rialto::Format::S32LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S32BE, firebolt::rialto::Format::S32BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U32LE, firebolt::rialto::Format::U32LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U32BE, firebolt::rialto::Format::U32BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24LE, firebolt::rialto::Format::S24LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24BE, firebolt::rialto::Format::S24BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24LE, firebolt::rialto::Format::U24LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24BE, firebolt::rialto::Format::U24BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S20LE, firebolt::rialto::Format::S20LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S20BE, firebolt::rialto::Format::S20BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U20LE, firebolt::rialto::Format::U20LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U20BE, firebolt::rialto::Format::U20BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S18LE, firebolt::rialto::Format::S18LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S18BE, firebolt::rialto::Format::S18BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U18LE, firebolt::rialto::Format::U18LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U18BE, firebolt::rialto::Format::U18BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F32LE, firebolt::rialto::Format::F32LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F32BE, firebolt::rialto::Format::F32BE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64LE, firebolt::rialto::Format::F64LE},
+            {firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64BE, firebolt::rialto::Format::F64BE}};
+    const auto kIt = kFormatConversionMap.find(format);
+    if (kFormatConversionMap.end() != kIt)
+    {
+        return kIt->second;
+    }
+    return firebolt::rialto::Format::S8;
+}
+
+firebolt::rialto::Layout convertLayout(const firebolt::rialto::AttachSourceRequest_AudioConfig_Layout &layout)
+{
+    static const std::unordered_map<firebolt::rialto::AttachSourceRequest_AudioConfig_Layout, firebolt::rialto::Layout>
+        kLayoutConversionMap{{firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_INTERLEAVED,
+                              firebolt::rialto::Layout::INTERLEAVED},
+                             {firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_NON_INTERLEAVED,
+                              firebolt::rialto::Layout::NON_INTERLEAVED}};
+    const auto kIt = kLayoutConversionMap.find(layout);
+    if (kLayoutConversionMap.end() != kIt)
+    {
+        return kIt->second;
+    }
+    return firebolt::rialto::Layout::INTERLEAVED;
 }
 } // namespace
 
@@ -367,7 +445,34 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
             auto codecSpecificConfigStr = kConfig.codec_specific_config();
             codecSpecificConfig.assign(codecSpecificConfigStr.begin(), codecSpecificConfigStr.end());
         }
-        AudioConfig audioConfig{numberofchannels, sampleRate, codecSpecificConfig};
+        std::optional<firebolt::rialto::Format> format{std::nullopt};
+        if (kConfig.has_format())
+        {
+            format = convertFormat(kConfig.format());
+        }
+        std::optional<firebolt::rialto::Layout> layout{std::nullopt};
+        if (kConfig.has_layout())
+        {
+            layout = convertLayout(kConfig.layout());
+        }
+        std::optional<uint64_t> channelMask{std::nullopt};
+        if (kConfig.has_channel_mask())
+        {
+            channelMask = kConfig.channel_mask();
+        }
+        std::vector<std::vector<uint8_t>> streamHeaders;
+        for (int i = 0; i < kConfig.stream_header_size(); ++i)
+        {
+            auto streamHeaderStr = kConfig.stream_header(i);
+            streamHeaders.push_back(std::vector<uint8_t>{streamHeaderStr.begin(), streamHeaderStr.end()});
+        }
+        std::optional<bool> framed;
+        if (kConfig.has_framed())
+        {
+            framed = kConfig.framed();
+        }
+        AudioConfig audioConfig{numberofchannels, sampleRate,  codecSpecificConfig, format,
+                                layout,           channelMask, streamHeaders,       framed};
 
         mediaSource =
             std::make_unique<IMediaPipeline::MediaSourceAudio>(request->mime_type(), hasDrm, audioConfig,
@@ -406,10 +511,23 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         return;
     }
 
-    if (!m_mediaPipelineService.attachSource(request->session_id(), mediaSource))
+    if (!request->has_switch_source() || !request->switch_source())
     {
-        RIALTO_SERVER_LOG_ERROR("Attach source failed");
-        controller->SetFailed("Operation failed");
+        RIALTO_SERVER_LOG_DEBUG("Attaching source");
+        if (!m_mediaPipelineService.attachSource(request->session_id(), mediaSource))
+        {
+            RIALTO_SERVER_LOG_ERROR("Attach source failed");
+            controller->SetFailed("Operation failed");
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Switching source");
+        if (!m_mediaPipelineService.switchSource(request->session_id(), mediaSource))
+        {
+            RIALTO_SERVER_LOG_ERROR("Switch source failed");
+            controller->SetFailed("Operation failed");
+        }
     }
     response->set_source_id(mediaSource->getId());
     done->Run();
@@ -544,6 +662,61 @@ void MediaPipelineModuleService::getPosition(::google::protobuf::RpcController *
     done->Run();
 }
 
+void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcController *controller,
+                                                    const ::firebolt::rialto::SetImmediateOutputRequest *request,
+                                                    ::firebolt::rialto::SetImmediateOutputResponse *response,
+                                                    ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setImmediateOutput(request->session_id(), request->source_id(),
+                                                   request->immediate_output()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Immediate Output failed");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getImmediateOutput(::google::protobuf::RpcController *controller,
+                                                    const ::firebolt::rialto::GetImmediateOutputRequest *request,
+                                                    ::firebolt::rialto::GetImmediateOutputResponse *response,
+                                                    ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    bool immediateOutputState;
+    if (!m_mediaPipelineService.getImmediateOutput(request->session_id(), request->source_id(), immediateOutputState))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get Immediate Output failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_immediate_output(immediateOutputState);
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getStats(::google::protobuf::RpcController *controller,
+                                          const ::firebolt::rialto::GetStatsRequest *request,
+                                          ::firebolt::rialto::GetStatsResponse *response,
+                                          ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    uint64_t renderedFrames;
+    uint64_t droppedFrames;
+    if (!m_mediaPipelineService.getStats(request->session_id(), request->source_id(), renderedFrames, droppedFrames))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get stats failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_rendered_frames(renderedFrames);
+        response->set_dropped_frames(droppedFrames);
+    }
+    done->Run();
+}
+
 void MediaPipelineModuleService::renderFrame(::google::protobuf::RpcController *controller,
                                              const ::firebolt::rialto::RenderFrameRequest *request,
                                              ::firebolt::rialto::RenderFrameResponse *response,
@@ -567,7 +740,8 @@ void MediaPipelineModuleService::setVolume(::google::protobuf::RpcController *co
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (!m_mediaPipelineService.setVolume(request->session_id(), request->volume()))
+    if (!m_mediaPipelineService.setVolume(request->session_id(), request->volume(), request->volume_duration(),
+                                          convertEaseType(request->ease_type())))
     {
         RIALTO_SERVER_LOG_ERROR("Set volume failed.");
         controller->SetFailed("Operation failed");
@@ -603,7 +777,7 @@ void MediaPipelineModuleService::setMute(::google::protobuf::RpcController *cont
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (!m_mediaPipelineService.setMute(request->session_id(), request->mute()))
+    if (!m_mediaPipelineService.setMute(request->session_id(), request->source_id(), request->mute()))
     {
         RIALTO_SERVER_LOG_ERROR("Set mute failed.");
         controller->SetFailed("Operation failed");
@@ -619,7 +793,7 @@ void MediaPipelineModuleService::getMute(::google::protobuf::RpcController *cont
     RIALTO_SERVER_LOG_DEBUG("entry:");
     bool mute{};
 
-    if (!m_mediaPipelineService.getMute(request->session_id(), mute))
+    if (!m_mediaPipelineService.getMute(request->session_id(), request->source_id(), mute))
     {
         RIALTO_SERVER_LOG_ERROR("Get mute failed.");
         controller->SetFailed("Operation failed");
@@ -632,17 +806,161 @@ void MediaPipelineModuleService::getMute(::google::protobuf::RpcController *cont
     done->Run();
 }
 
+void MediaPipelineModuleService::setTextTrackIdentifier(::google::protobuf::RpcController *controller,
+                                                        const ::firebolt::rialto::SetTextTrackIdentifierRequest *request,
+                                                        ::firebolt::rialto::SetTextTrackIdentifierResponse *response,
+                                                        ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_mediaPipelineService.setTextTrackIdentifier(request->session_id(), request->text_track_identifier()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set text track identifier failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
+}
+
+void MediaPipelineModuleService::getTextTrackIdentifier(::google::protobuf::RpcController *controller,
+                                                        const ::firebolt::rialto::GetTextTrackIdentifierRequest *request,
+                                                        ::firebolt::rialto::GetTextTrackIdentifierResponse *response,
+                                                        ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    std::string textTrackIdentifier{};
+
+    if (!m_mediaPipelineService.getTextTrackIdentifier(request->session_id(), textTrackIdentifier))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get TextTrackIdentifier failed.");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_text_track_identifier(textTrackIdentifier);
+    }
+
+    done->Run();
+}
+
+void MediaPipelineModuleService::setLowLatency(::google::protobuf::RpcController *controller,
+                                               const ::firebolt::rialto::SetLowLatencyRequest *request,
+                                               ::firebolt::rialto::SetLowLatencyResponse *response,
+                                               ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_mediaPipelineService.setLowLatency(request->session_id(), request->low_latency()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set low latency failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
+}
+
+void MediaPipelineModuleService::setSync(::google::protobuf::RpcController *controller,
+                                         const ::firebolt::rialto::SetSyncRequest *request,
+                                         ::firebolt::rialto::SetSyncResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_mediaPipelineService.setSync(request->session_id(), request->sync()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set sync failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
+}
+
+void MediaPipelineModuleService::getSync(::google::protobuf::RpcController *controller,
+                                         const ::firebolt::rialto::GetSyncRequest *request,
+                                         ::firebolt::rialto::GetSyncResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    bool sync{};
+
+    if (!m_mediaPipelineService.getSync(request->session_id(), sync))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get sync failed.");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_sync(sync);
+    }
+
+    done->Run();
+}
+
+void MediaPipelineModuleService::setSyncOff(::google::protobuf::RpcController *controller,
+                                            const ::firebolt::rialto::SetSyncOffRequest *request,
+                                            ::firebolt::rialto::SetSyncOffResponse *response,
+                                            ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_mediaPipelineService.setSyncOff(request->session_id(), request->sync_off()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set sync off failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
+}
+
+void MediaPipelineModuleService::setStreamSyncMode(::google::protobuf::RpcController *controller,
+                                                   const ::firebolt::rialto::SetStreamSyncModeRequest *request,
+                                                   ::firebolt::rialto::SetStreamSyncModeResponse *response,
+                                                   ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    if (!m_mediaPipelineService.setStreamSyncMode(request->session_id(), request->source_id(),
+                                                  request->stream_sync_mode()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set stream sync mode failed.");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
+}
+
+void MediaPipelineModuleService::getStreamSyncMode(::google::protobuf::RpcController *controller,
+                                                   const ::firebolt::rialto::GetStreamSyncModeRequest *request,
+                                                   ::firebolt::rialto::GetStreamSyncModeResponse *response,
+                                                   ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    int32_t streamSyncMode{};
+
+    if (!m_mediaPipelineService.getStreamSyncMode(request->session_id(), streamSyncMode))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get stream sync mode failed.");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_stream_sync_mode(streamSyncMode);
+    }
+
+    done->Run();
+}
+
 void MediaPipelineModuleService::flush(::google::protobuf::RpcController *controller,
                                        const ::firebolt::rialto::FlushRequest *request,
                                        ::firebolt::rialto::FlushResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (!m_mediaPipelineService.flush(request->session_id(), request->source_id(), request->reset_time()))
+    bool isAsync{false};
+    if (!m_mediaPipelineService.flush(request->session_id(), request->source_id(), request->reset_time(), isAsync))
     {
         RIALTO_SERVER_LOG_ERROR("Flush failed.");
         controller->SetFailed("Operation failed");
     }
+    response->set_async(isAsync);
 
     done->Run();
 }
@@ -653,11 +971,98 @@ void MediaPipelineModuleService::setSourcePosition(::google::protobuf::RpcContro
                                                    ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_mediaPipelineService.setSourcePosition(request->session_id(), request->source_id(), request->position()))
+    if (!m_mediaPipelineService.setSourcePosition(request->session_id(), request->source_id(), request->position(),
+                                                  request->reset_time(), request->applied_rate(),
+                                                  request->stop_position()))
     {
         RIALTO_SERVER_LOG_ERROR("Set Source Position failed.");
         controller->SetFailed("Operation failed");
     }
+    done->Run();
+}
+
+void MediaPipelineModuleService::processAudioGap(::google::protobuf::RpcController *controller,
+                                                 const ::firebolt::rialto::ProcessAudioGapRequest *request,
+                                                 ::firebolt::rialto::ProcessAudioGapResponse *response,
+                                                 ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.processAudioGap(request->session_id(), request->position(), request->duration(),
+                                                request->discontinuity_gap(), request->audio_aac()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Process audio gap failed.");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::setBufferingLimit(::google::protobuf::RpcController *controller,
+                                                   const ::firebolt::rialto::SetBufferingLimitRequest *request,
+                                                   ::firebolt::rialto::SetBufferingLimitResponse *response,
+                                                   ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setBufferingLimit(request->session_id(), request->limit_buffering_ms()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set buffering limit failed.");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getBufferingLimit(::google::protobuf::RpcController *controller,
+                                                   const ::firebolt::rialto::GetBufferingLimitRequest *request,
+                                                   ::firebolt::rialto::GetBufferingLimitResponse *response,
+                                                   ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    uint32_t bufferingLimit{};
+
+    if (!m_mediaPipelineService.getBufferingLimit(request->session_id(), bufferingLimit))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get buffering limit failed.");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_limit_buffering_ms(bufferingLimit);
+    }
+
+    done->Run();
+}
+
+void MediaPipelineModuleService::setUseBuffering(::google::protobuf::RpcController *controller,
+                                                 const ::firebolt::rialto::SetUseBufferingRequest *request,
+                                                 ::firebolt::rialto::SetUseBufferingResponse *response,
+                                                 ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setUseBuffering(request->session_id(), request->use_buffering()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set use buffering failed.");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getUseBuffering(::google::protobuf::RpcController *controller,
+                                                 const ::firebolt::rialto::GetUseBufferingRequest *request,
+                                                 ::firebolt::rialto::GetUseBufferingResponse *response,
+                                                 ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    bool useBuffering{};
+
+    if (!m_mediaPipelineService.getUseBuffering(request->session_id(), useBuffering))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get use buffering failed.");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_use_buffering(useBuffering);
+    }
+
     done->Run();
 }
 } // namespace firebolt::rialto::server::ipc

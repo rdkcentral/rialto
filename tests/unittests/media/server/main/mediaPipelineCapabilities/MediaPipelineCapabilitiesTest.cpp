@@ -18,17 +18,23 @@
  */
 
 #include "MediaPipelineCapabilities.h"
+#include "GlibWrapperFactoryMock.h"
+#include "GlibWrapperMock.h"
 #include "GstCapabilitiesFactoryMock.h"
 #include "GstCapabilitiesMock.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "IFactoryAccessor.h"
+#include "RdkGstreamerUtilsWrapperFactoryMock.h"
+#include "RdkGstreamerUtilsWrapperMock.h"
+
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::wrappers;
 
+using ::testing::_;
 using ::testing::ByMove;
 using ::testing::Return;
 using ::testing::StrictMock;
@@ -39,13 +45,24 @@ public:
     MediaPipelineCapabilitiesTest()
         : m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()},
           m_gstWrapperFactoryMock{std::make_shared<StrictMock<GstWrapperFactoryMock>>()},
+          m_glibWrapperMock{std::make_shared<StrictMock<GlibWrapperMock>>()},
+          m_glibWrapperFactoryMock{std::make_shared<StrictMock<GlibWrapperFactoryMock>>()},
+          m_rdkGstreamerUtilsWrapperMock{std::make_shared<StrictMock<RdkGstreamerUtilsWrapperMock>>()},
+          m_rdkGstreamerUtilsWrapperFactoryMock{std::make_shared<StrictMock<RdkGstreamerUtilsWrapperFactoryMock>>()},
           m_gstCapabilitiesFactoryMock{std::make_unique<StrictMock<GstCapabilitiesFactoryMock>>()},
           m_gstCapabilities{std::make_unique<StrictMock<GstCapabilitiesMock>>()},
           m_gstCapabilitiesMock{static_cast<StrictMock<GstCapabilitiesMock> *>(m_gstCapabilities.get())}
     {
         IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock;
+        IFactoryAccessor::instance().glibWrapperFactory() = m_glibWrapperFactoryMock;
+        IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = m_rdkGstreamerUtilsWrapperFactoryMock;
     }
-    ~MediaPipelineCapabilitiesTest() override { IFactoryAccessor::instance().gstWrapperFactory() = nullptr; }
+    ~MediaPipelineCapabilitiesTest() override
+    {
+        IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
+        IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
+        IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = nullptr;
+    }
 
     void createMediaPipelineCapabilities()
     {
@@ -66,6 +83,10 @@ public:
 protected:
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock;
     std::shared_ptr<StrictMock<GstWrapperFactoryMock>> m_gstWrapperFactoryMock;
+    std::shared_ptr<StrictMock<GlibWrapperMock>> m_glibWrapperMock;
+    std::shared_ptr<StrictMock<GlibWrapperFactoryMock>> m_glibWrapperFactoryMock;
+    std::shared_ptr<StrictMock<RdkGstreamerUtilsWrapperMock>> m_rdkGstreamerUtilsWrapperMock;
+    std::shared_ptr<StrictMock<RdkGstreamerUtilsWrapperFactoryMock>> m_rdkGstreamerUtilsWrapperFactoryMock;
     std::shared_ptr<StrictMock<GstCapabilitiesFactoryMock>> m_gstCapabilitiesFactoryMock;
     std::unique_ptr<StrictMock<GstCapabilitiesMock>> m_gstCapabilities;
     StrictMock<GstCapabilitiesMock> *m_gstCapabilitiesMock;
@@ -83,7 +104,12 @@ TEST_F(MediaPipelineCapabilitiesTest, failToCreateMediaPipelineCapabilities)
 TEST_F(MediaPipelineCapabilitiesTest, FactoryCreatesObject)
 {
     EXPECT_CALL(*m_gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(m_gstWrapperMock));
+    EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
+    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperFactoryMock, createRdkGstreamerUtilsWrapper())
+        .WillOnce(Return(m_rdkGstreamerUtilsWrapperMock));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
     std::shared_ptr<firebolt::rialto::IMediaPipelineCapabilitiesFactory> factory =
         firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
@@ -102,7 +128,7 @@ TEST_F(MediaPipelineCapabilitiesTest, getSupportedMimeTypesIsSuccessful)
     EXPECT_EQ(m_sut->getSupportedMimeTypes(sourceType), mimeTypes);
 }
 
-TEST_F(MediaPipelineCapabilitiesTest, isMimetypeSupported)
+TEST_F(MediaPipelineCapabilitiesTest, isMimeTypeSupported)
 {
     std::string mimeType = "video/h264";
 
@@ -110,4 +136,16 @@ TEST_F(MediaPipelineCapabilitiesTest, isMimetypeSupported)
 
     createMediaPipelineCapabilities();
     EXPECT_TRUE(m_sut->isMimeTypeSupported(mimeType));
+}
+
+TEST_F(MediaPipelineCapabilitiesTest, getSupportedProperties)
+{
+    const MediaSourceType kMediaType{MediaSourceType::AUDIO};
+    const std::vector<std::string> kProperties{"immediateOutput"};
+
+    EXPECT_CALL(*m_gstCapabilities, getSupportedProperties(kMediaType, _)).WillOnce(Return(kProperties));
+
+    createMediaPipelineCapabilities();
+    std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(kMediaType, kProperties)};
+    EXPECT_EQ(kProperties, supportedProperties);
 }

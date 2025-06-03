@@ -50,11 +50,14 @@ public:
 #ifdef RIALTO_ENABLE_CONFIG_FILE
 private:
     void readConfigFile(const std::string &filePath);
+    void mergeEnvVariables();
 #endif // RIALTO_ENABLE_CONFIG_FILE
 
 private:
     std::unique_ptr<IConfigReaderFactory> m_configReaderFactory;
     std::map<std::string, std::string> m_sessionServerEnvVars;
+    std::map<std::string, std::string> m_envVarsFromConfigFile;
+    std::map<std::string, std::string> m_extraEnvVarsFromConfigFile;
     std::string m_sessionServerPath;
     std::chrono::milliseconds m_sessionServerStartupTimeout;
     std::chrono::seconds m_healthcheckInterval;

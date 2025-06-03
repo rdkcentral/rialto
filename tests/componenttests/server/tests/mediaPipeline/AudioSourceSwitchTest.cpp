@@ -17,10 +17,13 @@
  * limitations under the License.
  */
 
+#include "ActionTraits.h"
+#include "ConfigureAction.h"
 #include "Constants.h"
 #include "ExpectMessage.h"
 #include "Matchers.h"
 #include "MediaPipelineTest.h"
+#include "MessageBuilders.h"
 
 using testing::_;
 using testing::Return;
@@ -50,8 +53,6 @@ public:
         EXPECT_CALL(*m_gstWrapperMock,
                     gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("rate"), G_TYPE_INT, kSampleRate));
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_audioCaps)).WillOnce(Return(&m_audioCapsStr));
-        EXPECT_CALL(*m_glibWrapperMock, gFree(&m_audioCapsStr));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_audioAppSrc)).WillOnce(Return(&m_oldCaps));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_audioCaps, &m_oldCaps)).WillOnce(Return(FALSE));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_oldCaps)).WillOnce(Return(&m_oldCapsStr));
@@ -62,17 +63,14 @@ public:
             .WillOnce(Return(true));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_oldCaps));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
-
-        willSetAudioAndVideoFlags();
     }
 
     void switchAudioSource()
     {
-        ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
-        attachAudioSource();
-        auto receivedNeedData{expectedNeedData.getMessage()};
-        ASSERT_TRUE(receivedNeedData);
-        m_lastAudioNeedData = receivedNeedData;
+        auto attachAudioSourceReq{createAttachAudioSourceRequest(m_sessionId)};
+        attachAudioSourceReq.set_switch_source(true);
+        ConfigureAction<AttachSource>(m_clientStub).send(attachAudioSourceReq).expectSuccess();
+        waitWorker();
     }
 
 private:
@@ -119,28 +117,22 @@ private:
  *   Expect that all sources are attached.
  *   Expect that the Playback state has changed to IDLE.
  *
- *  Step 4: Remove Audio Source
- *   Remove the audio source.
- *   Expect that audio source is removed.
+ *  Step 4: Switch Audio Source
+ *   Switch the audio source.
+ *   Expect that audio source is switched.
  *
- *  Step 5: Attach new audio source
- *   Attach the new audio source.
- *   Expect that audio switch procedure is triggered.
- *   Expect that new audio source is attached.
- *   Expect, that RialtoServer sends NeedMediaData for newly attached source
- *
- *  Step 6: Remove sources
+ *  Step 5: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 7: Stop
+ *  Step 6: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 8: Destroy media session
+ *  Step 7: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -174,24 +166,20 @@ TEST_F(AudioSourceSwitchTest, SwitchAudioSource)
     willFinishSetupAndAddSource();
     indicateAllSourcesAttached();
 
-    // Step 4: Remove Audio Source
-    willRemoveAudioSource();
-    removeSource(m_audioSourceId);
-
-    // Step 5: Attach new audio source
+    // Step 4: Switch Audio Source
     willSwitchAudioSource();
     switchAudioSource();
 
-    // Step 6: Remove sources
+    // Step 5: Remove sources
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 7: Stop
+    // Step 6: Stop
     willStop();
     stop();
 
-    // Step 8: Destroy media session
+    // Step 7: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

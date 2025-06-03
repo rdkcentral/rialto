@@ -78,6 +78,22 @@ void autoVideoSinkChildAddedCallback(GstChildProxy *obj, GObject *object, gchar 
 }
 
 /**
+ * @brief Callback for a autoaudiosink when a child has been added to the sink.
+ *
+ * @param[in] obj        : the parent element (autoaudiosink)
+ * @param[in] object     : the child element
+ * @param[in] name       : the name of the child element
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
+void autoAudioSinkChildAddedCallback(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)
+{
+    RIALTO_SERVER_LOG_DEBUG("AutoAudioSink added element %s", name);
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->addAutoAudioSinkChild(object);
+}
+
+/**
  * @brief Callback for a autovideosink when a child has been removed from the sink.
  *
  * @param[in] obj        : the parent element (autovideosink)
@@ -91,6 +107,22 @@ void autoVideoSinkChildRemovedCallback(GstChildProxy *obj, GObject *object, gcha
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
     player->removeAutoVideoSinkChild(object);
+}
+
+/**
+ * @brief Callback for a autoaudiosink when a child has been removed from the sink.
+ *
+ * @param[in] obj        : the parent element (autoaudiosink)
+ * @param[in] object     : the child element
+ * @param[in] name       : the name of the child element
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
+void autoAudioSinkChildRemovedCallback(GstChildProxy *obj, GObject *object, gchar *name, gpointer self)
+{
+    RIALTO_SERVER_LOG_DEBUG("AutoAudioSink removed element %s", name);
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->removeAutoAudioSinkChild(object);
 }
 } // namespace
 
@@ -139,51 +171,128 @@ void SetupElement::execute() const
         if (sinks)
             m_gstWrapper->gstIteratorFree(sinks);
     }
-
-    GstElementFactory *elementFactory = m_gstWrapper->gstElementGetFactory(m_element);
-    if (elementFactory &&
-        m_gstWrapper->gstElementFactoryListIsType(elementFactory,
-                                                  GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+    else if (kElementTypeName == "GstAutoAudioSink")
     {
-        if (!m_context.pendingGeometry.empty())
+        // Check and store child sink so we can set underlying properties
+        m_glibWrapper->gSignalConnect(m_element, "child-added", G_CALLBACK(autoAudioSinkChildAddedCallback), &m_player);
+        m_glibWrapper->gSignalConnect(m_element, "child-removed", G_CALLBACK(autoAudioSinkChildRemovedCallback),
+                                      &m_player);
+
+        // AutoAudioSink sets child before it is setup on the pipeline, so check for children here
+        GstIterator *sinks = m_gstWrapper->gstBinIterateSinks(GST_BIN(m_element));
+        if (sinks && sinks->size > 1)
         {
-            m_player.setVideoSinkRectangle();
+            RIALTO_SERVER_LOG_WARN("More than one child sink attached");
         }
+
+        GValue elem = G_VALUE_INIT;
+        if (m_gstWrapper->gstIteratorNext(sinks, &elem) == GST_ITERATOR_OK)
+        {
+            m_player.addAutoAudioSinkChild(G_OBJECT(m_glibWrapper->gValueGetObject(&elem)));
+        }
+        m_glibWrapper->gValueUnset(&elem);
+
+        if (sinks)
+            m_gstWrapper->gstIteratorFree(sinks);
     }
 
     if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "amlhalasink"))
     {
-        // Wait for video so that the audio aligns at the starting point with timeout of 4000ms.
-        m_glibWrapper->gObjectSet(m_element, "wait-video", TRUE, "a-wait-timeout", 4000, nullptr);
+        if (m_context.streamInfo.find(MediaSourceType::VIDEO) != m_context.streamInfo.end())
+        {
+            // Wait for video so that the audio aligns at the starting point with timeout of 4000ms.
+            m_glibWrapper->gObjectSet(m_element, "wait-video", TRUE, "a-wait-timeout", 4000, nullptr);
+        }
 
         // Xrun occasionally pauses the underlying sink due to unstable playback, but the rest of the pipeline
         // remains in the playing state. This causes problems with the synchronization of gst element and rialto
         // ultimately hangs waiting for pipeline termination.
         m_glibWrapper->gObjectSet(m_element, "disable-xrun", TRUE, nullptr);
     }
-
-    if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "brcmaudiosink"))
+    else if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "brcmaudiosink"))
     {
         m_glibWrapper->gObjectSet(m_element, "async", TRUE, nullptr);
     }
-
-    if (isVideoDecoder(*m_gstWrapper, m_element))
+    else if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "rialtotexttracksink"))
     {
-        std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
-        if (!underflowSignalName.empty())
+        // in cannot be set during construction, because playsink overwrites "sync" value of text-sink during setup
+        m_glibWrapper->gObjectSet(m_element, "sync", FALSE, nullptr);
+    }
+
+    if (isDecoder(*m_gstWrapper, m_element) || isSink(*m_gstWrapper, m_element))
+    {
+        std::optional<std::string> underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
+        if (underflowSignalName)
         {
-            m_glibWrapper->gSignalConnect(m_element, underflowSignalName.c_str(), G_CALLBACK(videoUnderflowCallback),
-                                          &m_player);
+            if (isAudio(*m_gstWrapper, m_element))
+            {
+                RIALTO_SERVER_LOG_INFO("Connecting audio underflow callback for signal: %s",
+                                       underflowSignalName.value().c_str());
+                m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(),
+                                              G_CALLBACK(audioUnderflowCallback), &m_player);
+            }
+            else if (isVideo(*m_gstWrapper, m_element))
+            {
+                RIALTO_SERVER_LOG_INFO("Connecting video underflow callback for signal: %s",
+                                       underflowSignalName.value().c_str());
+                m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(),
+                                              G_CALLBACK(videoUnderflowCallback), &m_player);
+            }
+        }
+    }
+
+    if (isVideoSink(*m_gstWrapper, m_element))
+    {
+        if (!m_context.pendingGeometry.empty())
+        {
+            m_player.setVideoSinkRectangle();
+        }
+        if (m_context.pendingImmediateOutputForVideo.has_value())
+        {
+            m_player.setImmediateOutput();
+        }
+        if (m_context.pendingRenderFrame)
+        {
+            m_player.setRenderFrame();
         }
     }
     else if (isAudioDecoder(*m_gstWrapper, m_element))
     {
-        std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
-        if (!underflowSignalName.empty())
+        if (m_context.pendingSyncOff.has_value())
         {
-            m_glibWrapper->gSignalConnect(m_element, underflowSignalName.c_str(), G_CALLBACK(audioUnderflowCallback),
-                                          &m_player);
+            m_player.setSyncOff();
         }
+        if (m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) != m_context.pendingStreamSyncMode.end())
+        {
+            m_player.setStreamSyncMode(MediaSourceType::AUDIO);
+        }
+        if (m_context.pendingBufferingLimit.has_value())
+        {
+            m_player.setBufferingLimit();
+        }
+    }
+    else if (isAudioSink(*m_gstWrapper, m_element))
+    {
+        if (m_context.pendingLowLatency.has_value())
+        {
+            m_player.setLowLatency();
+        }
+        if (m_context.pendingSync.has_value())
+        {
+            m_player.setSync();
+        }
+    }
+    else if (isVideoParser(*m_gstWrapper, m_element))
+    {
+        if (m_context.pendingStreamSyncMode.find(MediaSourceType::VIDEO) != m_context.pendingStreamSyncMode.end())
+        {
+            m_player.setStreamSyncMode(MediaSourceType::VIDEO);
+        }
+    }
+
+    if (m_gstWrapper->gstIsBaseParse(m_element))
+    {
+        m_gstWrapper->gstBaseParseSetPtsInterpolation(GST_BASE_PARSE(m_element), FALSE);
     }
 
     m_gstWrapper->gstObjectUnref(m_element);

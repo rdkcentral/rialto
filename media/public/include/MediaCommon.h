@@ -27,6 +27,8 @@
  *
  */
 
+#include <limits>
+#include <optional>
 #include <stddef.h>
 #include <stdint.h>
 #include <utility>
@@ -53,6 +55,16 @@ constexpr uint32_t kInvalidAudioSampleRate{0};
  * @brief The value of an undefined size
  */
 constexpr int32_t kUndefinedSize{0};
+
+/**
+ * @brief The value of an invalid limitBuffering
+ */
+constexpr uint32_t kInvalidLimitBuffering{std::numeric_limits<uint32_t>::max()};
+
+/**
+ * @brief The value of undefined position
+ */
+constexpr uint64_t kUndefinedPosition{std::numeric_limits<uint64_t>::max()};
 
 /**
  * @brief The supported types of media source.
@@ -157,13 +169,65 @@ enum class PlaybackState
 };
 
 /**
+ * @brief The Format of the audio samples. Used by the raw audio media types
+ */
+enum class Format
+{
+    S8,
+    U8,
+    S16LE,
+    S16BE,
+    U16LE,
+    U16BE,
+    S24_32LE,
+    S24_32BE,
+    U24_32LE,
+    U24_32BE,
+    S32LE,
+    S32BE,
+    U32LE,
+    U32BE,
+    S24LE,
+    S24BE,
+    U24LE,
+    U24BE,
+    S20LE,
+    S20BE,
+    U20LE,
+    U20BE,
+    S18LE,
+    S18BE,
+    U18LE,
+    U18BE,
+    F32LE,
+    F32BE,
+    F64LE,
+    F64BE
+};
+
+/**
+ * @brief The layout of channels within a buffer. Used by the raw audio media types
+ */
+enum class Layout
+{
+    INTERLEAVED,
+    NON_INTERLEAVED
+};
+
+/**
  * @brief Audio specific configuration
  */
 struct AudioConfig
 {
     uint32_t numberOfChannels = kInvalidAudioChannels; /**< The number of channels. */
     uint32_t sampleRate = kInvalidAudioSampleRate;     /**< The sampling rate.*/
-    std::vector<uint8_t> codecSpecificConfig; /**< The audio specific config. Zero length if no specific config*/
+    std::vector<uint8_t> codecSpecificConfig;       /**< The audio specific config. Zero length if no specific config*/
+    std::optional<Format> format;                   /**< The Format of the audio samples.*/
+    std::optional<Layout> layout;                   /**< The layout of channels within a buffer.*/
+    std::optional<uint64_t> channelMask;            /**< Bitmask of channel positions present. */
+    std::vector<std::vector<uint8_t>> streamHeader; /**< Stream header. Zero length if not present.*/
+    std::optional<bool>
+        framed; /**< True if each buffer passed through the pipeline contains a complete, self-contained media unit*/
 };
 
 /**
@@ -222,11 +286,13 @@ struct QosInfo
  */
 enum class MediaKeyErrorStatus
 {
-    OK,             /**< No error. */
-    FAIL,           /**< An unspecified error occurred. */
-    BAD_SESSION_ID, /**< The session id is not recognised. */
-    NOT_SUPPORTED,  /**< The request parameters are not supported. */
-    INVALID_STATE   /**< The object is in an invalid state for the operation. */
+    OK,                        /**< No error. */
+    FAIL,                      /**< An unspecified error occurred. */
+    BAD_SESSION_ID,            /**< The session id is not recognised. */
+    NOT_SUPPORTED,             /**< The request parameters are not supported. */
+    INVALID_STATE,             /**< The object is in an invalid state for the operation. */
+    INTERFACE_NOT_IMPLEMENTED, /**< The interface is not implemented. */
+    BUFFER_TOO_SMALL           /**< The size of the buffer is too small. */
 };
 
 /**
@@ -381,12 +447,22 @@ struct CodecData
 };
 
 /**
- * @brief None fatel asynchronous errors reported by the player.
+ * @brief None fatal asynchronous errors reported by the player.
  */
 enum class PlaybackError
 {
     UNKNOWN,
     DECRYPTION, /* Player failed to decrypt a buffer and the frame has been dropped */
+};
+
+/**
+ * @brief Ease type for audio volume changes.
+ */
+enum class EaseType
+{
+    EASE_LINEAR,
+    EASE_IN_CUBIC,
+    EASE_OUT_CUBIC
 };
 
 } // namespace firebolt::rialto

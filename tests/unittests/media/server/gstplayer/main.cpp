@@ -17,13 +17,46 @@
  * limitations under the License.
  */
 
+#include "GstInitialiser.h"
+#include "GstWrapperFactoryMock.h"
+#include "GstWrapperMock.h"
+#include "IFactoryAccessor.h"
 #include <gst/gst.h>
 #include <gtest/gtest.h>
+
+void initialiseGstreamer()
+{
+    using testing::_;
+    using testing::Return;
+    using testing::StrictMock;
+    using namespace firebolt::rialto::wrappers;
+
+    gst_init(nullptr, nullptr);
+
+    std::shared_ptr<StrictMock<GstWrapperFactoryMock>> gstWrapperFactoryMock{
+        std::make_shared<StrictMock<GstWrapperFactoryMock>>()};
+    std::shared_ptr<StrictMock<GstWrapperMock>> gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};
+    EXPECT_CALL(*gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(gstWrapperMock));
+    IFactoryAccessor::instance().gstWrapperFactory() = gstWrapperFactoryMock;
+
+    // Hack to mock GstPlugin to cover one of ifs in code
+    uint8_t dummyMemory;
+    GstPlugin *plugin{reinterpret_cast<GstPlugin *>(&dummyMemory)};
+    EXPECT_CALL(*gstWrapperMock, gstInit(nullptr, nullptr));
+    EXPECT_CALL(*gstWrapperMock, gstRegistryGet()).WillRepeatedly(Return(nullptr));
+    EXPECT_CALL(*gstWrapperMock, gstRegistryFindPlugin(nullptr, _)).WillOnce(Return(plugin));
+    EXPECT_CALL(*gstWrapperMock, gstRegistryRemovePlugin(nullptr, plugin));
+    EXPECT_CALL(*gstWrapperMock, gstObjectUnref(plugin));
+    firebolt::rialto::server::IGstInitialiser::instance().initialise(nullptr, nullptr);
+    firebolt::rialto::server::IGstInitialiser::instance().waitForInitialisation();
+
+    IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
+}
 
 int main(int argc, char **argv) // NOLINT(build/filename_format)
 {
     ::testing::InitGoogleTest(&argc, argv);
-    gst_init(nullptr, nullptr);
+    initialiseGstreamer();
     int status = RUN_ALL_TESTS();
     gst_deinit();
     return status;

@@ -95,6 +95,15 @@ void PlaybackService::setClientDisplayName(const std::string &clientDisplayName)
     }
 }
 
+void PlaybackService::setResourceManagerAppName(const std::string &appName) const
+{
+    // Method called during initialization only (before setting any state), no need to execute it on a task thread.
+    if (!appName.empty())
+    {
+        setenv("ESSRMGR_APPID", appName.c_str(), 1);
+    }
+}
+
 bool PlaybackService::getSharedMemory(int32_t &fd, uint32_t &size) const
 {
     auto shmBuffer = m_shmBuffer;

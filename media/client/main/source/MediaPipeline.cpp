@@ -23,6 +23,7 @@
 
 #include "KeyIdMap.h"
 #include "MediaPipeline.h"
+#include "MediaPipelineProxy.h"
 #include "RialtoClientLogging.h"
 
 namespace
@@ -135,15 +136,16 @@ MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> cl
     {
         std::shared_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactoryLocked = mediaPipelineIpcFactory.lock();
         std::shared_ptr<client::IClientController> clientControllerLocked = clientController.lock();
-        mediaPipeline = std::make_unique<client::MediaPipeline>(client, videoRequirements,
-                                                                mediaPipelineIpcFactoryLocked
-                                                                    ? mediaPipelineIpcFactoryLocked
-                                                                    : client::IMediaPipelineIpcFactory::getFactory(),
-                                                                common::IMediaFrameWriterFactory::getFactory(),
-                                                                clientControllerLocked
-                                                                    ? *clientControllerLocked
-                                                                    : client::IClientControllerAccessor::instance()
-                                                                          .getClientController());
+        firebolt::rialto::client::IClientController &cc =
+            clientControllerLocked ? *clientControllerLocked
+                                   : client::IClientControllerAccessor::instance().getClientController();
+
+        auto mp{std::make_shared<client::MediaPipeline>(client, videoRequirements,
+                                                        mediaPipelineIpcFactoryLocked
+                                                            ? mediaPipelineIpcFactoryLocked
+                                                            : client::IMediaPipelineIpcFactory::getFactory(),
+                                                        common::IMediaFrameWriterFactory::getFactory(), cc)};
+        mediaPipeline = std::move(std::make_unique<client::MediaPipelineProxy>(mp, cc));
     }
     catch (const std::exception &e)
     {
@@ -152,10 +154,31 @@ MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> cl
 
     return mediaPipeline;
 }
+
 }; // namespace firebolt::rialto
 
 namespace firebolt::rialto::client
 {
+MediaPipelineProxy::MediaPipelineProxy(const std::shared_ptr<IMediaPipelineAndIControlClient> &mediaPipeline,
+                                       IClientController &clientController)
+    : m_mediaPipeline{mediaPipeline}, m_clientController{clientController}
+{
+    ApplicationState state{ApplicationState::UNKNOWN};
+    if (!m_clientController.registerClient(m_mediaPipeline, state))
+    {
+        throw std::runtime_error("Failed to register client with clientController");
+    }
+    m_mediaPipeline->notifyApplicationState(state);
+}
+
+MediaPipelineProxy::~MediaPipelineProxy()
+{
+    if (!m_clientController.unregisterClient(m_mediaPipeline))
+    {
+        RIALTO_CLIENT_LOG_WARN("Failed to unregister client with clientController");
+    }
+}
+
 MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
                              const std::shared_ptr<IMediaPipelineIpcFactory> &mediaPipelineIpcFactory,
                              const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
@@ -165,16 +188,10 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    if (!m_clientController.registerClient(this, m_currentAppState))
-    {
-        throw std::runtime_error("Failed to register client with clientController");
-    }
-
     m_mediaPipelineIpc = mediaPipelineIpcFactory->createMediaPipelineIpc(this, videoRequirements);
 
     if (!m_mediaPipelineIpc)
     {
-        (void)m_clientController.unregisterClient(this);
         throw std::runtime_error("Media player ipc could not be created");
     }
 }
@@ -184,11 +201,6 @@ MediaPipeline::~MediaPipeline()
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     m_mediaPipelineIpc.reset();
-
-    if (!m_clientController.unregisterClient(this))
-    {
-        RIALTO_CLIENT_LOG_WARN("Failed to unregister client with clientController");
-    }
 }
 
 bool MediaPipeline::load(MediaType type, const std::string &mimeType, const std::string &url)
@@ -294,6 +306,21 @@ bool MediaPipeline::setPosition(int64_t position)
 bool MediaPipeline::getPosition(int64_t &position)
 {
     return m_mediaPipelineIpc->getPosition(position);
+}
+
+bool MediaPipeline::setImmediateOutput(int32_t sourceId, bool immediateOutput)
+{
+    return m_mediaPipelineIpc->setImmediateOutput(sourceId, immediateOutput);
+}
+
+bool MediaPipeline::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
+{
+    return m_mediaPipelineIpc->getImmediateOutput(sourceId, immediateOutput);
+}
+
+bool MediaPipeline::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    return m_mediaPipelineIpc->getStats(sourceId, renderedFrames, droppedFrames);
 }
 
 bool MediaPipeline::handleSetPosition(int64_t position)
@@ -442,36 +469,84 @@ bool MediaPipeline::renderFrame()
     return m_mediaPipelineIpc->renderFrame();
 }
 
-bool MediaPipeline::setVolume(double volume)
+bool MediaPipeline::setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    return m_mediaPipelineIpc->setVolume(volume);
+    return m_mediaPipelineIpc->setVolume(targetVolume, volumeDuration, easeType);
 }
 
-bool MediaPipeline::getVolume(double &volume)
+bool MediaPipeline::getVolume(double &currentVolume)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    return m_mediaPipelineIpc->getVolume(volume);
+    return m_mediaPipelineIpc->getVolume(currentVolume);
 }
 
-bool MediaPipeline::setMute(bool mute)
+bool MediaPipeline::setMute(int32_t sourceId, bool mute)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    return m_mediaPipelineIpc->setMute(mute);
+    return m_mediaPipelineIpc->setMute(sourceId, mute);
 }
 
-bool MediaPipeline::getMute(bool &mute)
+bool MediaPipeline::getMute(int32_t sourceId, bool &mute)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    return m_mediaPipelineIpc->getMute(mute);
+    return m_mediaPipelineIpc->getMute(sourceId, mute);
 }
 
-bool MediaPipeline::flush(int32_t sourceId, bool resetTime)
+bool MediaPipeline::setTextTrackIdentifier(const std::string &textTrackIdentifier)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setTextTrackIdentifier(textTrackIdentifier);
+}
+
+bool MediaPipeline::getTextTrackIdentifier(std::string &textTrackIdentifier)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->getTextTrackIdentifier(textTrackIdentifier);
+}
+
+bool MediaPipeline::setLowLatency(bool lowLatency)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setLowLatency(lowLatency);
+}
+
+bool MediaPipeline::setSync(bool sync)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setSync(sync);
+}
+
+bool MediaPipeline::getSync(bool &sync)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->getSync(sync);
+}
+
+bool MediaPipeline::setSyncOff(bool syncOff)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setSyncOff(syncOff);
+}
+
+bool MediaPipeline::setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->setStreamSyncMode(sourceId, streamSyncMode);
+}
+
+bool MediaPipeline::getStreamSyncMode(int32_t &streamSyncMode)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    return m_mediaPipelineIpc->getStreamSyncMode(streamSyncMode);
+}
+
+bool MediaPipeline::flush(int32_t sourceId, bool resetTime, bool &async)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     std::unique_lock<std::mutex> flushLock{m_flushMutex};
-    if (m_mediaPipelineIpc->flush(sourceId, resetTime))
+    if (m_mediaPipelineIpc->flush(sourceId, resetTime, async))
     {
         m_attachedSources.setFlushing(sourceId, true);
         flushLock.unlock();
@@ -494,11 +569,54 @@ bool MediaPipeline::flush(int32_t sourceId, bool resetTime)
     return false;
 }
 
-bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position)
+bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
+                                      uint64_t stopPosition)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaPipelineIpc->setSourcePosition(sourceId, position);
+    return m_mediaPipelineIpc->setSourcePosition(sourceId, position, resetTime, appliedRate, stopPosition);
+}
+
+bool MediaPipeline::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->processAudioGap(position, duration, discontinuityGap, audioAac);
+}
+
+bool MediaPipeline::setBufferingLimit(uint32_t limitBufferingMs)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->setBufferingLimit(limitBufferingMs);
+}
+
+bool MediaPipeline::getBufferingLimit(uint32_t &limitBufferingMs)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->getBufferingLimit(limitBufferingMs);
+}
+
+bool MediaPipeline::setUseBuffering(bool useBuffering)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->setUseBuffering(useBuffering);
+}
+
+bool MediaPipeline::getUseBuffering(bool &useBuffering)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->getUseBuffering(useBuffering);
+}
+
+bool MediaPipeline::switchSource(const std::unique_ptr<MediaSource> &source)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->switchSource(source);
 }
 
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
@@ -768,6 +886,9 @@ void MediaPipeline::notifySourceFlushed(int32_t sourceId)
     {
         client->notifySourceFlushed(sourceId);
     }
+
+    State expected = State::END_OF_STREAM;
+    m_currentState.compare_exchange_strong(expected, State::BUFFERING);
 }
 
 }; // namespace firebolt::rialto::client

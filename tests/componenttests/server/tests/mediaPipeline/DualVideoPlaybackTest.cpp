@@ -69,11 +69,11 @@ public:
             .WillOnce(Return(&m_secondaryPipeline))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags")))
-            .Times(3)
+            .Times(4)
             .WillRepeatedly(Return(kSecondaryGstPlayFlagsType))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kSecondaryGstPlayFlagsType))
-            .Times(3)
+            .Times(4)
             .WillRepeatedly(Return(&m_flagsClass));
         EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio")))
             .WillOnce(Return(&m_audioFlag))
@@ -83,6 +83,9 @@ public:
             .RetiresOnSaturation();
         EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("native-video")))
             .WillOnce(Return(&m_nativeVideoFlag))
+            .RetiresOnSaturation();
+        EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("text")))
+            .WillOnce(Return(&m_subtitleFlag))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("brcmaudiosink")))
             .WillOnce(Return(nullptr))
@@ -138,8 +141,6 @@ public:
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("height"), G_TYPE_INT, kHeight))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_videoCaps)).WillOnce(Return(&m_videoCapsStr)).RetiresOnSaturation();
-        EXPECT_CALL(*m_glibWrapperMock, gFree(&m_videoCapsStr)).RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("vidsrc")))
             .WillOnce(Return(GST_ELEMENT(&m_secondaryVideoAppSrc)));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_secondaryVideoAppSrc, &m_videoCaps));

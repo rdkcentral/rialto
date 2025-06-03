@@ -1099,7 +1099,7 @@ public:
     /**
      * @brief Starts playback of the media.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request playback and then return.
      *
      * Once the backend is successfully playing it should notify the
@@ -1113,7 +1113,7 @@ public:
     /**
      * @brief Pauses playback of the media.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request the playback pause and then return.
      *
      * Once the backend is successfully playing it should notify the
@@ -1127,7 +1127,7 @@ public:
     /**
      * @brief Stops playback of the media.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request the playback stop and then return.
      *
      * Once the backend is successfully stopped it should notify the
@@ -1156,7 +1156,7 @@ public:
      * If playback has not started this method sets the start position
      * for playback. If playback has started this method performs a seek.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request the new playback position and then return.
      *
      * Once the backend is seeking it should notify the media player
@@ -1182,6 +1182,43 @@ public:
      * @retval true on success.
      */
     virtual bool getPosition(int64_t &position) = 0;
+
+    /**
+     * @brief Get stats for this source.
+     *
+     * This method is sychronous, it returns dropped frames and rendered frames
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] renderedFrames : The number of rendered frames
+     * @param[out] droppedFrames : The number of dropped frames
+     *
+     * @retval true on success.
+     */
+    virtual bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
+
+    /**
+     * @brief Sets the "Immediate Output" property for this source.
+     *
+     * This method is asynchronous, it will set the "Immediate Output" property
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] immediateOutput : Set immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    virtual bool setImmediateOutput(int32_t sourceId, bool immediateOutput) = 0;
+
+    /**
+     * @brief Gets the "Immediate Output" property for this source.
+     *
+     * This method is sychronous, it gets the "Immediate Output" property
+     *
+     * @param[in] sourceId  : The source id. Value should be get to the MediaSource.id returned after attachSource()
+     * @param[out] immediateOutput : Get immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    virtual bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) = 0;
 
     /**
      * @brief Sets the coordinates of where the video should be displayed.
@@ -1241,69 +1278,231 @@ public:
     virtual bool renderFrame() = 0;
 
     /**
-     * @brief Set level and transition of audio attenuation.
-     *        Sets the current volume for the pipeline (0.0 silent -> 1.0 full volume)
+     * @brief Set the target volume level and transition duration with easing type.
+     *        By default volume is set immediately if duration and type are not set.
      *
-     * @param[in] volume : Target volume level (0.0 - 1.0)
+     * @param[in] targetVolume : Target volume level (0.0 - 1.0)
+     * @param[in] volumeDuration : (Optional) Duration of the volume transition in milliseconds
+     * @param[in] easeType : (Optional) Easing type for the volume transition
      *
-     * @retval true on success false otherwise
+     * @retval true on success, false otherwise.
      */
-    virtual bool setVolume(double volume) = 0;
+    virtual bool setVolume(double targetVolume, uint32_t volumeDuration = 0,
+                           EaseType easeType = EaseType::EASE_LINEAR) = 0;
 
     /**
      * @brief Get current audio level. Fetches the current volume level for the pipeline.
      *
-     * @param[out] volume : Current volume level (range 0.0 - 1.0)
+     * @param[out] currentVolume : Current volume level (range 0.0 - 1.0)
      *
-     * @retval true on success false otherwise
+     * @retval true on success, false otherwise.
      */
-    virtual bool getVolume(double &volume) = 0;
+    virtual bool getVolume(double &currentVolume) = 0;
 
     /**
      * @brief Set mute status of pipeline.
      *
-     * Muting does not change the underlying volume setting so when
-     * unmuted the user will hear audio at the same volume as previously
-     * set.
+     * Change mute status of media source
      *
-     * @param[in] mute : Desired mute state, true=muted, false=not muted
+     * @param[in] sourceId Source, which mute status should be changed
+     * @param[in] mute   Desired mute state, true=muted, false=not muted
      *
      * @retval true on success false otherwise
      */
-    virtual bool setMute(bool mute) = 0;
+    virtual bool setMute(int32_t sourceId, bool mute) = 0;
 
     /**
-     * @brief Get current mute status of the pipeline
+     * @brief Get current mute status of the media source
      *
-     * @param[out] mute : Current mute state
+     * @param[in] sourceId Source, which mute status should be fetched
+     * @param[out] mute   Current mute state
      *
      * @retval true on success false otherwise
      */
-    virtual bool getMute(bool &mute) = 0;
+    virtual bool getMute(int32_t sourceId, bool &mute) = 0;
+
+    /**
+     * @brief Change Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setTextTrackIdentifier(const std::string &textTrackIdentifier) = 0;
+
+    /**
+     * @brief Get Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getTextTrackIdentifier(std::string &textTrackIdentifier) = 0;
+
+    /**
+     * @brief Set low latency property on the audio sink. Default false.
+     *
+     * For use with gaming (no audio decoding, no a/v sync).
+     *
+     * @param[in] lowLatency : The low latency value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setLowLatency(bool lowLatency) = 0;
+
+    /**
+     * @brief Set sync property on the audio sink. Default false.
+     *
+     * Syncs the stream on the clock.
+     *
+     * @param[in] sync : The sync value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setSync(bool sync) = 0;
+
+    /**
+     * @brief Get sync property on the audio sink.
+     *
+     * @param[out] sync : Current sync value.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getSync(bool &sync) = 0;
+
+    /**
+     * @brief Set sync off property on the audio decoder. Default false.
+     *
+     * Turn on free running audio. Must be set before pipeline is PLAYING state.
+     *
+     * @param[in] syncOff : The sync off value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setSyncOff(bool syncOff) = 0;
+
+    /**
+     * @brief Set stream sync mode property on the audio decoder or video filter. Default 0.
+     *
+     * 1 - Frame to decode frame will immediately proceed next frame sync.
+     * 0 - Frame decoded with no frame sync.
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] streamSyncMode : The stream sync mode value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) = 0;
+
+    /**
+     * @brief Get stream sync mode property on the audio decoder.
+     *
+     * @param[out] streamSyncMode : Current stream sync mode value.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getStreamSyncMode(int32_t &streamSyncMode) = 0;
 
     /**
      * @brief Flushes a source.
      *
      * This method is called by Rialto Client to flush out all queued data for a media source stream.
      *
-     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
-     * @param[in] resetTime : True if time should be reset
+     * @param[in]  sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in]  resetTime : True if time should be reset
+     * @param[out] async     : True if flushed source is asynchronous (will preroll after flush)
      *
      * @retval true on success.
      */
-    virtual bool flush(int32_t sourceId, bool resetTime) = 0;
+    virtual bool flush(int32_t sourceId, bool resetTime, bool &async) = 0;
 
     /**
      * @brief Set the source position in nanoseconds.
      *
      * This method sets the start position for a source.
      *
-     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
-     * @param[in] position : The position in nanoseconds.
+     * @param[in] sourceId    : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] position    : The position in nanoseconds.
+     * @param[in] resetTime   : True if time should be reset
+     * @param[in] appliedRate : The applied rate after seek. Default value is 1.0.
+     * @param[in] stopPosition : The position of last pushed buffer
      *
      * @retval true on success.
      */
-    virtual bool setSourcePosition(int32_t sourceId, int64_t position) = 0;
+    virtual bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime = false, double appliedRate = 1.0,
+                                   uint64_t stopPosition = kUndefinedPosition) = 0;
+
+    /**
+     * @brief Process audio gap
+     *
+     * This method handles audio gap in order to avoid audio pops during transitions.
+     *
+     * @param[in] position         : Audio pts fade position
+     * @param[in] duration         : Audio pts fade duration
+     * @param[in] discontinuityGap : Audio discontinuity gap
+     * @param[in] audioAac         : True if audio codec is AAC
+     *
+     * @retval true on success.
+     */
+    virtual bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) = 0;
+
+    /**
+     * @brief Set buffering limit
+     *
+     * This method enables/disables limit buffering and sets millisecond threshold used.
+     * Use kInvalidLimitBuffering to disable limit buffering
+     *
+     * @param[in] limitBufferingMs         : buffering limit in ms
+     *
+     * @retval true on success.
+     */
+    virtual bool setBufferingLimit(uint32_t limitBufferingMs) = 0;
+
+    /**
+     * @brief Get buffering limit
+     *
+     * This method returns current value of buffering limit in milliseconds
+     * Method will return kInvalidLimitBuffering limit buffering is disabled
+     *
+     * @param[out] limitBufferingMs         : buffering limit in ms
+     *
+     * @retval true on success.
+     */
+    virtual bool getBufferingLimit(uint32_t &limitBufferingMs) = 0;
+
+    /**
+     * @brief Enables/disables the buffering option
+     *
+     * This method enables the buffering option so that BUFFERING messages are
+     * emitted based on low-/high-percent thresholds.
+     *
+     * @param[in] useBuffering         : true if buffering option enabled.
+     *
+     * @retval true on success.
+     */
+    virtual bool setUseBuffering(bool useBuffering) = 0;
+
+    /**
+     * @brief Checks, if buffering is enabled
+     *
+     * This method returns true, if buffering is enabled
+     *
+     * @param[out] useBuffering         : true if buffering option is enabled.
+     *
+     * @retval true on success.
+     */
+    virtual bool getUseBuffering(bool &useBuffering) = 0;
+
+    /**
+     * @brief Switches a source stream.
+     *
+     * This method is called to switch a media source stream.
+     *
+     * @param[in] source : The source.
+     *
+     * @retval true on success.
+     */
+    virtual bool switchSource(const std::unique_ptr<MediaSource> &source) = 0;
 };
 
 }; // namespace firebolt::rialto

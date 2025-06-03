@@ -83,6 +83,14 @@ void SharedMemoryBufferTests::shouldFailToReturnMaxVideoDataLen(
     EXPECT_EQ(m_sut->getMaxDataLen(playbackType, id, firebolt::rialto::MediaSourceType::VIDEO), 0);
 }
 
+void SharedMemoryBufferTests::shouldReturnMaxSubtitleDataLen(int id)
+{
+    ASSERT_TRUE(m_sut);
+    EXPECT_EQ(m_sut->getMaxDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC, id,
+                                   firebolt::rialto::MediaSourceType::SUBTITLE),
+              m_subtitleBufferLen);
+}
+
 void SharedMemoryBufferTests::shouldReturnMaxWebAudioDataLen(int id)
 {
     ASSERT_TRUE(m_sut);
@@ -147,6 +155,20 @@ void SharedMemoryBufferTests::shouldFailToClearVideoData(
     EXPECT_FALSE(m_sut->clearData(playbackType, id, firebolt::rialto::MediaSourceType::VIDEO));
 }
 
+void SharedMemoryBufferTests::shouldClearSubtitleData(
+    firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id)
+{
+    ASSERT_TRUE(m_sut);
+    EXPECT_TRUE(m_sut->clearData(playbackType, id, firebolt::rialto::MediaSourceType::SUBTITLE));
+}
+
+void SharedMemoryBufferTests::shouldFailToClearSubtitleData(
+    firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType, int id)
+{
+    ASSERT_TRUE(m_sut);
+    EXPECT_FALSE(m_sut->clearData(playbackType, id, firebolt::rialto::MediaSourceType::SUBTITLE));
+}
+
 uint8_t *
 SharedMemoryBufferTests::shouldGetDataPtr(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType playbackType,
                                           int id, const firebolt::rialto::MediaSourceType &mediaSourceType)
@@ -172,7 +194,7 @@ void SharedMemoryBufferTests::shouldGetFd()
 void SharedMemoryBufferTests::shouldGetSize()
 {
     ASSERT_TRUE(m_sut);
-    EXPECT_EQ(m_audioBufferLen + m_videoBufferLen + m_webAudioBufferLen,
+    EXPECT_EQ(m_audioBufferLen + m_videoBufferLen + m_subtitleBufferLen + m_webAudioBufferLen,
               m_sut->getSize()); // Size for one session & one webaudio
 }
 

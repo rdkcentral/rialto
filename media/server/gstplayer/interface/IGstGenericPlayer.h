@@ -105,7 +105,7 @@ public:
     /**
      * @brief Starts playback of the media.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request playback and then return.
      *
      * Once the backend is successfully playing it should notify the
@@ -117,7 +117,7 @@ public:
     /**
      * @brief Pauses playback of the media.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request the playback pause and then return.
      *
      * Once the backend is successfully paused it should notify the
@@ -129,7 +129,7 @@ public:
     /**
      * @brief Stops playback of the media.
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request the playback stop and then return.
      *
      * Once the backend is successfully stopped it should notify the
@@ -160,7 +160,7 @@ public:
     /**
      * @brief Attaches new samples
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request to attach new sample and then return.
      */
     virtual void attachSamples(const IMediaPipeline::MediaSegmentVector &mediaSegments) = 0;
@@ -168,7 +168,7 @@ public:
     /**
      * @brief Attaches new samples
      *
-     * This method is considered to be asychronous and MUST NOT block
+     * This method is considered to be asynchronous and MUST NOT block
      * but should request to attach new sample and then return.
      */
     virtual void attachSamples(const std::shared_ptr<IDataReader> &dataReader) = 0;
@@ -194,6 +194,37 @@ public:
     virtual bool getPosition(std::int64_t &position) = 0;
 
     /**
+     * @brief Sets the "Immediate Output" property for this source.
+     *
+     * @param[in] mediaSourceType : The media source type
+     * @param[in] immediateOutput : Set immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    virtual bool setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput) = 0;
+
+    /**
+     * @brief Gets the "Immediate Output" property for this source.
+     *
+     * @param[in] mediaSourceType : The media source type
+     * @param[out] immediateOutput : Get immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    virtual bool getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutput) = 0;
+
+    /**
+     * @brief Get stats for this source.
+     *
+     * @param[in] mediaSourceType : The media source type to get stats for
+     * @param[out] renderedFrames : The number of rendered frames
+     * @param[out] droppedFrames : The number of dropped frames
+     *
+     * @retval true on success.
+     */
+    virtual bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
+
+    /**
      * @brief Set the playback rate.
      *
      * @param[in] rate : The playback rate.
@@ -213,7 +244,7 @@ public:
      *
      * @param[in] volume : Target volume level (0.0 - 1.0)
      */
-    virtual void setVolume(double volume) = 0;
+    virtual void setVolume(double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType) = 0;
 
     /**
      * @brief Get current audio level. Fetches the current volume level for the pipeline.
@@ -233,7 +264,7 @@ public:
      *
      * @param[in] mute : Desired mute state, true=muted, false=not muted
      */
-    virtual void setMute(bool mute) = 0;
+    virtual void setMute(const MediaSourceType &mediaSourceType, bool mute) = 0;
 
     /**
      * @brief Get current mute status of the pipeline
@@ -242,7 +273,89 @@ public:
      *
      * @retval True in success, false otherwise
      */
-    virtual bool getMute(bool &mute) = 0;
+    virtual bool getMute(const MediaSourceType &mediaSourceType, bool &mute) = 0;
+
+    /**
+     * @brief Checks if given source is asyncronous
+     *
+     * @param[in]  mediaSourceType : The media source type
+     *
+     * @retval True if source is asynchronous.
+     */
+    virtual bool isAsync(const MediaSourceType &mediaSourceType) const = 0;
+
+    /**
+     * @brief Change Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    virtual void setTextTrackIdentifier(const std::string &textTrackIdentifier) = 0;
+
+    /**
+     * @brief Get Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getTextTrackIdentifier(std::string &textTrackIdentifier) = 0;
+
+    /**
+     * @brief Set low latency property on the pipeline. Default false.
+     *
+     * @param[in] lowLatency : The low latency value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setLowLatency(bool lowLatency) = 0;
+
+    /**
+     * @brief Set sync property on the pipeline. Default false.
+     *
+     * @param[in] sync : The sync value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setSync(bool sync) = 0;
+
+    /**
+     * @brief Get sync property on the pipeline.
+     *
+     * @param[out] sync : Current sync value.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getSync(bool &sync) = 0;
+
+    /**
+     * @brief Set sync off property on the pipeline. Default false.
+     *
+     * @param[in] syncOff : The sync off value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setSyncOff(bool syncOff) = 0;
+
+    /**
+     * @brief Set stream sync mode property on the pipeline. Default 0.
+     *
+     * @param[in] mediaSourceType : The media source type to set stream sync mode.
+     * @param[in] streamSyncMode : The stream sync mode value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool setStreamSyncMode(const MediaSourceType &mediaSourceType, int32_t streamSyncMode) = 0;
+
+    /**
+     * @brief Get stream sync mode property on the pipeline.
+     *
+     * @param[out] streamSyncMode : Current stream sync mode value.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool getStreamSyncMode(int32_t &streamSyncMode) = 0;
 
     /**
      * @brief Checks if worker thread is not deadlocked
@@ -268,8 +381,77 @@ public:
      *
      * @param[in] mediaSourceType : The media source type to flush.
      * @param[in] position : The position in nanoseconds.
+     * @param[in] resetTime : True if time should be reset
+     * @param[in] appliedRate : The applied rate after seek
+     * @param[in] stopPosition : The position of last pushed buffer
      */
-    virtual void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position) = 0;
+    virtual void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime,
+                                   double appliedRate, uint64_t stopPosition) = 0;
+
+    /**
+     * @brief Process audio gap
+     *
+     * This method handles audio gap in order to avoid audio pops during transitions.
+     *
+     * @param[in] position         : Audio pts fade position value
+     * @param[in] duration         : Audio pts fade duration
+     * @param[in] discontinuityGap : Audio discontinuity gap
+     * @param[in] audioAac         : True if audio codec is AAC
+     */
+    virtual void processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) = 0;
+
+    /**
+     * @brief Set buffering limit
+     *
+     * This method enables/disables limit buffering and sets millisecond threshold used.
+     * Use kInvalidLimitBuffering to disable limit buffering
+     *
+     * @param[in] limitBufferingMs         : buffering limit in ms
+     *
+     */
+    virtual void setBufferingLimit(uint32_t limitBufferingMs) = 0;
+
+    /**
+     * @brief Get buffering limit
+     *
+     * This method returns current value of buffering limit in milliseconds
+     * Method will return kInvalidLimitBuffering limit buffering is disabled
+     *
+     * @param[out] limitBufferingMs         : buffering limit in ms
+     *
+     * @retval true on success.
+     */
+    virtual bool getBufferingLimit(uint32_t &limitBufferingMs) = 0;
+
+    /**
+     * @brief Enables/disables the buffering option
+     *
+     * This method enables the buffering option so that BUFFERING messages are
+     * emitted based on low-/high-percent thresholds.
+     *
+     * @param[in] useBuffering         : true if buffering option enabled.
+     *
+     */
+    virtual void setUseBuffering(bool useBuffering) = 0;
+
+    /**
+     * @brief Checks, if buffering is enabled
+     *
+     * This method returns true, if buffering is enabled
+     *
+     * @param[out] useBuffering         : true if buffering option is enabled.
+     *
+     * @retval true on success.
+     */
+    virtual bool getUseBuffering(bool &useBuffering) = 0;
+
+    /**
+     * @brief Switches a source.
+     *
+     * @param[in] mediaSource : The media source.
+     *
+     */
+    virtual void switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) = 0;
 };
 
 }; // namespace firebolt::rialto::server

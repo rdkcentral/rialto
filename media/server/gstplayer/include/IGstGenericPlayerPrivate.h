@@ -21,9 +21,11 @@
 #define FIREBOLT_RIALTO_SERVER_I_GST_GENERIC_PLAYER_PRIVATE_H_
 
 #include "IMediaPipeline.h"
+
 #include <gst/app/gstappsrc.h>
 #include <gst/gst.h>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace firebolt::rialto::server
@@ -72,9 +74,65 @@ public:
     virtual bool setVideoSinkRectangle() = 0;
 
     /**
+     * @brief Sets immediate output. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setImmediateOutput() = 0;
+
+    /**
+     * @brief Sets the low latency property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setLowLatency() = 0;
+
+    /**
+     * @brief Sets the sync property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setSync() = 0;
+
+    /**
+     * @brief Sets the sync off property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setSyncOff() = 0;
+
+    /**
+     * @brief Sets the stream sync mode property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setStreamSyncMode(const MediaSourceType &type) = 0;
+
+    /**
+     * @brief Sets frame rendering. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setRenderFrame() = 0;
+
+    /**
+     * @brief Sets buffering limit. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setBufferingLimit() = 0;
+
+    /**
+     * @brief Sets use buffering. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setUseBuffering() = 0;
+
+    /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
      */
-    virtual void notifyNeedMediaData(bool audioNotificationNeeded, bool videoNotificationNeeded) = 0;
+    virtual void notifyNeedMediaData(const MediaSourceType mediaSource) = 0;
 
     /**
      * @brief Constructs a new buffer with data from media segment. Does not perform decryption.
@@ -82,15 +140,7 @@ public:
      */
     virtual GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const = 0;
 
-    /**
-     * @brief Attach audio data. Called by the worker thread
-     */
-    virtual void attachAudioData() = 0;
-
-    /**
-     * @brief Attach video data. Called by the worker thread
-     */
-    virtual void attachVideoData() = 0;
+    virtual void attachData(const firebolt::rialto::MediaSourceType mediaType) = 0;
 
     /**
      * @brief Checks the new audio mediaSegment metadata and updates the caps accordingly.
@@ -141,7 +191,7 @@ public:
      *
      * @param[in] underflowFlag    : The audio or video underflow flag to be cleared.
      */
-    virtual void cancelUnderflow(bool &underflowFlag) = 0;
+    virtual void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) = 0;
 
     /**
      * @brief Sets pending playback rate after reaching PLAYING state
@@ -163,6 +213,14 @@ public:
     virtual void addAutoVideoSinkChild(GObject *object) = 0;
 
     /**
+     * @brief Notification that a new child element has been added to the autoaudiosink.
+     *        Stores the child audio sink in the player context.
+     *
+     * @param[in] object    : Element added to the autoaudiosink.
+     */
+    virtual void addAutoAudioSinkChild(GObject *object) = 0;
+
+    /**
      * @brief Notification that a child element has been removed from the autovideosink.
      *        Removes the child video sink in the player context if it has been stored.
      *
@@ -171,22 +229,52 @@ public:
     virtual void removeAutoVideoSinkChild(GObject *object) = 0;
 
     /**
-     * @brief Gets the video sink element child sink if present.
-     *        Only gets children for GstAutoVideoSink's.
+     * @brief Notification that a child element has been removed from the autoaudiosink.
+     *        Removes the child audio sink in the player context if it has been stored.
      *
-     * @param[in] sink    : Sink element to check.
-     *
-     * @retval Underlying child video sink or 'sink' if there are no children.
+     * @param[in] object    : Element removed from the autoaudiosink.
      */
-    virtual GstElement *getSinkChildIfAutoVideoSink(GstElement *sink) = 0;
+    virtual void removeAutoAudioSinkChild(GObject *object) = 0;
+
+    /**
+     * @brief Gets the sink element for source type.
+     *
+     * @param[in] mediaSourceType : the source type to obtain the sink for
+     *
+     * @retval The sink, NULL if not found. Please call getObjectUnref() if it's non-null
+     */
+    virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
 
     /**
      * @brief Sets the audio and video flags on the pipeline based on the input.
      *
      * @param[in] enableAudio : Whether to enable audio flags.
-     * @param[in] enableVideo : Whether to enable video flags.
      */
-    virtual void setAudioVideoFlags(bool enableAudio, bool enableVideo) = 0;
+    virtual void setPlaybinFlags(bool enableAudio) = 0;
+
+    /**
+     * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
+     *
+     * @param[in] source          : The Gst Source element, that should receive new sample
+     * @param[in] typeStr         : The media source type string
+     */
+    virtual void pushSampleIfRequired(GstElement *source, const std::string &typeStr) = 0;
+
+    /**
+     * @brief Reattaches source (or switches it)
+     *
+     * @param[in] source          : The new media source
+     *
+     * @retval True on success
+     */
+    virtual bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
+
+    /**
+     * @brief Sets source state flushed
+     *
+     * @param[in] mediaSourceType : the source type that has been flushed
+     */
+    virtual void setSourceFlushed(const MediaSourceType &mediaSourceType) = 0;
 };
 } // namespace firebolt::rialto::server
 

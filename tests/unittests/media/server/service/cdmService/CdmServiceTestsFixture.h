@@ -60,12 +60,12 @@ public:
     void mediaKeysWillGetLastDrmErrorWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillGetDrmTimeWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
-    void mediaKeysWillDecryptDeprecatedWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillNotFindMediaKeySession();
     void mediaKeysWillCheckIfKeySystemIsPlayready(bool result);
     void mediaKeysWillPing();
+    void mediaKeysWillGetMetricSystemDataWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
 
     void mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
     void mediaKeysCapabilitiesFactoryWillReturnNullptr();
@@ -91,7 +91,6 @@ public:
     void closeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void removeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void getCdmKeySessionIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
-    void decryptDeprecatedShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void containsKeyShouldReturn(bool result);
@@ -109,6 +108,7 @@ public:
     void decrementSessionIdUsageCounter();
     void incrementSessionIdUsageCounterFails();
     void decrementSessionIdUsageCounterFails();
+    void getMetricSystemDataShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
 
     void getSupportedKeySystemsShouldSucceed();
     void getSupportedKeySystemsReturnNon();

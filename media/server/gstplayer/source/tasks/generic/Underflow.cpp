@@ -21,14 +21,15 @@
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 #include "tasks/generic/Pause.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
 Underflow::Underflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                     bool &underflowFlag, bool underflowEnabled, MediaSourceType sourceType)
-    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_underflowFlag{underflowFlag},
-      m_underflowEnabled{underflowEnabled}, m_sourceType{sourceType}
+                     bool underflowEnabled, MediaSourceType sourceType)
+    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_underflowEnabled{underflowEnabled},
+      m_sourceType{sourceType}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Underflow");
 }
@@ -40,20 +41,27 @@ Underflow::~Underflow()
 
 void Underflow::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing Underflow");
+    RIALTO_SERVER_LOG_WARN("Executing Underflow for %s source", common::convertMediaSourceType(m_sourceType));
     if (!m_underflowEnabled)
     {
         return;
     }
-    if (m_underflowFlag)
-    {
-        return;
-    }
 
-    m_underflowFlag = true;
-    if (m_gstPlayerClient)
+    auto elem = m_context.streamInfo.find(m_sourceType);
+    if (elem != m_context.streamInfo.end())
     {
-        m_gstPlayerClient->notifyBufferUnderflow(m_sourceType);
+        StreamInfo &streamInfo = elem->second;
+        if (streamInfo.underflowOccured)
+        {
+            return;
+        }
+
+        streamInfo.underflowOccured = true;
+
+        if (m_gstPlayerClient)
+        {
+            m_gstPlayerClient->notifyBufferUnderflow(m_sourceType);
+        }
     }
 }
 

@@ -19,6 +19,7 @@
 
 #include "RdkGstreamerUtilsWrapper.h"
 #include "rdk_gstreamer_utils.h"
+#include <stdexcept>
 
 namespace firebolt::rialto::wrappers
 {
@@ -45,5 +46,37 @@ bool RdkGstreamerUtilsWrapper::performAudioTrackCodecChannelSwitch(
                                                                     status, ui32Delay, audioChangeTargetPts,
                                                                     currentDispPts, audioChangeStage, appsrcCaps,
                                                                     audioaac, svpEnabled, aSrc, ret);
+}
+
+void RdkGstreamerUtilsWrapper::processAudioGap(GstElement *pipeline, gint64 gapstartpts, gint32 gapduration,
+                                               gint64 gapdiscontinuity, bool audioaac) const
+{
+    return rdk_gstreamer_utils::processAudioGap(pipeline, gapstartpts, gapduration, gapdiscontinuity, audioaac);
+}
+
+rdk_gstreamer_utils::rgu_Ease convertEaseType(firebolt::rialto::wrappers::rgu_Ease ease)
+{
+    switch (ease)
+    {
+    case firebolt::rialto::wrappers::rgu_Ease::EaseLinear:
+        return rdk_gstreamer_utils::rgu_Ease::EaseLinear;
+    case firebolt::rialto::wrappers::rgu_Ease::EaseInCubic:
+        return rdk_gstreamer_utils::rgu_Ease::EaseInCubic;
+    case firebolt::rialto::wrappers::rgu_Ease::EaseOutCubic:
+        return rdk_gstreamer_utils::rgu_Ease::EaseOutCubic;
+    default:
+        throw std::invalid_argument("Unknown rgu_Ease");
+    }
+}
+
+void RdkGstreamerUtilsWrapper::doAudioEasingonSoc(double target, uint32_t duration, rgu_Ease ease) const
+{
+    rdk_gstreamer_utils::rgu_Ease convertedEaseType = convertEaseType(ease);
+    return rdk_gstreamer_utils::doAudioEasingonSoc(target, duration, convertedEaseType);
+}
+
+bool RdkGstreamerUtilsWrapper::isSocAudioFadeSupported() const
+{
+    return rdk_gstreamer_utils::isSocAudioFadeSupported();
 }
 } // namespace firebolt::rialto::wrappers

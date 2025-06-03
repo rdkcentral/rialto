@@ -23,7 +23,9 @@
 class RialtoClientMediaPipelineIpcSetVolumeTest : public MediaPipelineIpcTestBase
 {
 protected:
-    double m_volume{0.7};
+    double m_targetVolume{0.7};
+    uint32_t m_volumeDuration{1000};
+    firebolt::rialto::EaseType m_easeType{firebolt::rialto::EaseType::EASE_LINEAR};
 
     virtual void SetUp()
     {
@@ -49,9 +51,10 @@ TEST_F(RialtoClientMediaPipelineIpcSetVolumeTest, Success)
 
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("setVolume"), m_controllerMock.get(),
-                           setVolumeRequestMatcher(m_sessionId, m_volume), _, m_blockingClosureMock.get()));
+                           setVolumeRequestMatcher(m_sessionId, m_targetVolume, m_volumeDuration, m_easeType), _,
+                           m_blockingClosureMock.get()));
 
-    EXPECT_EQ(m_mediaPipelineIpc->setVolume(m_volume), true);
+    EXPECT_EQ(m_mediaPipelineIpc->setVolume(m_targetVolume, m_volumeDuration, m_easeType), true);
 }
 
 /**
@@ -62,7 +65,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetVolumeTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaPipelineIpc->setVolume(m_volume), false);
+    EXPECT_EQ(m_mediaPipelineIpc->setVolume(m_targetVolume, m_volumeDuration, m_easeType), false);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -80,7 +83,7 @@ TEST_F(RialtoClientMediaPipelineIpcSetVolumeTest, ReconnectChannel)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setVolume"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->setVolume(m_volume), true);
+    EXPECT_EQ(m_mediaPipelineIpc->setVolume(m_targetVolume, m_volumeDuration, m_easeType), true);
 }
 
 /**
@@ -92,5 +95,5 @@ TEST_F(RialtoClientMediaPipelineIpcSetVolumeTest, SetVolumeFailure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setVolume"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->setVolume(m_volume), false);
+    EXPECT_EQ(m_mediaPipelineIpc->setVolume(m_targetVolume, m_volumeDuration, m_easeType), false);
 }

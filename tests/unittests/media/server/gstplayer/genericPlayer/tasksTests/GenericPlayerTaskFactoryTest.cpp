@@ -17,11 +17,13 @@
  * limitations under the License.
  */
 
-#include "tasks/generic/GenericPlayerTaskFactory.h"
+#include <gtest/gtest.h>
+
 #include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerClientMock.h"
 #include "GstGenericPlayerPrivateMock.h"
+#include "GstTextTrackSinkFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "HeartbeatHandlerMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
@@ -34,27 +36,38 @@
 #include "tasks/generic/Eos.h"
 #include "tasks/generic/FinishSetupSource.h"
 #include "tasks/generic/Flush.h"
+#include "tasks/generic/GenericPlayerTaskFactory.h"
 #include "tasks/generic/HandleBusMessage.h"
 #include "tasks/generic/NeedData.h"
 #include "tasks/generic/Pause.h"
 #include "tasks/generic/Ping.h"
 #include "tasks/generic/Play.h"
+#include "tasks/generic/ProcessAudioGap.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
+#include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
+#include "tasks/generic/SetBufferingLimit.h"
+#include "tasks/generic/SetImmediateOutput.h"
+#include "tasks/generic/SetLowLatency.h"
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
 #include "tasks/generic/SetSourcePosition.h"
+#include "tasks/generic/SetStreamSyncMode.h"
+#include "tasks/generic/SetSync.h"
+#include "tasks/generic/SetSyncOff.h"
+#include "tasks/generic/SetTextTrackIdentifier.h"
+#include "tasks/generic/SetUseBuffering.h"
 #include "tasks/generic/SetVideoGeometry.h"
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
 #include "tasks/generic/SetupSource.h"
 #include "tasks/generic/Shutdown.h"
 #include "tasks/generic/Stop.h"
+#include "tasks/generic/SwitchSource.h"
 #include "tasks/generic/Underflow.h"
 #include "tasks/generic/UpdatePlaybackGroup.h"
-#include <gtest/gtest.h>
 
 using testing::_;
 using testing::Return;
@@ -72,8 +85,10 @@ protected:
         std::make_shared<StrictMock<firebolt::rialto::wrappers::GstWrapperMock>>()};
     std::shared_ptr<firebolt::rialto::wrappers::RdkGstreamerUtilsWrapperMock> m_rdkGstreamerUtilsWrapper{
         std::make_shared<StrictMock<firebolt::rialto::wrappers::RdkGstreamerUtilsWrapperMock>>()};
+    std::shared_ptr<firebolt::rialto::server::GstTextTrackSinkFactoryMock> m_gstTextTrackSinkFactoryMock{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstTextTrackSinkFactoryMock>>()};
     firebolt::rialto::server::GenericPlayerTaskFactory m_sut{&m_gstPlayerClient, m_gstWrapper, m_glibWrapper,
-                                                             m_rdkGstreamerUtilsWrapper};
+                                                             m_rdkGstreamerUtilsWrapper, m_gstTextTrackSinkFactoryMock};
 };
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateAttachSamples)
@@ -126,14 +141,14 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateFinishSetupSource)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateHandleBusMessage)
 {
-    auto task = m_sut.createHandleBusMessage(m_context, m_gstPlayer, nullptr);
+    auto task = m_sut.createHandleBusMessage(m_context, m_gstPlayer, nullptr, false);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::HandleBusMessage &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateNeedData)
 {
-    auto task = m_sut.createNeedData(m_context, nullptr);
+    auto task = m_sut.createNeedData(m_context, m_gstPlayer, nullptr);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::NeedData &>(*task));
 }
@@ -211,7 +226,9 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetVideoGeometry)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetVolume)
 {
     constexpr double kVolume{0.7};
-    auto task = m_sut.createSetVolume(m_context, kVolume);
+    constexpr uint32_t kVolumeDuration{1000};
+    constexpr firebolt::rialto::EaseType kEaseType{firebolt::rialto::EaseType::EASE_LINEAR};
+    auto task = m_sut.createSetVolume(m_context, m_gstPlayer, kVolume, kVolumeDuration, kEaseType);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetVolume &>(*task));
 }
@@ -219,9 +236,42 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetVolume)
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetMute)
 {
     constexpr bool kMute{false};
-    auto task = m_sut.createSetMute(m_context, kMute);
+    auto task = m_sut.createSetMute(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, kMute);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetMute &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetLowLatency)
+{
+    constexpr bool kLowLatency{true};
+    auto task = m_sut.createSetLowLatency(m_context, m_gstPlayer, kLowLatency);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetLowLatency &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSync)
+{
+    constexpr bool kSync{true};
+    auto task = m_sut.createSetSync(m_context, m_gstPlayer, kSync);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetSync &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSyncOff)
+{
+    constexpr bool kSyncOff{true};
+    auto task = m_sut.createSetSyncOff(m_context, m_gstPlayer, kSyncOff);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetSyncOff &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetStreamSyncMode)
+{
+    constexpr int32_t kStreamSyncMode{1};
+    auto task = m_sut.createSetStreamSyncMode(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO,
+                                              kStreamSyncMode);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetStreamSyncMode &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateShutdown)
@@ -240,9 +290,8 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateStop)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUnderflow)
 {
-    bool flag{false};
     bool enabled{false};
-    auto task = m_sut.createUnderflow(m_context, m_gstPlayer, flag, enabled, firebolt::rialto::MediaSourceType::VIDEO);
+    auto task = m_sut.createUnderflow(m_context, m_gstPlayer, enabled, firebolt::rialto::MediaSourceType::VIDEO);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Underflow &>(*task));
 }
@@ -256,7 +305,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetPlaybackRate)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUpdatePlaybackGroup)
 {
-    auto task = m_sut.createUpdatePlaybackGroup(m_context, nullptr, nullptr);
+    auto task = m_sut.createUpdatePlaybackGroup(m_context, m_gstPlayer, nullptr, nullptr);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup &>(*task));
 }
@@ -270,14 +319,66 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreatePing)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateFlush)
 {
-    auto task = m_sut.createFlush(m_context, firebolt::rialto::MediaSourceType::AUDIO, true);
+    auto task = m_sut.createFlush(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Flush &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetSourcePosition)
 {
-    auto task = m_sut.createSetSourcePosition(m_context, firebolt::rialto::MediaSourceType::AUDIO, 0);
+    auto task = m_sut.createSetSourcePosition(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, 0,
+                                              false, 2.0, 324);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetSourcePosition &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateProcessAudioGap)
+{
+    auto task = m_sut.createProcessAudioGap(m_context, 0, 0, 0, false);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::ProcessAudioGap &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetImmediateOutput)
+{
+    auto task = m_sut.createSetImmediateOutput(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetImmediateOutput &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetTextTrackIdentifier)
+{
+    auto task = m_sut.createSetTextTrackIdentifier(m_context, "");
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetTextTrackIdentifier &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateRenderFrame)
+{
+    auto task = m_sut.createRenderFrame(m_context, m_gstPlayer);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::RenderFrame &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetBufferingLimit)
+{
+    auto task = m_sut.createSetBufferingLimit(m_context, m_gstPlayer, 0);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetBufferingLimit &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetUseBuffering)
+{
+    auto task = m_sut.createSetUseBuffering(m_context, m_gstPlayer, true);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetUseBuffering &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSwitchSource)
+{
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/mpeg");
+    auto task = m_sut.createSwitchSource(m_gstPlayer, source);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SwitchSource &>(*task));
 }

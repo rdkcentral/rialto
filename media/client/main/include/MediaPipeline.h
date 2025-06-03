@@ -68,10 +68,14 @@ public:
 
 namespace firebolt::rialto::client
 {
+class IMediaPipelineAndIControlClient : public IMediaPipeline, public IControlClient
+{
+};
+
 /**
  * @brief The definition of the MediaPipeline.
  */
-class MediaPipeline : public IMediaPipeline, public IMediaPipelineIpcClient, public IControlClient
+class MediaPipeline : public IMediaPipelineAndIControlClient, public IMediaPipelineIpcClient
 {
 public:
     /**
@@ -126,6 +130,11 @@ public:
 
     bool getPosition(int64_t &position) override;
 
+    bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
+
+    bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
+
+    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
     bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
@@ -153,17 +162,46 @@ public:
 
     bool renderFrame() override;
 
-    bool setVolume(double volume) override;
+    bool setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType) override;
 
-    bool getVolume(double &volume) override;
+    bool getVolume(double &currentVolume) override;
 
-    bool setMute(bool mute) override;
+    bool setMute(int32_t sourceId, bool mute) override;
 
-    bool getMute(bool &mute) override;
+    bool getMute(int32_t sourceId, bool &mute) override;
 
-    bool flush(int32_t sourceId, bool resetTime) override;
+    bool setTextTrackIdentifier(const std::string &textTrackIdentifier) override;
 
-    bool setSourcePosition(int32_t sourceId, int64_t position) override;
+    bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
+
+    bool setLowLatency(bool lowLatency) override;
+
+    bool setSync(bool sync) override;
+
+    bool getSync(bool &sync) override;
+
+    bool setSyncOff(bool syncOff) override;
+
+    bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) override;
+
+    bool getStreamSyncMode(int32_t &streamSyncMode) override;
+
+    bool flush(int32_t sourceId, bool resetTime, bool &async) override;
+
+    bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
+                           uint64_t stopPosition) override;
+
+    bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
+
+    bool setBufferingLimit(uint32_t limitBufferingMs) override;
+
+    bool getBufferingLimit(uint32_t &limitBufferingMs) override;
+
+    bool setUseBuffering(bool useBuffering) override;
+
+    bool getUseBuffering(bool &useBuffering) override;
+
+    bool switchSource(const std::unique_ptr<MediaSource> &source) override;
 
     void notifyApplicationState(ApplicationState state) override;
 
@@ -268,7 +306,6 @@ protected:
      * @brief Handles a have data request.
      *
      * @param[in] status  : The status
-     * @param[in] dataVec : The data returned.
      * @param[in] needDataRequestId : Need data request id
      *
      * @retval true on success.

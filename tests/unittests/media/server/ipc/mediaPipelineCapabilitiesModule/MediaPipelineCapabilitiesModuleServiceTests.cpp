@@ -43,8 +43,25 @@ TEST_F(MediaPipelineCapabilitiesModuleServiceTests, getSupportedMimeTypesWillFai
     sendGetSupportedMimeTypesRequestAndExpectFailure();
 }
 
+TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldCallGetSupportedProperties)
+{
+    mediaPipelineWillGetSupportedProperties();
+    sendGetSupportedPropertiesRequestWithSuccess();
+}
+
+TEST_F(MediaPipelineCapabilitiesModuleServiceTests, GetSupportedPropertiesWillFail)
+{
+    expectInvalidControlFailure();
+    sendGetSupportedPropertiesRequestAndExpectFailure();
+}
+
 TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldIfMimeTypeIsSupportedWillFail)
 {
     expectInvalidControlFailure();
     sendIsMimeTypeSupportedRequestAndExpectFailure();
+}
+
+TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldConvertMediaType)
+{
+    expectCorrectMediaTypeConversion();
 }

@@ -39,7 +39,7 @@ CheckAudioUnderflow::CheckAudioUnderflow(GenericPlayerContext &context, IGstGene
 void CheckAudioUnderflow::execute() const
 {
     // TODO(LLDEV-31012) Check if the audio stream is in underflow state.
-    if (m_context.audioAppSrc)
+    if (m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO) != m_context.streamInfo.end())
     {
         gint64 position = -1;
         m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position);
@@ -48,11 +48,10 @@ void CheckAudioUnderflow::execute() const
             m_gstWrapper->gstElementGetState(m_context.pipeline) == GST_STATE_PLAYING &&
             m_gstWrapper->gstElementGetPendingState(m_context.pipeline) != GST_STATE_PAUSED)
         {
-            RIALTO_SERVER_LOG_INFO("Audio stream underflow! Position %" PRIu64 ", lastAudioSampleTimestamps: %" PRIu64,
+            RIALTO_SERVER_LOG_WARN("Audio stream underflow! Position %" PRIu64 ", lastAudioSampleTimestamps: %" PRIu64,
                                    position, m_context.lastAudioSampleTimestamps);
             bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
-            Underflow task(m_context, m_player, m_gstPlayerClient, m_context.audioUnderflowOccured, underflowEnabled,
-                           MediaSourceType::AUDIO);
+            Underflow task(m_context, m_player, m_gstPlayerClient, underflowEnabled, MediaSourceType::AUDIO);
             task.execute();
         }
     }

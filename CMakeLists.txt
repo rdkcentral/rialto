@@ -98,8 +98,11 @@ if ( RIALTO_LOG_DEBUG_ENABLED )
     add_compile_definitions( RIALTO_LOG_DEBUG_ENABLED )
 endif()
 
-if ( RIALTO_ENABLE_DECRYPT_BUFFER )
-    add_compile_definitions( RIALTO_ENABLE_DECRYPT_BUFFER )
+#check if TextTrack plugin exists in Thunder
+find_path( TEXT_TRACK_INCLUDE_DIR NAMES WPEFramework/interfaces/ITextTrack.h )
+if (TEXT_TRACK_INCLUDE_DIR)
+    message("ENABLE RIALTO_ENABLE_TEXT_TRACK")
+    add_compile_definitions(RIALTO_ENABLE_TEXT_TRACK)
 endif()
 
 # Retrieve the commit ID
@@ -117,7 +120,7 @@ endif()
 
 # Retrieve release tag
 execute_process(
-    COMMAND bash -c "git tag --list --contains ${SRCREV} | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$'"
+    COMMAND bash -c "git tag --points-at ${SRCREV} | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$'"
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     OUTPUT_VARIABLE TAGS
     OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -157,6 +160,10 @@ option(ENABLE_SERVER_MANAGER "Enable building RialtoServerManagerSim" ON)
 
 if ( NOT ENVIRONMENT_VARIABLES)
     set( ENVIRONMENT_VARIABLES "\"XDG_RUNTIME_DIR=/tmp\",\"GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin\",\"WESTEROS_SINK_USE_ESSRMGR=1\"" )
+endif()
+
+if ( NOT EXTRA_ENV_VARIABLES)
+    set( EXTRA_ENV_VARIABLES "" )
 endif()
 
 if (NOT SESSION_SERVER_PATH)
@@ -201,8 +208,12 @@ if (NOT NUM_OF_PINGS_BEFORE_RECOVERY)
 endif()
 
 if( NATIVE_BUILD )
+    add_compile_options(-Wno-error=attributes)
     add_subdirectory( stubs/rdk_gstreamer_utils )
     add_subdirectory( stubs/opencdm )
+    add_subdirectory( stubs/wpeframework-core )
+    add_subdirectory( stubs/wpeframework-com )
+
     add_compile_options(-DFREE_MEM_BEFORE_EXIT)
     add_compile_options(-ggdb)
 

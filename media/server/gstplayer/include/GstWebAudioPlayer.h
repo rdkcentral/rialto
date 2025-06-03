@@ -23,6 +23,7 @@
 #include "IGlibWrapper.h"
 #include "IGstDispatcherThread.h"
 #include "IGstDispatcherThreadClient.h"
+#include "IGstInitialiser.h"
 #include "IGstSrc.h"
 #include "IGstWebAudioPlayer.h"
 #include "IGstWebAudioPlayerPrivate.h"
@@ -64,6 +65,7 @@ public:
      * @param[in] priority                     : Priority value for this pipeline.
      * @param[in] gstWrapper                   : The gstreamer wrapper.
      * @param[in] glibWrapper                  : The glib wrapper.
+     * @param[in] gstInitialiser               : The gst initialiser
      * @param[in] gstSrcFactory                : The gstreamer rialto src factory.
      * @param[in] taskFactory                  : The task factory
      * @param[in] workerThreadFactory          : The worker thread factory
@@ -72,7 +74,7 @@ public:
     GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority,
                       const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                       const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+                      const IGstInitialiser &gstInitialiser, const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                       std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
                       std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
                       std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory);

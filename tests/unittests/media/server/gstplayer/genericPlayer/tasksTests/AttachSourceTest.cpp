@@ -44,6 +44,27 @@ TEST_F(AttachSourceTest, shouldAttachOpusWithAudioSpecificConf)
     checkAudioSourceAttached();
 }
 
+TEST_F(AttachSourceTest, shouldAttachBwavAudioSource)
+{
+    shouldAttachBwavAudioSource();
+    triggerAttachBwavAudioSource();
+    checkAudioSourceAttachedWithDrm();
+}
+
+TEST_F(AttachSourceTest, shouldAttachXrawAudioSource)
+{
+    shouldAttachXrawAudioSource();
+    triggerAttachXrawAudioSource();
+    checkAudioSourceAttachedWithDrm();
+}
+
+TEST_F(AttachSourceTest, shouldAttachFlacAudioSource)
+{
+    shouldAttachFlacAudioSource();
+    triggerAttachFlacAudioSource();
+    checkAudioSourceAttachedWithDrm();
+}
+
 TEST_F(AttachSourceTest, shouldAttachVideoSourceAuAvc)
 {
     std::string mimeType = "video/h264";
@@ -102,6 +123,7 @@ TEST_F(AttachSourceTest, shouldAttachVideoSourceAuHev)
 
 TEST_F(AttachSourceTest, shouldAttachSubtitleSource)
 {
+    shouldAttachSubtitleSource();
     triggerAttachSubtitleSource();
     checkSubtitleSourceAttached();
 }
@@ -127,24 +149,33 @@ TEST_F(AttachSourceTest, shouldAttachVideoDolbyVisionSource)
     checkVideoSourceAttachedWithDrm();
 }
 
-TEST_F(AttachSourceTest, shouldSwitchAudioSource)
+TEST_F(AttachSourceTest, shouldFailToAttachUnknownSource)
 {
-    shouldSwitchAudioSource();
+    triggerAttachUnknownSource();
+}
+
+TEST_F(AttachSourceTest, shouldSkipSwitchAudioSourceWhenSourceIsNotRemoved)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
     triggerReattachAudioSource();
-    checkNewAudioSourceAttached();
 }
 
 TEST_F(AttachSourceTest, shouldReattachAudioSource)
 {
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextAudioSourceRemoved();
     shouldReattachAudioSource();
+    shouldEnableAudioFlagsAndSendNeedData();
     triggerReattachAudioSource();
     checkNewAudioSourceAttached();
 }
 
-TEST_F(AttachSourceTest, shouldNotReattachAudioSourceWhenMimeTypeIsEmpty)
+TEST_F(AttachSourceTest, shouldFailToReattachAudioSource)
 {
-    shouldNotSwitchAudioSourceWhenMimeTypeIsEmpty();
-    triggerReattachAudioSourceWithEmptyMimeType();
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextAudioSourceRemoved();
+    shouldFailToReattachAudioSource();
+    triggerReattachAudioSource();
 }
 
 TEST_F(AttachSourceTest, shouldFailToCastAudioSource)

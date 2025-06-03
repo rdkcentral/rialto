@@ -28,15 +28,3 @@ TEST_F(RenderFrameTest, shouldRenderFrame)
     shouldRenderFrame();
     triggerRenderFrame();
 }
-
-TEST_F(RenderFrameTest, RenderFrameFailsOnGettingSink)
-{
-    shouldGetVideoSinkFailure();
-    triggerRenderFrame();
-}
-
-TEST_F(RenderFrameTest, RenderFrameFailsOnFindProperty)
-{
-    shouldFindPropertyFailure();
-    triggerRenderFrame();
-}

@@ -75,8 +75,6 @@ public:
      * @param[in]  line      : The line number within the file where the log is defined
      * @param[in]  function  : The source code function within which the log is defined
      * @param[in]  message   : The message of the log
-     *
-     * @retval none
      */
     virtual void log(Level level, const std::string &file, int line, const std::string &function,
                      const std::string &message) = 0;

@@ -98,7 +98,7 @@ protected:
 
     void needDataGeneric() { needData(m_sourceId, m_frameCount, m_requestId, m_shmInfo); }
 
-    void addFrames(MediaSourceType sourceType, uint32_t numberOfFrames, std::vector<uint8_t> &data)
+    void addFrames(MediaSourceType sourceType, uint32_t numberOfFrames, const std::vector<uint8_t> &data)
     {
         int64_t timestamp = 0;
 
@@ -139,7 +139,7 @@ protected:
     {
         for (auto it = m_dataVec.begin(); it != m_dataVec.end(); it++)
         {
-            delete[](*it)->getData();
+            delete[] (*it)->getData();
         }
         m_dataVec.clear();
     }
@@ -313,8 +313,9 @@ TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventInvalidStates)
 TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventFlushingSource)
 {
     // Flush source
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime), true);
+    bool isAsync{false};
+    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime, _)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime, isAsync), true);
 
     // Should not trigger any expect calls in all invalid states
     m_mediaPipelineCallback->notifyNeedMediaData(m_sourceId, m_frameCount, m_requestId, m_shmInfo);
@@ -326,8 +327,29 @@ TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventFlushingSource)
 TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventAfterFlushingSource)
 {
     // Flush source
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime), true);
+    bool isAsync{false};
+    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime, _)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime, isAsync), true);
+
+    // Finish flush
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifySourceFlushed(m_sourceId));
+    m_mediaPipelineCallback->notifySourceFlushed(m_sourceId);
+
+    // Need data should be handled here.
+    needDataGeneric();
+}
+
+/**
+ * Test that a need data notification is handled when flush is finished in EOS state
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, NeedDataEventAfterFlushingSourceInEos)
+{
+    setPlaybackState(PlaybackState::END_OF_STREAM);
+
+    // Flush source
+    bool isAsync{false};
+    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime, _)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime, isAsync), true);
 
     // Finish flush
     EXPECT_CALL(*m_mediaPipelineClientMock, notifySourceFlushed(m_sourceId));
@@ -719,8 +741,9 @@ TEST_F(RialtoClientMediaPipelineDataTest, HaveDataFlushing)
     std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
     addFrames(MediaSourceType::AUDIO, m_numFrames, data);
 
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime), true);
+    bool isAsync{false};
+    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime, _)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime, isAsync), true);
 
     // haveData should return success but will not be forwarded to media ipc
     EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
@@ -736,8 +759,9 @@ TEST_F(RialtoClientMediaPipelineDataTest, HaveDataFlushCompleted)
     std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
     addFrames(MediaSourceType::AUDIO, m_numFrames, data);
 
-    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime)).WillOnce(Return(true));
-    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime), true);
+    bool isAsync{false};
+    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime, _)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime, isAsync), true);
 
     EXPECT_EQ(m_mediaPipeline->haveData(m_status, m_requestId), true);
 

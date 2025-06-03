@@ -36,7 +36,8 @@ class HandleBusMessage : public IPlayerTask
 public:
     HandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
                      std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, GstMessage *message);
+                     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, GstMessage *message,
+                     bool isFlushOngoing);
     ~HandleBusMessage() override;
     void execute() const override;
 
@@ -49,6 +50,7 @@ private:
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     GstMessage *m_message;
+    bool m_isFlushOngoing;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

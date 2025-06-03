@@ -93,7 +93,7 @@ public:
      *
      * @retval true on success, false otherwise.
      */
-    virtual bool registerClient(IControlClient *client, ApplicationState &appState) = 0;
+    virtual bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) = 0;
 
     /**
      * @brief Unregister a client.
@@ -102,7 +102,7 @@ public:
      *
      * @retval true on success, false otherwise.
      */
-    virtual bool unregisterClient(IControlClient *client) = 0;
+    virtual bool unregisterClient(std::weak_ptr<IControlClient> client) = 0;
 };
 
 }; // namespace firebolt::rialto::client

@@ -46,6 +46,14 @@ convertMediaKeyErrorStatus(const firebolt::rialto::MediaKeyErrorStatus &errorSta
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::BAD_SESSION_ID;
     }
+    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED;
+    }
+    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::BUFFER_TOO_SMALL;
+    }
     case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::NOT_SUPPORTED;
@@ -467,6 +475,23 @@ void MediaKeysModuleService::releaseKeySession(::google::protobuf::RpcController
 
     MediaKeyErrorStatus status = m_cdmService.releaseKeySession(request->media_keys_handle(), request->key_session_id());
     response->set_error_status(convertMediaKeyErrorStatus(status));
+    done->Run();
+}
+
+void MediaKeysModuleService::getMetricSystemData(::google::protobuf::RpcController *controller,
+                                                 const ::firebolt::rialto::GetMetricSystemDataRequest *request,
+                                                 ::firebolt::rialto::GetMetricSystemDataResponse *response,
+                                                 ::google::protobuf::Closure *done)
+{
+    std::vector<uint8_t> buffer;
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    MediaKeyErrorStatus status = m_cdmService.getMetricSystemData(request->media_keys_handle(), buffer);
+    response->set_error_status(convertMediaKeyErrorStatus(status));
+    for (const auto &buf : buffer)
+    {
+        response->add_buffer(buf);
+    }
     done->Run();
 }
 

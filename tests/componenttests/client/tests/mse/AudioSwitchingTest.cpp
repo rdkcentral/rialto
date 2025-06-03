@@ -69,43 +69,31 @@ public:
  *  Step 3: Write audio frame
  *   Write audio frames.
  *
- *  Step 4: Remove audio source
- *   Remove the audio source.
- *   Expect that remove source for audio propagated to the server.
+ *  Step 4: Switch audio source to eac
+ *   Switch the audio source.
+ *   Expect that attach source with switch source flag for audio propagated to the server.
  *
- *  Step 5: Attach eacs audio source
- *   Attach the new audio source.
- *   Expect that attach source for audio propagated to the server.
- *
- *  Step 6: Write audio frame
+ *  Step 5: Write audio frame
  *   Write audio frames.
  *
- *  Step 7: Play
+ *  Step 6: Play
  *   Play the content.
  *   Expect that play propagated to the server.
  *   Server notifies the client that the Playback state has changed to PLAYING.
  *   Expect that the state change notification is propagated to the client.
  *
- *  Step 8: Remove audio source
- *   Remove the audio source.
- *   Expect that remove source for audio propagated to the server.
+ *  Step 7: Switch audio source to mp4
+ *   Switch the audio source.
+ *   Expect that attach source with switch source flag for audio propagated to the server.
  *
- *  Step 9: Attach mp4 audio source
- *   Attach the new audio source.
- *   Expect that attach source for audio propagated to the server.
- *
- *  Step 10: Write audio frame
+ *  Step 8: Write audio frame
  *   Write audio frames.
  *
- *  Step 11: Remove audio source
- *   Remove the audio source.
- *   Expect that remove source for audio propagated to the server.
+ *  Step 9: Switch audio source to eac
+ *   Switch the audio source.
+ *   Expect that attach source with switch source flag for audio propagated to the server.
  *
- *  Step 12: Attach eacs audio source
- *   Attach the new audio source.
- *   Expect that attach source for audio propagated to the server.
- *
- *  Step 13: Write audio frame
+ *  Step 10: Write audio frame
  *   Write audio frames.
  *
  * Test Teardown:
@@ -132,43 +120,31 @@ TEST_F(AudioSwitchingTest, multiSwitching)
     // Step 3: Write audio frame
     writeAudioFrames();
 
-    // Step 4: Remove audio source
-    MediaPipelineTestMethods::shouldRemoveAudioSource();
-    MediaPipelineTestMethods::removeSourceAudio();
+    // Step 4: Switch audio source to eac
+    MediaPipelineTestMethods::shouldSwitchSourceEacs();
+    MediaPipelineTestMethods::switchSourceEac();
 
-    // Step 5: Attach eacs audio source
-    MediaPipelineTestMethods::shouldAttachAudioSourceEacs();
-    MediaPipelineTestMethods::attachSourceAudioEacs();
-
-    // Step 6: Write audio frame
+    // Step 5: Write audio frame
     writeAudioFrames();
 
-    // Step 7: Play
+    // Step 6: Play
     MediaPipelineTestMethods::shouldPlay();
     MediaPipelineTestMethods::play();
     MediaPipelineTestMethods::shouldNotifyPlaybackStatePlaying();
     MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
 
-    // Step 8: Remove audio source
-    MediaPipelineTestMethods::shouldRemoveAudioSource();
-    MediaPipelineTestMethods::removeSourceAudio();
+    // Step 7: Switch audio source to mp4
+    MediaPipelineTestMethods::shouldSwitchSourceMpeg();
+    MediaPipelineTestMethods::switchSourceMpeg();
 
-    // Step 9: Attach mp4 audio source
-    MediaPipelineTestMethods::shouldAttachAudioSourceMp4();
-    MediaPipelineTestMethods::attachSourceAudioMp4();
-
-    // Step 10: Write audio frame
+    // Step 8: Write audio frame
     writeAudioFrames();
 
-    // Step 11: Remove audio source
-    MediaPipelineTestMethods::shouldRemoveAudioSource();
-    MediaPipelineTestMethods::removeSourceAudio();
+    // Step 9: Switch audio source to eac
+    MediaPipelineTestMethods::shouldSwitchSourceEacs();
+    MediaPipelineTestMethods::switchSourceEac();
 
-    // Step 12: Attach eacs audio source
-    MediaPipelineTestMethods::shouldAttachAudioSourceEacs();
-    MediaPipelineTestMethods::attachSourceAudioEacs();
-
-    // Step 13: Write audio frame
+    // Step 10: Write audio frame
     writeAudioFrames();
 }
 } // namespace firebolt::rialto::client::ct

@@ -22,8 +22,24 @@
 #include "MessageBuilders.h"
 #include "RialtoServerComponentTest.h"
 
+using ::testing::_;
+using ::testing::DoAll;
+using ::testing::Return;
+using ::testing::SetArgPointee;
+using ::testing::StrEq;
 using ::testing::UnorderedElementsAre;
 
+namespace
+{
+constexpr int kNumPropertiesOnSink{3};
+const char *kPropertyName1 = "test-name-5";
+const char *kPropertyName2 = "test2";
+const char *kPropertyName3 = "prop";
+const char *kAudioFade = "audio-fade";
+const GstElementFactoryListType kExpectedFactoryListType{
+    GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_PARSER |
+    GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+}; // namespace
 namespace firebolt::rialto::server::ct
 {
 class MediaPipelineCapabilitiesTest : public RialtoServerComponentTest
@@ -31,11 +47,57 @@ class MediaPipelineCapabilitiesTest : public RialtoServerComponentTest
 public:
     MediaPipelineCapabilitiesTest()
     {
-        willConfigureSocket();
         configureSutInActiveState();
         connectClient();
+
+        m_dummyParams[0].name = kPropertyName1;
+        m_dummyParams[1].name = kPropertyName3;
+        m_dummyParams[2].name = kPropertyName2;
+        for (int i = 0; i < kNumPropertiesOnSink; ++i)
+            m_dummyParamsPtr[i] = &m_dummyParams[i];
+        memset(&m_object, 0x00, sizeof(m_object));
+        m_elementFactory = gst_element_factory_find("fakesrc");
     }
-    ~MediaPipelineCapabilitiesTest() override = default;
+    ~MediaPipelineCapabilitiesTest() { gst_object_unref(m_elementFactory); }
+
+    void willCallGetSupportedProperties()
+    {
+        m_listOfFactories = g_list_append(m_listOfFactories, m_elementFactory);
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(kExpectedFactoryListType, GST_RANK_NONE))
+            .WillOnce(Return(m_listOfFactories));
+        // The next calls should ensure that an object is created and then freed
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(m_elementFactory, nullptr)).WillOnce(Return(&m_object));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_object));
+
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
+            .WillRepeatedly(DoAll(SetArgPointee<1>(kNumPropertiesOnSink), Return(m_dummyParamsPtr)));
+        EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(true));
+        EXPECT_CALL(*m_glibWrapperMock, gFree(m_dummyParamsPtr)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
+    }
+
+    void callGetSupportedProperties()
+    {
+        auto request{createGetSupportedPropertiesRequest(ProtoMediaSourceType::VIDEO, m_kParamNames)};
+        ConfigureAction<GetSupportedProperties>{m_clientStub}.send(request).expectSuccess().matchResponse(
+            [this](const auto &resp)
+            {
+                std::vector<std::string> supportedProperties{resp.supported_properties().begin(),
+                                                             resp.supported_properties().end()};
+                EXPECT_EQ(supportedProperties, m_kParamNames);
+            });
+
+        gst_plugin_feature_list_free(m_listOfFactories);
+        m_listOfFactories = nullptr;
+    }
+
+private:
+    GList *m_listOfFactories{nullptr};
+    GParamSpec m_dummyParams[kNumPropertiesOnSink];
+    GParamSpec *m_dummyParamsPtr[kNumPropertiesOnSink];
+    std::vector<std::string> m_kParamNames{kPropertyName1, kPropertyName3, kPropertyName2, kAudioFade};
+    GstElement m_object;
+    GstElementFactory *m_elementFactory;
 };
 
 /*
@@ -273,5 +335,41 @@ TEST_F(MediaPipelineCapabilitiesTest, checkVideoMimeTypes)
         .send(vp9Request)
         .expectSuccess()
         .matchResponse([](const auto &resp) { EXPECT_FALSE(resp.is_supported()); });
-};
+}
+
+/*
+ * Component Test: Check that the API call GetSupportedProperties works
+ * Test Objective:
+ *  Test that the RialtoServer can process a request to get supported pipeline properites
+ *
+ * Sequence Diagrams:
+ *  Capabilities - Get Supported Properties
+ *  https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-Getsupportedproperties
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipelineCapabilities
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *
+ * Test Steps:
+ *  Step 1: Get supported properties
+ *
+ * Test Teardown:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  Rialto server checks, if mime types are supported.
+ *
+ * Code:
+ */
+TEST_F(MediaPipelineCapabilitiesTest, checkGetSupportedProperties)
+{
+    // Step 1: Get supported properties
+    willCallGetSupportedProperties();
+    callGetSupportedProperties();
+}
 } // namespace firebolt::rialto::server::ct

@@ -38,28 +38,30 @@ add_gtests (
         tests/control/LogHandlingTest.cpp
 
         # MSE Component tests
+        tests/mse/AudioSwitchingTest.cpp
         tests/mse/AudioVideoPlaybackSequenceTest.cpp
         tests/mse/AudioVideoPlaybackWriteSegmentsTest.cpp
-        tests/mse/PlayPauseStopFailuresTest.cpp
-        tests/mse/SetPlaybackRateTest.cpp
-        tests/mse/SetPositionTest.cpp
-        tests/mse/SingleSourcePlaybackTest.cpp
-        tests/mse/DualVideoPlaybackTest.cpp
-        tests/mse/AudioSwitchingTest.cpp
-        tests/mse/VolumeTest.cpp
-        tests/mse/MuteTest.cpp
-        tests/mse/SetVideoWindowTest.cpp
-        tests/mse/RenderFrameTest.cpp
-        tests/mse/PositionUpdatesTest.cpp
         tests/mse/CreateMediaPipelineFailuresTest.cpp
-        tests/mse/WriteSegmentEdgeCasesTest.cpp
-        tests/mse/UnderflowNotificationTest.cpp
+        tests/mse/DualVideoPlaybackTest.cpp
+        tests/mse/FlushTest.cpp
+        tests/mse/MediaPipelineCapabilitiesTest.cpp
+        tests/mse/MuteTest.cpp
+        tests/mse/PipelinePropertyTest.cpp
+        tests/mse/PlayPauseStopFailuresTest.cpp
+        tests/mse/PlaybackErrorNotificationTest.cpp
+        tests/mse/PositionUpdatesTest.cpp
+        tests/mse/ProcessAudioGapTest.cpp
         tests/mse/QosNotificationTest.cpp
         tests/mse/RemoveAudioPlaybackTest.cpp
-        tests/mse/PlaybackErrorNotificationTest.cpp
-        tests/mse/MediaPipelineCapabilitiesTest.cpp
-        tests/mse/FlushTest.cpp
+        tests/mse/RenderFrameTest.cpp
+        tests/mse/SetPlaybackRateTest.cpp
+        tests/mse/SetPositionTest.cpp
         tests/mse/SetSourcePositionTest.cpp
+        tests/mse/SetVideoWindowTest.cpp
+        tests/mse/SingleSourcePlaybackTest.cpp
+        tests/mse/UnderflowNotificationTest.cpp
+        tests/mse/VolumeTest.cpp
+        tests/mse/WriteSegmentEdgeCasesTest.cpp
         
         # Web Audio Component tests
         tests/webaudio/CreateWebAudioPlayerTest.cpp
@@ -83,6 +85,7 @@ add_gtests (
         tests/eme/SelectKeyIdTest.cpp
         tests/eme/SessionFailuresTest.cpp
         tests/eme/MediaKeysCapabilitiesTest.cpp
+        tests/eme/GetMetricSystemDataTest.cpp
         )
 
 add_subdirectory(mocks)

@@ -54,15 +54,35 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::SetPlaybackRateRequest createSetPlaybackRateRequest(int sessionId);
 ::firebolt::rialto::SetPositionRequest createSetPositionRequest(int sessionId, std::int64_t position);
 ::firebolt::rialto::GetPositionRequest createGetPositionRequest(int sessionId);
+::firebolt::rialto::SetImmediateOutputRequest createSetImmediateOutputRequest(int sessionId, int sourceId,
+                                                                              bool immediateOutput);
+::firebolt::rialto::GetImmediateOutputRequest createGetImmediateOutputRequest(int sessionId, int sourceId);
+::firebolt::rialto::GetStatsRequest createGetStatsRequest(int sessionId, int sourceId);
 ::firebolt::rialto::RenderFrameRequest createRenderFrameRequest(int sessionId);
-::firebolt::rialto::SetVolumeRequest createSetVolumeRequest(int sessionId);
+::firebolt::rialto::SetVolumeRequest createSetVolumeNormalRequest(int sessionId);
+::firebolt::rialto::SetVolumeRequest createSetVolumeWithFadeRequest(int sessionId);
 ::firebolt::rialto::GetVolumeRequest createGetVolumeRequest(int sessionId);
-::firebolt::rialto::SetMuteRequest createSetMuteRequest(int sessionId);
-::firebolt::rialto::GetMuteRequest createGetMuteRequest(int sessionId);
+::firebolt::rialto::SetMuteRequest createSetMuteRequest(int sessionId, int sourceId);
+::firebolt::rialto::GetMuteRequest createGetMuteRequest(int sessionId, int sourceId);
+::firebolt::rialto::SetLowLatencyRequest createSetLowLatencyRequest(int sessionId, bool lowLatency);
+::firebolt::rialto::SetSyncRequest createSetSyncRequest(int sessionId, bool sync);
+::firebolt::rialto::GetSyncRequest createGetSyncRequest(int sessionId);
+::firebolt::rialto::SetSyncOffRequest createSetSyncOffRequest(int sessionId, bool syncOff);
+::firebolt::rialto::SetStreamSyncModeRequest createSetStreamSyncModeRequest(int sessionId, int sourceId,
+                                                                            bool streamSyncMode);
+::firebolt::rialto::GetStreamSyncModeRequest createGetStreamSyncModeRequest(int sessionId);
+::firebolt::rialto::SetBufferingLimitRequest createSetBufferingLimitRequest(int sessionId, uint32_t bufferingLimit);
+::firebolt::rialto::GetBufferingLimitRequest createGetBufferingLimitRequest(int sessionId);
+::firebolt::rialto::SetUseBufferingRequest createSetUseBufferingRequest(int sessionId, bool useBuffering);
+::firebolt::rialto::GetUseBufferingRequest createGetUseBufferingRequest(int sessionId);
 ::firebolt::rialto::SetVideoWindowRequest createSetVideoWindowRequest(int sessionId);
 ::firebolt::rialto::FlushRequest createFlushRequest(int sessionId, int sourceId, bool resetTime);
 ::firebolt::rialto::SetSourcePositionRequest createSetSourcePositionRequest(int sessionId, int sourceId,
-                                                                            std::int64_t position);
+                                                                            std::int64_t position, bool resetTime,
+                                                                            double appliedRate, uint64_t stopPosition);
+::firebolt::rialto::ProcessAudioGapRequest createProcessAudioGapRequest(int sessionId, std::int64_t position,
+                                                                        unsigned duration,
+                                                                        std::int64_t discontinuityGap, bool audioAac);
 
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine();
@@ -89,6 +109,7 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::GetLdlSessionsLimitRequest createGetLdlSessionsLimitRequest(int mediaKeysHandle);
 ::firebolt::rialto::GetDrmTimeRequest createGetDrmTimeRequest(int mediaKeysHandle);
 ::firebolt::rialto::ReleaseKeySessionRequest createReleaseKeySessionRequest(int mediaKeysHandle, int keySessionId);
+::firebolt::rialto::GetMetricSystemDataRequest createGetMetricSystemDataRequest(int mediaKeysHandle);
 
 // media keys capabilities module
 ::firebolt::rialto::GetSupportedKeySystemsRequest createGetSupportedKeySystemsRequest();
@@ -107,6 +128,8 @@ createIsServerCertificateSupportedRequest(const std::string &keySystem);
 ::firebolt::rialto::GetSupportedMimeTypesRequest
 createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType);
 ::firebolt::rialto::IsMimeTypeSupportedRequest createIsMimeTypeSupportedRequest(const std::string &mimeType);
+::firebolt::rialto::GetSupportedPropertiesRequest
+createGetSupportedPropertiesRequest(const ProtoMediaSourceType &mediaType, const std::vector<std::string> &propertyNames);
 
 // web audio player module
 ::firebolt::rialto::CreateWebAudioPlayerRequest

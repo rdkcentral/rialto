@@ -47,14 +47,17 @@ public:
     void sessionServerManagerWillHandleRequestFailure();
     void sessionServerManagerWillHandleRequestFailureWithInvalidController();
     void sessionServerManagerWillSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerManagerWillSetConfigurationWithFd(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillSetState(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillSetLogLevels();
     void sessionServerManagerWillFailToSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerManagerWillFailToSetConfigurationWithFd(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillFailToSetState(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerManagerWillPing();
     void sessionServerManagerWillFailToPing();
 
     void sendSetConfiguration(const firebolt::rialto::common::SessionServerState &state);
+    void sendSetConfigurationWithFd(const firebolt::rialto::common::SessionServerState &state);
     void sendSetState(const firebolt::rialto::common::SessionServerState &state);
     void sendSetLogLevels();
     void sendPing();

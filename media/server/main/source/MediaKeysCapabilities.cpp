@@ -39,6 +39,10 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &status)
         return "FAIL";
     case firebolt::rialto::MediaKeyErrorStatus::BAD_SESSION_ID:
         return "BAD_SESSION_ID";
+    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+        return "INTERFACE_NOT_IMPLEMENTED";
+    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+        return "BUFFER_TOO_SMALL";
     case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
         return "NOT_SUPPORTED";
     case firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE:

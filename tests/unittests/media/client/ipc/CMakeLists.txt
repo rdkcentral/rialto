@@ -35,13 +35,26 @@ add_gtests (
         mediaPipelineIpc/SetPositionTest.cpp
         mediaPipelineIpc/SetPlaybackRateTest.cpp
         mediaPipelineIpc/GetPositionTest.cpp
+        mediaPipelineIpc/SetImmediateOutputTest.cpp
+        mediaPipelineIpc/GetImmediateOutputTest.cpp
+        mediaPipelineIpc/GetStatsTest.cpp
         mediaPipelineIpc/RenderFrameTest.cpp
         mediaPipelineIpc/GetVolumeTest.cpp
         mediaPipelineIpc/SetVolumeTest.cpp
         mediaPipelineIpc/GetMuteTest.cpp
         mediaPipelineIpc/SetMuteTest.cpp
+        mediaPipelineIpc/SetLowLatencyTest.cpp
+        mediaPipelineIpc/SetSyncTest.cpp
+        mediaPipelineIpc/GetSyncTest.cpp
+        mediaPipelineIpc/SetSyncOffTest.cpp
+        mediaPipelineIpc/SetStreamSyncModeTest.cpp
+        mediaPipelineIpc/GetStreamSyncModeTest.cpp
         mediaPipelineIpc/FlushTest.cpp
         mediaPipelineIpc/SetSourcePositionTest.cpp
+        mediaPipelineIpc/ProcessAudioGapTest.cpp
+        mediaPipelineIpc/TextTrackIdentifierTests.cpp
+        mediaPipelineIpc/BufferingLimitTest.cpp
+        mediaPipelineIpc/UseBufferingTest.cpp
 
         # MediaPipelineCapabilitiesIpc tests
         mediaPipelineCapabilitiesIpc/MediaPipelineCapabilitiesIpcTest.cpp
@@ -79,6 +92,7 @@ add_gtests (
         mediaKeysIpc/GetLastDrmErrorTest.cpp
         mediaKeysIpc/GetDrmTimeTest.cpp
         mediaKeysIpc/ReleaseKeySessionTest.cpp
+        mediaKeysIpc/GetMetricSystemDataTest.cpp
 
         # MediaKeysCapabilitiesIpc tests
         mediaKeysCapabilitiesIpc/CreateTest.cpp

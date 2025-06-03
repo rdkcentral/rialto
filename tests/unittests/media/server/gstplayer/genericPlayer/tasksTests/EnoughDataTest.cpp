@@ -22,25 +22,22 @@
 class EnoughDataTest : public GenericTasksTestsBase
 {
 protected:
-    EnoughDataTest() { setContextNeedData(true); }
+    EnoughDataTest()
+    {
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+        setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+        setContextNeedData(true);
+    }
 };
-
-TEST_F(EnoughDataTest, shouldDoNothingWhenAppSourcesAreNotPresent)
-{
-    triggerEnoughDataAudio();
-    checkNeedDataForBothSources();
-}
 
 TEST_F(EnoughDataTest, shouldMarkEnoughAudioData)
 {
-    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
     triggerEnoughDataAudio();
     checkNeedDataForVideoOnly();
 }
 
 TEST_F(EnoughDataTest, shouldMarkEnoughVideoData)
 {
-    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
     triggerEnoughDataVideo();
     checkNeedDataForAudioOnly();
 }

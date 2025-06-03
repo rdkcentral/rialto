@@ -33,6 +33,8 @@ pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0 gstre
 
 if( NATIVE_BUILD )
     set(ocdm_DIR "${CMAKE_BINARY_DIR}/stubs/opencdm/" )
+    set(WPEFrameworkCore_DIR "${CMAKE_BINARY_DIR}/stubs/wpeframework-core/" )
+    set(WPEFrameworkCOM_DIR "${CMAKE_BINARY_DIR}/stubs/wpeframework-com/" )
 endif()
 
 if( RIALTO_ENABLE_CONFIG_FILE )
@@ -47,13 +49,20 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
     add_compile_definitions(WRAPPERS_ENABLED)
 
     find_package( ocdm REQUIRED )
+    find_package( WPEFrameworkCore REQUIRED )
+    find_package( WPEFrameworkCOM REQUIRED )
 
     set(WRAPPER_INCLUDES
-        ${OCdm_INCLUDE_DIRS})
+        ${OCdm_INCLUDE_DIRS}
+        ${WPEFRAMEWORK_CORE_INCLUDE_DIRS}
+        ${WPEFRAMEWORK_COM_INCLUDE_DIRS}
+    )
 
     set(WRAPPER_LIBS
         rdkgstreamerutils
         ocdm::ocdm
+        WPEFrameworkCore::WPEFrameworkCore
+        WPEFrameworkCOM::WPEFrameworkCOM
         ${CMAKE_DL_LIBS})
 
     set(WRAPPER_SOURCES
@@ -64,7 +73,10 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
         source/OcdmCommon.cpp
         source/OcdmSystem.cpp
         source/OcdmSession.cpp
-        source/RdkGstreamerUtilsWrapper.cpp)
+        source/RdkGstreamerUtilsWrapper.cpp
+        source/TextTrackPluginWrapper.cpp
+        source/TextTrackWrapper.cpp
+        source/ThunderWrapper.cpp)
 endif()
 
 add_library(
@@ -78,6 +90,8 @@ add_library(
         source/OcdmAccessor.cpp
         source/OcdmSystemAccessor.cpp
         source/RdkGstreamerUtilsWrapperAccessor.cpp
+        source/TextTrackPluginWrapperFactoryAccessor.cpp
+        source/ThunderWrapperFactoryAccessor.cpp
         ${WRAPPER_SOURCES}
         ${JSONCPP_WRAPPER_SOURCE_FILES}
     )

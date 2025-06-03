@@ -22,6 +22,7 @@
 class RialtoClientMediaPipelineSetMuteTest : public MediaPipelineTestBase
 {
 protected:
+    const int32_t m_kSourceId{1};
     const bool m_kMute{false};
 
     virtual void SetUp()
@@ -44,9 +45,9 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineSetMuteTest, setMuteSuccess)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setMute(m_kMute)).WillOnce(Return(true));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setMute(m_kSourceId, m_kMute)).WillOnce(Return(true));
 
-    EXPECT_EQ(m_mediaPipeline->setMute(m_kMute), true);
+    EXPECT_EQ(m_mediaPipeline->setMute(m_kSourceId, m_kMute), true);
 }
 
 /**
@@ -54,7 +55,7 @@ TEST_F(RialtoClientMediaPipelineSetMuteTest, setMuteSuccess)
  */
 TEST_F(RialtoClientMediaPipelineSetMuteTest, setMuteFailure)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setMute(m_kMute)).WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setMute(m_kSourceId, m_kMute)).WillOnce(Return(false));
 
-    EXPECT_EQ(m_mediaPipeline->setMute(m_kMute), false);
+    EXPECT_EQ(m_mediaPipeline->setMute(m_kSourceId, m_kMute), false);
 }

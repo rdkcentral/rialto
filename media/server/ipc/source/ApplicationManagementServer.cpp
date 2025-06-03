@@ -18,9 +18,9 @@
  */
 
 #include "ApplicationManagementServer.h"
-#include "IIpcServerFactory.h"
 #include "IServerManagerModuleServiceFactory.h"
 #include "RialtoServerLogging.h"
+#include <IIpcServerFactory.h>
 
 namespace
 {

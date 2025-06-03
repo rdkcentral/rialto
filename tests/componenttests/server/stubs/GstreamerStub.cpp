@@ -114,8 +114,8 @@ void GstreamerStub::setupMessages(bool repeatedCallsToGstPipelineGetBus)
 void GstreamerStub::setupRialtoSource()
 {
     ASSERT_TRUE(m_setupSourceFunc);
-    ((void (*)(GstElement *, GstElement *, gpointer))m_setupSourceFunc)(m_pipeline, m_rialtoSource,
-                                                                        m_setupSourceUserData);
+    reinterpret_cast<void (*)(GstElement *, GstElement *, gpointer)>(m_setupSourceFunc)(m_pipeline, m_rialtoSource,
+                                                                                        m_setupSourceUserData);
 }
 
 void GstreamerStub::setupAppSrcCallbacks(GstAppSrc *appSrc)
@@ -129,7 +129,8 @@ void GstreamerStub::setupAppSrcCallbacks(GstAppSrc *appSrc)
 void GstreamerStub::setupElement(GstElement *element)
 {
     ASSERT_TRUE(m_setupElementFunc);
-    ((void (*)(GstElement *, GstElement *, gpointer))m_setupElementFunc)(m_pipeline, element, m_setupElementUserData);
+    reinterpret_cast<void (*)(GstElement *, GstElement *, gpointer)>(m_setupElementFunc)(m_pipeline, element,
+                                                                                         m_setupElementUserData);
 }
 
 void GstreamerStub::sendStateChanged(GstState oldState, GstState newState, GstState pendingState, bool handleParseCall)
@@ -161,7 +162,8 @@ void GstreamerStub::needData(GstAppSrc *appSrc, guint dataLength)
     ASSERT_NE(userData, m_appSrcCallbacksUserDatas.end());
     ASSERT_TRUE(callbacks->second.need_data);
     ASSERT_TRUE(userData->second);
-    ((void (*)(GstAppSrc *, guint, gpointer))callbacks->second.need_data)(appSrc, dataLength, userData->second);
+    reinterpret_cast<void (*)(GstAppSrc *, guint, gpointer)>(callbacks->second.need_data)(appSrc, dataLength,
+                                                                                          userData->second);
 }
 
 void GstreamerStub::sendEos()

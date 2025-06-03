@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_WRAPPERS_I_RDK_GSTREAMER_UTILS_WRAPPER_H_
 #define FIREBOLT_RIALTO_WRAPPERS_I_RDK_GSTREAMER_UTILS_WRAPPER_H_
 
+#include <atomic>
 #include <cstdint>
 #include <gst/gst.h>
 #include <memory>
@@ -31,7 +32,7 @@ struct PlaybackGroupPrivate
 {
     GstElement *m_gstPipeline{nullptr};
     GstElement *m_curAudioPlaysinkBin{nullptr};
-    GstElement *m_curAudioDecodeBin{nullptr};
+    std::atomic<GstElement *> m_curAudioDecodeBin{nullptr};
     GstElement *m_curAudioDecoder{nullptr};
     GstElement *m_curAudioParse{nullptr};
     GstElement *m_curAudioTypefind{nullptr};
@@ -48,6 +49,14 @@ struct AudioAttributesPrivate
     std::uint32_t m_blockAlignment{0};
     const std::uint8_t *m_codecSpecificData{nullptr};
     std::uint32_t m_codecSpecificDataLen{0};
+};
+
+enum rgu_Ease
+{
+    EaseLinear = 0,
+    EaseInCubic,
+    EaseOutCubic,
+    EaseCount
 };
 
 class IRdkGstreamerUtilsWrapper;
@@ -83,6 +92,10 @@ public:
         std::uint32_t *status, unsigned int *ui32Delay, long long *audioChangeTargetPts, // NOLINT(runtime/int)
         const long long *currentDispPts, unsigned int *audioChangeStage,                 // NOLINT(runtime/int)
         GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled, GstElement *aSrc, bool *ret) const = 0;
+    virtual void processAudioGap(GstElement *pipeline, gint64 gapstartpts, gint32 gapduration, gint64 gapdiscontinuity,
+                                 bool audioaac) const = 0;
+    virtual void doAudioEasingonSoc(double target, uint32_t duration, rgu_Ease ease) const = 0;
+    virtual bool isSocAudioFadeSupported() const = 0;
 };
 } // namespace firebolt::rialto::wrappers
 

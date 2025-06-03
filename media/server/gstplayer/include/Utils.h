@@ -22,14 +22,26 @@
 
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
+#include "IMediaPipeline.h"
 #include <gst/gst.h>
+#include <memory>
 #include <string>
 
 namespace firebolt::rialto::server
 {
-bool isVideoDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element);
 bool isAudioDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element);
-std::string getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper, GstElement *element);
+bool isVideoParser(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element);
+bool isVideoSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element);
+bool isAudioSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element);
+bool isSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element);
+bool isDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element);
+bool isAudio(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element);
+bool isVideo(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element);
+std::optional<std::string> getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper,
+                                                  GstElement *element);
+GstCaps *createCapsFromMediaSource(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                   const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                                   const std::unique_ptr<IMediaPipeline::MediaSource> &source);
 } // namespace firebolt::rialto::server
 
 #endif // FIREBOLT_RIALTO_SERVER_UTILS_H_

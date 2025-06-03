@@ -37,7 +37,12 @@ public:
     MOCK_METHOD(bool, performSetConfiguration,
                 (int, const firebolt::rialto::common::SessionServerState &, const std::string &, const std::string &,
                  const firebolt::rialto::common::MaxResourceCapabilitites &, const unsigned int, const std::string &,
-                 const std::string &),
+                 const std::string &, const std::string &),
+                (override));
+    MOCK_METHOD(bool, performSetConfiguration,
+                (int serverId, const firebolt::rialto::common::SessionServerState &initialState, int socketFd,
+                 const std::string &clientDisplayName,
+                 const firebolt::rialto::common::MaxResourceCapabilitites &maxResource, const std::string &appName),
                 (override));
     MOCK_METHOD(bool, performSetState, (int, const firebolt::rialto::common::SessionServerState &), (override));
     MOCK_METHOD(bool, performPing, (int serverId, int pingId), (override));

@@ -84,6 +84,16 @@ public:
                          ::google::protobuf::Closure *done) override;
     void getPosition(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetPositionRequest *request,
                      ::firebolt::rialto::GetPositionResponse *response, ::google::protobuf::Closure *done) override;
+    void setImmediateOutput(::google::protobuf::RpcController *controller,
+                            const ::firebolt::rialto::SetImmediateOutputRequest *request,
+                            ::firebolt::rialto::SetImmediateOutputResponse *response,
+                            ::google::protobuf::Closure *done) override;
+    void getImmediateOutput(::google::protobuf::RpcController *controller,
+                            const ::firebolt::rialto::GetImmediateOutputRequest *request,
+                            ::firebolt::rialto::GetImmediateOutputResponse *response,
+                            ::google::protobuf::Closure *done) override;
+    void getStats(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetStatsRequest *request,
+                  ::firebolt::rialto::GetStatsResponse *response, ::google::protobuf::Closure *done) override;
     void renderFrame(::google::protobuf::RpcController *controller, const ::firebolt::rialto::RenderFrameRequest *request,
                      ::firebolt::rialto::RenderFrameResponse *response, ::google::protobuf::Closure *done) override;
     void setVolume(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetVolumeRequest *request,
@@ -94,12 +104,57 @@ public:
                  ::firebolt::rialto::SetMuteResponse *response, ::google::protobuf::Closure *done) override;
     void getMute(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetMuteRequest *request,
                  ::firebolt::rialto::GetMuteResponse *response, ::google::protobuf::Closure *done) override;
+    void setTextTrackIdentifier(::google::protobuf::RpcController *controller,
+                                const ::firebolt::rialto::SetTextTrackIdentifierRequest *request,
+                                ::firebolt::rialto::SetTextTrackIdentifierResponse *response,
+                                ::google::protobuf::Closure *done) override;
+    void getTextTrackIdentifier(::google::protobuf::RpcController *controller,
+                                const ::firebolt::rialto::GetTextTrackIdentifierRequest *request,
+                                ::firebolt::rialto::GetTextTrackIdentifierResponse *response,
+                                ::google::protobuf::Closure *done) override;
+    void setLowLatency(::google::protobuf::RpcController *controller,
+                       const ::firebolt::rialto::SetLowLatencyRequest *request,
+                       ::firebolt::rialto::SetLowLatencyResponse *response, ::google::protobuf::Closure *done) override;
+    void setSync(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetSyncRequest *request,
+                 ::firebolt::rialto::SetSyncResponse *response, ::google::protobuf::Closure *done) override;
+    void getSync(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetSyncRequest *request,
+                 ::firebolt::rialto::GetSyncResponse *response, ::google::protobuf::Closure *done) override;
+    void setSyncOff(::google::protobuf::RpcController *controller, const ::firebolt::rialto::SetSyncOffRequest *request,
+                    ::firebolt::rialto::SetSyncOffResponse *response, ::google::protobuf::Closure *done) override;
+    void setStreamSyncMode(::google::protobuf::RpcController *controller,
+                           const ::firebolt::rialto::SetStreamSyncModeRequest *request,
+                           ::firebolt::rialto::SetStreamSyncModeResponse *response,
+                           ::google::protobuf::Closure *done) override;
+    void getStreamSyncMode(::google::protobuf::RpcController *controller,
+                           const ::firebolt::rialto::GetStreamSyncModeRequest *request,
+                           ::firebolt::rialto::GetStreamSyncModeResponse *response,
+                           ::google::protobuf::Closure *done) override;
     void flush(::google::protobuf::RpcController *controller, const ::firebolt::rialto::FlushRequest *request,
                ::firebolt::rialto::FlushResponse *response, ::google::protobuf::Closure *done) override;
     void setSourcePosition(::google::protobuf::RpcController *controller,
                            const ::firebolt::rialto::SetSourcePositionRequest *request,
                            ::firebolt::rialto::SetSourcePositionResponse *response,
                            ::google::protobuf::Closure *done) override;
+    void processAudioGap(::google::protobuf::RpcController *controller,
+                         const ::firebolt::rialto::ProcessAudioGapRequest *request,
+                         ::firebolt::rialto::ProcessAudioGapResponse *response,
+                         ::google::protobuf::Closure *done) override;
+    void setBufferingLimit(::google::protobuf::RpcController *controller,
+                           const ::firebolt::rialto::SetBufferingLimitRequest *request,
+                           ::firebolt::rialto::SetBufferingLimitResponse *response,
+                           ::google::protobuf::Closure *done) override;
+    void getBufferingLimit(::google::protobuf::RpcController *controller,
+                           const ::firebolt::rialto::GetBufferingLimitRequest *request,
+                           ::firebolt::rialto::GetBufferingLimitResponse *response,
+                           ::google::protobuf::Closure *done) override;
+    void setUseBuffering(::google::protobuf::RpcController *controller,
+                         const ::firebolt::rialto::SetUseBufferingRequest *request,
+                         ::firebolt::rialto::SetUseBufferingResponse *response,
+                         ::google::protobuf::Closure *done) override;
+    void getUseBuffering(::google::protobuf::RpcController *controller,
+                         const ::firebolt::rialto::GetUseBufferingRequest *request,
+                         ::firebolt::rialto::GetUseBufferingResponse *response,
+                         ::google::protobuf::Closure *done) override;
 
 private:
     service::IMediaPipelineService &m_mediaPipelineService;

@@ -112,7 +112,7 @@ const std::shared_ptr<MainThread::TaskInfo> MainThread::waitForTask()
         m_taskQueueCv.wait(lock, [this] { return !m_taskQueue.empty(); });
     }
     const std::shared_ptr<TaskInfo> kTaskInfo = m_taskQueue.front();
-    m_taskQueue.pop();
+    m_taskQueue.pop_front();
     return kTaskInfo;
 }
 
@@ -143,7 +143,7 @@ void MainThread::enqueueTask(uint32_t clientId, Task task)
     newTask->task = task;
     {
         std::unique_lock<std::mutex> lock(m_taskQueueMutex);
-        m_taskQueue.push(newTask);
+        m_taskQueue.push_back(newTask);
     }
     m_taskQueueCv.notify_one();
 }
@@ -160,7 +160,7 @@ void MainThread::enqueueTaskAndWait(uint32_t clientId, Task task)
         std::unique_lock<std::mutex> lockTask(*(newTask->mutex));
         {
             std::unique_lock<std::mutex> lockQueue(m_taskQueueMutex);
-            m_taskQueue.push(newTask);
+            m_taskQueue.push_back(newTask);
         }
         m_taskQueueCv.notify_one();
 
@@ -168,4 +168,23 @@ void MainThread::enqueueTaskAndWait(uint32_t clientId, Task task)
     }
 }
 
+void MainThread::enqueuePriorityTaskAndWait(uint32_t clientId, Task task)
+{
+    std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
+    newTask->clientId = clientId;
+    newTask->task = task;
+    newTask->mutex = std::make_unique<std::mutex>();
+    newTask->cv = std::make_unique<std::condition_variable>();
+
+    {
+        std::unique_lock<std::mutex> lockTask(*(newTask->mutex));
+        {
+            std::unique_lock<std::mutex> lockQueue(m_taskQueueMutex);
+            m_taskQueue.push_front(newTask);
+        }
+        m_taskQueueCv.notify_one();
+
+        newTask->cv->wait(lockTask);
+    }
+}
 } // namespace firebolt::rialto::server

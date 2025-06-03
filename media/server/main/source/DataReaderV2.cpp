@@ -20,6 +20,7 @@
 #include "DataReaderV2.h"
 #include "RialtoServerLogging.h"
 #include "ShmCommon.h"
+#include "TypeConverters.h"
 #include "metadata.pb.h"
 
 namespace
@@ -121,6 +122,14 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
                                                                                         metadata.width(),
                                                                                         metadata.height(), frameRate);
     }
+    else if (type == firebolt::rialto::MediaSourceType::SUBTITLE)
+    {
+        segment =
+            std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegment>(metadata.stream_id(),
+                                                                             firebolt::rialto::MediaSourceType::SUBTITLE,
+                                                                             metadata.time_position(),
+                                                                             metadata.sample_duration());
+    }
     else
     {
         RIALTO_SERVER_LOG_ERROR("Unknown segment type");
@@ -193,7 +202,8 @@ DataReaderV2::DataReaderV2(const MediaSourceType &mediaSourceType, std::uint8_t 
                            std::uint32_t numFrames)
     : m_mediaSourceType{mediaSourceType}, m_buffer{buffer}, m_dataOffset{dataOffset}, m_numFrames{numFrames}
 {
-    RIALTO_SERVER_LOG_DEBUG("Detected Metadata in Version 2.");
+    RIALTO_SERVER_LOG_DEBUG("Detected Metadata in Version 2. Media source type: %s",
+                            common::convertMediaSourceType(m_mediaSourceType));
 }
 
 IMediaPipeline::MediaSegmentVector DataReaderV2::readData() const

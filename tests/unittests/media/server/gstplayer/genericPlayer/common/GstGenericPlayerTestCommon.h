@@ -21,12 +21,14 @@
 #define GST_GENERIC_PLAYER_TEST_COMMON_H_
 
 #include "DecryptionServiceMock.h"
+#include "FlushWatcherMock.h"
 #include "GenericPlayerTaskFactoryMock.h"
 #include "GlibWrapperMock.h"
 #include "GstDispatcherThreadFactoryMock.h"
 #include "GstDispatcherThreadMock.h"
 #include "GstGenericPlayer.h"
 #include "GstGenericPlayerClientMock.h"
+#include "GstInitialiserMock.h"
 #include "GstProtectionMetadataHelperFactoryMock.h"
 #include "GstProtectionMetadataHelperMock.h"
 #include "GstSrcFactoryMock.h"
@@ -36,14 +38,24 @@
 #include "TimerFactoryMock.h"
 #include "WorkerThreadFactoryMock.h"
 #include "WorkerThreadMock.h"
+
 #include <gtest/gtest.h>
 #include <memory>
+#include <string>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::wrappers;
 
 using ::testing::StrictMock;
+
+namespace
+{
+// Test constants
+const std::string kElementTypeName{"GenericSink"};
+const std::string kAudioSinkStr{"audio-sink"};
+const std::string kVideoSinkStr{"video-sink"};
+} // namespace
 
 class GstGenericPlayerTestCommon : public ::testing::Test
 {
@@ -58,6 +70,8 @@ public:
     StrictMock<GstGenericPlayerClientMock> m_gstPlayerClient;
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};
     std::shared_ptr<StrictMock<GlibWrapperMock>> m_glibWrapperMock{std::make_shared<StrictMock<GlibWrapperMock>>()};
+    std::shared_ptr<StrictMock<RdkGstreamerUtilsWrapperMock>> m_rdkGstreamerUtilsWrapperMock{
+        std::make_shared<StrictMock<RdkGstreamerUtilsWrapperMock>>()};
     std::shared_ptr<StrictMock<GstSrcFactoryMock>> m_gstSrcFactoryMock{std::make_shared<StrictMock<GstSrcFactoryMock>>()};
     std::shared_ptr<StrictMock<GstSrcMock>> m_gstSrcMock{std::make_shared<StrictMock<GstSrcMock>>()};
     std::shared_ptr<StrictMock<TimerFactoryMock>> m_timerFactoryMock{std::make_shared<StrictMock<TimerFactoryMock>>()};
@@ -82,6 +96,9 @@ public:
     std::unique_ptr<StrictMock<GstProtectionMetadataHelperMock>> m_gstProtectionMetadataWrapper{
         std::make_unique<StrictMock<GstProtectionMetadataHelperMock>>()};
     StrictMock<GstProtectionMetadataHelperMock> *m_gstProtectionMetadataWrapperMock{m_gstProtectionMetadataWrapper.get()};
+    StrictMock<GstInitialiserMock> m_gstInitialiserMock;
+    std::unique_ptr<IFlushWatcher> m_flushWatcher{std::make_unique<StrictMock<FlushWatcherMock>>()};
+    StrictMock<FlushWatcherMock> &m_flushWatcherMock{dynamic_cast<StrictMock<FlushWatcherMock> &>(*m_flushWatcher)};
 
 public:
     void setPipelineState(const GstState &state);
@@ -100,6 +117,11 @@ protected:
     void expectSetUri();
     void expectCheckPlaySink();
     void expectSetMessageCallback();
+    void expectGetDecoder(GstElement *element);
+    void expectGetVideoParser(GstElement *element);
+    void expectGetSink(const std::string &sinkName, GstElement *elementObj);
+    void expectNoDecoder();
+    void expectNoParser();
 
 private:
     GstElement m_pipeline{};
@@ -112,6 +134,7 @@ private:
     GFlagsValue m_videoFlag{2, "video", "video"};
     GFlagsValue m_nativeVideoFlag{3, "native-video", "native-video"};
     GFlagsValue m_nativeAudioFlag{4, "native-audio", "native-audio"};
+    GFlagsValue m_subtitleFlag{5, "subtitle", "subtitle"};
     gpointer m_setupSourceUserData;
     GCallback m_setupSourceFunc;
     gulong m_setupSourceSignalId{0};
@@ -122,6 +145,9 @@ private:
     GCallback m_deepElementAddedFunc;
     gulong m_deepElementAddedSignalId{2};
     GstObject m_sinkFactory{}; // GstElementFactory is an opaque data structure
+    GstIterator m_it{};
+    char m_dummy{0};
+    GstElementFactory *m_factory = reinterpret_cast<GstElementFactory *>(&m_dummy);
 };
 
 #endif // GST_GENERIC_PLAYER_TEST_COMMON_H_

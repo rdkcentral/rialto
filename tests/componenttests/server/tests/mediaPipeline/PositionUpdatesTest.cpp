@@ -343,30 +343,30 @@ TEST_F(PositionUpdatesTest, PositionUpdate)
  *   Rialto should send GetPosition request and wait for response
  *   GetPositionResponse should contain current position
  *
- *  Step 12: End of audio stream
+ *  Step 14: End of audio stream
  *   Send audio haveData with one frame and EOS status
  *   Expect that Gstreamer is notified about end of stream
  *
- *  Step 13: End of video stream
+ *  Step 15: End of video stream
  *   Send video haveData with one frame and EOS status
  *   Expect that Gstreamer is notified about end of stream
  *
- *  Step 14: Notify end of stream
+ *  Step 16: Notify end of stream
  *   Simulate, that gst_message_eos is received by Rialto Server
  *   Expect that server notifies the client that the Network state has changed to END_OF_STREAM.
  *
- *  Step 15: Remove sources
+ *  Step 18: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 16: Stop
+ *  Step 19: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 17: Destroy media session
+ *  Step 20: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -436,26 +436,27 @@ TEST_F(PositionUpdatesTest, GetPositionSuccess)
     // Step 11: Get Position
     getPosition();
 
-    // Step 12: End of audio stream
-    // Step 13: End of video stream
+    // Step 14: End of audio stream
+    // Step 15: End of video stream
     willEos(&m_audioAppSrc);
     eosAudio(kFramesToPush);
     willEos(&m_videoAppSrc);
     eosVideo(kFramesToPush);
 
-    // Step 14: Notify end of stream
+    // Step 16: Notify end of stream
     gstNotifyEos();
 
-    // Step 15: Remove sources
+    // Step 18: Remove sources
+    // Step 19: Remove sources
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 16: Stop
+    // Step 20: Stop
     willStop();
     stop();
 
-    // Step 17: Destroy media session
+    // Step 21: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }
@@ -504,18 +505,18 @@ TEST_F(PositionUpdatesTest, GetPositionSuccess)
  *   Rialto should send GetPosition request and wait for response
  *   GetPositionResponse should contain current position
  *
- *  Step 5: Remove sources
+ *  Step 7: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 6: Stop
+ *  Step 8: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 7: Destroy media session
+ *  Step 9: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -552,16 +553,16 @@ TEST_F(PositionUpdatesTest, getPositionFailure)
     // Step 4: Get Position Failure
     getPositionFailure();
 
-    // Step 5: Remove sources
+    // Step 7: Remove sources
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 6: Stop
+    // Step 8: Stop
     willStop();
     stop();
 
-    // Step 7: Destroy media session
+    // Step 9: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

@@ -21,6 +21,7 @@
 #include "GenericPlayerContext.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -39,30 +40,38 @@ Eos::~Eos()
 
 void Eos::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing Eos");
-    if (m_type == firebolt::rialto::MediaSourceType::AUDIO && m_context.audioUnderflowOccured)
-    {
-        RIALTO_SERVER_LOG_DEBUG("Cancelling audio underflow in EOS procedure");
-        m_player.cancelUnderflow(m_context.audioUnderflowOccured);
-    }
-    else if (m_type == firebolt::rialto::MediaSourceType::VIDEO && m_context.videoUnderflowOccured)
-    {
-        RIALTO_SERVER_LOG_DEBUG("Cancelling video underflow in EOS procedure");
-        m_player.cancelUnderflow(m_context.videoUnderflowOccured);
-    }
+    RIALTO_SERVER_LOG_DEBUG("Executing Eos for %s", common::convertMediaSourceType(m_type));
+
+    m_player.cancelUnderflow(m_type);
+
     auto elem = m_context.streamInfo.find(m_type);
     if (elem == m_context.streamInfo.end())
     {
         RIALTO_SERVER_LOG_WARN("Set eos failed - Stream not found");
         return;
     }
-    if (m_gstWrapper->gstAppSrcEndOfStream(GST_APP_SRC(elem->second.appSrc)) != GST_FLOW_OK)
+
+    const auto eosInfoIt = m_context.endOfStreamInfo.find(m_type);
+    if (eosInfoIt != m_context.endOfStreamInfo.end() && eosInfoIt->second == EosState::SET)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Eos already set for source %s", common::convertMediaSourceType(m_type));
+        return;
+    }
+
+    StreamInfo &streamInfo = elem->second;
+    if (!streamInfo.buffers.empty())
+    {
+        RIALTO_SERVER_LOG_INFO("There are pending buffers; delaying sending EOS");
+        m_context.endOfStreamInfo[m_type] = EosState::PENDING;
+    }
+    else if (m_gstWrapper->gstAppSrcEndOfStream(GST_APP_SRC(elem->second.appSrc)) != GST_FLOW_OK)
     {
         RIALTO_SERVER_LOG_WARN("Set eos failed - Gstreamer error");
     }
     else
     {
-        m_context.endOfStreamInfo.emplace(m_type, elem->second);
+        RIALTO_SERVER_LOG_MIL("Successfully set EOS for source %s", common::convertMediaSourceType(m_type));
+        m_context.endOfStreamInfo[m_type] = EosState::SET;
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

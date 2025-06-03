@@ -35,6 +35,12 @@ public:
                  const long long *currentDispPts, unsigned int *audioChangeStage,                 // NOLINT(runtime/int)
                  GstCaps **appsrcCaps, bool *audioaac, bool svpEnabled, GstElement *aSrc, bool *ret),
                 (const, override));
+    MOCK_METHOD(void, processAudioGap,
+                (GstElement * pipeline, gint64 gapstartpts, gint32 gapduration, gint64 gapdiscontinuity, bool audioaac),
+                (const, override));
+    MOCK_METHOD(void, doAudioEasingonSoc, (double targetVolume, uint32_t volumeDuration, rgu_Ease easeType),
+                (const, override));
+    MOCK_METHOD(bool, isSocAudioFadeSupported, (), (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 

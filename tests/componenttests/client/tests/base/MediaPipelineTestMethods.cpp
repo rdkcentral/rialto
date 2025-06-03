@@ -85,7 +85,12 @@ const std::vector<std::string> kAudioMimeType{"audio/mp4", "audio/aac", "audio/x
 const std::vector<std::string> kVideoMimeType{"video/h264", "video/h265", "video/x-av1", "video/x-vp9", "video/mp4"};
 const std::vector<std::string> kUnknownMimeType{};
 constexpr bool kResetTime{true};
+constexpr double kAppliedRate{2.0};
 constexpr double kPosition{1234};
+constexpr int64_t kDiscontinuityGap{1};
+constexpr bool kIsAudioAac{false};
+const std::vector<std::string> kSupportedProperties{"immediate-output", "testProp2"};
+constexpr uint64_t kStopPosition{452345};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -236,17 +241,6 @@ void MediaPipelineTestMethods::shouldAttachAudioSourceMpeg()
                                     kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw);
 }
 
-void MediaPipelineTestMethods::shouldAttachAudioSourceMp4()
-{
-    shouldAttachAudioSource();
-}
-
-void MediaPipelineTestMethods::shouldAttachAudioSourceEacs()
-{
-    shouldAttachAudioSourceInternal(kAudioEacs, kHasNoDrm, kAlignment, kNumberOfChannelsEacs, kSampleRateEacs,
-                                    kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw);
-}
-
 void MediaPipelineTestMethods::attachSourceAudio()
 {
     attachSourceAudioInternal(kAudioMp4, kHasNoDrm, kAlignment, kNumberOfChannels, kSampleRate, kCodecSpecificConfigStr,
@@ -256,17 +250,6 @@ void MediaPipelineTestMethods::attachSourceAudio()
 void MediaPipelineTestMethods::attachSourceAudioMpeg()
 {
     attachSourceAudioInternal(kAudioMpeg, kHasNoDrm, kAlignment, kNumberOfChannelsMpeg, kSampleRateMpeg,
-                              kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw, true);
-}
-
-void MediaPipelineTestMethods::attachSourceAudioMp4()
-{
-    attachSourceAudio();
-}
-
-void MediaPipelineTestMethods::attachSourceAudioEacs()
-{
-    attachSourceAudioInternal(kAudioEacs, kHasNoDrm, kAlignment, kNumberOfChannelsEacs, kSampleRateEacs,
                               kCodecSpecificConfigStr, kCodecData, kStreamFormatRaw, true);
 }
 
@@ -370,7 +353,7 @@ int32_t MediaPipelineTestMethods::addSegmentMseAudio()
         std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount),
                                                             kDuration, kSampleRate, kNumberOfChannels);
     mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
-                     (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kAudioSegments[m_audioSegmentCount].c_str()));
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
 
     // Store where the segment should be written so we can check the data
@@ -463,7 +446,7 @@ int32_t MediaPipelineTestMethods::addSegmentEncryptedAudio(int32_t keyIndex)
         std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount),
                                                             kDuration, kSampleRate, kNumberOfChannels);
     mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
-                     (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kAudioSegments[m_audioSegmentCount].c_str()));
     addEncryptedDataToSegment(mseData, keyIndex);
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
 
@@ -502,7 +485,7 @@ int32_t MediaPipelineTestMethods::addSegmentEncryptedVideo(int32_t keyIndex)
         std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount),
                                                             kDuration, kWidth720p, kHeight720p, kFrameRateEmpty);
     mseData->setData(kVideoSegments[m_videoSegmentCount].size(),
-                     (const uint8_t *)kVideoSegments[m_videoSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kVideoSegments[m_videoSegmentCount].c_str()));
     addEncryptedDataToSegment(mseData, keyIndex);
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
 
@@ -1081,7 +1064,7 @@ void MediaPipelineTestMethods::addSegmentFailure()
         std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount),
                                                             kDuration, kSampleRate, kNumberOfChannels);
     mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
-                     (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kAudioSegments[m_audioSegmentCount].c_str()));
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::ERROR);
 }
 
@@ -1100,9 +1083,11 @@ void MediaPipelineTestMethods::writeVideoFramesSecondary()
     MediaPipelineTestMethods::haveDataOkSecondary();
 }
 
-void MediaPipelineTestMethods::shouldSetVolume(const double expectedVolume)
+void MediaPipelineTestMethods::shouldSetVolume(const double targetVolume, const uint32_t volumeDuration,
+                                               firebolt::rialto::EaseType easeType)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, setVolume(_, setVolumeRequestMatcher(kSessionId, expectedVolume), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setVolume(_, setVolumeRequestMatcher(kSessionId, targetVolume, volumeDuration, easeType), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
@@ -1127,27 +1112,155 @@ void MediaPipelineTestMethods::getVolume(const double expectedVolume)
 
 void MediaPipelineTestMethods::shouldSetMute(const bool expectedMute)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, setMute(_, setMuteRequestMatcher(kSessionId, expectedMute), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setMute(_, setMuteRequestMatcher(kSessionId, kAudioSourceId, expectedMute), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
 void MediaPipelineTestMethods::shouldGetMute(const bool mute)
 {
-    EXPECT_CALL(*m_mediaPipelineModuleMock, getMute(_, getMuteRequestMatcher(kSessionId), _, _))
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getMute(_, getMuteRequestMatcher(kSessionId, kAudioSourceId), _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getMuteResponse(mute)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
 }
 
 void MediaPipelineTestMethods::setMute(const bool mute)
 {
-    EXPECT_EQ(m_mediaPipeline->setMute(mute), true);
+    EXPECT_EQ(m_mediaPipeline->setMute(kAudioSourceId, mute), true);
 }
 
 void MediaPipelineTestMethods::getMute(const bool expectedMute)
 {
     bool returnMute;
-    EXPECT_EQ(m_mediaPipeline->getMute(returnMute), true);
+    EXPECT_EQ(m_mediaPipeline->getMute(kAudioSourceId, returnMute), true);
     EXPECT_EQ(returnMute, expectedMute);
+}
+
+void MediaPipelineTestMethods::shouldSetLowLatency(const bool expectedLowLatency)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setLowLatency(_, setLowLatencyRequestMatcher(kSessionId, expectedLowLatency), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setLowLatency(const bool lowLatency)
+{
+    EXPECT_EQ(m_mediaPipeline->setLowLatency(lowLatency), true);
+}
+
+void MediaPipelineTestMethods::shouldSetSync(const bool expectedSync)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setSync(_, setSyncRequestMatcher(kSessionId, expectedSync), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setSync(const bool sync)
+{
+    EXPECT_EQ(m_mediaPipeline->setSync(sync), true);
+}
+
+void MediaPipelineTestMethods::shouldGetSync(const bool sync)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getSync(_, getSyncRequestMatcher(kSessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getSyncResponse(sync)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getSync(const bool expectedSync)
+{
+    bool returnSync;
+    EXPECT_EQ(m_mediaPipeline->getSync(returnSync), true);
+    EXPECT_EQ(returnSync, expectedSync);
+}
+
+void MediaPipelineTestMethods::shouldSetSyncOff(const bool expectedSyncOff)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, setSyncOff(_, setSyncOffRequestMatcher(kSessionId, expectedSyncOff), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setSyncOff(const bool syncOff)
+{
+    EXPECT_EQ(m_mediaPipeline->setSyncOff(syncOff), true);
+}
+
+void MediaPipelineTestMethods::shouldSetStreamSyncMode(const int32_t expectedStreamSyncMode)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setStreamSyncMode(_, setStreamSyncModeRequestMatcher(kSessionId, kAudioSourceId, expectedStreamSyncMode),
+                                  _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setStreamSyncMode(const int32_t streamSyncMode)
+{
+    EXPECT_EQ(m_mediaPipeline->setStreamSyncMode(kAudioSourceId, streamSyncMode), true);
+}
+
+void MediaPipelineTestMethods::shouldGetStreamSyncMode(const int32_t streamSyncMode)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getStreamSyncMode(_, getStreamSyncModeRequestMatcher(kSessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getStreamSyncModeResponse(streamSyncMode)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getStreamSyncMode(const int32_t expectedStreamSyncMode)
+{
+    int32_t returnStreamSyncMode;
+    EXPECT_EQ(m_mediaPipeline->getStreamSyncMode(returnStreamSyncMode), true);
+    EXPECT_EQ(returnStreamSyncMode, expectedStreamSyncMode);
+}
+
+void MediaPipelineTestMethods::shouldSetBufferingLimit(const uint32_t expectedBufferingLimit)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setBufferingLimit(_, setBufferingLimitRequestMatcher(kSessionId, expectedBufferingLimit), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setBufferingLimit(const uint32_t bufferingLimit)
+{
+    EXPECT_EQ(m_mediaPipeline->setBufferingLimit(bufferingLimit), true);
+}
+
+void MediaPipelineTestMethods::shouldGetBufferingLimit(const uint32_t bufferingLimit)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getBufferingLimit(_, getBufferingLimitRequestMatcher(kSessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getBufferingLimitResponse(bufferingLimit)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getBufferingLimit(const uint32_t expectedBufferingLimit)
+{
+    uint32_t returnBufferingLimit;
+    EXPECT_EQ(m_mediaPipeline->getBufferingLimit(returnBufferingLimit), true);
+    EXPECT_EQ(returnBufferingLimit, expectedBufferingLimit);
+}
+
+void MediaPipelineTestMethods::shouldSetUseBuffering(const bool expectedUseBuffering)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setUseBuffering(_, setUseBufferingRequestMatcher(kSessionId, expectedUseBuffering), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::setUseBuffering(const bool useBuffering)
+{
+    EXPECT_EQ(m_mediaPipeline->setUseBuffering(useBuffering), true);
+}
+
+void MediaPipelineTestMethods::shouldGetUseBuffering(const bool useBuffering)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getUseBuffering(_, getUseBufferingRequestMatcher(kSessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getUseBufferingResponse(useBuffering)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getUseBuffering(const bool expectedUseBuffering)
+{
+    bool returnUseBuffering;
+    EXPECT_EQ(m_mediaPipeline->getUseBuffering(returnUseBuffering), true);
+    EXPECT_EQ(returnUseBuffering, expectedUseBuffering);
 }
 
 void MediaPipelineTestMethods::shouldSetVideoWindow(const uint32_t expectedX, const uint32_t expectedY,
@@ -1298,6 +1411,48 @@ void MediaPipelineTestMethods::getPosition(const int64_t expectedPosition)
     EXPECT_EQ(returnPosition, expectedPosition);
 }
 
+void MediaPipelineTestMethods::shouldSetImmediateOutput(bool immediateOutput)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setImmediateOutput(_, setImmediateOutputRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->setImmediateOutputResponse()),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::setImmediateOutput(bool immediateOutput)
+{
+    EXPECT_TRUE(m_mediaPipeline->setImmediateOutput(kVideoSourceId, immediateOutput));
+}
+
+void MediaPipelineTestMethods::shouldGetImmediateOutput(bool immediateOutput)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                getImmediateOutput(_, getImmediateOutputRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getImmediateOutputResponse(immediateOutput)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getImmediateOutput(bool immediateOutput)
+{
+    EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(kVideoSourceId, immediateOutput));
+}
+
+void MediaPipelineTestMethods::shouldGetStats(uint64_t renderedFrames, uint64_t droppedFrames)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getStats(_, getStatsRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getStatsResponse(renderedFrames, droppedFrames)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getStats(uint64_t expectedFrames, uint64_t expectedDropped)
+{
+    uint64_t returnFrames;
+    uint64_t returnDropped;
+    EXPECT_TRUE(m_mediaPipeline->getStats(kVideoSourceId, returnFrames, returnDropped));
+    EXPECT_EQ(returnFrames, expectedFrames);
+    EXPECT_EQ(returnDropped, expectedDropped);
+}
+
 void MediaPipelineTestMethods::shouldFlush()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock, flush(_, flushRequestMatcher(kSessionId, kAudioSourceId, kResetTime), _, _))
@@ -1306,7 +1461,8 @@ void MediaPipelineTestMethods::shouldFlush()
 
 void MediaPipelineTestMethods::flush()
 {
-    EXPECT_TRUE(m_mediaPipeline->flush(kAudioSourceId, kResetTime));
+    bool isAsync{false};
+    EXPECT_TRUE(m_mediaPipeline->flush(kAudioSourceId, kResetTime, isAsync));
 }
 
 void MediaPipelineTestMethods::shouldFailToFlush()
@@ -1317,31 +1473,118 @@ void MediaPipelineTestMethods::shouldFailToFlush()
 
 void MediaPipelineTestMethods::flushFailure()
 {
-    EXPECT_FALSE(m_mediaPipeline->flush(kAudioSourceId, kResetTime));
+    bool isAsync{false};
+    EXPECT_FALSE(m_mediaPipeline->flush(kAudioSourceId, kResetTime, isAsync));
 }
 
 void MediaPipelineTestMethods::shouldSetSourcePosition()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition), _, _))
+                setSourcePosition(_,
+                                  setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition, kResetTime,
+                                                                  kAppliedRate, kStopPosition),
+                                  _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
 void MediaPipelineTestMethods::setSourcePosition()
 {
-    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition));
+    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime, kAppliedRate, kStopPosition));
 }
 
 void MediaPipelineTestMethods::shouldFailToSetSourcePosition()
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                setSourcePosition(_, setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition), _, _))
+                setSourcePosition(_,
+                                  setSourcePositionRequestMatcher(kSessionId, kAudioSourceId, kPosition, kResetTime,
+                                                                  kAppliedRate, kStopPosition),
+                                  _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
 }
 
 void MediaPipelineTestMethods::setSourcePositionFailure()
 {
-    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition));
+    EXPECT_FALSE(m_mediaPipeline->setSourcePosition(kAudioSourceId, kPosition, kResetTime, kAppliedRate, kStopPosition));
+}
+
+void MediaPipelineTestMethods::shouldProcessAudioGap()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                processAudioGap(_,
+                                processAudioGapRequestMatcher(kSessionId, kPosition, kDuration, kDiscontinuityGap,
+                                                              kIsAudioAac),
+                                _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::processAudioGap()
+{
+    EXPECT_TRUE(m_mediaPipeline->processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac));
+}
+
+void MediaPipelineTestMethods::shouldFailToProcessAudioGap()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                processAudioGap(_,
+                                processAudioGapRequestMatcher(kSessionId, kPosition, kDuration, kDiscontinuityGap,
+                                                              kIsAudioAac),
+                                _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
+}
+
+void MediaPipelineTestMethods::processAudioGapFailure()
+{
+    EXPECT_FALSE(m_mediaPipeline->processAudioGap(kPosition, kDuration, kDiscontinuityGap, kIsAudioAac));
+}
+
+void MediaPipelineTestMethods::shouldSwitchSourceEacs()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                attachSource(_,
+                             attachSourceRequestMatcherSwitchSource(kSessionId, kAudioEacs, kHasNoDrm, kAlignment,
+                                                                    kNumberOfChannelsEacs, kSampleRateEacs,
+                                                                    kCodecSpecificConfigStr, kCodecData,
+                                                                    convertStreamFormat(kStreamFormatRaw)),
+                             _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->attachSourceResponse(kAudioSourceId)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::switchSourceEac()
+{
+    std::vector<uint8_t> codecSpecificConfig;
+    codecSpecificConfig.assign(kCodecSpecificConfigStr.begin(), kCodecSpecificConfigStr.end());
+    AudioConfig audioConfig{kNumberOfChannelsEacs, kSampleRateEacs, codecSpecificConfig};
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(kAudioEacs.c_str(), kHasNoDrm, audioConfig, kAlignment,
+                                                           kStreamFormatRaw, kCodecData);
+    EXPECT_EQ(m_mediaPipeline->switchSource(mediaSource), true);
+}
+
+void MediaPipelineTestMethods::shouldSwitchSourceMpeg()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                attachSource(_,
+                             attachSourceRequestMatcherSwitchSource(kSessionId, kAudioMpeg, kHasNoDrm, kAlignment,
+                                                                    kNumberOfChannelsMpeg, kSampleRateMpeg,
+                                                                    kCodecSpecificConfigStr, kCodecData,
+                                                                    convertStreamFormat(kStreamFormatRaw)),
+                             _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->attachSourceResponse(kAudioSourceId)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::switchSourceMpeg()
+{
+    std::vector<uint8_t> codecSpecificConfig;
+    codecSpecificConfig.assign(kCodecSpecificConfigStr.begin(), kCodecSpecificConfigStr.end());
+    AudioConfig audioConfig{kNumberOfChannelsMpeg, kSampleRateMpeg, codecSpecificConfig};
+
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(kAudioMpeg.c_str(), kHasNoDrm, audioConfig, kAlignment,
+                                                           kStreamFormatRaw, kCodecData);
+    EXPECT_EQ(m_mediaPipeline->switchSource(mediaSource), true);
 }
 
 /*************************** Private methods ********************************/
@@ -1733,7 +1976,7 @@ int32_t MediaPipelineTestMethods::addSegmentMseVideoInternal(const std::unique_p
         std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount), duration,
                                                             width, height, frameRate);
     mseData->setData(kVideoSegments[m_videoSegmentCount].size(),
-                     (const uint8_t *)kVideoSegments[m_videoSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kVideoSegments[m_videoSegmentCount].c_str()));
     EXPECT_EQ(mediaPipeline->addSegment(m_needDataRequestId, mseData), status);
 
     // Store where the segment should be written so we can check the data
@@ -1875,5 +2118,44 @@ void MediaPipelineTestMethods::shouldCheckIsMimeTypeNotSupported()
 void MediaPipelineTestMethods::isMimeTypeNotSupported()
 {
     EXPECT_EQ(m_mediaPipelineCapabilities->isMimeTypeSupported(kVideoMimeType[0]), false);
+}
+
+void MediaPipelineTestMethods::shouldGetSupportedProperties()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
+                getSupportedProperties(_,
+                                       getSupportedPropertiesRequestMatcher(firebolt::rialto::MediaSourceType::VIDEO,
+                                                                            kSupportedProperties),
+                                       _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(
+                            m_mediaPipelineCapabilitiesModuleMock->getSupportedPropertiesResponse(kSupportedProperties)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
+                                              &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getSupportedProperties()
+{
+    MediaSourceType sourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    EXPECT_EQ(m_mediaPipelineCapabilities->getSupportedProperties(sourceType, kSupportedProperties),
+              kSupportedProperties);
+}
+
+void MediaPipelineTestMethods::shouldGetSupportedPropertiesFailure()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock,
+                getSupportedProperties(_,
+                                       getSupportedPropertiesRequestMatcher(firebolt::rialto::MediaSourceType::VIDEO,
+                                                                            kSupportedProperties),
+                                       _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(
+                            m_mediaPipelineCapabilitiesModuleMock->getSupportedPropertiesResponse(kSupportedProperties)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
+                                              &MediaPipelineCapabilitiesModuleMock::failureReturn))));
+}
+
+void MediaPipelineTestMethods::getSupportedPropertiesFailure()
+{
+    MediaSourceType sourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    EXPECT_TRUE(m_mediaPipelineCapabilities->getSupportedProperties(sourceType, kSupportedProperties).empty());
 }
 } // namespace firebolt::rialto::client::ct

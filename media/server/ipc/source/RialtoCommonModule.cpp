@@ -37,6 +37,10 @@ firebolt::rialto::MediaSourceType convertMediaSourceType(const firebolt::rialto:
     {
         return firebolt::rialto::MediaSourceType::VIDEO;
     }
+    case firebolt::rialto::ProtoMediaSourceType::SUBTITLE:
+    {
+        return firebolt::rialto::MediaSourceType::SUBTITLE;
+    }
     }
     return firebolt::rialto::MediaSourceType::UNKNOWN;
 }

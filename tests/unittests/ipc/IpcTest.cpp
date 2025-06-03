@@ -64,6 +64,7 @@ protected:
         m_testClientMock = std::make_shared<StrictMock<TestClientMock>>();
 
         m_serverStub = std::make_shared<ServerStub>(m_testModuleMock);
+        m_serverStub->init();
 
         m_clientStub = std::make_shared<ClientStub>(m_testClientMock, m_socketName);
         m_clientStub->connect();
@@ -71,8 +72,11 @@ protected:
 
     virtual void TearDown()
     {
-        m_clientStub->disconnect();
-        m_clientStub.reset();
+        if (m_clientStub)
+        {
+            m_clientStub->disconnect();
+            m_clientStub.reset();
+        }
 
         m_serverStub.reset();
 
@@ -204,6 +208,11 @@ TEST_F(RialtoIpcTest, Timeout)
 
     EXPECT_FALSE(m_clientStub->sendSingleVarRequest(m_int));
 
+    // Disconnect and join client stub thread before calling failureReturn
+    // to fix the data race causing code coverage count issues
+    m_clientStub.reset();
+
+    // Call failureReturn at the end to prevent mock leak
     m_testModuleMock->failureReturn(controller, done);
 }
 

@@ -21,12 +21,12 @@ name: Doxygen Documentation Check
 
 on:
   pull_request:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: ["master"]
   workflow_dispatch:
 
 jobs:
   build-doxygen:
-      runs-on: ubuntu-22.04 
+      runs-on: ubuntu-24.04
       
       steps:
       - name: Checkout code

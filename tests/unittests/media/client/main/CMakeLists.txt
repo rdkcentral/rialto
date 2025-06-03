@@ -32,13 +32,27 @@ add_gtests (
         mediaPipeline/SetPositionTest.cpp
         mediaPipeline/SetPlaybackRateTest.cpp
         mediaPipeline/GetPositionTest.cpp
+        mediaPipeline/SetImmediateOutputTest.cpp
+        mediaPipeline/GetImmediateOutputTest.cpp
+        mediaPipeline/GetStatsTest.cpp
         mediaPipeline/RenderFrameTest.cpp
         mediaPipeline/SetVolumeTest.cpp
         mediaPipeline/GetVolumeTest.cpp
         mediaPipeline/SetMuteTest.cpp
         mediaPipeline/GetMuteTest.cpp
+        mediaPipeline/SetLowLatencyTest.cpp
+        mediaPipeline/SetSyncTest.cpp
+        mediaPipeline/GetSyncTest.cpp
+        mediaPipeline/SetSyncOffTest.cpp
+        mediaPipeline/SetStreamSyncModeTest.cpp
+        mediaPipeline/GetStreamSyncModeTest.cpp
         mediaPipeline/FlushTest.cpp
         mediaPipeline/SetSourcePositionTest.cpp
+        mediaPipeline/MediaPipelineProxyTest.cpp
+        mediaPipeline/ProcessAudioGapTest.cpp
+        mediaPipeline/TextTrackIdentifierTest.cpp
+        mediaPipeline/BufferingLimitTest.cpp
+        mediaPipeline/UseBufferingTest.cpp
 
         # MediaPipelineCapabilities tests
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
@@ -73,6 +87,7 @@ add_gtests (
         webAudioPlayer/GetDeviceInfoTest.cpp
         webAudioPlayer/GetBufferAvailableTest.cpp
         webAudioPlayer/WriteBufferTest.cpp
+        webAudioPlayer/WebAudioPlayerProxyTest.cpp
         )
 
 target_include_directories(

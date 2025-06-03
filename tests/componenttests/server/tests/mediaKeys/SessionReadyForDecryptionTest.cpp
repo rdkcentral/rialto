@@ -59,7 +59,7 @@ public:
 
     const std::vector<unsigned char> kResponse{4, 1, 3};
     const std::vector<unsigned char> m_kInitData{1, 2, 7};
-    const std::vector<uint8_t> kLicenseRequestMessage{'d', 'z', 'f'};
+    const std::vector<uint8_t> m_kLicenseRequestMessage{'d', 'z', 'f'};
 };
 
 void SessionReadyForDecryptionTest::willGenerateRequestWidevine()
@@ -131,17 +131,17 @@ void SessionReadyForDecryptionTest::willGenerateRequestNetflix()
             {
                 // This first call asks for the size of the data
                 EXPECT_EQ(challenge, nullptr);
-                *challengeSize = kLicenseRequestMessage.size();
+                *challengeSize = m_kLicenseRequestMessage.size();
                 return MediaKeyErrorStatus::OK;
             }))
         .WillOnce(testing::Invoke(
             [&](bool isLDL, uint8_t *challenge, const uint32_t *challengeSize) -> MediaKeyErrorStatus
             {
                 // This second call asks for the data
-                EXPECT_EQ(*challengeSize, kLicenseRequestMessage.size());
-                for (size_t i = 0; i < kLicenseRequestMessage.size(); ++i)
+                EXPECT_EQ(*challengeSize, m_kLicenseRequestMessage.size());
+                for (size_t i = 0; i < m_kLicenseRequestMessage.size(); ++i)
                 {
-                    challenge[i] = kLicenseRequestMessage[i];
+                    challenge[i] = m_kLicenseRequestMessage[i];
                 }
                 return MediaKeyErrorStatus::OK;
             }));
@@ -165,10 +165,10 @@ void SessionReadyForDecryptionTest::generateRequestNetflix()
     ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
     EXPECT_EQ(message->url(), "");
     const unsigned int kMax = message->license_request_message_size();
-    ASSERT_EQ(kMax, kLicenseRequestMessage.size());
+    ASSERT_EQ(kMax, m_kLicenseRequestMessage.size());
     for (unsigned int i = 0; i < kMax; ++i)
     {
-        ASSERT_EQ(message->license_request_message(i), kLicenseRequestMessage[i]);
+        ASSERT_EQ(message->license_request_message(i), m_kLicenseRequestMessage[i]);
     }
 }
 

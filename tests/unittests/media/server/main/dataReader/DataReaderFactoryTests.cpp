@@ -46,8 +46,8 @@ TEST_F(DataReaderFactoryTests, shouldCreateDataReaderV1)
     std::uint8_t *data{reinterpret_cast<std::uint8_t *>(&version)};
     auto reader = m_sut.createDataReader(kMediaSourceType, data, 0, kNumFrames);
     ASSERT_NE(nullptr, reader);
-    firebolt::rialto::server::DataReaderV1 *v1Reader =
-        dynamic_cast<firebolt::rialto::server::DataReaderV1 *>(reader.get());
+    const firebolt::rialto::server::DataReaderV1 *v1Reader =
+        dynamic_cast<const firebolt::rialto::server::DataReaderV1 *>(reader.get());
     ASSERT_NE(nullptr, v1Reader);
 }
 
@@ -59,7 +59,7 @@ TEST_F(DataReaderFactoryTests, shouldCreateDataReaderV2)
     std::uint8_t *data{reinterpret_cast<std::uint8_t *>(&version)};
     auto reader = m_sut.createDataReader(kMediaSourceType, data, 0, kNumFrames);
     ASSERT_NE(nullptr, reader);
-    firebolt::rialto::server::DataReaderV2 *v2Reader =
-        dynamic_cast<firebolt::rialto::server::DataReaderV2 *>(reader.get());
+    const firebolt::rialto::server::DataReaderV2 *v2Reader =
+        dynamic_cast<const firebolt::rialto::server::DataReaderV2 *>(reader.get());
     ASSERT_NE(nullptr, v2Reader);
 }

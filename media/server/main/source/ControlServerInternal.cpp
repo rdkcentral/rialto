@@ -157,7 +157,7 @@ void ControlServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatH
 
 bool ControlServerInternal::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
 {
-    setApplicationState(appState);
-    return true;
+    RIALTO_SERVER_LOG_ERROR("Method not implemented");
+    return false;
 }
 } // namespace firebolt::rialto::server

@@ -30,6 +30,7 @@
 #include <cstdint>
 #include <gst/app/gstappsrc.h>
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::server
 {
@@ -119,23 +120,27 @@ public:
      * @brief Creates a HandleBusMessage task.
      *
      * @param[in] context    : The GstGenericPlayer context
+     * @param[in] player     : The GstGenericPlayer instance
      * @param[in] message    : The message to be handled.
+     * @param[in] isFlushing : Current flushing state. True if flush for any source is queued
      *
      * @retval the new HandleBusMessage task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createHandleBusMessage(GenericPlayerContext &context,
-                                                                IGstGenericPlayerPrivate &player,
-                                                                GstMessage *message) const = 0;
+                                                                IGstGenericPlayerPrivate &player, GstMessage *message,
+                                                                bool isFlushing) const = 0;
 
     /**
      * @brief Creates a NeedData task.
      *
      * @param[in] context : The GstGenericPlayer context
+     * @param[in] player  : The GstGenericPlayer instance
      * @param[in] src     : The source, which reports need data.
      *
      * @retval the new NeedData task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createNeedData(GenericPlayerContext &context, GstAppSrc *src) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createNeedData(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                        GstAppSrc *src) const = 0;
 
     /**
      * @brief Creates a Pause task.
@@ -270,17 +275,84 @@ public:
      *
      * @retval the new SetVolume task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, double volume) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetVolume(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                         double targetVolume, uint32_t volumeDuration,
+                                                         firebolt::rialto::EaseType easeType) const = 0;
 
     /**
      * @brief Creates a SetMute task.
      *
-     * @param[in] context       : The GstGenericPlayer context
-     * @param[in] mute          : The mute state to be set
+     * @param[in] context         : The GstGenericPlayer context
+     * @param[in] player          : The GstGenericPlayer instance
+     * @param[in] mediaSourceType : The media source type to set mute
+     * @param[in] mute            : The mute state to be set
      *
      * @retval the new SetMute task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, bool mute) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetMute(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                       const MediaSourceType &mediaSourceType, bool mute) const = 0;
+
+    /**
+     * @brief Creates a SetTextTrackIdentifier task.
+     *
+     * @param[in] context             : The GstGenericPlayer context
+     * @param[in] textTrackIdentifier : The text track identifier to be set
+     *
+     * @retval the new SetTextTrackIdentifier task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetTextTrackIdentifier(GenericPlayerContext &context,
+                                                                      const std::string &textTrackIdentifier) const = 0;
+
+    /**
+     * @brief Creates a SetLowLatency task.
+     *
+     * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
+     * @param[in] lowLatency    : The low latency value to set
+     *
+     * @retval the new SetLowLatency task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetLowLatency(GenericPlayerContext &context,
+                                                             IGstGenericPlayerPrivate &player, bool lowLatency) const = 0;
+
+    /**
+     * @brief Creates a SetSync task.
+     *
+     * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
+     * @param[in] sync          : The sync value to set
+     *
+     * @retval the new SetSync task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetSync(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                       bool sync) const = 0;
+
+    /**
+     * @brief Creates a SetSyncOff task.
+     *
+     * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
+     * @param[in] syncOff       : The syncOff value to set
+     *
+     * @retval the new SetSyncOff task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetSyncOff(GenericPlayerContext &context,
+                                                          IGstGenericPlayerPrivate &player, bool syncOff) const = 0;
+
+    /**
+     * @brief Creates a SetStreamSyncMode task.
+     *
+     * @param[in] context           : The GstGenericPlayer context
+     * @param[in] player            : The GstGenericPlayer instance
+     * @param[in] type              : The media source type to set stream sync mode
+     * @param[in] streamSyncMode    : The streamSyncMode value to set
+     *
+     * @retval the new SetStreamSyncMode task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetStreamSyncMode(GenericPlayerContext &context,
+                                                                 IGstGenericPlayerPrivate &player,
+                                                                 const firebolt::rialto::MediaSourceType &type,
+                                                                 int32_t streamSyncMode) const = 0;
 
     /**
      * @brief Creates a Shutdown task.
@@ -307,27 +379,35 @@ public:
      *
      * @param[in] context          : The GstGenericPlayer context
      * @param[in] player           : The GstPlayer instance
-     * @param[in] underflowFlag    : The underflow flag (audio or video).
      * @param[in] underflowEnabled : The underflow enabled flag (audio or video).
      *
      * @retval the new Underflow task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context,
-                                                         IGstGenericPlayerPrivate &player, bool &underflowFlag,
+    virtual std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                          bool underflowEnabled, MediaSourceType sourceType) const = 0;
 
     /**
      * @brief Creates an UpdatePlaybackGroup task.
      *
      * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
      * @param[in] typefind      : The typefind element.
      * @param[in] caps          : The GstCaps of added element
      *
      * @retval the new UpdatePlaybackGroup task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context, GstElement *typefind,
-                                                                   const GstCaps *caps) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context,
+                                                                   IGstGenericPlayerPrivate &player,
+                                                                   GstElement *typefind, const GstCaps *caps) const = 0;
 
+    /**
+     * @brief Creates a RenderFrame task.
+     *
+     * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstPlayer instance
+     *
+     * @retval the new RenderFrame task instance.
+     */
     virtual std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context,
                                                            IGstGenericPlayerPrivate &player) const = 0;
 
@@ -349,21 +429,95 @@ public:
      *
      * @retval the new Flush task instance.
      */
-    virtual std::unique_ptr<IPlayerTask>
-    createFlush(GenericPlayerContext &context, const firebolt::rialto::MediaSourceType &type, bool resetTime) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createFlush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                     const firebolt::rialto::MediaSourceType &type,
+                                                     bool resetTime) const = 0;
 
     /**
      * @brief Creates a SetSourcePosition task.
      *
      * @param[in] context   : The GstPlayer context
+     * @param[in] player     : The GstGenericPlayer instance
      * @param[in] type      : The media source type to set position
      * @param[in] position  : The new source position
+     * @param[in] resetTime : True if time should be reset
+     * @param[in] appliedRate : The applied rate after seek
+     * @param[in] stopPosition : The position of last pushed buffer
      *
      * @retval the new SetSourcePosition task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context,
+                                                                 IGstGenericPlayerPrivate &player,
                                                                  const firebolt::rialto::MediaSourceType &type,
-                                                                 std::int64_t position) const = 0;
+                                                                 std::int64_t position, bool resetTime,
+                                                                 double appliedRate, uint64_t stopPosition) const = 0;
+
+    /**
+     * @brief Creates a ProcessAudioGap task.
+     *
+     * @param[in] context          : The GstPlayer context
+     * @param[in] position         : Audio pts fade position
+     * @param[in] duration         : Audio pts fade duration
+     * @param[in] discontinuityGap : Audio discontinuity gap
+     * @param[in] audioAac         : True if audio codec is AAC
+     *
+     * @retval the new ProcessAudioGap task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createProcessAudioGap(GenericPlayerContext &context, std::int64_t position,
+                                                               std::uint32_t duration, std::int64_t discontinuityGap,
+                                                               bool audioAac) const = 0;
+
+    /**
+     * @brief Creates a SetImmediateOutput task.
+     *
+     * @param[in] context         : The GstPlayer context
+     * @param[in] player          : The GstPlayer instance
+     * @param[in] type            : The media source type
+     * @param[in] immediateOutput : the value to set for immediate-output
+     *
+     * @retval the new ProcessAudioGap task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetImmediateOutput(GenericPlayerContext &context,
+                                                                  IGstGenericPlayerPrivate &player,
+                                                                  const firebolt::rialto::MediaSourceType &type,
+                                                                  bool immediateOutput) const = 0;
+
+    /**
+     * @brief Creates a SetBufferingLimit task.
+     *
+     * @param[in] context         : The GstPlayer context
+     * @param[in] player          : The GstPlayer instance
+     * @param[in] limit           : the value to set for buffering limit
+     *
+     * @retval the new ProcessAudioGap task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetBufferingLimit(GenericPlayerContext &context,
+                                                                 IGstGenericPlayerPrivate &player,
+                                                                 std::uint32_t limit) const = 0;
+
+    /**
+     * @brief Creates a SetUseBuffering task.
+     *
+     * @param[in] context         : The GstPlayer context
+     * @param[in] player          : The GstPlayer instance
+     * @param[in] useBuffering    : the value to set for use buffering
+     *
+     * @retval the new ProcessAudioGap task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask>
+    createSetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, bool useBuffering) const = 0;
+
+    /**
+     * @brief Creates a SwitchSource task.
+     *
+     * @param[in] player    : The GstGenericPlayer instance
+     * @param[in] source    : The source to switch.
+     *
+     * @retval the new SwitchSource task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask>
+    createSwitchSource(IGstGenericPlayerPrivate &player,
+                       const std::unique_ptr<IMediaPipeline::MediaSource> &source) const = 0;
 };
 
 } // namespace firebolt::rialto::server

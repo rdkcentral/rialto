@@ -152,6 +152,11 @@ void MediaKeySession::getChallenge()
     {
         uint32_t challengeSize = 0;
         MediaKeyErrorStatus status = m_ocdmSession->getChallengeData(m_kIsLDL, nullptr, &challengeSize);
+        if (challengeSize == 0)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to get the challenge data size, no onLicenseRequest will be generated");
+            return;
+        }
         std::vector<uint8_t> challenge(challengeSize, 0x00);
         status = m_ocdmSession->getChallengeData(m_kIsLDL, &challenge[0], &challengeSize);
         if (MediaKeyErrorStatus::OK != status)
@@ -222,27 +227,6 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
-    }
-
-    if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))
-    {
-        status = MediaKeyErrorStatus::FAIL;
-    }
-
-    return status;
-}
-
-// TODO(RIALTO-127): Remove
-MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstBuffer *subSample, const uint32_t subSampleCount,
-                                             GstBuffer *IV, GstBuffer *keyId, uint32_t initWithLast15, GstCaps *caps)
-{
-    initOcdmErrorChecking();
-
-    MediaKeyErrorStatus status =
-        m_ocdmSession->decrypt(encrypted, subSample, subSampleCount, IV, keyId, initWithLast15, caps);
-    if (MediaKeyErrorStatus::OK != status)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to decrypt");
     }
 
     if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))

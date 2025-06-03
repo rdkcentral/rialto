@@ -73,8 +73,8 @@ std::shared_ptr<IServer> ServerFactory::create()
 }
 
 ServerImpl::ServerImpl()
-    : m_pollFd(-1), m_wakeEventFd(-1), m_socketIdCounter(FIRST_LISTENING_SOCKET_ID),
-      m_clientIdCounter(FIRST_CLIENT_ID), m_recvDataBuf{0}, m_recvCtrlBuf{0}
+    : m_pollFd(-1), m_wakeEventFd(-1), m_socketIdCounter(FIRST_LISTENING_SOCKET_ID), m_clientIdCounter(FIRST_CLIENT_ID),
+      m_recvDataBuf{0}, m_recvCtrlBuf{0}
 {
     // create the eventfd use to wake the poll loop
     m_wakeEventFd = eventfd(0, EFD_CLOEXEC);
@@ -112,15 +112,18 @@ ServerImpl::~ServerImpl()
     {
         const Socket &kSocket = entry.second;
 
-        if (unlink(kSocket.sockPath.c_str()) != 0)
-            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket @ '%s'", kSocket.sockPath.c_str());
-        if (close(kSocket.sockFd) != 0)
-            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close listening socket");
+        if (kSocket.isOwned)
+        {
+            if (unlink(kSocket.sockPath.c_str()) != 0)
+                RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket @ '%s'", kSocket.sockPath.c_str());
+            if (close(kSocket.sockFd) != 0)
+                RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close listening socket");
 
-        if (unlink(kSocket.lockPath.c_str()) != 0)
-            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket lock file @ '%s'", kSocket.lockPath.c_str());
-        if (close(kSocket.lockFd) != 0)
-            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close socket lock file");
+            if (unlink(kSocket.lockPath.c_str()) != 0)
+                RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket lock file @ '%s'", kSocket.lockPath.c_str());
+            if (close(kSocket.lockFd) != 0)
+                RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to close socket lock file");
+        }
     }
 }
 
@@ -136,18 +139,18 @@ ServerImpl::~ServerImpl()
 bool ServerImpl::getSocketLock(Socket *socket)
 {
     std::string lockPath = socket->sockPath + ".lock";
-    int fd = open(lockPath.c_str(), O_CREAT | O_CLOEXEC, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
-    if (fd < 0)
+    int fileDescriptor = open(lockPath.c_str(), O_CREAT | O_CLOEXEC, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
+    if (fileDescriptor < 0)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to create / open lockfile @ '%s' (check permissions)", lockPath.c_str());
         return false;
     }
 
-    if (flock(fd, LOCK_EX | LOCK_NB) < 0)
+    if (flock(fileDescriptor, LOCK_EX | LOCK_NB) < 0)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to lock lockfile @ '%s', maybe another server is running",
                                  lockPath.c_str());
-        close(fd);
+        close(fileDescriptor);
         return false;
     }
 
@@ -157,7 +160,7 @@ bool ServerImpl::getSocketLock(Socket *socket)
         if (errno != ENOENT)
         {
             RIALTO_IPC_LOG_SYS_ERROR(errno, "did not manage to stat existing socket @ '%s'", socket->sockPath.c_str());
-            close(fd);
+            close(fileDescriptor);
             return false;
         }
     }
@@ -166,7 +169,7 @@ bool ServerImpl::getSocketLock(Socket *socket)
         unlink(socket->sockPath.c_str());
     }
 
-    socket->lockFd = fd;
+    socket->lockFd = fileDescriptor;
     socket->lockPath = std::move(lockPath);
 
     return true;
@@ -183,6 +186,11 @@ bool ServerImpl::getSocketLock(Socket *socket)
  */
 void ServerImpl::closeListeningSocket(Socket *socket)
 {
+    if (!socket->isOwned)
+    {
+        return;
+    }
+
     if (!socket->sockPath.empty() && (unlink(socket->sockPath.c_str()) != 0) && (errno != ENOENT))
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to remove socket @ '%s'", socket->sockPath.c_str());
     if ((socket->sockFd >= 0) && (close(socket->sockFd) != 0))
@@ -229,7 +237,7 @@ bool ServerImpl::addSocket(const std::string &socketPath,
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
 
-    if (bind(socket.sockFd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+    if (bind(socket.sockFd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == -1)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "bind error");
 
@@ -277,6 +285,52 @@ bool ServerImpl::addSocket(const std::string &socketPath,
     m_sockets.emplace(kSocketId, std::move(socket));
 
     RIALTO_IPC_LOG_INFO("added listening socket '%s' to server", socketPath.c_str());
+
+    return true;
+}
+
+bool ServerImpl::addSocket(int fd, std::function<void(const std::shared_ptr<IClient> &)> clientConnectedCb,
+                           std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb)
+{
+    // store the path
+    Socket socket;
+    socket.isOwned = false;
+    socket.sockFd = fd;
+
+    // put in listening mode
+    if (listen(socket.sockFd, 1) == -1)
+    {
+        RIALTO_IPC_LOG_SYS_ERROR(errno, "listen error");
+        return false;
+    }
+
+    // create an id for the listening socket
+    const uint64_t kSocketId = m_socketIdCounter++;
+    if (kSocketId >= FIRST_CLIENT_ID)
+    {
+        // should never happen, we'd run out of file descriptors before
+        // we hit the 10k limit on listening sockets
+        RIALTO_IPC_LOG_ERROR("too many listening sockets");
+        return false;
+    }
+
+    // add the socket to epoll
+    epoll_event event = {.events = EPOLLIN, .data = {.u64 = kSocketId}};
+    if (epoll_ctl(m_pollFd, EPOLL_CTL_ADD, socket.sockFd, &event) != 0)
+    {
+        RIALTO_IPC_LOG_SYS_ERROR(errno, "epoll_ctl failed to add listening socket");
+        return false;
+    }
+
+    // store the client connected / disconnected callbacks
+    socket.connectedCb = clientConnectedCb;
+    socket.disconnectedCb = clientDisconnectedCb;
+
+    // add to the internal map
+    std::lock_guard<std::mutex> locker(m_socketsLock);
+    m_sockets.emplace(kSocketId, std::move(socket));
+
+    RIALTO_IPC_LOG_INFO("added listening socket with fd: %d to server", fd);
 
     return true;
 }
@@ -621,7 +675,8 @@ static std::vector<FileDescriptor> readMessageFds(const struct msghdr *msg, size
 {
     std::vector<FileDescriptor> fds;
 
-    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg); cmsg != nullptr; cmsg = CMSG_NXTHDR((struct msghdr *)msg, cmsg))
+    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg); cmsg != nullptr;
+         cmsg = CMSG_NXTHDR(const_cast<struct msghdr *>(msg), cmsg))
     {
         if ((cmsg->cmsg_level == SOL_SOCKET) && (cmsg->cmsg_type == SCM_RIGHTS))
         {

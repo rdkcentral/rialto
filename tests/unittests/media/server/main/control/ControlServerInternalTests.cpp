@@ -60,6 +60,7 @@ public:
     {
         EXPECT_CALL(*m_mainThreadMock, unregisterClient(kMainThreadClientId));
         m_sut.reset();
+        m_controlClientMock.reset();
     }
 
     void mainThreadWillEnqueueTaskAndWait()
@@ -227,12 +228,4 @@ TEST_F(ControlServerInternalTests, shouldAckAndSendNextPing)
 TEST_F(ControlServerInternalTests, shouldSetApplicationState)
 {
     setRunningState();
-}
-
-TEST_F(ControlServerInternalTests, shouldRegisterClient)
-{
-    firebolt::rialto::ApplicationState appState{firebolt::rialto::ApplicationState::RUNNING};
-    mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_controlClientMock, notifyApplicationState(kAppState));
-    m_sut->registerClient(m_controlClientMock, appState);
 }

@@ -23,6 +23,7 @@
 #include "GlibWrapperMock.h"
 #include "GstDispatcherThreadFactoryMock.h"
 #include "GstDispatcherThreadMock.h"
+#include "GstInitialiserMock.h"
 #include "GstSrcFactoryMock.h"
 #include "GstSrcMock.h"
 #include "GstWebAudioPlayer.h"
@@ -72,6 +73,7 @@ public:
     std::unique_ptr<IGstDispatcherThread> gstDispatcherThread{std::make_unique<StrictMock<GstDispatcherThreadMock>>()};
     StrictMock<GstDispatcherThreadMock> &m_gstDispatcherThreadMock{
         dynamic_cast<StrictMock<GstDispatcherThreadMock> &>(*gstDispatcherThread)};
+    StrictMock<GstInitialiserMock> m_gstInitialiserMock;
 
 protected:
     void gstPlayerWillBeCreatedForLlama();
@@ -80,6 +82,7 @@ protected:
     void gstPlayerWillBeDestroyed();
     void executeTaskWhenEnqueued();
     void expectInitRialtoSrc();
+    void expectInitWorkerThread();
     void expectInitThreads();
     void expectCreatePipeline();
     void expectInitAppSrc();
@@ -93,6 +96,7 @@ protected:
     void expectMakeAutoAudioSink();
     void expectInitAutoAudioSink();
     void expectLinkElements();
+    void expectLinkElementsExceptVolume();
     void expectAddBinFailure();
     void expectLinkElementFailure();
     void expectTermPipeline();
@@ -106,6 +110,7 @@ protected:
     GstElement m_sink{};
     GstBus m_bus{};
     const uint32_t m_priority{5};
+    GstElement m_volume{};
 };
 
 #endif // GST_WEB_AUDIO_PLAYER_TEST_COMMON_H_

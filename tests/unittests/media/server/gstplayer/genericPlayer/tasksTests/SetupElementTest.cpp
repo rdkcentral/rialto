@@ -25,7 +25,7 @@ class SetupElementTest : public GenericTasksTestsBase
 
 TEST_F(SetupElementTest, shouldSetupVideoElement)
 {
-    shouldSetupVideoElementOnly();
+    shouldSetupVideoSinkElementOnly();
     triggerSetupElement();
 }
 
@@ -35,9 +35,63 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometry)
     triggerSetupElement();
 }
 
-TEST_F(SetupElementTest, shouldSetupVideoElementForAmlhalasink)
+TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingImmediateOutput)
 {
-    shouldSetupVideoElementAmlhalasink();
+    shouldSetupVideoElementWithPendingImmediateOutput();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingLowLatency)
+{
+    shouldSetupAudioSinkElementWithPendingLowLatency();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingSync)
+{
+    shouldSetupAudioSinkElementWithPendingSync();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingSyncOff)
+{
+    shouldSetupAudioDecoderElementWithPendingSyncOff();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingStreamSyncMode)
+{
+    shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingStreamSyncMode)
+{
+    shouldSetupVideoParserElementWithPendingStreamSyncMode();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingBufferingLimit)
+{
+    shouldSetupAudioDecoderElementWithPendingBufferingLimit();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingRenderFrame)
+{
+    shouldSetupVideoSinkElementWithPendingRenderFrame();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementAmlhalasinkWhenNoVideo)
+{
+    shouldSetupAudioElementAmlhalasinkWhenNoVideo();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementAmlhalasinkWhenVideoExists)
+{
+    shouldSetupAudioElementAmlhalasinkWhenVideoExists();
     triggerSetupElement();
 }
 
@@ -54,10 +108,24 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithChildSinkForAutoVideoSink)
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupAudioElementWithChildSinkForAutoAudioSink)
+{
+    shouldSetupAudioElementAutoAudioSink();
+    shouldAddFirstAutoAudioSinkChild();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupVideoElementWithoutChildSinkForAutoVideoSink)
 {
     shouldSetupVideoElementAutoVideoSink();
     shouldNotAddAutoVideoSinkChild();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupAudioElementWithoutChildSinkForAutoAudioSink)
+{
+    shouldSetupAudioElementAutoAudioSink();
+    shouldNotAddAutoAudioSinkChild();
     triggerSetupElement();
 }
 
@@ -68,15 +136,22 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithMultpileChildSinkForAutoVide
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupAudioElementWithMultpileChildSinkForAutoAudioSink)
+{
+    shouldSetupAudioElementAutoAudioSinkWithMultipleChildren();
+    shouldAddFirstAutoAudioSinkChild();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupAudioElement)
 {
-    shouldSetupAudioElementOnly();
+    shouldSetupAudioSinkElementOnly();
     triggerSetupElement();
 }
 
 TEST_F(SetupElementTest, shouldReportVideoUnderflow)
 {
-    shouldSetupVideoElementOnly();
+    shouldSetupVideoDecoderElementOnly();
     triggerSetupElement();
 
     shouldSetVideoUnderflowCallback();
@@ -85,7 +160,7 @@ TEST_F(SetupElementTest, shouldReportVideoUnderflow)
 
 TEST_F(SetupElementTest, shouldReportAudioUnderflow)
 {
-    shouldSetupAudioElementOnly();
+    shouldSetupAudioDecoderElementOnly();
     triggerSetupElement();
 
     shouldSetAudioUnderflowCallback();
@@ -102,6 +177,16 @@ TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildAdded)
     triggerAutoVideoSinkChildAddedCallback();
 }
 
+TEST_F(SetupElementTest, shouldReportAutoAudioSinkChildAdded)
+{
+    shouldSetupAudioElementAutoAudioSink();
+    shouldNotAddAutoAudioSinkChild();
+    triggerSetupElement();
+
+    shouldAddAutoAudioSinkChildCallback();
+    triggerAutoAudioSinkChildAddedCallback();
+}
+
 TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildRemoved)
 {
     shouldSetupVideoElementAutoVideoSink();
@@ -110,4 +195,26 @@ TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildRemoved)
 
     shouldRemoveAutoVideoSinkChildCallback();
     triggerAutoVideoSinkChildRemovedCallback();
+}
+
+TEST_F(SetupElementTest, shouldReportAutoAudioSinkChildRemoved)
+{
+    shouldSetupAudioElementAutoAudioSink();
+    shouldNotAddAutoAudioSinkChild();
+    triggerSetupElement();
+
+    shouldRemoveAutoAudioSinkChildCallback();
+    triggerAutoAudioSinkChildRemovedCallback();
+}
+
+TEST_F(SetupElementTest, shouldSetupTextTrackSink)
+{
+    shouldSetupTextTrackSink();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupBaseParse)
+{
+    shouldSetupBaseParse();
+    triggerSetupElement();
 }

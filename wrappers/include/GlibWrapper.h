@@ -72,6 +72,8 @@ public:
 
     GParamSpec *gObjectClassFindProperty(GObjectClass *oclass, const gchar *property_name) override;
 
+    GParamSpec **gObjectClassListProperties(GObjectClass *oclass, guint *nProps) override;
+
     gpointer gTypeClassRef(GType type) override { return g_type_class_ref(type); }
 
     GType gTypeFromName(const gchar *name) override { return g_type_from_name(name); }
@@ -87,18 +89,6 @@ public:
     {
         return g_signal_connect(instance, detailed_signal, c_handler, data);
     }
-
-    void gSignalHandlerDisconnect(GObject *instance, gulong handler_id) const override
-    {
-        g_signal_handler_disconnect(instance, handler_id);
-    }
-
-    guint gTimeoutAdd(guint interval, GSourceFunc function, gpointer data) override
-    {
-        return g_timeout_add(interval, function, data);
-    }
-
-    gboolean gSourceRemove(guint tag) override { return g_source_remove(tag); }
 
     gchar *gStrdupPrintf(const gchar *format, ...) override;
 
@@ -145,6 +135,8 @@ public:
     {
         return g_error_new_literal(domain, code, message);
     }
+
+    GValue *gValueInit(GValue *value, GType type) const override { return g_value_init(value, type); }
 };
 
 }; // namespace firebolt::rialto::wrappers

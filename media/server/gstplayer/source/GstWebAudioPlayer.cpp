@@ -74,7 +74,7 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
             throw std::runtime_error("Cannot create GlibWrapper");
         }
         gstPlayer = std::make_unique<GstWebAudioPlayer>(client, priority, gstWrapper, glibWrapper,
-                                                        IGstSrcFactory::getFactory(),
+                                                        IGstInitialiser::instance(), IGstSrcFactory::getFactory(),
                                                         std::make_unique<WebAudioPlayerTaskFactory>(client, gstWrapper,
                                                                                                     glibWrapper),
                                                         std::make_unique<WorkerThreadFactory>(),
@@ -91,14 +91,17 @@ std::unique_ptr<IGstWebAudioPlayer> GstWebAudioPlayerFactory::createGstWebAudioP
 GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uint32_t priority,
                                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                                      const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                                     const IGstInitialiser &gstInitialiser,
                                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                                      std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
                                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
                                      std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory)
-    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_taskFactory{
-                                                                                           std::move(taskFactory)}
+    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
+      m_taskFactory{std::move(taskFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstWebAudioPlayer is constructed.");
+
+    gstInitialiser.waitForInitialisation();
 
     if ((!gstSrcFactory) || (!(m_context.gstSrc = gstSrcFactory->getGstSrc())))
     {
@@ -195,6 +198,11 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
     {
         return linkElementsToSrc(sink);
     }
+    else
+    {
+        m_gstWrapper->gstObjectUnref(m_context.source);
+        m_context.source = nullptr;
+    }
     return false;
 }
 
@@ -237,41 +245,95 @@ GstElement *GstWebAudioPlayer::createAutoSink()
     return sink;
 }
 
+// NOTE:-
+//   This method hands the responsibility for the destruction of both { "sink", "m_context.source" }
+//   over to the pipeline (or if handover wasn't possible, it will unref)
 bool GstWebAudioPlayer::linkElementsToSrc(GstElement *sink)
 {
-    GstElement *convert = NULL;
-    GstElement *resample = NULL;
+    bool status{true};
+
+    GstElement *convert{nullptr};
+    GstElement *resample{nullptr};
+    GstElement *volume{nullptr};
 
     convert = m_gstWrapper->gstElementFactoryMake("audioconvert", NULL);
     if (!convert)
     {
         RIALTO_SERVER_LOG_ERROR("Failed create the audioconvert");
-        return false;
-    }
-    resample = m_gstWrapper->gstElementFactoryMake("audioresample", NULL);
-    if (!resample)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed create the audioresample");
-        return false;
+        status = false;
     }
 
-    if ((!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), m_context.source)) ||
-        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), convert)) ||
-        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), resample)) ||
-        (!m_gstWrapper->gstBinAdd(GST_BIN(m_context.pipeline), sink)))
+    if (status)
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to add elements to the bin");
-        return false;
+        resample = m_gstWrapper->gstElementFactoryMake("audioresample", NULL);
+        if (!resample)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed create the audioresample");
+            status = false;
+        }
     }
 
-    if ((!m_gstWrapper->gstElementLink(m_context.source, convert)) ||
-        (!m_gstWrapper->gstElementLink(convert, resample)) || (!m_gstWrapper->gstElementLink(resample, sink)))
+    if (status)
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to link elements");
-        return false;
+        volume = m_gstWrapper->gstElementFactoryMake("volume", NULL);
+        if (!volume)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed create the volume");
+            status = false;
+        }
     }
 
-    return true;
+    std::queue<GstElement *> elementsToAdd;
+    elementsToAdd.push(m_context.source);
+    if (convert)
+        elementsToAdd.push(convert);
+    if (resample)
+        elementsToAdd.push(resample);
+    if (volume)
+        elementsToAdd.push(volume);
+    elementsToAdd.push(sink);
+
+    if (status)
+    {
+        // Add elements to the pipeline
+        GstBin *pipelineBin = GST_BIN(m_context.pipeline);
+        while (!elementsToAdd.empty())
+        {
+            if (m_gstWrapper->gstBinAdd(pipelineBin, elementsToAdd.front()))
+                elementsToAdd.pop();
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to add element to the bin");
+                status = false;
+                break;
+            }
+        }
+    }
+
+    if (status)
+    {
+        if ((!m_gstWrapper->gstElementLink(m_context.source, convert)) ||
+            (!m_gstWrapper->gstElementLink(convert, resample)) || (!m_gstWrapper->gstElementLink(resample, volume)) ||
+            (!m_gstWrapper->gstElementLink(volume, sink)))
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to link elements");
+            status = false;
+        }
+        m_context.gstVolumeElement = GST_STREAM_VOLUME(volume);
+    }
+
+    if (!status)
+    {
+        // Unref anything that wasn't added to the pipeline
+        while (!elementsToAdd.empty())
+        {
+            m_gstWrapper->gstObjectUnref(elementsToAdd.front());
+            elementsToAdd.pop();
+        }
+        m_context.source = nullptr;
+    }
+
+    return status;
 }
 
 void GstWebAudioPlayer::termWebAudioPipeline()
@@ -320,8 +382,7 @@ void GstWebAudioPlayer::setVolume(double volume)
 bool GstWebAudioPlayer::getVolume(double &volume)
 {
     // Must be called on the main thread, otherwise the pipeline can be destroyed during the query.
-    volume =
-        m_gstWrapper->gstStreamVolumeGetVolume(GST_STREAM_VOLUME(m_context.pipeline), GST_STREAM_VOLUME_FORMAT_LINEAR);
+    volume = m_gstWrapper->gstStreamVolumeGetVolume(m_context.gstVolumeElement, GST_STREAM_VOLUME_FORMAT_LINEAR);
     return true;
 }
 

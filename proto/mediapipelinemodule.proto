@@ -94,9 +94,10 @@ message LoadResponse {
  * @fn int attachSource(int session_id, MediaSourceType media_type, string caps)
  * @brief Attaches a new media source on a session with the given capabilities.
  *
- * @param[in]  session_id   The id of the A/V session.
- * @param[in]  media_type   The media source type.
- * @param[in]  caps         The capabilities of the source.
+ * @param[in]  session_id    The id of the A/V session.
+ * @param[in]  media_type    The media source type.
+ * @param[in]  caps          The capabilities of the source.
+ * @param[in]  switch_source The flag indicating if source is switched (reattached)
  *
  * A client will typically create a single audio and video media source on a given session.
  *
@@ -131,9 +132,52 @@ message AttachSourceRequest {
     }
 
     message AudioConfig {
+        enum Format {
+            S8 = 0;
+            U8 = 1;
+            S16LE = 2;
+            S16BE = 3;
+            U16LE = 4;
+            U16BE = 5;
+            S24_32LE = 6;
+            S24_32BE = 7;
+            U24_32LE = 8;
+            U24_32BE = 9;
+            S32LE = 10;
+            S32BE = 11;
+            U32LE = 12;
+            U32BE = 13;
+            S24LE = 14;
+            S24BE = 15;
+            U24LE = 16;
+            U24BE = 17;
+            S20LE = 18;
+            S20BE = 19;
+            U20LE = 20;
+            U20BE = 21;
+            S18LE = 22;
+            S18BE = 23;
+            U18LE = 24;
+            U18BE = 25;
+            F32LE = 26;
+            F32BE = 27;
+            F64LE = 28;
+            F64BE = 29;
+        }
+
+        enum Layout {
+            INTERLEAVED = 0;
+            NON_INTERLEAVED = 1;
+        }
+
         optional uint32 number_of_channels = 1;   ///< The number of channels.
         optional uint32 sample_rate = 2;         ///< The sampling rate.
         optional bytes codec_specific_config = 3; ///The audio specific config. Zero length if no specific config
+        optional Format format = 4; ///< The Format of the audio samples.
+        optional Layout layout = 5; ///< The layout of channels within a buffer.
+        optional uint64 channel_mask = 6; ///< Bitmask of channel positions present.
+        repeated bytes stream_header = 7; ///< Stream header. Zero length if not present.
+        optional bool framed = 8;  ///< True if each buffer passed through the pipeline contains a complete, self-contained media unit
     }
 
     message CodecData {
@@ -157,6 +201,7 @@ message AttachSourceRequest {
     optional StreamFormat stream_format = 10;
     optional uint32 dolby_vision_profile = 11;
     optional string text_track_identifier = 12;
+    optional bool switch_source = 13;
 
 }
 message AttachSourceResponse {
@@ -355,16 +400,26 @@ message RenderFrameResponse {
 }
 
 /**
- * @fn void setVolume(double volume)
- * @brief Set level and transition of audio attenuation
+ * @fn void setVolume(int session_id, double volume, uint32 volumeDuration, EaseType easeType)
+ * @brief Set the volume level and transition duration with easing type
  *
  * @param[in] session_id  The id of the A/V session the request is for.
- * @param[in] volume      Target volume level (0.0 - 1.0)
+ * @param[in] volume : Target volume level (0.0 - 1.0)
+ * @param[in] volume_duration : Duration of the volume transition in milliseconds
+ * @param[in] ease_type : Easing type for the volume transition
  *
  */
 message SetVolumeRequest {
+    enum EaseType {
+        EASE_LINEAR = 0;
+        EASE_IN_CUBIC = 1;
+        EASE_OUT_CUBIC = 2;
+    };
+
     optional int32 session_id = 1 [default = -1];
     optional double volume = 2 [default = -1];
+    optional uint32 volume_duration = 3;
+    optional EaseType ease_type = 4;
 }
 message SetVolumeResponse {
 }
@@ -386,16 +441,18 @@ message GetVolumeResponse {
 }
 
 /**
- * @fn void setMute(bool mute)
+ * @fn void setMute(bool mute, int32_t source_id)
  * @brief Set mute status of pipeline.
  *
  * @param[in] session_id  The id of the A/V session the request is for.
  * @param[in] mute        Desired mute state, true=muted, false=not muted
+*  @param[in] source_id   The media source ID.
  *
  */
 message SetMuteRequest {
     optional int32 session_id = 1 [default = -1];
     optional bool mute = 2;
+    optional int32 source_id = 3 [default = -1];
 }
 message SetMuteResponse {
 }
@@ -411,9 +468,134 @@ message SetMuteResponse {
  */
 message GetMuteRequest {
     optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
 }
 message GetMuteResponse {
     optional bool mute = 1;
+}
+
+/**
+ * @fn void setTextTrackIdentifier(const std::string &textTrackIdentifier)
+ * @brief Change Text Track Identifier
+ *
+ * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+ *
+ * @retval true on success false otherwise
+ *
+ */
+message SetTextTrackIdentifierRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional string text_track_identifier = 2;
+}
+message SetTextTrackIdentifierResponse {
+}
+
+/**
+ * @fn void getTextTrackIdentifier(std::string &textTrackIdentifier) 
+ * @brief Get Text Track Identifier
+ *
+ * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+ *
+ * @retval true on success false otherwise
+ */
+message GetTextTrackIdentifierRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetTextTrackIdentifierResponse {
+    optional string text_track_identifier = 1;
+}
+
+/**
+ * @fn void setLowLatency(bool lowLatency)
+ * @brief Set low latency property on the pipeline.
+ *
+ * @param[in] lowLatency : The low latency value to set.
+ *
+ */
+message SetLowLatencyRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool low_latency = 2;
+}
+message SetLowLatencyResponse {
+}
+
+/**
+ * @fn void setSync(bool sync)
+ * @brief Set sync property on the pipeline.
+ *
+ * @param[in] session_id  The id of the A/V session the request is for.
+ * @param[in] sync        The sync value to set.
+ *
+ */
+message SetSyncRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool sync = 2;
+}
+message SetSyncResponse {
+}
+
+/**
+ * @fn void getSync(bool &sync)
+ * @brief Get sync property on the pipeline.
+ *
+ * @param[in]  session_id  The id of the A/V session the request is for.
+ * @param[out] sync        Current sync value.
+ *
+ * @retval true on success false otherwise
+ */
+message GetSyncRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetSyncResponse {
+    optional bool sync = 1;
+}
+
+/**
+ * @fn void setSyncOff(bool sync_off)
+ * @brief Set sync off property on the pipeline.
+ *
+ * @param[in] session_id  The id of the A/V session the request is for.
+ * @param[in] sync_off    The sync off value to set.
+ *
+ */
+message SetSyncOffRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool sync_off = 2;
+}
+message SetSyncOffResponse {
+}
+
+/**
+ * @fn void setStreamSyncMode(int32 stream_sync_mode)
+ * @brief Set stream sync mode property on the pipeline.
+ *
+ * @param[in] session_id        The id of the A/V session the request is for.
+ * @param[in] stream_sync_mode  The stream sync mode value to set.
+ * @param[in] sourceId          The source id. Value should be set to the MediaSource.id returned after attachSource()
+ *
+ */
+message SetStreamSyncModeRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 stream_sync_mode = 2;
+    optional int32 source_id = 3 [default = -1];
+}
+message SetStreamSyncModeResponse {
+}
+
+/**
+ * @fn void getStreamSyncMode(int32 &stream_sync_mode)
+ * @brief Get stream sync mode property on the pipeline.
+ *
+ * @param[in]  session_id       The id of the A/V session the request is for.
+ * @param[out] stream_sync_mode Current stream sync mode value.
+ *
+ * @retval true on success false otherwise
+ */
+message GetStreamSyncModeRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetStreamSyncModeResponse {
+    optional int32 stream_sync_mode = 1;
 }
 
 /**
@@ -423,6 +605,7 @@ message GetMuteResponse {
  * @param[in]  session_id   The id of the A/V session.
  * @param[in]  source_id    The id of the media source to flush.
  * @param[in]  reset_time   True if time should be reset
+ * @param[out] async        True if flushed source is asynchronous (will preroll after flush)
  *
  */
 message FlushRequest {
@@ -431,6 +614,7 @@ message FlushRequest {
   optional bool reset_time = 3 [default = false];
 }
 message FlushResponse {
+    optional bool async = 1 [default = true];
 }
 
 /**
@@ -440,6 +624,9 @@ message FlushResponse {
  * @param[in]  session_id   The id of the A/V session.
  * @param[in]  source_id    The id of the media source.
  * @param[in]  position     The position in nanoseconds.
+ * @param[in]  reset_time   True if time should be reset
+ * @param[in]  applied_rate The applied rate after seek
+ * @param[in]  stop_position The position of last pushed buffer
  *
  * This method sets the start position for a source.
  *
@@ -448,8 +635,160 @@ message SetSourcePositionRequest {
     optional int32 session_id = 1 [default = -1];
     optional int32 source_id = 2 [default = -1];
     optional int64 position = 3 [default = -1];
+    optional bool reset_time = 4 [default = false];
+    optional double applied_rate = 5 [default = 1];
+    optional uint64 stop_position = 6 [default = 18446744073709551615];
 }
 message SetSourcePositionResponse {
+}
+
+/**
+ * @fn void setImmediateOutput(int session_id, int source_id, bool immediate_output)
+ * @brief Sets the "Immediate Output" property for this source.
+ *
+ * @param[in]  session_id        The id of the A/V session.
+ * @param[in]  source_id         The id of the media source.
+ * @param[in]  immediate_output  Set immediate output mode on the sink
+ *
+ */
+message SetImmediateOutputRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+    optional bool immediate_output = 3 [default = false];
+}
+message SetImmediateOutputResponse {
+}
+
+/**
+ * @fn void getImmediateOutput(int session_id, int source_id, bool &immediate_output)
+ * @brief Gets the "Immediate Output" property for this source.
+ *
+ * @param[in]  session_id        The id of the A/V session.
+ * @param[in]  source_id         The id of the media source.
+ * @param[out] immediate_output  Get immediate output mode on the sink
+ *
+ */
+message GetImmediateOutputRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+message GetImmediateOutputResponse {
+    optional bool immediate_output = 1 [default = false];
+}
+
+/**
+ * @fn void getStats(int session_id, int source_id, uint64 &rendered_frames, uint64 &dropped_frames)
+ * @brief Get various stats from the source.
+ *
+ * @param[in]  session_id        The id of the A/V session.
+ * @param[in]  source_id         The id of the media source.
+ * @param[out] rendered_frames   The number of rendered frames
+ * @param[out] dropped_frames    The number of dropped frames
+ *
+ * This method gets various stats from the source.
+ *
+ */
+message GetStatsRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+message GetStatsResponse {
+    optional int64 rendered_frames = 1 [default = -1];
+    optional int64 dropped_frames = 2 [default = -1];
+}
+
+/**
+ * @fn void processAudioGap(int64 position, uint32 duration, uint32 level)
+ * @brief Process audio gap.
+ *
+ * @param[in] session_id        The id of the A/V session.
+ * @param[in] position          Audio pts fade pts value
+ * @param[in] duration          Audio pts fade duration
+ * @param[in] discontinuity_gap Audio discontinuity gap
+ * @param[in] audio_aac         True if audio codec is AAC
+ *
+ * This method handles audio gap in order to avoid audio pops during transitions.
+ *
+ */
+message ProcessAudioGapRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int64 position = 2 [default = -1];
+    optional uint32 duration = 3 [default = 0];
+    optional int64 discontinuity_gap = 4 [default = 0];
+    optional bool audio_aac = 5 [default = false];
+}
+message ProcessAudioGapResponse {
+}
+
+/**
+ * @fn void setBufferingLimit(uint32_t limitBufferingMs)
+ * @brief Set buffering limit
+ *
+ * @param[in] session_id        The id of the A/V session.
+ * @param[in] limitBufferingMs  buffering limit in ms
+ *
+ * This method sets millisecond threshold used if limit_buffering is set.
+ * Changing this value does not enable/disable limit_buffering
+ *
+ */
+message SetBufferingLimitRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional uint32 limit_buffering_ms = 2 [default = 0];
+}
+message SetBufferingLimitResponse {
+}
+
+/**
+ * @fn void getBufferingLimit(uint32_t &limitBufferingMs)
+ * @brief Get buffering limit
+ *
+ * @param[in] session_id        The id of the A/V session.
+ * @param[out] limitBufferingMs buffering limit in ms
+ *
+ * This method returns current value of buffering limit in milliseconds
+ * Method will return kInvalidLimitBuffering limit buffering is disabled
+ *
+ */
+message GetBufferingLimitRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetBufferingLimitResponse {
+    optional uint32 limit_buffering_ms = 1 [default = 0];
+}
+
+/**
+ * @fn void setUseBuffering(bool useBuffering)
+ * @brief Enables/disables the buffering option
+ *
+ * @param[in] session_id        The id of the A/V session.
+ * @param[in] useBuffering      true if buffering option enabled.
+ *
+ * This method enables the buffering option so that BUFFERING messages are
+ * emitted based on low-/high-percent thresholds.
+ *
+ */
+message SetUseBufferingRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional bool use_buffering = 2 [default = false];
+}
+message SetUseBufferingResponse {
+}
+
+/**
+ * @fn void bool getBufferingLimit(uint32_t &limitBufferingMs)
+ * @brief Checks, if buffering is enabled
+ *
+ * @param[in] session_id        The id of the A/V session.
+ * @param[out] useBuffering     true if buffering option enabled.
+ *
+ * This method returns true, if buffering is enabled
+ *
+ */
+message GetUseBufferingRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetUseBufferingResponse {
+    optional bool use_buffering = 1 [default = false];
 }
 
 /**
@@ -708,6 +1047,27 @@ service MediaPipelineModule {
     }
 
     /**
+     * @brief Sets the "Immediate Output" property for this source.
+     * @see SetImmediateOutputRequest
+     */
+    rpc setImmediateOutput(SetImmediateOutputRequest) returns (SetImmediateOutputResponse) {
+    }
+
+    /**
+     * @brief Gets the "Immediate Output" property for this source.
+     * @see GetImmediateOutputRequest
+     */
+    rpc getImmediateOutput(GetImmediateOutputRequest) returns (GetImmediateOutputResponse) {
+    }
+
+    /**
+     * @brief Gets the current stats property
+     * @see GetStatsRequest
+     */
+    rpc getStats(GetStatsRequest) returns (GetStatsResponse) {
+    }
+
+    /**
      * @brief Sets the playback rate
      * @see SetPlaybackRateRequest
      */
@@ -729,7 +1089,7 @@ service MediaPipelineModule {
     }
 
     /**
-     * @brief Set level and transition of audio attenuation
+     * @brief Set the target volume level and transition duration with easing type
      * @see SetVolumeRequest
      */
     rpc setVolume(SetVolumeRequest) returns (SetVolumeResponse) {
@@ -742,7 +1102,7 @@ service MediaPipelineModule {
     rpc getVolume(GetVolumeRequest) returns (GetVolumeResponse) {
     }
 
-        /**
+    /**
      * @brief Set mute status of pipeline.
      * @see SetMuteRequest
      */
@@ -757,6 +1117,62 @@ service MediaPipelineModule {
     }
 
     /**
+     * @brief Text Track Identifier
+     * @see SetTextTrackIdentifierRequest
+     */
+    rpc setTextTrackIdentifier(SetTextTrackIdentifierRequest) returns (SetTextTrackIdentifierResponse) {
+    } 
+
+    /**
+     * @brief Get Text Track Identifier
+     * @see GetTextTrackIdentifierRequest
+     */
+    rpc getTextTrackIdentifier(GetTextTrackIdentifierRequest) returns (GetTextTrackIdentifierResponse) {
+    }
+
+    /**
+     * @brief Set low latency property on the pipeline.
+     * @see SetLowLatencyRequest
+     */
+    rpc setLowLatency(SetLowLatencyRequest) returns (SetLowLatencyResponse) {
+    } 
+
+    /**
+     * @brief Set sync property on the pipeline.
+     * @see SetSyncRequest
+     */
+    rpc setSync(SetSyncRequest) returns (SetSyncResponse) {
+    } 
+
+    /**
+     * @brief Get sync property on the pipeline.
+     * @see GetSyncRequest
+     */
+    rpc getSync(GetSyncRequest) returns (GetSyncResponse) {
+    } 
+
+    /**
+     * @brief Set sync off property on the pipeline.
+     * @see SetSyncOffRequest
+     */
+    rpc setSyncOff(SetSyncOffRequest) returns (SetSyncOffResponse) {
+    } 
+
+    /**
+     * @brief Set stream sync mode property on the pipeline.
+     * @see SetStreamSyncModeRequest
+     */
+    rpc setStreamSyncMode(SetStreamSyncModeRequest) returns (SetStreamSyncModeResponse) {
+    } 
+
+    /**
+     * @brief Get stream sync mode property on the pipeline.
+     * @see GetStreamSyncModeRequest
+     */
+    rpc getStreamSyncMode(GetStreamSyncModeRequest) returns (GetStreamSyncModeResponse) {
+    } 
+
+    /**
      * @brief Flush the media source.
      * @see FlushRequest
      */
@@ -768,5 +1184,41 @@ service MediaPipelineModule {
      * @see SetSourcePositionRequest
      */
     rpc setSourcePosition(SetSourcePositionRequest) returns (SetSourcePositionResponse) {
+    }
+
+    /**
+     * @brief This method handles audio gap in order to avoid audio pops during transitions.
+     * @see ProcessAudioGapRequest
+     */
+    rpc processAudioGap(ProcessAudioGapRequest) returns (ProcessAudioGapResponse) {
+    }
+
+    /**
+     * @brief This method sets millisecond threshold used if limit_buffering is set.
+     * @see SetBufferingLimitRequest
+     */
+    rpc setBufferingLimit(SetBufferingLimitRequest) returns (SetBufferingLimitResponse) {
+    }
+
+    /**
+     * @brief Get buffering limit
+     * @see GetBufferingLimitRequest
+     */
+    rpc getBufferingLimit(GetBufferingLimitRequest) returns (GetBufferingLimitResponse) {
+    }
+
+    /**
+     * @brief This method enables the buffering option so that BUFFERING messages are
+     *        emitted based on low-/high-percent thresholds.
+     * @see SetUseBufferingRequest
+     */
+    rpc setUseBuffering(SetUseBufferingRequest) returns (SetUseBufferingResponse) {
+    }
+
+    /**
+     * @brief Checks, if buffering is enabled
+     * @see GetUseBufferingRequest
+     */
+    rpc getUseBuffering(GetUseBufferingRequest) returns (GetUseBufferingResponse) {
     }
 }

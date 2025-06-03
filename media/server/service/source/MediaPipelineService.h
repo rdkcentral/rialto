@@ -65,19 +65,40 @@ public:
     bool setPlaybackRate(int sessionId, double rate) override;
     bool setPosition(int sessionId, std::int64_t position) override;
     bool getPosition(int sessionId, std::int64_t &position) override;
+    bool setImmediateOutput(int sessionId, int32_t sourceId, bool immediateOutput) override;
+    bool getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput) override;
+    bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
     bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                         std::uint32_t height) override;
     bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
                   std::uint32_t needDataRequestId) override;
     bool renderFrame(int sessionId) override;
-    bool setVolume(int sessionId, double volume) override;
+    bool setVolume(int sessionId, double targetVolume, uint32_t volumeDuration, EaseType easeType) override;
     bool getVolume(int sessionId, double &volume) override;
-    bool setMute(int sessionId, bool mute) override;
-    bool getMute(int sessionId, bool &mute) override;
-    bool flush(int sessionId, std::int32_t sourceId, bool resetTime) override;
-    bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position) override;
+    bool setMute(int sessionId, std::int32_t sourceId, bool mute) override;
+    bool getMute(int sessionId, std::int32_t sourceId, bool &mute) override;
+    bool setTextTrackIdentifier(int sessionId, const std::string &textTrackIdentifier) override;
+    bool getTextTrackIdentifier(int sessionId, std::string &textTrackIdentifier) override;
+    bool setLowLatency(int sessionId, bool lowLatency) override;
+    bool setSync(int sessionId, bool sync) override;
+    bool getSync(int sessionId, bool &sync) override;
+    bool setSyncOff(int sessionId, bool syncOff) override;
+    bool setStreamSyncMode(int sessionId, int32_t sourceId, int32_t streamSyncMode) override;
+    bool getStreamSyncMode(int sessionId, int32_t &streamSyncMode) override;
+    bool flush(int sessionId, std::int32_t sourceId, bool resetTime, bool &isAsync) override;
+    bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
+                           uint64_t stopPosition) override;
+    bool processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,
+                         bool audioAac) override;
+    bool setBufferingLimit(int sessionId, uint32_t limitBufferingMs) override;
+    bool getBufferingLimit(int sessionId, uint32_t &limitBufferingMs) override;
+    bool setUseBuffering(int sessionId, bool useBuffering) override;
+    bool getUseBuffering(int sessionId, bool &useBuffering) override;
+    bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
+    std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
+                                                    const std::vector<std::string> &propertyNames) override;
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;
 
     void clearMediaPipelines();

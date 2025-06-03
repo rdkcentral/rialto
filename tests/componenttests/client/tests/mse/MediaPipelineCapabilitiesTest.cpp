@@ -36,8 +36,10 @@ public:
  *
  * Sequence Diagrams:
  *  Capabilities - Supported MIME types
- *               -
- * https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-SupportedMIMETypes
+ *  - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-SupportedMIMETypes
+ *  Capabilities - Get supported properties
+ *  - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-Getsupportedproperties
+ *
  * Test Setup:
  *  Language: C++
  *  Testing Framework: Google Test
@@ -79,7 +81,17 @@ public:
  *   Expect that isMimeTypeSupported is propagated to server.
  *   Api call returns with failure.
  *
- *  Step 7: Destroy MediaPipelineCapabilities
+ * Step 7: Get supported properties
+ *   getSupportedProperties.
+ *   Expect that getSupportedProperties is propagated to server.
+ *   Api call returns with success
+ *
+ * Step 8: Get supported properties failure
+ *   getSupportedProperties.
+ *   Expect that getSupportedProperties is propagated to server.
+ *   Api call returns with failure and the returned list should be empty
+ *
+ * Step 9: Destroy MediaPipelineCapabilities
  *
  * Test Teardown:
  *  Server is terminated.
@@ -90,7 +102,7 @@ public:
  * Code:
  */
 
-TEST_F(MediaPipelineCapabilitiesTest, checkSupportedMimeTypes)
+TEST_F(MediaPipelineCapabilitiesTest, checkSupportedMimeTypesAndProperties)
 {
     // Step 1: Create a MediaPipelineCabilities object.
     MediaPipelineTestMethods::createMediaPipelineCapabilitiesObject();
@@ -115,7 +127,15 @@ TEST_F(MediaPipelineCapabilitiesTest, checkSupportedMimeTypes)
     MediaPipelineTestMethods::shouldCheckIsMimeTypeNotSupported();
     MediaPipelineTestMethods::isMimeTypeNotSupported();
 
-    // Step 7: Destroy MediaPipelineCapabilities
+    // Step 7: Get supported properties
+    MediaPipelineTestMethods::shouldGetSupportedProperties();
+    MediaPipelineTestMethods::getSupportedProperties();
+
+    // Step 8: Get supported properties - failure
+    MediaPipelineTestMethods::shouldGetSupportedPropertiesFailure();
+    MediaPipelineTestMethods::getSupportedPropertiesFailure();
+
+    // Step 9: Destroy MediaPipelineCapabilities
     MediaPipelineTestMethods::destroyMediaPipelineCapabilitiesObject();
 }
 } // namespace firebolt::rialto::client::ct

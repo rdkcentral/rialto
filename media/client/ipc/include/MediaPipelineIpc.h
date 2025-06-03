@@ -91,21 +91,56 @@ public:
 
     bool getPosition(int64_t &position) override;
 
+    bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
+
+    bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
+
+    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
+
     bool setPlaybackRate(double rate) override;
 
     bool renderFrame() override;
 
-    bool setVolume(double volume) override;
+    bool setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType) override;
 
     bool getVolume(double &volume) override;
 
-    bool setMute(bool mute) override;
+    bool setMute(int32_t sourceId, bool mute) override;
 
-    bool getMute(bool &mute) override;
+    bool getMute(int32_t sourceId, bool &mute) override;
 
-    bool flush(int32_t sourceId, bool resetTime) override;
+    bool setTextTrackIdentifier(const std::string &textTrackIdentifier) override;
 
-    bool setSourcePosition(int32_t sourceId, int64_t position) override;
+    bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
+
+    bool setLowLatency(bool lowLatency) override;
+
+    bool setSync(bool sync) override;
+
+    bool getSync(bool &sync) override;
+
+    bool setSyncOff(bool syncOff) override;
+
+    bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) override;
+
+    bool getStreamSyncMode(int32_t &streamSyncMode) override;
+
+    bool flush(int32_t sourceId, bool resetTime, bool &async) override;
+
+    bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
+                           uint64_t stopPosition) override;
+
+    bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
+
+    bool setBufferingLimit(uint32_t limitBufferingMs) override;
+
+    bool getBufferingLimit(uint32_t &limitBufferingMs) override;
+
+    bool setUseBuffering(bool useBuffering) override;
+
+    bool getUseBuffering(bool &useBuffering) override;
+
+    bool switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
 
 private:
     /**
@@ -207,33 +242,55 @@ private:
     /**
      * @brief Converts the MediaType enum to protobuf LoadRequest MediaType.
      */
-    firebolt::rialto::LoadRequest_MediaType convertLoadRequestMediaType(MediaType mediaType);
+    firebolt::rialto::LoadRequest_MediaType convertLoadRequestMediaType(MediaType mediaType) const;
 
     /**
      * @brief Converts the MediaSourceStatus enum to protobuf HaveDataRequest MediaSourceStatus.
      */
-    firebolt::rialto::HaveDataRequest_MediaSourceStatus convertHaveDataRequestMediaSourceStatus(MediaSourceStatus status);
+    firebolt::rialto::HaveDataRequest_MediaSourceStatus
+    convertHaveDataRequestMediaSourceStatus(MediaSourceStatus status) const;
 
     /**
      * @brief Converts the SegmentAlignment enum to protobuf AttachSourceRequest SegmentAlignment.
      */
     firebolt::rialto::AttachSourceRequest_SegmentAlignment
-    convertSegmentAlignment(const firebolt::rialto::SegmentAlignment &alignment);
+    convertSegmentAlignment(const firebolt::rialto::SegmentAlignment &alignment) const;
 
     /**
      * @brief Converts the StreamFormat enum to protobuf AttachSourceRequest StreamFormat.
      */
     firebolt::rialto::AttachSourceRequest_StreamFormat
-    convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat);
+    convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat) const;
 
     firebolt::rialto::AttachSourceRequest_ConfigType
-    convertConfigType(const firebolt::rialto::SourceConfigType &configType);
+    convertConfigType(const firebolt::rialto::SourceConfigType &configType) const;
 
     /**
      * @brief Converts the CodecDataType enum to protobuf AttachSourceRequest CodecDataType.
      */
     firebolt::rialto::AttachSourceRequest_CodecData_Type
-    convertCodecDataType(const firebolt::rialto::CodecDataType &codecDataType);
+    convertCodecDataType(const firebolt::rialto::CodecDataType &codecDataType) const;
+
+    /**
+     * @brief Converts the Format enum to protobuf AttachSourceRequest Format.
+     */
+    firebolt::rialto::AttachSourceRequest_AudioConfig_Format convertFormat(const firebolt::rialto::Format &format) const;
+
+    /**
+     * @brief Converts the Layout enum to protobuf AttachSourceRequest Layout.
+     */
+    firebolt::rialto::AttachSourceRequest_AudioConfig_Layout convertLayout(const firebolt::rialto::Layout &layout) const;
+
+    /**
+     * @brief Converts the EaseType enum to protobuf SetVolumeRequest EaseType.
+     */
+    firebolt::rialto::SetVolumeRequest_EaseType convertEaseType(const firebolt::rialto::EaseType &easeType) const;
+
+    /**
+     * @brief Sets AttachSourceRequest parameters based on given MediaSource
+     */
+    bool buildAttachSourceRequest(firebolt::rialto::AttachSourceRequest &request,
+                                  const std::unique_ptr<IMediaPipeline::MediaSource> &source) const;
 };
 
 }; // namespace firebolt::rialto::client

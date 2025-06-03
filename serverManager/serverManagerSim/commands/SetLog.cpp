@@ -20,7 +20,6 @@
 #include "SetLog.h"
 #include "../HttpRequest.h"
 #include "../TestService.h"
-
 #include <string>
 
 namespace

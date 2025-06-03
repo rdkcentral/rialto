@@ -20,8 +20,8 @@
 #include <cstring>
 #include <google/protobuf/service.h>
 
-#include "GstInit.h"
 #include "IApplicationSessionServer.h"
+#include "IGstInitialiser.h"
 #include "RialtoServerLogging.h"
 
 // NOLINT(build/filename_format)
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
         RIALTO_SERVER_LOG_WARN("Failed to get git commit ID!");
     }
 
-    firebolt::rialto::server::gstInitalise(argc, argv);
+    firebolt::rialto::server::IGstInitialiser::instance().initialise(&argc, &argv);
 
     {
         // Creation of this variable in a local scope ensures Rialto

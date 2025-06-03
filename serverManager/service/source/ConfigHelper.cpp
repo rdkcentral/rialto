@@ -58,16 +58,19 @@ namespace rialto::servermanager::service
 {
 ConfigHelper::ConfigHelper(std::unique_ptr<IConfigReaderFactory> &&configReaderFactory,
                            const firebolt::rialto::common::ServerManagerConfig &config)
-    : m_configReaderFactory{std::move(configReaderFactory)}, m_sessionServerEnvVars{convertToMap(
-                                                                 config.sessionServerEnvVars)},
-      m_sessionServerPath{config.sessionServerPath}, m_sessionServerStartupTimeout{config.sessionServerStartupTimeout},
+    : m_configReaderFactory{std::move(configReaderFactory)},
+      m_sessionServerEnvVars{convertToMap(config.sessionServerEnvVars)}, m_sessionServerPath{config.sessionServerPath},
+      m_sessionServerStartupTimeout{config.sessionServerStartupTimeout},
       m_healthcheckInterval{config.healthcheckInterval}, m_socketPermissions{config.sessionManagementSocketPermissions},
       m_numOfPreloadedServers{config.numOfPreloadedServers},
       m_numOfFailedPingsBeforeRecovery{config.numOfFailedPingsBeforeRecovery}, m_loggingLevels{}
 {
 #ifdef RIALTO_ENABLE_CONFIG_FILE
+    // Read from least to most important file
     readConfigFile(RIALTO_CONFIG_PATH);
+    readConfigFile(RIALTO_CONFIG_SOC_PATH);
     readConfigFile(RIALTO_CONFIG_OVERRIDES_PATH);
+    mergeEnvVariables();
 #endif // RIALTO_ENABLE_CONFIG_FILE
 }
 
@@ -126,14 +129,18 @@ void ConfigHelper::readConfigFile(const std::string &filePath)
         return;
     }
 
-    std::map<std::string, std::string> envVariables{convertToMap(configReader->getEnvironmentVariables())};
-    for (const auto &[name, value] : envVariables)
+    // Always override env variables when present in "more important" file
+    // (envVariables + extraEnvVariables from less important file will be wiped if envVariables are present)
+    const std::map<std::string, std::string> envVariables{convertToMap(configReader->getEnvironmentVariables())};
+    if (!envVariables.empty())
     {
-        // If environment variable exists in ServerManagerConfig, do not overwrite it
-        if (m_sessionServerEnvVars.end() == m_sessionServerEnvVars.find(name))
-        {
-            m_sessionServerEnvVars.emplace(name, value);
-        }
+        m_envVarsFromConfigFile = envVariables;
+        m_extraEnvVarsFromConfigFile.clear();
+    }
+    const std::map<std::string, std::string> extraEnvVariables{convertToMap(configReader->getExtraEnvVariables())};
+    if (!extraEnvVariables.empty())
+    {
+        m_extraEnvVarsFromConfigFile = extraEnvVariables;
     }
 
     if (configReader->getSessionServerPath())
@@ -162,6 +169,20 @@ void ConfigHelper::readConfigFile(const std::string &filePath)
 
     if (configReader->getLoggingLevels())
         m_loggingLevels = configReader->getLoggingLevels().value();
+}
+
+void ConfigHelper::mergeEnvVariables()
+{
+    // Env vars from json are more important than values from config struct
+    if (!m_envVarsFromConfigFile.empty())
+    {
+        m_sessionServerEnvVars = m_envVarsFromConfigFile;
+    }
+    for (const auto &[name, value] : m_extraEnvVarsFromConfigFile)
+    {
+        // If env variable exists both in envVariables and extraEnvVariables, overwrite it.
+        m_sessionServerEnvVars[name] = value;
+    }
 }
 #endif // RIALTO_ENABLE_CONFIG_FILE
 } // namespace rialto::servermanager::service

@@ -43,17 +43,41 @@ public:
     MOCK_METHOD(void, attachSamples, (const std::shared_ptr<IDataReader> &dataReader), (override));
     MOCK_METHOD(void, setPosition, (std::int64_t position), (override));
     MOCK_METHOD(bool, getPosition, (std::int64_t & position), (override));
+    MOCK_METHOD(bool, setImmediateOutput, (const MediaSourceType &mediaSourceType, bool immediateOutput), (override));
+    MOCK_METHOD(bool, getImmediateOutput, (const MediaSourceType &mediaSourceType, bool &immediateOutput), (override));
+    MOCK_METHOD(bool, getStats,
+                (const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames), (override));
     MOCK_METHOD(void, setVideoGeometry, (int x, int y, int width, int height), (override));
     MOCK_METHOD(void, setEos, (const firebolt::rialto::MediaSourceType &type), (override));
     MOCK_METHOD(void, setPlaybackRate, (double rate), (override));
     MOCK_METHOD(void, renderFrame, (), (override));
-    MOCK_METHOD(void, setVolume, (double volume), (override));
+    MOCK_METHOD(void, setVolume, (double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType),
+                (override));
     MOCK_METHOD(bool, getVolume, (double &volume), (override));
-    MOCK_METHOD(void, setMute, (bool mute), (override));
-    MOCK_METHOD(bool, getMute, (bool &mute), (override));
+    MOCK_METHOD(void, setMute, (const MediaSourceType &mediaSourceType, bool mute), (override));
+    MOCK_METHOD(bool, getMute, (const MediaSourceType &mediaSourceType, bool &mute), (override));
+    MOCK_METHOD(bool, isAsync, (const MediaSourceType &mediaSourceType), (const, override));
+    MOCK_METHOD(void, setTextTrackIdentifier, (const std::string &textTrackIdentifier), (override));
+    MOCK_METHOD(bool, getTextTrackIdentifier, (std::string & textTrackIdentifier), (override));
+    MOCK_METHOD(bool, setLowLatency, (bool lowLatency), (override));
+    MOCK_METHOD(bool, setSync, (bool sync), (override));
+    MOCK_METHOD(bool, getSync, (bool &sync), (override));
+    MOCK_METHOD(bool, setSyncOff, (bool syncOff), (override));
+    MOCK_METHOD(bool, setStreamSyncMode, (const MediaSourceType &mediaSourceType, int32_t streamSyncMode), (override));
+    MOCK_METHOD(bool, getStreamSyncMode, (int32_t & streamSyncMode), (override));
     MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
     MOCK_METHOD(void, flush, (const MediaSourceType &mediaSourceType, bool resetTime), (override));
-    MOCK_METHOD(void, setSourcePosition, (const MediaSourceType &mediaSourceType, int64_t position), (override));
+    MOCK_METHOD(void, setSourcePosition,
+                (const MediaSourceType &mediaSourceType, int64_t position, bool resetTime, double appliedRate,
+                 uint64_t stopPosition),
+                (override));
+    MOCK_METHOD(void, processAudioGap, (int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
+                (override));
+    MOCK_METHOD(void, setBufferingLimit, (uint32_t limitBufferingMs), (override));
+    MOCK_METHOD(bool, getBufferingLimit, (uint32_t & limitBufferingMs), (override));
+    MOCK_METHOD(void, setUseBuffering, (bool useBuffering), (override));
+    MOCK_METHOD(bool, getUseBuffering, (bool &useBuffering), (override));
+    MOCK_METHOD(void, switchSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource), (override));
 };
 } // namespace firebolt::rialto::server
 

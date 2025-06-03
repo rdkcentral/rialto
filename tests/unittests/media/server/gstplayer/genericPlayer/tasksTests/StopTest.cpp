@@ -25,6 +25,8 @@ class StopTest : public GenericTasksTestsBase
 
 TEST_F(StopTest, shouldStop)
 {
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
     shouldStopGstPlayer();
     triggerStop();
     checkNoMoreNeedData();

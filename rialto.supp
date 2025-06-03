@@ -591,3 +591,25 @@
    fun:*protobuf*FileOptions*_InternalParse*
    ...
 }
+{
+   ignore_g_option_context_parse_definitly_lost
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:gst_update_registry
+   ...
+   fun:g_option_context_parse
+}
+{
+   ignore_gst_update_registry_definitly_lost
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:g_malloc
+   fun:g_strdup
+   ...
+
+   ...
+   fun:gst_update_registry
+   ...
+}

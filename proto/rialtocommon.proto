@@ -25,4 +25,5 @@ enum ProtoMediaSourceType {
     UNKNOWN = 0;        ///< Media source type not known.
     AUDIO = 1;          ///< Media source is AUDIO.
     VIDEO = 2;          ///< Media source is VIDEO.
+    SUBTITLE = 3;       ///< Media source is SUBTITLE.
 }

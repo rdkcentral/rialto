@@ -75,3 +75,24 @@ TEST_F(SetSourcePositionTest, ShouldSetVideoSourcePositionWithNeedData)
     checkInitialPositionNotSet(firebolt::rialto::MediaSourceType::AUDIO);
     checkNoEos();
 }
+
+TEST_F(SetSourcePositionTest, ShouldSetSubtitleSourcePositionWithNeedData)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    setContextEndOfStream(firebolt::rialto::MediaSourceType::SUBTITLE);
+    setContextEndOfStreamNotified();
+    setContextSetupSourceFinished();
+    setContextSubtitleSink();
+    shouldNotifyNeedSubtitleDataSuccess();
+    shouldSetSubtitleSourcePosition();
+    triggerSetSourcePosition(firebolt::rialto::MediaSourceType::SUBTITLE);
+    checkNoEos();
+    checkInitialPositionNotSet(firebolt::rialto::MediaSourceType::SUBTITLE);
+}
+
+TEST_F(SetSourcePositionTest, ShouldSetSubtitleSourcePositionWithoutNeedData)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
+    triggerSetSourcePosition(firebolt::rialto::MediaSourceType::SUBTITLE);
+    checkInitialPositionSet(firebolt::rialto::MediaSourceType::SUBTITLE);
+}

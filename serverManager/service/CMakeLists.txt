@@ -68,6 +68,7 @@ if( RIALTO_ENABLE_CONFIG_FILE )
     add_compile_definitions(RIALTO_ENABLE_CONFIG_FILE)
     add_compile_definitions(RIALTO_CONFIG_PATH="${RIALTO_CONFIG_FILE_DIR}/rialto-config.json")
     add_compile_definitions(RIALTO_CONFIG_OVERRIDES_PATH="${RIALTO_CONFIG_OVERRIDES_FILE_DIR}/rialto-config-overrides.json")
+    add_compile_definitions(RIALTO_CONFIG_SOC_PATH="/etc/rialto-soc.json")
 
     target_link_libraries(
         RialtoServerManager

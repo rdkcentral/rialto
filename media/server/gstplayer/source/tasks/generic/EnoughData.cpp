@@ -20,6 +20,7 @@
 #include "tasks/generic/EnoughData.h"
 #include "GenericPlayerContext.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -36,20 +37,14 @@ EnoughData::~EnoughData()
 void EnoughData::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing EnoughData");
-    auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
-    if (elem != m_context.streamInfo.end())
+    for (auto &elem : m_context.streamInfo)
     {
-        if (elem->second.appSrc == GST_ELEMENT(m_src))
+        firebolt::rialto::MediaSourceType sourceType = elem.first;
+        if (elem.second.appSrc == GST_ELEMENT(m_src))
         {
-            m_context.audioNeedData = false;
-        }
-    }
-    elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
-    if (elem != m_context.streamInfo.end())
-    {
-        if (elem->second.appSrc == GST_ELEMENT(m_src))
-        {
-            m_context.videoNeedData = false;
+            RIALTO_SERVER_LOG_DEBUG("%s source has enough data", common::convertMediaSourceType(sourceType));
+            elem.second.isDataNeeded = false;
+            break;
         }
     }
 }

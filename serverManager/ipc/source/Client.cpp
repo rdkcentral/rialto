@@ -186,7 +186,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
                                      const std::string &socketName, const std::string &clientDisplayName,
                                      const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                      const unsigned int socketPermissions, const std::string &socketOwner,
-                                     const std::string &socketGroup) const
+                                     const std::string &socketGroup, const std::string &appName) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
@@ -203,6 +203,42 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     request.set_socketpermissions(socketPermissions);
     request.set_socketowner(socketOwner);
     request.set_socketgroup(socketGroup);
+    request.set_appname(appName);
+    *(request.mutable_loglevels()) = getCurrentLogLevels();
+    request.set_initialsessionserverstate(convert(initialState));
+    auto ipcController = m_ipcLoop->createRpcController();
+    auto blockingClosure = m_ipcLoop->createBlockingClosure();
+    m_serviceStub->setConfiguration(ipcController.get(), &request, &response, blockingClosure.get());
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("failed to set configuration due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+    return true;
+}
+
+bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState, int socketFd,
+                                     const std::string &clientDisplayName,
+                                     const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
+                                     const std::string &appName) const
+{
+    if (!m_ipcLoop || !m_serviceStub)
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("failed to set configuration - client is not active for serverId: %d",
+                                        m_serverId);
+        return false;
+    }
+    rialto::SetConfigurationRequest request;
+    rialto::SetConfigurationResponse response;
+    request.set_sessionmanagementsocketfd(socketFd);
+    request.set_clientdisplayname(clientDisplayName);
+    request.mutable_resources()->set_maxplaybacks(maxResource.maxPlaybacks);
+    request.mutable_resources()->set_maxwebaudioplayers(maxResource.maxWebAudioPlayers);
+    request.set_appname(appName);
     *(request.mutable_loglevels()) = getCurrentLogLevels();
     request.set_initialsessionserverstate(convert(initialState));
     auto ipcController = m_ipcLoop->createRpcController();

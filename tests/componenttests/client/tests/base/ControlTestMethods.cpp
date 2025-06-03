@@ -17,8 +17,10 @@
  * limitations under the License.
  */
 
-#include "ControlTestMethods.h"
 #include <memory>
+
+#include "ControlTestMethods.h"
+#include "IClientController.h"
 
 namespace
 {

@@ -21,6 +21,7 @@
 #include "Matchers.h"
 #include "PlayerTaskMock.h"
 #include <memory>
+#include <string>
 #include <utility>
 
 using ::testing::_;
@@ -31,6 +32,7 @@ using ::testing::StrEq;
 
 void GstGenericPlayerTestCommon::gstPlayerWillBeCreated()
 {
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     initFactories();
     expectMakePlaybin();
     expectSetFlags();
@@ -83,24 +85,22 @@ void GstGenericPlayerTestCommon::executeTaskWhenEnqueued()
 void GstGenericPlayerTestCommon::triggerSetupSource(GstElement *element)
 {
     ASSERT_TRUE(m_setupSourceFunc);
-    ((void (*)(GstElement *, GstElement *, GstGenericPlayer *))m_setupSourceFunc)(&m_pipeline, element,
-                                                                                  reinterpret_cast<GstGenericPlayer *>(
-                                                                                      m_setupSourceUserData));
+    reinterpret_cast<void (*)(GstElement *, GstElement *, GstGenericPlayer *)>(
+        m_setupSourceFunc)(&m_pipeline, element, reinterpret_cast<GstGenericPlayer *>(m_setupSourceUserData));
 }
 
 void GstGenericPlayerTestCommon::triggerSetupElement(GstElement *element)
 {
     ASSERT_TRUE(m_setupElementFunc);
-    ((void (*)(GstElement *, GstElement *, GstGenericPlayer *))m_setupElementFunc)(&m_pipeline, element,
-                                                                                   reinterpret_cast<GstGenericPlayer *>(
-                                                                                       m_setupElementUserData));
+    reinterpret_cast<void (*)(GstElement *, GstElement *, GstGenericPlayer *)>(
+        m_setupElementFunc)(&m_pipeline, element, reinterpret_cast<GstGenericPlayer *>(m_setupElementUserData));
 }
 
 void GstGenericPlayerTestCommon::triggerDeepElementAdded(GstElement *element)
 {
     ASSERT_TRUE(m_deepElementAddedFunc);
-    ((void (*)(GstBin * pipeline, GstBin * bin, GstElement * element, GstGenericPlayer * self))
-         m_deepElementAddedFunc)(&m_bin, &m_bin, element, reinterpret_cast<GstGenericPlayer *>(m_setupElementUserData));
+    reinterpret_cast<void (*)(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self)>(
+        m_deepElementAddedFunc)(&m_bin, &m_bin, element, reinterpret_cast<GstGenericPlayer *>(m_setupElementUserData));
 }
 
 void GstGenericPlayerTestCommon::setPipelineState(const GstState &state)
@@ -120,11 +120,12 @@ void GstGenericPlayerTestCommon::expectMakePlaybin()
 
 void GstGenericPlayerTestCommon::expectSetFlags()
 {
-    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(3).WillRepeatedly(Return(m_gstPlayFlagsType));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(m_gstPlayFlagsType)).Times(3).WillRepeatedly(Return(&m_flagsClass));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(4).WillRepeatedly(Return(m_gstPlayFlagsType));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(m_gstPlayFlagsType)).Times(4).WillRepeatedly(Return(&m_flagsClass));
 
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio"))).WillOnce(Return(&m_audioFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
+    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("text"))).WillOnce(Return(&m_subtitleFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("native-video")))
         .WillOnce(Return(&m_nativeVideoFlag));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("brcmaudiosink"))).WillOnce(Return(nullptr));
@@ -134,11 +135,12 @@ void GstGenericPlayerTestCommon::expectSetFlags()
 
 void GstGenericPlayerTestCommon::expectSetFlagsWithNativeAudio()
 {
-    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(4).WillRepeatedly(Return(m_gstPlayFlagsType));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(m_gstPlayFlagsType)).Times(4).WillRepeatedly(Return(&m_flagsClass));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(5).WillRepeatedly(Return(m_gstPlayFlagsType));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(m_gstPlayFlagsType)).Times(5).WillRepeatedly(Return(&m_flagsClass));
 
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio"))).WillOnce(Return(&m_audioFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
+    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("text"))).WillOnce(Return(&m_subtitleFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("native-video")))
         .WillOnce(Return(&m_nativeVideoFlag));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("brcmaudiosink")))
@@ -197,4 +199,57 @@ void GstGenericPlayerTestCommon::expectSetMessageCallback()
 {
     EXPECT_CALL(m_gstDispatcherThreadFactoryMock, createGstDispatcherThread(_, _, _))
         .WillOnce(Return(ByMove(std::move(gstDispatcherThread))));
+}
+
+void GstGenericPlayerTestCommon::expectGetDecoder(GstElement *element)
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
+    EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(element));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(element)).WillOnce(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                           GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(element)).WillOnce(Return(element));
+    EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
+}
+
+void GstGenericPlayerTestCommon::expectGetVideoParser(GstElement *element)
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
+    EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(element));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(element)).WillOnce(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_PARSER |
+                                                                           GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO)))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(element)).WillOnce(Return(element));
+    EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
+}
+
+void GstGenericPlayerTestCommon::expectGetSink(const std::string &sinkName, GstElement *elementObj)
+{
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(sinkName.c_str()), _))
+        .WillOnce(Invoke(
+            [elementObj](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = elementObj;
+            }));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(elementObj))).WillOnce(Return(kElementTypeName.c_str()));
+}
+
+void GstGenericPlayerTestCommon::expectNoDecoder()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_DONE));
+    EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
+    EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
+}
+
+void GstGenericPlayerTestCommon::expectNoParser()
+{
+    expectNoDecoder();
 }

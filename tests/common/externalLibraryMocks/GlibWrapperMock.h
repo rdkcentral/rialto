@@ -37,9 +37,6 @@ public:
     MOCK_METHOD(void, gObjectUnref, (gpointer object), (override));
     MOCK_METHOD(gulong, gSignalConnect,
                 (gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data), (override));
-    MOCK_METHOD(void, gSignalHandlerDisconnect, (GObject * instance, gulong handler_id), (const, override));
-    MOCK_METHOD(guint, gTimeoutAdd, (guint interval, GSourceFunc function, gpointer data), (override));
-    MOCK_METHOD(gboolean, gSourceRemove, (guint tag));
     MOCK_METHOD(void, gFree, (gpointer mem), (const, override));
 
     // Cannot mock variadic functions
@@ -52,16 +49,40 @@ public:
 
         while (NULL != kProperty)
         {
-            gObjectSetStub(object, kProperty);
+            if (g_strcmp0(kProperty, "immediate-output") == 0 || g_strcmp0(kProperty, "low-latency") == 0 ||
+                g_strcmp0(kProperty, "sync") == 0 || g_strcmp0(kProperty, "sync-off") == 0 ||
+                g_strcmp0(kProperty, "syncmode-streaming") == 0 || g_strcmp0(kProperty, "use-buffering") == 0)
+            {
+                gboolean val = va_arg(args, gboolean);
+                gObjectSetBoolStub(object, kProperty, val);
+            }
+            else if (g_strcmp0(kProperty, "stream-sync-mode") == 0 || g_strcmp0(kProperty, "frame-step-on-preroll") == 0 ||
+                     g_strcmp0(kProperty, "limit-buffering-ms") == 0)
+            {
+                gint val = va_arg(args, gint);
+                gObjectSetIntStub(object, kProperty, val);
+            }
+            else if (g_strcmp0(kProperty, "audio-fade") == 0)
+            {
+                const gchar *val = va_arg(args, const gchar *);
+                gObjectSetStrStub(object, kProperty, val);
+            }
+            else
+            {
+                gObjectSetStub(object, kProperty);
+                // Get the next propery, ignore the values
+                va_arg(args, void *);
+            }
 
-            // Get the next propery, ignore the values
-            va_arg(args, void *);
             kProperty = va_arg(args, const gchar *);
         }
 
         va_end(args);
     };
     MOCK_METHOD(void, gObjectSetStub, (gpointer object, const gchar *first_property_name));
+    MOCK_METHOD(void, gObjectSetStrStub, (gpointer object, const gchar *first_property_name, const gchar *val));
+    MOCK_METHOD(void, gObjectSetBoolStub, (gpointer object, const gchar *first_property_name, gboolean val));
+    MOCK_METHOD(void, gObjectSetIntStub, (gpointer object, const gchar *first_property_name, gint val));
     void gObjectGet(gpointer object, const gchar *first_property_name, ...) override
     {
         va_list args;
@@ -99,6 +120,7 @@ public:
     MOCK_METHOD(gchar *, gStrdupPrintfStub, (const gchar *format));
 
     MOCK_METHOD(GParamSpec *, gObjectClassFindProperty, (GObjectClass *, const gchar *), (override));
+    MOCK_METHOD(GParamSpec **, gObjectClassListProperties, (GObjectClass * oclass, guint *nProps), (override));
     MOCK_METHOD(gboolean, gStrHasPrefix, (const gchar *, const gchar *), (override));
     MOCK_METHOD(guint *, gSignalListIds, (GType itype, guint *n_ids), (const, override));
     MOCK_METHOD(void, gSignalQuery, (guint signal_id, GSignalQuery *query), (const, override));
@@ -115,6 +137,7 @@ public:
     MOCK_METHOD(gpointer, gValueGetObject, (const GValue *value), (const, override));
     MOCK_METHOD(void, gValueUnset, (GValue * value), (const, override));
     MOCK_METHOD(GError *, gErrorNewLiteral, (GQuark domain, gint code, const gchar *message), (const, override));
+    MOCK_METHOD(GValue *, gValueInit, (GValue * value, GType type), (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 

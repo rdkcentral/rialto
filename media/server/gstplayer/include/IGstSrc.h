@@ -24,6 +24,7 @@
 #include <MediaCommon.h>
 #include <gst/app/gstappsrc.h>
 #include <gst/gst.h>
+#include <list>
 #include <memory>
 #include <stdint.h>
 #include <unordered_map>
@@ -62,9 +63,18 @@ public:
 struct StreamInfo
 {
     explicit StreamInfo(GstElement *appSrc_ = nullptr, bool hasDrm_ = true) : appSrc(appSrc_), hasDrm(hasDrm_) {}
-    bool operator==(const StreamInfo &other) const { return appSrc == other.appSrc && hasDrm == other.hasDrm; }
+    bool operator==(const StreamInfo &other) const
+    {
+        return appSrc == other.appSrc && hasDrm == other.hasDrm && isDataNeeded == other.isDataNeeded &&
+               isNeedDataPending == other.isNeedDataPending && isDataPushed == other.isDataPushed;
+    }
     GstElement *appSrc;
     bool hasDrm;
+    bool isDataNeeded{false};
+    bool isNeedDataPending{false};
+    bool isDataPushed{false};
+    std::list<GstBuffer *> buffers{};
+    bool underflowOccured{false};
 };
 /**
  * @brief Definition of a stream info map.

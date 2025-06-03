@@ -64,6 +64,17 @@ public:
     MOCK_METHOD(void, getPosition,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetPositionRequest *request,
                  ::firebolt::rialto::GetPositionResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setImmediateOutput,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::SetImmediateOutputRequest *request,
+                 ::firebolt::rialto::SetImmediateOutputResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getImmediateOutput,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::GetImmediateOutputRequest *request,
+                 ::firebolt::rialto::GetImmediateOutputResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getStats,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetStatsRequest *request,
+                 ::firebolt::rialto::GetStatsResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, setPlaybackRate,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::SetPlaybackRateRequest *request,
                  ::firebolt::rialto::SetPlaybackRateResponse *response, ::google::protobuf::Closure *done));
@@ -85,6 +96,40 @@ public:
     MOCK_METHOD(void, getMute,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetMuteRequest *request,
                  ::firebolt::rialto::GetMuteResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setLowLatency,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::SetLowLatencyRequest *request,
+                 ::firebolt::rialto::SetLowLatencyResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setSync,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::SetSyncRequest *request,
+                 ::firebolt::rialto::SetSyncResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getSync,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetSyncRequest *request,
+                 ::firebolt::rialto::GetSyncResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setSyncOff,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::SetSyncOffRequest *request,
+                 ::firebolt::rialto::SetSyncOffResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setStreamSyncMode,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::SetStreamSyncModeRequest *request,
+                 ::firebolt::rialto::SetStreamSyncModeResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getStreamSyncMode,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::GetStreamSyncModeRequest *request,
+                 ::firebolt::rialto::GetStreamSyncModeResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setBufferingLimit,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::SetBufferingLimitRequest *request,
+                 ::firebolt::rialto::SetBufferingLimitResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getBufferingLimit,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::GetBufferingLimitRequest *request,
+                 ::firebolt::rialto::GetBufferingLimitResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setUseBuffering,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::SetUseBufferingRequest *request,
+                 ::firebolt::rialto::SetUseBufferingResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getUseBuffering,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetUseBufferingRequest *request,
+                 ::firebolt::rialto::GetUseBufferingResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, flush,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::FlushRequest *request,
                  ::firebolt::rialto::FlushResponse *response, ::google::protobuf::Closure *done));
@@ -92,6 +137,9 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::SetSourcePositionRequest *request,
                  ::firebolt::rialto::SetSourcePositionResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, processAudioGap,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::ProcessAudioGapRequest *request,
+                 ::firebolt::rialto::ProcessAudioGapResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -132,10 +180,59 @@ public:
         return response;
     }
 
+    ::firebolt::rialto::GetSyncResponse getSyncResponse(const bool sync)
+    {
+        firebolt::rialto::GetSyncResponse response;
+        response.set_sync(sync);
+        return response;
+    }
+
+    ::firebolt::rialto::GetStreamSyncModeResponse getStreamSyncModeResponse(const int32_t streamSyncMode)
+    {
+        firebolt::rialto::GetStreamSyncModeResponse response;
+        response.set_stream_sync_mode(streamSyncMode);
+        return response;
+    }
+
+    ::firebolt::rialto::GetBufferingLimitResponse getBufferingLimitResponse(const uint32_t bufferingLimit)
+    {
+        firebolt::rialto::GetBufferingLimitResponse response;
+        response.set_limit_buffering_ms(bufferingLimit);
+        return response;
+    }
+
+    ::firebolt::rialto::GetUseBufferingResponse getUseBufferingResponse(const bool useBuffering)
+    {
+        firebolt::rialto::GetUseBufferingResponse response;
+        response.set_use_buffering(useBuffering);
+        return response;
+    }
+
     ::firebolt::rialto::GetPositionResponse getPositionResponse(const int64_t position)
     {
         firebolt::rialto::GetPositionResponse response;
         response.set_position(position);
+        return response;
+    }
+
+    ::firebolt::rialto::SetImmediateOutputResponse setImmediateOutputResponse()
+    {
+        firebolt::rialto::SetImmediateOutputResponse response;
+        return response;
+    }
+
+    ::firebolt::rialto::GetImmediateOutputResponse getImmediateOutputResponse(bool immediateOutputResponse)
+    {
+        firebolt::rialto::GetImmediateOutputResponse response;
+        response.set_immediate_output(immediateOutputResponse);
+        return response;
+    }
+
+    ::firebolt::rialto::GetStatsResponse getStatsResponse(const uint64_t renderedFrames, const uint64_t droppedFrames)
+    {
+        firebolt::rialto::GetStatsResponse response;
+        response.set_rendered_frames(renderedFrames);
+        response.set_dropped_frames(droppedFrames);
         return response;
     }
 

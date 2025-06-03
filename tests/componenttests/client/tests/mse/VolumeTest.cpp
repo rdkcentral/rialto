@@ -26,6 +26,8 @@ class VolumeTest : public ClientComponentTest
 {
 public:
     double m_volume = 0;
+    uint32_t m_volumeDuration = 0;
+    firebolt::rialto::EaseType m_easeType = EaseType::EASE_LINEAR;
 
     VolumeTest() : ClientComponentTest()
     {
@@ -90,7 +92,10 @@ TEST_F(VolumeTest, volume)
 {
     // Step 1: Set Volume 0.1
     m_volume = 0.1;
-    MediaPipelineTestMethods::shouldSetVolume(m_volume);
+    m_volumeDuration = 0;
+    m_easeType = EaseType::EASE_LINEAR;
+
+    MediaPipelineTestMethods::shouldSetVolume(m_volume, m_volumeDuration, m_easeType);
     MediaPipelineTestMethods::setVolume(m_volume);
 
     // Step 2: Get Volume
@@ -99,7 +104,9 @@ TEST_F(VolumeTest, volume)
 
     // Step 3: Set Volume 1.0
     m_volume = 1.0;
-    MediaPipelineTestMethods::shouldSetVolume(m_volume);
+    m_volumeDuration = 0;
+    m_easeType = EaseType::EASE_LINEAR;
+    MediaPipelineTestMethods::shouldSetVolume(m_volume, m_volumeDuration, m_easeType);
     MediaPipelineTestMethods::setVolume(m_volume);
 
     // Step 4: Get Volume

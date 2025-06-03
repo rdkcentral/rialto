@@ -47,10 +47,14 @@ public:
 /*
  * Component Test: QOS Notification
  * Test Objective:
- *  Test the QOS notification for all sources.
+ *  Test the QOS notification for all sources
+ *  Also test the get-stats functionality (which returns the number of rendered and dropped frames)
  *
  * Sequence Diagrams:
- *  Quality of Service - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams
+ *  Quality of Service
+ *  - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-QualityofService
+ *  Stats
+ *  - https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams-Stats
  *
  * Test Setup:
  *  Language: C++
@@ -74,6 +78,11 @@ public:
  *   Expect that the qos notification is propagated to the client.
  *   Check qos info.
  *
+ *  Step 3: Get Stats
+ *   GetStats
+ *   Expect that GetStats propagated to the server and returns the correct
+ *   number of frames rendered and dropped.
+ *
  * Test Tear-down:
  *  Terminate the media session.
  *  Memory region created for the shared buffer is closed.
@@ -93,5 +102,13 @@ TEST_F(QosNotificationTest, notifications)
     // Step 2: Notify qos video
     MediaPipelineTestMethods::shouldNotifyQosVideo();
     MediaPipelineTestMethods::sendNotifyQosVideo();
+
+    // Step 3: Get stats
+    {
+        const uint64_t kRenderedFrames = 2345;
+        const uint64_t kDroppedFrames = 6;
+        MediaPipelineTestMethods::shouldGetStats(kRenderedFrames, kDroppedFrames);
+        MediaPipelineTestMethods::getStats(kRenderedFrames, kDroppedFrames);
+    }
 }
 } // namespace firebolt::rialto::client::ct

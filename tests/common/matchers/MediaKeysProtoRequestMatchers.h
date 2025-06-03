@@ -205,4 +205,11 @@ MATCHER_P2(releaseKeySessionRequestMatcher, mediaKeysHandle, keySessionId, "")
     return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId));
 }
 
+MATCHER_P(getMetricSystemDataRequestMatcher, mediaKeysHandle, "")
+{
+    const ::firebolt::rialto::GetMetricSystemDataRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetMetricSystemDataRequest *>(arg);
+    return (kRequest->media_keys_handle() == mediaKeysHandle);
+}
+
 #endif // MEDIA_KEYS_PROTO_REQUEST_MATCHERS_H_

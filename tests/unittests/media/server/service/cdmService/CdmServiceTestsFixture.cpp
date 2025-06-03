@@ -210,13 +210,6 @@ void CdmServiceTests::mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto:
     EXPECT_CALL(m_mediaKeysMock, releaseKeySession(kKeySessionId)).WillOnce(Return(status));
 }
 
-void CdmServiceTests::mediaKeysWillDecryptDeprecatedWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
-{
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
-    EXPECT_CALL(m_mediaKeysMock, decrypt(kKeySessionId, _, _, kSubSampleCount, _, _, kInitWithLast15, _))
-        .WillOnce(Return(status));
-}
-
 void CdmServiceTests::mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
@@ -244,6 +237,11 @@ void CdmServiceTests::mediaKeysWillPing()
 {
     EXPECT_CALL(*m_heartbeatProcedureMock, createHandler());
     EXPECT_CALL(m_mediaKeysMock, ping(_));
+}
+
+void CdmServiceTests::mediaKeysWillGetMetricSystemDataWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_CALL(m_mediaKeysMock, getMetricSystemData(_)).WillOnce(Return(status));
 }
 
 void CdmServiceTests::createMediaKeysShouldSucceed()
@@ -311,17 +309,6 @@ void CdmServiceTests::getCdmKeySessionIdShouldReturnStatus(firebolt::rialto::Med
 {
     std::string cdmKeySessionId;
     EXPECT_EQ(status, m_sut.getCdmKeySessionId(kMediaKeysHandle, kKeySessionId, cdmKeySessionId));
-}
-
-void CdmServiceTests::decryptDeprecatedShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
-{
-    GstBuffer encryptedData{};
-    GstBuffer subSample{};
-    GstBuffer IV{};
-    GstBuffer keyId{};
-    GstCaps caps{};
-    EXPECT_EQ(status, m_sut.decrypt(kKeySessionId, &encryptedData, &subSample, kSubSampleCount, &IV, &keyId,
-                                    kInitWithLast15, &caps));
 }
 
 void CdmServiceTests::decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
@@ -463,4 +450,10 @@ void CdmServiceTests::decrementSessionIdUsageCounterFails()
 {
     EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(false));
     m_sut.decrementSessionIdUsageCounter(kKeySessionId);
+}
+
+void CdmServiceTests::getMetricSystemDataShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    std::vector<uint8_t> buffer;
+    EXPECT_EQ(status, m_sut.getMetricSystemData(kMediaKeysHandle, buffer));
 }

@@ -20,6 +20,8 @@
 add_gtests (
         RialtoServerMainUnitTests
 
+        main.cpp
+
         # gtest code
         activeRequests/ActiveRequestsTests.cpp
 
@@ -40,6 +42,8 @@ add_gtests (
         mediaPipeline/HaveDataTest.cpp
         mediaPipeline/FlushTest.cpp
         mediaPipeline/SetSourcePositionTest.cpp
+        mediaPipeline/ProcessAudioGapTest.cpp
+        mediaPipeline/TextTrackIdentifierTest.cpp
 
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
 
@@ -66,6 +70,7 @@ add_gtests (
         mediaKeys/IsNetflixPlayreadyKeySystemTest.cpp
         mediaKeys/PingTest.cpp
         mediaKeys/ReleaseKeySessionTest.cpp
+        mediaKeys/GetMetricSystemDataTest.cpp
 
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
@@ -73,7 +78,6 @@ add_gtests (
 
         mediaKeySession/base/MediaKeySessionTestBase.cpp
         mediaKeySession/CreateTest.cpp
-        mediaKeySession/DecryptTest.cpp
         mediaKeySession/DecryptBufferTest.cpp
         mediaKeySession/GenerateRequestTest.cpp
         mediaKeySession/LoadSessionTest.cpp
@@ -95,6 +99,10 @@ add_gtests (
         needMediaData/NeedMediaDataTests.cpp
 
         mainThread/MainThreadTest.cpp
+
+        textTrackAccessor/TextTrackAccessorTest.cpp
+
+        textTrackSession/TextTrackSessionTest.cpp
 
         webAudioPlayer/base/WebAudioPlayerTestBase.cpp
         webAudioPlayer/CreateTest.cpp

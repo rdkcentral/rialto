@@ -110,6 +110,12 @@ public:
 
     bool getPosition(int64_t &position) override;
 
+    bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
+
+    bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
+
+    bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
+
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
     bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
@@ -120,17 +126,46 @@ public:
 
     bool renderFrame() override;
 
-    bool setVolume(double volume) override;
+    bool setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType) override;
 
-    bool getVolume(double &volume) override;
+    bool getVolume(double &currentVolume) override;
 
-    bool setMute(bool mute) override;
+    bool setMute(std::int32_t sourceId, bool mute) override;
 
-    bool getMute(bool &mute) override;
+    bool getMute(std::int32_t sourceId, bool &mute) override;
 
-    bool flush(int32_t sourceId, bool resetTime) override;
+    bool setTextTrackIdentifier(const std::string &textTrackIdentifier) override;
 
-    bool setSourcePosition(int32_t sourceId, int64_t position) override;
+    bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
+
+    bool setLowLatency(bool lowLatency) override;
+
+    bool setSync(bool sync) override;
+
+    bool getSync(bool &sync) override;
+
+    bool setSyncOff(bool syncOff) override;
+
+    bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) override;
+
+    bool getStreamSyncMode(int32_t &streamSyncMode) override;
+
+    bool flush(int32_t sourceId, bool resetTime, bool &async) override;
+
+    bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
+                           uint64_t stopPosition) override;
+
+    bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
+
+    bool setBufferingLimit(uint32_t limitBufferingMs) override;
+
+    bool getBufferingLimit(uint32_t &limitBufferingMs) override;
+
+    bool setUseBuffering(bool useBuffering) override;
+
+    bool getUseBuffering(bool &useBuffering) override;
+
+    bool switchSource(const std::unique_ptr<MediaSource> &source) override;
 
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
@@ -243,6 +278,16 @@ protected:
     bool m_wasAllSourcesAttachedCalled;
 
     /**
+     * @brief Flag used to check if low latency is set for video source
+     */
+    bool m_IsLowLatencyVideoPlayer{false};
+
+    /**
+     * @brief Flag used to check if low latency is set for audio source
+     */
+    bool m_IsLowLatencyAudioPlayer{false};
+
+    /**
      * @brief Map of flags used to check if Eos has been set on the media type for this playback
      */
     std::map<MediaSourceType, bool> m_isMediaTypeEosMap;
@@ -332,6 +377,43 @@ protected:
     bool getPositionInternal(int64_t &position);
 
     /**
+     * @brief Sets the "Immediate Output" property for this source.
+     *
+     * This method is asynchronous
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] immediateOutput : The desired immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    bool setImmediateOutputInternal(int32_t sourceId, bool immediateOutput);
+
+    /**
+     * @brief Gets the "Immediate Output" property for this source.
+     *
+     * This method is sychronous
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] immediateOutput : Returns the immediate output mode on the sink
+     *
+     * @retval true on success.
+     */
+    bool getImmediateOutputInternal(int32_t sourceId, bool &immediateOutput);
+
+    /**
+     * @brief Get stats for this source.
+     *
+     * This method is sychronous, it returns dropped frames and rendered frames
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] renderedFrames : The number of rendered frames
+     * @param[out] droppedFrames : The number of dropped frames
+     *
+     * @retval true on success.
+     */
+    bool getStatsInternal(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames);
+
+    /**
      * @brief Set video window internally, only to be called on the main thread.
      *
      * @param[in] x      : The x position in pixels.
@@ -397,22 +479,25 @@ protected:
     void scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType);
 
     /**
-     * @brief Set volume internally, only to be called on the main thread.
+     * @brief Set the target volume level with a transition internally, only to be called on the main thread.
      *
-     * @param[in] volume Target volume level (0.0 - 1.0)
+     * @param[in] targetVolume : Target volume level (0.0 - 1.0)
+     * @param[in] volumeDuration : Duration of the volume transition in milliseconds
+     * @param[in] ease_type : Easing type for the volume transition
      *
-     * @retval true on success false otherwise
+     * @retval true on success, false otherwise
      */
-    bool setVolumeInternal(double volume);
+    bool setVolumeInternal(double targetVolume, uint32_t volumeDuration, EaseType easeType);
 
     /**
-     * @brief Get volume internally, only to be called on the main thread.
+     * @brief Get the current volume level internally, only to be called on the main thread.
+     *        Fetches the current volume level for the pipeline.
      *
-     * @param[out] volume Current volume level (range 0.0 - 1.0)
+     * @param[out] currentVolume : Current volume level (range 0.0 - 1.0)
      *
-     * @retval true on success false otherwise
+     * @retval true on success, false otherwise
      */
-    bool getVolumeInternal(double &volume);
+    bool getVolumeInternal(double &currentVolume);
 
     /**
      * @brief Set mute internally, only to be called on the main thread.
@@ -421,7 +506,7 @@ protected:
      *
      * @retval true on success false otherwise
      */
-    bool setMuteInternal(bool mute);
+    bool setMuteInternal(std::int32_t sourceId, bool mute);
 
     /**
      * @brief Get mute internally, only to be called on the main thread.
@@ -430,7 +515,80 @@ protected:
      *
      * @retval true on success false otherwise
      */
-    bool getMuteInternal(bool &mute);
+    bool getMuteInternal(std::int32_t sourceId, bool &mute);
+
+    /**
+     * @brief Change Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    bool setTextTrackIdentifierInternal(const std::string &textTrackIdentifier);
+
+    /**
+     * @brief Get Text Track Identifier
+     *
+     * @param[in] textTrackIdentifier Text track identifier of subtitle stream
+     *
+     * @retval true on success false otherwise
+     */
+    bool getTextTrackIdentifierInternal(std::string &textTrackIdentifier);
+
+    /**
+     * @brief Set low latency internally, only to be called on the main thread.
+     *
+     * @param[in] lowLatency : The low latency value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    bool setLowLatencyInternal(bool lowLatency);
+
+    /**
+     * @brief Set sync internally, only to be called on the main thread.
+     *
+     * @param[in] sync : The sync value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    bool setSyncInternal(bool sync);
+
+    /**
+     * @brief Get sync internally, only to be called on the main thread.
+     *
+     * @param[out] sync : Current sync value.
+     *
+     * @retval true on success false otherwise
+     */
+    bool getSyncInternal(bool &sync);
+
+    /**
+     * @brief Set sync off internally, only to be called on the main thread.
+     *
+     * @param[in] syncOff : The sync off value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    bool setSyncOffInternal(bool syncOff);
+
+    /**
+     * @brief Set stream sync mode internally, only to be called on the main thread.
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] streamSyncMode : The stream sync mode value to set.
+     *
+     * @retval true on success false otherwise
+     */
+    bool setStreamSyncModeInternal(int32_t sourceId, int32_t streamSyncMode);
+
+    /**
+     * @brief Get stream sync mode internally, only to be called on the main thread.
+     *
+     * @param[out] streamSyncMode : Current stream sync mode value.
+     *
+     * @retval true on success false otherwise
+     */
+    bool getStreamSyncModeInternal(int32_t &streamSyncMode);
 
     /**
      * @brief Checks if MediaPipeline threads are not deadlocked internally
@@ -442,12 +600,13 @@ protected:
     /**
      * @brief Flushes a source.
      *
-     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
-     * @param[in] resetTime : True if time should be reset
+     * @param[in]  sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in]  resetTime : True if time should be reset
+     * @param[out] async     : True if flushed source is asynchronous (will preroll after flush)
      *
      * @retval true on success.
      */
-    bool flushInternal(int32_t sourceId, bool resetTime);
+    bool flushInternal(int32_t sourceId, bool resetTime, bool &async);
 
     /**
      * @brief Set the source position in nanoseconds.
@@ -456,10 +615,93 @@ protected:
      *
      * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
      * @param[in] position : The position in nanoseconds.
+     * @param[in] resetTime : True if time should be reset
+     * @param[in] appliedRate : The applied rate after seek
+     * @param[in] stopPosition : The position of last pushed buffer
      *
      * @retval true on success.
      */
-    bool setSourcePositionInternal(int32_t sourceId, int64_t position);
+    bool setSourcePositionInternal(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
+                                   uint64_t stopPosition);
+
+    /**
+     * @brief Process audio gap
+     *
+     * This method handles audio gap in order to avoid audio pops during transitions.
+     *
+     * @param[in] position         : Audio pts fade position
+     * @param[in] duration         : Audio pts fade duration
+     * @param[in] discontinuityGap : Audio discontinuity gap
+     * @param[in] audioAac         : True if audio codec is AAC
+     *
+     * @retval true on success.
+     */
+    bool processAudioGapInternal(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac);
+
+    /**
+     * @brief Set buffering limit
+     *
+     * This method enables/disables limit buffering and sets millisecond threshold used.
+     * Use kInvalidLimitBuffering to disable limit buffering
+     *
+     * @param[in] limitBufferingMs         : buffering limit in ms
+     *
+     * @retval true on success.
+     */
+    bool setBufferingLimitInternal(uint32_t limitBufferingMs);
+
+    /**
+     * @brief Get buffering limit
+     *
+     * This method returns current value of buffering limit in milliseconds
+     * Method will return kInvalidLimitBuffering limit buffering is disabled
+     *
+     * @param[out] limitBufferingMs         : buffering limit in ms
+     *
+     * @retval true on success.
+     */
+    bool getBufferingLimitInternal(uint32_t &limitBufferingMs);
+
+    /**
+     * @brief Enables/disables the buffering option
+     *
+     * This method enables the buffering option so that BUFFERING messages are
+     * emitted based on low-/high-percent thresholds.
+     *
+     * @param[in] useBuffering         : true if buffering option enabled.
+     *
+     * @retval true on success.
+     */
+    bool setUseBufferingInternal(bool useBuffering);
+
+    /**
+     * @brief Checks, if buffering is enabled
+     *
+     * This method returns true, if buffering is enabled
+     *
+     * @param[out] useBuffering         : true if buffering option is enabled.
+     *
+     * @retval true on success.
+     */
+    bool getUseBufferingInternal(bool &useBuffering);
+
+    /**
+     * @brief Switches a source.
+     *
+     * @param[in] mediaSource : The media source.
+     *
+     */
+    bool switchSourceInternal(const std::unique_ptr<MediaSource> &source);
+
+    /**
+     * @brief Returns how long should we wait to send next NeedMediaData
+     *        if rialto client returns NO_AVAILABLE_SAMPLES
+     *
+     * @param[in] mediaSourceType : The media source type.
+     *
+     * @retval NeedMediaData timeout
+     */
+    std::chrono::milliseconds getNeedMediaDataTimeout(MediaSourceType mediaSourceType) const;
 };
 
 }; // namespace firebolt::rialto::server

@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2025 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,29 +17,20 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_INIT_H_
-#define FIREBOLT_RIALTO_SERVER_GST_INIT_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_INITIALISER_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_GST_INITIALISER_MOCK_H_
+
+#include "IGstInitialiser.h"
+#include <gmock/gmock.h>
 
 namespace firebolt::rialto::server
 {
-/**
- * @brief Initialise gstreamer.
- *
- * Gstreamer should be initalised at the start of the program.
- * Gstreamer shall be passed the pointers to the main argc and argv
- * variables so that it can process its own command line options.
- *
- * @param[in] argc    : The count of command line arguments.
- * @param[in] argv    : Vector of C strings each containing a command line argument.
- */
-bool gstInitalise(int argc, char **argv);
+class GstInitialiserMock : public IGstInitialiser
+{
+public:
+    MOCK_METHOD(void, initialise, (int *argc, char ***argv), (override));
+    MOCK_METHOD(void, waitForInitialisation, (), (const, override));
+};
+} // namespace firebolt::rialto::server
 
-/**
- * @brief Deinitalise gstreamer.
- *
- */
-bool gstDeinitalise();
-
-}; // namespace firebolt::rialto::server
-
-#endif // FIREBOLT_RIALTO_SERVER_GST_INIT_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_INITIALISER_MOCK_H_

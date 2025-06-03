@@ -27,9 +27,12 @@
 #include "GstGenericPlayerClientMock.h"
 #include "GstGenericPlayerPrivateMock.h"
 #include "GstSrcMock.h"
+#include "GstTextTrackSinkFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
+
 #include <memory>
+#include <string>
 
 /**
  * @brief GenericTasksTests context
@@ -56,6 +59,8 @@ public:
         std::make_shared<StrictMock<firebolt::rialto::server::GstSrcMock>>()};
     std::shared_ptr<StrictMock<firebolt::rialto::server::DataReaderMock>> m_dataReader{
         std::make_shared<StrictMock<firebolt::rialto::server::DataReaderMock>>()};
+    std::shared_ptr<firebolt::rialto::server::GstTextTrackSinkFactoryMock> m_gstTextTrackSinkFactoryMock{
+        std::make_shared<StrictMock<firebolt::rialto::server::GstTextTrackSinkFactoryMock>>()};
 
     // Gstreamer members
     GstElement *m_element{};
@@ -63,10 +68,12 @@ public:
     GstElement m_pipeline{};
     GstBuffer m_audioBuffer{};
     GstBuffer m_videoBuffer{};
+    GstBuffer m_subtitleBuffer{};
     GstCaps m_gstCaps1{};
     GstCaps m_gstCaps2{};
     GstElement m_appSrcAudio{};
     GstElement m_appSrcVideo{};
+    GstElement m_appSrcSubtitle{};
     GstBin m_bin{};
     GstObject m_obj1{};
     GstObject m_obj2{};
@@ -81,6 +88,9 @@ public:
     GstIterator m_iterator{};
     GstElement m_childElement{};
     GstQuery m_query{};
+    GstElement m_textTrackSink{};
+    GstElement m_videoSink{};
+    GstPad m_pad{};
 
     // Glib members
     guint m_signals[1]{123};
@@ -105,10 +115,11 @@ public:
     GObject m_gObj{};
 
     // Standard members
-    bool m_underflowFlag{false};
     bool m_underflowEnabled{false};
+    std::string m_textTrackIdentifier{"Identifier"};
     firebolt::rialto::server::StreamInfo m_streamInfoAudio{&m_appSrcAudio, true};
     firebolt::rialto::server::StreamInfo m_streamInfoVideo{&m_appSrcVideo, true};
+    firebolt::rialto::server::StreamInfo m_streamInfoSubtitle{&m_appSrcSubtitle, true};
 };
 
 #endif // GENERIC_TASKS_TESTS_CONTEXT_H_

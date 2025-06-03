@@ -27,6 +27,14 @@ TEST_F(ServerManagerModuleServiceTests, shouldSetConfiguration)
     sendSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE);
 }
 
+TEST_F(ServerManagerModuleServiceTests, shouldSetConfigurationWithFd)
+{
+    sessionServerManagerWillHandleRequestSuccess();
+    sessionServerManagerWillSetConfigurationWithFd(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sessionServerManagerWillSetLogLevels();
+    sendSetConfigurationWithFd(firebolt::rialto::common::SessionServerState::ACTIVE);
+}
+
 TEST_F(ServerManagerModuleServiceTests, shouldSetStateToUninitialized)
 {
     sessionServerManagerWillHandleRequestSuccess();
@@ -75,6 +83,14 @@ TEST_F(ServerManagerModuleServiceTests, shouldFailToSetConfiguration)
     sessionServerManagerWillFailToSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE);
     sessionServerManagerWillSetLogLevels();
     sendSetConfiguration(firebolt::rialto::common::SessionServerState::ACTIVE);
+}
+
+TEST_F(ServerManagerModuleServiceTests, shouldFailToSetConfigurationWithFd)
+{
+    sessionServerManagerWillHandleRequestFailure();
+    sessionServerManagerWillFailToSetConfigurationWithFd(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sessionServerManagerWillSetLogLevels();
+    sendSetConfigurationWithFd(firebolt::rialto::common::SessionServerState::ACTIVE);
 }
 
 TEST_F(ServerManagerModuleServiceTests, shouldFailToSetState)

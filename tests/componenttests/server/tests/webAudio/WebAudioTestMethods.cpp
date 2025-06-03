@@ -64,10 +64,10 @@ WebAudioTestMethods::WebAudioTestMethods()
     memset(&m_gstCaps2, 0x00, sizeof(m_gstCaps2));
     memset(&m_convert, 0x00, sizeof(m_convert));
     memset(&m_resample, 0x00, sizeof(m_resample));
+    memset(&m_volume, 0x00, sizeof(m_volume));
     memset(&m_buffer, 0x00, sizeof(m_buffer));
     memset(&m_capsStr, 0x00, sizeof(m_capsStr));
 
-    willConfigureSocket();
     configureSutInActiveState();
     connectClient();
 }
@@ -198,13 +198,16 @@ void WebAudioTestMethods::willCreateWebAudioPlayer()
     //   GstWebAudioPlayerTestCommon::expectLinkElements()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioconvert"), _)).WillOnce(Return(&m_convert));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioresample"), _)).WillOnce(Return(&m_resample));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("volume"), _)).WillOnce(Return(&m_volume));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), GST_ELEMENT(&m_appSrc))).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_convert)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_resample)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_volume)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementLink(GST_ELEMENT(&m_appSrc), &m_convert)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_convert, &m_resample)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_resample, &m_sink)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_resample, &m_volume)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_volume, &m_sink)).WillOnce(Return(TRUE));
 
     EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq(kAudioMimeType))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("channels"), G_TYPE_INT, kPcmChannels));

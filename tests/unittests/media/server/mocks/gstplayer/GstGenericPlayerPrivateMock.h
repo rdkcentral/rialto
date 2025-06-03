@@ -21,8 +21,10 @@
 #define FIREBOLT_RIALTO_SERVER_GST_GENERIC_PLAYER_PRIVATE_MOCK_H_
 
 #include "IGstGenericPlayerPrivate.h"
+
 #include <gmock/gmock.h>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace firebolt::rialto::server
@@ -36,10 +38,17 @@ public:
     MOCK_METHOD(void, scheduleVideoUnderflow, (), (override));
     MOCK_METHOD(void, scheduleAllSourcesAttached, (), (override));
     MOCK_METHOD(bool, setVideoSinkRectangle, (), (override));
-    MOCK_METHOD(void, notifyNeedMediaData, (bool audioNotificationNeeded, bool videoNotificationNeeded), (override));
+    MOCK_METHOD(bool, setImmediateOutput, (), (override));
+    MOCK_METHOD(bool, setLowLatency, (), (override));
+    MOCK_METHOD(bool, setSync, (), (override));
+    MOCK_METHOD(bool, setSyncOff, (), (override));
+    MOCK_METHOD(bool, setStreamSyncMode, (const MediaSourceType &type), (override));
+    MOCK_METHOD(bool, setRenderFrame, (), (override));
+    MOCK_METHOD(bool, setBufferingLimit, (), (override));
+    MOCK_METHOD(bool, setUseBuffering, (), (override));
+    MOCK_METHOD(void, notifyNeedMediaData, (const MediaSourceType mediaSource), (override));
     MOCK_METHOD(GstBuffer *, createBuffer, (const IMediaPipeline::MediaSegment &mediaSegment), (const, override));
-    MOCK_METHOD(void, attachAudioData, (), (override));
-    MOCK_METHOD(void, attachVideoData, (), (override));
+    MOCK_METHOD(void, attachData, (const firebolt::rialto::MediaSourceType mediaType), (override));
     MOCK_METHOD(void, updateAudioCaps, (int32_t rate, int32_t channels, const std::shared_ptr<CodecData> &codecData),
                 (override));
     MOCK_METHOD(void, updateVideoCaps,
@@ -49,15 +58,21 @@ public:
     MOCK_METHOD(void, startPositionReportingAndCheckAudioUnderflowTimer, (), (override));
     MOCK_METHOD(void, stopPositionReportingAndCheckAudioUnderflowTimer, (), (override));
     MOCK_METHOD(void, stopWorkerThread, (), (override));
-    MOCK_METHOD(void, cancelUnderflow, (bool &underflowFlag), (override));
+    MOCK_METHOD(void, cancelUnderflow, (firebolt::rialto::MediaSourceType mediaSource), (override));
     MOCK_METHOD(void, setPendingPlaybackRate, (), (override));
     MOCK_METHOD(void, updatePlaybackGroup, (GstElement * typefind, const GstCaps *caps), (override));
     MOCK_METHOD(void, addAutoVideoSinkChild, (GObject * object), (override));
+    MOCK_METHOD(void, addAutoAudioSinkChild, (GObject * object), (override));
     MOCK_METHOD(void, removeAutoVideoSinkChild, (GObject * object), (override));
-    MOCK_METHOD(GstElement *, getSinkChildIfAutoVideoSink, (GstElement * sink), (override));
-    MOCK_METHOD(void, setAudioVideoFlags, (bool enableAudio, bool enableVideo), (override));
+    MOCK_METHOD(void, removeAutoAudioSinkChild, (GObject * object), (override));
+    MOCK_METHOD(GstElement *, getSink, (const MediaSourceType &mediaSourceType), (const, override));
+    MOCK_METHOD(void, setPlaybinFlags, (bool enableAudio), (override));
+
     MOCK_METHOD(void, addAudioClippingToBuffer, (GstBuffer * buffer, uint64_t clippingStart, uint64_t clippingEnd),
                 (const, override));
+    MOCK_METHOD(void, pushSampleIfRequired, (GstElement * source, const std::string &typeStr), (override));
+    MOCK_METHOD(bool, reattachSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &source), (override));
+    MOCK_METHOD(void, setSourceFlushed, (const MediaSourceType &mediaSourceType), (override));
 };
 } // namespace firebolt::rialto::server
 

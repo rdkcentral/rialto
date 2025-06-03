@@ -168,6 +168,30 @@ struct GetPosition
     static constexpr auto m_kFunction{&Stub::getPosition};
 };
 
+struct SetImmediateOutput
+{
+    using RequestType = ::firebolt::rialto::SetImmediateOutputRequest;
+    using ResponseType = ::firebolt::rialto::SetImmediateOutputResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setImmediateOutput};
+};
+
+struct GetImmediateOutput
+{
+    using RequestType = ::firebolt::rialto::GetImmediateOutputRequest;
+    using ResponseType = ::firebolt::rialto::GetImmediateOutputResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getImmediateOutput};
+};
+
+struct GetStats
+{
+    using RequestType = ::firebolt::rialto::GetStatsRequest;
+    using ResponseType = ::firebolt::rialto::GetStatsResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getStats};
+};
+
 struct RenderFrame
 {
     using RequestType = ::firebolt::rialto::RenderFrameRequest;
@@ -208,6 +232,86 @@ struct GetMute
     static constexpr auto m_kFunction{&Stub::getMute};
 };
 
+struct SetLowLatency
+{
+    using RequestType = ::firebolt::rialto::SetLowLatencyRequest;
+    using ResponseType = ::firebolt::rialto::SetLowLatencyResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setLowLatency};
+};
+
+struct SetSync
+{
+    using RequestType = ::firebolt::rialto::SetSyncRequest;
+    using ResponseType = ::firebolt::rialto::SetSyncResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setSync};
+};
+
+struct GetSync
+{
+    using RequestType = ::firebolt::rialto::GetSyncRequest;
+    using ResponseType = ::firebolt::rialto::GetSyncResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getSync};
+};
+
+struct SetSyncOff
+{
+    using RequestType = ::firebolt::rialto::SetSyncOffRequest;
+    using ResponseType = ::firebolt::rialto::SetSyncOffResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setSyncOff};
+};
+
+struct SetStreamSyncMode
+{
+    using RequestType = ::firebolt::rialto::SetStreamSyncModeRequest;
+    using ResponseType = ::firebolt::rialto::SetStreamSyncModeResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setStreamSyncMode};
+};
+
+struct GetStreamSyncMode
+{
+    using RequestType = ::firebolt::rialto::GetStreamSyncModeRequest;
+    using ResponseType = ::firebolt::rialto::GetStreamSyncModeResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getStreamSyncMode};
+};
+
+struct SetBufferingLimit
+{
+    using RequestType = ::firebolt::rialto::SetBufferingLimitRequest;
+    using ResponseType = ::firebolt::rialto::SetBufferingLimitResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setBufferingLimit};
+};
+
+struct GetBufferingLimit
+{
+    using RequestType = ::firebolt::rialto::GetBufferingLimitRequest;
+    using ResponseType = ::firebolt::rialto::GetBufferingLimitResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getBufferingLimit};
+};
+
+struct SetUseBuffering
+{
+    using RequestType = ::firebolt::rialto::SetUseBufferingRequest;
+    using ResponseType = ::firebolt::rialto::SetUseBufferingResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setUseBuffering};
+};
+
+struct GetUseBuffering
+{
+    using RequestType = ::firebolt::rialto::GetUseBufferingRequest;
+    using ResponseType = ::firebolt::rialto::GetUseBufferingResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getUseBuffering};
+};
+
 struct SetVideoWindow
 {
     using RequestType = ::firebolt::rialto::SetVideoWindowRequest;
@@ -230,6 +334,14 @@ struct SetSourcePosition
     using ResponseType = ::firebolt::rialto::SetSourcePositionResponse;
     using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
     static constexpr auto m_kFunction{&Stub::setSourcePosition};
+};
+
+struct ProcessAudioGap
+{
+    using RequestType = ::firebolt::rialto::ProcessAudioGapRequest;
+    using ResponseType = ::firebolt::rialto::ProcessAudioGapResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::processAudioGap};
 };
 
 // mediakeys module
@@ -460,6 +572,14 @@ struct IsMimeTypeSupported
     static constexpr auto m_kFunction{&Stub::isMimeTypeSupported};
 };
 
+struct GetSupportedProperties
+{
+    using RequestType = ::firebolt::rialto::GetSupportedPropertiesRequest;
+    using ResponseType = ::firebolt::rialto::GetSupportedPropertiesResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getSupportedProperties};
+};
+
 // web audio player module
 struct CreateWebAudioPlayer
 {
@@ -547,6 +667,14 @@ struct WebAudioGetVolume
     using ResponseType = ::firebolt::rialto::WebAudioGetVolumeResponse;
     using Stub = ::firebolt::rialto::WebAudioPlayerModule_Stub;
     static constexpr auto m_kFunction{&Stub::getVolume};
+};
+
+struct GetMetricSystemData
+{
+    using RequestType = ::firebolt::rialto::GetMetricSystemDataRequest;
+    using ResponseType = ::firebolt::rialto::GetMetricSystemDataResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getMetricSystemData};
 };
 
 } // namespace firebolt::rialto::server::ct

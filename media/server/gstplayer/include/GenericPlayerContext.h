@@ -28,10 +28,19 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <mutex>
+#include <unordered_map>
+#include <vector>
 
 namespace firebolt::rialto::server
 {
 constexpr double kNoPendingPlaybackRate{0.0};
+
+enum class EosState
+{
+    PENDING,
+    SET
+};
 
 /**
  * @brief Structure used for video geometry
@@ -46,22 +55,23 @@ struct Rectangle
     inline void clear() { x = y = width = height = 0; }
 };
 
+/**
+ * @brief Structure used for set source position
+ */
+struct SegmentData
+{
+    int64_t position;
+    bool resetTime;
+    double appliedRate;
+    uint64_t stopPosition;
+};
+
 struct GenericPlayerContext
 {
     /**
      * @brief The rialto src object.
      */
     std::shared_ptr<IGstSrc> gstSrc{nullptr};
-
-    /**
-     * @brief The audio app source
-     */
-    GstElement *audioAppSrc{nullptr};
-
-    /**
-     * @brief The video app source
-     */
-    GstElement *videoAppSrc{nullptr};
 
     /**
      * @brief The gstreamer pipeline.
@@ -84,46 +94,14 @@ struct GenericPlayerContext
     GstElement *autoVideoChildSink{nullptr};
 
     /**
-     * @brief Flag used to check, if we need to request for new audio data.
-     *
-     * Flag can be used only in worker thread
+     * @brief Child sink of the autoaudiosink.
      */
-    bool audioNeedData{false};
+    GstElement *autoAudioChildSink{nullptr};
 
     /**
-     * @brief Flag used to check, if we need to request for new video data.
-     *
-     * Flag can be used only in worker thread
+     * @brief The subtitle sink
      */
-    bool videoNeedData{false};
-
-    /**
-     * @brief Flag used to check, if request for audio data was sent and we didn't receive response yet.
-     *
-     * Flag can be used only in worker thread
-     */
-    bool audioNeedDataPending{false};
-
-    /**
-     * @brief Flag used to check, if request for video data was sent and we didn't receive response yet.
-     *
-     * Flag can be used only in worker thread
-     */
-    bool videoNeedDataPending{false};
-
-    /**
-     * @brief Flag used to check, if any audio data has been pushed to gstreamer (to check if BUFFERED can be sent)
-     *
-     * Flag can be used only in worker thread
-     */
-    bool audioDataPushed{false};
-
-    /**
-     * @brief Flag used to check, if any video data has been pushed to gstreamer (to check if BUFFERED can be sent)
-     *
-     * Flag can be used only in worker thread
-     */
-    bool videoDataPushed{false};
+    GstElement *subtitleSink{nullptr};
 
     /**
      * @brief Flag used to check, if BUFFERED notification has been sent.
@@ -131,34 +109,6 @@ struct GenericPlayerContext
      * Flag can be used only in worker thread
      */
     bool bufferedNotificationSent{false};
-
-    /**
-     * @brief List containing audio buffers to attach
-     *
-     * List can be used only in worker thread
-     */
-    std::list<GstBuffer *> audioBuffers{};
-
-    /**
-     * @brief List containing video buffers to attach
-     *
-     * List can be used only in worker thread
-     */
-    std::list<GstBuffer *> videoBuffers{};
-
-    /**
-     * @brief Flag used to check, if audio underflow callback occured
-     *
-     * Flag can be used only in worker thread
-     */
-    bool audioUnderflowOccured{false};
-
-    /**
-     * @brief Flag used to check, if video underflow callback occured
-     *
-     * Flag can be used only in worker thread
-     */
-    bool videoUnderflowOccured{false};
 
     /**
      * @brief Flag used to check, if the playback is in the playing state
@@ -190,6 +140,46 @@ struct GenericPlayerContext
     double pendingPlaybackRate{kNoPendingPlaybackRate};
 
     /**
+     * @brief Pending immediate output for MediaSourceType::VIDEO
+     */
+    std::optional<bool> pendingImmediateOutputForVideo{};
+
+    /**
+     * @brief Pending low latency
+     */
+    std::optional<bool> pendingLowLatency{};
+
+    /**
+     * @brief Pending sync
+     */
+    std::optional<bool> pendingSync{};
+
+    /**
+     * @brief Pending sync off
+     */
+    std::optional<bool> pendingSyncOff{};
+
+    /**
+     * @brief Pending buffering limit
+     */
+    std::optional<uint32_t> pendingBufferingLimit{};
+
+    /**
+     * @brief Pending use buffering
+     */
+    std::optional<bool> pendingUseBuffering{};
+
+    /**
+     * @brief Pending stream sync mode
+     */
+    std::map<MediaSourceType, int32_t> pendingStreamSyncMode{};
+
+    /**
+     * @brief Pending render frame
+     */
+    bool pendingRenderFrame{false};
+
+    /**
      * @brief Last audio sample timestamps
      * TODO(LLDEV-31012) Needed to detect audio stream underflow
      */
@@ -217,7 +207,7 @@ struct GenericPlayerContext
     /**
      * @brief A map of streams that have ended.
      */
-    StreamInfoMap endOfStreamInfo{};
+    std::unordered_map<MediaSourceType, EosState> endOfStreamInfo{};
 
     /**
      * @brief Flag used to check if client already notified server that all sources were attached
@@ -238,7 +228,28 @@ struct GenericPlayerContext
      *
      * Attribute can be used only in worker thread
      */
-    std::map<GstElement *, std::uint64_t> initialPositions;
+    std::map<GstElement *, std::vector<SegmentData>> initialPositions;
+
+    /**
+     * @brief Currently set position of a source. Used to check, if additional segment should be pushed.
+     *
+     * Attribute can be used only in worker thread
+     */
+    std::map<GstElement *, SegmentData> currentPosition;
+
+    /**
+     * @brief The mutex, which protects properties, which are read/written by main/worker thread.
+     *        This mutex should be removed in future, when we find out better solution for
+     *        property read-write.
+     */
+    std::mutex propertyMutex;
+
+    /**
+     * @brief Flag used to check if audio fade is enabled
+     *
+     * Attribute can be used only in worker thread
+     */
+    std::atomic_bool audioFadeEnabled{false};
 };
 } // namespace firebolt::rialto::server
 

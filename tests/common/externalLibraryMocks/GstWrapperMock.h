@@ -45,7 +45,6 @@ public:
     MOCK_METHOD(gpointer, gstObjectRef, (gpointer object), (override));
     MOCK_METHOD(GstElement *, gstBinGetByName, (GstBin * bin, const gchar *name), (override));
     MOCK_METHOD(GstBus *, gstPipelineGetBus, (GstPipeline * pipeline), (override));
-    MOCK_METHOD(guint, gstBusAddWatch, (GstBus * bus, GstBusFunc func, gpointer user_data), (override));
     MOCK_METHOD(void, gstMessageParseStateChanged,
                 (GstMessage * message, GstState *oldstate, GstState *newstate, GstState *pending), (override));
     MOCK_METHOD(const gchar *, gstElementStateGetName, (GstState state), (override));
@@ -143,7 +142,6 @@ public:
     MOCK_METHOD(gboolean, gstByteWriterPutUint32Be, (GstByteWriter * writer, guint32 val), (const, override));
     MOCK_METHOD(GstBuffer *, gstBufferNewWrapped, (gpointer data, gsize size), (const, override));
     MOCK_METHOD(GstCaps *, gstCodecUtilsOpusCreateCapsFromHeader, (gconstpointer data, guint size), (const, override));
-    MOCK_METHOD(gboolean, gstCapsIsSubset, (const GstCaps *subset, const GstCaps *superset), (const));
     MOCK_METHOD(gboolean, gstCapsIsStrictlyEqual, (const GstCaps *caps1, const GstCaps *caps2), (const));
     MOCK_METHOD(gboolean, gstCapsCanIntersect, (const GstCaps *caps1, const GstCaps *caps2), (const));
     MOCK_METHOD(GstCaps *, gstStaticCapsGet, (GstStaticCaps * staticCaps), (const));
@@ -153,15 +151,13 @@ public:
     MOCK_METHOD(GstCaps *, gstCapsNewEmptySimple, (const char *media_type), (const));
     MOCK_METHOD(GstCaps *, gstCapsNewEmpty, (), (const));
     MOCK_METHOD(GstProtectionMeta *, gstBufferAddProtectionMeta, (GstBuffer * buffer, GstStructure *info), (const));
-    MOCK_METHOD(GstProtectionMeta *, gstBufferGetProtectionMeta, (GstBuffer * buffer), (const));
     MOCK_METHOD(GstMeta *, gstBufferAddMeta, (GstBuffer * buffer, const GstMetaInfo *info, gpointer params),
                 (const, override));
     MOCK_METHOD(GstMeta *, gstBufferGetMeta, (GstBuffer * buffer, GType api), (const, override));
     MOCK_METHOD(gboolean, gstBufferRemoveMeta, (GstBuffer * buffer, GstMeta *meta), (const, override));
-    MOCK_METHOD(gboolean, gstStructureGetUint, (const GstStructure *structure, const gchar *fieldname, guint *value),
-                (const));
-    MOCK_METHOD(const GValue *, gstStructureGetValue, (const GstStructure *structure, const gchar *fieldname), (const));
-    MOCK_METHOD(GstBuffer *, gstValueGetBuffer, (const GValue *value), (const));
+    MOCK_METHOD(gboolean, gstStructureGetUint64,
+                (const GstStructure *structure, const gchar *fieldname, guint64 *value), (const));
+    MOCK_METHOD(void, gstStructureFree, (GstStructure * structure), (const));
     MOCK_METHOD(GstEvent *, gstEventNewStep,
                 (GstFormat format, guint64 amount, gdouble rate, gboolean flush, gboolean intermediate), (const));
     MOCK_METHOD(gdouble, gstStreamVolumeGetVolume, (GstStreamVolume * volume, GstStreamVolumeFormat format),
@@ -185,15 +181,15 @@ public:
                 (GstStructure * structure, const gchar *firstname, GType type, const char *value), (const));
     MOCK_METHOD(void, gstMessageParseError, (GstMessage * message, GError **gerror, gchar **debug), (const));
     MOCK_METHOD(GstIterator *, gstBinIterateSinks, (GstBin * bin), (const, override));
+    MOCK_METHOD(GstIterator *, gstBinIterateRecurse, (GstBin * bin), (const, override));
     MOCK_METHOD(GstIteratorResult, gstIteratorNext, (GstIterator * it, GValue *elem), (const, override));
+    MOCK_METHOD(void, gstIteratorResync, (GstIterator * it), (const, override));
     MOCK_METHOD(void, gstIteratorFree, (GstIterator * it), (const, override));
     MOCK_METHOD(gboolean, gstElementPostMessage, (GstElement * element, GstMessage *message), (const, override));
     MOCK_METHOD(GstMessage *, gstMessageNewWarning, (GstObject * src, GError *error, const gchar *debug),
                 (const, override));
     MOCK_METHOD(void, gstMessageParseWarning, (GstMessage * message, GError **gerror, gchar **debug), (const, override));
-    MOCK_METHOD(GstCaps *, gstPadGetCurrentCaps, (GstPad * pad), (const, override));
     MOCK_METHOD(GstStructure *, gstCapsGetStructure, (const GstCaps *caps, guint index), (const, override));
-    MOCK_METHOD(const gchar *, gstStructureGetName, (const GstStructure *structure), (const, override));
     MOCK_METHOD(gboolean, gstObjectSetName, (GstObject * object, const gchar *name), (const, override));
     MOCK_METHOD(gboolean, gstSegmentDoSeek,
                 (GstSegment *, gdouble, GstFormat, GstSeekFlags, GstSeekType, guint64, GstSeekType, guint64, gboolean *),
@@ -210,6 +206,15 @@ public:
     MOCK_METHOD(bool, gstStructureHasField, (const GstStructure *structure, const gchar *fieldname), (const, override));
     MOCK_METHOD(GstAudioClippingMeta *, gstBufferAddAudioClippingMeta,
                 (GstBuffer * buffer, GstFormat format, guint64 start, guint64 end), (const, override));
+    MOCK_METHOD(GstPad *, gstElementGetStaticPad, (GstElement * element, const gchar *name), (const, override));
+    MOCK_METHOD(GstPad *, gstBaseSinkPad, (GstElement * element), (const, override));
+    MOCK_METHOD(void, gstValueArrayAppendValue, (GValue * value, const GValue *appendValue), (const, override));
+    MOCK_METHOD(void, gstValueSetBuffer, (GValue * value, GstBuffer *buffer), (const, override));
+    MOCK_METHOD(void, gstStructureSetValue, (GstStructure * structure, const gchar *fieldname, const GValue *value),
+                (const, override));
+    MOCK_METHOD(gboolean, gstIsBaseParse, (GstElement * element), (const, override));
+    MOCK_METHOD(void, gstBaseParseSetPtsInterpolation, (GstBaseParse * parse, gboolean ptsInterpolate),
+                (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

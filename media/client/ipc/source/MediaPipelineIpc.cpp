@@ -17,10 +17,11 @@
  * limitations under the License.
  */
 #include "MediaPipelineIpc.h"
-#include "IMediaPipeline.h"
 #include "RialtoClientLogging.h"
 #include "RialtoCommonIpc.h"
 #include "mediapipelinemodule.pb.h"
+#include <IMediaPipeline.h>
+#include <unordered_map>
 
 namespace firebolt::rialto::client
 {
@@ -218,88 +219,10 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     firebolt::rialto::AttachSourceRequest request;
 
     request.set_session_id(m_sessionId);
-    SourceConfigType configType = source->getConfigType();
-    request.set_config_type(convertConfigType(configType));
-    request.set_mime_type(source->getMimeType());
-    request.set_has_drm(source->getHasDrm());
-
-    if (configType == SourceConfigType::VIDEO_DOLBY_VISION || configType == SourceConfigType::VIDEO ||
-        configType == SourceConfigType::AUDIO)
+    request.set_switch_source(false);
+    if (!buildAttachSourceRequest(request, source))
     {
-        IMediaPipeline::MediaSourceAV *mediaSourceAV = dynamic_cast<IMediaPipeline::MediaSourceAV *>(source.get());
-        if (!mediaSourceAV)
-        {
-            RIALTO_CLIENT_LOG_ERROR("Failed to get the audio video source");
-            return false;
-        }
-        request.set_segment_alignment(convertSegmentAlignment(mediaSourceAV->getSegmentAlignment()));
-
-        if (mediaSourceAV->getCodecData())
-        {
-            request.mutable_codec_data()->set_data(mediaSourceAV->getCodecData()->data.data(),
-                                                   mediaSourceAV->getCodecData()->data.size());
-            request.mutable_codec_data()->set_type(convertCodecDataType(mediaSourceAV->getCodecData()->type));
-        }
-        request.set_stream_format(convertStreamFormat(mediaSourceAV->getStreamFormat()));
-
-        if (configType == SourceConfigType::VIDEO_DOLBY_VISION)
-        {
-            IMediaPipeline::MediaSourceVideoDolbyVision *mediaSourceDolby =
-                dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision *>(source.get());
-            if (!mediaSourceDolby)
-            {
-                RIALTO_CLIENT_LOG_ERROR("Failed to get the video dolby vision media source");
-                return false;
-            }
-            request.set_width(mediaSourceDolby->getWidth());
-            request.set_height(mediaSourceDolby->getHeight());
-            request.set_dolby_vision_profile(mediaSourceDolby->getDolbyVisionProfile());
-        }
-        else if (configType == SourceConfigType::VIDEO)
-        {
-            IMediaPipeline::MediaSourceVideo *mediaSourceVideo =
-                dynamic_cast<IMediaPipeline::MediaSourceVideo *>(source.get());
-            if (!mediaSourceVideo)
-            {
-                RIALTO_CLIENT_LOG_ERROR("Failed to get the video media source");
-                return false;
-            }
-            request.set_width(mediaSourceVideo->getWidth());
-            request.set_height(mediaSourceVideo->getHeight());
-        }
-        else if (configType == SourceConfigType::AUDIO)
-        {
-            IMediaPipeline::MediaSourceAudio *mediaSourceAudio =
-                dynamic_cast<IMediaPipeline::MediaSourceAudio *>(source.get());
-            if (!mediaSourceAudio)
-            {
-                RIALTO_CLIENT_LOG_ERROR("Failed to get the audio media source");
-                return false;
-            }
-            request.mutable_audio_config()->set_number_of_channels(mediaSourceAudio->getAudioConfig().numberOfChannels);
-            request.mutable_audio_config()->set_sample_rate(mediaSourceAudio->getAudioConfig().sampleRate);
-            if (!mediaSourceAudio->getAudioConfig().codecSpecificConfig.empty())
-            {
-                request.mutable_audio_config()
-                    ->set_codec_specific_config(mediaSourceAudio->getAudioConfig().codecSpecificConfig.data(),
-                                                mediaSourceAudio->getAudioConfig().codecSpecificConfig.size());
-            }
-        }
-    }
-    else if (configType == SourceConfigType::SUBTITLE)
-    {
-        IMediaPipeline::MediaSourceSubtitle *mediaSourceSubtitle =
-            dynamic_cast<IMediaPipeline::MediaSourceSubtitle *>(source.get());
-        if (!mediaSourceSubtitle)
-        {
-            RIALTO_CLIENT_LOG_ERROR("Failed to get the subtitle source");
-            return false;
-        }
-        request.set_text_track_identifier(mediaSourceSubtitle->getTextTrackIdentifier());
-    }
-    else
-    {
-        RIALTO_CLIENT_LOG_ERROR("Unknown source type");
+        RIALTO_CLIENT_LOG_ERROR("Failed to parse source");
         return false;
     }
 
@@ -603,6 +526,106 @@ bool MediaPipelineIpc::getPosition(int64_t &position)
     return true;
 }
 
+bool MediaPipelineIpc::setImmediateOutput(int32_t sourceId, bool immediateOutput)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetImmediateOutputRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+    request.set_immediate_output(immediateOutput);
+
+    firebolt::rialto::SetImmediateOutputResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setImmediateOutput(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set immediate-output due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetImmediateOutputRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+
+    firebolt::rialto::GetImmediateOutputResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getImmediateOutput(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get immediate-output due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+    else
+    {
+        immediateOutput = response.immediate_output();
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetStatsRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+
+    firebolt::rialto::GetStatsResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getStats(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get stats due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    renderedFrames = response.rendered_frames();
+    droppedFrames = response.dropped_frames();
+    return true;
+}
+
 bool MediaPipelineIpc::setPlaybackRate(double rate)
 {
     if (!reattachChannelIfRequired())
@@ -663,7 +686,7 @@ bool MediaPipelineIpc::renderFrame()
     return true;
 }
 
-bool MediaPipelineIpc::setVolume(double volume)
+bool MediaPipelineIpc::setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
     if (!reattachChannelIfRequired())
     {
@@ -674,7 +697,9 @@ bool MediaPipelineIpc::setVolume(double volume)
     firebolt::rialto::SetVolumeRequest request;
 
     request.set_session_id(m_sessionId);
-    request.set_volume(volume);
+    request.set_volume(targetVolume);
+    request.set_volume_duration(volumeDuration);
+    request.set_ease_type(convertEaseType(easeType));
 
     firebolt::rialto::SetVolumeResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -725,7 +750,7 @@ bool MediaPipelineIpc::getVolume(double &volume)
     return true;
 }
 
-bool MediaPipelineIpc::setMute(bool mute)
+bool MediaPipelineIpc::setMute(int32_t sourceId, bool mute)
 {
     if (!reattachChannelIfRequired())
     {
@@ -737,6 +762,7 @@ bool MediaPipelineIpc::setMute(bool mute)
 
     request.set_session_id(m_sessionId);
     request.set_mute(mute);
+    request.set_source_id(sourceId);
 
     firebolt::rialto::SetMuteResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -756,7 +782,7 @@ bool MediaPipelineIpc::setMute(bool mute)
     return true;
 }
 
-bool MediaPipelineIpc::getMute(bool &mute)
+bool MediaPipelineIpc::getMute(std::int32_t sourceId, bool &mute)
 {
     if (!reattachChannelIfRequired())
     {
@@ -767,6 +793,7 @@ bool MediaPipelineIpc::getMute(bool &mute)
     firebolt::rialto::GetMuteRequest request;
 
     request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
 
     firebolt::rialto::GetMuteResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -788,7 +815,258 @@ bool MediaPipelineIpc::getMute(bool &mute)
     return true;
 }
 
-bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime)
+bool MediaPipelineIpc::setTextTrackIdentifier(const std::string &textTrackIdentifier)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetTextTrackIdentifierRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_text_track_identifier(textTrackIdentifier);
+
+    firebolt::rialto::SetTextTrackIdentifierResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setTextTrackIdentifier(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // waiting for call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set text track identifier due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getTextTrackIdentifier(std::string &textTrackIdentifier)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetTextTrackIdentifierRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetTextTrackIdentifierResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getTextTrackIdentifier(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get mute due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    textTrackIdentifier = response.text_track_identifier();
+
+    return true;
+}
+
+bool MediaPipelineIpc::setLowLatency(bool lowLatency)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetLowLatencyRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_low_latency(lowLatency);
+
+    firebolt::rialto::SetLowLatencyResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setLowLatency(ipcController.get(), &request, &response, blockingClosure.get());
+    // waiting for call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set low-latency due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::setSync(bool sync)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetSyncRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_sync(sync);
+
+    firebolt::rialto::SetSyncResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setSync(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // waiting for call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set sync due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getSync(bool &sync)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetSyncRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetSyncResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getSync(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get sync due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    sync = response.sync();
+
+    return true;
+}
+
+bool MediaPipelineIpc::setSyncOff(bool syncOff)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetSyncOffRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_sync_off(syncOff);
+
+    firebolt::rialto::SetSyncOffResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setSyncOff(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // waiting for call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set sync-off due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetStreamSyncModeRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+    request.set_stream_sync_mode(streamSyncMode);
+
+    firebolt::rialto::SetStreamSyncModeResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setStreamSyncMode(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // waiting for call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set stream-sync-mode due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getStreamSyncMode(int32_t &streamSyncMode)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetStreamSyncModeRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetStreamSyncModeResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getStreamSyncMode(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get stream-sync-mode due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    streamSyncMode = response.stream_sync_mode();
+
+    return true;
+}
+
+bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime, bool &async)
 {
     if (!reattachChannelIfRequired())
     {
@@ -817,10 +1095,14 @@ bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime)
         return false;
     }
 
+    // Async is true by default
+    async = response.has_async() ? response.async() : true;
+
     return true;
 }
 
-bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position)
+bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
+                                         uint64_t stopPosition)
 {
     if (!reattachChannelIfRequired())
     {
@@ -833,6 +1115,9 @@ bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position)
     request.set_session_id(m_sessionId);
     request.set_source_id(sourceId);
     request.set_position(position);
+    request.set_reset_time(resetTime);
+    request.set_applied_rate(appliedRate);
+    request.set_stop_position(stopPosition);
 
     firebolt::rialto::SetSourcePositionResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -846,6 +1131,202 @@ bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set source position due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::ProcessAudioGapRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_position(position);
+    request.set_duration(duration);
+    request.set_discontinuity_gap(discontinuityGap);
+    request.set_audio_aac(audioAac);
+
+    firebolt::rialto::ProcessAudioGapResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->processAudioGap(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to process audio gap due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::setBufferingLimit(uint32_t limitBufferingMs)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetBufferingLimitRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_limit_buffering_ms(limitBufferingMs);
+
+    firebolt::rialto::SetBufferingLimitResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setBufferingLimit(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set buffering limit due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getBufferingLimit(uint32_t &limitBufferingMs)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetBufferingLimitRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetBufferingLimitResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getBufferingLimit(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get buffering limit due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    limitBufferingMs = response.limit_buffering_ms();
+
+    return true;
+}
+
+bool MediaPipelineIpc::setUseBuffering(bool useBuffering)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetUseBufferingRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_use_buffering(useBuffering);
+
+    firebolt::rialto::SetUseBufferingResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setUseBuffering(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set use buffering due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getUseBuffering(bool &useBuffering)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetUseBufferingRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetUseBufferingResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getUseBuffering(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get use buffering due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    useBuffering = response.use_buffering();
+
+    return true;
+}
+
+bool MediaPipelineIpc::switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::AttachSourceRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_switch_source(true);
+    if (!buildAttachSourceRequest(request, source))
+    {
+        RIALTO_CLIENT_LOG_ERROR("Failed to parse source");
+        return false;
+    }
+
+    firebolt::rialto::AttachSourceResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->attachSource(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to attach source due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -1067,7 +1548,7 @@ void MediaPipelineIpc::destroySession()
     }
 }
 
-firebolt::rialto::LoadRequest_MediaType MediaPipelineIpc::convertLoadRequestMediaType(MediaType mediaType)
+firebolt::rialto::LoadRequest_MediaType MediaPipelineIpc::convertLoadRequestMediaType(MediaType mediaType) const
 {
     firebolt::rialto::LoadRequest_MediaType protoMediaType = firebolt::rialto::LoadRequest_MediaType_UNKNOWN;
     switch (mediaType)
@@ -1083,7 +1564,7 @@ firebolt::rialto::LoadRequest_MediaType MediaPipelineIpc::convertLoadRequestMedi
 }
 
 firebolt::rialto::HaveDataRequest_MediaSourceStatus
-MediaPipelineIpc::convertHaveDataRequestMediaSourceStatus(MediaSourceStatus status)
+MediaPipelineIpc::convertHaveDataRequestMediaSourceStatus(MediaSourceStatus status) const
 {
     firebolt::rialto::HaveDataRequest_MediaSourceStatus protoMediaSourceStatus =
         firebolt::rialto::HaveDataRequest_MediaSourceStatus_UNKNOWN;
@@ -1112,7 +1593,7 @@ MediaPipelineIpc::convertHaveDataRequestMediaSourceStatus(MediaSourceStatus stat
 }
 
 firebolt::rialto::AttachSourceRequest_ConfigType
-MediaPipelineIpc::convertConfigType(const firebolt::rialto::SourceConfigType &configType)
+MediaPipelineIpc::convertConfigType(const firebolt::rialto::SourceConfigType &configType) const
 {
     switch (configType)
     {
@@ -1140,8 +1621,28 @@ MediaPipelineIpc::convertConfigType(const firebolt::rialto::SourceConfigType &co
     return firebolt::rialto::AttachSourceRequest_ConfigType_CONFIG_TYPE_UNKNOWN;
 }
 
+firebolt::rialto::SetVolumeRequest_EaseType MediaPipelineIpc::convertEaseType(const firebolt::rialto::EaseType &easeType) const
+{
+    switch (easeType)
+    {
+    case firebolt::rialto::EaseType::EASE_LINEAR:
+    {
+        return firebolt::rialto::SetVolumeRequest_EaseType_EASE_LINEAR;
+    }
+    case firebolt::rialto::EaseType::EASE_IN_CUBIC:
+    {
+        return firebolt::rialto::SetVolumeRequest_EaseType_EASE_IN_CUBIC;
+    }
+    case firebolt::rialto::EaseType::EASE_OUT_CUBIC:
+    {
+        return firebolt::rialto::SetVolumeRequest_EaseType_EASE_OUT_CUBIC;
+    }
+    }
+    return firebolt::rialto::SetVolumeRequest_EaseType_EASE_LINEAR;
+}
+
 firebolt::rialto::AttachSourceRequest_SegmentAlignment
-MediaPipelineIpc::convertSegmentAlignment(const firebolt::rialto::SegmentAlignment &alignment)
+MediaPipelineIpc::convertSegmentAlignment(const firebolt::rialto::SegmentAlignment &alignment) const
 {
     switch (alignment)
     {
@@ -1162,7 +1663,7 @@ MediaPipelineIpc::convertSegmentAlignment(const firebolt::rialto::SegmentAlignme
 }
 
 firebolt::rialto::AttachSourceRequest_StreamFormat
-MediaPipelineIpc::convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat)
+MediaPipelineIpc::convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat) const
 {
     switch (streamFormat)
     {
@@ -1195,7 +1696,7 @@ MediaPipelineIpc::convertStreamFormat(const firebolt::rialto::StreamFormat &stre
 }
 
 firebolt::rialto::AttachSourceRequest_CodecData_Type
-MediaPipelineIpc::convertCodecDataType(const firebolt::rialto::CodecDataType &codecDataType)
+MediaPipelineIpc::convertCodecDataType(const firebolt::rialto::CodecDataType &codecDataType) const
 {
     if (firebolt::rialto::CodecDataType::STRING == codecDataType)
     {
@@ -1204,4 +1705,174 @@ MediaPipelineIpc::convertCodecDataType(const firebolt::rialto::CodecDataType &co
     return firebolt::rialto::AttachSourceRequest_CodecData_Type_BUFFER;
 }
 
+firebolt::rialto::AttachSourceRequest_AudioConfig_Format
+MediaPipelineIpc::convertFormat(const firebolt::rialto::Format &format) const
+{
+    static const std::unordered_map<firebolt::rialto::Format, firebolt::rialto::AttachSourceRequest_AudioConfig_Format>
+        kFormatConversionMap{
+            {firebolt::rialto::Format::S8, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S8},
+            {firebolt::rialto::Format::U8, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U8},
+            {firebolt::rialto::Format::S16LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S16LE},
+            {firebolt::rialto::Format::S16BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S16BE},
+            {firebolt::rialto::Format::U16LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U16LE},
+            {firebolt::rialto::Format::U16BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U16BE},
+            {firebolt::rialto::Format::S24_32LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24_32LE},
+            {firebolt::rialto::Format::S24_32BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24_32BE},
+            {firebolt::rialto::Format::U24_32LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24_32LE},
+            {firebolt::rialto::Format::U24_32BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24_32BE},
+            {firebolt::rialto::Format::S32LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S32LE},
+            {firebolt::rialto::Format::S32BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S32BE},
+            {firebolt::rialto::Format::U32LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U32LE},
+            {firebolt::rialto::Format::U32BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U32BE},
+            {firebolt::rialto::Format::S24LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24LE},
+            {firebolt::rialto::Format::S24BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S24BE},
+            {firebolt::rialto::Format::U24LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24LE},
+            {firebolt::rialto::Format::U24BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U24BE},
+            {firebolt::rialto::Format::S20LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S20LE},
+            {firebolt::rialto::Format::S20BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S20BE},
+            {firebolt::rialto::Format::U20LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U20LE},
+            {firebolt::rialto::Format::U20BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U20BE},
+            {firebolt::rialto::Format::S18LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S18LE},
+            {firebolt::rialto::Format::S18BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S18BE},
+            {firebolt::rialto::Format::U18LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U18LE},
+            {firebolt::rialto::Format::U18BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_U18BE},
+            {firebolt::rialto::Format::F32LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F32LE},
+            {firebolt::rialto::Format::F32BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F32BE},
+            {firebolt::rialto::Format::F64LE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64LE},
+            {firebolt::rialto::Format::F64BE, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_F64BE}};
+    const auto kIt = kFormatConversionMap.find(format);
+    if (kFormatConversionMap.end() != kIt)
+    {
+        return kIt->second;
+    }
+    return firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S8;
+}
+
+firebolt::rialto::AttachSourceRequest_AudioConfig_Layout
+MediaPipelineIpc::convertLayout(const firebolt::rialto::Layout &layout) const
+{
+    static const std::unordered_map<firebolt::rialto::Layout, firebolt::rialto::AttachSourceRequest_AudioConfig_Layout>
+        kLayoutConversionMap{{firebolt::rialto::Layout::INTERLEAVED,
+                              firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_INTERLEAVED},
+                             {firebolt::rialto::Layout::NON_INTERLEAVED,
+                              firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_NON_INTERLEAVED}};
+    const auto kIt = kLayoutConversionMap.find(layout);
+    if (kLayoutConversionMap.end() != kIt)
+    {
+        return kIt->second;
+    }
+    return firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_INTERLEAVED;
+}
+
+bool MediaPipelineIpc::buildAttachSourceRequest(firebolt::rialto::AttachSourceRequest &request,
+                                                const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
+{
+    SourceConfigType configType = source->getConfigType();
+    request.set_config_type(convertConfigType(configType));
+    request.set_mime_type(source->getMimeType());
+    request.set_has_drm(source->getHasDrm());
+
+    if (configType == SourceConfigType::VIDEO_DOLBY_VISION || configType == SourceConfigType::VIDEO ||
+        configType == SourceConfigType::AUDIO)
+    {
+        IMediaPipeline::MediaSourceAV *mediaSourceAV = dynamic_cast<IMediaPipeline::MediaSourceAV *>(source.get());
+        if (!mediaSourceAV)
+        {
+            RIALTO_CLIENT_LOG_ERROR("Failed to get the audio video source");
+            return false;
+        }
+        request.set_segment_alignment(convertSegmentAlignment(mediaSourceAV->getSegmentAlignment()));
+
+        if (mediaSourceAV->getCodecData())
+        {
+            request.mutable_codec_data()->set_data(mediaSourceAV->getCodecData()->data.data(),
+                                                   mediaSourceAV->getCodecData()->data.size());
+            request.mutable_codec_data()->set_type(convertCodecDataType(mediaSourceAV->getCodecData()->type));
+        }
+        request.set_stream_format(convertStreamFormat(mediaSourceAV->getStreamFormat()));
+
+        if (configType == SourceConfigType::VIDEO_DOLBY_VISION)
+        {
+            IMediaPipeline::MediaSourceVideoDolbyVision *mediaSourceDolby =
+                dynamic_cast<IMediaPipeline::MediaSourceVideoDolbyVision *>(source.get());
+            if (!mediaSourceDolby)
+            {
+                RIALTO_CLIENT_LOG_ERROR("Failed to get the video dolby vision media source");
+                return false;
+            }
+            request.set_width(mediaSourceDolby->getWidth());
+            request.set_height(mediaSourceDolby->getHeight());
+            request.set_dolby_vision_profile(mediaSourceDolby->getDolbyVisionProfile());
+        }
+        else if (configType == SourceConfigType::VIDEO)
+        {
+            IMediaPipeline::MediaSourceVideo *mediaSourceVideo =
+                dynamic_cast<IMediaPipeline::MediaSourceVideo *>(source.get());
+            if (!mediaSourceVideo)
+            {
+                RIALTO_CLIENT_LOG_ERROR("Failed to get the video media source");
+                return false;
+            }
+            request.set_width(mediaSourceVideo->getWidth());
+            request.set_height(mediaSourceVideo->getHeight());
+        }
+        else if (configType == SourceConfigType::AUDIO)
+        {
+            IMediaPipeline::MediaSourceAudio *mediaSourceAudio =
+                dynamic_cast<IMediaPipeline::MediaSourceAudio *>(source.get());
+            if (!mediaSourceAudio)
+            {
+                RIALTO_CLIENT_LOG_ERROR("Failed to get the audio media source");
+                return false;
+            }
+            request.mutable_audio_config()->set_number_of_channels(mediaSourceAudio->getAudioConfig().numberOfChannels);
+            request.mutable_audio_config()->set_sample_rate(mediaSourceAudio->getAudioConfig().sampleRate);
+            if (!mediaSourceAudio->getAudioConfig().codecSpecificConfig.empty())
+            {
+                request.mutable_audio_config()
+                    ->set_codec_specific_config(mediaSourceAudio->getAudioConfig().codecSpecificConfig.data(),
+                                                mediaSourceAudio->getAudioConfig().codecSpecificConfig.size());
+            }
+            if (mediaSourceAudio->getAudioConfig().format.has_value())
+            {
+                request.mutable_audio_config()->set_format(
+                    convertFormat(mediaSourceAudio->getAudioConfig().format.value()));
+            }
+            if (mediaSourceAudio->getAudioConfig().layout.has_value())
+            {
+                request.mutable_audio_config()->set_layout(
+                    convertLayout(mediaSourceAudio->getAudioConfig().layout.value()));
+            }
+            if (mediaSourceAudio->getAudioConfig().channelMask.has_value())
+            {
+                request.mutable_audio_config()->set_channel_mask(mediaSourceAudio->getAudioConfig().channelMask.value());
+            }
+            for (auto &header : mediaSourceAudio->getAudioConfig().streamHeader)
+            {
+                request.mutable_audio_config()->add_stream_header(header.data(), header.size());
+            }
+            if (mediaSourceAudio->getAudioConfig().framed.has_value())
+            {
+                request.mutable_audio_config()->set_framed(mediaSourceAudio->getAudioConfig().framed.value());
+            }
+        }
+    }
+    else if (configType == SourceConfigType::SUBTITLE)
+    {
+        IMediaPipeline::MediaSourceSubtitle *mediaSourceSubtitle =
+            dynamic_cast<IMediaPipeline::MediaSourceSubtitle *>(source.get());
+        if (!mediaSourceSubtitle)
+        {
+            RIALTO_CLIENT_LOG_ERROR("Failed to get the subtitle source");
+            return false;
+        }
+        request.set_text_track_identifier(mediaSourceSubtitle->getTextTrackIdentifier());
+    }
+    else
+    {
+        RIALTO_CLIENT_LOG_ERROR("Unknown source type");
+        return false;
+    }
+    return true;
+}
 }; // namespace firebolt::rialto::client

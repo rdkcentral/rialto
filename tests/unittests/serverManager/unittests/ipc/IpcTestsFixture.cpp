@@ -139,8 +139,20 @@ bool IpcTests::triggerPerformSetConfiguration()
     // socket being owned by the user executing the code (and the group would be their primary group)
     const std::string kSocketOwner{};
     const std::string kSocketGroup{};
+    const std::string kAppId{"app"};
     return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketName, kClientSocketName, kMaxResource,
-                                          kSocketPermissions, kSocketOwner, kSocketGroup);
+                                          kSocketPermissions, kSocketOwner, kSocketGroup, kAppId);
+}
+
+bool IpcTests::triggerPerformSetConfigurationWithFd()
+{
+    EXPECT_TRUE(m_sut);
+    const auto kInitialState{firebolt::rialto::common::SessionServerState::INACTIVE};
+    constexpr int kSocketFd{123};
+    const std::string kClientSocketName{"westeros-rialto"};
+    constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{2, 1};
+    const std::string kAppId{"app"};
+    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketFd, kClientSocketName, kMaxResource, kAppId);
 }
 
 bool IpcTests::triggerPerformPing()

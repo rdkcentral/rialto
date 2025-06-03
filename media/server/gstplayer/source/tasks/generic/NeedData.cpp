@@ -21,12 +21,14 @@
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 #include <gst/gst.h>
 
 namespace firebolt::rialto::server::tasks::generic
 {
-NeedData::NeedData(GenericPlayerContext &context, IGstGenericPlayerClient *client, GstAppSrc *src)
-    : m_context{context}, m_gstPlayerClient{client}, m_src{src}
+NeedData::NeedData(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
+                   GstAppSrc *src)
+    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_src{src}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing NeedData");
 }
@@ -39,28 +41,32 @@ NeedData::~NeedData()
 void NeedData::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing NeedData");
-    auto elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO);
-    if (elem != m_context.streamInfo.end())
+
+    for (auto &elem : m_context.streamInfo)
     {
-        if (elem->second.appSrc == GST_ELEMENT(m_src))
+        firebolt::rialto::MediaSourceType sourceType = elem.first;
+        if (elem.second.appSrc == GST_ELEMENT(m_src))
         {
-            m_context.audioNeedData = true;
-            if (m_gstPlayerClient && !m_context.audioNeedDataPending && !m_context.audioSourceRemoved)
+            RIALTO_SERVER_LOG_DEBUG("%s source needs data", common::convertMediaSourceType(sourceType));
+
+            elem.second.isDataNeeded = true;
+
+            if (!elem.second.buffers.empty())
             {
-                m_context.audioNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::AUDIO);
+                RIALTO_SERVER_LOG_INFO("Attaching cached data for %s", common::convertMediaSourceType(sourceType));
+                m_player.attachData(sourceType);
             }
-        }
-    }
-    elem = m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO);
-    if (elem != m_context.streamInfo.end())
-    {
-        if (elem->second.appSrc == GST_ELEMENT(m_src))
-        {
-            m_context.videoNeedData = true;
-            if (m_gstPlayerClient && !m_context.videoNeedDataPending)
+
+            if (m_gstPlayerClient && !elem.second.isNeedDataPending)
             {
-                m_context.videoNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(MediaSourceType::VIDEO);
+                if (sourceType == MediaSourceType::AUDIO && m_context.audioSourceRemoved)
+                {
+                    RIALTO_SERVER_LOG_DEBUG("Audio source is removed, no need to request data");
+                    break;
+                }
+                elem.second.isNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(sourceType);
             }
+            break;
         }
     }
 }

@@ -44,17 +44,44 @@ public:
     MOCK_METHOD(bool, setPlaybackRate, (int, double), (override));
     MOCK_METHOD(bool, setPosition, (int, int64_t), (override));
     MOCK_METHOD(bool, getPosition, (int sessionId, int64_t &position), (override));
+    MOCK_METHOD(bool, setImmediateOutput, (int sessionId, int32_t sourceId, bool immediateOutput), (override));
+    MOCK_METHOD(bool, getImmediateOutput, (int sessionId, int32_t sourceId, bool &immediateOutput), (override));
+    MOCK_METHOD(bool, getStats, (int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames),
+                (override));
     MOCK_METHOD(bool, setVideoWindow, (int, std::uint32_t, std::uint32_t, std::uint32_t, std::uint32_t), (override));
     MOCK_METHOD(bool, haveData, (int, MediaSourceStatus, std::uint32_t, std::uint32_t), (override));
     MOCK_METHOD(bool, renderFrame, (int), (override));
-    MOCK_METHOD(bool, setVolume, (int sessionId, double volume), (override));
+    MOCK_METHOD(bool, setVolume, (int sessionId, double targetVolume, uint32_t volumeDuration, EaseType easeType),
+                (override));
     MOCK_METHOD(bool, getVolume, (int sessionId, double &volume), (override));
-    MOCK_METHOD(bool, setMute, (int sessionId, bool mute), (override));
-    MOCK_METHOD(bool, getMute, (int sessionId, bool &mute), (override));
-    MOCK_METHOD(bool, flush, (int, std::int32_t, bool), (override));
-    MOCK_METHOD(bool, setSourcePosition, (int sessionId, int32_t sourceId, int64_t position), (override));
+
+    MOCK_METHOD(bool, setMute, (int sessionId, std::int32_t sourceId, bool mute), (override));
+    MOCK_METHOD(bool, getMute, (int sessionId, std::int32_t sourceId, bool &mute), (override));
+    MOCK_METHOD(bool, setTextTrackIdentifier, (int sessionId, const std::string &textTrackIdentifier), (override));
+    MOCK_METHOD(bool, getTextTrackIdentifier, (int sessionId, std::string &textTrackIdentifier), (override));
+    MOCK_METHOD(bool, setLowLatency, (int sessionId, bool lowLatency), (override));
+    MOCK_METHOD(bool, setSync, (int sessionId, bool sync), (override));
+    MOCK_METHOD(bool, getSync, (int sessionId, bool &sync), (override));
+    MOCK_METHOD(bool, setSyncOff, (int sessionId, bool syncOff), (override));
+    MOCK_METHOD(bool, setStreamSyncMode, (int sessionId, int32_t sourceId, int32_t streamSyncMode), (override));
+    MOCK_METHOD(bool, getStreamSyncMode, (int sessionId, int32_t &streamSyncMode), (override));
+    MOCK_METHOD(bool, flush, (int, std::int32_t, bool, bool &isAsync), (override));
+    MOCK_METHOD(bool, setSourcePosition,
+                (int sessionId, int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
+                 uint64_t stopPosition),
+                (override));
+    MOCK_METHOD(bool, processAudioGap,
+                (int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
+                (override));
+    MOCK_METHOD(bool, setBufferingLimit, (int sessionId, uint32_t limitBufferingMs), (override));
+    MOCK_METHOD(bool, getBufferingLimit, (int sessionId, uint32_t &limitBufferingMs), (override));
+    MOCK_METHOD(bool, setUseBuffering, (int sessionId, bool useBuffering), (override));
+    MOCK_METHOD(bool, getUseBuffering, (int sessionId, bool &useBuffering), (override));
+    MOCK_METHOD(bool, switchSource, (int, const std::unique_ptr<IMediaPipeline::MediaSource> &), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedMimeTypes, (MediaSourceType type), (override));
     MOCK_METHOD(bool, isMimeTypeSupported, (const std::string &mimeType), (override));
+    MOCK_METHOD(std::vector<std::string>, getSupportedProperties,
+                (MediaSourceType mediaType, const std::vector<std::string> &propertyNames), (override));
     MOCK_METHOD(void, ping, (const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure), (override));
 };
 } // namespace firebolt::rialto::server::service

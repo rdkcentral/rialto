@@ -44,10 +44,16 @@ constexpr int kAllLogs{RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_ERROR | RIA
                        RIALTO_DEBUG_LEVEL_MILESTONE | RIALTO_DEBUG_LEVEL_INFO | RIALTO_DEBUG_LEVEL_DEBUG};
 constexpr double kPlaybackRate{0.5};
 constexpr std::int64_t kCurrentPosition{1234};
-constexpr double kVolume{0.7};
+constexpr double kVolume{0.5};
+constexpr uint32_t kNoVolumeDuration{0};
+constexpr uint32_t kVolumeDuration{10};
+constexpr firebolt::rialto::EaseType kEaseType{firebolt::rialto::EaseType::EASE_LINEAR};
 constexpr QosInfo kQosInfo{234, 567};
 constexpr std::uint64_t kPosition{1234};
 constexpr double kRate{1.0};
+constexpr uint64_t kRenderedFrames{54321};
+constexpr uint64_t kDroppedFrames{76};
+constexpr uint64_t kStopPosition{234234};
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_

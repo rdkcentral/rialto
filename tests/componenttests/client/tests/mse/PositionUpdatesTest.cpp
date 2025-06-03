@@ -25,8 +25,6 @@ namespace firebolt::rialto::client::ct
 class PositionUpdatesTest : public ClientComponentTest
 {
 public:
-    int64_t m_position = 10;
-
     PositionUpdatesTest() : ClientComponentTest()
     {
         ClientComponentTest::startApplicationRunning();
@@ -94,12 +92,12 @@ TEST_F(PositionUpdatesTest, positionUpdates)
     MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
 
     // Step 2: Notify position
-    m_position = 10;
-    MediaPipelineTestMethods::shouldNotifyPosition(m_position);
-    MediaPipelineTestMethods::sendNotifyPositionChanged(m_position);
+    int64_t position = 10;
+    MediaPipelineTestMethods::shouldNotifyPosition(position);
+    MediaPipelineTestMethods::sendNotifyPositionChanged(position);
 
     // Step 3: Get position
-    MediaPipelineTestMethods::shouldGetPosition(m_position);
-    MediaPipelineTestMethods::getPosition(m_position);
+    MediaPipelineTestMethods::shouldGetPosition(position);
+    MediaPipelineTestMethods::getPosition(position);
 }
 } // namespace firebolt::rialto::client::ct

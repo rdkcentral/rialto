@@ -54,20 +54,41 @@ public:
     virtual bool setPlaybackRate(int sessionId, double rate) = 0;
     virtual bool setPosition(int sessionId, std::int64_t position) = 0;
     virtual bool getPosition(int sessionId, std::int64_t &position) = 0;
+    virtual bool setImmediateOutput(int sessionId, int32_t sourceId, bool immediateOutput) = 0;
+    virtual bool getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput) = 0;
+    virtual bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
     virtual bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,
                                 std::uint32_t height) = 0;
     virtual bool haveData(int sessionId, MediaSourceStatus status, std::uint32_t numFrames,
                           std::uint32_t needDataRequestId) = 0;
     virtual bool renderFrame(int sessionId) = 0;
-    virtual bool setVolume(int sessionId, double volume) = 0;
+    virtual bool setVolume(int sessionId, double targetVolume, uint32_t volumeDuration, EaseType easeType) = 0;
     virtual bool getVolume(int sessionId, double &volume) = 0;
-    virtual bool setMute(int sessionId, bool mute) = 0;
-    virtual bool getMute(int sessionId, bool &mute) = 0;
-    virtual bool flush(int sessionId, std::int32_t sourceId, bool resetTime) = 0;
-    virtual bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position) = 0;
+    virtual bool setMute(int sessionId, std::int32_t sourceId, bool mute) = 0;
+    virtual bool getMute(int sessionId, std::int32_t sourceId, bool &mute) = 0;
+    virtual bool setTextTrackIdentifier(int sessionId, const std::string &textTrackIdentifier) = 0;
+    virtual bool getTextTrackIdentifier(int sessionId, std::string &textTrackIdentifier) = 0;
+    virtual bool setLowLatency(int sessionId, bool lowLatency) = 0;
+    virtual bool setSync(int sessionId, bool sync) = 0;
+    virtual bool getSync(int sessionId, bool &sync) = 0;
+    virtual bool setSyncOff(int sessionId, bool syncOff) = 0;
+    virtual bool setStreamSyncMode(int sessionId, int32_t sourceId, int32_t streamSyncMode) = 0;
+    virtual bool getStreamSyncMode(int sessionId, int32_t &streamSyncMode) = 0;
+    virtual bool flush(int sessionId, std::int32_t sourceId, bool resetTime, bool &isAsync) = 0;
+    virtual bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime,
+                                   double appliedRate, uint64_t stopPosition) = 0;
+    virtual bool processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,
+                                 bool audioAac) = 0;
+    virtual bool setBufferingLimit(int sessionId, uint32_t limitBufferingMs) = 0;
+    virtual bool getBufferingLimit(int sessionId, uint32_t &limitBufferingMs) = 0;
+    virtual bool setUseBuffering(int sessionId, bool useBuffering) = 0;
+    virtual bool getUseBuffering(int sessionId, bool &useBuffering) = 0;
     virtual std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) = 0;
     virtual bool isMimeTypeSupported(const std::string &mimeType) = 0;
+    virtual std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
+                                                            const std::vector<std::string> &propertyNames) = 0;
     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
+    virtual bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

@@ -20,10 +20,17 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_H_
 #define FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_H_
 
+#include "IGlibWrapper.h"
 #include "IGstCapabilities.h"
+#include "IGstInitialiser.h"
 #include "IGstWrapper.h"
+#include "IRdkGstreamerUtilsWrapper.h"
+
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 #include <string>
+#include <thread>
 #include <unordered_set>
 #include <vector>
 
@@ -51,8 +58,12 @@ public:
 class GstCapabilities : public IGstCapabilities
 {
 public:
-    explicit GstCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper);
-    ~GstCapabilities() = default;
+    explicit GstCapabilities(
+        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+        const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+        const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+        const IGstInitialiser &gstInitialiser);
+    ~GstCapabilities();
 
     GstCapabilities(const GstCapabilities &) = delete;
     GstCapabilities &operator=(const GstCapabilities &) = delete;
@@ -73,6 +84,17 @@ public:
      */
     bool isMimeTypeSupported(const std::string &mimeType) override;
 
+    /**
+     * @brief  Check sinks and decoders for supported properties
+     *
+     * @param[in] mediaType     : The media type to search. If set to UNKNOWN then both AUDIO and VIDEO are searched
+     * @param[in] propertyNames : A vector of property names to look for
+     *
+     * @retval Returns the subset of propertyNames that are supported by the mediaType
+     */
+    std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
+                                                    const std::vector<std::string> &propertyNames) override;
+
 private:
     /**
      * @brief Sets list of supported mime types
@@ -80,14 +102,14 @@ private:
     void fillSupportedMimeTypes();
 
     /**
-     * @brief Gets all unique caps from decoders' sink pads
-     */
-    std::vector<GstCaps *> getSupportedCapsFromDecoders();
-
-    /**
      * @brief Appends all unique caps from parser->decoders chains' sink pads to \a supportedCaps
      */
-    void appendSupportedCapsFromParserDecoderChains(std::vector<GstCaps *> &supportedCaps);
+    void appendLinkableCapsFromParserDecoderChains(std::vector<GstCaps *> &supportedCaps);
+
+    /**
+     * @brief Appends all unique caps from \a type pads to \a supportedCaps
+     */
+    void appendSupportedCapsFromFactoryType(const GstElementFactoryListType &type, std::vector<GstCaps *> &supportedCaps);
 
     /**
      * @brief Adds unique sink pads from \a padTemplates list to \a capsVector
@@ -109,6 +131,11 @@ private:
     bool isCapsInVector(const std::vector<GstCaps *> &capsVector, GstCaps *caps) const;
 
     /**
+     * @brief Waits for supportd mime types initialisation
+     */
+    void waitForInitialisation();
+
+    /**
      * @brief Set of mime types which are supported by gstreamer
      */
     std::unordered_set<std::string> m_supportedMimeTypes;
@@ -117,6 +144,13 @@ private:
      * @brief The gstreamer wrapper object.
      */
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
+    const IGstInitialiser &m_gstInitialiser;
+    std::thread m_initialisationThread;
+    std::mutex m_initialisationMutex;
+    std::condition_variable m_initialisationCv;
+    bool m_isInitialised{false};
 };
 
 }; // namespace firebolt::rialto::server

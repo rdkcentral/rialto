@@ -39,6 +39,7 @@ public:
     bool read() override;
 
     std::list<std::string> getEnvironmentVariables() override;
+    std::list<std::string> getExtraEnvVariables() override;
     std::optional<std::string> getSessionServerPath() override;
     std::optional<std::chrono::milliseconds> getSessionServerStartupTimeout() override;
     std::optional<std::chrono::seconds> getHealthcheckInterval() override;
@@ -51,6 +52,7 @@ public:
 
 private:
     void parseEnvironmentVariables(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseExtraEnvVariables(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseSessionServerPath(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseSessionServerStartupTimeout(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseHealthcheckInterval(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
@@ -61,10 +63,18 @@ private:
     void parseLogLevel(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseNumOfPingsBeforeRecovery(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
 
+    std::list<std::string> getListOfStrings(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,
+                                            const std::string &valueName) const;
+    std::optional<std::string> getString(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,
+                                         const std::string &valueName) const;
+    std::optional<unsigned int> getUInt(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,
+                                        const std::string &valueName) const;
+
     std::shared_ptr<firebolt::rialto::wrappers::IJsonCppWrapper> m_jsonWrapper;
     std::shared_ptr<IFileReader> m_fileReader;
 
     std::list<std::string> m_envVars;
+    std::list<std::string> m_extraEnvVars;
     std::optional<std::string> m_sessionServerPath;
     std::optional<std::chrono::milliseconds> m_sessionServerStartupTimeout;
     std::optional<std::chrono::seconds> m_healthcheckInterval;

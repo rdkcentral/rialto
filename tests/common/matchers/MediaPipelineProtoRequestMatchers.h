@@ -23,9 +23,11 @@
 #include "MediaCommon.h"
 #include "mediapipelinecapabilitiesmodule.pb.h"
 #include "mediapipelinemodule.pb.h"
+
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
+#include <string>
 #include <vector>
 
 MATCHER_P2(createSessionRequestMatcher, maxWidth, maxHeight, "")
@@ -108,7 +110,8 @@ MATCHER_P9(attachSourceRequestMatcherAudio, sessionId, mimeType, hasDrm, alignme
     }
 
     return ((kRequest->session_id() == sessionId) && (kRequest->mime_type() == mimeType) &&
-            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec && checkAudio);
+            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec &&
+            checkAudio && !kRequest->switch_source());
 }
 
 MATCHER_P8(attachSourceRequestMatcherVideo, sessionId, mimeType, hasDrm, width, height, alignment, codecData,
@@ -130,7 +133,8 @@ MATCHER_P8(attachSourceRequestMatcherVideo, sessionId, mimeType, hasDrm, width, 
     }
 
     return ((kRequest->session_id() == sessionId) && (kRequest->mime_type() == mimeType) &&
-            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec && checkVideo);
+            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec &&
+            checkVideo && !kRequest->switch_source());
 }
 
 MATCHER_P9(attachSourceRequestMatcherDolby, sessionId, mimeType, hasDrm, width, height, alignment, codecData,
@@ -153,7 +157,8 @@ MATCHER_P9(attachSourceRequestMatcherDolby, sessionId, mimeType, hasDrm, width, 
     }
 
     return ((kRequest->session_id() == sessionId) && (kRequest->mime_type() == mimeType) &&
-            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec && checkDolby);
+            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec &&
+            checkDolby && !kRequest->switch_source());
 }
 
 MATCHER_P4(attachSourceRequestMatcherSubtitle, sessionId, mimeType, hasDrm, textTrackIdentifier, "")
@@ -162,7 +167,33 @@ MATCHER_P4(attachSourceRequestMatcherSubtitle, sessionId, mimeType, hasDrm, text
         dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
 
     return ((kRequest->session_id() == sessionId) && (kRequest->mime_type() == mimeType) &&
-            (kRequest->has_drm() == hasDrm) && (kRequest->text_track_identifier() == textTrackIdentifier));
+            (kRequest->has_drm() == hasDrm) && (kRequest->text_track_identifier() == textTrackIdentifier) &&
+            !kRequest->switch_source());
+}
+
+MATCHER_P9(attachSourceRequestMatcherSwitchSource, sessionId, mimeType, hasDrm, alignment, numberOfChannels, sampleRate,
+           codecSpecificConfig, codecData, streamFormat, "")
+{
+    const ::firebolt::rialto::AttachSourceRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::AttachSourceRequest *>(arg);
+    bool checkCodec = checkAttachSourceCodecData(kRequest, codecData);
+
+    // Only check optional parameters if the config type is correct
+    bool checkAudio = false;
+    if (static_cast<const unsigned int>(kRequest->config_type()) ==
+        static_cast<const unsigned int>(SourceConfigType::AUDIO))
+    {
+        if ((kRequest->has_audio_config()) && (kRequest->audio_config().number_of_channels() == numberOfChannels) &&
+            (kRequest->audio_config().sample_rate() == sampleRate) &&
+            (kRequest->audio_config().codec_specific_config() == codecSpecificConfig))
+        {
+            checkAudio = true;
+        }
+    }
+
+    return ((kRequest->session_id() == sessionId) && (kRequest->mime_type() == mimeType) &&
+            (kRequest->has_drm() == hasDrm) && (kRequest->stream_format() == streamFormat) && checkCodec &&
+            checkAudio && kRequest->switch_source());
 }
 
 MATCHER_P2(removeSourceRequestMatcher, sessionId, sourceId, "")
@@ -213,19 +244,22 @@ MATCHER_P2(setPositionRequestMatcher, sessionId, position, "")
     return ((kRequest->session_id() == sessionId) && (kRequest->position() == position));
 }
 
-MATCHER_P3(setSourcePositionRequestMatcher, sessionId, sourceId, position, "")
+MATCHER_P6(setSourcePositionRequestMatcher, sessionId, sourceId, position, resetTime, appliedRate, stopPosition, "")
 {
     const ::firebolt::rialto::SetSourcePositionRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::SetSourcePositionRequest *>(arg);
     return ((kRequest->session_id() == sessionId) && (kRequest->position() == position) &&
-            (kRequest->source_id() == sourceId));
+            (kRequest->source_id() == sourceId) && (kRequest->reset_time() == resetTime) &&
+            (kRequest->applied_rate() == appliedRate) && (kRequest->stop_position() == stopPosition));
 }
 
-MATCHER_P2(setVolumeRequestMatcher, sessionId, volume, "")
+MATCHER_P4(setVolumeRequestMatcher, sessionId, targetVolume, volumeDuration, easeType, "")
 {
     const ::firebolt::rialto::SetVolumeRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::SetVolumeRequest *>(arg);
-    return ((kRequest->session_id() == sessionId) && (kRequest->volume() == volume));
+    return ((kRequest->session_id() == sessionId) && (kRequest->volume() == targetVolume) &&
+            (kRequest->volume_duration() == volumeDuration) &&
+            (kRequest->ease_type() == static_cast<firebolt::rialto::SetVolumeRequest_EaseType>(easeType)));
 }
 
 MATCHER_P(getVolumeRequestMatcher, sessionId, "")
@@ -235,15 +269,56 @@ MATCHER_P(getVolumeRequestMatcher, sessionId, "")
     return ((kRequest->session_id() == sessionId));
 }
 
-MATCHER_P2(setMuteRequestMatcher, sessionId, mute, "")
+MATCHER_P3(setMuteRequestMatcher, sessionId, sourceId, mute, "")
 {
     const ::firebolt::rialto::SetMuteRequest *kRequest = dynamic_cast<const ::firebolt::rialto::SetMuteRequest *>(arg);
-    return ((kRequest->session_id() == sessionId) && (kRequest->mute() == mute));
+    return ((kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId) && (kRequest->mute() == mute));
 }
 
-MATCHER_P(getMuteRequestMatcher, sessionId, "")
+MATCHER_P2(getMuteRequestMatcher, sessionId, sourceId, "")
 {
     const ::firebolt::rialto::GetMuteRequest *kRequest = dynamic_cast<const ::firebolt::rialto::GetMuteRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId));
+}
+
+MATCHER_P2(setLowLatencyRequestMatcher, sessionId, lowLatency, "")
+{
+    const ::firebolt::rialto::SetLowLatencyRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetLowLatencyRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->low_latency() == lowLatency));
+}
+
+MATCHER_P2(setSyncRequestMatcher, sessionId, sync, "")
+{
+    const ::firebolt::rialto::SetSyncRequest *kRequest = dynamic_cast<const ::firebolt::rialto::SetSyncRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->sync() == sync));
+}
+
+MATCHER_P(getSyncRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetSyncRequest *kRequest = dynamic_cast<const ::firebolt::rialto::GetSyncRequest *>(arg);
+    return ((kRequest->session_id() == sessionId));
+}
+
+MATCHER_P2(setSyncOffRequestMatcher, sessionId, syncOff, "")
+{
+    const ::firebolt::rialto::SetSyncOffRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetSyncOffRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->sync_off() == syncOff));
+}
+
+MATCHER_P3(setStreamSyncModeRequestMatcher, sessionId, sourceId, streamSyncMode, "")
+{
+    const ::firebolt::rialto::SetStreamSyncModeRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetStreamSyncModeRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId) &&
+            (kRequest->stream_sync_mode() == streamSyncMode));
+}
+
+MATCHER_P(getStreamSyncModeRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetStreamSyncModeRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetStreamSyncModeRequest *>(arg);
     return ((kRequest->session_id() == sessionId));
 }
 
@@ -269,6 +344,26 @@ MATCHER_P(getPositionRequestMatcher, sessionId, "")
     return ((kRequest->session_id() == sessionId));
 }
 
+MATCHER_P2(setImmediateOutputRequestMatcher, sessionId, sourceId, "")
+{
+    const ::firebolt::rialto::SetImmediateOutputRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetImmediateOutputRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+}
+
+MATCHER_P2(getImmediateOutputRequestMatcher, sessionId, sourceId, "")
+{
+    const ::firebolt::rialto::GetImmediateOutputRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetImmediateOutputRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+}
+
+MATCHER_P2(getStatsRequestMatcher, sessionId, sourceId, "")
+{
+    const ::firebolt::rialto::GetStatsRequest *kRequest = dynamic_cast<const ::firebolt::rialto::GetStatsRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+}
+
 MATCHER_P(getSupportedMimeTypesRequestMatcher, sourceType, "")
 {
     const ::firebolt::rialto::GetSupportedMimeTypesRequest *kRequest =
@@ -283,6 +378,15 @@ MATCHER_P(isMimeTypeSupportedRequestMatcher, mimeType, "")
     return (kRequest->mime_type() == mimeType);
 }
 
+MATCHER_P2(getSupportedPropertiesRequestMatcher, mediaType, propertyNames, "")
+{
+    const ::firebolt::rialto::GetSupportedPropertiesRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetSupportedPropertiesRequest *>(arg);
+    std::vector<std::string> tmp{kRequest->property_names().begin(), kRequest->property_names().end()};
+    return (kRequest->media_type() == static_cast<firebolt::rialto::ProtoMediaSourceType>(mediaType) &&
+            tmp == propertyNames);
+}
+
 MATCHER_P3(flushRequestMatcher, sessionId, sourceId, resetTime, "")
 {
     const ::firebolt::rialto::FlushRequest *kRequest = dynamic_cast<const ::firebolt::rialto::FlushRequest *>(arg);
@@ -290,4 +394,54 @@ MATCHER_P3(flushRequestMatcher, sessionId, sourceId, resetTime, "")
            (kRequest->reset_time() == resetTime);
 }
 
+MATCHER_P5(processAudioGapRequestMatcher, sessionId, position, duration, discontinuityGap, isAudioAac, "")
+{
+    const ::firebolt::rialto::ProcessAudioGapRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::ProcessAudioGapRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->position() == position) &&
+            (kRequest->duration() == duration) && (kRequest->discontinuity_gap() == discontinuityGap) &&
+            (kRequest->audio_aac() == isAudioAac));
+}
+
+MATCHER_P2(setTextTrackIdentifierRequestMatcher, sessionId, textTrackIdentifier, "")
+{
+    const ::firebolt::rialto::SetTextTrackIdentifierRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetTextTrackIdentifierRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->text_track_identifier() == textTrackIdentifier));
+}
+
+MATCHER_P(getTextTrackIdentifierRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetTextTrackIdentifierRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetTextTrackIdentifierRequest *>(arg);
+    return (kRequest->session_id() == sessionId);
+}
+
+MATCHER_P2(setBufferingLimitRequestMatcher, sessionId, limitBufferingMs, "")
+{
+    const ::firebolt::rialto::SetBufferingLimitRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetBufferingLimitRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->limit_buffering_ms() == limitBufferingMs));
+}
+
+MATCHER_P(getBufferingLimitRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetBufferingLimitRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetBufferingLimitRequest *>(arg);
+    return (kRequest->session_id() == sessionId);
+}
+
+MATCHER_P2(setUseBufferingRequestMatcher, sessionId, useBuffering, "")
+{
+    const ::firebolt::rialto::SetUseBufferingRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetUseBufferingRequest *>(arg);
+    return ((kRequest->session_id() == sessionId) && (kRequest->use_buffering() == useBuffering));
+}
+
+MATCHER_P(getUseBufferingRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetUseBufferingRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetUseBufferingRequest *>(arg);
+    return (kRequest->session_id() == sessionId);
+}
 #endif // MEDIA_PIPELINE_PROTO_REQUEST_MATCHERS_H_

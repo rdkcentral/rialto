@@ -23,6 +23,7 @@
 #include <gst/app/gstappsrc.h>
 #include <gst/audio/audio.h>
 #include <gst/audio/streamvolume.h>
+#include <gst/base/gstbaseparse.h>
 #include <gst/base/gstbasetransform.h>
 #include <gst/base/gstbytewriter.h>
 #include <gst/gst.h>
@@ -190,17 +191,6 @@ public:
      * @param[in] pipeline: The pipeline to use.
      */
     virtual GstBus *gstPipelineGetBus(GstPipeline *pipeline) = 0;
-
-    /**
-     * @brief Adds a bus watch to the bus. Revieves asynchronous messages in the main loop.
-     *
-     * @param[in] bus: The bus for the watch.
-     * @param[in] func: The message callback function.
-     * @param[in] user_data: Data to be passed to the function.
-     *
-     * @retval The event source id or 0 if event source already exsists.
-     */
-    virtual guint gstBusAddWatch(GstBus *bus, GstBusFunc func, gpointer user_data) = 0;
 
     /**
      * @brief Sets the synchronous handler on the bus.
@@ -821,16 +811,6 @@ public:
     virtual GstCaps *gstCodecUtilsOpusCreateCapsFromHeader(gconstpointer data, guint size) const = 0;
 
     /**
-     * @brief Checks if all caps represented by subset are in superset.
-     *
-     * @param[in] subset    : subset caps
-     * @param[in] superset  : superset caps, potentially broader
-     *
-     * @retval true if subset is a subset of superset
-     */
-    virtual gboolean gstCapsIsSubset(const GstCaps *subset, const GstCaps *superset) const = 0;
-
-    /**
      * @brief Checks if the given caps are exactly the same set of caps.
      *
      * @param[in] caps1  : caps
@@ -923,15 +903,6 @@ public:
     virtual GstProtectionMeta *gstBufferAddProtectionMeta(GstBuffer *buffer, GstStructure *info) const = 0;
 
     /**
-     * @brief Gets the metadata used for decryption of a sample.
-     *
-     * @param[in] buffer : the gst buffer to retrieve the protection meta from
-     *
-     * @retval the protected metadata
-     */
-    virtual GstProtectionMeta *gstBufferGetProtectionMeta(GstBuffer *buffer) const = 0;
-
-    /**
      * @brief Adds metadata for info to buffer using the parameters in params.
      *
      * @param[in] buffer : the gst buffer
@@ -971,26 +942,15 @@ public:
      *
      * @retval true on success, false if 'fieldname' does not exist or is not a uint.
      */
-    virtual gboolean gstStructureGetUint(const GstStructure *structure, const gchar *fieldname, guint *value) const = 0;
+    virtual gboolean gstStructureGetUint64(const GstStructure *structure, const gchar *fieldname,
+                                           guint64 *value) const = 0;
 
     /**
-     * @brief Gets the value of the field with name 'fieldname'.
+     * @brief Free this structure
      *
-     * @param[in] structure : the gst structure to search
-     * @param[in] fieldname : the name of the field
-     *
-     * @retval the field value
+     * @param[in] structure : the gst structure to free
      */
-    virtual const GValue *gstStructureGetValue(const GstStructure *structure, const gchar *fieldname) const = 0;
-
-    /**
-     * @brief Get a buffer from the given value.
-     *
-     * @param[in] value : the value
-     *
-     * @retval pointer to the buffer, the caller does not own a reference to the buffer.
-     */
-    virtual GstBuffer *gstValueGetBuffer(const GValue *value) const = 0;
+    virtual void gstStructureFree(GstStructure *structure) const = 0;
 
     /**
      * @brief Create a new step event. The purpose of the step event is to instruct a sink to skip amount (expressed in
@@ -1114,6 +1074,16 @@ public:
     virtual void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const = 0;
 
     /**
+     * @brief Sets the field with the given name field to value. If the field does not exist, it is created. If the
+     * field exists, the previous value is replaced and freed.
+     *
+     * @param[in] structure  : a GstStructure
+     * @param[in] fieldname  : the name of the field to set
+     * @param[in] fieldname  : the new value of the field
+     */
+    virtual void gstStructureSetValue(GstStructure *structure, const gchar *fieldname, const GValue *value) const = 0;
+
+    /**
      * @brief Gets the error and debug string from the message. Both gerror and debug must be freed by the caller once complete.
      *
      * @param[in]  message  : a gst error message.
@@ -1132,6 +1102,15 @@ public:
     virtual GstIterator *gstBinIterateSinks(GstBin *bin) const = 0;
 
     /**
+     * @brief Gets an iterator for the elements in this bin. This iterator recurses into GstBin children.
+     *
+     * @param[in]  bin  : the bin.
+     *
+     * @retval an iterator of elements.
+     */
+    virtual GstIterator *gstBinIterateRecurse(GstBin *bin) const = 0;
+
+    /**
      * @brief Gets the next item from the iterator.
      *
      * @param[in]  it   : the iterator to iterate.
@@ -1143,6 +1122,15 @@ public:
      *         GST_ITERATOR_ERROR if an error occured.
      */
     virtual GstIteratorResult gstIteratorNext(GstIterator *it, GValue *elem) const = 0;
+
+    /**
+     * @brief Rsync the iterator.
+     *
+     * To be used if the element list has been updated while iteration.
+     *
+     * @param[in]  it   : the iterator to resync.
+     */
+    virtual void gstIteratorResync(GstIterator *it) const = 0;
 
     /**
      * @brief Free the iterator.
@@ -1182,15 +1170,6 @@ public:
     virtual void gstMessageParseWarning(GstMessage *message, GError **gerror, gchar **debug) const = 0;
 
     /**
-     * @brief Get the capabilities from the pad.
-     *
-     * @param[in] pad   : pad to get the capabilities.
-     *
-     * @retval the current caps, NULL otherwise.
-     */
-    virtual GstCaps *gstPadGetCurrentCaps(GstPad *pad) const = 0;
-
-    /**
      * @brief Finds the structure at index in the caps.
      *
      * @param[in] caps  : a GstCaps.
@@ -1199,15 +1178,6 @@ public:
      * @retval ptr to a structure.
      */
     virtual GstStructure *gstCapsGetStructure(const GstCaps *caps, guint index) const = 0;
-
-    /**
-     * @brief Gets the name of the structure.
-     *
-     * @param[in] structure : a GstStructure.
-     *
-     * @retval the name of the structure.
-     */
-    virtual const gchar *gstStructureGetName(const GstStructure *structure) const = 0;
 
     /**
      * @brief Checks if the structure has the passed name
@@ -1337,6 +1307,60 @@ public:
      */
     virtual GstAudioClippingMeta *gstBufferAddAudioClippingMeta(GstBuffer *buffer, GstFormat format, guint64 start,
                                                                 guint64 end) const = 0;
+
+    /**
+     * @brief Gets a pad of given \a element
+     *
+     * @param element element from which pad should be returned
+     * @param name name of the pad
+     *
+     * @return given pad or NULL if failed
+     */
+    virtual GstPad *gstElementGetStaticPad(GstElement *element, const gchar *name) const = 0;
+
+    /**
+     * @brief Gives the pointer to the GstPad object of the element.
+     *
+     * @param element element from which pad should be returned
+     *
+     * @return given pad or NULL if failed
+     */
+    virtual GstPad *gstBaseSinkPad(GstElement *element) const = 0;
+
+    /**
+     * @brief Appends append_value to the GstValueArray in value.
+     *
+     * @param value : a GValue of type GST_TYPE_ARRAY
+     * @param appendValue : the value to append
+     */
+    virtual void gstValueArrayAppendValue(GValue *value, const GValue *appendValue) const = 0;
+
+    /**
+     * @brief Sets b as the value of v. Caller retains reference to buffer.
+     *
+     * @param value  : a GValue to receive the data
+     * @param buffer : a GstBuffer to assign to the GstValue
+     */
+    virtual void gstValueSetBuffer(GValue *value, GstBuffer *buffer) const = 0;
+
+    /**
+     * @brief Checks, if element is an instance of GstBaseParse
+     *
+     * @param element  : a GValue to receive the data
+     *
+     * @return TRUE if element is an instance of GstBaseParse
+     */
+    virtual gboolean gstIsBaseParse(GstElement *element) const = 0;
+
+    /**
+     * @brief By default, the base class will guess PTS timestamps using a simple interpolation (previous timestamp +
+     * duration), which is incorrect for data streams with reordering, where PTS can go backward. Sub-classes
+     * implementing such formats should disable PTS interpolation.
+     *
+     * @param parse           : a GstBaseParse
+     * @param ptsInterpolate  : TRUE if parser should interpolate PTS timestamps
+     */
+    virtual void gstBaseParseSetPtsInterpolation(GstBaseParse *parse, gboolean ptsInterpolate) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

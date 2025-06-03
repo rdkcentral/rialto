@@ -21,7 +21,10 @@
 
 extern "C"
 {
-    OpenCDMSystem *opencdm_create_system(const char keySystem[]) { return nullptr; }
+    OpenCDMSystem *opencdm_create_system(const char keySystem[])
+    {
+        return nullptr;
+    }
 
     OpenCDMError opencdm_construct_session(OpenCDMSystem *system, const LicenseType licenseType,
                                            const char initDataType[], const uint8_t initData[],
@@ -32,15 +35,30 @@ extern "C"
         return ERROR_NONE;
     }
 
-    OpenCDMError opencdm_destruct_system(struct OpenCDMSystem *system) { return ERROR_NONE; }
+    OpenCDMError opencdm_destruct_system(struct OpenCDMSystem *system)
+    {
+        return ERROR_NONE;
+    }
 
-    OpenCDMError opencdm_is_type_supported(const char keySystem[], const char mimeType[]) { return ERROR_NONE; }
+    OpenCDMError opencdm_is_type_supported(const char keySystem[], const char mimeType[])
+    {
+        return ERROR_NONE;
+    }
 
-    OpenCDMError opencdm_system_get_version(struct OpenCDMSystem *system, char versionStr[]) { return ERROR_NONE; }
+    OpenCDMError opencdm_system_get_version(struct OpenCDMSystem *system, char versionStr[])
+    {
+        return ERROR_NONE;
+    }
 
-    OpenCDMError opencdm_system_get_drm_time(struct OpenCDMSystem *system, uint64_t *time) { return ERROR_NONE; }
+    OpenCDMError opencdm_system_get_drm_time(struct OpenCDMSystem *system, uint64_t *time)
+    {
+        return ERROR_NONE;
+    }
 
-    OpenCDMError opencdm_session_load(struct OpenCDMSession *session) { return ERROR_NONE; }
+    OpenCDMError opencdm_session_load(struct OpenCDMSession *session)
+    {
+        return ERROR_NONE;
+    }
 
     OpenCDMError opencdm_session_update(struct OpenCDMSession *session, const uint8_t keyMessage[],
                                         const uint16_t keyLength)
@@ -48,17 +66,29 @@ extern "C"
         return ERROR_NONE;
     }
 
-    OpenCDMError opencdm_session_remove(struct OpenCDMSession *session) { return ERROR_NONE; }
+    OpenCDMError opencdm_session_remove(struct OpenCDMSession *session)
+    {
+        return ERROR_NONE;
+    }
 
-    OpenCDMError opencdm_session_close(struct OpenCDMSession *session) { return ERROR_NONE; }
+    OpenCDMError opencdm_session_close(struct OpenCDMSession *session)
+    {
+        return ERROR_NONE;
+    }
 
-    OpenCDMError opencdm_destruct_session(struct OpenCDMSession *session) { return ERROR_NONE; }
+    OpenCDMError opencdm_destruct_session(struct OpenCDMSession *session)
+    {
+        return ERROR_NONE;
+    }
 
     KeyStatus opencdm_session_status(const struct OpenCDMSession *session, const uint8_t keyId[], const uint8_t length)
     {
         return Usable;
     }
-    const char *opencdm_session_id(const struct OpenCDMSession *session) { return nullptr; }
+    const char *opencdm_session_id(const struct OpenCDMSession *session)
+    {
+        return nullptr;
+    }
 
     uint32_t opencdm_session_has_key_id(struct OpenCDMSession *session, const uint8_t length, const uint8_t keyId[])
     {
@@ -71,10 +101,18 @@ extern "C"
         return ERROR_NONE;
     }
 
-    OpenCDMError opencdm_session_system_error(const struct OpenCDMSession *session) { return ERROR_NONE; }
+    OpenCDMError opencdm_session_system_error(const struct OpenCDMSession *session)
+    {
+        return ERROR_NONE;
+    }
 
     OpenCDMBool opencdm_system_supports_server_certificate(struct OpenCDMSystem *system)
     {
         return OpenCDMBool::OPENCDM_BOOL_TRUE;
+    }
+
+    OpenCDMError opencdm_get_metric_system_data(struct OpenCDMSystem *system, uint32_t *bufferLength, uint8_t *buffer)
+    {
+        return ERROR_NONE;
     }
 }

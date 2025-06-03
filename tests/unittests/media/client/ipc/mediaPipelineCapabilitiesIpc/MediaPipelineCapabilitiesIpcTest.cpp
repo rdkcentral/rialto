@@ -24,6 +24,10 @@
 using ::testing::Return;
 using ::testing::WithArgs;
 
+namespace
+{
+const char *kPropertyName = "immediate-output";
+}
 class MediaPipelineCapabilitiesIpcTest : public IpcModuleBase, public ::testing::Test
 {
 protected:
@@ -54,6 +58,13 @@ public:
         firebolt::rialto::IsMimeTypeSupportedResponse *isMimeTypeSupportedResponse =
             dynamic_cast<firebolt::rialto::IsMimeTypeSupportedResponse *>(response);
         isMimeTypeSupportedResponse->set_is_supported(true);
+    }
+
+    void setGetSupportedPropertiesResponse(google::protobuf::Message *response)
+    {
+        firebolt::rialto::GetSupportedPropertiesResponse *getSupportedPropertiesResponse =
+            dynamic_cast<firebolt::rialto::GetSupportedPropertiesResponse *>(response);
+        getSupportedPropertiesResponse->add_supported_properties(kPropertyName);
     }
 };
 
@@ -122,6 +133,49 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, IsMimeTypeSupportedSuccess)
     EXPECT_TRUE(m_sut->isMimeTypeSupported("video/h264"));
 }
 
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedPropertiesDisconnectedReconnectChannel)
+{
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallReconnected();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedProperties"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setGetSupportedPropertiesResponse)));
+
+    std::vector<std::string> propertiesToLookFor{kPropertyName};
+    std::vector<std::string> propertiesSupported{
+        m_sut->getSupportedProperties(MediaSourceType::VIDEO, propertiesToLookFor)};
+    EXPECT_EQ(propertiesToLookFor, propertiesSupported);
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedPropertiesFailure)
+{
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallFailure();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedProperties"), _, _, _, _));
+
+    std::vector<std::string> propertiesToLookFor{kPropertyName};
+    std::vector<std::string> propertiesSupported{
+        m_sut->getSupportedProperties(MediaSourceType::VIDEO, propertiesToLookFor)};
+    EXPECT_TRUE(propertiesSupported.empty());
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedPropertiesSuccess)
+{
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedProperties"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setGetSupportedPropertiesResponse)));
+
+    std::vector<std::string> propertiesToLookFor{kPropertyName};
+    std::vector<std::string> propertiesSupported{
+        m_sut->getSupportedProperties(MediaSourceType::VIDEO, propertiesToLookFor)};
+    EXPECT_EQ(propertiesToLookFor, propertiesSupported);
+}
+
 TEST_F(MediaPipelineCapabilitiesIpcTest, IsMimeTypeSupportedsDisconnected)
 {
     createMediaPipelineCapabilitiesIpc();
@@ -150,4 +204,16 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, IsMimeTypeSupportedFailure)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("isMimeTypeSupported"), _, _, _, _));
 
     EXPECT_FALSE(m_sut->isMimeTypeSupported("video/h264"));
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedSubtitlesMimeTypesSuccess)
+{
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedMimeTypes"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setGetSupportedMimeTypesResponse)));
+
+    EXPECT_EQ(m_sut->getSupportedMimeTypes(MediaSourceType::SUBTITLE), m_mimeTypes);
 }

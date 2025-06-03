@@ -55,6 +55,22 @@ message IsMimeTypeSupportedResponse {
   optional bool is_supported = 1;
 }
 
+/**
+ * @fn vector<string> getSupportedProperties(MediaSourceType media_type, const vector<string> &property_names)
+ * @brief Has any gstreamer sink or decoder got a named property
+ *
+ * @param[in]  media_type      The media type to search. If set to UNKNOWN then both AUDIO and VIDEO are searched
+ * @param[in]  property_names  The property names that will be checked
+ *
+ * @returns    supported_properties   Returns the subset of property_names that are supported by the media_type
+ */
+message GetSupportedPropertiesRequest {
+  optional ProtoMediaSourceType media_type = 1 [default = UNKNOWN];
+  repeated string property_names = 2;
+}
+message GetSupportedPropertiesResponse {
+  repeated string supported_properties = 1;
+}
 
 service MediaPipelineCapabilitiesModule {
     /**
@@ -69,5 +85,12 @@ service MediaPipelineCapabilitiesModule {
      * @see IsMimeTypeSupportedRequest
      */
     rpc isMimeTypeSupported(IsMimeTypeSupportedRequest) returns (IsMimeTypeSupportedResponse) {
+    }
+
+    /**
+     * @brief Has any gstreamer element got the specified property
+     * @see GetSupportedPropertiesRequest
+     */
+    rpc getSupportedProperties(GetSupportedPropertiesRequest) returns (GetSupportedPropertiesResponse) {
     }
 }

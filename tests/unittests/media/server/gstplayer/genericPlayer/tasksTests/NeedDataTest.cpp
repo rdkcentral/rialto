@@ -109,3 +109,15 @@ TEST_F(NeedDataTest, shouldSkipToNotifyNeedVideoData)
     checkNeedDataPendingForVideoOnly();
     checkNeedDataForVideoOnly();
 }
+
+TEST_F(NeedDataTest, shouldAttachDataWhenBuffersBuffered)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    setContextVideoBuffer();
+    setContextNeedDataPendingVideoOnly(true);
+    shouldAttachData(firebolt::rialto::MediaSourceType::VIDEO);
+    triggerNeedDataVideo();
+    checkNeedDataPendingForVideoOnly();
+    checkNeedDataForVideoOnly();
+}

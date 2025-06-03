@@ -86,4 +86,24 @@ std::shared_ptr<::firebolt::rialto::ipc::IChannel> ServerManagerStub::getChannel
     }
     return m_ipcChannel;
 }
+
+void ServerManagerStub::reset()
+{
+    if (m_ipcThread.joinable())
+    {
+        m_ipcThread.join();
+    }
+    if (m_ipcChannel)
+    {
+        teardownSubscriptions(m_ipcChannel);
+    }
+
+    // Shutdown and close the server socket
+    // Other socket will be closed by the ipc channel
+    shutdown(m_socks[0], SHUT_RDWR);
+    close(m_socks[0]);
+
+    EXPECT_GE(socketpair(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC | SOCK_NONBLOCK, 0, m_socks.data()), 0);
+    m_ipcThread = std::thread(std::bind(&ServerManagerStub::ipcThread, this));
+}
 } // namespace firebolt::rialto::server::ct
