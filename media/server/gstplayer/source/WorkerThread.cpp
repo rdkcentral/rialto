@@ -26,17 +26,11 @@ namespace firebolt::rialto::server
 class FunctionTask : public IPlayerTask
 {
 public:
-    explicit FunctionTask(std::function<void(void)>&& callback)
-        : m_callback(std::move(callback))
-    {
-    }
+    explicit FunctionTask(std::function<void(void)> &&callback) : m_callback(std::move(callback)) {}
 
     ~FunctionTask() override = default;
 
-    void execute() const override
-    {
-        m_callback();
-    }
+    void execute() const override { m_callback(); }
 
 private:
     std::function<void(void)> m_callback;
