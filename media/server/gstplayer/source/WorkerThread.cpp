@@ -56,7 +56,7 @@ void WorkerThread::stop()
         std::unique_lock<std::mutex> lock(m_taskMutex);
 
         // A null pointer stops the worker thread.
-        m_taskQueue.push(nullptr);
+        m_taskQueue.push({});
 
         m_taskCV.notify_one();
     }
