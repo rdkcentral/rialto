@@ -54,10 +54,7 @@ void WorkerThread::stop()
 
     {
         std::unique_lock<std::mutex> lock(m_taskMutex);
-
-        // A null pointer stops the worker thread.
-        m_taskQueue.push({});
-
+        m_isTaskThreadActive = false;
         m_taskCV.notify_one();
     }
 }
@@ -97,12 +94,18 @@ void WorkerThread::taskHandler()
 std::unique_ptr<IPlayerTask> WorkerThread::waitForTask()
 {
     std::unique_lock<std::mutex> lock(m_taskMutex);
-    while (m_taskQueue.empty())
+    while (m_isTaskThreadActive)
     {
+        if (!m_taskQueue.empty())
+        {
+            std::unique_ptr<IPlayerTask> task = std::move(m_taskQueue.front());
+            m_taskQueue.pop();
+            return task;
+        }
+
         m_taskCV.wait(lock);
     }
-    std::unique_ptr<IPlayerTask> task = std::move(m_taskQueue.front());
-    m_taskQueue.pop();
-    return task;
+
+    return {};
 }
 } // namespace firebolt::rialto::server
