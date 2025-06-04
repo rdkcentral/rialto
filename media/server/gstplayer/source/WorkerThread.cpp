@@ -22,6 +22,26 @@
 
 namespace firebolt::rialto::server
 {
+
+class FunctionTask : public IPlayerTask
+{
+public:
+    explicit FunctionTask(std::function<void(void)>&& callback)
+        : m_callback(std::move(callback))
+    {
+    }
+
+    ~FunctionTask() override = default;
+
+    void execute() const override
+    {
+        m_callback();
+    }
+
+private:
+    std::function<void(void)> m_callback;
+};
+
 std::unique_ptr<IWorkerThread> WorkerThreadFactory::createWorkerThread() const
 {
     std::unique_ptr<IWorkerThread> workerThread;
@@ -52,11 +72,8 @@ void WorkerThread::stop()
 {
     RIALTO_SERVER_LOG_INFO("Stopping worker thread");
 
-    {
-        std::unique_lock<std::mutex> lock(m_taskMutex);
-        m_isTaskThreadActive = false;
-        m_taskCV.notify_one();
-    }
+    auto shutdownTask = [this]() { m_isTaskThreadActive = false; };
+    enqueueTask(std::make_unique<FunctionTask>(std::move(shutdownTask)));
 }
 
 void WorkerThread::join()
@@ -79,14 +96,9 @@ void WorkerThread::enqueueTask(std::unique_ptr<IPlayerTask> &&task)
 
 void WorkerThread::taskHandler()
 {
-    for (;;)
+    while (m_isTaskThreadActive)
     {
         std::unique_ptr<IPlayerTask> task = waitForTask();
-        // Thread quit if get a null executor
-        if (!task)
-        {
-            break;
-        }
         task->execute();
     }
 }
@@ -94,18 +106,13 @@ void WorkerThread::taskHandler()
 std::unique_ptr<IPlayerTask> WorkerThread::waitForTask()
 {
     std::unique_lock<std::mutex> lock(m_taskMutex);
-    while (m_isTaskThreadActive)
+    if (m_taskQueue.empty())
     {
-        if (!m_taskQueue.empty())
-        {
-            std::unique_ptr<IPlayerTask> task = std::move(m_taskQueue.front());
-            m_taskQueue.pop();
-            return task;
-        }
-
-        m_taskCV.wait(lock);
+        m_taskCV.wait(lock, [this] { return !m_taskQueue.empty(); });
     }
 
-    return {};
+    std::unique_ptr<IPlayerTask> task = std::move(m_taskQueue.front());
+    m_taskQueue.pop();
+    return task;
 }
 } // namespace firebolt::rialto::server
