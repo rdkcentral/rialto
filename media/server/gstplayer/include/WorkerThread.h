@@ -61,11 +61,6 @@ private:
 
 private:
     /**
-     * @brief Flag used to check, if task thread is active
-     */
-    bool m_isTaskThreadActive{true};
-
-    /**
      * @brief Thread for handling player tasks.
      */
     std::thread m_taskThread{};

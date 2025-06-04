@@ -44,18 +44,21 @@ WorkerThread::WorkerThread()
 
 WorkerThread::~WorkerThread()
 {
-    if (m_taskThread.joinable())
-    {
-        m_taskThread.join();
-    }
+    stop();
+    join();
 }
 
 void WorkerThread::stop()
 {
     RIALTO_SERVER_LOG_INFO("Stopping worker thread");
-    if (m_isTaskThreadActive)
+
     {
-        m_isTaskThreadActive = false;
+        std::unique_lock<std::mutex> lock(m_taskMutex);
+
+        // A null pointer stops the worker thread.
+        m_taskQueue.push(nullptr);
+
+        m_taskCV.notify_one();
     }
 }
 
@@ -69,18 +72,24 @@ void WorkerThread::join()
 
 void WorkerThread::enqueueTask(std::unique_ptr<IPlayerTask> &&task)
 {
+    if (task)
     {
         std::unique_lock<std::mutex> lock(m_taskMutex);
         m_taskQueue.push(std::move(task));
+        m_taskCV.notify_one();
     }
-    m_taskCV.notify_one();
 }
 
 void WorkerThread::taskHandler()
 {
-    while (m_isTaskThreadActive)
+    for (;;)
     {
         std::unique_ptr<IPlayerTask> task = waitForTask();
+        // Thread quit if get a null executor
+        if (!task)
+        {
+            break;
+        }
         task->execute();
     }
 }
@@ -88,9 +97,9 @@ void WorkerThread::taskHandler()
 std::unique_ptr<IPlayerTask> WorkerThread::waitForTask()
 {
     std::unique_lock<std::mutex> lock(m_taskMutex);
-    if (m_taskQueue.empty())
+    while (m_taskQueue.empty())
     {
-        m_taskCV.wait(lock, [this] { return !m_taskQueue.empty(); });
+        m_taskCV.wait(lock);
     }
     std::unique_ptr<IPlayerTask> task = std::move(m_taskQueue.front());
     m_taskQueue.pop();
