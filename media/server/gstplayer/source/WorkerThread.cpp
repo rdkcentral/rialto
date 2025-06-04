@@ -110,7 +110,6 @@ std::unique_ptr<IPlayerTask> WorkerThread::waitForTask()
     {
         m_taskCV.wait(lock, [this] { return !m_taskQueue.empty(); });
     }
-
     std::unique_ptr<IPlayerTask> task = std::move(m_taskQueue.front());
     m_taskQueue.pop();
     return task;
