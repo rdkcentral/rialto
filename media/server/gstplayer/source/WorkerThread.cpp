@@ -20,10 +20,10 @@
 #include "WorkerThread.h"
 #include "RialtoServerLogging.h"
 
-namespace firebolt::rialto::server
+namespace
 {
 
-class FunctionTask : public IPlayerTask
+class FunctionTask : public firebolt::rialto::server::IPlayerTask
 {
 public:
     explicit FunctionTask(std::function<void(void)> &&callback) : m_callback(std::move(callback)) {}
@@ -36,6 +36,10 @@ private:
     std::function<void(void)> m_callback;
 };
 
+} // namespace
+
+namespace firebolt::rialto::server
+{
 std::unique_ptr<IWorkerThread> WorkerThreadFactory::createWorkerThread() const
 {
     std::unique_ptr<IWorkerThread> workerThread;
