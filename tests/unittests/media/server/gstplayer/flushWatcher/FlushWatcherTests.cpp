@@ -30,10 +30,10 @@ TEST(FlushWatcherTests, ShouldReturnCorrectValue)
     EXPECT_FALSE(watcher.isFlushOngoing());
 
     // Flushing when flushing set for at least one source
-    watcher.setFlushing(MediaSourceType::AUDIO);
+    watcher.setFlushing(MediaSourceType::AUDIO, false);
     EXPECT_TRUE(watcher.isFlushOngoing());
 
-    watcher.setFlushing(MediaSourceType::VIDEO);
+    watcher.setFlushing(MediaSourceType::VIDEO, false);
     EXPECT_TRUE(watcher.isFlushOngoing());
 
     // Not flushing when all flush flags cleared

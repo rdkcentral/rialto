@@ -29,9 +29,11 @@ HandleBusMessage::HandleBusMessage(GenericPlayerContext &context, IGstGenericPla
                                    IGstGenericPlayerClient *client,
                                    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                                    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
-                                   GstMessage *message, bool isFlushOngoing)
+                                   GstMessage *message, const IFlushWatcher &flushWatcher)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper},
-      m_glibWrapper{glibWrapper}, m_message{message}, m_isFlushOngoing{isFlushOngoing}
+      m_glibWrapper{glibWrapper}, m_message{message}, m_flushWatcher{flushWatcher},
+      m_isFlushOngoingDuringCreation{flushWatcher.isFlushOngoing()},
+      m_isAsyncFlushOngoingDuringCreation{flushWatcher.isAsyncFlushOngoing()}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing HandleBusMessage");
 }
@@ -76,6 +78,14 @@ void HandleBusMessage::execute() const
             {
                 if (pending != GST_STATE_PAUSED)
                 {
+                    // If async flush was requested before HandleBusMessage task creation (but it was not executed yet)
+                    // or if async flush was created after HandleBusMessage task creation (but before its execution)
+                    // we can't report playback state, because async flush causes state loss - reported state is probably invalid.
+                    if (m_isAsyncFlushOngoingDuringCreation || m_flushWatcher.isAsyncFlushOngoing())
+                    {
+                        RIALTO_SERVER_LOG_WARN("Skip PAUSED notification - flush is ongoing");
+                        break;
+                    }
                     // newState==GST_STATE_PAUSED, pending==GST_STATE_PAUSED state transition is received as a result of
                     // waiting for preroll after seek.
                     // Subsequent newState==GST_STATE_PAUSED, pending!=GST_STATE_PAUSED transition will
@@ -86,6 +96,14 @@ void HandleBusMessage::execute() const
             }
             case GST_STATE_PLAYING:
             {
+                // If async flush was requested before HandleBusMessage task creation (but it was not executed yet)
+                // or if async flush was created after HandleBusMessage task creation (but before its execution)
+                // we can't report playback state, because async flush causes state loss - reported state is probably invalid.
+                if (m_isAsyncFlushOngoingDuringCreation || m_flushWatcher.isAsyncFlushOngoing())
+                {
+                    RIALTO_SERVER_LOG_WARN("Skip PLAYING notification - flush is ongoing");
+                    break;
+                }
                 if (m_context.pendingPlaybackRate != kNoPendingPlaybackRate)
                 {
                     m_player.setPendingPlaybackRate();
@@ -107,7 +125,10 @@ void HandleBusMessage::execute() const
     }
     case GST_MESSAGE_EOS:
     {
-        if (m_isFlushOngoing)
+        // If flush was requested before HandleBusMessage task creation (but it was not executed yet)
+        // or if flush was created after HandleBusMessage task creation (but before its execution)
+        // we can't report EOS, because flush clears EOS.
+        if (m_isFlushOngoingDuringCreation || m_flushWatcher.isFlushOngoing())
         {
             RIALTO_SERVER_LOG_WARN("Skip EOS notification - flush is ongoing");
             break;

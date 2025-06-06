@@ -18,15 +18,16 @@
  */
 
 #include "FlushWatcher.h"
+#include <algorithm>
 
 namespace firebolt::rialto::server
 {
-void FlushWatcher::setFlushing(const MediaSourceType &type)
+void FlushWatcher::setFlushing(const MediaSourceType &type, bool async)
 {
     std::unique_lock lock{m_mutex};
     if (MediaSourceType::UNKNOWN != type)
     {
-        m_flushingSources.insert(type);
+        m_flushingSources[type] = async;
     }
 }
 
@@ -40,5 +41,12 @@ bool FlushWatcher::isFlushOngoing() const
 {
     std::unique_lock lock{m_mutex};
     return !m_flushingSources.empty();
+}
+
+bool FlushWatcher::isAsyncFlushOngoing() const
+{
+    std::unique_lock lock{m_mutex};
+    return !m_flushingSources.empty() && std::any_of(m_flushingSources.begin(), m_flushingSources.end(),
+                                                     [](const auto &source) { return source.second; });
 }
 } // namespace firebolt::rialto::server

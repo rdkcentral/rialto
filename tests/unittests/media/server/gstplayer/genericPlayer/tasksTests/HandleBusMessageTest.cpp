@@ -18,6 +18,7 @@
  */
 
 #include "tasks/generic/HandleBusMessage.h"
+#include "FlushWatcherMock.h"
 #include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerClientMock.h"
@@ -54,6 +55,7 @@ protected:
         std::make_shared<StrictMock<firebolt::rialto::wrappers::GstWrapperMock>>()};
     std::shared_ptr<firebolt::rialto::wrappers::GlibWrapperMock> m_glibWrapper{
         std::make_shared<StrictMock<firebolt::rialto::wrappers::GlibWrapperMock>>()};
+    StrictMock<firebolt::rialto::server::FlushWatcherMock> m_flushWatcherMock;
     GstElement m_pipeline{};
     GstAppSrc m_audioSrc{};
     GstAppSrc m_videoSrc{};
@@ -84,9 +86,12 @@ TEST_F(HandleBusMessageTest, shouldNotHandleMessageWithUnknownType)
 {
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -94,9 +99,12 @@ TEST_F(HandleBusMessageTest, shouldNotHandleEosMessageForAnotherPipeline)
 {
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_EOS;
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -106,9 +114,12 @@ TEST_F(HandleBusMessageTest, shouldNotHandleMessageEosWhenPipelineIsNull)
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_EOS;
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -118,9 +129,12 @@ TEST_F(HandleBusMessageTest, shouldNotHandleMessageEosWhenEosAlreadyNotified)
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_EOS;
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -130,9 +144,12 @@ TEST_F(HandleBusMessageTest, shouldNotHandleEosMessageWhenFlushing)
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_EOS;
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,    m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper, m_glibWrapper, &m_message,
-                                                                    kFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 
     EXPECT_FALSE(m_context.eosNotified);
@@ -144,9 +161,12 @@ TEST_F(HandleBusMessageTest, shouldHandleEosMessage)
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_EOS;
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::END_OF_STREAM));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 
     EXPECT_TRUE(m_context.eosNotified);
@@ -156,9 +176,12 @@ TEST_F(HandleBusMessageTest, shouldNotHandleStateChangedMessageForAnotherPipelin
 {
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_STATE_CHANGED;
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -168,9 +191,12 @@ TEST_F(HandleBusMessageTest, shouldNotHandleMessageStateChangedWhenPipelineIsNul
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT(&m_pipeline);
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_STATE_CHANGED;
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -189,9 +215,11 @@ TEST_F(HandleBusMessageTest, shouldNotHandleStateChangedMessageWhenGstPlayerClie
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   nullptr,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,         m_gstPlayer,   nullptr,
+                                                                    m_gstWrapper,      m_glibWrapper, &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -211,9 +239,12 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToNullMessage)
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::STOPPED));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -233,9 +264,12 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedMessage)
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PAUSED));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -252,9 +286,12 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedAndPendingPausedMes
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(GST_STATE_PAUSED)).WillRepeatedly(Return("Paused"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -276,9 +313,12 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessage)
     EXPECT_CALL(m_gstPlayer, startPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PLAYING));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 
     EXPECT_TRUE(m_context.isPlaying);
@@ -303,9 +343,12 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessageAndSetPendi
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PLAYING));
     EXPECT_CALL(m_gstPlayer, setPendingPlaybackRate());
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -324,10 +367,12 @@ TEST_F(HandleBusMessageTest, shouldNotHandleQosMessageForUnsupportedFormat)
         .WillOnce(DoAll(SetArgPointee<1>(format), SetArgPointee<2>(processed), SetArgPointee<3>(dropped)));
     EXPECT_CALL(*m_gstWrapper, gstFormatGetName(format)).WillOnce(Return("Undefined"));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -348,10 +393,12 @@ TEST_F(HandleBusMessageTest, shouldNotHandleQosMessageForUnknownSourceType)
                                                           StrEq(GST_ELEMENT_METADATA_KLASS)))
         .WillOnce(Return("Unknown"));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -374,9 +421,12 @@ TEST_F(HandleBusMessageTest, shouldHandleQosMessageForVideo)
     EXPECT_CALL(m_gstPlayerClient,
                 notifyQos(firebolt::rialto::MediaSourceType::VIDEO, QosInfoMatcher(processed, dropped)));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -399,9 +449,12 @@ TEST_F(HandleBusMessageTest, shouldHandleQosMessageForAudio)
     EXPECT_CALL(m_gstPlayerClient,
                 notifyQos(firebolt::rialto::MediaSourceType::AUDIO, QosInfoMatcher(processed, dropped)));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -413,15 +466,17 @@ TEST_F(HandleBusMessageTest, shouldHandleErrorMessageNoEos)
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_ERROR;
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT_CAST(&m_videoSrc);
     m_err.domain = GST_CORE_ERROR;
-
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&m_message, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::FAILURE));
     expectFreeErrorMessage();
 
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -436,15 +491,17 @@ TEST_F(HandleBusMessageTest, shouldHandleErrorMessageWhenEosAllSources)
 
     m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, firebolt::rialto::server::EosState::SET);
     m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, firebolt::rialto::server::EosState::SET);
-
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&m_message, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::FAILURE));
     expectFreeErrorMessage();
 
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -456,15 +513,17 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageNoEos)
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_ERROR;
     GST_MESSAGE_SRC(&m_message) = GST_OBJECT_CAST(&m_videoSrc);
     m_err.domain = GST_STREAM_ERROR;
-
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&m_message, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::FAILURE));
     expectFreeErrorMessage();
 
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -478,15 +537,17 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosSingleSource)
     m_err.domain = GST_STREAM_ERROR;
 
     m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, firebolt::rialto::server::EosState::SET);
-
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&m_message, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::FAILURE));
     expectFreeErrorMessage();
 
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -501,15 +562,17 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSources)
 
     m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, firebolt::rialto::server::EosState::SET);
     m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, firebolt::rialto::server::EosState::SET);
-
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&m_message, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::END_OF_STREAM));
     expectFreeErrorMessage();
 
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 
     EXPECT_TRUE(m_context.eosNotified);
@@ -528,14 +591,16 @@ TEST_F(HandleBusMessageTest, shouldHandleStreamErrorMessageWhenEosAllSourcesAndE
     m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, firebolt::rialto::server::EosState::SET);
     m_context.endOfStreamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, firebolt::rialto::server::EosState::SET);
     m_context.eosNotified = true;
-
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(*m_gstWrapper, gstMessageParseError(&m_message, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
     expectFreeErrorMessage();
 
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 }
 
@@ -552,16 +617,18 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForAudioDecryption)
     GST_MESSAGE_SRC(&m_message) = decryptor;
     m_err.domain = GST_STREAM_ERROR;
     m_err.code = GST_STREAM_ERROR_DECRYPT;
-
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(*m_gstWrapper, gstMessageParseWarning(&m_message, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
                                                        firebolt::rialto::PlaybackError::DECRYPTION));
     expectFreeErrorMessage();
 
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 
     g_object_unref(decryptor);
@@ -580,16 +647,18 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForVideoDecryption)
     GST_MESSAGE_SRC(&m_message) = decryptor;
     m_err.domain = GST_STREAM_ERROR;
     m_err.code = GST_STREAM_ERROR_DECRYPT;
-
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(*m_gstWrapper, gstMessageParseWarning(&m_message, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
                                                        firebolt::rialto::PlaybackError::DECRYPTION));
     expectFreeErrorMessage();
 
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 
     g_object_unref(decryptor);
@@ -607,14 +676,16 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageGeneric)
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_WARNING;
     GST_MESSAGE_SRC(&m_message) = element;
     m_err.domain = GST_CORE_ERROR;
-
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(*m_gstWrapper, gstMessageParseWarning(&m_message, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
     expectFreeErrorMessage();
 
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 
     g_object_unref(element);
@@ -633,14 +704,16 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForUnknownSrcTypeDecrypti
     GST_MESSAGE_SRC(&m_message) = element;
     m_err.domain = GST_STREAM_ERROR;
     m_err.code = GST_STREAM_ERROR_DECRYPT;
-
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(*m_gstWrapper, gstMessageParseWarning(&m_message, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(&m_err), SetArgPointee<2>(m_debug)));
     expectFreeErrorMessage();
 
-    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,      m_gstPlayer,   &m_gstPlayerClient,
-                                                                    m_gstWrapper,   m_glibWrapper, &m_message,
-                                                                    kNoFlushOngoing};
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      &m_message,
+                                                                    m_flushWatcherMock};
     task.execute();
 
     g_object_unref(element);
