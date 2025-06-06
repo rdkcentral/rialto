@@ -32,15 +32,19 @@ TEST(FlushWatcherTests, ShouldReturnCorrectValue)
     // Flushing when flushing set for at least one source
     watcher.setFlushing(MediaSourceType::AUDIO, false);
     EXPECT_TRUE(watcher.isFlushOngoing());
+    EXPECT_FALSE(watcher.isAsyncFlushOngoing());
 
-    watcher.setFlushing(MediaSourceType::VIDEO, false);
+    watcher.setFlushing(MediaSourceType::VIDEO, true);
     EXPECT_TRUE(watcher.isFlushOngoing());
+    EXPECT_TRUE(watcher.isAsyncFlushOngoing());
 
     // Not flushing when all flush flags cleared
     watcher.setFlushed(MediaSourceType::AUDIO);
     EXPECT_TRUE(watcher.isFlushOngoing());
+    EXPECT_TRUE(watcher.isAsyncFlushOngoing());
 
     watcher.setFlushed(MediaSourceType::VIDEO);
     EXPECT_FALSE(watcher.isFlushOngoing());
+    EXPECT_FALSE(watcher.isAsyncFlushOngoing());
 }
 } // namespace firebolt::rialto::server
