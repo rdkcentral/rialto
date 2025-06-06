@@ -28,9 +28,10 @@ namespace firebolt::rialto::server
 class FlushWatcherMock : public IFlushWatcher
 {
 public:
-    MOCK_METHOD(void, setFlushing, (const MediaSourceType &type), (override));
+    MOCK_METHOD(void, setFlushing, (const MediaSourceType &type, bool async), (override));
     MOCK_METHOD(void, setFlushed, (const MediaSourceType &type), (override));
     MOCK_METHOD(bool, isFlushOngoing, (), (const, override));
+    MOCK_METHOD(bool, isAsyncFlushOngoing, (), (const, override));
 };
 } // namespace firebolt::rialto::server
 #endif // FIREBOLT_RIALTO_SERVER_FLUSH_WATCHER_MOCK_H_

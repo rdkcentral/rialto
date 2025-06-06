@@ -1881,11 +1881,12 @@ void GstGenericPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandle
     }
 }
 
-void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetTime)
+void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetTime, bool &async)
 {
     if (m_workerThread)
     {
-        m_flushWatcher->setFlushing(mediaSourceType);
+        async = isAsync(mediaSourceType);
+        m_flushWatcher->setFlushing(mediaSourceType, async);
         m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, *this, mediaSourceType, resetTime));
     }
 }
@@ -1986,8 +1987,7 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
 
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
-    m_workerThread->enqueueTask(
-        m_taskFactory->createHandleBusMessage(m_context, *this, message, m_flushWatcher->isFlushOngoing()));
+    m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)

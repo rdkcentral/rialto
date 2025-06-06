@@ -114,10 +114,11 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFinishSetupSource(G
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createHandleBusMessage(GenericPlayerContext &context,
                                                                               IGstGenericPlayerPrivate &player,
-                                                                              GstMessage *message, bool isFlushing) const
+                                                                              GstMessage *message,
+                                                                              const IFlushWatcher &flushWatcher) const
 {
     return std::make_unique<tasks::generic::HandleBusMessage>(context, player, m_client, m_gstWrapper, m_glibWrapper,
-                                                              message, isFlushing);
+                                                              message, flushWatcher);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createNeedData(GenericPlayerContext &context,

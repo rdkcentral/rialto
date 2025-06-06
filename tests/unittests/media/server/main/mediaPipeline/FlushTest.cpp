@@ -29,7 +29,6 @@ protected:
     const char *m_kMimeType{"video/mpeg"};
     const bool m_kResetTime{true};
     const int m_kDummySourceId{123};
-    const bool m_kIsAsync{true};
 
     RialtoServerMediaPipelineFlushTest() { createMediaPipeline(); }
 
@@ -53,10 +52,8 @@ TEST_F(RialtoServerMediaPipelineFlushTest, FlushSuccess)
 
     bool async{false};
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, isAsync(m_kType)).WillOnce(Return(m_kIsAsync));
-    EXPECT_CALL(*m_gstPlayerMock, flush(m_kType, m_kResetTime));
+    EXPECT_CALL(*m_gstPlayerMock, flush(m_kType, m_kResetTime, async));
     EXPECT_TRUE(m_mediaPipeline->flush(sourceId, m_kResetTime, async));
-    EXPECT_EQ(async, m_kIsAsync);
 }
 
 /**
@@ -99,10 +96,8 @@ TEST_F(RialtoServerMediaPipelineFlushTest, FlushResetEos)
     setEos(firebolt::rialto::MediaSourceType::VIDEO);
 
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, isAsync(m_kType)).WillOnce(Return(m_kIsAsync));
-    EXPECT_CALL(*m_gstPlayerMock, flush(m_kType, m_kResetTime));
+    EXPECT_CALL(*m_gstPlayerMock, flush(m_kType, m_kResetTime, async));
     EXPECT_TRUE(m_mediaPipeline->flush(sourceId, m_kResetTime, async));
-    EXPECT_EQ(async, m_kIsAsync);
 
     // Expect need data notified to client
     expectNotifyNeedData(firebolt::rialto::MediaSourceType::VIDEO, sourceId, 3);

@@ -276,15 +276,6 @@ public:
     virtual bool getMute(const MediaSourceType &mediaSourceType, bool &mute) = 0;
 
     /**
-     * @brief Checks if given source is asyncronous
-     *
-     * @param[in]  mediaSourceType : The media source type
-     *
-     * @retval True if source is asynchronous.
-     */
-    virtual bool isAsync(const MediaSourceType &mediaSourceType) const = 0;
-
-    /**
      * @brief Change Text Track Identifier
      *
      * @param[in] textTrackIdentifier Text track identifier of subtitle stream
@@ -370,9 +361,10 @@ public:
      *
      * @param[in] mediaSourceType : The media source type to flush.
      * @param[in] resetTime : True if time should be reset
+     * @param[out] async     : True if flushed source is asynchronous (will preroll after flush)
      *
      */
-    virtual void flush(const MediaSourceType &mediaSourceType, bool resetTime) = 0;
+    virtual void flush(const MediaSourceType &mediaSourceType, bool resetTime, bool &async) = 0;
 
     /**
      * @brief Set the source position in nanoseconds.

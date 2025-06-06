@@ -29,9 +29,10 @@ class IFlushWatcher
 public:
     virtual ~IFlushWatcher() = default;
 
-    virtual void setFlushing(const MediaSourceType &type) = 0;
+    virtual void setFlushing(const MediaSourceType &type, bool async) = 0;
     virtual void setFlushed(const MediaSourceType &type) = 0;
     virtual bool isFlushOngoing() const = 0;
+    virtual bool isAsyncFlushOngoing() const = 0;
 };
 } // namespace firebolt::rialto::server
 #endif // FIREBOLT_RIALTO_SERVER_I_FLUSH_WATCHER_H_
