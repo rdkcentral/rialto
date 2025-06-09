@@ -2355,11 +2355,6 @@ void GenericTasksTestsBase::shouldNotifyVideoUnderflow()
     EXPECT_CALL(testContext->m_gstPlayerClient, notifyBufferUnderflow(firebolt::rialto::MediaSourceType::VIDEO));
 }
 
-void GenericTasksTestsBase::shouldStopWorkerThread()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, stopWorkerThread());
-}
-
 void GenericTasksTestsBase::triggerShutdown()
 {
     firebolt::rialto::server::tasks::generic::Shutdown task{testContext->m_gstPlayer};

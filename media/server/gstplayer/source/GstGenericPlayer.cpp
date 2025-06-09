@@ -1605,14 +1605,6 @@ void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
     }
 }
 
-void GstGenericPlayer::stopWorkerThread()
-{
-    if (m_workerThread)
-    {
-        m_workerThread->stop();
-    }
-}
-
 void GstGenericPlayer::setPendingPlaybackRate()
 {
     RIALTO_SERVER_LOG_INFO("Setting pending playback rate");

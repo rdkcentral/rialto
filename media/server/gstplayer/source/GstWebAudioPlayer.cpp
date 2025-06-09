@@ -424,14 +424,6 @@ bool GstWebAudioPlayer::changePipelineState(GstState newState)
     return true;
 }
 
-void GstWebAudioPlayer::stopWorkerThread()
-{
-    if (m_workerThread)
-    {
-        m_workerThread->stop();
-    }
-}
-
 void GstWebAudioPlayer::handleBusMessage(GstMessage *message)
 {
     if (m_workerThread)

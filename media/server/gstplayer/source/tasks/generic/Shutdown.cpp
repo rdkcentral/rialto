@@ -36,6 +36,5 @@ Shutdown::~Shutdown()
 void Shutdown::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing Shutdown");
-    m_player.stopWorkerThread();
 }
 } // namespace firebolt::rialto::server::tasks::generic
