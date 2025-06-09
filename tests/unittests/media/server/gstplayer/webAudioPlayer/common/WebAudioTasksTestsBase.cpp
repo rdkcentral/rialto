@@ -126,11 +126,6 @@ void WebAudioTasksTestsBase::triggerSetVolume()
     task.execute();
 }
 
-void WebAudioTasksTestsBase::shouldStopWorkerThread()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, stopWorkerThread());
-}
-
 void WebAudioTasksTestsBase::triggerShutdown()
 {
     firebolt::rialto::server::tasks::webaudio::Shutdown task{testContext->m_gstPlayer};

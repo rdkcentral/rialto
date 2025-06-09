@@ -182,11 +182,6 @@ public:
     virtual void stopPositionReportingAndCheckAudioUnderflowTimer() = 0;
 
     /**
-     * @brief Stops worker thread. Called by the worker thread.
-     */
-    virtual void stopWorkerThread() = 0;
-
-    /**
      * @brief Restores playback after underflow. Called by the worker thread.
      *
      * @param[in] underflowFlag    : The audio or video underflow flag to be cleared.

@@ -69,7 +69,6 @@ protected:
     void triggerSetVolume();
 
     // Shutdown test methods
-    void shouldStopWorkerThread();
     void triggerShutdown();
 
     // Stop test methods

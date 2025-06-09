@@ -25,6 +25,5 @@ class WebAudioShutdownTest : public WebAudioTasksTestsBase
 
 TEST_F(WebAudioShutdownTest, shouldShutdown)
 {
-    shouldStopWorkerThread();
     triggerShutdown();
 }

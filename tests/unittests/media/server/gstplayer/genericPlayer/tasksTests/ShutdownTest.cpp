@@ -25,6 +25,5 @@ class ShutdownTest : public GenericTasksTestsBase
 
 TEST_F(ShutdownTest, shouldShutdown)
 {
-    shouldStopWorkerThread();
     triggerShutdown();
 }
