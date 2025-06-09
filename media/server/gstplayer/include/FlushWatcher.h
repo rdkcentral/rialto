@@ -21,8 +21,8 @@
 #define FIREBOLT_RIALTO_SERVER_FLUSH_WATCHER_H_
 
 #include "IFlushWatcher.h"
+#include <map>
 #include <mutex>
-#include <set>
 
 namespace firebolt::rialto::server
 {
@@ -32,13 +32,14 @@ public:
     FlushWatcher() = default;
     ~FlushWatcher() override = default;
 
-    void setFlushing(const MediaSourceType &type) override;
+    void setFlushing(const MediaSourceType &type, bool async) override;
     void setFlushed(const MediaSourceType &type) override;
     bool isFlushOngoing() const override;
+    bool isAsyncFlushOngoing() const override;
 
 private:
     mutable std::mutex m_mutex;
-    std::set<MediaSourceType> m_flushingSources;
+    std::map<MediaSourceType, bool> m_flushingSources;
 };
 } // namespace firebolt::rialto::server
 #endif // FIREBOLT_RIALTO_SERVER_FLUSH_WATCHER_H_
