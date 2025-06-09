@@ -29,6 +29,12 @@ add_compile_options(
 find_package( PkgConfig REQUIRED )
 pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0 gstreamer-pbutils-1.0 gstreamer-audio-1.0)
 
+if( CMAKE_RDK_SVP )
+    message("RDK SVP IS ENABLED")
+    add_compile_definitions( RDK_SVP )
+    set (RDK_SVP_LIBS -lgstsvpext)
+endif()
+
 add_library(
         RialtoServerGstPlayer
         STATIC
@@ -133,6 +139,9 @@ set_property(
 
 target_link_libraries(
         RialtoServerGstPlayer
+
+        PUBLIC
+        ${RDK_SVP_LIBS}
 
         PRIVATE
         RialtoLogging
