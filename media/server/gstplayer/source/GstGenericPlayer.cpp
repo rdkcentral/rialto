@@ -249,7 +249,6 @@ void GstGenericPlayer::resetWorkerThread()
 {
     // Shutdown task thread
     m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
-    m_workerThread->join();
     m_workerThread.reset();
 }
 

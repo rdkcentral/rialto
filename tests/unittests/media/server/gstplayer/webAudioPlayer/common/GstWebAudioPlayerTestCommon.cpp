@@ -65,7 +65,6 @@ void GstWebAudioPlayerTestCommon::expectResetWorkerThread()
     std::unique_ptr<IPlayerTask> shutdownTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*shutdownTask), execute());
     EXPECT_CALL(m_taskFactoryMock, createShutdown(_)).WillOnce(Return(ByMove(std::move(shutdownTask))));
-    EXPECT_CALL(m_workerThreadMock, join());
     executeTaskWhenEnqueued();
 }
 
