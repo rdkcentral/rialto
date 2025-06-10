@@ -85,7 +85,13 @@ void ReadShmDataAndAttachSamples::execute() const
                 RIALTO_SERVER_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
             }
         }
-        // no special action for SUBTITLE needed, just attach the buffer
+        else if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::SUBTITLE)
+        {
+            if (mediaSegment->getDisplayOffset())
+            {
+                GST_BUFFER_OFFSET(gstBuffer) = mediaSegment->getDisplayOffset().value();
+            }
+        }
 
         attachData(mediaSegment->getType(), gstBuffer);
     }

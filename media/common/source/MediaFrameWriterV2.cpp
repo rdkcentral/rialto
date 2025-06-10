@@ -148,6 +148,10 @@ MediaSegmentMetadata MediaFrameWriterV2::buildMetadata(const std::unique_ptr<IMe
     metadata.set_time_position(data->getTimeStamp());
     metadata.set_sample_duration(data->getDuration());
     metadata.set_stream_id(static_cast<uint32_t>(data->getId()));
+    if (data->getDisplayOffset())
+    {
+        metadata.set_display_offset(data->getDisplayOffset().value());
+    }
     if (MediaSourceType::AUDIO == data->getType())
     {
         IMediaPipeline::MediaSegmentAudio &audioSegment = dynamic_cast<IMediaPipeline::MediaSegmentAudio &>(*data);

@@ -137,6 +137,7 @@ constexpr bool kIsAudioAac{false};
 constexpr uint64_t kStopPosition{4523};
 const std::vector<uint8_t> kStreamHeaderVector{1, 2, 3, 4};
 constexpr bool kFramed{true};
+constexpr uint64_t kDisplayOffset{35};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 {
@@ -173,10 +174,12 @@ firebolt::rialto::IMediaPipeline::MediaSegmentVector buildSubtitleSamples()
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegment>(kSubtitleSourceId,
                                                                          firebolt::rialto::MediaSourceType::SUBTITLE,
                                                                          kItHappenedInThePast, kDuration));
+    dataVec.back()->setDisplayOffset(kDisplayOffset);
     dataVec.emplace_back(
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegment>(kSubtitleSourceId,
                                                                          firebolt::rialto::MediaSourceType::SUBTITLE,
                                                                          kItWillHappenInTheFuture, kDuration));
+    dataVec.back()->setDisplayOffset(kDisplayOffset);
     return dataVec;
 }
 
