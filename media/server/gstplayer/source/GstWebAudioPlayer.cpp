@@ -354,7 +354,6 @@ void GstWebAudioPlayer::termWebAudioPipeline()
 
 void GstWebAudioPlayer::resetWorkerThread()
 {
-    m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
     m_workerThread.reset();
 }
 

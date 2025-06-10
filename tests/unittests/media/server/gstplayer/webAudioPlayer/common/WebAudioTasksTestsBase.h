@@ -68,9 +68,6 @@ protected:
     void shouldGstSetVolume();
     void triggerSetVolume();
 
-    // Shutdown test methods
-    void triggerShutdown();
-
     // Stop test methods
     void shouldChangePlayerStateNull();
     void triggerStop();

@@ -30,7 +30,6 @@
 #include "tasks/webAudio/Play.h"
 #include "tasks/webAudio/SetCaps.h"
 #include "tasks/webAudio/SetVolume.h"
-#include "tasks/webAudio/Shutdown.h"
 #include "tasks/webAudio/Stop.h"
 #include "tasks/webAudio/WriteBuffer.h"
 
@@ -123,12 +122,6 @@ void WebAudioTasksTestsBase::shouldGstSetVolume()
 void WebAudioTasksTestsBase::triggerSetVolume()
 {
     firebolt::rialto::server::tasks::webaudio::SetVolume task{testContext->m_context, testContext->m_gstWrapper, kVolume};
-    task.execute();
-}
-
-void WebAudioTasksTestsBase::triggerShutdown()
-{
-    firebolt::rialto::server::tasks::webaudio::Shutdown task{testContext->m_gstPlayer};
     task.execute();
 }
 
