@@ -99,9 +99,10 @@ void ApplicationManagementServer::start()
     m_ipcServerThread = std::thread(
         [this]()
         {
+            constexpr int kPollInterval{100};
             while (m_ipcServer->process() && m_ipcClient && m_ipcClient->isConnected())
             {
-                m_ipcServer->wait(-1);
+                m_ipcServer->wait(kPollInterval);
             }
         });
 }
