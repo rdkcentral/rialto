@@ -354,8 +354,6 @@ void GstWebAudioPlayer::termWebAudioPipeline()
 
 void GstWebAudioPlayer::resetWorkerThread()
 {
-    m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
-    m_workerThread->join();
     m_workerThread.reset();
 }
 
@@ -424,14 +422,6 @@ bool GstWebAudioPlayer::changePipelineState(GstState newState)
         return false;
     }
     return true;
-}
-
-void GstWebAudioPlayer::stopWorkerThread()
-{
-    if (m_workerThread)
-    {
-        m_workerThread->stop();
-    }
 }
 
 void GstWebAudioPlayer::handleBusMessage(GstMessage *message)

@@ -43,7 +43,6 @@ public:
     ~WorkerThread() override;
 
     void stop() override;
-    void join() override;
     void enqueueTask(std::unique_ptr<IPlayerTask> &&task) override;
 
 private:

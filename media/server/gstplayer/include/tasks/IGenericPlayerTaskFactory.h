@@ -22,6 +22,7 @@
 
 #include "GenericPlayerContext.h"
 #include "IDataReader.h"
+#include "IFlushWatcher.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IHeartbeatHandler.h"
 #include "IMediaPipeline.h"
@@ -119,16 +120,16 @@ public:
     /**
      * @brief Creates a HandleBusMessage task.
      *
-     * @param[in] context    : The GstGenericPlayer context
-     * @param[in] player     : The GstGenericPlayer instance
-     * @param[in] message    : The message to be handled.
-     * @param[in] isFlushing : Current flushing state. True if flush for any source is queued
+     * @param[in] context      : The GstGenericPlayer context
+     * @param[in] player       : The GstGenericPlayer instance
+     * @param[in] message      : The message to be handled.
+     * @param[in] flushWatcher : Flush watcher instance
      *
      * @retval the new HandleBusMessage task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createHandleBusMessage(GenericPlayerContext &context,
                                                                 IGstGenericPlayerPrivate &player, GstMessage *message,
-                                                                bool isFlushing) const = 0;
+                                                                const IFlushWatcher &flushWatcher) const = 0;
 
     /**
      * @brief Creates a NeedData task.
@@ -353,15 +354,6 @@ public:
                                                                  IGstGenericPlayerPrivate &player,
                                                                  const firebolt::rialto::MediaSourceType &type,
                                                                  int32_t streamSyncMode) const = 0;
-
-    /**
-     * @brief Creates a Shutdown task.
-     *
-     * @param[in] context       : The GstGenericPlayer context
-     *
-     * @retval the new Shutdown task instance.
-     */
-    virtual std::unique_ptr<IPlayerTask> createShutdown(IGstGenericPlayerPrivate &player) const = 0;
 
     /**
      * @brief Creates a Stop task.

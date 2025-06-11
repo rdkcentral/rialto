@@ -124,7 +124,6 @@ public:
     bool getVolume(double &volume) override;
     void setMute(const MediaSourceType &mediaSourceType, bool mute) override;
     bool getMute(const MediaSourceType &mediaSourceType, bool &mute) override;
-    bool isAsync(const MediaSourceType &mediaSourceType) const override;
     void setTextTrackIdentifier(const std::string &textTrackIdentifier) override;
     bool getTextTrackIdentifier(std::string &textTrackIdentifier) override;
     bool setLowLatency(bool lowLatency) override;
@@ -134,7 +133,7 @@ public:
     bool setStreamSyncMode(const MediaSourceType &mediaSourceType, int32_t streamSyncMode) override;
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
-    void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
+    void flush(const MediaSourceType &mediaSourceType, bool resetTime, bool &async) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;
     void processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
@@ -169,7 +168,6 @@ private:
     bool changePipelineState(GstState newState) override;
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;
-    void stopWorkerThread() override;
     void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) override;
     void setPendingPlaybackRate() override;
     void renderFrame() override;
@@ -185,6 +183,7 @@ private:
     bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
     void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
+    bool isAsync(const MediaSourceType &mediaSourceType) const;
 
 private:
     /**

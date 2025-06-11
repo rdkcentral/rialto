@@ -51,11 +51,6 @@ public:
     virtual void stop() = 0;
 
     /**
-     * @brief Joins the task thread
-     */
-    virtual void join() = 0;
-
-    /**
      * @brief Queues a task in the task queue.
      */
     virtual void enqueueTask(std::unique_ptr<IPlayerTask> &&task) = 0;

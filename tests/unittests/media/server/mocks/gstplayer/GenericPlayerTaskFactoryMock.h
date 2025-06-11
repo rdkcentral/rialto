@@ -50,7 +50,8 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFinishSetupSource,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createHandleBusMessage,
-                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, GstMessage *message, bool isFlushing),
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, GstMessage *message,
+                 const IFlushWatcher &flushWatcher),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createNeedData,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, GstAppSrc *src), (const, override));
@@ -100,7 +101,6 @@ public:
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
                  const firebolt::rialto::MediaSourceType &type, int32_t streamSyncMode),
                 (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createShutdown, (IGstGenericPlayerPrivate & player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createStop,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUnderflow,

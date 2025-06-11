@@ -29,7 +29,6 @@ namespace firebolt::rialto::server
 class WebAudioPlayerTaskFactoryMock : public IWebAudioPlayerTaskFactory
 {
 public:
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createShutdown, (IGstWebAudioPlayerPrivate & player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createStop, (IGstWebAudioPlayerPrivate & player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPlay, (IGstWebAudioPlayerPrivate & player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createPause, (IGstWebAudioPlayerPrivate & player), (const, override));

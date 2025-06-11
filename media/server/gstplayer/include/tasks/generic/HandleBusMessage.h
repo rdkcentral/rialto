@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_HANDLE_BUS_MESSAGE_H_
 
 #include "GenericPlayerContext.h"
+#include "IFlushWatcher.h"
 #include "IGlibWrapper.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
@@ -35,9 +36,9 @@ class HandleBusMessage : public IPlayerTask
 {
 public:
     HandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, GstMessage *message,
-                     bool isFlushOngoing);
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, GstMessage *message,
+                     const IFlushWatcher &flushWatcher);
     ~HandleBusMessage() override;
     void execute() const override;
 
@@ -50,7 +51,9 @@ private:
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     GstMessage *m_message;
-    bool m_isFlushOngoing;
+    const IFlushWatcher &m_flushWatcher;
+    bool m_isFlushOngoingDuringCreation;
+    bool m_isAsyncFlushOngoingDuringCreation;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

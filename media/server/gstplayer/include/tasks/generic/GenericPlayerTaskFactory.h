@@ -55,7 +55,8 @@ public:
     std::unique_ptr<IPlayerTask> createFinishSetupSource(GenericPlayerContext &context,
                                                          IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createHandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                        GstMessage *message, bool isFlushing) const override;
+                                                        GstMessage *message,
+                                                        const IFlushWatcher &flushWatcher) const override;
     std::unique_ptr<IPlayerTask> createNeedData(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                 GstAppSrc *src) const override;
     std::unique_ptr<IPlayerTask> createPause(GenericPlayerContext &context,
@@ -94,7 +95,6 @@ public:
     std::unique_ptr<IPlayerTask> createSetStreamSyncMode(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                          const firebolt::rialto::MediaSourceType &type,
                                                          int32_t streamSyncMode) const override;
-    std::unique_ptr<IPlayerTask> createShutdown(IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createStop(GenericPlayerContext &context,
                                             IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,

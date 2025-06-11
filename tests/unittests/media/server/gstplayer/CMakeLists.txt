@@ -63,7 +63,6 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/SetVolumeTest.cpp
     genericPlayer/tasksTests/SetupElementTest.cpp
     genericPlayer/tasksTests/SetupSourceTest.cpp
-    genericPlayer/tasksTests/ShutdownTest.cpp
     genericPlayer/tasksTests/StopTest.cpp
     genericPlayer/tasksTests/SwitchSourceTest.cpp
     genericPlayer/tasksTests/UnderflowTest.cpp
@@ -86,7 +85,6 @@ add_gtests(RialtoServerGstPlayerUnitTests
     webAudioPlayer/taskTests/EosTest.cpp
     webAudioPlayer/taskTests/HandleBusMessageTest.cpp
     webAudioPlayer/taskTests/SetVolumeTest.cpp
-    webAudioPlayer/taskTests/ShutdownTest.cpp
     webAudioPlayer/taskTests/StopTest.cpp
     webAudioPlayer/taskTests/SetCapsTest.cpp
     webAudioPlayer/taskTests/WriteBufferTest.cpp

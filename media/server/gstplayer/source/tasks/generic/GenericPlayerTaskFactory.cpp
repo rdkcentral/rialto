@@ -52,7 +52,6 @@
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
 #include "tasks/generic/SetupSource.h"
-#include "tasks/generic/Shutdown.h"
 #include "tasks/generic/Stop.h"
 #include "tasks/generic/SwitchSource.h"
 #include "tasks/generic/Underflow.h"
@@ -114,10 +113,11 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFinishSetupSource(G
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createHandleBusMessage(GenericPlayerContext &context,
                                                                               IGstGenericPlayerPrivate &player,
-                                                                              GstMessage *message, bool isFlushing) const
+                                                                              GstMessage *message,
+                                                                              const IFlushWatcher &flushWatcher) const
 {
     return std::make_unique<tasks::generic::HandleBusMessage>(context, player, m_client, m_gstWrapper, m_glibWrapper,
-                                                              message, isFlushing);
+                                                              message, flushWatcher);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createNeedData(GenericPlayerContext &context,
@@ -247,11 +247,6 @@ GenericPlayerTaskFactory::createSetStreamSyncMode(GenericPlayerContext &context,
                                                   int32_t streamSyncMode) const
 {
     return std::make_unique<tasks::generic::SetStreamSyncMode>(context, player, type, streamSyncMode);
-}
-
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createShutdown(IGstGenericPlayerPrivate &player) const
-{
-    return std::make_unique<tasks::generic::Shutdown>(player);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createStop(GenericPlayerContext &context,

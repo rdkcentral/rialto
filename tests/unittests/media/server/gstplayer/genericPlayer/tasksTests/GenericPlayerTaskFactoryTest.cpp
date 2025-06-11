@@ -19,6 +19,7 @@
 
 #include <gtest/gtest.h>
 
+#include "FlushWatcherMock.h"
 #include "GenericPlayerContext.h"
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerClientMock.h"
@@ -63,7 +64,6 @@
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
 #include "tasks/generic/SetupSource.h"
-#include "tasks/generic/Shutdown.h"
 #include "tasks/generic/Stop.h"
 #include "tasks/generic/SwitchSource.h"
 #include "tasks/generic/Underflow.h"
@@ -87,6 +87,7 @@ protected:
         std::make_shared<StrictMock<firebolt::rialto::wrappers::RdkGstreamerUtilsWrapperMock>>()};
     std::shared_ptr<firebolt::rialto::server::GstTextTrackSinkFactoryMock> m_gstTextTrackSinkFactoryMock{
         std::make_shared<StrictMock<firebolt::rialto::server::GstTextTrackSinkFactoryMock>>()};
+    StrictMock<firebolt::rialto::server::FlushWatcherMock> m_flushWatcherMock;
     firebolt::rialto::server::GenericPlayerTaskFactory m_sut{&m_gstPlayerClient, m_gstWrapper, m_glibWrapper,
                                                              m_rdkGstreamerUtilsWrapper, m_gstTextTrackSinkFactoryMock};
 };
@@ -141,7 +142,11 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateFinishSetupSource)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateHandleBusMessage)
 {
-    auto task = m_sut.createHandleBusMessage(m_context, m_gstPlayer, nullptr, false);
+    constexpr bool kNoFlushOngoing{false};
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+
+    auto task = m_sut.createHandleBusMessage(m_context, m_gstPlayer, nullptr, m_flushWatcherMock);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::HandleBusMessage &>(*task));
 }
@@ -272,13 +277,6 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetStreamSyncMode)
                                               kStreamSyncMode);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetStreamSyncMode &>(*task));
-}
-
-TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateShutdown)
-{
-    auto task = m_sut.createShutdown(m_gstPlayer);
-    EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Shutdown &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateStop)
