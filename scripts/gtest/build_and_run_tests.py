@@ -111,7 +111,7 @@ def buildTargets (suites, buildDefines, outputDir, resultsFile, debug, coverage)
     runcmd(cmakeCmd, cwd=os.getcwd())
 
     # Make targets
-    jarg = "-j8"# + str(multiprocessing.cpu_count())
+    jarg = "-j" + str(multiprocessing.cpu_count())
     makeCmd = ["make", jarg]
     for key in suites:
         makeCmd.append(suites[key]["suite"])
