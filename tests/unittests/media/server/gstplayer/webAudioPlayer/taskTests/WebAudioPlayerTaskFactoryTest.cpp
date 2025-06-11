@@ -32,7 +32,6 @@
 #include "tasks/webAudio/Play.h"
 #include "tasks/webAudio/SetCaps.h"
 #include "tasks/webAudio/SetVolume.h"
-#include "tasks/webAudio/Shutdown.h"
 #include "tasks/webAudio/Stop.h"
 #include "tasks/webAudio/WriteBuffer.h"
 #include <gtest/gtest.h>
@@ -89,13 +88,6 @@ TEST_F(WebAudioPlayerTaskFactoryTest, ShouldStop)
     auto task = m_sut.createStop(m_gstPlayer);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::webaudio::Stop &>(*task));
-}
-
-TEST_F(WebAudioPlayerTaskFactoryTest, ShouldShutdown)
-{
-    auto task = m_sut.createShutdown(m_gstPlayer);
-    EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::webaudio::Shutdown &>(*task));
 }
 
 TEST_F(WebAudioPlayerTaskFactoryTest, ShouldSetVolume)

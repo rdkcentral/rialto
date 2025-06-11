@@ -258,10 +258,6 @@ protected:
     void triggerVideoUnderflow();
     void shouldNotifyVideoUnderflow();
 
-    // Shutdown test methods
-    void shouldStopWorkerThread();
-    void triggerShutdown();
-
     // SetMute test methods
     void triggerSetAudioMute();
     void triggerSetVideoMute();

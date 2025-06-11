@@ -101,7 +101,6 @@ public:
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
                  const firebolt::rialto::MediaSourceType &type, int32_t streamSyncMode),
                 (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createShutdown, (IGstGenericPlayerPrivate & player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createStop,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUnderflow,

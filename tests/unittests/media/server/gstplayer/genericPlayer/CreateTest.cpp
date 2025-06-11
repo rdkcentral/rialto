@@ -408,7 +408,6 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, UnknownMediaType)
 {
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
     initFactories();
-    expectShutdown();
     executeTaskWhenEnqueued();
     EXPECT_CALL(*m_gstSrcMock, initSrc());
     EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
