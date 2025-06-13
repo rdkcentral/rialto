@@ -78,4 +78,5 @@ message MediaSegmentMetadata {
     optional Fraction         frame_rate           = 20;                /* Fractional frame rate of the video segments */
     optional uint64           clipping_start       = 21;                /* The amount of audio to clip from start of buffer */
     optional uint64           clipping_end         = 22;                /* The amount of audio to clip from end of buffer */
+    optional uint64           display_offset       = 23;                /* The offset in the source file of the beginning of the media segment. */
 }
