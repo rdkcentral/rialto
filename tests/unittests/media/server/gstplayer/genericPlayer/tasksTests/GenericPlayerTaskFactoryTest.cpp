@@ -64,7 +64,6 @@
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
 #include "tasks/generic/SetupSource.h"
-#include "tasks/generic/Shutdown.h"
 #include "tasks/generic/Stop.h"
 #include "tasks/generic/SwitchSource.h"
 #include "tasks/generic/Underflow.h"
@@ -278,13 +277,6 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetStreamSyncMode)
                                               kStreamSyncMode);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetStreamSyncMode &>(*task));
-}
-
-TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateShutdown)
-{
-    auto task = m_sut.createShutdown(m_gstPlayer);
-    EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Shutdown &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateStop)

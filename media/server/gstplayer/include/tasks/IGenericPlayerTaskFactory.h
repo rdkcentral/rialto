@@ -356,15 +356,6 @@ public:
                                                                  int32_t streamSyncMode) const = 0;
 
     /**
-     * @brief Creates a Shutdown task.
-     *
-     * @param[in] context       : The GstGenericPlayer context
-     *
-     * @retval the new Shutdown task instance.
-     */
-    virtual std::unique_ptr<IPlayerTask> createShutdown(IGstGenericPlayerPrivate &player) const = 0;
-
-    /**
      * @brief Creates a Stop task.
      *
      * @param[in] context    : The GstGenericPlayer context

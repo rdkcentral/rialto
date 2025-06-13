@@ -57,7 +57,6 @@
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
 #include "tasks/generic/SetupSource.h"
-#include "tasks/generic/Shutdown.h"
 #include "tasks/generic/Stop.h"
 #include "tasks/generic/SwitchSource.h"
 #include "tasks/generic/Underflow.h"
@@ -2356,17 +2355,6 @@ void GenericTasksTestsBase::triggerVideoUnderflow()
 void GenericTasksTestsBase::shouldNotifyVideoUnderflow()
 {
     EXPECT_CALL(testContext->m_gstPlayerClient, notifyBufferUnderflow(firebolt::rialto::MediaSourceType::VIDEO));
-}
-
-void GenericTasksTestsBase::shouldStopWorkerThread()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, stopWorkerThread());
-}
-
-void GenericTasksTestsBase::triggerShutdown()
-{
-    firebolt::rialto::server::tasks::generic::Shutdown task{testContext->m_gstPlayer};
-    task.execute();
 }
 
 void GenericTasksTestsBase::shouldSetVideoMute()

@@ -106,7 +106,6 @@ public:
 protected:
     void gstPlayerWillBeCreated();
     void gstPlayerWillBeDestroyed();
-    void expectShutdown();
     void expectStop();
     void executeTaskWhenEnqueued();
     void initFactories();
