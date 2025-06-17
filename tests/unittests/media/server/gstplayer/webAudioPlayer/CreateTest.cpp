@@ -366,6 +366,46 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAudioResampleFailure)
 }
 
 /**
+ * Test that a GstWebAudioPlayer throws an exception if there is a failure to create queue.
+ */
+TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createAudioQueueFailure)
+{
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
+    expectInitRialtoSrc();
+    expectMakeRtkAudioSink();
+    expectCreatePipeline();
+    expectInitAppSrc();
+    expectInitWorkerThread();
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), StrEq("media-tunnel")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_sink), StrEq("audio-service")));
+
+    GstElement convert{};
+    GstElement resample{};
+    GstElement volume{};
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioconvert"), _)).WillOnce(Return(&convert));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioresample"), _)).WillOnce(Return(&resample));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("volume"), _)).WillOnce(Return(&volume));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&convert));
+
+    // Reset worker thread and pipeline on failure
+    gstPlayerWillBeDestroyed();
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&resample));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&volume));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_sink));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_appSrc));
+
+    EXPECT_THROW(m_gstPlayer = std::make_unique<GstWebAudioPlayer>(&m_gstPlayerClient, m_priority, m_gstWrapperMock,
+                                                                   m_glibWrapperMock, m_gstInitialiserMock,
+                                                                   m_gstSrcFactoryMock, std::move(m_taskFactory),
+                                                                   std::move(workerThreadFactory),
+                                                                   std::move(gstDispatcherThreadFactory)),
+                 std::runtime_error);
+    EXPECT_EQ(m_gstPlayer, nullptr);
+}
+
+/**
  * Test that a GstWebAudioPlayer throws an exception if there is a failure to add the audio sink elements to the bin.
  */
 TEST_F(RialtoServerCreateGstWebAudioPlayerTest, linkAudioSinkBinFailure)
