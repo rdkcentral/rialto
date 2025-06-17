@@ -199,15 +199,19 @@ void WebAudioTestMethods::willCreateWebAudioPlayer()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioconvert"), _)).WillOnce(Return(&m_convert));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioresample"), _)).WillOnce(Return(&m_resample));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("volume"), _)).WillOnce(Return(&m_volume));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), _)).WillOnce(Return(&m_queue));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, StrEq("max-size-bytes")));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), GST_ELEMENT(&m_appSrc))).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_convert)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_resample)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_volume)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_queue)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementLink(GST_ELEMENT(&m_appSrc), &m_convert)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_convert, &m_resample)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_resample, &m_volume)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_volume, &m_sink)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_volume, &m_queue)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_queue, &m_sink)).WillOnce(Return(TRUE));
 
     EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq(kAudioMimeType))).WillOnce(Return(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_gstCaps1, StrEq("channels"), G_TYPE_INT, kPcmChannels));
