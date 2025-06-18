@@ -672,7 +672,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     return true;
 }
 
-bool MediaPipelineServerInternal::haveData(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId)
+bool MediaPipelineServerInternal::haveDataByFrames(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 

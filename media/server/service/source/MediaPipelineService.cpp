@@ -322,7 +322,7 @@ bool MediaPipelineService::haveData(int sessionId, MediaSourceStatus status, std
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->haveData(status, numFrames, needDataRequestId);
+    return mediaPipelineIter->second->haveDataByFrames(status, numFrames, needDataRequestId);
 }
 
 bool MediaPipelineService::renderFrame(int sessionId)

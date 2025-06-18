@@ -120,7 +120,7 @@ public:
 
     bool haveData(MediaSourceStatus status, uint32_t needDataRequestId) override;
 
-    bool haveData(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId) override;
+    bool haveDataByFrames(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId) override;
 
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 

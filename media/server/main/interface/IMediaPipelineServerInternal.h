@@ -97,7 +97,7 @@ public:
      * @param[in] numFrames         : The number of frames written.
      * @param[in] needDataRequestId : Need data request id
      */
-    virtual bool haveData(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId) = 0;
+    virtual bool haveDataByFrames(MediaSourceStatus status, uint32_t numFrames, uint32_t needDataRequestId) = 0;
 
     /**
      * @brief Checks if MediaPipeline threads are not deadlocked
