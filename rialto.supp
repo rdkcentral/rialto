@@ -748,84 +748,6 @@
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
-   match-leak-kinds: definite
-   fun:malloc
-   fun:g_malloc
-   obj:*/libgobject-2.0.so*
-   obj:*/libglib-2.0.so*
-   obj:*/libgobject-2.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   ...
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: definite
-   fun:malloc
-   fun:g_malloc
-   obj:*/libglib-2.0.so*
-   obj:*/libglib-2.0.so*
-   obj:*/libgobject-2.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   ...
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
    match-leak-kinds: possible
    fun:malloc
    fun:g_malloc
@@ -836,162 +758,6 @@
    fun:g_object_new_valist
    fun:g_object_new
    fun:gst_system_clock_obtain
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   ...
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: definite
-   fun:g_type_create_instance
-   obj:*/libgobject-2.0.so*
-   fun:g_object_new_valist
-   fun:g_object_new
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   ...
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: possible
-   fun:malloc
-   fun:g_malloc
-   fun:g_strdup
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgobject-2.0.so*
-   obj:*/libgobject-2.0.so*
-   fun:g_object_new_valist
-   fun:g_object_new
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   ...
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: definite
-   fun:g_type_create_instance
-   obj:*/libgobject-2.0.so*
-   fun:g_object_new_valist
-   fun:g_object_new
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   ...
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: definite
-   fun:calloc
-   fun:g_malloc0
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
    obj:*/libgstreamer-1.0.so*
    obj:*/libgstreamer-1.0.so*
    obj:*/gstreamer-1.0/libgstplayback.so
@@ -1032,50 +798,6 @@
    fun:gst_element_change_state
    obj:*/libgstreamer-1.0.so*
    fun:gst_element_sync_state_with_parent
-   ...
-}
-{
-   <insert_a_suppression_name_here>
-   Memcheck:Leak
-   match-leak-kinds: possible
-   fun:malloc
-   fun:g_malloc
-   fun:g_strdup
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgobject-2.0.so*
-   obj:*/libgobject-2.0.so*
-   fun:g_object_new_valist
-   fun:g_object_new
-   fun:gst_static_pad_template_get
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   fun:g_cclosure_marshal_VOID__OBJECTv
-   obj:*/libgobject-2.0.so*
-   fun:g_signal_emit_valist
-   fun:g_signal_emit
-   fun:gst_element_remove_pad
-   obj:*/gstreamer-1.0/libgstplayback.so
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
-   obj:*/libgstreamer-1.0.so*
-   obj:*/gstreamer-1.0/libgstplayback.so
-   fun:gst_element_change_state
-   obj:*/libgstreamer-1.0.so*
    ...
 }
 {
@@ -1369,4 +1091,72 @@
    obj:*/libglib-2.0.so*
    fun:start_thread
    fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:g_cclosure_marshal_VOID__OBJECTv
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gst_element_remove_pad
+   fun:g_cclosure_marshal_VOID__OBJECTv
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gst_element_remove_pad
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:gst_element_change_state
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:gst_element_change_state
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:gst_element_change_state
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:g_cclosure_marshal_VOID__OBJECTv
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gst_element_remove_pad
+   fun:g_cclosure_marshal_VOID__OBJECTv
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gst_element_remove_pad
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:gst_element_change_state
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:gst_element_change_state
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:gst_element_change_state
+   ...
 }

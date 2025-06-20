@@ -67,7 +67,8 @@ void GstInitialiser::initialise(int *argc, char ***argv)
             m_gstWrapper->gstInit(argc, argv);
 
             // remove rialto sinks from the registry
-            GstPlugin *rialtoPlugin = m_gstWrapper->gstRegistryFindPlugin(m_gstWrapper->gstRegistryGet(), "rialtosinks");
+            GstPlugin *rialtoPlugin =
+                m_gstWrapper->gstRegistryFindPlugin(m_gstWrapper->gstRegistryGet(), "rialtosinks");
             if (rialtoPlugin)
             {
                 m_gstWrapper->gstRegistryRemovePlugin(m_gstWrapper->gstRegistryGet(), rialtoPlugin);
