@@ -23,6 +23,7 @@
 #include "IGstInitialiser.h"
 #include "IGstWrapper.h"
 #include <condition_variable>
+#include <memory>
 #include <mutex>
 #include <thread>
 
