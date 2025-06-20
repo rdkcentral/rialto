@@ -49,20 +49,14 @@ int main(int argc, char *argv[])
 
     firebolt::rialto::server::IGstInitialiser::instance().initialise(&argc, &argv);
 
+    auto appSessionServer =
+        firebolt::rialto::server::IApplicationSessionServerFactory::getFactory()->createApplicationSessionServer();
+
+    if (!appSessionServer->init(argc, argv))
     {
-        // Creation of this variable in a local scope ensures Rialto
-        // destructors are called before potentially calling gst_deinit()
-        // which would cause free memory reads
-        auto appSessionServer =
-            firebolt::rialto::server::IApplicationSessionServerFactory::getFactory()->createApplicationSessionServer();
-
-        if (!appSessionServer->init(argc, argv))
-        {
-            return EXIT_FAILURE;
-        }
-
-        appSessionServer->startService();
+        return EXIT_FAILURE;
     }
+    appSessionServer->startService();
 
 #ifdef FREE_MEM_BEFORE_EXIT
     RIALTO_SERVER_LOG_INFO("Calling ShutdownProtobufLibrary");
