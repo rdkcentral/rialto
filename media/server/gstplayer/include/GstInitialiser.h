@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_INITIALISER_H_
 
 #include "IGstInitialiser.h"
+#include "IGstWrapper.h"
 #include <condition_variable>
 #include <mutex>
 #include <thread>
@@ -41,6 +42,7 @@ private:
     mutable std::mutex m_mutex;
     mutable std::condition_variable m_cv;
     std::thread m_thread;
+    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
 };
 }; // namespace firebolt::rialto::server
 
