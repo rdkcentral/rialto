@@ -40,12 +40,3 @@ target_link_libraries(
         # # Link application source
         RialtoLogging
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoLoggingUnitTests
-
-        gcov
-        )
-endif()
-

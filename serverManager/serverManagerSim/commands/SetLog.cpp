@@ -59,11 +59,16 @@ rialto::servermanager::service::LoggingLevels convert(const std::string &compone
     auto loggingLevel{convert(level)};
     if ("all" == component)
     {
+        levels.defaultLoggingLevel = loggingLevel;
         levels.clientLoggingLevel = loggingLevel;
         levels.sessionServerLoggingLevel = loggingLevel;
         levels.ipcLoggingLevel = loggingLevel;
         levels.serverManagerLoggingLevel = loggingLevel;
         levels.commonLoggingLevel = loggingLevel;
+    }
+    else if ("default" == component)
+    {
+        levels.defaultLoggingLevel = loggingLevel;
     }
     else if ("client" == component)
     {

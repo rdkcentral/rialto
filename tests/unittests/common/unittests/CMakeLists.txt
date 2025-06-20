@@ -18,7 +18,8 @@
 #
 
 if ( COVERAGE_ENABLED )
-    add_compile_options(-coverage)
+    add_compile_options(--coverage)
+    add_link_options(--coverage)
 endif()
 
 add_gtests (
@@ -41,11 +42,3 @@ target_link_libraries(
         RialtoCommonUnitTests
         RialtoCommon
 )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoCommonUnitTests
-
-        gcov
-        )
-endif()

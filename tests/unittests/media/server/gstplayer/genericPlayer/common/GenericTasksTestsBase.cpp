@@ -2618,7 +2618,7 @@ void GenericTasksTestsBase::shouldFailToReportPosition()
 void GenericTasksTestsBase::shouldFinishSetupSource()
 {
     EXPECT_CALL(*testContext->m_gstSrc,
-                setupAndAddAppArc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
+                setupAndAddAppSrc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
                                       testContext->m_decryptionServiceMock)
                                       .get(),
                                   testContext->m_element, testContext->m_streamInfoAudio, _, &testContext->m_gstPlayer,
@@ -2633,7 +2633,7 @@ void GenericTasksTestsBase::shouldFinishSetupSource()
             }));
     EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::AUDIO));
     EXPECT_CALL(*testContext->m_gstSrc,
-                setupAndAddAppArc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
+                setupAndAddAppSrc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
                                       testContext->m_decryptionServiceMock)
                                       .get(),
                                   testContext->m_element, testContext->m_streamInfoVideo, _, &testContext->m_gstPlayer,

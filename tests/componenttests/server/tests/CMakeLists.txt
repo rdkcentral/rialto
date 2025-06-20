@@ -98,11 +98,3 @@ target_link_libraries(
         RialtoServerComponentTestsFixtures
         RialtoTestCommonUtils
 )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoServerComponentTests
-
-        gcov
-        )
-endif()
