@@ -30,11 +30,13 @@ GstInitialiser::~GstInitialiser()
         m_thread.join();
     }
 
+#ifdef FREE_MEM_BEFORE_EXIT
     if (m_gstWrapper)
     {
         m_gstWrapper->gstDeinit();
         m_gstWrapper.reset();
     }
+#endif
 }
 
 IGstInitialiser &IGstInitialiser::instance()
