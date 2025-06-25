@@ -19,7 +19,6 @@
 
 #include "GstInitialiser.h"
 #include "GstLogForwarding.h"
-#include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server
@@ -30,6 +29,14 @@ GstInitialiser::~GstInitialiser()
     {
         m_thread.join();
     }
+
+#ifdef FREE_MEM_BEFORE_EXIT
+    if (m_gstWrapper)
+    {
+        m_gstWrapper->gstDeinit();
+        m_gstWrapper.reset();
+    }
+#endif
 }
 
 IGstInitialiser &IGstInitialiser::instance()
@@ -51,22 +58,23 @@ void GstInitialiser::initialise(int *argc, char ***argv)
         {
             std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> factory =
                 firebolt::rialto::wrappers::IGstWrapperFactory::getFactory();
-            std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper = factory->getGstWrapper();
+            m_gstWrapper = factory->getGstWrapper();
 
-            if (!gstWrapper)
+            if (!m_gstWrapper)
             {
                 RIALTO_SERVER_LOG_ERROR("Failed to create the gst wrapper");
                 return;
             }
 
-            gstWrapper->gstInit(argc, argv);
+            m_gstWrapper->gstInit(argc, argv);
 
             // remove rialto sinks from the registry
-            GstPlugin *rialtoPlugin = gstWrapper->gstRegistryFindPlugin(gstWrapper->gstRegistryGet(), "rialtosinks");
+            GstPlugin *rialtoPlugin =
+                m_gstWrapper->gstRegistryFindPlugin(m_gstWrapper->gstRegistryGet(), "rialtosinks");
             if (rialtoPlugin)
             {
-                gstWrapper->gstRegistryRemovePlugin(gstWrapper->gstRegistryGet(), rialtoPlugin);
-                gstWrapper->gstObjectUnref(rialtoPlugin);
+                m_gstWrapper->gstRegistryRemovePlugin(m_gstWrapper->gstRegistryGet(), rialtoPlugin);
+                m_gstWrapper->gstObjectUnref(rialtoPlugin);
             }
 
             enableGstLogForwarding();
