@@ -1160,3 +1160,45 @@
    fun:gst_element_change_state
    ...
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:g_type_create_instance
+   fun:g_param_spec_internal
+   fun:*
+   fun:*
+   fun:ipatch_init
+   fun:new_fluid_synth
+   obj:*/gstreamer-1.0/libgstfluidsynthmidi.so
+   fun:g_type_create_instance
+   obj:*/libgobject-2.0.so*
+   fun:g_object_new_with_properties
+   fun:gst_element_factory_create_with_properties
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*/libglib-2.0.so*
+   fun:g_rec_mutex_init
+   obj:*/libgstreamer-1.0.so*
+   fun:g_type_create_instance
+   obj:*/libgobject-2.0.so*
+   fun:g_object_new_with_properties
+   fun:gst_element_factory_create_with_properties
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:g_malloc
+   obj:*/libglib-2.0.so*
+   obj:*/libgobject-2.0.so*
+   fun:g_object_unref
+   ...
+}
