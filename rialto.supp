@@ -672,7 +672,7 @@
    fun:allocate_dtv
    fun:_dl_allocate_tls
    fun:allocate_stack
-   fun:pthread_create@@GLIBC_2.34
+   fun:pthread_create*
    obj:*/libglib-2.0.so*
    obj:*/libglib-2.0.so*
    obj:*/libglib-2.0.so*
@@ -774,7 +774,7 @@
    fun:allocate_dtv
    fun:_dl_allocate_tls
    fun:allocate_stack
-   fun:pthread_create@@GLIBC_2.34
+   fun:pthread_create*
    obj:*/libglib-2.0.so*
    fun:g_thread_new
    fun:g_thread_pool_new_full
@@ -1200,5 +1200,17 @@
    obj:*/libglib-2.0.so*
    obj:*/libgobject-2.0.so*
    fun:g_object_unref
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:allocate_stack
+   fun:pthread_create*
    ...
 }
