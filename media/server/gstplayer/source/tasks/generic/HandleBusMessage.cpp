@@ -84,7 +84,7 @@ void HandleBusMessage::execute() const
                     if (m_isAsyncFlushOngoingDuringCreation || m_flushWatcher.isAsyncFlushOngoing())
                     {
                         RIALTO_SERVER_LOG_WARN("Skip PAUSED notification - flush is ongoing");
-                        //break;
+                        break;
                     }
                     // newState==GST_STATE_PAUSED, pending==GST_STATE_PAUSED state transition is received as a result of
                     // waiting for preroll after seek.
