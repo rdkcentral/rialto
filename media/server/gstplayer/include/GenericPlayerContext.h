@@ -180,6 +180,11 @@ struct GenericPlayerContext
     bool pendingRenderFrame{false};
 
     /**
+     * @brief Pending show video window
+     */
+    std::optional<bool> pendingShowVideoWindow{};
+
+    /**
      * @brief Last audio sample timestamps
      * TODO(LLDEV-31012) Needed to detect audio stream underflow
      */
