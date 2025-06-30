@@ -250,6 +250,13 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     std::atomic_bool audioFadeEnabled{false};
+
+    /**
+     * @brief Flag used to check if state change is ongoing
+     *
+     * Attribute can be used only in worker thread
+     */
+    std::optional<GstState> stateChangeOngoing{std::nullopt};
 };
 } // namespace firebolt::rialto::server
 

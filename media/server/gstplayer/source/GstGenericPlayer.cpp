@@ -1178,6 +1178,7 @@ bool GstGenericPlayer::changePipelineState(GstState newState)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
         return false;
     }
+    m_context.stateChangeOngoing = newState;
     return true;
 }
 
