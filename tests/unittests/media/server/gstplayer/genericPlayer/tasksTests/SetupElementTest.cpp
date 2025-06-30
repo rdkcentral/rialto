@@ -83,6 +83,12 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingRenderFrame)
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingShowVideoWindow)
+{
+    shouldSetupVideoSinkElementWithPendingShowVideoWindow();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupAudioElementAmlhalasinkWhenNoVideo)
 {
     shouldSetupAudioElementAmlhalasinkWhenNoVideo();

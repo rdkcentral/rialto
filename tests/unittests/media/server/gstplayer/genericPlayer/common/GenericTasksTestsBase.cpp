@@ -800,6 +800,21 @@ void GenericTasksTestsBase::shouldSetupVideoSinkElementWithPendingRenderFrame()
     expectSetupVideoSinkElement();
 }
 
+void GenericTasksTestsBase::shouldSetupVideoSinkElementWithPendingShowVideoWindow()
+{
+    testContext->m_context.pendingShowVideoWindow = true;
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
+
+    // This is the extra EXPECT caused by setting pendingShowVideoWindow...
+    EXPECT_CALL(testContext->m_gstPlayer, setShowVideoWindow()).WillOnce(Return(true));
+    expectSetupVideoSinkElement();
+}
+
 void GenericTasksTestsBase::shouldSetupAudioElementAmlhalasinkWhenVideoExists()
 {
     setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
@@ -2359,28 +2374,7 @@ void GenericTasksTestsBase::shouldNotifyVideoUnderflow()
 
 void GenericTasksTestsBase::shouldSetVideoMute()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO))
-        .WillOnce(Return(&testContext->m_videoSink));
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_videoSink), StrEq("show-video-window")))
-        .WillOnce(Return(&testContext->m_paramSpec));
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_videoSink, StrEq("show-video-window")));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(&testContext->m_videoSink));
-}
-
-void GenericTasksTestsBase::shouldFailToSetVideoMuteNoSink()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO)).WillOnce(Return(nullptr));
-}
-
-void GenericTasksTestsBase::shouldFailToSetVideoMuteNoProperty()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO))
-        .WillOnce(Return(&testContext->m_videoSink));
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_videoSink), StrEq("show-video-window")))
-        .WillOnce(Return(nullptr));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(&testContext->m_videoSink));
+    EXPECT_CALL(testContext->m_gstPlayer, setShowVideoWindow()).WillOnce(Return(true));
 }
 
 void GenericTasksTestsBase::triggerSetAudioMute()
@@ -2408,6 +2402,7 @@ void GenericTasksTestsBase::triggerSetVideoMute()
                                                            testContext->m_gstWrapper, testContext->m_glibWrapper,
                                                            MediaSourceType::VIDEO,    kMute};
     task.execute();
+    EXPECT_EQ(testContext->m_context.pendingShowVideoWindow, !kMute);
 }
 
 void GenericTasksTestsBase::triggerSetSubtitleMute()

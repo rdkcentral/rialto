@@ -62,21 +62,8 @@ void SetMute::execute() const
     }
     else if (m_mediaSourceType == MediaSourceType::VIDEO)
     {
-        GstElement *videoSink{m_player.getSink(MediaSourceType::VIDEO)};
-        if (!videoSink)
-        {
-            RIALTO_SERVER_LOG_ERROR("Setting mute failed. Video sink is NULL");
-            return;
-        }
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "show-video-window"))
-        {
-            m_glibWrapper->gObjectSet(videoSink, "show-video-window", m_mute, nullptr);
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_ERROR("Setting mute failed. Property does not exist");
-        }
-        m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
+        m_context.pendingShowVideoWindow = !m_mute;
+        m_player.setShowVideoWindow();
     }
     else
     {

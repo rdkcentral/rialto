@@ -88,6 +88,7 @@ protected:
     void shouldSetupVideoParserElementWithPendingStreamSyncMode();
     void shouldSetupAudioDecoderElementWithPendingBufferingLimit();
     void shouldSetupVideoSinkElementWithPendingRenderFrame();
+    void shouldSetupVideoSinkElementWithPendingShowVideoWindow();
     void shouldSetupAudioElementAmlhalasinkWhenNoVideo();
     void shouldSetupAudioElementAmlhalasinkWhenVideoExists();
     void shouldSetupAudioElementBrcmAudioSink();
@@ -265,8 +266,6 @@ protected:
     void triggerSetUnknownMute();
     void setContextSubtitleSink();
     void shouldSetAudioMute();
-    void shouldFailToSetVideoMuteNoSink();
-    void shouldFailToSetVideoMuteNoProperty();
     void shouldSetVideoMute();
     void shouldSetSubtitleMute();
 
