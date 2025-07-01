@@ -25,12 +25,39 @@
 #include <mutex>
 #include <sys/syscall.h>
 #include <sys/uio.h>
-#include <syslog.h>
 #include <unistd.h>
 
 #include "EnvVariableParser.h"
 #include "LogFileHandle.h"
 #include "RialtoLogging.h"
+
+#ifdef USE_ETHANLOG
+
+#include <ethanlog.h>
+
+#define SYSTEM_LOG_EXTERNAL_FORMAT 1
+#define SYSTEM_LOG_FATAL(filename, function, line, ...) ethanlog(ETHAN_LOG_FATAL, filename, function, line, __VA_ARGS__)
+#define SYSTEM_LOG_ERROR(filename, function, line, ...) ethanlog(ETHAN_LOG_ERROR, filename, function, line, __VA_ARGS__)
+#define SYSTEM_LOG_WARN(filename, function, line, ...)                                                                 \
+    ethanlog(ETHAN_LOG_WARNING, filename, function, line, __VA_ARGS__)
+#define SYSTEM_LOG_MIL(filename, function, line, ...)                                                                  \
+    ethanlog(ETHAN_LOG_MILESTONE, filename, function, line, __VA_ARGS__)
+#define SYSTEM_LOG_INFO(filename, function, line, ...) ethanlog(ETHAN_LOG_INFO, filename, function, line, __VA_ARGS__)
+#define SYSTEM_LOG_DEBUG(filename, function, line, ...) ethanlog(ETHAN_LOG_DEBUG, filename, function, line, __VA_ARGS__)
+
+#else
+
+#include <syslog.h>
+
+#define SYSTEM_LOG_EXTERNAL_FORMAT 0
+#define SYSTEM_LOG_FATAL(filename, function, line, ...) syslog(LOG_CRIT, __VA_ARGS__)
+#define SYSTEM_LOG_ERROR(filename, function, line, ...) syslog(LOG_ERR, __VA_ARGS__)
+#define SYSTEM_LOG_WARN(filename, function, line, ...) syslog(LOG_WARNING, __VA_ARGS__)
+#define SYSTEM_LOG_MIL(filename, function, line, ...) syslog(LOG_NOTICE, __VA_ARGS__)
+#define SYSTEM_LOG_INFO(filename, function, line, ...) syslog(LOG_INFO, __VA_ARGS__)
+#define SYSTEM_LOG_DEBUG(filename, function, line, ...) syslog(LOG_DEBUG, __VA_ARGS__)
+
+#endif
 
 namespace
 {
@@ -184,7 +211,7 @@ void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, co
     if (threadId <= 0)
         threadId = syscall(SYS_gettid);
     char fbuf[180];
-    if (RIALTO_DEBUG_LEVEL_EXTERNAL == level)
+    if (SYSTEM_LOG_EXTERNAL_FORMAT || RIALTO_DEBUG_LEVEL_EXTERNAL == level)
     {
         snprintf(fbuf, sizeof(fbuf), "%s: %s: < T:%d >", levelToString(level).c_str(),
                  componentToString(component).c_str(), threadId);
@@ -203,25 +230,25 @@ void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, co
     switch (level)
     {
     case RIALTO_DEBUG_LEVEL_FATAL:
-        syslog(LOG_CRIT, "%s %s", fbuf, message);
+        SYSTEM_LOG_FATAL(file, function, line, "%s %s", fbuf, message);
         break;
     case RIALTO_DEBUG_LEVEL_ERROR:
-        syslog(LOG_ERR, "%s %s", fbuf, message);
+        SYSTEM_LOG_ERROR(file, function, line, "%s %s", fbuf, message);
         break;
     case RIALTO_DEBUG_LEVEL_WARNING:
-        syslog(LOG_WARNING, "%s %s", fbuf, message);
+        SYSTEM_LOG_WARN(file, function, line, "%s %s", fbuf, message);
         break;
     case RIALTO_DEBUG_LEVEL_MILESTONE:
-        syslog(LOG_NOTICE, "%s %s", fbuf, message);
+        SYSTEM_LOG_MIL(file, function, line, "%s %s", fbuf, message);
         break;
     case RIALTO_DEBUG_LEVEL_INFO:
-        syslog(LOG_INFO, "%s %s", fbuf, message);
+        SYSTEM_LOG_INFO(file, function, line, "%s %s", fbuf, message);
         break;
     case RIALTO_DEBUG_LEVEL_DEBUG:
-        syslog(LOG_DEBUG, "%s %s", fbuf, message);
+        SYSTEM_LOG_DEBUG(file, function, line, "%s %s", fbuf, message);
         break;
     case RIALTO_DEBUG_LEVEL_EXTERNAL:
-        syslog(LOG_INFO, "%s %s", fbuf, message);
+        SYSTEM_LOG_INFO(file, function, line, "%s %s", fbuf, message);
         break;
     default:
         break;
