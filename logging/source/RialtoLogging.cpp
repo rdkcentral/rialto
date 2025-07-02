@@ -35,7 +35,6 @@
 
 #include <ethanlog.h>
 
-#define SYSTEM_LOG_EXTERNAL_FORMAT 1
 #define SYSTEM_LOG_FATAL(filename, function, line, ...) ethanlog(ETHAN_LOG_FATAL, filename, function, line, __VA_ARGS__)
 #define SYSTEM_LOG_ERROR(filename, function, line, ...) ethanlog(ETHAN_LOG_ERROR, filename, function, line, __VA_ARGS__)
 #define SYSTEM_LOG_WARN(filename, function, line, ...)                                                                 \
@@ -49,7 +48,6 @@
 
 #include <syslog.h>
 
-#define SYSTEM_LOG_EXTERNAL_FORMAT 0
 #define SYSTEM_LOG_FATAL(filename, function, line, ...) syslog(LOG_CRIT, __VA_ARGS__)
 #define SYSTEM_LOG_ERROR(filename, function, line, ...) syslog(LOG_ERR, __VA_ARGS__)
 #define SYSTEM_LOG_WARN(filename, function, line, ...) syslog(LOG_WARNING, __VA_ARGS__)
@@ -211,7 +209,7 @@ void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, co
     if (threadId <= 0)
         threadId = syscall(SYS_gettid);
     char fbuf[180];
-    if (SYSTEM_LOG_EXTERNAL_FORMAT || RIALTO_DEBUG_LEVEL_EXTERNAL == level)
+    if (RIALTO_DEBUG_LEVEL_EXTERNAL == level)
     {
         snprintf(fbuf, sizeof(fbuf), "%s: %s: < T:%d >", levelToString(level).c_str(),
                  componentToString(component).c_str(), threadId);
