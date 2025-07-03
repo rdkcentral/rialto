@@ -81,7 +81,8 @@ void HandleBusMessage::execute() const
                     // If async flush was requested before HandleBusMessage task creation (but it was not executed yet)
                     // or if async flush was created after HandleBusMessage task creation (but before its execution)
                     // we can't report playback state, because async flush causes state loss - reported state is probably invalid.
-                    if (m_context.stateChangeOngoing.has_value() && (m_isAsyncFlushOngoingDuringCreation || m_flushWatcher.isAsyncFlushOngoing()))
+                    if (m_context.stateChangeOngoing.has_value() &&
+                        (m_isAsyncFlushOngoingDuringCreation || m_flushWatcher.isAsyncFlushOngoing()))
                     {
                         RIALTO_SERVER_LOG_WARN("Skip PAUSED notification - flush is ongoing");
                         break;
@@ -103,7 +104,8 @@ void HandleBusMessage::execute() const
                 // If async flush was requested before HandleBusMessage task creation (but it was not executed yet)
                 // or if async flush was created after HandleBusMessage task creation (but before its execution)
                 // we can't report playback state, because async flush causes state loss - reported state is probably invalid.
-                if (m_context.stateChangeOngoing.has_value() && (m_isAsyncFlushOngoingDuringCreation || m_flushWatcher.isAsyncFlushOngoing()))
+                if (m_context.stateChangeOngoing.has_value() &&
+                    (m_isAsyncFlushOngoingDuringCreation || m_flushWatcher.isAsyncFlushOngoing()))
                 {
                     RIALTO_SERVER_LOG_WARN("Skip PLAYING notification - flush is ongoing");
                     break;
