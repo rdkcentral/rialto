@@ -45,7 +45,7 @@ HandleBusMessage::~HandleBusMessage()
 
 void HandleBusMessage::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing HandleBusMessage %i message", GST_MESSAGE_TYPE(m_message));
+    RIALTO_SERVER_LOG_DEBUG("Executing HandleBusMessage");
     switch (GST_MESSAGE_TYPE(m_message))
     {
     case GST_MESSAGE_STATE_CHANGED:
