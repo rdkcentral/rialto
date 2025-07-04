@@ -129,7 +129,7 @@ TEST_F(ConfigReaderTests, thereWillBeNothing)
     EXPECT_CALL(*m_rootJsonValueMock, isMember(_)).WillRepeatedly(Return(false));
 
     EXPECT_TRUE(m_sut->read());
-    EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0);
+    EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0u);
     EXPECT_EQ(m_sut->getSessionServerPath().has_value(), false);
     EXPECT_EQ(m_sut->getSessionServerStartupTimeout().has_value(), false);
     EXPECT_EQ(m_sut->getHealthcheckInterval().has_value(), false);
@@ -150,7 +150,7 @@ TEST_F(ConfigReaderTests, envVariablesNotArray)
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("environmentVariables"))).WillRepeatedly(Return(false));
 
     EXPECT_TRUE(m_sut->read());
-    EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0);
+    EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0u);
 }
 
 TEST_F(ConfigReaderTests, envVariablesEmptyArray)
@@ -165,7 +165,7 @@ TEST_F(ConfigReaderTests, envVariablesEmptyArray)
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("environmentVariables"))).WillRepeatedly(Return(false));
 
     EXPECT_TRUE(m_sut->read());
-    EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0);
+    EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0u);
 }
 
 TEST_F(ConfigReaderTests, envVariablesOneElementArrayNotString)
@@ -185,7 +185,7 @@ TEST_F(ConfigReaderTests, envVariablesOneElementArrayNotString)
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("environmentVariables"))).WillRepeatedly(Return(false));
 
     EXPECT_TRUE(m_sut->read());
-    EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0);
+    EXPECT_EQ(m_sut->getEnvironmentVariables().size(), 0u);
 }
 
 TEST_F(ConfigReaderTests, envVariablesMultipleElementArray)
@@ -431,7 +431,7 @@ TEST_F(ConfigReaderTests, extraEnvVariablesNotArray)
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("extraEnvVariables"))).WillRepeatedly(Return(false));
 
     EXPECT_TRUE(m_sut->read());
-    EXPECT_EQ(m_sut->getExtraEnvVariables().size(), 0);
+    EXPECT_EQ(m_sut->getExtraEnvVariables().size(), 0u);
 }
 
 TEST_F(ConfigReaderTests, extraEnvVariablesEmptyArray)
@@ -446,7 +446,7 @@ TEST_F(ConfigReaderTests, extraEnvVariablesEmptyArray)
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("extraEnvVariables"))).WillRepeatedly(Return(false));
 
     EXPECT_TRUE(m_sut->read());
-    EXPECT_EQ(m_sut->getExtraEnvVariables().size(), 0);
+    EXPECT_EQ(m_sut->getExtraEnvVariables().size(), 0u);
 }
 
 TEST_F(ConfigReaderTests, extraEnvVariablesOneElementArrayNotString)
@@ -466,7 +466,7 @@ TEST_F(ConfigReaderTests, extraEnvVariablesOneElementArrayNotString)
     EXPECT_CALL(*m_rootJsonValueMock, isMember(StrNe("extraEnvVariables"))).WillRepeatedly(Return(false));
 
     EXPECT_TRUE(m_sut->read());
-    EXPECT_EQ(m_sut->getExtraEnvVariables().size(), 0);
+    EXPECT_EQ(m_sut->getExtraEnvVariables().size(), 0u);
 }
 
 TEST_F(ConfigReaderTests, extraEnvVariablesMultipleElementArray)
