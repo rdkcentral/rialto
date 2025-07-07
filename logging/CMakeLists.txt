@@ -2,7 +2,7 @@
 # If not stated otherwise in this file or this component's LICENSE file the
 # following copyright and licenses apply:
 #
-# Copyright 2022 Sky UK
+# Copyright 2025 Sky UK
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,30 +17,36 @@
 # limitations under the License.
 #
 
-set(CMAKE_C_STANDARD 99)
-set(CMAKE_CXX_STANDARD 17)
+set(RialtoLogging_HEADERS
+    include/RialtoLogging.h
+    )
 
-set( CMAKE_CXX_STANDARD_REQUIRED ON )
-set( CMAKE_POSITION_INDEPENDENT_CODE ON )
-include( CheckCCompilerFlag )
-include( CheckCXXCompilerFlag )
+set(RialtoLogging_SOURCES
+    source/EnvVariableParser.cpp
+    source/EnvVariableParser.h
+    source/LogFileHandle.cpp
+    source/LogFileHandle.h
+    source/RialtoLogging.cpp
+    )
 
-set(LIB_RIALTO_LOGGING_SOURCES
-        source/EnvVariableParser.cpp
-        source/LogFileHandle.cpp
-        source/RialtoLogging.cpp
-        )
+set(RialtoLogging_INCLUDES
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+    )
 
-set(LIB_RIALTO_LOGGING_PUBLIC_HEADERS
-        include/RialtoLogging.h
-        )
+add_library(RialtoLogging STATIC ${RialtoLogging_HEADERS} ${RialtoLogging_SOURCES})
+target_include_directories(RialtoLogging PUBLIC "$<BUILD_INTERFACE:${RialtoLogging_INCLUDES}>")
+set_target_properties(RialtoLogging PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+set_target_properties(RialtoLogging PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
-add_library(RialtoLogging STATIC ${LIB_RIALTO_LOGGING_SOURCES})
-
-target_include_directories(
-        RialtoLogging
-
-        PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include/rialto>
-        )
+find_package(EthanLog)
+if (EthanLog_FOUND)
+    add_library(RialtoEthanLog STATIC ${RialtoLogging_HEADERS} ${RialtoLogging_SOURCES})
+    target_include_directories(RialtoEthanLog PUBLIC "$<BUILD_INTERFACE:${RialtoLogging_INCLUDES}>")
+    target_compile_definitions(RialtoEthanLog PRIVATE USE_ETHANLOG)
+    target_link_libraries(RialtoEthanLog PUBLIC EthanLog::EthanLog)
+    set_target_properties(RialtoEthanLog PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
+    set_target_properties(RialtoEthanLog PROPERTIES POSITION_INDEPENDENT_CODE ON)
+else ()
+    message(STATUS "EthanLog is disabled")
+    add_library(RialtoEthanLog ALIAS RialtoLogging)
+endif ()
