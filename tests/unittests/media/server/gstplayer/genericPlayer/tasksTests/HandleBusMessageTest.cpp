@@ -326,7 +326,6 @@ TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPausedMessageWhenAs
     GstState oldState = GST_STATE_READY;
     GstState newState = GST_STATE_PAUSED;
     GstState pending = GST_STATE_VOID_PENDING;
-    m_context.stateChangeOngoing = newState;
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
@@ -353,7 +352,6 @@ TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPausedMessageWhenAs
     GstState oldState = GST_STATE_READY;
     GstState newState = GST_STATE_PAUSED;
     GstState pending = GST_STATE_VOID_PENDING;
-    m_context.stateChangeOngoing = newState;
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
@@ -378,7 +376,6 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedAndPendingPausedMes
     GstState oldState = GST_STATE_PAUSED;
     GstState newState = GST_STATE_PAUSED;
     GstState pending = GST_STATE_PAUSED;
-    m_context.stateChangeOngoing = newState;
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
@@ -402,7 +399,6 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessage)
     GstState oldState = GST_STATE_READY;
     GstState newState = GST_STATE_PLAYING;
     GstState pending = GST_STATE_VOID_PENDING;
-    m_context.stateChangeOngoing = newState;
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
@@ -434,7 +430,6 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessageWhenSyncFlu
     GstState oldState = GST_STATE_READY;
     GstState newState = GST_STATE_PLAYING;
     GstState pending = GST_STATE_VOID_PENDING;
-    m_context.stateChangeOngoing = newState;
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
@@ -466,7 +461,6 @@ TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPlayingMessageWhenA
     GstState oldState = GST_STATE_READY;
     GstState newState = GST_STATE_PLAYING;
     GstState pending = GST_STATE_VOID_PENDING;
-    m_context.stateChangeOngoing = newState;
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
@@ -494,7 +488,6 @@ TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPlayingMessageWhenA
     GstState oldState = GST_STATE_READY;
     GstState newState = GST_STATE_PLAYING;
     GstState pending = GST_STATE_VOID_PENDING;
-    m_context.stateChangeOngoing = newState;
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
