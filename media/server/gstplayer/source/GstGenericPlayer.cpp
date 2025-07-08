@@ -1255,6 +1255,35 @@ bool GstGenericPlayer::setImmediateOutput()
     return result;
 }
 
+bool GstGenericPlayer::setShowVideoWindow()
+{
+    if (!m_context.pendingShowVideoWindow.has_value())
+    {
+        RIALTO_SERVER_LOG_WARN("No show video window value to be set. Aborting...");
+        return false;
+    }
+
+    GstElement *videoSink{getSink(MediaSourceType::VIDEO)};
+    if (!videoSink)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Setting show video window queued. Video sink is NULL");
+        return false;
+    }
+    bool result{false};
+    if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "show-video-window"))
+    {
+        m_glibWrapper->gObjectSet(videoSink, "show-video-window", m_context.pendingShowVideoWindow.value(), nullptr);
+        result = true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Setting show video window failed. Property does not exist");
+    }
+    m_context.pendingShowVideoWindow.reset();
+    m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
+    return result;
+}
+
 bool GstGenericPlayer::setLowLatency()
 {
     bool result{false};

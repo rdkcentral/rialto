@@ -151,6 +151,7 @@ private:
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
     bool setImmediateOutput() override;
+    bool setShowVideoWindow() override;
     bool setLowLatency() override;
     bool setSync() override;
     bool setSyncOff() override;
