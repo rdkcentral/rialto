@@ -99,7 +99,7 @@ if (RIALTO_LOG_DEBUG_ENABLED)
 endif()
 
 #check if TextTrack plugin exists in Thunder
-find_path( TEXT_TRACK_INCLUDE_DIR NAMES WPEFramework/interfaces/ITextTrack.h )
+find_path(TEXT_TRACK_INCLUDE_DIR NAMES WPEFramework/interfaces/ITextTrack.h)
 if (TEXT_TRACK_INCLUDE_DIR)
     message("ENABLE RIALTO_ENABLE_TEXT_TRACK")
     add_compile_definitions(RIALTO_ENABLE_TEXT_TRACK)
