@@ -93,7 +93,7 @@ if (RIALTO_LOG_INFO_ENABLED)
     add_compile_definitions( RIALTO_LOG_INFO_ENABLED )
 endif()
 
-if ( RIALTO_LOG_DEBUG_ENABLED )
+if (RIALTO_LOG_DEBUG_ENABLED)
     message("RIALTO_LOG_DEBUG IS ENABLED")
     add_compile_definitions( RIALTO_LOG_DEBUG_ENABLED )
 endif()
