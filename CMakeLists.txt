@@ -68,7 +68,7 @@ if (NOT RIALTO_LOG_FATAL_ENABLED OR
 
 endif()
 
-if ( RIALTO_LOG_FATAL_ENABLED )
+if (RIALTO_LOG_FATAL_ENABLED)
     message("RIALTO_LOG_FATAL IS ENABLED")
     add_compile_definitions( RIALTO_LOG_FATAL_ENABLED )
 endif()
