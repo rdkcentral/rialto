@@ -78,7 +78,7 @@ if (RIALTO_LOG_ERROR_ENABLED)
     add_compile_definitions( RIALTO_LOG_ERROR_ENABLED )
 endif()
 
-if ( RIALTO_LOG_WARN_ENABLED )
+if (RIALTO_LOG_WARN_ENABLED)
     message("RIALTO_LOG_WARN IS ENABLED")
     add_compile_definitions( RIALTO_LOG_WARN_ENABLED )
 endif()
