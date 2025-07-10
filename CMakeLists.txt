@@ -95,7 +95,7 @@ endif()
 
 if (RIALTO_LOG_DEBUG_ENABLED)
     message("RIALTO_LOG_DEBUG IS ENABLED")
-    add_compile_definitions( RIALTO_LOG_DEBUG_ENABLED )
+    add_compile_definitions(RIALTO_LOG_DEBUG_ENABLED)
 endif()
 
 #check if TextTrack plugin exists in Thunder
