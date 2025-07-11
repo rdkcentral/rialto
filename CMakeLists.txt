@@ -136,7 +136,7 @@ add_compile_definitions(SRCREV="${SRCREV}")
 add_compile_definitions(TAGS="${TAGS}")
 
 # Add our local cmake directory to search for components
-set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake )
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Thread is just the generic lib link for the pthread libraries (on platforms
 # that don't have a separate pthread library this is a NOP)
