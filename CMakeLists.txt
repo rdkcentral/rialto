@@ -46,7 +46,7 @@ option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
 option(RIALTO_LOG_WARN_ENABLED "Enable warning logging for RialtoServer" ON)
 option(RIALTO_LOG_MIL_ENABLED "Enable milestone logging for RialtoServer" ON)
 
-if( RIALTO_BUILD_TYPE STREQUAL "Debug" )
+if(RIALTO_BUILD_TYPE STREQUAL "Debug")
     message("_______________DEBUG MODE_______________")
     option(RIALTO_LOG_INFO_ENABLED "Enable info logging for RialtoServer" ON)
     option(RIALTO_LOG_DEBUG_ENABLED "Enable debug logging for RialtoServer" ON)
