@@ -65,7 +65,6 @@ if (NOT RIALTO_LOG_FATAL_ENABLED OR
 
     message("_______________COMPILATION ERRORS IGNORED_______________")
     add_compile_options(-Wno-error=unused-function -Wno-error=unused-variable)
-
 endif()
 
 if (RIALTO_LOG_FATAL_ENABLED)
