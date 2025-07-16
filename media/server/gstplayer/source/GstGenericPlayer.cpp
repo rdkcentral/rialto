@@ -247,6 +247,9 @@ void GstGenericPlayer::initMsePipeline()
 
 void GstGenericPlayer::resetWorkerThread()
 {
+    // Shutdown task thread
+    m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
+    m_workerThread->join();
     m_workerThread.reset();
 }
 
@@ -1630,6 +1633,14 @@ void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
     {
         m_positionReportingAndCheckAudioUnderflowTimer->cancel();
         m_positionReportingAndCheckAudioUnderflowTimer.reset();
+    }
+}
+
+void GstGenericPlayer::stopWorkerThread()
+{
+    if (m_workerThread)
+    {
+        m_workerThread->stop();
     }
 }
 

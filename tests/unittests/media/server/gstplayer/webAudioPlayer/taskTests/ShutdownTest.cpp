@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WORKER_THREAD_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_WORKER_THREAD_MOCK_H_
+#include "WebAudioTasksTestsBase.h"
 
-#include "IWorkerThread.h"
-#include <gmock/gmock.h>
-#include <memory>
-
-namespace firebolt::rialto::server
+class WebAudioShutdownTest : public WebAudioTasksTestsBase
 {
-class WorkerThreadMock : public IWorkerThread
-{
-public:
-    MOCK_METHOD(void, stop, (), (override));
-    MOCK_METHOD(void, join, (), (override));
-    MOCK_METHOD(void, enqueueTask, (std::unique_ptr<IPlayerTask> && task), (override));
 };
-} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_WORKER_THREAD_MOCK_H_
+TEST_F(WebAudioShutdownTest, shouldShutdown)
+{
+    shouldStopWorkerThread();
+    triggerShutdown();
+}
