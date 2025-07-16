@@ -17,22 +17,29 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WORKER_THREAD_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_WORKER_THREAD_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SHUTDOWN_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SHUTDOWN_H_
 
-#include "IWorkerThread.h"
-#include <gmock/gmock.h>
-#include <memory>
+#include "IPlayerTask.h"
+#include <gst/gst.h>
 
 namespace firebolt::rialto::server
 {
-class WorkerThreadMock : public IWorkerThread
-{
-public:
-    MOCK_METHOD(void, stop, (), (override));
-    MOCK_METHOD(void, join, (), (override));
-    MOCK_METHOD(void, enqueueTask, (std::unique_ptr<IPlayerTask> && task), (override));
-};
+class IGstGenericPlayerPrivate;
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_WORKER_THREAD_MOCK_H_
+namespace firebolt::rialto::server::tasks::generic
+{
+class Shutdown : public IPlayerTask
+{
+public:
+    explicit Shutdown(IGstGenericPlayerPrivate &player);
+    ~Shutdown() override;
+    void execute() const override;
+
+private:
+    IGstGenericPlayerPrivate &m_player;
+};
+} // namespace firebolt::rialto::server::tasks::generic
+
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SHUTDOWN_H_

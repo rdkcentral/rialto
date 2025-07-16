@@ -1679,6 +1679,12 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactivePositionReportingTimerW
     m_sut->stopPositionReportingAndCheckAudioUnderflowTimer();
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldStopWorkerThread)
+{
+    EXPECT_CALL(m_workerThreadMock, stop());
+    m_sut->stopWorkerThread();
+}
+
 TEST_F(GstGenericPlayerPrivateTest, shouldUpdatePlaybackGroup)
 {
     GstElement typefind;

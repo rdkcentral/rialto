@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2023 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,22 +17,25 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_WORKER_THREAD_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_WORKER_THREAD_MOCK_H_
+#include "tasks/webAudio/Shutdown.h"
+#include "IGstWebAudioPlayerPrivate.h"
+#include "RialtoServerLogging.h"
 
-#include "IWorkerThread.h"
-#include <gmock/gmock.h>
-#include <memory>
-
-namespace firebolt::rialto::server
+namespace firebolt::rialto::server::tasks::webaudio
 {
-class WorkerThreadMock : public IWorkerThread
+Shutdown::Shutdown(IGstWebAudioPlayerPrivate &player) : m_player{player}
 {
-public:
-    MOCK_METHOD(void, stop, (), (override));
-    MOCK_METHOD(void, join, (), (override));
-    MOCK_METHOD(void, enqueueTask, (std::unique_ptr<IPlayerTask> && task), (override));
-};
-} // namespace firebolt::rialto::server
+    RIALTO_SERVER_LOG_DEBUG("Constructing Shutdown");
+}
 
-#endif // FIREBOLT_RIALTO_SERVER_WORKER_THREAD_MOCK_H_
+Shutdown::~Shutdown()
+{
+    RIALTO_SERVER_LOG_DEBUG("Shutdown finished");
+}
+
+void Shutdown::execute() const
+{
+    RIALTO_SERVER_LOG_DEBUG("Executing Shutdown");
+    m_player.stopWorkerThread();
+}
+} // namespace firebolt::rialto::server::tasks::webaudio
