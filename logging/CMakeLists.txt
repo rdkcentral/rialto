@@ -39,7 +39,8 @@ set_target_properties(RialtoLogging PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQU
 set_target_properties(RialtoLogging PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 find_package(EthanLog)
-if (EthanLog_FOUND)
+if (EthanLog_FOUND AND RIALTO_ENABLE_ETHAN_LOG)
+    message(STATUS "EthanLog is enabled")
     add_library(RialtoEthanLog STATIC ${RialtoLogging_HEADERS} ${RialtoLogging_SOURCES})
     target_include_directories(RialtoEthanLog PUBLIC "$<BUILD_INTERFACE:${RialtoLogging_INCLUDES}>")
     target_compile_definitions(RialtoEthanLog PRIVATE USE_ETHANLOG)

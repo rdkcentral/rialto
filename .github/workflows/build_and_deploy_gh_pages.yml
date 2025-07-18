@@ -62,7 +62,7 @@ jobs:
           doxygen
 
       - name: Download Coverage Report
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: build_ut.yml
           workflow_conclusion: success
