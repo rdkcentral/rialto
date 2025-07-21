@@ -61,7 +61,8 @@ protected:
     GstCaps *createOpusCaps();
     GstCaps *getAudioSpecificConfiguration() const;
     void addSampleRateAndChannelsToCaps(GstCaps *caps) const;
-    void addMpegVersionToCaps(GstCaps *caps) const;
+    void addMpegVersion4ToCaps(GstCaps *caps) const;
+    void addMp3Caps(GstCaps *caps) const;
     void addRawAudioData(GstCaps *caps) const;
     void addFlacSpecificData(GstCaps *caps) const;
 

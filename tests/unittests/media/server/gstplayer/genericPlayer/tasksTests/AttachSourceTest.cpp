@@ -65,6 +65,13 @@ TEST_F(AttachSourceTest, shouldAttachFlacAudioSource)
     checkAudioSourceAttachedWithDrm();
 }
 
+TEST_F(AttachSourceTest, shouldAttachMp3AudioSource)
+{
+    shouldAttachMp3AudioSource();
+    triggerAttachMp3AudioSource();
+    checkAudioSourceAttached();
+}
+
 TEST_F(AttachSourceTest, shouldAttachVideoSourceAuAvc)
 {
     std::string mimeType = "video/h264";
