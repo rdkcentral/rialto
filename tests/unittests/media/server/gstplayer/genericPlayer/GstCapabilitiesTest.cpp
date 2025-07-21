@@ -74,6 +74,7 @@ public:
     GstCapabilitiesTest()
         // valid values of GstCaps are not needed, only addresses will be used
         : m_capsMap{{"audio/mpeg, mpegversion=(int)4", {}},
+                    {"audio/mpeg, mpegversion=(int)1, layer=(int)3", {}},
                     {"audio/x-eac3", {}},
                     {"audio/x-opus", {}},
                     {"audio/x-opus, channel-mapping-family=(int)0", {}},
@@ -584,6 +585,9 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
         .WillOnce(Return(true));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/x-raw"], &m_sinkTemplateCaps))
         .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsCanIntersect(&m_capsMap["audio/mpeg, mpegversion=(int)1, layer=(int)3"], &m_sinkTemplateCaps))
+        .WillOnce(Return(true));
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -593,6 +597,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
 
     EXPECT_TRUE(m_sut->isMimeTypeSupported("video/h264"));
     EXPECT_TRUE(m_sut->isMimeTypeSupported("audio/x-raw"));
+    EXPECT_TRUE(m_sut->isMimeTypeSupported("audio/mp3"));
     EXPECT_FALSE(m_sut->isMimeTypeSupported("video/x-av1"));
     EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/x-opus"));
 }

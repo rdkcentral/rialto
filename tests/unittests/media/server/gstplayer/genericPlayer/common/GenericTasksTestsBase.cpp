@@ -1540,6 +1540,30 @@ void GenericTasksTestsBase::triggerAttachFlacAudioSource()
     task.execute();
 }
 
+void GenericTasksTestsBase::shouldAttachMp3AudioSource()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/mpeg")))
+        .WillOnce(Return(&testContext->m_gstCaps1));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleIntStub(&testContext->m_gstCaps1, StrEq("mpegversion"), G_TYPE_INT, 1));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleIntStub(&testContext->m_gstCaps1, StrEq("layer"), G_TYPE_INT, 3));
+    expectSetCaps();
+}
+
+void GenericTasksTestsBase::triggerAttachMp3AudioSource()
+{
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/mp3", false);
+    firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
+                                                                testContext->m_gstWrapper,
+                                                                testContext->m_glibWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
+                                                                testContext->m_gstPlayer,
+                                                                source};
+    task.execute();
+}
+
 void GenericTasksTestsBase::expectAddChannelAndRateAudioToCaps()
 {
     EXPECT_CALL(*testContext->m_gstWrapper,

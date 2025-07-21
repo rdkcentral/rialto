@@ -168,6 +168,8 @@ protected:
     void triggerAttachXrawAudioSource();
     void shouldAttachFlacAudioSource();
     void triggerAttachFlacAudioSource();
+    void shouldAttachMp3AudioSource();
+    void triggerAttachMp3AudioSource();
     void shouldAttachVideoSource(const std::string &mime, const std::string &alignment, const std::string &format);
     void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
                                   firebolt::rialto::StreamFormat streamFormat);
