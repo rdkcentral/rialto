@@ -91,6 +91,7 @@ constexpr uint32_t kBufferingLimit{12341};
 constexpr bool kUseBuffering{true};
 constexpr uint64_t kStopPosition{2423};
 constexpr bool kFramed{true};
+constexpr bool kIsVideoMaster{true};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")
@@ -808,6 +809,19 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetUseBuffer
     EXPECT_CALL(m_mediaPipelineServiceMock, getUseBuffering(kHardcodedSessionId, _)).WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillCheckIfVideoIsMaster()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, isVideoMaster(kHardcodedSessionId, _))
+        .WillOnce(DoAll(SetArgReferee<1>(kIsVideoMaster), Return(true)));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToCheckIfVideoIsMaster()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, isVideoMaster(kHardcodedSessionId, _)).WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackStateChangedEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(PlaybackStateChangeEventMatcher(convertPlaybackState(kPlaybackState))));
@@ -1492,6 +1506,28 @@ void MediaPipelineModuleServiceTests::sendGetUseBufferingRequestAndReceiveRespon
     request.set_session_id(kHardcodedSessionId);
 
     m_service->getUseBuffering(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendIsVideoMasterRequestAndReceiveResponse()
+{
+    firebolt::rialto::IsVideoMasterRequest request;
+    firebolt::rialto::IsVideoMasterResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->isVideoMaster(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(kIsVideoMaster, response.is_video_master());
+}
+
+void MediaPipelineModuleServiceTests::sendIsVideoMasterRequestAndReceiveResponseWithoutMatch()
+{
+    firebolt::rialto::IsVideoMasterRequest request;
+    firebolt::rialto::IsVideoMasterResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->isVideoMaster(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendPlaybackStateChangedEvent()

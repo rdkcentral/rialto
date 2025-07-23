@@ -40,6 +40,7 @@ add_gtests (
         mediaPipelineIpc/GetStatsTest.cpp
         mediaPipelineIpc/RenderFrameTest.cpp
         mediaPipelineIpc/GetVolumeTest.cpp
+        mediaPipelineIpc/IsVideoMasterTest.cpp
         mediaPipelineIpc/SetVolumeTest.cpp
         mediaPipelineIpc/GetMuteTest.cpp
         mediaPipelineIpc/SetMuteTest.cpp

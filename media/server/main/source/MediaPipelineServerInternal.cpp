@@ -1341,8 +1341,7 @@ bool MediaPipelineServerInternal::isVideoMasterInternal(bool &isVideoMaster)
         RIALTO_SERVER_LOG_ERROR("Failed to check if video is master - Gstreamer player has not been loaded");
         return false;
     }
-    m_gstPlayer->isVideoMaster(isVideoMaster);
-    return true;
+    return m_gstPlayer->isVideoMaster(isVideoMaster);
 }
 
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,

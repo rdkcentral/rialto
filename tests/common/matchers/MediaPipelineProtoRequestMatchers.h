@@ -300,6 +300,13 @@ MATCHER_P(getSyncRequestMatcher, sessionId, "")
     return ((kRequest->session_id() == sessionId));
 }
 
+MATCHER_P(isVideoMasterRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::IsVideoMasterRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::IsVideoMasterRequest *>(arg);
+    return ((kRequest->session_id() == sessionId));
+}
+
 MATCHER_P2(setSyncOffRequestMatcher, sessionId, syncOff, "")
 {
     const ::firebolt::rialto::SetSyncOffRequest *kRequest =

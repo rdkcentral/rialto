@@ -1053,3 +1053,33 @@ TEST_F(GstGenericPlayerTest, shouldSwitchSource)
 
     m_sut->switchSource(source);
 }
+
+TEST_F(GstGenericPlayerTest, shouldFailToCheckIfVideoIsMasterWhenRegistryIsNull)
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(nullptr));
+    bool isVideoMaster{false};
+    EXPECT_FALSE(m_sut->isVideoMaster(isVideoMaster));
+}
+
+TEST_F(GstGenericPlayerTest, shouldCheckIfVideoIsMasterAndReturnTrue)
+{
+    GstRegistry registry{};
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(&registry));
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&registry, StrEq("amlhalasink"))).WillOnce(Return(nullptr));
+    bool isVideoMaster{false};
+    EXPECT_TRUE(m_sut->isVideoMaster(isVideoMaster));
+    EXPECT_TRUE(isVideoMaster);
+}
+
+TEST_F(GstGenericPlayerTest, shouldCheckIfVideoIsMasterAndReturnFalse)
+{
+    GstRegistry registry{};
+    GstObject feature{};
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(&registry));
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&registry, StrEq("amlhalasink")))
+        .WillOnce(Return(GST_PLUGIN_FEATURE(&feature)));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_PLUGIN_FEATURE(&feature)));
+    bool isVideoMaster{false};
+    EXPECT_TRUE(m_sut->isVideoMaster(isVideoMaster));
+    EXPECT_FALSE(isVideoMaster);
+}
