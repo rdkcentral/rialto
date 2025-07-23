@@ -142,6 +142,8 @@ public:
 
     bool switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
 
+    bool isVideoMaster(bool &isVideoMaster) override;
+
 private:
     /**
      * @brief The media player client ipc.

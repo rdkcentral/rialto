@@ -2014,6 +2014,24 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
     }
 }
 
+bool GstGenericPlayer::isVideoMaster(bool &isVideoMaster)
+{
+    GstRegistry *reg = m_gstWrapper->gstRegistryGet();
+    if (!reg)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed get the gst registry");
+        return false;
+    }
+    GstPluginFeature *feature{nullptr};
+    isVideoMaster = true;
+    if (nullptr != (feature = m_gstWrapper->gstRegistryLookupFeature(reg, "amlhalasink")))
+    {
+        isVideoMaster = false;
+        m_gstWrapper->gstObjectUnref(feature);
+    }
+    return true;
+}
+
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
