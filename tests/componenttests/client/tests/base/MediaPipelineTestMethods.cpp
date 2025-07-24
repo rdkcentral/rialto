@@ -1587,6 +1587,30 @@ void MediaPipelineTestMethods::switchSourceMpeg()
     EXPECT_EQ(m_mediaPipeline->switchSource(mediaSource), true);
 }
 
+void MediaPipelineTestMethods::shouldCheckIfVideoIsMaster()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, isVideoMaster(_, isVideoMasterRequestMatcher(kSessionId), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::shouldFailToCheckIfVideoIsMaster()
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, isVideoMaster(_, isVideoMasterRequestMatcher(kSessionId), _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
+}
+
+void MediaPipelineTestMethods::isVideoMaster()
+{
+    bool isVideoMaster{false};
+    EXPECT_TRUE(m_mediaPipeline->isVideoMaster(isVideoMaster));
+}
+
+void MediaPipelineTestMethods::isVideoMasterFailure()
+{
+    bool isVideoMaster{false};
+    EXPECT_FALSE(m_mediaPipeline->isVideoMaster(isVideoMaster));
+}
+
 /*************************** Private methods ********************************/
 
 void MediaPipelineTestMethods::resetWriteLocation(uint32_t partitionId)
