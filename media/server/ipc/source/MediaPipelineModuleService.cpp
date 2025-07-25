@@ -1065,4 +1065,25 @@ void MediaPipelineModuleService::getUseBuffering(::google::protobuf::RpcControll
 
     done->Run();
 }
+
+void MediaPipelineModuleService::isVideoMaster(::google::protobuf::RpcController *controller,
+                                               const ::firebolt::rialto::IsVideoMasterRequest *request,
+                                               ::firebolt::rialto::IsVideoMasterResponse *response,
+                                               ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    bool isVideoMaster{};
+
+    if (!m_mediaPipelineService.isVideoMaster(request->session_id(), isVideoMaster))
+    {
+        RIALTO_SERVER_LOG_ERROR("Is video master failed.");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_is_video_master(isVideoMaster);
+    }
+
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc

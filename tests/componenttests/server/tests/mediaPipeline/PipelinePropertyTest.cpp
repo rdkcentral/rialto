@@ -39,6 +39,7 @@ constexpr bool kSyncOff{true};
 constexpr int32_t kStreamSyncMode{1};
 constexpr int32_t kBufferingLimit{4321};
 constexpr bool kUseBuffering{true};
+constexpr bool kIsVideoMaster{true};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -312,6 +313,21 @@ public:
             .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.use_buffering(), kUseBuffering); });
     }
 
+    void willCheckIfVideoIsMaster()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(&m_registry));
+        EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&m_registry, StrEq("amlhalasink"))).WillOnce(Return(nullptr));
+    }
+
+    void checkIfVideoIsMaster()
+    {
+        auto req{createIsVideoMasterRequest(m_sessionId)};
+        ConfigureAction<IsVideoMaster>(m_clientStub)
+            .send(req)
+            .expectSuccess()
+            .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.is_video_master(), kIsVideoMaster); });
+    }
+
     void setImmediateOutputFailure()
     {
         auto req{createSetImmediateOutputRequest(m_sessionId, m_videoSourceId, true)};
@@ -402,6 +418,7 @@ private:
     GstIterator m_it{};
     char m_dummy{0};
     GstElementFactory *m_factory = reinterpret_cast<GstElementFactory *>(&m_dummy);
+    GstRegistry m_registry{};
 };
 
 /*
@@ -487,18 +504,21 @@ private:
  *  Step 15: Get Use Buffering
  *   Will get the UseBuffering property of the decodebin on the Rialto Server
  *
- *  Step 16: Remove sources
+ *  Step 16: Check if video is master
+ *   Will check, if video is master for current device.
+ *
+ *  Step 17: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 17: Stop
+ *  Step 18: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 18: Destroy media session
+ *  Step 19: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -578,16 +598,20 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
     // Step 15: Get Use Buffering
     getUseBuffering();
 
-    // Step 16: Remove sources
+    // Step 16: Check if video is master
+    willCheckIfVideoIsMaster();
+    checkIfVideoIsMaster();
+
+    // Step 17: Remove sources
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 17: Stop
+    // Step 18: Stop
     willStop();
     stop();
 
-    // Step 18: Destroy media session
+    // Step 19: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

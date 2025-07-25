@@ -344,6 +344,14 @@ struct ProcessAudioGap
     static constexpr auto m_kFunction{&Stub::processAudioGap};
 };
 
+struct IsVideoMaster
+{
+    using RequestType = ::firebolt::rialto::IsVideoMasterRequest;
+    using ResponseType = ::firebolt::rialto::IsVideoMasterResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::isVideoMaster};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {

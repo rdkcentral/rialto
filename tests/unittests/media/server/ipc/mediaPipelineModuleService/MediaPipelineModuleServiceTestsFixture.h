@@ -120,6 +120,8 @@ public:
     void mediaPipelineServiceWillFailToSetUseBuffering();
     void mediaPipelineServiceWillGetUseBuffering();
     void mediaPipelineServiceWillFailToGetUseBuffering();
+    void mediaPipelineServiceWillCheckIfVideoIsMaster();
+    void mediaPipelineServiceWillFailToCheckIfVideoIsMaster();
 
     void mediaClientWillSendPlaybackStateChangedEvent();
     void mediaClientWillSendNetworkStateChangedEvent();
@@ -184,6 +186,8 @@ public:
     void sendSetUseBufferingRequestAndReceiveResponse();
     void sendGetUseBufferingRequestAndReceiveResponse();
     void sendGetUseBufferingRequestAndReceiveResponseWithoutMatch();
+    void sendIsVideoMasterRequestAndReceiveResponse();
+    void sendIsVideoMasterRequestAndReceiveResponseWithoutMatch();
 
     void sendPlaybackStateChangedEvent();
     void sendNetworkStateChangedEvent();

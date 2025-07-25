@@ -792,6 +792,22 @@ message GetUseBufferingResponse {
 }
 
 /**
+ * @fn void isVideoMaster(bool &isVideoMaster)
+ * @brief Checks if the platform is video master.
+ *
+ * @param[in]  session_id    The id of the A/V session the request is for.
+ * @param[out] is_video_master True if video is master otherwise false.
+ *
+ * @retval true on success false otherwise
+ */
+message IsVideoMasterRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message IsVideoMasterResponse {
+    optional bool is_video_master = 1;
+}
+
+/**
  * @brief Event sent the playback state has changed.
  *
  * @param session_id   The id of the A/V session the status is for.
@@ -1220,5 +1236,12 @@ service MediaPipelineModule {
      * @see GetUseBufferingRequest
      */
     rpc getUseBuffering(GetUseBufferingRequest) returns (GetUseBufferingResponse) {
+    }
+
+    /**
+     * @brief Checks if the platform is video master.
+     * @see IsVideoMasterRequest
+     */
+    rpc isVideoMaster(IsVideoMasterRequest) returns (IsVideoMasterResponse) {
     }
 }

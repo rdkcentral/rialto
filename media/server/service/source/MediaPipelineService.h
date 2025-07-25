@@ -95,6 +95,7 @@ public:
     bool setUseBuffering(int sessionId, bool useBuffering) override;
     bool getUseBuffering(int sessionId, bool &useBuffering) override;
     bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
+    bool isVideoMaster(int sessionId, bool &isVideoMaster) override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
     std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,

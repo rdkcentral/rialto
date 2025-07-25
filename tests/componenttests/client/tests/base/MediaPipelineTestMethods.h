@@ -139,6 +139,8 @@ protected:
     void shouldFailToProcessAudioGap();
     void shouldSwitchSourceEacs();
     void shouldSwitchSourceMpeg();
+    void shouldCheckIfVideoIsMaster();
+    void shouldFailToCheckIfVideoIsMaster();
 
     // MediaPipelineClient Expect methods
     void shouldNotifyNetworkStateBuffering();
@@ -263,6 +265,8 @@ protected:
     void processAudioGapFailure();
     void switchSourceEac();
     void switchSourceMpeg();
+    void isVideoMaster();
+    void isVideoMasterFailure();
 
     // Event methods
     void sendNotifyNetworkStateBuffering();

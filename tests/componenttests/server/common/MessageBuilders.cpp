@@ -407,6 +407,13 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::IsVideoMasterRequest createIsVideoMasterRequest(int sessionId)
+{
+    ::firebolt::rialto::IsVideoMasterRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;
