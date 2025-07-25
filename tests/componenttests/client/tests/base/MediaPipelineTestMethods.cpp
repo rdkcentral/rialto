@@ -1601,14 +1601,14 @@ void MediaPipelineTestMethods::shouldFailToCheckIfVideoIsMaster()
 
 void MediaPipelineTestMethods::isVideoMaster()
 {
-    bool isVideoMaster{false};
-    EXPECT_TRUE(m_mediaPipeline->isVideoMaster(isVideoMaster));
+    bool isMaster{false};
+    EXPECT_TRUE(m_mediaPipeline->isVideoMaster(isMaster));
 }
 
 void MediaPipelineTestMethods::isVideoMasterFailure()
 {
-    bool isVideoMaster{false};
-    EXPECT_FALSE(m_mediaPipeline->isVideoMaster(isVideoMaster));
+    bool isMaster{false};
+    EXPECT_FALSE(m_mediaPipeline->isVideoMaster(isMaster));
 }
 
 /*************************** Private methods ********************************/
