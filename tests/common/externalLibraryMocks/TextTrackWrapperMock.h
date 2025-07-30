@@ -41,7 +41,7 @@ public:
     MOCK_METHOD(std::uint32_t, sendSessionTimestamp, (std::uint32_t sessionId, std::uint64_t mediaTimestampMs),
                 (const, override));
     MOCK_METHOD(std::uint32_t, sendSessionData,
-                (std::uint32_t sessionId, ITextTrackWrapper::DataType type, std::int32_t displayOffsetMs,
+                (std::uint32_t sessionId, ITextTrackWrapper::DataType type, std::int64_t displayOffsetMs,
                  const std::string &data),
                 (const, override));
     MOCK_METHOD(std::uint32_t, setSessionWebVTTSelection, (std::uint32_t sessionId), (const, override));

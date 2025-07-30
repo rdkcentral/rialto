@@ -91,7 +91,7 @@ std::uint32_t TextTrackWrapper::sendSessionTimestamp(std::uint32_t sessionId, st
 }
 
 std::uint32_t TextTrackWrapper::sendSessionData(std::uint32_t sessionId, ITextTrackWrapper::DataType type,
-                                                std::int32_t displayOffsetMs, const std::string &data) const
+                                                std::int64_t displayOffsetMs, const std::string &data) const
 {
     return m_textTrackControlInterface->SendSessionData(sessionId, convertDataType(type), displayOffsetMs, data);
 }

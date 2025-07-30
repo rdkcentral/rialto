@@ -121,7 +121,7 @@ bool TextTrackSession::setPosition(uint64_t mediaTimestampMs)
     return m_textTrackAccessor->setPosition(m_sessionId, mediaTimestampMs);
 }
 
-bool TextTrackSession::sendData(const std::string &data, int32_t displayOffsetMs)
+bool TextTrackSession::sendData(const std::string &data, int64_t displayOffsetMs)
 {
     return m_textTrackAccessor->sendData(m_sessionId, data, m_dataType, displayOffsetMs);
 }
