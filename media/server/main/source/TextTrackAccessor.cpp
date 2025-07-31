@@ -182,8 +182,8 @@ bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, Da
     const uint32_t result = m_textTrackWrapper->sendSessionData(sessionId, wrapperDataType, displayOffsetMs, data);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_DEBUG("Sending data to TextTrack session %u was successful; offset %ld, size %zu", sessionId,
-                                displayOffsetMs, data.size());
+        RIALTO_SERVER_LOG_DEBUG("Sending data to TextTrack session %u was successful; size %zu", sessionId,
+                                data.size());
         return true;
     }
 
