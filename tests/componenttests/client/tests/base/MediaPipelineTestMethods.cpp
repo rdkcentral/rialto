@@ -1599,6 +1599,18 @@ void MediaPipelineTestMethods::shouldFailToCheckIfVideoIsMaster()
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
 }
 
+void MediaPipelineTestMethods::shouldCheckIsVideoMasterCapability()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock, isVideoMaster(_, _, _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::shouldFailToCheckIsVideoMasterCapability()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock, isVideoMaster(_, _, _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
+}
+
 void MediaPipelineTestMethods::isVideoMaster()
 {
     bool isMaster{false};
@@ -1609,6 +1621,18 @@ void MediaPipelineTestMethods::isVideoMasterFailure()
 {
     bool isMaster{false};
     EXPECT_FALSE(m_mediaPipeline->isVideoMaster(isMaster));
+}
+
+void MediaPipelineTestMethods::isVideoMasterCapability()
+{
+    bool isMaster{false};
+    EXPECT_TRUE(m_mediaPipelineCapabilities->isVideoMaster(isMaster));
+}
+
+void MediaPipelineTestMethods::isVideoMasterCapabilityFailure()
+{
+    bool isMaster{false};
+    EXPECT_FALSE(m_mediaPipelineCapabilities->isVideoMaster(isMaster));
 }
 
 /*************************** Private methods ********************************/

@@ -812,14 +812,14 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetUseBuffer
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillCheckIfVideoIsMaster()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, isVideoMaster(kHardcodedSessionId, _))
-        .WillOnce(DoAll(SetArgReferee<1>(kIsVideoMaster), Return(true)));
+    EXPECT_CALL(m_mediaPipelineServiceMock, isVideoMaster(_))
+        .WillOnce(DoAll(SetArgReferee<0>(kIsVideoMaster), Return(true)));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToCheckIfVideoIsMaster()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, isVideoMaster(kHardcodedSessionId, _)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, isVideoMaster(_)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackStateChangedEvent()

@@ -68,6 +68,14 @@ public:
  *   Call IsVideoMaster
  *   Expect that when IsVideoMaster fails, it returns the error status.
  *
+ *  Step 3: Call IsVideoMaster capability
+ *   Call IsVideoMaster capability
+ *   Expect that IsVideoMaster propagated to the server and returns the IsVideoMaster status.
+ *
+ *  Step 4: Call IsVideoMaster capability failure
+ *   Call IsVideoMaster capability
+ *   Expect that when IsVideoMaster fails, it returns the error status.
+ *
  * Test Teardown:
  *  Terminate the media session.
  *  Memory region created for the shared buffer is closed.
@@ -87,5 +95,13 @@ TEST_F(MuteTest, mute)
     // Step 2: Call IsVideoMaster failure
     MediaPipelineTestMethods::shouldFailToCheckIfVideoIsMaster();
     MediaPipelineTestMethods::isVideoMasterFailure();
+
+    // Step 3: Call IsVideoMaster capability
+    MediaPipelineTestMethods::shouldCheckIsVideoMasterCapability();
+    MediaPipelineTestMethods::isVideoMasterCapability();
+
+    // Step 4: Call IsVideoMaster capability failure
+    MediaPipelineTestMethods::shouldFailToCheckIsVideoMasterCapability();
+    MediaPipelineTestMethods::isVideoMasterCapabilityFailure();
 }
 } // namespace firebolt::rialto::client::ct

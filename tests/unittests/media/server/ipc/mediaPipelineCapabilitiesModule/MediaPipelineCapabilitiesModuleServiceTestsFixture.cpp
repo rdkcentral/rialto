@@ -40,6 +40,7 @@ const std::vector<std::string> kMimeTypes{"video/h264", "video/h265"};
 const firebolt::rialto::MediaSourceType kSourceType{firebolt::rialto::MediaSourceType::VIDEO};
 const firebolt::rialto::ProtoMediaSourceType kMediaSourceType{firebolt::rialto::ProtoMediaSourceType::VIDEO};
 const std::vector<std::string> kPropertyNames{"test-property", "another-property"};
+constexpr bool kIsVideoMaster{true};
 } // namespace
 
 MediaPipelineCapabilitiesModuleServiceTests::MediaPipelineCapabilitiesModuleServiceTests()
@@ -78,6 +79,13 @@ void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillGetSupportedP
                 getSupportedProperties(firebolt::rialto::server::ipc::convertMediaSourceType(kMediaSourceType),
                                        kPropertyNames))
         .WillOnce(Return(kPropertyNames));
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillCheckIfVideoIsMaster()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, isVideoMaster(_))
+        .WillOnce(DoAll(SetArgReferee<0>(kIsVideoMaster), Return(true)));
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::expectRequestSuccess()
@@ -168,6 +176,23 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedPropertiesRequ
     std::vector<std::string> supportedProperties{response.supported_properties().begin(),
                                                  response.supported_properties().end()};
     EXPECT_TRUE(supportedProperties.empty());
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::sendIsVideoMasterCapabilityRequestWithSuccess()
+{
+    firebolt::rialto::IsVideoMasterCapabilityRequest request;
+    firebolt::rialto::IsVideoMasterCapabilityResponse response;
+
+    m_service->isVideoMaster(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(response.is_video_master(), kIsVideoMaster);
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::sendIsVideoMasterCapabilityRequestAndExpectFailure()
+{
+    firebolt::rialto::IsVideoMasterCapabilityRequest request;
+    firebolt::rialto::IsVideoMasterCapabilityResponse response;
+    m_service->isVideoMaster(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::expectCorrectMediaTypeConversion()

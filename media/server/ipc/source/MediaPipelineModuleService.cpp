@@ -1074,7 +1074,7 @@ void MediaPipelineModuleService::isVideoMaster(::google::protobuf::RpcController
     RIALTO_SERVER_LOG_DEBUG("entry:");
     bool isVideoMaster{};
 
-    if (!m_mediaPipelineService.isVideoMaster(request->session_id(), isVideoMaster))
+    if (!m_mediaPipelineService.isVideoMaster(isVideoMaster))
     {
         RIALTO_SERVER_LOG_ERROR("Is video master failed.");
         controller->SetFailed("Operation failed");

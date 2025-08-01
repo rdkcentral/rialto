@@ -142,7 +142,6 @@ public:
     void setUseBuffering(bool useBuffering) override;
     bool getUseBuffering(bool &useBuffering) override;
     void switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
-    bool isVideoMaster(bool &isVideoMaster) override;
 
 private:
     void scheduleNeedMediaData(GstAppSrc *src) override;

@@ -141,6 +141,8 @@ protected:
     void shouldSwitchSourceMpeg();
     void shouldCheckIfVideoIsMaster();
     void shouldFailToCheckIfVideoIsMaster();
+    void shouldCheckIsVideoMasterCapability();
+    void shouldFailToCheckIsVideoMasterCapability();
 
     // MediaPipelineClient Expect methods
     void shouldNotifyNetworkStateBuffering();
@@ -267,6 +269,8 @@ protected:
     void switchSourceMpeg();
     void isVideoMaster();
     void isVideoMasterFailure();
+    void isVideoMasterCapability();
+    void isVideoMasterCapabilityFailure();
 
     // Event methods
     void sendNotifyNetworkStateBuffering();

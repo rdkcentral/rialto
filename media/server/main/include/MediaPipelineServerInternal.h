@@ -696,15 +696,6 @@ protected:
     bool switchSourceInternal(const std::unique_ptr<MediaSource> &source);
 
     /**
-     * @brief Checks if the platform is video master.
-     *
-     * @param[out] isVideoMaster : The output value. True if video is master otherwise false.
-     *
-     * @retval true on success false otherwise
-     */
-    bool isVideoMasterInternal(bool &isVideoMaster);
-
-    /**
      * @brief Returns how long should we wait to send next NeedMediaData
      *        if rialto client returns NO_AVAILABLE_SAMPLES
      *

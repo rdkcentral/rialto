@@ -941,40 +941,12 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetUseBufferingSucce
 }
 
 /**
- * Test that IsVideoMaster returns failure if the gstreamer player is not initialized
+ * Test that IsVideoMaster returns false
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, IsVideoMasterFailureDueToUninitializedPlayer)
 {
-    mainThreadWillEnqueueTaskAndWait();
     bool resultIsVideoMaster{};
     EXPECT_FALSE(m_mediaPipeline->isVideoMaster(resultIsVideoMaster));
-}
-
-/**
- * Test that IsVideoMaster returns failure if the gstreamer API fails
- */
-TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, IsVideoMasterFailure)
-{
-    loadGstPlayer();
-    mainThreadWillEnqueueTaskAndWait();
-    bool resultIsVideoMaster{};
-    EXPECT_CALL(*m_gstPlayerMock, isVideoMaster(_)).WillOnce(Return(false));
-    EXPECT_FALSE(m_mediaPipeline->isVideoMaster(resultIsVideoMaster));
-}
-
-/**
- * Test that IsVideoMaster returns success if the gstreamer API succeeds
- */
-TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, IsVideoMasterSuccess)
-{
-    constexpr bool kIsVideoMaster{true};
-    bool resultIsVideoMaster{};
-    loadGstPlayer();
-    mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, isVideoMaster(_)).WillOnce(DoAll(SetArgReferee<0>(kIsVideoMaster), Return(true)));
-
-    EXPECT_TRUE(m_mediaPipeline->isVideoMaster(resultIsVideoMaster));
-    EXPECT_EQ(resultIsVideoMaster, kIsVideoMaster);
 }
 
 /**

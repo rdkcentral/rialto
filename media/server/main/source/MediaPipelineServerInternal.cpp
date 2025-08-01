@@ -1327,21 +1327,8 @@ bool MediaPipelineServerInternal::switchSourceInternal(const std::unique_ptr<Med
 
 bool MediaPipelineServerInternal::isVideoMaster(bool &isVideoMaster)
 {
-    bool result;
-    auto task = [&]() { result = isVideoMasterInternal(isVideoMaster); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::isVideoMasterInternal(bool &isVideoMaster)
-{
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to check if video is master - Gstreamer player has not been loaded");
-        return false;
-    }
-    return m_gstPlayer->isVideoMaster(isVideoMaster);
+    // Implementation moved to MediaPipelineCapabilities
+    return false;
 }
 
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
