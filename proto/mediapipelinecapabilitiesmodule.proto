@@ -64,9 +64,9 @@ message IsMimeTypeSupportedResponse {
  * @retval true on success false otherwise
 */
 
-message IsVideoMasterCapabilityRequest {
+message IsVideoMasterRequest {
 }
-message IsVideoMasterCapabilityResponse {
+message IsVideoMasterResponse {
     optional bool is_video_master = 1;
 }
 
@@ -111,8 +111,8 @@ service MediaPipelineCapabilitiesModule {
 
     /**
      * @brief Checks if the platform is video master.
-     * @see IsVideoMasterCapabilityRequest
+     * @see IsVideoMasterRequest
      */
-    rpc isVideoMaster(IsVideoMasterCapabilityRequest) returns (IsVideoMasterCapabilityResponse) {
+    rpc isVideoMaster(IsVideoMasterRequest) returns (IsVideoMasterResponse) {
     }
 }

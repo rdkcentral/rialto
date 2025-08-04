@@ -152,9 +152,10 @@ void MediaPipelineCapabilitiesModuleService::getSupportedProperties(
     done->Run();
 }
 
-void MediaPipelineCapabilitiesModuleService::isVideoMaster(
-    ::google::protobuf::RpcController *controller, const ::firebolt::rialto::IsVideoMasterCapabilityRequest *request,
-    ::firebolt::rialto::IsVideoMasterCapabilityResponse *response, ::google::protobuf::Closure *done)
+void MediaPipelineCapabilitiesModuleService::isVideoMaster(::google::protobuf::RpcController *controller,
+                                                           const ::firebolt::rialto::IsVideoMasterRequest *request,
+                                                           ::firebolt::rialto::IsVideoMasterResponse *response,
+                                                           ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);

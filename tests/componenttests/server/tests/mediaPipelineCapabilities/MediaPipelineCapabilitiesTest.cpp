@@ -415,8 +415,8 @@ TEST_F(MediaPipelineCapabilitiesTest, checkIsVideoMaster)
 {
     // Step 1: Check is video master
     willCheckIfVideoIsMaster();
-    ConfigureAction<IsVideoMasterCapability>{m_clientStub}
-        .send(createIsVideoMasterCapabilityRequest())
+    ConfigureAction<IsVideoMaster>{m_clientStub}
+        .send(createIsVideoMasterRequest())
         .expectSuccess()
         .matchResponse([](const auto &resp) { EXPECT_TRUE(resp.is_video_master()); });
 };

@@ -60,9 +60,8 @@ public:
                                 ::firebolt::rialto::GetSupportedPropertiesResponse *response,
                                 ::google::protobuf::Closure *done) override;
     void isVideoMaster(::google::protobuf::RpcController *controller,
-                       const ::firebolt::rialto::IsVideoMasterCapabilityRequest *request,
-                       ::firebolt::rialto::IsVideoMasterCapabilityResponse *response,
-                       ::google::protobuf::Closure *done) override;
+                       const ::firebolt::rialto::IsVideoMasterRequest *request,
+                       ::firebolt::rialto::IsVideoMasterResponse *response, ::google::protobuf::Closure *done) override;
 
 private:
     service::IMediaPipelineService &m_mediaPipelineService;

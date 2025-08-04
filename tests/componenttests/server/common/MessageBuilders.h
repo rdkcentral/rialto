@@ -83,7 +83,6 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::ProcessAudioGapRequest createProcessAudioGapRequest(int sessionId, std::int64_t position,
                                                                         unsigned duration,
                                                                         std::int64_t discontinuityGap, bool audioAac);
-::firebolt::rialto::IsVideoMasterRequest createIsVideoMasterRequest(int sessionId);
 
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine();
@@ -131,7 +130,7 @@ createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType);
 ::firebolt::rialto::IsMimeTypeSupportedRequest createIsMimeTypeSupportedRequest(const std::string &mimeType);
 ::firebolt::rialto::GetSupportedPropertiesRequest
 createGetSupportedPropertiesRequest(const ProtoMediaSourceType &mediaType, const std::vector<std::string> &propertyNames);
-::firebolt::rialto::IsVideoMasterCapabilityRequest createIsVideoMasterCapabilityRequest();
+::firebolt::rialto::IsVideoMasterRequest createIsVideoMasterRequest();
 
 // web audio player module
 ::firebolt::rialto::CreateWebAudioPlayerRequest

@@ -596,15 +596,3 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetUseBuffering)
     mediaPipelineServiceWillFailToGetUseBuffering();
     sendGetUseBufferingRequestAndReceiveResponseWithoutMatch();
 }
-
-TEST_F(MediaPipelineModuleServiceTests, shouldCheckIfVideoIsMaster)
-{
-    mediaPipelineServiceWillCheckIfVideoIsMaster();
-    sendIsVideoMasterRequestAndReceiveResponse();
-}
-
-TEST_F(MediaPipelineModuleServiceTests, shouldFailToCheckIfVideoIsMaster)
-{
-    mediaPipelineServiceWillFailToCheckIfVideoIsMaster();
-    sendIsVideoMasterRequestAndReceiveResponseWithoutMatch();
-}

@@ -185,8 +185,8 @@ bool MediaPipelineCapabilitiesIpc::isVideoMaster(bool &isVideoMaster)
         return {};
     }
 
-    firebolt::rialto::IsVideoMasterCapabilityRequest request;
-    firebolt::rialto::IsVideoMasterCapabilityResponse response;
+    firebolt::rialto::IsVideoMasterRequest request;
+    firebolt::rialto::IsVideoMasterResponse response;
     auto ipcController = m_ipc.createRpcController();
     auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineCapabilitiesStub->isVideoMaster(ipcController.get(), &request, &response, blockingClosure.get());

@@ -47,9 +47,8 @@ public:
                 (override));
 
     MOCK_METHOD(void, isVideoMaster,
-                (::google::protobuf::RpcController * controller,
-                 const ::firebolt::rialto::IsVideoMasterCapabilityRequest *request,
-                 ::firebolt::rialto::IsVideoMasterCapabilityResponse *response, ::google::protobuf::Closure *done),
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::IsVideoMasterRequest *request,
+                 ::firebolt::rialto::IsVideoMasterResponse *response, ::google::protobuf::Closure *done),
                 (override));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)

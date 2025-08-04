@@ -67,11 +67,11 @@ public:
         getSupportedPropertiesResponse->add_supported_properties(kPropertyName);
     }
 
-    void setIsVideoMasterCapabilityResponse(google::protobuf::Message *response)
+    void setIsVideoMasterResponse(google::protobuf::Message *response)
     {
-        firebolt::rialto::IsVideoMasterCapabilityResponse *isVideoMasterCapabilityResponse =
-            dynamic_cast<firebolt::rialto::IsVideoMasterCapabilityResponse *>(response);
-        isVideoMasterCapabilityResponse->set_is_video_master(true);
+        firebolt::rialto::IsVideoMasterResponse *isVideoMasterResponse =
+            dynamic_cast<firebolt::rialto::IsVideoMasterResponse *>(response);
+        isVideoMasterResponse->set_is_video_master(true);
     }
 };
 
@@ -234,7 +234,7 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, IsVideoMasterSuccess)
 
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("isVideoMaster"), m_controllerMock.get(), _, _, m_blockingClosureMock.get()))
-        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setIsVideoMasterCapabilityResponse)));
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setIsVideoMasterResponse)));
 
     EXPECT_TRUE(m_sut->isVideoMaster(isMaster));
 }
@@ -258,7 +258,7 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, IsVideoMasterDisconnectedReconnectChann
 
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("isVideoMaster"), m_controllerMock.get(), _, _, m_blockingClosureMock.get()))
-        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setIsVideoMasterCapabilityResponse)));
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setIsVideoMasterResponse)));
 
     EXPECT_TRUE(m_sut->isVideoMaster(isMaster));
 }

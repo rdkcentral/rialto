@@ -1325,12 +1325,6 @@ bool MediaPipelineServerInternal::switchSourceInternal(const std::unique_ptr<Med
     return true;
 }
 
-bool MediaPipelineServerInternal::isVideoMaster(bool &isVideoMaster)
-{
-    // Implementation moved to MediaPipelineCapabilities
-    return false;
-}
-
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
                                                          const std::unique_ptr<MediaSegment> &mediaSegment)
 {

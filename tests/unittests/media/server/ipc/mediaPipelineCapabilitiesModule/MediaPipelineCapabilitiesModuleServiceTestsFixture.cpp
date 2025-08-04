@@ -178,20 +178,20 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedPropertiesRequ
     EXPECT_TRUE(supportedProperties.empty());
 }
 
-void MediaPipelineCapabilitiesModuleServiceTests::sendIsVideoMasterCapabilityRequestWithSuccess()
+void MediaPipelineCapabilitiesModuleServiceTests::sendIsVideoMasterRequestWithSuccess()
 {
-    firebolt::rialto::IsVideoMasterCapabilityRequest request;
-    firebolt::rialto::IsVideoMasterCapabilityResponse response;
+    firebolt::rialto::IsVideoMasterRequest request;
+    firebolt::rialto::IsVideoMasterResponse response;
 
     m_service->isVideoMaster(m_controllerMock.get(), &request, &response, m_closureMock.get());
 
     EXPECT_EQ(response.is_video_master(), kIsVideoMaster);
 }
 
-void MediaPipelineCapabilitiesModuleServiceTests::sendIsVideoMasterCapabilityRequestAndExpectFailure()
+void MediaPipelineCapabilitiesModuleServiceTests::sendIsVideoMasterRequestAndExpectFailure()
 {
-    firebolt::rialto::IsVideoMasterCapabilityRequest request;
-    firebolt::rialto::IsVideoMasterCapabilityResponse response;
+    firebolt::rialto::IsVideoMasterRequest request;
+    firebolt::rialto::IsVideoMasterResponse response;
     m_service->isVideoMaster(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
 }
 

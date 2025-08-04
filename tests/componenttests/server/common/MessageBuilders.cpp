@@ -407,13 +407,6 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
-::firebolt::rialto::IsVideoMasterRequest createIsVideoMasterRequest(int sessionId)
-{
-    ::firebolt::rialto::IsVideoMasterRequest request;
-    request.set_session_id(sessionId);
-    return request;
-}
-
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;
@@ -662,9 +655,9 @@ createGetSupportedPropertiesRequest(const ProtoMediaSourceType &mediaType, const
     return request;
 }
 
-::firebolt::rialto::IsVideoMasterCapabilityRequest createIsVideoMasterCapabilityRequest()
+::firebolt::rialto::IsVideoMasterRequest createIsVideoMasterRequest()
 {
-    ::firebolt::rialto::IsVideoMasterCapabilityRequest request;
+    ::firebolt::rialto::IsVideoMasterRequest request;
     return request;
 }
 

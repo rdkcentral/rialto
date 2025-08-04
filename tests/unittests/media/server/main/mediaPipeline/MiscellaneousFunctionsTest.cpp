@@ -941,15 +941,6 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetUseBufferingSucce
 }
 
 /**
- * Test that IsVideoMaster returns false
- */
-TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, IsVideoMasterFailureDueToUninitializedPlayer)
-{
-    bool resultIsVideoMaster{};
-    EXPECT_FALSE(m_mediaPipeline->isVideoMaster(resultIsVideoMaster));
-}
-
-/**
  * Test that active requests are invalidated successfully
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, InvalidateActiveRequestsSuccess)

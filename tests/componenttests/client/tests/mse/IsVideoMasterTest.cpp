@@ -89,19 +89,11 @@ public:
 TEST_F(MuteTest, mute)
 {
     // Step 1: Call IsVideoMaster
-    MediaPipelineTestMethods::shouldCheckIfVideoIsMaster();
+    MediaPipelineTestMethods::shouldCheckIsVideoMaster();
     MediaPipelineTestMethods::isVideoMaster();
 
     // Step 2: Call IsVideoMaster failure
-    MediaPipelineTestMethods::shouldFailToCheckIfVideoIsMaster();
+    MediaPipelineTestMethods::shouldFailToCheckIsVideoMaster();
     MediaPipelineTestMethods::isVideoMasterFailure();
-
-    // Step 3: Call IsVideoMaster capability
-    MediaPipelineTestMethods::shouldCheckIsVideoMasterCapability();
-    MediaPipelineTestMethods::isVideoMasterCapability();
-
-    // Step 4: Call IsVideoMaster capability failure
-    MediaPipelineTestMethods::shouldFailToCheckIsVideoMasterCapability();
-    MediaPipelineTestMethods::isVideoMasterCapabilityFailure();
 }
 } // namespace firebolt::rialto::client::ct

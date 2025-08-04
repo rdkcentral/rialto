@@ -52,8 +52,8 @@ public:
     void sendIsMimeTypeSupportedRequestAndExpectFailure();
     void sendGetSupportedPropertiesRequestWithSuccess();
     void sendGetSupportedPropertiesRequestAndExpectFailure();
-    void sendIsVideoMasterCapabilityRequestWithSuccess();
-    void sendIsVideoMasterCapabilityRequestAndExpectFailure();
+    void sendIsVideoMasterRequestWithSuccess();
+    void sendIsVideoMasterRequestAndExpectFailure();
     void expectInvalidControlFailure();
     void expectCorrectMediaTypeConversion();
 
