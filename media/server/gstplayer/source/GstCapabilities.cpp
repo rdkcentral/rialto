@@ -439,6 +439,26 @@ void GstCapabilities::waitForInitialisation()
     m_initialisationCv.wait(lock, [this]() { return m_isInitialised; });
 }
 
+bool GstCapabilities::isVideoMaster(bool &isVideoMaster)
+{
+    waitForInitialisation();
+
+    GstRegistry *reg = m_gstWrapper->gstRegistryGet();
+    if (!reg)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed get the gst registry");
+        return false;
+    }
+    GstPluginFeature *feature{nullptr};
+    isVideoMaster = true;
+    if (nullptr != (feature = m_gstWrapper->gstRegistryLookupFeature(reg, "amlhalasink")))
+    {
+        isVideoMaster = false;
+        m_gstWrapper->gstObjectUnref(feature);
+    }
+    return true;
+}
+
 } // namespace firebolt::rialto::server
 
 // namespace firebolt::rialto::server

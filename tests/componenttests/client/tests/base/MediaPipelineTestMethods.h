@@ -139,8 +139,8 @@ protected:
     void shouldFailToProcessAudioGap();
     void shouldSwitchSourceEacs();
     void shouldSwitchSourceMpeg();
-    void shouldCheckIfVideoIsMaster();
-    void shouldFailToCheckIfVideoIsMaster();
+    void shouldCheckIsVideoMaster();
+    void shouldFailToCheckIsVideoMaster();
 
     // MediaPipelineClient Expect methods
     void shouldNotifyNetworkStateBuffering();

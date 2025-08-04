@@ -444,15 +444,6 @@ public:
      *
      */
     virtual void switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) = 0;
-
-    /**
-     * @brief Checks if the platform is video master.
-     *
-     * @param[out] isVideoMaster : The output value. True if video is master otherwise false.
-     *
-     * @retval true on success false otherwise
-     */
-    virtual bool isVideoMaster(bool &isVideoMaster) = 0;
 };
 
 }; // namespace firebolt::rialto::server

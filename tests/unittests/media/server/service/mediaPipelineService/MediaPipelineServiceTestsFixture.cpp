@@ -488,12 +488,12 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToSwitchSource()
 
 void MediaPipelineServiceTests::mediaPipelineWillCheckIfVideoIsMaster()
 {
-    EXPECT_CALL(m_mediaPipelineMock, isVideoMaster(_)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isVideoMaster(_)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToCheckIfVideoIsMaster()
 {
-    EXPECT_CALL(m_mediaPipelineMock, isVideoMaster(_)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isVideoMaster(_)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillPing()
@@ -1008,13 +1008,13 @@ void MediaPipelineServiceTests::switchSourceShouldFail()
 void MediaPipelineServiceTests::isVideoMasterShouldSucceed()
 {
     bool isMaster{false};
-    EXPECT_TRUE(m_sut->isVideoMaster(kSessionId, isMaster));
+    EXPECT_TRUE(m_sut->isVideoMaster(isMaster));
 }
 
 void MediaPipelineServiceTests::isVideoMasterShouldFail()
 {
     bool isMaster{false};
-    EXPECT_FALSE(m_sut->isVideoMaster(kSessionId, isMaster));
+    EXPECT_FALSE(m_sut->isVideoMaster(isMaster));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()

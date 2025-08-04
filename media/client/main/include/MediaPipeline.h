@@ -203,8 +203,6 @@ public:
 
     bool switchSource(const std::unique_ptr<MediaSource> &source) override;
 
-    bool isVideoMaster(bool &isVideoMaster) override;
-
     void notifyApplicationState(ApplicationState state) override;
 
 protected:
