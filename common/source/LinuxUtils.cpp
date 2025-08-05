@@ -33,18 +33,22 @@ uid_t getFileOwnerId(const std::string &fileOwner)
 {
     uid_t ownerId = kNoOwnerChange;
     long buffersize = sysconf(_SC_GETPW_R_SIZE_MAX);
-    size_t kBufferSize;
+    size_t BufferSize = 0;
+    if (buffersize == -1)
+    {
+        RIALTO_COMMON_LOG_SYS_WARN(errno, "Invalid Buffer Size '%s'", fileOwner.c_str());
+    }
     if (buffersize > 0)
     {
-        kBufferSize = static_cast<size_t>(buffersize);
+        BufferSize = static_cast<size_t>(buffersize);
     }
-    if (!fileOwner.empty() && kBufferSize > 0)
+    if (!fileOwner.empty() && BufferSize > 0)
     {
         errno = 0;
         passwd passwordStruct{};
         passwd *passwordResult = nullptr;
-        char buffer[kBufferSize];
-        int result = getpwnam_r(fileOwner.c_str(), &passwordStruct, buffer, kBufferSize, &passwordResult);
+        std::vector<char> buffer(BufferSize);
+        int result = getpwnam_r(fileOwner.c_str(), &passwordStruct, buffer.data(), BufferSize, &passwordResult);
         if (result == 0 && passwordResult)
         {
             ownerId = passwordResult->pw_uid;
@@ -61,18 +65,22 @@ gid_t getFileGroupId(const std::string &fileGroup)
 {
     gid_t groupId = kNoGroupChange;
     long buffersize = sysconf(_SC_GETPW_R_SIZE_MAX);
-    size_t kBufferSize = 0;
+    size_t BufferSize = 0;
+    if (buffersize == -1)
+    {
+        RIALTO_COMMON_LOG_SYS_WARN(errno, "Invalid Buffer Size '%s'", fileGroup.c_str());
+    }
     if (buffersize > 0)
     {
-        kBufferSize = static_cast<size_t>(buffersize);
+        BufferSize = static_cast<size_t>(buffersize);
     }
-    if (!fileGroup.empty() && kBufferSize > 0)
+    if (!fileGroup.empty() && BufferSize > 0)
     {
         errno = 0;
         group groupStruct{};
         group *groupResult = nullptr;
-        char buffer[kBufferSize];
-        int result = getgrnam_r(fileGroup.c_str(), &groupStruct, buffer, kBufferSize, &groupResult);
+        std::vector<char> buffer(BufferSize);
+        int result = getgrnam_r(fileGroup.c_str(), &groupStruct, buffer.data(), BufferSize, &groupResult);
         if (result == 0 && groupResult)
         {
             groupId = groupResult->gr_gid;
