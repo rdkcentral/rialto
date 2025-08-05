@@ -424,7 +424,7 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     std::shared_ptr<CodecData> codecData{};
     if (request->has_codec_data())
     {
-        auto codecDataProto = request->codec_data();
+        const auto &codecDataProto = request->codec_data();
         codecData = std::make_shared<CodecData>();
         codecData->data = std::vector<std::uint8_t>(codecDataProto.data().begin(), codecDataProto.data().end());
         codecData->type = convertCodecDataType(codecDataProto.type());

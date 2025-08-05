@@ -32,7 +32,12 @@ constexpr gid_t kNoGroupChange = -1; // -1 means chown() won't change the group
 uid_t getFileOwnerId(const std::string &fileOwner)
 {
     uid_t ownerId = kNoOwnerChange;
-    const size_t kBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    long buffersize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    size_t kBufferSize;
+    if (buffersize > 0)
+    {
+        kBufferSize = static_cast<size_t>(buffersize);
+    }
     if (!fileOwner.empty() && kBufferSize > 0)
     {
         errno = 0;
@@ -55,7 +60,12 @@ uid_t getFileOwnerId(const std::string &fileOwner)
 gid_t getFileGroupId(const std::string &fileGroup)
 {
     gid_t groupId = kNoGroupChange;
-    const size_t kBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    long buffersize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    size_t kBufferSize = 0;
+    if (buffersize > 0)
+    {
+        kBufferSize = static_cast<size_t>(buffersize);
+    }
     if (!fileGroup.empty() && kBufferSize > 0)
     {
         errno = 0;

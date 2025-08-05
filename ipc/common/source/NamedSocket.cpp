@@ -268,7 +268,12 @@ bool NamedSocket::getSocketLock()
 uid_t NamedSocket::getSocketOwnerId(const std::string &socketOwner) const
 {
     uid_t ownerId = kNoOwnerChange;
-    const size_t kBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    long buffersize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    size_t kBufferSize = 0;
+    if (buffersize > 0)
+    {
+        kBufferSize = static_cast<size_t>(buffersize);
+    }
     if (!socketOwner.empty() && kBufferSize > 0)
     {
         errno = 0;
@@ -291,7 +296,12 @@ uid_t NamedSocket::getSocketOwnerId(const std::string &socketOwner) const
 gid_t NamedSocket::getSocketGroupId(const std::string &socketGroup) const
 {
     gid_t groupId = kNoGroupChange;
-    const size_t kBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    long buffersize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    size_t kBufferSize = 0;
+    if (buffersize > 0)
+    {
+        kBufferSize = static_cast<size_t>(buffersize);
+    }
     if (!socketGroup.empty() && kBufferSize > 0)
     {
         errno = 0;
