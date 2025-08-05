@@ -33,7 +33,7 @@ uid_t getFileOwnerId(const std::string &fileOwner)
 {
     uid_t ownerId = kNoOwnerChange;
     long buffersize = sysconf(_SC_GETPW_R_SIZE_MAX);
-    size_t kBufferSize;
+    size_t kBufferSize = 0;
     if (buffersize > 0)
     {
         kBufferSize = static_cast<size_t>(buffersize);
