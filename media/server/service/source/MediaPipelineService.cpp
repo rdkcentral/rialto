@@ -620,18 +620,11 @@ bool MediaPipelineService::switchSource(int sessionId, const std::unique_ptr<IMe
     return mediaPipelineIter->second->switchSource(source);
 }
 
-bool MediaPipelineService::isVideoMaster(int sessionId, bool &isVideoMaster)
+bool MediaPipelineService::isVideoMaster(bool &isVideoMaster)
 {
-    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested check if video is master, session id: %d", sessionId);
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested check if video is master");
 
-    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
-    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
-    if (mediaPipelineIter == m_mediaPipelines.end())
-    {
-        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
-        return false;
-    }
-    return mediaPipelineIter->second->isVideoMaster(isVideoMaster);
+    return m_mediaPipelineCapabilities->isVideoMaster(isVideoMaster);
 }
 
 std::vector<std::string> MediaPipelineService::getSupportedMimeTypes(MediaSourceType type)

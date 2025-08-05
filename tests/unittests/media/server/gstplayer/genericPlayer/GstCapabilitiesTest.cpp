@@ -883,3 +883,39 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_GetSubtitlesMimeTypes)
 
     EXPECT_EQ(m_sut->getSupportedMimeTypes(MediaSourceType::SUBTITLE), kSubtitleMimeTypes);
 }
+
+TEST_F(GstCapabilitiesTest, shouldFailToCheckIfVideoIsMasterWhenRegistryIsNull)
+{
+    createSutWithNoDecoderAndNoSink();
+
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(nullptr));
+    bool isVideoMaster{false};
+    EXPECT_FALSE(m_sut->isVideoMaster(isVideoMaster));
+}
+
+TEST_F(GstCapabilitiesTest, shouldCheckIfVideoIsMasterAndReturnTrue)
+{
+    createSutWithNoDecoderAndNoSink();
+
+    GstRegistry registry{};
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(&registry));
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&registry, StrEq("amlhalasink"))).WillOnce(Return(nullptr));
+    bool isVideoMaster{false};
+    EXPECT_TRUE(m_sut->isVideoMaster(isVideoMaster));
+    EXPECT_TRUE(isVideoMaster);
+}
+
+TEST_F(GstCapabilitiesTest, shouldCheckIfVideoIsMasterAndReturnFalse)
+{
+    createSutWithNoDecoderAndNoSink();
+
+    GstRegistry registry{};
+    GstObject feature{};
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(&registry));
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&registry, StrEq("amlhalasink")))
+        .WillOnce(Return(GST_PLUGIN_FEATURE(&feature)));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_PLUGIN_FEATURE(&feature)));
+    bool isVideoMaster{false};
+    EXPECT_TRUE(m_sut->isVideoMaster(isVideoMaster));
+    EXPECT_FALSE(isVideoMaster);
+}

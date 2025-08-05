@@ -169,8 +169,6 @@ public:
         return m_mediaPipeline->switchSource(source);
     }
 
-    bool isVideoMaster(bool &isVideoMaster) { return m_mediaPipeline->isVideoMaster(isVideoMaster); }
-
     void notifyApplicationState(ApplicationState state) override { m_mediaPipeline->notifyApplicationState(state); }
 
 private:

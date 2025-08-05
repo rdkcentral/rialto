@@ -177,4 +177,32 @@ std::vector<std::string> MediaPipelineCapabilitiesIpc::getSupportedProperties(Me
     return std::vector<std::string>{response.supported_properties().begin(), response.supported_properties().end()};
 }
 
+bool MediaPipelineCapabilitiesIpc::isVideoMaster(bool &isVideoMaster)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return {};
+    }
+
+    firebolt::rialto::IsVideoMasterRequest request;
+    firebolt::rialto::IsVideoMasterResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineCapabilitiesStub->isVideoMaster(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    isVideoMaster = response.is_video_master();
+
+    return true;
+}
 }; // namespace firebolt::rialto::client
