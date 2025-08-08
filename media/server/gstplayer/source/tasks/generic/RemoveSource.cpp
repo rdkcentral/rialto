@@ -75,5 +75,7 @@ void RemoveSource::execute() const
 
     // Turn audio off, removing audio sink from playsink
     m_player.setPlaybinFlags(false);
+
+    RIALTO_SERVER_LOG_MIL("%s source removed", common::convertMediaSourceType(m_type));
 }
 } // namespace firebolt::rialto::server::tasks::generic

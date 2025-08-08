@@ -154,6 +154,7 @@ void SetCaps::execute() const
             m_gstWrapper->gstCapsUnref(caps);
 
         setBytesPerSample();
+        RIALTO_SERVER_LOG_MIL("New caps set for webaudio source: %s", strCaps.c_str());
     }
 }
 

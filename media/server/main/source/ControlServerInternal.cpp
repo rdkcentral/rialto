@@ -118,7 +118,7 @@ void ControlServerInternal::ack(int32_t ackId)
 
 void ControlServerInternal::setApplicationState(const ApplicationState &state)
 {
-    RIALTO_SERVER_LOG_INFO("Notify rialto client about state changed to: %s", convertApplicationState(state));
+    RIALTO_SERVER_LOG_MIL("Notify rialto client about state changed to: %s", convertApplicationState(state));
     auto task = [&]()
     {
         m_currentState = state;

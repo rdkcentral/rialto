@@ -81,6 +81,7 @@ MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessio
     {
         throw std::runtime_error("Ocdm session could not be created");
     }
+    RIALTO_SERVER_LOG_MIL("New OCDM session created");
 }
 
 MediaKeySession::~MediaKeySession()
@@ -254,6 +255,7 @@ MediaKeyErrorStatus MediaKeySession::closeKeySession()
             RIALTO_SERVER_LOG_WARN("Failed to clean the decrypt context for the key session");
         }
         status = MediaKeyErrorStatus::OK;
+        RIALTO_SERVER_LOG_MIL("OCDM session closed");
     }
     else
     {

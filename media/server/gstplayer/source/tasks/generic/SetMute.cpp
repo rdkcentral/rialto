@@ -69,6 +69,9 @@ void SetMute::execute() const
     {
         RIALTO_SERVER_LOG_ERROR("Setting mute for type %s unsupported",
                                 common::convertMediaSourceType(m_mediaSourceType));
+        return;
     }
+    RIALTO_SERVER_LOG_MIL("%s source %s", common::convertMediaSourceType(m_mediaSourceType),
+                          (m_mute ? "muted" : "unmuted"));
 }
 } // namespace firebolt::rialto::server::tasks::generic

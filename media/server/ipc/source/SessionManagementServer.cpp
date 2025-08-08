@@ -99,6 +99,8 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
     common::setFilePermissions(socketName, socketPermissions);
     common::setFileOwnership(socketName, socketOwner, socketGroup);
 
+    RIALTO_SERVER_LOG_MIL("Session Management Server initialized");
+
     return true;
 }
 
@@ -121,6 +123,9 @@ bool SessionManagementServer::initialize(int32_t socketFd)
                                 socketFd);
         return false;
     }
+
+    RIALTO_SERVER_LOG_MIL("Session Management Server initialized");
+
     return true;
 }
 
@@ -158,6 +163,7 @@ void SessionManagementServer::setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, 
 
 void SessionManagementServer::onClientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)
 {
+    RIALTO_SERVER_LOG_MIL("Client app connected");
     m_controlModule->clientConnected(client);
     m_mediaPipelineModule->clientConnected(client);
     m_mediaPipelineCapabilitiesModule->clientConnected(client);
@@ -169,6 +175,7 @@ void SessionManagementServer::onClientConnected(const std::shared_ptr<::firebolt
 
 void SessionManagementServer::onClientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)
 {
+    RIALTO_SERVER_LOG_MIL("Client app disconnected");
     m_setLogLevelsService.clientDisconnected(client);
     m_mediaKeysCapabilitiesModule->clientDisconnected(client);
     m_mediaKeysModule->clientDisconnected(client);

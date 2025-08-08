@@ -19,6 +19,7 @@
 
 #include "SwitchSource.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 #include "Utils.h"
 
 namespace firebolt::rialto::server::tasks::generic
@@ -40,6 +41,8 @@ void SwitchSource::execute() const
     if (!m_player.reattachSource(m_source))
     {
         RIALTO_SERVER_LOG_WARN("Switch audio source failed");
+        return;
     }
+    RIALTO_SERVER_LOG_MIL("%s source switched", common::convertMediaSourceType(m_source->getType()));
 }
 } // namespace firebolt::rialto::server::tasks::generic

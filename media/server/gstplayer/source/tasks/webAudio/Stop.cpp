@@ -38,5 +38,6 @@ void Stop::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing Stop");
     m_player.changePipelineState(GST_STATE_NULL);
+    RIALTO_SERVER_LOG_MIL("State change to NULL requested for webaudio pipeline");
 }
 } // namespace firebolt::rialto::server::tasks::webaudio

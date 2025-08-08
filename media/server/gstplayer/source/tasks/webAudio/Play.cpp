@@ -41,5 +41,6 @@ void Play::execute() const
     {
         RIALTO_SERVER_LOG_ERROR("Failed to play the web audio player");
     }
+    RIALTO_SERVER_LOG_MIL("State change to PLAYING requested for webaudio pipeline");
 }
 } // namespace firebolt::rialto::server::tasks::webaudio

@@ -93,7 +93,7 @@ void SetPlaybackRate::execute() const
 
     if (success)
     {
-        RIALTO_SERVER_LOG_INFO("Playback rate set to: %lf", m_rate);
+        RIALTO_SERVER_LOG_MIL("Playback rate set to: %lf", m_rate);
         m_context.playbackRate = m_rate;
     }
 

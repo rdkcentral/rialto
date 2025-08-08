@@ -39,5 +39,6 @@ void Pause::execute() const
     m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
     m_player.changePipelineState(GST_STATE_PAUSED);
     m_context.isPlaying = false;
+    RIALTO_SERVER_LOG_MIL("State change to PAUSED requested");
 }
 } // namespace firebolt::rialto::server::tasks::generic
