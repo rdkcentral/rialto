@@ -121,5 +121,7 @@ void FinishSetupSource::execute() const
         m_gstPlayerClient->notifyPlaybackState(PlaybackState::IDLE);
 
     m_context.setupSourceFinished = true;
+
+    RIALTO_SERVER_LOG_MIL("All sources attached.");
 }
 } // namespace firebolt::rialto::server::tasks::generic
