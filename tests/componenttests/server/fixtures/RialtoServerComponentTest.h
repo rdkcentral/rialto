@@ -123,8 +123,6 @@ protected:
     // GstCapabilities data
     GstCaps m_audioCaps;
     GstCaps m_videoCaps;
-    gchar m_audioCapsStr{};
-    gchar m_videoCapsStr{};
     GstCaps m_supportedCaps;
     GstCaps m_unsupportedCaps;
     GstStaticPadTemplate m_audioSinkPadTemplate;
