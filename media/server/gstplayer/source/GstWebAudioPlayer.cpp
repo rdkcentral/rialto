@@ -154,6 +154,8 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
         return false;
     }
 
+    RIALTO_SERVER_LOG_MIL("RialtoServer's webaudio pipeline constructed");
+
     // Create and initalise appsrc
     m_context.source = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
     if (!m_context.source)
@@ -367,6 +369,7 @@ void GstWebAudioPlayer::termWebAudioPipeline()
 
         m_gstWrapper->gstObjectUnref(m_context.pipeline);
     }
+    RIALTO_SERVER_LOG_MIL("RialtoServer's webaudio pipeline terminated.");
 }
 
 void GstWebAudioPlayer::resetWorkerThread()
