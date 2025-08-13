@@ -243,6 +243,7 @@ void GstGenericPlayer::initMsePipeline()
     {
         GST_WARNING("No playsink ?!?!?");
     }
+    RIALTO_SERVER_LOG_MIL("New RialtoServer's pipeline created");
 }
 
 void GstGenericPlayer::resetWorkerThread()
@@ -289,6 +290,8 @@ void GstGenericPlayer::termPipeline()
 
     // Delete the pipeline
     m_gstWrapper->gstObjectUnref(m_context.pipeline);
+
+    RIALTO_SERVER_LOG_MIL("RialtoServer's pipeline terminated");
 }
 
 unsigned GstGenericPlayer::getGstPlayFlag(const char *nick)
@@ -395,6 +398,7 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
     }
     if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
     {
+        RIALTO_SERVER_LOG_WARN("Query position failed");
         return false;
     }
     return true;
@@ -811,6 +815,7 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
         {
             m_context.bufferedNotificationSent = true;
             m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
+            RIALTO_SERVER_LOG_MIL("Buffered NetworkState reached");
         }
         cancelUnderflow(mediaType);
 
@@ -1010,6 +1015,8 @@ void GstGenericPlayer::setTextTrackPositionIfRequired(GstElement *source)
         return;
     }
 
+    RIALTO_SERVER_LOG_MIL("New subtitle position set %" GST_TIME_FORMAT,
+                          GST_TIME_ARGS(initialPosition->second.back().position));
     m_glibWrapper->gObjectSet(m_context.subtitleSink, "position",
                               static_cast<guint64>(initialPosition->second.back().position), nullptr);
 
@@ -2012,24 +2019,6 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
     {
         m_workerThread->enqueueTask(m_taskFactory->createSwitchSource(*this, mediaSource));
     }
-}
-
-bool GstGenericPlayer::isVideoMaster(bool &isVideoMaster)
-{
-    GstRegistry *reg = m_gstWrapper->gstRegistryGet();
-    if (!reg)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed get the gst registry");
-        return false;
-    }
-    GstPluginFeature *feature{nullptr};
-    isVideoMaster = true;
-    if (nullptr != (feature = m_gstWrapper->gstRegistryLookupFeature(reg, "amlhalasink")))
-    {
-        isVideoMaster = false;
-        m_gstWrapper->gstObjectUnref(feature);
-    }
-    return true;
 }
 
 void GstGenericPlayer::handleBusMessage(GstMessage *message)

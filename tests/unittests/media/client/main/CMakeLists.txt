@@ -38,7 +38,6 @@ add_gtests (
         mediaPipeline/RenderFrameTest.cpp
         mediaPipeline/SetVolumeTest.cpp
         mediaPipeline/GetVolumeTest.cpp
-        mediaPipeline/IsVideoMasterTest.cpp
         mediaPipeline/SetMuteTest.cpp
         mediaPipeline/GetMuteTest.cpp
         mediaPipeline/SetLowLatencyTest.cpp

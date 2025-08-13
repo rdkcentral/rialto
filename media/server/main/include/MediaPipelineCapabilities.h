@@ -66,6 +66,7 @@ public:
     bool isMimeTypeSupported(const std::string &mimeType) override;
     std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
                                                     const std::vector<std::string> &propertyNames) override;
+    bool isVideoMaster(bool &isVideoMaster) override;
 
 private:
     /**

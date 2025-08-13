@@ -94,4 +94,9 @@ std::vector<std::string> MediaPipelineCapabilities::getSupportedProperties(Media
     return m_gstCapabilities->getSupportedProperties(mediaType, propertyNames);
 }
 
+bool MediaPipelineCapabilities::isVideoMaster(bool &isVideoMaster)
+{
+    return m_gstCapabilities->isVideoMaster(isVideoMaster);
+}
+
 }; // namespace firebolt::rialto::server

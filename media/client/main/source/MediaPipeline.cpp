@@ -619,13 +619,6 @@ bool MediaPipeline::switchSource(const std::unique_ptr<MediaSource> &source)
     return m_mediaPipelineIpc->switchSource(source);
 }
 
-bool MediaPipeline::isVideoMaster(bool &isVideoMaster)
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    return m_mediaPipelineIpc->isVideoMaster(isVideoMaster);
-}
-
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 {
     // Find the needDataRequest for this needDataRequestId
