@@ -801,7 +801,7 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
                 RIALTO_CLIENT_LOG_INFO("NeedMediaData received in state != RUNNING, ignoring request id %u", requestId);
                 break;
             }
-            m_needDataRequestMap[requestId] = needDataRequest;
+            m_needDataRequestMap[requestId] = std::move(needDataRequest);
         }
 
         std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();

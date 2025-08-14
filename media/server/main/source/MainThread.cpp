@@ -140,10 +140,10 @@ void MainThread::enqueueTask(uint32_t clientId, Task task)
 {
     std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
     newTask->clientId = clientId;
-    newTask->task = task;
+    newTask->task = std::move(task);
     {
         std::unique_lock<std::mutex> lock(m_taskQueueMutex);
-        m_taskQueue.push_back(newTask);
+        m_taskQueue.push_back(std::move(newTask));
     }
     m_taskQueueCv.notify_one();
 }
@@ -152,7 +152,7 @@ void MainThread::enqueueTaskAndWait(uint32_t clientId, Task task)
 {
     std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
     newTask->clientId = clientId;
-    newTask->task = task;
+    newTask->task = std::move(task);
     newTask->mutex = std::make_unique<std::mutex>();
     newTask->cv = std::make_unique<std::condition_variable>();
 
@@ -172,7 +172,7 @@ void MainThread::enqueuePriorityTaskAndWait(uint32_t clientId, Task task)
 {
     std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
     newTask->clientId = clientId;
-    newTask->task = task;
+    newTask->task = std::move(task);
     newTask->mutex = std::make_unique<std::mutex>();
     newTask->cv = std::make_unique<std::condition_variable>();
 
