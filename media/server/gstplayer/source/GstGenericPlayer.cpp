@@ -1095,6 +1095,11 @@ void GstGenericPlayer::scheduleNeedMediaData(GstAppSrc *src)
 {
     if (m_workerThread)
     {
+        if (m_scheduledNeedDatas.isNeedDataScheduled(src))
+        {
+            return;
+        }
+        m_scheduledNeedDatas.setNeedDataScheduled(src);
         m_workerThread->enqueueTask(m_taskFactory->createNeedData(m_context, *this, src));
     }
 }
@@ -1103,6 +1108,7 @@ void GstGenericPlayer::scheduleEnoughData(GstAppSrc *src)
 {
     if (m_workerThread)
     {
+        clearNeedDataScheduled(src);
         m_workerThread->enqueueTask(m_taskFactory->createEnoughData(m_context, src));
     }
 }
@@ -2159,4 +2165,8 @@ bool GstGenericPlayer::shouldEnableNativeAudio()
     return false;
 }
 
+void GstGenericPlayer::clearNeedDataScheduled(GstAppSrc *src)
+{
+    m_scheduledNeedDatas.clearNeedDataScheduled(src);
+}
 }; // namespace firebolt::rialto::server

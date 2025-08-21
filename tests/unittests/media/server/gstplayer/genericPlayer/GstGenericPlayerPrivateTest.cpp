@@ -128,12 +128,11 @@ protected:
         bool m_waitBool = false;
 
         // Call any method to modify GstGenericPlayer context
-        GstAppSrc appSrc{};
         std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
         EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-        EXPECT_CALL(m_taskFactoryMock, createNeedData(_, _, &appSrc))
+        EXPECT_CALL(m_taskFactoryMock, createFinishSetupSource(_, _))
             .WillOnce(Invoke(
-                [&](GenericPlayerContext &context, IGstGenericPlayerPrivate &player, GstAppSrc *src)
+                [&](GenericPlayerContext &context, IGstGenericPlayerPrivate &player)
                 {
                     fun(context);
                     std::unique_lock<std::mutex> lock{m_waitMutex};
@@ -142,7 +141,7 @@ protected:
                     return std::move(task);
                 }));
 
-        m_sut->scheduleNeedMediaData(&appSrc);
+        m_sut->scheduleAllSourcesAttached();
 
         std::unique_lock<std::mutex> lock{m_waitMutex};
         m_waitCv.wait(lock, [&] { return m_waitBool; });
@@ -186,7 +185,57 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleNeedData)
     m_sut->scheduleNeedMediaData(&appSrc);
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldNotScheduleNeedDataWhenPreviousOneIsStillActive)
+{
+    GstAppSrc appSrc{};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createNeedData(_, _, &appSrc)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->scheduleNeedMediaData(&appSrc);
+    m_sut->scheduleNeedMediaData(&appSrc);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleNeedDataAfterClearingPreviousNeedDataFlag)
+{
+    GstAppSrc appSrc{};
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createNeedData(_, _, &appSrc)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->scheduleNeedMediaData(&appSrc);
+
+    m_sut->clearNeedDataScheduled(&appSrc);
+
+    task = std::make_unique<StrictMock<PlayerTaskMock>>();
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createNeedData(_, _, &appSrc)).WillOnce(Return(ByMove(std::move(task))));
+    m_sut->scheduleNeedMediaData(&appSrc);
+}
+
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleEnoughDataData)
+{
+    GstAppSrc appSrc{};
+
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createNeedData(_, _, &appSrc)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->scheduleNeedMediaData(&appSrc);
+
+    task = std::make_unique<StrictMock<PlayerTaskMock>>();
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createEnoughData(_, &appSrc)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->scheduleEnoughData(&appSrc);
+
+    task = std::make_unique<StrictMock<PlayerTaskMock>>();
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createNeedData(_, _, &appSrc)).WillOnce(Return(ByMove(std::move(task))));
+    m_sut->scheduleNeedMediaData(&appSrc);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, enoughDataShouldClearNeedDataFlag)
 {
     GstAppSrc appSrc{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
