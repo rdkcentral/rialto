@@ -398,6 +398,7 @@ protected:
     // RemoveSource test methods
     void shouldInvalidateActiveAudioRequests();
     void shouldDisableAudioFlag();
+    void shouldClearAudioNeedDataFlag();
     void triggerRemoveSourceAudio();
     void triggerRemoveSourceVideo();
     void checkAudioSourceRemoved();

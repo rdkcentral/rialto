@@ -52,6 +52,7 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSource)
 {
     shouldInvalidateActiveAudioRequests();
     shouldDisableAudioFlag();
+    shouldClearAudioNeedDataFlag();
     shouldFlushAudioSrcSuccess();
     triggerRemoveSourceAudio();
     checkNoMoreNeedData();
@@ -64,6 +65,7 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSourceFlushEventError)
 {
     shouldInvalidateActiveAudioRequests();
     shouldDisableAudioFlag();
+    shouldClearAudioNeedDataFlag();
     shouldFlushAudioSrcFailure();
     triggerRemoveSourceAudio();
     checkNoMoreNeedData();

@@ -63,6 +63,7 @@ void Flush::execute() const
     StreamInfo &streamInfo = sourceElem->second;
     streamInfo.isDataNeeded = false;
     streamInfo.isNeedDataPending = false;
+    m_player.clearNeedDataScheduled(GST_APP_SRC(source));
 
     for (auto &buffer : streamInfo.buffers)
     {

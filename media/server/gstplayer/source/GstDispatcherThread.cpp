@@ -66,6 +66,7 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
 
         if (message)
         {
+            bool shouldHandleMessage{true};
             if (GST_MESSAGE_SRC(message) == GST_OBJECT(pipeline))
             {
                 switch (GST_MESSAGE_TYPE(message))
@@ -101,8 +102,17 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                 }
                 }
             }
+            else if (GST_MESSAGE_STATE_CHANGED == GST_MESSAGE_TYPE(message))
+            {
+                // Skip handling GST_MESSAGE_STATE_CHANGED for non-pipeline objects.
+                // It signifficantly slows down rialto gst worker thread
+                shouldHandleMessage = false;
+            }
 
-            m_client.handleBusMessage(message);
+            if (shouldHandleMessage)
+            {
+                m_client.handleBusMessage(message);
+            }
         }
     }
 
