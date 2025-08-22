@@ -19,6 +19,8 @@
 
 #include "NeedDataMapping.h"
 
+namespace firebolt::rialto::server
+{
 bool NeedDataMapping::isNeedDataScheduled(GstAppSrc *src) const
 {
     std::unique_lock lock{m_mutex};
@@ -36,3 +38,4 @@ void NeedDataMapping::clearNeedDataScheduled(GstAppSrc *src)
     std::unique_lock lock{m_mutex};
     m_scheduledNeedDatas.erase(src);
 }
+} // namespace firebolt::rialto::server

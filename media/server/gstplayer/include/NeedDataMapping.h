@@ -24,6 +24,8 @@
 #include <mutex>
 #include <set>
 
+namespace firebolt::rialto::server
+{
 class NeedDataMapping
 {
 public:
@@ -42,5 +44,5 @@ private:
     mutable std::mutex m_mutex;
     std::set<GstAppSrc *> m_scheduledNeedDatas;
 };
-
+} // namespace firebolt::rialto::server
 #endif // FIREBOLT_RIALTO_SERVER_NEED_DATA_MAPPING_H_
