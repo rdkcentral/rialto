@@ -54,13 +54,13 @@ EventThread::EventThread(std::string threadName) : m_kThreadName(std::move(threa
 
 EventThread::~EventThread()
 {
-    std::unique_lock<std::mutex> locker(m_lock);
+    {
+        std::unique_lock<std::mutex> locker(m_lock);
 
-    m_shutdown = true;
+        m_shutdown = true;
 
-    m_cond.notify_all();
-
-    locker.unlock();
+        m_cond.notify_all();
+    }
 
     if (m_thread.joinable())
         m_thread.join();

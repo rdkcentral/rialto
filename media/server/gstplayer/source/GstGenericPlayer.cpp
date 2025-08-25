@@ -1371,7 +1371,7 @@ bool GstGenericPlayer::setSyncOff()
 
             if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "sync-off"))
             {
-                gboolean syncOffGboolean{decoder ? TRUE : FALSE};
+                gboolean syncOffGboolean{syncOff ? TRUE : FALSE};
                 m_glibWrapper->gObjectSet(decoder, "sync-off", syncOffGboolean, nullptr);
                 result = true;
             }
