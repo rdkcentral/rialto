@@ -52,8 +52,9 @@ protected:
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
                                                    m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
                                                    m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
-                                                   m_gstSrcFactoryMock, m_timerFactoryMock, std::move(m_taskFactory),
-                                                   std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
+                                                   std::move(m_flushWatcher), m_gstSrcFactoryMock, m_timerFactoryMock,
+                                                   std::move(m_taskFactory), std::move(workerThreadFactory),
+                                                   std::move(gstDispatcherThreadFactory),
                                                    m_gstProtectionMetadataFactoryMock);
         m_element = fakeElement();
     }
@@ -842,12 +843,23 @@ TEST_F(GstGenericPlayerTest, shouldPing)
 TEST_F(GstGenericPlayerTest, shouldFlush)
 {
     constexpr bool kResetTime{true};
+    bool isAsync{true};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(m_flushWatcherMock, setFlushing(MediaSourceType::VIDEO, isAsync));
+    expectGetSink(kVideoSinkStr, m_element);
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("async"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *val)
+            {
+                gboolean *returnVal = reinterpret_cast<gboolean *>(val);
+                *returnVal = TRUE;
+            }));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element));
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createFlush(_, _, MediaSourceType::AUDIO, kResetTime))
+    EXPECT_CALL(m_taskFactoryMock, createFlush(_, _, MediaSourceType::VIDEO, kResetTime))
         .WillOnce(Return(ByMove(std::move(task))));
 
-    m_sut->flush(MediaSourceType::AUDIO, kResetTime);
+    m_sut->flush(MediaSourceType::VIDEO, kResetTime, isAsync);
 }
 
 TEST_F(GstGenericPlayerTest, shouldSetSourcePosition)

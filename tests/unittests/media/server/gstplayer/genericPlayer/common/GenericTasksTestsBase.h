@@ -88,6 +88,7 @@ protected:
     void shouldSetupVideoParserElementWithPendingStreamSyncMode();
     void shouldSetupAudioDecoderElementWithPendingBufferingLimit();
     void shouldSetupVideoSinkElementWithPendingRenderFrame();
+    void shouldSetupVideoSinkElementWithPendingShowVideoWindow();
     void shouldSetupAudioElementAmlhalasinkWhenNoVideo();
     void shouldSetupAudioElementAmlhalasinkWhenVideoExists();
     void shouldSetupAudioElementBrcmAudioSink();
@@ -98,6 +99,7 @@ protected:
     void shouldSetupAudioSinkElementOnly();
     void shouldSetupAudioDecoderElementOnly();
     void shouldSetVideoUnderflowCallback();
+    void shouldSetupBaseParse();
     void triggerSetupElement();
     void triggerVideoUnderflowCallback();
     void shouldSetAudioUnderflowCallback();
@@ -164,6 +166,10 @@ protected:
     void triggerAttachBwavAudioSource();
     void shouldAttachXrawAudioSource();
     void triggerAttachXrawAudioSource();
+    void shouldAttachFlacAudioSource();
+    void triggerAttachFlacAudioSource();
+    void shouldAttachMp3AudioSource();
+    void triggerAttachMp3AudioSource();
     void shouldAttachVideoSource(const std::string &mime, const std::string &alignment, const std::string &format);
     void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
                                   firebolt::rialto::StreamFormat streamFormat);
@@ -266,8 +272,6 @@ protected:
     void triggerSetUnknownMute();
     void setContextSubtitleSink();
     void shouldSetAudioMute();
-    void shouldFailToSetVideoMuteNoSink();
-    void shouldFailToSetVideoMuteNoProperty();
     void shouldSetVideoMute();
     void shouldSetSubtitleMute();
 
@@ -434,12 +438,15 @@ private:
     void expectSetupAudioSinkElement();
     void expectSetupAudioDecoderElement();
     void expectSetupVideoParserElement();
+    void expectSetupBaseParseElement();
 
     // AttachSource helper methods
     void expectSetGenericVideoCaps();
     void expectSetChannelAndRateAudioCaps();
     void expectAddChannelAndRateAudioToCaps();
     void expectAddRawAudioDataToCaps();
+    void expectAddStreamHeaderToCaps();
+    void expectAddFramedToCaps();
     void expectSetCaps();
 
     // Set property helpers

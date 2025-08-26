@@ -27,7 +27,9 @@
 #include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 
+#include <condition_variable>
 #include <gtest/gtest.h>
+#include <mutex>
 #include <unordered_map>
 
 using namespace firebolt::rialto;
@@ -36,6 +38,7 @@ using namespace firebolt::rialto::wrappers;
 
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
@@ -71,10 +74,12 @@ public:
     GstCapabilitiesTest()
         // valid values of GstCaps are not needed, only addresses will be used
         : m_capsMap{{"audio/mpeg, mpegversion=(int)4", {}},
+                    {"audio/mpeg, mpegversion=(int)1, layer=(int)3", {}},
                     {"audio/x-eac3", {}},
                     {"audio/x-opus", {}},
                     {"audio/x-opus, channel-mapping-family=(int)0", {}},
                     {"audio/b-wav", {}},
+                    {"audio/x-flac", {}},
                     {"audio/x-raw", {}},
                     {"video/x-av1", {}},
                     {"video/x-h264", {}},
@@ -144,15 +149,30 @@ public:
 
     void createSutWithNoDecoderAndNoSink()
     {
+        // Some expectations are met in a thread in GstCapabilities constructor
+        // We have to wait for full object construction before adding new expectations
+        // Without that gtest may crash
+        std::mutex mutex;
+        std::condition_variable cv;
+        bool initialised{false};
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
             .WillOnce(Return(nullptr));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
-            .WillOnce(Return(nullptr));
+            .WillOnce(Invoke(
+                [&](auto type, auto rank)
+                {
+                    std::unique_lock lock{mutex};
+                    initialised = true;
+                    cv.notify_one();
+                    return nullptr;
+                }));
         EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
         m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
                                                   m_gstInitialiserMock);
+        std::unique_lock lock{mutex};
+        cv.wait_for(lock, std::chrono::milliseconds{200}, [&]() { return initialised; });
     }
 
     void expectGetSupportedPropertiesCommon()
@@ -565,6 +585,9 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
         .WillOnce(Return(true));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/x-raw"], &m_sinkTemplateCaps))
         .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsCanIntersect(&m_capsMap["audio/mpeg, mpegversion=(int)1, layer=(int)3"], &m_sinkTemplateCaps))
+        .WillOnce(Return(true));
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -574,6 +597,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
 
     EXPECT_TRUE(m_sut->isMimeTypeSupported("video/h264"));
     EXPECT_TRUE(m_sut->isMimeTypeSupported("audio/x-raw"));
+    EXPECT_TRUE(m_sut->isMimeTypeSupported("audio/mp3"));
     EXPECT_FALSE(m_sut->isMimeTypeSupported("video/x-av1"));
     EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/x-opus"));
 }
@@ -858,4 +882,40 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_GetSubtitlesMimeTypes)
                                               m_gstInitialiserMock);
 
     EXPECT_EQ(m_sut->getSupportedMimeTypes(MediaSourceType::SUBTITLE), kSubtitleMimeTypes);
+}
+
+TEST_F(GstCapabilitiesTest, shouldFailToCheckIfVideoIsMasterWhenRegistryIsNull)
+{
+    createSutWithNoDecoderAndNoSink();
+
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(nullptr));
+    bool isVideoMaster{false};
+    EXPECT_FALSE(m_sut->isVideoMaster(isVideoMaster));
+}
+
+TEST_F(GstCapabilitiesTest, shouldCheckIfVideoIsMasterAndReturnTrue)
+{
+    createSutWithNoDecoderAndNoSink();
+
+    GstRegistry registry{};
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(&registry));
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&registry, StrEq("amlhalasink"))).WillOnce(Return(nullptr));
+    bool isVideoMaster{false};
+    EXPECT_TRUE(m_sut->isVideoMaster(isVideoMaster));
+    EXPECT_TRUE(isVideoMaster);
+}
+
+TEST_F(GstCapabilitiesTest, shouldCheckIfVideoIsMasterAndReturnFalse)
+{
+    createSutWithNoDecoderAndNoSink();
+
+    GstRegistry registry{};
+    GstObject feature{};
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(&registry));
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&registry, StrEq("amlhalasink")))
+        .WillOnce(Return(GST_PLUGIN_FEATURE(&feature)));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_PLUGIN_FEATURE(&feature)));
+    bool isVideoMaster{false};
+    EXPECT_TRUE(m_sut->isVideoMaster(isVideoMaster));
+    EXPECT_FALSE(isVideoMaster);
 }

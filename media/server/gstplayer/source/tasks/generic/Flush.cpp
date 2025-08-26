@@ -100,5 +100,10 @@ void Flush::execute() const
 
     // Notify client, that flush has been finished
     m_gstPlayerClient->notifySourceFlushed(m_type);
+
+    // Notify GstGenericPlayer, that flush has been finished
+    m_player.setSourceFlushed(m_type);
+
+    RIALTO_SERVER_LOG_MIL("%s source flushed.", common::convertMediaSourceType(m_type));
 }
 } // namespace firebolt::rialto::server::tasks::generic

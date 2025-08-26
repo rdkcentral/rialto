@@ -50,6 +50,7 @@ const std::vector<uint8_t> kInitVector{34, 53, 54, 62, 56};
 constexpr size_t kNumClearBytes{2};
 constexpr size_t kNumEncryptedBytes{7};
 constexpr uint32_t kInitWithLast15{1};
+constexpr uint64_t kDisplayOffset{35};
 
 uint32_t readLEUint32(const uint8_t *buffer)
 {
@@ -78,6 +79,7 @@ void addOptionalData(std::unique_ptr<IMediaPipeline::MediaSegment> &segment)
     segment->setSegmentAlignment(SegmentAlignment::NAL);
     segment->setExtraData(kExtraData);
     segment->setCodecData(std::make_shared<CodecData>(CodecData{kCodecDataVector, CodecDataType::BUFFER}));
+    segment->setDisplayOffset(kDisplayOffset);
 }
 
 void addEncryptionData(std::unique_ptr<IMediaPipeline::MediaSegment> &segment)
@@ -133,6 +135,7 @@ void checkOptionalMetadataPresent(const MediaSegmentMetadata &metadata)
     EXPECT_TRUE(metadata.has_codec_data());
     EXPECT_EQ(metadata.codec_data().data(), std::string(kCodecDataVector.begin(), kCodecDataVector.end()));
     EXPECT_EQ(metadata.codec_data().type(), MediaSegmentMetadata_CodecData_Type_BUFFER);
+    EXPECT_EQ(metadata.display_offset(), kDisplayOffset);
 }
 
 void checkEncryptionMetadataNotPresent(const MediaSegmentMetadata &metadata)

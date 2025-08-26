@@ -1066,7 +1066,7 @@ bool MediaPipelineIpc::getStreamSyncMode(int32_t &streamSyncMode)
     return true;
 }
 
-bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime)
+bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime, bool &async)
 {
     if (!reattachChannelIfRequired())
     {
@@ -1094,6 +1094,9 @@ bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime)
         RIALTO_CLIENT_LOG_ERROR("failed to flush due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
+
+    // Async is true by default
+    async = response.has_async() ? response.async() : true;
 
     return true;
 }
@@ -1843,6 +1846,14 @@ bool MediaPipelineIpc::buildAttachSourceRequest(firebolt::rialto::AttachSourceRe
             if (mediaSourceAudio->getAudioConfig().channelMask.has_value())
             {
                 request.mutable_audio_config()->set_channel_mask(mediaSourceAudio->getAudioConfig().channelMask.value());
+            }
+            for (auto &header : mediaSourceAudio->getAudioConfig().streamHeader)
+            {
+                request.mutable_audio_config()->add_stream_header(header.data(), header.size());
+            }
+            if (mediaSourceAudio->getAudioConfig().framed.has_value())
+            {
+                request.mutable_audio_config()->set_framed(mediaSourceAudio->getAudioConfig().framed.value());
             }
         }
     }

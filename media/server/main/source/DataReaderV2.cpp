@@ -187,6 +187,10 @@ createSegment(const firebolt::rialto::MediaSegmentMetadata &metadata, const fire
     {
         segment->setEncryptionPattern(metadata.crypt(), metadata.skip());
     }
+    if (metadata.has_display_offset())
+    {
+        segment->setDisplayOffset(metadata.display_offset());
+    }
 
     for (const auto &info : metadata.sub_sample_info())
     {

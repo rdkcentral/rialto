@@ -65,7 +65,7 @@ public:
     MOCK_METHOD(bool, setStreamSyncMode, (const MediaSourceType &mediaSourceType, int32_t streamSyncMode), (override));
     MOCK_METHOD(bool, getStreamSyncMode, (int32_t & streamSyncMode), (override));
     MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
-    MOCK_METHOD(void, flush, (const MediaSourceType &mediaSourceType, bool resetTime), (override));
+    MOCK_METHOD(void, flush, (const MediaSourceType &mediaSourceType, bool resetTime, bool &async), (override));
     MOCK_METHOD(void, setSourcePosition,
                 (const MediaSourceType &mediaSourceType, int64_t position, bool resetTime, double appliedRate,
                  uint64_t stopPosition),

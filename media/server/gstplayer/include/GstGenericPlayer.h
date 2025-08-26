@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GST_GENERIC_PLAYER_H_
 
 #include "GenericPlayerContext.h"
+#include "IFlushWatcher.h"
 #include "IGlibWrapper.h"
 #include "IGstDispatcherThread.h"
 #include "IGstDispatcherThreadClient.h"
@@ -78,6 +79,7 @@ public:
      * @param[in] gstWrapper                   : The gstreamer wrapper.
      * @param[in] glibWrapper                  : The glib wrapper.
      * @param[in] gstInitialiser               : The gst initialiser
+     * @param[in] flushWatcher                 : The flush watcher
      * @param[in] gstSrcFactory                : The gstreamer rialto src factory.
      * @param[in] timerFactory                 : The Timer factory
      * @param[in] taskFactory                  : The task factory
@@ -89,7 +91,8 @@ public:
                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
-                     const IGstInitialiser &gstInitialiser, const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+                     const IGstInitialiser &gstInitialiser, std::unique_ptr<IFlushWatcher> &&flushWatcher,
+                     const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory,
                      std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
@@ -130,7 +133,7 @@ public:
     bool setStreamSyncMode(const MediaSourceType &mediaSourceType, int32_t streamSyncMode) override;
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
-    void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
+    void flush(const MediaSourceType &mediaSourceType, bool resetTime, bool &async) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;
     void processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
@@ -148,6 +151,7 @@ private:
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
     bool setImmediateOutput() override;
+    bool setShowVideoWindow() override;
     bool setLowLatency() override;
     bool setSync() override;
     bool setSyncOff() override;
@@ -183,6 +187,8 @@ private:
     bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     bool hasSourceType(const MediaSourceType &mediaSourceType) const override;
     GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
+    void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
+    bool isAsync(const MediaSourceType &mediaSourceType) const;
 
 private:
     /**
@@ -398,6 +404,11 @@ private:
      * @brief The protection metadata wrapper
      */
     std::unique_ptr<IGstProtectionMetadataHelper> m_protectionMetadataWrapper;
+
+    /**
+     * @brief The object used to check flushing state for all sources
+     */
+    std::unique_ptr<IFlushWatcher> m_flushWatcher;
 };
 
 } // namespace firebolt::rialto::server

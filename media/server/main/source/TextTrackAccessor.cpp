@@ -162,7 +162,7 @@ bool TextTrackAccessor::setPosition(uint32_t sessionId, uint64_t mediaTimestampM
     return false;
 }
 
-bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, DataType datatype, int32_t displayOffsetMs)
+bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, DataType datatype, int64_t displayOffsetMs)
 {
     firebolt::rialto::wrappers::ITextTrackWrapper::DataType wrapperDataType{};
     if (datatype == DataType::WebVTT)
@@ -182,7 +182,7 @@ bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, Da
     const uint32_t result = m_textTrackWrapper->sendSessionData(sessionId, wrapperDataType, displayOffsetMs, data);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_DEBUG("Sending data to TextTrack session %u was successful", sessionId);
+        RIALTO_SERVER_LOG_DEBUG("Sending data to TextTrack session %u was successful; size %zu", sessionId, data.size());
         return true;
     }
 

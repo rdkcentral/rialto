@@ -197,19 +197,24 @@ void GstWebAudioPlayerTestCommon::expectLinkElements()
     GstElement convert{};
     GstElement resample{};
     memset(&m_volume, 0x00, sizeof(m_volume));
+    GstElement queue{};
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioconvert"), _)).WillOnce(Return(&convert));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioresample"), _)).WillOnce(Return(&resample));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("volume"), _)).WillOnce(Return(&m_volume));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), _)).WillOnce(Return(&queue));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&queue), StrEq("max-size-bytes")));
 
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_appSrc)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &convert)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &resample)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_volume)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &queue)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_appSrc, &convert)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&convert, &resample)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&resample, &m_volume)).WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_volume, &m_sink)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_volume, &queue)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&queue, &m_sink)).WillOnce(Return(TRUE));
 }
 
 void GstWebAudioPlayerTestCommon::expectLinkElementsExceptVolume()
@@ -231,14 +236,18 @@ void GstWebAudioPlayerTestCommon::expectAddBinFailure()
     GstElement convert{};
     GstElement resample{};
     memset(&m_volume, 0x00, sizeof(m_volume));
+    GstElement queue{};
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioconvert"), _)).WillOnce(Return(&convert));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioresample"), _)).WillOnce(Return(&resample));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("volume"), _)).WillOnce(Return(&m_volume));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), _)).WillOnce(Return(&queue));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&queue), StrEq("max-size-bytes")));
 
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_appSrc)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &convert)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &resample)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_volume)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &queue)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(FALSE));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_sink));
 }
@@ -248,14 +257,18 @@ void GstWebAudioPlayerTestCommon::expectLinkElementFailure()
     GstElement convert{};
     GstElement resample{};
     memset(&m_volume, 0x00, sizeof(m_volume));
+    GstElement queue{};
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioconvert"), _)).WillOnce(Return(&convert));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("audioresample"), _)).WillOnce(Return(&resample));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("volume"), _)).WillOnce(Return(&m_volume));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), _)).WillOnce(Return(&queue));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&queue), StrEq("max-size-bytes")));
 
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_appSrc)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &convert)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &resample)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_volume)).WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &queue)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_pipeline), &m_sink)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&m_appSrc, &convert)).WillOnce(Return(FALSE));
 }

@@ -135,6 +135,455 @@
    ...
 }
 {
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:__vasprintf_internal
+   fun:g_vasprintf
+   fun:g_strdup_vprintf
+   fun:g_strdup_printf
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgobject-2.0.so*
+   obj:*/libgobject-2.0.so*
+   fun:g_object_new_with_properties
+   fun:gst_element_factory_create_with_properties
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libffi.so*
+   obj:*/libffi.so*
+   fun:g_cclosure_marshal_generic
+   fun:g_closure_invoke
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libffi.so*
+   obj:*/libffi.so*
+   fun:g_cclosure_marshal_generic
+   fun:g_closure_invoke
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libffi.so*
+   obj:*/libffi.so*
+   fun:g_cclosure_marshal_generic
+   fun:g_closure_invoke
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libglib-2.0.so*
+   obj:*/libglib-2.0.so*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:allocate_stack
+   fun:pthread_create*
+   obj:*/libglib-2.0.so*
+   obj:*/libglib-2.0.so*
+   fun:g_thread_pool_push
+   ...
+   fun:gst_element_change_state
+   fun:gst_element_change_state
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_element_sync_state_with_parent
+   fun:_ZN8firebolt6rialto8wrappers10GstWrapper29gstElementSyncStateWithParentEP11_GstElement
+   fun:_ZN8firebolt6rialto6server6GstSrc17setupAndAddAppSrcEPNS1_18IDecryptionServiceEP11_GstElementRNS1_10StreamInfoEP18GstAppSrcCallbacksPvNS0_15MediaSourceTypeE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:__vasprintf_internal
+   fun:g_vasprintf
+   fun:g_strdup_vprintf
+   fun:g_strdup_printf
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgobject-2.0.so*
+   obj:*/libgobject-2.0.so*
+   fun:g_object_new_with_properties
+   fun:gst_element_factory_create_with_properties
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libffi.so*
+   obj:*/libffi.so*
+   fun:g_cclosure_marshal_generic
+   fun:g_closure_invoke
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libffi.so*
+   obj:*/libffi.so*
+   fun:g_cclosure_marshal_generic
+   fun:g_closure_invoke
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libffi.so*
+   obj:*/libffi.so*
+   fun:g_cclosure_marshal_generic
+   fun:g_closure_invoke
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libglib-2.0.so*
+   obj:*/libglib-2.0.so*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:g_malloc
+   obj:*/libglib-2.0.so*
+   obj:*/libgobject-2.0.so*
+   fun:g_object_unref
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:g_object_unref
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_bin_remove
+   obj:*/libgstreamer-1.0.so*
+   fun:g_object_unref
+   fun:_ZN8firebolt6rialto8wrappers10GstWrapper14gstObjectUnrefEPv
+   fun:_ZN8firebolt6rialto6server16GstGenericPlayer12termPipelineEv
+   ...
+   fun:_ZNKSt14default_deleteIN8firebolt6rialto6server17IGstGenericPlayerEEclEPS3_
+   fun:_ZNSt10unique_ptrIN8firebolt6rialto6server17IGstGenericPlayerESt14default_deleteIS3_EED1Ev
+   ...
+   fun:_ZNKSt14default_deleteIN8firebolt6rialto6server28IMediaPipelineServerInternalEEclEPS3_
+   fun:_ZNSt10unique_ptrIN8firebolt6rialto6server28IMediaPipelineServerInternalESt14default_deleteIS3_EED1Ev
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*/libglib-2.0.so*
+   fun:g_rec_mutex_init
+   obj:*/libgstreamer-1.0.so*
+   fun:g_type_create_instance
+   obj:*/libgobject-2.0.so*
+   fun:g_object_new_with_properties
+   fun:gst_element_factory_create_with_properties
+   obj:*/gstreamer-1.0/libgstplayback.so
+   ...
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   ...
+   fun:gst_pad_push_event
+   ...
+   fun:gst_pad_push_event
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libglib-2.0.so*
+   obj:*/libglib-2.0.so*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:allocate_stack
+   fun:pthread_create*
+   obj:*/libglib-2.0.so*
+   obj:*/libglib-2.0.so*
+   fun:g_thread_pool_push
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_task_set_state
+   fun:gst_pad_start_task
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_set_active
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_iterator_fold
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_element_change_state
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_element_change_state
+   fun:gst_element_change_state
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libgstreamer-1.0.so*
+   fun:g_hook_list_marshal
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   ...
+   fun:gst_pad_push_event
+   obj:*/libffi.so*
+   obj:*/libffi.so*
+   fun:g_cclosure_marshal_generic
+   fun:g_closure_invoke
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   ...
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   ...
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   ...
+   fun:gst_pad_push_event
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libglib-2.0.so*
+   obj:*/libglib-2.0.so*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   fun:g_malloc0
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_structure_new_id
+   fun:gst_event_new_seek
+   fun:gst_element_seek
+   fun:_ZN8firebolt6rialto8wrappers10GstWrapper14gstElementSeekEP11_GstElementd9GstFormat12GstSeekFlags11GstSeekTypelS7_l
+   fun:_ZNK8firebolt6rialto6server5tasks7generic15SetPlaybackRate7executeEv
+   fun:_ZN8firebolt6rialto6server12WorkerThread11taskHandlerEv
+   fun:_ZSt13__invoke_implIvMN8firebolt6rialto6server12WorkerThreadEFvvEPS3_JEET_St21__invoke_memfun_derefOT0_OT1_DpOT2_
+   fun:_ZSt8__invokeIMN8firebolt6rialto6server12WorkerThreadEFvvEJPS3_EENSt15__invoke_resultIT_JDpT0_EE4typeEOS8_DpOS9_
+   fun:_ZNSt6thread8_InvokerISt5tupleIJMN8firebolt6rialto6server12WorkerThreadEFvvEPS5_EEE9_M_invokeIJLm0ELm1EEEEvSt12_Index_tupleIJXspT_EEE
+   fun:_ZNSt6thread8_InvokerISt5tupleIJMN8firebolt6rialto6server12WorkerThreadEFvvEPS5_EEEclEv
+   fun:_ZNSt6thread11_State_implINS_8_InvokerISt5tupleIJMN8firebolt6rialto6server12WorkerThreadEFvvEPS6_EEEEE6_M_runEv
+   obj:*/libstdc++.so*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:gst_event_new_custom
+   fun:gst_element_seek
+   fun:_ZN8firebolt6rialto8wrappers10GstWrapper14gstElementSeekEP11_GstElementd9GstFormat12GstSeekFlags11GstSeekTypelS7_l
+   fun:_ZNK8firebolt6rialto6server5tasks7generic15SetPlaybackRate7executeEv
+   fun:_ZN8firebolt6rialto6server12WorkerThread11taskHandlerEv
+   fun:_ZSt13__invoke_implIvMN8firebolt6rialto6server12WorkerThreadEFvvEPS3_JEET_St21__invoke_memfun_derefOT0_OT1_DpOT2_
+   fun:_ZSt8__invokeIMN8firebolt6rialto6server12WorkerThreadEFvvEJPS3_EENSt15__invoke_resultIT_JDpT0_EE4typeEOS8_DpOS9_
+   fun:_ZNSt6thread8_InvokerISt5tupleIJMN8firebolt6rialto6server12WorkerThreadEFvvEPS5_EEE9_M_invokeIJLm0ELm1EEEEvSt12_Index_tupleIJXspT_EEE
+   fun:_ZNSt6thread8_InvokerISt5tupleIJMN8firebolt6rialto6server12WorkerThreadEFvvEPS5_EEEclEv
+   fun:_ZNSt6thread11_State_implINS_8_InvokerISt5tupleIJMN8firebolt6rialto6server12WorkerThreadEFvvEPS6_EEEEE6_M_runEv
+   obj:*/libstdc++.so*
+   fun:start_thread
+   fun:clone
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:gst_*
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:g_*
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   obj:*/libglib-2.0.so*
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   obj:*/libgstcoreelements.so
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   obj:*/libgstreamer-1.0.so*
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   obj:*/libgstapp-1.0.so*
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   obj:*/libgstbase-1.0.so*
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:LockOrder
+   ...
+   obj:*/libgstreamer-1.0.so*
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   ...
+   fun:_ZNK6google8protobuf*
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Misc
+   obj:*/libexec/valgrind/vgpreload_helgrind-amd64-linux.so
+   fun:_ZN8firebolt6rialto6server10MainThread11enqueueTaskEjSt8functionIFvvEE
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Misc
+   obj:*/libexec/valgrind/vgpreload_helgrind-amd64-linux.so
+   fun:_ZN8firebolt6rialto6server10MainThread18enqueueTaskAndWaitEjSt8functionIFvvEE
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Misc
+   obj:*/libexec/valgrind/vgpreload_helgrind-amd64-linux.so
+   fun:_ZN8firebolt6rialto6server12WorkerThread11enqueueTaskEOSt10unique_ptrINS1_11IPlayerTaskESt14default_deleteIS4_EE
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   fun:_ZN8firebolt6rialto6server19GstDispatcherThread18gstBusEventHandlerEP11_GstElement
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Race
+   fun:_ZNK8firebolt6rialto6server5tasks7generic16HandleBusMessage7executeEv
+}
+{
+   <insert_a_suppression_name_here>
+   Helgrind:Misc
+   ...
+   fun:_ZN8firebolt6rialto6common5Timer6cancelEv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:__vasprintf_internal
+   fun:g_vasprintf
+   fun:g_strdup_vprintf
+   fun:g_error_new_valist
+   fun:g_error_new
+}
+{
    ignore_protobuf_internal_parse_possibly_lost
    Memcheck:Leak
    match-leak-kinds: possible
@@ -162,5 +611,606 @@
 
    ...
    fun:gst_update_registry
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:malloc
+   fun:allocate_dtv_entry
+   fun:allocate_and_init
+   fun:tls_get_addr_tail
+   fun:__tls_get_addr
+   obj:*/libgnutls.so*
+   fun:_dl_call_fini
+   fun:_dl_fini
+   fun:__run_exit_handlers
+   fun:exit
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:malloc
+   fun:_dl_resize_dtv
+   fun:_dl_update_slotinfo
+   fun:update_get_addr
+   fun:__tls_get_addr
+   obj:*/libgnutls.so*
+   fun:_dl_call_fini
+   fun:_dl_fini
+   fun:__run_exit_handlers
+   fun:exit
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:_dl_resize_dtv
+   fun:_dl_update_slotinfo
+   fun:update_get_addr
+   fun:__tls_get_addr
+   obj:*/libgnutls.so*
+   fun:_dl_call_fini
+   fun:_dl_fini
+   fun:__run_exit_handlers
+   fun:exit
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:allocate_stack
+   fun:pthread_create*
+   obj:*/libglib-2.0.so*
+   obj:*/libglib-2.0.so*
+   obj:*/libglib-2.0.so*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:__vasprintf_internal
+   fun:g_vasprintf
+   fun:g_strdup_vprintf
+   fun:g_strdup_printf
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgobject-2.0.so*
+   obj:*/libgobject-2.0.so*
+   fun:g_object_new_with_properties
+   fun:gst_element_factory_create_with_properties
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:g_rec_mutex_init
+   obj:*/libgstreamer-1.0.so*
+   fun:g_type_create_instance
+   obj:*/libgobject-2.0.so*
+   fun:g_object_new_with_properties
+   fun:gst_element_factory_create_with_properties
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:malloc
+   fun:resize_scopes
+   fun:dl_open_worker_begin
+   fun:_dl_catch_exception
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen_implementation
+   fun:dlopen@@GLIBC_2.34
+   fun:g_module_open_full
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_plugin_load_by_name
+   fun:gst_plugin_feature_load
+   fun:gst_element_factory_create_with_properties
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:g_malloc
+   obj:*/libglib-2.0.so*
+   obj:*/libglib-2.0.so*
+   obj:*/libgobject-2.0.so*
+   fun:g_object_unref
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:g_malloc
+   fun:g_atomic_rc_box_alloc
+   obj:*/libgstreamer-1.0.so*
+   fun:g_type_create_instance
+   obj:*/libgobject-2.0.so*
+   fun:g_object_new_valist
+   fun:g_object_new
+   fun:gst_system_clock_obtain
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:gst_element_change_state
+   obj:*/libgstreamer-1.0.so*
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:allocate_stack
+   fun:pthread_create*
+   obj:*/libglib-2.0.so*
+   fun:g_thread_new
+   fun:g_thread_pool_new_full
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:g_type_create_instance
+   obj:*/libgobject-2.0.so*
+   fun:g_object_new_with_properties
+   fun:g_object_new
+   fun:gst_task_new
+   fun:gst_pad_start_task
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_set_active
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_iterator_fold
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_element_change_state
+   fun:gst_element_change_state
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_element_sync_state_with_parent
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libgstreamer-1.0.so*
+   fun:g_hook_list_marshal
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libffi.so*
+   obj:*/libffi.so*
+   fun:ffi_call
+   fun:g_cclosure_marshal_generic
+   fun:g_closure_invoke
+   obj:*/libgobject-2.0.so*
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libglib-2.0.so*
+   obj:*/libglib-2.0.so*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libgstreamer-1.0.so*
+   fun:g_hook_list_marshal
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libffi.so*
+   obj:*/libffi.so*
+   fun:ffi_call
+   fun:g_cclosure_marshal_generic
+   fun:g_closure_invoke
+   obj:*/libgobject-2.0.so*
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libglib-2.0.so*
+   obj:*/libglib-2.0.so*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   ...
+   obj:*/libgobject-2.0.so*
+   fun:g_object_new_with_properties
+   fun:gst_element_factory_create_with_properties
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libffi.so*
+   obj:*/libffi.so*
+   fun:ffi_call
+   fun:g_cclosure_marshal_generic
+   fun:g_closure_invoke
+   obj:*/libgobject-2.0.so*
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libffi.so*
+   obj:*/libffi.so*
+   fun:ffi_call
+   fun:g_cclosure_marshal_generic
+   fun:g_closure_invoke
+   obj:*/libgobject-2.0.so*
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libffi.so*
+   obj:*/libffi.so*
+   fun:ffi_call
+   fun:g_cclosure_marshal_generic
+   fun:g_closure_invoke
+   obj:*/libgobject-2.0.so*
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libglib-2.0.so*
+   obj:*/libglib-2.0.so*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:g_type_create_instance
+   obj:*/libgobject-2.0.so*
+   fun:g_object_new_with_properties
+   fun:gst_element_factory_create_with_properties
+   fun:gst_element_factory_create_valist
+   fun:gst_element_factory_make_valist
+   fun:gst_element_factory_make_full
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libgstreamer-1.0.so*
+   fun:g_hook_list_marshal
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libffi.so*
+   fun:ffi_call
+   fun:g_cclosure_marshal_generic
+   fun:g_closure_invoke
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_forward
+   fun:gst_pad_event_default
+   obj:*/libgstreamer-1.0.so*
+   fun:gst_pad_push_event
+   obj:*/gstreamer-1.0/libgstcoreelements.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libglib-2.0.so*
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   ...
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:g_cclosure_marshal_VOID__OBJECTv
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gst_element_remove_pad
+   fun:g_cclosure_marshal_VOID__OBJECTv
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gst_element_remove_pad
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:gst_element_change_state
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:gst_element_change_state
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:gst_element_change_state
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:g_cclosure_marshal_VOID__OBJECTv
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gst_element_remove_pad
+   fun:g_cclosure_marshal_VOID__OBJECTv
+   obj:*/libgobject-2.0.so*
+   fun:g_signal_emit_valist
+   fun:g_signal_emit
+   fun:gst_element_remove_pad
+   obj:*/gstreamer-1.0/libgstplayback.so
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:gst_element_change_state
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:gst_element_change_state
+   obj:*/libgstreamer-1.0.so*
+   obj:*/libgstreamer-1.0.so*
+   obj:*/gstreamer-1.0/libgstplayback.so
+   fun:gst_element_change_state
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:g_type_create_instance
+   fun:g_param_spec_internal
+   fun:*
+   fun:*
+   fun:ipatch_init
+   fun:new_fluid_synth
+   obj:*/gstreamer-1.0/libgstfluidsynthmidi.so
+   fun:g_type_create_instance
+   obj:*/libgobject-2.0.so*
+   fun:g_object_new_with_properties
+   fun:gst_element_factory_create_with_properties
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:*/libglib-2.0.so*
+   fun:g_rec_mutex_init
+   obj:*/libgstreamer-1.0.so*
+   fun:g_type_create_instance
+   obj:*/libgobject-2.0.so*
+   fun:g_object_new_with_properties
+   fun:gst_element_factory_create_with_properties
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:g_malloc
+   obj:*/libglib-2.0.so*
+   obj:*/libgobject-2.0.so*
+   fun:g_object_unref
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   fun:calloc
+   fun:allocate_dtv
+   fun:_dl_allocate_tls
+   fun:allocate_stack
+   fun:pthread_create*
    ...
 }

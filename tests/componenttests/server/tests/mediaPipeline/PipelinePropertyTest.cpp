@@ -402,6 +402,7 @@ private:
     GstIterator m_it{};
     char m_dummy{0};
     GstElementFactory *m_factory = reinterpret_cast<GstElementFactory *>(&m_dummy);
+    GstRegistry m_registry{};
 };
 
 /*
@@ -587,7 +588,7 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
     willStop();
     stop();
 
-    // Step 18: Destroy media session
+    // Step 19: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

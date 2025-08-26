@@ -83,6 +83,12 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingRenderFrame)
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingShowVideoWindow)
+{
+    shouldSetupVideoSinkElementWithPendingShowVideoWindow();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupAudioElementAmlhalasinkWhenNoVideo)
 {
     shouldSetupAudioElementAmlhalasinkWhenNoVideo();
@@ -210,5 +216,11 @@ TEST_F(SetupElementTest, shouldReportAutoAudioSinkChildRemoved)
 TEST_F(SetupElementTest, shouldSetupTextTrackSink)
 {
     shouldSetupTextTrackSink();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupBaseParse)
+{
+    shouldSetupBaseParse();
     triggerSetupElement();
 }

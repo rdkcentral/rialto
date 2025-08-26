@@ -44,7 +44,7 @@ public:
     bool play() override;
     bool mute(bool mute) override;
     bool setPosition(uint64_t mediaTimestampMs) override;
-    bool sendData(const std::string &data, int32_t displayOffsetMs = 0) override;
+    bool sendData(const std::string &data, int64_t displayOffsetMs = 0) override;
     bool setSessionWebVTTSelection() override;
     bool setSessionTTMLSelection() override;
     bool setSessionCCSelection(const std::string &service) override;

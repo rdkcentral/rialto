@@ -260,6 +260,10 @@ void SetupElement::execute() const
         {
             m_player.setRenderFrame();
         }
+        if (m_context.pendingShowVideoWindow.has_value())
+        {
+            m_player.setShowVideoWindow();
+        }
     }
     else if (isAudioDecoder(*m_gstWrapper, m_element))
     {
@@ -293,6 +297,11 @@ void SetupElement::execute() const
         {
             m_player.setStreamSyncMode(MediaSourceType::VIDEO);
         }
+    }
+
+    if (m_gstWrapper->gstIsBaseParse(m_element))
+    {
+        m_gstWrapper->gstBaseParseSetPtsInterpolation(GST_BASE_PARSE(m_element), FALSE);
     }
 
     m_gstWrapper->gstObjectUnref(m_element);

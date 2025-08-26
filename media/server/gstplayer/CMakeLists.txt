@@ -88,6 +88,7 @@ add_library(
         source/tasks/webAudio/WriteBuffer.cpp
 
         source/CapsBuilder.cpp
+        source/FlushWatcher.cpp
         source/GstCapabilities.cpp
         source/GstDecryptor.cpp
         source/GstDispatcherThread.cpp

@@ -55,7 +55,8 @@ public:
     std::unique_ptr<IPlayerTask> createFinishSetupSource(GenericPlayerContext &context,
                                                          IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createHandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                        GstMessage *message) const override;
+                                                        GstMessage *message,
+                                                        const IFlushWatcher &flushWatcher) const override;
     std::unique_ptr<IPlayerTask> createNeedData(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                 GstAppSrc *src) const override;
     std::unique_ptr<IPlayerTask> createPause(GenericPlayerContext &context,

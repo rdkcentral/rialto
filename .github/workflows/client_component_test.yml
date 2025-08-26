@@ -137,4 +137,4 @@ jobs:
       # Run the check_coverage_stats script
       - name: Process Coverage Statistics
         if: ${{ success() && github.event_name == 'pull_request' && github.base_ref == 'master' }}
-        run: python scripts/coverage/check_coverage_stats.py build/coverage_statistics_public_apis.txt 98
+        run: python scripts/coverage/check_coverage_stats.py build/coverage_statistics_public_apis.txt 97

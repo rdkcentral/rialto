@@ -150,7 +150,7 @@ public:
 
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
 
-    bool flush(int32_t sourceId, bool resetTime) override;
+    bool flush(int32_t sourceId, bool resetTime, bool &async) override;
 
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;
@@ -600,12 +600,13 @@ protected:
     /**
      * @brief Flushes a source.
      *
-     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
-     * @param[in] resetTime : True if time should be reset
+     * @param[in]  sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in]  resetTime : True if time should be reset
+     * @param[out] async     : True if flushed source is asynchronous (will preroll after flush)
      *
      * @retval true on success.
      */
-    bool flushInternal(int32_t sourceId, bool resetTime);
+    bool flushInternal(int32_t sourceId, bool resetTime, bool &async);
 
     /**
      * @brief Set the source position in nanoseconds.

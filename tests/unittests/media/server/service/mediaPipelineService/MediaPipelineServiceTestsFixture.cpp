@@ -383,12 +383,12 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToGetMute()
 
 void MediaPipelineServiceTests::mediaPipelineWillFlush()
 {
-    EXPECT_CALL(m_mediaPipelineMock, flush(kSourceId, kResetTime)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, flush(kSourceId, kResetTime, _)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToFlush()
 {
-    EXPECT_CALL(m_mediaPipelineMock, flush(kSourceId, kResetTime)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, flush(kSourceId, kResetTime, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillSetSourcePosition()
@@ -484,6 +484,16 @@ void MediaPipelineServiceTests::mediaPipelineWillSwitchSource()
 void MediaPipelineServiceTests::mediaPipelineWillFailToSwitchSource()
 {
     EXPECT_CALL(m_mediaPipelineMock, switchSource(_)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillCheckIfVideoIsMaster()
+{
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isVideoMaster(_)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToCheckIfVideoIsMaster()
+{
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isVideoMaster(_)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillPing()
@@ -882,12 +892,14 @@ void MediaPipelineServiceTests::getStreamSyncModeShouldFail()
 
 void MediaPipelineServiceTests::flushShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->flush(kSessionId, kSourceId, kResetTime));
+    bool isAsync{false};
+    EXPECT_TRUE(m_sut->flush(kSessionId, kSourceId, kResetTime, isAsync));
 }
 
 void MediaPipelineServiceTests::flushShouldFail()
 {
-    EXPECT_FALSE(m_sut->flush(kSessionId, kSourceId, kResetTime));
+    bool isAsync{false};
+    EXPECT_FALSE(m_sut->flush(kSessionId, kSourceId, kResetTime, isAsync));
 }
 
 void MediaPipelineServiceTests::setSourcePositionShouldSucceed()
@@ -991,6 +1003,18 @@ void MediaPipelineServiceTests::switchSourceShouldFail()
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> mediaSource =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264");
     EXPECT_FALSE(m_sut->switchSource(kSessionId, mediaSource));
+}
+
+void MediaPipelineServiceTests::isVideoMasterShouldSucceed()
+{
+    bool isMaster{false};
+    EXPECT_TRUE(m_sut->isVideoMaster(isMaster));
+}
+
+void MediaPipelineServiceTests::isVideoMasterShouldFail()
+{
+    bool isMaster{false};
+    EXPECT_FALSE(m_sut->isVideoMaster(isMaster));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()

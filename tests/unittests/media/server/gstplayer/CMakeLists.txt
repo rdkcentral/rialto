@@ -116,6 +116,9 @@ add_gtests(RialtoServerGstPlayerUnitTests
     #WorkerThread unittests
     workerThread/WorkerThreadTest.cpp
 
+    #FlushWatcher unittests
+    flushWatcher/FlushWatcherTests.cpp
+
 )
 
 target_include_directories(RialtoServerGstPlayerUnitTests
@@ -143,13 +146,5 @@ target_link_libraries(RialtoServerGstPlayerUnitTests
     RialtoCommonMisc
     RialtoTestCommonUtils
 )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoServerGstPlayerUnitTests
-
-        gcov
-        )
-endif()
 
 set_target_properties(RialtoServerGstPlayerUnitTests PROPERTIES COMPILE_FLAGS "-Wno-write-strings")

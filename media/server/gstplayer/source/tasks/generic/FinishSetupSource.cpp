@@ -109,7 +109,7 @@ void FinishSetupSource::execute() const
         }
 
         StreamInfo &streamInfo = elem.second;
-        m_context.gstSrc->setupAndAddAppArc(m_context.decryptionService, m_context.source, streamInfo, &callbacks,
+        m_context.gstSrc->setupAndAddAppSrc(m_context.decryptionService, m_context.source, streamInfo, &callbacks,
                                             &m_player, sourceType);
         m_player.notifyNeedMediaData(sourceType);
     }
@@ -121,5 +121,7 @@ void FinishSetupSource::execute() const
         m_gstPlayerClient->notifyPlaybackState(PlaybackState::IDLE);
 
     m_context.setupSourceFinished = true;
+
+    RIALTO_SERVER_LOG_MIL("All sources attached.");
 }
 } // namespace firebolt::rialto::server::tasks::generic

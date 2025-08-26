@@ -109,11 +109,19 @@ GstCaps *MediaSourceAudioCapsBuilder::buildCaps()
     GstCaps *caps = MediaSourceCapsBuilder::buildCaps();
     if (mimeType == "audio/mp4" || mimeType == "audio/aac")
     {
-        addMpegVersionToCaps(caps);
+        addMpegVersion4ToCaps(caps);
+    }
+    else if (mimeType == "audio/mp3")
+    {
+        addMp3Caps(caps);
     }
     else if (mimeType == "audio/b-wav" || mimeType == "audio/x-raw")
     {
         addRawAudioData(caps);
+    }
+    else if (mimeType == "audio/x-flac")
+    {
+        addFlacSpecificData(caps);
     }
     addSampleRateAndChannelsToCaps(caps);
 
@@ -162,9 +170,15 @@ void MediaSourceAudioCapsBuilder::addSampleRateAndChannelsToCaps(GstCaps *caps) 
         m_gstWrapper->gstCapsSetSimple(caps, "rate", G_TYPE_INT, audioConfig.sampleRate, nullptr);
 }
 
-void MediaSourceAudioCapsBuilder::addMpegVersionToCaps(GstCaps *caps) const
+void MediaSourceAudioCapsBuilder::addMpegVersion4ToCaps(GstCaps *caps) const
 {
     m_gstWrapper->gstCapsSetSimple(caps, "mpegversion", G_TYPE_INT, 4, nullptr);
+}
+
+void MediaSourceAudioCapsBuilder::addMp3Caps(GstCaps *caps) const
+{
+    m_gstWrapper->gstCapsSetSimple(caps, "mpegversion", G_TYPE_INT, 1, nullptr);
+    m_gstWrapper->gstCapsSetSimple(caps, "layer", G_TYPE_INT, 3, nullptr);
 }
 
 void MediaSourceAudioCapsBuilder::addRawAudioData(GstCaps *caps) const
@@ -178,6 +192,37 @@ void MediaSourceAudioCapsBuilder::addRawAudioData(GstCaps *caps) const
                                        nullptr);
     if (audioConfig.channelMask.has_value())
         m_gstWrapper->gstCapsSetSimple(caps, "channel-mask", GST_TYPE_BITMASK, audioConfig.channelMask.value(), nullptr);
+}
+
+void MediaSourceAudioCapsBuilder::addFlacSpecificData(GstCaps *caps) const
+{
+    firebolt::rialto::AudioConfig audioConfig = m_attachedAudioSource.getAudioConfig();
+    if (audioConfig.streamHeader.size())
+    {
+        GValue streamHeaderArray = G_VALUE_INIT;
+        m_glibWrapper->gValueInit(&streamHeaderArray, GST_TYPE_ARRAY);
+        for (const auto &header : audioConfig.streamHeader)
+        {
+            gpointer memory = m_glibWrapper->gMemdup(header.data(), header.size());
+            GstBuffer *buf = m_gstWrapper->gstBufferNewWrapped(memory, header.size());
+            GST_BUFFER_FLAG_SET(buf, GST_BUFFER_FLAG_HEADER);
+
+            GValue value = G_VALUE_INIT;
+            m_glibWrapper->gValueInit(&value, GST_TYPE_BUFFER);
+            m_gstWrapper->gstValueSetBuffer(&value, buf);
+            m_gstWrapper->gstValueArrayAppendValue(&streamHeaderArray, &value);
+
+            m_glibWrapper->gValueUnset(&value);
+            m_gstWrapper->gstBufferUnref(buf);
+        }
+        m_gstWrapper->gstStructureSetValue(m_gstWrapper->gstCapsGetStructure(caps, 0), "streamheader",
+                                           &streamHeaderArray);
+        m_glibWrapper->gValueUnset(&streamHeaderArray);
+    }
+    if (audioConfig.framed.has_value())
+    {
+        m_gstWrapper->gstCapsSetSimple(caps, "framed", G_TYPE_BOOLEAN, audioConfig.framed.value(), nullptr);
+    }
 }
 
 MediaSourceVideoCapsBuilder::MediaSourceVideoCapsBuilder(

@@ -361,9 +361,10 @@ public:
      *
      * @param[in] mediaSourceType : The media source type to flush.
      * @param[in] resetTime : True if time should be reset
+     * @param[out] async     : True if flushed source is asynchronous (will preroll after flush)
      *
      */
-    virtual void flush(const MediaSourceType &mediaSourceType, bool resetTime) = 0;
+    virtual void flush(const MediaSourceType &mediaSourceType, bool resetTime, bool &async) = 0;
 
     /**
      * @brief Set the source position in nanoseconds.

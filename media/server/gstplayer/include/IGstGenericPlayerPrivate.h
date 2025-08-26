@@ -130,6 +130,13 @@ public:
     virtual bool setUseBuffering() = 0;
 
     /**
+     * @brief Sets Show Video Window property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setShowVideoWindow() = 0;
+
+    /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
      */
     virtual void notifyNeedMediaData(const MediaSourceType mediaSource) = 0;
@@ -287,6 +294,12 @@ public:
      * @retval True if the player has a source of the given type, false otherwise
      */
     virtual bool hasSourceType(const MediaSourceType &mediaSourceType) const = 0;
+
+     * @brief Sets source state flushed
+     *
+     * @param[in] mediaSourceType : the source type that has been flushed
+     */
+    virtual void setSourceFlushed(const MediaSourceType &mediaSourceType) = 0;
 };
 } // namespace firebolt::rialto::server
 

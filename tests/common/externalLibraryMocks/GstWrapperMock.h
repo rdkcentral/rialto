@@ -33,6 +33,7 @@ public:
     virtual ~GstWrapperMock() = default;
 
     MOCK_METHOD(void, gstInit, (int *argc, char ***argv), (override));
+    MOCK_METHOD(void, gstDeinit, (), (override));
     MOCK_METHOD(GstPlugin *, gstRegistryFindPlugin, (GstRegistry * registry, const gchar *name), (override));
     MOCK_METHOD(void, gstRegistryRemovePlugin, (GstRegistry * registry, GstPlugin *plugin), (override));
     MOCK_METHOD(void, gstObjectUnref, (gpointer object), (override));
@@ -207,6 +208,13 @@ public:
                 (GstBuffer * buffer, GstFormat format, guint64 start, guint64 end), (const, override));
     MOCK_METHOD(GstPad *, gstElementGetStaticPad, (GstElement * element, const gchar *name), (const, override));
     MOCK_METHOD(GstPad *, gstBaseSinkPad, (GstElement * element), (const, override));
+    MOCK_METHOD(void, gstValueArrayAppendValue, (GValue * value, const GValue *appendValue), (const, override));
+    MOCK_METHOD(void, gstValueSetBuffer, (GValue * value, GstBuffer *buffer), (const, override));
+    MOCK_METHOD(void, gstStructureSetValue, (GstStructure * structure, const gchar *fieldname, const GValue *value),
+                (const, override));
+    MOCK_METHOD(gboolean, gstIsBaseParse, (GstElement * element), (const, override));
+    MOCK_METHOD(void, gstBaseParseSetPtsInterpolation, (GstBaseParse * parse, gboolean ptsInterpolate),
+                (const, override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

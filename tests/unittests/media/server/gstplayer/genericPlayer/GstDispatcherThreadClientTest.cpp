@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include "FlushWatcherMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "IGstDispatcherThreadClient.h"
 #include "PlayerTaskMock.h"
@@ -39,8 +40,9 @@ protected:
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
                                                    m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
                                                    m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
-                                                   m_gstSrcFactoryMock, m_timerFactoryMock, std::move(m_taskFactory),
-                                                   std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
+                                                   std::move(m_flushWatcher), m_gstSrcFactoryMock, m_timerFactoryMock,
+                                                   std::move(m_taskFactory), std::move(workerThreadFactory),
+                                                   std::move(gstDispatcherThreadFactory),
                                                    m_gstProtectionMetadataFactoryMock);
     }
 
@@ -58,7 +60,8 @@ TEST_F(GstDispatcherThreadClientTest, shouldHandleBusMessage)
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*messageTask), execute());
     EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
         .WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
-    EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, &message)).WillOnce(Return(ByMove(std::move(messageTask))));
+    EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, &message, _))
+        .WillOnce(Return(ByMove(std::move(messageTask))));
 
     m_sut->handleBusMessage(&message);
 }

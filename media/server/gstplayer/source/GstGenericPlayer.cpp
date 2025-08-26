@@ -21,6 +21,7 @@
 #include <cinttypes>
 #include <stdexcept>
 
+#include "FlushWatcher.h"
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
 #include "GstProtectionMetadata.h"
@@ -104,8 +105,8 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
         }
         gstPlayer = std::make_unique<
             GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper, glibWrapper,
-                              rdkGstreamerUtilsWrapper, IGstInitialiser::instance(), IGstSrcFactory::getFactory(),
-                              common::ITimerFactory::getFactory(),
+                              rdkGstreamerUtilsWrapper, IGstInitialiser::instance(), std::make_unique<FlushWatcher>(),
+                              IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
                                                                          rdkGstreamerUtilsWrapper,
                                                                          IGstTextTrackSinkFactory::createFactory()),
@@ -126,14 +127,14 @@ GstGenericPlayer::GstGenericPlayer(
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
-    const IGstInitialiser &gstInitialiser, const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
-    std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
-    std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
+    const IGstInitialiser &gstInitialiser, std::unique_ptr<IFlushWatcher> &&flushWatcher,
+    const std::shared_ptr<IGstSrcFactory> &gstSrcFactory, std::shared_ptr<common::ITimerFactory> timerFactory,
+    std::unique_ptr<IGenericPlayerTaskFactory> taskFactory, std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
     std::shared_ptr<IGstProtectionMetadataHelperFactory> gstProtectionMetadataFactory)
     : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
       m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_timerFactory{timerFactory},
-      m_taskFactory{std::move(taskFactory)}
+      m_taskFactory{std::move(taskFactory)}, m_flushWatcher{std::move(flushWatcher)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is constructed.");
 
@@ -242,6 +243,7 @@ void GstGenericPlayer::initMsePipeline()
     {
         GST_WARNING("No playsink ?!?!?");
     }
+    RIALTO_SERVER_LOG_MIL("New RialtoServer's pipeline created");
 }
 
 void GstGenericPlayer::resetWorkerThread()
@@ -295,6 +297,8 @@ void GstGenericPlayer::termPipeline()
 
     // Delete the pipeline
     m_gstWrapper->gstObjectUnref(m_context.pipeline);
+
+    RIALTO_SERVER_LOG_MIL("RialtoServer's pipeline terminated");
 }
 
 unsigned GstGenericPlayer::getGstPlayFlag(const char *nick)
@@ -401,6 +405,7 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
     }
     if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
     {
+        RIALTO_SERVER_LOG_WARN("Query position failed");
         return false;
     }
 
@@ -460,6 +465,11 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
         }
     }
     return sink;
+}
+
+void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
+{
+    m_flushWatcher->setFlushed(mediaSourceType);
 }
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
@@ -813,6 +823,7 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
         {
             m_context.bufferedNotificationSent = true;
             m_gstPlayerClient->notifyNetworkState(NetworkState::BUFFERED);
+            RIALTO_SERVER_LOG_MIL("Buffered NetworkState reached");
         }
         cancelUnderflow(mediaType);
 
@@ -1012,6 +1023,8 @@ void GstGenericPlayer::setTextTrackPositionIfRequired(GstElement *source)
         return;
     }
 
+    RIALTO_SERVER_LOG_MIL("New subtitle position set %" GST_TIME_FORMAT,
+                          GST_TIME_ARGS(initialPosition->second.back().position));
     m_glibWrapper->gObjectSet(m_context.subtitleSink, "position",
                               static_cast<guint64>(initialPosition->second.back().position), nullptr);
 
@@ -1262,6 +1275,35 @@ bool GstGenericPlayer::setImmediateOutput()
             RIALTO_SERVER_LOG_DEBUG("Pending an immediate-output, sink is NULL");
         }
     }
+    return result;
+}
+
+bool GstGenericPlayer::setShowVideoWindow()
+{
+    if (!m_context.pendingShowVideoWindow.has_value())
+    {
+        RIALTO_SERVER_LOG_WARN("No show video window value to be set. Aborting...");
+        return false;
+    }
+
+    GstElement *videoSink{getSink(MediaSourceType::VIDEO)};
+    if (!videoSink)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Setting show video window queued. Video sink is NULL");
+        return false;
+    }
+    bool result{false};
+    if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "show-video-window"))
+    {
+        m_glibWrapper->gObjectSet(videoSink, "show-video-window", m_context.pendingShowVideoWindow.value(), nullptr);
+        result = true;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Setting show video window failed. Property does not exist");
+    }
+    m_context.pendingShowVideoWindow.reset();
+    m_gstWrapper->gstObjectUnref(GST_OBJECT(videoSink));
     return result;
 }
 
@@ -1762,6 +1804,20 @@ bool GstGenericPlayer::getMute(const MediaSourceType &mediaSourceType, bool &mut
     return true;
 }
 
+bool GstGenericPlayer::isAsync(const MediaSourceType &mediaSourceType) const
+{
+    GstElement *sink = getSink(mediaSourceType);
+    if (!sink)
+    {
+        RIALTO_SERVER_LOG_WARN("Sink not found for %s", common::convertMediaSourceType(mediaSourceType));
+        return true; // Our sinks are async by default
+    }
+    gboolean returnValue{TRUE};
+    m_glibWrapper->gObjectGet(sink, "async", &returnValue, nullptr);
+    m_gstWrapper->gstObjectUnref(sink);
+    return returnValue == TRUE;
+}
+
 void GstGenericPlayer::setTextTrackIdentifier(const std::string &textTrackIdentifier)
 {
     if (m_workerThread)
@@ -1902,10 +1958,12 @@ void GstGenericPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandle
     }
 }
 
-void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetTime)
+void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetTime, bool &async)
 {
     if (m_workerThread)
     {
+        async = isAsync(mediaSourceType);
+        m_flushWatcher->setFlushing(mediaSourceType, async);
         m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, *this, mediaSourceType, resetTime));
     }
 }
@@ -2006,7 +2064,7 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
 
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
-    m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message));
+    m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)

@@ -1461,7 +1461,8 @@ void MediaPipelineTestMethods::shouldFlush()
 
 void MediaPipelineTestMethods::flush()
 {
-    EXPECT_TRUE(m_mediaPipeline->flush(kAudioSourceId, kResetTime));
+    bool isAsync{false};
+    EXPECT_TRUE(m_mediaPipeline->flush(kAudioSourceId, kResetTime, isAsync));
 }
 
 void MediaPipelineTestMethods::shouldFailToFlush()
@@ -1472,7 +1473,8 @@ void MediaPipelineTestMethods::shouldFailToFlush()
 
 void MediaPipelineTestMethods::flushFailure()
 {
-    EXPECT_FALSE(m_mediaPipeline->flush(kAudioSourceId, kResetTime));
+    bool isAsync{false};
+    EXPECT_FALSE(m_mediaPipeline->flush(kAudioSourceId, kResetTime, isAsync));
 }
 
 void MediaPipelineTestMethods::shouldSetSourcePosition()
@@ -1583,6 +1585,30 @@ void MediaPipelineTestMethods::switchSourceMpeg()
         std::make_unique<IMediaPipeline::MediaSourceAudio>(kAudioMpeg.c_str(), kHasNoDrm, audioConfig, kAlignment,
                                                            kStreamFormatRaw, kCodecData);
     EXPECT_EQ(m_mediaPipeline->switchSource(mediaSource), true);
+}
+
+void MediaPipelineTestMethods::shouldCheckIsVideoMaster()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock, isVideoMaster(_, _, _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::shouldFailToCheckIsVideoMaster()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock, isVideoMaster(_, _, _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
+}
+
+void MediaPipelineTestMethods::isVideoMaster()
+{
+    bool isMaster{false};
+    EXPECT_TRUE(m_mediaPipelineCapabilities->isVideoMaster(isMaster));
+}
+
+void MediaPipelineTestMethods::isVideoMasterFailure()
+{
+    bool isMaster{false};
+    EXPECT_FALSE(m_mediaPipelineCapabilities->isVideoMaster(isMaster));
 }
 
 /*************************** Private methods ********************************/

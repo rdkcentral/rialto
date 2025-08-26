@@ -95,6 +95,15 @@ public:
     std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
                                                     const std::vector<std::string> &propertyNames) override;
 
+    /**
+     * @brief Checks if the platform is video master.
+     *
+     * @param[out] isVideoMaster : The output value. True if video is master otherwise false.
+     *
+     * @retval true on success false otherwise
+     */
+    bool isVideoMaster(bool &isVideoMaster) override;
+
 private:
     /**
      * @brief Sets list of supported mime types

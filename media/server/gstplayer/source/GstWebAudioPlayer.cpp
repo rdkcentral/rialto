@@ -154,6 +154,8 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
         return false;
     }
 
+    RIALTO_SERVER_LOG_MIL("RialtoServer's webaudio pipeline constructed");
+
     // Create and initalise appsrc
     m_context.source = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
     if (!m_context.source)
@@ -255,6 +257,7 @@ bool GstWebAudioPlayer::linkElementsToSrc(GstElement *sink)
     GstElement *convert{nullptr};
     GstElement *resample{nullptr};
     GstElement *volume{nullptr};
+    GstElement *queue{nullptr};
 
     convert = m_gstWrapper->gstElementFactoryMake("audioconvert", NULL);
     if (!convert)
@@ -282,6 +285,20 @@ bool GstWebAudioPlayer::linkElementsToSrc(GstElement *sink)
             status = false;
         }
     }
+    if (status)
+    {
+        queue = m_gstWrapper->gstElementFactoryMake("queue", NULL);
+        if (!queue)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed create the queue");
+            status = false;
+        }
+        else
+        {
+            constexpr guint kWebAudioQueueSize{8192};
+            m_glibWrapper->gObjectSet(queue, "max-size-bytes", kWebAudioQueueSize, nullptr);
+        }
+    }
 
     std::queue<GstElement *> elementsToAdd;
     elementsToAdd.push(m_context.source);
@@ -291,6 +308,8 @@ bool GstWebAudioPlayer::linkElementsToSrc(GstElement *sink)
         elementsToAdd.push(resample);
     if (volume)
         elementsToAdd.push(volume);
+    if (queue)
+        elementsToAdd.push(queue);
     elementsToAdd.push(sink);
 
     if (status)
@@ -314,7 +333,7 @@ bool GstWebAudioPlayer::linkElementsToSrc(GstElement *sink)
     {
         if ((!m_gstWrapper->gstElementLink(m_context.source, convert)) ||
             (!m_gstWrapper->gstElementLink(convert, resample)) || (!m_gstWrapper->gstElementLink(resample, volume)) ||
-            (!m_gstWrapper->gstElementLink(volume, sink)))
+            (!m_gstWrapper->gstElementLink(volume, queue)) || (!m_gstWrapper->gstElementLink(queue, sink)))
         {
             RIALTO_SERVER_LOG_ERROR("Failed to link elements");
             status = false;
@@ -350,6 +369,7 @@ void GstWebAudioPlayer::termWebAudioPipeline()
 
         m_gstWrapper->gstObjectUnref(m_context.pipeline);
     }
+    RIALTO_SERVER_LOG_MIL("RialtoServer's webaudio pipeline terminated.");
 }
 
 void GstWebAudioPlayer::resetWorkerThread()

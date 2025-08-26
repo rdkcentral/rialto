@@ -22,6 +22,7 @@
 
 #include "GenericPlayerContext.h"
 #include "IDataReader.h"
+#include "IFlushWatcher.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IHeartbeatHandler.h"
 #include "IMediaPipeline.h"
@@ -119,14 +120,16 @@ public:
     /**
      * @brief Creates a HandleBusMessage task.
      *
-     * @param[in] context    : The GstGenericPlayer context
-     * @param[in] message    : The message to be handled.
+     * @param[in] context      : The GstGenericPlayer context
+     * @param[in] player       : The GstGenericPlayer instance
+     * @param[in] message      : The message to be handled.
+     * @param[in] flushWatcher : Flush watcher instance
      *
      * @retval the new HandleBusMessage task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createHandleBusMessage(GenericPlayerContext &context,
-                                                                IGstGenericPlayerPrivate &player,
-                                                                GstMessage *message) const = 0;
+                                                                IGstGenericPlayerPrivate &player, GstMessage *message,
+                                                                const IFlushWatcher &flushWatcher) const = 0;
 
     /**
      * @brief Creates a NeedData task.

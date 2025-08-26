@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -460,7 +461,7 @@ public:
             : m_sourceId(sourceId), m_type(type), m_data(nullptr), m_dataLength(0u), m_timeStamp(timeStamp),
               m_duration(duration), m_encrypted(false), m_mediaKeySessionId(0), m_initWithLast15(0),
               m_alignment(SegmentAlignment::UNDEFINED), m_cipherMode(CipherMode::UNKNOWN), m_crypt(0), m_skip(0),
-              m_encryptionPatternSet(false)
+              m_encryptionPatternSet(false), m_displayOffset(std::nullopt)
         {
         }
 
@@ -608,6 +609,13 @@ public:
             return m_encryptionPatternSet;
         }
 
+        /**
+         * @brief Gets the display offset
+         *
+         * @retval The offset in the source file of the beginning of the media segment.
+         */
+        std::optional<uint64_t> getDisplayOffset() const { return m_displayOffset; }
+
     protected:
         /**
          * @brief The source id.
@@ -704,6 +712,11 @@ public:
          * @brief Whether the encryption pattern has been set.
          */
         bool m_encryptionPatternSet;
+
+        /**
+         * @brief The offset in the source file of the beginning of the media segment.
+         */
+        std::optional<uint64_t> m_displayOffset;
 
     public:
         /**
@@ -817,6 +830,13 @@ public:
             m_skip = skip;
             m_encryptionPatternSet = true;
         }
+
+        /**
+         * @brief Sets the display offset
+         *
+         * @param[in] displayOffset : The offset in the source file of the beginning of the media segment.
+         */
+        void setDisplayOffset(uint64_t displayOffset) { m_displayOffset = displayOffset; }
 
         /**
          * @brief Copies the data from other to this.
@@ -1408,12 +1428,13 @@ public:
      *
      * This method is called by Rialto Client to flush out all queued data for a media source stream.
      *
-     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
-     * @param[in] resetTime : True if time should be reset
+     * @param[in]  sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in]  resetTime : True if time should be reset
+     * @param[out] async     : True if flushed source is asynchronous (will preroll after flush)
      *
      * @retval true on success.
      */
-    virtual bool flush(int32_t sourceId, bool resetTime) = 0;
+    virtual bool flush(int32_t sourceId, bool resetTime, bool &async) = 0;
 
     /**
      * @brief Set the source position in nanoseconds.

@@ -23,6 +23,7 @@
 #include <gst/app/gstappsrc.h>
 #include <gst/audio/audio.h>
 #include <gst/audio/streamvolume.h>
+#include <gst/base/gstbaseparse.h>
 #include <gst/base/gstbasetransform.h>
 #include <gst/base/gstbytewriter.h>
 #include <gst/gst.h>
@@ -76,6 +77,12 @@ public:
      * @param[in] argv    : Vector of C strings each containing a command line argument.
      */
     virtual void gstInit(int *argc, char ***argv) = 0;
+
+    /**
+     * @brief Deinitalise gstreamer.
+     *
+     */
+    virtual void gstDeinit() = 0;
 
     /**
      * @brief Finds the plugin with the given name.
@@ -1067,6 +1074,16 @@ public:
     virtual void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const = 0;
 
     /**
+     * @brief Sets the field with the given name field to value. If the field does not exist, it is created. If the
+     * field exists, the previous value is replaced and freed.
+     *
+     * @param[in] structure  : a GstStructure
+     * @param[in] fieldname  : the name of the field to set
+     * @param[in] fieldname  : the new value of the field
+     */
+    virtual void gstStructureSetValue(GstStructure *structure, const gchar *fieldname, const GValue *value) const = 0;
+
+    /**
      * @brief Gets the error and debug string from the message. Both gerror and debug must be freed by the caller once complete.
      *
      * @param[in]  message  : a gst error message.
@@ -1309,6 +1326,41 @@ public:
      * @return given pad or NULL if failed
      */
     virtual GstPad *gstBaseSinkPad(GstElement *element) const = 0;
+
+    /**
+     * @brief Appends append_value to the GstValueArray in value.
+     *
+     * @param value : a GValue of type GST_TYPE_ARRAY
+     * @param appendValue : the value to append
+     */
+    virtual void gstValueArrayAppendValue(GValue *value, const GValue *appendValue) const = 0;
+
+    /**
+     * @brief Sets b as the value of v. Caller retains reference to buffer.
+     *
+     * @param value  : a GValue to receive the data
+     * @param buffer : a GstBuffer to assign to the GstValue
+     */
+    virtual void gstValueSetBuffer(GValue *value, GstBuffer *buffer) const = 0;
+
+    /**
+     * @brief Checks, if element is an instance of GstBaseParse
+     *
+     * @param element  : a GValue to receive the data
+     *
+     * @return TRUE if element is an instance of GstBaseParse
+     */
+    virtual gboolean gstIsBaseParse(GstElement *element) const = 0;
+
+    /**
+     * @brief By default, the base class will guess PTS timestamps using a simple interpolation (previous timestamp +
+     * duration), which is incorrect for data streams with reordering, where PTS can go backward. Sub-classes
+     * implementing such formats should disable PTS interpolation.
+     *
+     * @param parse           : a GstBaseParse
+     * @param ptsInterpolate  : TRUE if parser should interpolate PTS timestamps
+     */
+    virtual void gstBaseParseSetPtsInterpolation(GstBaseParse *parse, gboolean ptsInterpolate) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

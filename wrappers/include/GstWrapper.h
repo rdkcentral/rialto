@@ -73,6 +73,8 @@ public:
 
     void gstInit(int *argc, char ***argv) override { gst_init(argc, argv); }
 
+    void gstDeinit() override { gst_deinit(); }
+
     GstPlugin *gstRegistryFindPlugin(GstRegistry *registry, const gchar *name) override
     {
         return gst_registry_find_plugin(registry, name);
@@ -460,6 +462,11 @@ public:
 
     void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const override;
 
+    void gstStructureSetValue(GstStructure *structure, const gchar *fieldname, const GValue *value) const override
+    {
+        gst_structure_set_value(structure, fieldname, value);
+    }
+
     void gstMessageParseError(GstMessage *message, GError **gerror, gchar **debug) const override
     {
         return gst_message_parse_error(message, gerror, debug);
@@ -561,6 +568,20 @@ public:
     }
 
     GstPad *gstBaseSinkPad(GstElement *element) const override { return GST_BASE_SINK_PAD(element); }
+
+    void gstValueArrayAppendValue(GValue *value, const GValue *appendValue) const override
+    {
+        gst_value_array_append_value(value, appendValue);
+    }
+
+    void gstValueSetBuffer(GValue *value, GstBuffer *buffer) const override { gst_value_set_buffer(value, buffer); }
+
+    gboolean gstIsBaseParse(GstElement *element) const { return GST_IS_BASE_PARSE(element); }
+
+    void gstBaseParseSetPtsInterpolation(GstBaseParse *parse, gboolean ptsInterpolate) const override
+    {
+        gst_base_parse_set_pts_interpolation(parse, ptsInterpolate);
+    }
 };
 
 }; // namespace firebolt::rialto::wrappers
