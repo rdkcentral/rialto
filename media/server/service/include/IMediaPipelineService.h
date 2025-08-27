@@ -27,6 +27,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <chrono>
 
 namespace firebolt::rialto::server::service
 {

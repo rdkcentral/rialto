@@ -84,6 +84,7 @@ public:
     MOCK_METHOD(std::vector<std::string>, getSupportedProperties,
                 (MediaSourceType mediaType, const std::vector<std::string> &propertyNames), (override));
     MOCK_METHOD(void, ping, (const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure), (override));
+    MOCK_METHOD(void, setSubtitleResyncInterval, (const std::chrono::seconds subtitleResyncInterval), (override));
 };
 } // namespace firebolt::rialto::server::service
 
