@@ -191,6 +191,8 @@ public:
 
     void notifySourceFlushed(MediaSourceType mediaSourceType) override;
 
+    //void setSubtitleResyncInterval(const std::chrono::seconds subtitleResyncInterval) override;
+
 protected:
     /**
      * @brief The media player client.
@@ -286,6 +288,12 @@ protected:
      * @brief Flag used to check if low latency is set for audio source
      */
     bool m_IsLowLatencyAudioPlayer{false};
+
+    /**
+     * @brief Interval for resyncing subtitles' clock with the AV clock
+     *
+     */
+    std::chrono::seconds m_subtitleResyncInterval{30};
 
     /**
      * @brief Map of flags used to check if Eos has been set on the media type for this playback

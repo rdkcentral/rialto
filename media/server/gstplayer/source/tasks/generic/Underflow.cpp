@@ -18,11 +18,8 @@
  */
 
 #include "tasks/generic/Underflow.h"
-#include "IGstGenericPlayerClient.h"
-#include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
-#include "tasks/generic/Pause.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {

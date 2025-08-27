@@ -94,6 +94,7 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     common::MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(),
                                                  request->resources().maxwebaudioplayers()};
     const auto kClientDisplayName = request->has_clientdisplayname() ? request->clientdisplayname() : "";
+
     bool success{true};
     if (request->has_sessionmanagementsocketfd())
     {
@@ -105,7 +106,8 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
                                             request->socketowner(), request->socketgroup());
     }
     success &= m_sessionServerManager.configureServices(convertSessionServerState(request->initialsessionserverstate()),
-                                                        maxResource, kClientDisplayName, request->appname());
+                                                        maxResource, kClientDisplayName, request->appname(),
+                                                        std::chrono::seconds(request->subtitleclockresyncinterval()));
     m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().clientloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().sessionserverloglevels()),

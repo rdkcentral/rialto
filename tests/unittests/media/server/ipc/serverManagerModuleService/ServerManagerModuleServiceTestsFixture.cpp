@@ -38,6 +38,7 @@ constexpr int kPingId{29};
 const std::string kSocketOwner{};
 const std::string kSocketGroup{};
 const std::string kAppId{"app"};
+const std::chrono::seconds kSubtitleResyncInterval{30};
 
 rialto::SessionServerState convertSessionServerState(const firebolt::rialto::common::SessionServerState &state)
 {
@@ -83,7 +84,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kAppId, kSubtitleResyncInterval))
         .WillOnce(Return(true));
 }
 
@@ -93,7 +94,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kAppId, kSubtitleResyncInterval))
         .WillOnce(Return(true));
 }
 
@@ -117,7 +118,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kAppId, kSubtitleResyncInterval))
         .WillOnce(Return(false));
 }
 
@@ -127,7 +128,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kAppId, kSubtitleResyncInterval))
         .WillOnce(Return(false));
 }
 

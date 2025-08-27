@@ -45,6 +45,7 @@ public:
     MOCK_METHOD(IMediaPipelineService &, getMediaPipelineService, (), (const, override));
     MOCK_METHOD(IWebAudioPlayerService &, getWebAudioPlayerService, (), (const, override));
     MOCK_METHOD(void, ping, (const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure), (const, override));
+    MOCK_METHOD(void, setSubtitleResyncInterval, (const std::chrono::seconds subtitleResyncInterva), (override));
 };
 } // namespace firebolt::rialto::server::service
 

@@ -48,6 +48,7 @@ public:
     virtual void setMaxWebAudioPlayers(int maxWebAudio) = 0;
     virtual void setClientDisplayName(const std::string &clientDisplayName) const = 0;
     virtual void setResourceManagerAppName(const std::string &appName) const = 0;
+    virtual void setSubtitleResyncInterval(const std::chrono::seconds subtitleResyncInterval) = 0;
 
     virtual bool isActive() const = 0;
     virtual bool getSharedMemory(int32_t &fd, uint32_t &size) const = 0;

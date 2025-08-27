@@ -66,6 +66,7 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
                                                                configHelper.getSessionServerPath(),
                                                                configHelper.getSessionServerStartupTimeout(),
                                                                configHelper.getHealthcheckInterval(),
+                                                               configHelper.getSubtitleResyncInterval(),
                                                                configHelper.getNumOfFailedPingsBeforeRecovery(),
                                                                convertSocketPermissions(
                                                                    configHelper.getSocketPermissions()),

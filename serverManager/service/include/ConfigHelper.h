@@ -42,6 +42,7 @@ public:
     const std::string &getSessionServerPath() const;
     std::chrono::milliseconds getSessionServerStartupTimeout() const;
     std::chrono::seconds getHealthcheckInterval() const;
+    std::chrono::seconds getSubtitleResyncInterval() const;
     firebolt::rialto::common::SocketPermissions getSocketPermissions() const;
     unsigned int getNumOfPreloadedServers() const;
     unsigned int getNumOfFailedPingsBeforeRecovery() const;
@@ -61,6 +62,7 @@ private:
     std::string m_sessionServerPath;
     std::chrono::milliseconds m_sessionServerStartupTimeout;
     std::chrono::seconds m_healthcheckInterval;
+    std::chrono::seconds m_subtitleResyncInterval;
     firebolt::rialto::common::SocketPermissions m_socketPermissions;
     unsigned int m_numOfPreloadedServers;
     unsigned int m_numOfFailedPingsBeforeRecovery;

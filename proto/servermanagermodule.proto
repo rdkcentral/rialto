@@ -97,6 +97,7 @@ message SetConfigurationRequest {
     optional string socketGroup = 8;
     optional string appName = 9;
     optional int32 sessionManagementSocketFd = 10;
+    optional uint32 subtitleClockResyncInterval = 11;
 }
 message SetConfigurationResponse {
 }

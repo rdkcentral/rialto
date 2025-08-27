@@ -36,7 +36,7 @@ public:
                                      const std::string &sessionServerPath,
                                      std::chrono::milliseconds sessionServerStartupTimeout,
                                      unsigned int socketPermissions, const std::string &socketOwner,
-                                     const std::string &socketGroup);
+                                     const std::string &socketGroup, std::chrono::seconds subtitleResyncInterval);
     ~SessionServerAppFactory() override = default;
 
     std::unique_ptr<ISessionServerApp>
@@ -54,6 +54,7 @@ private:
     const unsigned int m_kSocketPermissions;
     const std::string m_kSocketOwner;
     const std::string m_kSocketGroup;
+    const std::chrono::seconds m_kSubtitleResyncInterval;
     std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapperFactory> m_linuxWrapperFactory;
 };
 } // namespace rialto::servermanager::common

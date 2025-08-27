@@ -50,6 +50,7 @@ bool ConfigReader::read()
     parseSessionServerPath(root);
     parseSessionServerStartupTimeout(root);
     parseHealthcheckInterval(root);
+    parseSubtitleResyncInterval(root);
     parseSocketPermissions(root);
     parseSocketOwner(root);
     parseSocketGroup(root);
@@ -90,6 +91,15 @@ void ConfigReader::parseHealthcheckInterval(std::shared_ptr<firebolt::rialto::wr
     if (interval.has_value())
     {
         m_healthcheckInterval = std::chrono::seconds{*interval};
+    }
+}
+
+void ConfigReader::parseSubtitleResyncInterval(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+{
+    auto interval{getUInt(root, "subtitleResyncIntervalInSeconds")};
+    if (interval.has_value())
+    {
+        m_subtitleResyncInterval = std::chrono::seconds{*interval};
     }
 }
 
@@ -185,6 +195,11 @@ std::optional<std::chrono::milliseconds> ConfigReader::getSessionServerStartupTi
 std::optional<std::chrono::seconds> ConfigReader::getHealthcheckInterval()
 {
     return m_healthcheckInterval;
+}
+
+std::optional<std::chrono::seconds> ConfigReader::getSubtitleResyncInterval()
+{
+    return m_subtitleResyncInterval;
 }
 
 std::optional<firebolt::rialto::common::SocketPermissions> ConfigReader::getSocketPermissions()
