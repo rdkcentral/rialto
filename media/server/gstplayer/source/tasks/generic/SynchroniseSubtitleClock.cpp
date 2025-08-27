@@ -40,7 +40,7 @@ SynchroniseSubtitleClock::~SynchroniseSubtitleClock()
 
 void SynchroniseSubtitleClock::execute() const
 {
-    RIALTO_SERVER_LOG_ERROR("KLOPS Executing SynchroniseSubtitleClock");
+    RIALTO_SERVER_LOG_DEBUG("Executing SynchroniseSubtitleClock");
     if (m_context.videoSink)
     {
         GstClockTime gstVideoPts = 0;
@@ -56,37 +56,34 @@ void SynchroniseSubtitleClock::execute() const
         {
             RIALTO_SERVER_LOG_WARN("KLOPS video-pts property not found in video-sink");
         }
+
         std::int64_t position2 = 0;
         if (m_gstWrapper->gstElementQueryPosition(m_context.videoSink, GST_FORMAT_TIME, &position2))
         {
-            // Create and send a custom event with the current PTS value
             GstStructure *structure =
                 m_gstWrapper->gstStructureNew("current-pts", "pts", G_TYPE_INT64, gstVideoPts, nullptr);
-            GstEvent *event = m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM, structure);
+            GstEvent *event = m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, structure);
             if (event)
             {
                 RIALTO_SERVER_LOG_ERROR("KLOPS Sending current-pts event with value: %" GST_TIME_FORMAT,
                                         GST_TIME_ARGS(gstVideoPts));
                 if (!m_gstWrapper->gstElementSendEvent(m_context.subtitleSink, event))
                 {
-                    RIALTO_SERVER_LOG_ERROR("KLOPS Failed to send current-pts event to subtitle sink");
+                    RIALTO_SERVER_LOG_ERROR("Failed to send current-pts event to subtitle sink");
                 }
             }
             else
             {
-                RIALTO_SERVER_LOG_ERROR("KLOPS Failed to create current-pts event");
+                RIALTO_SERVER_LOG_ERROR("Failed to create current-pts event");
             }
-            m_glibWrapper->gObjectSet(m_context.subtitleSink, "test", gstVideoPts, nullptr);
-            RIALTO_SERVER_LOG_ERROR("KLOPS Sink position: %" GST_TIME_FORMAT, GST_TIME_ARGS(position2));
         }
         RIALTO_SERVER_LOG_ERROR("KLOPS position and PTS equal: %d", (GstClockTime)position2 == gstVideoPts);
     }
     else
     {
-        RIALTO_SERVER_LOG_WARN("KLOPS video-sink is NULL");
+        RIALTO_SERVER_LOG_ERROR("video-sink is NULL");
     }
 
-    RIALTO_SERVER_LOG_ERROR("KLOPS ************************************ KLOPS ************************************");
 }
 
 } // namespace firebolt::rialto::server::tasks::generic

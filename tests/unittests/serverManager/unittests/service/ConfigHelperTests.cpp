@@ -48,6 +48,7 @@ const ServerManagerConfig kServerManagerConfig{kEnvVarSet1,
                                                "sessionServerPath",
                                                std::chrono::milliseconds{3},
                                                std::chrono::seconds{4},
+                                               std::chrono::seconds{10},
                                                {7, 7, 7, "user1", "group1"},
                                                5};
 constexpr unsigned kJsonNumOfPreloadedServers{10};

@@ -62,7 +62,8 @@ void SessionServerAppTests::createPreloadedAppSut()
                                                                               kEnvironmentVariables, kSessionServerPath,
                                                                               kSessionServerStartupTimeout,
                                                                               kSocketPermissions, kSocketOwner,
-                                                                              kSocketGroup, std::move(m_namedSocket));
+                                                                              kSocketGroup, std::chrono::seconds{10},
+                                                                              std::move(m_namedSocket));
     ASSERT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -87,7 +88,8 @@ void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConf
                                                                               kSessionServerPath,
                                                                               kSessionServerStartupTimeout,
                                                                               kSocketPermissions, kSocketOwner,
-                                                                              kSocketGroup, std::move(m_namedSocket));
+                                                                              kSocketGroup, std::chrono::seconds{10},
+                                                                              std::move(m_namedSocket));
     ASSERT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -112,7 +114,8 @@ void SessionServerAppTests::createAppSutWithDisabledTimer(const firebolt::rialto
                                                                               kSessionServerPath,
                                                                               std::chrono::milliseconds{0},
                                                                               kSocketPermissions, kSocketOwner,
-                                                                              kSocketGroup, std::move(m_namedSocket));
+                                                                              kSocketGroup, std::chrono::seconds{10},
+                                                                              std::move(m_namedSocket));
     ASSERT_TRUE(m_sut);
     EXPECT_FALSE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());

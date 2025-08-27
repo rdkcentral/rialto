@@ -45,8 +45,8 @@ public:
                      const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                      std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
                      const std::string &socketOwner, const std::string &socketGroup,
-                     const std::chrono::seconds &subtitleResyncInterval
-                         std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket);
+                     const std::chrono::seconds subtitleResyncInterval,
+                     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket);
     SessionServerApp(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                      const firebolt::rialto::common::AppConfig &appConfig,
                      const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
@@ -55,8 +55,8 @@ public:
                      const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                      std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
                      const std::string &socketOwner, const std::string &socketGroup,
-                     const std::chrono::seconds &subtitleResyncInterval
-                         std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket);
+                     const std::chrono::seconds subtitleResyncInterval,
+                     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket);
     virtual ~SessionServerApp();
 
     bool launch() override;
@@ -116,8 +116,8 @@ private:
     std::condition_variable m_processStartupCv;
     bool m_childInitialized;
     firebolt::rialto::common::SessionServerState m_expectedState;
-    std::unique_ptr<firebolt::rialto::ipc::INamedSocket> m_namedSocket;
     const std::chrono::seconds m_kSubtitleResyncInterval;
+    std::unique_ptr<firebolt::rialto::ipc::INamedSocket> m_namedSocket;
 };
 } // namespace rialto::servermanager::common
 

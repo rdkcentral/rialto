@@ -654,7 +654,7 @@ void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &hear
     }
 }
 
-void MediaPipelineService::setSubtitleResyncInterval(const std::chrono::seconds &subtitleResyncInterval)
+void MediaPipelineService::setSubtitleResyncInterval(const std::chrono::seconds subtitleResyncInterval)
 {
     RIALTO_SERVER_LOG_DEBUG("Set subtitle resync interval requested");
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};

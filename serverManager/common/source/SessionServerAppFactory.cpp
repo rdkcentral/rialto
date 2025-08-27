@@ -31,11 +31,11 @@ SessionServerAppFactory::SessionServerAppFactory(const std::list<std::string> &e
                                                  std::chrono::milliseconds sessionServerStartupTimeout,
                                                  unsigned int socketPermissions, const std::string &socketOwner,
                                                  const std::string &socketGroup,
-                                                 const std::chrono::seconds &subtitleResyncInterval)
+                                                 const std::chrono::seconds subtitleResyncInterval)
     : m_kEnvironmentVariables{environmentVariables}, m_kSessionServerPath{sessionServerPath},
       m_kSessionServerStartupTimeout{sessionServerStartupTimeout}, m_kSocketPermissions{socketPermissions},
       m_kSocketOwner{socketOwner}, m_kSocketGroup{socketGroup},
-      m_kSubtitleResyncInterval{subtitleResyncInterval} m_linuxWrapperFactory{
+      m_kSubtitleResyncInterval{subtitleResyncInterval}, m_linuxWrapperFactory{
           firebolt::rialto::wrappers::ILinuxWrapperFactory::createFactory()}
 {
 }

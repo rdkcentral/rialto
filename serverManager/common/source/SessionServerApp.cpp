@@ -82,7 +82,7 @@ SessionServerApp::SessionServerApp(
     ISessionServerAppManager &sessionServerAppManager, const std::list<std::string> &environmentVariables,
     const std::string &sessionServerPath, std::chrono::milliseconds sessionServerStartupTimeout,
     unsigned int socketPermissions, const std::string &socketOwner, const std::string &socketGroup,
-    const std::chrono::seconds &subtitleResyncInterval std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket)
+    const std::chrono::seconds subtitleResyncInterval, std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket)
     : m_kServerId{generateServerId()}, m_initialState{firebolt::rialto::common::SessionServerState::UNINITIALIZED},
       m_socks{-1, -1}, m_linuxWrapper{linuxWrapper}, m_timerFactory{timerFactory},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{true},
@@ -106,7 +106,7 @@ SessionServerApp::SessionServerApp(
     ISessionServerAppManager &sessionServerAppManager, const std::list<std::string> &environmentVariables,
     const std::string &sessionServerPath, std::chrono::milliseconds sessionServerStartupTimeout,
     unsigned int socketPermissions, const std::string &socketOwner, const std::string &socketGroup,
-    const std::chrono::seconds &subtitleResyncInterval std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket)
+    const std::chrono::seconds subtitleResyncInterval, std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket)
     : m_kServerId{generateServerId()}, m_appName{appName}, m_initialState{initialState},
       m_sessionManagementSocketName{getSessionManagementSocketPath(appConfig)},
       m_clientDisplayName{appConfig.clientDisplayName}, m_socks{-1, -1}, m_linuxWrapper{linuxWrapper},

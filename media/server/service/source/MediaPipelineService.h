@@ -103,7 +103,7 @@ public:
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;
 
     void clearMediaPipelines();
-    void setSubtitleResyncInterval(const std::chrono::seconds &subtitleResyncInterval) override;
+    void setSubtitleResyncInterval(const std::chrono::seconds subtitleResyncInterval) override;
 
 private:
     IPlaybackService &m_playbackService;

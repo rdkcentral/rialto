@@ -295,6 +295,7 @@ public:
      */
     virtual bool hasSourceType(const MediaSourceType &mediaSourceType) const = 0;
 
+    /**
      * @brief Sets source state flushed
      *
      * @param[in] mediaSourceType : the source type that has been flushed

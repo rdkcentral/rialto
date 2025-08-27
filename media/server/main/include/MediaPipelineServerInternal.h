@@ -191,7 +191,7 @@ public:
 
     void notifySourceFlushed(MediaSourceType mediaSourceType) override;
 
-    void setSubtitleResyncInterval(const std::chrono::seconds &subtitleResyncInterval) override;
+    void setSubtitleResyncInterval(const std::chrono::seconds subtitleResyncInterval) override;
 
 protected:
     /**

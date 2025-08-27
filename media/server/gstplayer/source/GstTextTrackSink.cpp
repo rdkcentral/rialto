@@ -18,15 +18,15 @@
  */
 
 #include "GstProtectionMetadataHelperFactory.h"
+#include "GstRialtoTextTrackSinkPrivate.h"
 #include "GstTextTrackSinkFactory.h"
 #include "RialtoServerLogging.h"
-#include <stdexcept>
-
-#include "GstRialtoTextTrackSinkPrivate.h"
 #include <atomic>
+#include <cinttypes>
 #include <cstdlib>
 #include <gst/base/gstbasetransform.h>
 #include <gst/gst.h>
+#include <stdexcept>
 G_BEGIN_DECLS
 
 enum
@@ -287,7 +287,7 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
                     std::unique_lock lock{textTrackSink->priv->m_mutex};
                     uint64_t offset = textTrackSink->priv->m_offset ? *textTrackSink->priv->m_offset : 0;
                     uint64_t position = offset + pts;
-                    GST_DEBUG_OBJECT(textTrackSink, "Setting position to %llu (offset %llu, pts %llu)", position,
+                    GST_DEBUG_OBJECT(textTrackSink, "Setting position to %" PRIu64 " (offset %" PRIu64 ", pts %" PRIu64 ")", position,
                                      offset, pts);
 
                     if (textTrackSink->priv->m_textTrackSession)
