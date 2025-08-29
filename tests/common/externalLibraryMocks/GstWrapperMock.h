@@ -33,6 +33,7 @@ public:
     virtual ~GstWrapperMock() = default;
 
     MOCK_METHOD(void, gstInit, (int *argc, char ***argv), (override));
+    MOCK_METHOD(void, gstDeinit, (), (override));
     MOCK_METHOD(GstPlugin *, gstRegistryFindPlugin, (GstRegistry * registry, const gchar *name), (override));
     MOCK_METHOD(void, gstRegistryRemovePlugin, (GstRegistry * registry, GstPlugin *plugin), (override));
     MOCK_METHOD(void, gstObjectUnref, (gpointer object), (override));

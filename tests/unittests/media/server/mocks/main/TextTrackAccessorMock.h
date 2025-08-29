@@ -37,7 +37,7 @@ public:
     MOCK_METHOD(bool, mute, (uint32_t sessionId, bool mute), (override));
     MOCK_METHOD(bool, setPosition, (uint32_t sessionId, uint64_t mediaTimestampMs), (override));
     MOCK_METHOD(bool, sendData,
-                (uint32_t sessionId, const std::string &data, DataType datatype, int32_t displayOffsetMs), (override));
+                (uint32_t sessionId, const std::string &data, DataType datatype, int64_t displayOffsetMs), (override));
     MOCK_METHOD(bool, setSessionWebVTTSelection, (uint32_t sessionId), (override));
     MOCK_METHOD(bool, setSessionTTMLSelection, (uint32_t sessionId), (override));
     MOCK_METHOD(bool, setSessionCCSelection, (uint32_t sessionId, const std::string &service), (override));

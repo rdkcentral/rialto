@@ -137,6 +137,7 @@ constexpr bool kIsAudioAac{false};
 constexpr uint64_t kStopPosition{4523};
 const std::vector<uint8_t> kStreamHeaderVector{1, 2, 3, 4};
 constexpr bool kFramed{true};
+constexpr uint64_t kDisplayOffset{35};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 {
@@ -173,10 +174,12 @@ firebolt::rialto::IMediaPipeline::MediaSegmentVector buildSubtitleSamples()
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegment>(kSubtitleSourceId,
                                                                          firebolt::rialto::MediaSourceType::SUBTITLE,
                                                                          kItHappenedInThePast, kDuration));
+    dataVec.back()->setDisplayOffset(kDisplayOffset);
     dataVec.emplace_back(
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegment>(kSubtitleSourceId,
                                                                          firebolt::rialto::MediaSourceType::SUBTITLE,
                                                                          kItWillHappenInTheFuture, kDuration));
+    dataVec.back()->setDisplayOffset(kDisplayOffset);
     return dataVec;
 }
 
@@ -795,6 +798,21 @@ void GenericTasksTestsBase::shouldSetupVideoSinkElementWithPendingRenderFrame()
 
     // This is the extra EXPECT caused by setting pendingRenderFrame...
     EXPECT_CALL(testContext->m_gstPlayer, setRenderFrame());
+    expectSetupVideoSinkElement();
+}
+
+void GenericTasksTestsBase::shouldSetupVideoSinkElementWithPendingShowVideoWindow()
+{
+    testContext->m_context.pendingShowVideoWindow = true;
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
+
+    // This is the extra EXPECT caused by setting pendingShowVideoWindow...
+    EXPECT_CALL(testContext->m_gstPlayer, setShowVideoWindow()).WillOnce(Return(true));
     expectSetupVideoSinkElement();
 }
 
@@ -1522,6 +1540,30 @@ void GenericTasksTestsBase::triggerAttachFlacAudioSource()
     task.execute();
 }
 
+void GenericTasksTestsBase::shouldAttachMp3AudioSource()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmptySimple(StrEq("audio/mpeg")))
+        .WillOnce(Return(&testContext->m_gstCaps1));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleIntStub(&testContext->m_gstCaps1, StrEq("mpegversion"), G_TYPE_INT, 1));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstCapsSetSimpleIntStub(&testContext->m_gstCaps1, StrEq("layer"), G_TYPE_INT, 3));
+    expectSetCaps();
+}
+
+void GenericTasksTestsBase::triggerAttachMp3AudioSource()
+{
+    std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
+        std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/mp3", false);
+    firebolt::rialto::server::tasks::generic::AttachSource task{testContext->m_context,
+                                                                testContext->m_gstWrapper,
+                                                                testContext->m_glibWrapper,
+                                                                testContext->m_gstTextTrackSinkFactoryMock,
+                                                                testContext->m_gstPlayer,
+                                                                source};
+    task.execute();
+}
+
 void GenericTasksTestsBase::expectAddChannelAndRateAudioToCaps()
 {
     EXPECT_CALL(*testContext->m_gstWrapper,
@@ -1566,6 +1608,9 @@ void GenericTasksTestsBase::expectAddFramedToCaps()
 
 void GenericTasksTestsBase::expectSetCaps()
 {
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps1))
+        .WillOnce(Return(&testContext->m_capsStr));
+    EXPECT_CALL(*testContext->m_glibWrapper, gFree(&testContext->m_capsStr));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryMake(_, StrEq(kAudName.c_str())))
         .WillOnce(Return(&testContext->m_appSrcAudio));
     EXPECT_CALL(*testContext->m_gstWrapper,
@@ -1624,6 +1669,9 @@ void GenericTasksTestsBase::triggerAttachUnknownSource()
 void GenericTasksTestsBase::shouldAttachSubtitleSource()
 {
     EXPECT_CALL(*testContext->m_gstWrapper, gstCapsNewEmpty()).WillOnce(Return(&testContext->m_gstCaps2));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps2))
+        .WillOnce(Return(&testContext->m_capsStr));
+    EXPECT_CALL(*testContext->m_glibWrapper, gFree(&testContext->m_capsStr));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryMake(_, StrEq(kSubtitleName.c_str())))
         .WillOnce(Return(&testContext->m_appSrcSubtitle));
     EXPECT_CALL(*testContext->m_gstTextTrackSinkFactoryMock, createGstTextTrackSink())
@@ -1726,6 +1774,9 @@ void GenericTasksTestsBase::shouldAttachVideoSourceWithEmptyCodecData()
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&(testContext->m_videoBuffer)));
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstCapsSetSimpleStringStub(&testContext->m_gstCaps1, StrEq("stream-format"), _, StrEq("avc")));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps1))
+        .WillOnce(Return(&testContext->m_capsStr));
+    EXPECT_CALL(*testContext->m_glibWrapper, gFree(&testContext->m_capsStr));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryMake(_, StrEq(kVidName.c_str())))
         .WillOnce(Return(&testContext->m_appSrcVideo));
     EXPECT_CALL(*testContext->m_gstWrapper,
@@ -1795,6 +1846,9 @@ void GenericTasksTestsBase::expectSetGenericVideoCaps()
                 gstCapsSetSimpleIntStub(&testContext->m_gstCaps1, StrEq("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstCapsSetSimpleIntStub(&testContext->m_gstCaps1, StrEq("height"), G_TYPE_INT, kHeight));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsToString(&testContext->m_gstCaps1))
+        .WillOnce(Return(&testContext->m_capsStr));
+    EXPECT_CALL(*testContext->m_glibWrapper, gFree(&testContext->m_capsStr));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryMake(_, StrEq(kVidName.c_str())))
         .WillOnce(Return(&testContext->m_appSrcVideo));
     EXPECT_CALL(*testContext->m_gstWrapper,
@@ -2368,28 +2422,7 @@ void GenericTasksTestsBase::triggerShutdown()
 
 void GenericTasksTestsBase::shouldSetVideoMute()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO))
-        .WillOnce(Return(&testContext->m_videoSink));
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_videoSink), StrEq("show-video-window")))
-        .WillOnce(Return(&testContext->m_paramSpec));
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_videoSink, StrEq("show-video-window")));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(&testContext->m_videoSink));
-}
-
-void GenericTasksTestsBase::shouldFailToSetVideoMuteNoSink()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO)).WillOnce(Return(nullptr));
-}
-
-void GenericTasksTestsBase::shouldFailToSetVideoMuteNoProperty()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getSink(firebolt::rialto::MediaSourceType::VIDEO))
-        .WillOnce(Return(&testContext->m_videoSink));
-    EXPECT_CALL(*testContext->m_glibWrapper,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(&testContext->m_videoSink), StrEq("show-video-window")))
-        .WillOnce(Return(nullptr));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(&testContext->m_videoSink));
+    EXPECT_CALL(testContext->m_gstPlayer, setShowVideoWindow()).WillOnce(Return(true));
 }
 
 void GenericTasksTestsBase::triggerSetAudioMute()
@@ -2417,6 +2450,7 @@ void GenericTasksTestsBase::triggerSetVideoMute()
                                                            testContext->m_gstWrapper, testContext->m_glibWrapper,
                                                            MediaSourceType::VIDEO,    kMute};
     task.execute();
+    EXPECT_EQ(testContext->m_context.pendingShowVideoWindow, !kMute);
 }
 
 void GenericTasksTestsBase::triggerSetSubtitleMute()
@@ -2627,7 +2661,7 @@ void GenericTasksTestsBase::shouldFailToReportPosition()
 void GenericTasksTestsBase::shouldFinishSetupSource()
 {
     EXPECT_CALL(*testContext->m_gstSrc,
-                setupAndAddAppArc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
+                setupAndAddAppSrc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
                                       testContext->m_decryptionServiceMock)
                                       .get(),
                                   testContext->m_element, testContext->m_streamInfoAudio, _, &testContext->m_gstPlayer,
@@ -2642,7 +2676,7 @@ void GenericTasksTestsBase::shouldFinishSetupSource()
             }));
     EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::AUDIO));
     EXPECT_CALL(*testContext->m_gstSrc,
-                setupAndAddAppArc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
+                setupAndAddAppSrc(std::dynamic_pointer_cast<firebolt::rialto::server::IDecryptionService>(
                                       testContext->m_decryptionServiceMock)
                                       .get(),
                                   testContext->m_element, testContext->m_streamInfoVideo, _, &testContext->m_gstPlayer,

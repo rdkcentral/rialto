@@ -46,7 +46,7 @@ public:
     virtual bool play() = 0;
     virtual bool mute(bool mute) = 0;
     virtual bool setPosition(uint64_t mediaTimestampMs) = 0;
-    virtual bool sendData(const std::string &data, int32_t displayOffsetMs = 0) = 0;
+    virtual bool sendData(const std::string &data, int64_t displayOffsetMs = 0) = 0;
     virtual bool setSessionWebVTTSelection() = 0;
     virtual bool setSessionTTMLSelection() = 0;
     virtual bool setSessionCCSelection(const std::string &service) = 0;

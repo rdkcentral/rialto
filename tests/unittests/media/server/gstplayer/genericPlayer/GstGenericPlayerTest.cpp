@@ -843,13 +843,23 @@ TEST_F(GstGenericPlayerTest, shouldPing)
 TEST_F(GstGenericPlayerTest, shouldFlush)
 {
     constexpr bool kResetTime{true};
+    bool isAsync{true};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(m_flushWatcherMock, setFlushing(MediaSourceType::AUDIO));
+    EXPECT_CALL(m_flushWatcherMock, setFlushing(MediaSourceType::VIDEO, isAsync));
+    expectGetSink(kVideoSinkStr, m_element);
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("async"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *val)
+            {
+                gboolean *returnVal = reinterpret_cast<gboolean *>(val);
+                *returnVal = TRUE;
+            }));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element));
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createFlush(_, _, MediaSourceType::AUDIO, kResetTime))
+    EXPECT_CALL(m_taskFactoryMock, createFlush(_, _, MediaSourceType::VIDEO, kResetTime))
         .WillOnce(Return(ByMove(std::move(task))));
 
-    m_sut->flush(MediaSourceType::AUDIO, kResetTime);
+    m_sut->flush(MediaSourceType::VIDEO, kResetTime, isAsync);
 }
 
 TEST_F(GstGenericPlayerTest, shouldSetSourcePosition)
@@ -1042,19 +1052,4 @@ TEST_F(GstGenericPlayerTest, shouldSwitchSource)
     EXPECT_CALL(m_taskFactoryMock, createSwitchSource(_, Ref(source))).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->switchSource(source);
-}
-
-TEST_F(GstGenericPlayerTest, shouldCheckIfSinkIsAsync)
-{
-    expectGetSink(kVideoSinkStr, m_element);
-    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("async"), _))
-        .WillOnce(Invoke(
-            [&](gpointer object, const gchar *first_property_name, void *val)
-            {
-                gboolean *returnVal = reinterpret_cast<gboolean *>(val);
-                *returnVal = TRUE;
-            }));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element));
-
-    EXPECT_TRUE(m_sut->isAsync(MediaSourceType::VIDEO));
 }

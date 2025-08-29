@@ -55,14 +55,12 @@ protected:
 
 TEST_F(GstDispatcherThreadClientTest, shouldHandleBusMessage)
 {
-    constexpr bool kIsFlushing{false};
     GstMessage message{};
     std::unique_ptr<IPlayerTask> messageTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillOnce(Return(kIsFlushing));
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*messageTask), execute());
     EXPECT_CALL(m_workerThreadMock, enqueueTask(_))
         .WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
-    EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, &message, kIsFlushing))
+    EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, &message, _))
         .WillOnce(Return(ByMove(std::move(messageTask))));
 
     m_sut->handleBusMessage(&message);

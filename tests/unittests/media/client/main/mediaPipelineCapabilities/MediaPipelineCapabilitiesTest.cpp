@@ -102,6 +102,15 @@ TEST_F(MediaPipelineCapabilitiesTest, getSupportedProperties)
     EXPECT_EQ(supportedProperties, kProperties);
 }
 
+TEST_F(MediaPipelineCapabilitiesTest, isVideoMaster)
+{
+    bool isMaster{false};
+    createMediaPipelineCapabilitiesIpcSucceeds();
+
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesIpcMock, isVideoMaster(isMaster)).WillOnce(Return(true));
+    EXPECT_TRUE(m_sut->isVideoMaster(isMaster));
+}
+
 /**
  * Test the factory failure
  */

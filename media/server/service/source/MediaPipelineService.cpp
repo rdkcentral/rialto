@@ -620,6 +620,13 @@ bool MediaPipelineService::switchSource(int sessionId, const std::unique_ptr<IMe
     return mediaPipelineIter->second->switchSource(source);
 }
 
+bool MediaPipelineService::isVideoMaster(bool &isVideoMaster)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested check if video is master");
+
+    return m_mediaPipelineCapabilities->isVideoMaster(isVideoMaster);
+}
+
 std::vector<std::string> MediaPipelineService::getSupportedMimeTypes(MediaSourceType type)
 {
     return m_mediaPipelineCapabilities->getSupportedMimeTypes(type);

@@ -819,6 +819,20 @@ TEST_F(MediaPipelineServiceTests, shouldSwitchSource)
     switchSourceShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToCheckIfVideoIsMaster)
+{
+    initSession();
+    mediaPipelineWillFailToCheckIfVideoIsMaster();
+    isVideoMasterShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldCheckIfVideoIsMaster)
+{
+    initSession();
+    mediaPipelineWillCheckIfVideoIsMaster();
+    isVideoMasterShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldPing)
 {
     initSession();

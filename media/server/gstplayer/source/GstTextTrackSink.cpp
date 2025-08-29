@@ -188,7 +188,12 @@ static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuf
     if (gst_buffer_map(buffer, &info, GST_MAP_READ))
     {
         std::string data(reinterpret_cast<char *>(info.data), info.size);
-        textTrackSink->priv->m_textTrackSession->sendData(data);
+        int64_t displayOffset{0};
+        if (GST_BUFFER_OFFSET_NONE != GST_BUFFER_OFFSET(buffer))
+        {
+            displayOffset = static_cast<int64_t>(GST_BUFFER_OFFSET(buffer));
+        }
+        textTrackSink->priv->m_textTrackSession->sendData(data, 0 - displayOffset);
 
         gst_buffer_unmap(buffer, &info);
     }

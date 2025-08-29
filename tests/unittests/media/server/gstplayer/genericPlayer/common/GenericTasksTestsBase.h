@@ -88,6 +88,7 @@ protected:
     void shouldSetupVideoParserElementWithPendingStreamSyncMode();
     void shouldSetupAudioDecoderElementWithPendingBufferingLimit();
     void shouldSetupVideoSinkElementWithPendingRenderFrame();
+    void shouldSetupVideoSinkElementWithPendingShowVideoWindow();
     void shouldSetupAudioElementAmlhalasinkWhenNoVideo();
     void shouldSetupAudioElementAmlhalasinkWhenVideoExists();
     void shouldSetupAudioElementBrcmAudioSink();
@@ -167,6 +168,8 @@ protected:
     void triggerAttachXrawAudioSource();
     void shouldAttachFlacAudioSource();
     void triggerAttachFlacAudioSource();
+    void shouldAttachMp3AudioSource();
+    void triggerAttachMp3AudioSource();
     void shouldAttachVideoSource(const std::string &mime, const std::string &alignment, const std::string &format);
     void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
                                   firebolt::rialto::StreamFormat streamFormat);
@@ -269,8 +272,6 @@ protected:
     void triggerSetUnknownMute();
     void setContextSubtitleSink();
     void shouldSetAudioMute();
-    void shouldFailToSetVideoMuteNoSink();
-    void shouldFailToSetVideoMuteNoProperty();
     void shouldSetVideoMute();
     void shouldSetSubtitleMute();
 

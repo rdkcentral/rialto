@@ -255,6 +255,10 @@ void SetupElement::execute() const
         {
             m_player.setRenderFrame();
         }
+        if (m_context.pendingShowVideoWindow.has_value())
+        {
+            m_player.setShowVideoWindow();
+        }
     }
     else if (isAudioDecoder(*m_gstWrapper, m_element))
     {

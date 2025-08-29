@@ -43,5 +43,6 @@ void Stop::execute() const
     {
         streamInfo.second.isDataNeeded = false;
     }
+    RIALTO_SERVER_LOG_MIL("State change to NULL requested");
 }
 } // namespace firebolt::rialto::server::tasks::generic

@@ -141,6 +141,8 @@ public:
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("height"), G_TYPE_INT, kHeight))
             .RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_videoCaps)).WillOnce(Return(&m_videoCapsStr));
+        EXPECT_CALL(*m_glibWrapperMock, gFree(&m_videoCapsStr));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("vidsrc")))
             .WillOnce(Return(GST_ELEMENT(&m_secondaryVideoAppSrc)));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_secondaryVideoAppSrc, &m_videoCaps));

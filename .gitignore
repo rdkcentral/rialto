@@ -10,6 +10,8 @@
 /cmake/ocdm-config.cmake
 *__pycache__
 /.vscode/*
+/CMakeUserPresets.json
+/CMakeLists.txt.user*
 
 # These files are fetched by cmake during building rialto for the native platform
 /stubs/opencdm/third-party/*

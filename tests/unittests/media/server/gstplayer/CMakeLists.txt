@@ -147,12 +147,4 @@ target_link_libraries(RialtoServerGstPlayerUnitTests
     RialtoTestCommonUtils
 )
 
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoServerGstPlayerUnitTests
-
-        gcov
-        )
-endif()
-
 set_target_properties(RialtoServerGstPlayerUnitTests PROPERTIES COMPILE_FLAGS "-Wno-write-strings")

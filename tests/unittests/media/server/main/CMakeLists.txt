@@ -143,11 +143,3 @@ target_link_libraries(
         RialtoPlayerCommon
         RialtoCommonMisc
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoServerMainUnitTests
-
-        gcov
-        )
-endif()

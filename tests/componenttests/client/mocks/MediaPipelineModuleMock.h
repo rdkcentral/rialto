@@ -140,6 +140,9 @@ public:
     MOCK_METHOD(void, processAudioGap,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::ProcessAudioGapRequest *request,
                  ::firebolt::rialto::ProcessAudioGapResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, isVideoMaster,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::IsVideoMasterRequest *request,
+                 ::firebolt::rialto::IsVideoMasterResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
