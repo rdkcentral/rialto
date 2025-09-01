@@ -34,6 +34,7 @@ enum
     PROP_0,
     PROP_MUTE,
     PROP_TEXT_TRACK_IDENTIFIER,
+    PROP_VIDEO_DECODER,
     PROP_POSITION,
     PROP_LAST
 };
@@ -114,7 +115,12 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
     g_object_class_install_property(gobjectClass, PROP_TEXT_TRACK_IDENTIFIER,
                                     g_param_spec_string("text-track-identifier", "Text Track Identifier",
                                                         "Identifier of text track", nullptr,
-                                                        GParamFlags(G_PARAM_READWRITE)));
+                                                        GParamFlags(G_PARAM_WRITABLE)));
+
+    g_object_class_install_property(gobjectClass, PROP_VIDEO_DECODER,
+                                    g_param_spec_uint64("video-decoder", "Video Decoder", "Video Decoder", 0, G_MAXUINT64, 0,
+                                                        GParamFlags(G_PARAM_WRITABLE)));
+
     g_object_class_install_property(gobjectClass, PROP_POSITION,
                                     g_param_spec_uint64("position", "Position", "Position", 0, G_MAXUINT64, 0,
                                                         GParamFlags(G_PARAM_READWRITE)));
@@ -339,11 +345,6 @@ static void gst_rialto_text_track_sink_get_property(GObject *object, guint propI
         g_value_set_boolean(value, priv->m_isMuted.load());
         break;
     }
-    case PROP_TEXT_TRACK_IDENTIFIER:
-    {
-        g_value_set_string(value, priv->m_textTrackIdentifier.c_str());
-        break;
-    }
     case PROP_POSITION:
     {
         // Thunder ITextTrack does not provide getPosition API so we are unable to determine current position
@@ -384,6 +385,16 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
         if (priv->m_textTrackSession)
         {
             priv->m_textTrackSession->setSessionCCSelection(priv->m_textTrackIdentifier);
+        }
+
+        break;
+    }
+    case PROP_VIDEO_DECODER:
+    {
+        priv->m_videoDecoderIdentifier = g_value_get_uint64(value);
+        if (priv->m_textTrackSession)
+        {
+            priv->m_textTrackSession->associateVideoDecoder(priv->m_videoDecoderIdentifier);
         }
 
         break;

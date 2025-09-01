@@ -48,6 +48,7 @@ public:
     bool setSessionWebVTTSelection() override;
     bool setSessionTTMLSelection() override;
     bool setSessionCCSelection(const std::string &service) override;
+    bool associateVideoDecoder(uint64_t decoderId) override;
 
 private:
     std::shared_ptr<ITextTrackAccessor> m_textTrackAccessor;

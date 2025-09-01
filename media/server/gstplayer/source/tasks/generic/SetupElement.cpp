@@ -219,6 +219,19 @@ void SetupElement::execute() const
         m_glibWrapper->gObjectSet(m_element, "sync", FALSE, nullptr);
     }
 
+    uintptr_t mVideoDecoderHandle = 0;
+    if (/*!mVideoDecoderHandle && */isVideoDecoder(*m_gstWrapper, m_element))
+    {
+        RIALTO_SERVER_LOG_ERROR("KLOPS element name %s", GST_ELEMENT_NAME(m_element));
+        if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "omx") ||
+            m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink") ||
+            m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "brcmvideodecoder"))
+        {
+            mVideoDecoderHandle = reinterpret_cast<uintptr_t>(m_element);
+            RIALTO_SERVER_LOG_ERROR("KLOPS2 element name %s, decoder handle %zu, %p", GST_ELEMENT_NAME(m_element), mVideoDecoderHandle, m_element);
+        }
+    }
+
     if (isDecoder(*m_gstWrapper, m_element) || isSink(*m_gstWrapper, m_element))
     {
         std::optional<std::string> underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);

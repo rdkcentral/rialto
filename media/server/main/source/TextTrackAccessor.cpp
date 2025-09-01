@@ -287,4 +287,18 @@ bool TextTrackAccessor::resetSession(uint32_t sessionId)
     return false;
 }
 
+bool TextTrackAccessor::associateVideoDecoder(uint32_t sessionId, const std::string &videoDecoder)
+{
+    uint32_t result = m_textTrackWrapper->associateVideoDecoder(sessionId, videoDecoder);
+    if (m_thunderWrapper->isSuccessful(result))
+    {
+        RIALTO_SERVER_LOG_INFO("Associating video decoder '%s' was successful", videoDecoder.c_str());
+        return true;
+    }
+
+    RIALTO_SERVER_LOG_ERROR("Failed to associate video decoder '%s'; error %s", videoDecoder.c_str(),
+                           m_thunderWrapper->errorToString(result));
+    return false;
+}
+
 } // namespace firebolt::rialto::server
