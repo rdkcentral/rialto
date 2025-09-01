@@ -48,42 +48,52 @@ void SynchroniseSubtitleClock::execute() const
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_context.videoSink), "video-pts"))
         {
             m_glibWrapper->gObjectGet(m_context.videoSink, "video-pts", &videoPts, nullptr);
+            // videoPts is in 90kHz ticks
             gstVideoPts = GST_TIME_AS_NSECONDS(videoPts) * GST_SECOND / 90000;
-            RIALTO_SERVER_LOG_ERROR("KLOPS Raw Video PTS: %" PRIu64 ", Video PTS: %" GST_TIME_FORMAT, videoPts,
-                                    GST_TIME_ARGS(gstVideoPts));
         }
         else
         {
-            RIALTO_SERVER_LOG_WARN("KLOPS video-pts property not found in video-sink");
+            RIALTO_SERVER_LOG_WARN("video-pts property not found in video-sink");
+            return;
         }
 
-        std::int64_t position2 = 0;
-        if (m_gstWrapper->gstElementQueryPosition(m_context.videoSink, GST_FORMAT_TIME, &position2))
+        auto sourceElem = m_context.streamInfo.find(MediaSourceType::SUBTITLE);
+        GstElement *source{nullptr};
+
+        if (sourceElem != m_context.streamInfo.end())
         {
-            GstStructure *structure =
-                m_gstWrapper->gstStructureNew("current-pts", "pts", G_TYPE_INT64, gstVideoPts, nullptr);
-            GstEvent *event = m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, structure);
-            if (event)
+            source = sourceElem->second.appSrc;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("subtitle source not found");
+            return;
+        }
+
+        GstStructure *structure =
+            m_gstWrapper->gstStructureNew("current-pts", "pts", G_TYPE_UINT64, gstVideoPts, nullptr);
+        GstEvent *event = m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, structure);
+
+        if (event)
+        {
+            if (m_gstWrapper->gstElementSendEvent(source, event))
             {
-                RIALTO_SERVER_LOG_ERROR("KLOPS Sending current-pts event with value: %" GST_TIME_FORMAT,
-                                        GST_TIME_ARGS(gstVideoPts));
-                if (!m_gstWrapper->gstElementSendEvent(m_context.subtitleSink, event))
-                {
-                    RIALTO_SERVER_LOG_ERROR("Failed to send current-pts event to subtitle sink");
-                }
+                RIALTO_SERVER_LOG_DEBUG("Sent current-pts event to subtitlesource");
             }
             else
             {
-                RIALTO_SERVER_LOG_ERROR("Failed to create current-pts event");
+                RIALTO_SERVER_LOG_ERROR("Failed to send current-pts event to source");
             }
         }
-        RIALTO_SERVER_LOG_ERROR("KLOPS position and PTS equal: %d", (GstClockTime)position2 == gstVideoPts);
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to create current-pts event");
+        }
     }
     else
     {
         RIALTO_SERVER_LOG_ERROR("video-sink is NULL");
     }
-
 }
 
 } // namespace firebolt::rialto::server::tasks::generic

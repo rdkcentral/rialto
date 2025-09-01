@@ -187,7 +187,7 @@ static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuf
     if (gst_buffer_map(buffer, &info, GST_MAP_READ))
     {
         std::string data(reinterpret_cast<char *>(info.data), info.size);
-        int64_t displayOffset{0};
+        int64_t displayOffset{/*textTrackSink->priv->m_offset ? 0 - (int64_t)*textTrackSink->priv->m_offset :*/ 0};
         if (GST_BUFFER_OFFSET_NONE != GST_BUFFER_OFFSET(buffer))
         {
             displayOffset = static_cast<int64_t>(GST_BUFFER_OFFSET(buffer));
@@ -285,10 +285,12 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
                     }
 
                     std::unique_lock lock{textTrackSink->priv->m_mutex};
-                    uint64_t offset = textTrackSink->priv->m_offset ? *textTrackSink->priv->m_offset : 0;
-                    uint64_t position = offset + pts;
-                    GST_DEBUG_OBJECT(textTrackSink, "Setting position to %" PRIu64 " (offset %" PRIu64 ", pts %" PRIu64 ")", position,
-                                     offset, pts);
+                    uint64_t position = pts;
+                    if (!textTrackSink->priv->m_textTrackSession->isTTML() && textTrackSink->priv->m_offset)
+                    {
+                        position += textTrackSink->priv->m_offset.value();
+                    }
+                    GST_DEBUG_OBJECT(textTrackSink, "Setting position to %" GST_TIME_FORMAT " (pts %" GST_TIME_FORMAT ")", GST_TIME_ARGS(position), GST_TIME_ARGS(pts));
 
                     if (textTrackSink->priv->m_textTrackSession)
                     {

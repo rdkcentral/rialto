@@ -48,6 +48,7 @@ public:
     bool setSessionWebVTTSelection() override;
     bool setSessionTTMLSelection() override;
     bool setSessionCCSelection(const std::string &service) override;
+    bool isTTML() const override;
 
 private:
     std::shared_ptr<ITextTrackAccessor> m_textTrackAccessor;

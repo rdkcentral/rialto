@@ -42,7 +42,7 @@ namespace
  *        whenever the session moves to another playback state.
  */
 constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
-constexpr std::chrono::seconds kSubtitleClockResyncInterval{30};
+constexpr std::chrono::seconds kSubtitleClockResyncInterval{60};
 
 bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)
 {
@@ -1673,6 +1673,7 @@ void GstGenericPlayer::startSubtitleClockResyncTimer()
             }
         },
         firebolt::rialto::common::TimerType::PERIODIC);
+    setPlaybackRate(1.1);
 }
 
 void GstGenericPlayer::stopSubtitleClockResyncTimer()

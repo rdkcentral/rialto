@@ -641,6 +641,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
 
         m_activeRequests->erase(needDataRequestId);
         scheduleNotifyNeedMediaData(mediaSourceType);
+
         return true;
     }
     else
@@ -765,6 +766,15 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     {
         m_gstPlayer->setEos(mediaSourceType);
         m_isMediaTypeEosMap[mediaSourceType] = true;
+    }
+
+    RIALTO_SERVER_LOG_WARN("KLOPS1");
+    static bool a = false;
+    if (!a)
+    {
+        RIALTO_SERVER_LOG_WARN("KLOPS playback rate is being set to 1.05");
+        a = true;
+        m_gstPlayer->setPlaybackRate(1.2);
     }
 
     return true;
