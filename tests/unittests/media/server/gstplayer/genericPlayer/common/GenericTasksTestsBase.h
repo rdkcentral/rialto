@@ -41,6 +41,7 @@ using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
+using ::testing::Ne;
 
 /**
  * @brief GenericTasksTest Base class
@@ -117,6 +118,7 @@ protected:
     void triggerAutoVideoSinkChildRemovedCallback();
     void triggerAutoAudioSinkChildRemovedCallback();
     void shouldSetupTextTrackSink();
+    void shouldSetupVideoDecoderForTextTrack();
 
     // SetVideoGeometry test methods
     void setPipelineToNull();

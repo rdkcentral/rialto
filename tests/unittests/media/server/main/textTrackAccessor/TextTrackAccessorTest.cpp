@@ -47,6 +47,7 @@ const char *kErrorString{"ERROR"};
 const std::string kDisplayName{"DisplayName"};
 const std::string kData("data");
 const std::string kService{"Service"};
+const std::string kVideoDecoder{"1234"};
 } // namespace
 
 class TextTrackAccessorTests : public testing::Test
@@ -312,4 +313,21 @@ TEST_F(TextTrackAccessorTests, ShouldFailToSetSessionCCSelection)
     EXPECT_CALL(*m_thunderWrapperMock, isSuccessful(kError)).WillOnce(Return(false));
     EXPECT_CALL(*m_thunderWrapperMock, errorToString(kError)).WillOnce(Return(kErrorString));
     EXPECT_FALSE(m_sut->setSessionCCSelection(kSessionId, kService));
+}
+
+TEST_F(TextTrackAccessorTests, ShouldAssociateVideoDecoder)
+{
+    createSut();
+    EXPECT_CALL(*m_textTrackWrapperMock, associateVideoDecoder(kSessionId, kVideoDecoder)).WillOnce(Return(kNoError));
+    EXPECT_CALL(*m_thunderWrapperMock, isSuccessful(kNoError)).WillOnce(Return(true));
+    EXPECT_TRUE(m_sut->associateVideoDecoder(kSessionId, kVideoDecoder));
+}
+
+TEST_F(TextTrackAccessorTests, ShouldFailToAssociateVideoDecoder)
+{
+    createSut();
+    EXPECT_CALL(*m_textTrackWrapperMock, associateVideoDecoder(kSessionId, kVideoDecoder)).WillOnce(Return(kError));
+    EXPECT_CALL(*m_thunderWrapperMock, isSuccessful(kError)).WillOnce(Return(false));
+    EXPECT_CALL(*m_thunderWrapperMock, errorToString(kError)).WillOnce(Return(kErrorString));
+    EXPECT_FALSE(m_sut->associateVideoDecoder(kSessionId, kVideoDecoder));
 }

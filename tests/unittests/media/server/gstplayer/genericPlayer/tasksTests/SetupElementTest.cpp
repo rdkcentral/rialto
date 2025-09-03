@@ -224,3 +224,9 @@ TEST_F(SetupElementTest, shouldSetupBaseParse)
     shouldSetupBaseParse();
     triggerSetupElement();
 }
+
+TEST_F(SetupElementTest, shouldSetupVideoDecodersForSubtitleSink)
+{
+    shouldSetupVideoDecoderForTextTrack();
+    triggerSetupElement();
+}

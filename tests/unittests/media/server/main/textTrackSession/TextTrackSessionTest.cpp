@@ -38,9 +38,11 @@ constexpr std::uint32_t kSessionId{1};
 constexpr bool kMute{true};
 constexpr std::uint64_t kMediaTimestampMs{1234};
 constexpr std::int32_t kDisplayOffsetMs{321};
+constexpr std::uint64_t kDecoderId{5678};
 const std::string kDisplayName{"DisplayName"};
 const std::string kService{"service"};
 const std::string kData{"DATA"};
+const std::string kVideoDecoder{"5678"};
 } // namespace
 
 class TextTrackSessionTest : public testing::Test
@@ -146,4 +148,18 @@ TEST_F(TextTrackSessionTest, shouldResetSession)
     EXPECT_CALL(*m_accessorMock, mute(kSessionId, true)).WillOnce(Return(true));
 
     EXPECT_TRUE(m_sut->resetSession(true));
+}
+
+TEST_F(TextTrackSessionTest, shouldAssociateVideoDecoder)
+{
+    createSut();
+    EXPECT_CALL(*m_accessorMock, associateVideoDecoder(kSessionId, kVideoDecoder)).WillOnce(Return(true));
+    EXPECT_TRUE(m_sut->associateVideoDecoder(kDecoderId));
+}
+
+TEST_F(TextTrackSessionTest, shouldFailToAssociateVideoDecoder)
+{
+    createSut();
+    EXPECT_CALL(*m_accessorMock, associateVideoDecoder(kSessionId, kVideoDecoder)).WillOnce(Return(false));
+    EXPECT_FALSE(m_sut->associateVideoDecoder(kDecoderId));
 }

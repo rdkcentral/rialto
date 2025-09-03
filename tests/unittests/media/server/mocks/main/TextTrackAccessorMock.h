@@ -41,6 +41,7 @@ public:
     MOCK_METHOD(bool, setSessionWebVTTSelection, (uint32_t sessionId), (override));
     MOCK_METHOD(bool, setSessionTTMLSelection, (uint32_t sessionId), (override));
     MOCK_METHOD(bool, setSessionCCSelection, (uint32_t sessionId, const std::string &service), (override));
+    MOCK_METHOD(bool, associateVideoDecoder, (uint32_t sessionId, const std::string &videoDecoder), (override));
 };
 
 } // namespace firebolt::rialto::server
