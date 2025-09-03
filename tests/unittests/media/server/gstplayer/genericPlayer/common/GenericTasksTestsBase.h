@@ -34,6 +34,7 @@ using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAreArray;
 using ::testing::Invoke;
+using ::testing::Ne;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -41,7 +42,6 @@ using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
-using ::testing::Ne;
 
 /**
  * @brief GenericTasksTest Base class

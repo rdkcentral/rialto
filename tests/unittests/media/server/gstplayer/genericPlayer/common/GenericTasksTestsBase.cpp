@@ -3485,8 +3485,11 @@ void GenericTasksTestsBase::shouldSetupVideoDecoderForTextTrack()
                                             GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(TRUE));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("omx"))).WillOnce(Return(TRUE));
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(G_OBJECT(testContext->m_context.subtitleSink), StrEq("video-decoder")));
-    EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryListIsType(testContext->m_elementFactory, Ne(GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO)))
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectSetStub(G_OBJECT(testContext->m_context.subtitleSink), StrEq("video-decoder")));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            Ne(GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO)))
         .WillRepeatedly(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
     EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));

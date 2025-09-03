@@ -48,7 +48,8 @@ public:
     MOCK_METHOD(std::uint32_t, setSessionTTMLSelection, (std::uint32_t sessionId), (const, override));
     MOCK_METHOD(std::uint32_t, setSessionClosedCaptionsService, (std::uint32_t sessionId, const std::string &service),
                 (const, override));
-    MOCK_METHOD(std::uint32_t, associateVideoDecoder, (std::uint32_t sessionId, const std::string &videoDecoder), (const, override));
+    MOCK_METHOD(std::uint32_t, associateVideoDecoder, (std::uint32_t sessionId, const std::string &videoDecoder),
+                (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 

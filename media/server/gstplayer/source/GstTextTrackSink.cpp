@@ -66,7 +66,8 @@ G_END_DECLS
 
 static GstStaticPadTemplate sinkTemplate =
     GST_STATIC_PAD_TEMPLATE("sink", GST_PAD_SINK, GST_PAD_ALWAYS,
-                            GST_STATIC_CAPS("application/ttml+xml; text/vtt; application/x-subtitle-vtt; text/x-raw; subtitle/x-subtitle-cc"));
+                            GST_STATIC_CAPS("application/ttml+xml; text/vtt; application/x-subtitle-vtt; text/x-raw; "
+                                            "subtitle/x-subtitle-cc"));
 
 GST_DEBUG_CATEGORY(gst_rialto_text_track_sink_debug_category);
 #define GST_CAT_DEFAULT gst_rialto_text_track_sink_debug_category
@@ -118,8 +119,8 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
                                                         GParamFlags(G_PARAM_WRITABLE)));
 
     g_object_class_install_property(gobjectClass, PROP_VIDEO_DECODER,
-                                    g_param_spec_uint64("video-decoder", "Video Decoder", "Video Decoder", 0, G_MAXUINT64, 0,
-                                                        GParamFlags(G_PARAM_WRITABLE)));
+                                    g_param_spec_uint64("video-decoder", "Video Decoder", "Video Decoder", 0,
+                                                        G_MAXUINT64, 0, GParamFlags(G_PARAM_WRITABLE)));
 
     g_object_class_install_property(gobjectClass, PROP_POSITION,
                                     g_param_spec_uint64("position", "Position", "Position", 0, G_MAXUINT64, 0,

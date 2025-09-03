@@ -302,7 +302,7 @@ bool TextTrackAccessor::associateVideoDecoder(uint32_t sessionId, const std::str
     }
 
     RIALTO_SERVER_LOG_ERROR("Failed to associate video decoder '%s'; error %s", videoDecoder.c_str(),
-                           m_thunderWrapper->errorToString(result));
+                            m_thunderWrapper->errorToString(result));
     return false;
 }
 

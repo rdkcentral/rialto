@@ -41,7 +41,8 @@ public:
     ~ThunderWrapper() override = default;
 
     const char *errorToString(std::uint32_t errorCode) const override;
-    bool isSuccessful(std::uint32_t errorCode) const override;};
+    bool isSuccessful(std::uint32_t errorCode) const override;
+};
 } // namespace firebolt::rialto::wrappers
 
 #endif // FIREBOLT_RIALTO_WRAPPERS_THUNDER_WRAPPER_H_
