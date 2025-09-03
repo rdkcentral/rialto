@@ -45,14 +45,14 @@ public:
     {
         m_elementFactory = gst_element_factory_find("fakesrc");
         m_audioDecoder = gst_element_factory_create(m_elementFactory, nullptr);
-        m_videoDecoderIdentifier = gst_element_factory_create(m_elementFactory, nullptr);
+        m_videoDecoder = gst_element_factory_create(m_elementFactory, nullptr);
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillRepeatedly(Return(m_elementFactory));
     }
 
     ~UnderflowTest() override
     {
         gst_object_unref(m_audioDecoder);
-        gst_object_unref(m_videoDecoderIdentifier);
+        gst_object_unref(m_videoDecoder);
         gst_object_unref(m_elementFactory);
     }
 
@@ -112,7 +112,7 @@ public:
 
     void willSetupVideoDecoder()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_videoDecoderIdentifier)).WillOnce(Return(m_videoDecoderIdentifier));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_videoDecoder)).WillOnce(Return(m_videoDecoder));
 
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
             .WillOnce(Return(TRUE));
@@ -143,7 +143,7 @@ public:
             .WillOnce(Return(FALSE))
             .RetiresOnSaturation();
 
-        EXPECT_CALL(*m_glibWrapperMock, gObjectType(m_videoDecoderIdentifier)).WillRepeatedly(Return(G_TYPE_PARAM));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectType(m_videoDecoder)).WillRepeatedly(Return(G_TYPE_PARAM));
         EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(_, StrEq("buffer-underflow-callback"), _, _))
             .WillOnce(Invoke(
                 [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
@@ -153,7 +153,7 @@ public:
                     return kSignalId;
                 }))
             .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoDecoderIdentifier))
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoDecoder))
             .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
@@ -165,7 +165,7 @@ public:
 
     void setupVideoDecoder()
     {
-        m_gstreamerStub.setupElement(m_videoDecoderIdentifier);
+        m_gstreamerStub.setupElement(m_videoDecoder);
         waitWorker();
     }
 
@@ -204,7 +204,7 @@ public:
 private:
     GstElementFactory *m_elementFactory{nullptr};
     GstElement *m_audioDecoder{nullptr};
-    GstElement *m_videoDecoderIdentifier{nullptr};
+    GstElement *m_videoDecoder{nullptr};
     guint m_signals[1]{123};
     GCallback m_audioUnderflowCallback;
     gpointer m_audioUnderflowData{nullptr};

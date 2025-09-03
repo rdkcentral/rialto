@@ -54,7 +54,7 @@ inline GstCaps *createSimpleCapsFromMimeType(std::shared_ptr<firebolt::rialto::w
          {"audio/x-eac3", "audio/x-eac3"},     {"audio/x-opus", "audio/x-opus"},
          {"audio/b-wav", "audio/b-wav"},       {"audio/x-raw", "audio/x-raw"},
          {"audio/x-flac", "audio/x-flac"},     {"text/vtt", "application/x-subtitle-vtt"},
-         {"text/ttml", "application/ttml+xml"}};
+         {"text/ttml", "application/ttml+xml"}, {"text/cc", "subtitle/x-subtitle-cc"}};
     auto mimeToMediaTypeIt = mimeToMediaType.find(m_attachedSource.getMimeType());
     if (mimeToMediaTypeIt != mimeToMediaType.end())
     {

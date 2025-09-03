@@ -219,16 +219,19 @@ void SetupElement::execute() const
         m_glibWrapper->gObjectSet(m_element, "sync", FALSE, nullptr);
     }
 
-    uintptr_t mVideoDecoderHandle = 0;
-    if (/*!mVideoDecoderHandle && */isVideoDecoder(*m_gstWrapper, m_element))
+    if (m_context.subtitleSink)
     {
-        RIALTO_SERVER_LOG_ERROR("KLOPS element name %s", GST_ELEMENT_NAME(m_element));
-        if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "omx") ||
-            m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink") ||
-            m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "brcmvideodecoder"))
+        if (!m_context.isVideoHandleSet && isVideoDecoder(*m_gstWrapper, m_element))
         {
-            mVideoDecoderHandle = reinterpret_cast<uintptr_t>(m_element);
-            RIALTO_SERVER_LOG_ERROR("KLOPS2 element name %s, decoder handle %zu, %p", GST_ELEMENT_NAME(m_element), mVideoDecoderHandle, m_element);
+            if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "omx") ||
+                m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink") ||
+                m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "brcmvideodecoder"))
+            {
+                uintptr_t videoDecoderHandle = reinterpret_cast<uintptr_t>(m_element);
+                m_glibWrapper->gObjectSet(m_context.subtitleSink, "video-decoder", videoDecoderHandle, nullptr);
+                RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %zu", videoDecoderHandle);
+                m_context.isVideoHandleSet = true;
+            }
         }
     }
 

@@ -173,6 +173,11 @@ bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, Da
     {
         wrapperDataType = firebolt::rialto::wrappers::ITextTrackWrapper::DataType::TTML;
     }
+    else if (datatype == DataType::CC)
+    {
+        RIALTO_SERVER_LOG_WARN("Data received for ClosedCaptions. It should not happen.");
+        return false;
+    }
     else
     {
         RIALTO_SERVER_LOG_ERROR("Unknown data type");
