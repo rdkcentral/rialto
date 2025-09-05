@@ -1876,6 +1876,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSkipReattachingAudioSource)
     GstAppSrc audioSrc{};
     GstCaps newGstCaps{};
     GstCaps oldGstCaps{};
+    setPipelineState(GST_STATE_PAUSED);
     modifyContext([&](GenericPlayerContext &context)
                   { context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc); });
 
@@ -1898,6 +1899,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachMpegAudioSource)
     GstCaps newGstCaps{};
     GstCaps oldGstCaps{};
     gchar capsStr[13]{"audio/x-eac3"};
+    setPipelineState(GST_STATE_PAUSED);
     firebolt::rialto::wrappers::PlaybackGroupPrivate *playbackGroup;
     modifyContext(
         [&](GenericPlayerContext &context)
@@ -1930,6 +1932,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachEac3AudioSource)
     GstCaps newGstCaps{};
     GstCaps oldGstCaps{};
     gchar capsStr[11]{"audio/mpeg"};
+    setPipelineState(GST_STATE_PAUSED);
     firebolt::rialto::wrappers::PlaybackGroupPrivate *playbackGroup;
     modifyContext(
         [&](GenericPlayerContext &context)
@@ -1961,6 +1964,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachRawAudioSource)
     GstCaps newGstCaps{};
     GstCaps oldGstCaps{};
     gchar capsStr[11]{"audio/mpeg"};
+    setPipelineState(GST_STATE_PAUSED);
     firebolt::rialto::wrappers::PlaybackGroupPrivate *playbackGroup;
     modifyContext(
         [&](GenericPlayerContext &context)

@@ -1037,20 +1037,8 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
         RIALTO_SERVER_LOG_ERROR("Failed to create audio attributes");
         return false;
     }
-    std::int64_t currentDispPts64b = 0; // In netflix code it's currentDisplayPosition + offset
-    
-    // Check if pipeline is prerolling before querying position
-    if (GST_STATE_RETURN(m_context.pipeline) == GST_STATE_CHANGE_ASYNC &&
-        GST_STATE_NEXT(m_context.pipeline) == GST_STATE_PAUSED)
-    {
-        RIALTO_SERVER_LOG_DEBUG("Pipeline is prerolling, using position 0 for source reattachment");
-        currentDispPts64b = 0;
-    }
-    else
-    {
-        m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &currentDispPts64b);
-    }
-    long long currentDispPts = currentDispPts64b; // NOLINT(runtime/int)
+
+    long long currentDispPts = getPosition(m_context.pipeline);; // NOLINT(runtime/int)
     GstCaps *caps{createCapsFromMediaSource(m_gstWrapper, m_glibWrapper, source)};
     GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[source->getType()].appSrc)};
     GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
