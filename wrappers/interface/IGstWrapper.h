@@ -223,6 +223,15 @@ public:
     virtual const gchar *gstElementStateGetName(GstState state) = 0;
 
     /**
+     * @brief Gets the state change return as a string.
+     *
+     * @param[in] state: The state change return.
+     *
+     * @retval The string of the state change return.
+     */
+    virtual const gchar *gstElementStateChangeReturnGetName(GstStateChangeReturn state) = 0;
+
+    /**
      * @brief Sets the state of the element.
      *
      * @param[in] element : A GstElement to change state of.

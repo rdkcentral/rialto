@@ -286,6 +286,17 @@ TEST_F(GstGenericPlayerTest, shouldAddDeepElement)
 TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenPipelineIsBelowPausedState)
 {
     int64_t targetPosition{};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(_)).WillRepeatedly(Return("NotImporant"));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateChangeReturnGetName(_)).WillRepeatedly(Return("NotImporant"));
+    EXPECT_FALSE(m_sut->getPosition(targetPosition));
+}
+
+TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenPipelineIsPrerolling)
+{
+    int64_t targetPosition{};
+    setPipelinePrerolling();
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(_)).WillRepeatedly(Return("NotImporant"));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateChangeReturnGetName(_)).WillRepeatedly(Return("NotImporant"));
     EXPECT_FALSE(m_sut->getPosition(targetPosition));
 }
 

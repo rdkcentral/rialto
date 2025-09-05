@@ -189,7 +189,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateRemoveSource)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateReportPosition)
 {
-    auto task = m_sut.createReportPosition(m_context);
+    auto task = m_sut.createReportPosition(m_context, m_gstPlayer);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::ReportPosition &>(*task));
 }

@@ -22,25 +22,29 @@
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
 #include <gst/gst.h>
+#include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
 ReportPosition::ReportPosition(GenericPlayerContext &context, IGstGenericPlayerClient *client,
-                               std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper)
-    : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}
+                               std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                               IGstGenericPlayerPrivate &playerPrivate)
+    : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_playerPrivate{playerPrivate}
 {
 }
 
 void ReportPosition::execute() const
 {
-    gint64 position = -1;
-    m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position);
-    if (position >= 0)
+    gint64 position = m_playerPrivate.getPosition(m_context.pipeline);
+    if (position == -1)
     {
-        if (m_gstPlayerClient)
-        {
-            m_gstPlayerClient->notifyPosition(position);
-        }
+        RIALTO_SERVER_LOG_WARN("Getting the position failed");
+        return;
+    }
+
+    if (m_gstPlayerClient)
+    {
+        m_gstPlayerClient->notifyPosition(position);
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic
