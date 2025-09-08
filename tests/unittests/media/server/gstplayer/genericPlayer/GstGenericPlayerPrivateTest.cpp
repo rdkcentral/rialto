@@ -1885,6 +1885,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSkipReattachingAudioSource)
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(&audioSrc))).WillOnce(Return(&oldGstCaps));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&newGstCaps, &oldGstCaps)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&oldGstCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillOnce(Return(GST_STATE_PAUSED));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&newGstCaps));
 
@@ -1915,6 +1917,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachMpegAudioSource)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&oldGstCaps)).WillOnce(Return(capsStr));
     EXPECT_CALL(*m_glibWrapperMock, gFree(capsStr));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&oldGstCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillOnce(Return(GST_STATE_PAUSED));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock,
                 performAudioTrackCodecChannelSwitch(playbackGroup, _, _, _, _, _, _, _, _, _, _, _, _))
@@ -1947,6 +1951,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachEac3AudioSource)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&oldGstCaps)).WillOnce(Return(capsStr));
     EXPECT_CALL(*m_glibWrapperMock, gFree(capsStr));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&oldGstCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillOnce(Return(GST_STATE_PAUSED));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock,
                 performAudioTrackCodecChannelSwitch(playbackGroup, _, _, _, _, _, _, _, _, _, _, _, _))
@@ -1979,6 +1985,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachRawAudioSource)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&oldGstCaps)).WillOnce(Return(capsStr));
     EXPECT_CALL(*m_glibWrapperMock, gFree(capsStr));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&oldGstCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillOnce(Return(GST_STATE_PAUSED));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock,
                 performAudioTrackCodecChannelSwitch(playbackGroup, _, _, _, _, _, _, _, _, _, _, _, _))

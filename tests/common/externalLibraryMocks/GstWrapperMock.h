@@ -51,6 +51,8 @@ public:
     MOCK_METHOD(const gchar *, gstElementStateChangeReturnGetName, (GstStateChangeReturn state_ret), (override));
     MOCK_METHOD(GstStateChangeReturn, gstElementSetState, (GstElement * element, GstState state), (override));
     MOCK_METHOD(GstState, gstElementGetState, (GstElement * element), (override));
+    MOCK_METHOD(GstStateChangeReturn, gstElementGetStateReturn, (GstElement * element), (override));
+    MOCK_METHOD(GstState, gstElementGetStateNext, (GstElement * element), (override));
     MOCK_METHOD(GstState, gstElementGetPendingState, (GstElement * element), (override));
     MOCK_METHOD(GstObject *, gstElementGetParent, (const GstElement *elem), (const, override));
     MOCK_METHOD(gchar *, gstElementGetName, (GstElement * element), (const, override));

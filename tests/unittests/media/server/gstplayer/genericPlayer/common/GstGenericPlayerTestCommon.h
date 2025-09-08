@@ -102,7 +102,6 @@ public:
 
 public:
     void setPipelineState(const GstState &state);
-    void setPipelinePrerolling();
 
 protected:
     void gstPlayerWillBeCreated();

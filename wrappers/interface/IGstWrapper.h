@@ -251,6 +251,24 @@ public:
     virtual GstState gstElementGetState(GstElement *element) = 0;
 
     /**
+     * @brief Gets the return value of the last state change operation.
+     *
+     * @param[in] element : A GstElement to get state return of.
+     *
+     * @retval The element's last state change return value.
+     */
+    virtual GstStateChangeReturn gstElementGetStateReturn(GstElement *element) = 0;
+
+    /**
+     * @brief Gets the next (target) state of the element.
+     *
+     * @param[in] element : A GstElement to get next state of.
+     *
+     * @retval The element's next GstState.
+     */
+    virtual GstState gstElementGetStateNext(GstElement *element) = 0;
+
+    /**
      * @brief Returns a copy of the name of elem. Caller should g_free the return value after usage. For a nameless
      *        element, this returns NULL, which you can safely g_free as well.
      *

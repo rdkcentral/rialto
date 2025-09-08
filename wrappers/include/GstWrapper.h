@@ -118,9 +118,9 @@ public:
 
     const gchar *gstElementStateGetName(GstState state) override { return gst_element_state_get_name(state); }
 
-    const gchar *gstElementStateChangeReturnGetName(GstStateChangeReturn state) override 
-    { 
-        return gst_element_state_change_return_get_name(state); 
+    const gchar *gstElementStateChangeReturnGetName(GstStateChangeReturn state) override
+    {
+        return gst_element_state_change_return_get_name(state);
     }
 
     GstStateChangeReturn gstElementSetState(GstElement *element, GstState state) override
@@ -129,6 +129,10 @@ public:
     }
 
     GstState gstElementGetState(GstElement *element) override { return GST_STATE(element); }
+
+    GstStateChangeReturn gstElementGetStateReturn(GstElement *element) override { return GST_STATE_RETURN(element); }
+
+    GstState gstElementGetStateNext(GstElement *element) override { return GST_STATE_NEXT(element); }
 
     GstState gstElementGetPendingState(GstElement *element) override { return GST_STATE_PENDING(element); }
 

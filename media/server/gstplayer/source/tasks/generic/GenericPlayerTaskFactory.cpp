@@ -153,7 +153,7 @@ GenericPlayerTaskFactory::createRemoveSource(GenericPlayerContext &context, IGst
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReportPosition(GenericPlayerContext &context,
-                                                                        IGstGenericPlayerPrivate &player) const
+                                                                            IGstGenericPlayerPrivate &player) const
 {
     return std::make_unique<tasks::generic::ReportPosition>(context, m_client, m_gstWrapper, player);
 }

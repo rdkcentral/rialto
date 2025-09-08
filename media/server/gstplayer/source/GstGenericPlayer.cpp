@@ -1038,7 +1038,7 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
         return false;
     }
 
-    long long currentDispPts = getPosition(m_context.pipeline);; // NOLINT(runtime/int)
+    long long currentDispPts = getPosition(m_context.pipeline); // NOLINT(runtime/int)
     GstCaps *caps{createCapsFromMediaSource(m_gstWrapper, m_glibWrapper, source)};
     GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[source->getType()].appSrc)};
     GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
@@ -1195,14 +1195,17 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
     }
 
     GST_STATE_LOCK(element);
-    if (GST_STATE(element) < GST_STATE_PAUSED ||
-        (GST_STATE_RETURN(element) == GST_STATE_CHANGE_ASYNC && GST_STATE_NEXT(element) == GST_STATE_PAUSED))
+
+    if (m_gstWrapper->gstElementGetState(element) < GST_STATE_PAUSED ||
+        (m_gstWrapper->gstElementGetStateReturn(element) == GST_STATE_CHANGE_ASYNC &&
+         m_gstWrapper->gstElementGetStateNext(element) == GST_STATE_PAUSED))
     {
         RIALTO_SERVER_LOG_WARN("Element is prerolling or in invalid state - state: %s, return: %s, next: %s, pending: "
                                "%s",
-                               m_gstWrapper->gstElementStateGetName(GST_STATE(element)),
-                               m_gstWrapper->gstElementStateChangeReturnGetName(GST_STATE_RETURN(element)),
-                               m_gstWrapper->gstElementStateGetName(GST_STATE_NEXT(element)),
+                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetState(element)),
+                               m_gstWrapper->gstElementStateChangeReturnGetName(
+                                   m_gstWrapper->gstElementGetStateReturn(element)),
+                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetStateNext(element)),
                                m_gstWrapper->gstElementStateGetName(GST_STATE_PENDING(element)));
 
         GST_STATE_UNLOCK(element);

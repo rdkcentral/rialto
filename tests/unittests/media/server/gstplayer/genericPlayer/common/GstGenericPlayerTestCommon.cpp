@@ -108,12 +108,6 @@ void GstGenericPlayerTestCommon::setPipelineState(const GstState &state)
     GST_STATE(&m_pipeline) = state;
 }
 
-void GstGenericPlayerTestCommon::setPipelinePrerolling()
-{
-    GST_STATE_NEXT(&m_pipeline) = GST_STATE_PAUSED;
-    GST_STATE_RETURN(&m_pipeline) = GST_STATE_CHANGE_ASYNC;
-}
-
 void GstGenericPlayerTestCommon::initFactories()
 {
     EXPECT_CALL(*m_gstSrcFactoryMock, getGstSrc()).WillOnce(Return(m_gstSrcMock));
