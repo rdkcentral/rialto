@@ -1194,7 +1194,7 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
         return -1;
     }
 
-    GST_STATE_LOCK(element);
+    m_gstWrapper->gstStateLock(element);
 
     if (m_gstWrapper->gstElementGetState(element) < GST_STATE_PAUSED ||
         (m_gstWrapper->gstElementGetStateReturn(element) == GST_STATE_CHANGE_ASYNC &&
@@ -1208,10 +1208,10 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
                                m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetStateNext(element)),
                                m_gstWrapper->gstElementStateGetName(GST_STATE_PENDING(element)));
 
-        GST_STATE_UNLOCK(element);
+        m_gstWrapper->gstStateUnlock(element);
         return -1;
     }
-    GST_STATE_UNLOCK(element);
+    m_gstWrapper->gstStateUnlock(element);
 
     gint64 position = -1;
     m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position);

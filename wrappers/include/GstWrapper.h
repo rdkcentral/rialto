@@ -134,6 +134,10 @@ public:
 
     GstState gstElementGetStateNext(GstElement *element) override { return GST_STATE_NEXT(element); }
 
+    void gstStateLock(GstElement *element) override { GST_STATE_LOCK(element); }
+
+    void gstStateUnlock(GstElement *element) override { GST_STATE_UNLOCK(element); }
+
     GstState gstElementGetPendingState(GstElement *element) override { return GST_STATE_PENDING(element); }
 
     GstObject *gstElementGetParent(const GstElement *elem) const override { return gst_element_get_parent(elem); }

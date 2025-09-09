@@ -269,6 +269,20 @@ public:
     virtual GstState gstElementGetStateNext(GstElement *element) = 0;
 
     /**
+     * @brief Locks the state mutex of an element.
+     *
+     * @param[in] element : A GstElement to lock the state mutex of.
+     */
+    virtual void gstStateLock(GstElement *element) = 0;
+
+    /**
+     * @brief Unlocks the state mutex of an element.
+     *
+     * @param[in] element : A GstElement to unlock the state mutex of.
+     */
+    virtual void gstStateUnlock(GstElement *element) = 0;
+
+    /**
      * @brief Returns a copy of the name of elem. Caller should g_free the return value after usage. For a nameless
      *        element, this returns NULL, which you can safely g_free as well.
      *
