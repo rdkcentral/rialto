@@ -27,15 +27,15 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 ReportPosition::ReportPosition(GenericPlayerContext &context, IGstGenericPlayerClient *client,
-                               std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                               IGstGenericPlayerPrivate &playerPrivate)
-    : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_playerPrivate{playerPrivate}
+                               const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                               IGstGenericPlayerPrivate &player)
+    : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_player{player}
 {
 }
 
 void ReportPosition::execute() const
 {
-    gint64 position = m_playerPrivate.getPosition(m_context.pipeline);
+    gint64 position = m_player.getPosition(m_context.pipeline);
     if (position == -1)
     {
         RIALTO_SERVER_LOG_WARN("Getting the position failed");

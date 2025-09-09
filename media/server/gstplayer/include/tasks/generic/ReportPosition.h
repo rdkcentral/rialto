@@ -33,8 +33,8 @@ class ReportPosition : public IPlayerTask
 {
 public:
     ReportPosition(GenericPlayerContext &context, IGstGenericPlayerClient *client,
-                   std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                   IGstGenericPlayerPrivate &playerPrivate);
+                   const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                   IGstGenericPlayerPrivate &player);
     ~ReportPosition() override = default;
     void execute() const override;
 
@@ -42,7 +42,7 @@ private:
     GenericPlayerContext &m_context;
     IGstGenericPlayerClient *m_gstPlayerClient;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
-    IGstGenericPlayerPrivate &m_playerPrivate;
+    IGstGenericPlayerPrivate &m_player;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
