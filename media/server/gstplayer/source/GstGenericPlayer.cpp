@@ -1200,13 +1200,11 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
         (m_gstWrapper->gstElementGetStateReturn(element) == GST_STATE_CHANGE_ASYNC &&
          m_gstWrapper->gstElementGetStateNext(element) == GST_STATE_PAUSED))
     {
-        RIALTO_SERVER_LOG_WARN("Element is prerolling or in invalid state - state: %s, return: %s, next: %s, pending: "
-                               "%s",
+        RIALTO_SERVER_LOG_WARN("Element is prerolling or in invalid state - state: %s, return: %s, next: %s",
                                m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetState(element)),
                                m_gstWrapper->gstElementStateChangeReturnGetName(
                                    m_gstWrapper->gstElementGetStateReturn(element)),
-                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetStateNext(element)),
-                               m_gstWrapper->gstElementStateGetName(GST_STATE_PENDING(element)));
+                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetStateNext(element)));
 
         m_gstWrapper->gstStateUnlock(element);
         return -1;
@@ -1214,7 +1212,12 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
     m_gstWrapper->gstStateUnlock(element);
 
     gint64 position = -1;
-    m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position);
+    if(!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
+    {
+        RIALTO_SERVER_LOG_WARN("Failed to query position");
+        return -1;
+    }
+
     return position;
 }
 
