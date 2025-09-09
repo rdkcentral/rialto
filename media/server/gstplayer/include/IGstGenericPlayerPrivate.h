@@ -183,7 +183,7 @@ public:
      *
      * @param[in] element : The GstElement to check.
      *
-     * @retval position of the element; GST_CLOCK_TIME_NONE(-1) in case of failure
+     * @retval position of the element; -1 in case of failure
      */
     virtual int64_t getPosition(GstElement *element) = 0;
 

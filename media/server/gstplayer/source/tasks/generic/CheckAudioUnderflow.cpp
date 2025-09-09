@@ -42,7 +42,7 @@ void CheckAudioUnderflow::execute() const
     if (m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO) != m_context.streamInfo.end())
     {
         gint64 position = m_player.getPosition(m_context.pipeline);
-        if (position == GST_CLOCK_TIME_NONE)
+        if (position == -1)
         {
             RIALTO_SERVER_LOG_WARN("Getting the position failed");
             return;

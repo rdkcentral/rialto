@@ -167,7 +167,7 @@ private:
                          const std::shared_ptr<CodecData> &codecData) override;
     void addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clippingStart, uint64_t clippingEnd) const override;
     bool changePipelineState(GstState newState) override;
-    int64_t getPosition(GstElement *pipeline) override;
+    int64_t getPosition(GstElement *element) override;
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopWorkerThread() override;

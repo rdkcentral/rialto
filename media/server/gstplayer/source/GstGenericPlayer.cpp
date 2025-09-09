@@ -1191,7 +1191,7 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
     if (!element)
     {
         RIALTO_SERVER_LOG_WARN("Element is null");
-        return GST_CLOCK_TIME_NONE;
+        return -1;
     }
 
     m_gstWrapper->gstStateLock(element);
@@ -1207,15 +1207,15 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
                                m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetStateNext(element)));
 
         m_gstWrapper->gstStateUnlock(element);
-        return GST_CLOCK_TIME_NONE;
+        return -1;
     }
     m_gstWrapper->gstStateUnlock(element);
 
-    gint64 position = GST_CLOCK_TIME_NONE;
+    gint64 position = -1;
     if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
     {
         RIALTO_SERVER_LOG_WARN("Failed to query position");
-        return GST_CLOCK_TIME_NONE;
+        return -1;
     }
 
     return position;
