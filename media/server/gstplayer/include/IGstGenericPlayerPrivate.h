@@ -179,6 +179,15 @@ public:
     virtual bool changePipelineState(GstState newState) = 0;
 
     /**
+     * @brief Gets the current position of the element
+     *
+     * @param[in] element : The GstElement to check.
+     *
+     * @retval position of the element; -1 in case of failure
+     */
+    virtual int64_t getPosition(GstElement *element) = 0;
+
+    /**
      * @brief Starts position reporting and check audio underflow. Called by the worker thread.
      */
     virtual void startPositionReportingAndCheckAudioUnderflowTimer() = 0;

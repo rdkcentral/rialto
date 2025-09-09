@@ -551,6 +551,7 @@ TEST_F(PositionUpdatesTest, getPositionFailure)
     indicateAllSourcesAttached();
 
     // Step 4: Get Position Failure
+    willSetStateInvalidForQueryPosition();
     getPositionFailure();
 
     // Step 7: Remove sources

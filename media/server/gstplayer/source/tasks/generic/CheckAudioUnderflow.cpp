@@ -41,8 +41,13 @@ void CheckAudioUnderflow::execute() const
     // TODO(LLDEV-31012) Check if the audio stream is in underflow state.
     if (m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO) != m_context.streamInfo.end())
     {
-        gint64 position = -1;
-        m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position);
+        gint64 position = m_player.getPosition(m_context.pipeline);
+        if (position == -1)
+        {
+            RIALTO_SERVER_LOG_WARN("Getting the position failed");
+            return;
+        }
+
         constexpr int64_t kAudioUnderflowMarginNs = 350 * 1000000;
         if ((position > m_context.lastAudioSampleTimestamps + kAudioUnderflowMarginNs) &&
             m_gstWrapper->gstElementGetState(m_context.pipeline) == GST_STATE_PLAYING &&
