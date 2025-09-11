@@ -1888,14 +1888,12 @@ void GenericTasksTestsBase::checkNewAudioSourceAttached()
 
 void GenericTasksTestsBase::shouldQueryPositionAndSetToZero()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementQueryPosition(&testContext->m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke(
-            [this](GstElement *element, GstFormat format, gint64 *cur)
-            {
-                *cur = 0;
-                return TRUE;
-            }));
+    EXPECT_CALL(testContext->m_gstPlayer, getPosition(NotNullMatcher())).WillOnce(Return(0));
+}
+
+void GenericTasksTestsBase::shouldBeInWrongStateForQueryPosition()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getPosition(NotNullMatcher())).WillOnce(Return(-1));
 }
 
 void GenericTasksTestsBase::triggerCheckAudioUnderflowNoNotification()
@@ -1914,14 +1912,8 @@ void GenericTasksTestsBase::triggerCheckAudioUnderflowNoNotification()
 
 void GenericTasksTestsBase::shouldNotifyAudioUnderflow()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementQueryPosition(&testContext->m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke(
-            [this](GstElement *element, GstFormat format, gint64 *cur)
-            {
-                *cur = kPositionOverUnderflowMargin;
-                return TRUE;
-            }));
+    EXPECT_CALL(testContext->m_gstPlayer, getPosition(NotNullMatcher())).WillOnce(Return(kPositionOverUnderflowMargin));
+
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetState(&testContext->m_pipeline))
         .WillOnce(Invoke([this](GstElement *element) { return GST_STATE_PLAYING; }));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetPendingState(&testContext->m_pipeline))
@@ -2630,34 +2622,20 @@ void GenericTasksTestsBase::checkContextPaused()
 
 void GenericTasksTestsBase::shouldReportPosition()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementQueryPosition(&testContext->m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke(
-            [this](GstElement *element, GstFormat format, gint64 *cur)
-            {
-                *cur = kPosition;
-                return TRUE;
-            }));
+    EXPECT_CALL(testContext->m_gstPlayer, getPosition(NotNullMatcher())).WillOnce(Return(kPosition));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifyPosition(kPosition));
 }
 
 void GenericTasksTestsBase::triggerReportPosition()
 {
     firebolt::rialto::server::tasks::generic::ReportPosition task{testContext->m_context, &testContext->m_gstPlayerClient,
-                                                                  testContext->m_gstWrapper};
+                                                                  testContext->m_gstWrapper, testContext->m_gstPlayer};
     task.execute();
 }
 
 void GenericTasksTestsBase::shouldFailToReportPosition()
 {
-    EXPECT_CALL(*testContext->m_gstWrapper,
-                gstElementQueryPosition(&testContext->m_pipeline, GST_FORMAT_TIME, NotNullMatcher()))
-        .WillOnce(Invoke(
-            [this](GstElement *element, GstFormat format, gint64 *cur)
-            {
-                *cur = -1;
-                return TRUE;
-            }));
+    EXPECT_CALL(testContext->m_gstPlayer, getPosition(NotNullMatcher())).WillOnce(Return(-1));
 }
 
 void GenericTasksTestsBase::shouldFinishSetupSource()
@@ -2899,6 +2877,12 @@ void GenericTasksTestsBase::setPipelinePlaying()
 {
     GST_STATE(&testContext->m_pipeline) = GST_STATE_PLAYING;
 }
+
+// void GenericTasksTestsBase::setPipelinePrerolling()
+// {
+//     GST_STATE(&testContext->m_pipeline) = GST_STATE_PAUSED;
+//     GST_STATE_PENDING(&testContext->m_pipeline) = GST_STATE_PAUSED;
+// }
 
 void GenericTasksTestsBase::shouldSetPlaybackRateAudioSinkNullSuccess()
 {

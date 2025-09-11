@@ -59,6 +59,7 @@ public:
     void willRemoveAudioSource();
     void willStop();
     void willSetAudioAndVideoFlags();
+    void willSetStateInvalidForQueryPosition();
 
     void createSession();
     void load();
