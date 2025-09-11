@@ -243,7 +243,10 @@ void GstGenericPlayer::initMsePipeline()
     {
         GST_WARNING("No playsink ?!?!?");
     }
-    m_gstWrapper->gstElementSetState(m_context.pipeline, GST_STATE_READY);
+    if (GST_STATE_CHANGE_FAILURE == m_gstWrapper->gstElementSetState(m_context.pipeline, GST_STATE_READY))
+    {
+        GST_WARNING("Failed to set pipeline to READY state");
+    }
     RIALTO_SERVER_LOG_MIL("New RialtoServer's pipeline created");
 }
 

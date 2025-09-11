@@ -453,7 +453,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, PlaysinkNotFound)
 
     EXPECT_CALL(*m_gstWrapperMock, gstBinGetByName(_, StrEq("playsink"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_READY))
-        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+        .WillOnce(Return(GST_STATE_CHANGE_FAILURE));
 
     EXPECT_NO_THROW(
         m_gstPlayer =
