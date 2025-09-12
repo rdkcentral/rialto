@@ -109,11 +109,16 @@ TEST_F(TextTrackSessionTest, shouldSetPosition)
     EXPECT_TRUE(m_sut->setPosition(kMediaTimestampMs));
 }
 
-TEST_F(TextTrackSessionTest, shouldSetSessionCCSelection)
+TEST_F(TextTrackSessionTest, shouldFailToSendCCData)
 {
     createSut();
     EXPECT_CALL(*m_accessorMock, setSessionCCSelection(kSessionId, kService)).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->setSessionCCSelection(kService));
+    EXPECT_TRUE(m_sut->isClosedCaptions());
+
+    EXPECT_CALL(*m_accessorMock, sendData(kSessionId, kData, ITextTrackAccessor::DataType::CC, kDisplayOffsetMs))
+        .WillOnce(Return(false));
+    EXPECT_FALSE(m_sut->sendData(kData, kDisplayOffsetMs));
 }
 
 TEST_F(TextTrackSessionTest, shouldSendWebVTTData)
@@ -121,6 +126,7 @@ TEST_F(TextTrackSessionTest, shouldSendWebVTTData)
     createSut();
     EXPECT_CALL(*m_accessorMock, setSessionWebVTTSelection(kSessionId)).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->setSessionWebVTTSelection());
+    EXPECT_FALSE(m_sut->isClosedCaptions());
 
     EXPECT_CALL(*m_accessorMock, sendData(kSessionId, kData, ITextTrackAccessor::DataType::WebVTT, kDisplayOffsetMs))
         .WillOnce(Return(true));
@@ -132,6 +138,7 @@ TEST_F(TextTrackSessionTest, shouldSendTTMLData)
     createSut();
     EXPECT_CALL(*m_accessorMock, setSessionTTMLSelection(kSessionId)).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->setSessionTTMLSelection());
+    EXPECT_FALSE(m_sut->isClosedCaptions());
 
     EXPECT_CALL(*m_accessorMock, sendData(kSessionId, kData, ITextTrackAccessor::DataType::TTML, kDisplayOffsetMs))
         .WillOnce(Return(true));
