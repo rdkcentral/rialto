@@ -157,4 +157,9 @@ bool TextTrackSession::associateVideoDecoder(uint64_t decoderId)
     std::string decoderIdStr = std::to_string(decoderId);
     return m_textTrackAccessor->associateVideoDecoder(m_sessionId, decoderIdStr);
 }
+
+bool TextTrackSession::isClosedCaptions() const
+{
+    return m_dataType == ITextTrackAccessor::DataType::CC;
+}
 } // namespace firebolt::rialto::server

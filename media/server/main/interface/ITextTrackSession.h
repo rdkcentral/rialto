@@ -51,6 +51,7 @@ public:
     virtual bool setSessionTTMLSelection() = 0;
     virtual bool setSessionCCSelection(const std::string &service) = 0;
     virtual bool associateVideoDecoder(uint64_t decoderId) = 0;
+    virtual bool isClosedCaptions() const = 0;
 };
 } // namespace firebolt::rialto::server
 #endif // FIREBOLT_RIALTO_SERVER_I_TEXT_TRACK_SESSION_H_

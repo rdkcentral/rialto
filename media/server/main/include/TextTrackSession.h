@@ -49,6 +49,7 @@ public:
     bool setSessionTTMLSelection() override;
     bool setSessionCCSelection(const std::string &service) override;
     bool associateVideoDecoder(uint64_t decoderId) override;
+    bool isClosedCaptions() const override;
 
 private:
     std::shared_ptr<ITextTrackAccessor> m_textTrackAccessor;
