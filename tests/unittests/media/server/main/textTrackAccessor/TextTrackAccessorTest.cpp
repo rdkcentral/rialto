@@ -253,6 +253,12 @@ TEST_F(TextTrackAccessorTests, ShouldSendDataForWebVttType)
     EXPECT_TRUE(m_sut->sendData(kSessionId, kData, TextTrackAccessor::DataType::WebVTT, kDisplayOffsetMs));
 }
 
+TEST_F(TextTrackAccessorTests, ShouldSendDataForCCType)
+{
+    createSut();
+    EXPECT_FALSE(m_sut->sendData(kSessionId, kData, TextTrackAccessor::DataType::CC, kDisplayOffsetMs));
+}
+
 TEST_F(TextTrackAccessorTests, ShouldFailToSendData)
 {
     createSut();
