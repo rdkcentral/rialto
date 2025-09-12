@@ -88,6 +88,12 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_playsink));
 
     // In case of longer testruns, GstPlayer may request to query position
+    EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).Times(AtLeast(0));
+    EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).Times(AtLeast(0));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).Times(AtLeast(0)).WillRepeatedly(Return(GST_STATE_PAUSED));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_))
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, _))
         .Times(AtLeast(0))
         .WillRepeatedly(Invoke(
@@ -423,6 +429,15 @@ void MediaPipelineTest::createSession()
         .send(request)
         .expectSuccess()
         .matchResponse([&](const ::firebolt::rialto::CreateSessionResponse &resp) { m_sessionId = resp.session_id(); });
+}
+
+void MediaPipelineTest::willSetStateInvalidForQueryPosition()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).Times(AtLeast(1)).WillRepeatedly(Return(GST_STATE_READY));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateNext(_)).WillRepeatedly(Return(GST_STATE_VOID_PENDING));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillRepeatedly(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(_)).WillRepeatedly(Return("NotImportant"));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateChangeReturnGetName(_)).WillRepeatedly(Return("NotImportant"));
 }
 
 void MediaPipelineTest::load()

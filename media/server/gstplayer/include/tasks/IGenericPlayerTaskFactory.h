@@ -193,10 +193,12 @@ public:
      * @brief Creates a ReportPosition task.
      *
      * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
      *
      * @retval the new ReportPosition task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createReportPosition(GenericPlayerContext &context) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createReportPosition(GenericPlayerContext &context,
+                                                              IGstGenericPlayerPrivate &player) const = 0;
 
     /**
      * @brief Creates a CheckAudioUnderflow task.

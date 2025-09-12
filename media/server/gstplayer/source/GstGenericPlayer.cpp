@@ -391,12 +391,8 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
 {
     // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
     // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
-    if (!m_context.pipeline || GST_STATE(m_context.pipeline) < GST_STATE_PAUSED)
-    {
-        RIALTO_SERVER_LOG_WARN("GetPosition failed. Pipeline is null or state < PAUSED");
-        return false;
-    }
-    if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
+    position = getPosition(m_context.pipeline);
+    if (position == -1)
     {
         RIALTO_SERVER_LOG_WARN("Query position failed");
         return false;
@@ -1041,9 +1037,8 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
         RIALTO_SERVER_LOG_ERROR("Failed to create audio attributes");
         return false;
     }
-    std::int64_t currentDispPts64b; // In netflix code it's currentDisplayPosition + offset
-    m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &currentDispPts64b);
-    long long currentDispPts = currentDispPts64b; // NOLINT(runtime/int)
+
+    long long currentDispPts = getPosition(m_context.pipeline); // NOLINT(runtime/int)
     GstCaps *caps{createCapsFromMediaSource(m_gstWrapper, m_glibWrapper, source)};
     GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[source->getType()].appSrc)};
     GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
@@ -1189,6 +1184,41 @@ bool GstGenericPlayer::changePipelineState(GstState newState)
         return false;
     }
     return true;
+}
+
+int64_t GstGenericPlayer::getPosition(GstElement *element)
+{
+    if (!element)
+    {
+        RIALTO_SERVER_LOG_WARN("Element is null");
+        return -1;
+    }
+
+    m_gstWrapper->gstStateLock(element);
+
+    if (m_gstWrapper->gstElementGetState(element) < GST_STATE_PAUSED ||
+        (m_gstWrapper->gstElementGetStateReturn(element) == GST_STATE_CHANGE_ASYNC &&
+         m_gstWrapper->gstElementGetStateNext(element) == GST_STATE_PAUSED))
+    {
+        RIALTO_SERVER_LOG_WARN("Element is prerolling or in invalid state - state: %s, return: %s, next: %s",
+                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetState(element)),
+                               m_gstWrapper->gstElementStateChangeReturnGetName(
+                                   m_gstWrapper->gstElementGetStateReturn(element)),
+                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetStateNext(element)));
+
+        m_gstWrapper->gstStateUnlock(element);
+        return -1;
+    }
+    m_gstWrapper->gstStateUnlock(element);
+
+    gint64 position = -1;
+    if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
+    {
+        RIALTO_SERVER_LOG_WARN("Failed to query position");
+        return -1;
+    }
+
+    return position;
 }
 
 void GstGenericPlayer::setVideoGeometry(int x, int y, int width, int height)
@@ -1627,7 +1657,7 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
         {
             if (m_workerThread)
             {
-                m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context));
+                m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context, *this));
                 m_workerThread->enqueueTask(m_taskFactory->createCheckAudioUnderflow(m_context, *this));
             }
         },

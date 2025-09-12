@@ -198,6 +198,7 @@ protected:
 
     // CheckAudioUnderflow test methods
     void shouldQueryPositionAndSetToZero();
+    void shouldBeInWrongStateForQueryPosition();
     void triggerCheckAudioUnderflowNoNotification();
     void shouldNotifyAudioUnderflow();
     void triggerCheckAudioUnderflow();
