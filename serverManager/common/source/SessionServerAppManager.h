@@ -97,6 +97,7 @@ private:
     std::shared_ptr<service::IStateObserver> m_stateObserver;
     std::unique_ptr<IHealthcheckService> m_healthcheckService;
     const firebolt::rialto::ipc::INamedSocketFactory &m_namedSocketFactory;
+    bool m_isShuttingDown;
 };
 } // namespace rialto::servermanager::common
 
