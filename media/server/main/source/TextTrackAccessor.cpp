@@ -67,7 +67,7 @@ std::optional<uint32_t> TextTrackAccessor::openSession(const std::string &displa
     uint32_t result = m_textTrackWrapper->openSession(displayName, sessionId);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_INFO("TextTrack session %u created with display '%s'", sessionId, displayName.c_str());
+        RIALTO_SERVER_LOG_MIL("TextTrack session %u created with display '%s'", sessionId, displayName.c_str());
         return sessionId;
     }
 
@@ -81,7 +81,7 @@ bool TextTrackAccessor::closeSession(uint32_t sessionId)
     uint32_t result = m_textTrackWrapper->closeSession(sessionId);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_INFO("TextTrack session %u closed", sessionId);
+        RIALTO_SERVER_LOG_MIL("TextTrack session %u closed", sessionId);
         return true;
     }
 
@@ -95,7 +95,7 @@ bool TextTrackAccessor::pause(uint32_t sessionId)
     uint32_t result = m_textTrackWrapper->pauseSession(sessionId);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_INFO("TextTrack session %u paused", sessionId);
+        RIALTO_SERVER_LOG_MIL("TextTrack session %u paused", sessionId);
         return true;
     }
 
@@ -109,7 +109,7 @@ bool TextTrackAccessor::play(uint32_t sessionId)
     uint32_t result = m_textTrackWrapper->resumeSession(sessionId);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_INFO("TextTrack session %u resumed", sessionId);
+        RIALTO_SERVER_LOG_MIL("TextTrack session %u resumed", sessionId);
         return true;
     }
 
@@ -125,7 +125,7 @@ bool TextTrackAccessor::mute(uint32_t sessionId, bool mute)
         uint32_t result = m_textTrackWrapper->muteSession(sessionId);
         if (m_thunderWrapper->isSuccessful(result))
         {
-            RIALTO_SERVER_LOG_INFO("TextTrack session %u muted", sessionId);
+            RIALTO_SERVER_LOG_MIL("TextTrack session %u muted", sessionId);
             return true;
         }
 
@@ -137,7 +137,7 @@ bool TextTrackAccessor::mute(uint32_t sessionId, bool mute)
         uint32_t result = m_textTrackWrapper->unmuteSession(sessionId);
         if (m_thunderWrapper->isSuccessful(result))
         {
-            RIALTO_SERVER_LOG_INFO("TextTrack session %u unmuted", sessionId);
+            RIALTO_SERVER_LOG_MIL("TextTrack session %u unmuted", sessionId);
             return true;
         }
 
@@ -153,7 +153,7 @@ bool TextTrackAccessor::setPosition(uint32_t sessionId, uint64_t mediaTimestampM
     uint32_t result = m_textTrackWrapper->sendSessionTimestamp(sessionId, mediaTimestampMs);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_INFO("TextTrack session %u set position to %" PRIu64, sessionId, mediaTimestampMs);
+        RIALTO_SERVER_LOG_MIL("TextTrack session %u set position to %" PRIu64, sessionId, mediaTimestampMs);
         return true;
     }
 
@@ -213,7 +213,7 @@ bool TextTrackAccessor::createTextTrackControlInterface()
             m_textTrackWrapper = m_textTrackPluginWrapper->interface();
             if (m_textTrackWrapper)
             {
-                RIALTO_SERVER_LOG_INFO("Created TextTrack interface");
+                RIALTO_SERVER_LOG_MIL("Created TextTrack interface");
                 return true;
             }
             else
@@ -241,7 +241,7 @@ bool TextTrackAccessor::setSessionWebVTTSelection(uint32_t sessionId)
 
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_DEBUG("Setting WebVTT selection for session %u was successful", sessionId);
+        RIALTO_SERVER_LOG_MIL("Setting WebVTT selection for session %u was successful", sessionId);
         return true;
     }
 
@@ -255,7 +255,7 @@ bool TextTrackAccessor::setSessionTTMLSelection(uint32_t sessionId)
     uint32_t result = m_textTrackWrapper->setSessionTTMLSelection(sessionId);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_DEBUG("Setting TTML selection for session %u was successful", sessionId);
+        RIALTO_SERVER_LOG_MIL("Setting TTML selection for session %u was successful", sessionId);
         return true;
     }
 
@@ -269,7 +269,7 @@ bool TextTrackAccessor::setSessionCCSelection(uint32_t sessionId, const std::str
     uint32_t result = m_textTrackWrapper->setSessionClosedCaptionsService(sessionId, service);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_DEBUG("Setting CC selection service '%s' for session %u was successful", service.c_str(),
+        RIALTO_SERVER_LOG_MIL("Setting CC selection service '%s' for session %u was successful", service.c_str(),
                                 sessionId);
         return true;
     }
@@ -297,7 +297,7 @@ bool TextTrackAccessor::associateVideoDecoder(uint32_t sessionId, const std::str
     uint32_t result = m_textTrackWrapper->associateVideoDecoder(sessionId, videoDecoder);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_INFO("Associating video decoder '%s' was successful", videoDecoder.c_str());
+        RIALTO_SERVER_LOG_MIL("Associating video decoder '%s' was successful", videoDecoder.c_str());
         return true;
     }
 
