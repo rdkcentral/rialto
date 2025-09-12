@@ -116,7 +116,7 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
     g_object_class_install_property(gobjectClass, PROP_TEXT_TRACK_IDENTIFIER,
                                     g_param_spec_string("text-track-identifier", "Text Track Identifier",
                                                         "Identifier of text track", nullptr,
-                                                        GParamFlags(G_PARAM_WRITABLE)));
+                                                        GParamFlags(G_PARAM_READWRITE)));
 
     g_object_class_install_property(gobjectClass, PROP_VIDEO_DECODER,
                                     g_param_spec_uint64("video-decoder", "Video Decoder", "Video Decoder", 0,
@@ -358,6 +358,11 @@ static void gst_rialto_text_track_sink_get_property(GObject *object, guint propI
     case PROP_MUTE:
     {
         g_value_set_boolean(value, priv->m_isMuted.load());
+        break;
+    }
+    case PROP_TEXT_TRACK_IDENTIFIER:
+    {
+        g_value_set_string(value, priv->m_textTrackIdentifier.c_str());
         break;
     }
     case PROP_POSITION:
