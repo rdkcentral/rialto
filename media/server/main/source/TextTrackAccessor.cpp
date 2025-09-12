@@ -270,7 +270,7 @@ bool TextTrackAccessor::setSessionCCSelection(uint32_t sessionId, const std::str
     if (m_thunderWrapper->isSuccessful(result))
     {
         RIALTO_SERVER_LOG_MIL("Setting CC selection service '%s' for session %u was successful", service.c_str(),
-                                sessionId);
+                              sessionId);
         return true;
     }
 
@@ -297,12 +297,13 @@ bool TextTrackAccessor::associateVideoDecoder(uint32_t sessionId, const std::str
     uint32_t result = m_textTrackWrapper->associateVideoDecoder(sessionId, videoDecoder);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_MIL("Associating video decoder '%s' was successful", videoDecoder.c_str());
+        RIALTO_SERVER_LOG_MIL("Associating video decoder '%s' with session %u was successful", videoDecoder.c_str(),
+                              sessionId);
         return true;
     }
 
-    RIALTO_SERVER_LOG_ERROR("Failed to associate video decoder '%s'; error %s", videoDecoder.c_str(),
-                            m_thunderWrapper->errorToString(result));
+    RIALTO_SERVER_LOG_ERROR("Failed to associate video decoder '%s' with session %u; error %s", videoDecoder.c_str(),
+                            sessionId, m_thunderWrapper->errorToString(result));
     return false;
 }
 
