@@ -223,6 +223,15 @@ public:
     virtual const gchar *gstElementStateGetName(GstState state) = 0;
 
     /**
+     * @brief Gets the state change return as a string.
+     *
+     * @param[in] state: The state change return.
+     *
+     * @retval The string of the state change return.
+     */
+    virtual const gchar *gstElementStateChangeReturnGetName(GstStateChangeReturn state) = 0;
+
+    /**
      * @brief Sets the state of the element.
      *
      * @param[in] element : A GstElement to change state of.
@@ -240,6 +249,38 @@ public:
      * @retval The element's current GstState.
      */
     virtual GstState gstElementGetState(GstElement *element) = 0;
+
+    /**
+     * @brief Gets the return value of the last state change operation.
+     *
+     * @param[in] element : A GstElement to get state return of.
+     *
+     * @retval The element's last state change return value.
+     */
+    virtual GstStateChangeReturn gstElementGetStateReturn(GstElement *element) = 0;
+
+    /**
+     * @brief Gets the next (target) state of the element.
+     *
+     * @param[in] element : A GstElement to get next state of.
+     *
+     * @retval The element's next GstState.
+     */
+    virtual GstState gstElementGetStateNext(GstElement *element) = 0;
+
+    /**
+     * @brief Locks the state mutex of an element.
+     *
+     * @param[in] element : A GstElement to lock the state mutex of.
+     */
+    virtual void gstStateLock(GstElement *element) = 0;
+
+    /**
+     * @brief Unlocks the state mutex of an element.
+     *
+     * @param[in] element : A GstElement to unlock the state mutex of.
+     */
+    virtual void gstStateUnlock(GstElement *element) = 0;
 
     /**
      * @brief Returns a copy of the name of elem. Caller should g_free the return value after usage. For a nameless

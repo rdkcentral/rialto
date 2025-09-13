@@ -153,9 +153,10 @@ GenericPlayerTaskFactory::createRemoveSource(GenericPlayerContext &context, IGst
     return std::make_unique<tasks::generic::RemoveSource>(context, player, m_client, m_gstWrapper, type);
 }
 
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReportPosition(GenericPlayerContext &context) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReportPosition(GenericPlayerContext &context,
+                                                                            IGstGenericPlayerPrivate &player) const
 {
-    return std::make_unique<tasks::generic::ReportPosition>(context, m_client, m_gstWrapper);
+    return std::make_unique<tasks::generic::ReportPosition>(context, m_client, m_gstWrapper, player);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createCheckAudioUnderflow(GenericPlayerContext &context,
