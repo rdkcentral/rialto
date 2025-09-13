@@ -52,6 +52,7 @@ const std::string kSocketOwner{};
 const std::string kSocketGroup{};
 const std::string kAppId{"app"};
 const std::string kClientDisplayName{"westeros-rialto"};
+const std::chrono::seconds kSubtitleResyncInterval{30};
 } // namespace
 
 SessionServerManagerTests::SessionServerManagerTests()
@@ -176,7 +177,7 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
     EXPECT_TRUE(m_sut);
     EXPECT_TRUE(
         m_sut->configureIpc(kSessionManagementSocket, kSessionManagementSocketPermissions, kSocketOwner, kSocketGroup));
-    EXPECT_FALSE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId));
+    EXPECT_FALSE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId, kSubtitleResyncInterval));
 }
 
 void SessionServerManagerTests::willSetConfiguration()
@@ -197,7 +198,7 @@ void SessionServerManagerTests::willSetConfiguration()
     EXPECT_TRUE(m_sut);
     EXPECT_TRUE(
         m_sut->configureIpc(kSessionManagementSocket, kSessionManagementSocketPermissions, kSocketOwner, kSocketGroup));
-    EXPECT_TRUE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId));
+    EXPECT_TRUE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId, kSubtitleResyncInterval));
 }
 
 void SessionServerManagerTests::willFailToSetConfigurationWithFdWhenSessionManagementServerFailsToInit()
@@ -222,7 +223,7 @@ void SessionServerManagerTests::willSetConfigurationWithFd()
         .WillOnce(Return(true));
     EXPECT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->configureIpc(kFd));
-    EXPECT_TRUE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId));
+    EXPECT_TRUE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId, kSubtitleResyncInterval));
 }
 
 void SessionServerManagerTests::willFailToSetUnsupportedState()

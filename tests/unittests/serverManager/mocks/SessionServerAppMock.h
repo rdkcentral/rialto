@@ -59,6 +59,7 @@ public:
     MOCK_METHOD(bool, isNamedSocketInitialized, (), (const, override));
     MOCK_METHOD(int, getSessionManagementSocketFd, (), (const, override));
     MOCK_METHOD(std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &, releaseNamedSocketRef, ());
+    MOCK_METHOD(std::chrono::seconds, getSubtitleResyncInterval, (), (const, override));
     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&releaseNamedSocket() override
     {
         return std::move(releaseNamedSocketRef());

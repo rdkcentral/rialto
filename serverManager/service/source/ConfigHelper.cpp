@@ -61,7 +61,8 @@ ConfigHelper::ConfigHelper(std::unique_ptr<IConfigReaderFactory> &&configReaderF
     : m_configReaderFactory{std::move(configReaderFactory)},
       m_sessionServerEnvVars{convertToMap(config.sessionServerEnvVars)}, m_sessionServerPath{config.sessionServerPath},
       m_sessionServerStartupTimeout{config.sessionServerStartupTimeout},
-      m_healthcheckInterval{config.healthcheckInterval}, m_socketPermissions{config.sessionManagementSocketPermissions},
+      m_healthcheckInterval{config.healthcheckInterval}, m_subtitleResyncInterval{config.subtitleResyncInterval},
+      m_socketPermissions{config.sessionManagementSocketPermissions},
       m_numOfPreloadedServers{config.numOfPreloadedServers},
       m_numOfFailedPingsBeforeRecovery{config.numOfFailedPingsBeforeRecovery}, m_loggingLevels{}
 {
@@ -92,6 +93,11 @@ std::chrono::milliseconds ConfigHelper::getSessionServerStartupTimeout() const
 std::chrono::seconds ConfigHelper::getHealthcheckInterval() const
 {
     return m_healthcheckInterval;
+}
+
+std::chrono::seconds ConfigHelper::getSubtitleResyncInterval() const
+{
+    return m_subtitleResyncInterval;
 }
 
 firebolt::rialto::common::SocketPermissions ConfigHelper::getSocketPermissions() const
@@ -151,6 +157,9 @@ void ConfigHelper::readConfigFile(const std::string &filePath)
 
     if (configReader->getHealthcheckInterval())
         m_healthcheckInterval = configReader->getHealthcheckInterval().value();
+
+    if (configReader->getSubtitleResyncInterval())
+        m_subtitleResyncInterval = configReader->getSubtitleResyncInterval().value();
 
     if (configReader->getSocketPermissions())
         m_socketPermissions = configReader->getSocketPermissions().value();

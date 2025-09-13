@@ -146,4 +146,9 @@ bool TextTrackSession::setSessionCCSelection(const std::string &service)
     m_ccService = service;
     return m_textTrackAccessor->setSessionCCSelection(m_sessionId, service);
 }
+
+bool TextTrackSession::isTTML() const
+{
+    return m_dataType == ITextTrackAccessor::DataType::TTML;
+}
 } // namespace firebolt::rialto::server

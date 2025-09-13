@@ -18,15 +18,15 @@
  */
 
 #include "GstProtectionMetadataHelperFactory.h"
+#include "GstRialtoTextTrackSinkPrivate.h"
 #include "GstTextTrackSinkFactory.h"
 #include "RialtoServerLogging.h"
-#include <stdexcept>
-
-#include "GstRialtoTextTrackSinkPrivate.h"
 #include <atomic>
+#include <cinttypes>
 #include <cstdlib>
 #include <gst/base/gstbasetransform.h>
 #include <gst/gst.h>
+#include <stdexcept>
 G_BEGIN_DECLS
 
 enum
@@ -118,7 +118,6 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
     g_object_class_install_property(gobjectClass, PROP_POSITION,
                                     g_param_spec_uint64("position", "Position", "Position", 0, G_MAXUINT64, 0,
                                                         GParamFlags(G_PARAM_READWRITE)));
-
     gst_element_class_add_pad_template(elementClass, gst_static_pad_template_get(&sinkTemplate));
     gst_element_class_set_static_metadata(elementClass, "Rialto TextTrack Sink", "Sink/Parser/Subtitle",
                                           "Rialto TextTrack Sink", "SKY");
@@ -188,7 +187,7 @@ static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuf
     if (gst_buffer_map(buffer, &info, GST_MAP_READ))
     {
         std::string data(reinterpret_cast<char *>(info.data), info.size);
-        int64_t displayOffset{0};
+        int64_t displayOffset{/*textTrackSink->priv->m_offset ? 0 - (int64_t)*textTrackSink->priv->m_offset :*/ 0};
         if (GST_BUFFER_OFFSET_NONE != GST_BUFFER_OFFSET(buffer))
         {
             displayOffset = static_cast<int64_t>(GST_BUFFER_OFFSET(buffer));
@@ -241,6 +240,7 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
     textTrackSink->priv->m_capsSet = true;
     if (textTrackSink->priv->m_queuedPosition.has_value())
     {
+        textTrackSink->priv->m_offset = textTrackSink->priv->m_queuedPosition;
         textTrackSink->priv->m_textTrackSession->setPosition(textTrackSink->priv->m_queuedPosition.value() / GST_MSECOND);
         textTrackSink->priv->m_queuedPosition.reset();
     }
@@ -265,6 +265,50 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
     }
     case GST_EVENT_FLUSH_STOP:
     {
+        break;
+    }
+    case GST_EVENT_CUSTOM_DOWNSTREAM:
+    case GST_EVENT_CUSTOM_DOWNSTREAM_OOB:
+    {
+        if (gst_event_has_name(event, "current-pts"))
+        {
+            uint64_t pts = 0;
+            const GstStructure *structure = gst_event_get_structure(event);
+            if (structure)
+            {
+                if (gst_structure_get_uint64(structure, "pts", &pts))
+                {
+                    if (pts == GST_CLOCK_TIME_NONE)
+                    {
+                        GST_ERROR_OBJECT(textTrackSink, "Invalid PTS value");
+                        return FALSE;
+                    }
+
+                    std::unique_lock lock{textTrackSink->priv->m_mutex};
+                    uint64_t position = pts;
+                    if (!textTrackSink->priv->m_textTrackSession->isTTML() && textTrackSink->priv->m_offset)
+                    {
+                        position += textTrackSink->priv->m_offset.value();
+                    }
+                    GST_DEBUG_OBJECT(textTrackSink, "Setting position to %" GST_TIME_FORMAT " (pts %" GST_TIME_FORMAT ")", GST_TIME_ARGS(position), GST_TIME_ARGS(pts));
+
+                    if (textTrackSink->priv->m_textTrackSession)
+                    {
+                        textTrackSink->priv->m_textTrackSession->setPosition(position / GST_MSECOND);
+                    }
+                }
+                else
+                {
+                    GST_ERROR_OBJECT(textTrackSink, "Failed to get PTS from structure");
+                    return FALSE;
+                }
+            }
+            else
+            {
+                GST_ERROR_OBJECT(textTrackSink, "Failed to get structure from event");
+                return FALSE;
+            }
+        }
         break;
     }
     default:
@@ -395,6 +439,7 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
         if (priv->m_textTrackSession && priv->m_capsSet)
         {
             priv->m_textTrackSession->setPosition(position / GST_MSECOND);
+            priv->m_offset = position;
         }
         else
         {

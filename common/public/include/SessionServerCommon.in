@@ -101,6 +101,7 @@ struct ServerManagerConfig
     std::chrono::milliseconds sessionServerStartupTimeout{@STARTUP_TIMEOUT_MS@};
         /* Custom session server startup timeout. If 0 - timeout disabled. */
     std::chrono::seconds healthcheckInterval{@HEALTHCHECK_INTERVAL_S@};
+    std::chrono::seconds subtitleResyncInterval{@SUBTITLE_RESYNC_INTERVAL_S@};
         /* Defines how often healthcheck messages will be sent */
     SocketPermissions sessionManagementSocketPermissions{}; /* Defines permissions of session management socket */
     unsigned numOfFailedPingsBeforeRecovery{@NUM_OF_PINGS_BEFORE_RECOVERY@};

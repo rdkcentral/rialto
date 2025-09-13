@@ -27,6 +27,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <chrono>
 
 namespace firebolt::rialto::server::service
 {
@@ -90,6 +91,7 @@ public:
     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
     virtual bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
     virtual bool isVideoMaster(bool &isVideoMaster) = 0;
+    virtual void setSubtitleResyncInterval(const std::chrono::seconds subtitleResyncInterval) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

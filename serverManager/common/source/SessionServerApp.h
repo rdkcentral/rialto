@@ -45,6 +45,7 @@ public:
                      const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                      std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
                      const std::string &socketOwner, const std::string &socketGroup,
+                     const std::chrono::seconds subtitleResyncInterval,
                      std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket);
     SessionServerApp(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                      const firebolt::rialto::common::AppConfig &appConfig,
@@ -54,6 +55,7 @@ public:
                      const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                      std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
                      const std::string &socketOwner, const std::string &socketGroup,
+                     const std::chrono::seconds subtitleResyncInterval,
                      std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket);
     virtual ~SessionServerApp();
 
@@ -73,6 +75,7 @@ public:
     std::string getClientDisplayName() const override;
     int getMaxPlaybackSessions() const override;
     int getMaxWebAudioPlayers() const override;
+    std::chrono::seconds getSubtitleResyncInterval() const override;
     void cancelStartupTimer() override;
     void kill() const override;
     void setExpectedState(const firebolt::rialto::common::SessionServerState &state) override;
@@ -113,6 +116,7 @@ private:
     std::condition_variable m_processStartupCv;
     bool m_childInitialized;
     firebolt::rialto::common::SessionServerState m_expectedState;
+    const std::chrono::seconds m_kSubtitleResyncInterval;
     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> m_namedSocket;
 };
 } // namespace rialto::servermanager::common
