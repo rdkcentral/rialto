@@ -521,6 +521,17 @@ public:
     virtual std::unique_ptr<IPlayerTask>
     createSwitchSource(IGstGenericPlayerPrivate &player,
                        const std::unique_ptr<IMediaPipeline::MediaSource> &source) const = 0;
+
+    /**
+     * @brief Creates a SynchroniseSubtitleClock task.
+     *
+     * @param[in] context   : The GstGenericPlayer context
+     * @param[in] player    : The GstGenericPlayer instance
+     *
+     * @retval the new SynchroniseSubtitleClock task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSynchroniseSubtitleClock(GenericPlayerContext &context,
+                                                                        IGstGenericPlayerPrivate &player) const = 0;
 };
 
 } // namespace firebolt::rialto::server

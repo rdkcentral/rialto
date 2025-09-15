@@ -42,6 +42,7 @@ namespace
  *        whenever the session moves to another playback state.
  */
 constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
+constexpr std::chrono::seconds kSubtitleClockResyncInterval{60};
 
 bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)
 {
@@ -208,7 +209,6 @@ GstGenericPlayer::GstGenericPlayer(
 GstGenericPlayer::~GstGenericPlayer()
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is destructed.");
-
     m_gstDispatcherThread.reset();
 
     resetWorkerThread();
@@ -286,6 +286,13 @@ void GstGenericPlayer::termPipeline()
     if (m_context.subtitleSink)
     {
         m_gstWrapper->gstObjectUnref(m_context.subtitleSink);
+        m_context.subtitleSink = nullptr;
+    }
+
+    if (m_context.videoSink)
+    {
+        m_gstWrapper->gstObjectUnref(m_context.videoSink);
+        m_context.videoSink = nullptr;
     }
 
     // Delete the pipeline
@@ -397,6 +404,7 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
         RIALTO_SERVER_LOG_WARN("Query position failed");
         return false;
     }
+
     return true;
 }
 
@@ -1086,6 +1094,11 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
     return true;
 }
 
+bool GstGenericPlayer::hasSourceType(const MediaSourceType &mediaSourceType) const
+{
+    return m_context.streamInfo.find(mediaSourceType) != m_context.streamInfo.end();
+}
+
 void GstGenericPlayer::scheduleNeedMediaData(GstAppSrc *src)
 {
     if (m_workerThread)
@@ -1670,6 +1683,35 @@ void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
     {
         m_positionReportingAndCheckAudioUnderflowTimer->cancel();
         m_positionReportingAndCheckAudioUnderflowTimer.reset();
+    }
+}
+
+void GstGenericPlayer::startSubtitleClockResyncTimer()
+{
+    if (m_subtitleClockResyncTimer && m_subtitleClockResyncTimer->isActive())
+    {
+        return;
+    }
+
+    m_subtitleClockResyncTimer = m_timerFactory->createTimer(
+        kSubtitleClockResyncInterval,
+        [this]()
+        {
+            if (m_workerThread)
+            {
+                m_workerThread->enqueueTask(m_taskFactory->createSynchroniseSubtitleClock(m_context, *this));
+            }
+        },
+        firebolt::rialto::common::TimerType::PERIODIC);
+    setPlaybackRate(1.1);
+}
+
+void GstGenericPlayer::stopSubtitleClockResyncTimer()
+{
+    if (m_subtitleClockResyncTimer && m_subtitleClockResyncTimer->isActive())
+    {
+        m_subtitleClockResyncTimer->cancel();
+        m_subtitleClockResyncTimer.reset();
     }
 }
 
