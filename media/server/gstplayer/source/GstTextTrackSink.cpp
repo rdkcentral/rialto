@@ -286,11 +286,11 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
 
                     std::unique_lock lock{textTrackSink->priv->m_mutex};
                     uint64_t position = pts;
-                    if (!textTrackSink->priv->m_textTrackSession->isTTML() && textTrackSink->priv->m_offset)
+                    if (textTrackSink->priv->m_offset)
                     {
                         position += textTrackSink->priv->m_offset.value();
                     }
-                    GST_DEBUG_OBJECT(textTrackSink, "Setting position to %" GST_TIME_FORMAT " (pts %" GST_TIME_FORMAT ")", GST_TIME_ARGS(position), GST_TIME_ARGS(pts));
+                    GST_DEBUG_OBJECT(textTrackSink, "Setting position to %" GST_TIME_FORMAT " (pts %" GST_TIME_FORMAT ", offset %" GST_TIME_FORMAT ")", GST_TIME_ARGS(position), GST_TIME_ARGS(pts), GST_TIME_ARGS(textTrackSink->priv->m_offset.value_or(0)));
 
                     if (textTrackSink->priv->m_textTrackSession)
                     {
