@@ -83,6 +83,10 @@ bool TextTrackSession::resetSession(bool isMuted)
         if (m_ccService.has_value())
         {
             wasDataTypeSelected = setSessionCCSelection(m_ccService.value());
+            if (m_videoDecoderId.has_value())
+            {
+                wasDataTypeSelected = associateVideoDecoder(m_videoDecoderId.value());
+            }
         }
         else
         {
@@ -145,5 +149,17 @@ bool TextTrackSession::setSessionCCSelection(const std::string &service)
     m_dataType = ITextTrackAccessor::DataType::CC;
     m_ccService = service;
     return m_textTrackAccessor->setSessionCCSelection(m_sessionId, service);
+}
+
+bool TextTrackSession::associateVideoDecoder(uint64_t decoderId)
+{
+    m_videoDecoderId = decoderId;
+    std::string decoderIdStr = std::to_string(decoderId);
+    return m_textTrackAccessor->associateVideoDecoder(m_sessionId, decoderIdStr);
+}
+
+bool TextTrackSession::isClosedCaptions() const
+{
+    return m_dataType == ITextTrackAccessor::DataType::CC;
 }
 } // namespace firebolt::rialto::server

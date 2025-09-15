@@ -55,6 +55,7 @@ public:
     bool setSessionWebVTTSelection(uint32_t sessionId) override;
     bool setSessionTTMLSelection(uint32_t sessionId) override;
     bool setSessionCCSelection(uint32_t sessionId, const std::string &service) override;
+    bool associateVideoDecoder(uint32_t sessionId, const std::string &videoDecoder) override;
 
 private:
     bool createTextTrackControlInterface();
