@@ -270,7 +270,7 @@ bool TextTrackAccessor::setSessionCCSelection(uint32_t sessionId, const std::str
     if (m_thunderWrapper->isSuccessful(result))
     {
         RIALTO_SERVER_LOG_INFO("Setting CC selection service '%s' for session %u was successful", service.c_str(),
-                              sessionId);
+                               sessionId);
         return true;
     }
 
