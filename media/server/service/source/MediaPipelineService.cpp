@@ -535,6 +535,20 @@ bool MediaPipelineService::setSourcePosition(int sessionId, int32_t sourceId, in
     return mediaPipelineIter->second->setSourcePosition(sourceId, position, resetTime, appliedRate, stopPosition);
 }
 
+bool MediaPipelineService::setSubtitleOffset(int sessionId, int32_t sourceId, int64_t position)
+{
+    RIALTO_SERVER_LOG_DEBUG("Set Subtitle Offset requested, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setSubtitleOffset(sourceId, position);
+}
+
 bool MediaPipelineService::processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,
                                            bool audioAac)
 {

@@ -43,6 +43,7 @@
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
 #include "tasks/generic/SetSourcePosition.h"
+#include "tasks/generic/SetSubtitleOffset.h"
 #include "tasks/generic/SetStreamSyncMode.h"
 #include "tasks/generic/SetSync.h"
 #include "tasks/generic/SetSyncOff.h"
@@ -306,6 +307,13 @@ GenericPlayerTaskFactory::createSetSourcePosition(GenericPlayerContext &context,
 {
     return std::make_unique<tasks::generic::SetSourcePosition>(context, player, m_client, m_glibWrapper, type, position,
                                                                resetTime, appliedRate, stopPosition);
+}
+
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createSetSubtitleOffset(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                  const firebolt::rialto::MediaSourceType &type, std::int64_t position) const
+{
+    return std::make_unique<tasks::generic::SetSubtitleOffset>(context, player, m_client, m_glibWrapper, type, position);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createProcessAudioGap(GenericPlayerContext &context,

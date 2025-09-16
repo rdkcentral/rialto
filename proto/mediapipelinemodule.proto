@@ -643,6 +643,23 @@ message SetSourcePositionResponse {
 }
 
 /**
+ * @fn void setSubtitleOffset(int session_id, int source_id, int64 position)
+ * @brief Set the subtitle offset in nanoseconds.
+ *
+ * @param[in]  session_id  The id of the A/V session.
+ * @param[in]  source_id   The id of the media source.
+ * @param[in]  position    The offset position in nanoseconds.
+ *
+ */
+message SetSubtitleOffsetRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+    optional int64 position = 3 [default = -1];
+}
+message SetSubtitleOffsetResponse {
+}
+
+/**
  * @fn void setImmediateOutput(int session_id, int source_id, bool immediate_output)
  * @brief Sets the "Immediate Output" property for this source.
  *
@@ -1184,6 +1201,13 @@ service MediaPipelineModule {
      * @see SetSourcePositionRequest
      */
     rpc setSourcePosition(SetSourcePositionRequest) returns (SetSourcePositionResponse) {
+    }
+
+    /**
+     * @brief This method sets the subtitle offset for a subtitle source.
+     * @see SetSubtitleOffsetRequest
+     */
+    rpc setSubtitleOffset(SetSubtitleOffsetRequest) returns (SetSubtitleOffsetResponse) {
     }
 
     /**

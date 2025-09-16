@@ -981,6 +981,20 @@ void MediaPipelineModuleService::setSourcePosition(::google::protobuf::RpcContro
     done->Run();
 }
 
+void MediaPipelineModuleService::setSubtitleOffset(::google::protobuf::RpcController *controller,
+                                                   const ::firebolt::rialto::SetSubtitleOffsetRequest *request,
+                                                   ::firebolt::rialto::SetSubtitleOffsetResponse *response,
+                                                   ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setSubtitleOffset(request->session_id(), request->source_id(), request->position()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Subtitle Offset failed.");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
 void MediaPipelineModuleService::processAudioGap(::google::protobuf::RpcController *controller,
                                                  const ::firebolt::rialto::ProcessAudioGapRequest *request,
                                                  ::firebolt::rialto::ProcessAudioGapResponse *response,

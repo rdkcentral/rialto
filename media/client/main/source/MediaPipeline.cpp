@@ -577,6 +577,13 @@ bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position, bool r
     return m_mediaPipelineIpc->setSourcePosition(sourceId, position, resetTime, appliedRate, stopPosition);
 }
 
+bool MediaPipeline::setSubtitleOffset(int32_t sourceId, int64_t position)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->setSubtitleOffset(sourceId, position);
+}
+
 bool MediaPipeline::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");

@@ -136,6 +136,7 @@ public:
     void flush(const MediaSourceType &mediaSourceType, bool resetTime, bool &async) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;
+    void setSubtitleOffset(const MediaSourceType &mediaSourceType, int64_t position) override;
     void processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
     void setBufferingLimit(uint32_t limitBufferingMs) override;
     bool getBufferingLimit(uint32_t &limitBufferingMs) override;

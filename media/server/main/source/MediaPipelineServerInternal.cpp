@@ -1203,6 +1203,36 @@ bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, in
     return true;
 }
 
+bool MediaPipelineServerInternal::setSubtitleOffset(int32_t sourceId, int64_t position)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setSubtitleOffsetInternal(sourceId, position); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setSubtitleOffsetInternal(int32_t sourceId, int64_t position)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set subtitle offset - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set subtitle offset - Source with id: %d not found", sourceId);
+        return false;
+    }
+
+    m_gstPlayer->setSubtitleOffset(sourceIter->first, position);
+    return true;
+}
+
 bool MediaPipelineServerInternal::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap,
                                                   bool audioAac)
 {

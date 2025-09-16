@@ -2009,6 +2009,14 @@ void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType,
     }
 }
 
+void GstGenericPlayer::setSubtitleOffset(const MediaSourceType &mediaSourceType, int64_t position)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetSubtitleOffset(m_context, *this, mediaSourceType, position));
+    }
+}
+
 void GstGenericPlayer::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)
 {
     if (m_workerThread)
