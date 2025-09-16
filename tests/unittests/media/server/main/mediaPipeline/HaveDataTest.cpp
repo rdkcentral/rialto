@@ -30,7 +30,7 @@ class RialtoServerMediaPipelineHaveDataTest : public MediaPipelineTestBase
 protected:
     const uint32_t m_kNumFrames{3};
     const uint32_t m_kNeedDataRequestId{0};
-    const std::chrono::milliseconds m_kDefaultNeedMediaDataResendTimeout{100};
+    const std::chrono::milliseconds m_kDefaultNeedMediaDataResendTimeout{25};
     const std::chrono::milliseconds m_kLowLatencyNeedMediaDataResendTimeout{5};
 
     RialtoServerMediaPipelineHaveDataTest() { createMediaPipeline(); }
