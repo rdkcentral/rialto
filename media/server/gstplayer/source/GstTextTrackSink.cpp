@@ -462,7 +462,6 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
         {
             priv->m_position = position;
             gst_rialto_text_track_sink_set_position(textTrackSink);
-
         }
         else
         {
