@@ -47,6 +47,7 @@ public:
     std::uint32_t setSessionWebVTTSelection(std::uint32_t sessionId) const override;
     std::uint32_t setSessionTTMLSelection(std::uint32_t sessionId) const override;
     std::uint32_t setSessionClosedCaptionsService(std::uint32_t sessionId, const std::string &service) const override;
+    std::uint32_t associateVideoDecoder(std::uint32_t sessionId, const std::string &videoDecoder) const override;
 
 private:
     WPEFramework::Exchange::ITextTrack *m_textTrackControlInterface;

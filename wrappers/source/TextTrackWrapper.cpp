@@ -115,6 +115,11 @@ std::uint32_t TextTrackWrapper::resetSession(std::uint32_t sessionId) const
 {
     return m_textTrackControlInterface->ResetSession(sessionId);
 }
+
+std::uint32_t TextTrackWrapper::associateVideoDecoder(std::uint32_t sessionId, const std::string &videoDecoder) const
+{
+    return m_textTrackControlInterface->AssociateVideoDecoder(sessionId, videoDecoder);
+}
 } // namespace firebolt::rialto::wrappers
 
 #endif // RIALTO_ENABLE_TEXT_TRACK

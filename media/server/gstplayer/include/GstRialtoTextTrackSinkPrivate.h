@@ -34,6 +34,7 @@ struct GstRialtoTextTrackSinkPrivate
     std::unique_ptr<ITextTrackSession> m_textTrackSession;
     std::atomic<bool> m_isMuted{false};
     std::string m_textTrackIdentifier;
+    uint64_t m_videoDecoderIdentifier{0};
     bool m_capsSet{false};
     std::optional<uint64_t> m_queuedPosition;
     std::mutex m_mutex;

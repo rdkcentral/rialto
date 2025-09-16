@@ -34,6 +34,7 @@ using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAreArray;
 using ::testing::Invoke;
+using ::testing::Ne;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -117,6 +118,7 @@ protected:
     void triggerAutoVideoSinkChildRemovedCallback();
     void triggerAutoAudioSinkChildRemovedCallback();
     void shouldSetupTextTrackSink();
+    void shouldSetupVideoDecoderForTextTrack();
 
     // SetVideoGeometry test methods
     void setPipelineToNull();
