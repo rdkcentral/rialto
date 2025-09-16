@@ -35,6 +35,7 @@ enum
     PROP_MUTE,
     PROP_TEXT_TRACK_IDENTIFIER,
     PROP_POSITION,
+    PROP_OFFSET,
     PROP_LAST
 };
 
@@ -115,9 +116,15 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
                                     g_param_spec_string("text-track-identifier", "Text Track Identifier",
                                                         "Identifier of text track", nullptr,
                                                         GParamFlags(G_PARAM_READWRITE)));
+
     g_object_class_install_property(gobjectClass, PROP_POSITION,
                                     g_param_spec_uint64("position", "Position", "Position", 0, G_MAXUINT64, 0,
                                                         GParamFlags(G_PARAM_READWRITE)));
+
+    g_object_class_install_property(gobjectClass, PROP_OFFSET,
+                                    g_param_spec_uint64("offset", "Offset", "Offset", 0, G_MAXUINT64, 0,
+                                                        GParamFlags(G_PARAM_WRITABLE)));
+
     gst_element_class_add_pad_template(elementClass, gst_static_pad_template_get(&sinkTemplate));
     gst_element_class_set_static_metadata(elementClass, "Rialto TextTrack Sink", "Sink/Parser/Subtitle",
                                           "Rialto TextTrack Sink", "SKY");
@@ -238,13 +245,36 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
 
     std::unique_lock lock{textTrackSink->priv->m_mutex};
     textTrackSink->priv->m_capsSet = true;
-    if (textTrackSink->priv->m_queuedPosition.has_value())
+    if (textTrackSink->priv->m_queuedPosition.has_value() || textTrackSink->priv->m_queuedOffset.has_value())
     {
-        textTrackSink->priv->m_offset = textTrackSink->priv->m_queuedPosition;
-        textTrackSink->priv->m_textTrackSession->setPosition(textTrackSink->priv->m_queuedPosition.value() / GST_MSECOND);
+        textTrackSink->priv->m_position = textTrackSink->priv->m_queuedPosition;
+        textTrackSink->priv->m_offset = textTrackSink->priv->m_queuedOffset;
+
+        gst_rialto_text_track_sink_set_position(textTrackSink);
+
         textTrackSink->priv->m_queuedPosition.reset();
+        textTrackSink->priv->m_queuedOffset.reset();
     }
 
+    return TRUE;
+}
+
+static gboolean gst_rialto_text_track_sink_set_position(GstRialtoTextTrackSink *textTrackSink)
+{
+    if (!textTrackSink->priv->m_textTrackSession)
+    {
+        GST_ERROR_OBJECT(textTrackSink, "Session is NULL");
+        return FALSE;
+    }
+
+    uint64_t positionWithOffset = textTrackSink->priv->m_position.value_or(0) + textTrackSink->priv->m_offset.value_or(0);
+
+    GST_DEBUG_OBJECT(textTrackSink,
+                     "Setting position to %" GST_TIME_FORMAT " (pts %" GST_TIME_FORMAT ", offset %" GST_TIME_FORMAT ")",
+                     GST_TIME_ARGS(positionWithOffset), GST_TIME_ARGS(textTrackSink->priv->m_position.value_or(0)),
+                     GST_TIME_ARGS(textTrackSink->priv->m_offset.value_or(0)));
+
+    textTrackSink->priv->m_textTrackSession->setPosition(positionWithOffset / GST_MSECOND);
     return TRUE;
 }
 
@@ -285,17 +315,9 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
                     }
 
                     std::unique_lock lock{textTrackSink->priv->m_mutex};
-                    uint64_t position = pts;
-                    if (textTrackSink->priv->m_offset)
-                    {
-                        position += textTrackSink->priv->m_offset.value();
-                    }
-                    GST_DEBUG_OBJECT(textTrackSink, "Setting position to %" GST_TIME_FORMAT " (pts %" GST_TIME_FORMAT ", offset %" GST_TIME_FORMAT ")", GST_TIME_ARGS(position), GST_TIME_ARGS(pts), GST_TIME_ARGS(textTrackSink->priv->m_offset.value_or(0)));
+                    textTrackSink->priv->m_position = pts;
 
-                    if (textTrackSink->priv->m_textTrackSession)
-                    {
-                        textTrackSink->priv->m_textTrackSession->setPosition(position / GST_MSECOND);
-                    }
+                    gst_rialto_text_track_sink_set_position(textTrackSink);
                 }
                 else
                 {
@@ -438,8 +460,9 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
         std::unique_lock lock{priv->m_mutex};
         if (priv->m_textTrackSession && priv->m_capsSet)
         {
-            priv->m_textTrackSession->setPosition(position / GST_MSECOND);
-            priv->m_offset = position;
+            priv->m_position = position;
+            gst_rialto_text_track_sink_set_position(textTrackSink);
+
         }
         else
         {
@@ -447,6 +470,22 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
         }
         break;
     }
+    case PROP_OFFSET:
+    {
+        uint64_t offset = g_value_get_uint64(value);
+        std::unique_lock lock{priv->m_mutex};
+        if (priv->m_textTrackSession && priv->m_capsSet)
+        {
+            priv->m_offset = offset;
+            gst_rialto_text_track_sink_set_position(textTrackSink);
+        }
+        else
+        {
+            priv->m_queuedOffset = offset;
+        }
+        break;
+    }
+
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID(object, propId, pspec);
         break;
