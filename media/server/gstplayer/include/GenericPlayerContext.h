@@ -109,6 +109,11 @@ struct GenericPlayerContext
     GstElement *videoSink{nullptr};
 
     /**
+     * @brief Flag used to check, if video decoder handle has been set.
+     */
+    bool isVideoHandleSet{false};
+
+    /**
      * @brief Flag used to check, if BUFFERED notification has been sent.
      *
      * Flag can be used only in worker thread

@@ -48,12 +48,15 @@ public:
     bool setSessionWebVTTSelection() override;
     bool setSessionTTMLSelection() override;
     bool setSessionCCSelection(const std::string &service) override;
+    bool associateVideoDecoder(uint64_t decoderId) override;
+    bool isClosedCaptions() const override;
 
 private:
     std::shared_ptr<ITextTrackAccessor> m_textTrackAccessor;
     ITextTrackAccessor::DataType m_dataType{ITextTrackAccessor::DataType::UNKNOWN};
     uint32_t m_sessionId{0};
     std::optional<std::string> m_ccService;
+    std::optional<uint64_t> m_videoDecoderId;
 };
 } // namespace firebolt::rialto::server
 #endif // FIREBOLT_RIALTO_SERVER_TEXT_TRACK_SESSION_H_

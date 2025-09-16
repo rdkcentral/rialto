@@ -201,7 +201,7 @@ std::vector<std::string> GstCapabilities::getSupportedMimeTypes(MediaSourceType 
     }
     else if (sourceType == MediaSourceType::SUBTITLE)
     {
-        return {"text/vtt", "text/ttml"};
+        return {"text/vtt", "text/ttml", "text/cc"};
     }
     else
     {

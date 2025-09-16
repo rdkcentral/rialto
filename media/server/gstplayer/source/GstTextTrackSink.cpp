@@ -34,6 +34,7 @@ enum
     PROP_0,
     PROP_MUTE,
     PROP_TEXT_TRACK_IDENTIFIER,
+    PROP_VIDEO_DECODER,
     PROP_POSITION,
     PROP_OFFSET,
     PROP_LAST
@@ -66,7 +67,8 @@ G_END_DECLS
 
 static GstStaticPadTemplate sinkTemplate =
     GST_STATIC_PAD_TEMPLATE("sink", GST_PAD_SINK, GST_PAD_ALWAYS,
-                            GST_STATIC_CAPS("application/ttml+xml; text/vtt; application/x-subtitle-vtt; text/x-raw"));
+                            GST_STATIC_CAPS("application/ttml+xml; text/vtt; application/x-subtitle-vtt; text/x-raw; "
+                                            "subtitle/x-subtitle-cc"));
 
 GST_DEBUG_CATEGORY(gst_rialto_text_track_sink_debug_category);
 #define GST_CAT_DEFAULT gst_rialto_text_track_sink_debug_category
@@ -116,6 +118,10 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
                                     g_param_spec_string("text-track-identifier", "Text Track Identifier",
                                                         "Identifier of text track", nullptr,
                                                         GParamFlags(G_PARAM_READWRITE)));
+
+    g_object_class_install_property(gobjectClass, PROP_VIDEO_DECODER,
+                                    g_param_spec_uint64("video-decoder", "Video Decoder", "Video Decoder", 0,
+                                                        G_MAXUINT64, 0, GParamFlags(G_PARAM_WRITABLE)));
 
     g_object_class_install_property(gobjectClass, PROP_POSITION,
                                     g_param_spec_uint64("position", "Position", "Position", 0, G_MAXUINT64, 0,
@@ -230,10 +236,24 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
         GST_INFO_OBJECT(sink, "Setting session to TTML");
         textTrackSink->priv->m_textTrackSession->setSessionTTMLSelection();
     }
-    else if (g_str_has_prefix(mimeName, "text/x-raw"))
+    else if (g_str_has_prefix(mimeName, "subtitle/x-subtitle-cc"))
     {
         GST_INFO_OBJECT(sink, "Setting session to CC");
-        textTrackSink->priv->m_textTrackSession->setSessionCCSelection(textTrackSink->priv->m_textTrackIdentifier);
+        std::string identifier = "CC1";
+        if (textTrackSink->priv->m_textTrackIdentifier.empty())
+        {
+            GST_WARNING_OBJECT(sink, "No text track identifier set, defaulting to %s", identifier.c_str());
+        }
+        else
+        {
+            identifier = textTrackSink->priv->m_textTrackIdentifier;
+        }
+        textTrackSink->priv->m_textTrackSession->setSessionCCSelection(identifier);
+
+        if (textTrackSink->priv->m_videoDecoderIdentifier)
+        {
+            textTrackSink->priv->m_textTrackSession->associateVideoDecoder(textTrackSink->priv->m_videoDecoderIdentifier);
+        }
     }
     else
     {
@@ -447,9 +467,19 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
     case PROP_TEXT_TRACK_IDENTIFIER:
     {
         priv->m_textTrackIdentifier = g_value_get_string(value);
-        if (priv->m_textTrackSession)
+        if (priv->m_textTrackSession && priv->m_textTrackSession->isClosedCaptions())
         {
             priv->m_textTrackSession->setSessionCCSelection(priv->m_textTrackIdentifier);
+        }
+
+        break;
+    }
+    case PROP_VIDEO_DECODER:
+    {
+        priv->m_videoDecoderIdentifier = g_value_get_uint64(value);
+        if (priv->m_textTrackSession && priv->m_textTrackSession->isClosedCaptions())
+        {
+            priv->m_textTrackSession->associateVideoDecoder(priv->m_videoDecoderIdentifier);
         }
 
         break;
