@@ -43,18 +43,10 @@ void SynchroniseSubtitleClock::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing SynchroniseSubtitleClock");
     if (m_context.videoSink)
     {
-        GstClockTime gstVideoPts = 0;
-        gint64 videoPts = 0;
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_context.videoSink), "video-pts"))
+        gint64 position = 0;
+        if (m_gstWrapper->gstElementQueryPosition(m_context.videoSink, GST_FORMAT_TIME, &position))
         {
-            m_glibWrapper->gObjectGet(m_context.videoSink, "video-pts", &videoPts, nullptr);
-            // videoPts is in 90kHz ticks
-            gstVideoPts = GST_TIME_AS_NSECONDS(videoPts) * GST_SECOND / 90000;
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_WARN("video-pts property not found in video-sink");
-            return;
+            RIALTO_SERVER_LOG_DEBUG("Videosink position: %" PRId64 " ns", position);
         }
 
         auto sourceElem = m_context.streamInfo.find(MediaSourceType::SUBTITLE);
@@ -70,8 +62,7 @@ void SynchroniseSubtitleClock::execute() const
             return;
         }
 
-        GstStructure *structure =
-            m_gstWrapper->gstStructureNew("current-pts", "pts", G_TYPE_UINT64, gstVideoPts, nullptr);
+        GstStructure *structure = m_gstWrapper->gstStructureNew("current-pts", "pts", G_TYPE_UINT64, position, nullptr);
         GstEvent *event = m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, structure);
 
         if (event)

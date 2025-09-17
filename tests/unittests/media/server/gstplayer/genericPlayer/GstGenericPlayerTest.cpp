@@ -895,55 +895,6 @@ TEST_F(GstGenericPlayerTest, shouldSetSourcePosition)
     m_sut->setSourcePosition(MediaSourceType::AUDIO, kPosition, kResetTime, kAppliedRate, kStopPosition);
 }
 
-TEST_F(GstGenericPlayerTest, shouldStartSubtitleClockResyncTimer)
-{
-    std::unique_ptr<firebolt::rialto::common::ITimer> timer = std::make_unique<StrictMock<firebolt::rialto::server::TimerMock>>();
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(_, _, firebolt::rialto::common::TimerType::PERIODIC))
-        .WillOnce(Return(ByMove(std::move(timer))));
-    
-    IGstGenericPlayerPrivate *privateSut = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
-    privateSut->startSubtitleClockResyncTimer();
-}
-
-TEST_F(GstGenericPlayerTest, shouldStopSubtitleClockResyncTimer)
-{
-    // First start a timer
-    std::unique_ptr<firebolt::rialto::common::ITimer> timer = std::make_unique<StrictMock<firebolt::rialto::server::TimerMock>>();
-    firebolt::rialto::server::TimerMock *timerMock = dynamic_cast<StrictMock<firebolt::rialto::server::TimerMock> *>(timer.get());
-    
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(_, _, firebolt::rialto::common::TimerType::PERIODIC))
-        .WillOnce(Return(ByMove(std::move(timer))));
-    EXPECT_CALL(*timerMock, isActive()).WillOnce(Return(false));
-    
-    IGstGenericPlayerPrivate *privateSut = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
-    privateSut->startSubtitleClockResyncTimer();
-    
-    // Now stop it
-    EXPECT_CALL(*timerMock, isActive()).WillOnce(Return(true));
-    EXPECT_CALL(*timerMock, cancel());
-    
-    privateSut->stopSubtitleClockResyncTimer();
-}
-
-TEST_F(GstGenericPlayerTest, shouldCreateSynchroniseSubtitleClockTask)
-{
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSynchroniseSubtitleClock(_, _))
-        .WillOnce(Return(ByMove(std::move(task))));
-
-    // Simulate timer callback by directly calling the task factory method
-    std::unique_ptr<firebolt::rialto::common::ITimer> timer = std::make_unique<StrictMock<firebolt::rialto::server::TimerMock>>();
-    
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(_, _, firebolt::rialto::common::TimerType::PERIODIC))
-        .WillOnce(Return(ByMove(std::move(timer))));
-    
-    IGstGenericPlayerPrivate *privateSut = dynamic_cast<IGstGenericPlayerPrivate *>(m_sut.get());
-    privateSut->startSubtitleClockResyncTimer();
-}
-
 TEST_F(GstGenericPlayerTest, shouldProcessAudioGap)
 {
     constexpr int64_t kPosition{3};

@@ -42,7 +42,7 @@ namespace
  *        whenever the session moves to another playback state.
  */
 constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
-constexpr std::chrono::seconds kSubtitleClockResyncInterval{60};
+constexpr std::chrono::seconds kSubtitleClockResyncInterval{10};
 
 bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)
 {

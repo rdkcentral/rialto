@@ -478,8 +478,8 @@ void GenericTasksTestsBase::expectSetupVideoSinkElement()
         .WillOnce(Return(TRUE));
 
     expectVideoUnderflowSignalConnection();
-
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectRef(testContext->m_element));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(testContext->m_element));
 }
 
 void GenericTasksTestsBase::expectSetupVideoDecoderElement()

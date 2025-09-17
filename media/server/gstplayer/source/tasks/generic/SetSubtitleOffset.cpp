@@ -47,7 +47,7 @@ void SetSubtitleOffset::execute() const
     }
     else
     {
-        RIALTO_SERVER_LOG_WARN("failed to set subtitle offset - subtitle sink is NULL");
+        RIALTO_SERVER_LOG_WARN("Failed to set subtitle offset - subtitle sink is NULL");
     }
 }
 
