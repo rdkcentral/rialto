@@ -218,7 +218,7 @@ static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuf
     return GST_FLOW_OK;
 }
 
-static gboolean gst_rialto_text_track_sink_set_position(GstRialtoTextTrackSink *textTrackSink)
+static gboolean gst_rialto_text_track_sink_set_position(GstRialtoTextTrackSink *textTrackSink) // NOLINT(build/function_format)
 {
     if (!textTrackSink->priv->m_textTrackSession)
     {

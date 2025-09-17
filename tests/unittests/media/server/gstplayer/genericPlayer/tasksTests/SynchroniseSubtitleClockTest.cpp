@@ -22,10 +22,7 @@
 class SynchroniseSubtitleClockTest : public GenericTasksTestsBase
 {
 protected:
-    SynchroniseSubtitleClockTest()
-    {
-        setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
-    }
+    SynchroniseSubtitleClockTest() { setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE); }
 };
 
 TEST_F(SynchroniseSubtitleClockTest, ShouldNotSetSourcePositionForUnknownSource)
@@ -34,4 +31,3 @@ TEST_F(SynchroniseSubtitleClockTest, ShouldNotSetSourcePositionForUnknownSource)
     // checkInitialPositionNotSet(firebolt::rialto::MediaSourceType::AUDIO);
     // checkInitialPositionNotSet(firebolt::rialto::MediaSourceType::VIDEO);
 }
-

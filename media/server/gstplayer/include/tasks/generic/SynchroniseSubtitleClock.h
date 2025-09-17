@@ -26,6 +26,7 @@
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include <gst/gst.h>
+#include <memory>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -33,8 +34,8 @@ class SynchroniseSubtitleClock : public IPlayerTask
 {
 public:
     SynchroniseSubtitleClock(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                             std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                             std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper);
+                             const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                             const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper);
     ~SynchroniseSubtitleClock() override;
     void execute() const override;
 

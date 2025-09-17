@@ -25,9 +25,10 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SynchroniseSubtitleClock::SynchroniseSubtitleClock(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                   std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                                                   std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper)
+SynchroniseSubtitleClock::SynchroniseSubtitleClock(
+    GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
     : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SynchroniseSubtitleClock");

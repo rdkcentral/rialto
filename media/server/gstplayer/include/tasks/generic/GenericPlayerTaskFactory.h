@@ -130,8 +130,8 @@ public:
     createSwitchSource(IGstGenericPlayerPrivate &player,
                        const std::unique_ptr<IMediaPipeline::MediaSource> &source) const override;
 
-    virtual std::unique_ptr<IPlayerTask> createSynchroniseSubtitleClock(GenericPlayerContext &context,
-                                                                        IGstGenericPlayerPrivate &player) const override;
+    std::unique_ptr<IPlayerTask> createSynchroniseSubtitleClock(GenericPlayerContext &context,
+                                                                IGstGenericPlayerPrivate &player) const override;
 
 private:
     IGstGenericPlayerClient *m_client;
