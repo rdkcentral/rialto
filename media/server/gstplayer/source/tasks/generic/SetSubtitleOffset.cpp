@@ -19,16 +19,13 @@
 
 #include "SetSubtitleOffset.h"
 #include "RialtoServerLogging.h"
-#include "TypeConverters.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetSubtitleOffset::SetSubtitleOffset(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                     IGstGenericPlayerClient *client,
+SetSubtitleOffset::SetSubtitleOffset(GenericPlayerContext &context,
                                      const std::shared_ptr<wrappers::IGlibWrapper> &glibWrapper,
-                                     const MediaSourceType &type, std::int64_t position)
-    : m_context{context}, m_player(player), m_gstPlayerClient{client}, m_glibWrapper{glibWrapper}, m_type{type},
-      m_position{position}
+                                     std::int64_t position)
+    : m_context{context}, m_glibWrapper{glibWrapper}, m_position{position}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetSubtitleOffset");
 }
@@ -40,32 +37,13 @@ SetSubtitleOffset::~SetSubtitleOffset()
 
 void SetSubtitleOffset::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing SetSubtitleOffset for %s source", common::convertMediaSourceType(m_type));
-
-    if (MediaSourceType::SUBTITLE != m_type)
-    {
-        RIALTO_SERVER_LOG_WARN("failed to set subtitle offset - source type is not subtitle");
-        return;
-    }
-
-    // Get source first
-    GstElement *source{nullptr};
-    auto sourceElem = m_context.streamInfo.find(m_type);
-    if (sourceElem != m_context.streamInfo.end())
-    {
-        source = sourceElem->second.appSrc;
-    }
-    if (!source)
-    {
-        RIALTO_SERVER_LOG_WARN("failed to set subtitle offset - subtitle source is NULL");
-        return;
-    }
+    RIALTO_SERVER_LOG_DEBUG("Executing SetSubtitleOffset");
 
     // Set subtitle offset directly on the subtitle sink
     if (m_context.subtitleSink)
     {
         RIALTO_SERVER_LOG_DEBUG("Setting subtitle offset to %ld nanoseconds", m_position);
-        m_glibWrapper->gObjectSet(m_context.subtitleSink, "subtitle-offset", static_cast<gint64>(m_position), nullptr);
+        m_glibWrapper->gObjectSet(m_context.subtitleSink, "offset", static_cast<gint64>(m_position), nullptr);
     }
     else
     {

@@ -381,14 +381,13 @@ public:
                                    double appliedRate, uint64_t stopPosition) = 0;
 
     /**
-     * @brief Sets the subtitle offset for a subtitle source.
+     * @brief Sets the subtitle offset.
      *
-     * This method sets the subtitle offset for a subtitle source to synchronize subtitle timing.
+     * This method sets the subtitle offset to synchronize subtitle timing.
      *
-     * @param[in] mediaSourceType : The type of the media source.
      * @param[in] position : The subtitle offset position in nanoseconds.
      */
-    virtual void setSubtitleOffset(const MediaSourceType &mediaSourceType, int64_t position) = 0;
+    virtual void setSubtitleOffset(int64_t position) = 0;
 
     /**
      * @brief Process audio gap

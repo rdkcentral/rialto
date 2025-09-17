@@ -310,10 +310,9 @@ GenericPlayerTaskFactory::createSetSourcePosition(GenericPlayerContext &context,
 }
 
 std::unique_ptr<IPlayerTask>
-GenericPlayerTaskFactory::createSetSubtitleOffset(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                  const firebolt::rialto::MediaSourceType &type, std::int64_t position) const
+GenericPlayerTaskFactory::createSetSubtitleOffset(GenericPlayerContext &context, std::int64_t position) const
 {
-    return std::make_unique<tasks::generic::SetSubtitleOffset>(context, player, m_client, m_glibWrapper, type, position);
+    return std::make_unique<tasks::generic::SetSubtitleOffset>(context, m_glibWrapper, position);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createProcessAudioGap(GenericPlayerContext &context,

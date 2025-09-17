@@ -51,7 +51,7 @@ TEST_F(RialtoServerMediaPipelineSetSubtitleOffsetTest, SetSubtitleOffsetSuccess)
     std::int32_t sourceId{mediaSource->getId()};
 
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, setSubtitleOffset(m_kType, m_kPosition));
+    EXPECT_CALL(*m_gstPlayerMock, setSubtitleOffset(m_kPosition));
     EXPECT_TRUE(m_mediaPipeline->setSubtitleOffset(sourceId, m_kPosition));
 }
 

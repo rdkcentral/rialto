@@ -423,7 +423,7 @@ protected:
 
     // Set Subtitle Offset test methods
     void shouldSetSubtitleOffset();
-    void triggerSetSubtitleOffset(firebolt::rialto::MediaSourceType sourceType);
+    void triggerSetSubtitleOffset();
 
     // ProcessAudioGap test methods
     void triggerProcessAudioGap();

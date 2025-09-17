@@ -3255,16 +3255,13 @@ void GenericTasksTestsBase::checkInitialPositionNotSet(firebolt::rialto::MediaSo
 
 void GenericTasksTestsBase::shouldSetSubtitleOffset()
 {
-    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_textTrackSink, StrEq("subtitle-offset")));
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_textTrackSink, StrEq("offset")));
 }
 
-void GenericTasksTestsBase::triggerSetSubtitleOffset(firebolt::rialto::MediaSourceType sourceType)
+void GenericTasksTestsBase::triggerSetSubtitleOffset()
 {
     firebolt::rialto::server::tasks::generic::SetSubtitleOffset task{testContext->m_context,
-                                                                     testContext->m_gstPlayer,
-                                                                     &testContext->m_gstPlayerClient,
                                                                      testContext->m_glibWrapper,
-                                                                     sourceType,
                                                                      kPosition};
     task.execute();
 }

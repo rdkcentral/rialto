@@ -2009,11 +2009,11 @@ void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType,
     }
 }
 
-void GstGenericPlayer::setSubtitleOffset(const MediaSourceType &mediaSourceType, int64_t position)
+void GstGenericPlayer::setSubtitleOffset(int64_t position)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetSubtitleOffset(m_context, *this, mediaSourceType, position));
+        m_workerThread->enqueueTask(m_taskFactory->createSetSubtitleOffset(m_context, position));
     }
 }
 

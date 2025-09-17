@@ -25,26 +25,12 @@ protected:
     SetSubtitleOffsetTest()
     {
         setContextPlaybackRate();
-        setContextStreamInfo(firebolt::rialto::MediaSourceType::SUBTITLE);
     }
 };
 
-TEST_F(SetSubtitleOffsetTest, ShouldNotSetSubtitleOffsetForNonSubtitleSource)
-{
-    triggerSetSubtitleOffset(firebolt::rialto::MediaSourceType::AUDIO);
-    // Should not set any offset
-}
-
-TEST_F(SetSubtitleOffsetTest, ShouldNotSetSubtitleOffsetWhenSourceIsNotAccessible)
-{
-    setContextStreamInfoEmpty();
-    triggerSetSubtitleOffset(firebolt::rialto::MediaSourceType::SUBTITLE);
-    // Should not set any offset
-}
-
 TEST_F(SetSubtitleOffsetTest, ShouldNotSetSubtitleOffsetWhenSubtitleSinkIsNull)
 {
-    triggerSetSubtitleOffset(firebolt::rialto::MediaSourceType::SUBTITLE);
+    triggerSetSubtitleOffset();
     // Should not set any offset since subtitle sink is not set
 }
 
@@ -52,5 +38,5 @@ TEST_F(SetSubtitleOffsetTest, ShouldSetSubtitleOffsetWithSubtitleSink)
 {
     setContextSubtitleSink();
     shouldSetSubtitleOffset();
-    triggerSetSubtitleOffset(firebolt::rialto::MediaSourceType::SUBTITLE);
+    triggerSetSubtitleOffset();
 }

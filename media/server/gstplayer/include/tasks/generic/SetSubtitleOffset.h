@@ -22,9 +22,6 @@
 
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
-#include "IGstGenericPlayerClient.h"
-#include "IGstGenericPlayerPrivate.h"
-#include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include <cstdint>
 #include <memory>
@@ -34,18 +31,14 @@ namespace firebolt::rialto::server::tasks::generic
 class SetSubtitleOffset : public IPlayerTask
 {
 public:
-    SetSubtitleOffset(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                      const std::shared_ptr<wrappers::IGlibWrapper> &glibWrapper, const MediaSourceType &type,
+    SetSubtitleOffset(GenericPlayerContext &context, const std::shared_ptr<wrappers::IGlibWrapper> &glibWrapper,
                       std::int64_t position);
     ~SetSubtitleOffset() override;
     void execute() const override;
 
 private:
     GenericPlayerContext &m_context;
-    IGstGenericPlayerPrivate &m_player;
-    IGstGenericPlayerClient *m_gstPlayerClient;
     std::shared_ptr<wrappers::IGlibWrapper> m_glibWrapper;
-    MediaSourceType m_type;
     std::int64_t m_position;
 };
 

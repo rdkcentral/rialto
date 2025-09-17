@@ -1229,7 +1229,7 @@ bool MediaPipelineServerInternal::setSubtitleOffsetInternal(int32_t sourceId, in
         return false;
     }
 
-    m_gstPlayer->setSubtitleOffset(sourceIter->first, position);
+    m_gstPlayer->setSubtitleOffset(position);
     return true;
 }
 
