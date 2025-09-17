@@ -46,8 +46,7 @@ public:
     virtual bool configureIpc(int32_t socketFd) = 0;
     virtual bool configureServices(const common::SessionServerState &state,
                                    const common::MaxResourceCapabilitites &maxResource,
-                                   const std::string &clientDisplayName, const std::string &appName,
-                                   const std::chrono::seconds subtitleResyncInterval) = 0;
+                                   const std::string &clientDisplayName, const std::string &appName) = 0;
     virtual bool setState(const common::SessionServerState &state) = 0;
     virtual void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                               RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,

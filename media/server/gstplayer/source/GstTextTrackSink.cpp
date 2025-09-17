@@ -218,6 +218,25 @@ static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuf
     return GST_FLOW_OK;
 }
 
+static gboolean gst_rialto_text_track_sink_set_position(GstRialtoTextTrackSink *textTrackSink)
+{
+    if (!textTrackSink->priv->m_textTrackSession)
+    {
+        GST_ERROR_OBJECT(textTrackSink, "Session is NULL");
+        return FALSE;
+    }
+
+    uint64_t positionWithOffset = textTrackSink->priv->m_position.value_or(0) + textTrackSink->priv->m_offset.value_or(0);
+
+    GST_DEBUG_OBJECT(textTrackSink,
+                     "Setting position to %" GST_TIME_FORMAT " (pts %" GST_TIME_FORMAT ", offset %" GST_TIME_FORMAT ")",
+                     GST_TIME_ARGS(positionWithOffset), GST_TIME_ARGS(textTrackSink->priv->m_position.value_or(0)),
+                     GST_TIME_ARGS(textTrackSink->priv->m_offset.value_or(0)));
+
+    textTrackSink->priv->m_textTrackSession->setPosition(positionWithOffset / GST_MSECOND);
+    return TRUE;
+}
+
 static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *caps) // NOLINT(build/function_format)
 {
     GST_INFO_OBJECT(sink, "Setting caps %" GST_PTR_FORMAT, caps);
@@ -276,25 +295,6 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
         textTrackSink->priv->m_queuedOffset.reset();
     }
 
-    return TRUE;
-}
-
-static gboolean gst_rialto_text_track_sink_set_position(GstRialtoTextTrackSink *textTrackSink)
-{
-    if (!textTrackSink->priv->m_textTrackSession)
-    {
-        GST_ERROR_OBJECT(textTrackSink, "Session is NULL");
-        return FALSE;
-    }
-
-    uint64_t positionWithOffset = textTrackSink->priv->m_position.value_or(0) + textTrackSink->priv->m_offset.value_or(0);
-
-    GST_DEBUG_OBJECT(textTrackSink,
-                     "Setting position to %" GST_TIME_FORMAT " (pts %" GST_TIME_FORMAT ", offset %" GST_TIME_FORMAT ")",
-                     GST_TIME_ARGS(positionWithOffset), GST_TIME_ARGS(textTrackSink->priv->m_position.value_or(0)),
-                     GST_TIME_ARGS(textTrackSink->priv->m_offset.value_or(0)));
-
-    textTrackSink->priv->m_textTrackSession->setPosition(positionWithOffset / GST_MSECOND);
     return TRUE;
 }
 

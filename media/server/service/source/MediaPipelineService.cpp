@@ -82,8 +82,7 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
             std::make_pair(sessionId, m_mediaPipelineFactory
                                           ->createMediaPipelineServerInternal(mediaPipelineClient,
                                                                               VideoRequirements{maxWidth, maxHeight},
-                                                                              sessionId, shmBuffer, m_decryptionService
-                                                                              /*,m_subtitleResyncInterval*/)));
+                                                                              sessionId, shmBuffer, m_decryptionService)));
         if (!m_mediaPipelines.at(sessionId))
         {
             RIALTO_SERVER_LOG_ERROR("Could not create MediaPipeline for session with id: %d", sessionId);
@@ -666,18 +665,6 @@ void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &hear
         auto &mediaPipeline = mediaPipelinePair.second;
         mediaPipeline->ping(heartbeatProcedure->createHandler());
     }
-}
-
-void MediaPipelineService::setSubtitleResyncInterval(const std::chrono::seconds subtitleResyncInterval)
-{
-    RIALTO_SERVER_LOG_DEBUG("Set subtitle resync interval requested");
-    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
-    m_subtitleResyncInterval = subtitleResyncInterval;
-    // for (const auto &mediaPipelinePair : m_mediaPipelines)
-    // {
-    //     auto &mediaPipeline = mediaPipelinePair.second;
-    //     //mediaPipeline->setSubtitleResyncInterval(m_subtitleResyncInterval);
-    // }
 }
 
 } // namespace firebolt::rialto::server::service
