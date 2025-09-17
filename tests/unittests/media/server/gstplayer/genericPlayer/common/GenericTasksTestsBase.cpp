@@ -48,8 +48,8 @@
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
 #include "tasks/generic/SetSourcePosition.h"
-#include "tasks/generic/SetSubtitleOffset.h"
 #include "tasks/generic/SetStreamSyncMode.h"
+#include "tasks/generic/SetSubtitleOffset.h"
 #include "tasks/generic/SetSync.h"
 #include "tasks/generic/SetSyncOff.h"
 #include "tasks/generic/SetTextTrackIdentifier.h"
@@ -3260,8 +3260,7 @@ void GenericTasksTestsBase::shouldSetSubtitleOffset()
 
 void GenericTasksTestsBase::triggerSetSubtitleOffset()
 {
-    firebolt::rialto::server::tasks::generic::SetSubtitleOffset task{testContext->m_context,
-                                                                     testContext->m_glibWrapper,
+    firebolt::rialto::server::tasks::generic::SetSubtitleOffset task{testContext->m_context, testContext->m_glibWrapper,
                                                                      kPosition};
     task.execute();
 }

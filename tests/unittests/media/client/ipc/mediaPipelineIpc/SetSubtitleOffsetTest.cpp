@@ -49,8 +49,8 @@ TEST_F(RialtoClientMediaPipelineIpcSetSubtitleOffsetTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setSubtitleOffset"), m_controllerMock.get(),
-                                           setSubtitleOffsetRequestMatcher(m_sessionId, m_kSourceId, m_kPosition),
-                                           _, m_blockingClosureMock.get()));
+                                           setSubtitleOffsetRequestMatcher(m_sessionId, m_kSourceId, m_kPosition), _,
+                                           m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->setSubtitleOffset(m_kSourceId, m_kPosition), true);
 }
@@ -78,8 +78,8 @@ TEST_F(RialtoClientMediaPipelineIpcSetSubtitleOffsetTest, Failure)
     expectIpcApiCallFailure();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("setSubtitleOffset"), m_controllerMock.get(),
-                                           setSubtitleOffsetRequestMatcher(m_sessionId, m_kSourceId, m_kPosition),
-                                           _, m_blockingClosureMock.get()));
+                                           setSubtitleOffsetRequestMatcher(m_sessionId, m_kSourceId, m_kPosition), _,
+                                           m_blockingClosureMock.get()));
 
     EXPECT_EQ(m_mediaPipelineIpc->setSubtitleOffset(m_kSourceId, m_kPosition), false);
 }

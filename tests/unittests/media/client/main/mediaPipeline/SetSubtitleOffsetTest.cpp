@@ -45,8 +45,7 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineSetSubtitleOffsetTest, Success)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setSubtitleOffset(m_kSourceId, m_kPosition))
-        .WillOnce(Return(true));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setSubtitleOffset(m_kSourceId, m_kPosition)).WillOnce(Return(true));
 
     EXPECT_EQ(m_mediaPipeline->setSubtitleOffset(m_kSourceId, m_kPosition), true);
 }
@@ -56,8 +55,7 @@ TEST_F(RialtoClientMediaPipelineSetSubtitleOffsetTest, Success)
  */
 TEST_F(RialtoClientMediaPipelineSetSubtitleOffsetTest, Failure)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, setSubtitleOffset(m_kSourceId, m_kPosition))
-        .WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, setSubtitleOffset(m_kSourceId, m_kPosition)).WillOnce(Return(false));
 
     EXPECT_EQ(m_mediaPipeline->setSubtitleOffset(m_kSourceId, m_kPosition), false);
 }

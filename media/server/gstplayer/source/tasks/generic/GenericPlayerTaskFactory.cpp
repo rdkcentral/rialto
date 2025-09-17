@@ -43,8 +43,8 @@
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
 #include "tasks/generic/SetSourcePosition.h"
-#include "tasks/generic/SetSubtitleOffset.h"
 #include "tasks/generic/SetStreamSyncMode.h"
+#include "tasks/generic/SetSubtitleOffset.h"
 #include "tasks/generic/SetSync.h"
 #include "tasks/generic/SetSyncOff.h"
 #include "tasks/generic/SetTextTrackIdentifier.h"
@@ -309,8 +309,8 @@ GenericPlayerTaskFactory::createSetSourcePosition(GenericPlayerContext &context,
                                                                resetTime, appliedRate, stopPosition);
 }
 
-std::unique_ptr<IPlayerTask>
-GenericPlayerTaskFactory::createSetSubtitleOffset(GenericPlayerContext &context, std::int64_t position) const
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSubtitleOffset(GenericPlayerContext &context,
+                                                                               std::int64_t position) const
 {
     return std::make_unique<tasks::generic::SetSubtitleOffset>(context, m_glibWrapper, position);
 }

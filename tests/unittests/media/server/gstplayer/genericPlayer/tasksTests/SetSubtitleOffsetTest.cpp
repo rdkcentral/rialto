@@ -22,10 +22,7 @@
 class SetSubtitleOffsetTest : public GenericTasksTestsBase
 {
 protected:
-    SetSubtitleOffsetTest()
-    {
-        setContextPlaybackRate();
-    }
+    SetSubtitleOffsetTest() { setContextPlaybackRate(); }
 };
 
 TEST_F(SetSubtitleOffsetTest, ShouldNotSetSubtitleOffsetWhenSubtitleSinkIsNull)

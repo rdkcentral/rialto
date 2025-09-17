@@ -23,8 +23,7 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 SetSubtitleOffset::SetSubtitleOffset(GenericPlayerContext &context,
-                                     const std::shared_ptr<wrappers::IGlibWrapper> &glibWrapper,
-                                     std::int64_t position)
+                                     const std::shared_ptr<wrappers::IGlibWrapper> &glibWrapper, std::int64_t position)
     : m_context{context}, m_glibWrapper{glibWrapper}, m_position{position}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetSubtitleOffset");
