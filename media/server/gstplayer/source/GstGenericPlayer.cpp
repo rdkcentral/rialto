@@ -1703,7 +1703,6 @@ void GstGenericPlayer::startSubtitleClockResyncTimer()
             }
         },
         firebolt::rialto::common::TimerType::PERIODIC);
-    setPlaybackRate(1.1);
 }
 
 void GstGenericPlayer::stopSubtitleClockResyncTimer()

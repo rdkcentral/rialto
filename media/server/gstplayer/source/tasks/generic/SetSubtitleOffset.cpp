@@ -19,6 +19,7 @@
 
 #include "SetSubtitleOffset.h"
 #include "RialtoServerLogging.h"
+#include <cinttypes>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -41,7 +42,7 @@ void SetSubtitleOffset::execute() const
     // Set subtitle offset directly on the subtitle sink
     if (m_context.subtitleSink)
     {
-        RIALTO_SERVER_LOG_DEBUG("Setting subtitle offset to %ld nanoseconds", m_position);
+        RIALTO_SERVER_LOG_DEBUG("Setting subtitle offset to %" PRId64 " nanoseconds", m_position);
         m_glibWrapper->gObjectSet(m_context.subtitleSink, "offset", static_cast<gint64>(m_position), nullptr);
     }
     else
