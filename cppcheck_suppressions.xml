@@ -15,10 +15,6 @@
         <fileName>ipc/client/source/IpcClientControllerImpl.cpp</fileName>
     </suppress>
     <suppress>
-        <id>unusedFunction</id>
-        <symbolName>rialto_mse_add_protection_metadata</symbolName>
-    </suppress>
-    <suppress>
         <id>ctuOneDefinitionRuleViolation</id>
         <fileName>tests/unittests/media/client/main/mediaPipeline/base/MediaPipelineTestBase.h</fileName>
     </suppress>
@@ -29,14 +25,6 @@
     <suppress>
         <id>ctuOneDefinitionRuleViolation</id>
         <fileName>tests/unittests/media/client/main/mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp</fileName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
-        <symbolName>gst_rialto_text_track_sink_class_init</symbolName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
-        <symbolName>gst_rialto_text_track_sink_init</symbolName>
     </suppress>
     <suppress>
         <id>unusedFunction</id>
