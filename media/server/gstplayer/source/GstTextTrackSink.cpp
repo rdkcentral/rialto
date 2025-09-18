@@ -200,7 +200,7 @@ static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuf
     if (gst_buffer_map(buffer, &info, GST_MAP_READ))
     {
         std::string data(reinterpret_cast<char *>(info.data), info.size);
-        int64_t displayOffset{/*textTrackSink->priv->m_offset ? 0 - (int64_t)*textTrackSink->priv->m_offset :*/ 0};
+        int64_t displayOffset{0};
         if (GST_BUFFER_OFFSET_NONE != GST_BUFFER_OFFSET(buffer))
         {
             displayOffset = static_cast<int64_t>(GST_BUFFER_OFFSET(buffer));

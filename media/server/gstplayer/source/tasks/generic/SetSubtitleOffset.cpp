@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2024 Sky UK
+ * Copyright 2025 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,6 @@ void SetSubtitleOffset::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetSubtitleOffset");
 
-    // Set subtitle offset directly on the subtitle sink
     if (m_context.subtitleSink)
     {
         RIALTO_SERVER_LOG_DEBUG("Setting subtitle offset to %" PRId64 " nanoseconds", m_position);
