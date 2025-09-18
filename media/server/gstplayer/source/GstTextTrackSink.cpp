@@ -284,15 +284,21 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
 
     std::unique_lock lock{textTrackSink->priv->m_mutex};
     textTrackSink->priv->m_capsSet = true;
-    if (textTrackSink->priv->m_queuedPosition.has_value() || textTrackSink->priv->m_queuedOffset.has_value())
+    bool wasAnyQueued = textTrackSink->priv->m_queuedPosition.has_value() ||
+                        textTrackSink->priv->m_queuedOffset.has_value();
+    if (textTrackSink->priv->m_queuedPosition.has_value())
     {
         textTrackSink->priv->m_position = textTrackSink->priv->m_queuedPosition;
-        textTrackSink->priv->m_offset = textTrackSink->priv->m_queuedOffset;
-
-        gst_rialto_text_track_sink_set_position(textTrackSink);
-
         textTrackSink->priv->m_queuedPosition.reset();
+    }
+    if (textTrackSink->priv->m_queuedOffset.has_value())
+    {
+        textTrackSink->priv->m_offset = textTrackSink->priv->m_queuedOffset;
         textTrackSink->priv->m_queuedOffset.reset();
+    }
+    if (wasAnyQueued)
+    {
+        gst_rialto_text_track_sink_set_position(textTrackSink);
     }
 
     return TRUE;
