@@ -15,6 +15,10 @@
         <fileName>ipc/client/source/IpcClientControllerImpl.cpp</fileName>
     </suppress>
     <suppress>
+        <id>unusedFunction</id>
+        <symbolName>rialto_mse_add_protection_metadata</symbolName>
+    </suppress>
+    <suppress>
         <id>ctuOneDefinitionRuleViolation</id>
         <fileName>tests/unittests/media/client/main/mediaPipeline/base/MediaPipelineTestBase.h</fileName>
     </suppress>
