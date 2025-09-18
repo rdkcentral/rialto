@@ -70,6 +70,7 @@ public:
                 (int sessionId, int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                  uint64_t stopPosition),
                 (override));
+    MOCK_METHOD(bool, setSubtitleOffset, (int sessionId, int32_t sourceId, int64_t position), (override));
     MOCK_METHOD(bool, processAudioGap,
                 (int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
                 (override));

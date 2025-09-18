@@ -67,6 +67,7 @@
 #include "tasks/generic/Shutdown.h"
 #include "tasks/generic/Stop.h"
 #include "tasks/generic/SwitchSource.h"
+#include "tasks/generic/SynchroniseSubtitleClock.h"
 #include "tasks/generic/Underflow.h"
 #include "tasks/generic/UpdatePlaybackGroup.h"
 
@@ -387,4 +388,11 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSwitchSource)
     auto task = m_sut.createSwitchSource(m_gstPlayer, source);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SwitchSource &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSynchroniseSubtitleClock)
+{
+    auto task = m_sut.createSynchroniseSubtitleClock(m_context, m_gstPlayer);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SynchroniseSubtitleClock &>(*task));
 }

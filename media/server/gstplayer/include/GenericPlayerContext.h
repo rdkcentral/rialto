@@ -104,6 +104,11 @@ struct GenericPlayerContext
     GstElement *subtitleSink{nullptr};
 
     /**
+     * @brief The video sink
+     */
+    GstElement *videoSink{nullptr};
+
+    /**
      * @brief Flag used to check, if video decoder handle has been set.
      */
     bool isVideoHandleSet{false};

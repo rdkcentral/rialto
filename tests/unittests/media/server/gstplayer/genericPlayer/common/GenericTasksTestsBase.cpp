@@ -49,6 +49,7 @@
 #include "tasks/generic/SetPosition.h"
 #include "tasks/generic/SetSourcePosition.h"
 #include "tasks/generic/SetStreamSyncMode.h"
+#include "tasks/generic/SetSubtitleOffset.h"
 #include "tasks/generic/SetSync.h"
 #include "tasks/generic/SetSyncOff.h"
 #include "tasks/generic/SetTextTrackIdentifier.h"
@@ -477,8 +478,8 @@ void GenericTasksTestsBase::expectSetupVideoSinkElement()
         .WillOnce(Return(TRUE));
 
     expectVideoUnderflowSignalConnection();
-
-    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectRef(testContext->m_element));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(testContext->m_element));
 }
 
 void GenericTasksTestsBase::expectSetupVideoDecoderElement()
@@ -3250,6 +3251,18 @@ void GenericTasksTestsBase::checkInitialPositionNotSet(firebolt::rialto::MediaSo
     GstElement *source = sourceType == firebolt::rialto::MediaSourceType::AUDIO ? &testContext->m_appSrcAudio
                                                                                 : &testContext->m_appSrcVideo;
     EXPECT_EQ(testContext->m_context.initialPositions.end(), testContext->m_context.initialPositions.find(source));
+}
+
+void GenericTasksTestsBase::shouldSetSubtitleOffset()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_textTrackSink, StrEq("offset")));
+}
+
+void GenericTasksTestsBase::triggerSetSubtitleOffset()
+{
+    firebolt::rialto::server::tasks::generic::SetSubtitleOffset task{testContext->m_context, testContext->m_glibWrapper,
+                                                                     kPosition};
+    task.execute();
 }
 
 void GenericTasksTestsBase::triggerProcessAudioGap()

@@ -421,6 +421,10 @@ protected:
     void checkInitialPositionSet(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType);
 
+    // Set Subtitle Offset test methods
+    void shouldSetSubtitleOffset();
+    void triggerSetSubtitleOffset();
+
     // ProcessAudioGap test methods
     void triggerProcessAudioGap();
     void shouldProcessAudioGap();
