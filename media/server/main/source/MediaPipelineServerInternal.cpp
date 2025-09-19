@@ -1620,7 +1620,7 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
 
 std::chrono::milliseconds MediaPipelineServerInternal::getNeedMediaDataTimeout(MediaSourceType mediaSourceType) const
 {
-    constexpr std::chrono::milliseconds kDefaultNeedMediaDataResendTimeMs{25};
+    constexpr std::chrono::milliseconds kDefaultNeedMediaDataResendTimeMs{15};
     constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMsForLowLatency{5};
     if ((mediaSourceType == MediaSourceType::VIDEO && m_IsLowLatencyVideoPlayer) ||
         (mediaSourceType == MediaSourceType::AUDIO && m_IsLowLatencyAudioPlayer))
