@@ -36,7 +36,10 @@ struct GstRialtoTextTrackSinkPrivate
     std::string m_textTrackIdentifier;
     uint64_t m_videoDecoderIdentifier{0};
     bool m_capsSet{false};
+    std::optional<uint64_t> m_position;
     std::optional<uint64_t> m_queuedPosition;
+    std::optional<uint64_t> m_offset;
+    std::optional<uint64_t> m_queuedOffset;
     std::mutex m_mutex;
 };
 }; // namespace firebolt::rialto::server

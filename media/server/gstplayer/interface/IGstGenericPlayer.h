@@ -381,6 +381,15 @@ public:
                                    double appliedRate, uint64_t stopPosition) = 0;
 
     /**
+     * @brief Sets the subtitle offset.
+     *
+     * This method sets the subtitle offset to synchronize subtitle timing.
+     *
+     * @param[in] position : The subtitle offset position in nanoseconds.
+     */
+    virtual void setSubtitleOffset(int64_t position) = 0;
+
+    /**
      * @brief Process audio gap
      *
      * This method handles audio gap in order to avoid audio pops during transitions.

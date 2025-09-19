@@ -32,14 +32,6 @@
     </suppress>
     <suppress>
         <id>unusedFunction</id>
-        <symbolName>gst_rialto_text_track_sink_class_init</symbolName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
-        <symbolName>gst_rialto_text_track_sink_init</symbolName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
         <fileName>stubs/wpeframework-core/core.cpp</fileName>
     </suppress>
     <suppress>

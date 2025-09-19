@@ -155,6 +155,8 @@ public:
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;
 
+    bool setSubtitleOffset(int32_t sourceId, int64_t position) override;
+
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
     bool setBufferingLimit(uint32_t limitBufferingMs) override;
@@ -623,6 +625,18 @@ protected:
      */
     bool setSourcePositionInternal(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                                    uint64_t stopPosition);
+
+    /**
+     * @brief Set subtitle offset for a subtitle source.
+     *
+     * This method is used to set the subtitle offset for a subtitle source.
+     *
+     * @param[in] sourceId : The id of the subtitle source
+     * @param[in] position : The subtitle offset position in nanoseconds
+     *
+     * @retval true on success.
+     */
+    bool setSubtitleOffsetInternal(int32_t sourceId, int64_t position);
 
     /**
      * @brief Process audio gap

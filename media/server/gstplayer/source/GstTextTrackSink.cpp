@@ -18,15 +18,15 @@
  */
 
 #include "GstProtectionMetadataHelperFactory.h"
+#include "GstRialtoTextTrackSinkPrivate.h"
 #include "GstTextTrackSinkFactory.h"
 #include "RialtoServerLogging.h"
-#include <stdexcept>
-
-#include "GstRialtoTextTrackSinkPrivate.h"
 #include <atomic>
+#include <cinttypes>
 #include <cstdlib>
 #include <gst/base/gstbasetransform.h>
 #include <gst/gst.h>
+#include <stdexcept>
 G_BEGIN_DECLS
 
 enum
@@ -36,6 +36,7 @@ enum
     PROP_TEXT_TRACK_IDENTIFIER,
     PROP_VIDEO_DECODER,
     PROP_POSITION,
+    PROP_OFFSET,
     PROP_LAST
 };
 
@@ -126,6 +127,10 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
                                     g_param_spec_uint64("position", "Position", "Position", 0, G_MAXUINT64, 0,
                                                         GParamFlags(G_PARAM_READWRITE)));
 
+    g_object_class_install_property(gobjectClass, PROP_OFFSET,
+                                    g_param_spec_uint64("offset", "Offset", "Offset", 0, G_MAXUINT64, 0,
+                                                        GParamFlags(G_PARAM_WRITABLE)));
+
     gst_element_class_add_pad_template(elementClass, gst_static_pad_template_get(&sinkTemplate));
     gst_element_class_set_static_metadata(elementClass, "Rialto TextTrack Sink", "Sink/Parser/Subtitle",
                                           "Rialto TextTrack Sink", "SKY");
@@ -213,6 +218,25 @@ static GstFlowReturn gst_rialto_text_track_sink_render(GstBaseSink *sink, GstBuf
     return GST_FLOW_OK;
 }
 
+static gboolean gst_rialto_text_track_sink_set_position(GstRialtoTextTrackSink *textTrackSink) // NOLINT(build/function_format)
+{
+    if (!textTrackSink->priv->m_textTrackSession)
+    {
+        GST_ERROR_OBJECT(textTrackSink, "Session is NULL");
+        return FALSE;
+    }
+
+    uint64_t positionWithOffset = textTrackSink->priv->m_position.value_or(0) + textTrackSink->priv->m_offset.value_or(0);
+
+    GST_DEBUG_OBJECT(textTrackSink,
+                     "Setting position to %" GST_TIME_FORMAT " (pts %" GST_TIME_FORMAT ", offset %" GST_TIME_FORMAT ")",
+                     GST_TIME_ARGS(positionWithOffset), GST_TIME_ARGS(textTrackSink->priv->m_position.value_or(0)),
+                     GST_TIME_ARGS(textTrackSink->priv->m_offset.value_or(0)));
+
+    textTrackSink->priv->m_textTrackSession->setPosition(positionWithOffset / GST_MSECOND);
+    return TRUE;
+}
+
 static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *caps) // NOLINT(build/function_format)
 {
     GST_INFO_OBJECT(sink, "Setting caps %" GST_PTR_FORMAT, caps);
@@ -260,10 +284,21 @@ static gboolean gst_rialto_text_track_sink_set_caps(GstBaseSink *sink, GstCaps *
 
     std::unique_lock lock{textTrackSink->priv->m_mutex};
     textTrackSink->priv->m_capsSet = true;
+    bool wasAnyQueued = textTrackSink->priv->m_queuedPosition.has_value() ||
+                        textTrackSink->priv->m_queuedOffset.has_value();
     if (textTrackSink->priv->m_queuedPosition.has_value())
     {
-        textTrackSink->priv->m_textTrackSession->setPosition(textTrackSink->priv->m_queuedPosition.value() / GST_MSECOND);
+        textTrackSink->priv->m_position = textTrackSink->priv->m_queuedPosition;
         textTrackSink->priv->m_queuedPosition.reset();
+    }
+    if (textTrackSink->priv->m_queuedOffset.has_value())
+    {
+        textTrackSink->priv->m_offset = textTrackSink->priv->m_queuedOffset;
+        textTrackSink->priv->m_queuedOffset.reset();
+    }
+    if (wasAnyQueued)
+    {
+        gst_rialto_text_track_sink_set_position(textTrackSink);
     }
 
     return TRUE;
@@ -286,6 +321,42 @@ static gboolean gst_rialto_text_track_sink_event(GstBaseSink *sink, GstEvent *ev
     }
     case GST_EVENT_FLUSH_STOP:
     {
+        break;
+    }
+    case GST_EVENT_CUSTOM_DOWNSTREAM:
+    case GST_EVENT_CUSTOM_DOWNSTREAM_OOB:
+    {
+        if (gst_event_has_name(event, "current-pts"))
+        {
+            uint64_t pts = 0;
+            const GstStructure *structure = gst_event_get_structure(event);
+            if (structure)
+            {
+                if (gst_structure_get_uint64(structure, "pts", &pts))
+                {
+                    if (pts == GST_CLOCK_TIME_NONE)
+                    {
+                        GST_ERROR_OBJECT(textTrackSink, "Invalid PTS value");
+                        return FALSE;
+                    }
+
+                    std::unique_lock lock{textTrackSink->priv->m_mutex};
+                    textTrackSink->priv->m_position = pts;
+
+                    gst_rialto_text_track_sink_set_position(textTrackSink);
+                }
+                else
+                {
+                    GST_ERROR_OBJECT(textTrackSink, "Failed to get PTS from structure");
+                    return FALSE;
+                }
+            }
+            else
+            {
+                GST_ERROR_OBJECT(textTrackSink, "Failed to get structure from event");
+                return FALSE;
+            }
+        }
         break;
     }
     default:
@@ -425,7 +496,8 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
         std::unique_lock lock{priv->m_mutex};
         if (priv->m_textTrackSession && priv->m_capsSet)
         {
-            priv->m_textTrackSession->setPosition(position / GST_MSECOND);
+            priv->m_position = position;
+            gst_rialto_text_track_sink_set_position(textTrackSink);
         }
         else
         {
@@ -433,6 +505,22 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
         }
         break;
     }
+    case PROP_OFFSET:
+    {
+        uint64_t offset = g_value_get_uint64(value);
+        std::unique_lock lock{priv->m_mutex};
+        if (priv->m_textTrackSession && priv->m_capsSet)
+        {
+            priv->m_offset = offset;
+            gst_rialto_text_track_sink_set_position(textTrackSink);
+        }
+        else
+        {
+            priv->m_queuedOffset = offset;
+        }
+        break;
+    }
+
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID(object, propId, pspec);
         break;

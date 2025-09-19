@@ -79,6 +79,7 @@ public:
     MOCK_METHOD(bool, setSourcePosition,
                 (int32_t sourceId, int64_t position, bool resetTime, double appliedRate, uint64_t stopPosition),
                 (override));
+    MOCK_METHOD(bool, setSubtitleOffset, (int32_t sourceId, int64_t position), (override));
     MOCK_METHOD(std::weak_ptr<IMediaPipelineClient>, getClient, (), (override));
     MOCK_METHOD(void, notifyApplicationState, (ApplicationState state), (override));
     MOCK_METHOD(bool, processAudioGap, (int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),

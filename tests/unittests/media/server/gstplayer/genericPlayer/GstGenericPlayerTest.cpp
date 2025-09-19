@@ -20,10 +20,12 @@
 #include "DataReaderMock.h"
 #include "GstGenericPlayerTestCommon.h"
 #include "HeartbeatHandlerMock.h"
+#include "IGstGenericPlayerPrivate.h"
 #include "IMediaPipeline.h"
 #include "MatchersGenericPlayer.h"
 #include "MediaSourceUtil.h"
 #include "PlayerTaskMock.h"
+#include "TimerMock.h"
 
 using testing::_;
 using testing::ByMove;

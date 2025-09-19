@@ -135,6 +135,10 @@ public:
                            const ::firebolt::rialto::SetSourcePositionRequest *request,
                            ::firebolt::rialto::SetSourcePositionResponse *response,
                            ::google::protobuf::Closure *done) override;
+    void setSubtitleOffset(::google::protobuf::RpcController *controller,
+                           const ::firebolt::rialto::SetSubtitleOffsetRequest *request,
+                           ::firebolt::rialto::SetSubtitleOffsetResponse *response,
+                           ::google::protobuf::Closure *done) override;
     void processAudioGap(::google::protobuf::RpcController *controller,
                          const ::firebolt::rialto::ProcessAudioGapRequest *request,
                          ::firebolt::rialto::ProcessAudioGapResponse *response,
