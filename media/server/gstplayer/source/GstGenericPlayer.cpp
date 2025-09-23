@@ -243,6 +243,10 @@ void GstGenericPlayer::initMsePipeline()
     {
         GST_WARNING("No playsink ?!?!?");
     }
+    if (GST_STATE_CHANGE_FAILURE == m_gstWrapper->gstElementSetState(m_context.pipeline, GST_STATE_READY))
+    {
+        GST_WARNING("Failed to set pipeline to READY state");
+    }
     RIALTO_SERVER_LOG_MIL("New RialtoServer's pipeline created");
 }
 
@@ -1103,6 +1107,11 @@ void GstGenericPlayer::scheduleNeedMediaData(GstAppSrc *src)
 {
     if (m_workerThread)
     {
+        if (m_scheduledNeedDatas.isNeedDataScheduled(src))
+        {
+            return;
+        }
+        m_scheduledNeedDatas.setNeedDataScheduled(src);
         m_workerThread->enqueueTask(m_taskFactory->createNeedData(m_context, *this, src));
     }
 }
@@ -1111,6 +1120,7 @@ void GstGenericPlayer::scheduleEnoughData(GstAppSrc *src)
 {
     if (m_workerThread)
     {
+        clearNeedDataScheduled(src);
         m_workerThread->enqueueTask(m_taskFactory->createEnoughData(m_context, src));
     }
 }
@@ -2238,4 +2248,8 @@ bool GstGenericPlayer::shouldEnableNativeAudio()
     return false;
 }
 
+void GstGenericPlayer::clearNeedDataScheduled(GstAppSrc *src)
+{
+    m_scheduledNeedDatas.clearNeedDataScheduled(src);
+}
 }; // namespace firebolt::rialto::server

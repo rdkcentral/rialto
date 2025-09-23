@@ -310,6 +310,13 @@ public:
      * @param[in] mediaSourceType : the source type that has been flushed
      */
     virtual void setSourceFlushed(const MediaSourceType &mediaSourceType) = 0;
+
+    /**
+     * @brief Clears need data scheduled flag
+     *
+     * @param[in] src : the app source
+     */
+    virtual void clearNeedDataScheduled(GstAppSrc *src) = 0;
 };
 } // namespace firebolt::rialto::server
 

@@ -2539,6 +2539,8 @@ void GenericTasksTestsBase::checkBuffersEmpty()
 
 void GenericTasksTestsBase::shouldExtractBuffers()
 {
+    EXPECT_CALL(testContext->m_gstPlayer, clearNeedDataScheduled(GST_APP_SRC(&testContext->m_appSrcAudio)));
+    EXPECT_CALL(testContext->m_gstPlayer, clearNeedDataScheduled(GST_APP_SRC(&testContext->m_appSrcVideo)));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::SEEKING));
     EXPECT_CALL(testContext->m_gstPlayerClient, clearActiveRequestsCache());
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_audioBuffer));
@@ -3009,6 +3011,11 @@ void GenericTasksTestsBase::shouldDisableAudioFlag()
     EXPECT_CALL(testContext->m_gstPlayer, setPlaybinFlags(false));
 }
 
+void GenericTasksTestsBase::shouldClearAudioNeedDataFlag()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, clearNeedDataScheduled(GST_APP_SRC(&testContext->m_appSrcAudio)));
+}
+
 void GenericTasksTestsBase::triggerRemoveSourceAudio()
 {
     firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, testContext->m_gstPlayer,
@@ -3120,6 +3127,7 @@ void GenericTasksTestsBase::triggerReadShmDataAndAttachSamples()
 
 void GenericTasksTestsBase::shouldFlushAudio()
 {
+    EXPECT_CALL(testContext->m_gstPlayer, clearNeedDataScheduled(GST_APP_SRC(&testContext->m_appSrcAudio)));
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_audioBuffer));
     EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::AUDIO));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifySourceFlushed(firebolt::rialto::MediaSourceType::AUDIO));
@@ -3128,6 +3136,7 @@ void GenericTasksTestsBase::shouldFlushAudio()
 
 void GenericTasksTestsBase::shouldFlushVideo()
 {
+    EXPECT_CALL(testContext->m_gstPlayer, clearNeedDataScheduled(GST_APP_SRC(&testContext->m_appSrcVideo)));
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_videoBuffer));
     EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::VIDEO));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifySourceFlushed(firebolt::rialto::MediaSourceType::VIDEO));
