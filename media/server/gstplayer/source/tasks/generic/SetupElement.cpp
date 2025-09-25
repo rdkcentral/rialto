@@ -219,6 +219,22 @@ void SetupElement::execute() const
         m_glibWrapper->gObjectSet(m_element, "sync", FALSE, nullptr);
     }
 
+    if (m_context.subtitleSink)
+    {
+        if (!m_context.isVideoHandleSet && isVideoDecoder(*m_gstWrapper, m_element))
+        {
+            if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "omx") ||
+                m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink") ||
+                m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "brcmvideodecoder"))
+            {
+                uintptr_t videoDecoderHandle = reinterpret_cast<uintptr_t>(m_element);
+                m_glibWrapper->gObjectSet(m_context.subtitleSink, "video-decoder", videoDecoderHandle, nullptr);
+                RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %zu", videoDecoderHandle);
+                m_context.isVideoHandleSet = true;
+            }
+        }
+    }
+
     if (isDecoder(*m_gstWrapper, m_element) || isSink(*m_gstWrapper, m_element))
     {
         std::optional<std::string> underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
@@ -243,6 +259,11 @@ void SetupElement::execute() const
 
     if (isVideoSink(*m_gstWrapper, m_element))
     {
+        if (!m_context.videoSink)
+        {
+            m_gstWrapper->gstObjectRef(m_element);
+            m_context.videoSink = m_element;
+        }
         if (!m_context.pendingGeometry.empty())
         {
             m_player.setVideoSinkRectangle();
@@ -254,6 +275,10 @@ void SetupElement::execute() const
         if (m_context.pendingRenderFrame)
         {
             m_player.setRenderFrame();
+        }
+        if (m_context.pendingShowVideoWindow.has_value())
+        {
+            m_player.setShowVideoWindow();
         }
     }
     else if (isAudioDecoder(*m_gstWrapper, m_element))

@@ -64,8 +64,10 @@
 #include "tasks/generic/SetVolume.h"
 #include "tasks/generic/SetupElement.h"
 #include "tasks/generic/SetupSource.h"
+#include "tasks/generic/Shutdown.h"
 #include "tasks/generic/Stop.h"
 #include "tasks/generic/SwitchSource.h"
+#include "tasks/generic/SynchroniseSubtitleClock.h"
 #include "tasks/generic/Underflow.h"
 #include "tasks/generic/UpdatePlaybackGroup.h"
 
@@ -188,7 +190,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateRemoveSource)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateReportPosition)
 {
-    auto task = m_sut.createReportPosition(m_context);
+    auto task = m_sut.createReportPosition(m_context, m_gstPlayer);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::ReportPosition &>(*task));
 }
@@ -277,6 +279,13 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetStreamSyncMode)
                                               kStreamSyncMode);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetStreamSyncMode &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateShutdown)
+{
+    auto task = m_sut.createShutdown(m_gstPlayer);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Shutdown &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateStop)
@@ -379,4 +388,11 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSwitchSource)
     auto task = m_sut.createSwitchSource(m_gstPlayer, source);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SwitchSource &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSynchroniseSubtitleClock)
+{
+    auto task = m_sut.createSynchroniseSubtitleClock(m_context, m_gstPlayer);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SynchroniseSubtitleClock &>(*task));
 }

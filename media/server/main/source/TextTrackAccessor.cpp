@@ -67,7 +67,7 @@ std::optional<uint32_t> TextTrackAccessor::openSession(const std::string &displa
     uint32_t result = m_textTrackWrapper->openSession(displayName, sessionId);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_INFO("TextTrack session %u created with display '%s'", sessionId, displayName.c_str());
+        RIALTO_SERVER_LOG_MIL("TextTrack session %u created with display '%s'", sessionId, displayName.c_str());
         return sessionId;
     }
 
@@ -81,7 +81,7 @@ bool TextTrackAccessor::closeSession(uint32_t sessionId)
     uint32_t result = m_textTrackWrapper->closeSession(sessionId);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_INFO("TextTrack session %u closed", sessionId);
+        RIALTO_SERVER_LOG_MIL("TextTrack session %u closed", sessionId);
         return true;
     }
 
@@ -162,7 +162,7 @@ bool TextTrackAccessor::setPosition(uint32_t sessionId, uint64_t mediaTimestampM
     return false;
 }
 
-bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, DataType datatype, int32_t displayOffsetMs)
+bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, DataType datatype, int64_t displayOffsetMs)
 {
     firebolt::rialto::wrappers::ITextTrackWrapper::DataType wrapperDataType{};
     if (datatype == DataType::WebVTT)
@@ -173,6 +173,11 @@ bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, Da
     {
         wrapperDataType = firebolt::rialto::wrappers::ITextTrackWrapper::DataType::TTML;
     }
+    else if (datatype == DataType::CC)
+    {
+        RIALTO_SERVER_LOG_WARN("Data received for ClosedCaptions. It should not happen.");
+        return false;
+    }
     else
     {
         RIALTO_SERVER_LOG_ERROR("Unknown data type");
@@ -182,8 +187,7 @@ bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, Da
     const uint32_t result = m_textTrackWrapper->sendSessionData(sessionId, wrapperDataType, displayOffsetMs, data);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_DEBUG("Sending data to TextTrack session %u was successful; offset %d, size %zu", sessionId,
-                                displayOffsetMs, data.size());
+        RIALTO_SERVER_LOG_DEBUG("Sending data to TextTrack session %u was successful; size %zu", sessionId, data.size());
         return true;
     }
 
@@ -237,7 +241,7 @@ bool TextTrackAccessor::setSessionWebVTTSelection(uint32_t sessionId)
 
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_DEBUG("Setting WebVTT selection for session %u was successful", sessionId);
+        RIALTO_SERVER_LOG_INFO("Setting WebVTT selection for session %u was successful", sessionId);
         return true;
     }
 
@@ -251,7 +255,7 @@ bool TextTrackAccessor::setSessionTTMLSelection(uint32_t sessionId)
     uint32_t result = m_textTrackWrapper->setSessionTTMLSelection(sessionId);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_DEBUG("Setting TTML selection for session %u was successful", sessionId);
+        RIALTO_SERVER_LOG_INFO("Setting TTML selection for session %u was successful", sessionId);
         return true;
     }
 
@@ -265,8 +269,8 @@ bool TextTrackAccessor::setSessionCCSelection(uint32_t sessionId, const std::str
     uint32_t result = m_textTrackWrapper->setSessionClosedCaptionsService(sessionId, service);
     if (m_thunderWrapper->isSuccessful(result))
     {
-        RIALTO_SERVER_LOG_DEBUG("Setting CC selection service '%s' for session %u was successful", service.c_str(),
-                                sessionId);
+        RIALTO_SERVER_LOG_INFO("Setting CC selection service '%s' for session %u was successful", service.c_str(),
+                               sessionId);
         return true;
     }
 
@@ -285,6 +289,21 @@ bool TextTrackAccessor::resetSession(uint32_t sessionId)
     }
 
     RIALTO_SERVER_LOG_ERROR("Failed to reset session %u; error %s", sessionId, m_thunderWrapper->errorToString(result));
+    return false;
+}
+
+bool TextTrackAccessor::associateVideoDecoder(uint32_t sessionId, const std::string &videoDecoder)
+{
+    uint32_t result = m_textTrackWrapper->associateVideoDecoder(sessionId, videoDecoder);
+    if (m_thunderWrapper->isSuccessful(result))
+    {
+        RIALTO_SERVER_LOG_MIL("Associating video decoder '%s' with session %u was successful", videoDecoder.c_str(),
+                              sessionId);
+        return true;
+    }
+
+    RIALTO_SERVER_LOG_ERROR("Failed to associate video decoder '%s' with session %u; error %s", videoDecoder.c_str(),
+                            sessionId, m_thunderWrapper->errorToString(result));
     return false;
 }
 

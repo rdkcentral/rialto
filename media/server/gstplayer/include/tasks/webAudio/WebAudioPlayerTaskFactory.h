@@ -37,6 +37,7 @@ public:
                               const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper);
     ~WebAudioPlayerTaskFactory() override = default;
 
+    std::unique_ptr<IPlayerTask> createShutdown(IGstWebAudioPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createStop(IGstWebAudioPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createPlay(IGstWebAudioPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createPause(IGstWebAudioPlayerPrivate &player) const override;

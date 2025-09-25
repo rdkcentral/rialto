@@ -39,6 +39,15 @@ public:
     virtual ~IWebAudioPlayerTaskFactory() = default;
 
     /**
+     * @brief Creates a Shutdown task.
+     *
+     * @param[in] player     : The GstWebAudioPlayer instance
+     *
+     * @retval the new Shutdown task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createShutdown(IGstWebAudioPlayerPrivate &player) const = 0;
+
+    /**
      * @brief Creates a Stop task.
      *
      * @param[in] player     : The GstWebAudioPlayer instance

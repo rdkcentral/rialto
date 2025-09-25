@@ -62,11 +62,8 @@ WorkerThread::WorkerThread()
 
 WorkerThread::~WorkerThread()
 {
-    if (m_taskThread.joinable())
-    {
-        stop();
-        m_taskThread.join();
-    }
+    stop();
+    join();
 }
 
 void WorkerThread::stop()
@@ -75,6 +72,14 @@ void WorkerThread::stop()
 
     auto shutdownTask = [this]() { m_isTaskThreadActive = false; };
     enqueueTask(std::make_unique<FunctionTask>(std::move(shutdownTask)));
+}
+
+void WorkerThread::join()
+{
+    if (m_taskThread.joinable())
+    {
+        m_taskThread.join();
+    }
 }
 
 void WorkerThread::enqueueTask(std::unique_ptr<IPlayerTask> &&task)

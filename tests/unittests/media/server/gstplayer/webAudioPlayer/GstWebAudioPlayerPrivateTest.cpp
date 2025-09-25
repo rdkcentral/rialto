@@ -52,3 +52,9 @@ TEST_F(GstWebAudioPlayerPrivateTest, shouldChangePlaybackState)
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(_, GST_STATE_PLAYING)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_TRUE(m_sut->changePipelineState(GST_STATE_PLAYING));
 }
+
+TEST_F(GstWebAudioPlayerPrivateTest, shouldStopWorkerThread)
+{
+    EXPECT_CALL(m_workerThreadMock, stop());
+    m_sut->stopWorkerThread();
+}

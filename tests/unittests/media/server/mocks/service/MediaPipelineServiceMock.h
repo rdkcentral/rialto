@@ -70,6 +70,7 @@ public:
                 (int sessionId, int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                  uint64_t stopPosition),
                 (override));
+    MOCK_METHOD(bool, setSubtitleOffset, (int sessionId, int32_t sourceId, int64_t position), (override));
     MOCK_METHOD(bool, processAudioGap,
                 (int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
                 (override));
@@ -78,6 +79,7 @@ public:
     MOCK_METHOD(bool, setUseBuffering, (int sessionId, bool useBuffering), (override));
     MOCK_METHOD(bool, getUseBuffering, (int sessionId, bool &useBuffering), (override));
     MOCK_METHOD(bool, switchSource, (int, const std::unique_ptr<IMediaPipeline::MediaSource> &), (override));
+    MOCK_METHOD(bool, isVideoMaster, (bool &isVideoMaster), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedMimeTypes, (MediaSourceType type), (override));
     MOCK_METHOD(bool, isMimeTypeSupported, (const std::string &mimeType), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedProperties,

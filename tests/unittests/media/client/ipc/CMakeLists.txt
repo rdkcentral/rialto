@@ -51,6 +51,7 @@ add_gtests (
         mediaPipelineIpc/GetStreamSyncModeTest.cpp
         mediaPipelineIpc/FlushTest.cpp
         mediaPipelineIpc/SetSourcePositionTest.cpp
+        mediaPipelineIpc/SetSubtitleOffsetTest.cpp
         mediaPipelineIpc/ProcessAudioGapTest.cpp
         mediaPipelineIpc/TextTrackIdentifierTests.cpp
         mediaPipelineIpc/BufferingLimitTest.cpp
@@ -145,11 +146,3 @@ target_link_libraries(
         RialtoIpcClient
         RialtoProtobuf
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoClientIpcUnitTests
-
-        gcov
-        )
-endif()

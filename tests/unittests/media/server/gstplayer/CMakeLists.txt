@@ -54,6 +54,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/SetPlaybackRateTest.cpp
     genericPlayer/tasksTests/SetPositionTest.cpp
     genericPlayer/tasksTests/SetSourcePositionTest.cpp
+    genericPlayer/tasksTests/SetSubtitleOffsetTest.cpp
     genericPlayer/tasksTests/SetStreamSyncModeTest.cpp
     genericPlayer/tasksTests/SetSyncTest.cpp
     genericPlayer/tasksTests/SetSyncOffTest.cpp
@@ -63,6 +64,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/SetVolumeTest.cpp
     genericPlayer/tasksTests/SetupElementTest.cpp
     genericPlayer/tasksTests/SetupSourceTest.cpp
+    genericPlayer/tasksTests/ShutdownTest.cpp
     genericPlayer/tasksTests/StopTest.cpp
     genericPlayer/tasksTests/SwitchSourceTest.cpp
     genericPlayer/tasksTests/UnderflowTest.cpp
@@ -85,6 +87,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     webAudioPlayer/taskTests/EosTest.cpp
     webAudioPlayer/taskTests/HandleBusMessageTest.cpp
     webAudioPlayer/taskTests/SetVolumeTest.cpp
+    webAudioPlayer/taskTests/ShutdownTest.cpp
     webAudioPlayer/taskTests/StopTest.cpp
     webAudioPlayer/taskTests/SetCapsTest.cpp
     webAudioPlayer/taskTests/WriteBufferTest.cpp
@@ -144,13 +147,5 @@ target_link_libraries(RialtoServerGstPlayerUnitTests
     RialtoCommonMisc
     RialtoTestCommonUtils
 )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoServerGstPlayerUnitTests
-
-        gcov
-        )
-endif()
 
 set_target_properties(RialtoServerGstPlayerUnitTests PROPERTIES COMPILE_FLAGS "-Wno-write-strings")

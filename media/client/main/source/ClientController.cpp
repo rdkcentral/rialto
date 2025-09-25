@@ -257,8 +257,8 @@ void ClientController::changeStateAndNotifyClients(ApplicationState state)
     std::vector<std::shared_ptr<IControlClient>> currentClients;
     {
         std::lock_guard<std::mutex> lock{m_mutex};
-        RIALTO_CLIENT_LOG_INFO("Rialto application state changed from %s to %s", stateToString(m_currentState).c_str(),
-                               stateToString(state).c_str());
+        RIALTO_CLIENT_LOG_MIL("Rialto application state changed from %s to %s", stateToString(m_currentState).c_str(),
+                              stateToString(state).c_str());
         m_currentState = state;
         for (const std::weak_ptr<IControlClient> &client : m_clients)
         {

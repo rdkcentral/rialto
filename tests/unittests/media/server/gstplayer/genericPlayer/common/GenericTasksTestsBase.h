@@ -34,6 +34,7 @@ using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAreArray;
 using ::testing::Invoke;
+using ::testing::Ne;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -88,6 +89,7 @@ protected:
     void shouldSetupVideoParserElementWithPendingStreamSyncMode();
     void shouldSetupAudioDecoderElementWithPendingBufferingLimit();
     void shouldSetupVideoSinkElementWithPendingRenderFrame();
+    void shouldSetupVideoSinkElementWithPendingShowVideoWindow();
     void shouldSetupAudioElementAmlhalasinkWhenNoVideo();
     void shouldSetupAudioElementAmlhalasinkWhenVideoExists();
     void shouldSetupAudioElementBrcmAudioSink();
@@ -116,6 +118,7 @@ protected:
     void triggerAutoVideoSinkChildRemovedCallback();
     void triggerAutoAudioSinkChildRemovedCallback();
     void shouldSetupTextTrackSink();
+    void shouldSetupVideoDecoderForTextTrack();
 
     // SetVideoGeometry test methods
     void setPipelineToNull();
@@ -167,6 +170,8 @@ protected:
     void triggerAttachXrawAudioSource();
     void shouldAttachFlacAudioSource();
     void triggerAttachFlacAudioSource();
+    void shouldAttachMp3AudioSource();
+    void triggerAttachMp3AudioSource();
     void shouldAttachVideoSource(const std::string &mime, const std::string &alignment, const std::string &format);
     void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
                                   firebolt::rialto::StreamFormat streamFormat);
@@ -193,6 +198,7 @@ protected:
 
     // CheckAudioUnderflow test methods
     void shouldQueryPositionAndSetToZero();
+    void shouldBeInWrongStateForQueryPosition();
     void triggerCheckAudioUnderflowNoNotification();
     void shouldNotifyAudioUnderflow();
     void triggerCheckAudioUnderflow();
@@ -258,6 +264,10 @@ protected:
     void triggerVideoUnderflow();
     void shouldNotifyVideoUnderflow();
 
+    // Shutdown test methods
+    void shouldStopWorkerThread();
+    void triggerShutdown();
+
     // SetMute test methods
     void triggerSetAudioMute();
     void triggerSetVideoMute();
@@ -265,8 +275,6 @@ protected:
     void triggerSetUnknownMute();
     void setContextSubtitleSink();
     void shouldSetAudioMute();
-    void shouldFailToSetVideoMuteNoSink();
-    void shouldFailToSetVideoMuteNoProperty();
     void shouldSetVideoMute();
     void shouldSetSubtitleMute();
 
@@ -393,6 +401,7 @@ protected:
     // RemoveSource test methods
     void shouldInvalidateActiveAudioRequests();
     void shouldDisableAudioFlag();
+    void shouldClearAudioNeedDataFlag();
     void triggerRemoveSourceAudio();
     void triggerRemoveSourceVideo();
     void checkAudioSourceRemoved();
@@ -412,6 +421,10 @@ protected:
     void triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionSet(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType);
+
+    // Set Subtitle Offset test methods
+    void shouldSetSubtitleOffset();
+    void triggerSetSubtitleOffset();
 
     // ProcessAudioGap test methods
     void triggerProcessAudioGap();

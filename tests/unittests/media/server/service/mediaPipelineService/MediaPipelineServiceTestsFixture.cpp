@@ -486,6 +486,16 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToSwitchSource()
     EXPECT_CALL(m_mediaPipelineMock, switchSource(_)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillCheckIfVideoIsMaster()
+{
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isVideoMaster(_)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToCheckIfVideoIsMaster()
+{
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isVideoMaster(_)).WillOnce(Return(false));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillPing()
 {
     EXPECT_CALL(*m_heartbeatProcedureMock, createHandler())
@@ -993,6 +1003,18 @@ void MediaPipelineServiceTests::switchSourceShouldFail()
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> mediaSource =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264");
     EXPECT_FALSE(m_sut->switchSource(kSessionId, mediaSource));
+}
+
+void MediaPipelineServiceTests::isVideoMasterShouldSucceed()
+{
+    bool isMaster{false};
+    EXPECT_TRUE(m_sut->isVideoMaster(isMaster));
+}
+
+void MediaPipelineServiceTests::isVideoMasterShouldFail()
+{
+    bool isMaster{false};
+    EXPECT_FALSE(m_sut->isVideoMaster(isMaster));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()

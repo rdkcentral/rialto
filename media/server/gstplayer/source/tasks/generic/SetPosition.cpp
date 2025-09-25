@@ -55,6 +55,7 @@ void SetPosition::execute() const
         StreamInfo &streamInfo = elem.second;
         streamInfo.isDataNeeded = false;
         streamInfo.isNeedDataPending = false;
+        m_player.clearNeedDataScheduled(GST_APP_SRC(streamInfo.appSrc));
 
         // Clear buffered samples for player session
         for (auto &buffer : streamInfo.buffers)
@@ -84,13 +85,15 @@ void SetPosition::execute() const
         return;
     }
 
+    RIALTO_SERVER_LOG_MIL("Pipeline seek to: %" GST_TIME_FORMAT, GST_TIME_ARGS(m_position));
+
     // Reset Eos info
     m_context.endOfStreamInfo.clear();
     m_context.eosNotified = false;
 
     m_gstPlayerClient->notifyPlaybackState(PlaybackState::SEEK_DONE);
 
-    // // Trigger NeedMediaData for all attached sources
+    // Trigger NeedMediaData for all attached sources
     for (const auto &streamInfo : m_context.streamInfo)
     {
         if (streamInfo.second.appSrc)

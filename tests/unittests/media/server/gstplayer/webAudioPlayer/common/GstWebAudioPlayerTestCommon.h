@@ -100,6 +100,7 @@ protected:
     void expectAddBinFailure();
     void expectLinkElementFailure();
     void expectTermPipeline();
+    void expectResetWorkerThread();
     void expectTaskStop();
 
     GstElement m_pipeline{};

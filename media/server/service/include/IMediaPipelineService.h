@@ -77,6 +77,7 @@ public:
     virtual bool flush(int sessionId, std::int32_t sourceId, bool resetTime, bool &isAsync) = 0;
     virtual bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime,
                                    double appliedRate, uint64_t stopPosition) = 0;
+    virtual bool setSubtitleOffset(int sessionId, int32_t sourceId, int64_t position) = 0;
     virtual bool processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,
                                  bool audioAac) = 0;
     virtual bool setBufferingLimit(int sessionId, uint32_t limitBufferingMs) = 0;
@@ -89,6 +90,7 @@ public:
                                                             const std::vector<std::string> &propertyNames) = 0;
     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
     virtual bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
+    virtual bool isVideoMaster(bool &isVideoMaster) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

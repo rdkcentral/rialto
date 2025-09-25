@@ -275,6 +275,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedMessage)
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Paused"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
@@ -302,6 +303,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedMessageWhenSyncFlus
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Paused"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
@@ -379,6 +381,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedAndPendingPausedMes
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(GST_STATE_PAUSED)).WillRepeatedly(Return("Paused"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
@@ -402,6 +405,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessage)
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Playing"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
@@ -433,6 +437,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessageWhenSyncFlu
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Playing"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
@@ -516,6 +521,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessageAndSetPendi
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
+    EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Playing"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));

@@ -86,8 +86,16 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
     EXPECT_CALL(*m_gstWrapperMock, gstBinGetByName(GST_BIN(&m_pipeline), StrEq("playsink"))).WillOnce(Return(&m_playsink));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_playsink, StrEq("send-event-mode")));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_playsink));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_READY))
+        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
 
     // In case of longer testruns, GstPlayer may request to query position
+    EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).Times(AtLeast(0));
+    EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).Times(AtLeast(0));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).Times(AtLeast(0)).WillRepeatedly(Return(GST_STATE_PAUSED));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_))
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, _))
         .Times(AtLeast(0))
         .WillRepeatedly(Invoke(
@@ -118,6 +126,8 @@ void MediaPipelineTest::audioSourceWillBeAttached()
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("mpegversion"), G_TYPE_INT, 4));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("rate"), G_TYPE_INT, kSampleRate));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_audioCaps)).WillOnce(Return(&m_audioCapsStr));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(&m_audioCapsStr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("audsrc")))
         .WillOnce(Return(GST_ELEMENT(&m_audioAppSrc)));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &m_audioCaps));
@@ -133,6 +143,8 @@ void MediaPipelineTest::videoSourceWillBeAttached()
                 gstCapsSetSimpleStringStub(&m_videoCaps, StrEq("stream-format"), G_TYPE_STRING, StrEq("raw")));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("height"), G_TYPE_INT, kHeight));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_videoCaps)).WillOnce(Return(&m_videoCapsStr));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(&m_videoCapsStr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("vidsrc")))
         .WillOnce(Return(GST_ELEMENT(&m_videoAppSrc)));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_videoAppSrc, &m_videoCaps));
@@ -419,6 +431,15 @@ void MediaPipelineTest::createSession()
         .send(request)
         .expectSuccess()
         .matchResponse([&](const ::firebolt::rialto::CreateSessionResponse &resp) { m_sessionId = resp.session_id(); });
+}
+
+void MediaPipelineTest::willSetStateInvalidForQueryPosition()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).Times(AtLeast(1)).WillRepeatedly(Return(GST_STATE_READY));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateNext(_)).WillRepeatedly(Return(GST_STATE_VOID_PENDING));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillRepeatedly(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(_)).WillRepeatedly(Return("NotImportant"));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateChangeReturnGetName(_)).WillRepeatedly(Return("NotImportant"));
 }
 
 void MediaPipelineTest::load()

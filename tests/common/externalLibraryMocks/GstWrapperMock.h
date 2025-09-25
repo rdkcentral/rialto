@@ -33,6 +33,7 @@ public:
     virtual ~GstWrapperMock() = default;
 
     MOCK_METHOD(void, gstInit, (int *argc, char ***argv), (override));
+    MOCK_METHOD(void, gstDeinit, (), (override));
     MOCK_METHOD(GstPlugin *, gstRegistryFindPlugin, (GstRegistry * registry, const gchar *name), (override));
     MOCK_METHOD(void, gstRegistryRemovePlugin, (GstRegistry * registry, GstPlugin *plugin), (override));
     MOCK_METHOD(void, gstObjectUnref, (gpointer object), (override));
@@ -47,8 +48,13 @@ public:
     MOCK_METHOD(void, gstMessageParseStateChanged,
                 (GstMessage * message, GstState *oldstate, GstState *newstate, GstState *pending), (override));
     MOCK_METHOD(const gchar *, gstElementStateGetName, (GstState state), (override));
+    MOCK_METHOD(const gchar *, gstElementStateChangeReturnGetName, (GstStateChangeReturn state_ret), (override));
     MOCK_METHOD(GstStateChangeReturn, gstElementSetState, (GstElement * element, GstState state), (override));
     MOCK_METHOD(GstState, gstElementGetState, (GstElement * element), (override));
+    MOCK_METHOD(GstStateChangeReturn, gstElementGetStateReturn, (GstElement * element), (override));
+    MOCK_METHOD(GstState, gstElementGetStateNext, (GstElement * element), (override));
+    MOCK_METHOD(void, gstStateLock, (GstElement * element), (override));
+    MOCK_METHOD(void, gstStateUnlock, (GstElement * element), (override));
     MOCK_METHOD(GstState, gstElementGetPendingState, (GstElement * element), (override));
     MOCK_METHOD(GstObject *, gstElementGetParent, (const GstElement *elem), (const, override));
     MOCK_METHOD(gchar *, gstElementGetName, (GstElement * element), (const, override));

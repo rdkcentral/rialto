@@ -54,10 +54,10 @@ void HandleBusMessage::execute() const
         {
             GstState oldState, newState, pending;
             m_gstWrapper->gstMessageParseStateChanged(m_message, &oldState, &newState, &pending);
-            RIALTO_SERVER_LOG_INFO("State changed (old: %s, new: %s, pending: %s)",
-                                   m_gstWrapper->gstElementStateGetName(oldState),
-                                   m_gstWrapper->gstElementStateGetName(newState),
-                                   m_gstWrapper->gstElementStateGetName(pending));
+            RIALTO_SERVER_LOG_MIL("State changed (old: %s, new: %s, pending: %s)",
+                                  m_gstWrapper->gstElementStateGetName(oldState),
+                                  m_gstWrapper->gstElementStateGetName(newState),
+                                  m_gstWrapper->gstElementStateGetName(pending));
 
             std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +
                                    std::string(m_gstWrapper->gstElementStateGetName(newState));
@@ -92,6 +92,10 @@ void HandleBusMessage::execute() const
                     // indicate that the pipeline is prerolled and it reached GST_STATE_PAUSED state after seek.
                     m_gstPlayerClient->notifyPlaybackState(PlaybackState::PAUSED);
                 }
+                if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
+                {
+                    m_player.stopSubtitleClockResyncTimer();
+                }
                 break;
             }
             case GST_STATE_PLAYING:
@@ -109,6 +113,10 @@ void HandleBusMessage::execute() const
                     m_player.setPendingPlaybackRate();
                 }
                 m_player.startPositionReportingAndCheckAudioUnderflowTimer();
+                if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
+                {
+                    m_player.startSubtitleClockResyncTimer();
+                }
 
                 m_context.isPlaying = true;
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::PLAYING);

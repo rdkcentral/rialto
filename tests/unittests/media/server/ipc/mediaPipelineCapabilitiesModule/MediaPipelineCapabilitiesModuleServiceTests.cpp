@@ -65,3 +65,15 @@ TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldConvertMediaType)
 {
     expectCorrectMediaTypeConversion();
 }
+
+TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldCheckIfVideoIsMaster)
+{
+    mediaPipelineWillCheckIfVideoIsMaster();
+    sendIsVideoMasterRequestWithSuccess();
+}
+
+TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldFailToCheckIfVideoIsMaster)
+{
+    expectInvalidControlFailure();
+    sendIsVideoMasterRequestAndExpectFailure();
+}

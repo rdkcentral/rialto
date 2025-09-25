@@ -48,6 +48,7 @@ add_gtests (
         mediaPipeline/GetStreamSyncModeTest.cpp
         mediaPipeline/FlushTest.cpp
         mediaPipeline/SetSourcePositionTest.cpp
+        mediaPipeline/SetSubtitleOffsetTest.cpp
         mediaPipeline/MediaPipelineProxyTest.cpp
         mediaPipeline/ProcessAudioGapTest.cpp
         mediaPipeline/TextTrackIdentifierTest.cpp
@@ -121,13 +122,3 @@ target_link_libraries(
         # # Link application source
         RialtoClient
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoClientUnitTests
-
-        gcov
-        )
-endif()
-
-

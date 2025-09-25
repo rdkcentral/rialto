@@ -41,6 +41,8 @@ void GstGenericPlayerTestCommon::gstPlayerWillBeCreated()
     expectCheckPlaySink();
     expectSetMessageCallback();
 
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_READY))
+        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_CALL(*m_gstSrcMock, initSrc());
     EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
     EXPECT_CALL(*m_gstProtectionMetadataFactoryMock, createProtectionMetadataWrapper(_))
@@ -50,11 +52,20 @@ void GstGenericPlayerTestCommon::gstPlayerWillBeCreated()
 
 void GstGenericPlayerTestCommon::gstPlayerWillBeDestroyed()
 {
+    expectShutdown();
     expectStop();
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline));
+}
+
+void GstGenericPlayerTestCommon::expectShutdown()
+{
+    std::unique_ptr<IPlayerTask> shutdownTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*shutdownTask), execute());
+    EXPECT_CALL(m_taskFactoryMock, createShutdown(_)).WillOnce(Return(ByMove(std::move(shutdownTask))));
+    EXPECT_CALL(m_workerThreadMock, join());
 }
 
 void GstGenericPlayerTestCommon::expectStop()

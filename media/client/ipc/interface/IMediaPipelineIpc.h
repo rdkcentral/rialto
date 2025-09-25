@@ -371,6 +371,18 @@ public:
                                    uint64_t stopPosition) = 0;
 
     /**
+     * @brief Set the subtitle offset in nanoseconds.
+     *
+     * This method sets the subtitle offset for a subtitle source.
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] position : The offset position in nanoseconds.
+     *
+     * @retval true on success.
+     */
+    virtual bool setSubtitleOffset(int32_t sourceId, int64_t position) = 0;
+
+    /**
      * @brief Process audio gap
      *
      * This method handles audio gap in order to avoid audio pops during transitions.

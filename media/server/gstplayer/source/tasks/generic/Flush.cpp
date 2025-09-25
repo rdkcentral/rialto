@@ -63,6 +63,7 @@ void Flush::execute() const
     StreamInfo &streamInfo = sourceElem->second;
     streamInfo.isDataNeeded = false;
     streamInfo.isNeedDataPending = false;
+    m_player.clearNeedDataScheduled(GST_APP_SRC(source));
 
     for (auto &buffer : streamInfo.buffers)
     {
@@ -103,5 +104,7 @@ void Flush::execute() const
 
     // Notify GstGenericPlayer, that flush has been finished
     m_player.setSourceFlushed(m_type);
+
+    RIALTO_SERVER_LOG_MIL("%s source flushed.", common::convertMediaSourceType(m_type));
 }
 } // namespace firebolt::rialto::server::tasks::generic

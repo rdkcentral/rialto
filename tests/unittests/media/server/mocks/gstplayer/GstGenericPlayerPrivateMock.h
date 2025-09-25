@@ -46,6 +46,7 @@ public:
     MOCK_METHOD(bool, setRenderFrame, (), (override));
     MOCK_METHOD(bool, setBufferingLimit, (), (override));
     MOCK_METHOD(bool, setUseBuffering, (), (override));
+    MOCK_METHOD(bool, setShowVideoWindow, (), (override));
     MOCK_METHOD(void, notifyNeedMediaData, (const MediaSourceType mediaSource), (override));
     MOCK_METHOD(GstBuffer *, createBuffer, (const IMediaPipeline::MediaSegment &mediaSegment), (const, override));
     MOCK_METHOD(void, attachData, (const firebolt::rialto::MediaSourceType mediaType), (override));
@@ -55,8 +56,10 @@ public:
                 (int32_t width, int32_t height, Fraction frameRate, const std::shared_ptr<CodecData> &codecData),
                 (override));
     MOCK_METHOD(bool, changePipelineState, (GstState newState), (override));
+    MOCK_METHOD(int64_t, getPosition, (GstElement * element), (override));
     MOCK_METHOD(void, startPositionReportingAndCheckAudioUnderflowTimer, (), (override));
     MOCK_METHOD(void, stopPositionReportingAndCheckAudioUnderflowTimer, (), (override));
+    MOCK_METHOD(void, stopWorkerThread, (), (override));
     MOCK_METHOD(void, cancelUnderflow, (firebolt::rialto::MediaSourceType mediaSource), (override));
     MOCK_METHOD(void, setPendingPlaybackRate, (), (override));
     MOCK_METHOD(void, updatePlaybackGroup, (GstElement * typefind, const GstCaps *caps), (override));
@@ -72,6 +75,10 @@ public:
     MOCK_METHOD(void, pushSampleIfRequired, (GstElement * source, const std::string &typeStr), (override));
     MOCK_METHOD(bool, reattachSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &source), (override));
     MOCK_METHOD(void, setSourceFlushed, (const MediaSourceType &mediaSourceType), (override));
+    MOCK_METHOD(void, clearNeedDataScheduled, (GstAppSrc * src), (override));
+    MOCK_METHOD(void, startSubtitleClockResyncTimer, (), (override));
+    MOCK_METHOD(void, stopSubtitleClockResyncTimer, (), (override));
+    MOCK_METHOD(bool, hasSourceType, (const MediaSourceType &mediaSourceType), (const, override));
 };
 } // namespace firebolt::rialto::server
 

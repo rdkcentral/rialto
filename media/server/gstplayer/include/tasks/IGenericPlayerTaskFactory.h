@@ -193,10 +193,12 @@ public:
      * @brief Creates a ReportPosition task.
      *
      * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
      *
      * @retval the new ReportPosition task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createReportPosition(GenericPlayerContext &context) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createReportPosition(GenericPlayerContext &context,
+                                                              IGstGenericPlayerPrivate &player) const = 0;
 
     /**
      * @brief Creates a CheckAudioUnderflow task.
@@ -356,6 +358,15 @@ public:
                                                                  int32_t streamSyncMode) const = 0;
 
     /**
+     * @brief Creates a Shutdown task.
+     *
+     * @param[in] context       : The GstGenericPlayer context
+     *
+     * @retval the new Shutdown task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createShutdown(IGstGenericPlayerPrivate &player) const = 0;
+
+    /**
      * @brief Creates a Stop task.
      *
      * @param[in] context    : The GstGenericPlayer context
@@ -445,6 +456,17 @@ public:
                                                                  double appliedRate, uint64_t stopPosition) const = 0;
 
     /**
+     * @brief Creates a SetSubtitleOffset task.
+     *
+     * @param[in] context  : The GstPlayer context
+     * @param[in] position : The subtitle offset position in nanoseconds
+     *
+     * @retval the new SetSubtitleOffset task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetSubtitleOffset(GenericPlayerContext &context,
+                                                                 std::int64_t position) const = 0;
+
+    /**
      * @brief Creates a ProcessAudioGap task.
      *
      * @param[in] context          : The GstPlayer context
@@ -510,6 +532,17 @@ public:
     virtual std::unique_ptr<IPlayerTask>
     createSwitchSource(IGstGenericPlayerPrivate &player,
                        const std::unique_ptr<IMediaPipeline::MediaSource> &source) const = 0;
+
+    /**
+     * @brief Creates a SynchroniseSubtitleClock task.
+     *
+     * @param[in] context   : The GstGenericPlayer context
+     * @param[in] player    : The GstGenericPlayer instance
+     *
+     * @retval the new SynchroniseSubtitleClock task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSynchroniseSubtitleClock(GenericPlayerContext &context,
+                                                                        IGstGenericPlayerPrivate &player) const = 0;
 };
 
 } // namespace firebolt::rialto::server

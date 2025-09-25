@@ -99,15 +99,6 @@ target_link_libraries(
         RialtoProtobuf
         )
 
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoServerIpcUnitTests
-
-        gcov
-        )
-endif()
-
-
 set_target_properties(
         RialtoServerIpcUnitTests
         PROPERTIES COMPILE_FLAGS "-Wno-write-strings"

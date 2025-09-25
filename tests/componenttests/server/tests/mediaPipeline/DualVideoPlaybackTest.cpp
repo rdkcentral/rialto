@@ -96,6 +96,8 @@ public:
             .WillOnce(Return(&m_secondaryPlaysink));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryPlaysink, StrEq("send-event-mode")));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryPlaysink));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_secondaryPipeline, GST_STATE_READY))
+            .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
 
         // In case of longer testruns, GstPlayer may request to query position
         EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(&m_secondaryPipeline, GST_FORMAT_TIME, _))
@@ -141,6 +143,8 @@ public:
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("height"), G_TYPE_INT, kHeight))
             .RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_videoCaps)).WillOnce(Return(&m_videoCapsStr));
+        EXPECT_CALL(*m_glibWrapperMock, gFree(&m_videoCapsStr));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("vidsrc")))
             .WillOnce(Return(GST_ELEMENT(&m_secondaryVideoAppSrc)));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_secondaryVideoAppSrc, &m_videoCaps));

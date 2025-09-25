@@ -21,6 +21,7 @@
 # Entry script for running rialto unittests
 
 import argparse
+import os
 from scripts.gtest.build_and_run_tests import getGenericArguments, buildAndRunGTests
 from scripts.gtest.utils import getSuitesToRun, getOutputFile
 from scripts.gtest.generate_coverage import generateCoverageReport
@@ -58,4 +59,4 @@ if __name__ == "__main__":
     buildAndRunGTests(args, outputFile, buildDefines, suitesToRun)
 
     if args['coverage'] == True:
-        generateCoverageReport(args['output'], outputFile, suitesToRun)
+        generateCoverageReport(os.getcwd(), args['output'], outputFile)

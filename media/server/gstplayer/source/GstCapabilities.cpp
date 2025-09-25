@@ -201,7 +201,7 @@ std::vector<std::string> GstCapabilities::getSupportedMimeTypes(MediaSourceType 
     }
     else if (sourceType == MediaSourceType::SUBTITLE)
     {
-        return {"text/vtt", "text/ttml"};
+        return {"text/vtt", "text/ttml", "text/cc"};
     }
     else
     {
@@ -437,6 +437,26 @@ void GstCapabilities::waitForInitialisation()
 {
     std::unique_lock lock{m_initialisationMutex};
     m_initialisationCv.wait(lock, [this]() { return m_isInitialised; });
+}
+
+bool GstCapabilities::isVideoMaster(bool &isVideoMaster)
+{
+    waitForInitialisation();
+
+    GstRegistry *reg = m_gstWrapper->gstRegistryGet();
+    if (!reg)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed get the gst registry");
+        return false;
+    }
+    GstPluginFeature *feature{nullptr};
+    isVideoMaster = true;
+    if (nullptr != (feature = m_gstWrapper->gstRegistryLookupFeature(reg, "amlhalasink")))
+    {
+        isVideoMaster = false;
+        m_gstWrapper->gstObjectUnref(feature);
+    }
+    return true;
 }
 
 } // namespace firebolt::rialto::server

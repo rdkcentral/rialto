@@ -109,7 +109,11 @@ GstCaps *MediaSourceAudioCapsBuilder::buildCaps()
     GstCaps *caps = MediaSourceCapsBuilder::buildCaps();
     if (mimeType == "audio/mp4" || mimeType == "audio/aac")
     {
-        addMpegVersionToCaps(caps);
+        addMpegVersion4ToCaps(caps);
+    }
+    else if (mimeType == "audio/mp3")
+    {
+        addMp3Caps(caps);
     }
     else if (mimeType == "audio/b-wav" || mimeType == "audio/x-raw")
     {
@@ -166,9 +170,15 @@ void MediaSourceAudioCapsBuilder::addSampleRateAndChannelsToCaps(GstCaps *caps) 
         m_gstWrapper->gstCapsSetSimple(caps, "rate", G_TYPE_INT, audioConfig.sampleRate, nullptr);
 }
 
-void MediaSourceAudioCapsBuilder::addMpegVersionToCaps(GstCaps *caps) const
+void MediaSourceAudioCapsBuilder::addMpegVersion4ToCaps(GstCaps *caps) const
 {
     m_gstWrapper->gstCapsSetSimple(caps, "mpegversion", G_TYPE_INT, 4, nullptr);
+}
+
+void MediaSourceAudioCapsBuilder::addMp3Caps(GstCaps *caps) const
+{
+    m_gstWrapper->gstCapsSetSimple(caps, "mpegversion", G_TYPE_INT, 1, nullptr);
+    m_gstWrapper->gstCapsSetSimple(caps, "layer", G_TYPE_INT, 3, nullptr);
 }
 
 void MediaSourceAudioCapsBuilder::addRawAudioData(GstCaps *caps) const

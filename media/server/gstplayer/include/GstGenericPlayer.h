@@ -33,6 +33,7 @@
 #include "IGstWrapper.h"
 #include "ITimer.h"
 #include "IWorkerThread.h"
+#include "NeedDataMapping.h"
 #include "tasks/IGenericPlayerTaskFactory.h"
 #include "tasks/IPlayerTask.h"
 #include <IMediaPipeline.h>
@@ -136,6 +137,7 @@ public:
     void flush(const MediaSourceType &mediaSourceType, bool resetTime, bool &async) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;
+    void setSubtitleOffset(int64_t position) override;
     void processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
     void setBufferingLimit(uint32_t limitBufferingMs) override;
     bool getBufferingLimit(uint32_t &limitBufferingMs) override;
@@ -151,6 +153,7 @@ private:
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
     bool setImmediateOutput() override;
+    bool setShowVideoWindow() override;
     bool setLowLatency() override;
     bool setSync() override;
     bool setSyncOff() override;
@@ -166,8 +169,12 @@ private:
                          const std::shared_ptr<CodecData> &codecData) override;
     void addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clippingStart, uint64_t clippingEnd) const override;
     bool changePipelineState(GstState newState) override;
+    int64_t getPosition(GstElement *element) override;
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;
+    void startSubtitleClockResyncTimer() override;
+    void stopSubtitleClockResyncTimer() override;
+    void stopWorkerThread() override;
     void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) override;
     void setPendingPlaybackRate() override;
     void renderFrame() override;
@@ -181,9 +188,11 @@ private:
     void setPlaybinFlags(bool enableAudio = true) override;
     void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
     bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
+    bool hasSourceType(const MediaSourceType &mediaSourceType) const override;
     GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
     void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
     bool isAsync(const MediaSourceType &mediaSourceType) const;
+    void clearNeedDataScheduled(GstAppSrc *src) override;
 
 private:
     /**
@@ -384,6 +393,13 @@ private:
     std::unique_ptr<firebolt::rialto::common::ITimer> m_positionReportingAndCheckAudioUnderflowTimer{nullptr};
 
     /**
+     * @brief Timer to resync subtitle clock with AV clock
+     *
+     * Variable can be used only in worker thread
+     */
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_subtitleClockResyncTimer{nullptr};
+
+    /**
      * @brief The GstGenericPlayer task factory
      */
     std::unique_ptr<IGenericPlayerTaskFactory> m_taskFactory;
@@ -397,6 +413,11 @@ private:
      * @brief The object used to check flushing state for all sources
      */
     std::unique_ptr<IFlushWatcher> m_flushWatcher;
+
+    /**
+     * @brief The object used to check if NeedData is scheduled for given source
+     */
+    NeedDataMapping m_scheduledNeedDatas;
 };
 
 } // namespace firebolt::rialto::server

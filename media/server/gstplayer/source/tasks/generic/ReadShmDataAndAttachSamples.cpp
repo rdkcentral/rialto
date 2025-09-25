@@ -98,7 +98,13 @@ void ReadShmDataAndAttachSamples::execute() const
     // All segments in vector have the same type
     if (!mediaSegments.empty())
     {
-        m_player.notifyNeedMediaData(mediaSegments.front()->getType());
+        const auto kMediaType{mediaSegments.front()->getType()};
+        const auto kFirstTimestamp{mediaSegments.front()->getTimeStamp()};
+        const auto kLastTimestamp{mediaSegments.back()->getTimeStamp()};
+        RIALTO_SERVER_LOG_DEBUG("%s data received. First ts: %" GST_TIME_FORMAT " last ts: %" GST_TIME_FORMAT,
+                                common::convertMediaSourceType(kMediaType), GST_TIME_ARGS(kFirstTimestamp),
+                                GST_TIME_ARGS(kLastTimestamp));
+        m_player.notifyNeedMediaData(kMediaType);
     }
 }
 

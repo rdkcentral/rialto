@@ -130,6 +130,13 @@ public:
     virtual bool setUseBuffering() = 0;
 
     /**
+     * @brief Sets Show Video Window property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setShowVideoWindow() = 0;
+
+    /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
      */
     virtual void notifyNeedMediaData(const MediaSourceType mediaSource) = 0;
@@ -172,6 +179,15 @@ public:
     virtual bool changePipelineState(GstState newState) = 0;
 
     /**
+     * @brief Gets the current position of the element
+     *
+     * @param[in] element : The GstElement to check.
+     *
+     * @retval position of the element; -1 in case of failure
+     */
+    virtual int64_t getPosition(GstElement *element) = 0;
+
+    /**
      * @brief Starts position reporting and check audio underflow. Called by the worker thread.
      */
     virtual void startPositionReportingAndCheckAudioUnderflowTimer() = 0;
@@ -180,6 +196,21 @@ public:
      * @brief Stops position reporting and check audio underflow. Called by the worker thread.
      */
     virtual void stopPositionReportingAndCheckAudioUnderflowTimer() = 0;
+
+    /**
+     * @brief Starts subtitle clock resync. Called by the worker thread.
+     */
+    virtual void startSubtitleClockResyncTimer() = 0;
+
+    /**
+     * @brief Stops subtitle clock resync. Called by the worker thread.
+     */
+    virtual void stopSubtitleClockResyncTimer() = 0;
+
+    /**
+     * @brief Stops worker thread. Called by the worker thread.
+     */
+    virtual void stopWorkerThread() = 0;
 
     /**
      * @brief Restores playback after underflow. Called by the worker thread.
@@ -265,11 +296,27 @@ public:
     virtual bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
 
     /**
+     * @brief Checks if the player has a source of the given type.
+     *
+     * @param[in] mediaSourceType : The source type to check
+     *
+     * @retval True if the player has a source of the given type, false otherwise
+     */
+    virtual bool hasSourceType(const MediaSourceType &mediaSourceType) const = 0;
+
+    /**
      * @brief Sets source state flushed
      *
      * @param[in] mediaSourceType : the source type that has been flushed
      */
     virtual void setSourceFlushed(const MediaSourceType &mediaSourceType) = 0;
+
+    /**
+     * @brief Clears need data scheduled flag
+     *
+     * @param[in] src : the app source
+     */
+    virtual void clearNeedDataScheduled(GstAppSrc *src) = 0;
 };
 } // namespace firebolt::rialto::server
 

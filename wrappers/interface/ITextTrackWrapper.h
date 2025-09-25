@@ -129,7 +129,7 @@ public:
      *
      * @retval the error code
      */
-    virtual std::uint32_t sendSessionData(std::uint32_t sessionId, DataType type, std::int32_t displayOffsetMs,
+    virtual std::uint32_t sendSessionData(std::uint32_t sessionId, DataType type, std::int64_t displayOffsetMs,
                                           const std::string &data) const = 0;
 
     /**
@@ -159,6 +159,15 @@ public:
      * @retval the error code
      */
     virtual std::uint32_t setSessionClosedCaptionsService(std::uint32_t sessionId, const std::string &service) const = 0;
+
+    /**
+     * @brief Associates a video decoder with TextTrack rendering
+     *
+     * @param[in] videoDecoder : The identifier of the video decoder
+     *
+     * @retval the error code
+     */
+    virtual std::uint32_t associateVideoDecoder(std::uint32_t sessionId, const std::string &videoDecoder) const = 0;
 };
 } // namespace firebolt::rialto::wrappers
 

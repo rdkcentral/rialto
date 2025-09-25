@@ -61,6 +61,7 @@ void RemoveSource::execute() const
     sourceElem->second.buffers.clear();
     sourceElem->second.isDataNeeded = false;
     sourceElem->second.isNeedDataPending = false;
+    m_player.clearNeedDataScheduled(GST_APP_SRC(sourceElem->second.appSrc));
     m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
     GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
     if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
@@ -75,5 +76,7 @@ void RemoveSource::execute() const
 
     // Turn audio off, removing audio sink from playsink
     m_player.setPlaybinFlags(false);
+
+    RIALTO_SERVER_LOG_MIL("%s source removed", common::convertMediaSourceType(m_type));
 }
 } // namespace firebolt::rialto::server::tasks::generic

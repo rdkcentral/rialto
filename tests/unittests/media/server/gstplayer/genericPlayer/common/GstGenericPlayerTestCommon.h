@@ -106,6 +106,7 @@ public:
 protected:
     void gstPlayerWillBeCreated();
     void gstPlayerWillBeDestroyed();
+    void expectShutdown();
     void expectStop();
     void executeTaskWhenEnqueued();
     void initFactories();
@@ -122,7 +123,7 @@ protected:
     void expectNoDecoder();
     void expectNoParser();
 
-private:
+protected:
     GstElement m_pipeline{};
     GFlagsClass m_flagsClass{};
     GstElement m_playsink{};

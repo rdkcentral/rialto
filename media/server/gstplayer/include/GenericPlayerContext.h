@@ -104,6 +104,16 @@ struct GenericPlayerContext
     GstElement *subtitleSink{nullptr};
 
     /**
+     * @brief The video sink
+     */
+    GstElement *videoSink{nullptr};
+
+    /**
+     * @brief Flag used to check, if video decoder handle has been set.
+     */
+    bool isVideoHandleSet{false};
+
+    /**
      * @brief Flag used to check, if BUFFERED notification has been sent.
      *
      * Flag can be used only in worker thread
@@ -178,6 +188,11 @@ struct GenericPlayerContext
      * @brief Pending render frame
      */
     bool pendingRenderFrame{false};
+
+    /**
+     * @brief Pending show video window
+     */
+    std::optional<bool> pendingShowVideoWindow{};
 
     /**
      * @brief Last audio sample timestamps

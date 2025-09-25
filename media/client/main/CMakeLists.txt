@@ -65,7 +65,6 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoClientIpcImpl,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoClientCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
 
         )
 
@@ -83,20 +82,11 @@ target_link_libraries(
         RialtoPlayerCommon
         RialtoClientIpcImpl
         RialtoCommon
-        RialtoLogging
+        RialtoEthanLog
 
         Threads::Threads
 
         )
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoClient
-
-        PRIVATE
-        gcov
-        )
-endif()
-
 
 include( GNUInstallDirs )
 

@@ -30,6 +30,7 @@ class WorkerThreadMock : public IWorkerThread
 {
 public:
     MOCK_METHOD(void, stop, (), (override));
+    MOCK_METHOD(void, join, (), (override));
     MOCK_METHOD(void, enqueueTask, (std::unique_ptr<IPlayerTask> && task), (override));
 };
 } // namespace firebolt::rialto::server

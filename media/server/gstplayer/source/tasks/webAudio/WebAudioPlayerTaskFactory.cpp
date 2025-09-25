@@ -24,6 +24,7 @@
 #include "tasks/webAudio/Play.h"
 #include "tasks/webAudio/SetCaps.h"
 #include "tasks/webAudio/SetVolume.h"
+#include "tasks/webAudio/Shutdown.h"
 #include "tasks/webAudio/Stop.h"
 #include "tasks/webAudio/WriteBuffer.h"
 
@@ -34,6 +35,11 @@ WebAudioPlayerTaskFactory::WebAudioPlayerTaskFactory(
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
     : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
 {
+}
+
+std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createShutdown(IGstWebAudioPlayerPrivate &player) const
+{
+    return std::make_unique<tasks::webaudio::Shutdown>(player);
 }
 
 std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createStop(IGstWebAudioPlayerPrivate &player) const

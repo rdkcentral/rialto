@@ -46,10 +46,12 @@ public:
     virtual bool play() = 0;
     virtual bool mute(bool mute) = 0;
     virtual bool setPosition(uint64_t mediaTimestampMs) = 0;
-    virtual bool sendData(const std::string &data, int32_t displayOffsetMs = 0) = 0;
+    virtual bool sendData(const std::string &data, int64_t displayOffsetMs = 0) = 0;
     virtual bool setSessionWebVTTSelection() = 0;
     virtual bool setSessionTTMLSelection() = 0;
     virtual bool setSessionCCSelection(const std::string &service) = 0;
+    virtual bool associateVideoDecoder(uint64_t decoderId) = 0;
+    virtual bool isClosedCaptions() const = 0;
 };
 } // namespace firebolt::rialto::server
 #endif // FIREBOLT_RIALTO_SERVER_I_TEXT_TRACK_SESSION_H_

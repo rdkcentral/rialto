@@ -154,6 +154,8 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
         return false;
     }
 
+    RIALTO_SERVER_LOG_MIL("RialtoServer's webaudio pipeline constructed");
+
     // Create and initalise appsrc
     m_context.source = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
     if (!m_context.source)
@@ -367,10 +369,13 @@ void GstWebAudioPlayer::termWebAudioPipeline()
 
         m_gstWrapper->gstObjectUnref(m_context.pipeline);
     }
+    RIALTO_SERVER_LOG_MIL("RialtoServer's webaudio pipeline terminated.");
 }
 
 void GstWebAudioPlayer::resetWorkerThread()
 {
+    m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
+    m_workerThread->join();
     m_workerThread.reset();
 }
 
@@ -439,6 +444,14 @@ bool GstWebAudioPlayer::changePipelineState(GstState newState)
         return false;
     }
     return true;
+}
+
+void GstWebAudioPlayer::stopWorkerThread()
+{
+    if (m_workerThread)
+    {
+        m_workerThread->stop();
+    }
 }
 
 void GstWebAudioPlayer::handleBusMessage(GstMessage *message)

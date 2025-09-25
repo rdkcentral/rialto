@@ -112,6 +112,8 @@ public:
     void mediaPipelineWillFailToGetUseBuffering();
     void mediaPipelineWillSwitchSource();
     void mediaPipelineWillFailToSwitchSource();
+    void mediaPipelineWillCheckIfVideoIsMaster();
+    void mediaPipelineWillFailToCheckIfVideoIsMaster();
 
     void mediaPipelineWillPing();
 
@@ -205,6 +207,8 @@ public:
     void getUseBufferingShouldFail();
     void switchSourceShouldSucceed();
     void switchSourceShouldFail();
+    void isVideoMasterShouldSucceed();
+    void isVideoMasterShouldFail();
 
     void clearMediaPipelines();
     void initSession();

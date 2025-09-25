@@ -41,7 +41,7 @@ SessionServerAppManager::SessionServerAppManager(
       m_eventThread{eventThreadFactory->createEventThread("rialtoservermanager-appmanager")},
       m_sessionServerAppFactory{std::move(sessionServerAppFactory)}, m_stateObserver{stateObserver},
       m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)},
-      m_namedSocketFactory{namedSocketFactory}
+      m_namedSocketFactory{namedSocketFactory}, m_isShuttingDown{false}
 {
 }
 
@@ -123,16 +123,19 @@ void SessionServerAppManager::sendPingEvents(int pingId)
     m_eventThread->add(
         [this, pingId]()
         {
-            for (const auto &sessionServer : m_sessionServerApps)
+            if (m_healthcheckService)
             {
-                auto serverId{sessionServer->getServerId()};
-                if (!m_ipcController->performPing(serverId, pingId))
+                for (const auto &sessionServer : m_sessionServerApps)
                 {
-                    RIALTO_SERVER_MANAGER_LOG_ERROR("Ping with id: %d failed for server: %d", pingId, serverId);
-                    m_healthcheckService->onPingFailed(serverId, pingId);
-                    continue;
+                    auto serverId{sessionServer->getServerId()};
+                    if (!m_ipcController->performPing(serverId, pingId))
+                    {
+                        RIALTO_SERVER_MANAGER_LOG_ERROR("Ping with id: %d failed for server: %d", pingId, serverId);
+                        m_healthcheckService->onPingFailed(serverId, pingId);
+                        continue;
+                    }
+                    m_healthcheckService->onPingSent(serverId, pingId);
                 }
-                m_healthcheckService->onPingSent(serverId, pingId);
             }
         });
 }
@@ -188,6 +191,11 @@ void SessionServerAppManager::restartServer(int serverId)
 
 void SessionServerAppManager::handleRestartServer(int serverId)
 {
+    if (m_isShuttingDown)
+    {
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Not restarting serverId: %d as server manager is shutting down", serverId);
+        return;
+    }
     const auto &kSessionServer{getServerById(serverId)};
     if (!kSessionServer)
     {
@@ -240,7 +248,10 @@ bool SessionServerAppManager::connectSessionServer(const std::unique_ptr<ISessio
                                         "session server with id: %d",
                                         kSessionServer->getServerId());
         kSessionServer->kill();
-        m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
+        if (m_healthcheckService)
+        {
+            m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
+        }
         m_sessionServerApps.erase(kSessionServer);
         return false;
     }
@@ -338,14 +349,20 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
     {
         m_ipcController->removeClient(serverId);
         kSessionServer->kill();
-        m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
+        if (m_healthcheckService)
+        {
+            m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
+        }
         m_sessionServerApps.erase(kSessionServer);
         connectSessionServer(preloadSessionServer());
     }
     else if (newState == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
     {
         m_ipcController->removeClient(serverId);
-        m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
+        if (m_healthcheckService)
+        {
+            m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
+        }
         m_sessionServerApps.erase(kSessionServer);
     }
 }
@@ -360,11 +377,16 @@ void SessionServerAppManager::handleAck(int serverId, int pingId, bool success)
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Ping with id: %d failed for server: %d", pingId, serverId);
     }
-    m_healthcheckService->onAckReceived(serverId, pingId, success);
+    if (m_healthcheckService)
+    {
+        m_healthcheckService->onAckReceived(serverId, pingId, success);
+    }
 }
 
 void SessionServerAppManager::shutdownAllSessionServers()
 {
+    m_isShuttingDown = true;
+    m_healthcheckService.reset();
     for (const auto &kSessionServer : m_sessionServerApps)
     {
         kSessionServer->kill();
