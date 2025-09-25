@@ -80,4 +80,5 @@ TEST_F(GstDispatcherThreadClientTest, shouldHandlePriorityBusMessage)
 
     m_sut->handleBusMessage(&message, kPriority);
 }
-
+// Clang format wants to remove newline at EOF, which breaks cpplint :-(
+// clang-format off-next-line
