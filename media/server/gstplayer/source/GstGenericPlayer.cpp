@@ -2110,9 +2110,17 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
     }
 }
 
-void GstGenericPlayer::handleBusMessage(GstMessage *message)
+void GstGenericPlayer::handleBusMessage(GstMessage *message, bool priority)
 {
-    m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
+    if (priority)
+    {
+        m_workerThread->enqueuePriorityTask(
+            m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
+    }
+    else
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
+    }
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)

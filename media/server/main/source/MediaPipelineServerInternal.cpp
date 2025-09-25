@@ -1388,15 +1388,11 @@ void MediaPipelineServerInternal::notifyPlaybackState(PlaybackState state)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto task = [&, state]()
+    if (m_mediaPipelineClient)
     {
-        m_currentPlaybackState = state;
-        if (m_mediaPipelineClient)
-        {
-            m_mediaPipelineClient->notifyPlaybackState(state);
-        }
-    };
-
+        m_mediaPipelineClient->notifyPlaybackState(state);
+    }
+    auto task = [&, state]() { m_currentPlaybackState = state; };
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 

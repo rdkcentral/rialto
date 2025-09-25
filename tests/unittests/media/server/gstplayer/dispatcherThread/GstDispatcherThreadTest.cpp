@@ -76,7 +76,7 @@ TEST_F(GstDispatcherThreadTest, PollTimeout)
         InSequence seq;
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(nullptr));
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-        EXPECT_CALL(m_client, handleBusMessage(_));
+        EXPECT_CALL(m_client, handleBusMessage(_, false));
     }
 
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
@@ -121,11 +121,11 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
     {
         InSequence seq;
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-        EXPECT_CALL(m_client, handleBusMessage(_));
+        EXPECT_CALL(m_client, handleBusMessage(_, true));
 
         // Signal error to stop the thread
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messageError));
-        EXPECT_CALL(m_client, handleBusMessage(_));
+        EXPECT_CALL(m_client, handleBusMessage(_, false));
     }
 
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
@@ -162,7 +162,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToStop)
         .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-    EXPECT_CALL(m_client, handleBusMessage(_));
+    EXPECT_CALL(m_client, handleBusMessage(_, true));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
         .WillOnce(Invoke(
             [this](gpointer bus)
@@ -190,7 +190,7 @@ TEST_F(GstDispatcherThreadTest, Error)
     GST_MESSAGE_TYPE(&m_message) = GST_MESSAGE_ERROR;
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
-    EXPECT_CALL(m_client, handleBusMessage(_));
+    EXPECT_CALL(m_client, handleBusMessage(_, false));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
         .WillOnce(Invoke(
             [this](gpointer bus)
@@ -226,7 +226,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPausedNonPipelineObject)
 
     // Signal error to stop the thread
     EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messageError));
-    EXPECT_CALL(m_client, handleBusMessage(_));
+    EXPECT_CALL(m_client, handleBusMessage(_, false));
 
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
         .WillOnce(Invoke(

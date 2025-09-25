@@ -40,7 +40,7 @@ public:
      *
      * @param[in] message : The new Gst message.
      */
-    virtual void handleBusMessage(GstMessage *message) = 0;
+    virtual void handleBusMessage(GstMessage *message, bool priority) = 0;
 };
 } // namespace firebolt::rialto::server
 

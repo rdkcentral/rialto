@@ -454,7 +454,7 @@ void GstWebAudioPlayer::stopWorkerThread()
     }
 }
 
-void GstWebAudioPlayer::handleBusMessage(GstMessage *message)
+void GstWebAudioPlayer::handleBusMessage(GstMessage *message, bool priority)
 {
     if (m_workerThread)
     {
