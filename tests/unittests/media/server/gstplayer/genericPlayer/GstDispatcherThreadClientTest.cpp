@@ -80,3 +80,4 @@ TEST_F(GstDispatcherThreadClientTest, shouldHandlePriorityBusMessage)
 
     m_sut->handleBusMessage(&message, kPriority);
 }
+
