@@ -1217,17 +1217,24 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
         return -1;
     }
 
+    if (m_flushWatcher->isFlushOngoing())
+    {
+        RIALTO_SERVER_LOG_WARN("Can't get position while flush is ongoing");
+        return -1;
+    }
+
     m_gstWrapper->gstStateLock(element);
 
-    if (m_gstWrapper->gstElementGetState(element) < GST_STATE_PAUSED ||
-        (m_gstWrapper->gstElementGetStateReturn(element) == GST_STATE_CHANGE_ASYNC &&
-         m_gstWrapper->gstElementGetStateNext(element) == GST_STATE_PAUSED))
+    const auto kElementState{m_gstWrapper->gstElementGetState(element)};
+    const auto kStateChangeReturn{m_gstWrapper->gstElementGetStateReturn(element)};
+    const auto kNextState{m_gstWrapper->gstElementGetStateNext(element)};
+    if (kElementState < GST_STATE_PAUSED ||
+        (kStateChangeReturn == GST_STATE_CHANGE_ASYNC && kNextState == GST_STATE_PAUSED))
     {
         RIALTO_SERVER_LOG_WARN("Element is prerolling or in invalid state - state: %s, return: %s, next: %s",
-                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetState(element)),
-                               m_gstWrapper->gstElementStateChangeReturnGetName(
-                                   m_gstWrapper->gstElementGetStateReturn(element)),
-                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetStateNext(element)));
+                               m_gstWrapper->gstElementStateGetName(kElementState),
+                               m_gstWrapper->gstElementStateChangeReturnGetName(kStateChangeReturn),
+                               m_gstWrapper->gstElementStateGetName(kNextState));
 
         m_gstWrapper->gstStateUnlock(element);
         return -1;
