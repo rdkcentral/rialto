@@ -67,7 +67,7 @@ void SetPlaybackRate::execute() const
     }
     m_context.pendingPlaybackRate = kNoPendingPlaybackRate;
 
-  //  GstElement *audioSink{nullptr};
+    GstElement *audioSink{nullptr};
     gboolean success{FALSE};
     // m_glibWrapper->gObjectGet(m_context.pipeline, "audio-sink", &audioSink, nullptr);
     // if (audioSink && m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(audioSink), "amlhalasink"))
