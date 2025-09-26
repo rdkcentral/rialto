@@ -67,29 +67,29 @@ void SetPlaybackRate::execute() const
     }
     m_context.pendingPlaybackRate = kNoPendingPlaybackRate;
 
-    GstElement *audioSink{nullptr};
+  //  GstElement *audioSink{nullptr};
     gboolean success{FALSE};
-    m_glibWrapper->gObjectGet(m_context.pipeline, "audio-sink", &audioSink, nullptr);
-    if (audioSink && m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(audioSink), "amlhalasink"))
-    {
-        GstSegment *segment{m_gstWrapper->gstSegmentNew()};
-        m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
-        segment->rate = m_rate;
-        segment->start = GST_CLOCK_TIME_NONE;
-        segment->position = GST_CLOCK_TIME_NONE;
-        success = m_gstWrapper->gstPadSendEvent(GST_BASE_SINK_PAD(audioSink), m_gstWrapper->gstEventNewSegment(segment));
-        RIALTO_SERVER_LOG_DEBUG("Sent new segment, success = %s", success ? "true" : "false");
-        m_gstWrapper->gstSegmentFree(segment);
-    }
-    else
-    {
+    // m_glibWrapper->gObjectGet(m_context.pipeline, "audio-sink", &audioSink, nullptr);
+    // if (audioSink && m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(audioSink), "amlhalasink"))
+    // {
+    //     GstSegment *segment{m_gstWrapper->gstSegmentNew()};
+    //     m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
+    //     segment->rate = m_rate;
+    //     segment->start = GST_CLOCK_TIME_NONE;
+    //     segment->position = GST_CLOCK_TIME_NONE;
+    //     success = m_gstWrapper->gstPadSendEvent(GST_BASE_SINK_PAD(audioSink), m_gstWrapper->gstEventNewSegment(segment));
+    //     RIALTO_SERVER_LOG_DEBUG("Sent new segment, success = %s", success ? "true" : "false");
+    //     m_gstWrapper->gstSegmentFree(segment);
+    // }
+    // else
+    // {
         GstStructure *structure{
             m_gstWrapper->gstStructureNew(kCustomInstantRateChangeEventName, "rate", G_TYPE_DOUBLE, m_rate, NULL)};
         success = m_gstWrapper->gstElementSendEvent(m_context.pipeline,
                                                     m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
                                                                                     structure));
         RIALTO_SERVER_LOG_DEBUG("Sent new event, success = %s", success ? "true" : "false");
-    }
+   // }
 
     if (success)
     {
