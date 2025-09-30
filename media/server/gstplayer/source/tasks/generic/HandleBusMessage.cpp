@@ -105,6 +105,7 @@ void HandleBusMessage::execute() const
                     break;
                 }
 
+                m_context.isPlaying = true;
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::PLAYING);
 
                 if (m_context.pendingPlaybackRate != kNoPendingPlaybackRate)
@@ -116,8 +117,6 @@ void HandleBusMessage::execute() const
                 {
                     m_player.startSubtitleClockResyncTimer();
                 }
-
-                m_context.isPlaying = true;
                 break;
             }
             case GST_STATE_VOID_PENDING:
