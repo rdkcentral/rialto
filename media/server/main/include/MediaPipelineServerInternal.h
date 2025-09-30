@@ -28,6 +28,7 @@
 #include "ITimer.h"
 #include <map>
 #include <memory>
+#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -293,6 +294,11 @@ protected:
      * @brief Map of flags used to check if Eos has been set on the media type for this playback
      */
     std::map<MediaSourceType, bool> m_isMediaTypeEosMap;
+
+    /**
+     * @brief Mutex to protect gstPlayer access in getPosition method
+     */
+    std::shared_mutex m_getPositionMutex;
 
     /**
      * @brief Load internally, only to be called on the main thread.

@@ -205,6 +205,7 @@ bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeTy
 
 bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string &mimeType, const std::string &url)
 {
+    std::unique_lock lock{m_getPositionMutex};
     /* If gstreamer player already created, destroy the old one first */
     if (m_gstPlayer)
     {
@@ -466,11 +467,14 @@ bool MediaPipelineServerInternal::getPosition(int64_t &position)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result;
-    auto task = [&]() { result = getPositionInternal(position); };
+    std::shared_lock lock{m_getPositionMutex};
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
-    return result;
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get position - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->getPosition(position);
 }
 
 bool MediaPipelineServerInternal::getPositionInternal(int64_t &position)
