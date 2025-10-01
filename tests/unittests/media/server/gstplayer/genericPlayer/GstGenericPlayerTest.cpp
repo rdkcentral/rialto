@@ -285,6 +285,22 @@ TEST_F(GstGenericPlayerTest, shouldAddDeepElement)
     triggerDeepElementAdded(&element);
 }
 
+TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenPipelineIsNull)
+{
+    GstElement *pipeline{};
+    getContext(
+        [&](GenericPlayerContext &m_context)
+        {
+            pipeline = m_context.pipeline;
+            m_context.pipeline = nullptr;
+        });
+    int64_t targetPosition{};
+    EXPECT_FALSE(m_sut->getPosition(targetPosition));
+
+    // Clean up
+    getContext([&](GenericPlayerContext &m_context) { m_context.pipeline = pipeline; });
+}
+
 TEST_F(GstGenericPlayerTest, shouldReturnInvalidPositionWhenFlushIsOngoing)
 {
     int64_t targetPosition{};

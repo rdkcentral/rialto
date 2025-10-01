@@ -376,15 +376,6 @@ protected:
     bool setPositionInternal(int64_t position);
 
     /**
-     * @brief Get position internally, only to be called on the main thread.
-     *
-     * @param[out] position : The playback position in nanoseconds
-     *
-     * @retval true on success.
-     */
-    bool getPositionInternal(int64_t &position);
-
-    /**
      * @brief Sets the "Immediate Output" property for this source.
      *
      * This method is asynchronous

@@ -477,18 +477,6 @@ bool MediaPipelineServerInternal::getPosition(int64_t &position)
     return m_gstPlayer->getPosition(position);
 }
 
-bool MediaPipelineServerInternal::getPositionInternal(int64_t &position)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    if (!m_gstPlayer)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to get position - Gstreamer player has not been loaded");
-        return false;
-    }
-    return m_gstPlayer->getPosition(position);
-}
-
 bool MediaPipelineServerInternal::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
