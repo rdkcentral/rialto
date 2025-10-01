@@ -67,14 +67,14 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
         if (message)
         {
             bool shouldHandleMessage{true};
-            bool priority{false};
+            bool isPrioritised{false};
             if (GST_MESSAGE_SRC(message) == GST_OBJECT(pipeline))
             {
                 switch (GST_MESSAGE_TYPE(message))
                 {
                 case GST_MESSAGE_STATE_CHANGED:
                 {
-                    priority = true;
+                    isPrioritised = true;
                     GstState oldState, newState, pending;
                     m_gstWrapper->gstMessageParseStateChanged(message, &oldState, &newState, &pending);
                     switch (newState)
@@ -113,7 +113,7 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
 
             if (shouldHandleMessage)
             {
-                m_client.handleBusMessage(message, priority);
+                m_client.handleBusMessage(message, isPrioritised);
             }
         }
     }
