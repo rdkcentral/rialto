@@ -43,23 +43,15 @@ public:
     void generateRequestWidevine();
     void processChallengeWidevine();
 
-    void willGenerateRequestNetflix();
-    void generateRequestNetflix();
-
     void willUpdateSessionWidevine();
     void updateSessionWidevine();
     void closeKeySessionWidevine();
-
-    void willCloseKeySessionNetflix();
-    void closeKeySessionNetflix();
 
     void releaseKeySession();
 
     void destroyMediaKeysRequest();
 
     const std::vector<unsigned char> kResponse{4, 1, 3};
-    const std::vector<unsigned char> m_kInitData{1, 2, 7};
-    const std::vector<uint8_t> m_kLicenseRequestMessage{'d', 'z', 'f'};
 };
 
 void SessionReadyForDecryptionTest::willGenerateRequestWidevine()
@@ -110,68 +102,6 @@ void SessionReadyForDecryptionTest::processChallengeWidevine()
     }
 }
 
-void SessionReadyForDecryptionTest::willGenerateRequestNetflix()
-{
-    EXPECT_CALL(m_ocdmSessionMock, constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, m_kInitData.size()))
-        .WillOnce(testing::Invoke(
-            [&](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
-                uint32_t initDataSize) -> MediaKeyErrorStatus
-            {
-                for (uint32_t i = 0; i < initDataSize; ++i)
-                {
-                    EXPECT_EQ(initData[i], m_kInitData[i]);
-                }
-
-                return MediaKeyErrorStatus::OK;
-            }));
-
-    EXPECT_CALL(m_ocdmSessionMock, getChallengeData(false, _, _))
-        .WillOnce(testing::Invoke(
-            [&](bool isLDL, const uint8_t *challenge, uint32_t *challengeSize) -> MediaKeyErrorStatus
-            {
-                // This first call asks for the size of the data
-                EXPECT_EQ(challenge, nullptr);
-                *challengeSize = m_kLicenseRequestMessage.size();
-                return MediaKeyErrorStatus::OK;
-            }))
-        .WillOnce(testing::Invoke(
-            [&](bool isLDL, uint8_t *challenge, const uint32_t *challengeSize) -> MediaKeyErrorStatus
-            {
-                // This second call asks for the data
-                EXPECT_EQ(*challengeSize, m_kLicenseRequestMessage.size());
-                for (size_t i = 0; i < m_kLicenseRequestMessage.size(); ++i)
-                {
-                    challenge[i] = m_kLicenseRequestMessage[i];
-                }
-                return MediaKeyErrorStatus::OK;
-            }));
-}
-
-void SessionReadyForDecryptionTest::generateRequestNetflix()
-{
-    auto request{createGenerateRequestRequest(m_mediaKeysHandle, m_mediaKeySessionId, m_kInitData)};
-
-    ExpectMessage<::firebolt::rialto::LicenseRequestEvent> expectedMessage(m_clientStub);
-
-    ConfigureAction<GenerateRequest>(m_clientStub)
-        .send(request)
-        .expectSuccess()
-        .matchResponse([&](const firebolt::rialto::GenerateRequestResponse &resp)
-                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
-
-    auto message = expectedMessage.getMessage();
-    ASSERT_TRUE(message);
-    ASSERT_EQ(message->media_keys_handle(), m_mediaKeysHandle);
-    ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
-    EXPECT_EQ(message->url(), "");
-    const unsigned int kMax = message->license_request_message_size();
-    ASSERT_EQ(kMax, m_kLicenseRequestMessage.size());
-    for (unsigned int i = 0; i < kMax; ++i)
-    {
-        ASSERT_EQ(message->license_request_message(i), m_kLicenseRequestMessage[i]);
-    }
-}
-
 void SessionReadyForDecryptionTest::willUpdateSessionWidevine()
 {
     // The following should match the details within the message "request"
@@ -199,22 +129,6 @@ void SessionReadyForDecryptionTest::updateSessionWidevine()
 }
 
 void SessionReadyForDecryptionTest::closeKeySessionWidevine()
-{
-    auto request{createCloseKeySessionRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
-
-    ConfigureAction<CloseKeySession>(m_clientStub)
-        .send(request)
-        .expectSuccess()
-        .matchResponse([&](const firebolt::rialto::CloseKeySessionResponse &resp)
-                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
-}
-
-void SessionReadyForDecryptionTest::willCloseKeySessionNetflix()
-{
-    EXPECT_CALL(m_ocdmSessionMock, cancelChallengeData()).WillOnce(Return(MediaKeyErrorStatus::OK));
-    EXPECT_CALL(m_ocdmSessionMock, cleanDecryptContext()).WillOnce(Return(MediaKeyErrorStatus::OK));
-}
-void SessionReadyForDecryptionTest::closeKeySessionNetflix()
 {
     auto request{createCloseKeySessionRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
 
@@ -392,16 +306,16 @@ TEST_F(SessionReadyForDecryptionTest, shouldUpdatNetflix)
     createKeySession();
 
     // Step 1: generateRequest
-    willGenerateRequestNetflix();
-    generateRequestNetflix();
+    willGenerateRequestPlayready();
+    generateRequestPlayready();
 
     // Step 2: Update session
     willUpdateSessionNetflix();
     updateSessionNetflix();
 
     // Step 3: Close session
-    willCloseKeySessionNetflix();
-    closeKeySessionNetflix();
+    willCloseKeySessionPlayready();
+    closeKeySessionPlayready();
 
     // Step 4: Destroy media keys
     willRelease();

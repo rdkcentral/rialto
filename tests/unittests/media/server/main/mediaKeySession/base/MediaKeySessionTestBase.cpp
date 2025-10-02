@@ -77,6 +77,22 @@ void MediaKeySessionTestBase::generateRequest()
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_initDataType, m_initData));
 }
 
+void MediaKeySessionTestBase::generateRequestPlayready()
+{
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+        .WillOnce(Return(MediaKeyErrorStatus::OK));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, nullptrMatcher(), _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_kChallenge.size()), Return(MediaKeyErrorStatus::OK)));
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, notNullptrMatcher(), _))
+        .WillOnce(DoAll(memcpyChallenge(m_kChallenge), Return(MediaKeyErrorStatus::OK)));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, m_kChallenge, _));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData));
+}
+
 void MediaKeySessionTestBase::mainThreadWillEnqueueTask()
 {
     EXPECT_CALL(*m_mainThreadMock, enqueueTask(m_kMainThreadClientId, _))

@@ -87,14 +87,30 @@ void SetDrmHeaderTest::setDrmHeader(const std::vector<unsigned char> &kKeyId)
  *
  *
  * Test Steps:
- *  Step 1: Set the drm header
+ *  Step 1: generateRequest
+ *      client sends generateRequest message to rialtoServer
+ *      rialtoServer passes request to OCDM library
+ *      ocdm lib returns success
+ *      rialtoServer returns a success message to the client
+ *
+ *      rialtoServer calls OCDM library get_challenge_data()
+ *      rialtoServer should forward this request, via an onLicenceRequest
+ *      message, to the client. The content of this message should match
+ *      the details from the ocdm library
+
+ *  Step 2: Set the drm header
  *   setDrmHeader first header.
  *   Expect that setDrmHeader is processed by the server.
  *   Api call returns with success.
  *
- *  Step 2: Set the drm header for a second time with different header
+ *  Step 3: Set the drm header for a second time with different header
  *   setDrmHeader second header.
  *   Expect that setDrmHeader is processed by the server.
+ *   Api call returns with success.
+ *
+ *  Step 4: Close session
+ *   closeSession.
+ *   Expect that closeSession is processed by the server.
  *   Api call returns with success.
  *
  * Test Tear-down:
@@ -111,13 +127,22 @@ TEST_F(SetDrmHeaderTest, multiple)
     ocdmSessionWillBeCreated();
     createKeySession();
 
-    // Step 1: Set the drm header
+    // Step 1: generateRequest
+    willGenerateRequestPlayready();
+    generateRequestPlayready();
+
+    // Step 2: Set the drm header
     willSetDrmHeader(kKeyId1);
     setDrmHeader(kKeyId1);
 
-    // Step 2: Set the drm header for a second time with different header
+    // Step 3: Set the drm header for a second time with different header
     willSetDrmHeader(kKeyId2);
     setDrmHeader(kKeyId2);
+
+    // Step 4: Close session
+    willCloseKeySessionPlayready();
+    closeKeySessionPlayready();
+    willRelease();
 }
 
 } // namespace firebolt::rialto::server::ct
