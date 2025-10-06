@@ -205,6 +205,7 @@ bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeTy
 
 bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string &mimeType, const std::string &url)
 {
+    std::unique_lock lock{m_getPositionMutex};
     /* If gstreamer player already created, destroy the old one first */
     if (m_gstPlayer)
     {
@@ -466,16 +467,7 @@ bool MediaPipelineServerInternal::getPosition(int64_t &position)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result;
-    auto task = [&]() { result = getPositionInternal(position); };
-
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::getPositionInternal(int64_t &position)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
+    std::shared_lock lock{m_getPositionMutex};
 
     if (!m_gstPlayer)
     {
@@ -1388,15 +1380,11 @@ void MediaPipelineServerInternal::notifyPlaybackState(PlaybackState state)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    auto task = [&, state]()
+    if (m_mediaPipelineClient)
     {
-        m_currentPlaybackState = state;
-        if (m_mediaPipelineClient)
-        {
-            m_mediaPipelineClient->notifyPlaybackState(state);
-        }
-    };
-
+        m_mediaPipelineClient->notifyPlaybackState(state);
+    }
+    auto task = [&, state]() { m_currentPlaybackState = state; };
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 

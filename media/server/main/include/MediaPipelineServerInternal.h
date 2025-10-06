@@ -28,6 +28,7 @@
 #include "ITimer.h"
 #include <map>
 #include <memory>
+#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -295,6 +296,11 @@ protected:
     std::map<MediaSourceType, bool> m_isMediaTypeEosMap;
 
     /**
+     * @brief Mutex to protect gstPlayer access in getPosition method
+     */
+    std::shared_mutex m_getPositionMutex;
+
+    /**
      * @brief Load internally, only to be called on the main thread.
      *
      * @param[in] type     : The media type.
@@ -368,15 +374,6 @@ protected:
      * @retval true on success.
      */
     bool setPositionInternal(int64_t position);
-
-    /**
-     * @brief Get position internally, only to be called on the main thread.
-     *
-     * @param[out] position : The playback position in nanoseconds
-     *
-     * @retval true on success.
-     */
-    bool getPositionInternal(int64_t &position);
 
     /**
      * @brief Sets the "Immediate Output" property for this source.

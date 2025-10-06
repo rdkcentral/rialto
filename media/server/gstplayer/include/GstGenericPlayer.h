@@ -178,7 +178,7 @@ private:
     void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) override;
     void setPendingPlaybackRate() override;
     void renderFrame() override;
-    void handleBusMessage(GstMessage *message) override;
+    void handleBusMessage(GstMessage *message, bool priority) override;
     void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
 
     void addAutoVideoSinkChild(GObject *object) override;
