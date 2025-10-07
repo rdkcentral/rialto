@@ -172,7 +172,17 @@ void MediaPipelineTest::willSetupAndAddSource(GstAppSrc *appSrc)
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(appSrc, GST_APP_STREAM_TYPE_SEEKABLE));
     EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_rialtoSource), GST_ELEMENT(appSrc)));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(GST_ELEMENT(appSrc), StrEq("src"))).WillOnce(Return(&m_pad));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), _)).WillOnce(Return(&m_queue)).RetiresOnSaturation();
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, StrEq("max-size-buffers"))).RetiresOnSaturation();
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, StrEq("max-size-bytes"))).RetiresOnSaturation();
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, StrEq("max-size-time"))).RetiresOnSaturation();
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, StrEq("silent"))).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_rialtoSource), &m_queue)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSyncStateWithParent(&m_queue)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(GST_ELEMENT(appSrc), &m_queue));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(&m_queue, StrEq("src")))
+        .WillOnce(Return(&m_pad))
+        .RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(StrEq(m_sourceName), &m_pad))
         .WillOnce(Return(&m_ghostPad))
         .RetiresOnSaturation();

@@ -172,8 +172,19 @@ public:
         EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock,
                     gstBinAdd(GST_BIN(&m_secondaryRialtoSource), GST_ELEMENT(&m_secondaryVideoAppSrc)));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("src")))
-            .WillOnce(Return(&m_pad));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), _))
+            .WillOnce(Return(&m_secondaryQueue))
+            .RetiresOnSaturation();
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryQueue, StrEq("max-size-buffers"))).RetiresOnSaturation();
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryQueue, StrEq("max-size-bytes"))).RetiresOnSaturation();
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryQueue, StrEq("max-size-time"))).RetiresOnSaturation();
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryQueue, StrEq("silent"))).RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_secondaryRialtoSource), &m_secondaryQueue)).RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSyncStateWithParent(&m_secondaryQueue)).RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstElementLink(GST_ELEMENT(&m_secondaryVideoAppSrc), &m_secondaryQueue));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(&m_secondaryQueue, StrEq("src")))
+            .WillOnce(Return(&m_pad))
+            .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(StrEq(m_sourceName), &m_pad))
             .WillOnce(Return(&m_ghostPad))
             .RetiresOnSaturation();
@@ -466,6 +477,7 @@ public:
     int m_secondarySessionId{-1};
     int m_secondaryVideoSourceId{-1};
     GstElement m_secondaryPipeline{};
+    GstElement m_secondaryQueue{};
     GstObject m_westerosFactory{};
     GstElement m_westerosSink{};
     GParamSpec m_rectangleSpec{};

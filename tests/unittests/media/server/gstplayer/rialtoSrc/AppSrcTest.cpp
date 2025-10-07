@@ -415,7 +415,8 @@ TEST_F(RialtoServerAppSrcGstSrcTest, NotDrm)
     expectSettings(videoMaxBytes);
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
-    expectSetupPad(m_streamInfo.appSrc);
+    expectLinkQueue(m_streamInfo.appSrc);
+    expectSetupPad(&m_queue);
 
     m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
                                 this, MediaSourceType::VIDEO);

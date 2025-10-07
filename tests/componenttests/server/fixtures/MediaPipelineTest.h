@@ -113,6 +113,7 @@ protected:
     std::string m_sourceName{"src_0"};
     GstPad m_pad{};
     GstPad m_ghostPad{};
+    GstElement m_queue{};
     GstEvent m_flushStartEvent{};
     GstEvent m_flushStopEvent{};
     GstSegment m_segment{};
