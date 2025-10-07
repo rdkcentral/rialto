@@ -32,7 +32,7 @@ class IDecryptionService
 public:
     virtual ~IDecryptionService() = default;
     virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) = 0;
-    virtual bool isNetflixPlayreadyKeySystem(int32_t keySessionId) = 0;
+    virtual bool isPlayreadyKeySystem(int32_t keySessionId) = 0;
     virtual MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) = 0;
     virtual void incrementSessionIdUsageCounter(int32_t keySessionId) = 0;
     virtual void decrementSessionIdUsageCounter(int32_t keySessionId) = 0;
