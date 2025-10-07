@@ -99,13 +99,13 @@ public:
     virtual bool hasSession(int32_t keySessionId) const = 0;
 
     /**
-     * @brief Checks, if key system of media key session is Netflix Playready.
+     * @brief Checks, if key system of media key session is Playready.
      *
      * @param[in] keySessionId    : The session id for the session.
      *
      * @retval true if key system is Playready
      */
-    virtual bool isNetflixPlayreadyKeySystem(int32_t keySessionId) const = 0;
+    virtual bool isPlayreadyKeySystem(int32_t keySessionId) const = 0;
 
     /**
      * @brief Increments number of buffers using keySessionId

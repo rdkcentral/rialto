@@ -732,14 +732,14 @@ TEST_F(CdmServiceTests, shouldCheckThatKeySystemIsPlayready)
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     mediaKeysWillCheckIfKeySystemIsPlayready(true);
-    isNetflixPlayreadyKeySystemShouldReturn(true);
+    isPlayreadyKeySystemShouldReturn(true);
     destroyMediaKeysShouldSucceed();
 }
 
 TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenNoMediaKeys)
 {
     triggerSwitchToActiveSuccess();
-    isNetflixPlayreadyKeySystemShouldReturn(false);
+    isPlayreadyKeySystemShouldReturn(false);
 }
 
 TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMediaKeysFails)
@@ -748,7 +748,7 @@ TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMedia
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     mediaKeysWillCheckIfKeySystemIsPlayready(false);
-    isNetflixPlayreadyKeySystemShouldReturn(false);
+    isPlayreadyKeySystemShouldReturn(false);
     destroyMediaKeysShouldSucceed();
 }
 
@@ -758,7 +758,7 @@ TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMedia
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     mediaKeysWillNotFindMediaKeySession();
-    isNetflixPlayreadyKeySystemShouldReturn(false);
+    isPlayreadyKeySystemShouldReturn(false);
     destroyMediaKeysShouldSucceed();
 }
 

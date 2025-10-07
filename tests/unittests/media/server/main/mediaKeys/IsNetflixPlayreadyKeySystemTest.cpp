@@ -19,44 +19,44 @@
 
 #include "MediaKeysTestBase.h"
 
-class RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest : public MediaKeysTestBase
+class RialtoServerMediaKeysIsPlayreadyKeySystemTest : public MediaKeysTestBase
 {
 protected:
-    RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest()
+    RialtoServerMediaKeysIsPlayreadyKeySystemTest()
     {
         createMediaKeys(kWidevineKeySystem);
         createKeySession(kWidevineKeySystem);
     }
-    ~RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest() { destroyMediaKeys(); }
+    ~RialtoServerMediaKeysIsPlayreadyKeySystemTest() { destroyMediaKeys(); }
 };
 
 /**
- * Test that isNetflixPlayreadyKeySystem returns true.
+ * Test that isPlayreadyKeySystem returns true.
  */
-TEST_F(RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest, ReturnTrue)
+TEST_F(RialtoServerMediaKeysIsPlayreadyKeySystemTest, ReturnTrue)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionMock, isNetflixPlayreadyKeySystem()).WillOnce(Return(true));
+    EXPECT_CALL(*m_mediaKeySessionMock, isPlayreadyKeySystem()).WillOnce(Return(true));
 
-    EXPECT_TRUE(m_mediaKeys->isNetflixPlayreadyKeySystem(m_kKeySessionId));
+    EXPECT_TRUE(m_mediaKeys->isPlayreadyKeySystem(m_kKeySessionId));
 }
 
 /**
- * Test that isNetflixPlayreadyKeySystem returns false if the key session does not exsist.
+ * Test that isPlayreadyKeySystem returns false if the key session does not exsist.
  */
-TEST_F(RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest, ReturnFalseWhenSessionDoesNotExist)
+TEST_F(RialtoServerMediaKeysIsPlayreadyKeySystemTest, ReturnFalseWhenSessionDoesNotExist)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_FALSE(m_mediaKeys->isNetflixPlayreadyKeySystem(m_kKeySessionId + 1));
+    EXPECT_FALSE(m_mediaKeys->isPlayreadyKeySystem(m_kKeySessionId + 1));
 }
 
 /**
- * Test that isNetflixPlayreadyKeySystem returns false
+ * Test that isPlayreadyKeySystem returns false
  */
-TEST_F(RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest, ReturnFalse)
+TEST_F(RialtoServerMediaKeysIsPlayreadyKeySystemTest, ReturnFalse)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionMock, isNetflixPlayreadyKeySystem()).WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaKeySessionMock, isPlayreadyKeySystem()).WillOnce(Return(false));
 
-    EXPECT_FALSE(m_mediaKeys->isNetflixPlayreadyKeySystem(m_kKeySessionId));
+    EXPECT_FALSE(m_mediaKeys->isPlayreadyKeySystem(m_kKeySessionId));
 }
