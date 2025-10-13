@@ -607,6 +607,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");
         return status;
     }
+    RIALTO_SERVER_LOG_INFO("Successfully decrypted buffer.");
 
     return status;
 }
