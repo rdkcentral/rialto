@@ -59,6 +59,10 @@ void HandleBusMessage::execute() const
                                   m_gstWrapper->gstElementStateGetName(newState),
                                   m_gstWrapper->gstElementStateGetName(pending));
 
+            std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +
+                                   std::string(m_gstWrapper->gstElementStateGetName(newState));
+            m_gstWrapper->gstDebugBinToDotFileWithTs(GST_BIN(m_context.pipeline), GST_DEBUG_GRAPH_SHOW_ALL,
+                                                     filename.c_str());
             if (!m_gstPlayerClient)
             {
                 break;
@@ -104,10 +108,6 @@ void HandleBusMessage::execute() const
                     RIALTO_SERVER_LOG_WARN("Skip PLAYING notification - flush is ongoing");
                     break;
                 }
-
-                m_context.isPlaying = true;
-                m_gstPlayerClient->notifyPlaybackState(PlaybackState::PLAYING);
-
                 if (m_context.pendingPlaybackRate != kNoPendingPlaybackRate)
                 {
                     m_player.setPendingPlaybackRate();
@@ -117,6 +117,9 @@ void HandleBusMessage::execute() const
                 {
                     m_player.startSubtitleClockResyncTimer();
                 }
+
+                m_context.isPlaying = true;
+                m_gstPlayerClient->notifyPlaybackState(PlaybackState::PLAYING);
                 break;
             }
             case GST_STATE_VOID_PENDING:
@@ -125,10 +128,6 @@ void HandleBusMessage::execute() const
                 break;
             }
             }
-            std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +
-                                   std::string(m_gstWrapper->gstElementStateGetName(newState));
-            m_gstWrapper->gstDebugBinToDotFileWithTs(GST_BIN(m_context.pipeline), GST_DEBUG_GRAPH_SHOW_ALL,
-                                                     filename.c_str());
         }
         break;
     }
