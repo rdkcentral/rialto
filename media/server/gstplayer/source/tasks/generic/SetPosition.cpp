@@ -55,7 +55,6 @@ void SetPosition::execute() const
         StreamInfo &streamInfo = elem.second;
         streamInfo.isDataNeeded = false;
         streamInfo.isNeedDataPending = false;
-        m_player.clearNeedDataScheduled(GST_APP_SRC(streamInfo.appSrc));
 
         // Clear buffered samples for player session
         for (auto &buffer : streamInfo.buffers)

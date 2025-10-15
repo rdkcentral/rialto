@@ -101,7 +101,6 @@ add_library(
         source/GstSrc.cpp
         source/GstTextTrackSink.cpp
         source/GstWebAudioPlayer.cpp
-        source/NeedDataMapping.cpp
         source/Utils.cpp
         source/WorkerThread.cpp
         )

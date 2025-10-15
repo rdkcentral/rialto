@@ -50,7 +50,6 @@ protected:
 
 TEST_F(WebAudioGstDispatcherThreadClientTest, shouldHandleBusMessage)
 {
-    constexpr bool kPriority{false};
     GstMessage message{};
     std::unique_ptr<IPlayerTask> messageTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*messageTask), execute());
@@ -58,5 +57,5 @@ TEST_F(WebAudioGstDispatcherThreadClientTest, shouldHandleBusMessage)
         .WillRepeatedly(Invoke([](std::unique_ptr<IPlayerTask> &&task) { task->execute(); }));
     EXPECT_CALL(m_taskFactoryMock, createHandleBusMessage(_, _, &message)).WillOnce(Return(ByMove(std::move(messageTask))));
 
-    m_sut->handleBusMessage(&message, kPriority);
+    m_sut->handleBusMessage(&message);
 }

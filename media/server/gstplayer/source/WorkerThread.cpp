@@ -87,17 +87,7 @@ void WorkerThread::enqueueTask(std::unique_ptr<IPlayerTask> &&task)
     if (task)
     {
         std::unique_lock<std::mutex> lock(m_taskMutex);
-        m_taskQueue.push_back(std::move(task));
-        m_taskCV.notify_one();
-    }
-}
-
-void WorkerThread::enqueuePriorityTask(std::unique_ptr<IPlayerTask> &&task)
-{
-    if (task)
-    {
-        std::unique_lock<std::mutex> lock(m_taskMutex);
-        m_taskQueue.push_front(std::move(task));
+        m_taskQueue.push(std::move(task));
         m_taskCV.notify_one();
     }
 }
@@ -119,7 +109,7 @@ std::unique_ptr<IPlayerTask> WorkerThread::waitForTask()
         m_taskCV.wait(lock, [this] { return !m_taskQueue.empty(); });
     }
     std::unique_ptr<IPlayerTask> task = std::move(m_taskQueue.front());
-    m_taskQueue.pop_front();
+    m_taskQueue.pop();
     return task;
 }
 } // namespace firebolt::rialto::server
