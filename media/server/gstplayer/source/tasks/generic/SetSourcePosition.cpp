@@ -20,17 +20,15 @@
 #include "SetSourcePosition.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
-#include "tasks/generic/NeedData.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetSourcePosition::SetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                     IGstGenericPlayerClient *client,
+SetSourcePosition::SetSourcePosition(GenericPlayerContext &context,
                                      const std::shared_ptr<wrappers::IGlibWrapper> &glibWrapper,
                                      const MediaSourceType &type, std::int64_t position, bool resetTime,
                                      double appliedRate, uint64_t stopPosition)
-    : m_context{context}, m_player(player), m_gstPlayerClient{client}, m_glibWrapper{glibWrapper}, m_type{type},
-      m_position{position}, m_resetTime{resetTime}, m_appliedRate{appliedRate}, m_stopPosition{stopPosition}
+    : m_context{context}, m_glibWrapper{glibWrapper}, m_type{type}, m_position{position}, m_resetTime{resetTime},
+      m_appliedRate{appliedRate}, m_stopPosition{stopPosition}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetSourcePosition");
 }
@@ -72,17 +70,6 @@ void SetSourcePosition::execute() const
     else if (MediaSourceType::SUBTITLE == m_type)
     {
         setSubtitlePosition(source);
-    }
-
-    if (m_context.setupSourceFinished)
-    {
-        // Reset Eos info
-        m_context.endOfStreamInfo.erase(m_type);
-        m_context.eosNotified = false;
-
-        // Trigger NeedData for source
-        NeedData task{m_context, m_player, m_gstPlayerClient, GST_APP_SRC(source)};
-        task.execute();
     }
 }
 

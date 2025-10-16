@@ -2007,7 +2007,7 @@ void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType,
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, *this, mediaSourceType, position,
+        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, mediaSourceType, position,
                                                                            resetTime, appliedRate, stopPosition));
     }
 }

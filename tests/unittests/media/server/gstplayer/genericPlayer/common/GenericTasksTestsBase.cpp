@@ -3153,10 +3153,6 @@ void GenericTasksTestsBase::checkAudioFlushed()
     auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
     ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
     EXPECT_EQ(videoStreamIt->second.buffers.size(), 1);
-    EXPECT_FALSE(audioStreamIt->second.isDataNeeded);
-    EXPECT_FALSE(audioStreamIt->second.isNeedDataPending);
-    EXPECT_TRUE(videoStreamIt->second.isDataNeeded);
-    EXPECT_TRUE(videoStreamIt->second.isNeedDataPending);
     EXPECT_FALSE(testContext->m_context.eosNotified);
     EXPECT_EQ(testContext->m_context.endOfStreamInfo.find(firebolt::rialto::MediaSourceType::AUDIO),
               testContext->m_context.endOfStreamInfo.end());
@@ -3172,10 +3168,6 @@ void GenericTasksTestsBase::checkVideoFlushed()
     auto videoStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::VIDEO)};
     ASSERT_NE(testContext->m_context.streamInfo.end(), videoStreamIt);
     EXPECT_EQ(videoStreamIt->second.buffers.size(), 0);
-    EXPECT_TRUE(audioStreamIt->second.isDataNeeded);
-    EXPECT_TRUE(audioStreamIt->second.isNeedDataPending);
-    EXPECT_FALSE(videoStreamIt->second.isDataNeeded);
-    EXPECT_FALSE(videoStreamIt->second.isNeedDataPending);
     EXPECT_FALSE(testContext->m_context.eosNotified);
     EXPECT_NE(testContext->m_context.endOfStreamInfo.find(firebolt::rialto::MediaSourceType::AUDIO),
               testContext->m_context.endOfStreamInfo.end());
@@ -3202,8 +3194,6 @@ void GenericTasksTestsBase::shouldSetSubtitleSourcePosition()
 void GenericTasksTestsBase::triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType)
 {
     firebolt::rialto::server::tasks::generic::SetSourcePosition task{testContext->m_context,
-                                                                     testContext->m_gstPlayer,
-                                                                     &testContext->m_gstPlayerClient,
                                                                      testContext->m_glibWrapper,
                                                                      sourceType,
                                                                      kPosition,
