@@ -440,7 +440,6 @@ public:
      * @brief Creates a SetSourcePosition task.
      *
      * @param[in] context   : The GstPlayer context
-     * @param[in] player     : The GstGenericPlayer instance
      * @param[in] type      : The media source type to set position
      * @param[in] position  : The new source position
      * @param[in] resetTime : True if time should be reset
@@ -450,7 +449,6 @@ public:
      * @retval the new SetSourcePosition task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context,
-                                                                 IGstGenericPlayerPrivate &player,
                                                                  const firebolt::rialto::MediaSourceType &type,
                                                                  std::int64_t position, bool resetTime,
                                                                  double appliedRate, uint64_t stopPosition) const = 0;
