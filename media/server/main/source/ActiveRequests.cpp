@@ -104,6 +104,7 @@ AddSegmentStatus ActiveRequests::addSegment(std::uint32_t requestId,
         return AddSegmentStatus::ERROR;
     }
 
+    std::unique_lock<std::mutex> lock{m_mutex};
     auto requestIter{m_requestMap.find(requestId)};
     if (requestIter != m_requestMap.end())
     {
@@ -115,6 +116,7 @@ AddSegmentStatus ActiveRequests::addSegment(std::uint32_t requestId,
 
 const IMediaPipeline::MediaSegmentVector &ActiveRequests::getSegments(std::uint32_t requestId) const
 {
+    std::unique_lock<std::mutex> lock{m_mutex};
     auto requestIter{m_requestMap.find(requestId)};
     if (requestIter != m_requestMap.end())
     {
