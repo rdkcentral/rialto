@@ -2805,12 +2805,6 @@ void GenericTasksTestsBase::shouldNotifyNeedVideoDataSuccess()
         .WillOnce(Return(true));
 }
 
-void GenericTasksTestsBase::shouldNotifyNeedSubtitleDataSuccess()
-{
-    EXPECT_CALL(testContext->m_gstPlayerClient, notifyNeedMediaData(firebolt::rialto::MediaSourceType::SUBTITLE))
-        .WillOnce(Return(true));
-}
-
 void GenericTasksTestsBase::checkNeedDataPendingForAudioOnly()
 {
     auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
