@@ -110,7 +110,7 @@ public:
     std::unique_ptr<IPlayerTask> createFlush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                              const firebolt::rialto::MediaSourceType &type,
                                              bool resetTime) const override;
-    std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+    std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context,
                                                          const firebolt::rialto::MediaSourceType &type,
                                                          std::int64_t position, bool resetTime, double appliedRate,
                                                          uint64_t stopPosition) const override;
