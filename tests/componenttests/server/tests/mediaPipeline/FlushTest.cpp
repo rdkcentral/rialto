@@ -92,6 +92,11 @@ public:
         expectedSourceFlushed.setFilter([&](const SourceFlushedEvent &event)
                                         { return event.source_id() == m_audioSourceId; });
 
+        // After successful Flush, NeedData for source is sent.
+        ExpectMessage<NeedMediaDataEvent> expectedAudioNeedData{m_clientStub};
+        expectedAudioNeedData.setFilter([&](const NeedMediaDataEvent &event)
+                                        { return event.source_id() == m_audioSourceId; });
+
         // Send FlushRequest and expect success
         auto request{createFlushRequest(m_sessionId, m_audioSourceId, kResetTime)};
         ConfigureAction<Flush>(m_clientStub)
@@ -104,19 +109,6 @@ public:
         ASSERT_TRUE(receivedSourceFlushed);
         EXPECT_EQ(receivedSourceFlushed->session_id(), m_sessionId);
         EXPECT_EQ(receivedSourceFlushed->source_id(), m_audioSourceId);
-    }
-
-    void setSourcePosition()
-    {
-        // After successful SetSourcePosition, NeedData for source is sent.
-        ExpectMessage<NeedMediaDataEvent> expectedAudioNeedData{m_clientStub};
-        expectedAudioNeedData.setFilter([&](const NeedMediaDataEvent &event)
-                                        { return event.source_id() == m_audioSourceId; });
-
-        // Send SetSourcePositionRequest and expect success
-        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition, kResetTime, kAppliedRate,
-                                                    kStopPosition)};
-        ConfigureAction<SetSourcePosition>(m_clientStub).send(request).expectSuccess();
 
         // Check received NeedDataReqs
         auto receivedAudioNeedData{expectedAudioNeedData.getMessage()};
@@ -124,6 +116,14 @@ public:
         EXPECT_EQ(receivedAudioNeedData->session_id(), m_sessionId);
         EXPECT_EQ(receivedAudioNeedData->source_id(), m_audioSourceId);
         m_lastAudioNeedData = receivedAudioNeedData;
+    }
+
+    void setSourcePosition()
+    {
+        // Send SetSourcePositionRequest and expect success
+        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition, kResetTime, kAppliedRate,
+                                                    kStopPosition)};
+        ConfigureAction<SetSourcePosition>(m_clientStub).send(request).expectSuccess();
     }
 
     void flushFailure()
