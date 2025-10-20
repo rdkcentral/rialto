@@ -20,6 +20,7 @@
 #include "tasks/generic/Flush.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
+#include "tasks/generic/NeedData.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -63,19 +64,20 @@ void Flush::execute() const
     StreamInfo &streamInfo = sourceElem->second;
     streamInfo.isDataNeeded = false;
     streamInfo.isNeedDataPending = false;
-    m_player.clearNeedDataScheduled(GST_APP_SRC(source));
 
     for (auto &buffer : streamInfo.buffers)
     {
         m_gstWrapper->gstBufferUnref(buffer);
     }
     streamInfo.buffers.clear();
+    m_context.initialPositions.erase(sourceElem->second.appSrc);
 
     m_gstPlayerClient->invalidateActiveRequests(m_type);
 
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
     {
         m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
+
         // Flush source
         GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
         if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
@@ -104,6 +106,13 @@ void Flush::execute() const
 
     // Notify GstGenericPlayer, that flush has been finished
     m_player.setSourceFlushed(m_type);
+
+    if (m_context.setupSourceFinished)
+    {
+        // Trigger NeedData for source
+        NeedData task{m_context, m_player, m_gstPlayerClient, GST_APP_SRC(source)};
+        task.execute();
+    }
 
     RIALTO_SERVER_LOG_MIL("%s source flushed.", common::convertMediaSourceType(m_type));
 }

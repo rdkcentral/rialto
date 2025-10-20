@@ -301,12 +301,12 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFlush(GenericPlayer
 }
 
 std::unique_ptr<IPlayerTask>
-GenericPlayerTaskFactory::createSetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+GenericPlayerTaskFactory::createSetSourcePosition(GenericPlayerContext &context,
                                                   const firebolt::rialto::MediaSourceType &type, std::int64_t position,
                                                   bool resetTime, double appliedRate, uint64_t stopPosition) const
 {
-    return std::make_unique<tasks::generic::SetSourcePosition>(context, player, m_client, m_glibWrapper, type, position,
-                                                               resetTime, appliedRate, stopPosition);
+    return std::make_unique<tasks::generic::SetSourcePosition>(context, m_glibWrapper, type, position, resetTime,
+                                                               appliedRate, stopPosition);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetSubtitleOffset(GenericPlayerContext &context,

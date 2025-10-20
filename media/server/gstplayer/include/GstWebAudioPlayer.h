@@ -33,7 +33,6 @@
 #include "tasks/IPlayerTask.h"
 #include "tasks/IWebAudioPlayerTaskFactory.h"
 #include <memory>
-#include <queue>
 #include <string>
 
 namespace firebolt::rialto::server
@@ -96,7 +95,7 @@ public:
 
     bool changePipelineState(GstState newState) override;
     void stopWorkerThread() override;
-    void handleBusMessage(GstMessage *message, bool priority) override;
+    void handleBusMessage(GstMessage *message) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 private:

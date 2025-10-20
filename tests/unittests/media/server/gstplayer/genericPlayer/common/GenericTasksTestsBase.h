@@ -361,7 +361,6 @@ protected:
     void triggerNeedDataUnknownSrc();
     void shouldNotifyNeedAudioDataSuccess();
     void shouldNotifyNeedVideoDataSuccess();
-    void shouldNotifyNeedSubtitleDataSuccess();
     void checkNeedDataPendingForAudioOnly();
     void checkNeedDataPendingForVideoOnly();
     void shouldNotifyNeedAudioDataFailure();
@@ -401,7 +400,6 @@ protected:
     // RemoveSource test methods
     void shouldInvalidateActiveAudioRequests();
     void shouldDisableAudioFlag();
-    void shouldClearAudioNeedDataFlag();
     void triggerRemoveSourceAudio();
     void triggerRemoveSourceVideo();
     void checkAudioSourceRemoved();

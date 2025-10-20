@@ -1107,11 +1107,6 @@ void GstGenericPlayer::scheduleNeedMediaData(GstAppSrc *src)
 {
     if (m_workerThread)
     {
-        if (m_scheduledNeedDatas.isNeedDataScheduled(src))
-        {
-            return;
-        }
-        m_scheduledNeedDatas.setNeedDataScheduled(src);
         m_workerThread->enqueueTask(m_taskFactory->createNeedData(m_context, *this, src));
     }
 }
@@ -1120,7 +1115,6 @@ void GstGenericPlayer::scheduleEnoughData(GstAppSrc *src)
 {
     if (m_workerThread)
     {
-        clearNeedDataScheduled(src);
         m_workerThread->enqueueTask(m_taskFactory->createEnoughData(m_context, src));
     }
 }
@@ -1217,24 +1211,17 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
         return -1;
     }
 
-    if (m_flushWatcher->isFlushOngoing())
-    {
-        RIALTO_SERVER_LOG_WARN("Can't get position while flush is ongoing");
-        return -1;
-    }
-
     m_gstWrapper->gstStateLock(element);
 
-    const auto kElementState{m_gstWrapper->gstElementGetState(element)};
-    const auto kStateChangeReturn{m_gstWrapper->gstElementGetStateReturn(element)};
-    const auto kNextState{m_gstWrapper->gstElementGetStateNext(element)};
-    if (kElementState < GST_STATE_PAUSED ||
-        (kStateChangeReturn == GST_STATE_CHANGE_ASYNC && kNextState == GST_STATE_PAUSED))
+    if (m_gstWrapper->gstElementGetState(element) < GST_STATE_PAUSED ||
+        (m_gstWrapper->gstElementGetStateReturn(element) == GST_STATE_CHANGE_ASYNC &&
+         m_gstWrapper->gstElementGetStateNext(element) == GST_STATE_PAUSED))
     {
         RIALTO_SERVER_LOG_WARN("Element is prerolling or in invalid state - state: %s, return: %s, next: %s",
-                               m_gstWrapper->gstElementStateGetName(kElementState),
-                               m_gstWrapper->gstElementStateChangeReturnGetName(kStateChangeReturn),
-                               m_gstWrapper->gstElementStateGetName(kNextState));
+                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetState(element)),
+                               m_gstWrapper->gstElementStateChangeReturnGetName(
+                                   m_gstWrapper->gstElementGetStateReturn(element)),
+                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetStateNext(element)));
 
         m_gstWrapper->gstStateUnlock(element);
         return -1;
@@ -2020,7 +2007,7 @@ void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType,
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, *this, mediaSourceType, position,
+        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, mediaSourceType, position,
                                                                            resetTime, appliedRate, stopPosition));
     }
 }
@@ -2117,17 +2104,9 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
     }
 }
 
-void GstGenericPlayer::handleBusMessage(GstMessage *message, bool priority)
+void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
-    if (priority)
-    {
-        m_workerThread->enqueuePriorityTask(
-            m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
-    }
-    else
-    {
-        m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
-    }
+    m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
@@ -2263,8 +2242,4 @@ bool GstGenericPlayer::shouldEnableNativeAudio()
     return false;
 }
 
-void GstGenericPlayer::clearNeedDataScheduled(GstAppSrc *src)
-{
-    m_scheduledNeedDatas.clearNeedDataScheduled(src);
-}
 }; // namespace firebolt::rialto::server

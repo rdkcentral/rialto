@@ -33,7 +33,6 @@
 #include "IGstWrapper.h"
 #include "ITimer.h"
 #include "IWorkerThread.h"
-#include "NeedDataMapping.h"
 #include "tasks/IGenericPlayerTaskFactory.h"
 #include "tasks/IPlayerTask.h"
 #include <IMediaPipeline.h>
@@ -178,7 +177,7 @@ private:
     void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) override;
     void setPendingPlaybackRate() override;
     void renderFrame() override;
-    void handleBusMessage(GstMessage *message, bool priority) override;
+    void handleBusMessage(GstMessage *message) override;
     void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
 
     void addAutoVideoSinkChild(GObject *object) override;
@@ -192,7 +191,6 @@ private:
     GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
     void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
     bool isAsync(const MediaSourceType &mediaSourceType) const;
-    void clearNeedDataScheduled(GstAppSrc *src) override;
 
 private:
     /**
@@ -413,11 +411,6 @@ private:
      * @brief The object used to check flushing state for all sources
      */
     std::unique_ptr<IFlushWatcher> m_flushWatcher;
-
-    /**
-     * @brief The object used to check if NeedData is scheduled for given source
-     */
-    NeedDataMapping m_scheduledNeedDatas;
 };
 
 } // namespace firebolt::rialto::server
