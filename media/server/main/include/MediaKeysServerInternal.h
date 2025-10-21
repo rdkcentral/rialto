@@ -121,9 +121,7 @@ public:
 
     MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) override;
 
-    bool hasSession(int32_t keySessionId) const override;
-
-    bool isPlayreadyKeySystem(int32_t keySessionId) const override;
+    bool isPlayreadyKeySystem() const override;
 
     void incrementSessionIdUsageCounter(int32_t keySessionId) override;
     void decrementSessionIdUsageCounter(int32_t keySessionId) override;
@@ -153,7 +151,7 @@ private:
     /**
      * @brief KeySystem type of the MediaKeysServerInternal.
      */
-    const std::string m_keySystem;
+    const std::string m_kKeySystem;
 
     /**
      * @brief This objects id registered on the main thread
@@ -284,15 +282,6 @@ private:
      * @retval the return status value.
      */
     MediaKeyErrorStatus getLastDrmErrorInternal(int32_t keySessionId, uint32_t &errorCode);
-
-    /**
-     * @brief Checks, if key system of media key session is Playready internally, only to be called on the main thread.
-     *
-     * @param[in] keySessionId    : The session id for the session.
-     *
-     * @retval true if key system is Playready
-     */
-    bool isPlayreadyKeySystemInternal(int32_t keySessionId) const;
 
     /**
      * @brief Releases a key session internally, only to be called on the main thread.

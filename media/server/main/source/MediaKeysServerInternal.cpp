@@ -105,7 +105,7 @@ MediaKeysServerInternal::MediaKeysServerInternal(
     const std::string &keySystem, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory,
     std::shared_ptr<IMediaKeySessionFactory> mediaKeySessionFactory)
-    : m_mediaKeySessionFactory(mediaKeySessionFactory), m_keySystem(keySystem)
+    : m_mediaKeySessionFactory(mediaKeySessionFactory), m_kKeySystem(keySystem)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -228,7 +228,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::createKeySessionInternal(KeySession
 {
     int32_t keySessionIdTemp = generateSessionId();
     std::unique_ptr<IMediaKeySession> mediaKeySession =
-        m_mediaKeySessionFactory->createMediaKeySession(m_keySystem, keySessionIdTemp, *m_ocdmSystem, sessionType,
+        m_mediaKeySessionFactory->createMediaKeySession(m_kKeySystem, keySessionIdTemp, *m_ocdmSystem, sessionType,
                                                         client, isLDL);
     if (!mediaKeySession)
     {
@@ -612,36 +612,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
     return status;
 }
 
-bool MediaKeysServerInternal::hasSession(int32_t keySessionId) const
+bool MediaKeysServerInternal::isPlayreadyKeySystem() const
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    bool result;
-    auto task = [&]() { result = m_mediaKeySessions.find(keySessionId) != m_mediaKeySessions.end(); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaKeysServerInternal::isPlayreadyKeySystem(int32_t keySessionId) const
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    bool result;
-    auto task = [&]() { result = isPlayreadyKeySystemInternal(keySessionId); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaKeysServerInternal::isPlayreadyKeySystemInternal(int32_t keySessionId) const
-{
-    auto sessionIter = m_mediaKeySessions.find(keySessionId);
-    if (sessionIter == m_mediaKeySessions.end())
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
-        return false;
-    }
-    return sessionIter->second.mediaKeySession->isPlayreadyKeySystem();
+    return m_kKeySystem.find("playready") != std::string::npos;
 }
 
 void MediaKeysServerInternal::incrementSessionIdUsageCounter(int32_t keySessionId)

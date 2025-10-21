@@ -212,25 +212,17 @@ void CdmServiceTests::mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto:
 
 void CdmServiceTests::mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
     EXPECT_CALL(m_mediaKeysMock, decrypt(kKeySessionId, _, _)).WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
     EXPECT_CALL(m_mediaKeysMock, selectKeyId(kKeySessionId, keyId)).WillOnce(Return(status));
-}
-
-void CdmServiceTests::mediaKeysWillNotFindMediaKeySession()
-{
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(false));
 }
 
 void CdmServiceTests::mediaKeysWillCheckIfKeySystemIsPlayready(bool result)
 {
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
-    EXPECT_CALL(m_mediaKeysMock, isPlayreadyKeySystem(kKeySessionId)).WillOnce(Return(result));
+    EXPECT_CALL(m_mediaKeysMock, isPlayreadyKeySystem()).WillOnce(Return(result));
 }
 
 void CdmServiceTests::mediaKeysWillPing()
@@ -428,27 +420,23 @@ void CdmServiceTests::supportsServerCertificateReturnFalse()
 
 void CdmServiceTests::incrementSessionIdUsageCounter()
 {
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
     EXPECT_CALL(m_mediaKeysMock, incrementSessionIdUsageCounter(kKeySessionId));
     m_sut.incrementSessionIdUsageCounter(kKeySessionId);
 }
 
 void CdmServiceTests::incrementSessionIdUsageCounterFails()
 {
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(false));
     m_sut.incrementSessionIdUsageCounter(kKeySessionId);
 }
 
 void CdmServiceTests::decrementSessionIdUsageCounter()
 {
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
     EXPECT_CALL(m_mediaKeysMock, decrementSessionIdUsageCounter(kKeySessionId));
     m_sut.decrementSessionIdUsageCounter(kKeySessionId);
 }
 
 void CdmServiceTests::decrementSessionIdUsageCounterFails()
 {
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(false));
     m_sut.decrementSessionIdUsageCounter(kKeySessionId);
 }
 

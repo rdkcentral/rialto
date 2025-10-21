@@ -22,11 +22,7 @@
 class RialtoServerMediaKeysIsPlayreadyKeySystemTest : public MediaKeysTestBase
 {
 protected:
-    RialtoServerMediaKeysIsPlayreadyKeySystemTest()
-    {
-        createMediaKeys(kWidevineKeySystem);
-        createKeySession(kWidevineKeySystem);
-    }
+    RialtoServerMediaKeysIsPlayreadyKeySystemTest() = default;
     ~RialtoServerMediaKeysIsPlayreadyKeySystemTest() { destroyMediaKeys(); }
 };
 
@@ -35,19 +31,8 @@ protected:
  */
 TEST_F(RialtoServerMediaKeysIsPlayreadyKeySystemTest, ReturnTrue)
 {
-    mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionMock, isPlayreadyKeySystem()).WillOnce(Return(true));
-
-    EXPECT_TRUE(m_mediaKeys->isPlayreadyKeySystem(m_kKeySessionId));
-}
-
-/**
- * Test that isPlayreadyKeySystem returns false if the key session does not exsist.
- */
-TEST_F(RialtoServerMediaKeysIsPlayreadyKeySystemTest, ReturnFalseWhenSessionDoesNotExist)
-{
-    mainThreadWillEnqueueTaskAndWait();
-    EXPECT_FALSE(m_mediaKeys->isPlayreadyKeySystem(m_kKeySessionId + 1));
+    createMediaKeys(kPlayreadyKeySystem);
+    EXPECT_TRUE(m_mediaKeys->isPlayreadyKeySystem());
 }
 
 /**
@@ -55,8 +40,6 @@ TEST_F(RialtoServerMediaKeysIsPlayreadyKeySystemTest, ReturnFalseWhenSessionDoes
  */
 TEST_F(RialtoServerMediaKeysIsPlayreadyKeySystemTest, ReturnFalse)
 {
-    mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionMock, isPlayreadyKeySystem()).WillOnce(Return(false));
-
-    EXPECT_FALSE(m_mediaKeys->isPlayreadyKeySystem(m_kKeySessionId));
+    createMediaKeys(kWidevineKeySystem);
+    EXPECT_FALSE(m_mediaKeys->isPlayreadyKeySystem());
 }

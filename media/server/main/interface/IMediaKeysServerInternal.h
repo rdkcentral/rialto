@@ -90,22 +90,11 @@ public:
     virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) = 0;
 
     /**
-     * @brief Checks if session with given id is handled by this MediaKeys instance
-     *
-     * @param[in] keySessionId    : The session id for the session.
-     *
-     * @retval true if session is handled by this MediaKeys instance
-     */
-    virtual bool hasSession(int32_t keySessionId) const = 0;
-
-    /**
      * @brief Checks, if key system of media key session is Playready.
-     *
-     * @param[in] keySessionId    : The session id for the session.
      *
      * @retval true if key system is Playready
      */
-    virtual bool isPlayreadyKeySystem(int32_t keySessionId) const = 0;
+    virtual bool isPlayreadyKeySystem() const = 0;
 
     /**
      * @brief Increments number of buffers using keySessionId

@@ -226,8 +226,8 @@ void GstGenericPlayer::initMsePipeline()
     // Set callbacks
     m_glibWrapper->gSignalConnect(m_context.pipeline, "source-setup", G_CALLBACK(&GstGenericPlayer::setupSource), this);
     m_glibWrapper->gSignalConnect(m_context.pipeline, "element-setup", G_CALLBACK(&GstGenericPlayer::setupElement), this);
-    // m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added",
-    //                               G_CALLBACK(&GstGenericPlayer::deepElementAdded), this);
+    m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added",
+                                  G_CALLBACK(&GstGenericPlayer::deepElementAdded), this);
 
     // Set uri
     m_glibWrapper->gObjectSet(m_context.pipeline, "uri", "rialto://", nullptr);

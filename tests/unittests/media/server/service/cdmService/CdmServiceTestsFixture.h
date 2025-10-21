@@ -62,7 +62,6 @@ public:
     void mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
-    void mediaKeysWillNotFindMediaKeySession();
     void mediaKeysWillCheckIfKeySystemIsPlayready(bool result);
     void mediaKeysWillPing();
     void mediaKeysWillGetMetricSystemDataWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
