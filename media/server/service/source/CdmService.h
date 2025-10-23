@@ -37,7 +37,10 @@ class CdmService : public ICdmService, public IDecryptionService
     struct MediaKeySessionInfo
     {
         int mediaKeysHandle;
-        // std::shared_ptr<IMediaKeysClient> client; // Moznaby polaczyc...
+        bool isPlayready{false};
+        uint32_t refCounter{0};
+        bool shouldBeClosed{false};
+        bool shouldBeReleased{false};
     };
 
 public:

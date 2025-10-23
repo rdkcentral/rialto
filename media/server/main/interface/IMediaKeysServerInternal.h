@@ -97,22 +97,6 @@ public:
     virtual bool isPlayreadyKeySystem() const = 0;
 
     /**
-     * @brief Increments number of buffers using keySessionId
-     *
-     * @param[in] keySessionId    : The session id for the session.
-     *
-     */
-
-    virtual void incrementSessionIdUsageCounter(int32_t keySessionId) = 0;
-    /**
-     * @brief Decrements number of buffers using keySessionId
-     *
-     * @param[in] keySessionId    : The session id for the session.
-     *
-     */
-    virtual void decrementSessionIdUsageCounter(int32_t keySessionId) = 0;
-
-    /**
      * @brief Checks, if MediaKeys main thread is not deadlocked
      *
      * @param[in] heartbeatHandler    : The heartbeat handler instance.

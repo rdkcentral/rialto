@@ -473,21 +473,21 @@ void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement
         }
     }
 
-    // Configure and add buffer queue
-    GstElement *queue = m_gstWrapper->gstElementFactoryMake("queue", nullptr);
-    if (queue)
-    {
-        m_glibWrapper->gObjectSet(G_OBJECT(queue), "max-size-buffers", 10, "max-size-bytes", 0, "max-size-time",
-                                  (gint64)0, "silent", TRUE, nullptr);
-        m_gstWrapper->gstBinAdd(GST_BIN(source), queue);
-        m_gstWrapper->gstElementSyncStateWithParent(queue);
-        m_gstWrapper->gstElementLink(src_elem, queue);
-        src_elem = queue;
-    }
-    else
-    {
-        GST_WARNING_OBJECT(src, "Could not create buffer queue element");
-    }
+    // // Configure and add buffer queue
+    // GstElement *queue = m_gstWrapper->gstElementFactoryMake("queue", nullptr);
+    // if (queue)
+    // {
+    //     m_glibWrapper->gObjectSet(G_OBJECT(queue), "max-size-buffers", 10, "max-size-bytes", 0, "max-size-time",
+    //                               (gint64)0, "silent", TRUE, nullptr);
+    //     m_gstWrapper->gstBinAdd(GST_BIN(source), queue);
+    //     m_gstWrapper->gstElementSyncStateWithParent(queue);
+    //     m_gstWrapper->gstElementLink(src_elem, queue);
+    //     src_elem = queue;
+    // }
+    // else
+    // {
+    //     GST_WARNING_OBJECT(src, "Could not create buffer queue element");
+    // }
 
     // Setup pad
     GstPad *target = m_gstWrapper->gstElementGetStaticPad(src_elem, "src");

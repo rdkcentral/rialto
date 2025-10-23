@@ -54,13 +54,6 @@ namespace firebolt::rialto::server
 class MediaKeysServerInternal : public IMediaKeysServerInternal
 {
 public:
-    struct MediaKeySessionUsage
-    {
-        std::unique_ptr<IMediaKeySession> mediaKeySession;
-        uint32_t bufCounter = 0;
-        bool shouldBeClosed = false;
-        bool shouldBeReleased = false;
-    };
     /**
      * @brief The constructor.
      *
@@ -123,8 +116,6 @@ public:
 
     bool isPlayreadyKeySystem() const override;
 
-    void incrementSessionIdUsageCounter(int32_t keySessionId) override;
-    void decrementSessionIdUsageCounter(int32_t keySessionId) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 private:
@@ -146,7 +137,7 @@ private:
     /**
      * @brief Map containing created sessions.
      */
-    std::map<int32_t, MediaKeySessionUsage> m_mediaKeySessions;
+    std::map<int32_t, std::unique_ptr<IMediaKeySession>> m_mediaKeySessions;
 
     /**
      * @brief KeySystem type of the MediaKeysServerInternal.
@@ -291,9 +282,6 @@ private:
      * @retval an error status.
      */
     MediaKeyErrorStatus releaseKeySessionInternal(int32_t keySessionId);
-
-    void incrementSessionIdUsageCounterInternal(int32_t keySessionId);
-    void decrementSessionIdUsageCounterInternal(int32_t keySessionId);
 };
 
 }; // namespace firebolt::rialto::server

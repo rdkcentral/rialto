@@ -176,7 +176,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::selectKeyIdInternal(int32_t keySess
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->selectKeyId(keyId);
+    MediaKeyErrorStatus status = sessionIter->second->selectKeyId(keyId);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to select key id");
@@ -206,7 +206,7 @@ bool MediaKeysServerInternal::containsKeyInternal(int32_t keySessionId, const st
         return false;
     }
 
-    return sessionIter->second.mediaKeySession->containsKey(keyId);
+    return sessionIter->second->containsKey(keyId);
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::createKeySession(KeySessionType sessionType,
@@ -236,7 +236,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::createKeySessionInternal(KeySession
         return MediaKeyErrorStatus::FAIL;
     }
     keySessionId = keySessionIdTemp;
-    m_mediaKeySessions.emplace(std::make_pair(keySessionId, MediaKeySessionUsage{std::move(mediaKeySession)}));
+    m_mediaKeySessions.emplace(std::make_pair(keySessionId, std::move(mediaKeySession)));
 
     return MediaKeyErrorStatus::OK;
 }
@@ -263,7 +263,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::generateRequestInternal(int32_t key
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->generateRequest(initDataType, initData);
+    MediaKeyErrorStatus status = sessionIter->second->generateRequest(initDataType, initData);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to generate request for the key session %d", keySessionId);
@@ -292,7 +292,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::loadSessionInternal(int32_t keySess
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->loadSession();
+    MediaKeyErrorStatus status = sessionIter->second->loadSession();
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load the session %d", keySessionId);
@@ -322,7 +322,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::updateSessionInternal(int32_t keySe
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->updateSession(responseData);
+    MediaKeyErrorStatus status = sessionIter->second->updateSession(responseData);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to update the session %d", keySessionId);
@@ -352,7 +352,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::setDrmHeaderInternal(int32_t keySes
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->setDrmHeader(requestData);
+    MediaKeyErrorStatus status = sessionIter->second->setDrmHeader(requestData);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set drm header");
@@ -382,20 +382,13 @@ MediaKeyErrorStatus MediaKeysServerInternal::closeKeySessionInternal(int32_t key
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    if (sessionIter->second.bufCounter == 0)
+    MediaKeyErrorStatus status = sessionIter->second->closeKeySession();
+    if (MediaKeyErrorStatus::OK != status)
     {
-        MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->closeKeySession();
-        if (MediaKeyErrorStatus::OK != status)
-        {
-            RIALTO_SERVER_LOG_ERROR("Failed to close the key session %d", keySessionId);
-            return status;
-        }
+        RIALTO_SERVER_LOG_ERROR("Failed to close the key session %d", keySessionId);
         return status;
     }
-
-    RIALTO_SERVER_LOG_INFO("Deferring closing of key session %d", keySessionId);
-    sessionIter->second.shouldBeClosed = true;
-    return MediaKeyErrorStatus::OK;
+    return status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::removeKeySession(int32_t keySessionId)
@@ -418,7 +411,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::removeKeySessionInternal(int32_t ke
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->removeKeySession();
+    MediaKeyErrorStatus status = sessionIter->second->removeKeySession();
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to remove the key session %d", keySessionId);
@@ -502,7 +495,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmErrorInternal(int32_t key
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->getLastDrmError(errorCode);
+    MediaKeyErrorStatus status = sessionIter->second->getLastDrmError(errorCode);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get last drm error");
@@ -551,14 +544,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::releaseKeySessionInternal(int32_t k
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    if (sessionIter->second.bufCounter == 0)
-    {
-        m_mediaKeySessions.erase(sessionIter);
-        return MediaKeyErrorStatus::OK;
-    }
-
-    RIALTO_SERVER_LOG_INFO("Deferring releasing of key session %d", keySessionId);
-    sessionIter->second.shouldBeReleased = true;
+    m_mediaKeySessions.erase(sessionIter);
     return MediaKeyErrorStatus::OK;
 }
 
@@ -571,7 +557,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionIdInternal(int32_t 
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->getCdmKeySessionId(cdmKeySessionId);
+    MediaKeyErrorStatus status = sessionIter->second->getCdmKeySessionId(cdmKeySessionId);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get cdm key session id");
@@ -601,7 +587,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->decrypt(encrypted, caps);
+    MediaKeyErrorStatus status = sessionIter->second->decrypt(encrypted, caps);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");
@@ -616,66 +602,6 @@ bool MediaKeysServerInternal::isPlayreadyKeySystem() const
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     return m_kKeySystem.find("playready") != std::string::npos;
-}
-
-void MediaKeysServerInternal::incrementSessionIdUsageCounter(int32_t keySessionId)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto task = [&]() { incrementSessionIdUsageCounterInternal(keySessionId); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-}
-
-void MediaKeysServerInternal::incrementSessionIdUsageCounterInternal(int32_t keySessionId)
-{
-    auto sessionIter = m_mediaKeySessions.find(keySessionId);
-    if (sessionIter == m_mediaKeySessions.end())
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
-        return;
-    }
-
-    sessionIter->second.bufCounter++;
-}
-
-void MediaKeysServerInternal::decrementSessionIdUsageCounter(int32_t keySessionId)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    auto task = [&]() { decrementSessionIdUsageCounterInternal(keySessionId); };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-}
-
-void MediaKeysServerInternal::decrementSessionIdUsageCounterInternal(int32_t keySessionId)
-{
-    auto sessionIter = m_mediaKeySessions.find(keySessionId);
-    if (sessionIter == m_mediaKeySessions.end())
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
-        return;
-    }
-
-    if (sessionIter->second.bufCounter > 0)
-    {
-        sessionIter->second.bufCounter--;
-    }
-
-    if (sessionIter->second.bufCounter == 0)
-    {
-        if (sessionIter->second.shouldBeClosed)
-        {
-            RIALTO_SERVER_LOG_INFO("Deferred closing of mksId %d", keySessionId);
-            MediaKeyErrorStatus status = sessionIter->second.mediaKeySession->closeKeySession();
-            if (MediaKeyErrorStatus::OK != status)
-            {
-                RIALTO_SERVER_LOG_ERROR("Failed to close the key session %d", keySessionId);
-            }
-        }
-        if (sessionIter->second.shouldBeReleased)
-        {
-            m_mediaKeySessions.erase(sessionIter);
-        }
-    }
 }
 
 void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)

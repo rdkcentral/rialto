@@ -42,6 +42,12 @@ void EnoughData::execute() const
         firebolt::rialto::MediaSourceType sourceType = elem.first;
         if (elem.second.appSrc == GST_ELEMENT(m_src))
         {
+            if (!elem.second.isDataPushed)
+            {
+                RIALTO_SERVER_LOG_WARN("%s source did not push data yet. Skip reporting EnoughData",
+                                       common::convertMediaSourceType(sourceType));
+                break;
+            }
             RIALTO_SERVER_LOG_DEBUG("%s source has enough data", common::convertMediaSourceType(sourceType));
             elem.second.isDataNeeded = false;
             break;
