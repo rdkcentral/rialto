@@ -381,7 +381,7 @@ void MediaPipelineTest::willPlay()
     EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_NULL)).WillRepeatedly(Return(kNullStateName.c_str()));
     EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_PLAYING))
         .WillRepeatedly(Return(kPlayingStateName.c_str()));
-    EXPECT_CALL(*m_gstWrapperMock, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
 }
 
 void MediaPipelineTest::willEos(GstAppSrc *appSrc)

@@ -22,9 +22,28 @@
 using ::testing::DoAll;
 using ::testing::SetArgPointee;
 
+MATCHER(nullptrMatcher, "")
+{
+    return arg == nullptr;
+}
+
+MATCHER(notNullptrMatcher, "")
+{
+    return arg != nullptr;
+}
+
+ACTION_P(memcpyChallenge, vec)
+{
+    memcpy(arg1, &vec[0], vec.size());
+}
+
 class RialtoServerMediaKeySessionGenerateRequestTest : public MediaKeySessionTestBase
 {
 protected:
+    const InitDataType m_kInitDataType = InitDataType::CENC;
+    const std::vector<uint8_t> m_kInitData{1, 2, 3};
+    const std::vector<unsigned char> m_kChallenge{'d', 'e', 'f'};
+
     ~RialtoServerMediaKeySessionGenerateRequestTest() { destroyKeySession(); }
 };
 
@@ -52,7 +71,18 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessNetflix)
 {
     createKeySession(kNetflixKeySystem);
 
-    generateRequestPlayready();
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+        .WillOnce(Return(MediaKeyErrorStatus::OK));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, nullptrMatcher(), _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_kChallenge.size()), Return(MediaKeyErrorStatus::OK)));
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, notNullptrMatcher(), _))
+        .WillOnce(DoAll(memcpyChallenge(m_kChallenge), Return(MediaKeyErrorStatus::OK)));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, m_kChallenge, _));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData));
 
     // Close ocdm before destroying
     expectCloseKeySession(kNetflixKeySystem);

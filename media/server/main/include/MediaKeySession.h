@@ -96,7 +96,7 @@ public:
 
     MediaKeyErrorStatus selectKeyId(const std::vector<uint8_t> &keyId) override;
 
-    bool isPlayreadyKeySystem() const override;
+    bool isNetflixPlayreadyKeySystem() const override;
 
     void onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength) override;
 
@@ -168,7 +168,7 @@ private:
     uint32_t m_mainThreadClientId;
 
     /**
-     * @brief Currently selected key id (PR specific)
+     * @brief Currently selected key id (Netflix specific)
      */
     std::vector<uint8_t> m_selectedKeyId;
 
@@ -186,11 +186,6 @@ private:
      * @brief Mutex protecting the ocdm error checking.
      */
     std::mutex m_ocdmErrorMutex;
-
-    /**
-     * @brief Drm header to be set once the session is constructed
-     */
-    std::vector<uint8_t> m_queuedDrmHeader;
 
     /**
      * @brief Posts a getChallenge task onto the main thread.

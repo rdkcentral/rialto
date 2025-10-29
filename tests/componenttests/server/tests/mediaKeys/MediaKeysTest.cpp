@@ -42,6 +42,8 @@ public:
     void generateRequestFail();
 
     void shouldFailToCreateKeySessionWhenMksIdIsWrong();
+
+    const std::vector<unsigned char> m_kInitData{1, 2, 7};
 };
 
 void MediaKeysTest::willGenerateRequestFail()
