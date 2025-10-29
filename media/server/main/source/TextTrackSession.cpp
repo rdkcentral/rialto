@@ -151,9 +151,10 @@ bool TextTrackSession::setSessionCCSelection(const std::string &service)
     return m_textTrackAccessor->setSessionCCSelection(m_sessionId, service);
 }
 
-bool TextTrackSession::associateVideoDecoder(uint64_t decoderId)
+bool TextTrackSession::associateVideoDecoder(gpointer decoderIdPtr)
 {
-    m_videoDecoderId = decoderId;
+    m_videoDecoderId = decoderIdPtr;
+    uintptr_t decoderId = reinterpret_cast<uintptr_t>(decoderIdPtr);
     std::string decoderIdStr = std::to_string(decoderId);
     return m_textTrackAccessor->associateVideoDecoder(m_sessionId, decoderIdStr);
 }
