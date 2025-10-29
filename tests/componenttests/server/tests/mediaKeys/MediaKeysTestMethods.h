@@ -41,14 +41,8 @@ public:
     void createKeySession();
     void ocdmSessionWillBeCreated();
 
-    void willGenerateRequestPlayready();
-    void generateRequestPlayready();
-
     void willUpdateSessionNetflix();
     void updateSessionNetflix();
-
-    void willCloseKeySessionPlayready();
-    void closeKeySessionPlayready();
 
     void willTeardown();
     void willRelease();
@@ -65,8 +59,6 @@ protected:
     firebolt::rialto::wrappers::IOcdmSessionClient *m_ocdmSessionClient{0};
 
     const std::vector<unsigned char> m_kUpdateSessionNetflixResponse{5, 6};
-    const std::vector<unsigned char> m_kInitData{1, 2, 7};
-    const std::vector<uint8_t> m_kLicenseRequestMessage{'d', 'z', 'f'};
 };
 
 } // namespace firebolt::rialto::server::ct

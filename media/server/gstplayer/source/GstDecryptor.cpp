@@ -280,7 +280,7 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
                 }
             }
 
-            if (protectionData->key && m_decryptionService->isPlayreadyKeySystem(protectionData->keySessionId))
+            if (protectionData->key && m_decryptionService->isNetflixPlayreadyKeySystem(protectionData->keySessionId))
             {
                 GstMapInfo keyMap;
                 if (m_gstWrapper->gstBufferMap(protectionData->key, &keyMap, GST_MAP_READ))

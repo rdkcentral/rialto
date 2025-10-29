@@ -127,14 +127,7 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
         else
         {
             m_isSessionConstructed = true;
-
-            if (!m_queuedDrmHeader.empty())
-            {
-                RIALTO_SERVER_LOG_DEBUG("Setting queued drm header after session construction");
-                setDrmHeader(m_queuedDrmHeader);
-                m_queuedDrmHeader.clear();
-            }
-            if (isPlayreadyKeySystem())
+            if (isNetflixPlayreadyKeySystem())
             {
                 // Ocdm-playready does not notify onProcessChallenge when complete.
                 // Fetch the challenge manually.
@@ -202,7 +195,7 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
     initOcdmErrorChecking();
 
     MediaKeyErrorStatus status;
-    if (isPlayreadyKeySystem())
+    if (isNetflixPlayreadyKeySystem())
     {
         status = m_ocdmSession->storeLicenseData(&responseData[0], responseData.size());
         if (MediaKeyErrorStatus::OK != status)
@@ -250,7 +243,7 @@ MediaKeyErrorStatus MediaKeySession::closeKeySession()
     initOcdmErrorChecking();
 
     MediaKeyErrorStatus status;
-    if (isPlayreadyKeySystem())
+    if (isNetflixPlayreadyKeySystem())
     {
         if (MediaKeyErrorStatus::OK != m_ocdmSession->cancelChallengeData())
         {
@@ -329,13 +322,6 @@ MediaKeyErrorStatus MediaKeySession::setDrmHeader(const std::vector<uint8_t> &re
 {
     initOcdmErrorChecking();
 
-    if (!m_isSessionConstructed)
-    {
-        RIALTO_SERVER_LOG_INFO("Session not yet constructed, queueing drm header to be set after construction");
-        m_queuedDrmHeader = requestData;
-        return MediaKeyErrorStatus::OK;
-    }
-
     MediaKeyErrorStatus status = m_ocdmSession->setDrmHeader(requestData.data(), requestData.size());
     if (MediaKeyErrorStatus::OK != status)
     {
@@ -392,9 +378,9 @@ MediaKeyErrorStatus MediaKeySession::selectKeyId(const std::vector<uint8_t> &key
     return status;
 }
 
-bool MediaKeySession::isPlayreadyKeySystem() const
+bool MediaKeySession::isNetflixPlayreadyKeySystem() const
 {
-    return m_kKeySystem.find("playready") != std::string::npos;
+    return m_kKeySystem.find("netflix") != std::string::npos;
 }
 
 void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength)

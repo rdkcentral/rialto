@@ -25,9 +25,9 @@
 
 namespace
 {
-bool isPlayready(const std::string &keySystem)
+bool isNetflixPlayready(const std::string &keySystem)
 {
-    return keySystem.find("playready") != std::string::npos;
+    return keySystem.find("netflix") != std::string::npos;
 }
 } // namespace
 
@@ -120,7 +120,7 @@ MediaKeyErrorStatus MediaKeys::createKeySession(KeySessionType sessionType, std:
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     auto result{m_mediaKeysIpc->createKeySession(sessionType, client, isLDL, keySessionId)};
-    if (isPlayready(m_keySystem) && MediaKeyErrorStatus::OK == result)
+    if (isNetflixPlayready(m_keySystem) && MediaKeyErrorStatus::OK == result)
     {
         KeyIdMap::instance().addSession(keySessionId);
     }
@@ -159,7 +159,7 @@ MediaKeyErrorStatus MediaKeys::setDrmHeader(int32_t keySessionId, const std::vec
 MediaKeyErrorStatus MediaKeys::closeKeySession(int32_t keySessionId)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    if (isPlayready(m_keySystem))
+    if (isNetflixPlayready(m_keySystem))
     {
         KeyIdMap::instance().erase(keySessionId);
     }
