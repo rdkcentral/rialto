@@ -19,38 +19,38 @@
 
 #include "MediaKeySessionTestBase.h"
 
-class RialtoServerMediaKeySessionIsPlayreadyKeySystemTest : public MediaKeySessionTestBase
+class RialtoServerMediaKeySessionIsNetflixPlayreadyKeySystemTest : public MediaKeySessionTestBase
 {
 protected:
-    ~RialtoServerMediaKeySessionIsPlayreadyKeySystemTest() { destroyKeySession(); }
+    ~RialtoServerMediaKeySessionIsNetflixPlayreadyKeySystemTest() { destroyKeySession(); }
 };
 
 /**
- * Test that isPlayreadyKeySystem returns true for microsoft playready key system
+ * Test that isNetflixPlayreadyKeySystem returns false for microsoft playready key system
  */
-TEST_F(RialtoServerMediaKeySessionIsPlayreadyKeySystemTest, ReturnTrueForMsPlayready)
+TEST_F(RialtoServerMediaKeySessionIsNetflixPlayreadyKeySystemTest, ReturnFalseForMsPlayready)
 {
     createKeySession(kPlayreadyKeySystem);
 
-    EXPECT_TRUE(m_mediaKeySession->isPlayreadyKeySystem());
+    EXPECT_FALSE(m_mediaKeySession->isNetflixPlayreadyKeySystem());
 }
 
 /**
- * Test that isPlayreadyKeySystem returns true for netflix playready key system
+ * Test that isNetflixPlayreadyKeySystem returns true for netflix key system
  */
-TEST_F(RialtoServerMediaKeySessionIsPlayreadyKeySystemTest, ReturnTrueFor)
+TEST_F(RialtoServerMediaKeySessionIsNetflixPlayreadyKeySystemTest, ReturnTrueForNetflix)
 {
     createKeySession(kNetflixKeySystem);
 
-    EXPECT_TRUE(m_mediaKeySession->isPlayreadyKeySystem());
+    EXPECT_TRUE(m_mediaKeySession->isNetflixPlayreadyKeySystem());
 }
 
 /**
- * Test that isPlayreadyKeySystem returns false for widevine key system
+ * Test that isNetflixPlayreadyKeySystem returns false for widevine key system
  */
-TEST_F(RialtoServerMediaKeySessionIsPlayreadyKeySystemTest, ReturnFalseForWidevine)
+TEST_F(RialtoServerMediaKeySessionIsNetflixPlayreadyKeySystemTest, ReturnFalseForWidevine)
 {
     createKeySession(kWidevineKeySystem);
 
-    EXPECT_FALSE(m_mediaKeySession->isPlayreadyKeySystem());
+    EXPECT_FALSE(m_mediaKeySession->isNetflixPlayreadyKeySystem());
 }

@@ -222,7 +222,7 @@ void CdmServiceTests::mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::Media
 
 void CdmServiceTests::mediaKeysWillCheckIfKeySystemIsPlayready(bool result)
 {
-    EXPECT_CALL(m_mediaKeysMock, isPlayreadyKeySystem()).WillOnce(Return(result));
+    EXPECT_CALL(m_mediaKeysMock, isNetflixPlayreadyKeySystem()).WillOnce(Return(result));
 }
 
 void CdmServiceTests::mediaKeysWillPing()
@@ -370,9 +370,9 @@ void CdmServiceTests::releaseKeySessionShouldReturnStatus(firebolt::rialto::Medi
     EXPECT_EQ(status, m_sut.releaseKeySession(kMediaKeysHandle, kKeySessionId));
 }
 
-void CdmServiceTests::isPlayreadyKeySystemShouldReturn(bool result)
+void CdmServiceTests::isNetflixPlayreadyKeySystemShouldReturn(bool result)
 {
-    EXPECT_EQ(result, m_sut.isPlayreadyKeySystem(kKeySessionId));
+    EXPECT_EQ(result, m_sut.isNetflixPlayreadyKeySystem(kKeySessionId));
 }
 
 void CdmServiceTests::getSupportedKeySystemsShouldSucceed()

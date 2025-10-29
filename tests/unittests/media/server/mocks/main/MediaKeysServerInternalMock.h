@@ -58,7 +58,7 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, getCdmKeySessionId, (int32_t keySessionId, std::string &cdmKeySessionId),
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, decrypt, (int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps), (override));
-    MOCK_METHOD(bool, isPlayreadyKeySystem, (), (const, override));
+    MOCK_METHOD(bool, isNetflixPlayreadyKeySystem, (), (const, override));
     MOCK_METHOD(void, incrementSessionIdUsageCounter, (int32_t keySessionId), (override));
     MOCK_METHOD(void, decrementSessionIdUsageCounter, (int32_t keySessionId), (override));
     MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));

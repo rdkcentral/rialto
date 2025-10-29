@@ -19,27 +19,27 @@
 
 #include "MediaKeysTestBase.h"
 
-class RialtoServerMediaKeysIsPlayreadyKeySystemTest : public MediaKeysTestBase
+class RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest : public MediaKeysTestBase
 {
 protected:
-    RialtoServerMediaKeysIsPlayreadyKeySystemTest() = default;
-    ~RialtoServerMediaKeysIsPlayreadyKeySystemTest() { destroyMediaKeys(); }
+    RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest() = default;
+    ~RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest() { destroyMediaKeys(); }
 };
 
 /**
- * Test that isPlayreadyKeySystem returns true.
+ * Test that isNetflixPlayreadyKeySystem returns true.
  */
-TEST_F(RialtoServerMediaKeysIsPlayreadyKeySystemTest, ReturnTrue)
+TEST_F(RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest, ReturnTrue)
 {
-    createMediaKeys(kPlayreadyKeySystem);
-    EXPECT_TRUE(m_mediaKeys->isPlayreadyKeySystem());
+    createMediaKeys(kNetflixKeySystem);
+    EXPECT_TRUE(m_mediaKeys->isNetflixPlayreadyKeySystem());
 }
 
 /**
- * Test that isPlayreadyKeySystem returns false
+ * Test that isNetflixPlayreadyKeySystem returns false
  */
-TEST_F(RialtoServerMediaKeysIsPlayreadyKeySystemTest, ReturnFalse)
+TEST_F(RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest, ReturnFalse)
 {
     createMediaKeys(kWidevineKeySystem);
-    EXPECT_FALSE(m_mediaKeys->isPlayreadyKeySystem());
+    EXPECT_FALSE(m_mediaKeys->isNetflixPlayreadyKeySystem());
 }

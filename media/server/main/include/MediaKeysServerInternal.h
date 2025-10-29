@@ -114,7 +114,7 @@ public:
 
     MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) override;
 
-    bool isPlayreadyKeySystem() const override;
+    bool isNetflixPlayreadyKeySystem() const override;
 
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 

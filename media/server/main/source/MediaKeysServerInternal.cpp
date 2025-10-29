@@ -598,10 +598,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
     return status;
 }
 
-bool MediaKeysServerInternal::isPlayreadyKeySystem() const
+bool MediaKeysServerInternal::isNetflixPlayreadyKeySystem() const
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    return m_kKeySystem.find("playready") != std::string::npos;
+    return m_kKeySystem.find("netflix") != std::string::npos;
 }
 
 void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)

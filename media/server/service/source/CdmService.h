@@ -37,7 +37,7 @@ class CdmService : public ICdmService, public IDecryptionService
     struct MediaKeySessionInfo
     {
         int mediaKeysHandle;
-        bool isPlayready{false};
+        bool isNetflixPlayready{false};
         uint32_t refCounter{0};
         bool shouldBeClosed{false};
         bool shouldBeReleased{false};
@@ -83,7 +83,7 @@ public:
     bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) override;
     bool isServerCertificateSupported(const std::string &keySystem) override;
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
-    bool isPlayreadyKeySystem(int32_t keySessionId) override;
+    bool isNetflixPlayreadyKeySystem(int32_t keySessionId) override;
     MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
     void incrementSessionIdUsageCounter(int32_t keySessionId) override;
     void decrementSessionIdUsageCounter(int32_t keySessionId) override;

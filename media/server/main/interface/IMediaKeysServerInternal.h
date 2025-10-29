@@ -90,11 +90,11 @@ public:
     virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) = 0;
 
     /**
-     * @brief Checks, if key system of media key session is Playready.
+     * @brief Checks, if key system of media key session is Netflix Playready.
      *
      * @retval true if key system is Playready
      */
-    virtual bool isPlayreadyKeySystem() const = 0;
+    virtual bool isNetflixPlayreadyKeySystem() const = 0;
 
     /**
      * @brief Checks, if MediaKeys main thread is not deadlocked

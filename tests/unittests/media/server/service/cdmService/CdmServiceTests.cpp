@@ -744,14 +744,14 @@ TEST_F(CdmServiceTests, shouldCheckThatKeySystemIsPlayready)
     mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     createKeySessionShouldSucceed();
     mediaKeysWillCheckIfKeySystemIsPlayready(true);
-    isPlayreadyKeySystemShouldReturn(true);
+    isNetflixPlayreadyKeySystemShouldReturn(true);
     destroyMediaKeysShouldSucceed();
 }
 
 TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenNoMediaKeys)
 {
     triggerSwitchToActiveSuccess();
-    isPlayreadyKeySystemShouldReturn(false);
+    isNetflixPlayreadyKeySystemShouldReturn(false);
 }
 
 TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMediaKeysFails)
@@ -762,7 +762,7 @@ TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMedia
     mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     createKeySessionShouldSucceed();
     mediaKeysWillCheckIfKeySystemIsPlayready(false);
-    isPlayreadyKeySystemShouldReturn(false);
+    isNetflixPlayreadyKeySystemShouldReturn(false);
     destroyMediaKeysShouldSucceed();
 }
 
@@ -771,7 +771,7 @@ TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMedia
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
-    isPlayreadyKeySystemShouldReturn(false);
+    isNetflixPlayreadyKeySystemShouldReturn(false);
     destroyMediaKeysShouldSucceed();
 }
 
