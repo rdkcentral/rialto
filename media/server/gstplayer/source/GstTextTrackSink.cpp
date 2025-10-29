@@ -120,8 +120,8 @@ static void gst_rialto_text_track_sink_class_init(GstRialtoTextTrackSinkClass *k
                                                         GParamFlags(G_PARAM_READWRITE)));
 
     g_object_class_install_property(gobjectClass, PROP_VIDEO_DECODER,
-                                    g_param_spec_uint64("video-decoder", "Video Decoder", "Video Decoder", 0,
-                                                        G_MAXUINT64, 0, GParamFlags(G_PARAM_WRITABLE)));
+                                    g_param_spec_pointer("video-decoder", "Video Decoder", "Video Decoder",
+                                                         GParamFlags(G_PARAM_WRITABLE)));
 
     g_object_class_install_property(gobjectClass, PROP_POSITION,
                                     g_param_spec_uint64("position", "Position", "Position", 0, G_MAXUINT64, 0,
@@ -482,7 +482,8 @@ static void gst_rialto_text_track_sink_set_property(GObject *object, guint propI
     }
     case PROP_VIDEO_DECODER:
     {
-        priv->m_videoDecoderIdentifier = g_value_get_uint64(value);
+        priv->m_videoDecoderIdentifier = g_value_get_pointer(value);
+
         if (priv->m_textTrackSession && priv->m_textTrackSession->isClosedCaptions())
         {
             priv->m_textTrackSession->associateVideoDecoder(priv->m_videoDecoderIdentifier);
