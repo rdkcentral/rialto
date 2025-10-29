@@ -38,11 +38,9 @@ constexpr std::uint32_t kSessionId{1};
 constexpr bool kMute{true};
 constexpr std::uint64_t kMediaTimestampMs{1234};
 constexpr std::int32_t kDisplayOffsetMs{321};
-constexpr std::uint64_t kDecoderId{5678};
 const std::string kDisplayName{"DisplayName"};
 const std::string kService{"service"};
 const std::string kData{"DATA"};
-const std::string kVideoDecoder{"5678"};
 } // namespace
 
 class TextTrackSessionTest : public testing::Test
@@ -159,14 +157,20 @@ TEST_F(TextTrackSessionTest, shouldResetSession)
 
 TEST_F(TextTrackSessionTest, shouldAssociateVideoDecoder)
 {
+    uint8_t decoder{0};
+    uintptr_t decoderAddress = reinterpret_cast<uintptr_t>(&decoder);
+    std::string decoderAddressStr = std::to_string(decoderAddress);
     createSut();
-    EXPECT_CALL(*m_accessorMock, associateVideoDecoder(kSessionId, kVideoDecoder)).WillOnce(Return(true));
-    EXPECT_TRUE(m_sut->associateVideoDecoder(kDecoderId));
+    EXPECT_CALL(*m_accessorMock, associateVideoDecoder(kSessionId, decoderAddressStr)).WillOnce(Return(true));
+    EXPECT_TRUE(m_sut->associateVideoDecoder(&decoder));
 }
 
 TEST_F(TextTrackSessionTest, shouldFailToAssociateVideoDecoder)
 {
+    uint8_t decoder{0};
+    uintptr_t decoderAddress = reinterpret_cast<uintptr_t>(&decoder);
+    std::string decoderAddressStr = std::to_string(decoderAddress);
     createSut();
-    EXPECT_CALL(*m_accessorMock, associateVideoDecoder(kSessionId, kVideoDecoder)).WillOnce(Return(false));
-    EXPECT_FALSE(m_sut->associateVideoDecoder(kDecoderId));
+    EXPECT_CALL(*m_accessorMock, associateVideoDecoder(kSessionId, decoderAddressStr)).WillOnce(Return(false));
+    EXPECT_FALSE(m_sut->associateVideoDecoder(&decoder));
 }
