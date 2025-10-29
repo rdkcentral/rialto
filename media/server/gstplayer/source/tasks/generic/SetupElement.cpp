@@ -227,9 +227,8 @@ void SetupElement::execute() const
                 m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink") ||
                 m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "brcmvideodecoder"))
             {
-                uintptr_t videoDecoderHandle = reinterpret_cast<uintptr_t>(m_element);
-                m_glibWrapper->gObjectSet(m_context.subtitleSink, "video-decoder", videoDecoderHandle, nullptr);
-                RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %zu", videoDecoderHandle);
+                m_glibWrapper->gObjectSet(m_context.subtitleSink, "video-decoder", m_element, nullptr);
+                RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %p", m_element);
                 m_context.isVideoHandleSet = true;
             }
         }
