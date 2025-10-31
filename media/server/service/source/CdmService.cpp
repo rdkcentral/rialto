@@ -505,7 +505,8 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
 
 bool CdmService::isNetflixPlayreadyKeySystem(int32_t keySessionId)
 {
-    RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key system is Netflix Playready, key session id: %d", keySessionId);
+    RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key system is Netflix Playready, key session id: %d",
+                            keySessionId);
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysHandleIter{m_sessionInfo.find(keySessionId)};

@@ -20,6 +20,7 @@
 #include "tasks/generic/HandleBusMessage.h"
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
+#include "IGstSrc.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 
@@ -91,6 +92,10 @@ void HandleBusMessage::execute() const
                     // Subsequent newState==GST_STATE_PAUSED, pending!=GST_STATE_PAUSED transition will
                     // indicate that the pipeline is prerolled and it reached GST_STATE_PAUSED state after seek.
                     m_gstPlayerClient->notifyPlaybackState(PlaybackState::PAUSED);
+                    if (m_context.gstSrc)
+                    {
+                        m_context.gstSrc->enableQueue();
+                    }
                 }
                 if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
                 {
