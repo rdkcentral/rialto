@@ -20,7 +20,6 @@
 #include "tasks/generic/HandleBusMessage.h"
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerClient.h"
-#include "IGstSrc.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 
