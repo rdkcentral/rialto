@@ -116,11 +116,6 @@ public:
      * @param[in] element   : The source element.
      */
     virtual void allAppSrcsAdded(GstElement *element) = 0;
-
-    /**
-     * @brief Enable queue in rialto source.
-     */
-    virtual void enableQueue() = 0;
 };
 
 }; // namespace firebolt::rialto::server

@@ -477,14 +477,12 @@ void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement
     GstElement *queue = m_gstWrapper->gstElementFactoryMake("queue", nullptr);
     if (queue)
     {
-        // Disable queue for first preroll
-        m_glibWrapper->gObjectSet(G_OBJECT(queue), "max-size-buffers", 0, "max-size-bytes", 0, "max-size-time",
+        m_glibWrapper->gObjectSet(G_OBJECT(queue), "max-size-buffers", 10, "max-size-bytes", 0, "max-size-time",
                                   (gint64)0, "silent", TRUE, nullptr);
         m_gstWrapper->gstBinAdd(GST_BIN(source), queue);
         m_gstWrapper->gstElementSyncStateWithParent(queue);
         m_gstWrapper->gstElementLink(src_elem, queue);
         src_elem = queue;
-        m_queues.insert(queue);
     }
     else
     {
@@ -511,19 +509,6 @@ void GstSrc::allAppSrcsAdded(GstElement *element)
     GstRialtoSrc *src = GST_RIALTO_SRC(element);
     m_gstWrapper->gstElementNoMorePads(element);
     gstRialtoSrcDoAsyncDone(src);
-}
-
-void GstSrc::enableQueue()
-{
-    if (m_queuesEnabled)
-    {
-        return;
-    }
-    for (auto &queue : m_queues)
-    {
-        m_glibWrapper->gObjectSet(G_OBJECT(queue), "max-size-buffers", 10, nullptr);
-    }
-    m_queuesEnabled = true;
 }
 
 GstElement *GstSrc::createPayloader()

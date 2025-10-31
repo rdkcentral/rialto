@@ -30,7 +30,6 @@
 #include <gst/gst.h>
 #include <memory>
 #include <mutex>
-#include <set>
 
 G_BEGIN_DECLS
 
@@ -128,7 +127,6 @@ public:
                            firebolt::rialto::MediaSourceType type) override;
 
     void allAppSrcsAdded(GstElement *element) override;
-    void enableQueue() override;
 
 protected:
     /*
@@ -150,16 +148,6 @@ protected:
      * @brief The gst decryptor element factory object.
      */
     std::shared_ptr<IGstDecryptorElementFactory> m_decryptorFactory;
-
-    /**
-     * @brief The gst queue object used by rialto source.
-     */
-    std::set<GstElement *> m_queues{};
-
-    /**
-     * @brief The flag to check, if queues are enabled
-     */
-    bool m_queuesEnabled{false};
 
     /**
      * @brief Create a payloader element.
