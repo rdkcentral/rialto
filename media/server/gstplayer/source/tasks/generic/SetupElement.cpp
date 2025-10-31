@@ -235,7 +235,9 @@ void SetupElement::execute() const
                 }
                 else
                 {
-                    RIALTO_SERVER_LOG_WARN("Failed to get video decoder handle from westerossink");
+                    m_glibWrapper->gObjectSet(m_context.subtitleSink, "video-decoder", m_element, nullptr);
+                    RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %p", m_element);
+                    m_context.isVideoHandleSet = true;
                 }
             }
             else if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "omx"))
