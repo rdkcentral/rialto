@@ -26,7 +26,7 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{3};
+constexpr int kFrameCountInPausedState{24};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -155,18 +155,16 @@ TEST_F(HaveDataFailureTest, HaveDataError)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
     pause();
 
     // Step 5: Audio HaveData Failure
-    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     failHaveData(m_lastAudioNeedData);
 
     // Step 6: Video HaveData Failure
-    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     failHaveData(m_lastVideoNeedData);
 
     // Step 14: Remove sources

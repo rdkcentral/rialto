@@ -333,9 +333,17 @@ public:
     void indicateAllSecondarySourcesAttached()
     {
         ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange(m_clientStub);
+        ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
 
         auto allSourcesAttachedReq{createAllSourcesAttachedRequest(m_secondarySessionId)};
         ConfigureAction<AllSourcesAttached>(m_clientStub).send(allSourcesAttachedReq).expectSuccess();
+
+        auto receivedNeedData{expectedNeedData.getMessage()};
+        ASSERT_TRUE(receivedNeedData);
+        EXPECT_EQ(receivedNeedData->session_id(), m_secondarySessionId);
+        EXPECT_EQ(receivedNeedData->source_id(), m_secondaryVideoSourceId);
+        EXPECT_EQ(receivedNeedData->frame_count(), kFrameCountInPlayingState);
+        m_lastSecondaryNeedData = receivedNeedData;
 
         auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
         ASSERT_TRUE(receivedPlaybackStateChange);
@@ -359,18 +367,6 @@ public:
         EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_secondarySessionId);
         EXPECT_EQ(receivedPlaybackStateChange->state(),
                   ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_PLAYING);
-    }
-
-    void secondaryGstNeedData()
-    {
-        ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
-        m_secondaryGstreamerStub.needData(&m_secondaryVideoAppSrc, 1);
-        auto receivedNeedData{expectedNeedData.getMessage()};
-        ASSERT_TRUE(receivedNeedData);
-        EXPECT_EQ(receivedNeedData->session_id(), m_secondarySessionId);
-        EXPECT_EQ(receivedNeedData->source_id(), m_secondaryVideoSourceId);
-        EXPECT_EQ(receivedNeedData->frame_count(), kFrameCountInPlayingState);
-        m_lastSecondaryNeedData = receivedNeedData;
     }
 
     void pushSecondaryVideoData()
@@ -661,7 +657,7 @@ TEST_F(DualVideoPlaybackTest, playbackFullDualVideo)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Create a secondary media session
     createSecondaryFullSession();
@@ -688,13 +684,11 @@ TEST_F(DualVideoPlaybackTest, playbackFullDualVideo)
     playSecondary();
 
     // Step 9: Push initial data for primary session
-    gstNeedData(&m_audioAppSrc, kFrameCountInPlayingState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPlayingState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCountInPlayingState);
-        pushVideoData(kFramesToPush, kFrameCountInPlayingState);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -703,7 +697,6 @@ TEST_F(DualVideoPlaybackTest, playbackFullDualVideo)
     }
 
     // Step 10: Push initial data for secondary session
-    secondaryGstNeedData();
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
@@ -917,7 +910,7 @@ TEST_F(DualVideoPlaybackTest, playbackNoResouceManagerSecondaryVideo)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Create a secondary media session
     createSecondaryLimitedSession();
@@ -944,13 +937,11 @@ TEST_F(DualVideoPlaybackTest, playbackNoResouceManagerSecondaryVideo)
     playSecondary();
 
     // Step 9: Push initial data for primary session
-    gstNeedData(&m_audioAppSrc, kFrameCountInPlayingState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPlayingState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCountInPlayingState);
-        pushVideoData(kFramesToPush, kFrameCountInPlayingState);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -959,7 +950,6 @@ TEST_F(DualVideoPlaybackTest, playbackNoResouceManagerSecondaryVideo)
     }
 
     // Step 10: Push initial data for secondary session
-    secondaryGstNeedData();
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
