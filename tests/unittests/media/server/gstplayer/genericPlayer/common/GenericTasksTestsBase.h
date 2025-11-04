@@ -119,6 +119,8 @@ protected:
     void triggerAutoAudioSinkChildRemovedCallback();
     void shouldSetupTextTrackSink();
     void shouldSetupVideoDecoderForTextTrack();
+    void shouldSetupVideoDecoderForTextTrackWesterosSinkWithDecoder();
+    void shouldSetupVideoDecoderForTextTrackWesterosSinkWithoutDecoder();
 
     // SetVideoGeometry test methods
     void setPipelineToNull();
