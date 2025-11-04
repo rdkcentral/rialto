@@ -223,9 +223,24 @@ void SetupElement::execute() const
     {
         if (!m_context.isVideoHandleSet && isVideoDecoder(*m_gstWrapper, m_element))
         {
-            if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "omx") ||
-                m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink") ||
-                m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "brcmvideodecoder"))
+            if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink"))
+            {
+                gpointer decoder{nullptr};
+                m_glibWrapper->gObjectGet(m_element, "videodecoder", &decoder, nullptr);
+                if (decoder)
+                {
+                    m_glibWrapper->gObjectSet(m_context.subtitleSink, "video-decoder", decoder, nullptr);
+                    RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %p", decoder);
+                    m_context.isVideoHandleSet = true;
+                }
+                else
+                {
+                    m_glibWrapper->gObjectSet(m_context.subtitleSink, "video-decoder", m_element, nullptr);
+                    RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %p", m_element);
+                    m_context.isVideoHandleSet = true;
+                }
+            }
+            else if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "omx"))
             {
                 m_glibWrapper->gObjectSet(m_context.subtitleSink, "video-decoder", m_element, nullptr);
                 RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %p", m_element);

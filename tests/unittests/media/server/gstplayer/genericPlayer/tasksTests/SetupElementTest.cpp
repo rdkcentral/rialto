@@ -230,3 +230,15 @@ TEST_F(SetupElementTest, shouldSetupVideoDecodersForSubtitleSink)
     shouldSetupVideoDecoderForTextTrack();
     triggerSetupElement();
 }
+
+TEST_F(SetupElementTest, shouldSetupVideoDecodersForSubtitleSinkWesterosSinkWithDecoder)
+{
+    shouldSetupVideoDecoderForTextTrackWesterosSinkWithDecoder();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupVideoDecodersForSubtitleSinkWesterosSinkWithoutDecoder)
+{
+    shouldSetupVideoDecoderForTextTrackWesterosSinkWithoutDecoder();
+    triggerSetupElement();
+}
