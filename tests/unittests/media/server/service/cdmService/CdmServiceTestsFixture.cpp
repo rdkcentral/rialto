@@ -420,22 +420,10 @@ void CdmServiceTests::supportsServerCertificateReturnFalse()
 
 void CdmServiceTests::incrementSessionIdUsageCounter()
 {
-    EXPECT_CALL(m_mediaKeysMock, incrementSessionIdUsageCounter(kKeySessionId));
-    m_sut.incrementSessionIdUsageCounter(kKeySessionId);
-}
-
-void CdmServiceTests::incrementSessionIdUsageCounterFails()
-{
     m_sut.incrementSessionIdUsageCounter(kKeySessionId);
 }
 
 void CdmServiceTests::decrementSessionIdUsageCounter()
-{
-    EXPECT_CALL(m_mediaKeysMock, decrementSessionIdUsageCounter(kKeySessionId));
-    m_sut.decrementSessionIdUsageCounter(kKeySessionId);
-}
-
-void CdmServiceTests::decrementSessionIdUsageCounterFails()
 {
     m_sut.decrementSessionIdUsageCounter(kKeySessionId);
 }

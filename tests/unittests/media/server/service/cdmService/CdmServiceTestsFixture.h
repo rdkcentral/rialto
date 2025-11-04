@@ -105,8 +105,6 @@ public:
     void isNetflixPlayreadyKeySystemShouldReturn(bool result);
     void incrementSessionIdUsageCounter();
     void decrementSessionIdUsageCounter();
-    void incrementSessionIdUsageCounterFails();
-    void decrementSessionIdUsageCounterFails();
     void getMetricSystemDataShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
 
     void getSupportedKeySystemsShouldSucceed();

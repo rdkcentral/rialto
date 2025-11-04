@@ -570,6 +570,7 @@ void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
         }
         if (mediaKeysHandleIter->second.shouldBeReleased)
         {
+            RIALTO_SERVER_LOG_INFO("Deferred releasing of mksId %d", keySessionId);
             m_sessionInfo.erase(keySessionId);
             m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->releaseKeySession(keySessionId);
         }
