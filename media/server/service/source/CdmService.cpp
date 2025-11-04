@@ -409,8 +409,9 @@ MediaKeyErrorStatus CdmService::releaseKeySession(int mediaKeysHandle, int32_t k
         mediaKeysHandleIter->second.shouldBeReleased = true;
         return MediaKeyErrorStatus::OK;
     }
+    const auto result = m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->releaseKeySession(keySessionId);
     m_sessionInfo.erase(keySessionId);
-    return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->releaseKeySession(keySessionId);
+    return result;
 }
 
 std::vector<std::string> CdmService::getSupportedKeySystems()
@@ -571,8 +572,8 @@ void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
         if (mediaKeysHandleIter->second.shouldBeReleased)
         {
             RIALTO_SERVER_LOG_INFO("Deferred releasing of mksId %d", keySessionId);
-            m_sessionInfo.erase(keySessionId);
             m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->releaseKeySession(keySessionId);
+            m_sessionInfo.erase(keySessionId);
         }
     }
 }
