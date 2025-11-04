@@ -28,7 +28,9 @@
 #include "MessageBuilders.h"
 #include "SegmentBuilder.h"
 #include <gst/audio/audio.h>
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 using testing::_;
