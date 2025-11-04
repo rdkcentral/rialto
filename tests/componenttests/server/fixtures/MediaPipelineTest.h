@@ -70,7 +70,6 @@ public:
     void indicateAllSourcesAttached(const std::vector<GstAppSrc *> &appsrcs);
     void pause();
     void notifyPaused();
-    void gstNeedData(GstAppSrc *appSrc);
     void pushAudioData(unsigned dataCountToPush);
     void pushVideoData(unsigned dataCountToPush);
     void pushAudioSample();
