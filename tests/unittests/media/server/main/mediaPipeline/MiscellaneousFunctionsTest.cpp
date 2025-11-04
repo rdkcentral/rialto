@@ -151,30 +151,6 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionSuccess)
 }
 
 /**
- * Test that SetPosition resets the Eos flag on success
- */
-TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionResetEos)
-{
-    loadGstPlayer();
-    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
-    int audioSourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
-    setEos(firebolt::rialto::MediaSourceType::VIDEO);
-    setEos(firebolt::rialto::MediaSourceType::AUDIO);
-
-    mainThreadWillEnqueueTaskAndWait();
-
-    EXPECT_CALL(*m_gstPlayerMock, setPosition(m_kPosition));
-    EXPECT_TRUE(m_mediaPipeline->setPosition(m_kPosition));
-
-    // Expect need data notified to client
-    expectNotifyNeedData(firebolt::rialto::MediaSourceType::VIDEO, videoSourceId, 3);
-    m_gstPlayerCallback->notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO);
-
-    expectNotifyNeedData(firebolt::rialto::MediaSourceType::AUDIO, audioSourceId, 3);
-    m_gstPlayerCallback->notifyNeedMediaData(firebolt::rialto::MediaSourceType::AUDIO);
-}
-
-/**
  * Test that SetPlaybackRate returns failure if the gstreamer player is not initialized
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPlaybackRateFailureDueToUninitializedPlayer)

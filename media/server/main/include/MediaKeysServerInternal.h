@@ -54,13 +54,6 @@ namespace firebolt::rialto::server
 class MediaKeysServerInternal : public IMediaKeysServerInternal
 {
 public:
-    struct MediaKeySessionUsage
-    {
-        std::unique_ptr<IMediaKeySession> mediaKeySession;
-        uint32_t bufCounter = 0;
-        bool shouldBeClosed = false;
-        bool shouldBeReleased = false;
-    };
     /**
      * @brief The constructor.
      *
@@ -121,12 +114,8 @@ public:
 
     MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) override;
 
-    bool hasSession(int32_t keySessionId) const override;
+    bool isNetflixPlayreadyKeySystem() const override;
 
-    bool isNetflixPlayreadyKeySystem(int32_t keySessionId) const override;
-
-    void incrementSessionIdUsageCounter(int32_t keySessionId) override;
-    void decrementSessionIdUsageCounter(int32_t keySessionId) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 private:
@@ -148,12 +137,12 @@ private:
     /**
      * @brief Map containing created sessions.
      */
-    std::map<int32_t, MediaKeySessionUsage> m_mediaKeySessions;
+    std::map<int32_t, std::unique_ptr<IMediaKeySession>> m_mediaKeySessions;
 
     /**
      * @brief KeySystem type of the MediaKeysServerInternal.
      */
-    const std::string m_keySystem;
+    const std::string m_kKeySystem;
 
     /**
      * @brief This objects id registered on the main thread
@@ -286,15 +275,6 @@ private:
     MediaKeyErrorStatus getLastDrmErrorInternal(int32_t keySessionId, uint32_t &errorCode);
 
     /**
-     * @brief Checks, if key system of media key session is Netflix Playready internally, only to be called on the main thread.
-     *
-     * @param[in] keySessionId    : The session id for the session.
-     *
-     * @retval true if key system is Playready
-     */
-    bool isNetflixPlayreadyKeySystemInternal(int32_t keySessionId) const;
-
-    /**
      * @brief Releases a key session internally, only to be called on the main thread.
      *
      * @param[in] keySessionId : The key session id.
@@ -302,9 +282,6 @@ private:
      * @retval an error status.
      */
     MediaKeyErrorStatus releaseKeySessionInternal(int32_t keySessionId);
-
-    void incrementSessionIdUsageCounterInternal(int32_t keySessionId);
-    void decrementSessionIdUsageCounterInternal(int32_t keySessionId);
 };
 
 }; // namespace firebolt::rialto::server

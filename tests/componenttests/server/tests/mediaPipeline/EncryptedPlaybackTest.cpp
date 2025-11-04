@@ -29,8 +29,7 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{3};
-constexpr int kFrameCountInPlayingState{24};
+constexpr int kFrameCount{24};
 } // namespace
 
 using testing::_;
@@ -289,7 +288,7 @@ TEST_F(EncryptedPlaybackTest, EncryptedPlayback)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -298,13 +297,11 @@ TEST_F(EncryptedPlaybackTest, EncryptedPlayback)
     // Step 5: Write 1 encrypted audio frame
     // Step 6: Write 1 encrypted video frame
     // Step 7: Notify buffered
-    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushEncryptedAudioData(kFrameCountInPausedState);
-        pushEncryptedVideoData(kFrameCountInPausedState);
+        pushEncryptedAudioData(kFrameCount);
+        pushEncryptedVideoData(kFrameCount);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -322,8 +319,8 @@ TEST_F(EncryptedPlaybackTest, EncryptedPlayback)
 
     // Step 10: Write 1 encrypted audio frame
     // Step 11: Write 1 encrypted video frame
-    pushEncryptedAudioData(kFrameCountInPlayingState);
-    pushEncryptedVideoData(kFrameCountInPlayingState);
+    pushEncryptedAudioData(kFrameCount);
+    pushEncryptedVideoData(kFrameCount);
 
     // Step 12: End of audio stream
     // Step 13: End of video stream

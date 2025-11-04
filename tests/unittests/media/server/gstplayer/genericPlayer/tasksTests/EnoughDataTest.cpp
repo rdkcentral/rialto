@@ -32,12 +32,20 @@ protected:
 
 TEST_F(EnoughDataTest, shouldMarkEnoughAudioData)
 {
+    setStreamIsDataPushed(firebolt::rialto::MediaSourceType::AUDIO);
     triggerEnoughDataAudio();
     checkNeedDataForVideoOnly();
 }
 
 TEST_F(EnoughDataTest, shouldMarkEnoughVideoData)
 {
+    setStreamIsDataPushed(firebolt::rialto::MediaSourceType::VIDEO);
     triggerEnoughDataVideo();
     checkNeedDataForAudioOnly();
+}
+
+TEST_F(EnoughDataTest, shouldNotMarkEnoughAudioDataWhenDataIsNotPushed)
+{
+    triggerEnoughDataAudio();
+    checkNeedDataForBothSources();
 }

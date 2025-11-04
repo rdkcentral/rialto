@@ -249,6 +249,7 @@ protected:
     void checkNeedDataForBothSources();
     void checkNeedDataForAudioOnly();
     void checkNeedDataForVideoOnly();
+    void setStreamIsDataPushed(firebolt::rialto::MediaSourceType sourceType);
 
     // Eos test methods
     void triggerEosAudio();

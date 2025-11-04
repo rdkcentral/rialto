@@ -30,9 +30,3 @@ TEST_F(NeedMediaDataTests, shouldSendMessageInPlayingState)
     initialize(firebolt::rialto::PlaybackState::PLAYING);
     needMediaDataWillBeSentInPlayingState();
 }
-
-TEST_F(NeedMediaDataTests, shouldSendMessageInPrerollingState)
-{
-    initialize(firebolt::rialto::PlaybackState::PAUSED);
-    needMediaDataWillBeSentBelowPlayingState();
-}
