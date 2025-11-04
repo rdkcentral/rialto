@@ -387,7 +387,7 @@ void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challen
 {
     std::string urlStr = url;
     std::vector<unsigned char> challengeVec = std::vector<unsigned char>{challenge, challenge + challengeLength};
-    auto task = [&, urlStr, challengeVec]()
+    auto task = [&, urlStr = std::move(urlStr), challengeVec = std::move(challengeVec)]()
     {
         std::shared_ptr<IMediaKeysClient> client = m_mediaKeysClient.lock();
         if (client)
@@ -409,7 +409,7 @@ void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challen
 void MediaKeySession::onKeyUpdated(const uint8_t keyId[], const uint8_t keyIdLength)
 {
     std::vector<unsigned char> keyIdVec = std::vector<unsigned char>{keyId, keyId + keyIdLength};
-    auto task = [&, keyIdVec]()
+    auto task = [&, keyIdVec = std::move(keyIdVec)]()
     {
         std::shared_ptr<IMediaKeysClient> client = m_mediaKeysClient.lock();
         if (client)
