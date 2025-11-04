@@ -28,7 +28,6 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCount{3};
 constexpr bool kResetTime{false};
 constexpr double kAppliedRate{2.0};
 } // namespace
@@ -186,7 +185,7 @@ TEST_F(SetSourcePositionTest, setSourcePositionSuccess)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -195,13 +194,11 @@ TEST_F(SetSourcePositionTest, setSourcePositionSuccess)
     // Step 5: Write 1 audio frame
     // Step 6: Write 1 video frame
     // Step 7: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCount);
-    gstNeedData(&m_videoAppSrc, kFrameCount);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCount);
-        pushVideoData(kFramesToPush, kFrameCount);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -213,11 +210,11 @@ TEST_F(SetSourcePositionTest, setSourcePositionSuccess)
 
     // Step 8: Set Audio Source Position
     setSourcePosition(m_audioSourceId);
-    pushAudioSample(kFrameCount);
+    pushAudioSample();
 
     // Step 9: Set Video Source Position
     setSourcePosition(m_videoSourceId);
-    pushVideoSample(kFrameCount);
+    pushVideoSample();
 
     // Step 10: End of audio stream
     // Step 11: End of video stream

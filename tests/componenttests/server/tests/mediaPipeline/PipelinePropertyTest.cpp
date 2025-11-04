@@ -531,7 +531,7 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Set Immediate Output
     willSetSinkProperty("video-sink", "immediate-output", kImmediateOutput);
@@ -737,7 +737,7 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetFailures)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Fail to set Immediate Output
     willFailToSetSinkProperty();

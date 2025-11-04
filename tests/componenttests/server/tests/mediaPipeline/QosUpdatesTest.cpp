@@ -35,7 +35,6 @@ using testing::StrEq;
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{3};
 const std::string kAudioSourceName{"Audio"};
 const std::string kVideoSourceName{"Video"};
 const std::string kElementTypeName{"GenericSink"};
@@ -295,7 +294,7 @@ TEST_F(QosUpdatesTest, QosUpdates)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -304,13 +303,11 @@ TEST_F(QosUpdatesTest, QosUpdates)
     // Step 5: Write 1 audio frame
     // Step 6: Write 1 video frame
     // Step 7: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCountInPausedState);
-        pushVideoData(kFramesToPush, kFrameCountInPausedState);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -489,7 +486,7 @@ TEST_F(QosUpdatesTest, StatsFailure)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -498,13 +495,11 @@ TEST_F(QosUpdatesTest, StatsFailure)
     // Step 5: Write 1 audio frame
     // Step 6: Write 1 video frame
     // Step 7: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCountInPausedState);
-        pushVideoData(kFramesToPush, kFrameCountInPausedState);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);

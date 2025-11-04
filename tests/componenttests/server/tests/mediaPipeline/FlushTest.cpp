@@ -28,7 +28,6 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCount{3};
 constexpr bool kResetTime{false};
 constexpr double kAppliedRate{2.0};
 constexpr bool kAsync{true};
@@ -261,7 +260,7 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -270,13 +269,11 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
     // Step 5: Write 1 audio frame
     // Step 6: Write 1 video frame
     // Step 7: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCount);
-    gstNeedData(&m_videoAppSrc, kFrameCount);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCount);
-        pushVideoData(kFramesToPush, kFrameCount);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -293,7 +290,7 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
 
     // Step 9: Set Source Position
     setSourcePosition();
-    pushAudioSample(kFrameCount);
+    pushAudioSample();
 
     // Step 10: End of audio stream
     // Step 11: End of video stream

@@ -2340,6 +2340,13 @@ void GenericTasksTestsBase::checkNeedDataForVideoOnly()
     EXPECT_TRUE(videoStreamIt->second.isDataNeeded);
 }
 
+void GenericTasksTestsBase::setStreamIsDataPushed(firebolt::rialto::MediaSourceType sourceType)
+{
+    auto streamIt{testContext->m_context.streamInfo.find(sourceType)};
+    ASSERT_NE(testContext->m_context.streamInfo.end(), streamIt);
+    streamIt->second.isDataPushed = true;
+}
+
 void GenericTasksTestsBase::triggerEosAudio()
 {
     firebolt::rialto::server::tasks::generic::Eos task{testContext->m_context, testContext->m_gstPlayer,

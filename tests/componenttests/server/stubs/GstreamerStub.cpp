@@ -154,18 +154,6 @@ void GstreamerStub::sendStateChanged(GstState oldState, GstState newState, GstSt
     m_cv.notify_one();
 }
 
-void GstreamerStub::needData(GstAppSrc *appSrc, guint dataLength)
-{
-    auto callbacks{m_appSrcCallbacks.find(appSrc)};
-    auto userData{m_appSrcCallbacksUserDatas.find(appSrc)};
-    ASSERT_NE(callbacks, m_appSrcCallbacks.end());
-    ASSERT_NE(userData, m_appSrcCallbacksUserDatas.end());
-    ASSERT_TRUE(callbacks->second.need_data);
-    ASSERT_TRUE(userData->second);
-    reinterpret_cast<void (*)(GstAppSrc *, guint, gpointer)>(callbacks->second.need_data)(appSrc, dataLength,
-                                                                                          userData->second);
-}
-
 void GstreamerStub::sendEos()
 {
     std::unique_lock lock(m_mutex);

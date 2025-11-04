@@ -81,6 +81,7 @@ TEST_F(CdmServiceTests, shouldCreateKeySession)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
     mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     createKeySessionShouldSucceed();
     destroyMediaKeysShouldSucceed();
@@ -107,6 +108,7 @@ TEST_F(CdmServiceTests, shouldFailToCreateKeySessionWhenMediaKeysClientExists)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
     mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     createKeySessionShouldSucceed();
     mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
@@ -197,6 +199,9 @@ TEST_F(CdmServiceTests, shouldCloseKeySession)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     mediaKeysWillCloseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     closeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     destroyMediaKeysShouldSucceed();
@@ -207,6 +212,9 @@ TEST_F(CdmServiceTests, incrementSessionUsage)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     incrementSessionIdUsageCounter();
     destroyMediaKeysShouldSucceed();
 }
@@ -216,25 +224,28 @@ TEST_F(CdmServiceTests, deccrementSessionUsage)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     decrementSessionIdUsageCounter();
     destroyMediaKeysShouldSucceed();
 }
 
-TEST_F(CdmServiceTests, incrementSessionUsageFails)
+TEST_F(CdmServiceTests, incrementSessionUsageNoSession)
 {
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
-    incrementSessionIdUsageCounterFails();
+    incrementSessionIdUsageCounter();
     destroyMediaKeysShouldSucceed();
 }
 
-TEST_F(CdmServiceTests, deccrementSessionUsageFails)
+TEST_F(CdmServiceTests, deccrementSessionUsageNoSession)
 {
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
-    decrementSessionIdUsageCounterFails();
+    decrementSessionIdUsageCounter();
     destroyMediaKeysShouldSucceed();
 }
 
@@ -249,8 +260,41 @@ TEST_F(CdmServiceTests, shouldFailToCloseKeySessionWhenMediaKeysFails)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     mediaKeysWillCloseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
     closeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldCloseKeySessionDeferred)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
+    incrementSessionIdUsageCounter();
+    closeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    mediaKeysWillCloseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    decrementSessionIdUsageCounter();
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldCloseKeySessionDeferredWithFailurePrint)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
+    incrementSessionIdUsageCounter();
+    closeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    mediaKeysWillCloseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
+    decrementSessionIdUsageCounter();
     destroyMediaKeysShouldSucceed();
 }
 
@@ -311,6 +355,9 @@ TEST_F(CdmServiceTests, shouldDecrypt)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     destroyMediaKeysShouldSucceed();
@@ -327,6 +374,9 @@ TEST_F(CdmServiceTests, shouldFailToDecryptWhenMediaKeysFails)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
     decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
     destroyMediaKeysShouldSucceed();
@@ -337,7 +387,6 @@ TEST_F(CdmServiceTests, shouldFailToDecryptWhenMediaKeysIsNotFoundForSession)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
-    mediaKeysWillNotFindMediaKeySession();
     decryptShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
     destroyMediaKeysShouldSucceed();
 }
@@ -347,6 +396,9 @@ TEST_F(CdmServiceTests, shouldSelectKeyId)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     destroyMediaKeysShouldSucceed();
@@ -363,6 +415,9 @@ TEST_F(CdmServiceTests, shouldFailToSelectKeyIdWhenMediaKeysFails)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
     selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
     destroyMediaKeysShouldSucceed();
@@ -373,7 +428,6 @@ TEST_F(CdmServiceTests, shouldFailToSelectKeyIdWhenMediaKeysIsNotFoundForSession
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
-    mediaKeysWillNotFindMediaKeySession();
     selectKeyIdShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
     destroyMediaKeysShouldSucceed();
 }
@@ -617,8 +671,26 @@ TEST_F(CdmServiceTests, shouldReleaseKeySession)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    destroyMediaKeysShouldSucceed();
+}
+
+TEST_F(CdmServiceTests, shouldReleaseKeySessionDeferred)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
+    incrementSessionIdUsageCounter();
+    releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    decrementSessionIdUsageCounter();
     destroyMediaKeysShouldSucceed();
 }
 
@@ -633,6 +705,9 @@ TEST_F(CdmServiceTests, shouldFailToReleaseKeySessionWhenMediaKeysFails)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
     releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE);
     destroyMediaKeysShouldSucceed();
@@ -732,6 +807,8 @@ TEST_F(CdmServiceTests, shouldCheckThatKeySystemIsPlayready)
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     mediaKeysWillCheckIfKeySystemIsPlayready(true);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     isNetflixPlayreadyKeySystemShouldReturn(true);
     destroyMediaKeysShouldSucceed();
 }
@@ -748,6 +825,8 @@ TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMedia
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
     mediaKeysWillCheckIfKeySystemIsPlayready(false);
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     isNetflixPlayreadyKeySystemShouldReturn(false);
     destroyMediaKeysShouldSucceed();
 }
@@ -757,7 +836,6 @@ TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingPlayreadyKeySystemWhenMedia
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
-    mediaKeysWillNotFindMediaKeySession();
     isNetflixPlayreadyKeySystemShouldReturn(false);
     destroyMediaKeysShouldSucceed();
 }

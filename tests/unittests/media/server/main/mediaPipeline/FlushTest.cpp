@@ -100,6 +100,6 @@ TEST_F(RialtoServerMediaPipelineFlushTest, FlushResetEos)
     EXPECT_TRUE(m_mediaPipeline->flush(sourceId, m_kResetTime, async));
 
     // Expect need data notified to client
-    expectNotifyNeedData(firebolt::rialto::MediaSourceType::VIDEO, sourceId, 3);
+    expectNotifyNeedData(firebolt::rialto::MediaSourceType::VIDEO, sourceId, 24);
     m_gstPlayerCallback->notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO);
 }

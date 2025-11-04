@@ -24,8 +24,6 @@ namespace
 {
 constexpr unsigned kFramesToPushBeforePreroll{3};
 constexpr unsigned kFramesToPushAfterPreroll{4};
-constexpr int kFrameCountInPausedState{3};
-constexpr int kFrameCountInPlayingState{24};
 } // namespace
 
 /*
@@ -167,7 +165,7 @@ TEST_F(MediaPipelineTest, WriteSegments)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -176,13 +174,11 @@ TEST_F(MediaPipelineTest, WriteSegments)
     // Step 5: Write 3 audio frames
     // Step 6: Write 3 video frames
     // Step 7: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPushBeforePreroll, kFrameCountInPausedState);
-        pushVideoData(kFramesToPushBeforePreroll, kFrameCountInPausedState);
+        pushAudioData(kFramesToPushBeforePreroll);
+        pushVideoData(kFramesToPushBeforePreroll);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -198,8 +194,8 @@ TEST_F(MediaPipelineTest, WriteSegments)
 
     // Step 9: Write 3 audio frames
     // Step 10: Write 3 video frames
-    pushAudioData(kFramesToPushBeforePreroll, kFrameCountInPlayingState);
-    pushVideoData(kFramesToPushBeforePreroll, kFrameCountInPlayingState);
+    pushAudioData(kFramesToPushBeforePreroll);
+    pushVideoData(kFramesToPushBeforePreroll);
 
     // Step 11: Send 4 frames and end of audio stream
     // Step 12: Send 4 frames and end of video stream

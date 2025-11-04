@@ -41,8 +41,6 @@ TEST_F(RialtoServerMediaKeysCreateKeySessionTest, Success)
     EXPECT_EQ(MediaKeyErrorStatus::OK,
               m_mediaKeys->createKeySession(m_keySessionType, m_mediaKeysClientMock, m_isLDL, returnKeySessionId));
     EXPECT_GE(returnKeySessionId, -1);
-    mainThreadWillEnqueueTaskAndWait();
-    EXPECT_TRUE(m_mediaKeys->hasSession(returnKeySessionId));
 }
 
 /**

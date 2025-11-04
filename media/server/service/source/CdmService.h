@@ -34,6 +34,15 @@ namespace firebolt::rialto::server::service
 {
 class CdmService : public ICdmService, public IDecryptionService
 {
+    struct MediaKeySessionInfo
+    {
+        int mediaKeysHandle;
+        bool isNetflixPlayready{false};
+        uint32_t refCounter{0};
+        bool shouldBeClosed{false};
+        bool shouldBeReleased{false};
+    };
+
 public:
     CdmService(std::shared_ptr<IMediaKeysServerInternalFactory> &&mediaKeysFactory,
                std::shared_ptr<IMediaKeysCapabilitiesFactory> &&mediaKeysCapabilitiesFactory);
@@ -86,6 +95,7 @@ private:
     std::atomic<bool> m_isActive;
     std::map<int, std::unique_ptr<IMediaKeysServerInternal>> m_mediaKeys;
     std::map<int, std::shared_ptr<IMediaKeysClient>> m_mediaKeysClients;
+    std::map<int32_t, MediaKeySessionInfo> m_sessionInfo;
     std::mutex m_mediaKeysMutex;
 
     MediaKeyErrorStatus removeKeySessionInternal(int mediaKeysHandle, int32_t keySessionId);
