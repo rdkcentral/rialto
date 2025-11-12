@@ -472,6 +472,14 @@ void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
     m_flushWatcher->setFlushed(mediaSourceType);
 }
 
+void GstGenericPlayer::postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, *this, mediaSourceType, resetTime));
+    }
+}
+
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
 {
     GstIterator *it = m_gstWrapper->gstBinIterateRecurse(GST_BIN(m_context.pipeline));

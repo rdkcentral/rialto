@@ -310,6 +310,14 @@ public:
      * @param[in] mediaSourceType : the source type that has been flushed
      */
     virtual void setSourceFlushed(const MediaSourceType &mediaSourceType) = 0;
+
+    /**
+     * @brief Postpones flush for the given source type
+     *
+     * @param[in] mediaSourceType : the source type that has been flushed
+     * @param[in] resetTime       : whether to reset the time after flush
+     */
+    virtual void postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime) = 0;
 };
 } // namespace firebolt::rialto::server
 

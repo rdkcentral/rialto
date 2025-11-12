@@ -24,6 +24,7 @@
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
+#include "UglyFlushHack.h"
 #include <gst/gst.h>
 #include <list>
 #include <map>
@@ -265,6 +266,11 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     std::atomic_bool audioFadeEnabled{false};
+
+    /**
+     * @brief Workaround for gstreamer flush issue
+     */
+    UglyFlushHack uglyFlushHack;
 };
 } // namespace firebolt::rialto::server
 

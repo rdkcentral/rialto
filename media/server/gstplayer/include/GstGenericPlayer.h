@@ -191,6 +191,7 @@ private:
     GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
     void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
     bool isAsync(const MediaSourceType &mediaSourceType) const;
+    void postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime) override;
 
 private:
     /**

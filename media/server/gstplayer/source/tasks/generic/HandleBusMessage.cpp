@@ -71,6 +71,7 @@ void HandleBusMessage::execute() const
             {
             case GST_STATE_NULL:
             {
+                m_context.uglyFlushHack.disableHack();
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::STOPPED);
                 break;
             }
@@ -91,6 +92,7 @@ void HandleBusMessage::execute() const
                     // Subsequent newState==GST_STATE_PAUSED, pending!=GST_STATE_PAUSED transition will
                     // indicate that the pipeline is prerolled and it reached GST_STATE_PAUSED state after seek.
                     m_gstPlayerClient->notifyPlaybackState(PlaybackState::PAUSED);
+                    m_context.uglyFlushHack.stateReached(newState);
                 }
                 if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
                 {
@@ -120,6 +122,7 @@ void HandleBusMessage::execute() const
 
                 m_context.isPlaying = true;
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::PLAYING);
+                m_context.uglyFlushHack.stateReached(newState);
                 break;
             }
             case GST_STATE_VOID_PENDING:

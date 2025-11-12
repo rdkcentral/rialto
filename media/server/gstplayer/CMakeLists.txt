@@ -101,6 +101,7 @@ add_library(
         source/GstSrc.cpp
         source/GstTextTrackSink.cpp
         source/GstWebAudioPlayer.cpp
+        source/UglyFlushHack.cpp
         source/Utils.cpp
         source/WorkerThread.cpp
         )
