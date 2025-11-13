@@ -23,12 +23,13 @@ namespace firebolt::rialto::server
 {
 bool UglyFlushHack::shouldPostponeFlush(const MediaSourceType &type) const
 {
-    return m_flushingSources.find(type) != m_flushingSources.end();
+    return m_isPrerolled && m_flushingSources.find(type) != m_flushingSources.end();
 }
 
 void UglyFlushHack::setFlushing(const MediaSourceType &type, const GstState &currentPipelineState)
 {
     m_flushingSources.insert(type);
+    m_isPrerolled = false;
     if (!m_targetState.has_value())
     {
         m_targetState = currentPipelineState;
@@ -37,6 +38,7 @@ void UglyFlushHack::setFlushing(const MediaSourceType &type, const GstState &cur
 
 void UglyFlushHack::stateReached(const GstState &newPipelineState)
 {
+    m_isPrerolled = true;
     if (m_targetState.has_value() && newPipelineState == m_targetState.value())
     {
         m_flushingSources.clear();

@@ -45,6 +45,7 @@ public:
 private:
     std::set<MediaSourceType> m_flushingSources{};
     std::optional<GstState> m_targetState{std::nullopt};
+    bool m_isPrerolled{false};
 };
 } // namespace firebolt::rialto::server
 
