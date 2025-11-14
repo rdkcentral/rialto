@@ -78,6 +78,7 @@ public:
     MOCK_METHOD(void, startSubtitleClockResyncTimer, (), (override));
     MOCK_METHOD(void, stopSubtitleClockResyncTimer, (), (override));
     MOCK_METHOD(bool, hasSourceType, (const MediaSourceType &mediaSourceType), (const, override));
+    MOCK_METHOD(void, postponeFlush, (const MediaSourceType &mediaSourceType, bool resetTime), (override));
 };
 } // namespace firebolt::rialto::server
 
