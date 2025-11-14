@@ -415,6 +415,7 @@ protected:
     void checkAudioFlushed();
     void checkVideoFlushed();
     void shouldFlushVideoSrcSuccess();
+    void shouldPostponeVideoFlush();
 
     // Set Source Position test methods
     void shouldSetSubtitleSourcePosition();
