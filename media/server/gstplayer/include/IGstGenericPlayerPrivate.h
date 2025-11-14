@@ -318,6 +318,11 @@ public:
      * @param[in] resetTime       : whether to reset the time after flush
      */
     virtual void postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime) = 0;
+
+    /**
+     * @brief Queues postponed flushes for execution
+     */
+    virtual void executePostponedFlushes() = 0;
 };
 } // namespace firebolt::rialto::server
 

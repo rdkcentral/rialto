@@ -103,6 +103,7 @@ void HandleBusMessage::execute() const
             case GST_STATE_PLAYING:
             {
                 m_context.uglyFlushHack.stateReached(newState);
+                m_player.executePostponedFlushes();
                 // If async flush was requested before HandleBusMessage task creation (but it was not executed yet)
                 // or if async flush was created after HandleBusMessage task creation (but before its execution)
                 // we can't report playback state, because async flush causes state loss - reported state is probably invalid.

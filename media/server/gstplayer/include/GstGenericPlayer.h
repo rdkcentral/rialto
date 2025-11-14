@@ -37,7 +37,9 @@
 #include "tasks/IPlayerTask.h"
 #include <IMediaPipeline.h>
 #include <memory>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace firebolt::rialto::server
@@ -192,6 +194,7 @@ private:
     void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
     bool isAsync(const MediaSourceType &mediaSourceType) const;
     void postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime) override;
+    void executePostponedFlushes() override;
 
 private:
     /**
@@ -412,6 +415,11 @@ private:
      * @brief The object used to check flushing state for all sources
      */
     std::unique_ptr<IFlushWatcher> m_flushWatcher;
+
+    /**
+     * @brief The postponed flush tasks
+     */
+    std::set<std::pair<MediaSourceType, bool>> m_postponedFlushes{};
 };
 
 } // namespace firebolt::rialto::server
