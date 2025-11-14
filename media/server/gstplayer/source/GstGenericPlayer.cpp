@@ -475,7 +475,7 @@ void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
 
 void GstGenericPlayer::postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime)
 {
-    m_postponedFlushes.insert(std::make_pair(mediaSourceType, resetTime));
+    m_postponedFlushes.emplace_back(std::make_pair(mediaSourceType, resetTime));
 }
 
 void GstGenericPlayer::executePostponedFlushes()

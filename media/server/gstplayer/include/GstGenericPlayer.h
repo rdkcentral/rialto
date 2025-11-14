@@ -37,7 +37,6 @@
 #include "tasks/IPlayerTask.h"
 #include <IMediaPipeline.h>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -419,7 +418,7 @@ private:
     /**
      * @brief The postponed flush tasks
      */
-    std::set<std::pair<MediaSourceType, bool>> m_postponedFlushes{};
+    std::vector<std::pair<MediaSourceType, bool>> m_postponedFlushes{};
 };
 
 } // namespace firebolt::rialto::server
