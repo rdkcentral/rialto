@@ -3187,6 +3187,14 @@ void GenericTasksTestsBase::shouldFlushVideoSrcSuccess()
         .WillOnce(Return(TRUE));
 }
 
+void GenericTasksTestsBase::shouldPostponeVideoFlush()
+{
+    testContext->m_context.flushOnPrerollController.setFlushing(firebolt::rialto::MediaSourceType::VIDEO,
+                                                                GST_STATE_PLAYING);
+    testContext->m_context.flushOnPrerollController.stateReached(GST_STATE_PAUSED);
+    EXPECT_CALL(testContext->m_gstPlayer, postponeFlush(firebolt::rialto::MediaSourceType::VIDEO, kResetTime));
+}
+
 void GenericTasksTestsBase::shouldSetSubtitleSourcePosition()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectSetStub(&testContext->m_textTrackSink, StrEq("position")));

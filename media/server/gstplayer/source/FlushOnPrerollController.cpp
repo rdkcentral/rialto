@@ -46,7 +46,7 @@ void FlushOnPrerollController::stateReached(const GstState &newPipelineState)
     }
 }
 
-void FlushOnPrerollController::disable()
+void FlushOnPrerollController::reset()
 {
     m_flushingSources.clear();
     m_targetState = std::nullopt;

@@ -71,7 +71,7 @@ void HandleBusMessage::execute() const
             {
             case GST_STATE_NULL:
             {
-                m_context.flushOnPrerollController.disable();
+                m_context.flushOnPrerollController.reset();
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::STOPPED);
                 break;
             }

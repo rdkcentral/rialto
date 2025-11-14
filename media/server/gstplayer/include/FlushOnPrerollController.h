@@ -40,7 +40,7 @@ public:
     bool shouldPostponeFlush(const MediaSourceType &type) const;
     void setFlushing(const MediaSourceType &type, const GstState &currentPipelineState);
     void stateReached(const GstState &newPipelineState);
-    void disable();
+    void reset();
 
 private:
     std::set<MediaSourceType> m_flushingSources{};
