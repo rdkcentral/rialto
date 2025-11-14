@@ -89,6 +89,7 @@ add_library(
         source/tasks/webAudio/WriteBuffer.cpp
 
         source/CapsBuilder.cpp
+        source/FlushOnPrerollController.cpp
         source/FlushWatcher.cpp
         source/GstCapabilities.cpp
         source/GstDecryptor.cpp
@@ -101,7 +102,6 @@ add_library(
         source/GstSrc.cpp
         source/GstTextTrackSink.cpp
         source/GstWebAudioPlayer.cpp
-        source/UglyFlushHack.cpp
         source/Utils.cpp
         source/WorkerThread.cpp
         )

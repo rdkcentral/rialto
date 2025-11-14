@@ -17,16 +17,16 @@
  * limitations under the License.
  */
 
-#include "UglyFlushHack.h"
+#include "FlushOnPrerollController.h"
 
 namespace firebolt::rialto::server
 {
-bool UglyFlushHack::shouldPostponeFlush(const MediaSourceType &type) const
+bool FlushOnPrerollController::shouldPostponeFlush(const MediaSourceType &type) const
 {
     return m_isPrerolled && m_flushingSources.find(type) != m_flushingSources.end();
 }
 
-void UglyFlushHack::setFlushing(const MediaSourceType &type, const GstState &currentPipelineState)
+void FlushOnPrerollController::setFlushing(const MediaSourceType &type, const GstState &currentPipelineState)
 {
     m_flushingSources.insert(type);
     m_isPrerolled = false;
@@ -36,7 +36,7 @@ void UglyFlushHack::setFlushing(const MediaSourceType &type, const GstState &cur
     }
 }
 
-void UglyFlushHack::stateReached(const GstState &newPipelineState)
+void FlushOnPrerollController::stateReached(const GstState &newPipelineState)
 {
     m_isPrerolled = true;
     if (m_targetState.has_value() && newPipelineState == m_targetState.value())
@@ -46,7 +46,7 @@ void UglyFlushHack::stateReached(const GstState &newPipelineState)
     }
 }
 
-void UglyFlushHack::disableHack()
+void FlushOnPrerollController::disable()
 {
     m_flushingSources.clear();
     m_targetState = std::nullopt;

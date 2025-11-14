@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_UGLY_FLUSH_HACK_H_
-#define FIREBOLT_RIALTO_SERVER_UGLY_FLUSH_HACK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_FLUSH_ON_PREROLL_CONTROLLER_H_
+#define FIREBOLT_RIALTO_SERVER_FLUSH_ON_PREROLL_CONTROLLER_H_
 
 #include "MediaCommon.h"
 #include <gst/gst.h>
@@ -31,16 +31,16 @@ namespace firebolt::rialto::server
  * @brief The workaround class for unresolved gstreamer preroll issue:
  *        https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/150
  */
-class UglyFlushHack
+class FlushOnPrerollController
 {
 public:
-    UglyFlushHack() = default;
-    ~UglyFlushHack() = default;
+    FlushOnPrerollController() = default;
+    ~FlushOnPrerollController() = default;
 
     bool shouldPostponeFlush(const MediaSourceType &type) const;
     void setFlushing(const MediaSourceType &type, const GstState &currentPipelineState);
     void stateReached(const GstState &newPipelineState);
-    void disableHack();
+    void disable();
 
 private:
     std::set<MediaSourceType> m_flushingSources{};
@@ -49,4 +49,4 @@ private:
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_UGLY_FLUSH_HACK_H_
+#endif // FIREBOLT_RIALTO_SERVER_FLUSH_ON_PREROLL_CONTROLLER_H_
