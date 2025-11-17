@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 #define FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 
+#include "FlushOnPrerollController.h"
 #include "IGstSrc.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
@@ -265,6 +266,11 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     std::atomic_bool audioFadeEnabled{false};
+
+    /**
+     * @brief Workaround for the gstreamer flush issue
+     */
+    FlushOnPrerollController flushOnPrerollController;
 };
 } // namespace firebolt::rialto::server
 

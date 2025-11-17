@@ -40,6 +40,13 @@ Flush::~Flush()
 
 void Flush::execute() const
 {
+    if (m_context.flushOnPrerollController.shouldPostponeFlush(m_type))
+    {
+        RIALTO_SERVER_LOG_WARN("Postponing Flush for %s source", common::convertMediaSourceType(m_type));
+        m_player.postponeFlush(m_type, m_resetTime);
+        return;
+    }
+
     RIALTO_SERVER_LOG_DEBUG("Executing Flush for %s source", common::convertMediaSourceType(m_type));
 
     // Get source first
@@ -77,6 +84,7 @@ void Flush::execute() const
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
     {
         m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
+        m_context.flushOnPrerollController.setFlushing(m_type, GST_STATE(m_context.pipeline));
 
         // Flush source
         GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();

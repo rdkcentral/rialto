@@ -108,3 +108,9 @@ TEST_F(FlushTest, ShouldFlushVideoWithNeedData)
     triggerFlush(firebolt::rialto::MediaSourceType::VIDEO);
     checkVideoFlushed();
 }
+
+TEST_F(FlushTest, ShouldPostponeFlush)
+{
+    shouldPostponeVideoFlush();
+    triggerFlush(firebolt::rialto::MediaSourceType::VIDEO);
+}
