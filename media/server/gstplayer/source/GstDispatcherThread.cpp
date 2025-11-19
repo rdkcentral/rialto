@@ -24,14 +24,17 @@ namespace firebolt::rialto::server
 {
 std::unique_ptr<IGstDispatcherThread> GstDispatcherThreadFactory::createGstDispatcherThread(
     IGstDispatcherThreadClient &client, GstElement *pipeline,
-    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const
+    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController) const
 {
-    return std::make_unique<GstDispatcherThread>(client, pipeline, gstWrapper);
+    return std::make_unique<GstDispatcherThread>(client, pipeline, gstWrapper, flushOnPrerollController);
 }
 
 GstDispatcherThread::GstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
-                                         const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper)
-    : m_client{client}, m_gstWrapper{gstWrapper}, m_isGstreamerDispatcherActive{true}
+                                         const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                         const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController)
+    : m_client{client}, m_gstWrapper{gstWrapper}, m_isGstreamerDispatcherActive{true},
+      m_flushOnPrerollController{flushOnPrerollController}
 {
     RIALTO_SERVER_LOG_INFO("GstDispatcherThread is starting");
     m_gstBusDispatcherThread = std::thread(&GstDispatcherThread::gstBusEventHandler, this, pipeline);
@@ -79,11 +82,16 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                     {
                     case GST_STATE_NULL:
                     {
+                        m_flushOnPrerollController->reset();
                         m_isGstreamerDispatcherActive = false;
                     }
-                    case GST_STATE_READY:
                     case GST_STATE_PAUSED:
                     case GST_STATE_PLAYING:
+                    {
+                        m_flushOnPrerollController->stateReached(newState);
+                        break;
+                    }
+                    case GST_STATE_READY:
                     case GST_STATE_VOID_PENDING:
                     {
                         break;
@@ -93,6 +101,7 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                 }
                 case GST_MESSAGE_ERROR:
                 {
+                    m_flushOnPrerollController->reset();
                     m_isGstreamerDispatcherActive = false;
                     break;
                 }
