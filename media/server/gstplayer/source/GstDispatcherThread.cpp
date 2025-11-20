@@ -82,13 +82,20 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                     {
                     case GST_STATE_NULL:
                     {
-                        m_flushOnPrerollController->reset();
+                        if (m_flushOnPrerollController)
+                        {
+                            m_flushOnPrerollController->reset();
+                        }
                         m_isGstreamerDispatcherActive = false;
+                        break;
                     }
                     case GST_STATE_PAUSED:
                     case GST_STATE_PLAYING:
                     {
-                        m_flushOnPrerollController->stateReached(newState);
+                        if (m_flushOnPrerollController)
+                        {
+                            m_flushOnPrerollController->stateReached(newState);
+                        }
                         break;
                     }
                     case GST_STATE_READY:
@@ -101,7 +108,10 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                 }
                 case GST_MESSAGE_ERROR:
                 {
-                    m_flushOnPrerollController->reset();
+                    if (m_flushOnPrerollController)
+                    {
+                        m_flushOnPrerollController->reset();
+                    }
                     m_isGstreamerDispatcherActive = false;
                     break;
                 }
