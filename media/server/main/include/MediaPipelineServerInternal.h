@@ -298,7 +298,12 @@ protected:
     /**
      * @brief Mutex to protect gstPlayer access in getPosition method
      */
-    std::shared_mutex m_getPositionMutex;
+    std::shared_mutex m_getPropertyMutex;
+
+    /**
+     * @brief Flag to check, if setting volume is in progress
+     */
+    std::atomic_bool m_isSetVolumeInProgress{false};
 
     /**
      * @brief Load internally, only to be called on the main thread.

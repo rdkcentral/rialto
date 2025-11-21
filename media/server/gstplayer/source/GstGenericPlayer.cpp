@@ -460,10 +460,6 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
                 sink = GST_ELEMENT(m_gstWrapper->gstObjectRef(GST_OBJECT(autoSink)));
             }
         }
-        else
-        {
-            RIALTO_SERVER_LOG_WARN("%s could not be obtained", kSinkName);
-        }
     }
     return sink;
 }
@@ -707,6 +703,10 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
             m_gstWrapper->gstStructureFree(stats);
         }
         m_gstWrapper->gstObjectUnref(sink);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get stats, sink is NULL");
     }
 
     return returnValue;
@@ -1293,6 +1293,10 @@ bool GstGenericPlayer::setVideoSinkRectangle()
             RIALTO_SERVER_LOG_ERROR("Failed to set the video rectangle");
         }
         m_gstWrapper->gstObjectUnref(videoSink);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set video rectangle, sink is NULL");
     }
 
     return result;
