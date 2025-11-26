@@ -61,6 +61,7 @@ public:
     std::string getAppConnectionInfo(const std::string &appName) const override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
     void restartServer(int serverId) override;
+    void onServerStartupTimeout(int serverId) override;
 
 private:
     bool connectSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer);
@@ -88,6 +89,7 @@ private:
     void handleRestartServer(int serverId);
     bool configureSessionServerWithSocketName(const std::unique_ptr<ISessionServerApp> &kSessionServer);
     bool configureSessionServerWithSocketFd(const std::unique_ptr<ISessionServerApp> &kSessionServer);
+    void handleServerStartupTimeout(int serverId);
 
 private:
     std::unique_ptr<ipc::IController> &m_ipcController;
