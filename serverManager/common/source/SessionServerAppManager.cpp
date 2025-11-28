@@ -536,10 +536,11 @@ void SessionServerAppManager::handleServerStartupTimeout(int serverId)
         RIALTO_SERVER_MANAGER_LOG_WARN("Unable to handle startup timeout for serverId: %d", serverId);
         return;
     }
+    const bool isPreloaded{kSessionServer->isPreloaded()};
     RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %d", serverId);
     handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::ERROR);
 
-    if (!kSessionServer->isPreloaded())
+    if (!isPreloaded)
     {
         kSessionServer->kill();
         handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::NOT_RUNNING);
