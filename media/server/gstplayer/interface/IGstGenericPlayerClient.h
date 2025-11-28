@@ -168,6 +168,8 @@ public:
      * @param[in] mediaSourceType  : The type of the source that has been flushed.
      */
     virtual void notifySourceFlushed(MediaSourceType mediaSourceType) = 0;
+
+    virtual void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) = 0;
 };
 
 }; // namespace firebolt::rialto::server

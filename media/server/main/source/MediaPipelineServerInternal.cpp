@@ -1584,6 +1584,14 @@ void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourc
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
+void MediaPipelineServerInternal::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
+{
+    if (m_mediaPipelineClient)
+    {
+        m_mediaPipelineClient->notifyPlaybackInfo(playbackInfo);
+    }
+}
+
 void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

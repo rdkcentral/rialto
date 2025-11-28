@@ -114,6 +114,8 @@ public:
      * @param[in] sourceId  : The id of the source that has been flushed.
      */
     virtual void notifySourceFlushed(int32_t sourceId) = 0;
+
+    virtual void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) = 0;
 };
 
 }; // namespace firebolt::rialto::client

@@ -393,6 +393,8 @@ private:
      */
     std::unique_ptr<firebolt::rialto::common::ITimer> m_positionReportingAndCheckAudioUnderflowTimer{nullptr};
 
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_playbackInfoTimer{nullptr};
+
     /**
      * @brief Timer to resync subtitle clock with AV clock
      *

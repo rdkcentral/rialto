@@ -194,6 +194,8 @@ public:
 
     void notifySourceFlushed(MediaSourceType mediaSourceType) override;
 
+    void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) override;
+
 protected:
     /**
      * @brief The media player client.

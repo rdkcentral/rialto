@@ -1685,6 +1685,7 @@ bool GstGenericPlayer::setErmContext()
 
 void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
 {
+    static constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
     if (m_positionReportingAndCheckAudioUnderflowTimer && m_positionReportingAndCheckAudioUnderflowTimer->isActive())
     {
         return;
@@ -1701,6 +1702,22 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
             }
         },
         firebolt::rialto::common::TimerType::PERIODIC);
+
+    PlaybackInfo info;
+    getPosition(info.currentPosition);
+    getVolume(info.volume);
+    m_gstPlayerClient->notifyPlaybackInfo(info);
+
+    m_playbackInfoTimer = m_timerFactory->createTimer(
+        kPlaybackInfoTimerMs,
+        [this]()
+        {
+            PlaybackInfo info;
+            getPosition(info.currentPosition);
+            getVolume(info.volume);
+            m_gstPlayerClient->notifyPlaybackInfo(info);
+        },
+        firebolt::rialto::common::TimerType::PERIODIC);
 }
 
 void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
@@ -1709,6 +1726,12 @@ void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
     {
         m_positionReportingAndCheckAudioUnderflowTimer->cancel();
         m_positionReportingAndCheckAudioUnderflowTimer.reset();
+    }
+
+    if (m_playbackInfoTimer && m_playbackInfoTimer->isActive())
+    {
+        m_playbackInfoTimer->cancel();
+        m_playbackInfoTimer.reset();
     }
 }
 

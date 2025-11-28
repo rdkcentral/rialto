@@ -465,6 +465,11 @@ enum class EaseType
     EASE_OUT_CUBIC
 };
 
+struct PlaybackInfo
+{
+    int64_t currentPosition{-1};
+    double volume{1.0};
+};
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_

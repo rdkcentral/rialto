@@ -967,6 +967,12 @@ message SetLogLevelsEvent {
     optional uint32 commonLogLevels = 4;
 }
 
+message PlaybackInfoEvent {
+    optional int32 session_id = 1 [default = -1];
+    optional int64 current_position = 2 [default = -1];
+    optional double volume = 3 [default = 1.0];
+}
+
 /**
  * @brief Event sent by the server when a source has been flushed.
  *

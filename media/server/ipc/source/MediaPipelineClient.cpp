@@ -262,4 +262,16 @@ void MediaPipelineClient::notifySourceFlushed(int32_t sourceId)
 
     m_ipcClient->sendEvent(event);
 }
+
+void MediaPipelineClient::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
+{
+    RIALTO_SERVER_LOG_DEBUG("Sending PlaybackInfoEvent...");
+
+    auto event = std::make_shared<firebolt::rialto::PlaybackInfoEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_current_position(playbackInfo.currentPosition);
+    event->set_volume(playbackInfo.volume);
+
+    m_ipcClient->sendEvent(event);
+}
 } // namespace firebolt::rialto::server::ipc
