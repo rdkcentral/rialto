@@ -465,6 +465,9 @@ enum class EaseType
     EASE_OUT_CUBIC
 };
 
+/**
+ * @brief Struct containing current playback information.
+ */
 struct PlaybackInfo
 {
     int64_t currentPosition{-1};
