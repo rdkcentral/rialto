@@ -470,8 +470,8 @@ enum class EaseType
  */
 struct PlaybackInfo
 {
-    int64_t currentPosition{-1};
-    double volume{1.0};
+    int64_t currentPosition{-1}; /**< The current playback position */
+    double volume{1.0};          /**< The current volume */
 };
 } // namespace firebolt::rialto
 
