@@ -898,4 +898,15 @@ void MediaPipeline::notifySourceFlushed(int32_t sourceId)
     m_currentState.compare_exchange_strong(expected, State::BUFFERING);
 }
 
+void MediaPipeline::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifyPlaybackInfo(playbackInfo);
+    }
+}
+
 }; // namespace firebolt::rialto::client

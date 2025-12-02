@@ -92,7 +92,7 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_READY))
         .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
 
-    // In case of longer testruns, GstPlayer may request to query position
+    // In case of longer testruns, GstPlayer may request to query position and volume
     EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).Times(AtLeast(0));
     EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).Times(AtLeast(0));
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).Times(AtLeast(0)).WillRepeatedly(Return(GST_STATE_PAUSED));
@@ -107,6 +107,11 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
                 *cur = kCurrentPosition;
                 return true;
             }));
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _)).Times(AtLeast(0));
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR))
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(kVolume));
 }
 
 void MediaPipelineTest::gstPlayerWillBeDestructed()
@@ -844,6 +849,11 @@ void MediaPipelineTest::mayReceivePositionUpdates()
     {
         m_positionChangeEventSuppressionId = m_clientStub.addSuppression<firebolt::rialto::PositionChangeEvent>();
     }
+
+    if (-1 == m_playbackInfoEventSuppressionId)
+    {
+        m_playbackInfoEventSuppressionId = m_clientStub.addSuppression<firebolt::rialto::PlaybackInfoEvent>();
+    }
 }
 
 void MediaPipelineTest::positionUpdatesShouldNotBeReceivedFromNow()
@@ -852,6 +862,12 @@ void MediaPipelineTest::positionUpdatesShouldNotBeReceivedFromNow()
     {
         m_clientStub.removeSuppression(m_positionChangeEventSuppressionId);
         m_positionChangeEventSuppressionId = -1;
+    }
+
+    if (-1 != m_playbackInfoEventSuppressionId)
+    {
+        m_clientStub.removeSuppression(m_playbackInfoEventSuppressionId);
+        m_playbackInfoEventSuppressionId = -1;
     }
 }
 

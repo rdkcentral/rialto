@@ -47,6 +47,7 @@ public:
     void notifyBufferUnderflow(int32_t sourceId) override;
     void notifyPlaybackError(int32_t sourceId, PlaybackError error) override;
     void notifySourceFlushed(int32_t sourceId) override;
+    void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) override;
 
 private:
     int m_sessionId;

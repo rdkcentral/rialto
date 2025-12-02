@@ -125,6 +125,10 @@ protected:
     // to avoid occassional test failures
     int m_positionChangeEventSuppressionId{-1};
 
+    // Playback Info events may be received in PLAYING state. We have to suppress them
+    // to avoid occassional test failures
+    int m_playbackInfoEventSuppressionId{-1};
+
     // Used to synchronise the writing of the data to gstreamer
     testing::Sequence m_writeBufferSeq;
 
