@@ -92,12 +92,18 @@ TEST_F(PositionUpdatesTest, positionUpdates)
     MediaPipelineTestMethods::sendNotifyPlaybackStatePlaying();
 
     // Step 2: Notify position
-    int64_t position = 10;
-    MediaPipelineTestMethods::shouldNotifyPosition(position);
-    MediaPipelineTestMethods::sendNotifyPositionChanged(position);
+    constexpr int64_t kPosition{10};
+    MediaPipelineTestMethods::shouldNotifyPosition(kPosition);
+    MediaPipelineTestMethods::sendNotifyPositionChanged(kPosition);
 
     // Step 3: Get position
-    MediaPipelineTestMethods::shouldGetPosition(position);
-    MediaPipelineTestMethods::getPosition(position);
+    MediaPipelineTestMethods::shouldGetPosition(kPosition);
+    MediaPipelineTestMethods::getPosition(kPosition);
+
+    // Step 4: Notify playback info
+    constexpr double kVolume{0.8};
+    constexpr firebolt::rialto::PlaybackInfo kPlaybackInfo{kPosition, kVolume};
+    MediaPipelineTestMethods::shouldNotifyPlaybackInfo(kPlaybackInfo);
+    MediaPipelineTestMethods::sendNotifyPlaybackInfo(kPlaybackInfo);
 }
 } // namespace firebolt::rialto::client::ct

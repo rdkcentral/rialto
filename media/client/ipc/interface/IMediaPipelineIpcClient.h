@@ -114,6 +114,15 @@ public:
      * @param[in] sourceId  : The id of the source that has been flushed.
      */
     virtual void notifySourceFlushed(int32_t sourceId) = 0;
+
+    /**
+     * @brief Notifies the client about the current playback state
+     *
+     * Notification shall be sent every 32ms after reaching the PLAYING state.
+     *
+     * @param[in] playbackInfo : The current playback information.
+     */
+    virtual void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) = 0;
 };
 
 }; // namespace firebolt::rialto::client

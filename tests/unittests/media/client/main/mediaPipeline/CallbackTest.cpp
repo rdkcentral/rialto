@@ -97,3 +97,17 @@ TEST_F(RialtoClientMediaPipelineCallbackTest, SourceFlushed)
 
     m_mediaPipelineCallback->notifySourceFlushed(sourceId);
 }
+
+/**
+ * Test a notification of playbackInfo is forwarded to the registered client.
+ */
+TEST_F(RialtoClientMediaPipelineCallbackTest, PlaybackInfo)
+{
+    int64_t position = 1234;
+    double volume = 0.75;
+    PlaybackInfo playbackInfo{position, volume};
+
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackInfo(playbackInfoMatcher(playbackInfo)));
+
+    m_mediaPipelineCallback->notifyPlaybackInfo(playbackInfo);
+}

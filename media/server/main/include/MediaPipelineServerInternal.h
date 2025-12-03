@@ -194,6 +194,8 @@ public:
 
     void notifySourceFlushed(MediaSourceType mediaSourceType) override;
 
+    void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) override;
+
 protected:
     /**
      * @brief The media player client.
@@ -298,7 +300,12 @@ protected:
     /**
      * @brief Mutex to protect gstPlayer access in getPosition method
      */
-    std::shared_mutex m_getPositionMutex;
+    std::shared_mutex m_getPropertyMutex;
+
+    /**
+     * @brief Flag to check, if setting volume is in progress
+     */
+    std::atomic_bool m_isSetVolumeInProgress{false};
 
     /**
      * @brief Load internally, only to be called on the main thread.

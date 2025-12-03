@@ -34,14 +34,16 @@ public:
     ~GstDispatcherThreadFactory() override = default;
     std::unique_ptr<IGstDispatcherThread>
     createGstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
-                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const override;
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                              const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController) const override;
 };
 
 class GstDispatcherThread : public IGstDispatcherThread
 {
 public:
     GstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
-                        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper);
+                        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                        const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController);
     ~GstDispatcherThread() override;
 
 private:
@@ -72,6 +74,11 @@ private:
      * @brief Thread for handling gst bus callbacks
      */
     std::thread m_gstBusDispatcherThread;
+
+    /**
+     * @brief Workaround for the gstreamer flush issue
+     */
+    std::shared_ptr<IFlushOnPrerollController> m_flushOnPrerollController;
 };
 } // namespace firebolt::rialto::server
 

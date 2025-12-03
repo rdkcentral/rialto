@@ -26,6 +26,7 @@
 #include "MessageBuilders.h"
 
 using testing::_;
+using testing::AtLeast;
 using testing::Return;
 using testing::StrEq;
 
@@ -41,7 +42,7 @@ public:
 
     void willSetPlaybackRate()
     {
-        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("audio-sink"), _));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, StrEq("audio-sink"), _)).Times(AtLeast(1));
         EXPECT_CALL(*m_gstWrapperMock, gstStructureNewDoubleStub(StrEq("custom-instant-rate-change"), StrEq("rate"),
                                                                  G_TYPE_DOUBLE, kPlaybackRate))
             .WillOnce(Return(&m_structure));

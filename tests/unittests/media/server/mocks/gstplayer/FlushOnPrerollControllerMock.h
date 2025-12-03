@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2025 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,22 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_FLUSH_ONPREROLL_CONTROLLER_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_FLUSH_ONPREROLL_CONTROLLER_MOCK_H_
 
-#include "IGstDispatcherThread.h"
+#include "IFlushOnPrerollController.h"
 #include <gmock/gmock.h>
-#include <memory>
 
 namespace firebolt::rialto::server
 {
-class GstDispatcherThreadFactoryMock : public IGstDispatcherThreadFactory
+class FlushOnPrerollControllerMock : public IFlushOnPrerollController
 {
 public:
-    MOCK_METHOD(std::unique_ptr<IGstDispatcherThread>, createGstDispatcherThread,
-                (IGstDispatcherThreadClient & client, GstElement *pipeline,
-                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                 const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController),
-                (const, override));
+    MOCK_METHOD(bool, shouldPostponeFlush, (const MediaSourceType &type), (const, override));
+    MOCK_METHOD(void, setFlushing, (const MediaSourceType &type, const GstState &currentPipelineState), (override));
+    MOCK_METHOD(void, stateReached, (const GstState &newPipelineState), (override));
+    MOCK_METHOD(void, reset, (), (override));
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_GST_DISPATCHER_THREAD_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_FLUSH_ONPREROLL_CONTROLLER_MOCK_H_

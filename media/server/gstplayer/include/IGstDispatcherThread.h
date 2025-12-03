@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_DISPATCHER_THREAD_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_DISPATCHER_THREAD_H_
 
+#include "IFlushOnPrerollController.h"
 #include "IGstDispatcherThreadClient.h"
 #include "IGstWrapper.h"
 #include <memory>
@@ -34,9 +35,10 @@ public:
     IGstDispatcherThreadFactory() = default;
     virtual ~IGstDispatcherThreadFactory() = default;
 
-    virtual std::unique_ptr<IGstDispatcherThread>
-    createGstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
-                              const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const = 0;
+    virtual std::unique_ptr<IGstDispatcherThread> createGstDispatcherThread(
+        IGstDispatcherThreadClient &client, GstElement *pipeline,
+        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+        const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController = nullptr) const = 0;
 };
 
 class IGstDispatcherThread
