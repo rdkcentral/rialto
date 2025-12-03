@@ -1695,7 +1695,13 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionWhenPositionRepo
     willNotifyPlaybackInfo();
     std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
-        .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
+        .WillOnce(Invoke(
+            [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback, common::TimerType timerType)
+            {
+                willNotifyPlaybackInfo();
+                callback();
+                return std::move(playbackInfoTimerMock);
+            }));
     m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
 }
 

@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineModuleServiceTestsFixture.h"
+#include "MediaCommon.h"
 #include "MediaPipelineModuleService.h"
 #include "MediaPipelineProtoUtils.h"
 #include "MediaSourceUtil.h"
@@ -221,6 +222,14 @@ MATCHER_P(SourceFlushedEventMatcher, kSourceId, "")
     std::shared_ptr<firebolt::rialto::SourceFlushedEvent> event =
         std::dynamic_pointer_cast<firebolt::rialto::SourceFlushedEvent>(arg);
     return (kSourceId == event->source_id());
+}
+
+MATCHER_P(PlaybackInfoEventMatcher, kExpectedPlaybackInfo, "")
+{
+    std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> event =
+        std::dynamic_pointer_cast<firebolt::rialto::PlaybackInfoEvent>(arg);
+    return (kExpectedPlaybackInfo.currentPosition == event->current_position() &&
+            kExpectedPlaybackInfo.volume == event->volume());
 }
 
 MediaPipelineModuleServiceTests::MediaPipelineModuleServiceTests()
@@ -846,6 +855,11 @@ void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackErrorEvent()
 void MediaPipelineModuleServiceTests::mediaClientWillSendSourceFlushedEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(SourceFlushedEventMatcher(kSourceId)));
+}
+
+void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackInfoEvent()
+{
+    EXPECT_CALL(*m_clientMock, sendEvent(PlaybackInfoEventMatcher(firebolt::rialto::PlaybackInfo{kPosition, kVolume})));
 }
 
 void MediaPipelineModuleServiceTests::sendClientConnected()
@@ -1537,6 +1551,12 @@ void MediaPipelineModuleServiceTests::sendSourceFlushedEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
     m_mediaPipelineClient->notifySourceFlushed(kSourceId);
+}
+
+void MediaPipelineModuleServiceTests::sendPlaybackInfoEvent()
+{
+    ASSERT_TRUE(m_mediaPipelineClient);
+    m_mediaPipelineClient->notifyPlaybackInfo(firebolt::rialto::PlaybackInfo{kPosition, kVolume});
 }
 
 void MediaPipelineModuleServiceTests::expectRequestSuccess()
