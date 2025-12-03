@@ -522,4 +522,28 @@ bool SessionServerAppManager::configureSessionServerWithSocketFd(const std::uniq
     RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of server with id %d succeeded.", kSessionServer->getServerId());
     return true;
 }
+
+void SessionServerAppManager::onServerStartupTimeout(int serverId)
+{
+    m_eventThread->add(&SessionServerAppManager::handleServerStartupTimeout, this, serverId);
+}
+
+void SessionServerAppManager::handleServerStartupTimeout(int serverId)
+{
+    const auto &kSessionServer{getServerById(serverId)};
+    if (!kSessionServer)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Unable to handle startup timeout for serverId: %d", serverId);
+        return;
+    }
+    const bool isPreloaded{kSessionServer->isPreloaded()};
+    RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %d", serverId);
+    handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::ERROR);
+
+    if (!isPreloaded)
+    {
+        kSessionServer->kill();
+        handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    }
+}
 } // namespace rialto::servermanager::common

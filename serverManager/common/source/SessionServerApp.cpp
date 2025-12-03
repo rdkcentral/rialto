@@ -293,11 +293,12 @@ std::string SessionServerApp::addAppSuffixToLogFile(const std::string &envVar) c
     return envVar;
 }
 
-void SessionServerApp::kill() const
+void SessionServerApp::kill()
 {
     if (m_pid > 0)
     {
         m_linuxWrapper->kill(m_pid, SIGKILL);
+        m_pid = -1;
     }
 }
 
@@ -326,20 +327,8 @@ void SessionServerApp::setupStartupTimer()
     if (std::chrono::milliseconds(0) < m_kSessionServerStartupTimeout)
     {
         std::unique_lock<std::mutex> lock{m_timerMutex};
-        m_startupTimer =
-            m_timerFactory
-                ->createTimer(m_kSessionServerStartupTimeout,
-                              [this]()
-                              {
-                                  RIALTO_SERVER_MANAGER_LOG_WARN("Killing: %d", m_kServerId);
-                                  m_sessionServerAppManager
-                                      .onSessionServerStateChanged(m_kServerId,
-                                                                   firebolt::rialto::common::SessionServerState::ERROR);
-                                  kill();
-                                  m_sessionServerAppManager
-                                      .onSessionServerStateChanged(m_kServerId,
-                                                                   firebolt::rialto::common::SessionServerState::NOT_RUNNING);
-                              });
+        m_startupTimer = m_timerFactory->createTimer(m_kSessionServerStartupTimeout, [this]()
+                                                     { m_sessionServerAppManager.onServerStartupTimeout(m_kServerId); });
     }
     else
     {

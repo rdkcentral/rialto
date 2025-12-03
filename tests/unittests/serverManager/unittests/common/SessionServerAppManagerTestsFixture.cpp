@@ -475,6 +475,15 @@ void SessionServerAppManagerTests::sessionServerWillRestartWillBeSkipped()
     EXPECT_CALL(m_sessionServerAppMock, releaseNamedSocketRef()).WillOnce(ReturnRef(m_namedSocket));
 }
 
+void SessionServerAppManagerTests::sessionServerWillHandleServerStartupTimeout()
+{
+    sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::ERROR);
+    EXPECT_CALL(m_sessionServerAppMock, isPreloaded()).WillRepeatedly(Return(false));
+    sessionServerWillKillRunningApplication();
+    sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    clientWillBeRemoved();
+}
+
 void SessionServerAppManagerTests::triggerPreloadSessionServers()
 {
     EXPECT_TRUE(m_sut);
@@ -527,4 +536,9 @@ void SessionServerAppManagerTests::triggerSendPingEvents()
 void SessionServerAppManagerTests::triggerRestartServer()
 {
     m_sut->restartServer(kServerId);
+}
+
+void SessionServerAppManagerTests::triggerOnServerStartupTimeout()
+{
+    m_sut->onServerStartupTimeout(kServerId);
 }
