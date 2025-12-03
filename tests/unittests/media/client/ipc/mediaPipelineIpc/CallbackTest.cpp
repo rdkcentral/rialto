@@ -193,3 +193,23 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, InvalidSessionIdSourceFlushed)
 
     m_sourceFlushedCb(sourceFlushedEvent);
 }
+
+/**
+ * Test that a playback info notification over IPC is forwarded to the client.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyPlaybackInfo)
+{
+    constexpr int64_t kPosition{1234};
+    constexpr double kVolume{0.75};
+    constexpr PlaybackInfo kPlaybackInfo{kPosition, kVolume};
+
+    auto playbackInfoEvent = std::make_shared<firebolt::rialto::PlaybackInfoEvent>();
+    playbackInfoEvent->set_session_id(m_sessionId);
+    playbackInfoEvent->set_current_position(kPosition);
+    playbackInfoEvent->set_volume(kVolume);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+    EXPECT_CALL(*m_clientMock, notifyPlaybackInfo(playbackInfoMatcher(kPlaybackInfo)));
+
+    m_playbackInfoCb(playbackInfoEvent);
+}

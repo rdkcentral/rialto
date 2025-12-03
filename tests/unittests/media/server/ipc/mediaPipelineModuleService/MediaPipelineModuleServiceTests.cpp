@@ -353,6 +353,14 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSendSourceFlushedEvent)
     sendSourceFlushedEvent();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackInfoEvent)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaClientWillSendPlaybackInfoEvent();
+    sendPlaybackInfoEvent();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldRenderFrame)
 {
     mediaPipelineServiceWillCreateSession();
