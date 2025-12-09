@@ -1180,10 +1180,11 @@ void GstGenericPlayer::cancelUnderflow(firebolt::rialto::MediaSourceType mediaSo
 
 void GstGenericPlayer::play()
 {
-    if (m_workerThread)
-    {
-        m_workerThread->enqueueTask(m_taskFactory->createPlay(*this));
-    }
+    // if (m_workerThread)
+    // {
+    //     m_workerThread->enqueueTask(m_taskFactory->createPlay(*this));
+    // }
+    changePipelineState(GST_STATE_PLAYING);
 }
 
 void GstGenericPlayer::pause()
