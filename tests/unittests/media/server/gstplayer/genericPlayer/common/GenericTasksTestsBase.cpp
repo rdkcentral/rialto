@@ -2273,7 +2273,7 @@ void GenericTasksTestsBase::shouldStopGstPlayer()
     videoStreamIt->second.isDataNeeded = true;
     audioStreamIt->second.isDataNeeded = true;
     EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
-    EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_NULL));
+    EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_NULL)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
 }
 
 void GenericTasksTestsBase::triggerStop()
@@ -2589,12 +2589,12 @@ void GenericTasksTestsBase::checkNoEos()
 
 void GenericTasksTestsBase::shouldChangeStatePlayingSuccess()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_PLAYING)).WillOnce(Return(true));
+    EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_PLAYING)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
 }
 
 void GenericTasksTestsBase::shouldChangeStatePlayingFailure()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_PLAYING)).WillOnce(Return(false));
+    EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_PLAYING)).WillOnce(Return(GST_STATE_CHANGE_FAILURE));
 }
 
 void GenericTasksTestsBase::triggerPlay()
@@ -2612,7 +2612,7 @@ void GenericTasksTestsBase::triggerPing()
 void GenericTasksTestsBase::shouldPause()
 {
     EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
-    EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_PAUSED));
+    EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_PAUSED)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
 }
 
 void GenericTasksTestsBase::triggerPause()

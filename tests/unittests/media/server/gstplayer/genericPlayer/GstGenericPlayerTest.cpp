@@ -165,14 +165,41 @@ TEST_F(GstGenericPlayerTest, shouldAllSourcesAttached)
     m_sut->allSourcesAttached();
 }
 
-// TEST_F(GstGenericPlayerTest, shouldPlay)
-// {
-//     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-//     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-//     EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
+TEST_F(GstGenericPlayerTest, shouldPlayOnWorkerThread)
+{
+    // Pause first
+    std::unique_ptr<IPlayerTask> pauseTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*pauseTask), execute());
+    EXPECT_CALL(m_taskFactoryMock, createPause(_, _)).WillOnce(Return(ByMove(std::move(pauseTask))));
 
-//     m_sut->play();
-// }
+    m_sut->pause();
+
+    // ...
+
+    bool async = false;
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->play(async);
+    EXPECT_TRUE(async);
+}
+
+TEST_F(GstGenericPlayerTest, shouldPlayImmediatelySynchronously)
+{
+    bool async = false;
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(_, GST_STATE_PLAYING)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+    m_sut->play(async);
+    EXPECT_FALSE(async);
+}
+
+TEST_F(GstGenericPlayerTest, shouldPlayImmediatelyAsynchronously)
+{
+    bool async = false;
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(_, GST_STATE_PLAYING)).WillOnce(Return(GST_STATE_CHANGE_ASYNC));
+    m_sut->play(async);
+    EXPECT_TRUE(async);
+}
 
 TEST_F(GstGenericPlayerTest, shouldPause)
 {

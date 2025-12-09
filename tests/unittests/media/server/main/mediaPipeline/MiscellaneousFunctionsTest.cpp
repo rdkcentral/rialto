@@ -43,11 +43,12 @@ protected:
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlaySuccess)
 {
+    bool async{false};
     loadGstPlayer();
     mainThreadWillEnqueuePriorityTaskAndWait();
 
-    EXPECT_CALL(*m_gstPlayerMock, play());
-    EXPECT_TRUE(m_mediaPipeline->play());
+    EXPECT_CALL(*m_gstPlayerMock, play(_));
+    EXPECT_TRUE(m_mediaPipeline->play(async));
 }
 
 /**
@@ -55,8 +56,9 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlaySuccess)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlayFailureDueToUninitializedPlayer)
 {
+    bool async{false};
     mainThreadWillEnqueuePriorityTaskAndWait();
-    EXPECT_FALSE(m_mediaPipeline->play());
+    EXPECT_FALSE(m_mediaPipeline->play(async));
 }
 
 /**
