@@ -277,8 +277,8 @@ void HandleBusMessage::execute() const
         break;
     }
 
-    m_gstWrapper->gstMessageUnref(m_message);
-}
+        m_gstWrapper->gstMessageUnref(m_message);
+    }
 
 bool HandleBusMessage::allSourcesEos() const
 {
