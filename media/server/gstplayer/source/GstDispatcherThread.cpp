@@ -126,6 +126,7 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                 // Skip handling GST_MESSAGE_STATE_CHANGED for non-pipeline objects.
                 // It signifficantly slows down rialto gst worker thread
                 shouldHandleMessage = false;
+                m_gstWrapper->gstMessageUnref(message);
             }
 
             if (shouldHandleMessage)

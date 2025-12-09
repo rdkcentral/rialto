@@ -239,6 +239,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPausedNonPipeline)
     {
         InSequence seq;
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
+        EXPECT_CALL(*m_gstWrapperMock, gstMessageUnref(&m_message));
 
         // Signal error to stop the thread
         EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&messageError));
