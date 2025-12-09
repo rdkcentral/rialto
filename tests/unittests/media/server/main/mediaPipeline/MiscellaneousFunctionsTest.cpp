@@ -44,7 +44,7 @@ protected:
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlaySuccess)
 {
     loadGstPlayer();
-    mainThreadWillEnqueueTaskAndWait();
+    mainThreadWillEnqueuePriorityTaskAndWait();
 
     EXPECT_CALL(*m_gstPlayerMock, play());
     EXPECT_TRUE(m_mediaPipeline->play());
@@ -55,7 +55,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlaySuccess)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlayFailureDueToUninitializedPlayer)
 {
-    mainThreadWillEnqueueTaskAndWait();
+    mainThreadWillEnqueuePriorityTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->play());
 }
 

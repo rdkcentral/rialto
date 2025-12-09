@@ -90,6 +90,7 @@ protected:
     void destroyMediaPipeline();
     void mainThreadWillEnqueueTask();
     void mainThreadWillEnqueueTaskAndWait();
+    void mainThreadWillEnqueuePriorityTaskAndWait();
     void loadGstPlayer();
     int attachSource(MediaSourceType sourceType, const std::string &mimeType);
     void setEos(MediaSourceType sourceType);
