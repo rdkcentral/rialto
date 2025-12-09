@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 #define FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 
+#include "FlushOnPrerollController.h"
 #include "IGstSrc.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
@@ -102,6 +103,16 @@ struct GenericPlayerContext
      * @brief The subtitle sink
      */
     GstElement *subtitleSink{nullptr};
+
+    /**
+     * @brief The video sink
+     */
+    GstElement *videoSink{nullptr};
+
+    /**
+     * @brief Flag used to check, if video decoder handle has been set.
+     */
+    bool isVideoHandleSet{false};
 
     /**
      * @brief Flag used to check, if BUFFERED notification has been sent.
@@ -255,6 +266,11 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     std::atomic_bool audioFadeEnabled{false};
+
+    /**
+     * @brief Workaround for the gstreamer flush issue
+     */
+    std::shared_ptr<FlushOnPrerollController> flushOnPrerollController{std::make_shared<FlushOnPrerollController>()};
 };
 } // namespace firebolt::rialto::server
 

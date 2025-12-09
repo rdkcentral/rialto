@@ -577,6 +577,13 @@ bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position, bool r
     return m_mediaPipelineIpc->setSourcePosition(sourceId, position, resetTime, appliedRate, stopPosition);
 }
 
+bool MediaPipeline::setSubtitleOffset(int32_t sourceId, int64_t position)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->setSubtitleOffset(sourceId, position);
+}
+
 bool MediaPipeline::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
@@ -889,6 +896,17 @@ void MediaPipeline::notifySourceFlushed(int32_t sourceId)
 
     State expected = State::END_OF_STREAM;
     m_currentState.compare_exchange_strong(expected, State::BUFFERING);
+}
+
+void MediaPipeline::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifyPlaybackInfo(playbackInfo);
+    }
 }
 
 }; // namespace firebolt::rialto::client

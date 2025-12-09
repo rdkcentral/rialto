@@ -128,6 +128,7 @@ public:
     void mediaClientWillSendQosEvent();
     void mediaClientWillSendPlaybackErrorEvent();
     void mediaClientWillSendSourceFlushedEvent();
+    void mediaClientWillSendPlaybackInfoEvent();
 
     void sendClientConnected();
     void sendClientDisconnected();
@@ -192,6 +193,7 @@ public:
     void sendQosEvent();
     void sendPlaybackErrorEvent();
     void sendSourceFlushedEvent();
+    void sendPlaybackInfoEvent();
     void sendRenderFrameRequestAndReceiveResponse();
 
 private:

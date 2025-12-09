@@ -22,11 +22,7 @@
 class RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest : public MediaKeysTestBase
 {
 protected:
-    RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest()
-    {
-        createMediaKeys(kWidevineKeySystem);
-        createKeySession(kWidevineKeySystem);
-    }
+    RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest() = default;
     ~RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest() { destroyMediaKeys(); }
 };
 
@@ -35,19 +31,8 @@ protected:
  */
 TEST_F(RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest, ReturnTrue)
 {
-    mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionMock, isNetflixPlayreadyKeySystem()).WillOnce(Return(true));
-
-    EXPECT_TRUE(m_mediaKeys->isNetflixPlayreadyKeySystem(m_kKeySessionId));
-}
-
-/**
- * Test that isNetflixPlayreadyKeySystem returns false if the key session does not exsist.
- */
-TEST_F(RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest, ReturnFalseWhenSessionDoesNotExist)
-{
-    mainThreadWillEnqueueTaskAndWait();
-    EXPECT_FALSE(m_mediaKeys->isNetflixPlayreadyKeySystem(m_kKeySessionId + 1));
+    createMediaKeys(kNetflixKeySystem);
+    EXPECT_TRUE(m_mediaKeys->isNetflixPlayreadyKeySystem());
 }
 
 /**
@@ -55,8 +40,6 @@ TEST_F(RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest, ReturnFalseWhenSess
  */
 TEST_F(RialtoServerMediaKeysIsNetflixPlayreadyKeySystemTest, ReturnFalse)
 {
-    mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionMock, isNetflixPlayreadyKeySystem()).WillOnce(Return(false));
-
-    EXPECT_FALSE(m_mediaKeys->isNetflixPlayreadyKeySystem(m_kKeySessionId));
+    createMediaKeys(kWidevineKeySystem);
+    EXPECT_FALSE(m_mediaKeys->isNetflixPlayreadyKeySystem());
 }

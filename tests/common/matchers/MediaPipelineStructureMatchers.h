@@ -29,4 +29,8 @@ MATCHER_P(qosInfoMatcher, expectedQosInfo, "")
     return ((expectedQosInfo.processed == arg.processed) && (expectedQosInfo.dropped == arg.dropped));
 }
 
+MATCHER_P(playbackInfoMatcher, expectedPlaybackInfo, "")
+{
+    return ((expectedPlaybackInfo.currentPosition == arg.currentPosition) && (expectedPlaybackInfo.volume == arg.volume));
+}
 #endif // MEDIA_PIPELINE_STRUCTURE_MATCHERS_H_

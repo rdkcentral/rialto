@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_TEXT_TRACK_SESSION_H_
 #define FIREBOLT_RIALTO_SERVER_I_TEXT_TRACK_SESSION_H_
 
+#include <gst/gst.h>
 #include <memory>
 #include <string>
 
@@ -50,6 +51,8 @@ public:
     virtual bool setSessionWebVTTSelection() = 0;
     virtual bool setSessionTTMLSelection() = 0;
     virtual bool setSessionCCSelection(const std::string &service) = 0;
+    virtual bool associateVideoDecoder(gpointer decoderId) = 0;
+    virtual bool isClosedCaptions() const = 0;
 };
 } // namespace firebolt::rialto::server
 #endif // FIREBOLT_RIALTO_SERVER_I_TEXT_TRACK_SESSION_H_

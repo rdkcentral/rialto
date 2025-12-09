@@ -28,6 +28,7 @@
 #include "mediapipelinemodule.pb.h"
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::server::ct
 {
@@ -59,20 +60,20 @@ public:
     void willRemoveAudioSource();
     void willStop();
     void willSetAudioAndVideoFlags();
+    void willSetStateInvalidForQueryPosition();
 
     void createSession();
     void load();
     void attachAudioSource();
     void attachVideoSource();
     void setupSource();
-    void indicateAllSourcesAttached();
+    void indicateAllSourcesAttached(const std::vector<GstAppSrc *> &appsrcs);
     void pause();
     void notifyPaused();
-    void gstNeedData(GstAppSrc *appSrc, int frameCount);
-    void pushAudioData(unsigned dataCountToPush, int needDataFrameCount);
-    void pushVideoData(unsigned dataCountToPush, int needDataFrameCount);
-    void pushAudioSample(int needDataFrameCount);
-    void pushVideoSample(int needDataFrameCount);
+    void pushAudioData(unsigned dataCountToPush);
+    void pushVideoData(unsigned dataCountToPush);
+    void pushAudioSample();
+    void pushVideoSample();
     void play();
     void eosAudio(unsigned dataCountToPush);
     void eosVideo(unsigned dataCountToPush);
@@ -112,6 +113,7 @@ protected:
     std::string m_sourceName{"src_0"};
     GstPad m_pad{};
     GstPad m_ghostPad{};
+    GstElement m_queue{};
     GstEvent m_flushStartEvent{};
     GstEvent m_flushStopEvent{};
     GstSegment m_segment{};
@@ -122,6 +124,10 @@ protected:
     // Position Update events may be received in PLAYING state. We have to suppress them
     // to avoid occassional test failures
     int m_positionChangeEventSuppressionId{-1};
+
+    // Playback Info events may be received in PLAYING state. We have to suppress them
+    // to avoid occassional test failures
+    int m_playbackInfoEventSuppressionId{-1};
 
     // Used to synchronise the writing of the data to gstreamer
     testing::Sequence m_writeBufferSeq;

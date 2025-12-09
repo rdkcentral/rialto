@@ -59,6 +59,7 @@ add_library(
         source/tasks/generic/SetPlaybackRate.cpp
         source/tasks/generic/SetPosition.cpp
         source/tasks/generic/SetSourcePosition.cpp
+        source/tasks/generic/SetSubtitleOffset.cpp
         source/tasks/generic/SetStreamSyncMode.cpp
         source/tasks/generic/SetSync.cpp
         source/tasks/generic/SetSyncOff.cpp
@@ -71,6 +72,7 @@ add_library(
         source/tasks/generic/Shutdown.cpp
         source/tasks/generic/Stop.cpp
         source/tasks/generic/SwitchSource.cpp
+        source/tasks/generic/SynchroniseSubtitleClock.cpp
         source/tasks/generic/Underflow.cpp
         source/tasks/generic/UpdatePlaybackGroup.cpp
 
@@ -87,6 +89,7 @@ add_library(
         source/tasks/webAudio/WriteBuffer.cpp
 
         source/CapsBuilder.cpp
+        source/FlushOnPrerollController.cpp
         source/FlushWatcher.cpp
         source/GstCapabilities.cpp
         source/GstDecryptor.cpp

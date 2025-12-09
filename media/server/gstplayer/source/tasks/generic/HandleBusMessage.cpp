@@ -92,10 +92,15 @@ void HandleBusMessage::execute() const
                     // indicate that the pipeline is prerolled and it reached GST_STATE_PAUSED state after seek.
                     m_gstPlayerClient->notifyPlaybackState(PlaybackState::PAUSED);
                 }
+                if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
+                {
+                    m_player.stopSubtitleClockResyncTimer();
+                }
                 break;
             }
             case GST_STATE_PLAYING:
             {
+                m_player.executePostponedFlushes();
                 // If async flush was requested before HandleBusMessage task creation (but it was not executed yet)
                 // or if async flush was created after HandleBusMessage task creation (but before its execution)
                 // we can't report playback state, because async flush causes state loss - reported state is probably invalid.
@@ -109,6 +114,10 @@ void HandleBusMessage::execute() const
                     m_player.setPendingPlaybackRate();
                 }
                 m_player.startPositionReportingAndCheckAudioUnderflowTimer();
+                if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
+                {
+                    m_player.startSubtitleClockResyncTimer();
+                }
 
                 m_context.isPlaying = true;
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::PLAYING);

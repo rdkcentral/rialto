@@ -205,6 +205,7 @@ bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeTy
 
 bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string &mimeType, const std::string &url)
 {
+    std::unique_lock lock{m_getPropertyMutex};
     /* If gstreamer player already created, destroy the old one first */
     if (m_gstPlayer)
     {
@@ -466,16 +467,7 @@ bool MediaPipelineServerInternal::getPosition(int64_t &position)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result;
-    auto task = [&]() { result = getPositionInternal(position); };
-
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::getPositionInternal(int64_t &position)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
+    std::shared_lock lock{m_getPropertyMutex};
 
     if (!m_gstPlayer)
     {
@@ -817,6 +809,7 @@ bool MediaPipelineServerInternal::setVolume(double targetVolume, uint32_t volume
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    m_isSetVolumeInProgress = true;
     bool result;
     auto task = [&]() { result = setVolumeInternal(targetVolume, volumeDuration, easeType); };
 
@@ -834,6 +827,7 @@ bool MediaPipelineServerInternal::setVolumeInternal(double targetVolume, uint32_
         return false;
     }
     m_gstPlayer->setVolume(targetVolume, volumeDuration, easeType);
+    m_isSetVolumeInProgress = false;
     return true;
 }
 
@@ -841,11 +835,16 @@ bool MediaPipelineServerInternal::getVolume(double &currentVolume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result;
-    auto task = [&]() { result = getVolumeInternal(currentVolume); };
+    if (m_isSetVolumeInProgress)
+    {
+        bool result;
+        auto task = [&]() { result = getVolumeInternal(currentVolume); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    return result;
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        return result;
+    }
+    std::shared_lock lock{m_getPropertyMutex};
+    return getVolumeInternal(currentVolume);
 }
 
 bool MediaPipelineServerInternal::getVolumeInternal(double &currentVolume)
@@ -1203,6 +1202,36 @@ bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, in
     return true;
 }
 
+bool MediaPipelineServerInternal::setSubtitleOffset(int32_t sourceId, int64_t position)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setSubtitleOffsetInternal(sourceId, position); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setSubtitleOffsetInternal(int32_t sourceId, int64_t position)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set subtitle offset - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set subtitle offset - Source with id: %d not found", sourceId);
+        return false;
+    }
+
+    m_gstPlayer->setSubtitleOffset(position);
+    return true;
+}
+
 bool MediaPipelineServerInternal::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap,
                                                   bool audioAac)
 {
@@ -1555,6 +1584,14 @@ void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourc
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
+void MediaPipelineServerInternal::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
+{
+    if (m_mediaPipelineClient)
+    {
+        m_mediaPipelineClient->notifyPlaybackInfo(playbackInfo);
+    }
+}
+
 void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -1590,7 +1627,7 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
 
 std::chrono::milliseconds MediaPipelineServerInternal::getNeedMediaDataTimeout(MediaSourceType mediaSourceType) const
 {
-    constexpr std::chrono::milliseconds kDefaultNeedMediaDataResendTimeMs{100};
+    constexpr std::chrono::milliseconds kDefaultNeedMediaDataResendTimeMs{15};
     constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMsForLowLatency{5};
     if ((mediaSourceType == MediaSourceType::VIDEO && m_IsLowLatencyVideoPlayer) ||
         (mediaSourceType == MediaSourceType::AUDIO && m_IsLowLatencyAudioPlayer))

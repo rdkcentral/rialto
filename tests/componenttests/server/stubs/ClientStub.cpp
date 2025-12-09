@@ -44,12 +44,13 @@ bool ClientStub::connect()
         return false;
     }
     setupSubscriptions<firebolt::rialto::PlaybackStateChangeEvent, firebolt::rialto::NetworkStateChangeEvent,
-                       firebolt::rialto::PositionChangeEvent, firebolt::rialto::NeedMediaDataEvent, firebolt::rialto::QosEvent,
-                       firebolt::rialto::BufferUnderflowEvent, firebolt::rialto::PlaybackErrorEvent,
-                       firebolt::rialto::SetLogLevelsEvent, firebolt::rialto::SourceFlushedEvent,
-                       firebolt::rialto::WebAudioPlayerStateEvent, firebolt::rialto::ApplicationStateChangeEvent,
-                       firebolt::rialto::PingEvent, firebolt::rialto::LicenseRequestEvent,
-                       firebolt::rialto::LicenseRenewalEvent, firebolt::rialto::KeyStatusesChangedEvent>(m_ipcChannel);
+                       firebolt::rialto::PositionChangeEvent, firebolt::rialto::NeedMediaDataEvent,
+                       firebolt::rialto::QosEvent, firebolt::rialto::BufferUnderflowEvent,
+                       firebolt::rialto::PlaybackErrorEvent, firebolt::rialto::SetLogLevelsEvent,
+                       firebolt::rialto::SourceFlushedEvent, firebolt::rialto::WebAudioPlayerStateEvent,
+                       firebolt::rialto::ApplicationStateChangeEvent, firebolt::rialto::PingEvent,
+                       firebolt::rialto::LicenseRequestEvent, firebolt::rialto::LicenseRenewalEvent,
+                       firebolt::rialto::KeyStatusesChangedEvent, firebolt::rialto::PlaybackInfoEvent>(m_ipcChannel);
     m_ipcThread = std::thread(&ClientStub::ipcThread, this);
     return true;
 }

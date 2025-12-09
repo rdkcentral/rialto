@@ -179,6 +179,15 @@ public:
     virtual bool changePipelineState(GstState newState) = 0;
 
     /**
+     * @brief Gets the current position of the element
+     *
+     * @param[in] element : The GstElement to check.
+     *
+     * @retval position of the element; -1 in case of failure
+     */
+    virtual int64_t getPosition(GstElement *element) = 0;
+
+    /**
      * @brief Starts position reporting and check audio underflow. Called by the worker thread.
      */
     virtual void startPositionReportingAndCheckAudioUnderflowTimer() = 0;
@@ -187,6 +196,16 @@ public:
      * @brief Stops position reporting and check audio underflow. Called by the worker thread.
      */
     virtual void stopPositionReportingAndCheckAudioUnderflowTimer() = 0;
+
+    /**
+     * @brief Starts subtitle clock resync. Called by the worker thread.
+     */
+    virtual void startSubtitleClockResyncTimer() = 0;
+
+    /**
+     * @brief Stops subtitle clock resync. Called by the worker thread.
+     */
+    virtual void stopSubtitleClockResyncTimer() = 0;
 
     /**
      * @brief Stops worker thread. Called by the worker thread.
@@ -277,11 +296,33 @@ public:
     virtual bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
 
     /**
+     * @brief Checks if the player has a source of the given type.
+     *
+     * @param[in] mediaSourceType : The source type to check
+     *
+     * @retval True if the player has a source of the given type, false otherwise
+     */
+    virtual bool hasSourceType(const MediaSourceType &mediaSourceType) const = 0;
+
+    /**
      * @brief Sets source state flushed
      *
      * @param[in] mediaSourceType : the source type that has been flushed
      */
     virtual void setSourceFlushed(const MediaSourceType &mediaSourceType) = 0;
+
+    /**
+     * @brief Postpones flush for the given source type
+     *
+     * @param[in] mediaSourceType : the source type that has been flushed
+     * @param[in] resetTime       : whether to reset the time after flush
+     */
+    virtual void postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime) = 0;
+
+    /**
+     * @brief Queues postponed flushes for execution
+     */
+    virtual void executePostponedFlushes() = 0;
 };
 } // namespace firebolt::rialto::server
 

@@ -68,7 +68,7 @@ public:
         ASSERT_TRUE(receivedNeedData);
         EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
         EXPECT_EQ(receivedNeedData->source_id(), m_audioSourceId);
-        EXPECT_EQ(receivedNeedData->frame_count(), kFramesToPush);
+        EXPECT_EQ(receivedNeedData->frame_count(), 24);
         m_lastAudioNeedData = receivedNeedData;
     }
 
@@ -213,20 +213,18 @@ TEST_F(RemoveAudioPlaybackTest, RemoveAudio)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
     pause();
 
     // Step 5: Write video and audio frames
-    gstNeedData(&m_audioAppSrc, kFramesToPush);
-    gstNeedData(&m_videoAppSrc, kFramesToPush);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFramesToPush);
-        pushVideoData(kFramesToPush, kFramesToPush);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -251,7 +249,7 @@ TEST_F(RemoveAudioPlaybackTest, RemoveAudio)
     removeSource(m_audioSourceId);
 
     // Step 9: Write video frames
-    pushVideoData(kFramesToPush, kFramesToPush);
+    pushVideoData(kFramesToPush);
 
     // Step 10: Play
     willPlay();
@@ -268,8 +266,8 @@ TEST_F(RemoveAudioPlaybackTest, RemoveAudio)
     reattachAudioSource();
 
     // Step 13: Write video and audio frames
-    pushAudioData(kFramesToPush, kFramesToPush);
-    pushVideoData(kFramesToPush, kFramesToPush);
+    pushAudioData(kFramesToPush);
+    pushVideoData(kFramesToPush);
 
     // Step 14: Play
     willPlay();

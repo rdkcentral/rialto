@@ -42,6 +42,7 @@ namespace
  *        whenever the session moves to another playback state.
  */
 constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
+constexpr std::chrono::seconds kSubtitleClockResyncInterval{10};
 
 bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)
 {
@@ -201,14 +202,13 @@ GstGenericPlayer::GstGenericPlayer(
         RIALTO_SERVER_LOG_MIL("Primary video playback selected");
     }
 
-    m_gstDispatcherThread =
-        gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper);
+    m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper,
+                                                                                  m_context.flushOnPrerollController);
 }
 
 GstGenericPlayer::~GstGenericPlayer()
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is destructed.");
-
     m_gstDispatcherThread.reset();
 
     resetWorkerThread();
@@ -243,11 +243,16 @@ void GstGenericPlayer::initMsePipeline()
     {
         GST_WARNING("No playsink ?!?!?");
     }
+    if (GST_STATE_CHANGE_FAILURE == m_gstWrapper->gstElementSetState(m_context.pipeline, GST_STATE_READY))
+    {
+        GST_WARNING("Failed to set pipeline to READY state");
+    }
     RIALTO_SERVER_LOG_MIL("New RialtoServer's pipeline created");
 }
 
 void GstGenericPlayer::resetWorkerThread()
 {
+    m_postponedFlushes.clear();
     // Shutdown task thread
     m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
     m_workerThread->join();
@@ -286,6 +291,13 @@ void GstGenericPlayer::termPipeline()
     if (m_context.subtitleSink)
     {
         m_gstWrapper->gstObjectUnref(m_context.subtitleSink);
+        m_context.subtitleSink = nullptr;
+    }
+
+    if (m_context.videoSink)
+    {
+        m_gstWrapper->gstObjectUnref(m_context.videoSink);
+        m_context.videoSink = nullptr;
     }
 
     // Delete the pipeline
@@ -391,16 +403,13 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
 {
     // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
     // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
-    if (!m_context.pipeline || GST_STATE(m_context.pipeline) < GST_STATE_PAUSED)
-    {
-        RIALTO_SERVER_LOG_WARN("GetPosition failed. Pipeline is null or state < PAUSED");
-        return false;
-    }
-    if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
+    position = getPosition(m_context.pipeline);
+    if (position == -1)
     {
         RIALTO_SERVER_LOG_WARN("Query position failed");
         return false;
     }
+
     return true;
 }
 
@@ -451,10 +460,6 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
                 sink = GST_ELEMENT(m_gstWrapper->gstObjectRef(GST_OBJECT(autoSink)));
             }
         }
-        else
-        {
-            RIALTO_SERVER_LOG_WARN("%s could not be obtained", kSinkName);
-        }
     }
     return sink;
 }
@@ -462,6 +467,23 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
 void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
 {
     m_flushWatcher->setFlushed(mediaSourceType);
+}
+
+void GstGenericPlayer::postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime)
+{
+    m_postponedFlushes.emplace_back(std::make_pair(mediaSourceType, resetTime));
+}
+
+void GstGenericPlayer::executePostponedFlushes()
+{
+    if (m_workerThread)
+    {
+        for (const auto &[mediaSourceType, resetTime] : m_postponedFlushes)
+        {
+            m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, *this, mediaSourceType, resetTime));
+        }
+    }
+    m_postponedFlushes.clear();
 }
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
@@ -681,6 +703,10 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
             m_gstWrapper->gstStructureFree(stats);
         }
         m_gstWrapper->gstObjectUnref(sink);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get stats, sink is NULL");
     }
 
     return returnValue;
@@ -1041,9 +1067,8 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
         RIALTO_SERVER_LOG_ERROR("Failed to create audio attributes");
         return false;
     }
-    std::int64_t currentDispPts64b; // In netflix code it's currentDisplayPosition + offset
-    m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &currentDispPts64b);
-    long long currentDispPts = currentDispPts64b; // NOLINT(runtime/int)
+
+    long long currentDispPts = getPosition(m_context.pipeline); // NOLINT(runtime/int)
     GstCaps *caps{createCapsFromMediaSource(m_gstWrapper, m_glibWrapper, source)};
     GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[source->getType()].appSrc)};
     GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
@@ -1089,6 +1114,11 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
         m_gstWrapper->gstCapsUnref(oldCaps);
 
     return true;
+}
+
+bool GstGenericPlayer::hasSourceType(const MediaSourceType &mediaSourceType) const
+{
+    return m_context.streamInfo.find(mediaSourceType) != m_context.streamInfo.end();
 }
 
 void GstGenericPlayer::scheduleNeedMediaData(GstAppSrc *src)
@@ -1191,6 +1221,41 @@ bool GstGenericPlayer::changePipelineState(GstState newState)
     return true;
 }
 
+int64_t GstGenericPlayer::getPosition(GstElement *element)
+{
+    if (!element)
+    {
+        RIALTO_SERVER_LOG_WARN("Element is null");
+        return -1;
+    }
+
+    m_gstWrapper->gstStateLock(element);
+
+    if (m_gstWrapper->gstElementGetState(element) < GST_STATE_PAUSED ||
+        (m_gstWrapper->gstElementGetStateReturn(element) == GST_STATE_CHANGE_ASYNC &&
+         m_gstWrapper->gstElementGetStateNext(element) == GST_STATE_PAUSED))
+    {
+        RIALTO_SERVER_LOG_WARN("Element is prerolling or in invalid state - state: %s, return: %s, next: %s",
+                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetState(element)),
+                               m_gstWrapper->gstElementStateChangeReturnGetName(
+                                   m_gstWrapper->gstElementGetStateReturn(element)),
+                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetStateNext(element)));
+
+        m_gstWrapper->gstStateUnlock(element);
+        return -1;
+    }
+    m_gstWrapper->gstStateUnlock(element);
+
+    gint64 position = -1;
+    if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
+    {
+        RIALTO_SERVER_LOG_WARN("Failed to query position");
+        return -1;
+    }
+
+    return position;
+}
+
 void GstGenericPlayer::setVideoGeometry(int x, int y, int width, int height)
 {
     if (m_workerThread)
@@ -1228,6 +1293,10 @@ bool GstGenericPlayer::setVideoSinkRectangle()
             RIALTO_SERVER_LOG_ERROR("Failed to set the video rectangle");
         }
         m_gstWrapper->gstObjectUnref(videoSink);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set video rectangle, sink is NULL");
     }
 
     return result;
@@ -1620,6 +1689,7 @@ bool GstGenericPlayer::setErmContext()
 
 void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
 {
+    static constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
     if (m_positionReportingAndCheckAudioUnderflowTimer && m_positionReportingAndCheckAudioUnderflowTimer->isActive())
     {
         return;
@@ -1631,9 +1701,25 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
         {
             if (m_workerThread)
             {
-                m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context));
+                m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context, *this));
                 m_workerThread->enqueueTask(m_taskFactory->createCheckAudioUnderflow(m_context, *this));
             }
+        },
+        firebolt::rialto::common::TimerType::PERIODIC);
+
+    PlaybackInfo info;
+    getPosition(info.currentPosition);
+    getVolume(info.volume);
+    m_gstPlayerClient->notifyPlaybackInfo(info);
+
+    m_playbackInfoTimer = m_timerFactory->createTimer(
+        kPlaybackInfoTimerMs,
+        [this]()
+        {
+            PlaybackInfo info;
+            getPosition(info.currentPosition);
+            getVolume(info.volume);
+            m_gstPlayerClient->notifyPlaybackInfo(info);
         },
         firebolt::rialto::common::TimerType::PERIODIC);
 }
@@ -1644,6 +1730,40 @@ void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
     {
         m_positionReportingAndCheckAudioUnderflowTimer->cancel();
         m_positionReportingAndCheckAudioUnderflowTimer.reset();
+    }
+
+    if (m_playbackInfoTimer && m_playbackInfoTimer->isActive())
+    {
+        m_playbackInfoTimer->cancel();
+        m_playbackInfoTimer.reset();
+    }
+}
+
+void GstGenericPlayer::startSubtitleClockResyncTimer()
+{
+    if (m_subtitleClockResyncTimer && m_subtitleClockResyncTimer->isActive())
+    {
+        return;
+    }
+
+    m_subtitleClockResyncTimer = m_timerFactory->createTimer(
+        kSubtitleClockResyncInterval,
+        [this]()
+        {
+            if (m_workerThread)
+            {
+                m_workerThread->enqueueTask(m_taskFactory->createSynchroniseSubtitleClock(m_context, *this));
+            }
+        },
+        firebolt::rialto::common::TimerType::PERIODIC);
+}
+
+void GstGenericPlayer::stopSubtitleClockResyncTimer()
+{
+    if (m_subtitleClockResyncTimer && m_subtitleClockResyncTimer->isActive())
+    {
+        m_subtitleClockResyncTimer->cancel();
+        m_subtitleClockResyncTimer.reset();
     }
 }
 
@@ -1936,8 +2056,16 @@ void GstGenericPlayer::setSourcePosition(const MediaSourceType &mediaSourceType,
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, *this, mediaSourceType, position,
+        m_workerThread->enqueueTask(m_taskFactory->createSetSourcePosition(m_context, mediaSourceType, position,
                                                                            resetTime, appliedRate, stopPosition));
+    }
+}
+
+void GstGenericPlayer::setSubtitleOffset(int64_t position)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createSetSubtitleOffset(m_context, position));
     }
 }
 

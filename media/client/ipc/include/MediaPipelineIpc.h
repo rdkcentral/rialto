@@ -130,6 +130,8 @@ public:
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;
 
+    bool setSubtitleOffset(int32_t sourceId, int64_t position) override;
+
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
     bool setBufferingLimit(uint32_t limitBufferingMs) override;
@@ -224,6 +226,8 @@ private:
      * @param[in] event : The source flushed event structure.
      */
     void onSourceFlushed(const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event);
+
+    void onPlaybackInfo(const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event);
 
     /**
      * @brief Create a new player session.

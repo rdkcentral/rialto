@@ -34,6 +34,7 @@ using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAreArray;
 using ::testing::Invoke;
+using ::testing::Ne;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -117,6 +118,9 @@ protected:
     void triggerAutoVideoSinkChildRemovedCallback();
     void triggerAutoAudioSinkChildRemovedCallback();
     void shouldSetupTextTrackSink();
+    void shouldSetupVideoDecoderForTextTrack();
+    void shouldSetupVideoDecoderForTextTrackWesterosSinkWithDecoder();
+    void shouldSetupVideoDecoderForTextTrackWesterosSinkWithoutDecoder();
 
     // SetVideoGeometry test methods
     void setPipelineToNull();
@@ -196,6 +200,7 @@ protected:
 
     // CheckAudioUnderflow test methods
     void shouldQueryPositionAndSetToZero();
+    void shouldBeInWrongStateForQueryPosition();
     void triggerCheckAudioUnderflowNoNotification();
     void shouldNotifyAudioUnderflow();
     void triggerCheckAudioUnderflow();
@@ -246,6 +251,7 @@ protected:
     void checkNeedDataForBothSources();
     void checkNeedDataForAudioOnly();
     void checkNeedDataForVideoOnly();
+    void setStreamIsDataPushed(firebolt::rialto::MediaSourceType sourceType);
 
     // Eos test methods
     void triggerEosAudio();
@@ -358,7 +364,6 @@ protected:
     void triggerNeedDataUnknownSrc();
     void shouldNotifyNeedAudioDataSuccess();
     void shouldNotifyNeedVideoDataSuccess();
-    void shouldNotifyNeedSubtitleDataSuccess();
     void checkNeedDataPendingForAudioOnly();
     void checkNeedDataPendingForVideoOnly();
     void shouldNotifyNeedAudioDataFailure();
@@ -410,6 +415,7 @@ protected:
     void checkAudioFlushed();
     void checkVideoFlushed();
     void shouldFlushVideoSrcSuccess();
+    void shouldPostponeVideoFlush();
 
     // Set Source Position test methods
     void shouldSetSubtitleSourcePosition();
@@ -417,6 +423,10 @@ protected:
     void triggerSetSourcePosition(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionSet(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType);
+
+    // Set Subtitle Offset test methods
+    void shouldSetSubtitleOffset();
+    void triggerSetSubtitleOffset();
 
     // ProcessAudioGap test methods
     void triggerProcessAudioGap();

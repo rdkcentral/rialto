@@ -54,6 +54,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/SetPlaybackRateTest.cpp
     genericPlayer/tasksTests/SetPositionTest.cpp
     genericPlayer/tasksTests/SetSourcePositionTest.cpp
+    genericPlayer/tasksTests/SetSubtitleOffsetTest.cpp
     genericPlayer/tasksTests/SetStreamSyncModeTest.cpp
     genericPlayer/tasksTests/SetSyncTest.cpp
     genericPlayer/tasksTests/SetSyncOffTest.cpp
@@ -70,6 +71,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/UpdatePlaybackGroupTest.cpp
 
     genericPlayer/CreateTest.cpp
+    genericPlayer/FlushOnPrerollControllerTest.cpp
     genericPlayer/GstGenericPlayerPrivateTest.cpp
     genericPlayer/GstGenericPlayerTest.cpp
     genericPlayer/GstDispatcherThreadClientTest.cpp

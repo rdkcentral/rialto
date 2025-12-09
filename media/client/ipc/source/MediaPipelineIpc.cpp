@@ -172,6 +172,13 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::PlaybackInfoEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onPlaybackInfo, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     return true;
 }
 
@@ -1137,6 +1144,38 @@ bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position, boo
     return true;
 }
 
+bool MediaPipelineIpc::setSubtitleOffset(int32_t sourceId, int64_t position)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetSubtitleOffsetRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+    request.set_position(position);
+
+    firebolt::rialto::SetSubtitleOffsetResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setSubtitleOffset(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set subtitle offset due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
 bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)
 {
     if (!reattachChannelIfRequired())
@@ -1486,6 +1525,17 @@ void MediaPipelineIpc::onSourceFlushed(const std::shared_ptr<firebolt::rialto::S
     if (event->session_id() == m_sessionId)
     {
         m_mediaPipelineIpcClient->notifySourceFlushed(event->source_id());
+    }
+}
+
+void MediaPipelineIpc::onPlaybackInfo(const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event)
+{
+    if (event->session_id() == m_sessionId)
+    {
+        PlaybackInfo playbackInfo;
+        playbackInfo.currentPosition = event->current_position();
+        playbackInfo.volume = event->volume();
+        m_mediaPipelineIpcClient->notifyPlaybackInfo(playbackInfo);
     }
 }
 

@@ -871,7 +871,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPads_Two
 
 TEST_F(GstCapabilitiesTest, CreateGstCapabilities_GetSubtitlesMimeTypes)
 {
-    const std::vector<std::string> kSubtitleMimeTypes{"text/vtt", "text/ttml"};
+    const std::vector<std::string> kSubtitleMimeTypes{"text/vtt", "text/ttml", "text/cc"};
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))

@@ -42,6 +42,7 @@ add_gtests (
         mediaPipeline/HaveDataTest.cpp
         mediaPipeline/FlushTest.cpp
         mediaPipeline/SetSourcePositionTest.cpp
+        mediaPipeline/SetSubtitleOffsetTest.cpp
         mediaPipeline/ProcessAudioGapTest.cpp
         mediaPipeline/TextTrackIdentifierTest.cpp
 

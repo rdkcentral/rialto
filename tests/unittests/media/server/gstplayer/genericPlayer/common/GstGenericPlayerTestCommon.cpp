@@ -41,6 +41,8 @@ void GstGenericPlayerTestCommon::gstPlayerWillBeCreated()
     expectCheckPlaySink();
     expectSetMessageCallback();
 
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_READY))
+        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_CALL(*m_gstSrcMock, initSrc());
     EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
     EXPECT_CALL(*m_gstProtectionMetadataFactoryMock, createProtectionMetadataWrapper(_))
@@ -197,7 +199,7 @@ void GstGenericPlayerTestCommon::expectCheckPlaySink()
 
 void GstGenericPlayerTestCommon::expectSetMessageCallback()
 {
-    EXPECT_CALL(m_gstDispatcherThreadFactoryMock, createGstDispatcherThread(_, _, _))
+    EXPECT_CALL(m_gstDispatcherThreadFactoryMock, createGstDispatcherThread(_, _, _, _))
         .WillOnce(Return(ByMove(std::move(gstDispatcherThread))));
 }
 

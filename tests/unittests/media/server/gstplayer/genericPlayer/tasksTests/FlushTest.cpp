@@ -74,6 +74,19 @@ TEST_F(FlushTest, ShouldFlushAudioEvenIfEventSendingFails)
     checkAudioFlushed();
 }
 
+TEST_F(FlushTest, ShouldFlushAudioWithNeedData)
+{
+    setContextEndOfStream(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextEndOfStreamNotified();
+    setContextSetupSourceFinished();
+    shouldFlushAudio();
+    shouldFlushAudioSrcSuccess();
+    shouldNotifyNeedAudioDataSuccess();
+    setPipelinePlaying();
+    triggerFlush(firebolt::rialto::MediaSourceType::AUDIO);
+    checkAudioFlushed();
+}
+
 TEST_F(FlushTest, ShouldFlushVideo)
 {
     shouldFlushVideo();
@@ -81,4 +94,23 @@ TEST_F(FlushTest, ShouldFlushVideo)
     setPipelinePlaying();
     triggerFlush(firebolt::rialto::MediaSourceType::VIDEO);
     checkVideoFlushed();
+}
+
+TEST_F(FlushTest, ShouldFlushVideoWithNeedData)
+{
+    setContextEndOfStream(firebolt::rialto::MediaSourceType::VIDEO);
+    setContextEndOfStreamNotified();
+    setContextSetupSourceFinished();
+    shouldFlushVideo();
+    shouldFlushVideoSrcSuccess();
+    shouldNotifyNeedVideoDataSuccess();
+    setPipelinePlaying();
+    triggerFlush(firebolt::rialto::MediaSourceType::VIDEO);
+    checkVideoFlushed();
+}
+
+TEST_F(FlushTest, ShouldPostponeFlush)
+{
+    shouldPostponeVideoFlush();
+    triggerFlush(firebolt::rialto::MediaSourceType::VIDEO);
 }

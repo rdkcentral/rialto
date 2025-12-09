@@ -134,10 +134,7 @@ void SessionServerAppTests::launchingAppWillTimeout()
     const int kAppId{m_sut->getServerId()};
     EXPECT_CALL(m_linuxWrapperMock, socketpair(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC | SOCK_NONBLOCK, 0, _))
         .WillOnce(DoAll(SetArrayArgument<3>(kSocketPair.begin(), kSocketPair.end()), Return(0)));
-    EXPECT_CALL(m_sessionServerAppManagerMock,
-                onSessionServerStateChanged(kAppId, firebolt::rialto::common::SessionServerState::ERROR));
-    EXPECT_CALL(m_sessionServerAppManagerMock,
-                onSessionServerStateChanged(kAppId, firebolt::rialto::common::SessionServerState::NOT_RUNNING));
+    EXPECT_CALL(m_sessionServerAppManagerMock, onServerStartupTimeout(kAppId));
     EXPECT_CALL(m_linuxWrapperMock, vfork(_)).WillOnce(DoAll(InvokeArgument<0>(kPid), Return(true)));
     EXPECT_CALL(*m_timerFactoryMock,
                 createTimer(kSessionServerStartupTimeout, _, firebolt::rialto::common::TimerType::ONE_SHOT))
@@ -180,7 +177,8 @@ void SessionServerAppTests::willKillAppOnDestruction() const
     EXPECT_CALL(*killTimer, cancel());
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kKillTimeout, _, firebolt::rialto::common::TimerType::ONE_SHOT))
         .WillOnce(DoAll(InvokeArgument<1>(), Return(ByMove(std::move(killTimer)))));
-    EXPECT_CALL(m_linuxWrapperMock, waitpid(kPid, nullptr, 0)).WillOnce(Return(-1));
+    EXPECT_CALL(m_linuxWrapperMock, waitpid(-1, nullptr, 0))
+        .WillOnce(Return(-1)); // -1 here as pid, because we invoked timer with kill earlier.
     EXPECT_CALL(m_linuxWrapperMock, close(kSocketPair[0])).WillOnce(Return(0));
 }
 

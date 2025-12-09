@@ -56,6 +56,7 @@ public:
                 (int32_t width, int32_t height, Fraction frameRate, const std::shared_ptr<CodecData> &codecData),
                 (override));
     MOCK_METHOD(bool, changePipelineState, (GstState newState), (override));
+    MOCK_METHOD(int64_t, getPosition, (GstElement * element), (override));
     MOCK_METHOD(void, startPositionReportingAndCheckAudioUnderflowTimer, (), (override));
     MOCK_METHOD(void, stopPositionReportingAndCheckAudioUnderflowTimer, (), (override));
     MOCK_METHOD(void, stopWorkerThread, (), (override));
@@ -74,6 +75,11 @@ public:
     MOCK_METHOD(void, pushSampleIfRequired, (GstElement * source, const std::string &typeStr), (override));
     MOCK_METHOD(bool, reattachSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &source), (override));
     MOCK_METHOD(void, setSourceFlushed, (const MediaSourceType &mediaSourceType), (override));
+    MOCK_METHOD(void, startSubtitleClockResyncTimer, (), (override));
+    MOCK_METHOD(void, stopSubtitleClockResyncTimer, (), (override));
+    MOCK_METHOD(bool, hasSourceType, (const MediaSourceType &mediaSourceType), (const, override));
+    MOCK_METHOD(void, postponeFlush, (const MediaSourceType &mediaSourceType, bool resetTime), (override));
+    MOCK_METHOD(void, executePostponedFlushes, (), (override));
 };
 } // namespace firebolt::rialto::server
 

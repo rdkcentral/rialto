@@ -107,11 +107,16 @@ TEST_F(TextTrackSessionTest, shouldSetPosition)
     EXPECT_TRUE(m_sut->setPosition(kMediaTimestampMs));
 }
 
-TEST_F(TextTrackSessionTest, shouldSetSessionCCSelection)
+TEST_F(TextTrackSessionTest, shouldFailToSendCCData)
 {
     createSut();
     EXPECT_CALL(*m_accessorMock, setSessionCCSelection(kSessionId, kService)).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->setSessionCCSelection(kService));
+    EXPECT_TRUE(m_sut->isClosedCaptions());
+
+    EXPECT_CALL(*m_accessorMock, sendData(kSessionId, kData, ITextTrackAccessor::DataType::CC, kDisplayOffsetMs))
+        .WillOnce(Return(false));
+    EXPECT_FALSE(m_sut->sendData(kData, kDisplayOffsetMs));
 }
 
 TEST_F(TextTrackSessionTest, shouldSendWebVTTData)
@@ -119,6 +124,7 @@ TEST_F(TextTrackSessionTest, shouldSendWebVTTData)
     createSut();
     EXPECT_CALL(*m_accessorMock, setSessionWebVTTSelection(kSessionId)).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->setSessionWebVTTSelection());
+    EXPECT_FALSE(m_sut->isClosedCaptions());
 
     EXPECT_CALL(*m_accessorMock, sendData(kSessionId, kData, ITextTrackAccessor::DataType::WebVTT, kDisplayOffsetMs))
         .WillOnce(Return(true));
@@ -130,6 +136,7 @@ TEST_F(TextTrackSessionTest, shouldSendTTMLData)
     createSut();
     EXPECT_CALL(*m_accessorMock, setSessionTTMLSelection(kSessionId)).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->setSessionTTMLSelection());
+    EXPECT_FALSE(m_sut->isClosedCaptions());
 
     EXPECT_CALL(*m_accessorMock, sendData(kSessionId, kData, ITextTrackAccessor::DataType::TTML, kDisplayOffsetMs))
         .WillOnce(Return(true));
@@ -146,4 +153,24 @@ TEST_F(TextTrackSessionTest, shouldResetSession)
     EXPECT_CALL(*m_accessorMock, mute(kSessionId, true)).WillOnce(Return(true));
 
     EXPECT_TRUE(m_sut->resetSession(true));
+}
+
+TEST_F(TextTrackSessionTest, shouldAssociateVideoDecoder)
+{
+    uint8_t decoder{0};
+    uintptr_t decoderAddress = reinterpret_cast<uintptr_t>(&decoder);
+    std::string decoderAddressStr = std::to_string(decoderAddress);
+    createSut();
+    EXPECT_CALL(*m_accessorMock, associateVideoDecoder(kSessionId, decoderAddressStr)).WillOnce(Return(true));
+    EXPECT_TRUE(m_sut->associateVideoDecoder(&decoder));
+}
+
+TEST_F(TextTrackSessionTest, shouldFailToAssociateVideoDecoder)
+{
+    uint8_t decoder{0};
+    uintptr_t decoderAddress = reinterpret_cast<uintptr_t>(&decoder);
+    std::string decoderAddressStr = std::to_string(decoderAddress);
+    createSut();
+    EXPECT_CALL(*m_accessorMock, associateVideoDecoder(kSessionId, decoderAddressStr)).WillOnce(Return(false));
+    EXPECT_FALSE(m_sut->associateVideoDecoder(&decoder));
 }

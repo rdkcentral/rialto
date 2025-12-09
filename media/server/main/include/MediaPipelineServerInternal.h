@@ -28,6 +28,7 @@
 #include "ITimer.h"
 #include <map>
 #include <memory>
+#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -155,6 +156,8 @@ public:
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;
 
+    bool setSubtitleOffset(int32_t sourceId, int64_t position) override;
+
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
     bool setBufferingLimit(uint32_t limitBufferingMs) override;
@@ -190,6 +193,8 @@ public:
     void notifyPlaybackError(MediaSourceType mediaSourceType, PlaybackError error) override;
 
     void notifySourceFlushed(MediaSourceType mediaSourceType) override;
+
+    void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) override;
 
 protected:
     /**
@@ -293,6 +298,16 @@ protected:
     std::map<MediaSourceType, bool> m_isMediaTypeEosMap;
 
     /**
+     * @brief Mutex to protect gstPlayer access in getPosition method
+     */
+    std::shared_mutex m_getPropertyMutex;
+
+    /**
+     * @brief Flag to check, if setting volume is in progress
+     */
+    std::atomic_bool m_isSetVolumeInProgress{false};
+
+    /**
      * @brief Load internally, only to be called on the main thread.
      *
      * @param[in] type     : The media type.
@@ -366,15 +381,6 @@ protected:
      * @retval true on success.
      */
     bool setPositionInternal(int64_t position);
-
-    /**
-     * @brief Get position internally, only to be called on the main thread.
-     *
-     * @param[out] position : The playback position in nanoseconds
-     *
-     * @retval true on success.
-     */
-    bool getPositionInternal(int64_t &position);
 
     /**
      * @brief Sets the "Immediate Output" property for this source.
@@ -623,6 +629,18 @@ protected:
      */
     bool setSourcePositionInternal(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                                    uint64_t stopPosition);
+
+    /**
+     * @brief Set subtitle offset for a subtitle source.
+     *
+     * This method is used to set the subtitle offset for a subtitle source.
+     *
+     * @param[in] sourceId : The id of the subtitle source
+     * @param[in] position : The subtitle offset position in nanoseconds
+     *
+     * @retval true on success.
+     */
+    bool setSubtitleOffsetInternal(int32_t sourceId, int64_t position);
 
     /**
      * @brief Process audio gap

@@ -1307,9 +1307,21 @@ void MediaPipelineTestMethods::shouldNotifyPosition(const uint32_t expectedPosit
         .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 
+void MediaPipelineTestMethods::shouldNotifyPlaybackInfo(const firebolt::rialto::PlaybackInfo &expectedPlaybackInfo)
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackInfo(playbackInfoMatcher(expectedPlaybackInfo)))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
 void MediaPipelineTestMethods::sendNotifyPositionChanged(const int64_t position)
 {
     getServerStub()->notifyPositionChangeEvent(kSessionId, position);
+    waitEvent();
+}
+
+void MediaPipelineTestMethods::sendNotifyPlaybackInfo(const firebolt::rialto::PlaybackInfo &playbackInfo)
+{
+    getServerStub()->notifyPlaybackInfo(kSessionId, playbackInfo);
     waitEvent();
 }
 

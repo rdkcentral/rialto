@@ -118,12 +118,25 @@ public:
 
     const gchar *gstElementStateGetName(GstState state) override { return gst_element_state_get_name(state); }
 
+    const gchar *gstElementStateChangeReturnGetName(GstStateChangeReturn state) override
+    {
+        return gst_element_state_change_return_get_name(state);
+    }
+
     GstStateChangeReturn gstElementSetState(GstElement *element, GstState state) override
     {
         return gst_element_set_state(element, state);
     }
 
     GstState gstElementGetState(GstElement *element) override { return GST_STATE(element); }
+
+    GstStateChangeReturn gstElementGetStateReturn(GstElement *element) override { return GST_STATE_RETURN(element); }
+
+    GstState gstElementGetStateNext(GstElement *element) override { return GST_STATE_NEXT(element); }
+
+    void gstStateLock(GstElement *element) override { GST_STATE_LOCK(element); }
+
+    void gstStateUnlock(GstElement *element) override { GST_STATE_UNLOCK(element); }
 
     GstState gstElementGetPendingState(GstElement *element) override { return GST_STATE_PENDING(element); }
 

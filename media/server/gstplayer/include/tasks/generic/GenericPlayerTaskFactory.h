@@ -67,7 +67,8 @@ public:
                                       const std::shared_ptr<IDataReader> &dataReader) const override;
     std::unique_ptr<IPlayerTask> createRemoveSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                     const firebolt::rialto::MediaSourceType &type) const override;
-    std::unique_ptr<IPlayerTask> createReportPosition(GenericPlayerContext &context) const override;
+    std::unique_ptr<IPlayerTask> createReportPosition(GenericPlayerContext &context,
+                                                      IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createCheckAudioUnderflow(GenericPlayerContext &context,
                                                            IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createSetPlaybackRate(GenericPlayerContext &context, double rate) const override;
@@ -109,10 +110,12 @@ public:
     std::unique_ptr<IPlayerTask> createFlush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                              const firebolt::rialto::MediaSourceType &type,
                                              bool resetTime) const override;
-    std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+    std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context,
                                                          const firebolt::rialto::MediaSourceType &type,
                                                          std::int64_t position, bool resetTime, double appliedRate,
                                                          uint64_t stopPosition) const override;
+    std::unique_ptr<IPlayerTask> createSetSubtitleOffset(GenericPlayerContext &context,
+                                                         std::int64_t position) const override;
     std::unique_ptr<IPlayerTask> createProcessAudioGap(GenericPlayerContext &context, std::int64_t position,
                                                        std::uint32_t duration, std::int64_t discontinuityGap,
                                                        bool audioAac) const override;
@@ -126,6 +129,9 @@ public:
     std::unique_ptr<IPlayerTask>
     createSwitchSource(IGstGenericPlayerPrivate &player,
                        const std::unique_ptr<IMediaPipeline::MediaSource> &source) const override;
+
+    std::unique_ptr<IPlayerTask> createSynchroniseSubtitleClock(GenericPlayerContext &context,
+                                                                IGstGenericPlayerPrivate &player) const override;
 
 private:
     IGstGenericPlayerClient *m_client;

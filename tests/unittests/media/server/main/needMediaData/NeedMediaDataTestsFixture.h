@@ -40,7 +40,6 @@ public:
     void initializeWithWrongType();
 
     void needMediaDataWillBeSentInPlayingState();
-    void needMediaDataWillBeSentBelowPlayingState();
     void needMediaDataWillNotBeSent();
 
 private:
