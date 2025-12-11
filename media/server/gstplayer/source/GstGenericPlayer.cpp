@@ -202,8 +202,8 @@ GstGenericPlayer::GstGenericPlayer(
         RIALTO_SERVER_LOG_MIL("Primary video playback selected");
     }
 
-    m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper,
-                                                                                  m_context.flushOnPrerollController);
+    m_gstDispatcherThread =
+        gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper);
 }
 
 GstGenericPlayer::~GstGenericPlayer()
@@ -484,6 +484,14 @@ void GstGenericPlayer::executePostponedFlushes()
         }
     }
     m_postponedFlushes.clear();
+}
+
+void GstGenericPlayer::notifyPlaybackInfo()
+{
+    PlaybackInfo info;
+    getPosition(info.currentPosition);
+    getVolume(info.volume);
+    m_gstPlayerClient->notifyPlaybackInfo(info);
 }
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
@@ -1722,21 +1730,11 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
         },
         firebolt::rialto::common::TimerType::PERIODIC);
 
-    PlaybackInfo info;
-    getPosition(info.currentPosition);
-    getVolume(info.volume);
-    m_gstPlayerClient->notifyPlaybackInfo(info);
+    notifyPlaybackInfo();
 
-    m_playbackInfoTimer = m_timerFactory->createTimer(
-        kPlaybackInfoTimerMs,
-        [this]()
-        {
-            PlaybackInfo info;
-            getPosition(info.currentPosition);
-            getVolume(info.volume);
-            m_gstPlayerClient->notifyPlaybackInfo(info);
-        },
-        firebolt::rialto::common::TimerType::PERIODIC);
+    m_playbackInfoTimer =
+        m_timerFactory
+            ->createTimer(kPlaybackInfoTimerMs, [this]() { notifyPlaybackInfo(); }, firebolt::rialto::common::TimerType::PERIODIC);
 }
 
 void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()

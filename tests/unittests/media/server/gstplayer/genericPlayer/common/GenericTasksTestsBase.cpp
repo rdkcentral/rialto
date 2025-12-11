@@ -3189,9 +3189,9 @@ void GenericTasksTestsBase::shouldFlushVideoSrcSuccess()
 
 void GenericTasksTestsBase::shouldPostponeVideoFlush()
 {
-    testContext->m_context.flushOnPrerollController->setFlushing(firebolt::rialto::MediaSourceType::VIDEO,
-                                                                 GST_STATE_PLAYING);
-    testContext->m_context.flushOnPrerollController->stateReached(GST_STATE_PAUSED);
+    testContext->m_context.flushOnPrerollController.setFlushing(firebolt::rialto::MediaSourceType::VIDEO,
+                                                                GST_STATE_PLAYING);
+    testContext->m_context.flushOnPrerollController.stateReached(GST_STATE_PAUSED);
     EXPECT_CALL(testContext->m_gstPlayer, postponeFlush(firebolt::rialto::MediaSourceType::VIDEO, kResetTime));
 }
 
