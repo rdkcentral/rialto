@@ -194,6 +194,7 @@ private:
     bool isAsync(const MediaSourceType &mediaSourceType) const;
     void postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime) override;
     void executePostponedFlushes() override;
+    void notifyPlaybackInfo() override;
 
 private:
     /**

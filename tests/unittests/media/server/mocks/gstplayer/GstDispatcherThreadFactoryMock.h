@@ -31,8 +31,7 @@ class GstDispatcherThreadFactoryMock : public IGstDispatcherThreadFactory
 public:
     MOCK_METHOD(std::unique_ptr<IGstDispatcherThread>, createGstDispatcherThread,
                 (IGstDispatcherThreadClient & client, GstElement *pipeline,
-                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                 const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController),
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper),
                 (const, override));
 };
 } // namespace firebolt::rialto::server

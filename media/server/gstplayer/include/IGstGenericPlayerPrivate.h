@@ -323,6 +323,11 @@ public:
      * @brief Queues postponed flushes for execution
      */
     virtual void executePostponedFlushes() = 0;
+
+    /**
+     * @brief Sends PlaybackInfo notification. Called by the worker thread.
+     */
+    virtual void notifyPlaybackInfo() = 0;
 };
 } // namespace firebolt::rialto::server
 

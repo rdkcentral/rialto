@@ -500,7 +500,7 @@ TEST_F(RialtoServerCreateGstWebAudioPlayerTest, createGstDispatcherThreadFailure
     expectInitAppSrc();
     expectAddElementsAutoAudioSink();
     expectInitWorkerThread();
-    EXPECT_CALL(m_gstDispatcherThreadFactoryMock, createGstDispatcherThread(_, _, _, _)).WillOnce(Return(nullptr));
+    EXPECT_CALL(m_gstDispatcherThreadFactoryMock, createGstDispatcherThread(_, _, _)).WillOnce(Return(nullptr));
 
     // Reset worker thread and pipeline on failure
     gstPlayerWillBeDestroyed();
