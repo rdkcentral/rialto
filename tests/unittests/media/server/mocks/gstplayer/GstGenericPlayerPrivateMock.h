@@ -80,6 +80,7 @@ public:
     MOCK_METHOD(bool, hasSourceType, (const MediaSourceType &mediaSourceType), (const, override));
     MOCK_METHOD(void, postponeFlush, (const MediaSourceType &mediaSourceType, bool resetTime), (override));
     MOCK_METHOD(void, executePostponedFlushes, (), (override));
+    MOCK_METHOD(void, notifyPlaybackInfo, (), (override));
 };
 } // namespace firebolt::rialto::server
 

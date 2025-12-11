@@ -18,7 +18,6 @@
  */
 
 #include "GstDispatcherThread.h"
-#include "FlushOnPrerollControllerMock.h"
 #include "GenericPlayerTaskFactoryMock.h"
 #include "GstDispatcherThreadClientMock.h"
 #include "GstWrapperMock.h"
@@ -57,8 +56,6 @@ protected:
         dynamic_cast<StrictMock<WorkerThreadFactoryMock> &>(*workerThreadFactory)};
     std::unique_ptr<IWorkerThread> workerThread{std::make_unique<StrictMock<WorkerThreadMock>>()};
     StrictMock<WorkerThreadMock> &m_workerThreadMock{dynamic_cast<StrictMock<WorkerThreadMock> &>(*workerThread)};
-    std::shared_ptr<FlushOnPrerollControllerMock> m_flushOnPrerollControllerMock{
-        std::make_shared<StrictMock<FlushOnPrerollControllerMock>>()};
 
     std::mutex m_dispatcherThreadMutex;
     std::condition_variable m_dispatcherThreadCond;
@@ -82,7 +79,6 @@ TEST_F(GstDispatcherThreadTest, PollTimeout)
         EXPECT_CALL(m_client, handleBusMessage(_));
     }
 
-    EXPECT_CALL(*m_flushOnPrerollControllerMock, reset());
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
         .WillOnce(Invoke(
             [this](gpointer bus)
@@ -92,8 +88,7 @@ TEST_F(GstDispatcherThreadTest, PollTimeout)
                 m_dispatcherThreadCond.notify_all();
             }));
 
-    auto sut =
-        std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_gstWrapperMock, m_flushOnPrerollControllerMock);
+    auto sut = std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_gstWrapperMock);
 
     // wait for dispatcher thread
     std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
@@ -122,7 +117,6 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
 
     EXPECT_CALL(*m_gstWrapperMock, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillOnce(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
-    EXPECT_CALL(*m_flushOnPrerollControllerMock, stateReached(newState));
 
     {
         InSequence seq;
@@ -134,7 +128,6 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
         EXPECT_CALL(m_client, handleBusMessage(_));
     }
 
-    EXPECT_CALL(*m_flushOnPrerollControllerMock, reset());
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
         .WillOnce(Invoke(
             [this](gpointer bus)
@@ -144,8 +137,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPaused)
                 m_dispatcherThreadCond.notify_all();
             }));
 
-    auto sut =
-        std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_gstWrapperMock, m_flushOnPrerollControllerMock);
+    auto sut = std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_gstWrapperMock);
 
     // wait for dispatcher thread
     std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
@@ -171,7 +163,6 @@ TEST_F(GstDispatcherThreadTest, StateChangedToStop)
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
     EXPECT_CALL(m_client, handleBusMessage(_));
-    EXPECT_CALL(*m_flushOnPrerollControllerMock, reset());
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
         .WillOnce(Invoke(
             [this](gpointer bus)
@@ -181,8 +172,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToStop)
                 m_dispatcherThreadCond.notify_all();
             }));
 
-    auto sut =
-        std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_gstWrapperMock, m_flushOnPrerollControllerMock);
+    auto sut = std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_gstWrapperMock);
 
     // wait for dispatcher thread
     std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
@@ -201,7 +191,6 @@ TEST_F(GstDispatcherThreadTest, Error)
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusTimedPopFiltered(&m_bus, 100 * GST_MSECOND, _)).WillOnce(Return(&m_message));
     EXPECT_CALL(m_client, handleBusMessage(_));
-    EXPECT_CALL(*m_flushOnPrerollControllerMock, reset());
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
         .WillOnce(Invoke(
             [this](gpointer bus)
@@ -211,8 +200,7 @@ TEST_F(GstDispatcherThreadTest, Error)
                 m_dispatcherThreadCond.notify_all();
             }));
 
-    auto sut =
-        std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_gstWrapperMock, m_flushOnPrerollControllerMock);
+    auto sut = std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_gstWrapperMock);
 
     // wait for dispatcher thread
     std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);
@@ -246,7 +234,6 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPausedNonPipeline)
         EXPECT_CALL(m_client, handleBusMessage(_));
     }
 
-    EXPECT_CALL(*m_flushOnPrerollControllerMock, reset());
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus))
         .WillOnce(Invoke(
             [this](gpointer bus)
@@ -256,8 +243,7 @@ TEST_F(GstDispatcherThreadTest, StateChangedToPausedNonPipeline)
                 m_dispatcherThreadCond.notify_all();
             }));
 
-    auto sut =
-        std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_gstWrapperMock, m_flushOnPrerollControllerMock);
+    auto sut = std::make_unique<GstDispatcherThread>(m_client, &m_pipeline, m_gstWrapperMock);
 
     // wait for dispatcher thread
     std::unique_lock<std::mutex> dispatcherLock(m_dispatcherThreadMutex);

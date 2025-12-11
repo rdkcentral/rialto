@@ -541,6 +541,7 @@ void MediaPipelineTest::pause()
 
 void MediaPipelineTest::notifyPaused()
 {
+    ExpectMessage<firebolt::rialto::PlaybackInfoEvent> expectedPlaybackInfo{m_clientStub};
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
     m_gstreamerStub.sendStateChanged(GST_STATE_NULL, GST_STATE_PAUSED, GST_STATE_NULL);
@@ -549,6 +550,9 @@ void MediaPipelineTest::notifyPaused()
     ASSERT_TRUE(receivedPlaybackStateChange);
     EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
     EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_PAUSED);
+
+    auto receivedPlaybackInfo{expectedPlaybackInfo.getMessage()};
+    ASSERT_TRUE(receivedPlaybackInfo);
 }
 
 void MediaPipelineTest::pushAudioData(unsigned dataCountToPush)
