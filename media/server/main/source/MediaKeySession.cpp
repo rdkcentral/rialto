@@ -65,7 +65,7 @@ MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessio
                                  const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
     : m_kKeySystem(keySystem), m_kKeySessionId(keySessionId), m_kSessionType(sessionType), m_mediaKeysClient(client),
       m_kIsLDL(isLDL), m_isSessionConstructed(false), m_isSessionClosed(false), m_licenseRequested(false),
-      m_ongoingOcdmOperation(false), m_ocdmError(false)
+      m_isAmazonApp(false), m_ongoingOcdmOperation(false), m_ocdmError(false)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -109,6 +109,10 @@ MediaKeySession::~MediaKeySession()
 MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    // Check if initData contains amazon string
+    m_isAmazonApp = isAmazonApp(initData);
+
     // Set the request flag for the onLicenseRequest callback
     m_licenseRequested = true;
 
@@ -127,7 +131,15 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
         else
         {
             m_isSessionConstructed = true;
-            if (isNetflixPlayreadyKeySystem())
+
+	    if (!m_queuedDrmHeader.empty())
+            {
+                RIALTO_SERVER_LOG_DEBUG("Setting queued drm header after session construction");
+                setDrmHeader(m_queuedDrmHeader);
+                m_queuedDrmHeader.clear();
+            }
+
+            if (isNetflixPlayreadyKeySystem() || m_isAmazonApp)
             {
                 // Ocdm-playready does not notify onProcessChallenge when complete.
                 // Fetch the challenge manually.
@@ -195,7 +207,7 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
     initOcdmErrorChecking();
 
     MediaKeyErrorStatus status;
-    if (isNetflixPlayreadyKeySystem())
+    if (isNetflixPlayreadyKeySystem() || m_isAmazonApp)
     {
         status = m_ocdmSession->storeLicenseData(&responseData[0], responseData.size());
         if (MediaKeyErrorStatus::OK != status)
@@ -243,7 +255,7 @@ MediaKeyErrorStatus MediaKeySession::closeKeySession()
     initOcdmErrorChecking();
 
     MediaKeyErrorStatus status;
-    if (isNetflixPlayreadyKeySystem())
+    if (isNetflixPlayreadyKeySystem() || m_isAmazonApp)
     {
         if (MediaKeyErrorStatus::OK != m_ocdmSession->cancelChallengeData())
         {
@@ -321,6 +333,13 @@ bool MediaKeySession::containsKey(const std::vector<uint8_t> &keyId)
 MediaKeyErrorStatus MediaKeySession::setDrmHeader(const std::vector<uint8_t> &requestData)
 {
     initOcdmErrorChecking();
+
+    if (!m_isSessionConstructed)
+    {
+        RIALTO_SERVER_LOG_INFO("Session not yet constructed, queueing drm header to be set after construction");
+        m_queuedDrmHeader = requestData;
+        return MediaKeyErrorStatus::OK;
+    }
 
     MediaKeyErrorStatus status = m_ocdmSession->setDrmHeader(requestData.data(), requestData.size());
     if (MediaKeyErrorStatus::OK != status)
@@ -472,4 +491,25 @@ bool MediaKeySession::checkForOcdmErrors(const char *operationStr)
     return error;
 }
 
+bool MediaKeySession::isAmazonApp(const std::vector<uint8_t> &data)
+{
+    // Check for UTF-8 encoding
+    std::string dataUtf8(data.begin(), data.end());
+    if (dataUtf8.find("amazon") != std::string::npos)
+    {
+        return true;
+    }
+
+    // Check for UTF-16 LE encoding
+    if (data.size() > 4)
+    {
+        std::string dataUtf16(data.begin(), data.end());
+        if (dataUtf16.find("a\0m\0a\0z\0o\0n", 0, 12) != std::string::npos)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
 }; // namespace firebolt::rialto::server
