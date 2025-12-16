@@ -188,6 +188,11 @@ private:
     std::mutex m_ocdmErrorMutex;
 
     /**
+     * @brief Drm header to be set once the session is constructed
+     */
+    std::vector<uint8_t> m_queuedDrmHeader;
+
+    /**
      * @brief Posts a getChallenge task onto the main thread.
      *
      * The challenge data is retrieved from ocdm and notified on a onLicenseRequest.

@@ -30,6 +30,7 @@
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
+#include <vector>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
@@ -38,9 +39,26 @@ using namespace firebolt::rialto::server::mock;
 
 using ::testing::_;
 using ::testing::ByMove;
+using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::SetArgPointee;
 using ::testing::StrictMock;
+
+MATCHER(nullptrMatcher, "")
+{
+    return arg == nullptr;
+}
+
+MATCHER(notNullptrMatcher, "")
+{
+    return arg != nullptr;
+}
+
+ACTION_P(memcpyChallenge, vec)
+{
+    memcpy(arg1, &vec[0], vec.size());
+}
 
 class MediaKeySessionTestBase : public ::testing::Test
 {
@@ -65,11 +83,15 @@ protected:
     const int32_t m_kMainThreadClientId = {5};
     KeySessionType m_keySessionType = KeySessionType::PERSISTENT_RELEASE_MESSAGE;
     bool m_isLDL = false;
+    const InitDataType m_kInitDataType{InitDataType::CENC};
+    const std::vector<uint8_t> m_kInitData{1, 2, 3};
+    const std::vector<unsigned char> m_kChallenge{'d', 'e', 'f'};
 
     void createKeySession(const std::string &keySystem);
     void destroyKeySession();
     void expectCloseKeySession(const std::string &keySystem);
     void generateRequest();
+    void generateRequestPlayready();
     void mainThreadWillEnqueueTask();
 };
 

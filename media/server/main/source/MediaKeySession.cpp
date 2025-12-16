@@ -127,6 +127,13 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
         else
         {
             m_isSessionConstructed = true;
+            if (!m_queuedDrmHeader.empty())
+            {
+                RIALTO_SERVER_LOG_DEBUG("Setting queued drm header after session construction");
+                setDrmHeader(m_queuedDrmHeader);
+                m_queuedDrmHeader.clear();
+            }
+
             if (isNetflixPlayreadyKeySystem())
             {
                 // Ocdm-playready does not notify onProcessChallenge when complete.
@@ -321,6 +328,13 @@ bool MediaKeySession::containsKey(const std::vector<uint8_t> &keyId)
 MediaKeyErrorStatus MediaKeySession::setDrmHeader(const std::vector<uint8_t> &requestData)
 {
     initOcdmErrorChecking();
+
+    if (!m_isSessionConstructed)
+    {
+        RIALTO_SERVER_LOG_INFO("Session not yet constructed, queueing drm header to be set after construction");
+        m_queuedDrmHeader = requestData;
+        return MediaKeyErrorStatus::OK;
+    }
 
     MediaKeyErrorStatus status = m_ocdmSession->setDrmHeader(requestData.data(), requestData.size());
     if (MediaKeyErrorStatus::OK != status)
