@@ -63,7 +63,7 @@ protected:
         std::make_unique<testing::StrictMock<wrappers::OcdmSessionMock>>()};
     testing::StrictMock<wrappers::OcdmSessionMock> &m_ocdmSessionMock{*m_ocdmSession};
     firebolt::rialto::wrappers::IOcdmSessionClient *m_ocdmSessionClient{0};
-    
+
     const std::vector<unsigned char> m_kUpdateSessionNetflixResponse{5, 6};
     const std::vector<unsigned char> m_kInitData{1, 2, 7};
     const std::vector<uint8_t> m_kLicenseRequestMessage{'d', 'z', 'f'};

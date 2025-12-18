@@ -32,7 +32,6 @@ const std::string kKeySystemWidevine{"com.widevine.alpha"};
 const std::string kKeySystemPlayready{"com.netflix.playready"};
 constexpr int32_t kMediaKeysHandle{1};
 constexpr firebolt::rialto::KeySessionType kSessionTypeTemp{firebolt::rialto::KeySessionType::TEMPORARY};
-constexpr bool kIsNotLdl{false};
 constexpr firebolt::rialto::MediaKeyErrorStatus kStatusOk{firebolt::rialto::MediaKeyErrorStatus::OK};
 constexpr firebolt::rialto::MediaKeyErrorStatus kStatusFailed{firebolt::rialto::MediaKeyErrorStatus::FAIL};
 constexpr firebolt::rialto::MediaKeyErrorStatus kStatusInterfaceNotImplemented{
@@ -108,8 +107,7 @@ void MediaKeysTestMethods::shouldCreateKeySession()
 {
     EXPECT_CALL(*m_mediaKeysModuleMock,
                 createKeySession(_,
-                                 createKeySessionRequestMatcher(kMediaKeysHandle,
-                                                                convertKeySessionType(kSessionTypeTemp), kIsNotLdl),
+                                 createKeySessionRequestMatcher(kMediaKeysHandle, convertKeySessionType(kSessionTypeTemp)),
                                  _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->createKeySessionResponse(kStatusOk, kKeySessionId)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
@@ -119,8 +117,7 @@ void MediaKeysTestMethods::shouldCreateKeySessionFailure()
 {
     EXPECT_CALL(*m_mediaKeysModuleMock,
                 createKeySession(_,
-                                 createKeySessionRequestMatcher(kMediaKeysHandle,
-                                                                convertKeySessionType(kSessionTypeTemp), kIsNotLdl),
+                                 createKeySessionRequestMatcher(kMediaKeysHandle, convertKeySessionType(kSessionTypeTemp)),
                                  _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->createKeySessionResponse(kStatusFailed, kKeySessionId)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
@@ -129,15 +126,14 @@ void MediaKeysTestMethods::shouldCreateKeySessionFailure()
 void MediaKeysTestMethods::createKeySession()
 {
     int32_t keySessionId;
-    EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, kIsNotLdl, keySessionId), kStatusOk);
+    EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, keySessionId), kStatusOk);
     EXPECT_EQ(keySessionId, kKeySessionId);
 }
 
 void MediaKeysTestMethods::createKeySessionFailure()
 {
     int32_t keySessionId;
-    EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, kIsNotLdl, keySessionId),
-              kStatusFailed);
+    EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, keySessionId), kStatusFailed);
 }
 
 void MediaKeysTestMethods::shouldGenerateRequest()

@@ -55,14 +55,13 @@ public:
      * @param[in]  ocdmSystem   : The ocdm system object to create the session on.
      * @param[in]  sessionType  : The session type.
      * @param[in]  client       : Client object for callbacks.
-     * @param[in]  isLDL        : Is this an LDL.
      *
      * @retval the new media keys instance or null on error.
      */
     virtual std::unique_ptr<IMediaKeySession>
     createMediaKeySession(const std::string &keySystem, int32_t keySessionId,
                           const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
-                          std::weak_ptr<IMediaKeysClient> client, bool isLDL) const = 0;
+                          std::weak_ptr<IMediaKeysClient> client) const = 0;
 };
 
 /**

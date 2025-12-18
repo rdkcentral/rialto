@@ -35,7 +35,6 @@ const std::vector<std::string> kKeySystems{"expectedKeySystem1", "expectedKeySys
 const std::string kVersion{"123"};
 constexpr int kMediaKeysHandle{2};
 constexpr firebolt::rialto::KeySessionType kKeySessionType{firebolt::rialto::KeySessionType::TEMPORARY};
-constexpr bool kIsLDL{false};
 constexpr int kKeySessionId{3};
 constexpr firebolt::rialto::InitDataType kInitDataType{firebolt::rialto::InitDataType::CENC};
 const std::vector<std::uint8_t> kInitData{6, 7, 2};
@@ -126,8 +125,8 @@ void CdmServiceTests::mediaKeysFactoryWillReturnNullptr()
 
 void CdmServiceTests::mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_CALL(m_mediaKeysMock, createKeySession(kKeySessionType, _, kIsLDL, _))
-        .WillOnce(DoAll(SetArgReferee<3>(kKeySessionId), Return(status)));
+    EXPECT_CALL(m_mediaKeysMock, createKeySession(kKeySessionType, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(kKeySessionId), Return(status)));
 }
 
 void CdmServiceTests::mediaKeysWillGenerateRequestWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
@@ -260,16 +259,15 @@ void CdmServiceTests::createKeySessionShouldSucceed()
 {
     int32_t returnKeySessionId = -1;
     EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK,
-              m_sut.createKeySession(kMediaKeysHandle, kKeySessionType, m_mediaKeysClientMock, kIsLDL,
-                                     returnKeySessionId));
+              m_sut.createKeySession(kMediaKeysHandle, kKeySessionType, m_mediaKeysClientMock, returnKeySessionId));
     EXPECT_GE(returnKeySessionId, -1);
 }
 
 void CdmServiceTests::createKeySessionShouldFailWithReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
     int32_t returnKeySessionId = -1;
-    EXPECT_EQ(status, m_sut.createKeySession(kMediaKeysHandle, kKeySessionType, m_mediaKeysClientMock, kIsLDL,
-                                             returnKeySessionId));
+    EXPECT_EQ(status,
+              m_sut.createKeySession(kMediaKeysHandle, kKeySessionType, m_mediaKeysClientMock, returnKeySessionId));
 }
 
 void CdmServiceTests::generateRequestShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)

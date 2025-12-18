@@ -115,11 +115,11 @@ bool MediaKeys::containsKey(int32_t keySessionId, const std::vector<uint8_t> &ke
 }
 
 MediaKeyErrorStatus MediaKeys::createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
-                                                bool isLDL, int32_t &keySessionId)
+                                                int32_t &keySessionId)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    auto result{m_mediaKeysIpc->createKeySession(sessionType, client, isLDL, keySessionId)};
+    auto result{m_mediaKeysIpc->createKeySession(sessionType, client, keySessionId)};
     if (isNetflixPlayready(m_keySystem) && MediaKeyErrorStatus::OK == result)
     {
         KeyIdMap::instance().addSession(keySessionId);

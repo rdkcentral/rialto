@@ -37,7 +37,7 @@ public:
     MOCK_METHOD(bool, destroyMediaKeys, (int mediaKeysHandle), (override));
     MOCK_METHOD(MediaKeyErrorStatus, createKeySession,
                 (int mediaKeysHandle, KeySessionType sessionType, const std::shared_ptr<IMediaKeysClient> &client,
-                 bool isLDL, int32_t &keySessionId),
+                 int32_t &keySessionId),
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, generateRequest,
                 (int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,

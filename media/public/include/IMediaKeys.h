@@ -110,13 +110,12 @@ public:
      *
      * @param[in]  sessionType : The session type.
      * @param[in]  client      : Client object for callbacks
-     * @param[in]  isLDL       : Is this an LDL
      * @param[out] keySessionId: The key session id
      *
      * @retval an error status.
      */
     virtual MediaKeyErrorStatus createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
-                                                 bool isLDL, int32_t &keySessionId) = 0;
+                                                 int32_t &keySessionId) = 0;
 
     /**
      * @brief Generates a licence request.

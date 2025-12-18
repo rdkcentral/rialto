@@ -262,7 +262,7 @@ void MediaKeysModuleService::createKeySession(::google::protobuf::RpcController 
         m_cdmService.createKeySession(request->media_keys_handle(), convertKeySessionType(request->session_type()),
                                       std::make_shared<MediaKeysClient>(request->media_keys_handle(),
                                                                         ipcController->getClient()),
-                                      request->is_ldl(), keySessionId);
+                                      keySessionId);
     if (MediaKeyErrorStatus::OK == status)
     {
         response->set_key_session_id(keySessionId);

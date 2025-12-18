@@ -41,15 +41,16 @@ std::shared_ptr<IMediaKeySessionFactory> IMediaKeySessionFactory::createFactory(
     return factory;
 }
 
-std::unique_ptr<IMediaKeySession> MediaKeySessionFactory::createMediaKeySession(
-    const std::string &keySystem, int32_t keySessionId, const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem,
-    KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL) const
+std::unique_ptr<IMediaKeySession>
+MediaKeySessionFactory::createMediaKeySession(const std::string &keySystem, int32_t keySessionId,
+                                              const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem,
+                                              KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client) const
 {
     std::unique_ptr<IMediaKeySession> mediaKeys;
     try
     {
         mediaKeys = std::make_unique<server::MediaKeySession>(keySystem, keySessionId, ocdmSystem, sessionType, client,
-                                                              isLDL, server::IMainThreadFactory::createFactory());
+                                                              server::IMainThreadFactory::createFactory());
     }
     catch (const std::exception &e)
     {
@@ -61,11 +62,11 @@ std::unique_ptr<IMediaKeySession> MediaKeySessionFactory::createMediaKeySession(
 
 MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessionId,
                                  const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
-                                 std::weak_ptr<IMediaKeysClient> client, bool isLDL,
+                                 std::weak_ptr<IMediaKeysClient> client,
                                  const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
     : m_kKeySystem(keySystem), m_kKeySessionId(keySessionId), m_kSessionType(sessionType), m_mediaKeysClient(client),
-      m_kIsLDL(isLDL), m_isSessionConstructed(false), m_isSessionClosed(false), m_licenseRequested(false),
-      m_ongoingOcdmOperation(false), m_ocdmError(false)
+      m_isSessionConstructed(false), m_isSessionClosed(false), m_licenseRequested(false), m_ongoingOcdmOperation(false),
+      m_ocdmError(false)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -158,15 +159,16 @@ void MediaKeySession::getChallenge()
     RIALTO_SERVER_LOG_DEBUG("entry:");
     auto task = [&]()
     {
+        const bool isLdlTemp{false};
         uint32_t challengeSize = 0;
-        MediaKeyErrorStatus status = m_ocdmSession->getChallengeData(m_kIsLDL, nullptr, &challengeSize);
+        MediaKeyErrorStatus status = m_ocdmSession->getChallengeData(isLdlTemp, nullptr, &challengeSize);
         if (challengeSize == 0)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to get the challenge data size, no onLicenseRequest will be generated");
             return;
         }
         std::vector<uint8_t> challenge(challengeSize, 0x00);
-        status = m_ocdmSession->getChallengeData(m_kIsLDL, &challenge[0], &challengeSize);
+        status = m_ocdmSession->getChallengeData(isLdlTemp, &challenge[0], &challengeSize);
         if (MediaKeyErrorStatus::OK != status)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to get the challenge data, no onLicenseRequest will be generated");

@@ -107,7 +107,7 @@ void SetDrmHeaderTest::setDrmHeader(const std::vector<unsigned char> &kKeyId)
  *   setDrmHeader second header.
  *   Expect that setDrmHeader is processed by the server.
  *   Api call returns with success.
- * 
+ *
  *  Step 4: Close session
  *   closeSession.
  *   Expect that closeSession is processed by the server.

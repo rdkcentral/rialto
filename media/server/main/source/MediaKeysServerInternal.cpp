@@ -210,13 +210,13 @@ bool MediaKeysServerInternal::containsKeyInternal(int32_t keySessionId, const st
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::createKeySession(KeySessionType sessionType,
-                                                              std::weak_ptr<IMediaKeysClient> client, bool isLDL,
+                                                              std::weak_ptr<IMediaKeysClient> client,
                                                               int32_t &keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status;
-    auto task = [&]() { status = createKeySessionInternal(sessionType, client, isLDL, keySessionId); };
+    auto task = [&]() { status = createKeySessionInternal(sessionType, client, false, keySessionId); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return status;
@@ -229,7 +229,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::createKeySessionInternal(KeySession
     int32_t keySessionIdTemp = generateSessionId();
     std::unique_ptr<IMediaKeySession> mediaKeySession =
         m_mediaKeySessionFactory->createMediaKeySession(m_kKeySystem, keySessionIdTemp, *m_ocdmSystem, sessionType,
-                                                        client, isLDL);
+                                                        client);
     if (!mediaKeySession)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create a new media key session");

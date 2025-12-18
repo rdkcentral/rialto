@@ -42,7 +42,7 @@ void MediaKeySessionTestBase::createKeySession(const std::string &keySystem)
 
     EXPECT_NO_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(keySystem, m_kKeySessionId, *m_ocdmSystemMock,
                                                                           m_keySessionType, m_mediaKeysClientMock,
-                                                                          m_isLDL, m_mainThreadFactoryMock));
+                                                                          m_mainThreadFactoryMock));
     EXPECT_NE(m_mediaKeySession, nullptr);
 }
 

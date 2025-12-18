@@ -61,11 +61,11 @@ void MediaKeysTestBase::destroyMediaKeys()
 void MediaKeysTestBase::createKeySession(std::string keySystem)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionFactoryMock, createMediaKeySession(keySystem, _, _, m_keySessionType, _, m_isLDL))
+    EXPECT_CALL(*m_mediaKeySessionFactoryMock, createMediaKeySession(keySystem, _, _, m_keySessionType, _))
         .WillOnce(Return(ByMove(std::move(m_mediaKeySession))));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK,
-              m_mediaKeys->createKeySession(m_keySessionType, m_mediaKeysClientMock, m_isLDL, m_kKeySessionId));
+              m_mediaKeys->createKeySession(m_keySessionType, m_mediaKeysClientMock, m_kKeySessionId));
 }
 
 void MediaKeysTestBase::mainThreadWillEnqueueTaskAndWait()

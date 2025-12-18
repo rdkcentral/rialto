@@ -334,7 +334,7 @@ bool MediaKeysIpc::containsKey(int32_t keySessionId, const std::vector<uint8_t> 
 }
 
 MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
-                                                   bool isLDL, int32_t &keySessionId)
+                                                   int32_t &keySessionId)
 {
     if (!reattachChannelIfRequired())
     {
@@ -362,7 +362,6 @@ MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, s
     firebolt::rialto::CreateKeySessionRequest request;
     request.set_media_keys_handle(m_mediaKeysHandle);
     request.set_session_type(protoSessionType);
-    request.set_is_ldl(isLDL);
 
     firebolt::rialto::CreateKeySessionResponse response;
     // Default error status to FAIL

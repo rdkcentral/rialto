@@ -34,12 +34,11 @@ TEST_F(RialtoServerMediaKeysCreateKeySessionTest, Success)
     int32_t returnKeySessionId = -1;
 
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionFactoryMock,
-                createMediaKeySession(kNetflixKeySystem, _, _, m_keySessionType, _, m_isLDL))
+    EXPECT_CALL(*m_mediaKeySessionFactoryMock, createMediaKeySession(kNetflixKeySystem, _, _, m_keySessionType, _))
         .WillOnce(Return(ByMove(std::move(m_mediaKeySession))));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK,
-              m_mediaKeys->createKeySession(m_keySessionType, m_mediaKeysClientMock, m_isLDL, returnKeySessionId));
+              m_mediaKeys->createKeySession(m_keySessionType, m_mediaKeysClientMock, returnKeySessionId));
     EXPECT_GE(returnKeySessionId, -1);
 }
 
@@ -51,10 +50,9 @@ TEST_F(RialtoServerMediaKeysCreateKeySessionTest, OcdmSystemFailure)
     int32_t returnKeySessionId = -1;
 
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionFactoryMock,
-                createMediaKeySession(kNetflixKeySystem, _, _, m_keySessionType, _, m_isLDL))
+    EXPECT_CALL(*m_mediaKeySessionFactoryMock, createMediaKeySession(kNetflixKeySystem, _, _, m_keySessionType, _))
         .WillOnce(Return(ByMove(nullptr)));
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL,
-              m_mediaKeys->createKeySession(m_keySessionType, m_mediaKeysClientMock, m_isLDL, returnKeySessionId));
+              m_mediaKeys->createKeySession(m_keySessionType, m_mediaKeysClientMock, returnKeySessionId));
 }

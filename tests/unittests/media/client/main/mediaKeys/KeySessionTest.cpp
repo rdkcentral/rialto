@@ -65,14 +65,12 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, CreateKeySession)
     KeySessionType sessionType = KeySessionType::PERSISTENT_LICENCE;
     std::shared_ptr<StrictMock<MediaKeysClientMock>> mediaKeysClientMock =
         std::make_shared<StrictMock<MediaKeysClientMock>>();
-    bool isLDL = false;
     int32_t returnKeySessionId;
 
-    EXPECT_CALL(*m_mediaKeysIpcMock, createKeySession(sessionType, _, isLDL, _))
-        .WillOnce(DoAll(SetArgReferee<3>(m_kKeySessionId), Return(m_mediaKeyErrorStatus)));
+    EXPECT_CALL(*m_mediaKeysIpcMock, createKeySession(sessionType, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_kKeySessionId), Return(m_mediaKeyErrorStatus)));
 
-    EXPECT_EQ(m_mediaKeys->createKeySession(sessionType, mediaKeysClientMock, isLDL, returnKeySessionId),
-              m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->createKeySession(sessionType, mediaKeysClientMock, returnKeySessionId), m_mediaKeyErrorStatus);
     EXPECT_EQ(returnKeySessionId, m_kKeySessionId);
 }
 

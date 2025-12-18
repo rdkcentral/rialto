@@ -121,8 +121,7 @@ bool CdmService::destroyMediaKeys(int mediaKeysHandle)
 }
 
 MediaKeyErrorStatus CdmService::createKeySession(int mediaKeysHandle, KeySessionType sessionType,
-                                                 const std::shared_ptr<IMediaKeysClient> &client, bool isLDL,
-                                                 int32_t &keySessionId)
+                                                 const std::shared_ptr<IMediaKeysClient> &client, int32_t &keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to create key session: %d", mediaKeysHandle);
 
@@ -134,7 +133,7 @@ MediaKeyErrorStatus CdmService::createKeySession(int mediaKeysHandle, KeySession
         return MediaKeyErrorStatus::FAIL;
     }
 
-    MediaKeyErrorStatus status = mediaKeysIter->second->createKeySession(sessionType, client, isLDL, keySessionId);
+    MediaKeyErrorStatus status = mediaKeysIter->second->createKeySession(sessionType, client, keySessionId);
     if (MediaKeyErrorStatus::OK == status)
     {
         if (m_mediaKeysClients.find(keySessionId) != m_mediaKeysClients.end())

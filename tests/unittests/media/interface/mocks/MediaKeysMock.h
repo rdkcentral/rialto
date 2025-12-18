@@ -37,8 +37,7 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, selectKeyId, (int32_t keySessionId, const std::vector<uint8_t> &keyId), (override));
     MOCK_METHOD(bool, containsKey, (int32_t keySessionId, const std::vector<uint8_t> &keyId), (override));
     MOCK_METHOD(MediaKeyErrorStatus, createKeySession,
-                (KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL, int32_t &keySessionId),
-                (override));
+                (KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, int32_t &keySessionId), (override));
     MOCK_METHOD(MediaKeyErrorStatus, generateRequest,
                 (int32_t keySessionId, InitDataType initDataType, const std::vector<uint8_t> &initData), (override));
     MOCK_METHOD(MediaKeyErrorStatus, loadSession, (int32_t keySessionId), (override));

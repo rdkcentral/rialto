@@ -43,8 +43,7 @@ public:
     std::unique_ptr<IMediaKeySession> createMediaKeySession(const std::string &keySystem, int32_t keySessionId,
                                                             const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem,
                                                             KeySessionType sessionType,
-                                                            std::weak_ptr<IMediaKeysClient> client,
-                                                            bool isLDL) const override;
+                                                            std::weak_ptr<IMediaKeysClient> client) const override;
 };
 
 /**
@@ -61,13 +60,11 @@ public:
      * @param[in]  ocdmSystem           : The ocdm system object to create the session on.
      * @param[in]  sessionType          : The session type.
      * @param[in]  client               : Client object for callbacks.
-     * @param[in]  isLDL                : Is this an LDL.
      * @param[in]  mainThreadFactory    : The main thread factory.
      */
     MediaKeySession(const std::string &keySystem, int32_t keySessionId,
                     const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
-                    std::weak_ptr<IMediaKeysClient> client, bool isLDL,
-                    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
+                    std::weak_ptr<IMediaKeysClient> client, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
 
     /**
      * @brief Virtual destructor.
@@ -136,11 +133,6 @@ private:
      * @brief The mainThread object.
      */
     std::shared_ptr<IMainThread> m_mainThread;
-
-    /**
-     * @brief Is the session LDL.
-     */
-    const bool m_kIsLDL;
 
     /**
      * @brief Is the ocdm session constructed.
