@@ -268,14 +268,23 @@ bool NamedSocket::getSocketLock()
 uid_t NamedSocket::getSocketOwnerId(const std::string &socketOwner) const
 {
     uid_t ownerId = kNoOwnerChange;
-    const size_t kBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (!socketOwner.empty() && kBufferSize > 0)
+    long buffersize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    size_t BufferSize = 0;
+    if (buffersize == -1)
+    {
+        RIALTO_IPC_LOG_SYS_WARN(errno, "Invalid Buffer Size '%s'", socketOwner.c_str());
+    }
+    if (buffersize > 0)
+    {
+        BufferSize = static_cast<size_t>(buffersize);
+    }
+    if (!socketOwner.empty() && BufferSize > 0)
     {
         errno = 0;
         passwd passwordStruct{};
         passwd *passwordResult = nullptr;
-        char buffer[kBufferSize];
-        int result = getpwnam_r(socketOwner.c_str(), &passwordStruct, buffer, kBufferSize, &passwordResult);
+        std::vector<char> buffer(BufferSize);
+        int result = getpwnam_r(socketOwner.c_str(), &passwordStruct, buffer.data(), BufferSize, &passwordResult);
         if (result == 0 && passwordResult)
         {
             ownerId = passwordResult->pw_uid;
@@ -291,14 +300,23 @@ uid_t NamedSocket::getSocketOwnerId(const std::string &socketOwner) const
 gid_t NamedSocket::getSocketGroupId(const std::string &socketGroup) const
 {
     gid_t groupId = kNoGroupChange;
-    const size_t kBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (!socketGroup.empty() && kBufferSize > 0)
+    long buffersize = sysconf(_SC_GETPW_R_SIZE_MAX);
+    size_t BufferSize = 0;
+    if (buffersize == -1)
+    {
+        RIALTO_IPC_LOG_SYS_WARN(errno, "Invalid Buffer Size '%s'", socketGroup.c_str());
+    }
+    if (buffersize > 0)
+    {
+        BufferSize = static_cast<size_t>(buffersize);
+    }
+    if (!socketGroup.empty() && BufferSize > 0)
     {
         errno = 0;
         group groupStruct{};
         group *groupResult = nullptr;
-        char buffer[kBufferSize];
-        int result = getgrnam_r(socketGroup.c_str(), &groupStruct, buffer, kBufferSize, &groupResult);
+        std::vector<char> buffer(BufferSize);
+        int result = getgrnam_r(socketGroup.c_str(), &groupStruct, buffer.data(), BufferSize, &groupResult);
         if (result == 0 && groupResult)
         {
             groupId = groupResult->gr_gid;
