@@ -26,7 +26,7 @@ UpdatePlaybackGroup::UpdatePlaybackGroup(GenericPlayerContext &context, IGstGene
                                          std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                                          std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                                          GstElement *typefind, const GstCaps *caps)
-    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_typefind{typefind},
+    : m_context{context}, m_player{player}, m_gstWrapper{std::move(gstWrapper)}, m_glibWrapper{std::move(glibWrapper)}, m_typefind{typefind},
       m_caps{caps}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing UpdatePlaybackGroup");

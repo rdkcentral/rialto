@@ -105,7 +105,7 @@ MediaKeysServerInternal::MediaKeysServerInternal(
     const std::string &keySystem, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory,
     std::shared_ptr<IMediaKeySessionFactory> mediaKeySessionFactory)
-    : m_mediaKeySessionFactory(mediaKeySessionFactory), m_kKeySystem(keySystem)
+    : m_mediaKeySessionFactory(std::move(mediaKeySessionFactory)), m_kKeySystem(keySystem)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 

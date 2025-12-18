@@ -29,7 +29,7 @@ namespace firebolt::rialto::server::tasks::generic
 ReportPosition::ReportPosition(GenericPlayerContext &context, IGstGenericPlayerClient *client,
                                const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                                IGstGenericPlayerPrivate &player)
-    : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_player{player}
+    : m_context{context}, m_gstPlayerClient{client}, m_gstWrapper{std::move(gstWrapper)}, m_player{player}
 {
 }
 

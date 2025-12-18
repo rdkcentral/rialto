@@ -26,7 +26,7 @@ namespace firebolt::rialto::server::tasks::webaudio
 {
 SetVolume::SetVolume(WebAudioPlayerContext &context,
                      std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, double volume)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_volume{volume}
+    : m_context{context}, m_gstWrapper{std::move(gstWrapper)}, m_volume{volume}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetVolume");
 }

@@ -27,7 +27,7 @@ RemoveSource::RemoveSource(GenericPlayerContext &context, IGstGenericPlayerPriva
                            IGstGenericPlayerClient *client,
                            std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                            const MediaSourceType &type)
-    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}
+    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{std::move(gstWrapper)}, m_type{type}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing RemoveSource");
 }
