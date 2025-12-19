@@ -41,7 +41,7 @@ public:
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, generateRequest,
                 (int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,
-                 const std::vector<uint8_t> &initData),
+                 const std::vector<uint8_t> &initData, const LimitedDurationLicense &ldlState),
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, loadSession, (int mediaKeysHandle, int32_t keySessionId), (override));
     MOCK_METHOD(MediaKeyErrorStatus, updateSession,

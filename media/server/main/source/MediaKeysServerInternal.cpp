@@ -242,19 +242,21 @@ MediaKeyErrorStatus MediaKeysServerInternal::createKeySessionInternal(KeySession
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::generateRequest(int32_t keySessionId, InitDataType initDataType,
-                                                             const std::vector<uint8_t> &initData)
+                                                             const std::vector<uint8_t> &initData,
+                                                             const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status;
-    auto task = [&]() { status = generateRequestInternal(keySessionId, initDataType, initData); };
+    auto task = [&]() { status = generateRequestInternal(keySessionId, initDataType, initData, ldlState); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return status;
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::generateRequestInternal(int32_t keySessionId, InitDataType initDataType,
-                                                                     const std::vector<uint8_t> &initData)
+                                                                     const std::vector<uint8_t> &initData,
+                                                                     const LimitedDurationLicense &ldlState)
 {
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
     if (sessionIter == m_mediaKeySessions.end())
@@ -263,7 +265,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::generateRequestInternal(int32_t key
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second->generateRequest(initDataType, initData);
+    MediaKeyErrorStatus status = sessionIter->second->generateRequest(initDataType, initData, ldlState);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to generate request for the key session %d", keySessionId);
@@ -596,12 +598,6 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
     RIALTO_SERVER_LOG_INFO("Successfully decrypted buffer.");
 
     return status;
-}
-
-bool MediaKeysServerInternal::isNetflixPlayreadyKeySystem() const
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return m_kKeySystem.find("netflix") != std::string::npos;
 }
 
 void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)

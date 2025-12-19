@@ -107,7 +107,8 @@ MediaKeySession::~MediaKeySession()
     m_mainThread->unregisterClient(m_mainThreadClientId);
 }
 
-MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData)
+MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData,
+                                                     const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     // Set the request flag for the onLicenseRequest callback
@@ -134,18 +135,19 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
                 setDrmHeader(m_queuedDrmHeader);
                 m_queuedDrmHeader.clear();
             }
-
-            if (isNetflixPlayreadyKeySystem())
-            {
-                // Ocdm-playready does not notify onProcessChallenge when complete.
-                // Fetch the challenge manually.
-                getChallenge();
-            }
         }
 
         if ((checkForOcdmErrors("generateRequest")) && (MediaKeyErrorStatus::OK == status))
         {
             status = MediaKeyErrorStatus::FAIL;
+        }
+
+        if (LimitedDurationLicense::NOT_SPECIFIED != ldlState)
+        {
+            m_extendedInterfaceInUse = true;
+            // Ocdm-playready does not notify onProcessChallenge when complete.
+            // Fetch the challenge manually.
+            getChallenge(ldlState);
         }
 
         return status;
@@ -154,21 +156,21 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
     return MediaKeyErrorStatus::OK;
 }
 
-void MediaKeySession::getChallenge()
+void MediaKeySession::getChallenge(const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     auto task = [&]()
     {
-        const bool isLdlTemp{false};
+        const bool kIsLdl{LimitedDurationLicense::ENABLED == ldlState};
         uint32_t challengeSize = 0;
-        MediaKeyErrorStatus status = m_ocdmSession->getChallengeData(isLdlTemp, nullptr, &challengeSize);
+        MediaKeyErrorStatus status = m_ocdmSession->getChallengeData(kIsLdl, nullptr, &challengeSize);
         if (challengeSize == 0)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to get the challenge data size, no onLicenseRequest will be generated");
             return;
         }
         std::vector<uint8_t> challenge(challengeSize, 0x00);
-        status = m_ocdmSession->getChallengeData(isLdlTemp, &challenge[0], &challengeSize);
+        status = m_ocdmSession->getChallengeData(kIsLdl, &challenge[0], &challengeSize);
         if (MediaKeyErrorStatus::OK != status)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to get the challenge data, no onLicenseRequest will be generated");
@@ -204,7 +206,7 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
     initOcdmErrorChecking();
 
     MediaKeyErrorStatus status;
-    if (isNetflixPlayreadyKeySystem())
+    if (m_extendedInterfaceInUse)
     {
         status = m_ocdmSession->storeLicenseData(&responseData[0], responseData.size());
         if (MediaKeyErrorStatus::OK != status)
@@ -252,7 +254,7 @@ MediaKeyErrorStatus MediaKeySession::closeKeySession()
     initOcdmErrorChecking();
 
     MediaKeyErrorStatus status;
-    if (isNetflixPlayreadyKeySystem())
+    if (m_extendedInterfaceInUse)
     {
         if (MediaKeyErrorStatus::OK != m_ocdmSession->cancelChallengeData())
         {
@@ -334,6 +336,7 @@ MediaKeyErrorStatus MediaKeySession::setDrmHeader(const std::vector<uint8_t> &re
     if (!m_isSessionConstructed)
     {
         RIALTO_SERVER_LOG_INFO("Session not yet constructed, queueing drm header to be set after construction");
+        m_extendedInterfaceInUse = true;
         m_queuedDrmHeader = requestData;
         return MediaKeyErrorStatus::OK;
     }
@@ -379,6 +382,7 @@ MediaKeyErrorStatus MediaKeySession::selectKeyId(const std::vector<uint8_t> &key
 
     initOcdmErrorChecking();
 
+    m_extendedInterfaceInUse = true;
     MediaKeyErrorStatus status = m_ocdmSession->selectKeyId(keyId.size(), keyId.data());
     if (MediaKeyErrorStatus::OK == status)
     {
@@ -392,11 +396,6 @@ MediaKeyErrorStatus MediaKeySession::selectKeyId(const std::vector<uint8_t> &key
     }
 
     return status;
-}
-
-bool MediaKeySession::isNetflixPlayreadyKeySystem() const
-{
-    return m_kKeySystem.find("netflix") != std::string::npos;
 }
 
 void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength)

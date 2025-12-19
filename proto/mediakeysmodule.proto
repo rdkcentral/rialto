@@ -215,11 +215,17 @@ message GenerateRequestRequest {
     DRMHEADER = 4;  ///< The init data is in DrmHeader format.
   };
 
+  enum LimitedDurationLicense {
+    NOT_SPECIFIED = 0; ///< The license duration is not specified
+    ENABLED = 1;       ///< The license has a limited duration
+    DISABLED = 2;      ///< The license does not have a limited duration
+  };
+
   optional int32 media_keys_handle = 1 [default = -1];
   optional int32 key_session_id = 2 [default = -1];
   optional InitDataType init_data_type = 3;
   repeated uint32 init_data = 4;
-
+  optional LimitedDurationLicense ldl_state = 5 [default = NOT_SPECIFIED];
 }
 message GenerateRequestResponse {
   optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];

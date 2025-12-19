@@ -80,7 +80,8 @@ public:
                                          int32_t &keySessionId) override;
 
     MediaKeyErrorStatus generateRequest(int32_t keySessionId, InitDataType initDataType,
-                                        const std::vector<uint8_t> &initData) override;
+                                        const std::vector<uint8_t> &initData,
+                                        const LimitedDurationLicense &ldlState) override;
 
     MediaKeyErrorStatus loadSession(int32_t keySessionId) override;
 
@@ -113,8 +114,6 @@ public:
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
 
     MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) override;
-
-    bool isNetflixPlayreadyKeySystem() const override;
 
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
@@ -168,11 +167,13 @@ private:
      * @param[in]  keySessionId : The key session id for the session.
      * @param[in]  initDataType : The init data type.
      * @param[in]  initData     : The init data.
+     * @param[in]  ldlState     : The Limited Duration License state. Most of key systems do not need this parameter.
      *
      * @retval an error status.
      */
     MediaKeyErrorStatus generateRequestInternal(int32_t keySessionId, InitDataType initDataType,
-                                                const std::vector<uint8_t> &initData);
+                                                const std::vector<uint8_t> &initData,
+                                                const LimitedDurationLicense &ldlState);
 
     /**
      * @brief Load internally, only to be called on the main thread.

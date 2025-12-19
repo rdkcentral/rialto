@@ -30,7 +30,8 @@ namespace firebolt::rialto::server
 class MediaKeySessionMock : public IMediaKeySession
 {
 public:
-    MOCK_METHOD(MediaKeyErrorStatus, generateRequest, (InitDataType initDataType, const std::vector<uint8_t> &initData),
+    MOCK_METHOD(MediaKeyErrorStatus, generateRequest,
+                (InitDataType initDataType, const std::vector<uint8_t> &initData, const LimitedDurationLicense &ldlState),
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, loadSession, (), (override));
     MOCK_METHOD(MediaKeyErrorStatus, updateSession, (const std::vector<uint8_t> &responseData), (override));
@@ -42,7 +43,6 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, setDrmHeader, (const std::vector<uint8_t> &requestData), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getLastDrmError, (uint32_t & errorCode), (override));
     MOCK_METHOD(MediaKeyErrorStatus, selectKeyId, (const std::vector<uint8_t> &keyId), (override));
-    MOCK_METHOD(bool, isNetflixPlayreadyKeySystem, (), (const, override));
 };
 } // namespace firebolt::rialto::server
 

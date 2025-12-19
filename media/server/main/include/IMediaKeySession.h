@@ -83,11 +83,12 @@ public:
      *
      * @param[in]  initDataType : The init data type.
      * @param[in]  initData     : The init data.
+     * @param[in]  ldlState     : The Limited Duration License state. Most of key systems do not need this parameter.
      *
      * @retval an error status.
      */
-    virtual MediaKeyErrorStatus generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData) = 0;
-
+    virtual MediaKeyErrorStatus generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData,
+                                                const LimitedDurationLicense &ldlState) = 0;
     /**
      * @brief Loads the existing key session.
      *
@@ -178,13 +179,6 @@ public:
      * @retval an error status.
      */
     virtual MediaKeyErrorStatus selectKeyId(const std::vector<uint8_t> &keyId) = 0;
-
-    /**
-     * @brief Checks, if key system of media key session is Netflix playready.
-     *
-     * @retval true if key system is Netflix playready
-     */
-    virtual bool isNetflixPlayreadyKeySystem() const = 0;
 };
 } // namespace firebolt::rialto::server
 

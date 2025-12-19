@@ -86,6 +86,7 @@ protected:
     const InitDataType m_kInitDataType{InitDataType::CENC};
     const std::vector<uint8_t> m_kInitData{1, 2, 3};
     const std::vector<unsigned char> m_kChallenge{'d', 'e', 'f'};
+    const LimitedDurationLicense m_kLdlState{LimitedDurationLicense::NOT_SPECIFIED};
 
     void createKeySession(const std::string &keySystem);
     void destroyKeySession();

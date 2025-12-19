@@ -100,6 +100,22 @@ firebolt::rialto::InitDataType covertInitDataType(firebolt::rialto::GenerateRequ
         return firebolt::rialto::InitDataType::UNKNOWN;
     }
 }
+
+firebolt::rialto::LimitedDurationLicense
+covertLimitedDurationLicense(firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense protoLimitedDurationLicense)
+{
+    switch (protoLimitedDurationLicense)
+    {
+    case firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense::GenerateRequestRequest_LimitedDurationLicense_NOT_SPECIFIED:
+        return firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED;
+    case firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense::GenerateRequestRequest_LimitedDurationLicense_ENABLED:
+        return firebolt::rialto::LimitedDurationLicense::ENABLED;
+    case firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense::GenerateRequestRequest_LimitedDurationLicense_DISABLED:
+        return firebolt::rialto::LimitedDurationLicense::DISABLED;
+    default:
+        return firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED;
+    }
+}
 } // namespace
 
 namespace firebolt::rialto::server::ipc
@@ -278,10 +294,11 @@ void MediaKeysModuleService::generateRequest(::google::protobuf::RpcController *
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status = m_cdmService.generateRequest(request->media_keys_handle(), request->key_session_id(),
-                                                              covertInitDataType(request->init_data_type()),
-                                                              std::vector<std::uint8_t>{request->init_data().begin(),
-                                                                                        request->init_data().end()});
+    MediaKeyErrorStatus status =
+        m_cdmService.generateRequest(request->media_keys_handle(), request->key_session_id(),
+                                     covertInitDataType(request->init_data_type()),
+                                     std::vector<std::uint8_t>{request->init_data().begin(), request->init_data().end()},
+                                     covertLimitedDurationLicense(request->ldl_state()));
     response->set_error_status(convertMediaKeyErrorStatus(status));
     done->Run();
 }

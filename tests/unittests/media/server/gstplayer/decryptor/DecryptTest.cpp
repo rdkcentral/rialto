@@ -144,12 +144,12 @@ protected:
 
     void expectWidevineKeySystem()
     {
-        EXPECT_CALL(*m_decryptionServiceMock, isNetflixPlayreadyKeySystem(m_keySessionId)).WillOnce(Return(false));
+        EXPECT_CALL(*m_decryptionServiceMock, isExtendedInterfaceUsed(m_keySessionId)).WillOnce(Return(false));
     }
 
     void expectPlayreadyKeySystem()
     {
-        EXPECT_CALL(*m_decryptionServiceMock, isNetflixPlayreadyKeySystem(m_keySessionId)).WillOnce(Return(true));
+        EXPECT_CALL(*m_decryptionServiceMock, isExtendedInterfaceUsed(m_keySessionId)).WillOnce(Return(true));
     }
 
     void expectKeyMappingFailure()

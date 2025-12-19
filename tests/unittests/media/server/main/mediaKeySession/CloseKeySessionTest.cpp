@@ -31,11 +31,14 @@ protected:
 TEST_F(RialtoServerMediaKeySessionCloseKeySessionTest, SuccessNetflix)
 {
     createKeySession(kNetflixKeySystem);
+    generateRequestPlayready();
 
     EXPECT_CALL(*m_ocdmSessionMock, cancelChallengeData()).WillOnce(Return(MediaKeyErrorStatus::OK));
     EXPECT_CALL(*m_ocdmSessionMock, cleanDecryptContext()).WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->closeKeySession());
+
+    EXPECT_CALL(*m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
 }
 
 /**
@@ -56,11 +59,14 @@ TEST_F(RialtoServerMediaKeySessionCloseKeySessionTest, SuccessNoneNetflix)
 TEST_F(RialtoServerMediaKeySessionCloseKeySessionTest, OcdmSessionCancelChallengeDataFailure)
 {
     createKeySession(kNetflixKeySystem);
+    generateRequestPlayready();
 
     EXPECT_CALL(*m_ocdmSessionMock, cancelChallengeData()).WillOnce(Return(MediaKeyErrorStatus::INVALID_STATE));
     EXPECT_CALL(*m_ocdmSessionMock, cleanDecryptContext()).WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->closeKeySession());
+
+    EXPECT_CALL(*m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
 }
 
 /**
@@ -69,11 +75,14 @@ TEST_F(RialtoServerMediaKeySessionCloseKeySessionTest, OcdmSessionCancelChalleng
 TEST_F(RialtoServerMediaKeySessionCloseKeySessionTest, OcdmSessionCleanDecryptContextFailure)
 {
     createKeySession(kNetflixKeySystem);
+    generateRequestPlayready();
 
     EXPECT_CALL(*m_ocdmSessionMock, cancelChallengeData()).WillOnce(Return(MediaKeyErrorStatus::OK));
     EXPECT_CALL(*m_ocdmSessionMock, cleanDecryptContext()).WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->closeKeySession());
+
+    EXPECT_CALL(*m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
 }
 
 /**

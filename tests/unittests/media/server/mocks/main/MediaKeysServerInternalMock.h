@@ -39,7 +39,9 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, createKeySession,
                 (KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, int32_t &keySessionId), (override));
     MOCK_METHOD(MediaKeyErrorStatus, generateRequest,
-                (int32_t keySessionId, InitDataType initDataType, const std::vector<uint8_t> &initData), (override));
+                (int32_t keySessionId, InitDataType initDataType, const std::vector<uint8_t> &initData,
+                 const LimitedDurationLicense &ldlState),
+                (override));
     MOCK_METHOD(MediaKeyErrorStatus, loadSession, (int32_t keySessionId), (override));
     MOCK_METHOD(MediaKeyErrorStatus, updateSession, (int32_t keySessionId, const std::vector<uint8_t> &responseData),
                 (override));
@@ -57,7 +59,6 @@ public:
     MOCK_METHOD(MediaKeyErrorStatus, getCdmKeySessionId, (int32_t keySessionId, std::string &cdmKeySessionId),
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, decrypt, (int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps), (override));
-    MOCK_METHOD(bool, isNetflixPlayreadyKeySystem, (), (const, override));
     MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
     MOCK_METHOD(MediaKeyErrorStatus, releaseKeySession, (int32_t keySessionId), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getMetricSystemData, (std::vector<uint8_t> & buffer), (override));

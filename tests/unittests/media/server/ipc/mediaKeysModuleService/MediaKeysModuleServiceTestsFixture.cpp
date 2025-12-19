@@ -49,6 +49,7 @@ const std::vector<uint8_t> kDrmHeader{6, 3, 8};
 const std::vector<unsigned char> kLicenseRequestMessage{3, 2, 1};
 const std::vector<unsigned char> kLicenseRenewalMessage{0, 4, 8};
 const std::string kUrl{"http://"};
+constexpr firebolt::rialto::LimitedDurationLicense kLdlState{firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED};
 } // namespace
 
 MATCHER_P4(LicenseRequestEventMatcher, kKeySessionId, mediaKeysHandle, requestMessage, kUrl, "")
@@ -156,14 +157,16 @@ void MediaKeysModuleServiceTests::cdmServiceWillFailToCreateKeySession()
 void MediaKeysModuleServiceTests::cdmServiceWillGenerateRequest()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_cdmServiceMock, generateRequest(kHardcodedMediaKeysHandle, kKeySessionId, kInitDataType, kInitData))
+    EXPECT_CALL(m_cdmServiceMock,
+                generateRequest(kHardcodedMediaKeysHandle, kKeySessionId, kInitDataType, kInitData, kLdlState))
         .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
 }
 
 void MediaKeysModuleServiceTests::cdmServiceWillFailToGenerateRequest()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_cdmServiceMock, generateRequest(kHardcodedMediaKeysHandle, kKeySessionId, kInitDataType, kInitData))
+    EXPECT_CALL(m_cdmServiceMock,
+                generateRequest(kHardcodedMediaKeysHandle, kKeySessionId, kInitDataType, kInitData, kLdlState))
         .WillOnce(Return(kErrorStatus));
 }
 
@@ -520,6 +523,7 @@ void MediaKeysModuleServiceTests::sendGenerateRequestRequestAndReceiveResponse()
     request.set_media_keys_handle(kHardcodedMediaKeysHandle);
     request.set_key_session_id(kKeySessionId);
     request.set_init_data_type(convertInitDataType(kInitDataType));
+    request.set_ldl_state(convertLimitedDurationLicense(kLdlState));
 
     for (auto it = kInitData.begin(); it != kInitData.end(); it++)
     {
@@ -538,6 +542,7 @@ void MediaKeysModuleServiceTests::sendGenerateRequestRequestAndReceiveErrorRespo
     request.set_media_keys_handle(kHardcodedMediaKeysHandle);
     request.set_key_session_id(kKeySessionId);
     request.set_init_data_type(convertInitDataType(kInitDataType));
+    request.set_ldl_state(convertLimitedDurationLicense(kLdlState));
 
     for (auto it = kInitData.begin(); it != kInitData.end(); it++)
     {

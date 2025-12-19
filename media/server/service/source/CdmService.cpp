@@ -142,9 +142,7 @@ MediaKeyErrorStatus CdmService::createKeySession(int mediaKeysHandle, KeySession
             static_cast<void>(removeKeySessionInternal(mediaKeysHandle, keySessionId));
             return MediaKeyErrorStatus::FAIL;
         }
-        m_sessionInfo.emplace(
-            std::make_pair(keySessionId,
-                           MediaKeySessionInfo{mediaKeysHandle, mediaKeysIter->second->isNetflixPlayreadyKeySystem()}));
+        m_sessionInfo.emplace(std::make_pair(keySessionId, MediaKeySessionInfo{mediaKeysHandle}));
         m_mediaKeysClients.emplace(std::make_pair(keySessionId, client));
     }
 
@@ -152,7 +150,8 @@ MediaKeyErrorStatus CdmService::createKeySession(int mediaKeysHandle, KeySession
 }
 
 MediaKeyErrorStatus CdmService::generateRequest(int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,
-                                                const std::vector<uint8_t> &initData)
+                                                const std::vector<uint8_t> &initData,
+                                                const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to generate request: %d", mediaKeysHandle);
 
@@ -163,7 +162,11 @@ MediaKeyErrorStatus CdmService::generateRequest(int mediaKeysHandle, int32_t key
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
         return MediaKeyErrorStatus::FAIL;
     }
-    return mediaKeysIter->second->generateRequest(keySessionId, initDataType, initData);
+    if (LimitedDurationLicense::NOT_SPECIFIED != ldlState)
+    {
+        m_sessionInfo[keySessionId].isExtendedInterfaceUsed = true;
+    }
+    return mediaKeysIter->second->generateRequest(keySessionId, initDataType, initData, ldlState);
 }
 
 MediaKeyErrorStatus CdmService::loadSession(int mediaKeysHandle, int32_t keySessionId)
@@ -288,7 +291,7 @@ MediaKeyErrorStatus CdmService::setDrmHeader(int mediaKeysHandle, int32_t keySes
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
         return MediaKeyErrorStatus::FAIL;
     }
-
+    m_sessionInfo[keySessionId].isExtendedInterfaceUsed = true;
     return mediaKeysIter->second->setDrmHeader(keySessionId, requestData);
 }
 
@@ -503,7 +506,7 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
     return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->decrypt(keySessionId, encrypted, caps);
 }
 
-bool CdmService::isNetflixPlayreadyKeySystem(int32_t keySessionId)
+bool CdmService::isExtendedInterfaceUsed(int32_t keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key system is Netflix Playready, key session id: %d",
                             keySessionId);
@@ -515,7 +518,7 @@ bool CdmService::isNetflixPlayreadyKeySystem(int32_t keySessionId)
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
         return false;
     }
-    return mediaKeysHandleIter->second.isNetflixPlayready;
+    return mediaKeysHandleIter->second.isExtendedInterfaceUsed;
 }
 
 MediaKeyErrorStatus CdmService::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)
@@ -529,6 +532,7 @@ MediaKeyErrorStatus CdmService::selectKeyId(int32_t keySessionId, const std::vec
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
         return MediaKeyErrorStatus::FAIL;
     }
+    m_sessionInfo[keySessionId].isExtendedInterfaceUsed = true;
     return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->selectKeyId(keySessionId, keyId);
 }
 

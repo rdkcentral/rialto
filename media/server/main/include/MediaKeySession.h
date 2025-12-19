@@ -71,7 +71,8 @@ public:
      */
     virtual ~MediaKeySession();
 
-    MediaKeyErrorStatus generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData) override;
+    MediaKeyErrorStatus generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData,
+                                        const LimitedDurationLicense &ldlState) override;
 
     MediaKeyErrorStatus loadSession() override;
 
@@ -92,8 +93,6 @@ public:
     MediaKeyErrorStatus getLastDrmError(uint32_t &errorCode) override;
 
     MediaKeyErrorStatus selectKeyId(const std::vector<uint8_t> &keyId) override;
-
-    bool isNetflixPlayreadyKeySystem() const override;
 
     void onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength) override;
 
@@ -185,11 +184,18 @@ private:
     std::vector<uint8_t> m_queuedDrmHeader;
 
     /**
+     * @brief Flag used to check if extended interface is used
+     */
+    bool m_extendedInterfaceInUse{false};
+
+    /**
      * @brief Posts a getChallenge task onto the main thread.
+     *
+     * @param[in] ldlState : The Limited Duration License state.
      *
      * The challenge data is retrieved from ocdm and notified on a onLicenseRequest.
      */
-    void getChallenge();
+    void getChallenge(const LimitedDurationLicense &ldlState);
 
     /**
      * @brief Initalises the ocdm error data which checks for onError callbacks.

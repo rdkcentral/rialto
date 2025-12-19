@@ -74,7 +74,7 @@ void MediaKeySessionTestBase::generateRequest()
     EXPECT_CALL(*m_ocdmSessionMock, constructSession(m_keySessionType, m_initDataType, &m_initData[0], m_initData.size()))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_initDataType, m_initData));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_initDataType, m_initData, m_kLdlState));
 }
 
 void MediaKeySessionTestBase::generateRequestPlayready()
@@ -90,7 +90,9 @@ void MediaKeySessionTestBase::generateRequestPlayready()
     mainThreadWillEnqueueTask();
     EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, m_kChallenge, _));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData));
+    EXPECT_EQ(MediaKeyErrorStatus::OK,
+              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData,
+                                                 firebolt::rialto::LimitedDurationLicense::DISABLED));
 }
 
 void MediaKeySessionTestBase::mainThreadWillEnqueueTask()

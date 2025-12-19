@@ -73,7 +73,8 @@ public:
                                          int32_t &keySessionId) override;
 
     MediaKeyErrorStatus generateRequest(int32_t keySessionId, InitDataType initDataType,
-                                        const std::vector<uint8_t> &initData) override;
+                                        const std::vector<uint8_t> &initData,
+                                        const LimitedDurationLicense &ldlState) override;
 
     MediaKeyErrorStatus loadSession(int32_t keySessionId) override;
 
