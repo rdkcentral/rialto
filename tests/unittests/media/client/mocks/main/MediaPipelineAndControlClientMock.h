@@ -39,7 +39,7 @@ public:
 
     MOCK_METHOD(bool, allSourcesAttached, (), (override));
 
-    MOCK_METHOD(bool, play, (), (override));
+    MOCK_METHOD(bool, play, (bool &async), (override));
     MOCK_METHOD(bool, pause, (), (override));
     MOCK_METHOD(bool, stop, (), (override));
 

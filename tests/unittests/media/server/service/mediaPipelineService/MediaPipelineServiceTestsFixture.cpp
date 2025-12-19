@@ -138,12 +138,12 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToAllSourcesAttached()
 
 void MediaPipelineServiceTests::mediaPipelineWillPlay()
 {
-    EXPECT_CALL(m_mediaPipelineMock, play()).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, play(_)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToPlay()
 {
-    EXPECT_CALL(m_mediaPipelineMock, play()).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, play(_)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillPause()
@@ -624,12 +624,14 @@ void MediaPipelineServiceTests::allSourcesAttachedShouldFail()
 
 void MediaPipelineServiceTests::playShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->play(kSessionId));
+    bool isAsync{false};
+    EXPECT_TRUE(m_sut->play(kSessionId, isAsync));
 }
 
 void MediaPipelineServiceTests::playShouldFail()
 {
-    EXPECT_FALSE(m_sut->play(kSessionId));
+    bool isAsync{false};
+    EXPECT_FALSE(m_sut->play(kSessionId, isAsync));
 }
 
 void MediaPipelineServiceTests::pauseShouldSucceed()

@@ -39,7 +39,7 @@ public:
     MOCK_METHOD(bool, allSourcesAttached, (), (override));
     MOCK_METHOD(bool, load, (MediaType type, const std::string &mimeType, const std::string &url), (override));
     MOCK_METHOD(bool, setVideoWindow, (uint32_t x, uint32_t y, uint32_t width, uint32_t height), (override));
-    MOCK_METHOD(bool, play, (), (override));
+    MOCK_METHOD(bool, play, (bool &async), (override));
     MOCK_METHOD(bool, pause, (), (override));
     MOCK_METHOD(bool, stop, (), (override));
     MOCK_METHOD(bool, haveData, (MediaSourceStatus status, uint32_t numFrames, uint32_t requestId), (override));

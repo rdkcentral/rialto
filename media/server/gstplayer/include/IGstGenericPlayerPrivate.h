@@ -174,9 +174,9 @@ public:
      *
      * @param[in] newState    : The desired state.
      *
-     * @retval true on success.
+     * @retval state change status
      */
-    virtual bool changePipelineState(GstState newState) = 0;
+    virtual GstStateChangeReturn changePipelineState(GstState newState) = 0;
 
     /**
      * @brief Gets the current position of the element
