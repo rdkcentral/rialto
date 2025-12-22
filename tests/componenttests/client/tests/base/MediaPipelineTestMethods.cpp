@@ -892,7 +892,8 @@ void MediaPipelineTestMethods::shouldNotifyPlaybackStateFailure()
 
 void MediaPipelineTestMethods::playFailure()
 {
-    EXPECT_EQ(m_mediaPipeline->play(), false);
+    bool async{false};
+    EXPECT_EQ(m_mediaPipeline->play(async), false);
 }
 
 void MediaPipelineTestMethods::pauseFailure()
@@ -2033,7 +2034,8 @@ void MediaPipelineTestMethods::haveDataInternal(const std::unique_ptr<IMediaPipe
 
 void MediaPipelineTestMethods::playInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const bool status)
 {
-    EXPECT_EQ(mediaPipeline->play(), status);
+    bool async{false};
+    EXPECT_EQ(mediaPipeline->play(async), status);
 }
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStateInternal(const int32_t sessionId, const PlaybackState &state)

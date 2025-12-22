@@ -169,7 +169,7 @@ bool MediaPipelineService::allSourcesAttached(int sessionId)
     return mediaPipelineIter->second->allSourcesAttached();
 }
 
-bool MediaPipelineService::play(int sessionId)
+bool MediaPipelineService::play(int sessionId, bool &async)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to play, session id: %d", sessionId);
 
@@ -180,7 +180,7 @@ bool MediaPipelineService::play(int sessionId)
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->play();
+    return mediaPipelineIter->second->play(async);
 }
 
 bool MediaPipelineService::pause(int sessionId)

@@ -105,14 +105,15 @@ public:
     /**
      * @brief Starts playback of the media.
      *
-     * This method is considered to be asynchronous and MUST NOT block
-     * but should request playback and then return.
-     *
      * Once the backend is successfully playing it should notify the
-     * media player client of playback state PlaybackState::PLAYING.
+     * media player client of playback state
+     * IMediaPipelineClient::PlaybackState::PLAYING.
      *
+     * @param[out] async     : True if play method call is asynchronous
+     *
+     * @retval true on success.
      */
-    virtual void play() = 0;
+    virtual void play(bool &async) = 0;
 
     /**
      * @brief Pauses playback of the media.

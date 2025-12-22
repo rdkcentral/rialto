@@ -566,11 +566,13 @@ void MediaPipelineModuleService::play(::google::protobuf::RpcController *control
                                       ::firebolt::rialto::PlayResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_mediaPipelineService.play(request->session_id()))
+    bool async{false};
+    if (!m_mediaPipelineService.play(request->session_id(), async))
     {
         RIALTO_SERVER_LOG_ERROR("Play failed");
         controller->SetFailed("Operation failed");
     }
+    response->set_async(async);
     done->Run();
 }
 

@@ -261,7 +261,8 @@ message SetVideoWindowResponse {
  * @fn void play(int session_id)
  * @brief Starts playback on a session.
  *
- * @param[in]  session_id   The id of the A/V session.
+ * @param[in]   session_id  The id of the A/V session.
+ * @param[out]  async       True if play method call is asynchronous
  *
  * This method is asynchronous. Once the backend is successfully playing it will notify the media player client of
  * playback state.
@@ -271,6 +272,7 @@ message PlayRequest {
     optional int32 session_id = 1 [default = -1];
 }
 message PlayResponse {
+    optional bool async = 1 [default = true];
 }
 
 /**
