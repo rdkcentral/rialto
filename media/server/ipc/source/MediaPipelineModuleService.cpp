@@ -424,10 +424,10 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     std::shared_ptr<CodecData> codecData{};
     if (request->has_codec_data())
     {
-        auto codecDataProto = request->codec_data();
+        const auto &kCodecDataProto = request->codec_data();
         codecData = std::make_shared<CodecData>();
-        codecData->data = std::vector<std::uint8_t>(codecDataProto.data().begin(), codecDataProto.data().end());
-        codecData->type = convertCodecDataType(codecDataProto.type());
+        codecData->data = std::vector<std::uint8_t>(kCodecDataProto.data().begin(), kCodecDataProto.data().end());
+        codecData->type = convertCodecDataType(kCodecDataProto.type());
     }
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource;
     firebolt::rialto::SourceConfigType configType = convertConfigType(request->config_type());
@@ -471,8 +471,8 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         {
             framed = kConfig.framed();
         }
-        AudioConfig audioConfig{numberofchannels, sampleRate,  codecSpecificConfig, format,
-                                layout,           channelMask, streamHeaders,       framed};
+        AudioConfig audioConfig{numberofchannels, sampleRate,  std::move(codecSpecificConfig), format,
+                                layout,           channelMask, std::move(streamHeaders),       framed};
 
         mediaSource =
             std::make_unique<IMediaPipeline::MediaSourceAudio>(request->mime_type(), hasDrm, audioConfig,

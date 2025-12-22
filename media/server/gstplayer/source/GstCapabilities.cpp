@@ -279,7 +279,7 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
                     if (it != propertiesToLookFor.end())
                     {
                         RIALTO_SERVER_LOG_DEBUG("Found property '%s'", kPropName.c_str());
-                        propertiesFound.push_back(kPropName);
+                        propertiesFound.push_back(std::move(kPropName));
                         propertiesToLookFor.erase(it);
                     }
                 }

@@ -277,8 +277,8 @@ bool ServerImpl::addSocket(const std::string &socketPath,
     }
 
     // store the client connected / disconnected callbacks
-    socket.connectedCb = clientConnectedCb;
-    socket.disconnectedCb = clientDisconnectedCb;
+    socket.connectedCb = std::move(clientConnectedCb);
+    socket.disconnectedCb = std::move(clientDisconnectedCb);
 
     // add to the internal map
     std::lock_guard<std::mutex> locker(m_socketsLock);
@@ -323,8 +323,8 @@ bool ServerImpl::addSocket(int fd, std::function<void(const std::shared_ptr<ICli
     }
 
     // store the client connected / disconnected callbacks
-    socket.connectedCb = clientConnectedCb;
-    socket.disconnectedCb = clientDisconnectedCb;
+    socket.connectedCb = std::move(clientConnectedCb);
+    socket.disconnectedCb = std::move(clientDisconnectedCb);
 
     // add to the internal map
     std::lock_guard<std::mutex> locker(m_socketsLock);
@@ -616,6 +616,11 @@ void ServerImpl::processNewConnection(uint64_t socketId)
 {
     RIALTO_IPC_LOG_DEBUG("processing new connection");
 
+    int clientSock = 0;
+    std::string SockPath;
+    std::function<void(const std::shared_ptr<IClient> &)> connectedCb;
+    std::function<void(const std::shared_ptr<IClient> &)> disconnectedCb;
+    {
     std::unique_lock<std::mutex> socketLocker(m_socketsLock);
 
     // find matching socket object
@@ -632,21 +637,20 @@ void ServerImpl::processNewConnection(uint64_t socketId)
     struct sockaddr clientAddr = {0};
     socklen_t clientAddrLen = sizeof(clientAddr);
 
-    int clientSock = accept4(kSocket.sockFd, &clientAddr, &clientAddrLen, SOCK_NONBLOCK | SOCK_CLOEXEC);
+    clientSock = accept4(kSocket.sockFd, &clientAddr, &clientAddrLen, SOCK_NONBLOCK | SOCK_CLOEXEC);
     if (clientSock < 0)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to accept client connection");
         return;
     }
 
-    const std::string kSockPath = kSocket.sockPath;
-    std::function<void(const std::shared_ptr<IClient> &)> connectedCb = kSocket.connectedCb;
-    std::function<void(const std::shared_ptr<IClient> &)> disconnectedCb = kSocket.disconnectedCb;
-
-    socketLocker.unlock();
+    SockPath = kSocket.sockPath;
+    connectedCb = kSocket.connectedCb;
+    disconnectedCb = kSocket.disconnectedCb;
+    }
 
     // attempt to add the socket to the client list
-    auto client = addClientSocket(clientSock, kSockPath, std::move(disconnectedCb));
+    auto client = addClientSocket(clientSock, SockPath, std::move(disconnectedCb));
     if (!client)
     {
         close(clientSock);
@@ -736,6 +740,9 @@ static std::vector<FileDescriptor> readMessageFds(const struct msghdr *msg, size
  */
 void ServerImpl::processClientSocket(uint64_t clientId, unsigned events)
 {
+    int SockFd = 0;
+    std::shared_ptr<ClientImpl> clientObj = nullptr;
+    {
     // take the lock while accessing the client list
     std::unique_lock<std::mutex> locker(m_clientsLock);
 
@@ -754,13 +761,11 @@ void ServerImpl::processClientSocket(uint64_t clientId, unsigned events)
     }
 
     // get the socket that corresponds to the client connection
-    const int kSockFd = it->second.sock;
+    SockFd = it->second.sock;
 
     // get the client object
-    std::shared_ptr<ClientImpl> clientObj = it->second.client;
-
-    // can safely release the lock now we have the clientId and client object
-    locker.unlock();
+    clientObj = it->second.client;
+    }
 
     // if there was an error disconnect the socket
     if (events & EPOLLERR)
@@ -786,7 +791,7 @@ void ServerImpl::processClientSocket(uint64_t clientId, unsigned events)
             msg.msg_controllen = sizeof(m_recvCtrlBuf);
 
             // read one message
-            ssize_t rd = TEMP_FAILURE_RETRY(recvmsg(kSockFd, &msg, MSG_CMSG_CLOEXEC));
+            ssize_t rd = TEMP_FAILURE_RETRY(recvmsg(SockFd, &msg, MSG_CMSG_CLOEXEC));
             if (rd < 0)
             {
                 if (errno != EWOULDBLOCK)
@@ -1303,9 +1308,10 @@ bool ServerImpl::isClientConnected(uint64_t clientId) const
  */
 void ServerImpl::disconnectClient(uint64_t clientId)
 {
+    {
     std::unique_lock<std::mutex> locker(m_clientsLock);
     m_condemnedClients.insert(clientId);
-    locker.unlock();
+    }
 
     wakeEventLoop();
 }
@@ -1406,8 +1412,6 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to send the complete event message");
         return false;
     }
-
-    locker.unlock();
 
     RIALTO_IPC_LOG_DEBUG("event{ %s } - { %s }", eventMessage->GetTypeName().c_str(),
                          eventMessage->ShortDebugString().c_str());

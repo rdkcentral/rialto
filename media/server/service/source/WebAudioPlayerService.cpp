@@ -34,7 +34,7 @@ namespace firebolt::rialto::server::service
 {
 WebAudioPlayerService::WebAudioPlayerService(IPlaybackService &playbackService,
                                              std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory)
-    : m_playbackService{playbackService}, m_webAudioPlayerFactory{webAudioPlayerFactory}
+    : m_playbackService{playbackService}, m_webAudioPlayerFactory{std::move(webAudioPlayerFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("WebAudioPlayerService is constructed");
 }
