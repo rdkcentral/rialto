@@ -170,7 +170,12 @@ static GstFlowReturn gst_rialto_decryptor_transform_ip(GstBaseTransform *base, /
     GstPad *sink_pad = gst_element_get_static_pad(GST_ELEMENT(self), "sink");
     GstCaps *caps = gst_pad_get_current_caps(sink_pad);
 
+    RIALTO_SERVER_LOG_DEBUG("%s: Received buffer for decryption.", GST_OBJECT_NAME(self));
+
     GstFlowReturn result = priv->decrypt(buffer, caps);
+
+    RIALTO_SERVER_LOG_DEBUG("%s: Buffer decrypted.", GST_OBJECT_NAME(self));
+
     gst_caps_unref(caps);
     gst_object_unref(sink_pad);
 
