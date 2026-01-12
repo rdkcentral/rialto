@@ -43,12 +43,13 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineIpcPlayPauseTest, PlaySuccess)
 {
+    bool async{false};
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("play"), m_controllerMock.get(),
                                            playRequestMatcher(m_sessionId), _, m_blockingClosureMock.get()));
 
-    EXPECT_EQ(m_mediaPipelineIpc->play(), true);
+    EXPECT_EQ(m_mediaPipelineIpc->play(async), true);
 }
 
 /**
@@ -56,10 +57,11 @@ TEST_F(RialtoClientMediaPipelineIpcPlayPauseTest, PlaySuccess)
  */
 TEST_F(RialtoClientMediaPipelineIpcPlayPauseTest, PlayChannelDisconnected)
 {
+    bool async{false};
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaPipelineIpc->play(), false);
+    EXPECT_EQ(m_mediaPipelineIpc->play(async), false);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -71,13 +73,14 @@ TEST_F(RialtoClientMediaPipelineIpcPlayPauseTest, PlayChannelDisconnected)
  */
 TEST_F(RialtoClientMediaPipelineIpcPlayPauseTest, PlayReconnectChannel)
 {
+    bool async{false};
     expectIpcApiCallReconnected();
     expectUnsubscribeEvents();
     expectSubscribeEvents();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("play"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->play(), true);
+    EXPECT_EQ(m_mediaPipelineIpc->play(async), true);
 }
 
 /**
@@ -85,11 +88,12 @@ TEST_F(RialtoClientMediaPipelineIpcPlayPauseTest, PlayReconnectChannel)
  */
 TEST_F(RialtoClientMediaPipelineIpcPlayPauseTest, PlayFailure)
 {
+    bool async{false};
     expectIpcApiCallFailure();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("play"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->play(), false);
+    EXPECT_EQ(m_mediaPipelineIpc->play(async), false);
 }
 
 /**
