@@ -80,7 +80,6 @@ TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeGenerateRequest
 {
     generateRequestPlayready();
     mainThreadWillEnqueueTask();
-    // EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, m_kLicenseRequestMessage, m_kUrl));
 
     m_mediaKeySession->onProcessChallenge(m_kUrl.c_str(), &m_kLicenseRequestMessage[0], m_kLicenseRequestMessage.size());
 
