@@ -87,7 +87,6 @@ void MediaKeySessionTestBase::generateRequestPlayready()
         .WillOnce(DoAll(SetArgPointee<2>(m_kChallenge.size()), Return(MediaKeyErrorStatus::OK)));
     EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, notNullptrMatcher(), _))
         .WillOnce(DoAll(memcpyChallenge(m_kChallenge), Return(MediaKeyErrorStatus::OK)));
-    mainThreadWillEnqueueTask();
     EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, m_kChallenge, _));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK,

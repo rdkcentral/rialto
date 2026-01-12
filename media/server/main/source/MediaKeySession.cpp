@@ -111,8 +111,15 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
                                                      const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    // Set the request flag for the onLicenseRequest callback
-    m_licenseRequested = true;
+    if (LimitedDurationLicense::NOT_SPECIFIED != ldlState)
+    {
+        m_extendedInterfaceInUse = true;
+    }
+    else
+    {
+        // Set the request flag for the onLicenseRequest callback
+        m_licenseRequested = true;
+    }
 
     // Only construct session if it hasnt previously been constructed
     if (!m_isSessionConstructed)
@@ -142,9 +149,8 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
             status = MediaKeyErrorStatus::FAIL;
         }
 
-        if (LimitedDurationLicense::NOT_SPECIFIED != ldlState)
+        if (m_extendedInterfaceInUse)
         {
-            m_extendedInterfaceInUse = true;
             // Ocdm-playready does not notify onProcessChallenge when complete.
             // Fetch the challenge manually.
             getChallenge(ldlState);
@@ -178,7 +184,11 @@ void MediaKeySession::getChallenge(const LimitedDurationLicense &ldlState)
         }
 
         std::string url;
-        onProcessChallenge(url.c_str(), &challenge[0], challengeSize);
+        std::shared_ptr<IMediaKeysClient> client = m_mediaKeysClient.lock();
+        if (client)
+        {
+            client->onLicenseRequest(m_kKeySessionId, challenge, url);
+        }
     };
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
@@ -404,6 +414,11 @@ void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challen
     std::vector<unsigned char> challengeVec = std::vector<unsigned char>{challenge, challenge + challengeLength};
     auto task = [&, urlStr, challengeVec]()
     {
+        if (m_extendedInterfaceInUse)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Received onProcessChallenge callback but extended interface is in use");
+            return;
+        }
         std::shared_ptr<IMediaKeysClient> client = m_mediaKeysClient.lock();
         if (client)
         {
