@@ -55,7 +55,7 @@ public:
     MOCK_METHOD(void, updateVideoCaps,
                 (int32_t width, int32_t height, Fraction frameRate, const std::shared_ptr<CodecData> &codecData),
                 (override));
-    MOCK_METHOD(bool, changePipelineState, (GstState newState), (override));
+    MOCK_METHOD(GstStateChangeReturn, changePipelineState, (GstState newState), (override));
     MOCK_METHOD(int64_t, getPosition, (GstElement * element), (override));
     MOCK_METHOD(void, startPositionReportingAndCheckAudioUnderflowTimer, (), (override));
     MOCK_METHOD(void, stopPositionReportingAndCheckAudioUnderflowTimer, (), (override));

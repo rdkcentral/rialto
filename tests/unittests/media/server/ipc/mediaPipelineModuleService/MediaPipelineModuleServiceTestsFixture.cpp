@@ -388,13 +388,13 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailAllSourcesAtta
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillPlay()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, play(kHardcodedSessionId)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineServiceMock, play(kHardcodedSessionId, _)).WillOnce(Return(true));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToPlay()
 {
     expectRequestFailure();
-    EXPECT_CALL(m_mediaPipelineServiceMock, play(kHardcodedSessionId)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, play(kHardcodedSessionId, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillPause()

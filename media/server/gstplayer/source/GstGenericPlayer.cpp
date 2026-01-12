@@ -1186,16 +1186,32 @@ void GstGenericPlayer::cancelUnderflow(firebolt::rialto::MediaSourceType mediaSo
     }
 }
 
-void GstGenericPlayer::play()
+void GstGenericPlayer::play(bool &async)
 {
-    if (m_workerThread)
+    if (0 == m_ongoingStateChangesNumber)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createPlay(*this));
+        // Operation called on main thread, because PAUSED->PLAYING change is synchronous and needs to be done fast.
+        //
+        // m_context.pipeline can be used, because it's modified only in GstGenericPlayer
+        // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
+        ++m_ongoingStateChangesNumber;
+        async = (changePipelineState(GST_STATE_PLAYING) == GST_STATE_CHANGE_ASYNC);
+        RIALTO_SERVER_LOG_MIL("State change to PLAYING requested");
+    }
+    else
+    {
+        ++m_ongoingStateChangesNumber;
+        async = true;
+        if (m_workerThread)
+        {
+            m_workerThread->enqueueTask(m_taskFactory->createPlay(*this));
+        }
     }
 }
 
 void GstGenericPlayer::pause()
 {
+    ++m_ongoingStateChangesNumber;
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createPause(m_context, *this));
@@ -1204,29 +1220,32 @@ void GstGenericPlayer::pause()
 
 void GstGenericPlayer::stop()
 {
+    ++m_ongoingStateChangesNumber;
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createStop(m_context, *this));
     }
 }
 
-bool GstGenericPlayer::changePipelineState(GstState newState)
+GstStateChangeReturn GstGenericPlayer::changePipelineState(GstState newState)
 {
     if (!m_context.pipeline)
     {
         RIALTO_SERVER_LOG_ERROR("Change state failed - pipeline is nullptr");
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
-        return false;
+        --m_ongoingStateChangesNumber;
+        return GST_STATE_CHANGE_FAILURE;
     }
-    if (m_gstWrapper->gstElementSetState(m_context.pipeline, newState) == GST_STATE_CHANGE_FAILURE)
+    const GstStateChangeReturn result{m_gstWrapper->gstElementSetState(m_context.pipeline, newState)};
+    if (result == GST_STATE_CHANGE_FAILURE)
     {
         RIALTO_SERVER_LOG_ERROR("Change state failed - Gstreamer returned an error");
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
-        return false;
     }
-    return true;
+    --m_ongoingStateChangesNumber;
+    return result;
 }
 
 int64_t GstGenericPlayer::getPosition(GstElement *element)

@@ -100,8 +100,9 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, play()).WillOnce(Return(true));
-    EXPECT_TRUE(proxy->play());
+    bool async{false};
+    EXPECT_CALL(*mediaPipelineMock, play(_)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->play(async));
 
     /////////////////////////////////////////////
 
