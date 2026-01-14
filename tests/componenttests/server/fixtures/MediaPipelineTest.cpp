@@ -538,6 +538,7 @@ void MediaPipelineTest::pause()
     auto pauseReq{createPauseRequest(m_sessionId)};
     ConfigureAction<Pause>(m_clientStub).send(pauseReq).expectSuccess();
     positionUpdatesShouldNotBeReceivedFromNow();
+    mayReceivePlaybackInfoUpdates();
 }
 
 void MediaPipelineTest::notifyPaused()
@@ -545,7 +546,6 @@ void MediaPipelineTest::notifyPaused()
     ExpectMessage<firebolt::rialto::PlaybackInfoEvent> expectedPlaybackInfo{m_clientStub};
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
-    mayReceivePlaybackInfoUpdates();
     m_gstreamerStub.sendStateChanged(GST_STATE_NULL, GST_STATE_PAUSED, GST_STATE_NULL);
 
     auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
