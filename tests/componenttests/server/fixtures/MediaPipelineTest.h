@@ -88,6 +88,8 @@ private:
     void initShm();
     void mayReceivePositionUpdates();
     void positionUpdatesShouldNotBeReceivedFromNow();
+    void mayReceivePlaybackInfoUpdates();
+    void playbackInfoUpdatesShouldNotBeReceivedFromNow();
 
 protected:
     int m_sessionId{-1};

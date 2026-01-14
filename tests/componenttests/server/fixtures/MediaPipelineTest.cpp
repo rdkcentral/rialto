@@ -67,6 +67,7 @@ MediaPipelineTest::MediaPipelineTest()
 MediaPipelineTest::~MediaPipelineTest()
 {
     positionUpdatesShouldNotBeReceivedFromNow();
+    playbackInfoUpdatesShouldNotBeReceivedFromNow();
 }
 
 void MediaPipelineTest::gstPlayerWillBeCreated()
@@ -537,6 +538,7 @@ void MediaPipelineTest::pause()
     auto pauseReq{createPauseRequest(m_sessionId)};
     ConfigureAction<Pause>(m_clientStub).send(pauseReq).expectSuccess();
     positionUpdatesShouldNotBeReceivedFromNow();
+    mayReceivePlaybackInfoUpdates();
 }
 
 void MediaPipelineTest::notifyPaused()
@@ -830,6 +832,7 @@ void MediaPipelineTest::stop()
     EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_STOPPED);
 
     positionUpdatesShouldNotBeReceivedFromNow();
+    playbackInfoUpdatesShouldNotBeReceivedFromNow();
 }
 
 void MediaPipelineTest::destroySession()
@@ -853,11 +856,6 @@ void MediaPipelineTest::mayReceivePositionUpdates()
     {
         m_positionChangeEventSuppressionId = m_clientStub.addSuppression<firebolt::rialto::PositionChangeEvent>();
     }
-
-    if (-1 == m_playbackInfoEventSuppressionId)
-    {
-        m_playbackInfoEventSuppressionId = m_clientStub.addSuppression<firebolt::rialto::PlaybackInfoEvent>();
-    }
 }
 
 void MediaPipelineTest::positionUpdatesShouldNotBeReceivedFromNow()
@@ -867,7 +865,18 @@ void MediaPipelineTest::positionUpdatesShouldNotBeReceivedFromNow()
         m_clientStub.removeSuppression(m_positionChangeEventSuppressionId);
         m_positionChangeEventSuppressionId = -1;
     }
+}
 
+void MediaPipelineTest::mayReceivePlaybackInfoUpdates()
+{
+    if (-1 == m_playbackInfoEventSuppressionId)
+    {
+        m_playbackInfoEventSuppressionId = m_clientStub.addSuppression<firebolt::rialto::PlaybackInfoEvent>();
+    }
+}
+
+void MediaPipelineTest::playbackInfoUpdatesShouldNotBeReceivedFromNow()
+{
     if (-1 != m_playbackInfoEventSuppressionId)
     {
         m_clientStub.removeSuppression(m_playbackInfoEventSuppressionId);
