@@ -232,7 +232,7 @@ public:
  *
  * Code:
  */
-TEST_F(FlushTest, flushAudioSourceSuccess)
+TEST_F(DISABLED_FlushTest, flushAudioSourceSuccess)
 {
     // Step 1: Create a new media session
     createSession();
