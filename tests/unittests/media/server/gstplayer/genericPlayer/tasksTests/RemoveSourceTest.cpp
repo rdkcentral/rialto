@@ -53,6 +53,7 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSource)
     shouldInvalidateActiveAudioRequests();
     shouldDisableAudioFlag();
     shouldFlushAudioSrcSuccess();
+    shouldStopPositionReportingAndCheckAudioUnderflowTimer();
     triggerRemoveSourceAudio();
     checkNoMoreNeedData();
     checkNoNeedDataPendingForBothSources();
@@ -65,6 +66,7 @@ TEST_F(RemoveSourceTest, shouldRemoveAudioSourceFlushEventError)
     shouldInvalidateActiveAudioRequests();
     shouldDisableAudioFlag();
     shouldFlushAudioSrcFailure();
+    shouldStopPositionReportingAndCheckAudioUnderflowTimer();
     triggerRemoveSourceAudio();
     checkNoMoreNeedData();
     checkNoNeedDataPendingForBothSources();

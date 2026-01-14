@@ -1654,12 +1654,18 @@ TEST_F(GstGenericPlayerPrivateTest, shouldStartPositionReportingTimer)
     std::unique_ptr<common::ITimer> audioUnderflowTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPositionReportTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(audioUnderflowTimerMock))));
+
+    m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldStartPlaybackInfoTimer)
+{
     willNotifyPlaybackInfo();
     std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
 
-    m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
+    m_sut->startNotifyPlaybackInfoTimer();
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotStartPositionReportingTimerWhenItIsActive)
@@ -1668,12 +1674,20 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotStartPositionReportingTimerWhenItIs
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timerMock), isActive()).WillOnce(Return(true));
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPositionReportTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(timerMock))));
-    willNotifyPlaybackInfo();
-    std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
+
+    m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
+    m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotStartPlaybackInfoTimerWhenItIsActive)
+{
+    std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
+    EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timerMock), isActive()).WillOnce(Return(true));
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
-        .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
-    m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
-    m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
+        .WillOnce(Return(ByMove(std::move(timerMock))));
+    willNotifyPlaybackInfo();
+    m_sut->startNotifyPlaybackInfoTimer();
+    m_sut->startNotifyPlaybackInfoTimer();
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionWhenPositionReportingTimerIsFired)
@@ -1692,6 +1706,12 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionWhenPositionRepo
                 callback();
                 return std::move(timerMock);
             }));
+    m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldSchedulePlaybackInfoWhenPlaybackInfoTimerIsFired)
+{
+    std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
     willNotifyPlaybackInfo();
     std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
@@ -1702,7 +1722,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionWhenPositionRepo
                 callback();
                 return std::move(playbackInfoTimerMock);
             }));
-    m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
+    m_sut->startNotifyPlaybackInfoTimer();
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldStopActivePositionReportingTimer)
@@ -1712,15 +1732,22 @@ TEST_F(GstGenericPlayerPrivateTest, shouldStopActivePositionReportingTimer)
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timerMock), cancel());
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPositionReportTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(timerMock))));
+
+    m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
+    m_sut->stopPositionReportingAndCheckAudioUnderflowTimer();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldStopActivePlaybackInfoTimerTimer)
+{
     willNotifyPlaybackInfo();
     std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive()).WillOnce(Return(true));
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), cancel());
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
-    m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
-    m_sut->stopPositionReportingAndCheckAudioUnderflowTimer();
-}
+
+    m_sut->startNotifyPlaybackInfoTimer();
+    m_sut->stopNotifyPlaybackInfoTimer();}
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactivePositionReportingTimer)
 {
@@ -1728,13 +1755,21 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactivePositionReportingTimer)
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*timerMock), isActive()).WillOnce(Return(false));
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPositionReportTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(timerMock))));
+
+    m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
+    m_sut->stopPositionReportingAndCheckAudioUnderflowTimer();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactiveActivePlaybackInfoTimer)
+{
     willNotifyPlaybackInfo();
     std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*playbackInfoTimerMock), isActive()).WillOnce(Return(false));
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
-    m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
-    m_sut->stopPositionReportingAndCheckAudioUnderflowTimer();
+
+    m_sut->startNotifyPlaybackInfoTimer();
+    m_sut->stopNotifyPlaybackInfoTimer();
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactivePositionReportingTimerWhenThereIsNoTimer)
