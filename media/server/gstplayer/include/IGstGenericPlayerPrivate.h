@@ -198,6 +198,16 @@ public:
     virtual void stopPositionReportingAndCheckAudioUnderflowTimer() = 0;
 
     /**
+     * @brief Starts notify playback info timer. Called by the worker thread.
+     */
+    virtual void startNotifyPlaybackInfoTimer() = 0;
+
+    /**
+     * @brief Stops notify playback info timer. Called by the worker thread.
+     */
+    virtual void stopNotifyPlaybackInfoTimer() = 0;
+
+    /**
      * @brief Starts subtitle clock resync. Called by the worker thread.
      */
     virtual void startSubtitleClockResyncTimer() = 0;

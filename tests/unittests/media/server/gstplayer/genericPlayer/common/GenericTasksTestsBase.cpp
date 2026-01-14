@@ -2273,7 +2273,13 @@ void GenericTasksTestsBase::shouldStopGstPlayer()
     videoStreamIt->second.isDataNeeded = true;
     audioStreamIt->second.isDataNeeded = true;
     EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(testContext->m_gstPlayer, stopNotifyPlaybackInfoTimer());
     EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_NULL));
+}
+
+void GenericTasksTestsBase::shouldStopPositionReportingAndCheckAudioUnderflowTimer()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
 }
 
 void GenericTasksTestsBase::triggerStop()
@@ -3040,7 +3046,6 @@ void GenericTasksTestsBase::checkAudioSourceNotRemoved()
 
 void GenericTasksTestsBase::shouldFlushAudioSrcSuccess()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcAudio, &testContext->m_event))
         .WillOnce(Return(TRUE));
@@ -3051,7 +3056,6 @@ void GenericTasksTestsBase::shouldFlushAudioSrcSuccess()
 
 void GenericTasksTestsBase::shouldFlushAudioSrcFailure()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcAudio, &testContext->m_event))
         .WillOnce(Return(FALSE));
@@ -3178,7 +3182,6 @@ void GenericTasksTestsBase::checkVideoFlushed()
 
 void GenericTasksTestsBase::shouldFlushVideoSrcSuccess()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStart()).WillOnce(Return(&testContext->m_event));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcVideo, &testContext->m_event))
         .WillOnce(Return(TRUE));

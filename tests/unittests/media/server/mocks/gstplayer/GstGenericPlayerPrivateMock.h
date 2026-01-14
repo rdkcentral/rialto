@@ -59,6 +59,8 @@ public:
     MOCK_METHOD(int64_t, getPosition, (GstElement * element), (override));
     MOCK_METHOD(void, startPositionReportingAndCheckAudioUnderflowTimer, (), (override));
     MOCK_METHOD(void, stopPositionReportingAndCheckAudioUnderflowTimer, (), (override));
+    MOCK_METHOD(void, startNotifyPlaybackInfoTimer, (), (override));
+    MOCK_METHOD(void, stopNotifyPlaybackInfoTimer, (), (override));
     MOCK_METHOD(void, stopWorkerThread, (), (override));
     MOCK_METHOD(void, cancelUnderflow, (firebolt::rialto::MediaSourceType mediaSource), (override));
     MOCK_METHOD(void, setPendingPlaybackRate, (), (override));

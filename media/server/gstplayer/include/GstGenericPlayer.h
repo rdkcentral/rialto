@@ -172,6 +172,8 @@ private:
     int64_t getPosition(GstElement *element) override;
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;
+    void startNotifyPlaybackInfoTimer() override;
+    void stopNotifyPlaybackInfoTimer() override;
     void startSubtitleClockResyncTimer() override;
     void stopSubtitleClockResyncTimer() override;
     void stopWorkerThread() override;
