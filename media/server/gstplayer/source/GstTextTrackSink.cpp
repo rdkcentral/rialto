@@ -159,7 +159,7 @@ static void gst_rialto_text_track_sink_finalize(GObject *object) // NOLINT(build
 
 static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink) // NOLINT(build/function_format)
 {
-    std::string kDisplay{"westeros-asplayer-subtitles"};
+    const std::string kDisplay{"westeros-asplayer-subtitles"};
     GstRialtoTextTrackSink *self = GST_RIALTO_TEXT_TRACK_SINK(sink);
     try
     {
