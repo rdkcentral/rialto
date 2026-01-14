@@ -232,80 +232,80 @@ public:
  *
  * Code:
  */
-// TEST_F(FlushTest, flushAudioSourceSuccess)
-// {
-//     // Step 1: Create a new media session
-//     createSession();
+TEST_F(FlushTest, DISABLED_flushAudioSourceSuccess)
+{
+    // Step 1: Create a new media session
+    createSession();
 
-//     // Step 2: Load content
-//     gstPlayerWillBeCreated();
-//     load();
+    // Step 2: Load content
+    gstPlayerWillBeCreated();
+    load();
 
-//     // Step 3: Attach all sources
-//     audioSourceWillBeAttached();
-//     attachAudioSource();
-//     videoSourceWillBeAttached();
-//     attachVideoSource();
-//     sourceWillBeSetup();
-//     setupSource();
-//     willSetupAndAddSource(&m_audioAppSrc);
-//     willSetupAndAddSource(&m_videoAppSrc);
-//     willFinishSetupAndAddSource();
-//     indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
+    // Step 3: Attach all sources
+    audioSourceWillBeAttached();
+    attachAudioSource();
+    videoSourceWillBeAttached();
+    attachVideoSource();
+    sourceWillBeSetup();
+    setupSource();
+    willSetupAndAddSource(&m_audioAppSrc);
+    willSetupAndAddSource(&m_videoAppSrc);
+    willFinishSetupAndAddSource();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
-//     // Step 4: Pause
-//     willPause();
-//     pause();
+    // Step 4: Pause
+    willPause();
+    pause();
 
-//     // Step 5: Write 1 audio frame
-//     // Step 6: Write 1 video frame
-//     // Step 7: Notify buffered and Paused
-//     {
-//         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
+    // Step 5: Write 1 audio frame
+    // Step 6: Write 1 video frame
+    // Step 7: Notify buffered and Paused
+    {
+        ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-//         pushAudioData(kFramesToPush);
-//         pushVideoData(kFramesToPush);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
-//         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
-//         ASSERT_TRUE(receivedNetworkStateChange);
-//         EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
-//         EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
-//     }
-//     willNotifyPaused();
-//     notifyPaused();
-//     GST_STATE(&m_pipeline) = GST_STATE_PAUSED;
+        auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
+        ASSERT_TRUE(receivedNetworkStateChange);
+        EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
+        EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
+    }
+    willNotifyPaused();
+    notifyPaused();
+    GST_STATE(&m_pipeline) = GST_STATE_PAUSED;
 
-//     // Step 8: Flush
-//     willFlush();
-//     flush();
+    // Step 8: Flush
+    willFlush();
+    flush();
 
-//     // Step 9: Set Source Position
-//     setSourcePosition();
-//     pushAudioSample();
+    // Step 9: Set Source Position
+    setSourcePosition();
+    pushAudioSample();
 
-//     // Step 10: End of audio stream
-//     // Step 11: End of video stream
-//     willEos(&m_audioAppSrc);
-//     eosAudio(kFramesToPush);
-//     willEos(&m_videoAppSrc);
-//     eosVideo(kFramesToPush);
+    // Step 10: End of audio stream
+    // Step 11: End of video stream
+    willEos(&m_audioAppSrc);
+    eosAudio(kFramesToPush);
+    willEos(&m_videoAppSrc);
+    eosVideo(kFramesToPush);
 
-//     // Step 12: Notify end of stream
-//     gstNotifyEos();
+    // Step 12: Notify end of stream
+    gstNotifyEos();
 
-//     // Step 13: Remove sources
-//     willRemoveAudioSource();
-//     removeSource(m_audioSourceId);
-//     removeSource(m_videoSourceId);
+    // Step 13: Remove sources
+    willRemoveAudioSource();
+    removeSource(m_audioSourceId);
+    removeSource(m_videoSourceId);
 
-//     // Step 14: Stop
-//     willStop();
-//     stop();
+    // Step 14: Stop
+    willStop();
+    stop();
 
-//     // Step 15: Destroy media session
-//     gstPlayerWillBeDestructed();
-//     destroySession();
-// }
+    // Step 15: Destroy media session
+    gstPlayerWillBeDestructed();
+    destroySession();
+}
 
 /*
  * Component Test: Flush failure
