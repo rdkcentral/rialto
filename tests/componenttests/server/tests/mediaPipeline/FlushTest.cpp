@@ -47,9 +47,14 @@ class FlushTest : public MediaPipelineTest
     GstSegment m_segment{};
 
 public:
-    FlushTest() {}
+    FlushTest()
+    {
+        GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
+        m_audioSink = gst_element_factory_create(elementFactory, nullptr);
+        gst_object_unref(elementFactory);
+    }
 
-    ~FlushTest() override {}
+    ~FlushTest() override { gst_object_unref(m_audioSink); }
 
     void willFlush()
     {
@@ -61,7 +66,7 @@ public:
                     gboolean *asyncPtr = reinterpret_cast<gboolean *>(element);
                     *asyncPtr = static_cast<gboolean>(kAsync);
                 }));
-
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink));
         EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStart()).WillOnce(Return(&m_flushStartEvent));
         EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStartEvent))
             .WillOnce(Return(true));
