@@ -77,6 +77,8 @@ void HandleBusMessage::execute() const
             }
             case GST_STATE_PAUSED:
             {
+                m_player.startNotifyPlaybackInfoTimer();
+                m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
                 if (pending != GST_STATE_PAUSED)
                 {
                     m_context.flushOnPrerollController.stateReached(newState);
@@ -93,8 +95,8 @@ void HandleBusMessage::execute() const
                     // Subsequent newState==GST_STATE_PAUSED, pending!=GST_STATE_PAUSED transition will
                     // indicate that the pipeline is prerolled and it reached GST_STATE_PAUSED state after seek.
                     m_gstPlayerClient->notifyPlaybackState(PlaybackState::PAUSED);
-                    m_player.notifyPlaybackInfo();
                 }
+
                 if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
                 {
                     m_player.stopSubtitleClockResyncTimer();
@@ -128,8 +130,12 @@ void HandleBusMessage::execute() const
                 break;
             }
             case GST_STATE_VOID_PENDING:
+            {
+                break;
+            }
             case GST_STATE_READY:
             {
+                m_player.stopNotifyPlaybackInfoTimer();
                 break;
             }
             }
