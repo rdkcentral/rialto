@@ -59,6 +59,9 @@ namespace firebolt::rialto::server::ct
 {
 MediaPipelineTest::MediaPipelineTest()
 {
+    GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
+    m_audioSink = gst_element_factory_create(elementFactory, nullptr);
+    gst_object_unref(elementFactory);
     configureSutInActiveState();
     connectClient();
     initShm();
@@ -68,6 +71,7 @@ MediaPipelineTest::~MediaPipelineTest()
 {
     positionUpdatesShouldNotBeReceivedFromNow();
     playbackInfoUpdatesShouldNotBeReceivedFromNow();
+    gst_object_unref(m_audioSink);
 }
 
 void MediaPipelineTest::gstPlayerWillBeCreated()
@@ -110,16 +114,18 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
             }));
 
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
-            .WillRepeatedly(Invoke(
-                [&](gpointer object, const gchar *first_property_name, void *element)
-                {
-                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
-                    *elementPtr = m_audioSink;
-                }));
+        .WillRepeatedly(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = m_audioSink;
+            }));
 
     EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR))
         .Times(AtLeast(0))
         .WillRepeatedly(Return(kVolume));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink));
 }
 
 void MediaPipelineTest::gstPlayerWillBeDestructed()
