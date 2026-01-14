@@ -413,6 +413,7 @@ protected:
     void triggerRemoveSourceVideo();
     void checkAudioSourceRemoved();
     void checkAudioSourceNotRemoved();
+    void shouldStopPositionReportingAndCheckAudioUnderflowTimer();
 
     // Flush test methods
     void shouldFlushAudio();
