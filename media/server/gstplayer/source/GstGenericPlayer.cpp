@@ -406,7 +406,6 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
     position = getPosition(m_context.pipeline);
     if (position == -1)
     {
-        RIALTO_SERVER_LOG_WARN("Query position failed");
         return false;
     }
 

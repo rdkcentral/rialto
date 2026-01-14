@@ -65,7 +65,7 @@ public:
                 {
                     GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                     *elementPtr = m_audioSink;
-                }));
+                })).RetiresOnSaturation();
 
         EXPECT_CALL(*m_glibWrapperMock, gTypeName(_)).WillRepeatedly(Return("GstStreamVolume"));
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(m_audioSink, StrEq("async"), _))

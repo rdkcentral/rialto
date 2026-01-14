@@ -1747,7 +1747,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldStopActivePlaybackInfoTimerTimer)
         .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
 
     m_sut->startNotifyPlaybackInfoTimer();
-    m_sut->stopNotifyPlaybackInfoTimer();}
+    m_sut->stopNotifyPlaybackInfoTimer();
+}
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactivePositionReportingTimer)
 {
@@ -1760,7 +1761,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactivePositionReportingTimer)
     m_sut->stopPositionReportingAndCheckAudioUnderflowTimer();
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactiveActivePlaybackInfoTimer)
+TEST_F(GstGenericPlayerPrivateTest, shouldNotStopInactivePlaybackInfoTimer)
 {
     willNotifyPlaybackInfo();
     std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
