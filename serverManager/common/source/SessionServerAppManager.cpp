@@ -354,7 +354,10 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
             m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
         }
         m_sessionServerApps.erase(kSessionServer);
-        connectSessionServer(preloadSessionServer());
+        if (!m_isShuttingDown)
+        {
+            connectSessionServer(preloadSessionServer());
+        }
     }
     else if (newState == firebolt::rialto::common::SessionServerState::NOT_RUNNING)
     {
