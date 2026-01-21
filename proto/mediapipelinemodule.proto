@@ -679,6 +679,32 @@ message SetImmediateOutputResponse {
 }
 
 /**
+ * @brief Sets the "Report Decode Errors" property for this source.
+ * @see ReportDecodeErrorsRequest
+ */
+rpc setReportDecodeErrors(ReportDecodeErrorsRequest)
+    returns (ReportDecodeErrorsResponse) {
+}
+
+/**
+ * @fn void setReportDecodeErrors(int session_id, int source_id, bool report_decode_errors)
+ * @brief Enables or disables decode error reporting for this source.
+ *
+ * @param[in] session_id             The id of the A/V session.
+ * @param[in] source_id              The id of the media source.
+ * @param[in] report_decode_errors   Enable decode error reporting.
+ */
+message ReportDecodeErrorsRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id  = 2 [default = -1];
+    optional bool report_decode_errors = 3 [default = false];
+}
+
+message ReportDecodeErrorsResponse {
+}
+
+
+/**
  * @fn void getImmediateOutput(int session_id, int source_id, bool &immediate_output)
  * @brief Gets the "Immediate Output" property for this source.
  *
