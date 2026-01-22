@@ -132,6 +132,8 @@ public:
 
     bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
 
+    bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) override;
+
     bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
 
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;

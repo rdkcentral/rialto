@@ -205,6 +205,16 @@ public:
     virtual bool setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput) = 0;
 
     /**
+     * @brief Sets the "Report Decode Error" property for this source.
+     *
+     * @param[in] mediaSourceType : The media source type
+     * @param[in] reportDecodeErrors : Set report decode error
+     *
+     * @retval true on success.
+     */
+    virtual bool setReportDecodeErrors(const MediaSourceType &mediaSourceType, bool reportDecodeErrors) = 0;
+
+    /**
      * @brief Gets the "Immediate Output" property for this source.
      *
      * @param[in] mediaSourceType : The media source type

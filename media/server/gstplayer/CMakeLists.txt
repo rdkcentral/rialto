@@ -58,6 +58,7 @@ add_library(
         source/tasks/generic/SetMute.cpp
         source/tasks/generic/SetPlaybackRate.cpp
         source/tasks/generic/SetPosition.cpp
+        source/tasks/generic/SetReportDecodeErrors.cpp
         source/tasks/generic/SetSourcePosition.cpp
         source/tasks/generic/SetSubtitleOffset.cpp
         source/tasks/generic/SetStreamSyncMode.cpp

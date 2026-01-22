@@ -55,6 +55,7 @@ public:
     virtual bool setPosition(int sessionId, std::int64_t position) = 0;
     virtual bool getPosition(int sessionId, std::int64_t &position) = 0;
     virtual bool setImmediateOutput(int sessionId, int32_t sourceId, bool immediateOutput) = 0;
+    virtual bool setReportDecodeErrors(int sessionId, int32_t sourceId, bool reportDecodeErrors) = 0;
     virtual bool getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput) = 0;
     virtual bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) = 0;
     virtual bool setVideoWindow(int sessionId, std::uint32_t x, std::uint32_t y, std::uint32_t width,

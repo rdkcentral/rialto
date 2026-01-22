@@ -679,14 +679,6 @@ message SetImmediateOutputResponse {
 }
 
 /**
- * @brief Sets the "Report Decode Errors" property for this source.
- * @see ReportDecodeErrorsRequest
- */
-rpc setReportDecodeErrors(ReportDecodeErrorsRequest)
-    returns (ReportDecodeErrorsResponse) {
-}
-
-/**
  * @fn void setReportDecodeErrors(int session_id, int source_id, bool report_decode_errors)
  * @brief Enables or disables decode error reporting for this source.
  *
@@ -1102,6 +1094,14 @@ service MediaPipelineModule {
      * @see SetImmediateOutputRequest
      */
     rpc setImmediateOutput(SetImmediateOutputRequest) returns (SetImmediateOutputResponse) {
+    }
+
+    /**
+    * @brief Sets the "Report Decode Errors" property for this source.
+    * @see ReportDecodeErrorsRequest
+    */
+    rpc setReportDecodeErrors(ReportDecodeErrorsRequest)
+        returns (ReportDecodeErrorsResponse) {
     }
 
     /**

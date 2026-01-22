@@ -679,6 +679,21 @@ void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcContr
     done->Run();
 }
 
+void MediaPipelineModuleService::setReportDecodeErrors(::google::protobuf::RpcController *controller,
+                                                    const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
+                                                    ::firebolt::rialto::SetReportDecodeErrorsResponse *response,
+                                                    ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setReportDecodeErrors(request->session_id(), request->source_id(),
+                                                   request->report_decode_errors()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Report Decode Error failed");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
 void MediaPipelineModuleService::getImmediateOutput(::google::protobuf::RpcController *controller,
                                                     const ::firebolt::rialto::GetImmediateOutputRequest *request,
                                                     ::firebolt::rialto::GetImmediateOutputResponse *response,

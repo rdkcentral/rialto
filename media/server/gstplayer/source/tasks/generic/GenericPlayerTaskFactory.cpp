@@ -334,6 +334,14 @@ GenericPlayerTaskFactory::createSetImmediateOutput(GenericPlayerContext &context
     return std::make_unique<tasks::generic::SetImmediateOutput>(context, player, type, immediateOutput);
 }
 
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createSetReportDecodeErrors(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                   const firebolt::rialto::MediaSourceType &type,
+                                                   bool reportDecodeErrors) const
+{
+    return std::make_unique<tasks::generic::SetReportDecodeErrors>(context, player, type, reportDecodeErrors);
+}
+
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetBufferingLimit(GenericPlayerContext &context,
                                                                                IGstGenericPlayerPrivate &player,
                                                                                std::uint32_t limit) const

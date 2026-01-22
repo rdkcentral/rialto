@@ -267,6 +267,20 @@ bool MediaPipelineService::setImmediateOutput(int sessionId, int32_t sourceId, b
     return mediaPipelineIter->second->setImmediateOutput(sourceId, immediateOutput);
 }
 
+bool MediaPipelineService::setReportDecodeErrors(int sessionId, int32_t sourceId, bool reportDecodeErrors)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to setReportDecodeErrors, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setReportDecodeErrors(sourceId, reportDecodeErrors);
+}
+
 bool MediaPipelineService::getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to getImmediateOutput, session id: %d", sessionId);

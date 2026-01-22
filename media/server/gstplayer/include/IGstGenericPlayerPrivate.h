@@ -81,6 +81,13 @@ public:
     virtual bool setImmediateOutput() = 0;
 
     /**
+     * @brief Sets report decode error. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setReportDecodeErrors(bool reportDecodeErrors) = 0;
+
+    /**
      * @brief Sets the low latency property. Called by the worker thread.
      *
      * @retval true on success.
