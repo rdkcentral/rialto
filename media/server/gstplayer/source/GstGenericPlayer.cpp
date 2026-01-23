@@ -202,8 +202,9 @@ GstGenericPlayer::GstGenericPlayer(
         RIALTO_SERVER_LOG_MIL("Primary video playback selected");
     }
 
-    m_gstDispatcherThread =
-        gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper);
+    m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
+                                                                                  &m_context.flushOnPrerollController,
+                                                                                  m_gstWrapper);
 }
 
 GstGenericPlayer::~GstGenericPlayer()
