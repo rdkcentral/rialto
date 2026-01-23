@@ -203,7 +203,7 @@ GstGenericPlayer::GstGenericPlayer(
     }
 
     m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
-                                                                                  &m_context.flushOnPrerollController,
+                                                                                  m_context.flushOnPrerollController,
                                                                                   m_gstWrapper);
 }
 

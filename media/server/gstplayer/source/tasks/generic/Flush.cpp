@@ -30,7 +30,7 @@ Flush::Flush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IG
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type},
       m_resetTime{resetTime}
 {
-    RIALTO_SERVER_LOG_MIL("Constructing Flush for %s source", common::convertMediaSourceType(m_type));
+    RIALTO_SERVER_LOG_DEBUG("Constructing Flush");
 }
 
 Flush::~Flush()
@@ -40,9 +40,9 @@ Flush::~Flush()
 
 void Flush::execute() const
 {
-    m_context.flushOnPrerollController.waitIfRequired(m_type);
+    m_context.flushOnPrerollController->waitIfRequired(m_type);
 
-    RIALTO_SERVER_LOG_MIL("Executing Flush for %s source", common::convertMediaSourceType(m_type));
+    RIALTO_SERVER_LOG_DEBUG("Executing Flush for %s source", common::convertMediaSourceType(m_type));
 
     // Get source first
     GstElement *source{nullptr};
@@ -79,7 +79,7 @@ void Flush::execute() const
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
     {
         // add is async check here...
-        m_context.flushOnPrerollController.setFlushing(m_type, GST_STATE(m_context.pipeline));
+        m_context.flushOnPrerollController->setFlushing(m_type, GST_STATE(m_context.pipeline));
 
         // Flush source
         GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
