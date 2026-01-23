@@ -917,7 +917,7 @@ TEST_F(GstGenericPlayerTest, shouldFlush)
             }));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element));
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createFlush(_, _, MediaSourceType::VIDEO, kResetTime))
+    EXPECT_CALL(m_taskFactoryMock, createFlush(_, _, MediaSourceType::VIDEO, kResetTime, isAsync))
         .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->flush(MediaSourceType::VIDEO, kResetTime, isAsync);

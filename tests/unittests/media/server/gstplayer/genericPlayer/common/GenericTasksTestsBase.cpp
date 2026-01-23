@@ -139,6 +139,7 @@ constexpr uint64_t kStopPosition{4523};
 const std::vector<uint8_t> kStreamHeaderVector{1, 2, 3, 4};
 constexpr bool kFramed{true};
 constexpr uint64_t kDisplayOffset{35};
+constexpr bool kIsAsync{true};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 {
@@ -3146,7 +3147,8 @@ void GenericTasksTestsBase::triggerFlush(firebolt::rialto::MediaSourceType sourc
                                                          &testContext->m_gstPlayerClient,
                                                          testContext->m_gstWrapper,
                                                          sourceType,
-                                                         kResetTime};
+                                                         kResetTime,
+                                                         kIsAsync};
     task.execute();
 }
 

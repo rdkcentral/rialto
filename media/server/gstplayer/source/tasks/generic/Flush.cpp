@@ -26,9 +26,9 @@ namespace firebolt::rialto::server::tasks::generic
 {
 Flush::Flush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
              std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, const MediaSourceType &type,
-             bool resetTime)
+             bool resetTime, bool isAsync)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type},
-      m_resetTime{resetTime}
+      m_resetTime{resetTime}, m_isAsync{isAsync}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Flush");
 }
@@ -78,8 +78,10 @@ void Flush::execute() const
 
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
     {
-        // add is async check here...
-        m_context.flushOnPrerollController->setFlushing(m_type, GST_STATE(m_context.pipeline));
+        if (m_isAsync)
+        {
+            m_context.flushOnPrerollController->setFlushing(m_type, GST_STATE(m_context.pipeline));
+        }
 
         // Flush source
         GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();

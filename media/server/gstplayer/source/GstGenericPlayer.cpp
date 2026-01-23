@@ -2053,7 +2053,7 @@ void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetT
     {
         async = isAsync(mediaSourceType);
         m_flushWatcher->setFlushing(mediaSourceType, async);
-        m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, *this, mediaSourceType, resetTime));
+        m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, *this, mediaSourceType, resetTime, async));
     }
 }
 
