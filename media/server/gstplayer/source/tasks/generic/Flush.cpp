@@ -83,7 +83,6 @@ void Flush::execute() const
 
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
     {
-        m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
         m_context.flushOnPrerollController.setFlushing(m_type, GST_STATE(m_context.pipeline));
 
         // Flush source
