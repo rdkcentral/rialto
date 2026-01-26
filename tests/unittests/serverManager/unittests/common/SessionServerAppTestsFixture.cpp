@@ -56,7 +56,7 @@ using testing::StrictMock;
 
 void SessionServerAppTests::createPreloadedAppSut()
 {
-    m_sut = std::make_unique<rialto::servermanager::common::SessionServerApp>(std::move(m_linuxWrapper),
+    m_sut = std::make_shared<rialto::servermanager::common::SessionServerApp>(std::move(m_linuxWrapper),
                                                                               m_timerFactoryMock,
                                                                               m_sessionServerAppManagerMock,
                                                                               kEnvironmentVariables, kSessionServerPath,
@@ -79,7 +79,7 @@ void SessionServerAppTests::createPreloadedAppSut()
 void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConfig &appConfig)
 {
     EXPECT_CALL(m_namedSocketMock, bind(_)).WillOnce(Return(true));
-    m_sut = std::make_unique<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
+    m_sut = std::make_shared<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
                                                                               std::move(m_linuxWrapper),
                                                                               m_timerFactoryMock,
                                                                               m_sessionServerAppManagerMock,
@@ -104,7 +104,7 @@ void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConf
 void SessionServerAppTests::createAppSutWithDisabledTimer(const firebolt::rialto::common::AppConfig &appConfig)
 {
     EXPECT_CALL(m_namedSocketMock, bind(_)).WillOnce(Return(true));
-    m_sut = std::make_unique<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
+    m_sut = std::make_shared<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
                                                                               std::move(m_linuxWrapper),
                                                                               m_timerFactoryMock,
                                                                               m_sessionServerAppManagerMock,
