@@ -46,7 +46,7 @@ void SetReportDecodeErrors::execute() const
 
     if (m_context.pipeline)
     {
-        m_player.SetReportDecodeErrors(m_reportDecodeErrors);
+        m_player.setReportDecodeErrors(m_reportDecodeErrors);
     }
 }
 } // namespace firebolt::rialto::server::tasks::generic

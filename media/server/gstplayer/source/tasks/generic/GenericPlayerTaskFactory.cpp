@@ -38,6 +38,7 @@
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetBufferingLimit.h"
 #include "tasks/generic/SetImmediateOutput.h"
+#include "tasks/generic/SetReportDecodeErrors.h"
 #include "tasks/generic/SetLowLatency.h"
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"

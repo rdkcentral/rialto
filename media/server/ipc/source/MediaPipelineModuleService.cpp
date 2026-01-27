@@ -680,8 +680,8 @@ void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcContr
 }
 
 void MediaPipelineModuleService::setReportDecodeErrors(::google::protobuf::RpcController *controller,
-                                                    const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
-                                                    ::firebolt::rialto::SetReportDecodeErrorsResponse *response,
+                                                    const ::firebolt::rialto::ReportDecodeErrorsRequest *request,
+                                                    ::firebolt::rialto::ReportDecodeErrorsResponse *response,
                                                     ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
