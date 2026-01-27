@@ -389,7 +389,6 @@ void SessionServerAppManagerTests::sessionServerWillFailToSetLogLevels()
 void SessionServerAppManagerTests::clientWillBeRemoved()
 {
     EXPECT_CALL(m_healthcheckServiceMock, onServerRemoved(kServerId)).RetiresOnSaturation();
-    ;
     EXPECT_CALL(m_controllerMock, removeClient(kServerId));
 }
 
