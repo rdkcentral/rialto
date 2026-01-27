@@ -714,6 +714,23 @@ message GetImmediateOutputResponse {
 }
 
 /**
+ * @fn void getQueuedFrames(int session_id, int source_id, uint32_t &queued_frames)
+ * @brief Gets the "Queued Frames" property for this source.
+ *
+ * @param[in]  session_id        The id of the A/V session.
+ * @param[in]  source_id         The id of the media source.
+ * @param[out] queued_frames  Get queued frames on the decoder
+ *
+ */
+message GetQueuedFramesRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+message GetQueuedFramesResponse {
+    optional uint32 queued_frames = 1 [default = -1];
+}
+
+/**
  * @fn void getStats(int session_id, int source_id, uint64 &rendered_frames, uint64 &dropped_frames)
  * @brief Get various stats from the source.
  *
@@ -1109,6 +1126,13 @@ service MediaPipelineModule {
      * @see GetImmediateOutputRequest
      */
     rpc getImmediateOutput(GetImmediateOutputRequest) returns (GetImmediateOutputResponse) {
+    }
+
+    /**
+     * @brief Gets the "Queued Frames" property for this source.
+     * @see GetQueuedFramesRequest
+     */
+    rpc getQueuedFrames(GetQueuedFramesRequest) returns (GetQueuedFramesResponse) {
     }
 
     /**
