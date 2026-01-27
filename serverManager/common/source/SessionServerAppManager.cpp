@@ -396,10 +396,6 @@ void SessionServerAppManager::shutdownAllSessionServers()
     m_healthcheckService.reset();
     for (const auto &kSessionServer : m_sessionServerApps)
     {
-        if (m_healthcheckService)
-        {
-            m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
-        }
         kSessionServer->kill();
     }
     m_sessionServerApps.clear();
