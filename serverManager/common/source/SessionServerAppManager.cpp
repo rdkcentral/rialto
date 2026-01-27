@@ -197,6 +197,10 @@ void SessionServerAppManager::handleRestartServer(int serverId)
         RIALTO_SERVER_MANAGER_LOG_WARN("Unable to restart server, serverId: %d", serverId);
         return;
     }
+    if (m_healthcheckService)
+    {
+        m_healthcheckService->onServerRemoved(sessionServer->getServerId());
+    }
     // First, get all needed information from current app
     const std::string kAppName{sessionServer->getAppName()};
     const firebolt::rialto::common::SessionServerState kState{sessionServer->getExpectedState()};
@@ -306,6 +310,10 @@ bool SessionServerAppManager::changeSessionServerState(const std::string &appNam
         return false;
     }
     sessionServer->setExpectedState(newState);
+    if (m_healthcheckService && firebolt::rialto::common::SessionServerState::NOT_RUNNING == newState)
+    {
+        m_healthcheckService->onServerRemoved(sessionServer->getServerId());
+    }
     if (!m_ipcController->performSetState(sessionServer->getServerId(), newState))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed.", appName.c_str(), toString(newState));
@@ -388,6 +396,10 @@ void SessionServerAppManager::shutdownAllSessionServers()
     m_healthcheckService.reset();
     for (const auto &kSessionServer : m_sessionServerApps)
     {
+        if (m_healthcheckService)
+        {
+            m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
+        }
         kSessionServer->kill();
     }
     m_sessionServerApps.clear();
@@ -539,6 +551,10 @@ void SessionServerAppManager::handleServerStartupTimeout(int serverId)
 
     if (!isPreloaded)
     {
+        if (m_healthcheckService)
+        {
+            m_healthcheckService->onServerRemoved(sessionServer->getServerId());
+        }
         sessionServer->kill();
         handleSessionServerStateChange(serverId, firebolt::rialto::common::SessionServerState::NOT_RUNNING);
     }

@@ -177,7 +177,7 @@ void SessionServerAppTests::willKillAppOnDestruction() const
     EXPECT_CALL(*killTimer, cancel());
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kKillTimeout, _, firebolt::rialto::common::TimerType::ONE_SHOT))
         .WillOnce(DoAll(InvokeArgument<1>(), Return(ByMove(std::move(killTimer)))));
-    EXPECT_CALL(m_linuxWrapperMock, waitpid(-1, nullptr, 0))
+    EXPECT_CALL(m_linuxWrapperMock, waitpid(kPid, nullptr, 0))
         .WillOnce(Return(-1)); // -1 here as pid, because we invoked timer with kill earlier.
     EXPECT_CALL(m_linuxWrapperMock, close(kSocketPair[0])).WillOnce(Return(0));
 }
