@@ -22,6 +22,7 @@
 
 #include "IGstSrc.h"
 #include "IRdkGstreamerUtilsWrapper.h"
+#include "GstProfiler.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
 #include <gst/gst.h>
@@ -265,6 +266,8 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     std::atomic_bool audioFadeEnabled{false};
+
+    std::unique_ptr<GstProfiler> m_gstProfiler;
 };
 } // namespace firebolt::rialto::server
 
