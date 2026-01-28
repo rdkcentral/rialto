@@ -64,9 +64,9 @@ public:
     void onServerStartupTimeout(int serverId) override;
 
 private:
-    bool connectSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer);
-    bool configureSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer);
-    bool configurePreloadedSessionServer(const std::unique_ptr<ISessionServerApp> &sessionServer,
+    bool connectSessionServer(const std::shared_ptr<ISessionServerApp> &sessionServer);
+    bool configureSessionServer(const std::shared_ptr<ISessionServerApp> &sessionServer);
+    bool configurePreloadedSessionServer(const std::shared_ptr<ISessionServerApp> &sessionServer,
                                          const std::string &appName,
                                          const firebolt::rialto::common::SessionServerState &state,
                                          const firebolt::rialto::common::AppConfig &appConfig);
@@ -75,26 +75,26 @@ private:
     void handleSessionServerStateChange(int serverId, firebolt::rialto::common::SessionServerState newState);
     void handleAck(int serverId, int pingId, bool success);
     void shutdownAllSessionServers();
-    const std::unique_ptr<ISessionServerApp> &
+    std::shared_ptr<ISessionServerApp>
     launchSessionServer(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                         const firebolt::rialto::common::AppConfig &appConfig);
-    void handleStateChangeFailure(const std::unique_ptr<ISessionServerApp> &sessionServer,
+    void handleStateChangeFailure(const std::shared_ptr<ISessionServerApp> &sessionServer,
                                   const firebolt::rialto::common::SessionServerState &state);
-    const std::unique_ptr<ISessionServerApp> &preloadSessionServer();
-    const std::unique_ptr<ISessionServerApp> &getPreloadedServer() const;
-    const std::unique_ptr<ISessionServerApp> &getServerByAppName(const std::string &appName) const;
-    const std::unique_ptr<ISessionServerApp> &getServerById(int serverId) const;
+    std::shared_ptr<ISessionServerApp> preloadSessionServer();
+    std::shared_ptr<ISessionServerApp> getPreloadedServer() const;
+    std::shared_ptr<ISessionServerApp> getServerByAppName(const std::string &appName) const;
+    std::shared_ptr<ISessionServerApp> getServerById(int serverId) const;
     bool handleInitiateApplication(const std::string &appName, const firebolt::rialto::common::SessionServerState &state,
                                    const firebolt::rialto::common::AppConfig &appConfig);
     void handleRestartServer(int serverId);
-    bool configureSessionServerWithSocketName(const std::unique_ptr<ISessionServerApp> &kSessionServer);
-    bool configureSessionServerWithSocketFd(const std::unique_ptr<ISessionServerApp> &kSessionServer);
+    bool configureSessionServerWithSocketName(const std::shared_ptr<ISessionServerApp> &kSessionServer);
+    bool configureSessionServerWithSocketFd(const std::shared_ptr<ISessionServerApp> &kSessionServer);
     void handleServerStartupTimeout(int serverId);
 
 private:
     std::unique_ptr<ipc::IController> &m_ipcController;
     std::unique_ptr<firebolt::rialto::common::IEventThread> m_eventThread;
-    std::set<std::unique_ptr<ISessionServerApp>> m_sessionServerApps;
+    std::set<std::shared_ptr<ISessionServerApp>> m_sessionServerApps;
     std::unique_ptr<ISessionServerAppFactory> m_sessionServerAppFactory;
     std::shared_ptr<service::IStateObserver> m_stateObserver;
     std::unique_ptr<IHealthcheckService> m_healthcheckService;
