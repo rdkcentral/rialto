@@ -56,7 +56,7 @@ using testing::StrictMock;
 
 void SessionServerAppTests::createPreloadedAppSut()
 {
-    m_sut = std::make_unique<rialto::servermanager::common::SessionServerApp>(std::move(m_linuxWrapper),
+    m_sut = std::make_shared<rialto::servermanager::common::SessionServerApp>(std::move(m_linuxWrapper),
                                                                               m_timerFactoryMock,
                                                                               m_sessionServerAppManagerMock,
                                                                               kEnvironmentVariables, kSessionServerPath,
@@ -79,7 +79,7 @@ void SessionServerAppTests::createPreloadedAppSut()
 void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConfig &appConfig)
 {
     EXPECT_CALL(m_namedSocketMock, bind(_)).WillOnce(Return(true));
-    m_sut = std::make_unique<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
+    m_sut = std::make_shared<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
                                                                               std::move(m_linuxWrapper),
                                                                               m_timerFactoryMock,
                                                                               m_sessionServerAppManagerMock,
@@ -104,7 +104,7 @@ void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConf
 void SessionServerAppTests::createAppSutWithDisabledTimer(const firebolt::rialto::common::AppConfig &appConfig)
 {
     EXPECT_CALL(m_namedSocketMock, bind(_)).WillOnce(Return(true));
-    m_sut = std::make_unique<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
+    m_sut = std::make_shared<rialto::servermanager::common::SessionServerApp>(kAppName, kInitialState, appConfig,
                                                                               std::move(m_linuxWrapper),
                                                                               m_timerFactoryMock,
                                                                               m_sessionServerAppManagerMock,
@@ -177,7 +177,7 @@ void SessionServerAppTests::willKillAppOnDestruction() const
     EXPECT_CALL(*killTimer, cancel());
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kKillTimeout, _, firebolt::rialto::common::TimerType::ONE_SHOT))
         .WillOnce(DoAll(InvokeArgument<1>(), Return(ByMove(std::move(killTimer)))));
-    EXPECT_CALL(m_linuxWrapperMock, waitpid(-1, nullptr, 0))
+    EXPECT_CALL(m_linuxWrapperMock, waitpid(kPid, nullptr, 0))
         .WillOnce(Return(-1)); // -1 here as pid, because we invoked timer with kill earlier.
     EXPECT_CALL(m_linuxWrapperMock, close(kSocketPair[0])).WillOnce(Return(0));
 }
