@@ -590,9 +590,6 @@ void ChannelImpl::processTimeoutEvent()
         updateTimeoutTimer();
     }
 
-    // drop the lock and now terminate the timed out method calls
-    locker.unlock();
-
     for (auto &call : timedOuts)
     {
         completeWithError(&call, "Timed out");
@@ -736,9 +733,6 @@ void ChannelImpl::processReplyFromServer(const transport::MethodCallReply &reply
     // update the timeout timer now a method call has been processed
     updateTimeoutTimer();
 
-    // can now drop the lock
-    locker.unlock();
-
     // this is an actual reply so try and read it
     if (!methodCall.response->ParseFromString(reply.reply_message()))
     {
@@ -786,9 +780,6 @@ void ChannelImpl::processErrorFromServer(const transport::MethodCallError &error
 
     // update the timeout timer now a method call has been processed
     updateTimeoutTimer();
-
-    // can now drop the lock
-    locker.unlock();
 
     RIALTO_IPC_LOG_DEBUG("error{ serial %" PRIu64 " } - %s", kSerialId, error.error_reason().c_str());
 
@@ -1162,12 +1153,10 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
 
     if (m_sock < 0)
     {
-        locker.unlock();
         completeWithError(&methodCall, "Not connected");
     }
     else if (sendmsg(m_sock, header, MSG_NOSIGNAL) != static_cast<ssize_t>(kRequiredDataLen))
     {
-        locker.unlock();
         completeWithError(&methodCall, "Failed to send message");
     }
     else

@@ -545,12 +545,18 @@ bool MediaPipeline::flush(int32_t sourceId, bool resetTime, bool &async)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    std::unique_lock<std::mutex> flushLock{m_flushMutex};
-    if (m_mediaPipelineIpc->flush(sourceId, resetTime, async))
+    bool clearData = false;
     {
-        m_attachedSources.setFlushing(sourceId, true);
-        flushLock.unlock();
+        std::unique_lock<std::mutex> flushLock{m_flushMutex};
+        if (m_mediaPipelineIpc->flush(sourceId, resetTime, async))
+        {
+            m_attachedSources.setFlushing(sourceId, true);
+            clearData = true;
+	}
+    }
 
+    if (clearData)
+    {
         // Clear all need datas for flushed source
         std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
         for (auto it = m_needDataRequestMap.begin(); it != m_needDataRequestMap.end();)
