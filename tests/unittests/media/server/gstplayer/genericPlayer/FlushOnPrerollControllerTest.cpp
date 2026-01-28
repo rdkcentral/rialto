@@ -19,6 +19,7 @@
 
 #include "FlushOnPrerollController.h"
 #include <gtest/gtest.h>
+#include <thread>
 
 using firebolt::rialto::MediaSourceType;
 using firebolt::rialto::server::FlushOnPrerollController;
@@ -29,37 +30,51 @@ protected:
     FlushOnPrerollController m_sut;
 };
 
-TEST_F(FlushOnPrerollControllerTest, shouldNotPostponeFlushWhenNoFlushSet)
+TEST_F(FlushOnPrerollControllerTest, shouldNotWaithWhenNoFlushSet)
 {
-    EXPECT_FALSE(m_sut.shouldPostponeFlush(MediaSourceType::AUDIO));
+    m_sut.waitIfRequired(MediaSourceType::AUDIO);
+    // No deadlock here
 }
 
-TEST_F(FlushOnPrerollControllerTest, shouldNotPostponeFlushWhenNotPrerolled)
-{
-    m_sut.setFlushing(MediaSourceType::AUDIO, GST_STATE_PLAYING);
-    EXPECT_FALSE(m_sut.shouldPostponeFlush(MediaSourceType::AUDIO));
-}
-
-TEST_F(FlushOnPrerollControllerTest, shouldPostponeAudioFlush)
+TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWhenNotPrerolled)
 {
     m_sut.setFlushing(MediaSourceType::AUDIO, GST_STATE_PLAYING);
-    m_sut.stateReached(GST_STATE_PAUSED);
-    EXPECT_TRUE(m_sut.shouldPostponeFlush(MediaSourceType::AUDIO));
-    EXPECT_FALSE(m_sut.shouldPostponeFlush(MediaSourceType::VIDEO));
+    m_sut.waitIfRequired(MediaSourceType::AUDIO);
+    // No deadlock here
 }
 
-TEST_F(FlushOnPrerollControllerTest, shouldNotPostponeAudioFlushWhenReset)
+TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWhenReset)
 {
     m_sut.setFlushing(MediaSourceType::AUDIO, GST_STATE_PLAYING);
     m_sut.stateReached(GST_STATE_PAUSED);
     m_sut.reset();
-    EXPECT_FALSE(m_sut.shouldPostponeFlush(MediaSourceType::AUDIO));
+    m_sut.waitIfRequired(MediaSourceType::AUDIO);
+    // No deadlock here
 }
 
-TEST_F(FlushOnPrerollControllerTest, shouldNotPostponeAudioFlushWhenPreviousProcedureIsFinished)
+TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWhenPreviousProcedureIsFinished)
 {
     m_sut.setFlushing(MediaSourceType::AUDIO, GST_STATE_PLAYING);
     m_sut.stateReached(GST_STATE_PAUSED);
     m_sut.stateReached(GST_STATE_PLAYING);
-    EXPECT_FALSE(m_sut.shouldPostponeFlush(MediaSourceType::AUDIO));
+    m_sut.waitIfRequired(MediaSourceType::AUDIO);
+    // No deadlock here
+}
+
+TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWithVideoFlushWhenOnlyAudioIsOngoing)
+{
+    m_sut.setFlushing(MediaSourceType::AUDIO, GST_STATE_PLAYING);
+    m_sut.stateReached(GST_STATE_PAUSED);
+    m_sut.waitIfRequired(MediaSourceType::VIDEO);
+    // No deadlock here
+}
+
+TEST_F(FlushOnPrerollControllerTest, shouldWaitForAudioFlushFinish)
+{
+    m_sut.setFlushing(MediaSourceType::AUDIO, GST_STATE_PLAYING);
+    m_sut.stateReached(GST_STATE_PAUSED);
+    std::thread waitThread([this]() { m_sut.waitIfRequired(MediaSourceType::AUDIO); });
+    m_sut.stateReached(GST_STATE_PLAYING);
+    waitThread.join();
+    // No deadlock here
 }

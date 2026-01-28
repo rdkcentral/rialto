@@ -139,6 +139,7 @@ constexpr uint64_t kStopPosition{4523};
 const std::vector<uint8_t> kStreamHeaderVector{1, 2, 3, 4};
 constexpr bool kFramed{true};
 constexpr uint64_t kDisplayOffset{35};
+constexpr bool kIsAsync{true};
 
 firebolt::rialto::IMediaPipeline::MediaSegmentVector buildAudioSamples()
 {
@@ -3146,7 +3147,8 @@ void GenericTasksTestsBase::triggerFlush(firebolt::rialto::MediaSourceType sourc
                                                          &testContext->m_gstPlayerClient,
                                                          testContext->m_gstWrapper,
                                                          sourceType,
-                                                         kResetTime};
+                                                         kResetTime,
+                                                         kIsAsync};
     task.execute();
 }
 
@@ -3188,14 +3190,6 @@ void GenericTasksTestsBase::shouldFlushVideoSrcSuccess()
     EXPECT_CALL(*testContext->m_gstWrapper, gstEventNewFlushStop(kResetTime)).WillOnce(Return(&testContext->m_event2));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementSendEvent(&testContext->m_appSrcVideo, &testContext->m_event2))
         .WillOnce(Return(TRUE));
-}
-
-void GenericTasksTestsBase::shouldPostponeVideoFlush()
-{
-    testContext->m_context.flushOnPrerollController.setFlushing(firebolt::rialto::MediaSourceType::VIDEO,
-                                                                GST_STATE_PLAYING);
-    testContext->m_context.flushOnPrerollController.stateReached(GST_STATE_PAUSED);
-    EXPECT_CALL(testContext->m_gstPlayer, postponeFlush(firebolt::rialto::MediaSourceType::VIDEO, kResetTime));
 }
 
 void GenericTasksTestsBase::shouldSetSubtitleSourcePosition()
