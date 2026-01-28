@@ -23,6 +23,7 @@
 #include "FlushOnPrerollController.h"
 #include "IGstSrc.h"
 #include "IRdkGstreamerUtilsWrapper.h"
+#include "GstProfiler.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
 #include <gst/gst.h>
@@ -275,6 +276,7 @@ struct GenericPlayerContext
      *        This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
      */
     bool isLive{false};
+    std::unique_ptr<GstProfiler> m_gstProfiler;
 };
 } // namespace firebolt::rialto::server
 

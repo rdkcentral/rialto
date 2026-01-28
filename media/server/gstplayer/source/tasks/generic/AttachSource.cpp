@@ -102,6 +102,11 @@ void AttachSource::addSource() const
             m_glibWrapper->gObjectSet(m_context.pipeline, "text-sink", elem, nullptr);
         }
     }
+    if (appSrc)
+    {
+        m_context.m_gstProfiler->createRecord(std::string("Created AppSrc element -> ") + m_gstWrapper->gstElementGetName(appSrc));
+    }
+
     m_glibWrapper->gFree(capsStr);
 
     m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), caps);
