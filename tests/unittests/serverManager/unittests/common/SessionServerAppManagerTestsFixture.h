@@ -92,13 +92,12 @@ public:
 private:
     std::unique_ptr<rialto::servermanager::ipc::IController> m_controller;
     std::shared_ptr<StrictMock<rialto::servermanager::service::StateObserverMock>> m_stateObserver;
-    std::unique_ptr<rialto::servermanager::common::ISessionServerApp> m_sessionServerApp;
-    std::unique_ptr<rialto::servermanager::common::ISessionServerApp> m_secondSessionServerApp;
+    std::shared_ptr<StrictMock<rialto::servermanager::common::SessionServerAppMock>> m_sessionServerAppMock;
+    std::shared_ptr<StrictMock<rialto::servermanager::common::SessionServerAppMock>> m_secondSessionServerAppMock;
     std::unique_ptr<rialto::servermanager::common::ISessionServerAppFactory> m_sessionServerAppFactory;
     std::unique_ptr<rialto::servermanager::common::IHealthcheckServiceFactory> m_healthcheckServiceFactory;
     std::unique_ptr<rialto::servermanager::common::IHealthcheckService> m_healthcheckService;
     StrictMock<rialto::servermanager::ipc::ControllerMock> &m_controllerMock;
-    StrictMock<rialto::servermanager::common::SessionServerAppMock> &m_sessionServerAppMock;
     StrictMock<rialto::servermanager::common::SessionServerAppFactoryMock> &m_sessionServerAppFactoryMock;
     StrictMock<rialto::servermanager::common::HealthcheckServiceFactoryMock> &m_healthcheckServiceFactoryMock;
     StrictMock<rialto::servermanager::common::HealthcheckServiceMock> &m_healthcheckServiceMock;
