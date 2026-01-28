@@ -23,6 +23,7 @@
 #include "FlushOnPrerollController.h"
 #include "IGstSrc.h"
 #include "IRdkGstreamerUtilsWrapper.h"
+#include "GstProfiler.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
 #include <gst/gst.h>
@@ -271,6 +272,8 @@ struct GenericPlayerContext
      * @brief Workaround for the gstreamer flush issue
      */
     FlushOnPrerollController flushOnPrerollController;
+
+    std::unique_ptr<GstProfiler> m_gstProfiler;
 };
 } // namespace firebolt::rialto::server
 
