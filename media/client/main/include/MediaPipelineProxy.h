@@ -68,6 +68,10 @@ public:
     {
         return m_mediaPipeline->setImmediateOutput(sourceId, immediateOutput);
     }
+    bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors)
+    {
+        return m_mediaPipeline->setReportDecodeErrors(sourceId, reportDecodeErrors);
+    }
     bool getImmediateOutput(int32_t sourceId, bool &immediateOutput)
     {
         return m_mediaPipeline->getImmediateOutput(sourceId, immediateOutput);

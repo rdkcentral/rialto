@@ -38,6 +38,7 @@
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetBufferingLimit.h"
 #include "tasks/generic/SetImmediateOutput.h"
+#include "tasks/generic/SetReportDecodeErrors.h"
 #include "tasks/generic/SetLowLatency.h"
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
@@ -332,6 +333,14 @@ GenericPlayerTaskFactory::createSetImmediateOutput(GenericPlayerContext &context
                                                    bool immediateOutput) const
 {
     return std::make_unique<tasks::generic::SetImmediateOutput>(context, player, type, immediateOutput);
+}
+
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createSetReportDecodeErrors(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                   const firebolt::rialto::MediaSourceType &type,
+                                                   bool reportDecodeErrors) const
+{
+    return std::make_unique<tasks::generic::SetReportDecodeErrors>(context, player, type, reportDecodeErrors);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetBufferingLimit(GenericPlayerContext &context,

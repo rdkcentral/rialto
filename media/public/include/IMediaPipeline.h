@@ -1228,6 +1228,18 @@ public:
     virtual bool setImmediateOutput(int32_t sourceId, bool immediateOutput) = 0;
 
     /**
+     * @brief Sets the "Report Decode Errors" property for this source.
+     *
+     * This method is asynchronous, it will set the "Report Decode Errors" property
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] immediateOutput : Set Report Decode Errors mode on the sink
+     *
+     * @retval true on success.
+     */
+    virtual bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) = 0;
+
+    /**
      * @brief Gets the "Immediate Output" property for this source.
      *
      * This method is sychronous, it gets the "Immediate Output" property

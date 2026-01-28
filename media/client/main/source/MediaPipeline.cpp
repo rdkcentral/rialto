@@ -313,6 +313,11 @@ bool MediaPipeline::setImmediateOutput(int32_t sourceId, bool immediateOutput)
     return m_mediaPipelineIpc->setImmediateOutput(sourceId, immediateOutput);
 }
 
+bool MediaPipeline::setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors)
+{
+    return m_mediaPipelineIpc->setReportDecodeErrors(sourceId, reportDecodeErrors);
+}
+
 bool MediaPipeline::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
 {
     return m_mediaPipelineIpc->getImmediateOutput(sourceId, immediateOutput);
