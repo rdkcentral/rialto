@@ -495,14 +495,14 @@ public:
                                                                   bool immediateOutput) const = 0;
 
     /**
-     * @brief Creates a setReportDecodeErrors task.
+     * @brief Creates a SetReportDecodeErrors task.
      *
      * @param[in] context         : The GstPlayer context
      * @param[in] player          : The GstPlayer instance
      * @param[in] type            : The media source type
-     * @param[in] immediateOutput : the value to set for report decode error
+     * @param[in] reportDecodeErrors : the value to set for report decode error
      *
-     * @retval the new ProcessAudioGap task instance.
+     * @retval the new SetReportDecodeErrors task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createSetReportDecodeErrors(GenericPlayerContext &context,
                                                                   IGstGenericPlayerPrivate &player,

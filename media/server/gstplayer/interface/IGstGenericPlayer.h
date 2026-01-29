@@ -215,6 +215,16 @@ public:
     virtual bool setReportDecodeErrors(const MediaSourceType &mediaSourceType, bool reportDecodeErrors) = 0;
 
     /**
+     * @brief Gets the queued frames for this source.
+     *
+     * @param[in] mediaSourceType : The media source type
+     * @param[out] queuedFrames : Get queued frames mode on the decoder
+     *
+     * @retval true on success.
+     */
+    virtual bool getQueuedFrames(const MediaSourceType &mediaSourceType, uint32_t &queuedFrames) = 0;
+
+    /**
      * @brief Gets the "Immediate Output" property for this source.
      *
      * @param[in] mediaSourceType : The media source type

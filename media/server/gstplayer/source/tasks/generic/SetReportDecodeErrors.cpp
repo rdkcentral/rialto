@@ -41,12 +41,16 @@ void SetReportDecodeErrors::execute() const
 
     if (m_type != MediaSourceType::VIDEO)
     {
-        RIALTO_SERVER_LOG_ERROR("SetReportDecodeErrors not currently supported for non-video");
+        RIALTO_SERVER_LOG_WARN("SetReportDecodeErrors not currently supported for non-video");
+        return;
     }
 
     if (m_context.pipeline)
     {
-        m_player.setReportDecodeErrors(m_reportDecodeErrors);
+        RIALTO_SERVER_LOG_DEBUG("Pipeline not available yet - cannot apply report_decode_errors setting");
+        return;
     }
+
+    m_player.setReportDecodeErrors(m_reportDecodeErrors);
 }
 } // namespace firebolt::rialto::server::tasks::generic

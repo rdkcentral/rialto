@@ -664,6 +664,31 @@ bool GstGenericPlayer::setReportDecodeErrors(const MediaSourceType &mediaSourceT
     return true;
 }
 
+bool GstGenericPlayer::getQueuedFrames(const MediaSourceType &mediaSourceType, uint32_t &queuedFrames)
+{
+    bool returnValue{false};
+    GstElement *decoder{getDecoder(mediaSourceType)};
+    if (decoder)
+    {
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "queued_frames"))
+        {
+            m_glibWrapper->gObjectGet(decoder, "queued_frames", &queuedFrames, nullptr);
+            returnValue = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("queued_frames not supported in element %s", GST_ELEMENT_NAME(decoder));
+        }
+        m_gstWrapper->gstObjectUnref(decoder);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get queued_frames property, decoder is NULL");
+    }
+
+    return returnValue;
+}
+
 bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutputRef)
 {
     bool returnValue{false};
@@ -1392,7 +1417,7 @@ bool GstGenericPlayer::setReportDecodeErrors(bool reportDecodeErrors)
     }
     else
     {
-        RIALTO_SERVER_LOG_DEBUG("Pending an report_decode_errors, decoder is NULL");
+        RIALTO_SERVER_LOG_DEBUG("Pending a report_decode_errors, decoder is NULL");
     }
     return result;
 }

@@ -719,7 +719,7 @@ message GetImmediateOutputResponse {
  *
  * @param[in]  session_id        The id of the A/V session.
  * @param[in]  source_id         The id of the media source.
- * @param[out] queued_frames  Get queued frames on the decoder
+ * @param[out] queued_frames     The number of queued frames on the decoder
  *
  */
 message GetQueuedFramesRequest {
@@ -727,7 +727,7 @@ message GetQueuedFramesRequest {
     optional int32 source_id = 2 [default = -1];
 }
 message GetQueuedFramesResponse {
-    optional uint32 queued_frames = 1 [default = -1];
+    optional uint32 queued_frames = 1 [default = 0];
 }
 
 /**
