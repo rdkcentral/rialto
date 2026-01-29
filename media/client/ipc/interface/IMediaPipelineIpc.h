@@ -201,6 +201,18 @@ public:
     virtual bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) = 0;
 
     /**
+     * @brief Gets the queued frames for this source.
+     *
+     * This method is sychronous, it gets the queued frames property
+     *
+     * @param[in] sourceId  : The source id. Value should be get to the MediaSource.id returned after attachSource()
+     * @param[out] queuedFrames : Get queued frames on the decoder
+     *
+     * @retval true on success.
+     */
+    virtual bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) = 0;
+
+    /**
      * @brief Gets the "Immediate Output" property for this source.
      *
      * This method is sychronous

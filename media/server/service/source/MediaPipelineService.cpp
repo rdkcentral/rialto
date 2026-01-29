@@ -281,6 +281,20 @@ bool MediaPipelineService::setReportDecodeErrors(int sessionId, int32_t sourceId
     return mediaPipelineIter->second->setReportDecodeErrors(sourceId, reportDecodeErrors);
 }
 
+bool MediaPipelineService::getQueuedFrames(int sessionId, int32_t sourceId, uint32_t &queuedFrames)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to getQueuedFrames, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getQueuedFrames(sourceId, queuedFrames);
+}
+
 bool MediaPipelineService::getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to getImmediateOutput, session id: %d", sessionId);

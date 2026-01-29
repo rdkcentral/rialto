@@ -694,6 +694,25 @@ void MediaPipelineModuleService::setReportDecodeErrors(::google::protobuf::RpcCo
     done->Run();
 }
 
+void MediaPipelineModuleService::getQueuedFrames(::google::protobuf::RpcController *controller,
+                                                    const ::firebolt::rialto::GetQueuedFramesRequest *request,
+                                                    ::firebolt::rialto::GetQueuedFramesResponse *response,
+                                                    ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    uint32_t queuedFramesNumber;
+    if (!m_mediaPipelineService.getQueuedFrames(request->session_id(), request->source_id(), queuedFramesNumber))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get queued frames failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_queued_frames(queuedFramesNumber);
+    }
+    done->Run();
+}
+
 void MediaPipelineModuleService::getImmediateOutput(::google::protobuf::RpcController *controller,
                                                     const ::firebolt::rialto::GetImmediateOutputRequest *request,
                                                     ::firebolt::rialto::GetImmediateOutputResponse *response,

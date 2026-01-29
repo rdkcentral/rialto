@@ -72,6 +72,10 @@ public:
     {
         return m_mediaPipeline->setReportDecodeErrors(sourceId, reportDecodeErrors);
     }
+    bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
+    {
+        return m_mediaPipeline->getQueuedFrames(sourceId, queuedFrames);
+    }
     bool getImmediateOutput(int32_t sourceId, bool &immediateOutput)
     {
         return m_mediaPipeline->getImmediateOutput(sourceId, immediateOutput);

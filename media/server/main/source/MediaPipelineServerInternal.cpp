@@ -564,6 +564,34 @@ bool MediaPipelineServerInternal::setReportDecodeErrorsInternal(int32_t sourceId
     return m_gstPlayer->setReportDecodeErrors(sourceIter->first, reportDecodeErrors);
 }
 
+bool MediaPipelineServerInternal::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = getQueuedFramesInternal(sourceId, queuedFrames); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getQueuedFramesInternal(int32_t sourceId, uint32_t &queuedFrames)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed - Source not found");
+        return false;
+    }
+    return m_gstPlayer->getQueuedFrames(sourceIter->first, queuedFrames);
+}
+
 bool MediaPipelineServerInternal::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

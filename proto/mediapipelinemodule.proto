@@ -727,7 +727,7 @@ message GetQueuedFramesRequest {
     optional int32 source_id = 2 [default = -1];
 }
 message GetQueuedFramesResponse {
-    optional uint32 queued_frames = 1 [default = -1];
+    optional uint32 queued_frames = 1 [default = 0];
 }
 
 /**
