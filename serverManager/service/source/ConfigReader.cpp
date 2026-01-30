@@ -56,6 +56,7 @@ bool ConfigReader::read()
     parseNumOfPreloadedServers(root);
     parseLogLevel(root);
     parseNumOfPingsBeforeRecovery(root);
+    parseSubtitlesDisplayName(root);
 
     return true;
 }
@@ -162,6 +163,11 @@ void ConfigReader::parseNumOfPingsBeforeRecovery(std::shared_ptr<firebolt::rialt
     m_numOfPingsBeforeRecovery = getUInt(root, "numOfPingsBeforeRecovery");
 }
 
+void ConfigReader::parseSubtitlesDisplayName(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+{
+    m_subtitlesDisplayName = getString(root, "subtitlesDisplayName");
+}
+
 std::list<std::string> ConfigReader::getEnvironmentVariables()
 {
     return m_envVars;
@@ -215,6 +221,11 @@ std::optional<rialto::servermanager::service::LoggingLevels> ConfigReader::getLo
 std::optional<unsigned int> ConfigReader::getNumOfPingsBeforeRecovery()
 {
     return m_numOfPingsBeforeRecovery;
+}
+
+std::optional<std::string> ConfigReader::getSubtitlesDisplayName()
+{
+    return m_subtitlesDisplayName;
 }
 
 std::list<std::string> ConfigReader::getListOfStrings(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,

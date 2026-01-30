@@ -202,6 +202,7 @@ bool Client::performSetState(const firebolt::rialto::common::SessionServerState 
 
 bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState,
                                      const std::string &socketName, const std::string &clientDisplayName,
+                                     const std::string &subtitlesDisplayName,
                                      const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                      const unsigned int socketPermissions, const std::string &socketOwner,
                                      const std::string &socketGroup, const std::string &appName) const
@@ -216,6 +217,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     rialto::SetConfigurationResponse response;
     request.set_sessionmanagementsocketname(socketName);
     request.set_clientdisplayname(clientDisplayName);
+    request.set_subtitlesdisplayname(subtitlesDisplayName);
     request.mutable_resources()->set_maxplaybacks(maxResource.maxPlaybacks);
     request.mutable_resources()->set_maxwebaudioplayers(maxResource.maxWebAudioPlayers);
     request.set_socketpermissions(socketPermissions);
@@ -241,6 +243,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
 
 bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState, int socketFd,
                                      const std::string &clientDisplayName,
+                                     const std::string &subtitlesDisplayName,
                                      const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                      const std::string &appName) const
 {
@@ -254,6 +257,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     rialto::SetConfigurationResponse response;
     request.set_sessionmanagementsocketfd(socketFd);
     request.set_clientdisplayname(clientDisplayName);
+    request.set_subtitlesdisplayname(subtitlesDisplayName);
     request.mutable_resources()->set_maxplaybacks(maxResource.maxPlaybacks);
     request.mutable_resources()->set_maxwebaudioplayers(maxResource.maxWebAudioPlayers);
     request.set_appname(appName);

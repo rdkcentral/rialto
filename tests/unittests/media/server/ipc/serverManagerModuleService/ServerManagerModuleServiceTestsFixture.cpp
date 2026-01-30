@@ -38,6 +38,7 @@ constexpr int kPingId{29};
 const std::string kSocketOwner{};
 const std::string kSocketGroup{};
 const std::string kAppId{"app"};
+const std::string kSubtitlesDisplayName{"westeros-asplayer-subtitles"};
 
 rialto::SessionServerState convertSessionServerState(const firebolt::rialto::common::SessionServerState &state)
 {
@@ -83,7 +84,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kSubtitlesDisplayName, kAppId))
         .WillOnce(Return(true));
 }
 
@@ -93,7 +94,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kSubtitlesDisplayName, kAppId))
         .WillOnce(Return(true));
 }
 
@@ -117,7 +118,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kSubtitlesDisplayName, kAppId))
         .WillOnce(Return(false));
 }
 
@@ -127,7 +128,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId))
+                                  kSubtitlesDisplayName, kAppId))
         .WillOnce(Return(false));
 }
 
@@ -169,6 +170,7 @@ void ServerManagerModuleServiceTests::sendSetConfiguration(const firebolt::rialt
     request.set_socketowner(kSocketOwner);
     request.set_socketgroup(kSocketGroup);
     request.set_appname(kAppId);
+    request.set_subtitlesdisplayname(kSubtitlesDisplayName);
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -190,6 +192,7 @@ void ServerManagerModuleServiceTests::sendSetConfigurationWithFd(const firebolt:
     request.set_initialsessionserverstate(convertSessionServerState(state));
     request.set_clientdisplayname(kClientDisplayName);
     request.set_appname(kAppId);
+    request.set_subtitlesdisplayname(kSubtitlesDisplayName);
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
