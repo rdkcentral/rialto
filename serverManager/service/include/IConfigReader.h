@@ -45,6 +45,7 @@ public:
     virtual std::optional<unsigned int> getNumOfPreloadedServers() = 0;
     virtual std::optional<rialto::servermanager::service::LoggingLevels> getLoggingLevels() = 0;
     virtual std::optional<unsigned int> getNumOfPingsBeforeRecovery() = 0;
+    virtual std::optional<std::string> getSubtitlesDisplayName() = 0;
 };
 
 } // namespace rialto::servermanager::service

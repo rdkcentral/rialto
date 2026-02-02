@@ -31,5 +31,6 @@
     "socketGroup" : @SOCKET_GROUP@,
     "numOfPreloadedServers" : @NUM_OF_PRELOADED_SERVERS@,
     "logLevel" : @LOG_LEVEL@,
-    "numOfPingsBeforeRecovery" : @NUM_OF_PINGS_BEFORE_RECOVERY@
+    "numOfPingsBeforeRecovery" : @NUM_OF_PINGS_BEFORE_RECOVERY@,
+    "subtitlesDisplayName" : @SUBTITLES_WAYLAND_DISPLAY@
 }

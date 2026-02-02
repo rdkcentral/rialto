@@ -68,6 +68,7 @@ struct AppConfig
      * "/tmp/bar" In all cases the name can be retrieved with getAppConnectionInfo()
      */
     std::string clientDisplayName; /**< Socket name that Rialto client should connect to */
+    std::string subtitlesDisplayName; /**< Wayland display name for subtitles */
 };
 
 /**
@@ -105,6 +106,8 @@ struct ServerManagerConfig
     SocketPermissions sessionManagementSocketPermissions{}; /* Defines permissions of session management socket */
     unsigned numOfFailedPingsBeforeRecovery{@NUM_OF_PINGS_BEFORE_RECOVERY@};
         /* Defines how many pings have to fail before recovery action will be taken */
+    std::string subtitlesDisplayName{@SUBTITLES_WAYLAND_DISPLAY@};
+        /* Wayland display name for subtitles rendering */
 };
 
 } // namespace firebolt::rialto::common
