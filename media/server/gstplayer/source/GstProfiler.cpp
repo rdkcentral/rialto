@@ -19,8 +19,7 @@ GstProfiler::GstProfiler(GstElement* pipeline,
                         const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                         const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
     :   m_pipeline{pipeline},
-        m_id{generateId()},
-        m_profiler{k_module, m_id},
+        m_profiler{k_module},
         m_gstWrapper{gstWrapper},
         m_glibWrapper{glibWrapper}
 {
@@ -35,16 +34,14 @@ GstProfiler::~GstProfiler()
         m_gstWrapper->gstObjectUnref(m_pipeline);
 }
 
-uint64_t GstProfiler::generateId()
+std::optional<GstProfiler::RecordId> GstProfiler::createRecord(std::string stage)
 {
-    using namespace std::chrono;
-
-    return duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
+    return m_profiler.record(std::move(stage));
 }
 
-void GstProfiler::createRecord(std::string stage)
+std::optional<GstProfiler::RecordId> GstProfiler::createRecord(std::string stage, std::string info)
 {
-    m_profiler.record(stage);
+    return m_profiler.record(std::move(stage), std::move(info));
 }
 
 void GstProfiler::scheduleGstElementRecord(GstElement* element)
@@ -52,14 +49,15 @@ void GstProfiler::scheduleGstElementRecord(GstElement* element)
     if (!element)
         return;
 
-    if(!checkElement(element))
+    auto stage = checkElement(element);
+    if(!stage)
         return;
 
     GstPad* pad = m_gstWrapper->gstElementGetStaticPad(element, "src");
     if (!pad)
         return;
 
-    auto* probeCtx = new ProbeCtx{this, std::string(m_gstWrapper->gstElementGetName(element))};
+    auto* probeCtx = new ProbeCtx{this, stage.value_or(""), std::string(m_gstWrapper->gstElementGetName(element))};
 
     gst_pad_add_probe(pad,
                     GST_PAD_PROBE_TYPE_BUFFER,
@@ -68,6 +66,11 @@ void GstProfiler::scheduleGstElementRecord(GstElement* element)
                     &GstProfiler::probeCtxDestroy);
 
     m_gstWrapper->gstObjectUnref(pad);
+}
+
+void GstProfiler::logRecord(GstProfiler::RecordId id)
+{
+    m_profiler.log(id);
 }
 
 GstPadProbeReturn GstProfiler::probeCb(GstPad* pad, GstPadProbeInfo* info, gpointer user_data)
@@ -82,7 +85,8 @@ GstPadProbeReturn GstProfiler::probeCb(GstPad* pad, GstPadProbeInfo* info, gpoin
     if (!buffer)
       return GST_PAD_PROBE_OK;
 
-    self->m_profiler.record(probeCtx->stage);
+    const auto id = self->m_profiler.record(probeCtx->stage, probeCtx->info);
+    self->m_profiler.log(id.value());
 
     return GST_PAD_PROBE_REMOVE;
 }
@@ -92,25 +96,25 @@ void GstProfiler::probeCtxDestroy(gpointer data)
     delete static_cast<ProbeCtx*>(data);
 }
 
-bool GstProfiler::checkElement(GstElement* element)
+std::optional<std::string> GstProfiler::checkElement(GstElement* element)
 {
     GstElementFactory* factory = m_gstWrapper->gstElementGetFactory(element);
     if (!factory)
-        return false;
+        return std::nullopt;
 
     const gchar* klass = gst_element_factory_get_klass(factory);
     if (!klass)
-        return false;
+        return std::nullopt;
 
     for (auto token : kKlassTokens)
     {
         if (g_strrstr(klass, token.data()) != nullptr)
         {
-            return true;
+            return std::string(token.data());
         }
     }
 
-    return false;
+    return std::nullopt;
 }
 
 } // namespace firebolt::rialto::server

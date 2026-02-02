@@ -8,39 +8,48 @@
 #include <gst/gst.h>
 
 #include <memory>
+#include <optional>
 
 namespace firebolt::rialto::server
 {
 class GstProfiler
 {
 public:
+    using IGstWrapper = firebolt::rialto::wrappers::IGstWrapper;
+    using IGlibWrapper = firebolt::rialto::wrappers::IGlibWrapper;
+    using Profiler = firebolt::rialto::common::Profiler;
+    using RecordId = Profiler::RecordId;
+
     enum class Stage {AppSrc, Decryptor, Decoder};
 
     GstProfiler(GstElement* pipeline,
-                const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper);
+                const std::shared_ptr<IGstWrapper> &gstWrapper,
+                const std::shared_ptr<IGlibWrapper> &glibWrapper);
     ~GstProfiler();
 
-    void createRecord(std::string stage);
+    std::optional<RecordId> createRecord(std::string stage);
+    std::optional<RecordId> createRecord(std::string stage, std::string info);
+
     void scheduleGstElementRecord(GstElement* element);
+
+    void logRecord(const RecordId id);
 
 private:
     struct ProbeCtx {
         GstProfiler* self;
         std::string stage;
+        std::string info;
     };
 
-    static uint64_t generateId();
-    bool checkElement(GstElement* element);
+    std::optional<std::string> checkElement(GstElement* element);
 
     static GstPadProbeReturn probeCb(GstPad* pad, GstPadProbeInfo* info, gpointer user_data);
     static void probeCtxDestroy(gpointer data);
 
     GstElement* m_pipeline = nullptr;
-    uint64_t m_id;
     Profiler m_profiler;
-    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
-    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
+    std::shared_ptr<IGstWrapper> m_gstWrapper;
+    std::shared_ptr<IGlibWrapper> m_glibWrapper;
     static constexpr std::string_view k_module = "GstProfiler";
 };
 } // namespace firebolt::rialto::server
