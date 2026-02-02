@@ -104,7 +104,9 @@ void AttachSource::addSource() const
     }
     if (appSrc)
     {
-        m_context.m_gstProfiler->createRecord(std::string("Created AppSrc element -> ") + m_gstWrapper->gstElementGetName(appSrc));
+        auto recordId = m_context.m_gstProfiler->createRecord("Created AppSrc Element", m_gstWrapper->gstElementGetName(appSrc));
+        if(recordId)
+            m_context.m_gstProfiler->logRecord(recordId.value());
     }
 
     m_glibWrapper->gFree(capsStr);
