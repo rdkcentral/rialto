@@ -141,9 +141,8 @@ bool IpcTests::triggerPerformSetConfiguration()
     const std::string kSocketOwner{};
     const std::string kSocketGroup{};
     const std::string kAppId{"app"};
-    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketName, kClientSocketName,
-                                          kSubtitlesDisplayName, kMaxResource, kSocketPermissions, kSocketOwner,
-                                          kSocketGroup, kAppId);
+    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketName, kClientSocketName, kSubtitlesDisplayName,
+                                          kMaxResource, kSocketPermissions, kSocketOwner, kSocketGroup, kAppId);
 }
 
 bool IpcTests::triggerPerformSetConfigurationWithFd()
@@ -155,8 +154,8 @@ bool IpcTests::triggerPerformSetConfigurationWithFd()
     const std::string kSubtitlesDisplayName{"westeros-asplayer-subtitles"};
     constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{2, 1};
     const std::string kAppId{"app"};
-    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketFd, kClientSocketName,
-                                          kSubtitlesDisplayName, kMaxResource, kAppId);
+    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketFd, kClientSocketName, kSubtitlesDisplayName,
+                                          kMaxResource, kAppId);
 }
 
 bool IpcTests::triggerPerformPing()

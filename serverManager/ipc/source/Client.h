@@ -56,8 +56,7 @@ public:
                                  const unsigned int socketPermissions, const std::string &socketOwner,
                                  const std::string &socketGroup, const std::string &appName) const;
     bool performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState, int socketFd,
-                                 const std::string &clientDisplayName,
-                                 const std::string &subtitlesDisplayName,
+                                 const std::string &clientDisplayName, const std::string &subtitlesDisplayName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                  const std::string &appName) const;
     bool performPing(int pingId) const;

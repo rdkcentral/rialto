@@ -74,9 +74,8 @@ bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::c
     auto client = m_clients.find(serverId);
     if (client != m_clients.end())
     {
-        return client->second->performSetConfiguration(initialState, socketName, clientDisplayName,
-                                                       subtitlesDisplayName, maxResource,
-                                                       socketPermissions, socketOwner, socketGroup, appName);
+        return client->second->performSetConfiguration(initialState, socketName, clientDisplayName, subtitlesDisplayName,
+                                                       maxResource, socketPermissions, socketOwner, socketGroup, appName);
     }
     return false;
 }
@@ -91,8 +90,8 @@ bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::c
     auto client = m_clients.find(serverId);
     if (client != m_clients.end())
     {
-        return client->second->performSetConfiguration(initialState, socketFd, clientDisplayName,
-                                                       subtitlesDisplayName, maxResource, appName);
+        return client->second->performSetConfiguration(initialState, socketFd, clientDisplayName, subtitlesDisplayName,
+                                                       maxResource, appName);
     }
     return false;
 }

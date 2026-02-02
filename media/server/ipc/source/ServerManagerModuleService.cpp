@@ -94,7 +94,7 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     common::MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(),
                                                  request->resources().maxwebaudioplayers()};
     const auto kClientDisplayName = request->has_clientdisplayname() ? request->clientdisplayname() : "";
-    const auto kSubtitlesDisplayName = request->subtitlesdisplayname();
+    const auto kSubtitlesDisplayName = request->has_subtitlesdisplayname() ? request->subtitlesdisplayname() : "";
     bool success{true};
     if (request->has_sessionmanagementsocketfd())
     {

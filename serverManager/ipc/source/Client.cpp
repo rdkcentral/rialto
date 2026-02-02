@@ -242,8 +242,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
 }
 
 bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState, int socketFd,
-                                     const std::string &clientDisplayName,
-                                     const std::string &subtitlesDisplayName,
+                                     const std::string &clientDisplayName, const std::string &subtitlesDisplayName,
                                      const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                      const std::string &appName) const
 {
