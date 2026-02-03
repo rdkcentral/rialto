@@ -20,7 +20,9 @@
 cmake_minimum_required( VERSION 3.10 )
 project( Rialto LANGUAGES C CXX VERSION 1.0.0 )
 
-find_package(WPEFramework NAMES WPEFramework Thunder)
+find_package(Thunder)
+
+add_compile_options(-DTHUNDER_VERSION=5)
 
 # Preprocesser Variable
 add_compile_definitions(PROJECT_VER_MAJOR="${PROJECT_VERSION_MAJOR}")
