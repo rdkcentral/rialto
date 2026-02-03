@@ -18,7 +18,11 @@
  */
 
 #include "ThunderWrapper.h"
+#if THUNDER_VERSION >= 5
+#include <core/Errors.h>
+#else
 #include <core/Portability.h>
+#endif
 
 namespace firebolt::rialto::wrappers
 {
