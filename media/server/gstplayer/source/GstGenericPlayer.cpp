@@ -406,7 +406,6 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
     position = getPosition(m_context.pipeline);
     if (position == -1)
     {
-        RIALTO_SERVER_LOG_WARN("Query position failed");
         return false;
     }
 
@@ -1712,7 +1711,6 @@ bool GstGenericPlayer::setErmContext()
 
 void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
 {
-    static constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
     if (m_positionReportingAndCheckAudioUnderflowTimer && m_positionReportingAndCheckAudioUnderflowTimer->isActive())
     {
         return;
@@ -1729,12 +1727,6 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
             }
         },
         firebolt::rialto::common::TimerType::PERIODIC);
-
-    notifyPlaybackInfo();
-
-    m_playbackInfoTimer =
-        m_timerFactory
-            ->createTimer(kPlaybackInfoTimerMs, [this]() { notifyPlaybackInfo(); }, firebolt::rialto::common::TimerType::PERIODIC);
 }
 
 void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
@@ -1744,7 +1736,25 @@ void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
         m_positionReportingAndCheckAudioUnderflowTimer->cancel();
         m_positionReportingAndCheckAudioUnderflowTimer.reset();
     }
+}
 
+void GstGenericPlayer::startNotifyPlaybackInfoTimer()
+{
+    static constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
+    if (m_playbackInfoTimer && m_playbackInfoTimer->isActive())
+    {
+        return;
+    }
+
+    notifyPlaybackInfo();
+
+    m_playbackInfoTimer =
+        m_timerFactory
+            ->createTimer(kPlaybackInfoTimerMs, [this]() { notifyPlaybackInfo(); }, firebolt::rialto::common::TimerType::PERIODIC);
+}
+
+void GstGenericPlayer::stopNotifyPlaybackInfoTimer()
+{
     if (m_playbackInfoTimer && m_playbackInfoTimer->isActive())
     {
         m_playbackInfoTimer->cancel();
