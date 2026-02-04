@@ -223,7 +223,8 @@ void GstGenericPlayer::initMsePipeline()
     // Set pipeline flags
     setPlaybinFlags(true);
 
-    m_context.m_gstProfiler = std::make_unique<GstProfiler>(m_context.pipeline, m_gstWrapper, m_glibWrapper);
+    m_context.m_gstProfiler = std::make_unique<GstProfiler>(m_context.pipeline, m_gstWrapper, m_glibWrapper,
+                                firebolt::rialto::common::IProfilerFactory::createFactory());
 
     // Set callbacks
     m_glibWrapper->gSignalConnect(m_context.pipeline, "source-setup", G_CALLBACK(&GstGenericPlayer::setupSource), this);
