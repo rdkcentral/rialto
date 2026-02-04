@@ -1,4 +1,5 @@
 #include "GstProfiler.h"
+#include "RialtoCommonLogging.h"
 
 #include <mutex>
 #include <string>
@@ -17,14 +18,18 @@ inline constexpr std::array kKlassTokens
 
 GstProfiler::GstProfiler(GstElement* pipeline,
                         const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                        const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
+                        const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                        std::shared_ptr<IProfilerFactory> profilerFactory)
     :   m_pipeline{pipeline},
-        m_profiler{k_module},
         m_gstWrapper{gstWrapper},
-        m_glibWrapper{glibWrapper}
+        m_glibWrapper{glibWrapper},
+        m_profilerFactory{profilerFactory}
 {
     if (m_pipeline)
         m_gstWrapper->gstObjectRef(m_pipeline);
+
+    if (m_profilerFactory)
+        m_profiler = m_profilerFactory->createProfiler(std::string{k_module});
 }
 
 
@@ -36,12 +41,12 @@ GstProfiler::~GstProfiler()
 
 std::optional<GstProfiler::RecordId> GstProfiler::createRecord(std::string stage)
 {
-    return m_profiler.record(std::move(stage));
+    return m_profiler->record(stage);
 }
 
 std::optional<GstProfiler::RecordId> GstProfiler::createRecord(std::string stage, std::string info)
 {
-    return m_profiler.record(std::move(stage), std::move(info));
+    return m_profiler->record(stage, info);
 }
 
 void GstProfiler::scheduleGstElementRecord(GstElement* element)
@@ -58,7 +63,6 @@ void GstProfiler::scheduleGstElementRecord(GstElement* element)
         return;
 
     auto* probeCtx = new ProbeCtx{this, stage.value_or(""), std::string(m_gstWrapper->gstElementGetName(element))};
-
     gst_pad_add_probe(pad,
                     GST_PAD_PROBE_TYPE_BUFFER,
                     &GstProfiler::probeCb,
@@ -70,7 +74,7 @@ void GstProfiler::scheduleGstElementRecord(GstElement* element)
 
 void GstProfiler::logRecord(GstProfiler::RecordId id)
 {
-    m_profiler.log(id);
+    m_profiler->log(id);
 }
 
 GstPadProbeReturn GstProfiler::probeCb(GstPad* pad, GstPadProbeInfo* info, gpointer user_data)
@@ -85,8 +89,11 @@ GstPadProbeReturn GstProfiler::probeCb(GstPad* pad, GstPadProbeInfo* info, gpoin
     if (!buffer)
       return GST_PAD_PROBE_OK;
 
-    const auto id = self->m_profiler.record(probeCtx->stage, probeCtx->info);
-    self->m_profiler.log(id.value());
+    const auto id = self->m_profiler->record(probeCtx->stage, probeCtx->info);
+    if(id)
+    {
+        self->m_profiler->log(id.value());
+    }
 
     return GST_PAD_PROBE_REMOVE;
 }
