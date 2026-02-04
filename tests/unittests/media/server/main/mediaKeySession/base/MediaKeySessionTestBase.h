@@ -93,6 +93,7 @@ protected:
     void expectCloseKeySession(const std::string &keySystem);
     void generateRequest();
     void generateRequestPlayready();
+    void generateRequestPlayreadyWithTwoCalls();
     void mainThreadWillEnqueueTask();
 };
 

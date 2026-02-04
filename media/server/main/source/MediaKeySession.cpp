@@ -121,13 +121,14 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
         m_licenseRequested = true;
     }
 
+    auto status = MediaKeyErrorStatus::OK;
+
     // Only construct session if it hasnt previously been constructed
     if (!m_isSessionConstructed)
     {
         initOcdmErrorChecking();
 
-        MediaKeyErrorStatus status =
-            m_ocdmSession->constructSession(m_kSessionType, initDataType, &initData[0], initData.size());
+        status = m_ocdmSession->constructSession(m_kSessionType, initDataType, &initData[0], initData.size());
         if (MediaKeyErrorStatus::OK != status)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to construct the key session");
@@ -148,18 +149,16 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
         {
             status = MediaKeyErrorStatus::FAIL;
         }
-
-        if (m_extendedInterfaceInUse)
-        {
-            // Ocdm-playready does not notify onProcessChallenge when complete.
-            // Fetch the challenge manually.
-            getChallenge(ldlState);
-        }
-
-        return status;
     }
 
-    return MediaKeyErrorStatus::OK;
+    if (m_extendedInterfaceInUse)
+    {
+        // Ocdm-playready does not notify onProcessChallenge when complete.
+        // Fetch the challenge manually.
+        getChallenge(ldlState);
+    }
+
+    return status;
 }
 
 void MediaKeySession::getChallenge(const LimitedDurationLicense &ldlState)

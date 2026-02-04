@@ -59,6 +59,19 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessNetflix)
 }
 
 /**
+ * Test that GenerateRequest can generate request successfully for a netflix keysystem.
+ */
+TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessNetflixWithTwoGenerateChallengeCalls)
+{
+    createKeySession(kNetflixKeySystem);
+
+    generateRequestPlayreadyWithTwoCalls();
+
+    // Close ocdm before destroying
+    expectCloseKeySession(kNetflixKeySystem);
+}
+
+/**
  * Test that GenerateRequest fails when returned challenge data size is zero
  */
 TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, FailNetflixWhenChallengeDataSizeIsZero)
