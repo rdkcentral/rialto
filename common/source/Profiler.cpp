@@ -2,14 +2,35 @@
 #include "RialtoCommonLogging.h"
 
 #include <algorithm>
+#include <fstream>
 
 namespace firebolt::rialto::common
 {
-Profiler::Profiler(std::string_view module)
-    : m_module(module)
+std::shared_ptr<IProfilerFactory> IProfilerFactory::createFactory()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_records.clear();
+    std::shared_ptr<IProfilerFactory> factory;
+
+    try
+    {
+        factory = std::make_shared<ProfilerFactory>();
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_COMMON_LOG_ERROR("Failed to create the profiler factory, reason: %s", e.what());
+    }
+
+    return factory;
+}
+
+std::unique_ptr<IProfiler> ProfilerFactory::createProfiler(std::string moduleName) const
+{
+    return std::make_unique<Profiler>(moduleName);
+}
+
+Profiler::Profiler(std::string module)
+    : m_module(std::move(module))
+{
+
 }
 
 std::optional<Profiler::RecordId> Profiler::record(std::string stage)
@@ -25,7 +46,7 @@ std::optional<Profiler::RecordId> Profiler::record(std::string stage)
     const Profiler::RecordId id = m_id++;
 
     m_records.push_back(Record{
-        std::string(m_module),
+        m_module,
         id,
         std::move(stage),
         std::string{},
@@ -48,7 +69,7 @@ std::optional<Profiler::RecordId> Profiler::record(std::string stage, std::strin
     const Profiler::RecordId id = m_id++;
 
     m_records.push_back(Record{
-        std::string(m_module),
+        m_module,
         id,
         std::move(stage),
         std::move(info),
@@ -89,20 +110,41 @@ void Profiler::log(const RecordId id)
     {
         const auto us = std::chrono::duration_cast<std::chrono::microseconds>(record->time.time_since_epoch()).count();
         RIALTO_COMMON_LOG_MIL("PROFILER | RECORD | MODULE[%s] ID[%llu] STAGE[%s] INFO[%s] TIMESTAMP[%lld]",
-                            record->module.data(), static_cast<unsigned long long>(record->id),
+                            record->module.c_str(), static_cast<unsigned long long>(record->id),
                             record->stage.c_str(), record->info.c_str(), (long long)us);
     }
 }
 
-void Profiler::dump(std::ostream& os) const
+bool Profiler::dump(const std::string& path) const
 {
-    // TODO dump()
+    std::vector<Record> copy;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        copy = m_records;
+    }
+
+    std::ofstream out(path, std::ios::out | std::ios::trunc);
+    if (!out.is_open())
+        return false;
+
+    for (const auto& record : copy)
+    {
+        const auto us = std::chrono::duration_cast<std::chrono::microseconds>(
+                                record.time.time_since_epoch()).count();
+
+        out << "MODULE[" << record.module << "] "
+            << "ID[" << record.id << "] "
+            << "STAGE[" << record.stage << "] "
+            << "INFO[" << record.info << "] "
+            << "TIMESTAMP[" << us << "]"
+            << '\n';
+    }
+
+    return static_cast<bool>(out);
 }
 
 const Profiler::Record* Profiler::findById(Profiler::RecordId id)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
-
     for (const auto& record : m_records)
     {
         if (record.id == id)
