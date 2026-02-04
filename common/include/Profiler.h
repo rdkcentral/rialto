@@ -1,6 +1,8 @@
 #ifndef FIREBOLT_RIALTO_COMMON_PROFILER_H_
 #define FIREBOLT_RIALTO_COMMON_PROFILER_H_
 
+#include "IProfiler.h"
+
 #include <chrono>
 #include <mutex>
 #include <string_view>
@@ -9,44 +11,43 @@
 
 namespace firebolt::rialto::common
 {
-class Profiler final
+class ProfilerFactory : public IProfilerFactory
 {
 public:
-    using RecordId = std::uint64_t;
+    std::unique_ptr<IProfiler> createProfiler(std::string moduleName) const override;
+};
+
+class Profiler final : public IProfiler
+{
+public:
     using Clock = std::chrono::steady_clock;
 
     struct Record
     {
-        std::string_view module;
+        std::string module;
         uint64_t id{0};
         std::string stage;
         std::string info;
         Clock::time_point time;
     };
 
-    Profiler() = delete;
-    ~Profiler() = default;
+    explicit Profiler(std::string module);
 
-    Profiler(const Profiler&) = delete;
-    Profiler& operator=(const Profiler&) = delete;
+    std::optional<RecordId> record(std::string stage) override;
+    std::optional<RecordId> record(std::string stage, std::string info) override;
 
-    Profiler(std::string_view module);
+    std::optional<RecordId> find(std::string stage) override;
+    std::optional<RecordId> find(std::string stage, std::string info) override;
 
-    std::optional<RecordId> record(std::string stage);
-    std::optional<RecordId> record(std::string stage, std::string info);
+    void log(const RecordId id) override;
 
-    std::optional<RecordId> find(std::string stage);
-    std::optional<RecordId> find(std::string stage, std::string info);
-
-    void log(const RecordId id);
-
-    void dump(std::ostream& os) const;
+    bool dump(const std::string& path) const override;
 
 private:
     const Record* findById(RecordId id);
 
     mutable std::mutex m_mutex;
-    std::string_view m_module{};
+    std::string m_module;
     RecordId m_id{1};
     std::vector<Record> m_records;
     static constexpr size_t kMaxRecords = 100;
