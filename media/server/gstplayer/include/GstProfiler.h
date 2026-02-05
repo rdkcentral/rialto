@@ -53,6 +53,7 @@ private:
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
     std::shared_ptr<IProfilerFactory> m_profilerFactory;
     std::unique_ptr<IProfiler> m_profiler;
+    bool m_enabled = false;
     static constexpr std::string_view k_module = "GstProfiler";
 };
 } // namespace firebolt::rialto::server
