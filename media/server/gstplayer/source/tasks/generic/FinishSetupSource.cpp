@@ -124,8 +124,8 @@ void FinishSetupSource::execute() const
     m_context.setupSourceFinished = true;
 
     RIALTO_SERVER_LOG_MIL("All sources attached.");
-    auto recordId = m_context.m_gstProfiler->createRecord("All Sources Attached");
+    auto recordId = m_context.gstProfiler->createRecord("All Sources Attached");
     if(recordId)
-        m_context.m_gstProfiler->logRecord(recordId.value());
+        m_context.gstProfiler->logRecord(recordId.value());
 }
 } // namespace firebolt::rialto::server::tasks::generic
