@@ -56,7 +56,7 @@ DeepElementAdded::DeepElementAdded(GenericPlayerContext &context, IGstGenericPla
             }
         }
 
-        m_context.m_gstProfiler->scheduleGstElementRecord(m_element);
+        m_context.gstProfiler->scheduleGstElementRecord(m_element);
     }
 }
 
