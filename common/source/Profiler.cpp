@@ -28,13 +28,20 @@ std::unique_ptr<IProfiler> ProfilerFactory::createProfiler(std::string moduleNam
 }
 
 Profiler::Profiler(std::string module)
-    : m_module(std::move(module))
+    : m_module(std::move(module)), m_enabled(parseEnv(std::getenv(kProfilerEnv), false))
 {
 
 }
 
+bool Profiler::enabled() const noexcept
+{
+    return m_enabled;
+}
+
 std::optional<Profiler::RecordId> Profiler::record(std::string stage)
 {
+    if (!m_enabled) return std::nullopt;
+
     auto now = Clock::now();
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -58,6 +65,8 @@ std::optional<Profiler::RecordId> Profiler::record(std::string stage)
 
 std::optional<Profiler::RecordId> Profiler::record(std::string stage, std::string info)
 {
+    if (!m_enabled) return std::nullopt;
+
     auto now = Clock::now();
     std::lock_guard<std::mutex> lock(m_mutex);
 
@@ -81,6 +90,8 @@ std::optional<Profiler::RecordId> Profiler::record(std::string stage, std::strin
 
 std::optional<Profiler::RecordId> Profiler::find(std::string stage)
 {
+    if (!m_enabled) return std::nullopt;
+
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for (const auto& record : m_records)
@@ -92,6 +103,8 @@ std::optional<Profiler::RecordId> Profiler::find(std::string stage)
 
 std::optional<Profiler::RecordId> Profiler::find(std::string stage, std::string info)
 {
+    if (!m_enabled) return std::nullopt;
+
     std::lock_guard<std::mutex> lock(m_mutex);
 
     for (const auto& record : m_records)
@@ -103,6 +116,8 @@ std::optional<Profiler::RecordId> Profiler::find(std::string stage, std::string 
 
 void Profiler::log(const RecordId id)
 {
+    if (!m_enabled) return;
+
     std::lock_guard<std::mutex> lock(m_mutex);
 
     const auto* record = findById(id);
@@ -117,6 +132,8 @@ void Profiler::log(const RecordId id)
 
 bool Profiler::dump(const std::string& path) const
 {
+    if (!m_enabled) return false;
+
     std::vector<Record> copy;
     {
         std::lock_guard<std::mutex> lock(m_mutex);
@@ -141,6 +158,23 @@ bool Profiler::dump(const std::string& path) const
     }
 
     return static_cast<bool>(out);
+}
+
+bool Profiler::parseEnv(const char *value, bool defaultValue)
+{
+    if (!value || (value[0] == '\0'))
+        return defaultValue;
+
+    std::string stringValue(value);
+    std::transform(stringValue.begin(), stringValue.end(), stringValue.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+    if (stringValue == "1" || stringValue == "true" || stringValue == "yes" || stringValue == "on")
+        return true;
+    if (stringValue == "0" || stringValue == "false" || stringValue == "no" || stringValue == "off")
+        return false;
+
+    return defaultValue;
 }
 
 const Profiler::Record* Profiler::findById(Profiler::RecordId id)
