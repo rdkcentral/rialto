@@ -48,6 +48,8 @@ public:
     IProfiler(IProfiler &&) = delete;
     IProfiler &operator=(IProfiler &&) = delete;
 
+    virtual bool enabled() const noexcept = 0;
+
     virtual std::optional<RecordId> record(std::string stage) = 0;
     virtual std::optional<RecordId> record(std::string stage, std::string info) = 0;
 
