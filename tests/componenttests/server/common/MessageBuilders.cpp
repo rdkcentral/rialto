@@ -430,7 +430,8 @@ namespace firebolt::rialto::server::ct
 }
 
 ::firebolt::rialto::GenerateRequestRequest createGenerateRequestRequest(int mediaKeysHandle, int keySessionId,
-                                                                        const std::vector<unsigned char> &initData)
+                                                                        const std::vector<unsigned char> &initData,
+                                                                        bool extendedInterface)
 {
     ::firebolt::rialto::GenerateRequestRequest request;
     request.set_media_keys_handle(mediaKeysHandle);
@@ -439,6 +440,10 @@ namespace firebolt::rialto::server::ct
     for (auto i : initData)
     {
         request.add_init_data(i);
+    }
+    if (extendedInterface)
+    {
+        request.set_ldl_state(::firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense_DISABLED);
     }
     return request;
 }

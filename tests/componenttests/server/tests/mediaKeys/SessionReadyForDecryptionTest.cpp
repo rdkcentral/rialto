@@ -149,7 +149,8 @@ void SessionReadyForDecryptionTest::willGenerateRequestNetflix()
 
 void SessionReadyForDecryptionTest::generateRequestNetflix()
 {
-    auto request{createGenerateRequestRequest(m_mediaKeysHandle, m_mediaKeySessionId, m_kInitData)};
+    constexpr bool kUseExtendedInterface{true};
+    auto request{createGenerateRequestRequest(m_mediaKeysHandle, m_mediaKeySessionId, m_kInitData, kUseExtendedInterface)};
 
     ExpectMessage<::firebolt::rialto::LicenseRequestEvent> expectedMessage(m_clientStub);
 
