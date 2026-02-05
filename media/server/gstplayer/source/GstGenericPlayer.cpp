@@ -224,7 +224,7 @@ void GstGenericPlayer::initMsePipeline()
     // Set pipeline flags
     setPlaybinFlags(true);
 
-    m_context.m_gstProfiler = std::make_unique<GstProfiler>(m_context.pipeline, m_gstWrapper, m_glibWrapper,
+    m_context.gstProfiler = std::make_unique<GstProfiler>(m_context.pipeline, m_gstWrapper, m_glibWrapper,
                                 firebolt::rialto::common::IProfilerFactory::createFactory());
 
     // Set callbacks
@@ -252,9 +252,9 @@ void GstGenericPlayer::initMsePipeline()
         GST_WARNING("Failed to set pipeline to READY state");
     }
     RIALTO_SERVER_LOG_MIL("New RialtoServer's pipeline created");
-    auto recordId = m_context.m_gstProfiler->createRecord("Pipeline Created");
+    auto recordId = m_context.gstProfiler->createRecord("Pipeline Created");
     if(recordId)
-        m_context.m_gstProfiler->logRecord(recordId.value());
+        m_context.gstProfiler->logRecord(recordId.value());
 }
 
 void GstGenericPlayer::resetWorkerThread()
@@ -310,9 +310,9 @@ void GstGenericPlayer::termPipeline()
     m_gstWrapper->gstObjectUnref(m_context.pipeline);
 
     RIALTO_SERVER_LOG_MIL("RialtoServer's pipeline terminated");
-    auto recordId = m_context.m_gstProfiler->createRecord("Pipeline Terminated");
+    auto recordId = m_context.gstProfiler->createRecord("Pipeline Terminated");
     if(recordId)
-        m_context.m_gstProfiler->logRecord(recordId.value());
+        m_context.gstProfiler->logRecord(recordId.value());
 }
 
 unsigned GstGenericPlayer::getGstPlayFlag(const char *nick)
@@ -992,9 +992,9 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
                               typeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
                               segment->rate, segment->applied_rate, resetTime);
-        auto recordId = m_context.m_gstProfiler->createRecord("First Segment Received", typeStr);
+        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", typeStr);
         if(recordId)
-            m_context.m_gstProfiler->logRecord(recordId.value());
+            m_context.gstProfiler->logRecord(recordId.value());
 
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
         // We can't pass buffer in GstSample, because implementation of gst_app_src_push_sample
