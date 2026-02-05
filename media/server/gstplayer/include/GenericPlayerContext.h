@@ -267,7 +267,10 @@ struct GenericPlayerContext
      */
     std::atomic_bool audioFadeEnabled{false};
 
-    std::unique_ptr<GstProfiler> m_gstProfiler;
+    /**
+     * @brief Profiler for player pipeline
+     */
+    std::unique_ptr<GstProfiler> gstProfiler;
 };
 } // namespace firebolt::rialto::server
 
