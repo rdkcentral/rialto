@@ -68,6 +68,9 @@ void Flush::execute() const
         return;
     }
 
+    GstDebugLevel defaultLevel = gst_debug_get_default_threshold();
+    gst_debug_set_default_threshold(GST_LEVEL_DEBUG);
+
     StreamInfo &streamInfo = sourceElem->second;
     streamInfo.isDataNeeded = false;
     streamInfo.isNeedDataPending = false;
@@ -121,6 +124,8 @@ void Flush::execute() const
         NeedData task{m_context, m_player, m_gstPlayerClient, GST_APP_SRC(source)};
         task.execute();
     }
+
+    gst_debug_set_default_threshold(defaultLevel);
 
     RIALTO_SERVER_LOG_MIL("%s source flushed.", common::convertMediaSourceType(m_type));
 }
