@@ -47,7 +47,7 @@ void Flush::execute() const
         return;
     }
 
-    RIALTO_SERVER_LOG_DEBUG("Executing Flush for %s source", common::convertMediaSourceType(m_type));
+    RIALTO_SERVER_LOG_MIL("Executing Flush for %s source", common::convertMediaSourceType(m_type));
 
     // Get source first
     GstElement *source{nullptr};
@@ -89,7 +89,7 @@ void Flush::execute() const
         m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
         m_context.flushOnPrerollController.setFlushing(m_type, GST_STATE(m_context.pipeline));
 
-        RIALTO_SERVER_LOG_INFO("DEBUG: Sending flush start");
+        RIALTO_SERVER_LOG_MIL("DEBUG: Sending flush start");
         // Flush source
         GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
         if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
@@ -97,13 +97,13 @@ void Flush::execute() const
             RIALTO_SERVER_LOG_WARN("failed to send flush-start event for %s", common::convertMediaSourceType(m_type));
         }
 
-        RIALTO_SERVER_LOG_INFO("DEBUG: Sending flush stop");
+        RIALTO_SERVER_LOG_MIL("DEBUG: Sending flush stop");
         GstEvent *flushStop = m_gstWrapper->gstEventNewFlushStop(m_resetTime);
         if (!m_gstWrapper->gstElementSendEvent(source, flushStop))
         {
             RIALTO_SERVER_LOG_WARN("failed to send flush-stop event for %s", common::convertMediaSourceType(m_type));
         }
-        RIALTO_SERVER_LOG_INFO("DEBUG: Flush events sending finished");
+        RIALTO_SERVER_LOG_MIL("DEBUG: Flush events sending finished");
     }
     else
     {
