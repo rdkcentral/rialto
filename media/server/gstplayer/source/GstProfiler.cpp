@@ -30,6 +30,9 @@ GstProfiler::GstProfiler(GstElement* pipeline,
 
     if (m_profilerFactory)
         m_profiler = m_profilerFactory->createProfiler(std::string{k_module});
+
+    if (m_profiler)
+        m_enabled = m_profiler->enabled();
 }
 
 
@@ -41,16 +44,22 @@ GstProfiler::~GstProfiler()
 
 std::optional<GstProfiler::RecordId> GstProfiler::createRecord(std::string stage)
 {
+    if (!m_enabled) return std::nullopt;
+
     return m_profiler->record(stage);
 }
 
 std::optional<GstProfiler::RecordId> GstProfiler::createRecord(std::string stage, std::string info)
 {
+    if (!m_enabled) return std::nullopt;
+
     return m_profiler->record(stage, info);
 }
 
 void GstProfiler::scheduleGstElementRecord(GstElement* element)
 {
+    if (!m_enabled) return;
+
     if (!element)
         return;
 
@@ -74,6 +83,8 @@ void GstProfiler::scheduleGstElementRecord(GstElement* element)
 
 void GstProfiler::logRecord(GstProfiler::RecordId id)
 {
+    if (!m_enabled) return;
+
     m_profiler->log(id);
 }
 
