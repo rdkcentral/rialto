@@ -276,7 +276,11 @@ struct GenericPlayerContext
      *        This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
      */
     bool isLive{false};
-    std::unique_ptr<GstProfiler> m_gstProfiler;
+
+    /**
+     * @brief Profiler for player pipeline
+     */
+    std::unique_ptr<GstProfiler> gstProfiler;
 };
 } // namespace firebolt::rialto::server
 

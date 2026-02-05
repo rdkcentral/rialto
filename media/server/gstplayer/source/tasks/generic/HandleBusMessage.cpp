@@ -58,9 +58,9 @@ void HandleBusMessage::execute() const
                                   m_gstWrapper->gstElementStateGetName(oldState),
                                   m_gstWrapper->gstElementStateGetName(newState),
                                   m_gstWrapper->gstElementStateGetName(pending));
-            auto recordId = m_context.m_gstProfiler->createRecord("Pipeline State Changed", m_gstWrapper->gstElementStateGetName(newState));
+            auto recordId = m_context.gstProfiler->createRecord("Pipeline State Changed", m_gstWrapper->gstElementStateGetName(newState));
             if(recordId)
-                m_context.m_gstProfiler->logRecord(recordId.value());
+                m_context.gstProfiler->logRecord(recordId.value());
 
             std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +
                                    std::string(m_gstWrapper->gstElementStateGetName(newState));

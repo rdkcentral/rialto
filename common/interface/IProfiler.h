@@ -48,16 +48,65 @@ public:
     IProfiler(IProfiler &&) = delete;
     IProfiler &operator=(IProfiler &&) = delete;
 
+    /**
+     * @brief Checks if profiler is enabled.
+     *
+     * @retval true if profiler is enabled, false otherwise.
+     */
     virtual bool enabled() const noexcept = 0;
 
+    /**
+     * @brief Creates a record for given stage.
+     *
+     * @param[in] stage : Stage name used for record creation
+     *
+     * @retval Record identificator for created record or std::nullopt.
+     */
     virtual std::optional<RecordId> record(std::string stage) = 0;
+
+    /**
+     * @brief Creates a record for given stage and info.
+     *
+     * @param[in] stage : Stage name used for record creation
+     * @param[in] info  : Additional information used for record creation
+     *
+     * @retval Record identificator for created record or std::nullopt.
+     */
     virtual std::optional<RecordId> record(std::string stage, std::string info) = 0;
 
+    /**
+     * @brief Finds an existing record for given stage.
+     *
+     * @param[in] stage : Stage name of the record to be found
+     *
+     * @retval Record identificator for found record or std::nullopt.
+     */
     virtual std::optional<RecordId> find(std::string stage) = 0;
+
+    /**
+     * @brief Finds an existing record for given stage and info.
+     *
+     * @param[in] stage : Stage name of the record to be found
+     * @param[in] info  : Additional information of the record to be found
+     *
+     * @retval Record identificator for found record or std::nullopt.
+     */
     virtual std::optional<RecordId> find(std::string stage, std::string info) = 0;
 
+    /**
+     * @brief Logs a record for given identificator.
+     *
+     * @param[in] id : Record identificator
+     */
     virtual void log(RecordId id) = 0;
 
+    /**
+     * @brief Dumps all records into file.
+     *
+     * @param[in] path : Full path to the directory where the file will be stored
+     *
+     * @retval true if file is created and records are dumped, false otherwise.
+     */
     virtual bool dump(const std::string& path) const = 0;
 
 protected:
