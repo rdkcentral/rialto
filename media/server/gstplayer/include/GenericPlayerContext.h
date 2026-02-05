@@ -273,7 +273,10 @@ struct GenericPlayerContext
      */
     FlushOnPrerollController flushOnPrerollController;
 
-    std::unique_ptr<GstProfiler> m_gstProfiler;
+    /**
+     * @brief Profiler for player pipeline
+     */
+    std::unique_ptr<GstProfiler> gstProfiler;
 };
 } // namespace firebolt::rialto::server
 
