@@ -33,6 +33,8 @@ public:
 
     explicit Profiler(std::string module);
 
+    bool enabled() const noexcept override;
+
     std::optional<RecordId> record(std::string stage) override;
     std::optional<RecordId> record(std::string stage, std::string info) override;
 
@@ -44,12 +46,17 @@ public:
     bool dump(const std::string& path) const override;
 
 private:
+    static bool parseEnv(const char *value, bool defaultValue);
     const Record* findById(RecordId id);
 
-    mutable std::mutex m_mutex;
     std::string m_module;
+    const bool m_enabled;
+
+    mutable std::mutex m_mutex;
     RecordId m_id{1};
     std::vector<Record> m_records;
+
+    static constexpr const char* kProfilerEnv = "PROFILER_ENABLED";
     static constexpr size_t kMaxRecords = 100;
 };
 
