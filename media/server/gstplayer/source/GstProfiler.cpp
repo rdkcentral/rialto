@@ -128,7 +128,7 @@ std::optional<std::string> GstProfiler::checkElement(GstElement* element)
     {
         if (g_strrstr(klass, token.data()) != nullptr)
         {
-            return std::string(token.data());
+            return std::string(token.data()) + " FB Exit";
         }
     }
 
