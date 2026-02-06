@@ -40,8 +40,6 @@ Flush::~Flush()
 
 void Flush::execute() const
 {
-    m_context.flushOnPrerollController->waitIfRequired(m_type);
-
     RIALTO_SERVER_LOG_DEBUG("Executing Flush for %s source", common::convertMediaSourceType(m_type));
 
     // Get source first
@@ -78,6 +76,8 @@ void Flush::execute() const
 
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
     {
+        m_context.flushOnPrerollController->waitIfRequired(m_type);
+
         // Flush source
         GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
         if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
@@ -93,7 +93,7 @@ void Flush::execute() const
 
         if (m_isAsync)
         {
-            m_context.flushOnPrerollController->setFlushing(m_type, GST_STATE(m_context.pipeline));
+            m_context.flushOnPrerollController->setFlushing(m_type);
         }
     }
     else

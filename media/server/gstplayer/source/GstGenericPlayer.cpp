@@ -1219,6 +1219,7 @@ GstStateChangeReturn GstGenericPlayer::changePipelineState(GstState newState)
         --m_ongoingStateChangesNumber;
         return GST_STATE_CHANGE_FAILURE;
     }
+    m_context.flushOnPrerollController->setTargetState(newState);
     const GstStateChangeReturn result{m_gstWrapper->gstElementSetState(m_context.pipeline, newState)};
     if (result == GST_STATE_CHANGE_FAILURE)
     {

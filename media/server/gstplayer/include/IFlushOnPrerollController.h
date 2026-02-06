@@ -35,8 +35,9 @@ public:
     virtual ~IFlushOnPrerollController() = default;
 
     virtual void waitIfRequired(const MediaSourceType &type) = 0;
-    virtual void setFlushing(const MediaSourceType &type, const GstState &currentPipelineState) = 0;
+    virtual void setFlushing(const MediaSourceType &type) = 0;
     virtual void stateReached(const GstState &newPipelineState) = 0;
+    virtual void setTargetState(const GstState &state) = 0;
     virtual void reset() = 0;
 };
 } // namespace firebolt::rialto::server

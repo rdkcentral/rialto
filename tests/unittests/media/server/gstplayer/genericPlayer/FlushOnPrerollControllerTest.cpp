@@ -38,14 +38,16 @@ TEST_F(FlushOnPrerollControllerTest, shouldNotWaithWhenNoFlushSet)
 
 TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWhenNotPrerolled)
 {
-    m_sut.setFlushing(MediaSourceType::AUDIO, GST_STATE_PLAYING);
+    m_sut.setTargetState(GST_STATE_PLAYING);
+    m_sut.setFlushing(MediaSourceType::AUDIO);
     m_sut.waitIfRequired(MediaSourceType::AUDIO);
     // No deadlock here
 }
 
 TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWhenReset)
 {
-    m_sut.setFlushing(MediaSourceType::AUDIO, GST_STATE_PLAYING);
+    m_sut.setTargetState(GST_STATE_PLAYING);
+    m_sut.setFlushing(MediaSourceType::AUDIO);
     m_sut.stateReached(GST_STATE_PAUSED);
     m_sut.reset();
     m_sut.waitIfRequired(MediaSourceType::AUDIO);
@@ -54,7 +56,8 @@ TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWhenReset)
 
 TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWhenPreviousProcedureIsFinished)
 {
-    m_sut.setFlushing(MediaSourceType::AUDIO, GST_STATE_PLAYING);
+    m_sut.setTargetState(GST_STATE_PLAYING);
+    m_sut.setFlushing(MediaSourceType::AUDIO);
     m_sut.stateReached(GST_STATE_PAUSED);
     m_sut.stateReached(GST_STATE_PLAYING);
     m_sut.waitIfRequired(MediaSourceType::AUDIO);
@@ -63,7 +66,8 @@ TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWhenPreviousProcedureIsFinishe
 
 TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWithVideoFlushWhenOnlyAudioIsOngoing)
 {
-    m_sut.setFlushing(MediaSourceType::AUDIO, GST_STATE_PLAYING);
+    m_sut.setTargetState(GST_STATE_PLAYING);
+    m_sut.setFlushing(MediaSourceType::AUDIO);
     m_sut.stateReached(GST_STATE_PAUSED);
     m_sut.waitIfRequired(MediaSourceType::VIDEO);
     // No deadlock here
@@ -71,7 +75,8 @@ TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWithVideoFlushWhenOnlyAudioIsO
 
 TEST_F(FlushOnPrerollControllerTest, shouldWaitForAudioFlushFinish)
 {
-    m_sut.setFlushing(MediaSourceType::AUDIO, GST_STATE_PLAYING);
+    m_sut.setTargetState(GST_STATE_PLAYING);
+    m_sut.setFlushing(MediaSourceType::AUDIO);
     m_sut.stateReached(GST_STATE_PAUSED);
     std::thread waitThread([this]() { m_sut.waitIfRequired(MediaSourceType::AUDIO); });
     m_sut.stateReached(GST_STATE_PLAYING);

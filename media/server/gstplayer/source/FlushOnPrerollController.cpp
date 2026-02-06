@@ -35,17 +35,12 @@ void FlushOnPrerollController::waitIfRequired(const MediaSourceType &type)
                             common::convertMediaSourceType(type));
 }
 
-void FlushOnPrerollController::setFlushing(const MediaSourceType &type, const GstState &currentPipelineState)
+void FlushOnPrerollController::setFlushing(const MediaSourceType &type)
 {
-    RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Set flushing for: %s, state: %s",
-                            common::convertMediaSourceType(type), gst_element_state_get_name(currentPipelineState));
+    RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Set flushing for: %s", common::convertMediaSourceType(type));
     std::unique_lock lock{m_mutex};
     m_flushingSources.insert(type);
     m_isPrerolled = false;
-    if (!m_targetState.has_value())
-    {
-        m_targetState = currentPipelineState;
-    }
 }
 
 void FlushOnPrerollController::stateReached(const GstState &newPipelineState)
@@ -55,10 +50,18 @@ void FlushOnPrerollController::stateReached(const GstState &newPipelineState)
     m_isPrerolled = true;
     if (m_targetState.has_value() && newPipelineState == m_targetState.value())
     {
+        RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Clear state after state reached %s",
+                                gst_element_state_get_name(newPipelineState));
         m_flushingSources.clear();
-        m_targetState = std::nullopt;
     }
     m_conditionVariable.notify_all();
+}
+
+void FlushOnPrerollController::setTargetState(const GstState &state)
+{
+    std::unique_lock lock{m_mutex};
+    m_targetState = state;
+    RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Set target state %s", gst_element_state_get_name(state));
 }
 
 void FlushOnPrerollController::reset()
