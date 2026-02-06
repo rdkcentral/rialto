@@ -202,8 +202,9 @@ GstGenericPlayer::GstGenericPlayer(
         RIALTO_SERVER_LOG_MIL("Primary video playback selected");
     }
 
-    m_gstDispatcherThread =
-        gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper);
+    m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
+                                                                                  m_context.flushOnPrerollController,
+                                                                                  m_gstWrapper);
 }
 
 GstGenericPlayer::~GstGenericPlayer()
@@ -252,7 +253,6 @@ void GstGenericPlayer::initMsePipeline()
 
 void GstGenericPlayer::resetWorkerThread()
 {
-    m_postponedFlushes.clear();
     // Shutdown task thread
     m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
     m_workerThread->join();
@@ -466,23 +466,6 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
 void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
 {
     m_flushWatcher->setFlushed(mediaSourceType);
-}
-
-void GstGenericPlayer::postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime)
-{
-    m_postponedFlushes.emplace_back(std::make_pair(mediaSourceType, resetTime));
-}
-
-void GstGenericPlayer::executePostponedFlushes()
-{
-    if (m_workerThread)
-    {
-        for (const auto &[mediaSourceType, resetTime] : m_postponedFlushes)
-        {
-            m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, *this, mediaSourceType, resetTime));
-        }
-    }
-    m_postponedFlushes.clear();
 }
 
 void GstGenericPlayer::notifyPlaybackInfo()
@@ -1236,6 +1219,7 @@ GstStateChangeReturn GstGenericPlayer::changePipelineState(GstState newState)
         --m_ongoingStateChangesNumber;
         return GST_STATE_CHANGE_FAILURE;
     }
+    m_context.flushOnPrerollController->setTargetState(newState);
     const GstStateChangeReturn result{m_gstWrapper->gstElementSetState(m_context.pipeline, newState)};
     if (result == GST_STATE_CHANGE_FAILURE)
     {
@@ -2070,7 +2054,7 @@ void GstGenericPlayer::flush(const MediaSourceType &mediaSourceType, bool resetT
     {
         async = isAsync(mediaSourceType);
         m_flushWatcher->setFlushing(mediaSourceType, async);
-        m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, *this, mediaSourceType, resetTime));
+        m_workerThread->enqueueTask(m_taskFactory->createFlush(m_context, *this, mediaSourceType, resetTime, async));
     }
 }
 

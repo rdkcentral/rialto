@@ -125,8 +125,8 @@ GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uin
     }
 
     if ((!gstDispatcherThreadFactory) ||
-        (!(m_gstDispatcherThread =
-               gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper))))
+        (!(m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
+                                                                                         nullptr, m_gstWrapper))))
     {
         termWebAudioPipeline();
         resetWorkerThread();

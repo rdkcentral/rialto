@@ -119,7 +119,7 @@ public:
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFlush,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
-                 const firebolt::rialto::MediaSourceType &type, bool resetTime),
+                 const firebolt::rialto::MediaSourceType &type, bool resetTime, bool isAsync),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSourcePosition,
                 (GenericPlayerContext & context, const firebolt::rialto::MediaSourceType &type, std::int64_t position,
