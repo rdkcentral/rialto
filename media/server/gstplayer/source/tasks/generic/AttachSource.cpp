@@ -102,6 +102,13 @@ void AttachSource::addSource() const
             m_glibWrapper->gObjectSet(m_context.pipeline, "text-sink", elem, nullptr);
         }
     }
+    if (appSrc)
+    {
+        auto recordId = m_context.gstProfiler->createRecord("Created AppSrc Element", m_gstWrapper->gstElementGetName(appSrc));
+        if(recordId)
+            m_context.gstProfiler->logRecord(recordId.value());
+    }
+
     m_glibWrapper->gFree(capsStr);
 
     m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), caps);

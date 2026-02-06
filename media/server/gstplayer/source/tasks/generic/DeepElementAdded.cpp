@@ -54,6 +54,8 @@ DeepElementAdded::DeepElementAdded(GenericPlayerContext &context, IGstGenericPla
                 m_callbackRegistered = true;
             }
         }
+
+        m_context.gstProfiler->scheduleGstElementRecord(m_element);
     }
 }
 
