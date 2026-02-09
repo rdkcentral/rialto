@@ -1,10 +1,30 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2026 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #ifndef FIREBOLT_RIALTO_COMMON_I_PROFILER_H_
 #define FIREBOLT_RIALTO_COMMON_I_PROFILER_H_
 
+#include <cstdint>
 #include <functional>
 #include <memory>
-#include <string>
 #include <optional>
+#include <string>
 
 namespace firebolt::rialto::common
 {
@@ -60,7 +80,7 @@ public:
      *
      * @param[in] stage : Stage name used for record creation
      *
-     * @retval Record identificator for created record or std::nullopt.
+     * @retval Record identifier for created record or std::nullopt.
      */
     virtual std::optional<RecordId> record(std::string stage) = 0;
 
@@ -70,7 +90,7 @@ public:
      * @param[in] stage : Stage name used for record creation
      * @param[in] info  : Additional information used for record creation
      *
-     * @retval Record identificator for created record or std::nullopt.
+     * @retval Record identifier for created record or std::nullopt.
      */
     virtual std::optional<RecordId> record(std::string stage, std::string info) = 0;
 
@@ -79,7 +99,7 @@ public:
      *
      * @param[in] stage : Stage name of the record to be found
      *
-     * @retval Record identificator for found record or std::nullopt.
+     * @retval Record identifier for found record or std::nullopt.
      */
     virtual std::optional<RecordId> find(std::string stage) = 0;
 
@@ -89,25 +109,25 @@ public:
      * @param[in] stage : Stage name of the record to be found
      * @param[in] info  : Additional information of the record to be found
      *
-     * @retval Record identificator for found record or std::nullopt.
+     * @retval Record identifier for found record or std::nullopt.
      */
     virtual std::optional<RecordId> find(std::string stage, std::string info) = 0;
 
     /**
-     * @brief Logs a record for given identificator.
+     * @brief Logs a record for given identifier.
      *
-     * @param[in] id : Record identificator
+     * @param[in] id : Record identifier
      */
     virtual void log(RecordId id) = 0;
 
     /**
      * @brief Dumps all records into file.
      *
-     * @param[in] path : Full path to the directory where the file will be stored
+     * @param[in] path : Full path to the output file
      *
      * @retval true if file is created and records are dumped, false otherwise.
      */
-    virtual bool dump(const std::string& path) const = 0;
+    virtual bool dump(const std::string &path) const = 0;
 
 protected:
     IProfiler() = default;
