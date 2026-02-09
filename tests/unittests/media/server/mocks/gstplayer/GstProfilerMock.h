@@ -17,24 +17,30 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMMON_PROFILER_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_COMMON_PROFILER_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_PROFILER_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_GST_PROFILER_MOCK_H_
 
-#include "IProfiler.h"
+#include "IGstProfiler.h"
+
 #include <gmock/gmock.h>
-#include <memory>
+#include <optional>
 #include <string>
 
-namespace firebolt::rialto::common
+namespace firebolt::rialto::server
 {
-class ProfilerFactoryMock : public IProfilerFactory
+class GstProfilerMock : public IGstProfiler
 {
 public:
-    ProfilerFactoryMock() = default;
-    virtual ~ProfilerFactoryMock() = default;
+    GstProfilerMock() = default;
+    virtual ~GstProfilerMock() = default;
 
-    MOCK_METHOD(std::unique_ptr<IProfiler>, createProfiler, (std::string moduleName), (const, override));
+    MOCK_METHOD(std::optional<RecordId>, createRecord, (std::string stage), (override));
+    MOCK_METHOD(std::optional<RecordId>, createRecord, (std::string stage, std::string info), (override));
+
+    MOCK_METHOD(void, scheduleGstElementRecord, (GstElement * element), (override));
+
+    MOCK_METHOD(void, logRecord, (RecordId id), (override));
 };
-} // namespace firebolt::rialto::common
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_COMMON_PROFILER_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_PROFILER_MOCK_H_

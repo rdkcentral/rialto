@@ -21,9 +21,9 @@
 #define FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 
 #include "FlushOnPrerollController.h"
+#include "GstProfiler.h"
 #include "IGstSrc.h"
 #include "IRdkGstreamerUtilsWrapper.h"
-#include "GstProfiler.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
 #include <gst/gst.h>
@@ -276,7 +276,7 @@ struct GenericPlayerContext
     /**
      * @brief Profiler for player pipeline
      */
-    std::unique_ptr<GstProfiler> gstProfiler;
+    std::unique_ptr<IGstProfiler> gstProfiler;
 };
 } // namespace firebolt::rialto::server
 
