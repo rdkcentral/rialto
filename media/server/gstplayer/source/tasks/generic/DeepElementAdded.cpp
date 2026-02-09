@@ -53,9 +53,9 @@ DeepElementAdded::DeepElementAdded(GenericPlayerContext &context, IGstGenericPla
                 m_glibWrapper->gSignalConnect(G_OBJECT(m_element), "have-type", G_CALLBACK(onHaveType), &m_player);
                 m_callbackRegistered = true;
             }
-        }
 
-        m_context.gstProfiler->scheduleGstElementRecord(m_element);
+            m_context.gstProfiler->scheduleGstElementRecord(m_element);
+        }
     }
 }
 
