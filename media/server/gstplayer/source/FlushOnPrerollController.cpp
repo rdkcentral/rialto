@@ -40,7 +40,14 @@ void FlushOnPrerollController::setFlushing(const MediaSourceType &type)
     RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Set flushing for: %s", common::convertMediaSourceType(type));
     std::unique_lock lock{m_mutex};
     m_flushingSources.insert(type);
+}
+
+void FlushOnPrerollController::setPrerolling()
+{
+    RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Set prerolling");
+    std::unique_lock lock{m_mutex};
     m_isPrerolled = false;
+    m_conditionVariable.notify_all();
 }
 
 void FlushOnPrerollController::stateReached(const GstState &newPipelineState)

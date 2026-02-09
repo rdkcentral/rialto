@@ -54,6 +54,15 @@ TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWhenReset)
     // No deadlock here
 }
 
+TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWhenPrerolling)
+{
+    m_sut.setTargetState(GST_STATE_PLAYING);
+    m_sut.setFlushing(MediaSourceType::AUDIO);
+    m_sut.setPrerolling();
+    m_sut.waitIfRequired(MediaSourceType::AUDIO);
+    // No deadlock here
+}
+
 TEST_F(FlushOnPrerollControllerTest, shouldNotWaitWhenPreviousProcedureIsFinished)
 {
     m_sut.setTargetState(GST_STATE_PLAYING);

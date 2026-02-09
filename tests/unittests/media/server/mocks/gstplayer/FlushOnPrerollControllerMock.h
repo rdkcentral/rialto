@@ -30,6 +30,7 @@ class FlushOnPrerollControllerMock : public IFlushOnPrerollController
 public:
     MOCK_METHOD(void, waitIfRequired, (const MediaSourceType &type), (override));
     MOCK_METHOD(void, setFlushing, (const MediaSourceType &type), (override));
+    MOCK_METHOD(void, setPrerolling, (), (override));
     MOCK_METHOD(void, stateReached, (const GstState &newPipelineState), (override));
     MOCK_METHOD(void, setTargetState, (const GstState &state), (override));
     MOCK_METHOD(void, reset, (), (override));

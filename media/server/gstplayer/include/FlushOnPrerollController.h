@@ -40,6 +40,7 @@ public:
 
     void waitIfRequired(const MediaSourceType &type) override;
     void setFlushing(const MediaSourceType &type) override;
+    void setPrerolling() override;
     void stateReached(const GstState &newPipelineState) override;
     void setTargetState(const GstState &state) override;
     void reset() override;

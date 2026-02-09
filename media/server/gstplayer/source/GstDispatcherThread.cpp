@@ -95,6 +95,10 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                         {
                             m_flushOnPrerollController->stateReached(newState);
                         }
+                        else if (m_flushOnPrerollController && pending == GST_STATE_PAUSED)
+                        {
+                            m_flushOnPrerollController->setPrerolling();
+                        }
                         break;
                     }
                     case GST_STATE_PLAYING:
