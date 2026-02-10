@@ -33,7 +33,7 @@ class Flush : public IPlayerTask
 {
 public:
     Flush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-          std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, const MediaSourceType &type,
+          const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper, const MediaSourceType &type,
           bool resetTime, bool isAsync);
     ~Flush() override;
     void execute() const override;

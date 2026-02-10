@@ -30,6 +30,7 @@ void FlushOnPrerollController::waitIfRequired(const MediaSourceType &type)
     RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Waiting if required for %s source entry",
                             common::convertMediaSourceType(type));
     m_conditionVariable.wait(lock, [this, &type]()
+                             // coverity[MISSING_LOCK:FALSE]
                              { return !m_isPrerolled || m_flushingSources.find(type) == m_flushingSources.end(); });
     RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Waiting if required for %s source exit",
                             common::convertMediaSourceType(type));

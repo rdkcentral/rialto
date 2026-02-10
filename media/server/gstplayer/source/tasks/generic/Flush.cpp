@@ -25,7 +25,7 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 Flush::Flush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-             std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, const MediaSourceType &type,
+             const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper, const MediaSourceType &type,
              bool resetTime, bool isAsync)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type},
       m_resetTime{resetTime}, m_isAsync{isAsync}
