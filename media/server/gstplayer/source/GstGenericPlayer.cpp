@@ -666,6 +666,12 @@ bool GstGenericPlayer::setReportDecodeErrors(const MediaSourceType &mediaSourceT
 
 bool GstGenericPlayer::getQueuedFrames(const MediaSourceType &mediaSourceType, uint32_t &queuedFrames)
 {
+    if (mediaSourceType != MediaSourceType::VIDEO)
+    {
+        RIALTO_SERVER_LOG_ERROR("Queued frames only supported for VIDEO");
+        return false;
+    }
+
     bool returnValue{false};
     GstElement *decoder{getDecoder(mediaSourceType)};
     if (decoder)
@@ -1411,8 +1417,10 @@ bool GstGenericPlayer::setReportDecodeErrors(bool reportDecodeErrors)
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to set report_decode_errors property on decoder '%s'", GST_ELEMENT_NAME(decoder));
+            RIALTO_SERVER_LOG_ERROR("Failed to set report_decode_errors property on decoder '%s'",
+                                    GST_ELEMENT_NAME(decoder));
         }
+        m_context.pendingReportDecodeErrorsForVideo.reset();
         m_gstWrapper->gstObjectUnref(decoder);
     }
     else

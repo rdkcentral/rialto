@@ -47,6 +47,7 @@
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
+#include "tasks/generic/SetReportDecodeErrors.h"
 #include "tasks/generic/SetSourcePosition.h"
 #include "tasks/generic/SetStreamSyncMode.h"
 #include "tasks/generic/SetSubtitleOffset.h"
@@ -3370,6 +3371,20 @@ void GenericTasksTestsBase::triggerSetImmediateOutput()
     task.execute();
 
     EXPECT_EQ(testContext->m_context.pendingImmediateOutputForVideo, true);
+}
+
+void GenericTasksTestsBase::shouldSetReportDecodeErrors()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, setReportDecodeErrors(true)).WillOnce(Return(true));
+}
+
+void GenericTasksTestsBase::triggerSetReportDecodeErrors()
+{
+    firebolt::rialto::server::tasks::generic::SetReportDecodeErrors task{testContext->m_context, testContext->m_gstPlayer,
+                                                                         MediaSourceType::VIDEO, true};
+    task.execute();
+
+    EXPECT_EQ(testContext->m_context.pendingReportDecodeErrorsForVideo, true);
 }
 
 void GenericTasksTestsBase::shouldSetLowLatency()

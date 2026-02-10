@@ -184,6 +184,22 @@ struct GetImmediateOutput
     static constexpr auto m_kFunction{&Stub::getImmediateOutput};
 };
 
+struct SetReportDecodeErrors
+{
+    using RequestType = ::firebolt::rialto::ReportDecodeErrorsRequest;
+    using ResponseType = ::firebolt::rialto::ReportDecodeErrorsResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::setReportDecodeErrors};
+};
+
+struct GetQueuedFrames
+{
+    using RequestType = ::firebolt::rialto::GetQueuedFramesRequest;
+    using ResponseType = ::firebolt::rialto::GetQueuedFramesResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getQueuedFrames};
+};
+
 struct GetStats
 {
     using RequestType = ::firebolt::rialto::GetStatsRequest;

@@ -33,6 +33,8 @@ namespace
 {
 const std::string kElementTypeName{"GenericSink"};
 constexpr bool kImmediateOutput{true};
+constexpr bool kReportDecodeErrors{true};
+constexpr uint32_t kQueuedFrames{123};
 constexpr bool kLowLatency{true};
 constexpr bool kSync{true};
 constexpr bool kSyncOff{true};
@@ -232,6 +234,23 @@ public:
         waitWorker();
     }
 
+    void setReportDecodeErrors()
+    {
+        auto req{createSetReportDecodeErrorsRequest(m_sessionId, m_videoSourceId, kReportDecodeErrors)};
+        ConfigureAction<SetReportDecodeErrors>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
+        waitWorker();
+    }
+
+    void getQueuedFrames()
+    {
+        auto req{createGetQueuedFramesRequest(m_sessionId, m_videoSourceId)};
+        ConfigureAction<GetQueuedFrames>(m_clientStub)
+            .send(req)
+            .expectSuccess()
+            .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.queued_frames(), kQueuedFrames); });
+        waitWorker();
+    }
+
     void setLowLatency()
     {
         auto req{createSetLowLatencyRequest(m_sessionId, kLowLatency)};
@@ -325,6 +344,22 @@ public:
     {
         auto req{createGetImmediateOutputRequest(m_sessionId, m_videoSourceId)};
         ConfigureAction<GetImmediateOutput>(m_clientStub).send(req).expectFailure();
+        waitWorker();
+    }
+
+    void setReportDecodeErrorsFailure()
+    {
+        auto req{createSetReportDecodeErrorsRequest(m_sessionId, m_videoSourceId, true)};
+        // We expect success from this test because it's asynchronous (and the return
+        // value doesn't reflect that the immediate-output flag wasn't set)
+        ConfigureAction<SetReportDecodeErrors>(m_clientStub).send(req).expectSuccess();
+        waitWorker();
+    }
+
+    void getQueuedFramesFailure()
+    {
+        auto req{createGetQueuedFramesRequest(m_sessionId, m_videoSourceId)};
+        ConfigureAction<GetQueuedFrames>(m_clientStub).send(req).expectFailure();
         waitWorker();
     }
 
@@ -573,22 +608,30 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
     willGetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "limit-buffering-ms", kBufferingLimit);
     getBufferingLimit();
 
-    // Step 14: Set Use Buffering
+    // Step 14: Set Report Decode Errors
+    willSetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO, "report_decode_errors", kReportDecodeErrors);
+    setReportDecodeErrors();
+
+    // Step 15: Get Queued Frames
+    willGetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO, "queued_frames", kQueuedFrames);
+    getQueuedFrames();
+
+    // Step 16: Set Use Buffering
     setUseBuffering();
 
-    // Step 15: Get Use Buffering
+    // Step 17: Get Use Buffering
     getUseBuffering();
 
-    // Step 16: Remove sources
+    // Step 18: Remove sources
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 17: Stop
+    // Step 19: Stop
     willStop();
     stop();
 
-    // Step 19: Destroy media session
+    // Step 20: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }
@@ -785,16 +828,24 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetFailures)
     // Step 15: Fail to Set Use Buffering
     setUseBufferingFailure();
 
-    // Step 16: Remove sources
+    // Step 16: Fail to set Report Decode Errors
+    willFailToSetDecoderProperty();
+    setReportDecodeErrorsFailure();
+
+    // Step 17: Fail to get Queued Frames
+    willFailToSetDecoderProperty();
+    getQueuedFramesFailure();
+
+    // Step 18: Remove sources
     willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 17: Stop
+    // Step 19: Stop
     willStop();
     stop();
 
-    // Step 18: Destroy media session
+    // Step 20: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

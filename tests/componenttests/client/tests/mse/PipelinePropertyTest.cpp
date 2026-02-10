@@ -174,5 +174,15 @@ TEST_F(PipelinePropertyTest, setAndGetPipelineProperties)
     // Step 12: Get UseBuffering
     MediaPipelineTestMethods::shouldGetUseBuffering(useBuffering);
     MediaPipelineTestMethods::getUseBuffering(useBuffering);
+
+    // Step 13: Set Report Decode Errors
+    bool reportDecodeErrors{true};
+    MediaPipelineTestMethods::shouldSetReportDecodeErrors(reportDecodeErrors);
+    MediaPipelineTestMethods::setReportDecodeErrors(reportDecodeErrors);
+
+    // Step 14: Get Queued Frames
+    uint32_t queuedFrames{0};
+    MediaPipelineTestMethods::shouldGetQueuedFrames(queuedFrames);
+    MediaPipelineTestMethods::getQueuedFrames(queuedFrames);
 }
 } // namespace firebolt::rialto::client::ct

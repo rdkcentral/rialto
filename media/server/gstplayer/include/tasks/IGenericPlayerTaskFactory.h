@@ -505,9 +505,9 @@ public:
      * @retval the new SetReportDecodeErrors task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createSetReportDecodeErrors(GenericPlayerContext &context,
-                                                                  IGstGenericPlayerPrivate &player,
-                                                                  const firebolt::rialto::MediaSourceType &type,
-                                                                  bool reportDecodeErrors) const = 0;
+                                                                     IGstGenericPlayerPrivate &player,
+                                                                     const firebolt::rialto::MediaSourceType &type,
+                                                                     bool reportDecodeErrors) const = 0;
 
     /**
      * @brief Creates a SetBufferingLimit task.

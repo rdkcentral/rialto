@@ -34,7 +34,7 @@ class SetReportDecodeErrors : public IPlayerTask
 {
 public:
     explicit SetReportDecodeErrors(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                const MediaSourceType &type, bool reportDecodeErrors);
+                                   const MediaSourceType &type, bool reportDecodeErrors);
     ~SetReportDecodeErrors() override;
     void execute() const override;
 

@@ -680,13 +680,13 @@ void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcContr
 }
 
 void MediaPipelineModuleService::setReportDecodeErrors(::google::protobuf::RpcController *controller,
-                                                    const ::firebolt::rialto::ReportDecodeErrorsRequest *request,
-                                                    ::firebolt::rialto::ReportDecodeErrorsResponse *response,
-                                                    ::google::protobuf::Closure *done)
+                                                       const ::firebolt::rialto::ReportDecodeErrorsRequest *request,
+                                                       ::firebolt::rialto::ReportDecodeErrorsResponse *response,
+                                                       ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_mediaPipelineService.setReportDecodeErrors(request->session_id(), request->source_id(),
-                                                   request->report_decode_errors()))
+                                                      request->report_decode_errors()))
     {
         RIALTO_SERVER_LOG_ERROR("Set Report Decode Error failed");
         controller->SetFailed("Operation failed");
@@ -695,9 +695,9 @@ void MediaPipelineModuleService::setReportDecodeErrors(::google::protobuf::RpcCo
 }
 
 void MediaPipelineModuleService::getQueuedFrames(::google::protobuf::RpcController *controller,
-                                                    const ::firebolt::rialto::GetQueuedFramesRequest *request,
-                                                    ::firebolt::rialto::GetQueuedFramesResponse *response,
-                                                    ::google::protobuf::Closure *done)
+                                                 const ::firebolt::rialto::GetQueuedFramesRequest *request,
+                                                 ::firebolt::rialto::GetQueuedFramesResponse *response,
+                                                 ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     uint32_t queuedFramesNumber;

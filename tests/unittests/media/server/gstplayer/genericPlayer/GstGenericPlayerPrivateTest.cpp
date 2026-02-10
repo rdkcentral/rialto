@@ -72,6 +72,7 @@ const std::string kAutoVideoSinkTypeName{"GstAutoVideoSink"};
 const std::string kAutoAudioSinkTypeName{"GstAutoAudioSink"};
 constexpr bool kResetTime{true};
 const std::string kImmediateOutputStr{"immediate-output"};
+const std::string kReportDecodeErrorsStr{"report_decode_errors"};
 const std::string kLowLatencyStr{"low-latency"};
 const std::string kSyncStr{"sync"};
 const std::string kSyncOffStr{"sync-off"};
@@ -380,6 +381,36 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetImmediateOutput)
     expectSetProperty(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kImmediateOutputStr, true);
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
     EXPECT_TRUE(m_sut->setImmediateOutput());
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetReportDecodeErrorsIfPropertyDoesntExist)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.pendingReportDecodeErrorsForVideo = true; });
+
+    expectGetVideoDecoder(m_realElement);
+
+    expectPropertyDoesntExist(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kReportDecodeErrorsStr);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
+    EXPECT_FALSE(m_sut->setReportDecodeErrors(true));
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldSetReportDecodeErrors)
+{
+    modifyContext([&](GenericPlayerContext &context) { context.pendingReportDecodeErrorsForVideo = true; });
+
+    expectGetVideoDecoder(m_realElement);
+
+    EXPECT_CALL(*m_glibWrapperMock,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_realElement),
+                                        StrEq(kReportDecodeErrorsStr)))
+        .WillOnce(Return(&gParamSpec));
+
+    EXPECT_CALL(*m_glibWrapperMock,
+                gObjectSetStub(m_realElement, StrEq(kReportDecodeErrorsStr)))
+        .Times(1);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
+    EXPECT_TRUE(m_sut->setReportDecodeErrors(true));
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetLowLatencyIfSinkIsNull)

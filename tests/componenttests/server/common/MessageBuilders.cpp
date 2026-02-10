@@ -223,6 +223,24 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::ReportDecodeErrorsRequest createSetReportDecodeErrorsRequest(int sessionId, int sourceId,
+                                                                                 bool reportDecodeErrors)
+{
+    ::firebolt::rialto::ReportDecodeErrorsRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    request.set_report_decode_errors(reportDecodeErrors);
+    return request;
+}
+
+::firebolt::rialto::GetQueuedFramesRequest createGetQueuedFramesRequest(int sessionId, int sourceId)
+{
+    ::firebolt::rialto::GetQueuedFramesRequest request;
+    request.set_session_id(sessionId);
+    request.set_source_id(sourceId);
+    return request;
+}
+
 ::firebolt::rialto::GetStatsRequest createGetStatsRequest(int sessionId, int sourceId)
 {
     ::firebolt::rialto::GetStatsRequest request;

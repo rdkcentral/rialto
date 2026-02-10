@@ -72,6 +72,13 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::GetImmediateOutputRequest *request,
                  ::firebolt::rialto::GetImmediateOutputResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setReportDecodeErrors,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::ReportDecodeErrorsRequest *request,
+                 ::firebolt::rialto::ReportDecodeErrorsResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getQueuedFrames,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetQueuedFramesRequest *request,
+                 ::firebolt::rialto::GetQueuedFramesResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getStats,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetStatsRequest *request,
                  ::firebolt::rialto::GetStatsResponse *response, ::google::protobuf::Closure *done));
@@ -228,6 +235,19 @@ public:
     {
         firebolt::rialto::GetImmediateOutputResponse response;
         response.set_immediate_output(immediateOutputResponse);
+        return response;
+    }
+
+    ::firebolt::rialto::ReportDecodeErrorsResponse ReportDecodeErrorsResponse()
+    {
+        firebolt::rialto::ReportDecodeErrorsResponse response;
+        return response;
+    }
+
+    ::firebolt::rialto::GetQueuedFramesResponse getQueuedFramesResponse(uint32_t queuedFramesResponse)
+    {
+        firebolt::rialto::GetQueuedFramesResponse response;
+        response.set_queued_frames(queuedFramesResponse);
         return response;
     }
 

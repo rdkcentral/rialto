@@ -24,7 +24,7 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 SetReportDecodeErrors::SetReportDecodeErrors(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                       const MediaSourceType &type, bool reportDecodeErrors)
+                                             const MediaSourceType &type, bool reportDecodeErrors)
     : m_context{context}, m_player(player), m_type{type}, m_reportDecodeErrors{reportDecodeErrors}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetReportDecodeErrors");
@@ -43,6 +43,10 @@ void SetReportDecodeErrors::execute() const
     {
         RIALTO_SERVER_LOG_WARN("SetReportDecodeErrors not currently supported for non-video");
         return;
+    }
+    else
+    {
+        m_context.pendingReportDecodeErrorsForVideo = m_reportDecodeErrors;
     }
 
     if (m_context.pipeline)
