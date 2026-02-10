@@ -400,15 +400,6 @@ protected:
     void triggerReadShmDataAndAttachSamplesVideo();
     void triggerReadShmDataAndAttachSamples();
 
-    // RemoveSource test methods
-    void shouldInvalidateActiveAudioRequests();
-    void shouldDisableAudioFlag();
-    void triggerRemoveSourceAudio();
-    void triggerRemoveSourceVideo();
-    void checkAudioSourceRemoved();
-    void checkAudioSourceNotRemoved();
-    void shouldStopPositionReportingAndCheckAudioUnderflowTimer();
-
     // Flush test methods
     void shouldFlushAudio();
     void shouldFlushVideo();

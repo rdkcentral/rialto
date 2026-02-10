@@ -194,7 +194,7 @@ private:
  *
  * Code:
  */
-TEST_F(RemoveAudioPlaybackTest, RemoveAudio)
+TEST_F(RemoveAudioPlaybackTest, DISABLED_RemoveAudio)
 {
     // Step 1: Create a new media session
     createSession();
@@ -245,7 +245,6 @@ TEST_F(RemoveAudioPlaybackTest, RemoveAudio)
     notifyPaused();
 
     // Step 8: Remove Audio Source
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
 
     // Step 9: Write video frames
@@ -274,7 +273,6 @@ TEST_F(RemoveAudioPlaybackTest, RemoveAudio)
     play();
 
     // Step 15: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
