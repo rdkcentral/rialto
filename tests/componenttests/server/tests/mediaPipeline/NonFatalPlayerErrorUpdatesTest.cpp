@@ -289,7 +289,6 @@ TEST_F(NonFatalPlayerErrorUpdatesTest, warningMessage)
 
     // Step 15: Notify end of stream
     gstNotifyEos();
-    willRemoveAudioSource();
 
     // Step 16: Remove sources
     removeSource(m_audioSourceId);

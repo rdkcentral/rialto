@@ -306,7 +306,6 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
     gstNotifyEos();
 
     // Step 13: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 

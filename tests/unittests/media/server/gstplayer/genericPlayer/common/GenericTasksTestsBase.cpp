@@ -38,7 +38,6 @@
 #include "tasks/generic/Play.h"
 #include "tasks/generic/ProcessAudioGap.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
-#include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetBufferingLimit.h"
@@ -2991,44 +2990,6 @@ void GenericTasksTestsBase::triggerRenderFrame()
 {
     firebolt::rialto::server::tasks::generic::RenderFrame task{testContext->m_context, testContext->m_gstPlayer};
     task.execute();
-}
-
-void GenericTasksTestsBase::shouldInvalidateActiveAudioRequests()
-{
-    EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::AUDIO));
-}
-
-void GenericTasksTestsBase::shouldDisableAudioFlag()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, setPlaybinFlags(false));
-}
-
-void GenericTasksTestsBase::triggerRemoveSourceAudio()
-{
-    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, testContext->m_gstPlayer,
-                                                                &testContext->m_gstPlayerClient,
-                                                                testContext->m_gstWrapper,
-                                                                firebolt::rialto::MediaSourceType::AUDIO};
-    task.execute();
-}
-
-void GenericTasksTestsBase::triggerRemoveSourceVideo()
-{
-    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, testContext->m_gstPlayer,
-                                                                &testContext->m_gstPlayerClient,
-                                                                testContext->m_gstWrapper,
-                                                                firebolt::rialto::MediaSourceType::VIDEO};
-    task.execute();
-}
-
-void GenericTasksTestsBase::checkAudioSourceRemoved()
-{
-    EXPECT_TRUE(testContext->m_context.audioSourceRemoved);
-}
-
-void GenericTasksTestsBase::checkAudioSourceNotRemoved()
-{
-    EXPECT_FALSE(testContext->m_context.audioSourceRemoved);
 }
 
 void GenericTasksTestsBase::shouldFlushAudioSrcSuccess()

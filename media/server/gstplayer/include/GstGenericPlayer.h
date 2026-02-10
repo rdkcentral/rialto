@@ -105,7 +105,6 @@ public:
     virtual ~GstGenericPlayer();
 
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
-    void removeSource(const MediaSourceType &mediaSourceType) override;
     void allSourcesAttached() override;
     void play() override;
     void pause() override;
