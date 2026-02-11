@@ -99,6 +99,7 @@ TEST_F(MediaPipelineTest, shouldAttachAudioSourceOnly)
     indicateAllSourcesAttached();
 
     // Step 4: Remove sources
+    willRemoveAudioSource();
     removeSource(m_audioSourceId);
 
     // Step 5: Stop
@@ -195,6 +196,7 @@ TEST_F(MediaPipelineTest, shouldAttachBothSources)
     indicateAllSourcesAttached();
 
     // Step 4: Remove sources
+    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 

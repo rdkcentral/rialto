@@ -170,6 +170,7 @@ TEST_F(HaveDataFailureTest, HaveDataError)
     failHaveData(m_lastVideoNeedData);
 
     // Step 14: Remove sources
+    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 

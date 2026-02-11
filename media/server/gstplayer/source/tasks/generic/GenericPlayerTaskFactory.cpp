@@ -33,6 +33,7 @@
 #include "tasks/generic/Play.h"
 #include "tasks/generic/ProcessAudioGap.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
+#include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetBufferingLimit.h"
@@ -144,6 +145,13 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReadShmDataAndAttac
     GenericPlayerContext &context, IGstGenericPlayerPrivate &player, const std::shared_ptr<IDataReader> &dataReader) const
 {
     return std::make_unique<tasks::generic::ReadShmDataAndAttachSamples>(context, m_gstWrapper, player, dataReader);
+}
+
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createRemoveSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                             const firebolt::rialto::MediaSourceType &type) const
+{
+    return std::make_unique<tasks::generic::RemoveSource>(context, player, m_client, m_gstWrapper, type);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReportPosition(GenericPlayerContext &context,

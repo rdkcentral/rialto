@@ -167,6 +167,24 @@ TEST_F(AttachSourceTest, shouldSkipSwitchAudioSourceWhenSourceIsNotRemoved)
     triggerReattachAudioSource();
 }
 
+TEST_F(AttachSourceTest, shouldReattachAudioSource)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextAudioSourceRemoved();
+    shouldReattachAudioSource();
+    shouldEnableAudioFlagsAndSendNeedData();
+    triggerReattachAudioSource();
+    checkNewAudioSourceAttached();
+}
+
+TEST_F(AttachSourceTest, shouldFailToReattachAudioSource)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextAudioSourceRemoved();
+    shouldFailToReattachAudioSource();
+    triggerReattachAudioSource();
+}
+
 TEST_F(AttachSourceTest, shouldFailToCastAudioSource)
 {
     triggerFailToCastAudioSource();

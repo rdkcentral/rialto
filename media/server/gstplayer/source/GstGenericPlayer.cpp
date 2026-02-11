@@ -350,6 +350,14 @@ void GstGenericPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     }
 }
 
+void GstGenericPlayer::removeSource(const MediaSourceType &mediaSourceType)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createRemoveSource(m_context, *this, mediaSourceType));
+    }
+}
+
 void GstGenericPlayer::allSourcesAttached()
 {
     if (m_workerThread)
@@ -1115,7 +1123,7 @@ void GstGenericPlayer::scheduleAudioUnderflow()
 {
     if (m_workerThread)
     {
-        bool underflowEnabled = m_context.isPlaying;
+        bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
         m_workerThread->enqueueTask(
             m_taskFactory->createUnderflow(m_context, *this, underflowEnabled, MediaSourceType::AUDIO));
     }

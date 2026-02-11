@@ -159,6 +159,7 @@ TEST_F(MuteTest, Mute)
     getMute();
 
     // Step 7: Remove sources
+    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 

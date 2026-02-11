@@ -173,6 +173,7 @@ TEST_F(SetVideoWindowTest, SetVideoWindow)
     setVideoWindow();
 
     // Step 6: Remove sources
+    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 

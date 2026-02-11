@@ -56,6 +56,7 @@ public:
     void willNotifyPaused();
     void willPlay();
     void willEos(GstAppSrc *appSrc);
+    void willRemoveAudioSource();
     void willStop();
     void willSetAudioAndVideoFlags();
     void willSetStateInvalidForQueryPosition();

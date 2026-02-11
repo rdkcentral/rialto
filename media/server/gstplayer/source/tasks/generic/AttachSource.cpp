@@ -59,6 +59,10 @@ void AttachSource::execute() const
     {
         addSource();
     }
+    else if (m_attachedSource->getType() == MediaSourceType::AUDIO && m_context.audioSourceRemoved)
+    {
+        reattachAudioSource();
+    }
     else
     {
         RIALTO_SERVER_LOG_ERROR("cannot update caps");
@@ -105,5 +109,23 @@ void AttachSource::addSource() const
 
     if (caps)
         m_gstWrapper->gstCapsUnref(caps);
+}
+
+void AttachSource::reattachAudioSource() const
+{
+    if (!m_player.reattachSource(m_attachedSource))
+    {
+        RIALTO_SERVER_LOG_ERROR("Reattaching source failed!");
+        return;
+    }
+
+    // Restart audio sink
+    m_player.setPlaybinFlags(true);
+
+    m_context.streamInfo[m_attachedSource->getType()].isDataNeeded = true;
+    m_context.audioSourceRemoved = false;
+    m_player.notifyNeedMediaData(MediaSourceType::AUDIO);
+
+    RIALTO_SERVER_LOG_MIL("Audio source reattached");
 }
 } // namespace firebolt::rialto::server::tasks::generic
