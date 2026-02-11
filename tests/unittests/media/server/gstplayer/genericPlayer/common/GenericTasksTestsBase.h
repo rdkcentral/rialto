@@ -189,7 +189,6 @@ protected:
     void shouldAttachVideoSourceWithDolbyVisionSource();
     void triggerAttachVideoSourceWithDolbyVisionSource();
     void shouldReattachAudioSource();
-    void shouldEnableAudioFlagsAndSendNeedData();
     void shouldFailToReattachAudioSource();
     void triggerReattachAudioSource();
     void checkNewAudioSourceAttached();

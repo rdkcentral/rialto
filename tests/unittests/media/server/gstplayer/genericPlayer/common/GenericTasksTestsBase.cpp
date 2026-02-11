@@ -1857,12 +1857,6 @@ void GenericTasksTestsBase::shouldReattachAudioSource()
     EXPECT_CALL(testContext->m_gstPlayer, reattachSource(_)).WillOnce(Return(true));
 }
 
-void GenericTasksTestsBase::shouldEnableAudioFlagsAndSendNeedData()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, setPlaybinFlags(true));
-    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::AUDIO));
-}
-
 void GenericTasksTestsBase::shouldFailToReattachAudioSource()
 {
     EXPECT_CALL(testContext->m_gstPlayer, reattachSource(_)).WillOnce(Return(false));
