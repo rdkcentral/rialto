@@ -263,7 +263,7 @@ struct GenericPlayerContext
     /**
      * @brief Workaround for the gstreamer flush issue
      */
-    FlushOnPrerollController flushOnPrerollController;
+    std::shared_ptr<IFlushOnPrerollController> flushOnPrerollController{std::make_shared<FlushOnPrerollController>()};
 };
 } // namespace firebolt::rialto::server
 

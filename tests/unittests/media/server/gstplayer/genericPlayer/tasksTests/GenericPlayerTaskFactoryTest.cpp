@@ -318,7 +318,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreatePing)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateFlush)
 {
-    auto task = m_sut.createFlush(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
+    auto task = m_sut.createFlush(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true, true);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Flush &>(*task));
 }

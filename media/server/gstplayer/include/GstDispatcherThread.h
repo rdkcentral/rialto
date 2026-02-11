@@ -34,6 +34,7 @@ public:
     ~GstDispatcherThreadFactory() override = default;
     std::unique_ptr<IGstDispatcherThread>
     createGstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
+                              const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController,
                               const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const override;
 };
 
@@ -41,6 +42,7 @@ class GstDispatcherThread : public IGstDispatcherThread
 {
 public:
     GstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
+                        const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController,
                         const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper);
     ~GstDispatcherThread() override;
 
@@ -57,6 +59,11 @@ private:
      * @brief The listening client.
      */
     IGstDispatcherThreadClient &m_client;
+
+    /**
+     * @brief The flush on preroll controller.
+     */
+    std::shared_ptr<IFlushOnPrerollController> m_flushOnPrerollController;
 
     /**
      * @brief The gstreamer wrapper object.

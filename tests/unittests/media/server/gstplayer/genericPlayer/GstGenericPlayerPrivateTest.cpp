@@ -2116,15 +2116,3 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetShowVideoWindow)
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement));
     EXPECT_TRUE(m_sut->setShowVideoWindow());
 }
-
-TEST_F(GstGenericPlayerPrivateTest, shouldExecutePostponedFlush)
-{
-    constexpr MediaSourceType kSourceType{MediaSourceType::AUDIO};
-    constexpr bool kResetTime{true};
-    m_sut->postponeFlush(kSourceType, kResetTime);
-
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createFlush(_, _, kSourceType, kResetTime)).WillOnce(Return(ByMove(std::move(task))));
-    m_sut->executePostponedFlushes();
-}

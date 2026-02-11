@@ -1151,6 +1151,8 @@ bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime
 
     m_gstPlayer->flush(sourceIter->first, resetTime, async);
 
+    m_needMediaDataTimers.erase(sourceIter->first);
+
     // Reset Eos on flush
     auto it = m_isMediaTypeEosMap.find(sourceIter->first);
     if (it != m_isMediaTypeEosMap.end() && it->second)

@@ -194,8 +194,6 @@ private:
     GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
     void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
     bool isAsync(const MediaSourceType &mediaSourceType) const;
-    void postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime) override;
-    void executePostponedFlushes() override;
     void notifyPlaybackInfo() override;
 
 private:
@@ -424,11 +422,6 @@ private:
      * @brief The object used to check flushing state for all sources
      */
     std::unique_ptr<IFlushWatcher> m_flushWatcher;
-
-    /**
-     * @brief The postponed flush tasks
-     */
-    std::vector<std::pair<MediaSourceType, bool>> m_postponedFlushes{};
 
     /**
      * @brief The ongoing state change operations counter
