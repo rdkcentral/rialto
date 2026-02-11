@@ -72,7 +72,6 @@ protected:
     void setContextVideoBuffer();
     void setContextPlaybackRate();
     void setContextSourceNull();
-    void setContextAudioSourceRemoved();
     void setContextStreamInfoEmpty();
     void setContextNeedDataAudioOnly();
     void setContextSetupSourceFinished();

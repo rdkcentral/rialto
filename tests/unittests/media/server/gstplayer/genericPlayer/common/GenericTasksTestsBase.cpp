@@ -384,11 +384,6 @@ void GenericTasksTestsBase::setContextSourceNull()
     testContext->m_context.source = nullptr;
 }
 
-void GenericTasksTestsBase::setContextAudioSourceRemoved()
-{
-    testContext->m_context.audioSourceRemoved = true;
-}
-
 void GenericTasksTestsBase::setContextStreamInfoEmpty()
 {
     testContext->m_context.streamInfo.clear();
@@ -1883,7 +1878,6 @@ void GenericTasksTestsBase::checkNewAudioSourceAttached()
     ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
 
     EXPECT_TRUE(audioStreamIt->second.isDataNeeded);
-    EXPECT_FALSE(testContext->m_context.audioSourceRemoved);
 }
 
 void GenericTasksTestsBase::shouldQueryPositionAndSetToZero()
