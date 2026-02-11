@@ -47,7 +47,6 @@ public:
 
 private:
     void addSource() const;
-    void reattachAudioSource() const;
 
     GenericPlayerContext &m_context;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;

@@ -1140,7 +1140,7 @@ void GstGenericPlayer::scheduleAudioUnderflow()
 {
     if (m_workerThread)
     {
-        bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
+        bool underflowEnabled = m_context.isPlaying;
         m_workerThread->enqueueTask(
             m_taskFactory->createUnderflow(m_context, *this, underflowEnabled, MediaSourceType::AUDIO));
     }
