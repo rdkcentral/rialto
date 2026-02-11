@@ -345,7 +345,6 @@ TEST_F(QosUpdatesTest, QosUpdates)
 
     // Step 14: Notify end of stream
     gstNotifyEos();
-    willRemoveAudioSource();
 
     // Step 15: Remove sources
     removeSource(m_audioSourceId);
@@ -531,7 +530,6 @@ TEST_F(QosUpdatesTest, StatsFailure)
 
     // Step 12: Notify end of stream
     gstNotifyEos();
-    willRemoveAudioSource();
 
     // Step 13: Remove sources
     removeSource(m_audioSourceId);

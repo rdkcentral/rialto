@@ -314,7 +314,6 @@ TEST_F(SetPositionTest, SetPosition)
     gstNotifyEos();
 
     // Step 14: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
@@ -468,7 +467,6 @@ TEST_F(SetPositionTest, SetPositionFailure)
     SetPositionFailure();
 
     // Step 9: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
