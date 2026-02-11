@@ -272,13 +272,6 @@ public:
     virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
 
     /**
-     * @brief Sets the audio and video flags on the pipeline based on the input.
-     *
-     * @param[in] enableAudio : Whether to enable audio flags.
-     */
-    virtual void setPlaybinFlags(bool enableAudio) = 0;
-
-    /**
      * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
      *
      * @param[in] source          : The Gst Source element, that should receive new sample

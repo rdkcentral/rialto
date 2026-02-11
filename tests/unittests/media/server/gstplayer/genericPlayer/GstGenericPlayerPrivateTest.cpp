@@ -198,12 +198,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleEnoughDataData)
 
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflowWithUnderflowEnabled)
 {
-    modifyContext(
-        [&](GenericPlayerContext &context)
-        {
-            context.isPlaying = true;
-            context.audioSourceRemoved = false;
-        });
+    modifyContext([&](GenericPlayerContext &context) { context.isPlaying = true; });
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
@@ -215,29 +210,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflowWithUnderflowEna
 
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflowWithUnderflowDisabledNotPlaying)
 {
-    modifyContext(
-        [&](GenericPlayerContext &context)
-        {
-            context.isPlaying = false;
-            context.audioSourceRemoved = false;
-        });
-
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createUnderflow(_, _, false, MediaSourceType::AUDIO))
-        .WillOnce(Return(ByMove(std::move(task))));
-
-    m_sut->scheduleAudioUnderflow();
-}
-
-TEST_F(GstGenericPlayerPrivateTest, shouldScheduleAudioUnderflowWithUnderflowDisabledRemoveSource)
-{
-    modifyContext(
-        [&](GenericPlayerContext &context)
-        {
-            context.isPlaying = true;
-            context.audioSourceRemoved = true;
-        });
+    modifyContext([&](GenericPlayerContext &context) { context.isPlaying = false; });
 
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());

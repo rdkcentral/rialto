@@ -738,7 +738,6 @@ TEST_F(DualVideoPlaybackTest, playbackFullDualVideo)
     destroySecondarySession();
 
     // Step 16: Terminate the primary media session
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
     willStop();
@@ -994,7 +993,6 @@ TEST_F(DualVideoPlaybackTest, playbackNoResouceManagerSecondaryVideo)
     destroySecondarySession();
 
     // Step 16: Terminate the primary media session
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
     willStop();
