@@ -40,7 +40,7 @@ Flush::~Flush()
 
 void Flush::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing Flush for %s source", common::convertMediaSourceType(m_type));
+    RIALTO_SERVER_LOG_MIL("Executing Flush for %s source", common::convertMediaSourceType(m_type));
 
     // Get source first
     GstElement *source{nullptr};
@@ -61,6 +61,9 @@ void Flush::execute() const
         return;
     }
 
+    GstDebugLevel defaultLevel = gst_debug_get_default_threshold();
+    gst_debug_set_default_threshold(GST_LEVEL_DEBUG);
+
     StreamInfo &streamInfo = sourceElem->second;
     streamInfo.isDataNeeded = false;
     streamInfo.isNeedDataPending = false;
@@ -78,6 +81,7 @@ void Flush::execute() const
     {
         m_context.flushOnPrerollController->waitIfRequired(m_type);
 
+        RIALTO_SERVER_LOG_MIL("DEBUG: Sending flush start");
         // Flush source
         GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
         if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
@@ -85,6 +89,7 @@ void Flush::execute() const
             RIALTO_SERVER_LOG_WARN("failed to send flush-start event for %s", common::convertMediaSourceType(m_type));
         }
 
+        RIALTO_SERVER_LOG_MIL("DEBUG: Sending flush stop");
         GstEvent *flushStop = m_gstWrapper->gstEventNewFlushStop(m_resetTime);
         if (!m_gstWrapper->gstElementSendEvent(source, flushStop))
         {
@@ -95,6 +100,7 @@ void Flush::execute() const
         {
             m_context.flushOnPrerollController->setFlushing(m_type);
         }
+        RIALTO_SERVER_LOG_MIL("DEBUG: Flush events sending finished");
     }
     else
     {
@@ -118,6 +124,8 @@ void Flush::execute() const
         NeedData task{m_context, m_player, m_gstPlayerClient, GST_APP_SRC(source)};
         task.execute();
     }
+
+    gst_debug_set_default_threshold(defaultLevel);
 
     RIALTO_SERVER_LOG_MIL("%s source flushed.", common::convertMediaSourceType(m_type));
 }
