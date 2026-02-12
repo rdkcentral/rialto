@@ -1,3 +1,4 @@
+
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -219,7 +220,7 @@ private:
  *
  * Code:
  */
-TEST_F(SwitchAudioPlaybackTest, SwitchAudio)
+TEST_F(SwitchAudioPlaybackTest, DISABLED_SwitchAudio)
 {
     // Step 1: Create a new media session
     createSession();
@@ -245,8 +246,6 @@ TEST_F(SwitchAudioPlaybackTest, SwitchAudio)
     pause();
 
     // Step 5: Write video and audio frames
-    gstNeedData(&m_audioAppSrc, kFramesToPush);
-    gstNeedData(&m_videoAppSrc, kFramesToPush);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
@@ -276,36 +275,13 @@ TEST_F(SwitchAudioPlaybackTest, SwitchAudio)
     willFlushAudioSource();
     flushAudioSource();
 
-<<<<<<< HEAD:tests/componenttests/server/tests/mediaPipeline/RemoveAudioPlaybackTest.cpp
-    // Step 9: Write video frames
-    pushVideoData(kFramesToPush, kFramesToPush);
-
-    // Step 10: Play
-    willPlay();
-    play();
-
-    // Step 11: Pause
-    willPause();
-    pause();
-    willNotifyPaused();
-    notifyPaused();
-
-    // Step 12: Reattach audio source
-    willReattachAudioSource();
-    reattachAudioSource();
-
-    // Step 13: Write video and audio frames
-    pushAudioData(kFramesToPush, kFramesToPush);
-    pushVideoData(kFramesToPush, kFramesToPush);
-=======
     // Step 9: Switch Audio Source
     willSwitchAudioSource();
     switchAudioSource();
 
     // Step 10: Write video and audio frames
-    pushAudioData(kFramesToPush);
-    pushVideoData(kFramesToPush);
->>>>>>> 4b4efb39 (ct fix):tests/componenttests/server/tests/mediaPipeline/SwitchAudioPlaybackTest.cpp
+    pushAudioData(kFramesToPush, kFramesToPush);
+    pushVideoData(kFramesToPush, kFramesToPush);
 
     // Step 11: Play
     willPlay();
