@@ -280,8 +280,8 @@ TEST_F(SwitchAudioPlaybackTest, DISABLED_SwitchAudio)
     switchAudioSource();
 
     // Step 10: Write video and audio frames
-    pushAudioData(kFramesToPush, kFramesToPush);
-    pushVideoData(kFramesToPush, kFramesToPush);
+    pushAudioData(kFramesToPush);
+    pushVideoData(kFramesToPush);
 
     // Step 11: Play
     willPlay();
