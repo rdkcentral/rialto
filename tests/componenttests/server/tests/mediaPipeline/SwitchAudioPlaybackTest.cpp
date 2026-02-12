@@ -275,28 +275,6 @@ TEST_F(SwitchAudioPlaybackTest, DISABLED_SwitchAudio)
     willFlushAudioSource();
     flushAudioSource();
 
-<<<<<<< HEAD:tests/componenttests/server/tests/mediaPipeline/RemoveAudioPlaybackTest.cpp
-    // Step 9: Write video frames
-    pushVideoData(kFramesToPush);
-
-    // Step 10: Play
-    willPlay();
-    play();
-
-    // Step 11: Pause
-    willPause();
-    pause();
-    willNotifyPaused();
-    notifyPaused();
-
-    // Step 12: Reattach audio source
-    willReattachAudioSource();
-    reattachAudioSource();
-
-    // Step 13: Write video and audio frames
-    pushAudioData(kFramesToPush);
-    pushVideoData(kFramesToPush);
-=======
     // Step 9: Switch Audio Source
     willSwitchAudioSource();
     switchAudioSource();
@@ -304,7 +282,6 @@ TEST_F(SwitchAudioPlaybackTest, DISABLED_SwitchAudio)
     // Step 10: Write video and audio frames
     pushAudioData(kFramesToPush, kFramesToPush);
     pushVideoData(kFramesToPush, kFramesToPush);
->>>>>>> v0.14.2_RemoveSource:tests/componenttests/server/tests/mediaPipeline/SwitchAudioPlaybackTest.cpp
 
     // Step 11: Play
     willPlay();
