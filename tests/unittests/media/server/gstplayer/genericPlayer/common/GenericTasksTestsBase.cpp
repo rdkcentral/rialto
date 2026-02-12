@@ -389,14 +389,6 @@ void GenericTasksTestsBase::setContextStreamInfoEmpty()
     testContext->m_context.streamInfo.clear();
 }
 
-void GenericTasksTestsBase::setContextNeedDataAudioOnly()
-{
-    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
-    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
-
-    audioStreamIt->second.isDataNeeded = true;
-}
-
 void GenericTasksTestsBase::setContextSetupSourceFinished()
 {
     testContext->m_context.setupSourceFinished = true;
@@ -1864,14 +1856,6 @@ void GenericTasksTestsBase::shouldFailToReattachAudioSource()
 void GenericTasksTestsBase::triggerReattachAudioSource()
 {
     triggerAttachAudioSource();
-}
-
-void GenericTasksTestsBase::checkNewAudioSourceAttached()
-{
-    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
-    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
-
-    EXPECT_TRUE(audioStreamIt->second.isDataNeeded);
 }
 
 void GenericTasksTestsBase::shouldQueryPositionAndSetToZero()
