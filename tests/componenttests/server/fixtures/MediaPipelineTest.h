@@ -57,7 +57,6 @@ public:
     void willPlay();
     void willEos(GstAppSrc *appSrc);
     void willStop();
-    void willSetAudioAndVideoFlags();
     void willSetStateInvalidForQueryPosition();
 
     void createSession();
