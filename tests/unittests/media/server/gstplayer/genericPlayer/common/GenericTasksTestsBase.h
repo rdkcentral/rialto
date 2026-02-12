@@ -73,7 +73,6 @@ protected:
     void setContextPlaybackRate();
     void setContextSourceNull();
     void setContextStreamInfoEmpty();
-    void setContextNeedDataAudioOnly();
     void setContextSetupSourceFinished();
 
     // SetupElement test methods
@@ -191,7 +190,6 @@ protected:
     void shouldReattachAudioSource();
     void shouldFailToReattachAudioSource();
     void triggerReattachAudioSource();
-    void checkNewAudioSourceAttached();
     void triggerFailToCastAudioSource();
     void triggerFailToCastVideoSource();
     void triggerFailToCastDolbyVisionSource();
