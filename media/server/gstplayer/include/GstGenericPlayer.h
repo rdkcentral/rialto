@@ -106,7 +106,6 @@ public:
     virtual ~GstGenericPlayer();
 
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
-    void removeSource(const MediaSourceType &mediaSourceType) override;
     void allSourcesAttached() override;
     void play() override;
     void pause() override;
@@ -185,7 +184,6 @@ private:
     void addAutoAudioSinkChild(GObject *object) override;
     void removeAutoVideoSinkChild(GObject *object) override;
     void removeAutoAudioSinkChild(GObject *object) override;
-    void setPlaybinFlags(bool enableAudio = true) override;
     void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
     bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     bool hasSourceType(const MediaSourceType &mediaSourceType) const override;
@@ -339,6 +337,13 @@ private:
      * @param[in] source : the media source
      */
     void pushAdditionalSegmentIfRequired(GstElement *source);
+
+    /**
+     * @brief Sets the audio and video flags on the pipeline based on the input.
+     *
+     * @param[in] enableAudio : Whether to enable audio flags.
+     */
+    void setPlaybinFlags(bool enableAudio = true);
 
 private:
     /**

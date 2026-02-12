@@ -211,7 +211,6 @@ TEST_F(MediaPipelineTest, playback)
 
     // Step 14: Notify end of stream
     gstNotifyEos();
-    willRemoveAudioSource();
 
     // Step 15: Remove sources
     removeSource(m_audioSourceId);
