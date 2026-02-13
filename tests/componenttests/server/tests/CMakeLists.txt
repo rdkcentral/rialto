@@ -56,13 +56,13 @@ add_gtests (
         mediaPipeline/PositionUpdatesTest.cpp
         mediaPipeline/ProcessAudioGapTest.cpp
         mediaPipeline/QosUpdatesTest.cpp
-        mediaPipeline/RemoveAudioPlaybackTest.cpp
         mediaPipeline/RenderFrameTest.cpp
         mediaPipeline/SetPlaybackRateTest.cpp
         mediaPipeline/SetPositionTest.cpp
         mediaPipeline/SetSourcePositionTest.cpp
         mediaPipeline/SetVideoWindowTest.cpp
         mediaPipeline/SourceTest.cpp
+        mediaPipeline/SwitchAudioPlaybackTest.cpp
         mediaPipeline/UnderflowTest.cpp
         mediaPipeline/VolumeTest.cpp
         mediaPipeline/WriteSegmentsTest.cpp
