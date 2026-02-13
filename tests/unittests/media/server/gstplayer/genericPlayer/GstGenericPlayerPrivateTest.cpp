@@ -373,14 +373,13 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetReportDecodeErrors)
 
     expectGetVideoDecoder(m_realElement);
 
-    EXPECT_CALL(*m_glibWrapperMock,
-                gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_realElement),
-                                        StrEq(kReportDecodeErrorsStr)))
-        .WillOnce(Return(&gParamSpec));
+    GParamSpec gParamSpec{};
 
     EXPECT_CALL(*m_glibWrapperMock,
-                gObjectSetStub(m_realElement, StrEq(kReportDecodeErrorsStr)))
-        .Times(1);
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_realElement), StrEq(kReportDecodeErrorsStr)))
+        .WillOnce(Return(&gParamSpec));
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_realElement, StrEq(kReportDecodeErrorsStr))).Times(1);
 
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
     EXPECT_TRUE(m_sut->setReportDecodeErrors(true));

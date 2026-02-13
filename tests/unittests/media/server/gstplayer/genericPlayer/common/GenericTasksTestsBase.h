@@ -278,7 +278,6 @@ protected:
     void shouldSetSubtitleMute();
 
     // report_decode_errors decoder property test method
-    void shouldSetReportDecodeErrors();
     void triggerSetReportDecodeErrors();
 
     // immediate-output sink property test methods

@@ -3295,11 +3295,6 @@ void GenericTasksTestsBase::triggerSetImmediateOutput()
     EXPECT_EQ(testContext->m_context.pendingImmediateOutputForVideo, true);
 }
 
-void GenericTasksTestsBase::shouldSetReportDecodeErrors()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, setReportDecodeErrors(true)).WillOnce(Return(true));
-}
-
 void GenericTasksTestsBase::triggerSetReportDecodeErrors()
 {
     firebolt::rialto::server::tasks::generic::SetReportDecodeErrors task{testContext->m_context, testContext->m_gstPlayer,
