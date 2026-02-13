@@ -49,7 +49,6 @@ add_library(
         source/tasks/generic/Play.cpp
         source/tasks/generic/ProcessAudioGap.cpp
         source/tasks/generic/ReadShmDataAndAttachSamples.cpp
-        source/tasks/generic/RemoveSource.cpp
         source/tasks/generic/RenderFrame.cpp
         source/tasks/generic/ReportPosition.cpp
         source/tasks/generic/SetBufferingLimit.cpp
