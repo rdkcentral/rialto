@@ -206,13 +206,6 @@ struct GenericPlayerContext
     IDecryptionService *decryptionService{nullptr};
 
     /**
-     * @brief Flag used to check, if audio source has been recently removed
-     *
-     * Flag can be used only in worker thread
-     */
-    bool audioSourceRemoved{false};
-
-    /**
      * @brief Audio elements of gst pipeline.
      *
      * Attribute can be used only in worker thread

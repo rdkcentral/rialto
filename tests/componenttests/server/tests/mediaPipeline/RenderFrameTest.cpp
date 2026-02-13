@@ -189,7 +189,6 @@ TEST_F(RenderFrameTest, RenderFrameSuccess)
     renderFrame();
 
     // Step 6: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
@@ -303,7 +302,6 @@ TEST_F(RenderFrameTest, renderFrameFailure)
     renderFrameFailure();
 
     // Step 6: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 

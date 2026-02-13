@@ -179,7 +179,6 @@ TEST_F(AudioSourceSwitchTest, SwitchAudioSource)
     switchAudioSource();
 
     // Step 6: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
