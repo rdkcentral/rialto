@@ -253,7 +253,6 @@ TEST_F(VolumeTest, Volume)
     getVolume();
 
     // Step 9: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
