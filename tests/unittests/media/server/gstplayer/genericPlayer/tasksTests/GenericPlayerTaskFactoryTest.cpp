@@ -45,7 +45,6 @@
 #include "tasks/generic/Play.h"
 #include "tasks/generic/ProcessAudioGap.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
-#include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetBufferingLimit.h"
@@ -180,13 +179,6 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateReadShmDataAndAttachSamples)
     auto task = m_sut.createReadShmDataAndAttachSamples(m_context, m_gstPlayer, nullptr);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::ReadShmDataAndAttachSamples &>(*task));
-}
-
-TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateRemoveSource)
-{
-    auto task = m_sut.createRemoveSource(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO);
-    EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::RemoveSource &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateReportPosition)
@@ -327,7 +319,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreatePing)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateFlush)
 {
-    auto task = m_sut.createFlush(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
+    auto task = m_sut.createFlush(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true, true);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Flush &>(*task));
 }

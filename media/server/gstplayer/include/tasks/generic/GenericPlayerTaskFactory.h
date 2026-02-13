@@ -65,8 +65,6 @@ public:
     std::unique_ptr<IPlayerTask>
     createReadShmDataAndAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                       const std::shared_ptr<IDataReader> &dataReader) const override;
-    std::unique_ptr<IPlayerTask> createRemoveSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                    const firebolt::rialto::MediaSourceType &type) const override;
     std::unique_ptr<IPlayerTask> createReportPosition(GenericPlayerContext &context,
                                                       IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createCheckAudioUnderflow(GenericPlayerContext &context,
@@ -108,8 +106,8 @@ public:
                                                    IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const override;
     std::unique_ptr<IPlayerTask> createFlush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                             const firebolt::rialto::MediaSourceType &type,
-                                             bool resetTime) const override;
+                                             const firebolt::rialto::MediaSourceType &type, bool resetTime,
+                                             bool isAsync) const override;
     std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context,
                                                          const firebolt::rialto::MediaSourceType &type,
                                                          std::int64_t position, bool resetTime, double appliedRate,

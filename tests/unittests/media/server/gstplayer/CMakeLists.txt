@@ -44,7 +44,6 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/PlayTest.cpp
     genericPlayer/tasksTests/ProcessAudioGapTest.cpp
     genericPlayer/tasksTests/ReadShmDataAndAttachSamplesTest.cpp
-    genericPlayer/tasksTests/RemoveSourceTest.cpp
     genericPlayer/tasksTests/RenderFrameTest.cpp
     genericPlayer/tasksTests/ReportPositionTest.cpp
     genericPlayer/tasksTests/SetBufferingLimitTest.cpp

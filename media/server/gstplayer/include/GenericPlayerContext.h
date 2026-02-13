@@ -212,13 +212,6 @@ struct GenericPlayerContext
     IDecryptionService *decryptionService{nullptr};
 
     /**
-     * @brief Flag used to check, if audio source has been recently removed
-     *
-     * Flag can be used only in worker thread
-     */
-    bool audioSourceRemoved{false};
-
-    /**
      * @brief Audio elements of gst pipeline.
      *
      * Attribute can be used only in worker thread
@@ -275,7 +268,7 @@ struct GenericPlayerContext
     /**
      * @brief Workaround for the gstreamer flush issue
      */
-    FlushOnPrerollController flushOnPrerollController;
+    std::shared_ptr<IFlushOnPrerollController> flushOnPrerollController{std::make_shared<FlushOnPrerollController>()};
 };
 } // namespace firebolt::rialto::server
 

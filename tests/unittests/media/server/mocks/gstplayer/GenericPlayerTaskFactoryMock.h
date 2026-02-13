@@ -62,10 +62,6 @@ public:
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
                  const std::shared_ptr<IDataReader> &dataReader),
                 (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createRemoveSource,
-                (GenericPlayerContext & context, (IGstGenericPlayerPrivate & player),
-                 const firebolt::rialto::MediaSourceType &type),
-                (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createReportPosition,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createCheckAudioUnderflow,
@@ -119,7 +115,7 @@ public:
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFlush,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
-                 const firebolt::rialto::MediaSourceType &type, bool resetTime),
+                 const firebolt::rialto::MediaSourceType &type, bool resetTime, bool isAsync),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSourcePosition,
                 (GenericPlayerContext & context, const firebolt::rialto::MediaSourceType &type, std::int64_t position,

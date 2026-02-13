@@ -622,8 +622,7 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
     // Step 17: Get Use Buffering
     getUseBuffering();
 
-    // Step 18: Remove sources
-    willRemoveAudioSource();
+    // Step 16: Remove sources
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 

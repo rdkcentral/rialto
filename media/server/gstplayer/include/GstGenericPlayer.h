@@ -107,7 +107,6 @@ public:
     virtual ~GstGenericPlayer();
 
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
-    void removeSource(const MediaSourceType &mediaSourceType) override;
     void allSourcesAttached() override;
     void play(bool &async) override;
     void pause() override;
@@ -191,15 +190,12 @@ private:
     void addAutoAudioSinkChild(GObject *object) override;
     void removeAutoVideoSinkChild(GObject *object) override;
     void removeAutoAudioSinkChild(GObject *object) override;
-    void setPlaybinFlags(bool enableAudio = true) override;
     void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
     bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     bool hasSourceType(const MediaSourceType &mediaSourceType) const override;
     GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
     void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
     bool isAsync(const MediaSourceType &mediaSourceType) const;
-    void postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime) override;
-    void executePostponedFlushes() override;
     void notifyPlaybackInfo() override;
 
 private:
@@ -346,6 +342,13 @@ private:
      */
     void pushAdditionalSegmentIfRequired(GstElement *source);
 
+    /**
+     * @brief Sets the audio and video flags on the pipeline based on the input.
+     *
+     * @param[in] enableAudio : Whether to enable audio flags.
+     */
+    void setPlaybinFlags(bool enableAudio = true);
+
 private:
     /**
      * @brief The player context.
@@ -428,11 +431,6 @@ private:
      * @brief The object used to check flushing state for all sources
      */
     std::unique_ptr<IFlushWatcher> m_flushWatcher;
-
-    /**
-     * @brief The postponed flush tasks
-     */
-    std::vector<std::pair<MediaSourceType, bool>> m_postponedFlushes{};
 
     /**
      * @brief The ongoing state change operations counter

@@ -71,7 +71,6 @@ public:
     MOCK_METHOD(void, removeAutoVideoSinkChild, (GObject * object), (override));
     MOCK_METHOD(void, removeAutoAudioSinkChild, (GObject * object), (override));
     MOCK_METHOD(GstElement *, getSink, (const MediaSourceType &mediaSourceType), (const, override));
-    MOCK_METHOD(void, setPlaybinFlags, (bool enableAudio), (override));
 
     MOCK_METHOD(void, addAudioClippingToBuffer, (GstBuffer * buffer, uint64_t clippingStart, uint64_t clippingEnd),
                 (const, override));
@@ -81,8 +80,6 @@ public:
     MOCK_METHOD(void, startSubtitleClockResyncTimer, (), (override));
     MOCK_METHOD(void, stopSubtitleClockResyncTimer, (), (override));
     MOCK_METHOD(bool, hasSourceType, (const MediaSourceType &mediaSourceType), (const, override));
-    MOCK_METHOD(void, postponeFlush, (const MediaSourceType &mediaSourceType, bool resetTime), (override));
-    MOCK_METHOD(void, executePostponedFlushes, (), (override));
     MOCK_METHOD(void, notifyPlaybackInfo, (), (override));
 };
 } // namespace firebolt::rialto::server

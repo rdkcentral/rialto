@@ -185,7 +185,6 @@ TEST_F(MediaPipelineTest, AudioOnlyPlayback)
     gstNotifyEos();
 
     // Step 12: Remove source
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
 
     // Step 13: Stop
