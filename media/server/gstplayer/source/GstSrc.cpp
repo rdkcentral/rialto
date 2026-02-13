@@ -48,7 +48,9 @@ static void gstRialtoSrcFinalize(GObject *object)
 {
     GstRialtoSrc *src = GST_RIALTO_SRC(object);
     GstRialtoSrcPrivate *priv = src->priv;
+    GST_OBJECT_LOCK(src);
     g_free(priv->uri);
+    GST_OBJECT_UNLOCK(src);
     priv->~GstRialtoSrcPrivate();
     GST_CALL_PARENT(G_OBJECT_CLASS, finalize, (object));
 }

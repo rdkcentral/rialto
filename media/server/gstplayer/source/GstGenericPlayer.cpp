@@ -1540,8 +1540,12 @@ bool GstGenericPlayer::setRenderFrame()
                 RIALTO_SERVER_LOG_INFO("Rendering preroll");
 
                 m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 1, nullptr);
-                m_gstWrapper->gstElementSendEvent(sink, m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true,
-                                                                                      false));
+                if (!m_gstWrapper->gstElementSendEvent(sink, m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true,
+                                                                                      false)))
+		{
+                   RIALTO_SERVER_LOG_ERROR("Failed to send new step event to sink element");
+		}
+
                 m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 0, nullptr);
                 result = true;
             }
