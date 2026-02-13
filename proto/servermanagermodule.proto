@@ -84,6 +84,7 @@ message Resources {
  * @param[in]  socketGroup                  Socket file created with this group
  * @param[in]  sessionManagementSocketFd    File descriptor of socket used for SessionServer <-> Application communication
  *                                          (optional, sessionManagementSocketName will be used if fd not present)
+ * @param[in]  subtitlesDisplayName         Wayland display name for subtitles rendering
  *
  */
 message SetConfigurationRequest {
@@ -98,6 +99,7 @@ message SetConfigurationRequest {
     optional string appName = 9;
     optional int32 sessionManagementSocketFd = 10;
     optional uint32 subtitleClockResyncInterval = 11;
+    optional string subtitlesDisplayName = 12;
 }
 message SetConfigurationResponse {
 }

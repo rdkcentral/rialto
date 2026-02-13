@@ -130,12 +130,14 @@ bool SessionServerManager::configureIpc(int32_t socketFd)
 
 bool SessionServerManager::configureServices(const common::SessionServerState &state,
                                              const common::MaxResourceCapabilitites &maxResource,
-                                             const std::string &clientDisplayName, const std::string &appName)
+                                             const std::string &clientDisplayName,
+                                             const std::string &subtitlesDisplayName, const std::string &appName)
 {
     m_sessionManagementServer->start();
     m_playbackService.setMaxPlaybacks(maxResource.maxPlaybacks);
     m_playbackService.setMaxWebAudioPlayers(maxResource.maxWebAudioPlayers);
     m_playbackService.setClientDisplayName(clientDisplayName);
+    m_playbackService.setSubtitlesDisplayName(subtitlesDisplayName);
     m_playbackService.setResourceManagerAppName(appName);
     return setState(state);
 }

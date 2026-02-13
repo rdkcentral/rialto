@@ -52,11 +52,13 @@ public:
     void removeClient(int serverId) override;
     bool performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
                                  const std::string &socketName, const std::string &clientDisplayName,
+                                 const std::string &subtitlesDisplayName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                  const unsigned int socketPermissions, const std::string &socketOwner,
                                  const std::string &socketGroup, const std::string &appName) override;
     bool performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
                                  int socketFd, const std::string &clientDisplayName,
+                                 const std::string &subtitlesDisplayName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                  const std::string &appName) override;
     bool performPing(int serverId, int pingId) override;

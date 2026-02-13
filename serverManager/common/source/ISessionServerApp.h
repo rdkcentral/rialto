@@ -48,6 +48,7 @@ public:
     virtual std::string getSessionManagementSocketOwner() const = 0;
     virtual std::string getSessionManagementSocketGroup() const = 0;
     virtual std::string getClientDisplayName() const = 0;
+    virtual std::string getSubtitlesDisplayName() const = 0;
     virtual firebolt::rialto::common::SessionServerState getInitialState() const = 0;
     virtual int getServerId() const = 0;
     virtual const std::string &getAppName() const = 0;
