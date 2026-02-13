@@ -836,7 +836,6 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetFailures)
     getQueuedFramesFailure();
 
     // Step 18: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 

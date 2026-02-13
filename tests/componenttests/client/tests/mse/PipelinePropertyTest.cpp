@@ -181,7 +181,7 @@ TEST_F(PipelinePropertyTest, setAndGetPipelineProperties)
     MediaPipelineTestMethods::setReportDecodeErrors(reportDecodeErrors);
 
     // Step 14: Get Queued Frames
-    uint32_t queuedFrames{0};
+    uint32_t queuedFrames{123};
     MediaPipelineTestMethods::shouldGetQueuedFrames(queuedFrames);
     MediaPipelineTestMethods::getQueuedFrames(queuedFrames);
 }
