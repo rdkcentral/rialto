@@ -38,7 +38,6 @@
 #include "tasks/generic/Play.h"
 #include "tasks/generic/ProcessAudioGap.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
-#include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetBufferingLimit.h"
@@ -386,22 +385,9 @@ void GenericTasksTestsBase::setContextSourceNull()
     testContext->m_context.source = nullptr;
 }
 
-void GenericTasksTestsBase::setContextAudioSourceRemoved()
-{
-    testContext->m_context.audioSourceRemoved = true;
-}
-
 void GenericTasksTestsBase::setContextStreamInfoEmpty()
 {
     testContext->m_context.streamInfo.clear();
-}
-
-void GenericTasksTestsBase::setContextNeedDataAudioOnly()
-{
-    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
-    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
-
-    audioStreamIt->second.isDataNeeded = true;
 }
 
 void GenericTasksTestsBase::setContextSetupSourceFinished()
@@ -1863,12 +1849,6 @@ void GenericTasksTestsBase::shouldReattachAudioSource()
     EXPECT_CALL(testContext->m_gstPlayer, reattachSource(_)).WillOnce(Return(true));
 }
 
-void GenericTasksTestsBase::shouldEnableAudioFlagsAndSendNeedData()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, setPlaybinFlags(true));
-    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::AUDIO));
-}
-
 void GenericTasksTestsBase::shouldFailToReattachAudioSource()
 {
     EXPECT_CALL(testContext->m_gstPlayer, reattachSource(_)).WillOnce(Return(false));
@@ -1877,15 +1857,6 @@ void GenericTasksTestsBase::shouldFailToReattachAudioSource()
 void GenericTasksTestsBase::triggerReattachAudioSource()
 {
     triggerAttachAudioSource();
-}
-
-void GenericTasksTestsBase::checkNewAudioSourceAttached()
-{
-    auto audioStreamIt{testContext->m_context.streamInfo.find(firebolt::rialto::MediaSourceType::AUDIO)};
-    ASSERT_NE(testContext->m_context.streamInfo.end(), audioStreamIt);
-
-    EXPECT_TRUE(audioStreamIt->second.isDataNeeded);
-    EXPECT_FALSE(testContext->m_context.audioSourceRemoved);
 }
 
 void GenericTasksTestsBase::shouldQueryPositionAndSetToZero()
@@ -2276,11 +2247,6 @@ void GenericTasksTestsBase::shouldStopGstPlayer()
     EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(testContext->m_gstPlayer, stopNotifyPlaybackInfoTimer());
     EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_NULL)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
-}
-
-void GenericTasksTestsBase::shouldStopPositionReportingAndCheckAudioUnderflowTimer()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
 }
 
 void GenericTasksTestsBase::triggerStop()
@@ -3005,44 +2971,6 @@ void GenericTasksTestsBase::triggerRenderFrame()
 {
     firebolt::rialto::server::tasks::generic::RenderFrame task{testContext->m_context, testContext->m_gstPlayer};
     task.execute();
-}
-
-void GenericTasksTestsBase::shouldInvalidateActiveAudioRequests()
-{
-    EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::AUDIO));
-}
-
-void GenericTasksTestsBase::shouldDisableAudioFlag()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, setPlaybinFlags(false));
-}
-
-void GenericTasksTestsBase::triggerRemoveSourceAudio()
-{
-    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, testContext->m_gstPlayer,
-                                                                &testContext->m_gstPlayerClient,
-                                                                testContext->m_gstWrapper,
-                                                                firebolt::rialto::MediaSourceType::AUDIO};
-    task.execute();
-}
-
-void GenericTasksTestsBase::triggerRemoveSourceVideo()
-{
-    firebolt::rialto::server::tasks::generic::RemoveSource task{testContext->m_context, testContext->m_gstPlayer,
-                                                                &testContext->m_gstPlayerClient,
-                                                                testContext->m_gstWrapper,
-                                                                firebolt::rialto::MediaSourceType::VIDEO};
-    task.execute();
-}
-
-void GenericTasksTestsBase::checkAudioSourceRemoved()
-{
-    EXPECT_TRUE(testContext->m_context.audioSourceRemoved);
-}
-
-void GenericTasksTestsBase::checkAudioSourceNotRemoved()
-{
-    EXPECT_FALSE(testContext->m_context.audioSourceRemoved);
 }
 
 void GenericTasksTestsBase::shouldFlushAudioSrcSuccess()

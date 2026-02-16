@@ -405,25 +405,6 @@ void MediaPipelineTest::willEos(GstAppSrc *appSrc)
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcEndOfStream(appSrc)).WillOnce(Return(GST_FLOW_OK));
 }
 
-void MediaPipelineTest::willRemoveAudioSource()
-{
-    EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStart()).WillOnce(Return(&m_flushStartEvent));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStartEvent))
-        .WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStop(0)).WillOnce(Return(&m_flushStopEvent));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStopEvent))
-        .WillOnce(Return(TRUE));
-
-    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(3).WillRepeatedly(Return(kGstPlayFlagsType));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(3).WillRepeatedly(Return(&m_flagsClass));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("native-video")))
-        .WillOnce(Return(&m_nativeVideoFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("text"))).WillOnce(Return(&m_subtitleFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("flags")))
-        .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
-}
-
 void MediaPipelineTest::willStop()
 {
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_NULL))
@@ -434,19 +415,6 @@ void MediaPipelineTest::willStop()
     EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(GST_STATE_NULL)).WillRepeatedly(Return(kNullStateName.c_str()));
     EXPECT_CALL(*m_gstWrapperMock, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
-}
-
-void MediaPipelineTest::willSetAudioAndVideoFlags()
-{
-    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(4).WillRepeatedly(Return(kGstPlayFlagsType));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(4).WillRepeatedly(Return(&m_flagsClass));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("brcmaudiosink"))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio"))).WillOnce(Return(&m_audioFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("native-video")))
-        .WillOnce(Return(&m_nativeVideoFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("text"))).WillOnce(Return(&m_subtitleFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("flags")));
 }
 
 void MediaPipelineTest::createSession()
@@ -819,10 +787,6 @@ void MediaPipelineTest::removeSource(int sourceId)
 {
     auto removeSourceReq{createRemoveSourceRequest(m_sessionId, sourceId)};
     ConfigureAction<RemoveSource>(m_clientStub).send(removeSourceReq).expectSuccess();
-
-    // Sources other than audio do not do anything for RemoveSource
-    if (m_audioSourceId == sourceId)
-        waitWorker();
 }
 
 void MediaPipelineTest::stop()

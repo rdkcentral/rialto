@@ -331,7 +331,6 @@ TEST_F(EncryptedPlaybackTest, EncryptedPlayback)
 
     // Step 14: Notify end of stream
     gstNotifyEos();
-    willRemoveAudioSource();
 
     // Step 15: Remove sources
     removeSource(m_audioSourceId);
