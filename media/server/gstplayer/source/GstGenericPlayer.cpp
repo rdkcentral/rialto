@@ -1239,22 +1239,11 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
         return -1;
     }
 
-    m_gstWrapper->gstStateLock(element);
-
-    if (m_gstWrapper->gstElementGetState(element) < GST_STATE_PAUSED ||
-        (m_gstWrapper->gstElementGetStateReturn(element) == GST_STATE_CHANGE_ASYNC &&
-         m_gstWrapper->gstElementGetStateNext(element) == GST_STATE_PAUSED))
+    if (m_prerolling || GST_STATE(element) < GST_STATE_PAUSED)
     {
-        RIALTO_SERVER_LOG_WARN("Element is prerolling or in invalid state - state: %s, return: %s, next: %s",
-                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetState(element)),
-                               m_gstWrapper->gstElementStateChangeReturnGetName(
-                                   m_gstWrapper->gstElementGetStateReturn(element)),
-                               m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetStateNext(element)));
-
-        m_gstWrapper->gstStateUnlock(element);
+        RIALTO_SERVER_LOG_WARN("Element is prerolling or in invalid state");
         return -1;
     }
-    m_gstWrapper->gstStateUnlock(element);
 
     gint64 position = -1;
     if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
@@ -2163,6 +2152,11 @@ void GstGenericPlayer::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
 void GstGenericPlayer::handleBusMessage(GstMessage *message)
 {
     m_workerThread->enqueueTask(m_taskFactory->createHandleBusMessage(m_context, *this, message, *m_flushWatcher));
+}
+
+void GstGenericPlayer::setPrerollingState(bool prerolling)
+{
+    m_prerolling = prerolling;
 }
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)

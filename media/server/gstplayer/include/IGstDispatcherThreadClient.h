@@ -41,6 +41,13 @@ public:
      * @param[in] message : The new Gst message.
      */
     virtual void handleBusMessage(GstMessage *message) = 0;
+
+    /**
+     * @brief Set prerolling state
+     *
+     * @param[in] prerolling : The new prerolling state.
+     */
+    virtual void setPrerollingState(bool prerolling) = 0;
 };
 } // namespace firebolt::rialto::server
 

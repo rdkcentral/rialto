@@ -462,6 +462,11 @@ void GstWebAudioPlayer::handleBusMessage(GstMessage *message)
     }
 }
 
+void GstWebAudioPlayer::setPrerollingState(bool prerolling)
+{
+    // No need to implement this function in WebAudioPlayer
+}
+
 void GstWebAudioPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
 {
     if (m_workerThread)

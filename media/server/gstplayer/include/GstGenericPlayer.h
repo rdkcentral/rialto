@@ -182,6 +182,7 @@ private:
     void setPendingPlaybackRate() override;
     void renderFrame() override;
     void handleBusMessage(GstMessage *message) override;
+    void setPrerollingState(bool prerolling) override;
     void updatePlaybackGroup(GstElement *typefind, const GstCaps *caps) override;
 
     void addAutoVideoSinkChild(GObject *object) override;
@@ -428,6 +429,11 @@ private:
      * @brief The ongoing state change operations counter
      */
     std::atomic<uint32_t> m_ongoingStateChangesNumber{0};
+
+    /**
+     * @brief The flag indicating whether the pipeline is in prerolling state
+     */
+    std::atomic<bool> m_prerolling{false};
 };
 
 } // namespace firebolt::rialto::server
