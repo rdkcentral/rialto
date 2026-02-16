@@ -12,6 +12,7 @@
 /.vscode/*
 /CMakeUserPresets.json
 /CMakeLists.txt.user*
+/_codeql_detected_source_root
 
 # These files are fetched by cmake during building rialto for the native platform
 /stubs/opencdm/third-party/*
