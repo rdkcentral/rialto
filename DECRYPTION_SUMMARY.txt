@@ -1,0 +1,64 @@
+================================================================================
+RIALTO DECRYPTION ANALYSIS - EXECUTIVE SUMMARY
+================================================================================
+
+QUESTION: Where is decryption being completed in the Rialto repository?
+
+ANSWER: Decryption is completed in the OcdmSession wrapper class.
+
+PRIMARY LOCATION:
+-----------------
+File:     wrappers/source/OcdmSession.cpp
+Method:   OcdmSession::decryptBuffer()
+Line:     198
+Call:     opencdm_gstreamer_session_decrypt_buffer(m_session, encrypted, caps)
+
+This is the final layer in the Rialto architecture where the actual decryption
+operation is performed by calling the external OpenCDM library.
+
+DECRYPTION FLOW SUMMARY:
+------------------------
+1. GStreamer pipeline receives encrypted buffer
+2. GstRialtoDecryptor element intercepts buffer (GstDecryptor.cpp)
+3. Calls IDecryptionService::decrypt() (line 310)
+4. MediaKeysServerInternal handles thread safety and session lookup
+5. MediaKeySession delegates to OCDM wrapper (MediaKeySession.cpp:227)
+6. OcdmSession makes the actual decryption call (OcdmSession.cpp:198) ★
+7. OpenCDM library interfaces with DRM system (Widevine/PlayReady/etc.)
+
+KEY FILES:
+----------
+1. wrappers/source/OcdmSession.cpp              - ACTUAL DECRYPTION (line 198)
+2. media/server/main/source/MediaKeySession.cpp - Session management
+3. media/server/main/source/MediaKeysServerInternal.cpp - Orchestration
+4. media/server/gstplayer/source/GstDecryptor.cpp - GStreamer integration
+
+SUPPORTED DRM SYSTEMS:
+----------------------
+- Widevine (com.widevine.alpha)
+- PlayReady (com.microsoft.playready)
+- Netflix PlayReady (com.netflix.playready.h264/h265)
+- ClearKey (org.w3.clearkey)
+
+CIPHER MODES:
+-------------
+- CENC (AES-CTR)
+- CBCS (AES-CBC with pattern)
+- CBC1 (AES-CBC)
+- CENS (AES-CTR with pattern)
+
+DOCUMENTATION:
+--------------
+Full analysis:      DECRYPTION_ANALYSIS.md
+Quick reference:    DECRYPTION_QUICK_REFERENCE.md
+This summary:       DECRYPTION_SUMMARY.txt
+
+CONCLUSION:
+-----------
+The actual decryption happens when OcdmSession::decryptBuffer() calls
+opencdm_gstreamer_session_decrypt_buffer() at line 198 of OcdmSession.cpp.
+This external library function interfaces with the platform's DRM Content
+Decryption Module (CDM) to perform the cryptographic decryption of protected
+media content.
+
+================================================================================
