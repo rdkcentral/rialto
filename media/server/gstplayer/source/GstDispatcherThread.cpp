@@ -78,6 +78,16 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                 {
                     GstState oldState, newState, pending;
                     m_gstWrapper->gstMessageParseStateChanged(message, &oldState, &newState, &pending);
+                    if (newState == GST_STATE_PAUSED && pending == GST_STATE_PAUSED)
+                    {
+                        RIALTO_SERVER_LOG_DEBUG("Pipeline is prerolling");
+                        m_client.setPrerollingState(true);
+                    }
+                    else
+                    {
+                        m_client.setPrerollingState(false);
+                    }
+
                     switch (newState)
                     {
                     case GST_STATE_NULL:
