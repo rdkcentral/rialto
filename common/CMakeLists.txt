@@ -30,6 +30,7 @@ add_library(
 
         source/EventThread.cpp
         source/LinuxUtils.cpp
+        source/Profiler.cpp
         source/Timer.cpp
     )
 
