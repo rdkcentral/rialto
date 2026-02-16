@@ -282,13 +282,6 @@ public:
     virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
 
     /**
-     * @brief Sets the audio and video flags on the pipeline based on the input.
-     *
-     * @param[in] enableAudio : Whether to enable audio flags.
-     */
-    virtual void setPlaybinFlags(bool enableAudio) = 0;
-
-    /**
      * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
      *
      * @param[in] source          : The Gst Source element, that should receive new sample
@@ -320,19 +313,6 @@ public:
      * @param[in] mediaSourceType : the source type that has been flushed
      */
     virtual void setSourceFlushed(const MediaSourceType &mediaSourceType) = 0;
-
-    /**
-     * @brief Postpones flush for the given source type
-     *
-     * @param[in] mediaSourceType : the source type that has been flushed
-     * @param[in] resetTime       : whether to reset the time after flush
-     */
-    virtual void postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime) = 0;
-
-    /**
-     * @brief Queues postponed flushes for execution
-     */
-    virtual void executePostponedFlushes() = 0;
 
     /**
      * @brief Sends PlaybackInfo notification. Called by the worker thread.

@@ -177,19 +177,6 @@ public:
                                       const std::shared_ptr<IDataReader> &dataReader) const = 0;
 
     /**
-     * @brief Creates a Remove Source task.
-     *
-     * @param[in] context : The GstPlayer context
-     * @param[in] player  : The GstGenericPlayer instance
-     * @param[in] type    : The media source type to remove
-     *
-     * @retval the new Remove Source task instance.
-     */
-    virtual std::unique_ptr<IPlayerTask> createRemoveSource(GenericPlayerContext &context,
-                                                            IGstGenericPlayerPrivate &player,
-                                                            const firebolt::rialto::MediaSourceType &type) const = 0;
-
-    /**
      * @brief Creates a ReportPosition task.
      *
      * @param[in] context       : The GstGenericPlayer context
@@ -429,12 +416,13 @@ public:
      * @param[in] context   : The GstPlayer context
      * @param[in] type      : The media source type to flush
      * @param[in] resetTime : True if time should be reset
+     * @param[in] isAsync     : True if flushed source is asynchronous
      *
      * @retval the new Flush task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createFlush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                     const firebolt::rialto::MediaSourceType &type,
-                                                     bool resetTime) const = 0;
+                                                     const firebolt::rialto::MediaSourceType &type, bool resetTime,
+                                                     bool isAsync) const = 0;
 
     /**
      * @brief Creates a SetSourcePosition task.
