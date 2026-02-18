@@ -44,11 +44,12 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineGetQueuedFramesTest, GetQueuedFramesSuccess)
 {
+    constexpr uint32_t kExpectedQueuedFrames{123};
     EXPECT_CALL(*m_mediaPipelineIpcMock, getQueuedFrames(m_kSourceId, _))
         .WillOnce(DoAll(SetArgReferee<1>(123), Return(true)));
     uint32_t QueuedFrames;
     EXPECT_TRUE(m_mediaPipeline->getQueuedFrames(m_kSourceId, QueuedFrames));
-    EXPECT_TRUE(QueuedFrames);
+    EXPECT_EQ(kExpectedQueuedFrames, QueuedFrames);
 }
 
 /**

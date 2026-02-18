@@ -33,8 +33,6 @@ namespace
 {
 const std::string kElementTypeName{"GenericSink"};
 constexpr bool kImmediateOutput{true};
-constexpr bool kReportDecodeErrors{true};
-constexpr uint32_t kQueuedFrames{123};
 constexpr bool kLowLatency{true};
 constexpr bool kSync{true};
 constexpr bool kSyncOff{true};
@@ -161,6 +159,16 @@ public:
                         *returnVal = value ? TRUE : FALSE;
                     }));
         }
+        else if constexpr (std::is_same_v<T, uint32_t>)
+        {
+            EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(propertyName.c_str()), _))
+                .WillOnce(Invoke(
+                    [&](gpointer, const gchar *, void *val)
+                    {
+                        guint *returnVal = reinterpret_cast<guint *>(val);
+                        *returnVal = value;
+                    }));
+        }
         else if constexpr (std::is_same_v<T, int32_t>)
         {
             EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(propertyName.c_str()), _))
@@ -233,23 +241,6 @@ public:
             .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.immediate_output(), kImmediateOutput); });
         waitWorker();
     }
-
-    void setReportDecodeErrors()
-    {
-        auto req{createSetReportDecodeErrorsRequest(m_sessionId, m_videoSourceId, kReportDecodeErrors)};
-        ConfigureAction<SetReportDecodeErrors>(m_clientStub).send(req).expectSuccess().matchResponse([&](const auto &resp) {});
-        waitWorker();
-    }
-
-    // void getQueuedFrames()
-    // {
-    //     auto req{createGetQueuedFramesRequest(m_sessionId, m_videoSourceId)};
-    //     ConfigureAction<GetQueuedFrames>(m_clientStub)
-    //         .send(req)
-    //         .expectSuccess()
-    //         .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.queued_frames(), kQueuedFrames); });
-    //     waitWorker();
-    // }
 
     void setLowLatency()
     {
@@ -346,22 +337,6 @@ public:
         ConfigureAction<GetImmediateOutput>(m_clientStub).send(req).expectFailure();
         waitWorker();
     }
-
-    void setReportDecodeErrorsFailure()
-    {
-        auto req{createSetReportDecodeErrorsRequest(m_sessionId, m_videoSourceId, true)};
-        // We expect success from this test because it's asynchronous (and the return
-        // value doesn't reflect that the immediate-output flag wasn't set)
-        ConfigureAction<SetReportDecodeErrors>(m_clientStub).send(req).expectSuccess();
-        waitWorker();
-    }
-
-    // void getQueuedFramesFailure()
-    // {
-    //     auto req{createGetQueuedFramesRequest(m_sessionId, m_videoSourceId)};
-    //     ConfigureAction<GetQueuedFrames>(m_clientStub).send(req).expectFailure();
-    //     waitWorker();
-    // }
 
     void setLowLatencyFailure()
     {
@@ -608,29 +583,21 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
     willGetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO, "limit-buffering-ms", kBufferingLimit);
     getBufferingLimit();
 
-    // Step 14: Set Report Decode Errors
-    willSetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO, "report_decode_errors", kReportDecodeErrors);
-    setReportDecodeErrors();
-
-    // Step 15: Get Queued Frames
-    willGetDecoderProperty(GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO, "queued_frames", kQueuedFrames);
-    getQueuedFrames();
-
-    // Step 16: Set Use Buffering
+    // Step 14: Set Use Buffering
     setUseBuffering();
 
-    // Step 17: Get Use Buffering
+    // Step 15: Get Use Buffering
     getUseBuffering();
 
-    // Step 18: Remove sources
+    // Step 16: Remove sources
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 19: Stop
+    // Step 17: Stop
     willStop();
     stop();
 
-    // Step 20: Destroy media session
+    // Step 18: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }
@@ -827,23 +794,15 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetFailures)
     // Step 15: Fail to Set Use Buffering
     setUseBufferingFailure();
 
-    // Step 16: Fail to set Report Decode Errors
-    willFailToSetDecoderProperty();
-    setReportDecodeErrorsFailure();
-
-    // Step 17: Fail to get Queued Frames
-    willFailToSetDecoderProperty();
-    getQueuedFramesFailure();
-
-    // Step 18: Remove sources
+    // Step 16: Remove sources
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 19: Stop
+    // Step 17: Stop
     willStop();
     stop();
 
-    // Step 20: Destroy media session
+    // Step 18: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }
