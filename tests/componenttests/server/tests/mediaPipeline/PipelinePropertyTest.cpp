@@ -241,15 +241,15 @@ public:
         waitWorker();
     }
 
-    void getQueuedFrames()
-    {
-        auto req{createGetQueuedFramesRequest(m_sessionId, m_videoSourceId)};
-        ConfigureAction<GetQueuedFrames>(m_clientStub)
-            .send(req)
-            .expectSuccess()
-            .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.queued_frames(), kQueuedFrames); });
-        waitWorker();
-    }
+    // void getQueuedFrames()
+    // {
+    //     auto req{createGetQueuedFramesRequest(m_sessionId, m_videoSourceId)};
+    //     ConfigureAction<GetQueuedFrames>(m_clientStub)
+    //         .send(req)
+    //         .expectSuccess()
+    //         .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.queued_frames(), kQueuedFrames); });
+    //     waitWorker();
+    // }
 
     void setLowLatency()
     {
@@ -356,12 +356,12 @@ public:
         waitWorker();
     }
 
-    void getQueuedFramesFailure()
-    {
-        auto req{createGetQueuedFramesRequest(m_sessionId, m_videoSourceId)};
-        ConfigureAction<GetQueuedFrames>(m_clientStub).send(req).expectFailure();
-        waitWorker();
-    }
+    // void getQueuedFramesFailure()
+    // {
+    //     auto req{createGetQueuedFramesRequest(m_sessionId, m_videoSourceId)};
+    //     ConfigureAction<GetQueuedFrames>(m_clientStub).send(req).expectFailure();
+    //     waitWorker();
+    // }
 
     void setLowLatencyFailure()
     {
@@ -622,7 +622,7 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
     // Step 17: Get Use Buffering
     getUseBuffering();
 
-    // Step 16: Remove sources
+    // Step 18: Remove sources
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
