@@ -60,7 +60,7 @@ TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeNoGenerateReque
 /**
  * Test that onProcessChallenge after a generateRequest for none Netflix key system notifies licenseRequest.
  */
-TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeGenerateRequestNoneNetflix)
+TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeGenerateRequest)
 {
     generateRequest();
     mainThreadWillEnqueueTask();
@@ -70,21 +70,6 @@ TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeGenerateRequest
 
     // OcdmSession will be closed on destruction
     expectCloseKeySession(kWidevineKeySystem);
-}
-
-/**
- * Test that onProcessChallenge after a generateRequest for a Netflix key system does not automatically notify the
- * licenseRequest.
- */
-TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeGenerateRequestNetflix)
-{
-    generateRequestPlayready();
-    mainThreadWillEnqueueTask();
-
-    m_mediaKeySession->onProcessChallenge(m_kUrl.c_str(), &m_kLicenseRequestMessage[0], m_kLicenseRequestMessage.size());
-
-    // OcdmSession will be closed on destruction
-    expectCloseKeySession(kNetflixKeySystem);
 }
 
 /**
