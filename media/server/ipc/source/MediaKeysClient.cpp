@@ -69,7 +69,7 @@ MediaKeysClient::~MediaKeysClient() {}
 void MediaKeysClient::onLicenseRequest(int32_t keySessionId, const std::vector<unsigned char> &licenseRequestMessage,
                                        const std::string &url)
 {
-    RIALTO_SERVER_LOG_MIL("Sending LicenseRequestEvent with license size: %zu", licenseRequestMessage.size());
+    RIALTO_SERVER_LOG_DEBUG("Sending LicenseRequestEvent");
 
     auto event = std::make_shared<firebolt::rialto::LicenseRequestEvent>();
     for (auto it = licenseRequestMessage.begin(); it != licenseRequestMessage.end(); it++)

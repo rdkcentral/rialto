@@ -182,11 +182,6 @@ void MediaKeySession::getChallenge(const LimitedDurationLicense &ldlState)
             return;
         }
 
-        RIALTO_SERVER_LOG_MIL("GET CHALLENGE DATA, size: %u", static_cast<unsigned int>(challengeSize));
-        RIALTO_SERVER_LOG_MIL("CHALLENGE DATA VECTOR, size: %u", static_cast<unsigned int>(challenge.size()));
-        const std::vector<unsigned char> &challengeVec = std::vector<unsigned char>{challenge};
-        RIALTO_SERVER_LOG_MIL("CASTED CHALLENGE DATA VECTOR, size: %u", static_cast<unsigned int>(challengeVec.size()));
-
         std::string url;
         m_licenseRequested = true;
         onProcessChallenge(url.c_str(), &challenge[0], challengeSize);
@@ -418,8 +413,6 @@ void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challen
         std::shared_ptr<IMediaKeysClient> client = m_mediaKeysClient.lock();
         if (client)
         {
-            RIALTO_SERVER_LOG_MIL("Received onProcessChallenge callback, size: %u",
-                                  static_cast<unsigned int>(challengeLength));
             if (m_licenseRequested)
             {
                 client->onLicenseRequest(m_kKeySessionId, challengeVec, urlStr);
