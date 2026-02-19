@@ -41,6 +41,7 @@ public:
     MOCK_METHOD(std::optional<unsigned int>, getNumOfPreloadedServers, (), (override));
     MOCK_METHOD(std::optional<rialto::servermanager::service::LoggingLevels>, getLoggingLevels, (), (override));
     MOCK_METHOD(std::optional<unsigned int>, getNumOfPingsBeforeRecovery, (), (override));
+    MOCK_METHOD(std::optional<std::string>, getSubtitlesDisplayName, (), (override));
 };
 } // namespace rialto::servermanager::service
 

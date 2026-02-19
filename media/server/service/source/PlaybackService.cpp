@@ -95,6 +95,15 @@ void PlaybackService::setClientDisplayName(const std::string &clientDisplayName)
     }
 }
 
+void PlaybackService::setSubtitlesDisplayName(const std::string &subtitlesDisplayName) const
+{
+    // Method called during initialization only (before setting any state), no need to execute it on a task thread.
+    if (!subtitlesDisplayName.empty())
+    {
+        setenv("SUBTITLES_WAYLAND_DISPLAY", subtitlesDisplayName.c_str(), 1);
+    }
+}
+
 void PlaybackService::setResourceManagerAppName(const std::string &appName) const
 {
     // Method called during initialization only (before setting any state), no need to execute it on a task thread.

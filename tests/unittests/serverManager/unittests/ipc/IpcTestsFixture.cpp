@@ -133,6 +133,7 @@ bool IpcTests::triggerPerformSetConfiguration()
     const auto kInitialState{firebolt::rialto::common::SessionServerState::INACTIVE};
     const std::string kSocketName{getenv("RIALTO_SOCKET_PATH")};
     const std::string kClientSocketName{"westeros-rialto"};
+    const std::string kSubtitlesDisplayName{"westeros-asplayer-subtitles"};
     constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{2, 1};
     constexpr unsigned int kSocketPermissions{0777};
     // Empty strings for kSocketOwner and kSocketGroup means that chown() won't be called. This will leave the created
@@ -140,8 +141,8 @@ bool IpcTests::triggerPerformSetConfiguration()
     const std::string kSocketOwner{};
     const std::string kSocketGroup{};
     const std::string kAppId{"app"};
-    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketName, kClientSocketName, kMaxResource,
-                                          kSocketPermissions, kSocketOwner, kSocketGroup, kAppId);
+    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketName, kClientSocketName, kSubtitlesDisplayName,
+                                          kMaxResource, kSocketPermissions, kSocketOwner, kSocketGroup, kAppId);
 }
 
 bool IpcTests::triggerPerformSetConfigurationWithFd()
@@ -150,9 +151,11 @@ bool IpcTests::triggerPerformSetConfigurationWithFd()
     const auto kInitialState{firebolt::rialto::common::SessionServerState::INACTIVE};
     constexpr int kSocketFd{123};
     const std::string kClientSocketName{"westeros-rialto"};
+    const std::string kSubtitlesDisplayName{"westeros-asplayer-subtitles"};
     constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{2, 1};
     const std::string kAppId{"app"};
-    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketFd, kClientSocketName, kMaxResource, kAppId);
+    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketFd, kClientSocketName, kSubtitlesDisplayName,
+                                          kMaxResource, kAppId);
 }
 
 bool IpcTests::triggerPerformPing()

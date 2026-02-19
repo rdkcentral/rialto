@@ -65,6 +65,7 @@ bool Controller::performSetState(int serverId, const firebolt::rialto::common::S
 
 bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
                                          const std::string &socketName, const std::string &clientDisplayName,
+                                         const std::string &subtitlesDisplayName,
                                          const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                          const unsigned int socketPermissions, const std::string &socketOwner,
                                          const std::string &socketGroup, const std::string &appName)
@@ -73,14 +74,15 @@ bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::c
     auto client = m_clients.find(serverId);
     if (client != m_clients.end())
     {
-        return client->second->performSetConfiguration(initialState, socketName, clientDisplayName, maxResource,
-                                                       socketPermissions, socketOwner, socketGroup, appName);
+        return client->second->performSetConfiguration(initialState, socketName, clientDisplayName, subtitlesDisplayName,
+                                                       maxResource, socketPermissions, socketOwner, socketGroup, appName);
     }
     return false;
 }
 
 bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
                                          int socketFd, const std::string &clientDisplayName,
+                                         const std::string &subtitlesDisplayName,
                                          const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                          const std::string &appName)
 {
@@ -88,7 +90,8 @@ bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::c
     auto client = m_clients.find(serverId);
     if (client != m_clients.end())
     {
-        return client->second->performSetConfiguration(initialState, socketFd, clientDisplayName, maxResource, appName);
+        return client->second->performSetConfiguration(initialState, socketFd, clientDisplayName, subtitlesDisplayName,
+                                                       maxResource, appName);
     }
     return false;
 }

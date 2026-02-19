@@ -48,6 +48,7 @@ public:
     void triggerSetMaxPlaybacks();
     void triggerSetMaxWebAudioPlayers();
     void triggerSetClientDisplayName();
+    void triggerSetSubtitlesDisplayName();
     void triggerPing();
 
     void createPlaybackServiceShouldSuccess();
@@ -58,6 +59,7 @@ public:
     void getMaxPlaybacksShouldSucceed();
     void getMaxWebAudioPlayersShouldSucceed();
     void clientDisplayNameShouldBeSet();
+    void subtitlesDisplayNameShouldBeSet();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>> m_mediaPipelineFactoryMock;

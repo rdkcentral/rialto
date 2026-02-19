@@ -63,7 +63,8 @@ ConfigHelper::ConfigHelper(std::unique_ptr<IConfigReaderFactory> &&configReaderF
       m_sessionServerStartupTimeout{config.sessionServerStartupTimeout},
       m_healthcheckInterval{config.healthcheckInterval}, m_socketPermissions{config.sessionManagementSocketPermissions},
       m_numOfPreloadedServers{config.numOfPreloadedServers},
-      m_numOfFailedPingsBeforeRecovery{config.numOfFailedPingsBeforeRecovery}, m_loggingLevels{}
+      m_numOfFailedPingsBeforeRecovery{config.numOfFailedPingsBeforeRecovery}, m_loggingLevels{},
+      m_subtitlesDisplayName{config.subtitlesDisplayName}
 {
 #ifdef RIALTO_ENABLE_CONFIG_FILE
     // Read from least to most important file
@@ -112,6 +113,11 @@ unsigned int ConfigHelper::getNumOfFailedPingsBeforeRecovery() const
 const rialto::servermanager::service::LoggingLevels &ConfigHelper::getLoggingLevels() const
 {
     return m_loggingLevels;
+}
+
+const std::string &ConfigHelper::getSubtitlesDisplayName() const
+{
+    return m_subtitlesDisplayName;
 }
 
 #ifdef RIALTO_ENABLE_CONFIG_FILE
@@ -169,6 +175,9 @@ void ConfigHelper::readConfigFile(const std::string &filePath)
 
     if (configReader->getLoggingLevels())
         m_loggingLevels = configReader->getLoggingLevels().value();
+
+    if (configReader->getSubtitlesDisplayName())
+        m_subtitlesDisplayName = configReader->getSubtitlesDisplayName().value();
 }
 
 void ConfigHelper::mergeEnvVariables()
