@@ -184,7 +184,7 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
                              const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
                              IClientController &clientController)
     : m_mediaPipelineClient(client), m_clientController{clientController}, m_currentAppState{ApplicationState::UNKNOWN},
-      m_mediaFrameWriterFactory(mediaFrameWriterFactory), m_currentState(State::IDLE)
+      m_mediaFrameWriterFactory(mediaFrameWriterFactory), m_currentState(State::IDLE), m_attachingSource(false)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 

@@ -233,7 +233,7 @@ GstRialtoDecryptorPrivate::GstRialtoDecryptorPrivate(
     GstBaseTransform *parentElement,
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapperFactory> &glibWrapperFactory)
-    : m_decryptorElement(parentElement)
+    : m_decryptorElement(parentElement), m_decryptionService(nullptr)
 {
     if ((!gstWrapperFactory) || (!(m_gstWrapper = gstWrapperFactory->getGstWrapper())))
     {

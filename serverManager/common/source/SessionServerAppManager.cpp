@@ -491,7 +491,7 @@ bool SessionServerAppManager::configureSessionServerWithSocketName(const std::sh
     const auto kSocketPermissions{kSessionServer->getSessionManagementSocketPermissions()};
     const auto kSocketOwner{kSessionServer->getSessionManagementSocketOwner()};
     const auto kSocketGroup{kSessionServer->getSessionManagementSocketGroup()};
-    const auto kAppName{kSessionServer->getAppName()};
+    const auto &kAppName{kSessionServer->getAppName()};
 
     const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
                                                                           kSessionServer->getMaxWebAudioPlayers()};
@@ -513,7 +513,7 @@ bool SessionServerAppManager::configureSessionServerWithSocketFd(const std::shar
     const auto kInitialState{kSessionServer->getInitialState()};
     const auto kSocketFd{kSessionServer->getSessionManagementSocketFd()};
     const auto kClientDisplayName{kSessionServer->getClientDisplayName()};
-    const auto kAppName{kSessionServer->getAppName()};
+    const auto &kAppName{kSessionServer->getAppName()};
 
     const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
                                                                           kSessionServer->getMaxWebAudioPlayers()};
