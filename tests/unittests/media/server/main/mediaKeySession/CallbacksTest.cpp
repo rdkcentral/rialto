@@ -60,7 +60,7 @@ TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeNoGenerateReque
 /**
  * Test that onProcessChallenge after a generateRequest for none Netflix key system notifies licenseRequest.
  */
-TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeGenerateRequestNoneNetflix)
+TEST_F(RialtoServerMediaKeySessionCallbacksTest, ProcessChallengeGenerateRequest)
 {
     generateRequest();
     mainThreadWillEnqueueTask();

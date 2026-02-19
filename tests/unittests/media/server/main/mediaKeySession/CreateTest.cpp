@@ -34,8 +34,7 @@ TEST_F(RialtoServerCreateMediaKeySessionTest, Create)
 
     EXPECT_NO_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(kNetflixKeySystem, m_kKeySessionId,
                                                                           *m_ocdmSystemMock, m_keySessionType,
-                                                                          m_mediaKeysClientMock, m_isLDL,
-                                                                          m_mainThreadFactoryMock));
+                                                                          m_mediaKeysClientMock, m_mainThreadFactoryMock));
     EXPECT_NE(m_mediaKeySession, nullptr);
 
     destroyKeySession();
@@ -52,7 +51,7 @@ TEST_F(RialtoServerCreateMediaKeySessionTest, FactoryCreatesObject)
 
     EXPECT_CALL(*m_ocdmSystemMock, createSession(_)).WillOnce(Return(ByMove(std::move(m_ocdmSession))));
     EXPECT_NE(factory->createMediaKeySession(kNetflixKeySystem, m_kKeySessionId, *m_ocdmSystemMock, m_keySessionType,
-                                             m_mediaKeysClientMock, m_isLDL),
+                                             m_mediaKeysClientMock),
               nullptr);
 }
 
@@ -66,8 +65,7 @@ TEST_F(RialtoServerCreateMediaKeySessionTest, CreateMainThreadFailure)
 
     EXPECT_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(kNetflixKeySystem, m_kKeySessionId,
                                                                        *m_ocdmSystemMock, m_keySessionType,
-                                                                       m_mediaKeysClientMock, m_isLDL,
-                                                                       m_mainThreadFactoryMock),
+                                                                       m_mediaKeysClientMock, m_mainThreadFactoryMock),
                  std::runtime_error);
 }
 
@@ -83,7 +81,6 @@ TEST_F(RialtoServerCreateMediaKeySessionTest, CreateOcdmSessionFailure)
 
     EXPECT_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(kNetflixKeySystem, m_kKeySessionId,
                                                                        *m_ocdmSystemMock, m_keySessionType,
-                                                                       m_mediaKeysClientMock, m_isLDL,
-                                                                       m_mainThreadFactoryMock),
+                                                                       m_mediaKeysClientMock, m_mainThreadFactoryMock),
                  std::runtime_error);
 }

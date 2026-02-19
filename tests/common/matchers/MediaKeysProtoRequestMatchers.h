@@ -42,12 +42,11 @@ MATCHER_P(destroyMediaKeysRequestMatcher, mediaKeysHandle, "")
     return (kRequest->media_keys_handle() == mediaKeysHandle);
 }
 
-MATCHER_P3(createKeySessionRequestMatcher, mediaKeysHandle, sessionType, isLdl, "")
+MATCHER_P2(createKeySessionRequestMatcher, mediaKeysHandle, sessionType, "")
 {
     const ::firebolt::rialto::CreateKeySessionRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::CreateKeySessionRequest *>(arg);
-    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->session_type() == sessionType) &&
-            (kRequest->is_ldl() == isLdl));
+    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->session_type() == sessionType));
 }
 
 MATCHER_P4(generateRequestRequestMatcher, mediaKeysHandle, keySessionId, initDataType, initData, "")

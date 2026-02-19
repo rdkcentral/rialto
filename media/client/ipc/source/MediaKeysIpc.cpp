@@ -334,7 +334,7 @@ bool MediaKeysIpc::containsKey(int32_t keySessionId, const std::vector<uint8_t> 
 }
 
 MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
-                                                   bool isLDL, int32_t &keySessionId)
+                                                   int32_t &keySessionId)
 {
     if (!reattachChannelIfRequired())
     {
@@ -362,7 +362,6 @@ MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, s
     firebolt::rialto::CreateKeySessionRequest request;
     request.set_media_keys_handle(m_mediaKeysHandle);
     request.set_session_type(protoSessionType);
-    request.set_is_ldl(isLDL);
 
     firebolt::rialto::CreateKeySessionResponse response;
     // Default error status to FAIL
@@ -387,7 +386,8 @@ MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, s
 }
 
 MediaKeyErrorStatus MediaKeysIpc::generateRequest(int32_t keySessionId, InitDataType initDataType,
-                                                  const std::vector<uint8_t> &initData)
+                                                  const std::vector<uint8_t> &initData,
+                                                  const LimitedDurationLicense &ldlState)
 {
     if (!reattachChannelIfRequired())
     {
@@ -415,10 +415,29 @@ MediaKeyErrorStatus MediaKeysIpc::generateRequest(int32_t keySessionId, InitData
         break;
     }
 
+    GenerateRequestRequest_LimitedDurationLicense protoLimitedDurationLicense{
+        GenerateRequestRequest_LimitedDurationLicense_NOT_SPECIFIED};
+    switch (ldlState)
+    {
+    case LimitedDurationLicense::NOT_SPECIFIED:
+        protoLimitedDurationLicense = GenerateRequestRequest_LimitedDurationLicense_NOT_SPECIFIED;
+        break;
+    case LimitedDurationLicense::ENABLED:
+        protoLimitedDurationLicense = GenerateRequestRequest_LimitedDurationLicense_ENABLED;
+        break;
+    case LimitedDurationLicense::DISABLED:
+        protoLimitedDurationLicense = GenerateRequestRequest_LimitedDurationLicense_DISABLED;
+        break;
+    default:
+        RIALTO_CLIENT_LOG_WARN("Received unknown limited duration license state");
+        break;
+    }
+
     firebolt::rialto::GenerateRequestRequest request;
     request.set_media_keys_handle(m_mediaKeysHandle);
     request.set_key_session_id(keySessionId);
     request.set_init_data_type(protoInitDataType);
+    request.set_ldl_state(protoLimitedDurationLicense);
 
     for (auto it = initData.begin(); it != initData.end(); it++)
     {

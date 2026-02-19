@@ -43,8 +43,7 @@ public:
     std::unique_ptr<IMediaKeySession> createMediaKeySession(const std::string &keySystem, int32_t keySessionId,
                                                             const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem,
                                                             KeySessionType sessionType,
-                                                            std::weak_ptr<IMediaKeysClient> client,
-                                                            bool isLDL) const override;
+                                                            std::weak_ptr<IMediaKeysClient> client) const override;
 };
 
 /**
@@ -61,20 +60,19 @@ public:
      * @param[in]  ocdmSystem           : The ocdm system object to create the session on.
      * @param[in]  sessionType          : The session type.
      * @param[in]  client               : Client object for callbacks.
-     * @param[in]  isLDL                : Is this an LDL.
      * @param[in]  mainThreadFactory    : The main thread factory.
      */
     MediaKeySession(const std::string &keySystem, int32_t keySessionId,
                     const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
-                    std::weak_ptr<IMediaKeysClient> client, bool isLDL,
-                    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
+                    std::weak_ptr<IMediaKeysClient> client, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
 
     /**
      * @brief Virtual destructor.
      */
     virtual ~MediaKeySession();
 
-    MediaKeyErrorStatus generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData) override;
+    MediaKeyErrorStatus generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData,
+                                        const LimitedDurationLicense &ldlState) override;
 
     MediaKeyErrorStatus loadSession() override;
 
@@ -95,8 +93,6 @@ public:
     MediaKeyErrorStatus getLastDrmError(uint32_t &errorCode) override;
 
     MediaKeyErrorStatus selectKeyId(const std::vector<uint8_t> &keyId) override;
-
-    bool isNetflixPlayreadyKeySystem() const override;
 
     void onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength) override;
 
@@ -136,11 +132,6 @@ private:
      * @brief The mainThread object.
      */
     std::shared_ptr<IMainThread> m_mainThread;
-
-    /**
-     * @brief Is the session LDL.
-     */
-    const bool m_kIsLDL;
 
     /**
      * @brief Is the ocdm session constructed.
@@ -188,11 +179,23 @@ private:
     std::mutex m_ocdmErrorMutex;
 
     /**
+     * @brief Drm header to be set once the session is constructed
+     */
+    std::vector<uint8_t> m_queuedDrmHeader;
+
+    /**
+     * @brief Flag used to check if extended interface is used
+     */
+    bool m_extendedInterfaceInUse{false};
+
+    /**
      * @brief Posts a getChallenge task onto the main thread.
+     *
+     * @param[in] ldlState : The Limited Duration License state.
      *
      * The challenge data is retrieved from ocdm and notified on a onLicenseRequest.
      */
-    void getChallenge();
+    void getChallenge(const LimitedDurationLicense &ldlState);
 
     /**
      * @brief Initalises the ocdm error data which checks for onError callbacks.

@@ -42,7 +42,7 @@ void MediaKeySessionTestBase::createKeySession(const std::string &keySystem)
 
     EXPECT_NO_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(keySystem, m_kKeySessionId, *m_ocdmSystemMock,
                                                                           m_keySessionType, m_mediaKeysClientMock,
-                                                                          m_isLDL, m_mainThreadFactoryMock));
+                                                                          m_mainThreadFactoryMock));
     EXPECT_NE(m_mediaKeySession, nullptr);
 }
 
@@ -74,7 +74,47 @@ void MediaKeySessionTestBase::generateRequest()
     EXPECT_CALL(*m_ocdmSessionMock, constructSession(m_keySessionType, m_initDataType, &m_initData[0], m_initData.size()))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_initDataType, m_initData));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_initDataType, m_initData, m_kLdlState));
+}
+
+void MediaKeySessionTestBase::generateRequestPlayready()
+{
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+        .WillOnce(Return(MediaKeyErrorStatus::OK));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, nullptrMatcher(), _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_kChallenge.size()), Return(MediaKeyErrorStatus::OK)));
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, notNullptrMatcher(), _))
+        .WillOnce(DoAll(memcpyChallenge(m_kChallenge), Return(MediaKeyErrorStatus::OK)));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, m_kChallenge, _));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OK,
+              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData,
+                                                 firebolt::rialto::LimitedDurationLicense::DISABLED));
+}
+
+void MediaKeySessionTestBase::generateRequestPlayreadyWithTwoCalls()
+{
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+        .WillOnce(Return(MediaKeyErrorStatus::OK));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OK,
+              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData,
+                                                 firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, nullptrMatcher(), _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_kChallenge.size()), Return(MediaKeyErrorStatus::OK)));
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, notNullptrMatcher(), _))
+        .WillOnce(DoAll(memcpyChallenge(m_kChallenge), Return(MediaKeyErrorStatus::OK)));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, m_kChallenge, _));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OK,
+              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData,
+                                                 firebolt::rialto::LimitedDurationLicense::DISABLED));
 }
 
 void MediaKeySessionTestBase::mainThreadWillEnqueueTask()

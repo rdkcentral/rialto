@@ -33,11 +33,15 @@ protected:
 TEST_F(RialtoServerMediaKeySessionUpdateSessionTest, SuccessNetflix)
 {
     createKeySession(kNetflixKeySystem);
+    generateRequestPlayready();
 
     EXPECT_CALL(*m_ocdmSessionMock, storeLicenseData(&m_kResponseData[0], m_kResponseData.size()))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->updateSession(m_kResponseData));
+
+    // Close ocdm before destroying
+    expectCloseKeySession(kNetflixKeySystem);
 }
 
 /**
@@ -59,11 +63,15 @@ TEST_F(RialtoServerMediaKeySessionUpdateSessionTest, SuccessNoneNetflix)
 TEST_F(RialtoServerMediaKeySessionUpdateSessionTest, OcdmSessionStoreLicenseDataFailure)
 {
     createKeySession(kNetflixKeySystem);
+    generateRequestPlayready();
 
     EXPECT_CALL(*m_ocdmSessionMock, storeLicenseData(&m_kResponseData[0], m_kResponseData.size()))
         .WillOnce(Return(MediaKeyErrorStatus::INVALID_STATE));
 
     EXPECT_EQ(MediaKeyErrorStatus::INVALID_STATE, m_mediaKeySession->updateSession(m_kResponseData));
+
+    // Close ocdm before destroying
+    expectCloseKeySession(kNetflixKeySystem);
 }
 
 /**

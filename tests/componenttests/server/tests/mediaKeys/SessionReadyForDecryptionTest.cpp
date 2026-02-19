@@ -58,8 +58,6 @@ public:
     void destroyMediaKeysRequest();
 
     const std::vector<unsigned char> kResponse{4, 1, 3};
-    const std::vector<unsigned char> m_kInitData{1, 2, 7};
-    const std::vector<uint8_t> m_kLicenseRequestMessage{'d', 'z', 'f'};
 };
 
 void SessionReadyForDecryptionTest::willGenerateRequestWidevine()
@@ -149,7 +147,8 @@ void SessionReadyForDecryptionTest::willGenerateRequestNetflix()
 
 void SessionReadyForDecryptionTest::generateRequestNetflix()
 {
-    auto request{createGenerateRequestRequest(m_mediaKeysHandle, m_mediaKeySessionId, m_kInitData)};
+    constexpr bool kUseExtendedInterface{true};
+    auto request{createGenerateRequestRequest(m_mediaKeysHandle, m_mediaKeySessionId, m_kInitData, kUseExtendedInterface)};
 
     ExpectMessage<::firebolt::rialto::LicenseRequestEvent> expectedMessage(m_clientStub);
 

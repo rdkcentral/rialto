@@ -89,7 +89,8 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestNetflix();
 ::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle);
 ::firebolt::rialto::GenerateRequestRequest createGenerateRequestRequest(int mediaKeysHandle, int keySessionId,
-                                                                        const std::vector<unsigned char> &initData);
+                                                                        const std::vector<unsigned char> &initData,
+                                                                        bool extendedInterface = false);
 ::firebolt::rialto::UpdateSessionRequest createUpdateSessionRequest(int mediaKeysHandle, int keySessionId,
                                                                     const std::vector<unsigned char> &response);
 ::firebolt::rialto::ContainsKeyRequest createContainsKeyRequest(int mediaKeysHandle, int keySessionId,
