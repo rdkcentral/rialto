@@ -151,7 +151,7 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
         }
     }
 
-    if (m_extendedInterfaceInUse)
+    if (m_isSessionConstructed && m_extendedInterfaceInUse)
     {
         // Ocdm-playready does not notify onProcessChallenge when complete.
         // Fetch the challenge manually.

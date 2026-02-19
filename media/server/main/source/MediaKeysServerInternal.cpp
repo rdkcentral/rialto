@@ -216,7 +216,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::createKeySession(KeySessionType ses
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status;
-    auto task = [&]() { status = createKeySessionInternal(sessionType, client, false, keySessionId); };
+    auto task = [&]() { status = createKeySessionInternal(sessionType, client, keySessionId); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return status;
@@ -224,7 +224,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::createKeySession(KeySessionType ses
 
 MediaKeyErrorStatus MediaKeysServerInternal::createKeySessionInternal(KeySessionType sessionType,
                                                                       std::weak_ptr<IMediaKeysClient> client,
-                                                                      bool isLDL, int32_t &keySessionId)
+                                                                      int32_t &keySessionId)
 {
     int32_t keySessionIdTemp = generateSessionId();
     std::unique_ptr<IMediaKeySession> mediaKeySession =

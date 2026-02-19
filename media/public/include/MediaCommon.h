@@ -475,7 +475,7 @@ struct PlaybackInfo
 };
 
 /**
- * @brief Struct containing current playback information.
+ * @brief Limited duration license state.
  */
 enum class LimitedDurationLicense
 {

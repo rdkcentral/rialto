@@ -429,7 +429,7 @@ MediaKeyErrorStatus MediaKeysIpc::generateRequest(int32_t keySessionId, InitData
         protoLimitedDurationLicense = GenerateRequestRequest_LimitedDurationLicense_DISABLED;
         break;
     default:
-        RIALTO_CLIENT_LOG_WARN("Recieved unknown limited duration license state");
+        RIALTO_CLIENT_LOG_WARN("Received unknown limited duration license state");
         break;
     }
 

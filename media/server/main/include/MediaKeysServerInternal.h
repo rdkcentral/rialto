@@ -153,13 +153,12 @@ private:
      *
      * @param[in]  sessionType : The session type.
      * @param[in]  client      : Client object for callbacks
-     * @param[in]  isLDL       : Is this an LDL
      * @param[out] keySessionId: The key session id
      *
      * @retval an error status.
      */
     MediaKeyErrorStatus createKeySessionInternal(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
-                                                 bool isLDL, int32_t &keySessionId);
+                                                 int32_t &keySessionId);
 
     /**
      * @brief Generate internally, only to be called on the main thread.

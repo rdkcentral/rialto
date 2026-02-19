@@ -130,6 +130,8 @@ TEST_F(CdmServiceTests, shouldGenerateRequestWithLdlEnabled)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     mediaKeysWillGenerateRequestLdlEnabledWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     generateRequestWithLdlEnabledShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     isExtendedInterfaceUsedShouldReturn(true);
@@ -464,6 +466,8 @@ TEST_F(CdmServiceTests, shouldSetDrmHeader)
     triggerSwitchToActiveSuccess();
     mediaKeysFactoryWillCreateMediaKeys();
     createMediaKeysShouldSucceed();
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
     mediaKeysWillSetDrmHeaderWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     setDrmHeaderShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
     isExtendedInterfaceUsedShouldReturn(true);

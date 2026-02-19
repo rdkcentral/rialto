@@ -162,7 +162,7 @@ MediaKeyErrorStatus CdmService::generateRequest(int mediaKeysHandle, int32_t key
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
         return MediaKeyErrorStatus::FAIL;
     }
-    if (LimitedDurationLicense::NOT_SPECIFIED != ldlState)
+    if (LimitedDurationLicense::NOT_SPECIFIED != ldlState && m_sessionInfo.find(keySessionId) != m_sessionInfo.end())
     {
         m_sessionInfo[keySessionId].isExtendedInterfaceUsed = true;
     }
@@ -291,7 +291,10 @@ MediaKeyErrorStatus CdmService::setDrmHeader(int mediaKeysHandle, int32_t keySes
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
         return MediaKeyErrorStatus::FAIL;
     }
-    m_sessionInfo[keySessionId].isExtendedInterfaceUsed = true;
+    if (m_sessionInfo.find(keySessionId) != m_sessionInfo.end())
+    {
+        m_sessionInfo[keySessionId].isExtendedInterfaceUsed = true;
+    }
     return mediaKeysIter->second->setDrmHeader(keySessionId, requestData);
 }
 
@@ -508,7 +511,7 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
 
 bool CdmService::isExtendedInterfaceUsed(int32_t keySessionId)
 {
-    RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if key system is Netflix Playready, key session id: %d",
+    RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if extended interface is used, key session id: %d",
                             keySessionId);
 
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
@@ -532,7 +535,10 @@ MediaKeyErrorStatus CdmService::selectKeyId(int32_t keySessionId, const std::vec
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
         return MediaKeyErrorStatus::FAIL;
     }
-    m_sessionInfo[keySessionId].isExtendedInterfaceUsed = true;
+    if (m_sessionInfo.find(keySessionId) != m_sessionInfo.end())
+    {
+        m_sessionInfo[keySessionId].isExtendedInterfaceUsed = true;
+    }
     return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->selectKeyId(keySessionId, keyId);
 }
 
