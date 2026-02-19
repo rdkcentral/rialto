@@ -173,6 +173,11 @@ private:
     std::vector<uint8_t> m_selectedKeyId;
 
     /**
+    * @brief Whether initData contains amazon string
+    */
+    bool m_isAmazonApp;
+
+    /**
      * @brief Whether a Ocdm call is currently ongoing.
      */
     bool m_ongoingOcdmOperation;
@@ -186,6 +191,11 @@ private:
      * @brief Mutex protecting the ocdm error checking.
      */
     std::mutex m_ocdmErrorMutex;
+
+    /**
+     * @brief Drm header to be set once the session is constructed
+     */
+    std::vector<uint8_t> m_queuedDrmHeader;
 
     /**
      * @brief Posts a getChallenge task onto the main thread.
@@ -207,6 +217,15 @@ private:
      * @retval True if an error was received.
      */
     bool checkForOcdmErrors(const char *operationStr);
+
+    /**
+     * @brief Checks if data contains amazon string in UTF-8 or UTF-16 encoding.
+     *
+     * @param[in] data : The data to check.
+     *
+     * @retval True if amazon string is found.
+     */
+    bool isAmazonApp(const std::vector<uint8_t> &data);
 };
 } // namespace firebolt::rialto::server
 
