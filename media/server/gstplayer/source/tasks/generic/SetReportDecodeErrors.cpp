@@ -39,15 +39,7 @@ void SetReportDecodeErrors::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetReportDecodeErrors for %s source", common::convertMediaSourceType(m_type));
 
-    if (m_type != MediaSourceType::VIDEO)
-    {
-        RIALTO_SERVER_LOG_WARN("SetReportDecodeErrors not currently supported for non-video");
-        return;
-    }
-    else
-    {
-        m_context.pendingReportDecodeErrorsForVideo = m_reportDecodeErrors;
-    }
+    m_context.pendingReportDecodeErrorsForVideo = m_reportDecodeErrors;
 
     if (!m_context.pipeline)
     {

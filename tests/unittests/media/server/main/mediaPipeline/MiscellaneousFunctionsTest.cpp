@@ -395,7 +395,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetQueuedFramesFailu
     loadGstPlayer();
     int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, getQueuedFrames(_, _)).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstPlayerMock, getQueuedFrames(_)).WillOnce(Return(false));
     uint32_t queuedFrames;
     EXPECT_FALSE(m_mediaPipeline->getQueuedFrames(videoSourceId, queuedFrames));
 }
@@ -423,12 +423,12 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetQueuedFramesSucce
 
     uint32_t queuedFrames;
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, getQueuedFrames(_, _)).WillOnce(DoAll(SetArgReferee<1>(123), Return(true)));
+    EXPECT_CALL(*m_gstPlayerMock, getQueuedFrames(_)).WillOnce(DoAll(SetArgReferee<0>(123), Return(true)));
     EXPECT_TRUE(m_mediaPipeline->getQueuedFrames(videoSourceId, queuedFrames));
     EXPECT_EQ(queuedFrames, 123);
 
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerMock, getQueuedFrames(_, _)).WillOnce(DoAll(SetArgReferee<1>(456), Return(true)));
+    EXPECT_CALL(*m_gstPlayerMock, getQueuedFrames(_)).WillOnce(DoAll(SetArgReferee<0>(456), Return(true)));
     EXPECT_TRUE(m_mediaPipeline->getQueuedFrames(videoSourceId, queuedFrames));
     EXPECT_EQ(queuedFrames, 456);
 }

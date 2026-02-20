@@ -472,16 +472,8 @@ TEST_F(GstGenericPlayerTest, shouldGetQueuedFramesInPlayingState)
     willGetElementProperty(kPropertyStr, kTestQueuedFramesValue);
 
     uint32_t queuedFrames;
-    EXPECT_TRUE(m_sut->getQueuedFrames(MediaSourceType::VIDEO, queuedFrames));
+    EXPECT_TRUE(m_sut->getQueuedFrames(queuedFrames));
     EXPECT_EQ(queuedFrames, kTestQueuedFramesValue);
-}
-
-TEST_F(GstGenericPlayerTest, shouldFailToGetQueuedFramesInPlayingStateIfMediaTypeWrong)
-{
-    setPipelineState(GST_STATE_PLAYING);
-
-    uint32_t queuedFrames;
-    EXPECT_FALSE(m_sut->getQueuedFrames(MediaSourceType::UNKNOWN, queuedFrames));
 }
 
 TEST_F(GstGenericPlayerTest, shouldFailToGetQueuedFramesInPlayingStateIfPropertyDoesntExist)
@@ -494,7 +486,7 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetQueuedFramesInPlayingStateIfProperty
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
 
     uint32_t queuedFrames;
-    EXPECT_FALSE(m_sut->getQueuedFrames(MediaSourceType::VIDEO, queuedFrames));
+    EXPECT_FALSE(m_sut->getQueuedFrames(queuedFrames));
 }
 
 TEST_F(GstGenericPlayerTest, shouldGetStatsInPlayingState)

@@ -639,16 +639,10 @@ bool GstGenericPlayer::setReportDecodeErrors(const MediaSourceType &mediaSourceT
     return true;
 }
 
-bool GstGenericPlayer::getQueuedFrames(const MediaSourceType &mediaSourceType, uint32_t &queuedFrames)
+bool GstGenericPlayer::getQueuedFrames(uint32_t &queuedFrames)
 {
-    if (mediaSourceType != MediaSourceType::VIDEO)
-    {
-        RIALTO_SERVER_LOG_ERROR("Queued frames only supported for VIDEO");
-        return false;
-    }
-
     bool returnValue{false};
-    GstElement *decoder{getDecoder(mediaSourceType)};
+    GstElement *decoder{getDecoder(MediaSourceType::VIDEO)};
     if (decoder)
     {
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "queued_frames"))
