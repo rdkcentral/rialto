@@ -201,12 +201,14 @@ public:
     /**
      * @brief Creates a SetPlaybackRate task.
      *
-     * @param[in] context   : The GstGenericPlayer context
-     * @param[in] rate      : The new playback rate.
+     * @param[in] context      : The GstGenericPlayer context
+     * @param[in] rate         : The new playback rate.
+     * @param[in] audiodecoder : The audiodecoder element.
+     * @param[in] videodecoder : The videodecoder element.
      *
      * @retval the new SetPlaybackRate task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetPlaybackRate(GenericPlayerContext &context, double rate) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createSetPlaybackRate(GenericPlayerContext &context, double rate, GstElement *audiodecoder, GstElement *videodecoder) const = 0;
 
     /**
      * @brief Creates a SetPosition task.
