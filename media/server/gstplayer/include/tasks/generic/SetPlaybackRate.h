@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_PLAYBACK_RATE_H_
 
 #include "GenericPlayerContext.h"
+#include "GstGenericPlayer.h"
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
