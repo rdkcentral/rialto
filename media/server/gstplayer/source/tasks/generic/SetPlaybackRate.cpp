@@ -67,10 +67,6 @@ void SetPlaybackRate::execute() const
     }
     m_context.pendingPlaybackRate = kNoPendingPlaybackRate;
 
-    
-
-    
-
     GstElement *audioSink{nullptr};
     gboolean success{FALSE};
     m_glibWrapper->gObjectGet(m_context.pipeline, "audio-sink", &audioSink, nullptr);
@@ -89,27 +85,37 @@ void SetPlaybackRate::execute() const
     {
         GstStructure *structure{
             m_gstWrapper->gstStructureNew(kCustomInstantRateChangeEventName, "rate", G_TYPE_DOUBLE, m_rate, NULL)};
-        
-        // If m_videodecoder is "brcmvideodecoder", send event to it
-         if (m_videodecoder && (0 == strcmp(GST_ELEMENT_NAME(m_videodecoder), "brcmvideodecoder")))
-         {
-         if (!m_gstWrapper->gstElementSendEvent(m_videodecoder, gst_event_ref(rate_event)))
-         {
-            RIALTO_SERVER_LOG_INFO("failed to push rate_event %p to video decoder %p", (void*)rate_event, (void*)m_videodecoder);
-         }
-        } 
+      
+         if(m_videodecoder && (0 == strcmp(GST_ELEMENT_NAME(m_videodecoder), "brcmvideodecoder")) ||
+            m_audiodecoder && (0 == strcmp(GST_ELEMENT_NAME(m_audiodecoder), "brcmaudiodecoder")
+         {           
+            success = true;
+            if (m_videodecoder)
+            {
+             if (!m_gstWrapper->gstElementSendEvent(m_videodecoder, gst_event_ref(rate_event)))
+             {
+                RIALTO_SERVER_LOG_INFO("failed to push rate_event %p to video decoder %p", (void*)rate_event, (void*)m_videodecoder);
+                success = false;
+             }
+            } 
   
-      //if m_audiodecoder exists, always send event to it
-      if (m_audiodecoder && (0 == strcmp(GST_ELEMENT_NAME(m_audiodecoder), "brcmaudiodecoder"))))
-      {
-          if (!m_gstWrapper->gstElementSendEvent(m_audiodecoder, gst_event_ref(rate_event)))
-          {
-              RIALTO_SERVER_LOG_INFO("failed to push rate_event %p to audio decoder %p", (void*)rate_event, (void*)m_audiodecoder);
-          }
-      }
-        success = m_gstWrapper->gstElementSendEvent(m_context.pipeline,
+      
+             if (m_audiodecoder)
+            {
+                if (!m_gstWrapper->gstElementSendEvent(m_audiodecoder, gst_event_ref(rate_event)))
+                {
+                    RIALTO_SERVER_LOG_INFO("failed to push rate_event %p to audio decoder %p", (void*)rate_event, (void*)m_audiodecoder);
+                    success = false;
+                }
+             }
+             gst_event_unref(rate_event);
+         }
+         else
+         {
+              success = m_gstWrapper->gstElementSendEvent(m_context.pipeline,
                                                     m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
                                                                                     structure));
+         }
         RIALTO_SERVER_LOG_DEBUG("Sent new event, success = %s", success ? "true" : "false");
     }
 
