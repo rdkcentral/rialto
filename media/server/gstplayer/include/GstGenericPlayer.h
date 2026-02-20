@@ -116,7 +116,7 @@ public:
     void setPosition(std::int64_t position) override;
     void setVideoGeometry(int x, int y, int width, int height) override;
     void setEos(const firebolt::rialto::MediaSourceType &type) override;
-    void setPlaybackRate(double rate) override;
+    void setPlaybackRate(double rate, GstElement* audioDecoder, GstElement* videoDecoder) override;
     bool getPosition(std::int64_t &position) override;
     bool setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput) override;
     bool getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutput) override;
