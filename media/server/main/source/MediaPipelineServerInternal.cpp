@@ -588,7 +588,7 @@ bool MediaPipelineServerInternal::getQueuedFramesInternal(int32_t sourceId, uint
         RIALTO_SERVER_LOG_ERROR("Failed - Source not found");
         return false;
     }
-    return m_gstPlayer->getQueuedFrames(sourceIter->first, queuedFrames);
+    return m_gstPlayer->getQueuedFrames(queuedFrames);
 }
 
 bool MediaPipelineServerInternal::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
