@@ -383,11 +383,13 @@ void GstGenericPlayer::setPosition(std::int64_t position)
     }
 }
 
-void GstGenericPlayer::setPlaybackRate(double rate)
+void GstGenericPlayer::setPlaybackRate(double rate, GstElement* audioDecoder, GstElement* videoDecoder)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetPlaybackRate(m_context, rate));
+        m_workerThread->enqueueTask(
+            m_taskFactory->createSetPlaybackRate(m_context, rate, audioDecoder, videoDecoder)
+        );
     }
 }
 
