@@ -86,6 +86,15 @@ void DeepElementAdded::execute() const
             {
                 RIALTO_SERVER_LOG_DEBUG("curAudioDecoder = %s", m_elementName);
                 m_context.playbackGroup.m_curAudioDecoder = m_element;
+
+                // Check if audio decoder is not null and element name starts with brcmaudiodecoder
+                if (m_context.playbackGroup.m_curAudioDecoder &&
+                    m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_context.playbackGroup.m_curAudioDecoder),
+                                                 "brcmaudiodecoder"))
+                {
+                    RIALTO_SERVER_LOG_DEBUG("brcmaudiodecoder detected: %s", m_elementName);
+                    // TODO: Add brcmaudiodecoder-specific code here
+                }
             }
         }
         else
