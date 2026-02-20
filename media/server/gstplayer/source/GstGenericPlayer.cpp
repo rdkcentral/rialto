@@ -383,8 +383,11 @@ void GstGenericPlayer::setPosition(std::int64_t position)
     }
 }
 
-void GstGenericPlayer::setPlaybackRate(double rate, GstElement* audioDecoder, GstElement* videoDecoder)
+void GstGenericPlayer::setPlaybackRate(double rate)
 {
+    GstElement* audioDecoder = getDecoder(firebolt::rialto::MediaSourceType::AUDIO);
+    GstElement* videoDecoder = getDecoder(firebolt::rialto::MediaSourceType::VIDEO);
+    
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(
