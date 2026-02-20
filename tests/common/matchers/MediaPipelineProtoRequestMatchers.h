@@ -366,6 +366,20 @@ MATCHER_P2(getImmediateOutputRequestMatcher, sessionId, sourceId, "")
     return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
 }
 
+MATCHER_P2(setReportDecodeErrorsRequestMatcher, sessionId, sourceId, "")
+{
+    const ::firebolt::rialto::ReportDecodeErrorsRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::ReportDecodeErrorsRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+}
+
+MATCHER_P2(getQueuedFramesRequestMatcher, sessionId, sourceId, "")
+{
+    const ::firebolt::rialto::GetQueuedFramesRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetQueuedFramesRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+}
+
 MATCHER_P2(getStatsRequestMatcher, sessionId, sourceId, "")
 {
     const ::firebolt::rialto::GetStatsRequest *kRequest = dynamic_cast<const ::firebolt::rialto::GetStatsRequest *>(arg);

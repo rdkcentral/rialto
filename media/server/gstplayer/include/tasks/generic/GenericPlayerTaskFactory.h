@@ -120,6 +120,10 @@ public:
     std::unique_ptr<IPlayerTask> createSetImmediateOutput(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                           const firebolt::rialto::MediaSourceType &type,
                                                           bool immediateOutput) const override;
+    std::unique_ptr<IPlayerTask> createSetReportDecodeErrors(GenericPlayerContext &context,
+                                                             IGstGenericPlayerPrivate &player,
+                                                             const firebolt::rialto::MediaSourceType &type,
+                                                             bool reportDecodeErrors) const override;
     std::unique_ptr<IPlayerTask> createSetBufferingLimit(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                          std::uint32_t limit) const override;
     std::unique_ptr<IPlayerTask> createSetUseBuffering(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,

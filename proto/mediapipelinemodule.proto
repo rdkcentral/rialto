@@ -679,6 +679,24 @@ message SetImmediateOutputResponse {
 }
 
 /**
+ * @fn void setReportDecodeErrors(int session_id, int source_id, bool report_decode_errors)
+ * @brief Enables or disables decode error reporting for this source.
+ *
+ * @param[in] session_id             The id of the A/V session.
+ * @param[in] source_id              The id of the media source.
+ * @param[in] report_decode_errors   Enable decode error reporting.
+ */
+message ReportDecodeErrorsRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id  = 2 [default = -1];
+    optional bool report_decode_errors = 3 [default = false];
+}
+
+message ReportDecodeErrorsResponse {
+}
+
+
+/**
  * @fn void getImmediateOutput(int session_id, int source_id, bool &immediate_output)
  * @brief Gets the "Immediate Output" property for this source.
  *
@@ -693,6 +711,23 @@ message GetImmediateOutputRequest {
 }
 message GetImmediateOutputResponse {
     optional bool immediate_output = 1 [default = false];
+}
+
+/**
+ * @fn void getQueuedFrames(int session_id, int source_id, uint32_t &queued_frames)
+ * @brief Gets the "Queued Frames" property for this source.
+ *
+ * @param[in]  session_id        The id of the A/V session.
+ * @param[in]  source_id         The id of the media source.
+ * @param[out] queued_frames     The number of queued frames on the decoder
+ *
+ */
+message GetQueuedFramesRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+message GetQueuedFramesResponse {
+    optional uint32 queued_frames = 1 [default = 0];
 }
 
 /**
@@ -1079,10 +1114,25 @@ service MediaPipelineModule {
     }
 
     /**
+    * @brief Sets the "Report Decode Errors" property for this source.
+    * @see ReportDecodeErrorsRequest
+    */
+    rpc setReportDecodeErrors(ReportDecodeErrorsRequest)
+        returns (ReportDecodeErrorsResponse) {
+    }
+
+    /**
      * @brief Gets the "Immediate Output" property for this source.
      * @see GetImmediateOutputRequest
      */
     rpc getImmediateOutput(GetImmediateOutputRequest) returns (GetImmediateOutputResponse) {
+    }
+
+    /**
+     * @brief Gets the "Queued Frames" property for this source.
+     * @see GetQueuedFramesRequest
+     */
+    rpc getQueuedFrames(GetQueuedFramesRequest) returns (GetQueuedFramesResponse) {
     }
 
     /**
