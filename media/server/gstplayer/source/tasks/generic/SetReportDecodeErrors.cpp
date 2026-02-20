@@ -49,12 +49,12 @@ void SetReportDecodeErrors::execute() const
         m_context.pendingReportDecodeErrorsForVideo = m_reportDecodeErrors;
     }
 
-    if (m_context.pipeline)
+    if (!m_context.pipeline)
     {
-        RIALTO_SERVER_LOG_DEBUG("Pipeline not available yet - cannot apply report_decode_errors setting");
+        RIALTO_SERVER_LOG_WARN("Pipeline not available yet - cannot apply report_decode_errors setting");
         return;
     }
 
-    m_player.setReportDecodeErrors(m_reportDecodeErrors);
+    m_player.setReportDecodeErrors();
 }
 } // namespace firebolt::rialto::server::tasks::generic

@@ -39,7 +39,7 @@ public:
     MOCK_METHOD(void, scheduleAllSourcesAttached, (), (override));
     MOCK_METHOD(bool, setVideoSinkRectangle, (), (override));
     MOCK_METHOD(bool, setImmediateOutput, (), (override));
-    MOCK_METHOD(bool, setReportDecodeErrors, (bool reportDecodeErrors), (override));
+    MOCK_METHOD(bool, setReportDecodeErrors, (), (override));
     MOCK_METHOD(bool, setLowLatency, (), (override));
     MOCK_METHOD(bool, setSync, (), (override));
     MOCK_METHOD(bool, setSyncOff, (), (override));

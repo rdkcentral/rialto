@@ -85,7 +85,7 @@ public:
      *
      * @retval true on success.
      */
-    virtual bool setReportDecodeErrors(bool reportDecodeErrors) = 0;
+    virtual bool setReportDecodeErrors() = 0;
 
     /**
      * @brief Sets the low latency property. Called by the worker thread.

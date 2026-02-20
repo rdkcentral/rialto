@@ -25,5 +25,6 @@ class SetReportDecodeErrorsTest : public GenericTasksTestsBase
 
 TEST_F(SetReportDecodeErrorsTest, shouldSetReportDecodeErrors)
 {
+    shouldSetReportDecodeErrors();
     triggerSetReportDecodeErrors();
 }

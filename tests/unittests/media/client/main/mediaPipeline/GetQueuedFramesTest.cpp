@@ -47,9 +47,9 @@ TEST_F(RialtoClientMediaPipelineGetQueuedFramesTest, GetQueuedFramesSuccess)
     constexpr uint32_t kExpectedQueuedFrames{123};
     EXPECT_CALL(*m_mediaPipelineIpcMock, getQueuedFrames(m_kSourceId, _))
         .WillOnce(DoAll(SetArgReferee<1>(123), Return(true)));
-    uint32_t QueuedFrames;
-    EXPECT_TRUE(m_mediaPipeline->getQueuedFrames(m_kSourceId, QueuedFrames));
-    EXPECT_EQ(kExpectedQueuedFrames, QueuedFrames);
+    uint32_t queuedFrames;
+    EXPECT_TRUE(m_mediaPipeline->getQueuedFrames(m_kSourceId, queuedFrames));
+    EXPECT_EQ(kExpectedQueuedFrames, queuedFrames);
 }
 
 /**
@@ -58,6 +58,6 @@ TEST_F(RialtoClientMediaPipelineGetQueuedFramesTest, GetQueuedFramesSuccess)
 TEST_F(RialtoClientMediaPipelineGetQueuedFramesTest, GetQueuedFramesFailure)
 {
     EXPECT_CALL(*m_mediaPipelineIpcMock, getQueuedFrames(m_kSourceId, _)).WillOnce(Return(false));
-    uint32_t QueuedFrames;
-    EXPECT_FALSE(m_mediaPipeline->getQueuedFrames(m_kSourceId, QueuedFrames));
+    uint32_t queuedFrames;
+    EXPECT_FALSE(m_mediaPipeline->getQueuedFrames(m_kSourceId, queuedFrames));
 }

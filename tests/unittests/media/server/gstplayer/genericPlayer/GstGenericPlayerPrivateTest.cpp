@@ -364,7 +364,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetReportDecodeErrorsIfPropertyD
 
     expectPropertyDoesntExist(m_glibWrapperMock, m_gstWrapperMock, m_realElement, kReportDecodeErrorsStr);
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
-    EXPECT_FALSE(m_sut->setReportDecodeErrors(true));
+    EXPECT_FALSE(m_sut->setReportDecodeErrors());
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldSetReportDecodeErrors)
@@ -382,7 +382,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetReportDecodeErrors)
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_realElement, StrEq(kReportDecodeErrorsStr))).Times(1);
 
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement)).Times(1);
-    EXPECT_TRUE(m_sut->setReportDecodeErrors(true));
+    EXPECT_TRUE(m_sut->setReportDecodeErrors());
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldFailToSetLowLatencyIfSinkIsNull)

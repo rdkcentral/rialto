@@ -1377,9 +1377,20 @@ bool GstGenericPlayer::setImmediateOutput()
     return result;
 }
 
-bool GstGenericPlayer::setReportDecodeErrors(bool reportDecodeErrors)
+bool GstGenericPlayer::setReportDecodeErrors()
 {
     bool result{false};
+    bool reportDecodeErrors{false};
+
+    {
+        std::unique_lock lock{m_context.propertyMutex};
+        if (!m_context.pendingReportDecodeErrorsForVideo.has_value())
+        {
+            return false;
+        }
+        reportDecodeErrors = m_context.pendingReportDecodeErrorsForVideo.value();
+    }
+
     GstElement *decoder = getDecoder(MediaSourceType::VIDEO);
     if (decoder)
     {
@@ -1396,12 +1407,17 @@ bool GstGenericPlayer::setReportDecodeErrors(bool reportDecodeErrors)
             RIALTO_SERVER_LOG_ERROR("Failed to set report_decode_errors property on decoder '%s'",
                                     GST_ELEMENT_NAME(decoder));
         }
-        m_context.pendingReportDecodeErrorsForVideo.reset();
+
         m_gstWrapper->gstObjectUnref(decoder);
+
+        {
+            std::unique_lock lock{m_context.propertyMutex};
+            m_context.pendingReportDecodeErrorsForVideo.reset();
+        }
     }
     else
     {
-        RIALTO_SERVER_LOG_DEBUG("Pending a report_decode_errors, decoder is NULL");
+        RIALTO_SERVER_LOG_DEBUG("Pending report_decode_errors, decoder is NULL");
     }
     return result;
 }
