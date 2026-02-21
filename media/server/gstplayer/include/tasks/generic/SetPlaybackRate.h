@@ -33,7 +33,7 @@ class SetPlaybackRate : public IPlayerTask
 public:
     SetPlaybackRate(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, double rate,
-                    GstElemet *m_audioDecoder, GstElement *m_videoDeocder);
+                    GstElement *m_audioDecoder, GstElement *m_videoDeocder);
     ~SetPlaybackRate() override;
     void execute() const override;
 
