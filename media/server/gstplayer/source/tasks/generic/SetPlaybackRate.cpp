@@ -87,8 +87,8 @@ void SetPlaybackRate::execute() const
         GstStructure *structure{
             m_gstWrapper->gstStructureNew(kCustomInstantRateChangeEventName, "rate", G_TYPE_DOUBLE, m_rate, NULL)};
       
-         if(m_videodecoder && (0 == strcmp(GST_ELEMENT_NAME(m_videodecoder), "brcmvideodecoder")) ||
-            m_audiodecoder && (0 == strcmp(GST_ELEMENT_NAME(m_audiodecoder), "brcmaudiodecoder")
+         if(m_videoDecoder && (0 == strcmp(GST_ELEMENT_NAME(m_videoDecoder), "brcmvideodecoder")) ||
+            m_audioDecoder && (0 == strcmp(GST_ELEMENT_NAME(m_audioDecoder), "brcmaudiodecoder"))
          {           
             success = true;
             if (m_videodecoder)
