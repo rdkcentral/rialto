@@ -86,18 +86,18 @@ void SetPlaybackRate::execute() const
     {
         GstStructure *structure{
             m_gstWrapper->gstStructureNew(kCustomInstantRateChangeEventName, "rate", G_TYPE_DOUBLE, m_rate, NULL)};
-        GStEvent *instantRateChangeEvent = m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
+        GstEvent *instantRateChangeEvent = m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
                                                                                     structure);
       
-         if(m_videoDecoder && (0 == strcmp(GST_ELEMENT_NAME(m_videoDecoder), "brcmvideodecoder")) ||
-            m_audioDecoder && (0 == strcmp(GST_ELEMENT_NAME(m_audioDecoder), "brcmaudiodecoder"))
+         if((m_videoDecoder && (0 == strcmp(GST_ELEMENT_NAME(m_videoDecoder), "brcmvideodecoder")) ||
+            (m_audioDecoder && (0 == strcmp(GST_ELEMENT_NAME(m_audioDecoder), "brcmaudiodecoder")))
          {           
             success = true;
             if (m_videodecoder)
             {
              if (!m_gstWrapper->gstElementSendEvent(m_videoDecoder, gst_event_ref(instantRateChangeEvent)))
              {
-                RIALTO_SERVER_LOG_INFO("Sent new event to videoDecoder failed);
+                RIALTO_SERVER_LOG_INFO("Sent new event to videoDecoder failed");
                 success = false;
              }
             } 
@@ -105,7 +105,7 @@ void SetPlaybackRate::execute() const
       
              if (m_audiodecoder)
             {
-                if (!m_gstWrapper->gstElementSendEvent(m_audioDecoder, gst_event_ref()))
+                if (!m_gstWrapper->gstElementSendEvent(m_audioDecoder, gst_event_ref(instantRateChangeEvent)))
                 {
                     RIALTO_SERVER_LOG_INFO("Sent new event to audioDecoder failed");
                     success = false;
