@@ -93,9 +93,10 @@ void SetPlaybackRate::execute() const
             success = true;
             if (m_videodecoder)
             {
-             if (!m_gstWrapper->gstElementSendEvent(m_videodecoder, gst_event_ref(rate_event)))
+             if (!m_gstWrapper->gstElementSendEvent(m_videoDecoder, gst_event_ref(m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
+                                                                                    structure))))
              {
-                RIALTO_SERVER_LOG_INFO("failed to push rate_event %p to video decoder %p", (void*)rate_event, (void*)m_videodecoder);
+                RIALTO_SERVER_LOG_INFO("Sent new event to videoDecoder failed);
                 success = false;
              }
             } 
@@ -103,13 +104,15 @@ void SetPlaybackRate::execute() const
       
              if (m_audiodecoder)
             {
-                if (!m_gstWrapper->gstElementSendEvent(m_audiodecoder, gst_event_ref(rate_event)))
+                if (!m_gstWrapper->gstElementSendEvent(m_audioDecoder, gst_event_ref(m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
+                                                                                    structure))))
                 {
-                    RIALTO_SERVER_LOG_INFO("failed to push rate_event %p to audio decoder %p", (void*)rate_event, (void*)m_audiodecoder);
+                    RIALTO_SERVER_LOG_INFO("Sent new event to audioDecoder failed");
                     success = false;
                 }
              }
-             gst_event_unref(rate_event);
+             gst_event_unref(m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
+                                                                                    structure));
          }
          else
          {
