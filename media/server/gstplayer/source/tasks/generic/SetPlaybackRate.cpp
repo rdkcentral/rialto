@@ -34,7 +34,7 @@ SetPlaybackRate::SetPlaybackRate(GenericPlayerContext &context,
                                  std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                                  std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, double rate,
                                  GstElement *audioDecoder, GstElement *videoDecoder)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rate{rate}, m_audioDecoder, m_videoDecoder
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rate{rate}, m_audioDecoder{audioDecoder}, m_videoDecoder{videoDecoder}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetPlaybackRate");
 }
