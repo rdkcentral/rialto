@@ -1,5 +1,8 @@
 # rialto
 
+## Comprehensive Repository Description
+For a detailed description of this repository, its architecture, components, and features, see [REPOSITORY_DESCRIPTION.md](REPOSITORY_DESCRIPTION.md).
+
 ## Project webpage (with current coverage report and Doxygen)
 https://rdkcentral.github.io/rialto/
 
