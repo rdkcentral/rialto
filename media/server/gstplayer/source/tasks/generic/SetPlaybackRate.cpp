@@ -86,6 +86,8 @@ void SetPlaybackRate::execute() const
     {
         GstStructure *structure{
             m_gstWrapper->gstStructureNew(kCustomInstantRateChangeEventName, "rate", G_TYPE_DOUBLE, m_rate, NULL)};
+        GStEvent *instantRateChangeEvent = m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
+                                                                                    structure);
       
          if(m_videoDecoder && (0 == strcmp(GST_ELEMENT_NAME(m_videoDecoder), "brcmvideodecoder")) ||
             m_audioDecoder && (0 == strcmp(GST_ELEMENT_NAME(m_audioDecoder), "brcmaudiodecoder"))
@@ -93,8 +95,7 @@ void SetPlaybackRate::execute() const
             success = true;
             if (m_videodecoder)
             {
-             if (!m_gstWrapper->gstElementSendEvent(m_videoDecoder, gst_event_ref(m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
-                                                                                    structure))))
+             if (!m_gstWrapper->gstElementSendEvent(m_videoDecoder, gst_event_ref(instantRateChangeEvent)))
              {
                 RIALTO_SERVER_LOG_INFO("Sent new event to videoDecoder failed);
                 success = false;
@@ -104,21 +105,17 @@ void SetPlaybackRate::execute() const
       
              if (m_audiodecoder)
             {
-                if (!m_gstWrapper->gstElementSendEvent(m_audioDecoder, gst_event_ref(m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
-                                                                                    structure))))
+                if (!m_gstWrapper->gstElementSendEvent(m_audioDecoder, gst_event_ref()))
                 {
                     RIALTO_SERVER_LOG_INFO("Sent new event to audioDecoder failed");
                     success = false;
                 }
              }
-             gst_event_unref(m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
-                                                                                    structure));
+             gst_event_unref(instantRateChangeEvent);
          }
          else
          {
-              success = m_gstWrapper->gstElementSendEvent(m_context.pipeline,
-                                                    m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
-                                                                                    structure));
+              success = m_gstWrapper->gstElementSendEvent(m_context.pipeline, instantRateChangeEvent);
          }
         RIALTO_SERVER_LOG_DEBUG("Sent new event, success = %s", success ? "true" : "false");
     }
