@@ -119,7 +119,6 @@ void SetPlaybackRate::execute() const
         }
         RIALTO_SERVER_LOG_DEBUG("Sent new event, success = %s", success ? "true" : "false");
     }
-    }
 
     if (success)
     {
