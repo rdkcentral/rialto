@@ -76,11 +76,12 @@ public:
 
     bool containsKey(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
 
-    MediaKeyErrorStatus createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL,
+    MediaKeyErrorStatus createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
                                          int32_t &keySessionId) override;
 
     MediaKeyErrorStatus generateRequest(int32_t keySessionId, InitDataType initDataType,
-                                        const std::vector<uint8_t> &initData) override;
+                                        const std::vector<uint8_t> &initData,
+                                        const LimitedDurationLicense &ldlState) override;
 
     MediaKeyErrorStatus loadSession(int32_t keySessionId) override;
 
@@ -113,8 +114,6 @@ public:
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
 
     MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) override;
-
-    bool isNetflixPlayreadyKeySystem() const override;
 
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
@@ -154,13 +153,12 @@ private:
      *
      * @param[in]  sessionType : The session type.
      * @param[in]  client      : Client object for callbacks
-     * @param[in]  isLDL       : Is this an LDL
      * @param[out] keySessionId: The key session id
      *
      * @retval an error status.
      */
     MediaKeyErrorStatus createKeySessionInternal(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
-                                                 bool isLDL, int32_t &keySessionId);
+                                                 int32_t &keySessionId);
 
     /**
      * @brief Generate internally, only to be called on the main thread.
@@ -168,11 +166,13 @@ private:
      * @param[in]  keySessionId : The key session id for the session.
      * @param[in]  initDataType : The init data type.
      * @param[in]  initData     : The init data.
+     * @param[in]  ldlState     : The Limited Duration License state. Most of key systems do not need this parameter.
      *
      * @retval an error status.
      */
     MediaKeyErrorStatus generateRequestInternal(int32_t keySessionId, InitDataType initDataType,
-                                                const std::vector<uint8_t> &initData);
+                                                const std::vector<uint8_t> &initData,
+                                                const LimitedDurationLicense &ldlState);
 
     /**
      * @brief Load internally, only to be called on the main thread.

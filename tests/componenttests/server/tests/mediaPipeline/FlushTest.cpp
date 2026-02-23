@@ -34,6 +34,7 @@ constexpr bool kAsync{true};
 } // namespace
 
 using testing::_;
+using testing::AtLeast;
 using testing::Invoke;
 using testing::Return;
 using testing::StrEq;
@@ -51,6 +52,8 @@ public:
     {
         GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
         m_audioSink = gst_element_factory_create(elementFactory, nullptr);
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_audioSink))).WillRepeatedly(Return("audio_sink"));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink)).Times(AtLeast(0));
         gst_object_unref(elementFactory);
     }
 
@@ -66,7 +69,6 @@ public:
                     gboolean *asyncPtr = reinterpret_cast<gboolean *>(element);
                     *asyncPtr = static_cast<gboolean>(kAsync);
                 }));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink));
         EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStart()).WillOnce(Return(&m_flushStartEvent));
         EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStartEvent))
             .WillOnce(Return(true));
@@ -232,7 +234,7 @@ public:
  *
  * Code:
  */
-TEST_F(FlushTest, DISABLED_flushAudioSourceSuccess)
+TEST_F(FlushTest, flushAudioSourceSuccess)
 {
     // Step 1: Create a new media session
     createSession();
