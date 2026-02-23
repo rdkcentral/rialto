@@ -69,14 +69,12 @@ TEST_F(RialtoClientMediaKeysNetflixKeySessionTest, CreateKeySession)
     KeySessionType sessionType = KeySessionType::PERSISTENT_LICENCE;
     std::shared_ptr<StrictMock<MediaKeysClientMock>> mediaKeysClientMock =
         std::make_shared<StrictMock<MediaKeysClientMock>>();
-    bool isLDL = false;
     int32_t returnKeySessionId;
 
-    EXPECT_CALL(*m_mediaKeysIpcMock, createKeySession(sessionType, _, isLDL, _))
-        .WillOnce(DoAll(SetArgReferee<3>(m_keySessionId), Return(m_mediaKeyErrorStatus)));
+    EXPECT_CALL(*m_mediaKeysIpcMock, createKeySession(sessionType, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(m_keySessionId), Return(m_mediaKeyErrorStatus)));
 
-    EXPECT_EQ(m_mediaKeys->createKeySession(sessionType, mediaKeysClientMock, isLDL, returnKeySessionId),
-              m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->createKeySession(sessionType, mediaKeysClientMock, returnKeySessionId), m_mediaKeyErrorStatus);
     EXPECT_EQ(returnKeySessionId, m_keySessionId);
     // Update key should be possible, as keySession should be present in KeyIdMap
     EXPECT_TRUE(KeyIdMap::instance().updateKey(m_keySessionId, m_keyId));

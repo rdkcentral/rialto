@@ -473,6 +473,16 @@ struct PlaybackInfo
     int64_t currentPosition{-1}; /**< The current playback position */
     double volume{1.0};          /**< The current volume */
 };
+
+/**
+ * @brief Limited duration license state.
+ */
+enum class LimitedDurationLicense
+{
+    NOT_SPECIFIED, /**< The license duration is not specified */
+    ENABLED,       /**< The license has a limited duration */
+    DISABLED       /**< The license does not have a limited duration */
+};
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_
