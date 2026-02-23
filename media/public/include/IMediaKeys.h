@@ -110,13 +110,12 @@ public:
      *
      * @param[in]  sessionType : The session type.
      * @param[in]  client      : Client object for callbacks
-     * @param[in]  isLDL       : Is this an LDL
      * @param[out] keySessionId: The key session id
      *
      * @retval an error status.
      */
     virtual MediaKeyErrorStatus createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
-                                                 bool isLDL, int32_t &keySessionId) = 0;
+                                                 int32_t &keySessionId) = 0;
 
     /**
      * @brief Generates a licence request.
@@ -130,11 +129,14 @@ public:
      * @param[in]  keySessionId : The key session id for the session.
      * @param[in]  initDataType : The init data type.
      * @param[in]  initData     : The init data.
+     * @param[in]  ldlState     : The Limited Duration License state. Most of key systems do not need this parameter,
+     *                            so the default value is NOT_SPECIFIED.
      *
      * @retval an error status.
      */
-    virtual MediaKeyErrorStatus generateRequest(int32_t keySessionId, InitDataType initDataType,
-                                                const std::vector<uint8_t> &initData) = 0;
+    virtual MediaKeyErrorStatus
+    generateRequest(int32_t keySessionId, InitDataType initDataType, const std::vector<uint8_t> &initData,
+                    const LimitedDurationLicense &ldlState = LimitedDurationLicense::NOT_SPECIFIED) = 0;
 
     /**
      * @brief Loads an existing key session

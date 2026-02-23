@@ -48,10 +48,11 @@ public:
     virtual bool createMediaKeys(int mediaKeysHandle, std::string keySystem) = 0;
     virtual bool destroyMediaKeys(int mediaKeysHandle) = 0;
     virtual MediaKeyErrorStatus createKeySession(int mediaKeysHandle, KeySessionType sessionType,
-                                                 const std::shared_ptr<IMediaKeysClient> &client, bool isLDL,
+                                                 const std::shared_ptr<IMediaKeysClient> &client,
                                                  int32_t &keySessionId) = 0;
     virtual MediaKeyErrorStatus generateRequest(int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,
-                                                const std::vector<uint8_t> &initData) = 0;
+                                                const std::vector<uint8_t> &initData,
+                                                const LimitedDurationLicense &ldlState) = 0;
     virtual MediaKeyErrorStatus loadSession(int mediaKeysHandle, int32_t keySessionId) = 0;
     virtual MediaKeyErrorStatus updateSession(int mediaKeysHandle, int32_t keySessionId,
                                               const std::vector<uint8_t> &responseData) = 0;
