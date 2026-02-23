@@ -45,6 +45,7 @@ public:
     void mediaKeysFactoryWillReturnNullptr();
     void mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillGenerateRequestWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillGenerateRequestLdlEnabledWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillLoadSessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillUpdateSessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillCloseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
@@ -62,7 +63,6 @@ public:
     void mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
-    void mediaKeysWillCheckIfKeySystemIsPlayready(bool result);
     void mediaKeysWillPing();
     void mediaKeysWillGetMetricSystemDataWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
 
@@ -85,6 +85,7 @@ public:
     void createKeySessionShouldSucceed();
     void createKeySessionShouldFailWithReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void generateRequestShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void generateRequestWithLdlEnabledShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void loadSessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void updateSessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void closeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
@@ -102,7 +103,7 @@ public:
     void getLastDrmErrorShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void getDrmTimeShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
-    void isNetflixPlayreadyKeySystemShouldReturn(bool result);
+    void isExtendedInterfaceUsedShouldReturn(bool result);
     void incrementSessionIdUsageCounter();
     void decrementSessionIdUsageCounter();
     void getMetricSystemDataShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);

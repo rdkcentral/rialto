@@ -163,6 +163,21 @@ convertInitDataType(const firebolt::rialto::InitDataType &initDataType)
     }
 }
 
+inline firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense
+convertLimitedDurationLicense(const firebolt::rialto::LimitedDurationLicense &ldlState)
+{
+    switch (ldlState)
+    {
+    case firebolt::rialto::LimitedDurationLicense::ENABLED:
+        return firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense_ENABLED;
+    case firebolt::rialto::LimitedDurationLicense::DISABLED:
+        return firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense_DISABLED;
+    case firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED:
+    default:
+        return firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense_NOT_SPECIFIED;
+    }
+}
+
 inline firebolt::rialto::KeyStatus convertKeyStatus(const firebolt::rialto::KeyStatusesChangedEvent_KeyStatus &keyStatus)
 {
     switch (keyStatus)

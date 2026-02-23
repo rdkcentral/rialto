@@ -69,11 +69,12 @@ public:
 
     bool containsKey(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
 
-    MediaKeyErrorStatus createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL,
+    MediaKeyErrorStatus createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
                                          int32_t &keySessionId) override;
 
     MediaKeyErrorStatus generateRequest(int32_t keySessionId, InitDataType initDataType,
-                                        const std::vector<uint8_t> &initData) override;
+                                        const std::vector<uint8_t> &initData,
+                                        const LimitedDurationLicense &ldlState) override;
 
     MediaKeyErrorStatus loadSession(int32_t keySessionId) override;
 

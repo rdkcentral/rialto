@@ -37,7 +37,7 @@ class CdmService : public ICdmService, public IDecryptionService
     struct MediaKeySessionInfo
     {
         int mediaKeysHandle;
-        bool isNetflixPlayready{false};
+        bool isExtendedInterfaceUsed{false};
         uint32_t refCounter{0};
         bool shouldBeClosed{false};
         bool shouldBeReleased{false};
@@ -54,10 +54,10 @@ public:
     bool createMediaKeys(int mediaKeysHandle, std::string keySystem) override;
     bool destroyMediaKeys(int mediaKeysHandle) override;
     MediaKeyErrorStatus createKeySession(int mediaKeysHandle, KeySessionType sessionType,
-                                         const std::shared_ptr<IMediaKeysClient> &client, bool isLDL,
-                                         int32_t &keySessionId) override;
+                                         const std::shared_ptr<IMediaKeysClient> &client, int32_t &keySessionId) override;
     MediaKeyErrorStatus generateRequest(int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,
-                                        const std::vector<uint8_t> &initData) override;
+                                        const std::vector<uint8_t> &initData,
+                                        const LimitedDurationLicense &ldlState) override;
     MediaKeyErrorStatus loadSession(int mediaKeysHandle, int32_t keySessionId) override;
     MediaKeyErrorStatus updateSession(int mediaKeysHandle, int32_t keySessionId,
                                       const std::vector<uint8_t> &responseData) override;
@@ -83,7 +83,7 @@ public:
     bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) override;
     bool isServerCertificateSupported(const std::string &keySystem) override;
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
-    bool isNetflixPlayreadyKeySystem(int32_t keySessionId) override;
+    bool isExtendedInterfaceUsed(int32_t keySessionId) override;
     MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
     void incrementSessionIdUsageCounter(int32_t keySessionId) override;
     void decrementSessionIdUsageCounter(int32_t keySessionId) override;

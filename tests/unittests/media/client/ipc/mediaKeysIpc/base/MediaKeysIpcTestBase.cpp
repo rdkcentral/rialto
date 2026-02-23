@@ -103,7 +103,7 @@ void MediaKeysIpcTestBase::createKeySession()
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createKeySession"), _, _, _, _))
         .WillOnce(WithArgs<3>(Invoke(this, &MediaKeysIpcTestBase::setCreateKeySessionResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->createKeySession(KeySessionType::PERSISTENT_LICENCE, m_mediaKeysClientMock, false,
+    EXPECT_EQ(m_mediaKeysIpc->createKeySession(KeySessionType::PERSISTENT_LICENCE, m_mediaKeysClientMock,
                                                returnKeySessionid),
               MediaKeyErrorStatus::OK);
 }
