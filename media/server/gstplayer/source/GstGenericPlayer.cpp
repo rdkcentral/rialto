@@ -462,6 +462,11 @@ void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
 
 void GstGenericPlayer::notifyPlaybackInfo()
 {
+    if (m_prerolling || GST_STATE(m_context.pipeline) < GST_STATE_PAUSED || m_flushWatcher->isFlushOngoing())
+    {
+        RIALTO_SERVER_LOG_MIL("Skip Playback info notification!");
+        return;
+    }
     PlaybackInfo info;
     getPosition(info.currentPosition);
     getVolume(info.volume);
