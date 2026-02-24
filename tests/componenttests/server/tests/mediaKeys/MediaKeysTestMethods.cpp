@@ -85,6 +85,69 @@ void MediaKeysTestMethods::ocdmSessionWillBeCreated()
             }));
 }
 
+void MediaKeysTestMethods::willGenerateRequestPlayready()
+{
+    EXPECT_CALL(m_ocdmSessionMock, constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, m_kInitData.size()))
+        .WillOnce(testing::Invoke(
+            [&](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
+                uint32_t initDataSize) -> MediaKeyErrorStatus
+            {
+                for (uint32_t i = 0; i < initDataSize; ++i)
+                {
+                    EXPECT_EQ(initData[i], m_kInitData[i]);
+                }
+
+                return MediaKeyErrorStatus::OK;
+            }));
+
+    EXPECT_CALL(m_ocdmSessionMock, getChallengeData(false, _, _))
+        .WillOnce(testing::Invoke(
+            [&](bool isLDL, const uint8_t *challenge, uint32_t *challengeSize) -> MediaKeyErrorStatus
+            {
+                // This first call asks for the size of the data
+                EXPECT_EQ(challenge, nullptr);
+                *challengeSize = m_kLicenseRequestMessage.size();
+                return MediaKeyErrorStatus::OK;
+            }))
+        .WillOnce(testing::Invoke(
+            [&](bool isLDL, uint8_t *challenge, const uint32_t *challengeSize) -> MediaKeyErrorStatus
+            {
+                // This second call asks for the data
+                EXPECT_EQ(*challengeSize, m_kLicenseRequestMessage.size());
+                for (size_t i = 0; i < m_kLicenseRequestMessage.size(); ++i)
+                {
+                    challenge[i] = m_kLicenseRequestMessage[i];
+                }
+                return MediaKeyErrorStatus::OK;
+            }));
+}
+
+void MediaKeysTestMethods::generateRequestPlayready()
+{
+    constexpr bool kUseExtendedInterface{true};
+    auto request{createGenerateRequestRequest(m_mediaKeysHandle, m_mediaKeySessionId, m_kInitData, kUseExtendedInterface)};
+
+    ExpectMessage<::firebolt::rialto::LicenseRequestEvent> expectedMessage(m_clientStub);
+
+    ConfigureAction<GenerateRequest>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::GenerateRequestResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+
+    auto message = expectedMessage.getMessage();
+    ASSERT_TRUE(message);
+    ASSERT_EQ(message->media_keys_handle(), m_mediaKeysHandle);
+    ASSERT_EQ(message->key_session_id(), m_mediaKeySessionId);
+    EXPECT_EQ(message->url(), "");
+    const unsigned int kMax = message->license_request_message_size();
+    ASSERT_EQ(kMax, m_kLicenseRequestMessage.size());
+    for (unsigned int i = 0; i < kMax; ++i)
+    {
+        ASSERT_EQ(message->license_request_message(i), m_kLicenseRequestMessage[i]);
+    }
+}
+
 void MediaKeysTestMethods::willUpdateSessionNetflix()
 {
     EXPECT_CALL(m_ocdmSessionMock, storeLicenseData(_, m_kUpdateSessionNetflixResponse.size()))
@@ -106,6 +169,23 @@ void MediaKeysTestMethods::updateSessionNetflix()
         .send(request)
         .expectSuccess()
         .matchResponse([&](const firebolt::rialto::UpdateSessionResponse &resp)
+                       { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
+}
+
+void MediaKeysTestMethods::willCloseKeySessionPlayready()
+{
+    EXPECT_CALL(m_ocdmSessionMock, cancelChallengeData()).WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_CALL(m_ocdmSessionMock, cleanDecryptContext()).WillOnce(Return(MediaKeyErrorStatus::OK));
+}
+
+void MediaKeysTestMethods::closeKeySessionPlayready()
+{
+    auto request{createCloseKeySessionRequest(m_mediaKeysHandle, m_mediaKeySessionId)};
+
+    ConfigureAction<CloseKeySession>(m_clientStub)
+        .send(request)
+        .expectSuccess()
+        .matchResponse([&](const firebolt::rialto::CloseKeySessionResponse &resp)
                        { EXPECT_EQ(resp.error_status(), ProtoMediaKeyErrorStatus::OK); });
 }
 

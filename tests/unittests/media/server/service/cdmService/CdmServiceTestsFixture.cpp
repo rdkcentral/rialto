@@ -35,7 +35,6 @@ const std::vector<std::string> kKeySystems{"expectedKeySystem1", "expectedKeySys
 const std::string kVersion{"123"};
 constexpr int kMediaKeysHandle{2};
 constexpr firebolt::rialto::KeySessionType kKeySessionType{firebolt::rialto::KeySessionType::TEMPORARY};
-constexpr bool kIsLDL{false};
 constexpr int kKeySessionId{3};
 constexpr firebolt::rialto::InitDataType kInitDataType{firebolt::rialto::InitDataType::CENC};
 const std::vector<std::uint8_t> kInitData{6, 7, 2};
@@ -44,6 +43,8 @@ const std::vector<uint8_t> keyId{1, 4, 7};
 const std::vector<uint8_t> kDrmHeader{4, 9, 3};
 const uint32_t kSubSampleCount{2};
 constexpr uint32_t kInitWithLast15{1};
+constexpr firebolt::rialto::LimitedDurationLicense kLdlState{firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED};
+constexpr firebolt::rialto::LimitedDurationLicense kLdlStateEnabled{firebolt::rialto::LimitedDurationLicense::ENABLED};
 } // namespace
 
 CdmServiceTests::CdmServiceTests()
@@ -126,13 +127,20 @@ void CdmServiceTests::mediaKeysFactoryWillReturnNullptr()
 
 void CdmServiceTests::mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_CALL(m_mediaKeysMock, createKeySession(kKeySessionType, _, kIsLDL, _))
-        .WillOnce(DoAll(SetArgReferee<3>(kKeySessionId), Return(status)));
+    EXPECT_CALL(m_mediaKeysMock, createKeySession(kKeySessionType, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(kKeySessionId), Return(status)));
 }
 
 void CdmServiceTests::mediaKeysWillGenerateRequestWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_CALL(m_mediaKeysMock, generateRequest(kKeySessionId, kInitDataType, kInitData)).WillOnce(Return(status));
+    EXPECT_CALL(m_mediaKeysMock, generateRequest(kKeySessionId, kInitDataType, kInitData, kLdlState))
+        .WillOnce(Return(status));
+}
+
+void CdmServiceTests::mediaKeysWillGenerateRequestLdlEnabledWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_CALL(m_mediaKeysMock, generateRequest(kKeySessionId, kInitDataType, kInitData, kLdlStateEnabled))
+        .WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillLoadSessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
@@ -220,11 +228,6 @@ void CdmServiceTests::mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::Media
     EXPECT_CALL(m_mediaKeysMock, selectKeyId(kKeySessionId, keyId)).WillOnce(Return(status));
 }
 
-void CdmServiceTests::mediaKeysWillCheckIfKeySystemIsPlayready(bool result)
-{
-    EXPECT_CALL(m_mediaKeysMock, isNetflixPlayreadyKeySystem()).WillOnce(Return(result));
-}
-
 void CdmServiceTests::mediaKeysWillPing()
 {
     EXPECT_CALL(*m_heartbeatProcedureMock, createHandler());
@@ -260,21 +263,25 @@ void CdmServiceTests::createKeySessionShouldSucceed()
 {
     int32_t returnKeySessionId = -1;
     EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK,
-              m_sut.createKeySession(kMediaKeysHandle, kKeySessionType, m_mediaKeysClientMock, kIsLDL,
-                                     returnKeySessionId));
+              m_sut.createKeySession(kMediaKeysHandle, kKeySessionType, m_mediaKeysClientMock, returnKeySessionId));
     EXPECT_GE(returnKeySessionId, -1);
 }
 
 void CdmServiceTests::createKeySessionShouldFailWithReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
     int32_t returnKeySessionId = -1;
-    EXPECT_EQ(status, m_sut.createKeySession(kMediaKeysHandle, kKeySessionType, m_mediaKeysClientMock, kIsLDL,
-                                             returnKeySessionId));
+    EXPECT_EQ(status,
+              m_sut.createKeySession(kMediaKeysHandle, kKeySessionType, m_mediaKeysClientMock, returnKeySessionId));
 }
 
 void CdmServiceTests::generateRequestShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_EQ(status, m_sut.generateRequest(kMediaKeysHandle, kKeySessionId, kInitDataType, kInitData));
+    EXPECT_EQ(status, m_sut.generateRequest(kMediaKeysHandle, kKeySessionId, kInitDataType, kInitData, kLdlState));
+}
+
+void CdmServiceTests::generateRequestWithLdlEnabledShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_EQ(status, m_sut.generateRequest(kMediaKeysHandle, kKeySessionId, kInitDataType, kInitData, kLdlStateEnabled));
 }
 
 void CdmServiceTests::loadSessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
@@ -370,9 +377,9 @@ void CdmServiceTests::releaseKeySessionShouldReturnStatus(firebolt::rialto::Medi
     EXPECT_EQ(status, m_sut.releaseKeySession(kMediaKeysHandle, kKeySessionId));
 }
 
-void CdmServiceTests::isNetflixPlayreadyKeySystemShouldReturn(bool result)
+void CdmServiceTests::isExtendedInterfaceUsedShouldReturn(bool result)
 {
-    EXPECT_EQ(result, m_sut.isNetflixPlayreadyKeySystem(kKeySessionId));
+    EXPECT_EQ(result, m_sut.isExtendedInterfaceUsed(kKeySessionId));
 }
 
 void CdmServiceTests::getSupportedKeySystemsShouldSucceed()
