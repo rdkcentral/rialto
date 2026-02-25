@@ -466,7 +466,7 @@ TEST_F(GstGenericPlayerTest, shouldGetQueuedFramesInPlayingState)
 {
     setPipelineState(GST_STATE_PLAYING);
     const uint32_t kTestQueuedFramesValue{123};
-    const std::string kPropertyStr{"queued_frames"};
+    const std::string kPropertyStr{"queued-frames"};
 
     expectGetVideoDecoder(m_element);
     willGetElementProperty(kPropertyStr, kTestQueuedFramesValue);
@@ -482,7 +482,7 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetQueuedFramesInPlayingStateIfProperty
 
     expectGetVideoDecoder(m_element);
 
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("queued_frames"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("queued-frames"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
 
     uint32_t queuedFrames;

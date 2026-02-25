@@ -72,7 +72,7 @@ const std::string kAutoVideoSinkTypeName{"GstAutoVideoSink"};
 const std::string kAutoAudioSinkTypeName{"GstAutoAudioSink"};
 constexpr bool kResetTime{true};
 const std::string kImmediateOutputStr{"immediate-output"};
-const std::string kReportDecodeErrorsStr{"report_decode_errors"};
+const std::string kReportDecodeErrorsStr{"report-decode-errors"};
 const std::string kLowLatencyStr{"low-latency"};
 const std::string kSyncStr{"sync"};
 const std::string kSyncOffStr{"sync-off"};

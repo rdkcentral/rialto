@@ -645,20 +645,20 @@ bool GstGenericPlayer::getQueuedFrames(uint32_t &queuedFrames)
     GstElement *decoder{getDecoder(MediaSourceType::VIDEO)};
     if (decoder)
     {
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "queued_frames"))
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "queued-frames"))
         {
-            m_glibWrapper->gObjectGet(decoder, "queued_frames", &queuedFrames, nullptr);
+            m_glibWrapper->gObjectGet(decoder, "queued-frames", &queuedFrames, nullptr);
             returnValue = true;
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("queued_frames not supported in element %s", GST_ELEMENT_NAME(decoder));
+            RIALTO_SERVER_LOG_ERROR("queued-frames not supported in element %s", GST_ELEMENT_NAME(decoder));
         }
         m_gstWrapper->gstObjectUnref(decoder);
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to get queued_frames property, decoder is NULL");
+        RIALTO_SERVER_LOG_ERROR("Failed to get queued-frames property, decoder is NULL");
     }
 
     return returnValue;
@@ -1390,15 +1390,15 @@ bool GstGenericPlayer::setReportDecodeErrors()
     {
         RIALTO_SERVER_LOG_DEBUG("Set report decode errors to %s", reportDecodeErrors ? "TRUE" : "FALSE");
 
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "report_decode_errors"))
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "report-decode-errors"))
         {
             gboolean reportDecodeErrorsGboolean{reportDecodeErrors ? TRUE : FALSE};
-            m_glibWrapper->gObjectSet(decoder, "report_decode_errors", reportDecodeErrorsGboolean, nullptr);
+            m_glibWrapper->gObjectSet(decoder, "report-decode-errors", reportDecodeErrorsGboolean, nullptr);
             result = true;
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to set report_decode_errors property on decoder '%s'",
+            RIALTO_SERVER_LOG_ERROR("Failed to set report-decode-errors property on decoder '%s'",
                                     GST_ELEMENT_NAME(decoder));
         }
 
@@ -1411,7 +1411,7 @@ bool GstGenericPlayer::setReportDecodeErrors()
     }
     else
     {
-        RIALTO_SERVER_LOG_DEBUG("Pending report_decode_errors, decoder is NULL");
+        RIALTO_SERVER_LOG_DEBUG("Pending report-decode-errors, decoder is NULL");
     }
     return result;
 }

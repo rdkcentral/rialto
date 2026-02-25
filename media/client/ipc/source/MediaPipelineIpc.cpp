@@ -575,13 +575,13 @@ bool MediaPipelineIpc::setReportDecodeErrors(int32_t sourceId, bool reportDecode
         return false;
     }
 
-    firebolt::rialto::ReportDecodeErrorsRequest request;
+    firebolt::rialto::SetReportDecodeErrorsRequest request;
 
     request.set_session_id(m_sessionId);
     request.set_source_id(sourceId);
     request.set_report_decode_errors(reportDecodeErrors);
 
-    firebolt::rialto::ReportDecodeErrorsResponse response;
+    firebolt::rialto::SetReportDecodeErrorsResponse response;
     auto ipcController = m_ipc.createRpcController();
     auto blockingClosure = m_ipc.createBlockingClosure();
     m_mediaPipelineStub->setReportDecodeErrors(ipcController.get(), &request, &response, blockingClosure.get());

@@ -43,7 +43,7 @@ void SetReportDecodeErrors::execute() const
 
     if (!m_context.pipeline)
     {
-        RIALTO_SERVER_LOG_WARN("Pipeline not available yet - cannot apply report_decode_errors setting");
+        RIALTO_SERVER_LOG_WARN("Pipeline not available yet - cannot apply report-decode-errors setting");
         return;
     }
 

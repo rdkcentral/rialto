@@ -89,8 +89,8 @@ public:
                             ::firebolt::rialto::SetImmediateOutputResponse *response,
                             ::google::protobuf::Closure *done) override;
     void setReportDecodeErrors(::google::protobuf::RpcController *controller,
-                               const ::firebolt::rialto::ReportDecodeErrorsRequest *request,
-                               ::firebolt::rialto::ReportDecodeErrorsResponse *response,
+                               const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
+                               ::firebolt::rialto::SetReportDecodeErrorsResponse *response,
                                ::google::protobuf::Closure *done) override;
     void getQueuedFrames(::google::protobuf::RpcController *controller,
                          const ::firebolt::rialto::GetQueuedFramesRequest *request,

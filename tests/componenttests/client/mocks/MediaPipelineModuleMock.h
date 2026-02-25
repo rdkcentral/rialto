@@ -74,8 +74,8 @@ public:
                  ::firebolt::rialto::GetImmediateOutputResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, setReportDecodeErrors,
                 (::google::protobuf::RpcController * controller,
-                 const ::firebolt::rialto::ReportDecodeErrorsRequest *request,
-                 ::firebolt::rialto::ReportDecodeErrorsResponse *response, ::google::protobuf::Closure *done));
+                 const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
+                 ::firebolt::rialto::SetReportDecodeErrorsResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getQueuedFrames,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetQueuedFramesRequest *request,
                  ::firebolt::rialto::GetQueuedFramesResponse *response, ::google::protobuf::Closure *done));
@@ -238,9 +238,9 @@ public:
         return response;
     }
 
-    ::firebolt::rialto::ReportDecodeErrorsResponse ReportDecodeErrorsResponse()
+    ::firebolt::rialto::SetReportDecodeErrorsResponse SetReportDecodeErrorsResponse()
     {
-        firebolt::rialto::ReportDecodeErrorsResponse response;
+        firebolt::rialto::SetReportDecodeErrorsResponse response;
         return response;
     }
 

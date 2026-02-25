@@ -368,8 +368,8 @@ MATCHER_P2(getImmediateOutputRequestMatcher, sessionId, sourceId, "")
 
 MATCHER_P2(setReportDecodeErrorsRequestMatcher, sessionId, sourceId, "")
 {
-    const ::firebolt::rialto::ReportDecodeErrorsRequest *kRequest =
-        dynamic_cast<const ::firebolt::rialto::ReportDecodeErrorsRequest *>(arg);
+    const ::firebolt::rialto::SetReportDecodeErrorsRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetReportDecodeErrorsRequest *>(arg);
     return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
 }
 

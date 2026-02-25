@@ -1454,7 +1454,7 @@ void MediaPipelineTestMethods::shouldSetReportDecodeErrors(bool reportDecodeErro
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
                 setReportDecodeErrors(_, setReportDecodeErrorsRequestMatcher(kSessionId, kVideoSourceId), _, _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->ReportDecodeErrorsResponse()),
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->SetReportDecodeErrorsResponse()),
                         WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
 }
 

@@ -686,13 +686,13 @@ message SetImmediateOutputResponse {
  * @param[in] source_id              The id of the media source.
  * @param[in] report_decode_errors   Enable decode error reporting.
  */
-message ReportDecodeErrorsRequest {
+message SetReportDecodeErrorsRequest {
     optional int32 session_id = 1 [default = -1];
     optional int32 source_id  = 2 [default = -1];
     optional bool report_decode_errors = 3 [default = false];
 }
 
-message ReportDecodeErrorsResponse {
+message SetReportDecodeErrorsResponse {
 }
 
 
@@ -1115,10 +1115,10 @@ service MediaPipelineModule {
 
     /**
     * @brief Sets the "Report Decode Errors" property for this source.
-    * @see ReportDecodeErrorsRequest
+    * @see SetReportDecodeErrorsRequest
     */
-    rpc setReportDecodeErrors(ReportDecodeErrorsRequest)
-        returns (ReportDecodeErrorsResponse) {
+    rpc setReportDecodeErrors(SetReportDecodeErrorsRequest)
+        returns (SetReportDecodeErrorsResponse) {
     }
 
     /**

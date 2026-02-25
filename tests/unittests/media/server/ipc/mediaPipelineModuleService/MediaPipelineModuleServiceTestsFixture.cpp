@@ -1179,8 +1179,8 @@ void MediaPipelineModuleServiceTests::sendGetImmediateOutputRequestAndReceiveFai
 
 void MediaPipelineModuleServiceTests::sendSetReportDecodeErrorsRequestAndReceiveResponse()
 {
-    firebolt::rialto::ReportDecodeErrorsRequest request;
-    firebolt::rialto::ReportDecodeErrorsResponse response;
+    firebolt::rialto::SetReportDecodeErrorsRequest request;
+    firebolt::rialto::SetReportDecodeErrorsResponse response;
 
     request.set_session_id(kHardcodedSessionId);
     request.set_report_decode_errors(kReportDecodeErrorsVal);
@@ -1190,8 +1190,8 @@ void MediaPipelineModuleServiceTests::sendSetReportDecodeErrorsRequestAndReceive
 
 void MediaPipelineModuleServiceTests::sendSetReportDecodeErrorsRequestAndReceiveFail()
 {
-    firebolt::rialto::ReportDecodeErrorsRequest request;
-    firebolt::rialto::ReportDecodeErrorsResponse response;
+    firebolt::rialto::SetReportDecodeErrorsRequest request;
+    firebolt::rialto::SetReportDecodeErrorsResponse response;
 
     request.set_session_id(kHardcodedSessionId);
     request.set_report_decode_errors(kReportDecodeErrorsVal);
