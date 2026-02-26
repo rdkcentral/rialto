@@ -22,6 +22,7 @@
 
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
+#include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
 #include <memory>
@@ -31,19 +32,18 @@ namespace firebolt::rialto::server::tasks::generic
 class SetPlaybackRate : public IPlayerTask
 {
 public:
-    SetPlaybackRate(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, double rate,
-                    GstElement *m_audioDecoder, GstElement *m_videoDeocder);
+    SetPlaybackRate(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, double rate);
     ~SetPlaybackRate() override;
     void execute() const override;
 
 private:
     GenericPlayerContext &m_context;
+    IGstGenericPlayerPrivate &m_player;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     double m_rate;
-    GstElement *m_audioDecoder;
-    GstElement *m_videoDecoder;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

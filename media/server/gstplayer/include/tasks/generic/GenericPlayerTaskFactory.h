@@ -69,8 +69,8 @@ public:
                                                       IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createCheckAudioUnderflow(GenericPlayerContext &context,
                                                            IGstGenericPlayerPrivate &player) const override;
-    std::unique_ptr<IPlayerTask> createSetPlaybackRate(GenericPlayerContext &context, double rate, 
-                                                       GstElement *element, GstElement *element1) const override;
+    std::unique_ptr<IPlayerTask> createSetPlaybackRate(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                       double rate) const override;
     std::unique_ptr<IPlayerTask> createSetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                    std::int64_t position) const override;
     std::unique_ptr<IPlayerTask> createSetupElement(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,

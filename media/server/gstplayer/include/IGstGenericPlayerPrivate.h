@@ -282,6 +282,15 @@ public:
     virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
 
     /**
+     * @brief Gets the decoder element for source type.
+     *
+     * @param[in] mediaSourceType : the source type to obtain the decoder for
+     *
+     * @retval The decoder, NULL if not found
+     */
+    virtual GstElement *getDecoder(const MediaSourceType &mediaSourceType) = 0;
+
+    /**
      * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
      *
      * @param[in] source          : The Gst Source element, that should receive new sample

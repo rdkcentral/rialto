@@ -315,7 +315,11 @@ public:
     GstEvent *gstEventNewCustom(GstEventType type, GstStructure *structure) const override
     {
         return gst_event_new_custom(type, structure);
-    };
+    }
+
+    GstEvent *gstEventRef(GstEvent *event) const override { return gst_event_ref(event); }
+
+    void gstEventUnref(GstEvent *event) const override { gst_event_unref(event); };
 
     GstStructure *gstStructureNew(const gchar *name, const gchar *firstfield, ...) const override;
 
