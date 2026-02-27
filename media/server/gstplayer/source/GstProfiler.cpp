@@ -139,11 +139,7 @@ void GstProfiler::probeCtxDestroy(gpointer data)
 
 std::optional<std::string> GstProfiler::checkElement(GstElement *element)
 {
-    GstElementFactory *factory = m_gstWrapper->gstElementGetFactory(element);
-    if (!factory)
-        return std::nullopt;
-
-    const gchar *klass = gst_element_factory_get_klass(factory);
+    const gchar* klass = getElementClass(element);
     if (!klass)
         return std::nullopt;
 
@@ -156,6 +152,21 @@ std::optional<std::string> GstProfiler::checkElement(GstElement *element)
     }
 
     return std::nullopt;
+}
+
+const gchar* GstProfiler::getElementClass(GstElement *element)
+{
+    GstElementFactory *factory = m_gstWrapper->gstElementGetFactory(element);
+    if (factory)
+    {
+        return gst_element_factory_get_klass(factory);
+    }
+    else
+    {
+        return m_gstWrapper->gstElementClassGetMetadata(GST_ELEMENT_CLASS(G_OBJECT_GET_CLASS(element)), GST_ELEMENT_METADATA_KLASS);
+    }
+
+    return NULL;
 }
 
 } // namespace firebolt::rialto::server
