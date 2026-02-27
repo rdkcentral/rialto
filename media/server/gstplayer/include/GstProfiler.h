@@ -61,6 +61,7 @@ private:
     };
 
     std::optional<std::string> checkElement(GstElement *element);
+    const gchar* getElementClass(GstElement *element);
 
     static GstPadProbeReturn probeCb(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
     static void probeCtxDestroy(gpointer data);
