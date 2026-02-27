@@ -416,6 +416,9 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
     case MediaSourceType::VIDEO:
         kSinkName = "video-sink";
         break;
+    case MediaSourceType::SUBTITLE:
+        kSinkName = "text-sink";
+        break;
     default:
         break;
     }
