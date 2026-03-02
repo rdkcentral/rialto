@@ -231,7 +231,7 @@ void GstGenericPlayerTestCommon::expectGetVideoParser(GstElement *element)
     EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
 }
 
-void GstGenericPlayerTestCommon::expectGetSink(const std::string &sinkName, GstElement *elementObj)
+void GstGenericPlayerTestCommon::expectGetAVSink(const std::string &sinkName, GstElement *elementObj)
 {
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(sinkName.c_str()), _))
         .WillOnce(Invoke(
@@ -241,6 +241,17 @@ void GstGenericPlayerTestCommon::expectGetSink(const std::string &sinkName, GstE
                 *elementPtr = elementObj;
             }));
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(elementObj))).WillOnce(Return(kElementTypeName.c_str()));
+}
+
+void GstGenericPlayerTestCommon::expectGetSink(const std::string &sinkName, GstElement *elementObj)
+{
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(sinkName.c_str()), _))
+        .WillOnce(Invoke(
+            [elementObj](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = elementObj;
+            }));
 }
 
 void GstGenericPlayerTestCommon::expectNoDecoder()
