@@ -277,8 +277,8 @@ bool ServerImpl::addSocket(const std::string &socketPath,
     }
 
     // store the client connected / disconnected callbacks
-    socket.connectedCb = clientConnectedCb;
-    socket.disconnectedCb = clientDisconnectedCb;
+    socket.connectedCb = std::move(clientConnectedCb);
+    socket.disconnectedCb = std::move(clientDisconnectedCb);
 
     // add to the internal map
     std::lock_guard<std::mutex> locker(m_socketsLock);
@@ -323,8 +323,8 @@ bool ServerImpl::addSocket(int fd, std::function<void(const std::shared_ptr<ICli
     }
 
     // store the client connected / disconnected callbacks
-    socket.connectedCb = clientConnectedCb;
-    socket.disconnectedCb = clientDisconnectedCb;
+    socket.connectedCb = std::move(clientConnectedCb);
+    socket.disconnectedCb = std::move(clientDisconnectedCb);
 
     // add to the internal map
     std::lock_guard<std::mutex> locker(m_socketsLock);

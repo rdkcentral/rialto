@@ -93,7 +93,7 @@ namespace firebolt::rialto::server
 {
 MediaKeysCapabilities::MediaKeysCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IOcdmFactory> ocdmFactory,
                                              std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory)
-    : m_ocdmSystemFactory{ocdmSystemFactory}
+    : m_ocdmSystemFactory{std::move(ocdmSystemFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 

@@ -67,10 +67,10 @@ std::vector<std::string> split(std::string s, const std::string &delimiter)
     size_t pos = 0;
     while ((pos = s.find(delimiter)) != std::string::npos)
     {
-        result.push_back(s.substr(0, pos));
+        result.push_back(std::move(s.substr(0, pos)));
         s.erase(0, pos + delimiter.length());
     }
-    result.push_back(s);
+    result.push_back(std::move(s));
     return result;
 }
 
