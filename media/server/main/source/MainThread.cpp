@@ -113,7 +113,7 @@ const std::shared_ptr<MainThread::TaskInfo> MainThread::waitForTask()
     }
     auto kTaskInfo = m_taskQueue.front();
     m_taskQueue.pop_front();
-    return kTaskInfo;
+    return std::move(kTaskInfo);
 }
 
 int32_t MainThread::registerClient()
