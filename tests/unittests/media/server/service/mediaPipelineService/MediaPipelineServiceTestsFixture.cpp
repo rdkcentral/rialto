@@ -69,6 +69,7 @@ const std::string kTextTrackIdentifier{"TextTrackIdentifier"};
 constexpr uint32_t kBufferingLimit{4324};
 constexpr bool kUseBuffering{true};
 constexpr uint64_t kStopPosition{23412};
+constexpr uint32_t kQueuedFrames{123};
 } // namespace
 
 namespace firebolt::rialto
@@ -240,6 +241,26 @@ void MediaPipelineServiceTests::mediaPipelineWillGetImmediateOutput()
 void MediaPipelineServiceTests::mediaPipelineWillFailToGetImmediateOutput()
 {
     EXPECT_CALL(m_mediaPipelineMock, getImmediateOutput(_, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillSetReportDecodeErrors()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setReportDecodeErrors(_, _)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetReportDecodeErrors()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setReportDecodeErrors(_, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetQueuedFrames()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getQueuedFrames(_, _)).WillOnce(DoAll(SetArgReferee<1>(123), Return(true)));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetQueuedFrames()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getQueuedFrames(_, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillGetStats()
@@ -744,6 +765,29 @@ void MediaPipelineServiceTests::getImmediateOutputShouldFail()
 {
     bool immOp;
     EXPECT_FALSE(m_sut->getImmediateOutput(kSessionId, kSourceId, immOp));
+}
+
+void MediaPipelineServiceTests::setReportDecodeErrorsShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setReportDecodeErrors(kSessionId, kSourceId, true));
+}
+
+void MediaPipelineServiceTests::setReportDecodeErrorsShouldFail()
+{
+    EXPECT_FALSE(m_sut->setReportDecodeErrors(kSessionId, kSourceId, true));
+}
+
+void MediaPipelineServiceTests::getQueuedFramesShouldSucceed()
+{
+    uint32_t queuedFr;
+    EXPECT_TRUE(m_sut->getQueuedFrames(kSessionId, kSourceId, queuedFr));
+    EXPECT_EQ(queuedFr, kQueuedFrames);
+}
+
+void MediaPipelineServiceTests::getQueuedFramesShouldFail()
+{
+    uint32_t queuedFr;
+    EXPECT_FALSE(m_sut->getQueuedFrames(kSessionId, kSourceId, queuedFr));
 }
 
 void MediaPipelineServiceTests::getSupportedMimeTypesSucceed()

@@ -78,6 +78,10 @@ public:
     void mediaPipelineServiceWillFailToSetImmediateOutput();
     void mediaPipelineServiceWillGetImmediateOutput();
     void mediaPipelineServiceWillFailToGetImmediateOutput();
+    void mediaPipelineServiceWillSetReportDecodeErrors();
+    void mediaPipelineServiceWillFailToSetReportDecodeErrors();
+    void mediaPipelineServiceWillGetQueuedFrames();
+    void mediaPipelineServiceWillFailToGetQueuedFrames();
     void mediaPipelineServiceWillGetStats();
     void mediaPipelineServiceWillFailToGetStats();
     void mediaPipelineServiceWillRenderFrame();
@@ -154,6 +158,10 @@ public:
     void sendSetImmediateOutputRequestAndReceiveFail();
     void sendGetImmediateOutputRequestAndReceiveResponse();
     void sendGetImmediateOutputRequestAndReceiveFail();
+    void sendSetReportDecodeErrorsRequestAndReceiveResponse();
+    void sendSetReportDecodeErrorsRequestAndReceiveFail();
+    void sendGetQueuedFramesRequestAndReceiveResponse();
+    void sendGetQueuedFramesRequestAndReceiveFail();
     void sendGetStatsRequestAndReceiveResponse();
     void sendGetStatsRequestAndReceiveResponseWithoutStatsMatch();
     void sendHaveDataRequestAndReceiveResponse();

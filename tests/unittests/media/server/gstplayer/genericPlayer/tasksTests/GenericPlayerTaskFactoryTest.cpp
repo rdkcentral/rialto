@@ -53,6 +53,7 @@
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
+#include "tasks/generic/SetReportDecodeErrors.h"
 #include "tasks/generic/SetSourcePosition.h"
 #include "tasks/generic/SetStreamSyncMode.h"
 #include "tasks/generic/SetSync.h"
@@ -342,6 +343,13 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetImmediateOutput)
     auto task = m_sut.createSetImmediateOutput(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetImmediateOutput &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetReportDecodeErrors)
+{
+    auto task = m_sut.createSetReportDecodeErrors(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::VIDEO, true);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetReportDecodeErrors &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetTextTrackIdentifier)
