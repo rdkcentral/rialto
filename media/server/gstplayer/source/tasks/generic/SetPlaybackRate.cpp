@@ -101,9 +101,9 @@ void SetPlaybackRate::execute() const
                 if (!m_gstWrapper->gstElementSendEvent(videoDecoder, videoRateChangeEvent))
                 {
                     RIALTO_SERVER_LOG_INFO("Sent new event to videoDecoder failed");
-                    m_gstWrapper->gstEventUnref(videoRateChangeEvent);
                     success = false;
                 }
+                 m_gstWrapper->gstEventUnref(videoRateChangeEvent);
             }
 
             if (audioDecoder)
@@ -112,9 +112,9 @@ void SetPlaybackRate::execute() const
                 if (!m_gstWrapper->gstElementSendEvent(audioDecoder, audioRateChangeEvent))
                 {
                     RIALTO_SERVER_LOG_INFO("Sent new event to audioDecoder failed");
-                    m_gstWrapper->gstEventUnref(audioRateChangeEvent);
                     success = false;
                 }
+                m_gstWrapper->gstEventUnref(audioRateChangeEvent);
             }
             m_gstWrapper->gstEventUnref(instantRateChangeEvent);
         }
@@ -135,5 +135,13 @@ void SetPlaybackRate::execute() const
     {
         m_glibWrapper->gObjectUnref(audioSink);
     }
-}
+    if (audioDecoder)
+    {
+        m_glibWrapper->gObjectUnref(audioDecoder);
+    }
+    if (videoDecoder)
+    {
+        m_glibWrapper->gObjectUnref(videoDecoder);
+    }
+  }
 } // namespace firebolt::rialto::server::tasks::generic
