@@ -30,8 +30,8 @@ HandleBusMessage::HandleBusMessage(WebAudioPlayerContext &context, IGstWebAudioP
                                    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                                    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                                    GstMessage *message)
-    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper},
-      m_glibWrapper{glibWrapper}, m_message{message}
+    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{std::move(gstWrapper)},
+      m_glibWrapper{std::move(glibWrapper)}, m_message{message}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing HandleBusMessage");
 }

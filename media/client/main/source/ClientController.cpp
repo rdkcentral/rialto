@@ -265,7 +265,7 @@ void ClientController::changeStateAndNotifyClients(ApplicationState state)
             std::shared_ptr<IControlClient> clientLocked{client.lock()};
             if (clientLocked)
             {
-                currentClients.push_back(clientLocked);
+                currentClients.push_back(std::move(clientLocked));
             }
             else
             {

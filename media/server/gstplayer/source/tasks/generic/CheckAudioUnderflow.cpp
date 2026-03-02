@@ -32,7 +32,7 @@ namespace firebolt::rialto::server::tasks::generic
 CheckAudioUnderflow::CheckAudioUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                          IGstGenericPlayerClient *client,
                                          std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper)
-    : m_context{context}, m_player(player), m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}
+    : m_context{context}, m_player(player), m_gstPlayerClient{client}, m_gstWrapper{std::move(gstWrapper)}
 {
 }
 

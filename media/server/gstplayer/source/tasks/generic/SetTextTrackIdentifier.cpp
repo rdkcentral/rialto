@@ -26,7 +26,7 @@ namespace firebolt::rialto::server::tasks::generic
 SetTextTrackIdentifier::SetTextTrackIdentifier(GenericPlayerContext &context,
                                                std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                                                const std::string &textTrackIdentifier)
-    : m_context{context}, m_glibWrapper{glibWrapper}, m_textTrackIdentifier{textTrackIdentifier}
+    : m_context{context}, m_glibWrapper{std::move(glibWrapper)}, m_textTrackIdentifier{textTrackIdentifier}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetTextTrackIdentifier");
 }

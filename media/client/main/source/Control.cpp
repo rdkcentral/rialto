@@ -76,7 +76,7 @@ bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationSt
     std::shared_ptr<IControlClient> lockedClient = client.lock();
     if (lockedClient && m_clientController.registerClient(lockedClient, appState))
     {
-        m_clientsToUnregister.push_back(lockedClient);
+        m_clientsToUnregister.push_back(std::move(lockedClient));
         return true;
     }
     RIALTO_CLIENT_LOG_WARN("Unable to register client");

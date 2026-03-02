@@ -191,7 +191,7 @@ std::shared_ptr<ipc::IBlockingClosure> IpcClient::createBlockingClosure()
     // check which thread we're being called from, this determines if we pump
     // event loop from within the wait() method or not
     if (m_ipcThread.get_id() == std::this_thread::get_id())
-        return m_blockingClosureFactory->createBlockingClosurePoll(ipcChannel);
+        return m_blockingClosureFactory->createBlockingClosurePoll(std::move(ipcChannel));
     else
         return m_blockingClosureFactory->createBlockingClosureSemaphore();
 }
