@@ -111,7 +111,7 @@ const std::shared_ptr<MainThread::TaskInfo> MainThread::waitForTask()
     {
         m_taskQueueCv.wait(lock, [this] { return !m_taskQueue.empty(); });
     }
-    auto kTaskInfo = m_taskQueue.front();
+    const auto kTaskInfo = m_taskQueue.front();
     m_taskQueue.pop_front();
     return kTaskInfo;
 }

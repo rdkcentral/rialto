@@ -29,7 +29,7 @@ std::vector<std::string> splitUri(std::string uri)
     size_t pos = 0;
     while ((pos = uri.find("/")) != std::string::npos)
     {
-        const std::string token = uri.substr(0, pos);
+        std::string token = uri.substr(0, pos);
         if (!token.empty())
         {
             result.push_back(std::move(token));
