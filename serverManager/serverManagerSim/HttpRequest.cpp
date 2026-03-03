@@ -19,6 +19,7 @@
 
 #include "HttpRequest.h"
 #include <cstring>
+#include <utility>
 
 namespace
 {

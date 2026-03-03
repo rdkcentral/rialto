@@ -629,6 +629,41 @@ bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType
     return true;
 }
 
+bool GstGenericPlayer::setReportDecodeErrors(const MediaSourceType &mediaSourceType, bool reportDecodeErrors)
+{
+    if (!m_workerThread)
+        return false;
+
+    m_workerThread->enqueueTask(
+        m_taskFactory->createSetReportDecodeErrors(m_context, *this, mediaSourceType, reportDecodeErrors));
+    return true;
+}
+
+bool GstGenericPlayer::getQueuedFrames(uint32_t &queuedFrames)
+{
+    bool returnValue{false};
+    GstElement *decoder{getDecoder(MediaSourceType::VIDEO)};
+    if (decoder)
+    {
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "queued-frames"))
+        {
+            m_glibWrapper->gObjectGet(decoder, "queued-frames", &queuedFrames, nullptr);
+            returnValue = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("queued-frames not supported in element %s", GST_ELEMENT_NAME(decoder));
+        }
+        m_gstWrapper->gstObjectUnref(decoder);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get queued-frames property, decoder is NULL");
+    }
+
+    return returnValue;
+}
+
 bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutputRef)
 {
     bool returnValue{false};
@@ -1332,6 +1367,51 @@ bool GstGenericPlayer::setImmediateOutput()
         {
             RIALTO_SERVER_LOG_DEBUG("Pending an immediate-output, sink is NULL");
         }
+    }
+    return result;
+}
+
+bool GstGenericPlayer::setReportDecodeErrors()
+{
+    bool result{false};
+    bool reportDecodeErrors{false};
+
+    {
+        std::unique_lock lock{m_context.propertyMutex};
+        if (!m_context.pendingReportDecodeErrorsForVideo.has_value())
+        {
+            return false;
+        }
+        reportDecodeErrors = m_context.pendingReportDecodeErrorsForVideo.value();
+    }
+
+    GstElement *decoder = getDecoder(MediaSourceType::VIDEO);
+    if (decoder)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Set report decode errors to %s", reportDecodeErrors ? "TRUE" : "FALSE");
+
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "report-decode-errors"))
+        {
+            gboolean reportDecodeErrorsGboolean{reportDecodeErrors ? TRUE : FALSE};
+            m_glibWrapper->gObjectSet(decoder, "report-decode-errors", reportDecodeErrorsGboolean, nullptr);
+            result = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set report-decode-errors property on decoder '%s'",
+                                    GST_ELEMENT_NAME(decoder));
+        }
+
+        m_gstWrapper->gstObjectUnref(decoder);
+
+        {
+            std::unique_lock lock{m_context.propertyMutex};
+            m_context.pendingReportDecodeErrorsForVideo.reset();
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Pending report-decode-errors, decoder is NULL");
     }
     return result;
 }

@@ -108,7 +108,8 @@ protected:
 SetCaps::SetCaps(WebAudioPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                  std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
                  const std::string &audioMimeType, std::weak_ptr<const WebAudioConfig> webAudioConfig)
-    : m_context{context}, m_gstWrapper{std::move(gstWrapper)}, m_glibWrapper{std::move(glibWrapper)}, m_audioMimeType{audioMimeType}
+    : m_context{context}, m_gstWrapper{std::move(gstWrapper)}, m_glibWrapper{std::move(glibWrapper)},
+      m_audioMimeType{audioMimeType}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetCaps");
 

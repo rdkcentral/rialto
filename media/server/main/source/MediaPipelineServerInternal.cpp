@@ -134,9 +134,10 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
     std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService)
-    : m_mediaPipelineClient(std::move(client)), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
-      m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
-      m_timerFactory{std::move(timerFactory)}, m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
+    : m_mediaPipelineClient(std::move(client)), m_kGstPlayerFactory(gstPlayerFactory),
+      m_kVideoRequirements(videoRequirements), m_sessionId{sessionId}, m_shmBuffer{shmBuffer},
+      m_dataReaderFactory{std::move(dataReaderFactory)}, m_timerFactory{std::move(timerFactory)},
+      m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
       m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -532,6 +533,63 @@ bool MediaPipelineServerInternal::setImmediateOutputInternal(int32_t sourceId, b
 
     m_IsLowLatencyVideoPlayer = immediateOutput;
     return m_gstPlayer->setImmediateOutput(sourceIter->first, immediateOutput);
+}
+
+bool MediaPipelineServerInternal::setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setReportDecodeErrorsInternal(sourceId, reportDecodeErrors); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setReportDecodeErrorsInternal(int32_t sourceId, bool reportDecodeErrors)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed - Source not found");
+        return false;
+    }
+
+    return m_gstPlayer->setReportDecodeErrors(sourceIter->first, reportDecodeErrors);
+}
+
+bool MediaPipelineServerInternal::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = getQueuedFramesInternal(sourceId, queuedFrames); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::getQueuedFramesInternal(int32_t sourceId, uint32_t &queuedFrames)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed - Source not found");
+        return false;
+    }
+    return m_gstPlayer->getQueuedFrames(queuedFrames);
 }
 
 bool MediaPipelineServerInternal::getImmediateOutput(int32_t sourceId, bool &immediateOutput)

@@ -31,8 +31,8 @@ namespace firebolt::rialto::server::service
 {
 CdmService::CdmService(std::shared_ptr<IMediaKeysServerInternalFactory> &&mediaKeysFactory,
                        std::shared_ptr<IMediaKeysCapabilitiesFactory> &&mediaKeysCapabilitiesFactory)
-    : m_mediaKeysFactory{std::move(mediaKeysFactory)}, m_mediaKeysCapabilitiesFactory{std::move(mediaKeysCapabilitiesFactory)},
-      m_isActive{false}
+    : m_mediaKeysFactory{std::move(mediaKeysFactory)},
+      m_mediaKeysCapabilitiesFactory{std::move(mediaKeysCapabilitiesFactory)}, m_isActive{false}
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService is constructed");
 }
