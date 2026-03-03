@@ -80,14 +80,10 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                     case GST_STATE_NULL:
                     {
                         m_isGstreamerDispatcherActive = false;
-                        break;
-                    }
-                    case GST_STATE_PAUSED:
-                    case GST_STATE_PLAYING:
-                    {
-                        break;
                     }
                     case GST_STATE_READY:
+                    case GST_STATE_PAUSED:
+                    case GST_STATE_PLAYING:
                     case GST_STATE_VOID_PENDING:
                     {
                         break;

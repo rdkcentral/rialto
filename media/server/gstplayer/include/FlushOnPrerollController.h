@@ -20,8 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_FLUSH_ONPREROLL_CONTROLLER_H_
 #define FIREBOLT_RIALTO_SERVER_FLUSH_ONPREROLL_CONTROLLER_H_
 
-#include "IFlushOnPrerollController.h"
-#include <mutex>
+#include "MediaCommon.h"
+#include <gst/gst.h>
 #include <optional>
 #include <set>
 
@@ -31,19 +31,18 @@ namespace firebolt::rialto::server
  * @brief The workaround class for unresolved gstreamer preroll issue:
  *        https://gitlab.freedesktop.org/gstreamer/gstreamer/-/issues/150
  */
-class FlushOnPrerollController : public IFlushOnPrerollController
+class FlushOnPrerollController
 {
 public:
     FlushOnPrerollController() = default;
-    ~FlushOnPrerollController() override = default;
+    ~FlushOnPrerollController() = default;
 
-    bool shouldPostponeFlush(const MediaSourceType &type) const override;
-    void setFlushing(const MediaSourceType &type, const GstState &currentPipelineState) override;
-    void stateReached(const GstState &newPipelineState) override;
-    void reset() override;
+    bool shouldPostponeFlush(const MediaSourceType &type) const;
+    void setFlushing(const MediaSourceType &type, const GstState &currentPipelineState);
+    void stateReached(const GstState &newPipelineState);
+    void reset();
 
 private:
-    mutable std::mutex m_mutex{};
     std::set<MediaSourceType> m_flushingSources{};
     std::optional<GstState> m_targetState{std::nullopt};
     bool m_isPrerolled{false};

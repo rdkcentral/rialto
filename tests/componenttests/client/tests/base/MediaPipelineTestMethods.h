@@ -167,7 +167,6 @@ protected:
     void shouldNotifyNeedDataVideo(const size_t framesToWrite);
     void shouldNotifyNeedDataVideoSecondary(const size_t framesToWrite);
     void shouldNotifyPosition(const uint32_t expectedPosition);
-    void shouldNotifyPlaybackInfo(const firebolt::rialto::PlaybackInfo &expectedPlaybackInfo);
     void shouldNotifyQosAudio();
     void shouldNotifyQosVideo();
     void shouldNotifyBufferUnderflowAudio();
@@ -294,7 +293,6 @@ protected:
     void sendNotifyPlaybackStateSeeking();
     void sendNotifyPlaybackStateSeekDone();
     void sendNotifyPositionChanged(const int64_t position);
-    void sendNotifyPlaybackInfo(const firebolt::rialto::PlaybackInfo &playbackInfo);
     void sendNotifyQosAudio();
     void sendNotifyQosVideo();
     void sendNotifyBufferUnderflowAudio();

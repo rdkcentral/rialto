@@ -460,6 +460,10 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
                 sink = GST_ELEMENT(m_gstWrapper->gstObjectRef(GST_OBJECT(autoSink)));
             }
         }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("%s could not be obtained", kSinkName);
+        }
     }
     return sink;
 }
@@ -711,10 +715,6 @@ bool GstGenericPlayer::getStats(const MediaSourceType &mediaSourceType, uint64_t
             m_gstWrapper->gstStructureFree(stats);
         }
         m_gstWrapper->gstObjectUnref(sink);
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to get stats, sink is NULL");
     }
 
     return returnValue;
@@ -1302,10 +1302,6 @@ bool GstGenericPlayer::setVideoSinkRectangle()
         }
         m_gstWrapper->gstObjectUnref(videoSink);
     }
-    else
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to set video rectangle, sink is NULL");
-    }
 
     return result;
 }
@@ -1693,7 +1689,6 @@ bool GstGenericPlayer::setErmContext()
 
 void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
 {
-    static constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
     if (m_positionReportingAndCheckAudioUnderflowTimer && m_positionReportingAndCheckAudioUnderflowTimer->isActive())
     {
         return;
@@ -1710,12 +1705,6 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
             }
         },
         firebolt::rialto::common::TimerType::PERIODIC);
-
-    notifyPlaybackInfo();
-
-    m_playbackInfoTimer =
-        m_timerFactory
-            ->createTimer(kPlaybackInfoTimerMs, [this]() { notifyPlaybackInfo(); }, firebolt::rialto::common::TimerType::PERIODIC);
 }
 
 void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
@@ -1724,12 +1713,6 @@ void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
     {
         m_positionReportingAndCheckAudioUnderflowTimer->cancel();
         m_positionReportingAndCheckAudioUnderflowTimer.reset();
-    }
-
-    if (m_playbackInfoTimer && m_playbackInfoTimer->isActive())
-    {
-        m_playbackInfoTimer->cancel();
-        m_playbackInfoTimer.reset();
     }
 }
 

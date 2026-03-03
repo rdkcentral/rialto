@@ -23,13 +23,11 @@ namespace firebolt::rialto::server
 {
 bool FlushOnPrerollController::shouldPostponeFlush(const MediaSourceType &type) const
 {
-    std::unique_lock lock{m_mutex};
     return m_isPrerolled && m_flushingSources.find(type) != m_flushingSources.end();
 }
 
 void FlushOnPrerollController::setFlushing(const MediaSourceType &type, const GstState &currentPipelineState)
 {
-    std::unique_lock lock{m_mutex};
     m_flushingSources.insert(type);
     m_isPrerolled = false;
     if (!m_targetState.has_value())
@@ -40,7 +38,6 @@ void FlushOnPrerollController::setFlushing(const MediaSourceType &type, const Gs
 
 void FlushOnPrerollController::stateReached(const GstState &newPipelineState)
 {
-    std::unique_lock lock{m_mutex};
     m_isPrerolled = true;
     if (m_targetState.has_value() && newPipelineState == m_targetState.value())
     {
@@ -51,7 +48,6 @@ void FlushOnPrerollController::stateReached(const GstState &newPipelineState)
 
 void FlushOnPrerollController::reset()
 {
-    std::unique_lock lock{m_mutex};
     m_flushingSources.clear();
     m_targetState = std::nullopt;
 }

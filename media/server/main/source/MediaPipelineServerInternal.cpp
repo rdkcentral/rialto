@@ -205,7 +205,7 @@ bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeTy
 
 bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string &mimeType, const std::string &url)
 {
-    std::unique_lock lock{m_getPropertyMutex};
+    std::unique_lock lock{m_getPositionMutex};
     /* If gstreamer player already created, destroy the old one first */
     if (m_gstPlayer)
     {
@@ -467,7 +467,7 @@ bool MediaPipelineServerInternal::getPosition(int64_t &position)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    std::shared_lock lock{m_getPropertyMutex};
+    std::shared_lock lock{m_getPositionMutex};
 
     if (!m_gstPlayer)
     {
@@ -809,7 +809,6 @@ bool MediaPipelineServerInternal::setVolume(double targetVolume, uint32_t volume
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    m_isSetVolumeInProgress = true;
     bool result;
     auto task = [&]() { result = setVolumeInternal(targetVolume, volumeDuration, easeType); };
 
@@ -827,7 +826,6 @@ bool MediaPipelineServerInternal::setVolumeInternal(double targetVolume, uint32_
         return false;
     }
     m_gstPlayer->setVolume(targetVolume, volumeDuration, easeType);
-    m_isSetVolumeInProgress = false;
     return true;
 }
 
@@ -835,16 +833,11 @@ bool MediaPipelineServerInternal::getVolume(double &currentVolume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (m_isSetVolumeInProgress)
-    {
-        bool result;
-        auto task = [&]() { result = getVolumeInternal(currentVolume); };
+    bool result;
+    auto task = [&]() { result = getVolumeInternal(currentVolume); };
 
-        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-        return result;
-    }
-    std::shared_lock lock{m_getPropertyMutex};
-    return getVolumeInternal(currentVolume);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
 }
 
 bool MediaPipelineServerInternal::getVolumeInternal(double &currentVolume)
@@ -1582,14 +1575,6 @@ void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourc
     };
 
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
-}
-
-void MediaPipelineServerInternal::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
-{
-    if (m_mediaPipelineClient)
-    {
-        m_mediaPipelineClient->notifyPlaybackInfo(playbackInfo);
-    }
 }
 
 void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType)

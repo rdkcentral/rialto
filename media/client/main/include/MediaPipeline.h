@@ -160,8 +160,6 @@ public:
 
     void notifySourceFlushed(int32_t sourceId) override;
 
-    void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) override;
-
     bool renderFrame() override;
 
     bool setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType) override;

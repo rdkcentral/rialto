@@ -227,8 +227,6 @@ private:
      */
     void onSourceFlushed(const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event);
 
-    void onPlaybackInfo(const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event);
-
     /**
      * @brief Create a new player session.
      *
