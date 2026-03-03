@@ -45,6 +45,8 @@ if( RIALTO_ENABLE_CONFIG_FILE )
         source/JsonCppWrapperFactory.cpp)
 endif()
 
+find_package (yaml-cpp REQUIRED)
+
 if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL "ComponentTests" )
     add_compile_definitions(WRAPPERS_ENABLED)
 
@@ -76,7 +78,8 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
         source/RdkGstreamerUtilsWrapper.cpp
         source/TextTrackPluginWrapper.cpp
         source/TextTrackWrapper.cpp
-        source/ThunderWrapper.cpp)
+        source/ThunderWrapper.cpp
+        source/YamlCppWrapper.cpp)
 endif()
 
 add_library(
@@ -92,6 +95,7 @@ add_library(
         source/RdkGstreamerUtilsWrapperAccessor.cpp
         source/TextTrackPluginWrapperFactoryAccessor.cpp
         source/ThunderWrapperFactoryAccessor.cpp
+        source/YamlCppWrapperAccessor.cpp
         ${WRAPPER_SOURCES}
         ${JSONCPP_WRAPPER_SOURCE_FILES}
     )
