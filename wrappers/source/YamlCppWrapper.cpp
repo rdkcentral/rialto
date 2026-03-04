@@ -18,6 +18,12 @@
  */
 
 #include "YamlCppWrapper.h"
+#include <yaml-cpp/yaml.h>
+
+namespace
+{
+const std::string kAudioCapabilitiesFilePath{"/product/hfp/config/hfp-audiodecoder.yaml"};
+} // namespace
 
 namespace firebolt::rialto::wrappers
 {
@@ -27,12 +33,21 @@ std::shared_ptr<IYamlCppWrapper> YamlCppWrapperFactory::createYamlCppWrapper()
 }
 
 DecoderCapabilitiesStatus YamlCppWrapper::getAudioDecoderCapabilities(AudioDecoderCapabilities &capabilities) const
+try
 {
     return DecoderCapabilitiesStatus::OK;
+}
+catch (const std::exception &e)
+{
+    return DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED;
 }
 
 DecoderCapabilitiesStatus YamlCppWrapper::getVideoDecoderCapabilities(VideoDecoderCapabilities &capabilities) const
+try
 {
     return DecoderCapabilitiesStatus::OK;
 }
+catch (const std::exception &e)
+{
+    return DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED;
 } // namespace firebolt::rialto::wrappers

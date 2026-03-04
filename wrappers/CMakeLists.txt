@@ -125,6 +125,7 @@ target_link_libraries (
         PRIVATE
         ${WRAPPER_LIBS}
         ${GStreamerApp_LIBRARIES}
+        yaml-cpp
     )
 
 if( RIALTO_ENABLE_CONFIG_FILE )
