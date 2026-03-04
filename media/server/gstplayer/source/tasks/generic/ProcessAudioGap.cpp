@@ -25,10 +25,10 @@ namespace firebolt::rialto::server::tasks::generic
 ProcessAudioGap::ProcessAudioGap(
     GenericPlayerContext &context, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
     std::int64_t position, std::uint32_t duration, std::int64_t discontinuityGap, bool audioAac)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{std::move(rdkGstreamerUtilsWrapper)}, m_position{position}, m_duration{duration},
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_position{position}, m_duration{duration},
       m_discontinuityGap{discontinuityGap}, m_audioAac{audioAac}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing ProcessAudioGap");

@@ -68,9 +68,9 @@ public:
     int32_t registerClient() override;
     void unregisterClient(uint32_t clientId) override;
 
-    void enqueueTask(uint32_t clientId, Task task) override;
-    void enqueueTaskAndWait(uint32_t clientId, Task task) override;
-    void enqueuePriorityTaskAndWait(uint32_t clientId, Task task) override;
+    void enqueueTask(uint32_t clientId, const Task &task) override;
+    void enqueueTaskAndWait(uint32_t clientId, const Task &task) override;
+    void enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task) override;
 
 private:
     /**

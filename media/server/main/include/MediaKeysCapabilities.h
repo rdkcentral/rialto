@@ -58,7 +58,7 @@ public:
      * @param[in] ocdmSystemFactory : The ocdmSystem factory.
      */
     MediaKeysCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IOcdmFactory> ocdmFactory,
-                          std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory);
+                          const std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> &ocdmSystemFactory);
 
     /**
      * @brief Virtual destructor.

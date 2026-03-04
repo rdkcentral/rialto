@@ -32,8 +32,9 @@ namespace firebolt::rialto::server::tasks::webaudio
 class WriteBuffer : public IPlayerTask
 {
 public:
-    WriteBuffer(WebAudioPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength);
+    WriteBuffer(WebAudioPlayerContext &context,
+                const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper, uint8_t *mainPtr,
+                uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength);
     ~WriteBuffer() override;
     void execute() const override;
 

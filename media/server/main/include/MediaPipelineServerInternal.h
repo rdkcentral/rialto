@@ -78,11 +78,12 @@ public:
      * @param[in] activeRequests    : The active requests
      * @param[in] decryptionService : The decryption service
      */
-    MediaPipelineServerInternal(std::shared_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
+    MediaPipelineServerInternal(const std::shared_ptr<IMediaPipelineClient> &client,
+                                const VideoRequirements &videoRequirements,
                                 const std::shared_ptr<IGstGenericPlayerFactory> &gstPlayerFactory, int sessionId,
                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-                                std::shared_ptr<common::ITimerFactory> timerFactory,
+                                const std::shared_ptr<common::ITimerFactory> &timerFactory,
                                 std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
                                 std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService);
 
