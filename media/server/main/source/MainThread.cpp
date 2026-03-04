@@ -99,6 +99,7 @@ void MainThread::mainThreadLoop()
         if (nullptr != kTaskInfo->cv)
         {
             std::unique_lock<std::mutex> lockTask(*(kTaskInfo->mutex));
+            kTaskInfo->done = true;
             kTaskInfo->cv->notify_one();
         }
     }
@@ -164,7 +165,7 @@ void MainThread::enqueueTaskAndWait(uint32_t clientId, const Task &task)
         }
         m_taskQueueCv.notify_one();
 
-        newTask->cv->wait(lockTask);
+        newTask->cv->wait(lockTask, [&]{ return newTask->done; });
     }
 }
 
@@ -184,7 +185,7 @@ void MainThread::enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task)
         }
         m_taskQueueCv.notify_one();
 
-        newTask->cv->wait(lockTask);
+        newTask->cv->wait(lockTask, [&]{ return newTask->done; });
     }
 }
 } // namespace firebolt::rialto::server

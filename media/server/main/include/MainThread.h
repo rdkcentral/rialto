@@ -78,6 +78,7 @@ private:
      */
     struct TaskInfo
     {
+        bool done{false};
         uint32_t clientId;                           /**< The id of the client creating the task. */
         Task task;                                   /**< The task to execute. */
         std::unique_ptr<std::mutex> mutex;           /**< Mutex for the task condition variable. */
