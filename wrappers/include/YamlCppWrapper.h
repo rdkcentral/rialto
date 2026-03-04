@@ -24,9 +24,12 @@
 
 namespace firebolt::rialto::wrappers
 {
-class IYamlCppWrapperFactory : public IYamlCppWrapperFactory
+class YamlCppWrapperFactory : public IYamlCppWrapperFactory
 {
 public:
+    YamlCppWrapperFactory() = default;
+    ~YamlCppWrapperFactory() override = default;
+
     std::shared_ptr<IYamlCppWrapper> createYamlCppWrapper() override;
 };
 
@@ -35,6 +38,7 @@ class YamlCppWrapper : public IYamlCppWrapper
 public:
     YamlCppWrapper() = default;
     ~YamlCppWrapper() override = default;
+
     DecoderCapabilitiesStatus getAudioDecoderCapabilities(AudioDecoderCapabilities &capabilities) const override;
     DecoderCapabilitiesStatus getVideoDecoderCapabilities(VideoDecoderCapabilities &capabilities) const override;
 };

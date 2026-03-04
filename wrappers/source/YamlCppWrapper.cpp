@@ -50,4 +50,6 @@ try
 catch (const std::exception &e)
 {
     return DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED;
+}
+
 } // namespace firebolt::rialto::wrappers
