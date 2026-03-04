@@ -133,6 +133,10 @@ public:
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
                  const firebolt::rialto::MediaSourceType &type, bool immediateOutput),
                 (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetReportDecodeErrors,
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
+                 const firebolt::rialto::MediaSourceType &type, bool reportDecodeErrors),
+                (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetBufferingLimit,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, std::uint32_t limit),
                 (const, override));

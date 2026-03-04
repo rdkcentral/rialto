@@ -55,6 +55,7 @@ namespace
 const std::string kElementTypeName{"GenericSink"};
 const std::string kAudioSinkStr{"audio-sink"};
 const std::string kVideoSinkStr{"video-sink"};
+const std::string kTextSinkStr{"text-sink"};
 } // namespace
 
 class GstGenericPlayerTestCommon : public ::testing::Test
@@ -118,7 +119,9 @@ protected:
     void expectCheckPlaySink();
     void expectSetMessageCallback();
     void expectGetDecoder(GstElement *element);
+    void expectGetVideoDecoder(GstElement *element);
     void expectGetVideoParser(GstElement *element);
+    void expectGetAVSink(const std::string &sinkName, GstElement *elementObj);
     void expectGetSink(const std::string &sinkName, GstElement *elementObj);
     void expectNoDecoder();
     void expectNoParser();
