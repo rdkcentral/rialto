@@ -65,7 +65,7 @@ public:
      */
     MediaKeysServerInternal(const std::string &keySystem, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
                             std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory,
-                            std::shared_ptr<IMediaKeySessionFactory> mediaKeySessionFactory);
+                            const std::shared_ptr<IMediaKeySessionFactory> &mediaKeySessionFactory);
 
     /**
      * @brief Virtual destructor.

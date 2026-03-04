@@ -55,7 +55,7 @@ public:
      *
      * @param[in] gstCapabilitiesFactory : The gstreamer capabilities factory.
      */
-    explicit MediaPipelineCapabilities(std::shared_ptr<IGstCapabilitiesFactory> gstCapabilitiesFactory);
+    explicit MediaPipelineCapabilities(const std::shared_ptr<IGstCapabilitiesFactory> &gstCapabilitiesFactory);
 
     /**
      * @brief Virtual destructor.

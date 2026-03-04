@@ -274,7 +274,7 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
             {
                 for (guint j = 0; j < nProps && !propertiesToLookFor.empty(); ++j)
                 {
-                    const std::string kPropName{props[j]->name};
+                    std::string kPropName{props[j]->name};
                     auto it = propertiesToLookFor.find(kPropName);
                     if (it != propertiesToLookFor.end())
                     {

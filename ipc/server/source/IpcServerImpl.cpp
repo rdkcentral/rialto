@@ -209,8 +209,8 @@ void ServerImpl::closeListeningSocket(Socket *socket)
 }
 
 bool ServerImpl::addSocket(const std::string &socketPath,
-                           std::function<void(const std::shared_ptr<IClient> &)> clientConnectedCb,
-                           std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb)
+                           const std::function<void(const std::shared_ptr<IClient> &)> &clientConnectedCb,
+                           const std::function<void(const std::shared_ptr<IClient> &)> &clientDisconnectedCb)
 {
     // store the path
     Socket socket;
@@ -277,8 +277,8 @@ bool ServerImpl::addSocket(const std::string &socketPath,
     }
 
     // store the client connected / disconnected callbacks
-    socket.connectedCb = std::move(clientConnectedCb);
-    socket.disconnectedCb = std::move(clientDisconnectedCb);
+    socket.connectedCb = clientConnectedCb;
+    socket.disconnectedCb = clientDisconnectedCb;
 
     // add to the internal map
     std::lock_guard<std::mutex> locker(m_socketsLock);
@@ -289,8 +289,8 @@ bool ServerImpl::addSocket(const std::string &socketPath,
     return true;
 }
 
-bool ServerImpl::addSocket(int fd, std::function<void(const std::shared_ptr<IClient> &)> clientConnectedCb,
-                           std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb)
+bool ServerImpl::addSocket(int fd, const std::function<void(const std::shared_ptr<IClient> &)> &clientConnectedCb,
+                           const std::function<void(const std::shared_ptr<IClient> &)> &clientDisconnectedCb)
 {
     // store the path
     Socket socket;
@@ -323,8 +323,8 @@ bool ServerImpl::addSocket(int fd, std::function<void(const std::shared_ptr<ICli
     }
 
     // store the client connected / disconnected callbacks
-    socket.connectedCb = std::move(clientConnectedCb);
-    socket.disconnectedCb = std::move(clientDisconnectedCb);
+    socket.connectedCb = clientConnectedCb;
+    socket.disconnectedCb = clientDisconnectedCb;
 
     // add to the internal map
     std::lock_guard<std::mutex> locker(m_socketsLock);

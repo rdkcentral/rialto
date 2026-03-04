@@ -129,15 +129,14 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
 }
 
 MediaPipelineServerInternal::MediaPipelineServerInternal(
-    std::shared_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
+    const std::shared_ptr<IMediaPipelineClient> &client, const VideoRequirements &videoRequirements,
     const std::shared_ptr<IGstGenericPlayerFactory> &gstPlayerFactory, int sessionId,
     const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-    std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
+    const std::shared_ptr<common::ITimerFactory> &timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
     std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService)
-    : m_mediaPipelineClient(std::move(client)), m_kGstPlayerFactory(gstPlayerFactory),
-      m_kVideoRequirements(videoRequirements), m_sessionId{sessionId}, m_shmBuffer{shmBuffer},
-      m_dataReaderFactory{std::move(dataReaderFactory)}, m_timerFactory{std::move(timerFactory)},
-      m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
+    : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
+      m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
+      m_timerFactory{timerFactory}, m_activeRequests{std::move(activeRequests)}, m_decryptionService{decryptionService},
       m_currentPlaybackState{PlaybackState::UNKNOWN}, m_wasAllSourcesAttachedCalled{false}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

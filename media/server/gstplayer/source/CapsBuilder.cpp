@@ -24,10 +24,10 @@
 
 namespace firebolt::rialto::server
 {
-MediaSourceCapsBuilder::MediaSourceCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                                               std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+MediaSourceCapsBuilder::MediaSourceCapsBuilder(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                               const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                                                const firebolt::rialto::IMediaPipeline::MediaSourceAV &source)
-    : m_gstWrapper(std::move(gstWrapper)), m_glibWrapper(std::move(glibWrapper)), m_attachedSource(source)
+    : m_gstWrapper(gstWrapper), m_glibWrapper(glibWrapper), m_attachedSource(source)
 {
 }
 GstCaps *MediaSourceCapsBuilder::buildCaps()
@@ -92,9 +92,10 @@ void MediaSourceCapsBuilder::addStreamFormatToCaps(GstCaps *caps) const
 }
 
 MediaSourceAudioCapsBuilder::MediaSourceAudioCapsBuilder(
-    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, const IMediaPipeline::MediaSourceAudio &source)
-    : MediaSourceCapsBuilder(std::move(gstWrapper), std::move(glibWrapper), source), m_attachedAudioSource(source)
+    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+    const IMediaPipeline::MediaSourceAudio &source)
+    : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedAudioSource(source)
 {
 }
 
@@ -226,9 +227,10 @@ void MediaSourceAudioCapsBuilder::addFlacSpecificData(GstCaps *caps) const
 }
 
 MediaSourceVideoCapsBuilder::MediaSourceVideoCapsBuilder(
-    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, const IMediaPipeline::MediaSourceVideo &source)
-    : MediaSourceCapsBuilder(std::move(gstWrapper), std::move(glibWrapper), source), m_attachedVideoSource(source)
+    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+    const IMediaPipeline::MediaSourceVideo &source)
+    : MediaSourceCapsBuilder(gstWrapper, glibWrapper, source), m_attachedVideoSource(source)
 {
 }
 
@@ -244,10 +246,10 @@ GstCaps *MediaSourceVideoCapsBuilder::buildCaps()
 }
 
 MediaSourceVideoDolbyVisionCapsBuilder::MediaSourceVideoDolbyVisionCapsBuilder(
-    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const IMediaPipeline::MediaSourceVideoDolbyVision &source)
-    : MediaSourceVideoCapsBuilder(std::move(gstWrapper), std::move(glibWrapper), source), m_attachedDolbySource(source)
+    : MediaSourceVideoCapsBuilder(gstWrapper, glibWrapper, source), m_attachedDolbySource(source)
 {
 }
 

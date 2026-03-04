@@ -27,12 +27,12 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 SetVolume::SetVolume(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
-                     std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
                      double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType)
-    : m_context{context}, m_player{player}, m_gstWrapper{std::move(gstWrapper)}, m_glibWrapper{std::move(glibWrapper)},
-      m_rdkGstreamerUtilsWrapper{std::move(rdkGstreamerUtilsWrapper)}, m_targetVolume{targetVolume},
+    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_targetVolume{targetVolume},
       m_volumeDuration{volumeDuration}, m_easeType{easeType}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetVolume");

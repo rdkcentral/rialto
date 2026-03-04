@@ -33,7 +33,7 @@ class SetTextTrackIdentifier : public IPlayerTask
 {
 public:
     SetTextTrackIdentifier(GenericPlayerContext &context,
-                           std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                           const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                            const std::string &textTrackIdentifier);
     ~SetTextTrackIdentifier() override;
     void execute() const override;

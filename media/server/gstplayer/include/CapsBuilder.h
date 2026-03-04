@@ -31,8 +31,8 @@ namespace firebolt::rialto::server
 class MediaSourceCapsBuilder
 {
 public:
-    MediaSourceCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                           std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+    MediaSourceCapsBuilder(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                           const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                            const firebolt::rialto::IMediaPipeline::MediaSourceAV &source);
     virtual ~MediaSourceCapsBuilder() = default;
     virtual GstCaps *buildCaps();
@@ -51,8 +51,8 @@ protected:
 class MediaSourceAudioCapsBuilder : public MediaSourceCapsBuilder
 {
 public:
-    MediaSourceAudioCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                                std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+    MediaSourceAudioCapsBuilder(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                                 const IMediaPipeline::MediaSourceAudio &source);
     ~MediaSourceAudioCapsBuilder() override = default;
     GstCaps *buildCaps() override;
@@ -72,8 +72,8 @@ protected:
 class MediaSourceVideoCapsBuilder : public MediaSourceCapsBuilder
 {
 public:
-    MediaSourceVideoCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                                std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+    MediaSourceVideoCapsBuilder(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                                 const IMediaPipeline::MediaSourceVideo &source);
     ~MediaSourceVideoCapsBuilder() override = default;
     GstCaps *buildCaps() override;
@@ -85,8 +85,8 @@ protected:
 class MediaSourceVideoDolbyVisionCapsBuilder : public MediaSourceVideoCapsBuilder
 {
 public:
-    MediaSourceVideoDolbyVisionCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                                           std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+    MediaSourceVideoDolbyVisionCapsBuilder(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                           const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                                            const IMediaPipeline::MediaSourceVideoDolbyVision &source);
     ~MediaSourceVideoDolbyVisionCapsBuilder() override = default;
     GstCaps *buildCaps() override;

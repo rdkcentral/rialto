@@ -129,11 +129,10 @@ void autoAudioSinkChildRemovedCallback(GstChildProxy *obj, GObject *object, gcha
 namespace firebolt::rialto::server::tasks::generic
 {
 SetupElement::SetupElement(GenericPlayerContext &context,
-                           std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                           std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                           const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                           const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                            IGstGenericPlayerPrivate &player, GstElement *element)
-    : m_context{context}, m_gstWrapper{std::move(gstWrapper)}, m_glibWrapper{std::move(glibWrapper)}, m_player{player},
-      m_element{element}
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_player{player}, m_element{element}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetupElement");
 }
