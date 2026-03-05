@@ -1577,10 +1577,23 @@ void MediaPipelineServerInternal::notifyQos(MediaSourceType mediaSourceType, con
 
 void MediaPipelineServerInternal::notifyBufferUnderflow(MediaSourceType mediaSourceType)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
+    RIALTO_SERVER_LOG_WARN("notifyBufferUnderflow called for source %s",
+                           common::convertMediaSourceType(mediaSourceType));
+
+    if (!m_mediaPipelineClient)
+    {
+        RIALTO_SERVER_LOG_WARN("notifyBufferUnderflow: m_mediaPipelineClient is NULL");
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("notifyBufferUnderflow: m_mediaPipelineClient is valid");
+    }
 
     auto task = [&, mediaSourceType]()
     {
+        RIALTO_SERVER_LOG_WARN("notifyBufferUnderflow task executing for source %s",
+                               common::convertMediaSourceType(mediaSourceType));
+
         if (m_mediaPipelineClient)
         {
             const auto kSourceIter = m_attachedSources.find(mediaSourceType);
@@ -1590,9 +1603,23 @@ void MediaPipelineServerInternal::notifyBufferUnderflow(MediaSourceType mediaSou
                                        common::convertMediaSourceType(mediaSourceType));
                 return;
             }
+
+            RIALTO_SERVER_LOG_WARN("Buffer underflow sending to client, sourceId=%d (%s)",
+                                   kSourceIter->second,
+                                   common::convertMediaSourceType(mediaSourceType));
+
             m_mediaPipelineClient->notifyBufferUnderflow(kSourceIter->second);
+
+            RIALTO_SERVER_LOG_WARN("Buffer underflow notification SENT to client");
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("notifyBufferUnderflow task: m_mediaPipelineClient is NULL");
         }
     };
+
+    RIALTO_SERVER_LOG_DEBUG("notifyBufferUnderflow: enqueue task for source %s",
+                            common::convertMediaSourceType(mediaSourceType));
 
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
