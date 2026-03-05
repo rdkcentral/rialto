@@ -165,7 +165,7 @@ void MainThread::enqueueTaskAndWait(uint32_t clientId, const Task &task)
         }
         m_taskQueueCv.notify_one();
 
-        newTask->cv->wait(lockTask, [&]{ return newTask->done; });
+        newTask->cv->wait(lockTask, [&] { return newTask->done; });
     }
 }
 
@@ -185,7 +185,7 @@ void MainThread::enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task)
         }
         m_taskQueueCv.notify_one();
 
-        newTask->cv->wait(lockTask, [&]{ return newTask->done; });
+        newTask->cv->wait(lockTask, [&] { return newTask->done; });
     }
 }
 } // namespace firebolt::rialto::server
