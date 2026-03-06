@@ -101,6 +101,20 @@ public:
      */
     bool isVideoMaster(bool &isVideoMaster) override;
 
+    /**
+     * @brief Gets the supported audio capabilities.
+     *
+     * @retval The supported audio capabilities.
+     */
+    AudioDecoderCapabilities getSupportedAudioCapabilities() override;
+
+    /**
+     * @brief Gets the supported video capabilities.
+     *
+     * @retval The supported video capabilities.
+     */
+    VideoDecoderCapabilities getSupportedVideoCapabilities() override;
+
 private:
     /**
      * @brief The ipc protobuf media Pipeline capabilities stub.

@@ -19,6 +19,7 @@
 
 #include "MediaPipelineCapabilitiesIpc.h"
 #include "IpcModuleBase.h"
+#include "MediaPipelineStructureMatchers.h"
 #include <gtest/gtest.h>
 
 using ::testing::Return;
@@ -27,7 +28,9 @@ using ::testing::WithArgs;
 namespace
 {
 const char *kPropertyName = "immediate-output";
-}
+const std::string kInterfaceVersion{"2.0.0"};
+const std::string kSchemaVersion{"1.0.0"};
+} // namespace
 class MediaPipelineCapabilitiesIpcTest : public IpcModuleBase, public ::testing::Test
 {
 protected:
@@ -72,6 +75,22 @@ public:
         firebolt::rialto::IsVideoMasterResponse *isVideoMasterResponse =
             dynamic_cast<firebolt::rialto::IsVideoMasterResponse *>(response);
         isVideoMasterResponse->set_is_video_master(true);
+    }
+
+    void setGetSupportedAudioCapabilitiesResponse(google::protobuf::Message *response)
+    {
+        firebolt::rialto::GetSupportedAudioCapabilitiesResponse *getSupportedAudioCapabResp =
+            dynamic_cast<firebolt::rialto::GetSupportedAudioCapabilitiesResponse *>(response);
+        getSupportedAudioCapabResp->set_interface_version(kInterfaceVersion);
+        getSupportedAudioCapabResp->set_schema_version(kSchemaVersion);
+    }
+
+    void setGetSupportedVideoCapabilitiesResponse(google::protobuf::Message *response)
+    {
+        firebolt::rialto::GetSupportedVideoCapabilitiesResponse *getSupportedVideoCapabResp =
+            dynamic_cast<firebolt::rialto::GetSupportedVideoCapabilitiesResponse *>(response);
+        getSupportedVideoCapabResp->set_interface_version(kInterfaceVersion);
+        getSupportedVideoCapabResp->set_schema_version(kSchemaVersion);
     }
 };
 
@@ -273,4 +292,92 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, IsVideoMasterFailure)
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("isVideoMaster"), _, _, _, _));
 
     EXPECT_FALSE(m_sut->isVideoMaster(isMaster));
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedAudioCapabilitiesSuccess)
+{
+    const AudioDecoderCapabilities kCapabilities{kInterfaceVersion, kSchemaVersion, {}};
+
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedAudioCapabilities"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setGetSupportedAudioCapabilitiesResponse)));
+
+    EXPECT_THAT(m_sut->getSupportedAudioCapabilities(), decoderCapabilitiesMatcher(kCapabilities));
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedAudioCapabilitiesDisconnected)
+{
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallDisconnected();
+
+    m_sut->getSupportedAudioCapabilities();
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedAudioCapabilitiesReconnectChannel)
+{
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallReconnected();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedAudioCapabilities"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setGetSupportedAudioCapabilitiesResponse)));
+
+    m_sut->getSupportedAudioCapabilities();
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedAudioCapabilitiesFailure)
+{
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallFailure();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedAudioCapabilities"), _, _, _, _));
+
+    m_sut->getSupportedAudioCapabilities();
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedVideoCapabilitiesSuccess)
+{
+    const VideoDecoderCapabilities kCapabilities{kInterfaceVersion, kSchemaVersion, {}};
+
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedVideoCapabilities"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setGetSupportedVideoCapabilitiesResponse)));
+
+    EXPECT_THAT(m_sut->getSupportedVideoCapabilities(), decoderCapabilitiesMatcher(kCapabilities));
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedVideoCapabilitiesDisconnected)
+{
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallDisconnected();
+
+    m_sut->getSupportedVideoCapabilities();
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedVideoCapabilitiesReconnectChannel)
+{
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallReconnected();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedVideoCapabilities"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setGetSupportedVideoCapabilitiesResponse)));
+
+    m_sut->getSupportedVideoCapabilities();
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedVideoCapabilitiesFailure)
+{
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallFailure();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedVideoCapabilities"), _, _, _, _));
+
+    m_sut->getSupportedVideoCapabilities();
 }

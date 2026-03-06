@@ -108,4 +108,18 @@ bool MediaPipelineCapabilities::isVideoMaster(bool &isVideoMaster)
 
     return m_mediaPipelineCapabilitiesIpc->isVideoMaster(isVideoMaster);
 }
+
+AudioDecoderCapabilities MediaPipelineCapabilities::getSupportedAudioCapabilities()
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineCapabilitiesIpc->getSupportedAudioCapabilities();
+}
+
+VideoDecoderCapabilities MediaPipelineCapabilities::getSupportedVideoCapabilities()
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineCapabilitiesIpc->getSupportedVideoCapabilities();
+}
 }; // namespace firebolt::rialto::client
