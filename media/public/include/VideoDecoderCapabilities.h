@@ -223,22 +223,22 @@ struct Av1Profile
 /**
  * @brief Codec capabilities for a specific video codec
  */
-struct CodecCapabilities
+struct VideoCodecCapabilities
 {
-    std::optional<Mpeg2Profile> mpeg2Profile; /**< MPEG2 profiles (if codec is MPEG2) */
-    std::optional<H264Profile> h264Profile;   /**< H.264 profiles (if codec is H264) */
-    std::optional<H265Profile> h265Profile;   /**< H.265 profiles (if codec is H265) */
-    std::optional<Vp9Profile> vp9Profile;     /**< VP9 profiles (if codec is VP9) */
-    std::optional<Av1Profile> av1Profile;     /**< AV1 profiles (if codec is AV1) */
+    std::vector<Mpeg2Profile> mpeg2Profiles; /**< MPEG2 profiles (if codec is MPEG2) */
+    std::vector<H264Profile> h264Profiles;   /**< H.264 profiles (if codec is H264) */
+    std::vector<H265Profile> h265Profiles;   /**< H.265 profiles (if codec is H265) */
+    std::vector<Vp9Profile> vp9Profiles;     /**< VP9 profiles (if codec is VP9) */
+    std::vector<Av1Profile> av1Profiles;     /**< AV1 profiles (if codec is AV1) */
 };
 
 /**
  * @brief Decoder capability entry for a specific rank
  */
-struct DecoderCapability
+struct VideoDecoderCapability
 {
-    CodecCapabilities codecCapabilities; /**< List of supported codec capabilities */
-    DynamicRange dynamicRange;           /**< List of supported dynamic ranges */
+    VideoCodecCapabilities codecCapabilities; /**< List of supported codec capabilities */
+    std::vector<DynamicRange> dynamicRanges;  /**< List of supported dynamic ranges */
 };
 
 /**
@@ -246,9 +246,9 @@ struct DecoderCapability
  */
 struct VideoDecoderCapabilities
 {
-    std::string interfaceVersion;                /**< Interface version string */
-    std::string schemaVersion;                   /**< Schema version (e.g., "0.1.0") */
-    std::vector<DecoderCapability> capabilities; /**< List of decoder capabilities */
+    std::string interfaceVersion;                     /**< Interface version string */
+    std::string schemaVersion;                        /**< Schema version (e.g., "0.1.0") */
+    std::vector<VideoDecoderCapability> capabilities; /**< List of decoder capabilities */
 };
 
 } // namespace firebolt::rialto
