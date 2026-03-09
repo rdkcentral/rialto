@@ -18,9 +18,11 @@
  */
 
 #include "MediaPipelineCapabilitiesModuleServiceTestsFixture.h"
+#include "AudioDecoderCapabilities.h"
 #include "MediaCommon.h"
 #include "MediaPipelineCapabilitiesModuleService.h"
 #include "RialtoCommonModule.h"
+#include "VideoDecoderCapabilities.h"
 
 #include <fcntl.h>
 #include <string>
@@ -41,6 +43,8 @@ const firebolt::rialto::MediaSourceType kSourceType{firebolt::rialto::MediaSourc
 const firebolt::rialto::ProtoMediaSourceType kMediaSourceType{firebolt::rialto::ProtoMediaSourceType::VIDEO};
 const std::vector<std::string> kPropertyNames{"test-property", "another-property"};
 constexpr bool kIsVideoMaster{true};
+const firebolt::rialto::AudioDecoderCapabilities kAudioCapabilities{"1.0", "2.0", {}};
+const firebolt::rialto::VideoDecoderCapabilities kVideoCapabilities{"3.0", "4.0", {}};
 } // namespace
 
 MediaPipelineCapabilitiesModuleServiceTests::MediaPipelineCapabilitiesModuleServiceTests()
@@ -86,6 +90,18 @@ void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillCheckIfVideoI
     expectRequestSuccess();
     EXPECT_CALL(m_mediaPipelineServiceMock, isVideoMaster(_))
         .WillOnce(DoAll(SetArgReferee<0>(kIsVideoMaster), Return(true)));
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillGetSupportedAudioCapabilities()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getSupportedAudioCapabilities()).WillOnce(Return(kAudioCapabilities));
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillGetSupportedVideoCapabilities()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getSupportedVideoCapabilities()).WillOnce(Return(kVideoCapabilities));
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::expectRequestSuccess()
@@ -193,6 +209,40 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendIsVideoMasterRequestAndExp
     firebolt::rialto::IsVideoMasterRequest request;
     firebolt::rialto::IsVideoMasterResponse response;
     m_service->isVideoMaster(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedAudioCapabilitiesRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetSupportedAudioCapabilitiesRequest request;
+    firebolt::rialto::GetSupportedAudioCapabilitiesResponse response;
+    m_service->getSupportedAudioCapabilities(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(response.interface_version(), kAudioCapabilities.interfaceVersion);
+    EXPECT_EQ(response.schema_version(), kAudioCapabilities.schemaVersion);
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedAudioCapabilitiesRequestAndExpectFailure()
+{
+    firebolt::rialto::GetSupportedAudioCapabilitiesRequest request;
+    firebolt::rialto::GetSupportedAudioCapabilitiesResponse response;
+    m_service->getSupportedAudioCapabilities(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedVideoCapabilitiesRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetSupportedVideoCapabilitiesRequest request;
+    firebolt::rialto::GetSupportedVideoCapabilitiesResponse response;
+    m_service->getSupportedVideoCapabilities(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(response.interface_version(), kVideoCapabilities.interfaceVersion);
+    EXPECT_EQ(response.schema_version(), kVideoCapabilities.schemaVersion);
+}
+
+void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedVideoCapabilitiesRequestAndExpectFailure()
+{
+    firebolt::rialto::GetSupportedVideoCapabilitiesRequest request;
+    firebolt::rialto::GetSupportedVideoCapabilitiesResponse response;
+    m_service->getSupportedVideoCapabilities(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::expectCorrectMediaTypeConversion()
