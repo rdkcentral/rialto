@@ -879,3 +879,17 @@ TEST_F(MediaPipelineServiceTests, shouldPing)
     mediaPipelineWillPing();
     triggerPing();
 }
+
+TEST_F(MediaPipelineServiceTests, shouldGetAudioCapabilities)
+{
+    initSession();
+    mediaPipelineWillGetAudioDecoderCapabilities();
+    getAudioDecoderCapabilitiesShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetVideoCapabilities)
+{
+    initSession();
+    mediaPipelineWillGetVideoDecoderCapabilities();
+    getVideoDecoderCapabilitiesShouldSucceed();
+}

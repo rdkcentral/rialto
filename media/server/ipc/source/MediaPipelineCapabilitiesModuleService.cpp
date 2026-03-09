@@ -180,4 +180,46 @@ void MediaPipelineCapabilitiesModuleService::isVideoMaster(::google::protobuf::R
 
     done->Run();
 }
+
+void MediaPipelineCapabilitiesModuleService::getSupportedAudioCapabilities(
+    ::google::protobuf::RpcController *controller,
+    const ::firebolt::rialto::GetSupportedAudioCapabilitiesRequest *request,
+    ::firebolt::rialto::GetSupportedAudioCapabilitiesResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
+    {
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        controller->SetFailed("ipc library provided incompatible controller object");
+        done->Run();
+        return;
+    }
+
+    const firebolt::rialto::AudioDecoderCapabilities kAudioCapabilities =
+        m_mediaPipelineService.getSupportedAudioCapabilities();
+
+    done->Run();
+}
+
+void MediaPipelineCapabilitiesModuleService::getSupportedVideoCapabilities(
+    ::google::protobuf::RpcController *controller,
+    const ::firebolt::rialto::GetSupportedVideoCapabilitiesRequest *request,
+    ::firebolt::rialto::GetSupportedVideoCapabilitiesResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
+    {
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        controller->SetFailed("ipc library provided incompatible controller object");
+        done->Run();
+        return;
+    }
+
+    const firebolt::rialto::VideoDecoderCapabilities kVideoCapabilities =
+        m_mediaPipelineService.getSupportedVideoCapabilities();
+
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc

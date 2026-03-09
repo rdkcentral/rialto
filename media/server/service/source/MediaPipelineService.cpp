@@ -669,6 +669,20 @@ bool MediaPipelineService::isVideoMaster(bool &isVideoMaster)
     return m_mediaPipelineCapabilities->isVideoMaster(isVideoMaster);
 }
 
+AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabilities()
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested check supported audio capabilities");
+
+    return m_mediaPipelineCapabilities->getSupportedAudioCapabilities();
+}
+
+VideoDecoderCapabilities MediaPipelineService::getSupportedVideoCapabilities()
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested check supported video capabilities");
+
+    return m_mediaPipelineCapabilities->getSupportedVideoCapabilities();
+}
+
 std::vector<std::string> MediaPipelineService::getSupportedMimeTypes(MediaSourceType type)
 {
     return m_mediaPipelineCapabilities->getSupportedMimeTypes(type);
