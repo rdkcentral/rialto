@@ -19,6 +19,7 @@
 
 #include "ActionTraits.h"
 #include "ConfigureAction.h"
+#include "Constants.h"
 #include "MessageBuilders.h"
 #include "RialtoServerComponentTest.h"
 
@@ -419,5 +420,95 @@ TEST_F(MediaPipelineCapabilitiesTest, checkIsVideoMaster)
         .send(createIsVideoMasterRequest())
         .expectSuccess()
         .matchResponse([](const auto &resp) { EXPECT_TRUE(resp.is_video_master()); });
+};
+
+/*
+ * Component Test: Check, if audio decoder capabilities are returned
+ * Test Objective:
+ *  Test if audio decoder capabilities are returned in Rialto Server
+ *
+ * Sequence Diagrams:
+ *  Capabilities
+ *  https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipelineCapabilities
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *
+ * Test Steps:
+ *  Step 1: Check if audio decoder capabilities are returned
+ *   Client stub requests the server to get audio decoder capabilities
+ *   Expect that server returns the audio decoder capabilities
+ *
+ * Test Teardown:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  Rialto server checks, if mime types are supported.
+ *
+ * Code:
+ */
+TEST_F(MediaPipelineCapabilitiesTest, checkSupportedAudioDecoderCapabilities)
+{
+    // Step 1: Check if audio decoder capabilities are returned
+    ConfigureAction<GetSupportedAudioCapabilities>{m_clientStub}
+        .send(createGetSupportedAudioCapabilitiesRequest())
+        .expectSuccess()
+        .matchResponse(
+            [](const auto &resp)
+            {
+                resp.interface_version() == kAudioCapabilities.interfaceVersion &&resp.schema_version() ==
+                    kAudioCapabilities.schemaVersion;
+            });
+};
+
+/*
+ * Component Test: Check, if Video decoder capabilities are returned
+ * Test Objective:
+ *  Test if Video decoder capabilities are returned in Rialto Server
+ *
+ * Sequence Diagrams:
+ *  Capabilities
+ *  https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipelineCapabilities
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *
+ * Test Steps:
+ *  Step 1: Check if Video decoder capabilities are returned
+ *   Client stub requests the server to get Video decoder capabilities
+ *   Expect that server returns the Video decoder capabilities
+ *
+ * Test Teardown:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  Rialto server checks, if mime types are supported.
+ *
+ * Code:
+ */
+TEST_F(MediaPipelineCapabilitiesTest, checkSupportedVideoDecoderCapabilities)
+{
+    // Step 1: Check if Video decoder capabilities are returned
+    ConfigureAction<GetSupportedVideoCapabilities>{m_clientStub}
+        .send(createGetSupportedVideoCapabilitiesRequest())
+        .expectSuccess()
+        .matchResponse(
+            [](const auto &resp)
+            {
+                resp.interface_version() == kVideoCapabilities.interfaceVersion &&resp.schema_version() ==
+                    kVideoCapabilities.schemaVersion;
+            });
 };
 } // namespace firebolt::rialto::server::ct

@@ -666,6 +666,18 @@ createGetSupportedPropertiesRequest(const ProtoMediaSourceType &mediaType, const
     return request;
 }
 
+::firebolt::rialto::GetSupportedAudioCapabilitiesRequest createGetSupportedAudioCapabilitiesRequest()
+{
+    ::firebolt::rialto::GetSupportedAudioCapabilitiesRequest request;
+    return request;
+}
+
+::firebolt::rialto::GetSupportedVideoCapabilitiesRequest createGetSupportedVideoCapabilitiesRequest()
+{
+    ::firebolt::rialto::GetSupportedVideoCapabilitiesRequest request;
+    return request;
+}
+
 ::firebolt::rialto::CreateWebAudioPlayerRequest
 createCreateWebAudioPlayerRequest(uint32 pcmRate, uint32 pcmChannels, uint32 pcmSampleSize, bool pcmIsBigEndian,
                                   bool pcmIsSigned, bool pcmIsFloat, const std::string &audioMimeType, uint32 priority)
