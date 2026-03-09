@@ -91,6 +91,8 @@ constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
 const std::vector<std::string> kSupportedProperties{"immediate-output", "testProp2"};
 constexpr uint64_t kStopPosition{452345};
+const firebolt::rialto::AudioDecoderCapabilities kAudioCapabilities{"1.0", "1.1", {}};
+const firebolt::rialto::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -2223,5 +2225,35 @@ void MediaPipelineTestMethods::getSupportedPropertiesFailure()
 {
     MediaSourceType sourceType = firebolt::rialto::MediaSourceType::VIDEO;
     EXPECT_TRUE(m_mediaPipelineCapabilities->getSupportedProperties(sourceType, kSupportedProperties).empty());
+}
+
+void MediaPipelineTestMethods::shouldGetSupportedAudioCapabilities()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock, getSupportedAudioCapabilities(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineCapabilitiesModuleMock->getSupportedAudioCapabilitiesResponse(
+                            kAudioCapabilities)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
+                                              &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::shouldGetSupportedVideoCapabilities()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock, getSupportedVideoCapabilities(_, _, _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineCapabilitiesModuleMock->getSupportedVideoCapabilitiesResponse(
+                            kVideoCapabilities)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
+                                              &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getSupportedAudioCapabilities()
+{
+    EXPECT_THAT(m_mediaPipelineCapabilities->getSupportedAudioCapabilities(),
+                decoderCapabilitiesMatcher(kAudioCapabilities));
+}
+
+void MediaPipelineTestMethods::getSupportedVideoCapabilities()
+{
+    EXPECT_THAT(m_mediaPipelineCapabilities->getSupportedVideoCapabilities(),
+                decoderCapabilitiesMatcher(kVideoCapabilities));
 }
 } // namespace firebolt::rialto::client::ct
