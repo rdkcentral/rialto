@@ -416,6 +416,9 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
     case MediaSourceType::VIDEO:
         kSinkName = "video-sink";
         break;
+    case MediaSourceType::SUBTITLE:
+        kSinkName = "text-sink";
+        break;
     default:
         break;
     }
@@ -434,7 +437,7 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
             RIALTO_SERVER_LOG_DEBUG("Pipeline is valid: %p", m_context.pipeline);
         }
         m_glibWrapper->gObjectGet(m_context.pipeline, kSinkName, &sink, nullptr);
-        if (sink)
+        if (sink && firebolt::rialto::MediaSourceType::SUBTITLE != mediaSourceType)
         {
             GstElement *autoSink{sink};
             if (firebolt::rialto::MediaSourceType::VIDEO == mediaSourceType)
