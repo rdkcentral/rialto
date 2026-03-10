@@ -327,6 +327,61 @@ private:
     createAudioAttributes(const std::unique_ptr<IMediaPipeline::MediaSource> &source) const;
 
     /**
+     * @brief Configures audio caps based on audio attributes.
+     *        Called by worker thread only!
+     *
+     * @param[in]     pAttrib    : The audio attributes.
+     * @param[out]    audioaac   : Set to true if AAC, false otherwise.
+     * @param[in]     svpenabled : Whether SVP is enabled.
+     * @param[in,out] appsrcCaps : The caps to configure.
+     */
+    void configAudioCap(firebolt::rialto::wrappers::AudioAttributesPrivate *pAttrib, bool *audioaac, bool svpenabled,
+                        GstCaps **appsrcCaps);
+
+    /**
+     * @brief Halts audio playback by setting playsink to READY and decodebin to PAUSED.
+     *        Called by worker thread only!
+     */
+    void haltAudioPlayback();
+
+    /**
+     * @brief Resumes audio playback by syncing playsink and decodebin with parent.
+     *        Called by worker thread only!
+     */
+    void resumeAudioPlayback();
+
+    /**
+     * @brief First-time codec switch from AC3 to AAC when no decoder exists yet.
+     *        Called by worker thread only!
+     *
+     * @param[in] newAudioCaps : The new audio caps to apply.
+     */
+    void firstTimeSwitchFromAC3toAAC(GstCaps *newAudioCaps);
+
+    /**
+     * @brief Switches the audio codec by unlinking old parser/decoder and linking new ones.
+     *        Called by worker thread only!
+     *
+     * @param[in] isAudioAAC   : Whether the new codec is AAC.
+     * @param[in] newAudioCaps : The new audio caps to apply.
+     *
+     * @retval true if codec was switched, false if same codec.
+     */
+    bool switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps);
+
+    /**
+     * @brief Top-level audio track codec channel switch, ported from rdk_gstreamer_utils_soc.
+     *        Called by worker thread only!
+     */
+    bool performAudioTrackCodecChannelSwitch(const void *pSampleAttr,
+                                             firebolt::rialto::wrappers::AudioAttributesPrivate *pAudioAttr,
+                                             uint32_t *pStatus, unsigned int *pui32Delay,
+                                             long long *pAudioChangeTargetPts,         // NOLINT(runtime/int)
+                                             const long long *pcurrentDispPts,         // NOLINT(runtime/int)
+                                             unsigned int *audioChangeStage, GstCaps **appsrcCaps, bool *audioaac,
+                                             bool svpenabled, GstElement *aSrc, bool *ret);
+
+    /**
      * @brief Sets text track position before pushing data
      *
      * @param[in] source : the subtitle media source

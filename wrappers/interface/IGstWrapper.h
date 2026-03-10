@@ -1402,6 +1402,69 @@ public:
      * @param ptsInterpolate  : TRUE if parser should interpolate PTS timestamps
      */
     virtual void gstBaseParseSetPtsInterpolation(GstBaseParse *parse, gboolean ptsInterpolate) const = 0;
+
+    /**
+     * @brief Gets the state of the element (blocking version with timeout).
+     *
+     * @param[in]  element : A GstElement to get state of.
+     * @param[out] state   : A pointer to GstState to hold the state, or NULL.
+     * @param[out] pending : A pointer to GstState to hold the pending state, or NULL.
+     * @param[in]  timeout : A GstClockTime to specify the timeout.
+     *
+     * @retval GST_STATE_CHANGE_SUCCESS if the element has no more pending state
+     *         and the last state change succeeded, GST_STATE_CHANGE_ASYNC if the
+     *         element is still performing a state change, or other values on failure.
+     */
+    virtual GstStateChangeReturn gstElementGetStateFull(GstElement *element, GstState *state, GstState *pending,
+                                                        GstClockTime timeout) = 0;
+
+    /**
+     * @brief Gets the peer pad of the given pad.
+     *
+     * @param[in] pad : A GstPad to get the peer of.
+     *
+     * @retval The peer GstPad. Unref after usage. NULL if pad has no peer.
+     */
+    virtual GstPad *gstPadGetPeer(GstPad *pad) = 0;
+
+    /**
+     * @brief Unlinks the source pad from the sink pad.
+     *
+     * @param[in] srcpad  : The source GstPad to unlink.
+     * @param[in] sinkpad : The sink GstPad to unlink.
+     *
+     * @retval TRUE if the pads were unlinked, FALSE otherwise.
+     */
+    virtual gboolean gstPadUnlink(GstPad *srcpad, GstPad *sinkpad) = 0;
+
+    /**
+     * @brief Links the source pad to the sink pad.
+     *
+     * @param[in] srcpad  : The source GstPad to link.
+     * @param[in] sinkpad : The sink GstPad to link.
+     *
+     * @retval A result code indicating if the connection worked or what went wrong.
+     */
+    virtual GstPadLinkReturn gstPadLink(GstPad *srcpad, GstPad *sinkpad) = 0;
+
+    /**
+     * @brief Removes an element from the bin.
+     *
+     * @param[in] bin     : The bin to remove the element from.
+     * @param[in] element : The element to remove.
+     *
+     * @retval TRUE if the element could be removed, FALSE otherwise.
+     */
+    virtual gboolean gstBinRemove(GstBin *bin, GstElement *element) = 0;
+
+    /**
+     * @brief Gets the parent of a pad.
+     *
+     * @param[in] pad : The pad to get the parent of.
+     *
+     * @retval The parent GstObject. Unref after usage. NULL if pad has no parent.
+     */
+    virtual GstObject *gstPadGetParent(GstPad *pad) = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers
