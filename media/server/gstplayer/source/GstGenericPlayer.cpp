@@ -1016,6 +1016,7 @@ bool GstGenericPlayer::performAudioTrackCodecChannelSwitch(const void *pSampleAt
     *ret = true;
     return true;
 }
+
 bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutputParam)
 {
     if (!m_workerThread)
@@ -1486,6 +1487,7 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
     GstCaps *caps{createCapsFromMediaSource(m_gstWrapper, m_glibWrapper, source)};
     GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[source->getType()].appSrc)};
     GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
+
     if ((!oldCaps) || (!m_gstWrapper->gstCapsIsEqual(caps, oldCaps)))
     {
         RIALTO_SERVER_LOG_DEBUG("Caps not equal. Perform audio track codec channel switch.");
@@ -1502,9 +1504,28 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
         bool audioAac{oldCapsStr.find("audio/mpeg") != std::string::npos};
         bool svpEnabled{true}; // assume always true
         bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
-        bool result = performAudioTrackCodecChannelSwitch(&sampleAttributes, &(*audioAttributes), &status, &ui32Delay,
-                                                          &audioChangeTargetPts, &currentDispPts, &audioChangeStage,
-                                                          &caps, &audioAac, svpEnabled, GST_ELEMENT(appSrc), &retVal);
+        GstElement *sink = getSink(MediaSourceType::AUDIO);
+        std::string sinkName = GST_ELEMENT_NAME(sink);
+        m_gstWrapper->gstObjectUnref(sink);
+        bool result = false;
+        if (m_glibWrapper->gStrHasPrefix(sinkName.c_str(), "amlhalasink"))
+        {
+            // due to problems audio codec change in prerolling, temporarely moved the code from rdk gstreamer utils to
+            // Rialto and applied fixes
+            result = performAudioTrackCodecChannelSwitch(&sampleAttributes, &(*audioAttributes), &status, &ui32Delay,
+                                                         &audioChangeTargetPts, &currentDispPts, &audioChangeStage,
+                                                         &caps, &audioAac, svpEnabled, GST_ELEMENT(appSrc), &retVal);
+        }
+        else
+        {
+            result = m_rdkGstreamerUtilsWrapper->performAudioTrackCodecChannelSwitch(&m_context.playbackGroup,
+                                                                                     &sampleAttributes,
+                                                                                     &(*audioAttributes), &status,
+                                                                                     &ui32Delay, &audioChangeTargetPts,
+                                                                                     &currentDispPts, &audioChangeStage,
+                                                                                     &caps, &audioAac, svpEnabled,
+                                                                                     GST_ELEMENT(appSrc), &retVal);
+        }
 
         if (!result || !retVal)
         {
