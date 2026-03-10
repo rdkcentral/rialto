@@ -2005,6 +2005,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachMpegAudioSource)
     GstCaps newGstCaps{};
     GstCaps oldGstCaps{};
     gchar capsStr[13]{"audio/x-eac3"};
+    GstElement *fakeSink = gst_element_factory_make("fakesink", "fakesink");
     setPipelineState(GST_STATE_PAUSED);
     firebolt::rialto::wrappers::PlaybackGroupPrivate *playbackGroup;
     modifyContext(
@@ -2026,6 +2027,12 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachMpegAudioSource)
     EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).WillOnce(Return());
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            { *reinterpret_cast<GstElement **>(element) = fakeSink; }));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(fakeSink));
+    EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(StrEq("fakesink"), StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock,
                 performAudioTrackCodecChannelSwitch(playbackGroup, _, _, _, _, _, _, _, _, _, _, _, _))
         .WillOnce(Return(true));
@@ -2034,6 +2041,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachMpegAudioSource)
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/aac", false);
     EXPECT_TRUE(m_sut->reattachSource(source));
+    gst_object_unref(fakeSink);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldReattachEac3AudioSource)
@@ -2042,6 +2050,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachEac3AudioSource)
     GstCaps newGstCaps{};
     GstCaps oldGstCaps{};
     gchar capsStr[11]{"audio/mpeg"};
+    GstElement *fakeSink = gst_element_factory_make("fakesink", "fakesink0");
     setPipelineState(GST_STATE_PAUSED);
     firebolt::rialto::wrappers::PlaybackGroupPrivate *playbackGroup;
     modifyContext(
@@ -2062,6 +2071,12 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachEac3AudioSource)
     EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).WillOnce(Return());
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            { *reinterpret_cast<GstElement **>(element) = fakeSink; }));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(fakeSink));
+    EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock,
                 performAudioTrackCodecChannelSwitch(playbackGroup, _, _, _, _, _, _, _, _, _, _, _, _))
         .WillOnce(Return(true));
@@ -2070,6 +2085,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachEac3AudioSource)
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/x-eac3", false);
     EXPECT_TRUE(m_sut->reattachSource(source));
+    gst_object_unref(fakeSink);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldReattachRawAudioSource)
@@ -2078,6 +2094,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachRawAudioSource)
     GstCaps newGstCaps{};
     GstCaps oldGstCaps{};
     gchar capsStr[11]{"audio/mpeg"};
+    GstElement *fakeSink = gst_element_factory_make("fakesink", "fakesink1");
     setPipelineState(GST_STATE_PAUSED);
     firebolt::rialto::wrappers::PlaybackGroupPrivate *playbackGroup;
     modifyContext(
@@ -2098,6 +2115,12 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachRawAudioSource)
     EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).WillOnce(Return());
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
+        .WillOnce(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            { *reinterpret_cast<GstElement **>(element) = fakeSink; }));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(fakeSink));
+    EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
     EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock,
                 performAudioTrackCodecChannelSwitch(playbackGroup, _, _, _, _, _, _, _, _, _, _, _, _))
         .WillOnce(Return(true));
@@ -2106,6 +2129,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachRawAudioSource)
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/x-raw", false);
     EXPECT_TRUE(m_sut->reattachSource(source));
+    gst_object_unref(fakeSink);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldSetSourceFlushed)
