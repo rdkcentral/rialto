@@ -629,8 +629,8 @@ void GstGenericPlayer::configAudioCap(firebolt::rialto::wrappers::AudioAttribute
 {
     gchar *capsString;
     RIALTO_SERVER_LOG_DEBUG("Config audio codec %s sampling rate %d channel %d alignment %d",
-                           pAttrib->m_codecParam.c_str(), pAttrib->m_samplesPerSecond, pAttrib->m_numberOfChannels,
-                           pAttrib->m_blockAlignment);
+                            pAttrib->m_codecParam.c_str(), pAttrib->m_samplesPerSecond, pAttrib->m_numberOfChannels,
+                            pAttrib->m_blockAlignment);
     if (pAttrib->m_codecParam.compare(0, 4, std::string("mp4a")) == 0)
     {
         RIALTO_SERVER_LOG_DEBUG("Using AAC");
@@ -641,11 +641,10 @@ void GstGenericPlayer::configAudioCap(firebolt::rialto::wrappers::AudioAttribute
     else
     {
         RIALTO_SERVER_LOG_DEBUG("Using EAC3");
-        capsString =
-            m_glibWrapper->gStrdupPrintf("audio/x-eac3, framed=(boolean)true, rate=(int)%u, channels=(int)%u, "
-                                         "alignment=(string)frame, enable-svp=(string)%s",
-                                         pAttrib->m_samplesPerSecond, pAttrib->m_numberOfChannels,
-                                         svpenabled ? "true" : "false");
+        capsString = m_glibWrapper->gStrdupPrintf("audio/x-eac3, framed=(boolean)true, rate=(int)%u, channels=(int)%u, "
+                                                  "alignment=(string)frame, enable-svp=(string)%s",
+                                                  pAttrib->m_samplesPerSecond, pAttrib->m_numberOfChannels,
+                                                  svpenabled ? "true" : "false");
         *audioaac = false;
     }
     *appsrcCaps = m_gstWrapper->gstCapsFromString(capsString);
@@ -655,23 +654,17 @@ void GstGenericPlayer::configAudioCap(firebolt::rialto::wrappers::AudioAttribute
 void GstGenericPlayer::haltAudioPlayback()
 {
     GstState currentState, pending;
-    // Get Current State of the Pipeline
-    m_gstWrapper->gstElementGetStateFull(m_context.playbackGroup.m_gstPipeline, &currentState, &pending,
-                                         GST_CLOCK_TIME_NONE);
-    if (currentState == GST_STATE_PLAYING)
-        RIALTO_SERVER_LOG_DEBUG("OTF -> Pipeline in the play state");
-    else if (currentState == GST_STATE_PAUSED)
-        RIALTO_SERVER_LOG_DEBUG("OTF -> Pipeline in the paused state");
+
     // Transition Playsink to Paused
     m_gstWrapper->gstElementSetState(m_context.playbackGroup.m_curAudioPlaysinkBin, GST_STATE_READY);
-    m_gstWrapper->gstElementGetStateFull(m_context.playbackGroup.m_curAudioPlaysinkBin, &currentState, &pending,
-                                         GST_CLOCK_TIME_NONE);
+    m_gstWrapper->gstElementGetState(m_context.playbackGroup.m_curAudioPlaysinkBin, &currentState, &pending,
+                                     GST_CLOCK_TIME_NONE);
     if (currentState == GST_STATE_PAUSED)
         RIALTO_SERVER_LOG_DEBUG("OTF -> Current AudioPlaySinkBin State = %d", currentState);
     // Transition Decodebin to Paused
     m_gstWrapper->gstElementSetState(m_context.playbackGroup.m_curAudioDecodeBin, GST_STATE_PAUSED);
-    m_gstWrapper->gstElementGetStateFull(m_context.playbackGroup.m_curAudioDecodeBin, &currentState, &pending,
-                                         GST_CLOCK_TIME_NONE);
+    m_gstWrapper->gstElementGetState(m_context.playbackGroup.m_curAudioDecodeBin, &currentState, &pending,
+                                     GST_CLOCK_TIME_NONE);
     if (currentState == GST_STATE_PAUSED)
         RIALTO_SERVER_LOG_DEBUG("OTF -> Current DecodeBin State = %d", currentState);
 }
@@ -680,12 +673,12 @@ void GstGenericPlayer::resumeAudioPlayback()
 {
     GstState currentState, pending;
     m_gstWrapper->gstElementSyncStateWithParent(m_context.playbackGroup.m_curAudioPlaysinkBin);
-    m_gstWrapper->gstElementGetStateFull(m_context.playbackGroup.m_curAudioPlaysinkBin, &currentState, &pending,
-                                         GST_CLOCK_TIME_NONE);
+    m_gstWrapper->gstElementGetState(m_context.playbackGroup.m_curAudioPlaysinkBin, &currentState, &pending,
+                                     GST_CLOCK_TIME_NONE);
     RIALTO_SERVER_LOG_DEBUG("OTF -> AudioPlaysinkbin State = %d Pending = %d", currentState, pending);
     m_gstWrapper->gstElementSyncStateWithParent(m_context.playbackGroup.m_curAudioDecodeBin);
-    m_gstWrapper->gstElementGetStateFull(m_context.playbackGroup.m_curAudioDecodeBin, &currentState, &pending,
-                                         GST_CLOCK_TIME_NONE);
+    m_gstWrapper->gstElementGetState(m_context.playbackGroup.m_curAudioDecodeBin, &currentState, &pending,
+                                     GST_CLOCK_TIME_NONE);
     RIALTO_SERVER_LOG_DEBUG("OTF -> Decodebin State = %d Pending = %d", currentState, pending);
 }
 
@@ -699,13 +692,7 @@ void GstGenericPlayer::firstTimeSwitchFromAC3toAAC(GstCaps *newAudioCaps)
     GstElement *newAudioDecoder = NULL;
     GstElement *newQueue = NULL;
     gboolean linkRet = false;
-    // Get Current State of the Pipeline
-    m_gstWrapper->gstElementGetStateFull(m_context.playbackGroup.m_gstPipeline, &currentState, &pending,
-                                         GST_CLOCK_TIME_NONE);
-    if (currentState == GST_STATE_PLAYING)
-        RIALTO_SERVER_LOG_DEBUG("OTF -> Pipeline in the play state");
-    else if (currentState == GST_STATE_PAUSED)
-        RIALTO_SERVER_LOG_DEBUG("OTF -> Pipeline in the paused state");
+
     /* Get the SinkPad of ASink - pTypfdSrcPeerPad */
     if ((pTypfdSrcPad = m_gstWrapper->gstElementGetStaticPad(m_context.playbackGroup.m_curAudioTypefind, "src")) !=
         NULL) // Unref the Pad
@@ -738,7 +725,8 @@ void GstGenericPlayer::firstTimeSwitchFromAC3toAAC(GstCaps *newAudioCaps)
     // Connect decoder to ASINK
     if (m_gstWrapper->gstPadLink(pNewAudioDecoderSrcPad, pTypfdSrcPeerPad) != GST_PAD_LINK_OK)
         RIALTO_SERVER_LOG_DEBUG("OTF -> New AudioDecoder Downstream Link Failed");
-    linkRet = m_gstWrapper->gstElementLink(newAudioParse, newQueue) && m_gstWrapper->gstElementLink(newQueue, newAudioDecoder);
+    linkRet = m_gstWrapper->gstElementLink(newAudioParse, newQueue) &&
+              m_gstWrapper->gstElementLink(newQueue, newAudioDecoder);
     if (!linkRet)
         RIALTO_SERVER_LOG_DEBUG("OTF -> Downstream Link Failed for typefind, parser, decoder");
     /* Force Caps */
@@ -746,20 +734,20 @@ void GstGenericPlayer::firstTimeSwitchFromAC3toAAC(GstCaps *newAudioCaps)
     m_gstWrapper->gstElementSetState(m_context.playbackGroup.m_curAudioTypefind, GST_STATE_READY);
     m_glibWrapper->gObjectSet(G_OBJECT(m_context.playbackGroup.m_curAudioTypefind), "force-caps", newAudioCaps, NULL);
     m_gstWrapper->gstElementSyncStateWithParent(m_context.playbackGroup.m_curAudioTypefind);
-    m_gstWrapper->gstElementGetStateFull(m_context.playbackGroup.m_curAudioTypefind, &currentState, &pending,
-                                         GST_CLOCK_TIME_NONE);
+    m_gstWrapper->gstElementGetState(m_context.playbackGroup.m_curAudioTypefind, &currentState, &pending,
+                                     GST_CLOCK_TIME_NONE);
     RIALTO_SERVER_LOG_DEBUG("OTF -> New Typefind State = %d Pending = %d", currentState, pending);
     RIALTO_SERVER_LOG_DEBUG("OTF -> Typefind Syncing with Parent");
     m_context.playbackGroup.m_linkTypefindParser = true;
     /* Update the state */
     m_gstWrapper->gstElementSyncStateWithParent(newAudioDecoder);
-    m_gstWrapper->gstElementGetStateFull(newAudioDecoder, &currentState, &pending, GST_CLOCK_TIME_NONE);
+    m_gstWrapper->gstElementGetState(newAudioDecoder, &currentState, &pending, GST_CLOCK_TIME_NONE);
     RIALTO_SERVER_LOG_DEBUG("OTF -> New AudioDecoder State = %d Pending = %d", currentState, pending);
     m_gstWrapper->gstElementSyncStateWithParent(newQueue);
-    m_gstWrapper->gstElementGetStateFull(newQueue, &currentState, &pending, GST_CLOCK_TIME_NONE);
+    m_gstWrapper->gstElementGetState(newQueue, &currentState, &pending, GST_CLOCK_TIME_NONE);
     RIALTO_SERVER_LOG_DEBUG("OTF -> New queue State = %d Pending = %d", currentState, pending);
     m_gstWrapper->gstElementSyncStateWithParent(newAudioParse);
-    m_gstWrapper->gstElementGetStateFull(newAudioParse, &currentState, &pending, GST_CLOCK_TIME_NONE);
+    m_gstWrapper->gstElementGetState(newAudioParse, &currentState, &pending, GST_CLOCK_TIME_NONE);
     RIALTO_SERVER_LOG_DEBUG("OTF -> New AudioParser State = %d Pending = %d", currentState, pending);
     m_gstWrapper->gstObjectUnref(pTypfdSrcPad);
     m_gstWrapper->gstObjectUnref(pTypfdSrcPeerPad);
@@ -771,7 +759,7 @@ bool GstGenericPlayer::switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps)
 {
     bool ret = false;
     RIALTO_SERVER_LOG_DEBUG("Current Audio Codec AAC = %d Same as Incoming audio Codec AAC = %d",
-                           m_context.playbackGroup.m_isAudioAAC, isAudioAAC);
+                            m_context.playbackGroup.m_isAudioAAC, isAudioAAC);
     if (m_context.playbackGroup.m_isAudioAAC == isAudioAAC)
     {
         return ret;
@@ -797,13 +785,7 @@ bool GstGenericPlayer::switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps)
     GstPad *audioParseSrcPeerPad = NULL;
     GstPad *audioParseSinkPeerPad = NULL;
     GstState currentState, pending;
-    // Get Current State of the Pipeline
-    m_gstWrapper->gstElementGetStateFull(m_context.playbackGroup.m_gstPipeline, &currentState, &pending,
-                                         GST_CLOCK_TIME_NONE);
-    if (currentState == GST_STATE_PLAYING)
-        RIALTO_SERVER_LOG_DEBUG("OTF -> Pipeline in the play state");
-    else if (currentState == GST_STATE_PAUSED)
-        RIALTO_SERVER_LOG_DEBUG("OTF -> Pipeline in the paused state");
+
     // Get AudioDecoder Src Pads
     if ((audioDecSrcPad = m_gstWrapper->gstElementGetStaticPad(m_context.playbackGroup.m_curAudioDecoder, "src")) !=
         NULL) // Unref the Pad
@@ -846,14 +828,14 @@ bool GstGenericPlayer::switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps)
         RIALTO_SERVER_LOG_DEBUG("OTF -> AudioParser Upstream Unlink Failed");
     // Current Audio Decoder NULL
     m_gstWrapper->gstElementSetState(m_context.playbackGroup.m_curAudioDecoder, GST_STATE_NULL);
-    m_gstWrapper->gstElementGetStateFull(m_context.playbackGroup.m_curAudioDecoder, &currentState, &pending,
-                                         GST_CLOCK_TIME_NONE);
+    m_gstWrapper->gstElementGetState(m_context.playbackGroup.m_curAudioDecoder, &currentState, &pending,
+                                     GST_CLOCK_TIME_NONE);
     if (currentState == GST_STATE_NULL)
         RIALTO_SERVER_LOG_DEBUG("OTF -> Current AudioDecoder State = %d", currentState);
     // Current Audio Parser NULL
     m_gstWrapper->gstElementSetState(m_context.playbackGroup.m_curAudioParse, GST_STATE_NULL);
-    m_gstWrapper->gstElementGetStateFull(m_context.playbackGroup.m_curAudioParse, &currentState, &pending,
-                                         GST_CLOCK_TIME_NONE);
+    m_gstWrapper->gstElementGetState(m_context.playbackGroup.m_curAudioParse, &currentState, &pending,
+                                     GST_CLOCK_TIME_NONE);
     if (currentState == GST_STATE_NULL)
         RIALTO_SERVER_LOG_DEBUG("OTF -> Current AudioParser State = %d", currentState);
     // Remove Audio Decoder From Decodebin
@@ -885,8 +867,7 @@ bool GstGenericPlayer::switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps)
         GstPadLinkReturn gstPadLinkRet = GST_PAD_LINK_OK;
         GstElement *audioParseUpstreamEl = NULL;
         // Add new Decoder to Decodebin
-        if (m_gstWrapper->gstBinAdd(GST_BIN(m_context.playbackGroup.m_curAudioDecodeBin.load()), newAudioDecoder) ==
-            TRUE)
+        if (m_gstWrapper->gstBinAdd(GST_BIN(m_context.playbackGroup.m_curAudioDecodeBin.load()), newAudioDecoder) == TRUE)
         {
             RIALTO_SERVER_LOG_DEBUG("OTF -> Added New AudioDecoder = %p", newAudioDecoder);
         }
@@ -906,24 +887,21 @@ bool GstGenericPlayer::switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps)
             RIALTO_SERVER_LOG_DEBUG("OTF -> New AudioDecoder Downstream Link Failed");
         if ((gstPadLinkRet = m_gstWrapper->gstPadLink(audioDecSinkPeerPad, newAudioDecoderSinkPad)) != GST_PAD_LINK_OK)
             RIALTO_SERVER_LOG_DEBUG("OTF -> New AudioDecoder Upstream Link Failed");
-        if ((newAudioParseSrcPad = m_gstWrapper->gstElementGetStaticPad(newAudioParse, "src")) !=
-            NULL) // Unref the Pad
+        if ((newAudioParseSrcPad = m_gstWrapper->gstElementGetStaticPad(newAudioParse, "src")) != NULL) // Unref the Pad
             RIALTO_SERVER_LOG_DEBUG("OTF -> New AudioParser Src Pad = %p", newAudioParseSrcPad);
-        if ((newAudioParseSinkPad = m_gstWrapper->gstElementGetStaticPad(newAudioParse, "sink")) !=
-            NULL) // Unref the Pad
+        if ((newAudioParseSinkPad = m_gstWrapper->gstElementGetStaticPad(newAudioParse, "sink")) != NULL) // Unref the Pad
             RIALTO_SERVER_LOG_DEBUG("OTF -> New AudioParser Sink Pad = %p", newAudioParseSinkPad);
         // Link New Parser to Downstream followed by UpStream
         if ((gstPadLinkRet = m_gstWrapper->gstPadLink(newAudioParseSrcPad, audioParseSrcPeerPad)) != GST_PAD_LINK_OK)
             RIALTO_SERVER_LOG_DEBUG("OTF -> New AudioParser Downstream Link Failed %d", gstPadLinkRet);
-        if ((audioParseUpstreamEl =
-                 GST_ELEMENT_CAST(m_gstWrapper->gstPadGetParent(audioParseSinkPeerPad))) ==
+        if ((audioParseUpstreamEl = GST_ELEMENT_CAST(m_gstWrapper->gstPadGetParent(audioParseSinkPeerPad))) ==
             m_context.playbackGroup.m_curAudioTypefind)
         {
             RIALTO_SERVER_LOG_DEBUG("OTF -> Typefind Setting to READY");
             m_gstWrapper->gstElementSetState(audioParseUpstreamEl, GST_STATE_READY);
             m_glibWrapper->gObjectSet(G_OBJECT(audioParseUpstreamEl), "force-caps", newAudioCaps, NULL);
             m_gstWrapper->gstElementSyncStateWithParent(audioParseUpstreamEl);
-            m_gstWrapper->gstElementGetStateFull(audioParseUpstreamEl, &currentState, &pending, GST_CLOCK_TIME_NONE);
+            m_gstWrapper->gstElementGetState(audioParseUpstreamEl, &currentState, &pending, GST_CLOCK_TIME_NONE);
             RIALTO_SERVER_LOG_DEBUG("OTF -> New Typefind State = %d Pending = %d", currentState, pending);
             RIALTO_SERVER_LOG_DEBUG("OTF -> Typefind Syncing with Parent");
             m_context.playbackGroup.m_linkTypefindParser = true;
@@ -943,20 +921,22 @@ bool GstGenericPlayer::switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps)
     m_gstWrapper->gstObjectUnref(audioDecSinkPad);
     m_gstWrapper->gstObjectUnref(audioDecSrcPad);
     m_gstWrapper->gstElementSyncStateWithParent(newAudioDecoder);
-    m_gstWrapper->gstElementGetStateFull(newAudioDecoder, &currentState, &pending, GST_CLOCK_TIME_NONE);
+    m_gstWrapper->gstElementGetState(newAudioDecoder, &currentState, &pending, GST_CLOCK_TIME_NONE);
     RIALTO_SERVER_LOG_DEBUG("OTF -> New AudioDecoder State = %d Pending = %d", currentState, pending);
     m_gstWrapper->gstElementSyncStateWithParent(newAudioParse);
-    m_gstWrapper->gstElementGetStateFull(newAudioParse, &currentState, &pending, GST_CLOCK_TIME_NONE);
+    m_gstWrapper->gstElementGetState(newAudioParse, &currentState, &pending, GST_CLOCK_TIME_NONE);
     RIALTO_SERVER_LOG_DEBUG("OTF -> New AudioParser State = %d Pending = %d", currentState, pending);
     m_context.playbackGroup.m_isAudioAAC = isAudioAAC;
     return true;
 }
 
-bool GstGenericPlayer::performAudioTrackCodecChannelSwitch(
-    const void *pSampleAttr, firebolt::rialto::wrappers::AudioAttributesPrivate *pAudioAttr, uint32_t *pStatus,
-    unsigned int *pui32Delay, long long *pAudioChangeTargetPts,         // NOLINT(runtime/int)
-    const long long *pcurrentDispPts,                                   // NOLINT(runtime/int)
-    unsigned int *audioChangeStage, GstCaps **appsrcCaps, bool *audioaac, bool svpenabled, GstElement *aSrc, bool *ret)
+bool GstGenericPlayer::performAudioTrackCodecChannelSwitch(const void *pSampleAttr,
+                                                           firebolt::rialto::wrappers::AudioAttributesPrivate *pAudioAttr,
+                                                           uint32_t *pStatus, unsigned int *pui32Delay,
+                                                           long long *pAudioChangeTargetPts, // NOLINT(runtime/int)
+                                                           const long long *pcurrentDispPts, // NOLINT(runtime/int)
+                                                           unsigned int *audioChangeStage, GstCaps **appsrcCaps,
+                                                           bool *audioaac, bool svpenabled, GstElement *aSrc, bool *ret)
 {
     constexpr uint32_t kOk = 0;
     constexpr uint32_t kWaitWhileIdling = 100;
@@ -981,8 +961,8 @@ bool GstGenericPlayer::performAudioTrackCodecChannelSwitch(
         bool isAudioAAC = (pCodecAcc) ? true : false;
         bool isCodecSwitch = false;
         RIALTO_SERVER_LOG_DEBUG("Audio Attribute format %s channel %d samp %d, bitrate %d blockAlignment %d", pCodecStr,
-                               pAudioAttr->m_numberOfChannels, pAudioAttr->m_samplesPerSecond, pAudioAttr->m_bitrate,
-                               pAudioAttr->m_blockAlignment);
+                                pAudioAttr->m_numberOfChannels, pAudioAttr->m_samplesPerSecond, pAudioAttr->m_bitrate,
+                                pAudioAttr->m_blockAlignment);
         *pAudioChangeTargetPts = *pcurrentDispPts;
         *audioChangeStage = kAudchgAlign;
         if (*appsrcCaps)
@@ -1008,7 +988,6 @@ bool GstGenericPlayer::performAudioTrackCodecChannelSwitch(
         }
         if (!isCodecSwitch)
         {
-            RIALTO_SERVER_LOG_DEBUG("TRACK SWITCH mAudioAAC = %d", *audioaac);
             m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(aSrc), *appsrcCaps);
         }
         else
@@ -1023,9 +1002,8 @@ bool GstGenericPlayer::performAudioTrackCodecChannelSwitch(
             resumeAudioPlayback();
         }
         clock_gettime(CLOCK_MONOTONIC, &now);
-        reconfigDelayMs = now.tv_nsec > ts.tv_nsec
-                              ? (now.tv_nsec - ts.tv_nsec) / 1000000
-                              : (1000 - (ts.tv_nsec - now.tv_nsec) / 1000000);
+        reconfigDelayMs = now.tv_nsec > ts.tv_nsec ? (now.tv_nsec - ts.tv_nsec) / 1000000
+                                                   : (1000 - (ts.tv_nsec - now.tv_nsec) / 1000000);
         (*pAudioChangeTargetPts) += (reconfigDelayMs + kAudioChangeGapThresholdMS);
     }
     else
@@ -1524,12 +1502,9 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
         bool audioAac{oldCapsStr.find("audio/mpeg") != std::string::npos};
         bool svpEnabled{true}; // assume always true
         bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
-        bool result =
-            performAudioTrackCodecChannelSwitch(&sampleAttributes, &(*audioAttributes),
-                                                &status, &ui32Delay, &audioChangeTargetPts, &currentDispPts,
-                                                &audioChangeStage,
-                                                &caps,
-                                                &audioAac, svpEnabled, GST_ELEMENT(appSrc), &retVal);
+        bool result = performAudioTrackCodecChannelSwitch(&sampleAttributes, &(*audioAttributes), &status, &ui32Delay,
+                                                          &audioChangeTargetPts, &currentDispPts, &audioChangeStage,
+                                                          &caps, &audioAac, svpEnabled, GST_ELEMENT(appSrc), &retVal);
 
         if (!result || !retVal)
         {

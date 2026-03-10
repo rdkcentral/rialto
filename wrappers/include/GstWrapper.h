@@ -596,8 +596,8 @@ public:
         gst_base_parse_set_pts_interpolation(parse, ptsInterpolate);
     }
 
-    GstStateChangeReturn gstElementGetStateFull(GstElement *element, GstState *state, GstState *pending,
-                                                GstClockTime timeout) override
+    GstStateChangeReturn gstElementGetState(GstElement *element, GstState *state, GstState *pending,
+                                            GstClockTime timeout) override
     {
         return gst_element_get_state(element, state, pending, timeout);
     }

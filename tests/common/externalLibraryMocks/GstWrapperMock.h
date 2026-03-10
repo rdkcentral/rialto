@@ -220,7 +220,7 @@ public:
     MOCK_METHOD(gboolean, gstIsBaseParse, (GstElement * element), (const, override));
     MOCK_METHOD(void, gstBaseParseSetPtsInterpolation, (GstBaseParse * parse, gboolean ptsInterpolate),
                 (const, override));
-    MOCK_METHOD(GstStateChangeReturn, gstElementGetStateFull,
+    MOCK_METHOD(GstStateChangeReturn, gstElementGetState,
                 (GstElement * element, GstState *state, GstState *pending, GstClockTime timeout), (override));
     MOCK_METHOD(GstPad *, gstPadGetPeer, (GstPad * pad), (override));
     MOCK_METHOD(gboolean, gstPadUnlink, (GstPad * srcpad, GstPad *sinkpad), (override));

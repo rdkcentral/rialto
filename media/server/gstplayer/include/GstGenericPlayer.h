@@ -376,8 +376,8 @@ private:
     bool performAudioTrackCodecChannelSwitch(const void *pSampleAttr,
                                              firebolt::rialto::wrappers::AudioAttributesPrivate *pAudioAttr,
                                              uint32_t *pStatus, unsigned int *pui32Delay,
-                                             long long *pAudioChangeTargetPts,         // NOLINT(runtime/int)
-                                             const long long *pcurrentDispPts,         // NOLINT(runtime/int)
+                                             long long *pAudioChangeTargetPts, // NOLINT(runtime/int)
+                                             const long long *pcurrentDispPts, // NOLINT(runtime/int)
                                              unsigned int *audioChangeStage, GstCaps **appsrcCaps, bool *audioaac,
                                              bool svpenabled, GstElement *aSrc, bool *ret);
 

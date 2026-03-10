@@ -1415,8 +1415,8 @@ public:
      *         and the last state change succeeded, GST_STATE_CHANGE_ASYNC if the
      *         element is still performing a state change, or other values on failure.
      */
-    virtual GstStateChangeReturn gstElementGetStateFull(GstElement *element, GstState *state, GstState *pending,
-                                                        GstClockTime timeout) = 0;
+    virtual GstStateChangeReturn gstElementGetState(GstElement *element, GstState *state, GstState *pending,
+                                                    GstClockTime timeout) = 0;
 
     /**
      * @brief Gets the peer pad of the given pad.
