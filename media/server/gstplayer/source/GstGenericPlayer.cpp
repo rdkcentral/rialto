@@ -627,6 +627,11 @@ GstGenericPlayer::createAudioAttributes(const std::unique_ptr<IMediaPipeline::Me
 void GstGenericPlayer::configAudioCap(firebolt::rialto::wrappers::AudioAttributesPrivate *pAttrib, bool *audioaac,
                                       bool svpenabled, GstCaps **appsrcCaps)
 {
+    if (!pAttrib || !audioaac || !appsrcCaps)
+    {
+        RIALTO_SERVER_LOG_ERROR("configAudioCap: invalid null parameter");
+        return;
+    }
     gchar *capsString;
     RIALTO_SERVER_LOG_DEBUG("Config audio codec %s sampling rate %d channel %d alignment %d",
                             pAttrib->m_codecParam.c_str(), pAttrib->m_samplesPerSecond, pAttrib->m_numberOfChannels,
@@ -653,6 +658,11 @@ void GstGenericPlayer::configAudioCap(firebolt::rialto::wrappers::AudioAttribute
 
 void GstGenericPlayer::haltAudioPlayback()
 {
+    if (!m_context.playbackGroup.m_curAudioPlaysinkBin || !m_context.playbackGroup.m_curAudioDecodeBin)
+    {
+        RIALTO_SERVER_LOG_ERROR("haltAudioPlayback: audio playsink bin or decode bin is null");
+        return;
+    }
     GstState currentState, pending;
 
     // Transition Playsink to Paused
@@ -671,6 +681,11 @@ void GstGenericPlayer::haltAudioPlayback()
 
 void GstGenericPlayer::resumeAudioPlayback()
 {
+    if (!m_context.playbackGroup.m_curAudioPlaysinkBin || !m_context.playbackGroup.m_curAudioDecodeBin)
+    {
+        RIALTO_SERVER_LOG_ERROR("resumeAudioPlayback: audio playsink bin or decode bin is null");
+        return;
+    }
     GstState currentState, pending;
     m_gstWrapper->gstElementSyncStateWithParent(m_context.playbackGroup.m_curAudioPlaysinkBin);
     m_gstWrapper->gstElementGetState(m_context.playbackGroup.m_curAudioPlaysinkBin, &currentState, &pending,
@@ -684,6 +699,11 @@ void GstGenericPlayer::resumeAudioPlayback()
 
 void GstGenericPlayer::firstTimeSwitchFromAC3toAAC(GstCaps *newAudioCaps)
 {
+    if (!m_context.playbackGroup.m_curAudioTypefind || !m_context.playbackGroup.m_curAudioDecodeBin)
+    {
+        RIALTO_SERVER_LOG_ERROR("firstTimeSwitchFromAC3toAAC: audio typefind or decode bin is null");
+        return;
+    }
     GstState currentState, pending;
     GstPad *pTypfdSrcPad = NULL;
     GstPad *pTypfdSrcPeerPad = NULL;
@@ -769,6 +789,12 @@ bool GstGenericPlayer::switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps)
         firstTimeSwitchFromAC3toAAC(newAudioCaps);
         m_context.playbackGroup.m_isAudioAAC = isAudioAAC;
         return true;
+    }
+    if (!m_context.playbackGroup.m_curAudioDecoder || !m_context.playbackGroup.m_curAudioParse ||
+        !m_context.playbackGroup.m_curAudioDecodeBin)
+    {
+        RIALTO_SERVER_LOG_ERROR("switchAudioCodec: audio decoder, parser or decode bin is null");
+        return false;
     }
     GstElement *newAudioParse = NULL;
     GstElement *newAudioDecoder = NULL;
@@ -938,6 +964,13 @@ bool GstGenericPlayer::performAudioTrackCodecChannelSwitch(const void *pSampleAt
                                                            unsigned int *audioChangeStage, GstCaps **appsrcCaps,
                                                            bool *audioaac, bool svpenabled, GstElement *aSrc, bool *ret)
 {
+    if (!pStatus || !pui32Delay || !pAudioChangeTargetPts || !pcurrentDispPts || !audioChangeStage || !appsrcCaps ||
+        !audioaac || !aSrc || !ret)
+    {
+        RIALTO_SERVER_LOG_ERROR("performAudioTrackCodecChannelSwitch: invalid null parameter");
+        return false;
+    }
+
     constexpr uint32_t kOk = 0;
     constexpr uint32_t kWaitWhileIdling = 100;
     constexpr int kAudioChangeGapThresholdMS = 40;
@@ -1483,15 +1516,6 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
         return false;
     }
 
-    GstElement *sink = getSink(MediaSourceType::AUDIO);
-    std::string sinkName = GST_ELEMENT_NAME(sink);
-    if (!sink)
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to get audio sink");
-        return false;
-    }
-    m_gstWrapper->gstObjectUnref(sink);
-
     long long currentDispPts = getPosition(m_context.pipeline); // NOLINT(runtime/int)
     GstCaps *caps{createCapsFromMediaSource(m_gstWrapper, m_glibWrapper, source)};
     GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[source->getType()].appSrc)};
@@ -1500,6 +1524,20 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
     if ((!oldCaps) || (!m_gstWrapper->gstCapsIsEqual(caps, oldCaps)))
     {
         RIALTO_SERVER_LOG_DEBUG("Caps not equal. Perform audio track codec channel switch.");
+
+        GstElement *sink = getSink(MediaSourceType::AUDIO);
+        if (!sink)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to get audio sink");
+            if (caps)
+                m_gstWrapper->gstCapsUnref(caps);
+            if (oldCaps)
+                m_gstWrapper->gstCapsUnref(oldCaps);
+            return false;
+        }
+        std::string sinkName = GST_ELEMENT_NAME(sink);
+        m_gstWrapper->gstObjectUnref(sink);
+
         int sampleAttributes{
             0}; // rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch checks if this param != NULL only.
         std::uint32_t status{0};   // must be 0 to make rdk_gstreamer_utils::performAudioTrackCodecChannelSwitch work
