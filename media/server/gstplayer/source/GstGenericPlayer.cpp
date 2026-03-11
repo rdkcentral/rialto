@@ -1483,6 +1483,15 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
         return false;
     }
 
+    GstElement *sink = getSink(MediaSourceType::AUDIO);
+    std::string sinkName = GST_ELEMENT_NAME(sink);
+    if (!sink)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get audio sink");
+        return false;
+    }
+    m_gstWrapper->gstObjectUnref(sink);
+
     long long currentDispPts = getPosition(m_context.pipeline); // NOLINT(runtime/int)
     GstCaps *caps{createCapsFromMediaSource(m_gstWrapper, m_glibWrapper, source)};
     GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[source->getType()].appSrc)};
@@ -1504,9 +1513,8 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
         bool audioAac{oldCapsStr.find("audio/mpeg") != std::string::npos};
         bool svpEnabled{true}; // assume always true
         bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
-        GstElement *sink = getSink(MediaSourceType::AUDIO);
-        std::string sinkName = GST_ELEMENT_NAME(sink);
-        m_gstWrapper->gstObjectUnref(sink);
+
+
         bool result = false;
         if (m_glibWrapper->gStrHasPrefix(sinkName.c_str(), "amlhalasink"))
         {
