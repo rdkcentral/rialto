@@ -26,6 +26,8 @@
 #include "MessageBuilders.h"
 
 using testing::_;
+using testing::AtLeast;
+using testing::Invoke;
 using testing::Return;
 using testing::StrEq;
 
@@ -39,8 +41,15 @@ namespace firebolt::rialto::server::ct
 class AudioSourceSwitchTest : public MediaPipelineTest
 {
 public:
-    AudioSourceSwitchTest() = default;
-    ~AudioSourceSwitchTest() = default;
+    AudioSourceSwitchTest()
+    {
+        GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
+        m_audioSink = gst_element_factory_create(elementFactory, nullptr);
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_audioSink))).WillRepeatedly(Return("audio_sink"));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink)).Times(AtLeast(0));
+        gst_object_unref(elementFactory);
+    }
+    ~AudioSourceSwitchTest() override { gst_object_unref(m_audioSink); }
 
     void willSwitchAudioSource()
     {
@@ -61,6 +70,7 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_audioCaps, &m_oldCaps)).WillOnce(Return(FALSE));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_oldCaps)).WillOnce(Return(&m_oldCapsStr));
         EXPECT_CALL(*m_glibWrapperMock, gFree(&m_oldCapsStr));
+        EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
         EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock,
                     performAudioTrackCodecChannelSwitch(_, _, _, _, _, _, _, _, _, _, kSvpEnabled,
                                                         GST_ELEMENT(&m_audioAppSrc), _))

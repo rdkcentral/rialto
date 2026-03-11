@@ -220,6 +220,13 @@ public:
     MOCK_METHOD(gboolean, gstIsBaseParse, (GstElement * element), (const, override));
     MOCK_METHOD(void, gstBaseParseSetPtsInterpolation, (GstBaseParse * parse, gboolean ptsInterpolate),
                 (const, override));
+    MOCK_METHOD(GstStateChangeReturn, gstElementGetState,
+                (GstElement * element, GstState *state, GstState *pending, GstClockTime timeout), (override));
+    MOCK_METHOD(GstPad *, gstPadGetPeer, (GstPad * pad), (override));
+    MOCK_METHOD(gboolean, gstPadUnlink, (GstPad * srcpad, GstPad *sinkpad), (override));
+    MOCK_METHOD(GstPadLinkReturn, gstPadLink, (GstPad * srcpad, GstPad *sinkpad), (override));
+    MOCK_METHOD(gboolean, gstBinRemove, (GstBin * bin, GstElement *element), (override));
+    MOCK_METHOD(GstObject *, gstPadGetParent, (GstPad * pad), (override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {
