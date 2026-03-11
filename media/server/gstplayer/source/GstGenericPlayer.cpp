@@ -665,7 +665,7 @@ void GstGenericPlayer::haltAudioPlayback()
         RIALTO_SERVER_LOG_ERROR("haltAudioPlayback: audio playsink bin or decode bin is null");
         return;
     }
-    GstState currentState, pending;
+    GstState currentState{GST_STATE_VOID_PENDING}, pending{GST_STATE_VOID_PENDING};
 
     // Transition Playsink to Ready
     if (GST_STATE_CHANGE_FAILURE ==
@@ -699,7 +699,7 @@ void GstGenericPlayer::resumeAudioPlayback()
         RIALTO_SERVER_LOG_ERROR("resumeAudioPlayback: audio playsink bin or decode bin is null");
         return;
     }
-    GstState currentState, pending;
+    GstState currentState{GST_STATE_VOID_PENDING}, pending{GST_STATE_VOID_PENDING};
     m_gstWrapper->gstElementSyncStateWithParent(m_context.playbackGroup.m_curAudioPlaysinkBin);
     m_gstWrapper->gstElementGetState(m_context.playbackGroup.m_curAudioPlaysinkBin, &currentState, &pending,
                                      GST_CLOCK_TIME_NONE);
@@ -718,7 +718,7 @@ void GstGenericPlayer::firstTimeSwitchFromAC3toAAC(GstCaps *newAudioCaps)
         RIALTO_SERVER_LOG_ERROR("firstTimeSwitchFromAC3toAAC: audio typefind or decode bin is null");
         return;
     }
-    GstState currentState, pending;
+    GstState currentState{GST_STATE_VOID_PENDING}, pending{GST_STATE_VOID_PENDING};
     GstPad *pTypfdSrcPad = NULL;
     GstPad *pTypfdSrcPeerPad = NULL;
     GstPad *pNewAudioDecoderSrcPad = NULL;
@@ -832,7 +832,7 @@ bool GstGenericPlayer::switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps)
     GstPad *audioParseSinkPad = NULL;
     GstPad *audioParseSrcPeerPad = NULL;
     GstPad *audioParseSinkPeerPad = NULL;
-    GstState currentState, pending;
+    GstState currentState{GST_STATE_VOID_PENDING}, pending{GST_STATE_VOID_PENDING};
 
     // Get AudioDecoder Src Pads
     if ((audioDecSrcPad = m_gstWrapper->gstElementGetStaticPad(m_context.playbackGroup.m_curAudioDecoder, "src")) !=
@@ -1589,7 +1589,7 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
         bool result = false;
         if (m_glibWrapper->gStrHasPrefix(sinkName.c_str(), "amlhalasink"))
         {
-            // due to problems audio codec change in prerolling, temporarely moved the code from rdk gstreamer utils to
+            // due to problems audio codec change in prerolling, temporarily moved the code from rdk gstreamer utils to
             // Rialto and applied fixes
             result = performAudioTrackCodecChannelSwitch(&sampleAttributes, &(*audioAttributes), &status, &ui32Delay,
                                                          &audioChangeTargetPts, &currentDispPts, &audioChangeStage,
