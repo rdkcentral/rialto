@@ -2028,9 +2028,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachMpegAudioSource)
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
-        .WillOnce(Invoke(
-            [&](gpointer object, const gchar *first_property_name, void *element)
-            { *reinterpret_cast<GstElement **>(element) = fakeSink; }));
+        .WillOnce(Invoke([&](gpointer object, const gchar *first_property_name, void *element)
+                         { *reinterpret_cast<GstElement **>(element) = fakeSink; }));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(fakeSink));
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(fakeSink))).WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(StrEq("fakesink"), StrEq("amlhalasink"))).WillOnce(Return(FALSE));
@@ -2073,9 +2072,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachEac3AudioSource)
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
-        .WillOnce(Invoke(
-            [&](gpointer object, const gchar *first_property_name, void *element)
-            { *reinterpret_cast<GstElement **>(element) = fakeSink; }));
+        .WillOnce(Invoke([&](gpointer object, const gchar *first_property_name, void *element)
+                         { *reinterpret_cast<GstElement **>(element) = fakeSink; }));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(fakeSink));
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(fakeSink))).WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
@@ -2118,9 +2116,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachRawAudioSource)
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
-        .WillOnce(Invoke(
-            [&](gpointer object, const gchar *first_property_name, void *element)
-            { *reinterpret_cast<GstElement **>(element) = fakeSink; }));
+        .WillOnce(Invoke([&](gpointer object, const gchar *first_property_name, void *element)
+                         { *reinterpret_cast<GstElement **>(element) = fakeSink; }));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(fakeSink));
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(fakeSink))).WillOnce(Return(kElementTypeName.c_str()));
     EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
@@ -2170,9 +2167,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachAmlhalasinkAudioSourceNoCodecS
     EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
     // getSink
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
-        .WillOnce(Invoke(
-            [&](gpointer, const gchar *, void *element)
-            { *reinterpret_cast<GstElement **>(element) = fakeSink; }));
+        .WillOnce(Invoke([&](gpointer, const gchar *, void *element)
+                         { *reinterpret_cast<GstElement **>(element) = fakeSink; }));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(fakeSink));
     // getSinkChildIfAutoAudioSink
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(fakeSink))).WillOnce(Return(kElementTypeName.c_str()));
@@ -2186,11 +2182,9 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachAmlhalasinkAudioSourceNoCodecS
     EXPECT_CALL(*m_glibWrapperMock, gFree(configCapsStr));
     // flush events
     EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStart()).WillOnce(Return(&flushStartEvent));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&audioSrc), &flushStartEvent))
-        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&audioSrc), &flushStartEvent)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStop(kResetTime)).WillOnce(Return(&flushStopEvent));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&audioSrc), &flushStopEvent))
-        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&audioSrc), &flushStopEvent)).WillOnce(Return(TRUE));
     // no codec switch - just set new caps
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(GST_APP_SRC(&audioSrc), &configCaps));
     // end of reattachSource: caps was updated to configCaps
@@ -2250,9 +2244,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachAmlhalasinkAudioSourceWithFirs
     EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
     // getSink
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
-        .WillOnce(Invoke(
-            [&](gpointer, const gchar *, void *element)
-            { *reinterpret_cast<GstElement **>(element) = fakeSink; }));
+        .WillOnce(Invoke([&](gpointer, const gchar *, void *element)
+                         { *reinterpret_cast<GstElement **>(element) = fakeSink; }));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(fakeSink));
     // getSinkChildIfAutoAudioSink
     EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(fakeSink))).WillOnce(Return(kElementTypeName.c_str()));
@@ -2266,38 +2259,29 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachAmlhalasinkAudioSourceWithFirs
     EXPECT_CALL(*m_glibWrapperMock, gFree(configCapsStr));
     // flush events
     EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStart()).WillOnce(Return(&flushStartEvent));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&audioSrc), &flushStartEvent))
-        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&audioSrc), &flushStartEvent)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStop(kResetTime)).WillOnce(Return(&flushStopEvent));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&audioSrc), &flushStopEvent))
-        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&audioSrc), &flushStopEvent)).WillOnce(Return(TRUE));
     // haltAudioPlayback + resumeAudioPlayback: playsinkBin and decodeBin each called twice
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&playsinkBin, GST_STATE_READY));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstElementGetState(&playsinkBin, _, _, GST_CLOCK_TIME_NONE))
-        .Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(&playsinkBin, _, _, GST_CLOCK_TIME_NONE)).Times(2);
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&decodeBin, GST_STATE_PAUSED));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstElementGetState(&decodeBin, _, _, GST_CLOCK_TIME_NONE))
-        .Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(&decodeBin, _, _, GST_CLOCK_TIME_NONE)).Times(2);
     // switchAudioCodec -> firstTimeSwitchFromAC3toAAC
-    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(&typefind, StrEq("src")))
-        .WillOnce(Return(&typefindSrcPad));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(&typefind, StrEq("src"))).WillOnce(Return(&typefindSrcPad));
     EXPECT_CALL(*m_gstWrapperMock, gstPadGetPeer(&typefindSrcPad)).WillOnce(Return(&typefindSrcPeerPad));
     EXPECT_CALL(*m_gstWrapperMock, gstPadUnlink(&typefindSrcPad, &typefindSrcPeerPad)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("aacparse"), StrEq("aacparse")))
         .WillOnce(Return(&newAudioParse));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("avdec_aac"), StrEq("avdec_aac")))
         .WillOnce(Return(&newAudioDecoder));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), StrEq("aqueue")))
-        .WillOnce(Return(&newQueue));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), StrEq("aqueue"))).WillOnce(Return(&newQueue));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(_, &newAudioDecoder)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(_, &newAudioParse)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(_, &newQueue)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(&newAudioDecoder, StrEq("src")))
         .WillOnce(Return(&newAudioDecoderSrcPad));
-    EXPECT_CALL(*m_gstWrapperMock, gstPadLink(&newAudioDecoderSrcPad, &typefindSrcPeerPad))
-        .WillOnce(Return(GST_PAD_LINK_OK));
+    EXPECT_CALL(*m_gstWrapperMock, gstPadLink(&newAudioDecoderSrcPad, &typefindSrcPeerPad)).WillOnce(Return(GST_PAD_LINK_OK));
     EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&newAudioParse, &newQueue)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementLink(&newQueue, &newAudioDecoder)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&typefind, GST_STATE_READY));
