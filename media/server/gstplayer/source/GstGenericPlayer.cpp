@@ -1567,6 +1567,8 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
         bool retVal{false};    // Output param. Set to TRUE in rdk_gstreamer_utils function stub
 
         bool result = false;
+        RIALTO_SERVER_LOG_MIL("Changing audio source. Sink name: %s, old caps: %s, new codec: %s", sinkName.c_str(),
+                              oldCapsStr.c_str(), audioAttributes->m_codecParam.c_str());
         if (m_glibWrapper->gStrHasPrefix(sinkName.c_str(), "amlhalasink"))
         {
             // due to problems audio codec change in prerolling, temporarily moved the code from rdk gstreamer utils to
