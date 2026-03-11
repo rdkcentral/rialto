@@ -627,7 +627,7 @@ GstGenericPlayer::createAudioAttributes(const std::unique_ptr<IMediaPipeline::Me
 void GstGenericPlayer::configAudioCap(firebolt::rialto::wrappers::AudioAttributesPrivate *pAttrib, bool *audioaac,
                                       bool svpenabled, GstCaps **appsrcCaps)
 {
-    // this function comes from gst rdk utils
+    // this function comes from rdk_gstreamer_utils
     if (!pAttrib || !audioaac || !appsrcCaps)
     {
         RIALTO_SERVER_LOG_ERROR("configAudioCap: invalid null parameter");
@@ -659,7 +659,7 @@ void GstGenericPlayer::configAudioCap(firebolt::rialto::wrappers::AudioAttribute
 
 void GstGenericPlayer::haltAudioPlayback()
 {
-    // this function comes from gst rdk utils
+    // this function comes from rdk_gstreamer_utils
     if (!m_context.playbackGroup.m_curAudioPlaysinkBin || !m_context.playbackGroup.m_curAudioDecodeBin)
     {
         RIALTO_SERVER_LOG_ERROR("haltAudioPlayback: audio playsink bin or decode bin is null");
@@ -693,7 +693,7 @@ void GstGenericPlayer::haltAudioPlayback()
 
 void GstGenericPlayer::resumeAudioPlayback()
 {
-    // this function comes from gst rdk utils
+    // this function comes from rdk_gstreamer_utils
     if (!m_context.playbackGroup.m_curAudioPlaysinkBin || !m_context.playbackGroup.m_curAudioDecodeBin)
     {
         RIALTO_SERVER_LOG_ERROR("resumeAudioPlayback: audio playsink bin or decode bin is null");
@@ -712,7 +712,7 @@ void GstGenericPlayer::resumeAudioPlayback()
 
 void GstGenericPlayer::firstTimeSwitchFromAC3toAAC(GstCaps *newAudioCaps)
 {
-    // this function comes from gst rdk utils
+    // this function comes from rdk_gstreamer_utils
     if (!m_context.playbackGroup.m_curAudioTypefind || !m_context.playbackGroup.m_curAudioDecodeBin)
     {
         RIALTO_SERVER_LOG_ERROR("firstTimeSwitchFromAC3toAAC: audio typefind or decode bin is null");
@@ -798,7 +798,7 @@ void GstGenericPlayer::firstTimeSwitchFromAC3toAAC(GstCaps *newAudioCaps)
 }
 
 bool GstGenericPlayer::switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps)
-{ // this function comes from gst rdk utils
+{ // this function comes from rdk_gstreamer_utils
     bool ret = false;
     RIALTO_SERVER_LOG_DEBUG("Current Audio Codec AAC = %d Same as Incoming audio Codec AAC = %d",
                             m_context.playbackGroup.m_isAudioAAC, isAudioAAC);
@@ -997,7 +997,7 @@ bool GstGenericPlayer::performAudioTrackCodecChannelSwitch(const void *pSampleAt
                                                            unsigned int *audioChangeStage, GstCaps **appsrcCaps,
                                                            bool *audioaac, bool svpenabled, GstElement *aSrc, bool *ret)
 {
-    // this function comes from gst rdk utils
+    // this function comes from rdk_gstreamer_utils
     if (!pStatus || !pui32Delay || !pAudioChangeTargetPts || !pcurrentDispPts || !audioChangeStage || !appsrcCaps ||
         !audioaac || !aSrc || !ret)
     {
