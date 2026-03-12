@@ -22,6 +22,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
+#include <utility>
 
 namespace firebolt::rialto::server::tasks::generic
 {

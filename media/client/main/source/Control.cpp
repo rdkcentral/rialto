@@ -20,6 +20,7 @@
 #include "Control.h"
 #include "IControlIpc.h"
 #include "RialtoClientLogging.h"
+#include <utility>
 
 namespace firebolt::rialto
 {

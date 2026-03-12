@@ -18,6 +18,7 @@
  */
 
 #include <stdexcept>
+#include <utility>
 
 #include "MediaKeySession.h"
 #include "MediaKeysCommon.h"

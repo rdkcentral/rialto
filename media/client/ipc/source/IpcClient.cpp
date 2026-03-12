@@ -19,6 +19,7 @@
 
 #include "IpcClient.h"
 #include "RialtoClientLogging.h"
+#include <utility>
 
 namespace firebolt::rialto::client
 {

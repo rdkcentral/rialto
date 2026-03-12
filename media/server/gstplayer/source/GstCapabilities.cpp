@@ -21,6 +21,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 #include "GstCapabilities.h"
 #include "GstMimeMapping.h"
