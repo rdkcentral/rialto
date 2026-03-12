@@ -41,10 +41,7 @@ namespace firebolt::rialto::server::ct
 class AudioSourceSwitchTest : public MediaPipelineTest
 {
 public:
-    AudioSourceSwitchTest()
-    {
-        m_audioSink = gst_element_factory_make("fakesrc", nullptr);
-    }
+    AudioSourceSwitchTest() { m_audioSink = gst_element_factory_make("fakesrc", nullptr); }
     ~AudioSourceSwitchTest() override { gst_object_unref(m_audioSink); }
 
     void willSwitchAudioSource()
