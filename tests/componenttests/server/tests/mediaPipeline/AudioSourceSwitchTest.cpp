@@ -43,16 +43,21 @@ class AudioSourceSwitchTest : public MediaPipelineTest
 public:
     AudioSourceSwitchTest()
     {
-        GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
-        m_audioSink = gst_element_factory_create(elementFactory, nullptr);
-        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_audioSink))).WillRepeatedly(Return("audio_sink"));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink)).Times(AtLeast(0));
-        gst_object_unref(elementFactory);
+        m_audioSink = gst_element_factory_make("fakesrc", nullptr);
     }
     ~AudioSourceSwitchTest() override { gst_object_unref(m_audioSink); }
 
     void willSwitchAudioSource()
     {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
+            .WillOnce(Invoke(
+                [this](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                    *elementPtr = m_audioSink;
+                }));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink)).Times(AtLeast(0));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_audioSink))).WillRepeatedly(Return("audio_sink"));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq("audio/mpeg"))).WillOnce(Return(&m_audioCaps));
         EXPECT_CALL(*m_gstWrapperMock,
                     gstCapsSetSimpleStringStub(&m_audioCaps, StrEq("alignment"), G_TYPE_STRING, StrEq("nal")));
@@ -90,6 +95,7 @@ public:
 private:
     GstCaps m_oldCaps{};
     gchar m_oldCapsStr{};
+    GstElement *m_audioSink{};
 };
 /*
  * Component Test: Switch audio source procedure test
