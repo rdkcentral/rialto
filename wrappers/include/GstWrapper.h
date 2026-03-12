@@ -595,6 +595,22 @@ public:
     {
         gst_base_parse_set_pts_interpolation(parse, ptsInterpolate);
     }
+
+    GstStateChangeReturn gstElementGetState(GstElement *element, GstState *state, GstState *pending,
+                                            GstClockTime timeout) override
+    {
+        return gst_element_get_state(element, state, pending, timeout);
+    }
+
+    GstPad *gstPadGetPeer(GstPad *pad) override { return gst_pad_get_peer(pad); }
+
+    gboolean gstPadUnlink(GstPad *srcpad, GstPad *sinkpad) override { return gst_pad_unlink(srcpad, sinkpad); }
+
+    GstPadLinkReturn gstPadLink(GstPad *srcpad, GstPad *sinkpad) override { return gst_pad_link(srcpad, sinkpad); }
+
+    gboolean gstBinRemove(GstBin *bin, GstElement *element) override { return gst_bin_remove(bin, element); }
+
+    GstObject *gstPadGetParent(GstPad *pad) override { return gst_pad_get_parent(pad); }
 };
 
 }; // namespace firebolt::rialto::wrappers

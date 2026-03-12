@@ -26,6 +26,8 @@
 #include "MessageBuilders.h"
 
 using testing::_;
+using testing::AtLeast;
+using testing::Invoke;
 using testing::Return;
 using testing::StrEq;
 
@@ -39,11 +41,20 @@ namespace firebolt::rialto::server::ct
 class AudioSourceSwitchTest : public MediaPipelineTest
 {
 public:
-    AudioSourceSwitchTest() = default;
-    ~AudioSourceSwitchTest() = default;
+    AudioSourceSwitchTest() { m_audioSink = gst_element_factory_make("fakesrc", nullptr); }
+    ~AudioSourceSwitchTest() override { gst_object_unref(m_audioSink); }
 
     void willSwitchAudioSource()
     {
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
+            .WillOnce(Invoke(
+                [this](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                    *elementPtr = m_audioSink;
+                }));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink)).Times(AtLeast(0));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_audioSink))).WillRepeatedly(Return("audio_sink"));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq("audio/mpeg"))).WillOnce(Return(&m_audioCaps));
         EXPECT_CALL(*m_gstWrapperMock,
                     gstCapsSetSimpleStringStub(&m_audioCaps, StrEq("alignment"), G_TYPE_STRING, StrEq("nal")));
@@ -61,6 +72,7 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_audioCaps, &m_oldCaps)).WillOnce(Return(FALSE));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_oldCaps)).WillOnce(Return(&m_oldCapsStr));
         EXPECT_CALL(*m_glibWrapperMock, gFree(&m_oldCapsStr));
+        EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
         EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock,
                     performAudioTrackCodecChannelSwitch(_, _, _, _, _, _, _, _, _, _, kSvpEnabled,
                                                         GST_ELEMENT(&m_audioAppSrc), _))
@@ -80,6 +92,7 @@ public:
 private:
     GstCaps m_oldCaps{};
     gchar m_oldCapsStr{};
+    GstElement *m_audioSink{};
 };
 /*
  * Component Test: Switch audio source procedure test
