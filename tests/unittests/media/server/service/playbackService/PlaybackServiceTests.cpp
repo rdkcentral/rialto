@@ -59,6 +59,13 @@ TEST_F(PlaybackServiceTests, shouldSetClientDisplayName)
     clientDisplayNameShouldBeSet();
 }
 
+TEST_F(PlaybackServiceTests, shouldSetSubtitlesDisplayName)
+{
+    createPlaybackServiceShouldSuccess();
+    triggerSetSubtitlesDisplayName();
+    subtitlesDisplayNameShouldBeSet();
+}
+
 TEST_F(PlaybackServiceTests, shouldPing)
 {
     createPlaybackServiceShouldSuccess();

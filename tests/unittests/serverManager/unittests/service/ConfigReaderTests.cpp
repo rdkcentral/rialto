@@ -323,6 +323,23 @@ TEST_F(ConfigReaderTests, socketGroupExists)
     EXPECT_EQ(m_sut->getSocketGroup().value(), kTestValue);
 }
 
+TEST_F(ConfigReaderTests, subtitlesDisplayNameNotString)
+{
+    expectSuccessfulParsing();
+    expectNotString("subtitlesDisplayName");
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSubtitlesDisplayName().has_value(), false);
+}
+
+TEST_F(ConfigReaderTests, subtitlesDisplayNameExists)
+{
+    const char *kTestValue = "westeros-asplayer-subtitles";
+    expectSuccessfulParsing();
+    expectReturnString("subtitlesDisplayName", kTestValue);
+    EXPECT_TRUE(m_sut->read());
+    EXPECT_EQ(m_sut->getSubtitlesDisplayName().value(), kTestValue);
+}
+
 TEST_F(ConfigReaderTests, numOfPreloadedServersNotUint)
 {
     expectSuccessfulParsing();
