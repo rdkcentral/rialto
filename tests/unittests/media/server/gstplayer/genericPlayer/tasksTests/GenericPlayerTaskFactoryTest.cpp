@@ -298,7 +298,7 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUnderflow)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetPlaybackRate)
 {
-    auto task = m_sut.createSetPlaybackRate(m_context, 1.25);
+    auto task = m_sut.createSetPlaybackRate(m_context, m_gstPlayer, 1.25);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetPlaybackRate &>(*task));
 }

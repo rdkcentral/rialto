@@ -2822,7 +2822,8 @@ void GenericTasksTestsBase::shouldNotifyNeedVideoDataFailure()
 
 void GenericTasksTestsBase::triggerSetPlaybackRate()
 {
-    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{testContext->m_context, testContext->m_gstWrapper,
+    firebolt::rialto::server::tasks::generic::SetPlaybackRate task{testContext->m_context, testContext->m_gstPlayer,
+                                                                   testContext->m_gstWrapper,
                                                                    testContext->m_glibWrapper, kRate};
     task.execute();
 }

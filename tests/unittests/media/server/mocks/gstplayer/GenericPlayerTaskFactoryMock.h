@@ -66,8 +66,8 @@ public:
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createCheckAudioUnderflow,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetPlaybackRate, (GenericPlayerContext & context, double rate),
-                (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetPlaybackRate,
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, double rate), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetPosition,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, std::int64_t position),
                 (const, override));
