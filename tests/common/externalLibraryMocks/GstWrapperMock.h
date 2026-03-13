@@ -131,6 +131,8 @@ public:
     MOCK_METHOD(void, gstSegmentFree, (GstSegment * segment), (const, override));
     MOCK_METHOD(GstEvent *, gstEventNewSegment, (const GstSegment *segment), (const, override));
     MOCK_METHOD(GstEvent *, gstEventNewCustom, (GstEventType type, GstStructure *structure), (const, override));
+    MOCK_METHOD(GstEvent *, gstEventRef, (GstEvent * event), (const, override));
+    MOCK_METHOD(void, gstEventUnref, (GstEvent * event), (const, override));
     MOCK_METHOD(GstStructure *, gstStructureNewDoubleStub,
                 (const gchar *name, const gchar *firstfield, GType type, double value), (const));
     MOCK_METHOD(GstStructure *, gstStructureNewBoolStub,

@@ -787,6 +787,22 @@ public:
     virtual GstEvent *gstEventNewCustom(GstEventType type, GstStructure *structure) const = 0;
 
     /**
+     * @brief Increases the refcount of the given event by one.
+     *
+     * @param[in] event : The event to refcount
+     *
+     * @retval event (for convenience when doing assignments)
+     */
+    virtual GstEvent *gstEventRef(GstEvent *event) const = 0;
+
+    /**
+     * @brief Decreases the refcount of the event. If the refcount reaches 0, the event will be freed.
+     *
+     * @param[in] event : The event to unref
+     */
+    virtual void gstEventUnref(GstEvent *event) const = 0;
+
+    /**
      * @brief Creates a new GstStructure with the given name. Free-function: gst_structure_free
      *
      * @param[in] name       : name of new structure

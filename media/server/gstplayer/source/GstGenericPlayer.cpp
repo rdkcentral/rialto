@@ -389,7 +389,7 @@ void GstGenericPlayer::setPlaybackRate(double rate)
 {
     if (m_workerThread)
     {
-        m_workerThread->enqueueTask(m_taskFactory->createSetPlaybackRate(m_context, rate));
+        m_workerThread->enqueueTask(m_taskFactory->createSetPlaybackRate(m_context, *this, rate));
     }
 }
 

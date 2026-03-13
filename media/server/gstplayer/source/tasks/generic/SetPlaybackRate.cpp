@@ -30,10 +30,10 @@ const char kCustomInstantRateChangeEventName[] = "custom-instant-rate-change";
 
 namespace firebolt::rialto::server::tasks::generic
 {
-SetPlaybackRate::SetPlaybackRate(GenericPlayerContext &context,
+SetPlaybackRate::SetPlaybackRate(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                  std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                                  std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, double rate)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rate{rate}
+    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rate{rate}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetPlaybackRate");
 }
@@ -67,6 +67,9 @@ void SetPlaybackRate::execute() const
     }
     m_context.pendingPlaybackRate = kNoPendingPlaybackRate;
 
+    GstElement *audioDecoder = m_player.getDecoder(firebolt::rialto::MediaSourceType::AUDIO);
+    GstElement *videoDecoder = m_player.getDecoder(firebolt::rialto::MediaSourceType::VIDEO);
+
     GstElement *audioSink{nullptr};
     gboolean success{FALSE};
     m_glibWrapper->gObjectGet(m_context.pipeline, "audio-sink", &audioSink, nullptr);
@@ -85,9 +88,40 @@ void SetPlaybackRate::execute() const
     {
         GstStructure *structure{
             m_gstWrapper->gstStructureNew(kCustomInstantRateChangeEventName, "rate", G_TYPE_DOUBLE, m_rate, NULL)};
-        success = m_gstWrapper->gstElementSendEvent(m_context.pipeline,
-                                                    m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
-                                                                                    structure));
+        GstEvent *instantRateChangeEvent = m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
+                                                                                    structure);
+
+        if ((videoDecoder && (0 == strcmp(GST_ELEMENT_NAME(videoDecoder), "brcmvideodecoder"))) ||
+            (audioDecoder && (0 == strcmp(GST_ELEMENT_NAME(audioDecoder), "brcmaudiodecoder"))))
+        {
+            success = true;
+            if (videoDecoder)
+            {
+                GstEvent *videoRateChangeEvent = m_gstWrapper->gstEventRef(instantRateChangeEvent);
+                if (!m_gstWrapper->gstElementSendEvent(videoDecoder, videoRateChangeEvent))
+                {
+                    RIALTO_SERVER_LOG_INFO("Sent new event to videoDecoder failed");
+                    success = false;
+                }
+                 m_gstWrapper->gstEventUnref(videoRateChangeEvent);
+            }
+
+            if (audioDecoder)
+            {
+                GstEvent *audioRateChangeEvent = m_gstWrapper->gstEventRef(instantRateChangeEvent);
+                if (!m_gstWrapper->gstElementSendEvent(audioDecoder, audioRateChangeEvent))
+                {
+                    RIALTO_SERVER_LOG_INFO("Sent new event to audioDecoder failed");
+                    success = false;
+                }
+                m_gstWrapper->gstEventUnref(audioRateChangeEvent);
+            }
+            m_gstWrapper->gstEventUnref(instantRateChangeEvent);
+        }
+        else
+        {
+            success = m_gstWrapper->gstElementSendEvent(m_context.pipeline, instantRateChangeEvent);
+        }
         RIALTO_SERVER_LOG_DEBUG("Sent new event, success = %s", success ? "true" : "false");
     }
 
@@ -101,5 +135,13 @@ void SetPlaybackRate::execute() const
     {
         m_glibWrapper->gObjectUnref(audioSink);
     }
-}
+    if (audioDecoder)
+    {
+        m_glibWrapper->gObjectUnref(audioDecoder);
+    }
+    if (videoDecoder)
+    {
+        m_glibWrapper->gObjectUnref(videoDecoder);
+    }
+  }
 } // namespace firebolt::rialto::server::tasks::generic
