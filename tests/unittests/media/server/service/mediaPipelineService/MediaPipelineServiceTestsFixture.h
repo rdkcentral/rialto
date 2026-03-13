@@ -66,12 +66,8 @@ public:
     void mediaPipelineWillFailToGetPosition();
     void mediaPipelineWillSetImmediateOutput();
     void mediaPipelineWillFailToSetImmediateOutput();
-    void mediaPipelineWillSetReportDecodeErrors();
-    void mediaPipelineWillFailToSetReportDecodeErrors();
     void mediaPipelineWillGetImmediateOutput();
     void mediaPipelineWillFailToGetImmediateOutput();
-    void mediaPipelineWillGetQueuedFrames();
-    void mediaPipelineWillFailToGetQueuedFrames();
     void mediaPipelineWillGetStats();
     void mediaPipelineWillFailToGetStats();
     void mediaPipelineWillRenderFrame();
@@ -160,14 +156,10 @@ public:
     void haveDataShouldFail();
     void getPositionShouldSucceed();
     void getPositionShouldFail();
-    void setReportDecodeErrorsShouldSucceed();
-    void setReportDecodeErrorsShouldFail();
     void setImmediateOutputShouldSucceed();
     void setImmediateOutputShouldFail();
     void getImmediateOutputShouldSucceed();
     void getImmediateOutputShouldFail();
-    void getQueuedFramesShouldSucceed();
-    void getQueuedFramesShouldFail();
     void getStatsShouldSucceed();
     void getStatsShouldFail();
     void getSupportedMimeTypesSucceed();

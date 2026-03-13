@@ -159,16 +159,6 @@ public:
                         *returnVal = value ? TRUE : FALSE;
                     }));
         }
-        else if constexpr (std::is_same_v<T, uint32_t>)
-        {
-            EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(propertyName.c_str()), _))
-                .WillOnce(Invoke(
-                    [&](gpointer, const gchar *, void *val)
-                    {
-                        guint *returnVal = reinterpret_cast<guint *>(val);
-                        *returnVal = value;
-                    }));
-        }
         else if constexpr (std::is_same_v<T, int32_t>)
         {
             EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(propertyName.c_str()), _))
@@ -597,7 +587,7 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
     willStop();
     stop();
 
-    // Step 18: Destroy media session
+    // Step 19: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }
