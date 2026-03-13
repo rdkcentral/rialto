@@ -91,8 +91,9 @@ std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesFactory::getMediaKe
 
 namespace firebolt::rialto::server
 {
-MediaKeysCapabilities::MediaKeysCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IOcdmFactory> ocdmFactory,
-                                             std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory)
+MediaKeysCapabilities::MediaKeysCapabilities(
+    const std::shared_ptr<firebolt::rialto::wrappers::IOcdmFactory> &ocdmFactory,
+    const std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> &ocdmSystemFactory)
     : m_ocdmSystemFactory{ocdmSystemFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

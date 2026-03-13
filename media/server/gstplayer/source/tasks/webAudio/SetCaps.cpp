@@ -33,8 +33,8 @@ namespace
 class WebAudioCapsBuilder
 {
 public:
-    WebAudioCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                        std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper)
+    WebAudioCapsBuilder(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                        const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
         : m_gstWrapper(gstWrapper), m_glibWrapper(glibWrapper)
     {
     }
@@ -49,8 +49,8 @@ protected:
 class WebAudioPcmCapsBuilder : public WebAudioCapsBuilder
 {
 public:
-    WebAudioPcmCapsBuilder(std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                           std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+    WebAudioPcmCapsBuilder(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                           const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                            const WebAudioPcmConfig &pcmConfig)
         : WebAudioCapsBuilder(gstWrapper, glibWrapper), m_pcmConfig(pcmConfig)
     {
@@ -105,8 +105,9 @@ protected:
 };
 }; // namespace
 
-SetCaps::SetCaps(WebAudioPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                 std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+SetCaps::SetCaps(WebAudioPlayerContext &context,
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                  const std::string &audioMimeType, std::weak_ptr<const WebAudioConfig> webAudioConfig)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_audioMimeType{audioMimeType}
 {

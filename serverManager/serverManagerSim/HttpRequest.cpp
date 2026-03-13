@@ -19,6 +19,7 @@
 
 #include "HttpRequest.h"
 #include <cstring>
+#include <utility>
 
 namespace
 {
@@ -28,16 +29,16 @@ std::vector<std::string> splitUri(std::string uri)
     size_t pos = 0;
     while ((pos = uri.find("/")) != std::string::npos)
     {
-        const std::string token = uri.substr(0, pos);
+        std::string token = uri.substr(0, pos);
         if (!token.empty())
         {
-            result.push_back(token);
+            result.push_back(std::move(token));
         }
         uri.erase(0, pos + 1);
     }
     if (!uri.empty())
     {
-        result.push_back(uri);
+        result.push_back(std::move(uri));
     }
     return result;
 }

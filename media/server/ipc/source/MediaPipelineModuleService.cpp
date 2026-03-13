@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <unordered_map>
+#include <utility>
 
 namespace
 {
@@ -471,8 +472,8 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         {
             framed = kConfig.framed();
         }
-        AudioConfig audioConfig{numberofchannels, sampleRate,  codecSpecificConfig, format,
-                                layout,           channelMask, streamHeaders,       framed};
+        AudioConfig audioConfig{numberofchannels, sampleRate,  std::move(codecSpecificConfig), format,
+                                layout,           channelMask, std::move(streamHeaders),       framed};
 
         mediaSource =
             std::make_unique<IMediaPipeline::MediaSourceAudio>(request->mime_type(), hasDrm, audioConfig,

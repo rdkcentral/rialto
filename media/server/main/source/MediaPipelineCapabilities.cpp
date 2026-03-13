@@ -61,7 +61,7 @@ std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesFactory::cr
 
 namespace firebolt::rialto::server
 {
-MediaPipelineCapabilities::MediaPipelineCapabilities(std::shared_ptr<IGstCapabilitiesFactory> gstCapabilitiesFactory)
+MediaPipelineCapabilities::MediaPipelineCapabilities(const std::shared_ptr<IGstCapabilitiesFactory> &gstCapabilitiesFactory)
     : m_kGstCapabilitiesFactory{gstCapabilitiesFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

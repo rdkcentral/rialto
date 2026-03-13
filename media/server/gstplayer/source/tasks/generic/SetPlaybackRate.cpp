@@ -31,8 +31,9 @@ const char kCustomInstantRateChangeEventName[] = "custom-instant-rate-change";
 namespace firebolt::rialto::server::tasks::generic
 {
 SetPlaybackRate::SetPlaybackRate(GenericPlayerContext &context,
-                                 std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                                 std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, double rate)
+                                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                                 double rate)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rate{rate}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetPlaybackRate");

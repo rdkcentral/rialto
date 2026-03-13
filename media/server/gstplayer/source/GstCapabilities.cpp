@@ -21,6 +21,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 #include "GstCapabilities.h"
 #include "GstMimeMapping.h"
@@ -274,12 +275,12 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
             {
                 for (guint j = 0; j < nProps && !propertiesToLookFor.empty(); ++j)
                 {
-                    const std::string kPropName{props[j]->name};
-                    auto it = propertiesToLookFor.find(kPropName);
+                    std::string propName{props[j]->name};
+                    auto it = propertiesToLookFor.find(propName);
                     if (it != propertiesToLookFor.end())
                     {
-                        RIALTO_SERVER_LOG_DEBUG("Found property '%s'", kPropName.c_str());
-                        propertiesFound.push_back(kPropName);
+                        RIALTO_SERVER_LOG_DEBUG("Found property '%s'", propName.c_str());
+                        propertiesFound.push_back(std::move(propName));
                         propertiesToLookFor.erase(it);
                     }
                 }

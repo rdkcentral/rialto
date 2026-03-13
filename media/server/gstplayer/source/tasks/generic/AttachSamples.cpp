@@ -22,6 +22,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
+#include <utility>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -42,7 +43,7 @@ AttachSamples::AttachSamples(GenericPlayerContext &context,
                     dynamic_cast<IMediaPipeline::MediaSegmentVideo &>(*mediaSegment);
                 VideoData videoData = {gstBuffer, videoSegment.getWidth(), videoSegment.getHeight(),
                                        videoSegment.getFrameRate(), videoSegment.getCodecData()};
-                m_videoData.push_back(videoData);
+                m_videoData.push_back(std::move(videoData));
             }
             catch (const std::exception &e)
             {
@@ -62,7 +63,7 @@ AttachSamples::AttachSamples(GenericPlayerContext &context,
                                        audioSegment.getCodecData(),
                                        audioSegment.getClippingStart(),
                                        audioSegment.getClippingEnd()};
-                m_audioData.push_back(audioData);
+                m_audioData.push_back(std::move(audioData));
             }
             catch (const std::exception &e)
             {

@@ -23,8 +23,8 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 UpdatePlaybackGroup::UpdatePlaybackGroup(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                         std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                                         std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                                         const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                         const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                                          GstElement *typefind, const GstCaps *caps)
     : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_typefind{typefind},
       m_caps{caps}

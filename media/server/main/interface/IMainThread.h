@@ -94,7 +94,7 @@ public:
      * @param[in]  clientId : The id of the registered client.
      * @param[in]  task     : Task to queue.
      */
-    virtual void enqueueTask(uint32_t clientId, Task task) = 0;
+    virtual void enqueueTask(uint32_t clientId, const Task &task) = 0;
 
     /**
      * @brief Enqueue a task on the main thread and wait for it to finish before returning.
@@ -102,7 +102,7 @@ public:
      * @param[in]  clientId : The id of the registered client.
      * @param[in]  task     : Task to queue.
      */
-    virtual void enqueueTaskAndWait(uint32_t clientId, Task task) = 0;
+    virtual void enqueueTaskAndWait(uint32_t clientId, const Task &task) = 0;
 
     /**
      * @brief Enqueue a priority task on the main thread and wait for it to finish before returning.
@@ -110,7 +110,7 @@ public:
      * @param[in]  clientId : The id of the registered client.
      * @param[in]  task     : Task to queue.
      */
-    virtual void enqueuePriorityTaskAndWait(uint32_t clientId, Task task) = 0;
+    virtual void enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task) = 0;
 };
 } // namespace firebolt::rialto::server
 

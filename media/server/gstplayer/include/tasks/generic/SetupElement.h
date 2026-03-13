@@ -33,8 +33,9 @@ namespace firebolt::rialto::server::tasks::generic
 class SetupElement : public IPlayerTask
 {
 public:
-    SetupElement(GenericPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                 std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+    SetupElement(GenericPlayerContext &context,
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                  IGstGenericPlayerPrivate &player, GstElement *element);
     ~SetupElement() override;
     void execute() const override;

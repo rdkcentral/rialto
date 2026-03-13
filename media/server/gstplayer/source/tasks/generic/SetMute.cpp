@@ -25,8 +25,8 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 SetMute::SetMute(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                 std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                 std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                  const MediaSourceType &mediaSourceType, bool mute)
     : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
       m_mediaSourceType{mediaSourceType}, m_mute{mute}

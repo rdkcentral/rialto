@@ -99,6 +99,7 @@ void MainThread::mainThreadLoop()
         if (nullptr != kTaskInfo->cv)
         {
             std::unique_lock<std::mutex> lockTask(*(kTaskInfo->mutex));
+            kTaskInfo->done = true;
             kTaskInfo->cv->notify_one();
         }
     }
@@ -111,7 +112,7 @@ const std::shared_ptr<MainThread::TaskInfo> MainThread::waitForTask()
     {
         m_taskQueueCv.wait(lock, [this] { return !m_taskQueue.empty(); });
     }
-    const std::shared_ptr<TaskInfo> kTaskInfo = m_taskQueue.front();
+    const auto kTaskInfo = m_taskQueue.front();
     m_taskQueue.pop_front();
     return kTaskInfo;
 }
@@ -136,19 +137,19 @@ void MainThread::unregisterClient(uint32_t clientId)
     m_registeredClients.erase(clientId);
 }
 
-void MainThread::enqueueTask(uint32_t clientId, Task task)
+void MainThread::enqueueTask(uint32_t clientId, const Task &task)
 {
     std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
     newTask->clientId = clientId;
     newTask->task = task;
     {
         std::unique_lock<std::mutex> lock(m_taskQueueMutex);
-        m_taskQueue.push_back(newTask);
+        m_taskQueue.push_back(std::move(newTask));
     }
     m_taskQueueCv.notify_one();
 }
 
-void MainThread::enqueueTaskAndWait(uint32_t clientId, Task task)
+void MainThread::enqueueTaskAndWait(uint32_t clientId, const Task &task)
 {
     std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
     newTask->clientId = clientId;
@@ -164,11 +165,11 @@ void MainThread::enqueueTaskAndWait(uint32_t clientId, Task task)
         }
         m_taskQueueCv.notify_one();
 
-        newTask->cv->wait(lockTask);
+        newTask->cv->wait(lockTask, [&] { return newTask->done; });
     }
 }
 
-void MainThread::enqueuePriorityTaskAndWait(uint32_t clientId, Task task)
+void MainThread::enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task)
 {
     std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
     newTask->clientId = clientId;
@@ -184,7 +185,7 @@ void MainThread::enqueuePriorityTaskAndWait(uint32_t clientId, Task task)
         }
         m_taskQueueCv.notify_one();
 
-        newTask->cv->wait(lockTask);
+        newTask->cv->wait(lockTask, [&] { return newTask->done; });
     }
 }
 } // namespace firebolt::rialto::server
