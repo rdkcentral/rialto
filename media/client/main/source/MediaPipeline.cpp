@@ -876,7 +876,12 @@ void MediaPipeline::notifyBufferUnderflow(int32_t sourceId)
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
     if (client)
     {
+        RIALTO_CLIENT_LOG_WARN("MediaPipeline::notifyBufferUnderflow: sending notify underflow");
         client->notifyBufferUnderflow(sourceId);
+    }
+    else
+    {
+        RIALTO_CLIENT_LOG_WARN("MediaPipeline::notifyBufferUnderflow: client is invalid");
     }
 }
 
