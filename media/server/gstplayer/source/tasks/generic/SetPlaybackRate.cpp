@@ -26,14 +26,16 @@
 namespace
 {
 const char kCustomInstantRateChangeEventName[] = "custom-instant-rate-change";
+constexpr double DEFAULT_INITIAL_RATE_CORRECTION_SPEED = 1.000001;
 } // namespace
 
 namespace firebolt::rialto::server::tasks::generic
 {
 SetPlaybackRate::SetPlaybackRate(GenericPlayerContext &context,
+                                 IGstGenericPlayerPrivate &player,
                                  std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
                                  std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, double rate)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rate{rate}
+    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rate{rate}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetPlaybackRate");
 }
@@ -46,23 +48,38 @@ SetPlaybackRate::~SetPlaybackRate()
 void SetPlaybackRate::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetPlaybackRate");
-    if (m_context.playbackRate == m_rate)
+    double rate{m_rate};
+    if (rate == DEFAULT_INITIAL_RATE_CORRECTION_SPEED)
     {
-        RIALTO_SERVER_LOG_DEBUG("No need to change playback rate - it is already %lf", m_rate);
+        GstElement *decoder{m_player.getDecoder(firebolt::rialto::MediaSourceType::AUDIO)};
+        if (!decoder || !m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(decoder), "brcm"))
+        {
+            rate = 1.0f;
+        }
+
+        if (decoder)
+        {
+            m_gstWrapper->gstObjectUnref(decoder);
+        }
+    }
+
+    if (m_context.playbackRate == rate)
+    {
+        RIALTO_SERVER_LOG_DEBUG("No need to change playback rate - it is already %lf", rate);
         return;
     }
 
     if (!m_context.pipeline)
     {
-        RIALTO_SERVER_LOG_INFO("Postponing set playback rate to %lf. Pipeline is NULL", m_rate);
-        m_context.pendingPlaybackRate = m_rate;
+        RIALTO_SERVER_LOG_INFO("Postponing set playback rate to %lf. Pipeline is NULL", rate);
+        m_context.pendingPlaybackRate = rate;
         return;
     }
 
     if (GST_STATE(m_context.pipeline) < GST_STATE_PLAYING)
     {
-        RIALTO_SERVER_LOG_INFO("Postponing set playback rate to %lf. Pipeline state is below PLAYING", m_rate);
-        m_context.pendingPlaybackRate = m_rate;
+        RIALTO_SERVER_LOG_INFO("Postponing set playback rate to %lf. Pipeline state is below PLAYING", rate);
+        m_context.pendingPlaybackRate = rate;
         return;
     }
     m_context.pendingPlaybackRate = kNoPendingPlaybackRate;
@@ -74,7 +91,7 @@ void SetPlaybackRate::execute() const
     {
         GstSegment *segment{m_gstWrapper->gstSegmentNew()};
         m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
-        segment->rate = m_rate;
+        segment->rate = rate;
         segment->start = GST_CLOCK_TIME_NONE;
         segment->position = GST_CLOCK_TIME_NONE;
         success = m_gstWrapper->gstPadSendEvent(GST_BASE_SINK_PAD(audioSink), m_gstWrapper->gstEventNewSegment(segment));
@@ -84,7 +101,7 @@ void SetPlaybackRate::execute() const
     else
     {
         GstStructure *structure{
-            m_gstWrapper->gstStructureNew(kCustomInstantRateChangeEventName, "rate", G_TYPE_DOUBLE, m_rate, NULL)};
+            m_gstWrapper->gstStructureNew(kCustomInstantRateChangeEventName, "rate", G_TYPE_DOUBLE, rate, NULL)};
         success = m_gstWrapper->gstElementSendEvent(m_context.pipeline,
                                                     m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB,
                                                                                     structure));
@@ -93,8 +110,8 @@ void SetPlaybackRate::execute() const
 
     if (success)
     {
-        RIALTO_SERVER_LOG_MIL("Playback rate set to: %lf", m_rate);
-        m_context.playbackRate = m_rate;
+        RIALTO_SERVER_LOG_MIL("Playback rate set to: %lf", rate);
+        m_context.playbackRate = rate;
     }
 
     if (audioSink)

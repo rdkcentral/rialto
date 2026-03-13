@@ -235,7 +235,8 @@ TEST_F(GstGenericPlayerTest, shouldSetPlaybackRate)
     double playbackRate{1.5};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createSetPlaybackRate(_, playbackRate)).WillOnce(Return(ByMove(std::move(task))));
+    EXPECT_CALL(m_taskFactoryMock, createSetPlaybackRate(_, _, playbackRate))
+        .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->setPlaybackRate(playbackRate);
 }

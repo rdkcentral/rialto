@@ -202,11 +202,14 @@ public:
      * @brief Creates a SetPlaybackRate task.
      *
      * @param[in] context   : The GstGenericPlayer context
+        * @param[in] player    : The GstGenericPlayer instance
      * @param[in] rate      : The new playback rate.
      *
      * @retval the new SetPlaybackRate task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createSetPlaybackRate(GenericPlayerContext &context, double rate) const = 0;
+        virtual std::unique_ptr<IPlayerTask> createSetPlaybackRate(GenericPlayerContext &context,
+                                                       IGstGenericPlayerPrivate &player,
+                                                       double rate) const = 0;
 
     /**
      * @brief Creates a SetPosition task.
