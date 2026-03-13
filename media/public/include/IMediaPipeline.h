@@ -543,7 +543,7 @@ public:
          *
          * @retval the media key session id.
          */
-        const int32_t getMediaKeySessionId() const { return m_mediaKeySessionId; }
+        int32_t getMediaKeySessionId() const { return m_mediaKeySessionId; }
 
         /**
          * @brief Returns the key id. Empty if unencrypted.
@@ -571,14 +571,14 @@ public:
          *
          * @retval the initWithLast15 value.
          */
-        const uint32_t getInitWithLast15() const { return m_initWithLast15; }
+        uint32_t getInitWithLast15() const { return m_initWithLast15; }
 
         /**
          * @brief Returns the segment alignment
          *
          * @retval the segment alignment
          */
-        const SegmentAlignment getSegmentAlignment() const { return m_alignment; }
+        SegmentAlignment getSegmentAlignment() const { return m_alignment; }
 
         /**
          * @brief Gets the codec data
@@ -602,7 +602,7 @@ public:
          *
          * @retval if the encryption pattern has been set
          */
-        const bool getEncryptionPattern(uint32_t &crypt, uint32_t &skip) const
+        bool getEncryptionPattern(uint32_t &crypt, uint32_t &skip) const
         {
             crypt = m_crypt;
             skip = m_skip;
