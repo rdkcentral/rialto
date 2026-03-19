@@ -118,7 +118,7 @@ public:
 
     bool allSourcesAttached() override;
 
-    bool play() override;
+    bool play(bool &async) override;
 
     bool pause() override;
 

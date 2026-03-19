@@ -287,9 +287,9 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createPing(std::unique_pt
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFlush(GenericPlayerContext &context,
                                                                    IGstGenericPlayerPrivate &player,
                                                                    const firebolt::rialto::MediaSourceType &type,
-                                                                   bool resetTime) const
+                                                                   bool resetTime, bool isAsync) const
 {
-    return std::make_unique<tasks::generic::Flush>(context, player, m_client, m_gstWrapper, type, resetTime);
+    return std::make_unique<tasks::generic::Flush>(context, player, m_client, m_gstWrapper, type, resetTime, isAsync);
 }
 
 std::unique_ptr<IPlayerTask>

@@ -348,7 +348,7 @@ bool MediaPipelineIpc::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, ui
     return true;
 }
 
-bool MediaPipelineIpc::play()
+bool MediaPipelineIpc::play(bool &async)
 {
     if (!reattachChannelIfRequired())
     {
@@ -374,6 +374,8 @@ bool MediaPipelineIpc::play()
         RIALTO_CLIENT_LOG_ERROR("failed to play due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
+
+    async = response.async();
 
     return true;
 }

@@ -174,9 +174,9 @@ public:
      *
      * @param[in] newState    : The desired state.
      *
-     * @retval true on success.
+     * @retval state change status
      */
-    virtual bool changePipelineState(GstState newState) = 0;
+    virtual GstStateChangeReturn changePipelineState(GstState newState) = 0;
 
     /**
      * @brief Gets the current position of the element
@@ -303,19 +303,6 @@ public:
      * @param[in] mediaSourceType : the source type that has been flushed
      */
     virtual void setSourceFlushed(const MediaSourceType &mediaSourceType) = 0;
-
-    /**
-     * @brief Postpones flush for the given source type
-     *
-     * @param[in] mediaSourceType : the source type that has been flushed
-     * @param[in] resetTime       : whether to reset the time after flush
-     */
-    virtual void postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime) = 0;
-
-    /**
-     * @brief Queues postponed flushes for execution
-     */
-    virtual void executePostponedFlushes() = 0;
 
     /**
      * @brief Sends PlaybackInfo notification. Called by the worker thread.

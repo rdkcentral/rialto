@@ -334,18 +334,18 @@ bool MediaPipelineServerInternal::allSourcesAttachedInternal()
     return true;
 }
 
-bool MediaPipelineServerInternal::play()
+bool MediaPipelineServerInternal::play(bool &async)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = playInternal(); };
+    auto task = [&]() { result = playInternal(async); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::playInternal()
+bool MediaPipelineServerInternal::playInternal(bool &async)
 {
     if (!m_gstPlayer)
     {
@@ -353,7 +353,7 @@ bool MediaPipelineServerInternal::playInternal()
         return false;
     }
 
-    m_gstPlayer->play();
+    m_gstPlayer->play(async);
     return true;
 }
 
@@ -1150,6 +1150,8 @@ bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime
     }
 
     m_gstPlayer->flush(sourceIter->first, resetTime, async);
+
+    m_needMediaDataTimers.erase(sourceIter->first);
 
     // Reset Eos on flush
     auto it = m_isMediaTypeEosMap.find(sourceIter->first);

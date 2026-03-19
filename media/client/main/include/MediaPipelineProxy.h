@@ -52,7 +52,7 @@ public:
 
     bool allSourcesAttached() override { return m_mediaPipeline->allSourcesAttached(); }
 
-    bool play() override { return m_mediaPipeline->play(); }
+    bool play(bool &async) override { return m_mediaPipeline->play(async); }
 
     bool pause() override { return m_mediaPipeline->pause(); }
 

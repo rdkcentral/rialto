@@ -70,7 +70,7 @@ private:
     EventRanger &m_eventRanger;
     std::shared_ptr<MessageType> m_message{nullptr};
     std::function<bool(const MessageType &)> m_filter{[](const MessageType &) { return true; }};
-    std::chrono::milliseconds m_timeout{400};
+    std::chrono::milliseconds m_timeout{600};
 };
 } // namespace firebolt::rialto::server::ct
 

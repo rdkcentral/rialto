@@ -252,11 +252,11 @@ bool MediaPipeline::allSourcesAttached()
     return m_mediaPipelineIpc->allSourcesAttached();
 }
 
-bool MediaPipeline::play()
+bool MediaPipeline::play(bool &async)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaPipelineIpc->play();
+    return m_mediaPipelineIpc->play(async);
 }
 
 bool MediaPipeline::pause()

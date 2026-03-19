@@ -99,7 +99,7 @@ public:
 
     bool allSourcesAttached() override;
 
-    bool play() override;
+    bool play(bool &async) override;
 
     bool pause() override;
 
@@ -346,9 +346,11 @@ protected:
     /**
      * @brief Play internally, only to be called on the main thread.
      *
+     * @param[out] async     : True if play method call is asynchronous
+     *
      * @retval true on success.
      */
-    bool playInternal();
+    bool playInternal(bool &async);
 
     /**
      * @brief Pause internally, only to be called on the main thread.

@@ -36,6 +36,7 @@
 #include "tasks/IGenericPlayerTaskFactory.h"
 #include "tasks/IPlayerTask.h"
 #include <IMediaPipeline.h>
+#include <atomic>
 #include <memory>
 #include <string>
 #include <utility>
@@ -107,7 +108,7 @@ public:
 
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
     void allSourcesAttached() override;
-    void play() override;
+    void play(bool &async) override;
     void pause() override;
     void stop() override;
     void attachSamples(const IMediaPipeline::MediaSegmentVector &mediaSegments) override;
@@ -167,7 +168,7 @@ private:
     void updateVideoCaps(int32_t width, int32_t height, Fraction frameRate,
                          const std::shared_ptr<CodecData> &codecData) override;
     void addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clippingStart, uint64_t clippingEnd) const override;
-    bool changePipelineState(GstState newState) override;
+    GstStateChangeReturn changePipelineState(GstState newState) override;
     int64_t getPosition(GstElement *element) override;
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;
@@ -190,8 +191,6 @@ private:
     GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
     void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
     bool isAsync(const MediaSourceType &mediaSourceType) const;
-    void postponeFlush(const MediaSourceType &mediaSourceType, bool resetTime) override;
-    void executePostponedFlushes() override;
     void notifyPlaybackInfo() override;
 
 private:
@@ -429,9 +428,9 @@ private:
     std::unique_ptr<IFlushWatcher> m_flushWatcher;
 
     /**
-     * @brief The postponed flush tasks
+     * @brief The ongoing state change operations counter
      */
-    std::vector<std::pair<MediaSourceType, bool>> m_postponedFlushes{};
+    std::atomic<uint32_t> m_ongoingStateChangesNumber{0};
 };
 
 } // namespace firebolt::rialto::server

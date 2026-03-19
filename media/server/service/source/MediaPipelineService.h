@@ -59,7 +59,7 @@ public:
     bool attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     bool removeSource(int sessionId, std::int32_t sourceId) override;
     bool allSourcesAttached(int sessionId) override;
-    bool play(int sessionId) override;
+    bool play(int sessionId, bool &async) override;
     bool pause(int sessionId) override;
     bool stop(int sessionId) override;
     bool setPlaybackRate(int sessionId, double rate) override;

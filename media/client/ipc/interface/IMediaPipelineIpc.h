@@ -126,9 +126,11 @@ public:
     /**
      * @brief Request play on the playback session.
      *
+     * @param[out] async     : True if play method call is asynchronous
+     *
      * @retval true on success.
      */
-    virtual bool play() = 0;
+    virtual bool play(bool &async) = 0;
 
     /**
      * @brief Request pause on the playback session.

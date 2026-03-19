@@ -36,7 +36,7 @@ public:
     MOCK_METHOD(bool, attachSource, (const std::unique_ptr<MediaSource> &source), (override));
     MOCK_METHOD(bool, removeSource, (int32_t id), (override));
     MOCK_METHOD(bool, allSourcesAttached, (), (override));
-    MOCK_METHOD(bool, play, (), (override));
+    MOCK_METHOD(bool, play, (bool &async), (override));
     MOCK_METHOD(bool, pause, (), (override));
     MOCK_METHOD(bool, stop, (), (override));
     MOCK_METHOD(bool, setPlaybackRate, (double rate), (override));

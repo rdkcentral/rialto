@@ -18,41 +18,67 @@
  */
 
 #include "FlushOnPrerollController.h"
+#include "RialtoServerLogging.h"
+#include "TypeConverters.h"
+#include <gst/gst.h>
 
 namespace firebolt::rialto::server
 {
-bool FlushOnPrerollController::shouldPostponeFlush(const MediaSourceType &type) const
+void FlushOnPrerollController::waitIfRequired(const MediaSourceType &type)
 {
     std::unique_lock lock{m_mutex};
-    return m_isPrerolled && m_flushingSources.find(type) != m_flushingSources.end();
+    RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Waiting if required for %s source entry",
+                            common::convertMediaSourceType(type));
+    m_conditionVariable.wait(lock, [this, &type]()
+                             // coverity[MISSING_LOCK:FALSE]
+                             { return !m_isPrerolled || m_flushingSources.find(type) == m_flushingSources.end(); });
+    RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Waiting if required for %s source exit",
+                            common::convertMediaSourceType(type));
 }
 
-void FlushOnPrerollController::setFlushing(const MediaSourceType &type, const GstState &currentPipelineState)
+void FlushOnPrerollController::setFlushing(const MediaSourceType &type)
 {
+    RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Set flushing for: %s", common::convertMediaSourceType(type));
     std::unique_lock lock{m_mutex};
     m_flushingSources.insert(type);
+}
+
+void FlushOnPrerollController::setPrerolling()
+{
+    RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Set prerolling");
+    std::unique_lock lock{m_mutex};
     m_isPrerolled = false;
-    if (!m_targetState.has_value())
-    {
-        m_targetState = currentPipelineState;
-    }
+    m_conditionVariable.notify_all();
 }
 
 void FlushOnPrerollController::stateReached(const GstState &newPipelineState)
 {
+    RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: State reached %s", gst_element_state_get_name(newPipelineState));
     std::unique_lock lock{m_mutex};
     m_isPrerolled = true;
     if (m_targetState.has_value() && newPipelineState == m_targetState.value())
     {
+        RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Clear state after state reached %s",
+                                gst_element_state_get_name(newPipelineState));
         m_flushingSources.clear();
-        m_targetState = std::nullopt;
     }
+    m_conditionVariable.notify_all();
+}
+
+void FlushOnPrerollController::setTargetState(const GstState &state)
+{
+    std::unique_lock lock{m_mutex};
+    m_targetState = state;
+    RIALTO_SERVER_LOG_DEBUG("FlushOnPrerollController: Set target state %s", gst_element_state_get_name(state));
 }
 
 void FlushOnPrerollController::reset()
 {
+    RIALTO_SERVER_LOG_DEBUG("Reset FlushOnPrerollController");
     std::unique_lock lock{m_mutex};
+    m_isPrerolled = false;
     m_flushingSources.clear();
     m_targetState = std::nullopt;
+    m_conditionVariable.notify_all();
 }
 } // namespace firebolt::rialto::server
