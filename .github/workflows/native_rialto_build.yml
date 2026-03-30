@@ -36,7 +36,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          sh -x install_dependencies_for_native_build.sh
+          sudo sh -x install_dependencies_for_native_build.sh
 
       - name: Build Rialto
         run: |
