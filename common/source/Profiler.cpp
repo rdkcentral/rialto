@@ -139,10 +139,10 @@ void Profiler::log(const RecordId id)
     const auto *record = findById(id);
     if (record)
     {
-        const auto us = std::chrono::duration_cast<std::chrono::microseconds>(record->time.time_since_epoch()).count();
+        const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(record->time.time_since_epoch()).count();
 
         const auto idStr = std::to_string(static_cast<std::uint64_t>(record->id));
-        const auto tsStr = std::to_string(static_cast<std::int64_t>(us));
+        const auto tsStr = std::to_string(static_cast<std::int64_t>(ms));
 
         RIALTO_COMMON_LOG_MIL("PROFILER | RECORD | MODULE[%s] ID[%s] STAGE[%s] INFO[%s] TIMESTAMP[%s]",
                               record->module.c_str(), idStr.c_str(), record->stage.c_str(), record->info.c_str(),
