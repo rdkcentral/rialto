@@ -59,14 +59,20 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
         {
             do
             {
-                std::unique_lock<std::mutex> lock{m_mutex};
-                if (!m_cv.wait_for(lock, m_timeout, [this]() { return !m_active; }))
+                bool Callback = false;
                 {
-                    if (m_active && m_callback)
+                    std::unique_lock<std::mutex> lock{m_mutex};
+                    if (!m_cv.wait_for(lock, m_timeout, [this]() { return !m_active; }))
                     {
-                        lock.unlock();
-                        m_callback();
+                        if (m_active && m_callback)
+                        {
+                            Callback = true;
+                        }
                     }
+                }
+                if (Callback)
+                {
+                    m_callback();
                 }
             } while (timerType == TimerType::PERIODIC && m_active);
             m_active = false;
