@@ -27,6 +27,7 @@
 
 #include <gst/gst.h>
 
+#include <chrono>
 #include <memory>
 #include <optional>
 #include <string>
@@ -36,6 +37,7 @@ namespace firebolt::rialto::server
 class GstProfiler : public IGstProfiler
 {
 public:
+    using Clock = std::chrono::system_clock;
     using IGstWrapper = firebolt::rialto::wrappers::IGstWrapper;
     using IGlibWrapper = firebolt::rialto::wrappers::IGlibWrapper;
     using IProfiler = firebolt::rialto::common::IProfiler;
@@ -51,6 +53,7 @@ public:
     void scheduleGstElementRecord(GstElement *element) override;
 
     void logRecord(const RecordId id) override;
+    void logPipeline() const override;
 
 private:
     struct ProbeCtx
@@ -60,11 +63,57 @@ private:
         std::string info;
     };
 
+    struct PipelineStageTimestamps
+    {
+        std::optional<Clock::time_point> pipelineCreated;
+        std::optional<Clock::time_point> allSourcesAttached;
+
+        std::optional<Clock::time_point> firstSegmentReceivedVideo;
+        std::optional<Clock::time_point> firstSegmentReceivedAudio;
+
+        std::optional<Clock::time_point> sourceFbExitVideo;
+        std::optional<Clock::time_point> sourceFbExitAudio;
+
+        std::optional<Clock::time_point> decryptorFbExitVideo;
+        std::optional<Clock::time_point> decryptorFbExitAudio;
+
+        std::optional<Clock::time_point> decoderFbExitVideo;
+        std::optional<Clock::time_point> decoderFbExitAudio;
+
+        std::optional<Clock::time_point> pipelinePaused;
+        std::optional<Clock::time_point> pipelinePlaying;
+    };
+
+    struct PipelineMetrics
+    {
+        std::optional<int64_t> preparation;
+        std::optional<int64_t> videoDownload;
+        std::optional<int64_t> audioDownload;
+        std::optional<int64_t> videoSource;
+        std::optional<int64_t> audioSource;
+        std::optional<int64_t> videoDecryption;
+        std::optional<int64_t> audioDecryption;
+        std::optional<int64_t> videoDecode;
+        std::optional<int64_t> audioDecode;
+        std::optional<int64_t> preRoll;
+        std::optional<int64_t> play;
+        std::optional<int64_t> total;
+        std::optional<int64_t> totalWithoutApp;
+    };
+
     std::optional<std::string> checkElement(GstElement *element);
     const gchar* getElementClass(GstElement *element);
+    std::string processElementName(std::string name);
+
+    std::optional<GstProfiler::PipelineMetrics> calculateMetrics() const;
 
     static GstPadProbeReturn probeCb(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
     static void probeCtxDestroy(gpointer data);
+
+    static std::optional<int64_t> diffMs(const std::optional<Clock::time_point>& end,
+                                     const std::optional<Clock::time_point>& start);
+    static std::optional<Clock::time_point> maxTime(const std::optional<Clock::time_point>& a,
+                                                const std::optional<Clock::time_point>& b);
 
     GstElement *m_pipeline = nullptr;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
