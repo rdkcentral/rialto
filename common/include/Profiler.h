@@ -40,16 +40,7 @@ public:
 class Profiler final : public IProfiler
 {
 public:
-    using Clock = std::chrono::system_clock;
-
-    struct Record
-    {
-        std::string module;
-        uint64_t id{0};
-        std::string stage;
-        std::string info;
-        Clock::time_point time;
-    };
+    // using Record = IProfiler::Record;
 
     explicit Profiler(std::string module);
 
@@ -64,6 +55,7 @@ public:
     void log(const RecordId id) override;
 
     bool dump(const std::string &path) const override;
+    const std::vector<Record>& getRecords() const override;
 
 private:
     static bool parseEnv(const char *value, bool defaultValue);

@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_COMMON_I_PROFILER_H_
 #define FIREBOLT_RIALTO_COMMON_I_PROFILER_H_
 
+#include <chrono>
 #include <cstdint>
 #include <functional>
 #include <memory>
@@ -60,6 +61,16 @@ class IProfiler
 {
 public:
     using RecordId = std::uint64_t;
+    using Clock = std::chrono::system_clock;
+
+    struct Record
+    {
+        std::string module;
+        uint64_t id{0};
+        std::string stage;
+        std::string info;
+        Clock::time_point time;
+    };
 
     virtual ~IProfiler() = default;
 
@@ -128,6 +139,8 @@ public:
      * @retval true if file is created and records are dumped, false otherwise.
      */
     virtual bool dump(const std::string &path) const = 0;
+
+    virtual const std::vector<Record>& getRecords() const = 0;
 
 protected:
     IProfiler() = default;

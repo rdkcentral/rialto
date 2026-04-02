@@ -176,6 +176,11 @@ bool Profiler::dump(const std::string &path) const
     return static_cast<bool>(out);
 }
 
+const std::vector<IProfiler::Record>& Profiler::getRecords() const
+{
+    return m_records;
+}
+
 bool Profiler::parseEnv(const char *value, bool defaultValue)
 {
     if (!value || (value[0] == '\0'))
