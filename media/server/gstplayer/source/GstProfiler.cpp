@@ -40,7 +40,7 @@ GstProfiler::GstProfiler(GstElement *pipeline, const std::shared_ptr<firebolt::r
 {
     auto profilerFactory = firebolt::rialto::common::IProfilerFactory::createFactory();
     m_profiler = profilerFactory ? profilerFactory->createProfiler(std::string{k_module}) : nullptr;
-    m_enabled = (m_profiler != nullptr) && m_profiler->enabled();
+    m_enabled = (m_profiler != nullptr) && m_profiler->isEnabled();
 
     if (m_enabled && m_pipeline)
         m_gstWrapper->gstObjectRef(m_pipeline);
@@ -114,22 +114,23 @@ void GstProfiler::logRecord(GstProfiler::RecordId id)
 void GstProfiler::logPipeline() const
 {
     const auto metrics = calculateMetrics();
-    if(metrics)
+    if (metrics)
     {
-        RIALTO_COMMON_LOG_MIL("PROFILER | TUNETIME: %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld",
-                              metrics->preparation ? static_cast<long long>(*metrics->preparation) : -1,
-                              metrics->videoDownload ? static_cast<long long>(*metrics->videoDownload) : -1,
-                              metrics->audioDownload ? static_cast<long long>(*metrics->audioDownload) : -1,
-                              metrics->videoSource ? static_cast<long long>(*metrics->videoSource) : -1,
-                              metrics->audioSource ? static_cast<long long>(*metrics->audioSource) : -1,
-                              metrics->videoDecryption ? static_cast<long long>(*metrics->videoDecryption) : -1,
-                              metrics->audioDecryption ? static_cast<long long>(*metrics->audioDecryption) : -1,
-                              metrics->videoDecode ? static_cast<long long>(*metrics->videoDecode) : -1,
-                              metrics->audioDecode ? static_cast<long long>(*metrics->audioDecode) : -1,
-                              metrics->preRoll ? static_cast<long long>(*metrics->preRoll) : -1,
-                              metrics->play ? static_cast<long long>(*metrics->play) : -1,
-                              metrics->total ? static_cast<long long>(*metrics->total) : -1,
-                              metrics->totalWithoutApp ? static_cast<long long>(*metrics->totalWithoutApp) : -1);
+        RIALTO_COMMON_LOG_MIL("PROFILER | TUNETIME: %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  "
+                              "%lld,  %lld,  %lld,  %lld",
+                              metrics->preparation ? static_cast<long long>(*metrics->preparation) : -1,     // NOLINT
+                              metrics->videoDownload ? static_cast<long long>(*metrics->videoDownload) : -1, // NOLINT
+                              metrics->audioDownload ? static_cast<long long>(*metrics->audioDownload) : -1, // NOLINT
+                              metrics->videoSource ? static_cast<long long>(*metrics->videoSource) : -1,     // NOLINT
+                              metrics->audioSource ? static_cast<long long>(*metrics->audioSource) : -1,     // NOLINT
+                              metrics->videoDecryption ? static_cast<long long>(*metrics->videoDecryption) : -1, // NOLINT
+                              metrics->audioDecryption ? static_cast<long long>(*metrics->audioDecryption) : -1, // NOLINT
+                              metrics->videoDecode ? static_cast<long long>(*metrics->videoDecode) : -1, // NOLINT
+                              metrics->audioDecode ? static_cast<long long>(*metrics->audioDecode) : -1, // NOLINT
+                              metrics->preRoll ? static_cast<long long>(*metrics->preRoll) : -1,         // NOLINT
+                              metrics->play ? static_cast<long long>(*metrics->play) : -1,               // NOLINT
+                              metrics->total ? static_cast<long long>(*metrics->total) : -1,             // NOLINT
+                              metrics->totalWithoutApp ? static_cast<long long>(*metrics->totalWithoutApp) : -1); // NOLINT
     }
 }
 
@@ -161,7 +162,7 @@ void GstProfiler::probeCtxDestroy(gpointer data)
 
 std::optional<std::string> GstProfiler::checkElement(GstElement *element)
 {
-    const gchar* klass = getElementClass(element);
+    const gchar *klass = getElementClass(element);
     if (!klass)
         return std::nullopt;
 
@@ -176,7 +177,7 @@ std::optional<std::string> GstProfiler::checkElement(GstElement *element)
     return std::nullopt;
 }
 
-const gchar* GstProfiler::getElementClass(GstElement *element)
+const gchar *GstProfiler::getElementClass(GstElement *element)
 {
     GstElementFactory *factory = m_gstWrapper->gstElementGetFactory(element);
     if (factory)
@@ -185,7 +186,8 @@ const gchar* GstProfiler::getElementClass(GstElement *element)
     }
     else
     {
-        return m_gstWrapper->gstElementClassGetMetadata(GST_ELEMENT_CLASS(G_OBJECT_GET_CLASS(element)), GST_ELEMENT_METADATA_KLASS);
+        return m_gstWrapper->gstElementClassGetMetadata(GST_ELEMENT_CLASS(G_OBJECT_GET_CLASS(element)),
+                                                        GST_ELEMENT_METADATA_KLASS);
     }
 
     return NULL;
@@ -194,27 +196,19 @@ const gchar* GstProfiler::getElementClass(GstElement *element)
 std::string GstProfiler::processElementName(std::string name)
 {
     std::string lower = name;
-    std::transform(lower.begin(), lower.end(), lower.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+    std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c) { return std::tolower(c); });
 
-    if (lower.find("vid") != std::string::npos ||
-        lower.find("h264") != std::string::npos ||
-        lower.find("h265") != std::string::npos ||
-        lower.find("hevc") != std::string::npos ||
-        lower.find("avc") != std::string::npos ||
-        lower.find("av1") != std::string::npos ||
-        lower.find("vp9") != std::string::npos ||
-        lower.find("video") != std::string::npos)
+    if (lower.find("vid") != std::string::npos || lower.find("h264") != std::string::npos ||
+        lower.find("h265") != std::string::npos || lower.find("hevc") != std::string::npos ||
+        lower.find("avc") != std::string::npos || lower.find("av1") != std::string::npos ||
+        lower.find("vp9") != std::string::npos || lower.find("video") != std::string::npos)
     {
         return "Video";
     }
 
-    if (lower.find("aud") != std::string::npos ||
-        lower.find("eac3") != std::string::npos ||
-        lower.find("ac3") != std::string::npos ||
-        lower.find("aac") != std::string::npos ||
-        lower.find("opus") != std::string::npos ||
-        lower.find("audio") != std::string::npos)
+    if (lower.find("aud") != std::string::npos || lower.find("eac3") != std::string::npos ||
+        lower.find("ac3") != std::string::npos || lower.find("aac") != std::string::npos ||
+        lower.find("opus") != std::string::npos || lower.find("audio") != std::string::npos)
     {
         return "Audio";
     }
@@ -224,14 +218,14 @@ std::string GstProfiler::processElementName(std::string name)
 
 std::optional<GstProfiler::PipelineMetrics> GstProfiler::calculateMetrics() const
 {
-    const auto& records = m_profiler->getRecords();
+    const auto &records = m_profiler->getRecords();
 
     PipelineStageTimestamps timestamps;
 
-    for (const auto& record : records)
+    for (const auto &record : records)
     {
-        const auto& stage = record.stage;
-        const auto& info = record.info;
+        const auto &stage = record.stage;
+        const auto &info = record.info;
 
         if (!timestamps.pipelineCreated && stage == "Pipeline Created")
             timestamps.pipelineCreated = record.time;
@@ -259,30 +253,28 @@ std::optional<GstProfiler::PipelineMetrics> GstProfiler::calculateMetrics() cons
             timestamps.pipelinePlaying = record.time;
     }
 
-    if(!timestamps.pipelineCreated || !timestamps.allSourcesAttached || !timestamps.firstSegmentReceivedVideo
-        || !timestamps.firstSegmentReceivedAudio || !timestamps.sourceFbExitVideo
-        || !timestamps.sourceFbExitAudio || !timestamps.decoderFbExitVideo
-        || !timestamps.decoderFbExitAudio || !timestamps.pipelinePaused
-        || !timestamps.pipelinePlaying)
+    if (!timestamps.pipelineCreated || !timestamps.allSourcesAttached || !timestamps.firstSegmentReceivedVideo ||
+        !timestamps.firstSegmentReceivedAudio || !timestamps.sourceFbExitVideo || !timestamps.sourceFbExitAudio ||
+        !timestamps.decoderFbExitVideo || !timestamps.decoderFbExitAudio || !timestamps.pipelinePaused ||
+        !timestamps.pipelinePlaying)
     {
-        // TODO Warning message
         return std::nullopt;
     }
 
     PipelineMetrics metrics;
 
-    metrics.preparation      = diffMs(timestamps.allSourcesAttached,        timestamps.pipelineCreated);
-    metrics.videoDownload    = diffMs(timestamps.firstSegmentReceivedVideo, timestamps.allSourcesAttached);
-    metrics.audioDownload    = diffMs(timestamps.firstSegmentReceivedAudio, timestamps.allSourcesAttached);
-    metrics.videoSource      = diffMs(timestamps.sourceFbExitVideo,         timestamps.firstSegmentReceivedVideo);
-    metrics.audioSource      = diffMs(timestamps.sourceFbExitAudio,         timestamps.firstSegmentReceivedAudio);
+    metrics.preparation = diffMs(timestamps.allSourcesAttached, timestamps.pipelineCreated);
+    metrics.videoDownload = diffMs(timestamps.firstSegmentReceivedVideo, timestamps.allSourcesAttached);
+    metrics.audioDownload = diffMs(timestamps.firstSegmentReceivedAudio, timestamps.allSourcesAttached);
+    metrics.videoSource = diffMs(timestamps.sourceFbExitVideo, timestamps.firstSegmentReceivedVideo);
+    metrics.audioSource = diffMs(timestamps.sourceFbExitAudio, timestamps.firstSegmentReceivedAudio);
 
-    if(timestamps.decryptorFbExitVideo && timestamps.decryptorFbExitAudio)
+    if (timestamps.decryptorFbExitVideo && timestamps.decryptorFbExitAudio)
     {
-        metrics.videoDecryption  = diffMs(timestamps.decryptorFbExitVideo,      timestamps.sourceFbExitVideo);
-        metrics.audioDecryption  = diffMs(timestamps.decryptorFbExitAudio,      timestamps.sourceFbExitAudio);
-        metrics.videoDecode      = diffMs(timestamps.decoderFbExitVideo,        timestamps.decryptorFbExitVideo);
-        metrics.audioDecode      = diffMs(timestamps.decoderFbExitAudio,        timestamps.decryptorFbExitAudio);
+        metrics.videoDecryption = diffMs(timestamps.decryptorFbExitVideo, timestamps.sourceFbExitVideo);
+        metrics.audioDecryption = diffMs(timestamps.decryptorFbExitAudio, timestamps.sourceFbExitAudio);
+        metrics.videoDecode = diffMs(timestamps.decoderFbExitVideo, timestamps.decryptorFbExitVideo);
+        metrics.audioDecode = diffMs(timestamps.decoderFbExitAudio, timestamps.decryptorFbExitAudio);
     }
     else
     {
@@ -290,19 +282,18 @@ std::optional<GstProfiler::PipelineMetrics> GstProfiler::calculateMetrics() cons
         metrics.audioDecode = diffMs(timestamps.decoderFbExitAudio, timestamps.sourceFbExitAudio);
     }
 
-    const auto firstMediaReady = maxTime(timestamps.firstSegmentReceivedVideo,
-                                         timestamps.firstSegmentReceivedAudio);
+    const auto firstMediaReady = maxTime(timestamps.firstSegmentReceivedVideo, timestamps.firstSegmentReceivedAudio);
 
-    metrics.preRoll         = diffMs(timestamps.pipelinePaused,  firstMediaReady);
-    metrics.play            = diffMs(timestamps.pipelinePlaying, timestamps.pipelinePaused);
-    metrics.total           = diffMs(timestamps.pipelinePlaying, timestamps.pipelineCreated);
+    metrics.preRoll = diffMs(timestamps.pipelinePaused, firstMediaReady);
+    metrics.play = diffMs(timestamps.pipelinePlaying, timestamps.pipelinePaused);
+    metrics.total = diffMs(timestamps.pipelinePlaying, timestamps.pipelineCreated);
     metrics.totalWithoutApp = diffMs(timestamps.pipelinePlaying, firstMediaReady);
 
     return metrics;
 }
 
-std::optional<int64_t> GstProfiler::diffMs(const std::optional<Clock::time_point>& end,
-                                     const std::optional<Clock::time_point>& start)
+std::optional<int64_t> GstProfiler::diffMs(const std::optional<Clock::time_point> &end,
+                                           const std::optional<Clock::time_point> &start)
 {
     if (!end || !start)
         return std::nullopt;
@@ -310,8 +301,8 @@ std::optional<int64_t> GstProfiler::diffMs(const std::optional<Clock::time_point
     return std::chrono::duration_cast<std::chrono::milliseconds>(*end - *start).count();
 }
 
-std::optional<GstProfiler::Clock::time_point> GstProfiler::maxTime(const std::optional<Clock::time_point>& a,
-                                                const std::optional<Clock::time_point>& b)
+std::optional<GstProfiler::Clock::time_point> GstProfiler::maxTime(const std::optional<Clock::time_point> &a,
+                                                                   const std::optional<Clock::time_point> &b)
 {
     if (a && b)
         return std::max(*a, *b);

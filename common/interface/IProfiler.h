@@ -26,6 +26,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::common
 {
@@ -80,11 +81,25 @@ public:
     IProfiler &operator=(IProfiler &&) = delete;
 
     /**
+     * @brief Enable profiler.
+     *
+     * @retval none.
+     */
+    virtual void enable() noexcept = 0;
+
+    /**
+     * @brief Disable profiler.
+     *
+     * @retval none.
+     */
+    virtual void disable() noexcept = 0;
+
+    /**
      * @brief Checks if profiler is enabled.
      *
      * @retval true if profiler is enabled, false otherwise.
      */
-    virtual bool enabled() const noexcept = 0;
+    virtual bool isEnabled() const noexcept = 0;
 
     /**
      * @brief Creates a record for given stage.
@@ -140,7 +155,7 @@ public:
      */
     virtual bool dump(const std::string &path) const = 0;
 
-    virtual const std::vector<Record>& getRecords() const = 0;
+    virtual const std::vector<Record> &getRecords() const = 0;
 
 protected:
     IProfiler() = default;

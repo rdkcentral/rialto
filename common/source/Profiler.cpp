@@ -53,7 +53,17 @@ Profiler::Profiler(std::string module)
 {
 }
 
-bool Profiler::enabled() const noexcept
+void Profiler::enable() noexcept
+{
+    m_enabled = true;
+}
+
+void Profiler::disable() noexcept
+{
+    m_enabled = false;
+}
+
+bool Profiler::isEnabled() const noexcept
 {
     return m_enabled;
 }
@@ -176,7 +186,7 @@ bool Profiler::dump(const std::string &path) const
     return static_cast<bool>(out);
 }
 
-const std::vector<IProfiler::Record>& Profiler::getRecords() const
+const std::vector<IProfiler::Record> &Profiler::getRecords() const
 {
     return m_records;
 }
