@@ -62,7 +62,7 @@ void HandleBusMessage::execute() const
                                                                 m_gstWrapper->gstElementStateGetName(newState));
             if (recordId)
                 m_context.gstProfiler->logRecord(recordId.value());
-            if(newState == GST_STATE_PLAYING)
+            if (newState == GST_STATE_PLAYING)
                 m_context.gstProfiler->logPipeline();
 
             std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +

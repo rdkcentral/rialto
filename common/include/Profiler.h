@@ -44,7 +44,9 @@ public:
 
     explicit Profiler(std::string module);
 
-    bool enabled() const noexcept override;
+    void enable() noexcept override;
+    void disable() noexcept override;
+    bool isEnabled() const noexcept override;
 
     std::optional<RecordId> record(std::string stage) override;
     std::optional<RecordId> record(std::string stage, std::string info) override;
@@ -55,14 +57,14 @@ public:
     void log(const RecordId id) override;
 
     bool dump(const std::string &path) const override;
-    const std::vector<Record>& getRecords() const override;
+    const std::vector<Record> &getRecords() const override;
 
 private:
     static bool parseEnv(const char *value, bool defaultValue);
     const Record *findById(RecordId id);
 
     std::string m_module;
-    const bool m_enabled;
+    bool m_enabled;
 
     mutable std::mutex m_mutex;
     RecordId m_id{1};

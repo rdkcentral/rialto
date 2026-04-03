@@ -36,6 +36,9 @@ protected:
 
         profiler = factory->createProfiler("UnitTestModule");
         ASSERT_TRUE(profiler);
+
+        profiler->enable();
+        ASSERT_TRUE(profiler->isEnabled());
     }
 
     std::shared_ptr<IProfilerFactory> factory;
@@ -44,13 +47,10 @@ protected:
 
 TEST_F(ProfilerTests, RecordAndFindByStage)
 {
-    if (!profiler->enabled())
-        GTEST_SKIP() << "Profiler disabled in current configuration";
-
-    auto id = profiler->record("Stage1");
+    const auto id = profiler->record("Stage1");
     ASSERT_TRUE(id.has_value());
 
-    auto found = profiler->find("Stage1");
+    const auto found = profiler->find("Stage1");
     ASSERT_TRUE(found.has_value());
 
     EXPECT_EQ(found.value(), id.value());
@@ -58,31 +58,53 @@ TEST_F(ProfilerTests, RecordAndFindByStage)
 
 TEST_F(ProfilerTests, RecordAndFindByStageAndInfo)
 {
-    if (!profiler->enabled())
-        GTEST_SKIP() << "Profiler disabled in current configuration";
-
-    auto id = profiler->record("Stage1", "InfoA");
+    const auto id = profiler->record("Stage1", "InfoA");
     ASSERT_TRUE(id.has_value());
 
-    EXPECT_TRUE(profiler->find("Stage1", "InfoA").has_value());
+    const auto found = profiler->find("Stage1", "InfoA");
+    ASSERT_TRUE(found.has_value());
+    EXPECT_EQ(found.value(), id.value());
+
     EXPECT_FALSE(profiler->find("Stage1", "InfoB").has_value());
+}
+
+TEST_F(ProfilerTests, GetRecordsReturnsRecordedEntries)
+{
+    const auto id1 = profiler->record("Stage1");
+    ASSERT_TRUE(id1.has_value());
+
+    const auto id2 = profiler->record("Stage2", "Info2");
+    ASSERT_TRUE(id2.has_value());
+
+    const auto &records = profiler->getRecords();
+    ASSERT_GE(records.size(), 2U);
+
+    const auto &record1 = records[records.size() - 2];
+    EXPECT_EQ(record1.module, "UnitTestModule");
+    EXPECT_EQ(record1.id, id1.value());
+    EXPECT_EQ(record1.stage, "Stage1");
+    EXPECT_TRUE(record1.info.empty());
+
+    const auto &record2 = records[records.size() - 1];
+    EXPECT_EQ(record2.module, "UnitTestModule");
+    EXPECT_EQ(record2.id, id2.value());
+    EXPECT_EQ(record2.stage, "Stage2");
+    EXPECT_EQ(record2.info, "Info2");
 }
 
 TEST_F(ProfilerTests, DumpCreatesFile)
 {
-    if (!profiler->enabled())
-        GTEST_SKIP() << "Profiler disabled in current configuration";
-
     (void)profiler->record("StageDump", "InfoDump");
 
     const auto suffix = std::to_string(std::random_device{}());
     const std::string path = std::string{"/tmp/rialto_profiler_ut_dump_"} + suffix + ".txt";
+
     ASSERT_TRUE(profiler->dump(path));
 
     std::ifstream in(path);
     ASSERT_TRUE(in.good());
 
-    std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    const std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     EXPECT_FALSE(content.empty());
     EXPECT_NE(content.find("StageDump"), std::string::npos);
 }

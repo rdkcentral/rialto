@@ -102,7 +102,7 @@ private:
     };
 
     std::optional<std::string> checkElement(GstElement *element);
-    const gchar* getElementClass(GstElement *element);
+    const gchar *getElementClass(GstElement *element);
     std::string processElementName(std::string name);
 
     std::optional<GstProfiler::PipelineMetrics> calculateMetrics() const;
@@ -110,10 +110,10 @@ private:
     static GstPadProbeReturn probeCb(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
     static void probeCtxDestroy(gpointer data);
 
-    static std::optional<int64_t> diffMs(const std::optional<Clock::time_point>& end,
-                                     const std::optional<Clock::time_point>& start);
-    static std::optional<Clock::time_point> maxTime(const std::optional<Clock::time_point>& a,
-                                                const std::optional<Clock::time_point>& b);
+    static std::optional<int64_t> diffMs(const std::optional<Clock::time_point> &end,
+                                         const std::optional<Clock::time_point> &start);
+    static std::optional<Clock::time_point> maxTime(const std::optional<Clock::time_point> &a,
+                                                    const std::optional<Clock::time_point> &b);
 
     GstElement *m_pipeline = nullptr;
     std::shared_ptr<IGstWrapper> m_gstWrapper;

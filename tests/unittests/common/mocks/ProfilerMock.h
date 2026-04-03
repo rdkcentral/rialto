@@ -21,9 +21,11 @@
 #define FIREBOLT_RIALTO_COMMON_PROFILER_MOCK_H_
 
 #include "IProfiler.h"
+
 #include <gmock/gmock.h>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::common
 {
@@ -31,9 +33,12 @@ class ProfilerMock : public IProfiler
 {
 public:
     ProfilerMock() = default;
-    virtual ~ProfilerMock() = default;
+    ~ProfilerMock() override = default;
 
-    MOCK_METHOD(bool, enabled, (), (const, noexcept, override));
+    MOCK_METHOD(void, enable, (), (noexcept, override));
+    MOCK_METHOD(void, disable, (), (noexcept, override));
+
+    MOCK_METHOD(bool, isEnabled, (), (const, noexcept, override));
 
     MOCK_METHOD(std::optional<RecordId>, record, (std::string stage), (override));
     MOCK_METHOD(std::optional<RecordId>, record, (std::string stage, std::string info), (override));
@@ -44,6 +49,8 @@ public:
     MOCK_METHOD(void, log, (RecordId id), (override));
 
     MOCK_METHOD(bool, dump, (const std::string &path), (const, override));
+
+    MOCK_METHOD(const std::vector<Record> &, getRecords, (), (const, override));
 };
 } // namespace firebolt::rialto::common
 
