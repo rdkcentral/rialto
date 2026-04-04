@@ -19,8 +19,10 @@
 
 #include "IProfiler.h"
 
+#include <cstdlib>
 #include <fstream>
 #include <gtest/gtest.h>
+#include <optional>
 #include <random>
 #include <string>
 
@@ -31,6 +33,12 @@ class ProfilerTests : public ::testing::Test
 protected:
     void SetUp() override
     {
+        const char *envValue = std::getenv("PROFILER_ENABLED");
+        if (envValue)
+            m_originalProfilerEnabled = envValue;
+        else
+            m_originalProfilerEnabled = std::nullopt;
+
         factory = IProfilerFactory::createFactory();
         ASSERT_TRUE(factory);
 
@@ -41,8 +49,17 @@ protected:
         ASSERT_TRUE(profiler->isEnabled());
     }
 
+    void TearDown() override
+    {
+        if (m_originalProfilerEnabled)
+            setenv("PROFILER_ENABLED", m_originalProfilerEnabled->c_str(), 1);
+        else
+            unsetenv("PROFILER_ENABLED");
+    }
+
     std::shared_ptr<IProfilerFactory> factory;
     std::unique_ptr<IProfiler> profiler;
+    std::optional<std::string> m_originalProfilerEnabled;
 };
 
 TEST_F(ProfilerTests, RecordAndFindByStage)
@@ -107,4 +124,38 @@ TEST_F(ProfilerTests, DumpCreatesFile)
     const std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     EXPECT_FALSE(content.empty());
     EXPECT_NE(content.find("StageDump"), std::string::npos);
+
+    std::remove(path.c_str());
+}
+
+TEST_F(ProfilerTests, StartsEnabledWhenEnvTrue)
+{
+    setenv("PROFILER_ENABLED", "true", 1);
+
+    auto envProfiler = factory->createProfiler("UnitTestModule");
+
+    ASSERT_TRUE(envProfiler);
+    EXPECT_TRUE(envProfiler->isEnabled());
+}
+
+TEST_F(ProfilerTests, StartsDisabledWhenEnvValueInvalid)
+{
+    setenv("PROFILER_ENABLED", "definitely-not-a-bool", 1);
+
+    auto envProfiler = factory->createProfiler("UnitTestModule");
+
+    ASSERT_TRUE(envProfiler);
+    EXPECT_FALSE(envProfiler->isEnabled());
+}
+
+TEST_F(ProfilerTests, FindByStageReturnsNulloptWhenMissing)
+{
+    ASSERT_TRUE(profiler->record("Stage1").has_value());
+
+    EXPECT_EQ(profiler->find("MissingStage"), std::nullopt);
+}
+
+TEST_F(ProfilerTests, DumpReturnsFalseForInvalidPath)
+{
+    EXPECT_FALSE(profiler->dump("/proc/rialto_profiler_ut_dump.txt"));
 }

@@ -21,7 +21,9 @@
 #include "RialtoCommonLogging.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdint>
+#include <cstdlib>
 #include <fstream>
 #include <string>
 
@@ -188,6 +190,10 @@ bool Profiler::dump(const std::string &path) const
 
 const std::vector<IProfiler::Record> &Profiler::getRecords() const
 {
+    static const std::vector<IProfiler::Record> empty{};
+    if (!m_enabled)
+        return empty;
+
     return m_records;
 }
 

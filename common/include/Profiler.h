@@ -40,8 +40,6 @@ public:
 class Profiler final : public IProfiler
 {
 public:
-    // using Record = IProfiler::Record;
-
     explicit Profiler(std::string module);
 
     void enable() noexcept override;

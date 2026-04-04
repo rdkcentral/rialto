@@ -21,7 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 
 #include "FlushOnPrerollController.h"
-#include "GstProfiler.h"
+#include "IGstProfiler.h"
 #include "IGstSrc.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"

@@ -20,8 +20,11 @@
 #include "GstProfiler.h"
 #include "RialtoCommonLogging.h"
 
-#include <mutex>
+#include <algorithm>
+#include <array>
+#include <cctype>
 #include <string>
+#include <string_view>
 
 #include <glib.h>
 #include <gst/gst.h>
@@ -50,6 +53,35 @@ GstProfiler::~GstProfiler()
 {
     if (m_enabled && m_pipeline)
         m_gstWrapper->gstObjectUnref(m_pipeline);
+}
+
+void GstProfiler::enable()
+{
+    if (!m_profiler || m_enabled)
+        return;
+
+    m_profiler->enable();
+    m_enabled = m_profiler->isEnabled();
+
+    if (m_enabled && m_pipeline)
+        m_gstWrapper->gstObjectRef(m_pipeline);
+}
+
+void GstProfiler::disable()
+{
+    if (!m_profiler || !m_enabled)
+        return;
+
+    if (m_pipeline)
+        m_gstWrapper->gstObjectUnref(m_pipeline);
+
+    m_profiler->disable();
+    m_enabled = false;
+}
+
+bool GstProfiler::isEnabled() const
+{
+    return m_profiler && m_profiler->isEnabled();
 }
 
 std::optional<GstProfiler::RecordId> GstProfiler::createRecord(std::string stage)
@@ -98,7 +130,8 @@ void GstProfiler::scheduleGstElementRecord(GstElement *element)
         m_glibWrapper->gFree(rawName);
 
     auto *probeCtx = new ProbeCtx{this, stage.value(), processElementName(std::move(elementName))};
-    gst_pad_add_probe(pad, GST_PAD_PROBE_TYPE_BUFFER, &GstProfiler::probeCb, probeCtx, &GstProfiler::probeCtxDestroy);
+    m_gstWrapper->gstPadAddProbe(pad, GST_PAD_PROBE_TYPE_BUFFER, &GstProfiler::probeCb, probeCtx,
+                                 &GstProfiler::probeCtxDestroy);
 
     m_gstWrapper->gstObjectUnref(pad);
 }
@@ -113,6 +146,9 @@ void GstProfiler::logRecord(GstProfiler::RecordId id)
 
 void GstProfiler::logPipeline() const
 {
+    if (!m_enabled || !m_profiler)
+        return;
+
     const auto metrics = calculateMetrics();
     if (metrics)
     {
@@ -168,7 +204,7 @@ std::optional<std::string> GstProfiler::checkElement(GstElement *element)
 
     for (auto token : kKlassTokens)
     {
-        if (g_strrstr(klass, token.data()) != nullptr)
+        if (m_glibWrapper->gStrrstr(klass, token.data()) != nullptr)
         {
             return std::string(token.data()) + " FB Exit";
         }
