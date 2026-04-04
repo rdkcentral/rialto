@@ -228,6 +228,10 @@ public:
     MOCK_METHOD(GstPadLinkReturn, gstPadLink, (GstPad * srcpad, GstPad *sinkpad), (override));
     MOCK_METHOD(gboolean, gstBinRemove, (GstBin * bin, GstElement *element), (override));
     MOCK_METHOD(GstObject *, gstPadGetParent, (GstPad * pad), (override));
+    MOCK_METHOD(gulong, gstPadAddProbe,
+                (GstPad * pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
+                 GDestroyNotify destroyData),
+                (override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

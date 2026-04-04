@@ -17,146 +17,397 @@
  * limitations under the License.
  */
 
-#include <gmock/gmock.h>
+#include "GlibWrapperMock.h"
+#include "GstWrapperMock.h"
+
+#include <cstdlib>
+#include <glib.h>
+#include <gst/gst.h>
 #include <gtest/gtest.h>
+#include <thread>
 
-#include <memory>
-#include <optional>
-#include <string>
-
+#define private public
 #include "GstProfiler.h"
-#include "common/interface/IProfiler.h"
-#include "common/interface/IProfilerFactory.h"
-#include "wrappers/IGlibWrapper.h"
-#include "wrappers/IGstWrapper.h"
-
-#include "common/mocks/ProfilerFactoryMock.h"
-#include "common/mocks/ProfilerMock.h"
-#include "wrappers/mocks/GlibWrapperMock.h"
-#include "wrappers/mocks/GstWrapperMock.h"
+#undef private
 
 using namespace firebolt::rialto::server;
+using namespace firebolt::rialto::wrappers;
 
 using ::testing::_;
-using ::testing::ByMove;
-using ::testing::NiceMock;
+using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::StrEq;
 using ::testing::StrictMock;
 
 class GstProfilerTests : public ::testing::Test
 {
 protected:
+    std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock;
+    std::shared_ptr<StrictMock<GlibWrapperMock>> m_glibWrapperMock;
+    std::unique_ptr<GstProfiler> m_gstProfiler;
+    std::optional<std::string> m_profilerEnabledEnv;
+    GstElement *m_realElement{nullptr};
+
+    GstElement m_pipeline = {};
+    GstElement m_element = {};
+    GstPad m_pad = {};
+
     void SetUp() override
     {
-        gstWrapper = std::make_shared<NiceMock<firebolt::rialto::wrappers::GstWrapperMock>>();
-        glibWrapper = std::make_shared<NiceMock<firebolt::rialto::wrappers::GlibWrapperMock>>();
+        if (const char *env = std::getenv("PROFILER_ENABLED"))
+            m_profilerEnabledEnv = env;
+        unsetenv("PROFILER_ENABLED");
 
-        factoryMock = std::make_shared<StrictMock<firebolt::rialto::common::ProfilerFactoryMock>>();
-        ASSERT_TRUE(factoryMock);
+        m_gstWrapperMock = std::make_shared<StrictMock<GstWrapperMock>>();
+        m_glibWrapperMock = std::make_shared<StrictMock<GlibWrapperMock>>();
+
+        gst_init(nullptr, nullptr);
+        m_realElement = gst_element_factory_make("fakesrc", "profiler-test-source");
+        ASSERT_NE(m_realElement, nullptr);
     }
 
-    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper;
-    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper;
-    std::shared_ptr<StrictMock<firebolt::rialto::common::ProfilerFactoryMock>> factoryMock;
+    void TearDown() override
+    {
+        if (m_realElement)
+        {
+            gst_object_unref(m_realElement);
+            m_realElement = nullptr;
+        }
+
+        if (m_profilerEnabledEnv)
+            setenv("PROFILER_ENABLED", m_profilerEnabledEnv->c_str(), 1);
+        else
+            unsetenv("PROFILER_ENABLED");
+    }
+
+    void createGstProfiler(GstElement *pipeline = nullptr)
+    {
+        if (pipeline)
+        {
+            EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(pipeline));
+            EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(pipeline));
+        }
+
+        EXPECT_NO_THROW(m_gstProfiler = std::make_unique<GstProfiler>(pipeline, m_gstWrapperMock, m_glibWrapperMock));
+        ASSERT_NE(m_gstProfiler, nullptr);
+
+        m_gstProfiler->enable();
+        ASSERT_TRUE(m_gstProfiler->isEnabled());
+    }
+
+    void expectElementRecognizedAsSource(GstElement *element)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(element)).WillOnce(Return(nullptr));
+
+        EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return("Source"));
+
+        EXPECT_CALL(*m_glibWrapperMock, gStrrstr(_, _)).WillOnce(Return(const_cast<gchar *>("Source")));
+    }
+
+    void addRecordAndWait(const std::string &stage, const std::optional<std::string> &info = std::nullopt)
+    {
+        std::optional<IGstProfiler::RecordId> id;
+
+        if (info)
+            id = m_gstProfiler->createRecord(stage, *info);
+        else
+            id = m_gstProfiler->createRecord(stage);
+
+        ASSERT_TRUE(id.has_value());
+        std::this_thread::sleep_for(std::chrono::milliseconds{2});
+    }
 };
 
-TEST_F(GstProfilerTests, DisabledProfilerDoesNotRefPipeline)
+/**
+ * Test that GstProfiler can be created with null pipeline.
+ */
+TEST_F(GstProfilerTests, CreateWithNullPipeline)
 {
-    auto profilerMock = std::make_unique<StrictMock<firebolt::rialto::common::ProfilerMock>>();
-    EXPECT_CALL(*profilerMock, enabled()).WillOnce(Return(false));
-
-    EXPECT_CALL(*factoryMock, createProfiler(_)).WillOnce(Return(ByMove(std::move(profilerMock))));
-
-    auto *pipeline = reinterpret_cast<GstElement *>(0x1234);
-
-    // Disabled profiler: no pipeline ref/unref expected.
-    GstProfiler gstProfiler{pipeline, gstWrapper, glibWrapper, factoryMock};
+    createGstProfiler();
 }
 
-TEST_F(GstProfilerTests, EnabledProfilerRefsAndUnrefsPipeline)
+/**
+ * Test that GstProfiler can be created with valid pipeline.
+ */
+TEST_F(GstProfilerTests, CreateWithPipeline)
 {
-    auto profilerMock = std::make_unique<StrictMock<firebolt::rialto::common::ProfilerMock>>();
-    EXPECT_CALL(*profilerMock, enabled()).WillOnce(Return(true));
-
-    EXPECT_CALL(*factoryMock, createProfiler(_)).WillOnce(Return(ByMove(std::move(profilerMock))));
-
-    auto *pipeline = reinterpret_cast<GstElement *>(0x1234);
-
-    auto gstWrapperMock = std::static_pointer_cast<NiceMock<firebolt::rialto::wrappers::GstWrapperMock>>(gstWrapper);
-
-    EXPECT_CALL(*gstWrapperMock, gstObjectRef(pipeline));
-    EXPECT_CALL(*gstWrapperMock, gstObjectUnref(pipeline));
-
-    {
-        GstProfiler gstProfiler{pipeline, gstWrapper, glibWrapper, factoryMock};
-    }
+    createGstProfiler(&m_pipeline);
 }
 
-TEST_F(GstProfilerTests, CreateRecordNoOpWhenDisabled)
+/**
+ * Test that GstProfiler can create a record with stage only.
+ */
+TEST_F(GstProfilerTests, CreateRecordStageOnly)
 {
-    auto profilerMock = std::make_unique<StrictMock<firebolt::rialto::common::ProfilerMock>>();
-    EXPECT_CALL(*profilerMock, enabled()).WillOnce(Return(false));
+    createGstProfiler();
 
-    EXPECT_CALL(*factoryMock, createProfiler(_)).WillOnce(Return(ByMove(std::move(profilerMock))));
-
-    GstProfiler gstProfiler{nullptr, gstWrapper, glibWrapper, factoryMock};
-
-    EXPECT_FALSE(gstProfiler.createRecord("Stage").has_value());
-    EXPECT_FALSE(gstProfiler.createRecord("Stage", "Info").has_value());
-
-    gstProfiler.logRecord(123U); // no-op when disabled
+    EXPECT_NO_THROW({ [[maybe_unused]] const auto id = m_gstProfiler->createRecord("PipelineCreated"); });
 }
 
-TEST_F(GstProfilerTests, CreateRecordForwardsWhenEnabled)
+/**
+ * Test that GstProfiler can create a record with stage and info.
+ */
+TEST_F(GstProfilerTests, CreateRecordStageAndInfo)
 {
-    constexpr firebolt::rialto::common::IProfiler::RecordId kRecordId{123U};
+    createGstProfiler();
 
-    auto profilerMock = std::make_unique<StrictMock<firebolt::rialto::common::ProfilerMock>>();
-    EXPECT_CALL(*profilerMock, enabled()).WillOnce(Return(true));
-    EXPECT_CALL(*profilerMock, record(std::string{"StageOnly"}))
-        .WillOnce(Return(std::optional<firebolt::rialto::common::IProfiler::RecordId>{kRecordId}));
-    EXPECT_CALL(*profilerMock, log(kRecordId));
-
-    EXPECT_CALL(*factoryMock, createProfiler(_)).WillOnce(Return(ByMove(std::move(profilerMock))));
-
-    GstProfiler gstProfiler{nullptr, gstWrapper, glibWrapper, factoryMock};
-
-    const auto id = gstProfiler.createRecord("StageOnly");
-    ASSERT_TRUE(id.has_value());
-    EXPECT_EQ(*id, kRecordId);
-
-    gstProfiler.logRecord(*id);
+    EXPECT_NO_THROW({ [[maybe_unused]] const auto id = m_gstProfiler->createRecord("SourceAttached", "video"); });
 }
 
-TEST_F(GstProfilerTests, CreateRecordWithInfoForwardsWhenEnabled)
+/**
+ * Test that GstProfiler can log a record.
+ */
+TEST_F(GstProfilerTests, LogRecord)
 {
-    constexpr firebolt::rialto::common::IProfiler::RecordId kRecordId{456U};
+    createGstProfiler();
 
-    auto profilerMock = std::make_unique<StrictMock<firebolt::rialto::common::ProfilerMock>>();
-    EXPECT_CALL(*profilerMock, enabled()).WillOnce(Return(true));
-    EXPECT_CALL(*profilerMock, record(std::string{"StageWithInfo"}, std::string{"InfoValue"}))
-        .WillOnce(Return(std::optional<firebolt::rialto::common::IProfiler::RecordId>{kRecordId}));
-    EXPECT_CALL(*profilerMock, log(kRecordId));
-
-    EXPECT_CALL(*factoryMock, createProfiler(_)).WillOnce(Return(ByMove(std::move(profilerMock))));
-
-    GstProfiler gstProfiler{nullptr, gstWrapper, glibWrapper, factoryMock};
-
-    const auto id = gstProfiler.createRecord("StageWithInfo", "InfoValue");
-    ASSERT_TRUE(id.has_value());
-    EXPECT_EQ(*id, kRecordId);
-
-    gstProfiler.logRecord(*id);
+    EXPECT_NO_THROW(m_gstProfiler->logRecord(1));
 }
 
-TEST_F(GstProfilerTests, ScheduleNullElementIsSafe)
+/**
+ * Test that GstProfiler can log pipeline metrics.
+ */
+TEST_F(GstProfilerTests, LogPipeline)
 {
-    auto profilerMock = std::make_unique<StrictMock<firebolt::rialto::common::ProfilerMock>>();
-    EXPECT_CALL(*profilerMock, enabled()).WillOnce(Return(true));
+    createGstProfiler();
 
-    EXPECT_CALL(*factoryMock, createProfiler(_)).WillOnce(Return(ByMove(std::move(profilerMock))));
+    EXPECT_NO_THROW(m_gstProfiler->logPipeline());
+}
 
-    GstProfiler gstProfiler{nullptr, gstWrapper, glibWrapper, factoryMock};
+/**
+ * Test that disable prevents record creation and scheduling.
+ */
+TEST_F(GstProfilerTests, DisablePreventsRecordCreationAndScheduling)
+{
+    createGstProfiler();
 
-    gstProfiler.scheduleGstElementRecord(nullptr);
+    m_gstProfiler->disable();
+    EXPECT_FALSE(m_gstProfiler->isEnabled());
+    EXPECT_FALSE(m_gstProfiler->createRecord("Pipeline Created").has_value());
+
+    EXPECT_NO_THROW(m_gstProfiler->scheduleGstElementRecord(m_realElement));
+}
+
+/**
+ * Test that enabling allows scheduling path to proceed up to pad lookup.
+ */
+TEST_F(GstProfilerTests, EnableAllowsScheduling)
+{
+    EXPECT_NO_THROW(m_gstProfiler = std::make_unique<GstProfiler>(nullptr, m_gstWrapperMock, m_glibWrapperMock));
+    ASSERT_NE(m_gstProfiler, nullptr);
+    EXPECT_FALSE(m_gstProfiler->isEnabled());
+
+    m_gstProfiler->enable();
+    ASSERT_TRUE(m_gstProfiler->isEnabled());
+
+    expectElementRecognizedAsSource(m_realElement);
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(m_realElement, StrEq("src"))).WillOnce(Return(nullptr));
+
+    EXPECT_NO_THROW(m_gstProfiler->scheduleGstElementRecord(m_realElement));
+}
+
+/**
+ * Test that scheduling record for null element is safe.
+ */
+TEST_F(GstProfilerTests, ScheduleNullElementRecord)
+{
+    createGstProfiler();
+
+    EXPECT_NO_THROW(m_gstProfiler->scheduleGstElementRecord(nullptr));
+}
+
+/**
+ * Test that scheduling record for valid element is safe.
+ */
+TEST_F(GstProfilerTests, ScheduleElementRecord)
+{
+    createGstProfiler();
+
+    expectElementRecognizedAsSource(m_realElement);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(m_realElement, StrEq("src"))).WillOnce(Return(&m_pad));
+
+    gchar *rawName = g_strdup("videoDecoder");
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetName(m_realElement)).WillOnce(Return(rawName));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(rawName)).WillOnce(Invoke([](gpointer ptr) { g_free(ptr); }));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstPadAddProbe(&m_pad, _, _, _, _))
+        .WillOnce(Invoke(
+            [](GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
+               GDestroyNotify destroyData) -> gulong
+            {
+                if (destroyData)
+                {
+                    destroyData(userData);
+                }
+                return 1;
+            }));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pad));
+
+    EXPECT_NO_THROW(m_gstProfiler->scheduleGstElementRecord(m_realElement));
+}
+
+/**
+ * Test that scheduled probe creates record with normalized video info.
+ */
+TEST_F(GstProfilerTests, ScheduleElementRecordCreatesProbeRecordWithVideoInfo)
+{
+    createGstProfiler();
+
+    expectElementRecognizedAsSource(m_realElement);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(m_realElement, StrEq("src"))).WillOnce(Return(&m_pad));
+
+    gchar *rawName = g_strdup("videoDecoder");
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetName(m_realElement)).WillOnce(Return(rawName));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(rawName)).WillOnce(Invoke([](gpointer ptr) { g_free(ptr); }));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstPadAddProbe(&m_pad, _, _, _, _))
+        .WillOnce(Invoke(
+            [](GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
+               GDestroyNotify destroyData) -> gulong
+            {
+                GstBuffer *buffer = gst_buffer_new();
+                GstPadProbeInfo info{};
+                info.type = GST_PAD_PROBE_TYPE_BUFFER;
+                info.data = buffer;
+
+                EXPECT_EQ(callback(pad, &info, userData), GST_PAD_PROBE_REMOVE);
+
+                gst_buffer_unref(buffer);
+                if (destroyData)
+                    destroyData(userData);
+
+                return 1;
+            }));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pad));
+
+    m_gstProfiler->scheduleGstElementRecord(m_realElement);
+
+    const auto &records = m_gstProfiler->m_profiler->getRecords();
+    ASSERT_FALSE(records.empty());
+    EXPECT_EQ(records.back().stage, "Source FB Exit");
+    EXPECT_EQ(records.back().info, "Video");
+}
+
+/**
+ * Test that scheduling record handles missing src pad.
+ */
+TEST_F(GstProfilerTests, ScheduleElementRecordNoPad)
+{
+    createGstProfiler();
+
+    expectElementRecognizedAsSource(m_realElement);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(m_realElement, StrEq("src"))).WillOnce(Return(nullptr));
+
+    EXPECT_NO_THROW(m_gstProfiler->scheduleGstElementRecord(m_realElement));
+}
+
+/**
+ * Test that GstProfiler can be destroyed after creation with pipeline.
+ */
+TEST_F(GstProfilerTests, DestroyAfterCreateWithPipeline)
+{
+    createGstProfiler(&m_pipeline);
+
+    EXPECT_NO_THROW(m_gstProfiler.reset());
+}
+
+/**
+ * Test that element names are normalized to video and audio buckets.
+ */
+TEST_F(GstProfilerTests, ProcessElementNameNormalizesMediaTypes)
+{
+    createGstProfiler();
+
+    EXPECT_EQ(m_gstProfiler->processElementName("h264parse"), "Video");
+    EXPECT_EQ(m_gstProfiler->processElementName("audsrc"), "Audio");
+    EXPECT_EQ(m_gstProfiler->processElementName("custom-element"), "custom-element");
+}
+
+/**
+ * Test that element classes are mapped to expected stage names.
+ */
+TEST_F(GstProfilerTests, CheckElementMapsClassToExpectedStage)
+{
+    createGstProfiler();
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return("Decryptor"));
+    EXPECT_CALL(*m_glibWrapperMock, gStrrstr("Decryptor", StrEq("Source"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_glibWrapperMock, gStrrstr("Decryptor", StrEq("Decryptor")))
+        .WillOnce(Return(const_cast<gchar *>("Decryptor")));
+
+    const auto stage = m_gstProfiler->checkElement(m_realElement);
+    ASSERT_TRUE(stage.has_value());
+    EXPECT_EQ(stage.value(), "Decryptor FB Exit");
+}
+
+/**
+ * Test that metrics calculation returns null when required records are missing.
+ */
+TEST_F(GstProfilerTests, CalculateMetricsReturnsNulloptWhenRecordsMissing)
+{
+    createGstProfiler();
+
+    addRecordAndWait("Pipeline Created");
+    addRecordAndWait("All Sources Attached");
+
+    EXPECT_FALSE(m_gstProfiler->calculateMetrics().has_value());
+}
+
+/**
+ * Test that metrics calculation succeeds for a full clear pipeline path.
+ */
+TEST_F(GstProfilerTests, CalculateMetricsReturnsValuesForNonEncryptedPlayback)
+{
+    createGstProfiler();
+
+    addRecordAndWait("Pipeline Created");
+    addRecordAndWait("All Sources Attached");
+    addRecordAndWait("First Segment Received", "Video");
+    addRecordAndWait("First Segment Received", "Audio");
+    addRecordAndWait("Source FB Exit", "Video");
+    addRecordAndWait("Source FB Exit", "Audio");
+    addRecordAndWait("Decoder FB Exit", "Video");
+    addRecordAndWait("Decoder FB Exit", "Audio");
+    addRecordAndWait("Pipeline State Changed", "PAUSED");
+    addRecordAndWait("Pipeline State Changed", "PLAYING");
+
+    const auto metrics = m_gstProfiler->calculateMetrics();
+    ASSERT_TRUE(metrics.has_value());
+    EXPECT_TRUE(metrics->preparation.has_value());
+    EXPECT_TRUE(metrics->videoDownload.has_value());
+    EXPECT_TRUE(metrics->audioDownload.has_value());
+    EXPECT_TRUE(metrics->videoSource.has_value());
+    EXPECT_TRUE(metrics->audioSource.has_value());
+    EXPECT_TRUE(metrics->videoDecode.has_value());
+    EXPECT_TRUE(metrics->audioDecode.has_value());
+    EXPECT_TRUE(metrics->preRoll.has_value());
+    EXPECT_TRUE(metrics->play.has_value());
+    EXPECT_TRUE(metrics->total.has_value());
+    EXPECT_TRUE(metrics->totalWithoutApp.has_value());
+}
+
+/**
+ * Test that public API can be called multiple times.
+ */
+TEST_F(GstProfilerTests, MultipleCalls)
+{
+    createGstProfiler();
+
+    expectElementRecognizedAsSource(m_realElement);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(m_realElement, StrEq("src"))).WillOnce(Return(nullptr));
+
+    EXPECT_NO_THROW({
+        [[maybe_unused]] const auto id1 = m_gstProfiler->createRecord("PipelineCreated");
+        [[maybe_unused]] const auto id2 = m_gstProfiler->createRecord("AllSourcesAttached", "audio+video");
+        m_gstProfiler->logRecord(1);
+        m_gstProfiler->scheduleGstElementRecord(m_realElement);
+        m_gstProfiler->logPipeline();
+    });
 }

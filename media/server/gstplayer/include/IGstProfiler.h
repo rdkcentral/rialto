@@ -36,6 +36,10 @@ public:
 
     virtual ~IGstProfiler() = default;
 
+    virtual void enable() = 0;
+    virtual void disable() = 0;
+    virtual bool isEnabled() const = 0;
+
     virtual std::optional<RecordId> createRecord(std::string stage) = 0;
     virtual std::optional<RecordId> createRecord(std::string stage, std::string info) = 0;
 

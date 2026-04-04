@@ -616,6 +616,12 @@ public:
     gboolean gstBinRemove(GstBin *bin, GstElement *element) override { return gst_bin_remove(bin, element); }
 
     GstObject *gstPadGetParent(GstPad *pad) override { return gst_pad_get_parent(pad); }
+
+    gulong gstPadAddProbe(GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
+                          GDestroyNotify destroyData) override
+    {
+        return gst_pad_add_probe(pad, mask, callback, userData, destroyData);
+    }
 };
 
 }; // namespace firebolt::rialto::wrappers

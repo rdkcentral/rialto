@@ -125,7 +125,6 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         ${GStreamerApp_INCLUDE_DIRS}
-        ${CMAKE_CURRENT_LIST_DIR}/../../../common/include
 
         )
 

@@ -47,6 +47,10 @@ public:
                 const std::shared_ptr<IGlibWrapper> &glibWrapper);
     ~GstProfiler() override;
 
+    void enable() override;
+    void disable() override;
+    bool isEnabled() const override;
+
     std::optional<RecordId> createRecord(std::string stage) override;
     std::optional<RecordId> createRecord(std::string stage, std::string info) override;
 

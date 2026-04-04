@@ -34,6 +34,10 @@ public:
     GstProfilerMock() = default;
     ~GstProfilerMock() override = default;
 
+    MOCK_METHOD(void, enable, (), (override));
+    MOCK_METHOD(void, disable, (), (override));
+    MOCK_METHOD(bool, isEnabled, (), (const, override));
+
     MOCK_METHOD(std::optional<RecordId>, createRecord, (std::string stage), (override));
     MOCK_METHOD(std::optional<RecordId>, createRecord, (std::string stage, std::string info), (override));
 

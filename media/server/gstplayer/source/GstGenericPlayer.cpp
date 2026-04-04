@@ -26,6 +26,7 @@
 #include "FlushWatcher.h"
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
+#include "GstProfiler.h"
 #include "GstProtectionMetadata.h"
 #include "IGstTextTrackSinkFactory.h"
 #include "IMediaPipeline.h"
@@ -313,13 +314,14 @@ void GstGenericPlayer::termPipeline()
         m_context.playbackGroup.m_curAudioPlaysinkBin = nullptr;
     }
 
+    auto recordId = m_context.gstProfiler->createRecord("Pipeline Terminated");
+    if (recordId)
+        m_context.gstProfiler->logRecord(recordId.value());
+
     // Delete the pipeline
     m_gstWrapper->gstObjectUnref(m_context.pipeline);
 
     RIALTO_SERVER_LOG_MIL("RialtoServer's pipeline terminated");
-    auto recordId = m_context.gstProfiler->createRecord("Pipeline Terminated");
-    if (recordId)
-        m_context.gstProfiler->logRecord(recordId.value());
 }
 
 unsigned GstGenericPlayer::getGstPlayFlag(const char *nick)
