@@ -36,6 +36,10 @@ std::shared_ptr<IMediaKeysCapabilitiesIpcFactory> IMediaKeysCapabilitiesIpcFacto
     catch (const std::exception &e)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create the media keys capabilities ipc factory, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                 "Failed to create the media keys capabilities ipc factory, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysCapabilitiesIpc", telemetryBuff);
     }
 
     return factory;
@@ -58,6 +62,10 @@ std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesIpcFactory::getMedi
         catch (const std::exception &e)
         {
             RIALTO_CLIENT_LOG_ERROR("Failed to create the media keys capabilities ipc, reason: %s", e.what());
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                     "Failed to create the media keys capabilities ipc, reason: %s", e.what());
+            TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysCapabilitiesIpc", telemetryBuff);
         }
 
         MediaKeysCapabilitiesIpcFactory::m_mediaKeysCapabilitiesIpc = mediaKeysCapabilitiesIpc;
@@ -115,6 +123,10 @@ std::vector<std::string> MediaKeysCapabilitiesIpc::getSupportedKeySystems()
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get supported key systems due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get supported key systems due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysCapabilitiesIpc", telemetryBuff);
         return {};
     }
 
@@ -144,6 +156,10 @@ bool MediaKeysCapabilitiesIpc::supportsKeySystem(const std::string &keySystem)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to supports key system due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to support key systems due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysCapabilitiesIpc", telemetryBuff);
         return false;
     }
 
@@ -175,6 +191,10 @@ bool MediaKeysCapabilitiesIpc::getSupportedKeySystemVersion(const std::string &k
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get supported key system version due to '%s'",
                                 ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get supported key system versions due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysCapabilitiesIpc", telemetryBuff);
         return false;
     }
     version = response.version();
@@ -207,6 +227,10 @@ bool MediaKeysCapabilitiesIpc::isServerCertificateSupported(const std::string &k
     {
         RIALTO_CLIENT_LOG_ERROR("failed to check if server certificate is supported due to '%s'",
                                 ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to check if server certificate is supported due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysCapabilitiesIpc", telemetryBuff);
         return false;
     }
 
