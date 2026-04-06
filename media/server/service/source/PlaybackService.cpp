@@ -46,6 +46,7 @@ PlaybackService::PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFac
 PlaybackService::~PlaybackService()
 {
     RIALTO_SERVER_LOG_DEBUG("PlaybackService is destructed");
+    TELEMETRY_UNINIT();
 }
 
 bool PlaybackService::switchToActive()
