@@ -21,6 +21,7 @@
 
 using ::testing::A;
 using ::testing::ByMove;
+using ::testing::InSequence;
 using ::testing::Ref;
 using ::testing::ReturnRef;
 using ::testing::Throw;
@@ -296,6 +297,94 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithR
                 notifyNeedMediaData(sourceId, m_kNumFrames, 0, _)); // params tested in NeedMediaDataTests
     mainThreadWillEnqueueTask();
     resendCallback();
+}
+
+TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataResendBackoffDoublesOnFailureAndResetsAfterSuccess)
+{
+    auto status = firebolt::rialto::MediaSourceStatus::ERROR;
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    std::function<void()> firstResendCallback;
+    std::function<void()> secondResendCallback;
+    std::function<void()> thirdResendCallback;
+    const std::chrono::milliseconds kFirstBackoff{30};
+    const std::chrono::milliseconds kSecondBackoff{60};
+
+    loadGstPlayer();
+
+    {
+        InSequence seq;
+
+        EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kDefaultNeedMediaDataResendTimeout, _, _))
+            .WillOnce(Invoke(
+                [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback,
+                    firebolt::rialto::common::TimerType timerType)
+                {
+                    firstResendCallback = callback;
+                    return std::make_unique<::testing::NiceMock<TimerMock>>();
+                }));
+        EXPECT_CALL(*m_timerFactoryMock, createTimer(kFirstBackoff, _, _))
+            .WillOnce(Invoke(
+                [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback,
+                    firebolt::rialto::common::TimerType timerType)
+                {
+                    secondResendCallback = callback;
+                    return std::make_unique<::testing::NiceMock<TimerMock>>();
+                }));
+        EXPECT_CALL(*m_timerFactoryMock, createTimer(kSecondBackoff, _, _))
+            .WillOnce(Invoke(
+                [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback,
+                    firebolt::rialto::common::TimerType timerType)
+                {
+                    thirdResendCallback = callback;
+                    return std::make_unique<::testing::NiceMock<TimerMock>>();
+                }));
+        EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kDefaultNeedMediaDataResendTimeout, _, _))
+            .WillOnce(Return(ByMove(std::make_unique<::testing::NiceMock<TimerMock>>())));
+    }
+
+    mainThreadWillEnqueueTaskAndWait();
+    ASSERT_TRUE(m_activeRequestsMock);
+    EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId)).WillOnce(Return(mediaSourceType));
+    EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
+    EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNumFrames, m_kNeedDataRequestId));
+
+    ASSERT_TRUE(firstResendCallback);
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
+        .WillOnce(Return(true));
+    firstResendCallback();
+
+    ASSERT_TRUE(secondResendCallback);
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
+        .WillOnce(Return(true));
+    secondResendCallback();
+
+    const int kSourceId = attachSource(mediaSourceType, "video/h264");
+
+    ASSERT_TRUE(thirdResendCallback);
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
+        .WillOnce(Return(7 * 1024 * 1024));
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
+        .WillOnce(Return(0));
+    EXPECT_CALL(*m_activeRequestsMock, insert(mediaSourceType, _)).WillOnce(Return(0));
+    EXPECT_CALL(*m_mediaPipelineClientMock,
+                notifyNeedMediaData(kSourceId, m_kNumFrames, 0, _)); // params tested in NeedMediaDataTests
+    thirdResendCallback();
+
+    const auto kNextNeedDataRequestId{m_kNeedDataRequestId + 1};
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_activeRequestsMock, getType(kNextNeedDataRequestId)).WillOnce(Return(mediaSourceType));
+    EXPECT_CALL(*m_activeRequestsMock, erase(kNextNeedDataRequestId));
+    EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNumFrames, kNextNeedDataRequestId));
 }
 
 TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataFailureDueToShmBufferError)

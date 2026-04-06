@@ -723,6 +723,12 @@ protected:
      * @retval NeedMediaData timeout
      */
     std::chrono::milliseconds getNeedMediaDataTimeout(MediaSourceType mediaSourceType) const;
+
+private:
+    std::map<MediaSourceType, std::chrono::milliseconds> m_needMediaDataBackoff;
+
+    void updateNeedMediaDataDelay(MediaSourceType mediaSourceType, std::chrono::milliseconds delay);
+    void resetNeedMediaDataBackoff(MediaSourceType mediaSourceType);
 };
 
 }; // namespace firebolt::rialto::server

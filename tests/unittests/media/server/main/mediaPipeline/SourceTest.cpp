@@ -100,6 +100,66 @@ TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceSuccess)
     EXPECT_EQ(m_mediaPipeline->removeSource(sourceId), true);
 }
 
+TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceResetsNeedMediaDataBackoff)
+{
+    constexpr auto kStatus = firebolt::rialto::MediaSourceStatus::ERROR;
+    constexpr auto kNeedDataRequestId = 0U;
+    const std::chrono::milliseconds kBackoffAfterFailure{30};
+    std::function<void()> resendCallback;
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceAudio>(m_kMimeType);
+
+    loadGstPlayer();
+
+    {
+        ::testing::InSequence seq;
+
+        EXPECT_CALL(*m_timerFactoryMock, createTimer(std::chrono::milliseconds{15}, _, _))
+            .WillOnce(Invoke(
+                [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback,
+                    firebolt::rialto::common::TimerType timerType)
+                {
+                    resendCallback = callback;
+                    return std::make_unique<::testing::NiceMock<TimerMock>>();
+                }));
+        EXPECT_CALL(*m_timerFactoryMock, createTimer(kBackoffAfterFailure, _, _))
+            .WillOnce(Return(ByMove(std::make_unique<::testing::NiceMock<TimerMock>>())));
+        EXPECT_CALL(*m_timerFactoryMock, createTimer(std::chrono::milliseconds{15}, _, _))
+            .WillOnce(Return(ByMove(std::make_unique<::testing::NiceMock<TimerMock>>())));
+    }
+
+    mainThreadWillEnqueueTaskAndWait();
+    ASSERT_TRUE(m_activeRequestsMock);
+    EXPECT_CALL(*m_activeRequestsMock, getType(kNeedDataRequestId)).WillOnce(Return(m_type));
+    EXPECT_CALL(*m_activeRequestsMock, erase(kNeedDataRequestId));
+    EXPECT_TRUE(m_mediaPipeline->haveData(kStatus, kNeedDataRequestId));
+
+    ASSERT_TRUE(resendCallback);
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, m_type))
+        .WillOnce(Return(true));
+    resendCallback();
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+    std::int32_t firstSourceId{mediaSource->getId()};
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_EQ(m_mediaPipeline->removeSource(firstSourceId), true);
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
+
+    constexpr auto kNextNeedDataRequestId = 1U;
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_activeRequestsMock, getType(kNextNeedDataRequestId)).WillOnce(Return(m_type));
+    EXPECT_CALL(*m_activeRequestsMock, erase(kNextNeedDataRequestId));
+    EXPECT_TRUE(m_mediaPipeline->haveData(kStatus, kNextNeedDataRequestId));
+}
+
 /**
  * Test that RemoveSource fails if load has not been called (no gstreamer player).
  */
