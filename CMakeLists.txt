@@ -32,7 +32,7 @@ if ( COVERAGE_ENABLED )
     add_link_options(--coverage)
 endif()
 
-add_compile_options(-Wall -Werror)
+add_compile_options(-Wall -Werror -Wno-format)
 
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 13.0)
     add_compile_options(-Wno-error=overloaded-virtual)
