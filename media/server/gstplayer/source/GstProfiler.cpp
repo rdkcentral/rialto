@@ -31,6 +31,36 @@
 
 namespace firebolt::rialto::server
 {
+std::weak_ptr<IGstProfilerFactory> GstProfilerFactory::m_factory;
+
+std::shared_ptr<IGstProfilerFactory> IGstProfilerFactory::getFactory()
+{
+    std::shared_ptr<IGstProfilerFactory> factory = GstProfilerFactory::m_factory.lock();
+
+    if (!factory)
+    {
+        try
+        {
+            factory = std::make_shared<GstProfilerFactory>();
+        }
+        catch (const std::exception &e)
+        {
+            RIALTO_COMMON_LOG_ERROR("Failed to create the gst profiler factory, reason: %s", e.what());
+        }
+
+        GstProfilerFactory::m_factory = factory;
+    }
+
+    return factory;
+}
+
+std::unique_ptr<IGstProfiler> GstProfilerFactory::createGstProfiler(GstElement *pipeline,
+                                                                    const std::shared_ptr<IGstWrapper> &gstWrapper,
+                                                                    const std::shared_ptr<IGlibWrapper> &glibWrapper) const
+{
+    return std::make_unique<GstProfiler>(pipeline, gstWrapper, glibWrapper);
+}
+
 inline constexpr std::array kKlassTokens{
     std::string_view{"Source"},
     std::string_view{"Decryptor"},
@@ -55,33 +85,9 @@ GstProfiler::~GstProfiler()
         m_gstWrapper->gstObjectUnref(m_pipeline);
 }
 
-void GstProfiler::enable()
-{
-    if (!m_profiler || m_enabled)
-        return;
-
-    m_profiler->enable();
-    m_enabled = m_profiler->isEnabled();
-
-    if (m_enabled && m_pipeline)
-        m_gstWrapper->gstObjectRef(m_pipeline);
-}
-
-void GstProfiler::disable()
-{
-    if (!m_profiler || !m_enabled)
-        return;
-
-    if (m_pipeline)
-        m_gstWrapper->gstObjectUnref(m_pipeline);
-
-    m_profiler->disable();
-    m_enabled = false;
-}
-
 bool GstProfiler::isEnabled() const
 {
-    return m_profiler && m_profiler->isEnabled();
+    return m_enabled;
 }
 
 std::optional<GstProfiler::RecordId> GstProfiler::createRecord(std::string stage)

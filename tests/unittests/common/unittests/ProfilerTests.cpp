@@ -44,8 +44,6 @@ protected:
 
         profiler = factory->createProfiler("UnitTestModule");
         ASSERT_TRUE(profiler);
-
-        profiler->enable();
         ASSERT_TRUE(profiler->isEnabled());
     }
 
@@ -141,6 +139,16 @@ TEST_F(ProfilerTests, StartsEnabledWhenEnvTrue)
 TEST_F(ProfilerTests, StartsDisabledWhenEnvValueInvalid)
 {
     setenv("PROFILER_ENABLED", "definitely-not-a-bool", 1);
+
+    auto envProfiler = factory->createProfiler("UnitTestModule");
+
+    ASSERT_TRUE(envProfiler);
+    EXPECT_FALSE(envProfiler->isEnabled());
+}
+
+TEST_F(ProfilerTests, StartsDisabledWhenEnvFalse)
+{
+    setenv("PROFILER_ENABLED", "false", 1);
 
     auto envProfiler = factory->createProfiler("UnitTestModule");
 

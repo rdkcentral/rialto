@@ -24,6 +24,7 @@
 #include <glib.h>
 #include <gst/gst.h>
 #include <gtest/gtest.h>
+#include <string_view>
 #include <thread>
 
 #define private public
@@ -56,7 +57,6 @@ protected:
     {
         if (const char *env = std::getenv("PROFILER_ENABLED"))
             m_profilerEnabledEnv = env;
-        unsetenv("PROFILER_ENABLED");
 
         m_gstWrapperMock = std::make_shared<StrictMock<GstWrapperMock>>();
         m_glibWrapperMock = std::make_shared<StrictMock<GlibWrapperMock>>();
@@ -80,9 +80,13 @@ protected:
             unsetenv("PROFILER_ENABLED");
     }
 
+    void setProfilerEnabledEnv(bool enabled) { setenv("PROFILER_ENABLED", enabled ? "true" : "false", 1); }
+
     void createGstProfiler(GstElement *pipeline = nullptr)
     {
-        if (pipeline)
+        const char *profilerEnabledEnv = std::getenv("PROFILER_ENABLED");
+        const bool expectPipelineRef = pipeline && profilerEnabledEnv && std::string_view{profilerEnabledEnv} == "true";
+        if (expectPipelineRef)
         {
             EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(pipeline));
             EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(pipeline));
@@ -90,9 +94,6 @@ protected:
 
         EXPECT_NO_THROW(m_gstProfiler = std::make_unique<GstProfiler>(pipeline, m_gstWrapperMock, m_glibWrapperMock));
         ASSERT_NE(m_gstProfiler, nullptr);
-
-        m_gstProfiler->enable();
-        ASSERT_TRUE(m_gstProfiler->isEnabled());
     }
 
     void expectElementRecognizedAsSource(GstElement *element)
@@ -123,7 +124,9 @@ protected:
  */
 TEST_F(GstProfilerTests, CreateWithNullPipeline)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
+    EXPECT_TRUE(m_gstProfiler->isEnabled());
 }
 
 /**
@@ -131,7 +134,9 @@ TEST_F(GstProfilerTests, CreateWithNullPipeline)
  */
 TEST_F(GstProfilerTests, CreateWithPipeline)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler(&m_pipeline);
+    EXPECT_TRUE(m_gstProfiler->isEnabled());
 }
 
 /**
@@ -139,6 +144,7 @@ TEST_F(GstProfilerTests, CreateWithPipeline)
  */
 TEST_F(GstProfilerTests, CreateRecordStageOnly)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
 
     EXPECT_NO_THROW({ [[maybe_unused]] const auto id = m_gstProfiler->createRecord("PipelineCreated"); });
@@ -149,6 +155,7 @@ TEST_F(GstProfilerTests, CreateRecordStageOnly)
  */
 TEST_F(GstProfilerTests, CreateRecordStageAndInfo)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
 
     EXPECT_NO_THROW({ [[maybe_unused]] const auto id = m_gstProfiler->createRecord("SourceAttached", "video"); });
@@ -159,6 +166,7 @@ TEST_F(GstProfilerTests, CreateRecordStageAndInfo)
  */
 TEST_F(GstProfilerTests, LogRecord)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
 
     EXPECT_NO_THROW(m_gstProfiler->logRecord(1));
@@ -169,19 +177,20 @@ TEST_F(GstProfilerTests, LogRecord)
  */
 TEST_F(GstProfilerTests, LogPipeline)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
 
     EXPECT_NO_THROW(m_gstProfiler->logPipeline());
 }
 
 /**
- * Test that disable prevents record creation and scheduling.
+ * Test that disabled profiler prevents record creation and scheduling.
  */
-TEST_F(GstProfilerTests, DisablePreventsRecordCreationAndScheduling)
+TEST_F(GstProfilerTests, DisabledProfilerPreventsRecordCreationAndScheduling)
 {
+    setProfilerEnabledEnv(false);
     createGstProfiler();
 
-    m_gstProfiler->disable();
     EXPECT_FALSE(m_gstProfiler->isEnabled());
     EXPECT_FALSE(m_gstProfiler->createRecord("Pipeline Created").has_value());
 
@@ -189,15 +198,13 @@ TEST_F(GstProfilerTests, DisablePreventsRecordCreationAndScheduling)
 }
 
 /**
- * Test that enabling allows scheduling path to proceed up to pad lookup.
+ * Test that enabled profiler allows scheduling path to proceed up to pad lookup.
  */
-TEST_F(GstProfilerTests, EnableAllowsScheduling)
+TEST_F(GstProfilerTests, EnabledProfilerAllowsScheduling)
 {
+    setProfilerEnabledEnv(true);
     EXPECT_NO_THROW(m_gstProfiler = std::make_unique<GstProfiler>(nullptr, m_gstWrapperMock, m_glibWrapperMock));
     ASSERT_NE(m_gstProfiler, nullptr);
-    EXPECT_FALSE(m_gstProfiler->isEnabled());
-
-    m_gstProfiler->enable();
     ASSERT_TRUE(m_gstProfiler->isEnabled());
 
     expectElementRecognizedAsSource(m_realElement);
@@ -211,6 +218,7 @@ TEST_F(GstProfilerTests, EnableAllowsScheduling)
  */
 TEST_F(GstProfilerTests, ScheduleNullElementRecord)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
 
     EXPECT_NO_THROW(m_gstProfiler->scheduleGstElementRecord(nullptr));
@@ -221,6 +229,7 @@ TEST_F(GstProfilerTests, ScheduleNullElementRecord)
  */
 TEST_F(GstProfilerTests, ScheduleElementRecord)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
 
     expectElementRecognizedAsSource(m_realElement);
@@ -253,6 +262,7 @@ TEST_F(GstProfilerTests, ScheduleElementRecord)
  */
 TEST_F(GstProfilerTests, ScheduleElementRecordCreatesProbeRecordWithVideoInfo)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
 
     expectElementRecognizedAsSource(m_realElement);
@@ -297,6 +307,7 @@ TEST_F(GstProfilerTests, ScheduleElementRecordCreatesProbeRecordWithVideoInfo)
  */
 TEST_F(GstProfilerTests, ScheduleElementRecordNoPad)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
 
     expectElementRecognizedAsSource(m_realElement);
@@ -311,6 +322,7 @@ TEST_F(GstProfilerTests, ScheduleElementRecordNoPad)
  */
 TEST_F(GstProfilerTests, DestroyAfterCreateWithPipeline)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler(&m_pipeline);
 
     EXPECT_NO_THROW(m_gstProfiler.reset());
@@ -321,6 +333,7 @@ TEST_F(GstProfilerTests, DestroyAfterCreateWithPipeline)
  */
 TEST_F(GstProfilerTests, ProcessElementNameNormalizesMediaTypes)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
 
     EXPECT_EQ(m_gstProfiler->processElementName("h264parse"), "Video");
@@ -333,6 +346,7 @@ TEST_F(GstProfilerTests, ProcessElementNameNormalizesMediaTypes)
  */
 TEST_F(GstProfilerTests, CheckElementMapsClassToExpectedStage)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement)).WillOnce(Return(nullptr));
@@ -351,6 +365,7 @@ TEST_F(GstProfilerTests, CheckElementMapsClassToExpectedStage)
  */
 TEST_F(GstProfilerTests, CalculateMetricsReturnsNulloptWhenRecordsMissing)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
 
     addRecordAndWait("Pipeline Created");
@@ -364,6 +379,7 @@ TEST_F(GstProfilerTests, CalculateMetricsReturnsNulloptWhenRecordsMissing)
  */
 TEST_F(GstProfilerTests, CalculateMetricsReturnsValuesForNonEncryptedPlayback)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
 
     addRecordAndWait("Pipeline Created");
@@ -397,6 +413,7 @@ TEST_F(GstProfilerTests, CalculateMetricsReturnsValuesForNonEncryptedPlayback)
  */
 TEST_F(GstProfilerTests, MultipleCalls)
 {
+    setProfilerEnabledEnv(true);
     createGstProfiler();
 
     expectElementRecognizedAsSource(m_realElement);

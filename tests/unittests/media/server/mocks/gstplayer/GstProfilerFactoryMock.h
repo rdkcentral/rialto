@@ -17,33 +17,29 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_PROFILER_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_GST_PROFILER_MOCK_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GST_PROFILER_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_SERVER_GST_PROFILER_FACTORY_MOCK_H_
 
 #include "IGstProfiler.h"
 
 #include <gmock/gmock.h>
-#include <optional>
-#include <string>
 
 namespace firebolt::rialto::server
 {
-class GstProfilerMock : public IGstProfiler
+class GstProfilerFactoryMock : public IGstProfilerFactory
 {
 public:
-    GstProfilerMock() = default;
-    ~GstProfilerMock() override = default;
+    using IGstWrapper = firebolt::rialto::wrappers::IGstWrapper;
+    using IGlibWrapper = firebolt::rialto::wrappers::IGlibWrapper;
 
-    MOCK_METHOD(bool, isEnabled, (), (const, override));
+    GstProfilerFactoryMock() = default;
+    ~GstProfilerFactoryMock() override = default;
 
-    MOCK_METHOD(std::optional<RecordId>, createRecord, (std::string stage), (override));
-    MOCK_METHOD(std::optional<RecordId>, createRecord, (std::string stage, std::string info), (override));
-
-    MOCK_METHOD(void, scheduleGstElementRecord, (GstElement * element), (override));
-
-    MOCK_METHOD(void, logRecord, (RecordId id), (override));
-    MOCK_METHOD(void, logPipeline, (), (const, override));
+    MOCK_METHOD(std::unique_ptr<IGstProfiler>, createGstProfiler,
+                (GstElement * pipeline, const std::shared_ptr<IGstWrapper> &gstWrapper,
+                 const std::shared_ptr<IGlibWrapper> &glibWrapper),
+                (const, override));
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_GST_PROFILER_MOCK_H_
+#endif // FIREBOLT_RIALTO_SERVER_GST_PROFILER_FACTORY_MOCK_H_

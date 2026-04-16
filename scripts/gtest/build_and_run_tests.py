@@ -128,6 +128,9 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
 
     for key in suites:
         executeCmd = []
+        cmdEnv = os.environ.copy()
+        cmdEnv.setdefault("PROFILER_ENABLED", "false")
+        cmdEnv.update(suites[key].get("env", {}))
 
         # Valgrind command must come before the test executable
         if valgrind == True:
@@ -147,9 +150,10 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
 
         # Run the command
         if resultsFile != None:
-            status = runcmd(executeCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
+            status = runcmd(executeCmd, cwd=os.getcwd() + '/' + outputDir, env=cmdEnv, stdout=resultsFile,
+                            stderr=subprocess.STDOUT)
         else:
-            status = runcmd(executeCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
+            status = runcmd(executeCmd, cwd=os.getcwd() + '/' + outputDir, env=cmdEnv, stderr=subprocess.STDOUT)
 
         # Check for error code
         if status.returncode == getvalgrindErrorCode():
