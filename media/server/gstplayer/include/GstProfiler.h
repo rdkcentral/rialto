@@ -34,6 +34,15 @@
 
 namespace firebolt::rialto::server
 {
+class GstProfilerFactory : public IGstProfilerFactory
+{
+public:
+    std::unique_ptr<IGstProfiler> createGstProfiler(GstElement *pipeline, const std::shared_ptr<IGstWrapper> &gstWrapper,
+                                                    const std::shared_ptr<IGlibWrapper> &glibWrapper) const override;
+
+    static std::weak_ptr<IGstProfilerFactory> m_factory;
+};
+
 class GstProfiler : public IGstProfiler
 {
 public:
@@ -47,8 +56,6 @@ public:
                 const std::shared_ptr<IGlibWrapper> &glibWrapper);
     ~GstProfiler() override;
 
-    void enable() override;
-    void disable() override;
     bool isEnabled() const override;
 
     std::optional<RecordId> createRecord(std::string stage) override;

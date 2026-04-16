@@ -42,8 +42,6 @@ class Profiler final : public IProfiler
 public:
     explicit Profiler(std::string module);
 
-    void enable() noexcept override;
-    void disable() noexcept override;
     bool isEnabled() const noexcept override;
 
     std::optional<RecordId> record(std::string stage) override;

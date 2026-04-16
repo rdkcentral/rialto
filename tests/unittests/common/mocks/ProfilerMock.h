@@ -35,9 +35,6 @@ public:
     ProfilerMock() = default;
     ~ProfilerMock() override = default;
 
-    MOCK_METHOD(void, enable, (), (noexcept, override));
-    MOCK_METHOD(void, disable, (), (noexcept, override));
-
     MOCK_METHOD(bool, isEnabled, (), (const, noexcept, override));
 
     MOCK_METHOD(std::optional<RecordId>, record, (std::string stage), (override));

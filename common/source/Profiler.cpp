@@ -55,16 +55,6 @@ Profiler::Profiler(std::string module)
 {
 }
 
-void Profiler::enable() noexcept
-{
-    m_enabled = true;
-}
-
-void Profiler::disable() noexcept
-{
-    m_enabled = false;
-}
-
 bool Profiler::isEnabled() const noexcept
 {
     return m_enabled;

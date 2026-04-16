@@ -28,6 +28,7 @@
 #include "IGstGenericPlayer.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstInitialiser.h"
+#include "IGstProfiler.h"
 #include "IGstProtectionMetadataHelperFactory.h"
 #include "IGstSrc.h"
 #include "IGstWrapper.h"
@@ -83,6 +84,7 @@ public:
      * @param[in] gstInitialiser               : The gst initialiser
      * @param[in] flushWatcher                 : The flush watcher
      * @param[in] gstSrcFactory                : The gstreamer rialto src factory.
+     * @param[in] gstProfilerFactory           : The gstreamer rialto profiler factory.
      * @param[in] timerFactory                 : The Timer factory
      * @param[in] taskFactory                  : The task factory
      * @param[in] workerThreadFactory          : The worker thread factory
@@ -95,6 +97,7 @@ public:
                      const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
                      const IGstInitialiser &gstInitialiser, std::unique_ptr<IFlushWatcher> &&flushWatcher,
                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+                     const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory,
                      std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
@@ -430,6 +433,11 @@ private:
      * @brief The rdk gstreamer utils wrapper object
      */
     std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
+
+    /**
+     * @brief Factory creating gst profilers
+     */
+    std::shared_ptr<IGstProfilerFactory> m_gstProfilerFactory;
 
     /**
      * @brief Thread for handling player tasks.

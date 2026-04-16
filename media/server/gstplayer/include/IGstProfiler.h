@@ -20,7 +20,11 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_PROFILER_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_PROFILER_H_
 
+#include "IGlibWrapper.h"
+#include "IGstWrapper.h"
+
 #include <cstdint>
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -29,6 +33,24 @@ using GstElement = _GstElement;
 
 namespace firebolt::rialto::server
 {
+class IGstProfiler;
+
+class IGstProfilerFactory
+{
+public:
+    using IGstWrapper = firebolt::rialto::wrappers::IGstWrapper;
+    using IGlibWrapper = firebolt::rialto::wrappers::IGlibWrapper;
+
+    IGstProfilerFactory() = default;
+    virtual ~IGstProfilerFactory() = default;
+
+    static std::shared_ptr<IGstProfilerFactory> getFactory();
+
+    virtual std::unique_ptr<IGstProfiler> createGstProfiler(GstElement *pipeline,
+                                                            const std::shared_ptr<IGstWrapper> &gstWrapper,
+                                                            const std::shared_ptr<IGlibWrapper> &glibWrapper) const = 0;
+};
+
 class IGstProfiler
 {
 public:
@@ -36,8 +58,6 @@ public:
 
     virtual ~IGstProfiler() = default;
 
-    virtual void enable() = 0;
-    virtual void disable() = 0;
     virtual bool isEnabled() const = 0;
 
     virtual std::optional<RecordId> createRecord(std::string stage) = 0;
