@@ -19,6 +19,7 @@
 
 #include "GstProfiler.h"
 #include "RialtoCommonLogging.h"
+#include "Utils.h"
 
 #include <algorithm>
 #include <array>
@@ -130,12 +131,24 @@ void GstProfiler::scheduleGstElementRecord(GstElement *element)
     if (!pad)
         return;
 
-    gchar *rawName = m_gstWrapper->gstElementGetName(element);
-    std::string elementName = rawName ? rawName : "<null>";
-    if (rawName)
-        m_glibWrapper->gFree(rawName);
+    std::string elementInfo;
+    if (isVideo(*m_gstWrapper, element))
+    {
+        elementInfo = "Video";
+    }
+    else if (isAudio(*m_gstWrapper, element))
+    {
+        elementInfo = "Audio";
+    }
+    else
+    {
+        gchar *rawName = m_gstWrapper->gstElementGetName(element);
+        elementInfo = rawName ? rawName : "<null>";
+        if (rawName)
+            m_glibWrapper->gFree(rawName);
+    }
 
-    auto *probeCtx = new ProbeCtx{this, stage.value(), processElementName(std::move(elementName))};
+    auto *probeCtx = new ProbeCtx{this, stage.value(), std::move(elementInfo)};
     m_gstWrapper->gstPadAddProbe(pad, GST_PAD_PROBE_TYPE_BUFFER, &GstProfiler::probeCb, probeCtx,
                                  &GstProfiler::probeCtxDestroy);
 
@@ -233,29 +246,6 @@ const gchar *GstProfiler::getElementClass(GstElement *element)
     }
 
     return NULL;
-}
-
-std::string GstProfiler::processElementName(std::string name)
-{
-    std::string lower = name;
-    std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c) { return std::tolower(c); });
-
-    if (lower.find("vid") != std::string::npos || lower.find("h264") != std::string::npos ||
-        lower.find("h265") != std::string::npos || lower.find("hevc") != std::string::npos ||
-        lower.find("avc") != std::string::npos || lower.find("av1") != std::string::npos ||
-        lower.find("vp9") != std::string::npos || lower.find("video") != std::string::npos)
-    {
-        return "Video";
-    }
-
-    if (lower.find("aud") != std::string::npos || lower.find("eac3") != std::string::npos ||
-        lower.find("ac3") != std::string::npos || lower.find("aac") != std::string::npos ||
-        lower.find("opus") != std::string::npos || lower.find("audio") != std::string::npos)
-    {
-        return "Audio";
-    }
-
-    return name;
 }
 
 std::optional<GstProfiler::PipelineMetrics> GstProfiler::calculateMetrics() const
