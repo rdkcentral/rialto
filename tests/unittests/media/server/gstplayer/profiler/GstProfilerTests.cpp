@@ -37,6 +37,7 @@ using namespace firebolt::rialto::wrappers;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::ReturnNull;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 
@@ -232,9 +233,20 @@ TEST_F(GstProfilerTests, ScheduleElementRecord)
     setProfilerEnabledEnv(true);
     createGstProfiler();
 
-    expectElementRecognizedAsSource(m_realElement);
+    auto *factory = reinterpret_cast<GstElementFactory *>(0x1);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement))
+        .WillOnce(Return(nullptr))
+        .WillOnce(Return(factory))
+        .WillOnce(Return(factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return("Source"));
+    EXPECT_CALL(*m_glibWrapperMock, gStrrstr(_, _)).WillOnce(Return(const_cast<gchar *>("Source")));
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(m_realElement, StrEq("src"))).WillOnce(Return(&m_pad));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillOnce(Return(false));
 
     gchar *rawName = g_strdup("videoDecoder");
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetName(m_realElement)).WillOnce(Return(rawName));
@@ -265,13 +277,15 @@ TEST_F(GstProfilerTests, ScheduleElementRecordCreatesProbeRecordWithVideoInfo)
     setProfilerEnabledEnv(true);
     createGstProfiler();
 
-    expectElementRecognizedAsSource(m_realElement);
+    auto *factory = reinterpret_cast<GstElementFactory *>(0x1);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement)).WillOnce(Return(nullptr)).WillOnce(Return(factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return("Source"));
+    EXPECT_CALL(*m_glibWrapperMock, gStrrstr(_, _)).WillOnce(Return(const_cast<gchar *>("Source")));
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(m_realElement, StrEq("src"))).WillOnce(Return(&m_pad));
-
-    gchar *rawName = g_strdup("videoDecoder");
-    EXPECT_CALL(*m_gstWrapperMock, gstElementGetName(m_realElement)).WillOnce(Return(rawName));
-    EXPECT_CALL(*m_glibWrapperMock, gFree(rawName)).WillOnce(Invoke([](gpointer ptr) { g_free(ptr); }));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(true));
 
     EXPECT_CALL(*m_gstWrapperMock, gstPadAddProbe(&m_pad, _, _, _, _))
         .WillOnce(Invoke(
@@ -303,6 +317,62 @@ TEST_F(GstProfilerTests, ScheduleElementRecordCreatesProbeRecordWithVideoInfo)
 }
 
 /**
+ * Test that scheduled probe falls back to raw element name when media type cannot be classified.
+ */
+TEST_F(GstProfilerTests, ScheduleElementRecordFallsBackToRawElementName)
+{
+    setProfilerEnabledEnv(true);
+    createGstProfiler();
+
+    auto *factory = reinterpret_cast<GstElementFactory *>(0x1);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement))
+        .WillOnce(Return(nullptr))
+        .WillOnce(Return(factory))
+        .WillOnce(Return(factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return("Source"));
+    EXPECT_CALL(*m_glibWrapperMock, gStrrstr(_, _)).WillOnce(Return(const_cast<gchar *>("Source")));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(m_realElement, StrEq("src"))).WillOnce(Return(&m_pad));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillOnce(Return(false));
+
+    gchar *rawName = g_strdup("custom-element");
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetName(m_realElement)).WillOnce(Return(rawName));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(rawName)).WillOnce(Invoke([](gpointer ptr) { g_free(ptr); }));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstPadAddProbe(&m_pad, _, _, _, _))
+        .WillOnce(Invoke(
+            [](GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
+               GDestroyNotify destroyData) -> gulong
+            {
+                GstBuffer *buffer = gst_buffer_new();
+                GstPadProbeInfo info{};
+                info.type = GST_PAD_PROBE_TYPE_BUFFER;
+                info.data = buffer;
+
+                EXPECT_EQ(callback(pad, &info, userData), GST_PAD_PROBE_REMOVE);
+
+                gst_buffer_unref(buffer);
+                if (destroyData)
+                    destroyData(userData);
+
+                return 1;
+            }));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pad));
+
+    m_gstProfiler->scheduleGstElementRecord(m_realElement);
+
+    const auto &records = m_gstProfiler->m_profiler->getRecords();
+    ASSERT_FALSE(records.empty());
+    EXPECT_EQ(records.back().stage, "Source FB Exit");
+    EXPECT_EQ(records.back().info, "custom-element");
+}
+
+/**
  * Test that scheduling record handles missing src pad.
  */
 TEST_F(GstProfilerTests, ScheduleElementRecordNoPad)
@@ -326,19 +396,6 @@ TEST_F(GstProfilerTests, DestroyAfterCreateWithPipeline)
     createGstProfiler(&m_pipeline);
 
     EXPECT_NO_THROW(m_gstProfiler.reset());
-}
-
-/**
- * Test that element names are normalized to video and audio buckets.
- */
-TEST_F(GstProfilerTests, ProcessElementNameNormalizesMediaTypes)
-{
-    setProfilerEnabledEnv(true);
-    createGstProfiler();
-
-    EXPECT_EQ(m_gstProfiler->processElementName("h264parse"), "Video");
-    EXPECT_EQ(m_gstProfiler->processElementName("audsrc"), "Audio");
-    EXPECT_EQ(m_gstProfiler->processElementName("custom-element"), "custom-element");
 }
 
 /**
