@@ -19,6 +19,7 @@
 
 #include "IProfiler.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <fstream>
 #include <gtest/gtest.h>
@@ -27,6 +28,18 @@
 #include <string>
 
 using namespace firebolt::rialto::common;
+
+namespace
+{
+const IProfiler::Record *findRecord(const std::vector<IProfiler::Record> &records, const std::string &stage,
+                                    const std::optional<std::string> &info = std::nullopt)
+{
+    const auto it = std::find_if(records.begin(), records.end(), [&](const auto &record)
+                                 { return record.stage == stage && (!info.has_value() || record.info == info.value()); });
+
+    return it != records.end() ? &(*it) : nullptr;
+}
+} // namespace
 
 class ProfilerTests : public ::testing::Test
 {
@@ -65,10 +78,10 @@ TEST_F(ProfilerTests, RecordAndFindByStage)
     const auto id = profiler->record("Stage1");
     ASSERT_TRUE(id.has_value());
 
-    const auto found = profiler->find("Stage1");
-    ASSERT_TRUE(found.has_value());
+    const auto *found = findRecord(profiler->getRecords(), "Stage1");
+    ASSERT_NE(found, nullptr);
 
-    EXPECT_EQ(found.value(), id.value());
+    EXPECT_EQ(found->id, id.value());
 }
 
 TEST_F(ProfilerTests, RecordAndFindByStageAndInfo)
@@ -76,11 +89,11 @@ TEST_F(ProfilerTests, RecordAndFindByStageAndInfo)
     const auto id = profiler->record("Stage1", "InfoA");
     ASSERT_TRUE(id.has_value());
 
-    const auto found = profiler->find("Stage1", "InfoA");
-    ASSERT_TRUE(found.has_value());
-    EXPECT_EQ(found.value(), id.value());
+    const auto *found = findRecord(profiler->getRecords(), "Stage1", "InfoA");
+    ASSERT_NE(found, nullptr);
+    EXPECT_EQ(found->id, id.value());
 
-    EXPECT_FALSE(profiler->find("Stage1", "InfoB").has_value());
+    EXPECT_EQ(findRecord(profiler->getRecords(), "Stage1", "InfoB"), nullptr);
 }
 
 TEST_F(ProfilerTests, GetRecordsReturnsRecordedEntries)
@@ -156,11 +169,11 @@ TEST_F(ProfilerTests, StartsDisabledWhenEnvFalse)
     EXPECT_FALSE(envProfiler->isEnabled());
 }
 
-TEST_F(ProfilerTests, FindByStageReturnsNulloptWhenMissing)
+TEST_F(ProfilerTests, GetRecordsDoesNotContainMissingStage)
 {
     ASSERT_TRUE(profiler->record("Stage1").has_value());
 
-    EXPECT_EQ(profiler->find("MissingStage"), std::nullopt);
+    EXPECT_EQ(findRecord(profiler->getRecords(), "MissingStage"), nullptr);
 }
 
 TEST_F(ProfilerTests, DumpReturnsFalseForInvalidPath)

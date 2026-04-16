@@ -40,9 +40,6 @@ public:
     MOCK_METHOD(std::optional<RecordId>, record, (std::string stage), (override));
     MOCK_METHOD(std::optional<RecordId>, record, (std::string stage, std::string info), (override));
 
-    MOCK_METHOD(std::optional<RecordId>, find, (std::string stage), (override));
-    MOCK_METHOD(std::optional<RecordId>, find, (std::string stage, std::string info), (override));
-
     MOCK_METHOD(void, log, (RecordId id), (override));
 
     MOCK_METHOD(bool, dump, (const std::string &path), (const, override));

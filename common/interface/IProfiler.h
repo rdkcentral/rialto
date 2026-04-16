@@ -107,25 +107,6 @@ public:
     virtual std::optional<RecordId> record(std::string stage, std::string info) = 0;
 
     /**
-     * @brief Finds an existing record for given stage.
-     *
-     * @param[in] stage : Stage name of the record to be found
-     *
-     * @retval Record identifier for found record or std::nullopt.
-     */
-    virtual std::optional<RecordId> find(std::string stage) = 0;
-
-    /**
-     * @brief Finds an existing record for given stage and info.
-     *
-     * @param[in] stage : Stage name of the record to be found
-     * @param[in] info  : Additional information of the record to be found
-     *
-     * @retval Record identifier for found record or std::nullopt.
-     */
-    virtual std::optional<RecordId> find(std::string stage, std::string info) = 0;
-
-    /**
      * @brief Logs a record for given identifier.
      *
      * @param[in] id : Record identifier
