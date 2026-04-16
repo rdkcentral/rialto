@@ -100,37 +100,6 @@ std::optional<Profiler::RecordId> Profiler::record(std::string stage, std::strin
     return id;
 }
 
-std::optional<Profiler::RecordId> Profiler::find(std::string stage)
-{
-    if (!m_enabled)
-        return std::nullopt;
-
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    const auto it =
-        std::find_if(m_records.begin(), m_records.end(), [&](const auto &record) { return record.stage == stage; });
-
-    if (it != m_records.end())
-        return it->id;
-
-    return std::nullopt;
-}
-
-std::optional<Profiler::RecordId> Profiler::find(std::string stage, std::string info)
-{
-    if (!m_enabled)
-        return std::nullopt;
-
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    const auto it = std::find_if(m_records.begin(), m_records.end(),
-                                 [&](const auto &record) { return record.stage == stage && record.info == info; });
-    if (it != m_records.end())
-        return it->id;
-
-    return std::nullopt;
-}
-
 void Profiler::log(const RecordId id)
 {
     if (!m_enabled)

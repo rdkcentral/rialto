@@ -47,9 +47,6 @@ public:
     std::optional<RecordId> record(std::string stage) override;
     std::optional<RecordId> record(std::string stage, std::string info) override;
 
-    std::optional<RecordId> find(std::string stage) override;
-    std::optional<RecordId> find(std::string stage, std::string info) override;
-
     void log(const RecordId id) override;
 
     bool dump(const std::string &path) const override;
