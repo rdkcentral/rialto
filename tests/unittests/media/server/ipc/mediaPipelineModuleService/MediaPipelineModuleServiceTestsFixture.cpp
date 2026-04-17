@@ -491,6 +491,24 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetPosition(
     EXPECT_CALL(m_mediaPipelineServiceMock, getPosition(kHardcodedSessionId, _)).WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetDuration()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getDuration(kHardcodedSessionId, _))
+        .WillOnce(Invoke(
+            [&](int, std::int64_t &pos)
+            {
+                pos = kDuration;
+                return true;
+            }));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetDuration()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getDuration(kHardcodedSessionId, _)).WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetImmediateOutput()
 {
     expectRequestSuccess();
@@ -1102,6 +1120,28 @@ void MediaPipelineModuleServiceTests::sendGetPositionRequestAndReceiveResponseWi
     request.set_session_id(kHardcodedSessionId);
 
     m_service->getPosition(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendGetDurationRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetDurationRequest request;
+    firebolt::rialto::GetDurationResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getDuration(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(response.duration(), kDuration);
+}
+
+void MediaPipelineModuleServiceTests::sendGetDurationRequestAndReceiveResponseWithoutDurationMatch()
+{
+    firebolt::rialto::GetDurationRequest request;
+    firebolt::rialto::GetDurationResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getDuration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendSetImmediateOutputRequestAndReceiveResponse()

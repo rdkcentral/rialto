@@ -65,6 +65,7 @@ public:
     bool setPlaybackRate(int sessionId, double rate) override;
     bool setPosition(int sessionId, std::int64_t position) override;
     bool getPosition(int sessionId, std::int64_t &position) override;
+    bool getDuration(int sessionId, std::int64_t &duration) override;
     bool setImmediateOutput(int sessionId, int32_t sourceId, bool immediateOutput) override;
     bool getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput) override;
     bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;

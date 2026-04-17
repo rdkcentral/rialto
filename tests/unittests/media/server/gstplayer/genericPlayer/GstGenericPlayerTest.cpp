@@ -1126,3 +1126,25 @@ TEST_F(GstGenericPlayerTest, shouldSwitchSource)
 
     m_sut->switchSource(source);
 }
+
+TEST_F(GstGenericPlayerTest, shouldReturnInvalidDurationWhenQueryFails)
+{
+    int64_t targetDuration{};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryDuration(_, GST_FORMAT_TIME, _)).WillOnce(Return(FALSE));
+    EXPECT_FALSE(m_sut->getDuration(targetDuration));
+}
+
+TEST_F(GstGenericPlayerTest, shouldReturnDuration)
+{
+    constexpr gint64 kExpectedDuration{123};
+    int64_t targetDuration{};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryDuration(_, GST_FORMAT_TIME, _))
+        .WillOnce(Invoke(
+            [&](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = kExpectedDuration;
+                return TRUE;
+            }));
+    EXPECT_TRUE(m_sut->getDuration(targetDuration));
+    EXPECT_EQ(kExpectedDuration, targetDuration);
+}

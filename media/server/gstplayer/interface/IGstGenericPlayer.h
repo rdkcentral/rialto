@@ -187,6 +187,15 @@ public:
     virtual bool getPosition(std::int64_t &position) = 0;
 
     /**
+     * @brief Get the playback duration in nanoseconds.
+     *
+     * @param[out] duration : The playback duration in nanoseconds.
+     *
+     * @retval True on success
+     */
+    virtual bool getDuration(std::int64_t &duration) = 0;
+
+    /**
      * @brief Sets the "Immediate Output" property for this source.
      *
      * @param[in] mediaSourceType : The media source type

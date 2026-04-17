@@ -118,6 +118,7 @@ public:
     void setEos(const firebolt::rialto::MediaSourceType &type) override;
     void setPlaybackRate(double rate) override;
     bool getPosition(std::int64_t &position) override;
+    bool getDuration(std::int64_t &duration) override;
     bool setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput) override;
     bool getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutput) override;
     bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) override;

@@ -476,6 +476,20 @@ bool MediaPipelineServerInternal::getPosition(int64_t &position)
     return m_gstPlayer->getPosition(position);
 }
 
+bool MediaPipelineServerInternal::getDuration(int64_t &duration)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    std::shared_lock lock{m_getPropertyMutex};
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get duration - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->getDuration(duration);
+}
+
 bool MediaPipelineServerInternal::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -1353,11 +1367,6 @@ bool MediaPipelineServerInternal::switchSourceInternal(const std::unique_ptr<Med
     }
     m_gstPlayer->switchSource(source);
     return true;
-}
-
-bool MediaPipelineServerInternal::getDuration(int64_t &duration)
-{
-    return false;
 }
 
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,

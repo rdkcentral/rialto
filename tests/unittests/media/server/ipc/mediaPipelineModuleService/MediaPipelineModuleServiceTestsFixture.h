@@ -74,6 +74,8 @@ public:
     void mediaPipelineServiceWillFailToSetPlaybackRate();
     void mediaPipelineServiceWillGetPosition();
     void mediaPipelineServiceWillFailToGetPosition();
+    void mediaPipelineServiceWillGetDuration();
+    void mediaPipelineServiceWillFailToGetDuration();
     void mediaPipelineServiceWillSetImmediateOutput();
     void mediaPipelineServiceWillFailToSetImmediateOutput();
     void mediaPipelineServiceWillGetImmediateOutput();
@@ -150,6 +152,8 @@ public:
     void sendSetPositionRequestAndReceiveResponse();
     void sendGetPositionRequestAndReceiveResponse();
     void sendGetPositionRequestAndReceiveResponseWithoutPositionMatch();
+    void sendGetDurationRequestAndReceiveResponse();
+    void sendGetDurationRequestAndReceiveResponseWithoutDurationMatch();
     void sendSetImmediateOutputRequestAndReceiveResponse();
     void sendSetImmediateOutputRequestAndReceiveFail();
     void sendGetImmediateOutputRequestAndReceiveResponse();

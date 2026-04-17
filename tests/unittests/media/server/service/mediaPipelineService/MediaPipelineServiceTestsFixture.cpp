@@ -222,6 +222,22 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToGetPosition()
     EXPECT_CALL(m_mediaPipelineMock, getPosition(_)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillGetDuration()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getDuration(_))
+        .WillOnce(Invoke(
+            [&](int64_t &pos)
+            {
+                pos = kDuration;
+                return true;
+            }));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetDuration()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getDuration(_)).WillOnce(Return(false));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillSetImmediateOutput()
 {
     EXPECT_CALL(m_mediaPipelineMock, setImmediateOutput(_, _)).WillOnce(Return(true));
@@ -705,6 +721,19 @@ void MediaPipelineServiceTests::getPositionShouldFail()
 {
     std::int64_t targetPosition{};
     EXPECT_FALSE(m_sut->getPosition(kSessionId, targetPosition));
+}
+
+void MediaPipelineServiceTests::getDurationShouldSucceed()
+{
+    std::int64_t targetDuration{};
+    EXPECT_TRUE(m_sut->getDuration(kSessionId, targetDuration));
+    EXPECT_EQ(targetDuration, kDuration);
+}
+
+void MediaPipelineServiceTests::getDurationShouldFail()
+{
+    std::int64_t targetDuration{};
+    EXPECT_FALSE(m_sut->getDuration(kSessionId, targetDuration));
 }
 
 void MediaPipelineServiceTests::getStatsShouldSucceed()
