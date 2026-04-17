@@ -25,8 +25,10 @@
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "IFactoryAccessor.h"
+#include "MediaPipelineStructureMatchers.h"
 #include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
+#include "YamlCppWrapperMock.h"
 
 #include <gtest/gtest.h>
 
@@ -49,6 +51,8 @@ public:
           m_glibWrapperFactoryMock{std::make_shared<StrictMock<GlibWrapperFactoryMock>>()},
           m_rdkGstreamerUtilsWrapperMock{std::make_shared<StrictMock<RdkGstreamerUtilsWrapperMock>>()},
           m_rdkGstreamerUtilsWrapperFactoryMock{std::make_shared<StrictMock<RdkGstreamerUtilsWrapperFactoryMock>>()},
+          m_yamlCppWrapperMock{std::make_shared<StrictMock<YamlCppWrapperMock>>()},
+          m_yamlCppWrapperFactoryMock{std::make_shared<StrictMock<YamlCppWrapperFactoryMock>>()},
           m_gstCapabilitiesFactoryMock{std::make_unique<StrictMock<GstCapabilitiesFactoryMock>>()},
           m_gstCapabilities{std::make_unique<StrictMock<GstCapabilitiesMock>>()},
           m_gstCapabilitiesMock{static_cast<StrictMock<GstCapabilitiesMock> *>(m_gstCapabilities.get())}
@@ -56,12 +60,14 @@ public:
         IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock;
         IFactoryAccessor::instance().glibWrapperFactory() = m_glibWrapperFactoryMock;
         IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = m_rdkGstreamerUtilsWrapperFactoryMock;
+        IFactoryAccessor::instance().yamlCppWrapperFactory() = m_yamlCppWrapperFactoryMock;
     }
     ~MediaPipelineCapabilitiesTest() override
     {
         IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
         IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
         IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = nullptr;
+        IFactoryAccessor::instance().yamlCppWrapperFactory() = nullptr;
     }
 
     void createMediaPipelineCapabilities()
@@ -87,6 +93,8 @@ protected:
     std::shared_ptr<StrictMock<GlibWrapperFactoryMock>> m_glibWrapperFactoryMock;
     std::shared_ptr<StrictMock<RdkGstreamerUtilsWrapperMock>> m_rdkGstreamerUtilsWrapperMock;
     std::shared_ptr<StrictMock<RdkGstreamerUtilsWrapperFactoryMock>> m_rdkGstreamerUtilsWrapperFactoryMock;
+    std::shared_ptr<StrictMock<YamlCppWrapperMock>> m_yamlCppWrapperMock;
+    std::shared_ptr<StrictMock<YamlCppWrapperFactoryMock>> m_yamlCppWrapperFactoryMock;
     std::shared_ptr<StrictMock<GstCapabilitiesFactoryMock>> m_gstCapabilitiesFactoryMock;
     std::unique_ptr<StrictMock<GstCapabilitiesMock>> m_gstCapabilities;
     StrictMock<GstCapabilitiesMock> *m_gstCapabilitiesMock;
@@ -107,10 +115,15 @@ TEST_F(MediaPipelineCapabilitiesTest, FactoryCreatesObject)
     EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
     EXPECT_CALL(*m_rdkGstreamerUtilsWrapperFactoryMock, createRdkGstreamerUtilsWrapper())
         .WillOnce(Return(m_rdkGstreamerUtilsWrapperMock));
+    EXPECT_CALL(*m_yamlCppWrapperFactoryMock, createYamlCppWrapper()).WillOnce(Return(m_yamlCppWrapperMock));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_yamlCppWrapperMock, getAudioDecoderCapabilities(_))
+        .WillOnce(Return(DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
+    EXPECT_CALL(*m_yamlCppWrapperMock, getVideoDecoderCapabilities(_))
+        .WillOnce(Return(DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
     std::shared_ptr<firebolt::rialto::IMediaPipelineCapabilitiesFactory> factory =
         firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory();
     EXPECT_NE(factory, nullptr);
@@ -158,4 +171,24 @@ TEST_F(MediaPipelineCapabilitiesTest, isVideoMaster)
 
     createMediaPipelineCapabilities();
     EXPECT_TRUE(m_sut->isVideoMaster(isMaster));
+}
+
+TEST_F(MediaPipelineCapabilitiesTest, getSupportedAudioCapabilities)
+{
+    AudioDecoderCapabilities kCapabilities{"1.0", "0.1.0", {}};
+
+    EXPECT_CALL(*m_gstCapabilities, getSupportedAudioCapabilities()).WillOnce(Return(kCapabilities));
+
+    createMediaPipelineCapabilities();
+    EXPECT_THAT(m_sut->getSupportedAudioCapabilities(), decoderCapabilitiesMatcher(kCapabilities));
+}
+
+TEST_F(MediaPipelineCapabilitiesTest, getSupportedVideoCapabilities)
+{
+    VideoDecoderCapabilities kCapabilities{"1.0", "0.1.0", {}};
+
+    EXPECT_CALL(*m_gstCapabilities, getSupportedVideoCapabilities()).WillOnce(Return(kCapabilities));
+
+    createMediaPipelineCapabilities();
+    EXPECT_THAT(m_sut->getSupportedVideoCapabilities(), decoderCapabilitiesMatcher(kCapabilities));
 }

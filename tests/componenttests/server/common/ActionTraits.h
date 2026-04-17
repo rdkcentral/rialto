@@ -588,6 +588,22 @@ struct IsVideoMaster
     static constexpr auto m_kFunction{&Stub::isVideoMaster};
 };
 
+struct GetSupportedAudioCapabilities
+{
+    using RequestType = ::firebolt::rialto::GetSupportedAudioCapabilitiesRequest;
+    using ResponseType = ::firebolt::rialto::GetSupportedAudioCapabilitiesResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getSupportedAudioCapabilities};
+};
+
+struct GetSupportedVideoCapabilities
+{
+    using RequestType = ::firebolt::rialto::GetSupportedVideoCapabilitiesRequest;
+    using ResponseType = ::firebolt::rialto::GetSupportedVideoCapabilitiesResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getSupportedVideoCapabilities};
+};
+
 // web audio player module
 struct CreateWebAudioPlayer
 {

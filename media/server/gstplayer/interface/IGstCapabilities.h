@@ -20,7 +20,9 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_CAPABILITIES_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_CAPABILITIES_H_
 
+#include <AudioDecoderCapabilities.h>
 #include <MediaCommon.h>
+#include <VideoDecoderCapabilities.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -98,6 +100,20 @@ public:
      * @retval true on success false otherwise
      */
     virtual bool isVideoMaster(bool &isVideoMaster) = 0;
+
+    /**
+     * @brief Gets the supported audio capabilities.
+     *
+     * @retval The supported audio capabilities.
+     */
+    virtual AudioDecoderCapabilities getSupportedAudioCapabilities() = 0;
+
+    /**
+     * @brief Gets the supported video capabilities.
+     *
+     * @retval The supported video capabilities.
+     */
+    virtual VideoDecoderCapabilities getSupportedVideoCapabilities() = 0;
 };
 
 }; // namespace firebolt::rialto::server

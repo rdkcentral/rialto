@@ -91,7 +91,17 @@ public:
  *   Expect that getSupportedProperties is propagated to server.
  *   Api call returns with failure and the returned list should be empty
  *
- * Step 9: Destroy MediaPipelineCapabilities
+ * Step 9: Get supported audio capabilities
+ *   getSupportedAudioCapabilities.
+ *   Expect that getSupportedAudioCapabilities is propagated to server.
+ *   Api call returns with success
+ *
+ * Step 10: Get supported Video capabilities
+ *   getSupportedVideoCapabilities.
+ *   Expect that getSupportedVideoCapabilities is propagated to server.
+ *   Api call returns with success
+ *
+ * Step 11: Destroy MediaPipelineCapabilities
  *
  * Test Teardown:
  *  Server is terminated.
@@ -135,7 +145,15 @@ TEST_F(MediaPipelineCapabilitiesTest, checkSupportedMimeTypesAndProperties)
     MediaPipelineTestMethods::shouldGetSupportedPropertiesFailure();
     MediaPipelineTestMethods::getSupportedPropertiesFailure();
 
-    // Step 9: Destroy MediaPipelineCapabilities
+    // Step 9: Get supported audio capabilities
+    MediaPipelineTestMethods::shouldGetSupportedAudioCapabilities();
+    MediaPipelineTestMethods::getSupportedAudioCapabilities();
+
+    // Step 10: Get supported video capabilities
+    MediaPipelineTestMethods::shouldGetSupportedVideoCapabilities();
+    MediaPipelineTestMethods::getSupportedVideoCapabilities();
+
+    // Step 11: Destroy MediaPipelineCapabilities
     MediaPipelineTestMethods::destroyMediaPipelineCapabilitiesObject();
 }
 } // namespace firebolt::rialto::client::ct

@@ -23,8 +23,10 @@
 #include <cstdint>
 #include <string>
 
+#include "AudioDecoderCapabilities.h"
 #include "MediaCommon.h"
 #include "RialtoLogging.h"
+#include "VideoDecoderCapabilities.h"
 
 namespace firebolt::rialto::server::ct
 {
@@ -54,6 +56,8 @@ constexpr double kRate{1.0};
 constexpr uint64_t kRenderedFrames{54321};
 constexpr uint64_t kDroppedFrames{76};
 constexpr uint64_t kStopPosition{234234};
+const firebolt::rialto::AudioDecoderCapabilities kAudioCapabilities{"1.0", "1.1", {}};
+const firebolt::rialto::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_

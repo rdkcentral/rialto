@@ -22,6 +22,7 @@
 #include "MediaPipelineCapabilities.h"
 #include "MediaPipelineCapabilitiesIpcFactoryMock.h"
 #include "MediaPipelineCapabilitiesIpcMock.h"
+#include "MediaPipelineStructureMatchers.h"
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
@@ -109,6 +110,24 @@ TEST_F(MediaPipelineCapabilitiesTest, isVideoMaster)
 
     EXPECT_CALL(*m_mediaPipelineCapabilitiesIpcMock, isVideoMaster(isMaster)).WillOnce(Return(true));
     EXPECT_TRUE(m_sut->isVideoMaster(isMaster));
+}
+
+TEST_F(MediaPipelineCapabilitiesTest, AudioDecoderCapabilities)
+{
+    const AudioDecoderCapabilities kExpectedCapabilities{"1.0", "2.0", {}};
+    createMediaPipelineCapabilitiesIpcSucceeds();
+
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesIpcMock, getSupportedAudioCapabilities()).WillOnce(Return(kExpectedCapabilities));
+    EXPECT_THAT(m_sut->getSupportedAudioCapabilities(), decoderCapabilitiesMatcher(kExpectedCapabilities));
+}
+
+TEST_F(MediaPipelineCapabilitiesTest, VideoDecoderCapabilities)
+{
+    const VideoDecoderCapabilities kExpectedCapabilities{"1.0", "2.0", {}};
+    createMediaPipelineCapabilitiesIpcSucceeds();
+
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesIpcMock, getSupportedVideoCapabilities()).WillOnce(Return(kExpectedCapabilities));
+    EXPECT_THAT(m_sut->getSupportedVideoCapabilities(), decoderCapabilitiesMatcher(kExpectedCapabilities));
 }
 
 /**

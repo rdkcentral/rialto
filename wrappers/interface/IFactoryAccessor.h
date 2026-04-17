@@ -28,6 +28,7 @@
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITextTrackPluginWrapper.h"
 #include "IThunderWrapper.h"
+#include "IYamlCppWrapper.h"
 #include <memory>
 
 namespace firebolt::rialto::wrappers
@@ -109,6 +110,13 @@ public:
      * @retval non-const (by purpose) reference to the factory instance ptr
      */
     virtual std::shared_ptr<IThunderWrapperFactory> &thunderWrapperFactory() = 0;
+
+    /**
+     * @brief Access the IYamlCppWrapperFactory instance.
+     *
+     * @retval non-const (by purpose) reference to the factory instance ptr
+     */
+    virtual std::shared_ptr<IYamlCppWrapperFactory> &yamlCppWrapperFactory() = 0;
 
 protected:
     /**

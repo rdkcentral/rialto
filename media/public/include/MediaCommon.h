@@ -483,6 +483,17 @@ enum class LimitedDurationLicense
     ENABLED,       /**< The license has a limited duration */
     DISABLED       /**< The license does not have a limited duration */
 };
+
+/**
+ * @brief Status of the decoder capabilities config file read operation.
+ */
+enum class DecoderCapabilitiesStatus
+{
+    OK,
+    CONFIG_NOT_FOUND,
+    SCHEMA_VALIDATION_FAILED,
+    INTERNAL_ERROR
+};
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_

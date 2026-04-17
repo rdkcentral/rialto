@@ -44,6 +44,7 @@
 #include "TextTrackWrapperMock.h"
 #include "ThunderWrapperFactoryMock.h"
 #include "ThunderWrapperMock.h"
+#include "YamlCppWrapperMock.h"
 
 namespace firebolt::rialto::server::ct
 {
@@ -119,6 +120,10 @@ protected:
         std::make_shared<testing::StrictMock<wrappers::ThunderWrapperFactoryMock>>()};
     std::shared_ptr<testing::StrictMock<wrappers::ThunderWrapperMock>> m_thunderWrapperMock{
         std::make_shared<testing::StrictMock<wrappers::ThunderWrapperMock>>()};
+    std::shared_ptr<testing::StrictMock<wrappers::YamlCppWrapperFactoryMock>> m_yamlCppWrapperFactoryMock{
+        std::make_shared<testing::StrictMock<wrappers::YamlCppWrapperFactoryMock>>()};
+    std::shared_ptr<testing::StrictMock<wrappers::YamlCppWrapperMock>> m_yamlCppWrapperMock{
+        std::make_shared<testing::StrictMock<wrappers::YamlCppWrapperMock>>()};
 
     // GstCapabilities data
     GstCaps m_audioCaps;

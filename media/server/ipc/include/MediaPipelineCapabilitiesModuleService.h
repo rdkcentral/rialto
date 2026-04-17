@@ -62,6 +62,14 @@ public:
     void isVideoMaster(::google::protobuf::RpcController *controller,
                        const ::firebolt::rialto::IsVideoMasterRequest *request,
                        ::firebolt::rialto::IsVideoMasterResponse *response, ::google::protobuf::Closure *done) override;
+    void getSupportedAudioCapabilities(::google::protobuf::RpcController *controller,
+                                       const ::firebolt::rialto::GetSupportedAudioCapabilitiesRequest *request,
+                                       ::firebolt::rialto::GetSupportedAudioCapabilitiesResponse *response,
+                                       ::google::protobuf::Closure *done) override;
+    void getSupportedVideoCapabilities(::google::protobuf::RpcController *controller,
+                                       const ::firebolt::rialto::GetSupportedVideoCapabilitiesRequest *request,
+                                       ::firebolt::rialto::GetSupportedVideoCapabilitiesResponse *response,
+                                       ::google::protobuf::Closure *done) override;
 
 private:
     service::IMediaPipelineService &m_mediaPipelineService;

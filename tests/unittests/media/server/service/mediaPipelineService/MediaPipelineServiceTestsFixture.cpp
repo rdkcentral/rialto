@@ -18,8 +18,11 @@
  */
 
 #include "MediaPipelineServiceTestsFixture.h"
+#include "AudioDecoderCapabilities.h"
 #include "HeartbeatHandlerMock.h"
 #include "MediaCommon.h"
+#include "MediaPipelineStructureMatchers.h"
+#include "VideoDecoderCapabilities.h"
 
 #include <string>
 #include <utility>
@@ -69,6 +72,8 @@ const std::string kTextTrackIdentifier{"TextTrackIdentifier"};
 constexpr uint32_t kBufferingLimit{4324};
 constexpr bool kUseBuffering{true};
 constexpr uint64_t kStopPosition{23412};
+const firebolt::rialto::AudioDecoderCapabilities kAudioDecoderCapabilities{"1.0", "2.0", {}};
+const firebolt::rialto::VideoDecoderCapabilities kVideoDecoderCapabilities{"3.0", "4.0", {}};
 } // namespace
 
 namespace firebolt::rialto
@@ -494,6 +499,16 @@ void MediaPipelineServiceTests::mediaPipelineWillCheckIfVideoIsMaster()
 void MediaPipelineServiceTests::mediaPipelineWillFailToCheckIfVideoIsMaster()
 {
     EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isVideoMaster(_)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetAudioDecoderCapabilities()
+{
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, getSupportedAudioCapabilities()).WillOnce(Return(kAudioDecoderCapabilities));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetVideoDecoderCapabilities()
+{
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, getSupportedVideoCapabilities()).WillOnce(Return(kVideoDecoderCapabilities));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillPing()
@@ -1017,6 +1032,16 @@ void MediaPipelineServiceTests::isVideoMasterShouldFail()
 {
     bool isMaster{false};
     EXPECT_FALSE(m_sut->isVideoMaster(isMaster));
+}
+
+void MediaPipelineServiceTests::getAudioDecoderCapabilitiesShouldSucceed()
+{
+    EXPECT_THAT(m_sut->getSupportedAudioCapabilities(), decoderCapabilitiesMatcher(kAudioDecoderCapabilities));
+}
+
+void MediaPipelineServiceTests::getVideoDecoderCapabilitiesShouldSucceed()
+{
+    EXPECT_THAT(m_sut->getSupportedVideoCapabilities(), decoderCapabilitiesMatcher(kVideoDecoderCapabilities));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()

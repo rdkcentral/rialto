@@ -87,6 +87,391 @@ message GetSupportedPropertiesResponse {
   repeated string supported_properties = 1;
 }
 
+/**
+ * @fn AudioDecoderCapabilities getSupportedAudioCapabilities()
+ * @brief Gets the supported audio capabilities.
+ *
+ * @returns    audio_decoder_capabilities The supported audio capabilities.
+ */
+message GetSupportedAudioCapabilitiesRequest {
+}
+message GetSupportedAudioCapabilitiesResponse {
+  enum AudioCodec {
+    AUDIO_CODEC_PCM = 0;
+    AUDIO_CODEC_AAC = 1;
+    AUDIO_CODEC_MPEG_AUDIO = 2;
+    AUDIO_CODEC_MP3 = 3;
+    AUDIO_CODEC_ALAC = 4;
+    AUDIO_CODEC_SBC = 5;
+    AUDIO_CODEC_DOLBY_AC3 = 6;
+    AUDIO_CODEC_DOLBY_AC4 = 7;
+    AUDIO_CODEC_DOLBY_MAT = 8;
+    AUDIO_CODEC_DOLBY_TRUEHD = 9;
+    AUDIO_CODEC_FLAC = 10;
+    AUDIO_CODEC_VORBIS = 11;
+    AUDIO_CODEC_OPUS = 12;
+    AUDIO_CODEC_WMA = 13;
+    AUDIO_CODEC_REALAUDIO = 14;
+    AUDIO_CODEC_USAC = 15;
+    AUDIO_CODEC_DTS = 16;
+    AUDIO_CODEC_AVS = 17;
+  }
+
+  enum AacProfile {
+    AAC_PROFILE_LC = 0;
+    AAC_PROFILE_HE_V1 = 1;
+    AAC_PROFILE_HE_V2 = 2;
+    AAC_PROFILE_ELD = 3;
+    AAC_PROFILE_X_HE = 4;
+  }
+
+  enum DolbyAc3Profile {
+    DOLBY_AC3_PROFILE_STANDARD = 0;
+    DOLBY_AC3_PROFILE_PLUS = 1;
+    DOLBY_AC3_PROFILE_PLUS_JOC = 2;
+  }
+
+  enum DolbyMatProfile {
+    DOLBY_MAT_PROFILE_V1 = 0;
+    DOLBY_MAT_PROFILE_V2 = 1;
+  }
+
+  enum WmaProfile {
+    WMA_PROFILE_STANDARD = 0;
+    WMA_PROFILE_PRO = 1;
+    WMA_PROFILE_LOSSLESS = 2;
+  }
+
+  enum RealAudioProfile {
+    REALAUDIO_PROFILE_RA8 = 0;
+    REALAUDIO_PROFILE_RA10 = 1;
+  }
+
+  enum UsacProfile {
+    USAC_PROFILE_BASELINE = 0;
+    USAC_PROFILE_EXTENDED_HE_AAC = 1;
+  }
+
+  enum DtsProfile {
+    DTS_PROFILE_CORE = 0;
+    DTS_PROFILE_HD_HRA = 1;
+    DTS_PROFILE_HD_MA = 2;
+  }
+
+  enum AvsProfile {
+    AVS_PROFILE_AVS1_PART2 = 0;
+    AVS_PROFILE_AVS2 = 1;
+    AVS_PROFILE_AVS3 = 2;
+  }
+
+  message PcmCapability {
+    optional uint64 max_bitrate_in_bps = 1;
+    optional uint32 max_channels = 2;
+    optional uint32 max_sample_rate_in_hz = 3;
+    optional uint32 max_bit_depth = 4;
+  }
+
+  message AacCapability {
+    repeated AacProfile profiles = 1;
+    optional uint64 max_bitrate_in_bps = 2;
+    optional uint32 max_channels = 3;
+    optional uint32 max_sample_rate_in_hz = 4;
+    optional uint32 max_bit_depth = 5;
+  }
+
+  message MpegAudioCapability {
+    optional uint64 max_bitrate_in_bps = 1;
+    optional uint32 max_channels = 2;
+    optional uint32 max_sample_rate_in_hz = 3;
+    optional uint32 max_bit_depth = 4;
+  }
+
+  message Mp3Capability {
+    optional uint64 max_bitrate_in_bps = 1;
+    optional uint32 max_channels = 2;
+    optional uint32 max_sample_rate_in_hz = 3;
+    optional uint32 max_bit_depth = 4;
+  }
+
+  message AlacCapability {
+    optional uint64 max_bitrate_in_bps = 1;
+    optional uint32 max_channels = 2;
+    optional uint32 max_sample_rate_in_hz = 3;
+    optional uint32 max_bit_depth = 4;
+  }
+
+  message SbcCapability {
+    optional uint64 max_bitrate_in_bps = 1;
+    optional uint32 max_channels = 2;
+    optional uint32 max_sample_rate_in_hz = 3;
+    optional uint32 max_bit_depth = 4;
+  }
+
+  message DolbyAc3Capability {
+    repeated DolbyAc3Profile profiles = 1;
+    optional uint64 max_bitrate_in_bps = 2;
+    optional uint32 max_channels = 3;
+    optional uint32 max_sample_rate_in_hz = 4;
+    optional uint32 max_bit_depth = 5;
+  }
+
+  message DolbyAc4Capability {
+    optional uint64 max_bitrate_in_bps = 1;
+    optional uint32 max_channels = 2;
+    optional uint32 max_sample_rate_in_hz = 3;
+    optional uint32 max_bit_depth = 4;
+  }
+
+  message DolbyMatCapability {
+    repeated DolbyMatProfile profiles = 1;
+    optional uint64 max_bitrate_in_bps = 2;
+    optional uint32 max_channels = 3;
+    optional uint32 max_sample_rate_in_hz = 4;
+    optional uint32 max_bit_depth = 5;
+  }
+
+  message DolbyTruehdCapability {
+    optional uint64 max_bitrate_in_bps = 1;
+    optional uint32 max_channels = 2;
+    optional uint32 max_sample_rate_in_hz = 3;
+    optional uint32 max_bit_depth = 4;
+  }
+
+  message FlacCapability {
+    optional uint64 max_bitrate_in_bps = 1;
+    optional uint32 max_channels = 2;
+    optional uint32 max_sample_rate_in_hz = 3;
+    optional uint32 max_bit_depth = 4;
+  }
+
+  message VorbisCapability {
+    optional uint64 max_bitrate_in_bps = 1;
+    optional uint32 max_channels = 2;
+    optional uint32 max_sample_rate_in_hz = 3;
+    optional uint32 max_bit_depth = 4;
+  }
+
+  message OpusCapability {
+    optional uint64 max_bitrate_in_bps = 1;
+    optional uint32 max_channels = 2;
+    optional uint32 max_sample_rate_in_hz = 3;
+    optional uint32 max_bit_depth = 4;
+  }
+
+  message WmaCapability {
+    repeated WmaProfile profiles = 1;
+    optional uint64 max_bitrate_in_bps = 2;
+    optional uint32 max_channels = 3;
+    optional uint32 max_sample_rate_in_hz = 4;
+    optional uint32 max_bit_depth = 5;
+  }
+
+  message RealAudioCapability {
+    repeated RealAudioProfile profiles = 1;
+    optional uint64 max_bitrate_in_bps = 2;
+    optional uint32 max_channels = 3;
+    optional uint32 max_sample_rate_in_hz = 4;
+    optional uint32 max_bit_depth = 5;
+  }
+
+  message UsacCapability {
+    repeated UsacProfile profiles = 1;
+    optional uint64 max_bitrate_in_bps = 2;
+    optional uint32 max_channels = 3;
+    optional uint32 max_sample_rate_in_hz = 4;
+    optional uint32 max_bit_depth = 5;
+  }
+
+  message DtsCapability {
+    repeated DtsProfile profiles = 1;
+    optional uint64 max_bitrate_in_bps = 2;
+    optional uint32 max_channels = 3;
+    optional uint32 max_sample_rate_in_hz = 4;
+    optional uint32 max_bit_depth = 5;
+  }
+
+  message AvsCapability {
+    repeated AvsProfile profiles = 1;
+    optional uint64 max_bitrate_in_bps = 2;
+    optional uint32 max_channels = 3;
+    optional uint32 max_sample_rate_in_hz = 4;
+    optional uint32 max_bit_depth = 5;
+  }
+
+  message AudioDecoderCapability {
+    optional PcmCapability pcm = 1;
+    optional AacCapability aac = 2;
+    optional MpegAudioCapability mpeg_audio = 3;
+    optional Mp3Capability mp3 = 4;
+    optional AlacCapability alac = 5;
+    optional SbcCapability sbc = 6;
+    optional DolbyAc3Capability dolby_ac3 = 7;
+    optional DolbyAc4Capability dolby_ac4 = 8;
+    optional DolbyMatCapability dolby_mat = 9;
+    optional DolbyTruehdCapability dolby_truehd = 10;
+    optional FlacCapability flac = 11;
+    optional VorbisCapability vorbis = 12;
+    optional OpusCapability opus = 13;
+    optional WmaCapability wma = 14;
+    optional RealAudioCapability real_audio = 15;
+    optional UsacCapability usac = 16;
+    optional DtsCapability dts = 17;
+    optional AvsCapability avs = 18;
+  }
+  optional string interface_version = 1;
+  optional string schema_version = 2;
+  repeated AudioDecoderCapability capabilities = 3;
+}
+
+/**
+ * @fn VideoDecoderCapabilities getSupportedVideoCapabilities()
+ * @brief Gets the supported video capabilities.
+ *
+ * @returns    video_decoder_capabilities The supported video capabilities.
+ */
+message GetSupportedVideoCapabilitiesRequest {
+}
+message GetSupportedVideoCapabilitiesResponse {
+  enum DynamicRange {
+    DYNAMIC_RANGE_SDR = 0;
+    DYNAMIC_RANGE_HLG = 1;
+    DYNAMIC_RANGE_HDR10 = 2;
+    DYNAMIC_RANGE_HDR10PLUS = 3;
+    DYNAMIC_RANGE_DOLBY_VISION = 4;
+  }
+
+  enum Mpeg2ProfileType {
+    MPEG2_PROFILE_MAIN = 0;
+    MPEG2_PROFILE_SIMPLE = 1;
+  }
+
+  enum Mpeg2Level {
+    MPEG2_LEVEL_LOW = 0;
+    MPEG2_LEVEL_MAIN = 1;
+    MPEG2_LEVEL_HIGH = 2;
+  }
+
+  enum H264ProfileType {
+    H264_PROFILE_BASELINE = 0;
+    H264_PROFILE_MAIN = 1;
+    H264_PROFILE_HIGH = 2;
+  }
+
+  enum H264Level {
+    H264_LEVEL_3 = 0;
+    H264_LEVEL_3_1 = 1;
+    H264_LEVEL_4 = 2;
+    H264_LEVEL_4_1 = 3;
+    H264_LEVEL_5 = 4;
+    H264_LEVEL_5_1 = 5;
+    H264_LEVEL_5_2 = 6;
+  }
+
+  enum H265ProfileType {
+    H265_PROFILE_MAIN = 0;
+    H265_PROFILE_MAIN_10 = 1;
+    H265_PROFILE_MAIN_10_HDR10 = 2;
+  }
+
+  enum H265Level {
+    H265_LEVEL_4 = 0;
+    H265_LEVEL_4_1 = 1;
+    H265_LEVEL_5 = 2;
+    H265_LEVEL_5_1 = 3;
+    H265_LEVEL_5_2 = 4;
+    H265_LEVEL_6 = 5;
+    H265_LEVEL_6_1 = 6;
+    H265_LEVEL_6_2 = 7;
+  }
+
+  enum Vp9ProfileType {
+    VP9_PROFILE_0 = 0;
+    VP9_PROFILE_1 = 1;
+    VP9_PROFILE_2 = 2;
+    VP9_PROFILE_3 = 3;
+  }
+
+  enum Vp9Level {
+    VP9_LEVEL_1 = 0;
+    VP9_LEVEL_1_1 = 1;
+    VP9_LEVEL_2 = 2;
+    VP9_LEVEL_2_1 = 3;
+    VP9_LEVEL_3 = 4;
+    VP9_LEVEL_3_1 = 5;
+    VP9_LEVEL_4 = 6;
+    VP9_LEVEL_4_1 = 7;
+    VP9_LEVEL_5 = 8;
+    VP9_LEVEL_5_1 = 9;
+    VP9_LEVEL_5_2 = 10;
+    VP9_LEVEL_6 = 11;
+    VP9_LEVEL_6_1 = 12;
+    VP9_LEVEL_6_2 = 13;
+  }
+
+  enum Av1ProfileType {
+    AV1_PROFILE_MAIN = 0;
+    AV1_PROFILE_HIGH = 1;
+  }
+
+  enum Av1Level {
+    AV1_LEVEL_4_0 = 0;
+    AV1_LEVEL_4_1 = 1;
+    AV1_LEVEL_5_0 = 2;
+    AV1_LEVEL_5_1 = 3;
+    AV1_LEVEL_5_2 = 4;
+    AV1_LEVEL_6_0 = 5;
+    AV1_LEVEL_6_1 = 6;
+    AV1_LEVEL_6_2 = 7;
+  }
+
+  message Mpeg2Profile {
+    optional Mpeg2ProfileType type = 1;
+    optional Mpeg2Level max_level = 2;
+    optional uint64 max_bitrate_in_bps = 3;
+  }
+
+  message H264Profile {
+    optional H264ProfileType type = 1;
+    optional H264Level max_level = 2;
+    optional uint64 max_bitrate_in_bps = 3;
+  }
+
+  message H265Profile {
+    optional H265ProfileType type = 1;
+    optional H265Level max_level = 2;
+    optional uint64 max_bitrate_in_bps = 3;
+  }
+
+  message Vp9Profile {
+    optional Vp9ProfileType type = 1;
+    optional Vp9Level max_level = 2;
+    optional uint64 max_bitrate_in_bps = 3;
+  }
+
+  message Av1Profile {
+    optional Av1ProfileType type = 1;
+    optional Av1Level max_level = 2;
+    optional uint64 max_bitrate_in_bps = 3;
+  }
+
+  message VideoCodecCapabilities {
+    repeated Mpeg2Profile mpeg2_profiles = 1;
+    repeated H264Profile h264_profiles = 2;
+    repeated H265Profile h265_profiles = 3;
+    repeated Vp9Profile vp9_profiles = 4;
+    repeated Av1Profile av1_profiles = 5;
+  }
+
+  message VideoDecoderCapability {
+    optional VideoCodecCapabilities codec_capabilities = 1;
+    repeated DynamicRange dynamic_ranges = 2;
+  }
+
+  optional string interface_version = 1;
+  optional string schema_version = 2;
+  repeated VideoDecoderCapability capabilities = 3;
+}
+
 service MediaPipelineCapabilitiesModule {
     /**
      * @brief Returns the MSE mime types supported by Rialto
@@ -114,5 +499,19 @@ service MediaPipelineCapabilitiesModule {
      * @see IsVideoMasterRequest
      */
     rpc isVideoMaster(IsVideoMasterRequest) returns (IsVideoMasterResponse) {
+    }
+
+    /**
+     * @brief Gets the supported audio capabilities.
+     * @see GetSupportedAudioCapabilitiesRequest
+     */
+    rpc getSupportedAudioCapabilities(GetSupportedAudioCapabilitiesRequest) returns (GetSupportedAudioCapabilitiesResponse) {
+    }
+
+    /**
+     * @brief Gets the supported video capabilities.
+     * @see GetSupportedVideoCapabilitiesRequest
+     */
+    rpc getSupportedVideoCapabilities(GetSupportedVideoCapabilitiesRequest) returns (GetSupportedVideoCapabilitiesResponse) {
     }
 }

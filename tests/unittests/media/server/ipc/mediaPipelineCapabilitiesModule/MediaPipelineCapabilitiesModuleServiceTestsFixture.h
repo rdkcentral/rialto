@@ -43,6 +43,8 @@ public:
     void mediaPipelineWillCheckIfMimeTypeIsSupported();
     void mediaPipelineWillGetSupportedProperties();
     void mediaPipelineWillCheckIfVideoIsMaster();
+    void mediaPipelineWillGetSupportedAudioCapabilities();
+    void mediaPipelineWillGetSupportedVideoCapabilities();
 
     void sendClientConnected();
     void sendClientDisconnected();
@@ -54,6 +56,10 @@ public:
     void sendGetSupportedPropertiesRequestAndExpectFailure();
     void sendIsVideoMasterRequestWithSuccess();
     void sendIsVideoMasterRequestAndExpectFailure();
+    void sendGetSupportedAudioCapabilitiesRequestAndReceiveResponse();
+    void sendGetSupportedAudioCapabilitiesRequestAndExpectFailure();
+    void sendGetSupportedVideoCapabilitiesRequestAndReceiveResponse();
+    void sendGetSupportedVideoCapabilitiesRequestAndExpectFailure();
     void expectInvalidControlFailure();
     void expectCorrectMediaTypeConversion();
 

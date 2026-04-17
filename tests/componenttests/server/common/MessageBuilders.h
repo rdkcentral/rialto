@@ -132,6 +132,8 @@ createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType);
 ::firebolt::rialto::GetSupportedPropertiesRequest
 createGetSupportedPropertiesRequest(const ProtoMediaSourceType &mediaType, const std::vector<std::string> &propertyNames);
 ::firebolt::rialto::IsVideoMasterRequest createIsVideoMasterRequest();
+::firebolt::rialto::GetSupportedAudioCapabilitiesRequest createGetSupportedAudioCapabilitiesRequest();
+::firebolt::rialto::GetSupportedVideoCapabilitiesRequest createGetSupportedVideoCapabilitiesRequest();
 
 // web audio player module
 ::firebolt::rialto::CreateWebAudioPlayerRequest
