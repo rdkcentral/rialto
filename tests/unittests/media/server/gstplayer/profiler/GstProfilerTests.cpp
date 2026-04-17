@@ -29,9 +29,7 @@
 #include <string_view>
 #include <thread>
 
-#define private public
 #include "GstProfiler.h"
-#undef private
 
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::wrappers;
@@ -42,6 +40,18 @@ using ::testing::Return;
 using ::testing::ReturnNull;
 using ::testing::StrEq;
 using ::testing::StrictMock;
+
+namespace firebolt::rialto::server
+{
+class GstProfilerAccessor
+{
+public:
+    static std::optional<GstProfiler::PipelineMetrics> calculateMetrics(const GstProfiler &profiler)
+    {
+        return profiler.calculateMetrics();
+    }
+};
+} // namespace firebolt::rialto::server
 
 class GstProfilerTests : public ::testing::Test
 {
@@ -116,8 +126,6 @@ protected:
 
     void expectElementRecognizedAsSource(GstElement *element)
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(element)).WillOnce(Return(nullptr));
-
         EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return("Source"));
 
         EXPECT_CALL(*m_glibWrapperMock, gStrrstr(_, _)).WillOnce(Return(const_cast<gchar *>("Source")));
@@ -299,10 +307,7 @@ TEST_F(GstProfilerTests, ScheduleElementRecord)
 
     auto *factory = reinterpret_cast<GstElementFactory *>(0x1);
 
-    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement))
-        .WillOnce(Return(nullptr))
-        .WillOnce(Return(factory))
-        .WillOnce(Return(factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement)).WillOnce(Return(factory)).WillOnce(Return(factory));
     EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return("Source"));
     EXPECT_CALL(*m_glibWrapperMock, gStrrstr(_, _)).WillOnce(Return(const_cast<gchar *>("Source")));
 
@@ -343,7 +348,7 @@ TEST_F(GstProfilerTests, ScheduleElementRecordCreatesProbeRecordWithVideoInfo)
 
     auto *factory = reinterpret_cast<GstElementFactory *>(0x1);
 
-    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement)).WillOnce(Return(nullptr)).WillOnce(Return(factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement)).WillOnce(Return(factory));
     EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return("Source"));
     EXPECT_CALL(*m_glibWrapperMock, gStrrstr(_, _)).WillOnce(Return(const_cast<gchar *>("Source")));
 
@@ -374,7 +379,7 @@ TEST_F(GstProfilerTests, ScheduleElementRecordCreatesProbeRecordWithVideoInfo)
 
     m_gstProfiler->scheduleGstElementRecord(m_realElement);
 
-    const auto &records = m_gstProfiler->m_profiler->getRecords();
+    const auto &records = m_gstProfiler->getRecords();
     ASSERT_FALSE(records.empty());
     EXPECT_EQ(records.back().stage, "Source FB Exit");
     EXPECT_EQ(records.back().info, "Video");
@@ -390,10 +395,7 @@ TEST_F(GstProfilerTests, ScheduleElementRecordCreatesProbeRecordWithVideoInfoFro
 
     auto *factory = reinterpret_cast<GstElementFactory *>(0x1);
 
-    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement))
-        .WillOnce(Return(nullptr))
-        .WillOnce(Return(factory))
-        .WillOnce(Return(factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement)).WillOnce(Return(factory)).WillOnce(Return(factory));
     EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return("Source"));
     EXPECT_CALL(*m_glibWrapperMock, gStrrstr(_, _)).WillOnce(Return(const_cast<gchar *>("Source")));
 
@@ -430,7 +432,7 @@ TEST_F(GstProfilerTests, ScheduleElementRecordCreatesProbeRecordWithVideoInfoFro
 
     m_gstProfiler->scheduleGstElementRecord(m_realElement);
 
-    const auto &records = m_gstProfiler->m_profiler->getRecords();
+    const auto &records = m_gstProfiler->getRecords();
     ASSERT_FALSE(records.empty());
     EXPECT_EQ(records.back().stage, "Source FB Exit");
     EXPECT_EQ(records.back().info, "Video");
@@ -446,10 +448,7 @@ TEST_F(GstProfilerTests, ScheduleElementRecordFallsBackToRawElementName)
 
     auto *factory = reinterpret_cast<GstElementFactory *>(0x1);
 
-    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement))
-        .WillOnce(Return(nullptr))
-        .WillOnce(Return(factory))
-        .WillOnce(Return(factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement)).WillOnce(Return(factory)).WillOnce(Return(factory));
     EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return("Source"));
     EXPECT_CALL(*m_glibWrapperMock, gStrrstr(_, _)).WillOnce(Return(const_cast<gchar *>("Source")));
 
@@ -486,7 +485,7 @@ TEST_F(GstProfilerTests, ScheduleElementRecordFallsBackToRawElementName)
 
     m_gstProfiler->scheduleGstElementRecord(m_realElement);
 
-    const auto &records = m_gstProfiler->m_profiler->getRecords();
+    const auto &records = m_gstProfiler->getRecords();
     ASSERT_FALSE(records.empty());
     EXPECT_EQ(records.back().stage, "Source FB Exit");
     EXPECT_EQ(records.back().info, "custom-element");
@@ -508,6 +507,36 @@ TEST_F(GstProfilerTests, ScheduleElementRecordNoPad)
 }
 
 /**
+ * Test that scheduling record handles probe installation failure without leaking context ownership.
+ */
+TEST_F(GstProfilerTests, ScheduleElementRecordProbeAddFails)
+{
+    setProfilerEnabledEnv(true);
+    createGstProfiler();
+
+    auto *factory = reinterpret_cast<GstElementFactory *>(0x1);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement)).WillOnce(Return(factory)).WillOnce(Return(factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return("Source"));
+    EXPECT_CALL(*m_glibWrapperMock, gStrrstr(_, _)).WillOnce(Return(const_cast<gchar *>("Source")));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(m_realElement, StrEq("src"))).WillOnce(Return(&m_pad));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+        .WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillOnce(Return(false));
+
+    gchar *rawName = g_strdup("videoDecoder");
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetName(m_realElement)).WillOnce(Return(rawName));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(rawName)).WillOnce(Invoke([](gpointer ptr) { g_free(ptr); }));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstPadAddProbe(&m_pad, _, _, _, _)).WillOnce(Return(0));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pad));
+
+    EXPECT_NO_THROW(m_gstProfiler->scheduleGstElementRecord(m_realElement));
+}
+
+/**
  * Test that GstProfiler can be destroyed after creation with pipeline.
  */
 TEST_F(GstProfilerTests, DestroyAfterCreateWithPipeline)
@@ -516,25 +545,6 @@ TEST_F(GstProfilerTests, DestroyAfterCreateWithPipeline)
     createGstProfiler(&m_pipeline);
 
     EXPECT_NO_THROW(m_gstProfiler.reset());
-}
-
-/**
- * Test that element classes are mapped to expected stage names.
- */
-TEST_F(GstProfilerTests, CheckElementMapsClassToExpectedStage)
-{
-    setProfilerEnabledEnv(true);
-    createGstProfiler();
-
-    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_realElement)).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return("Decryptor"));
-    EXPECT_CALL(*m_glibWrapperMock, gStrrstr("Decryptor", StrEq("Source"))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_glibWrapperMock, gStrrstr("Decryptor", StrEq("Decryptor")))
-        .WillOnce(Return(const_cast<gchar *>("Decryptor")));
-
-    const auto stage = m_gstProfiler->checkElement(m_realElement);
-    ASSERT_TRUE(stage.has_value());
-    EXPECT_EQ(stage.value(), "Decryptor FB Exit");
 }
 
 /**
@@ -548,7 +558,7 @@ TEST_F(GstProfilerTests, CalculateMetricsReturnsNulloptWhenRecordsMissing)
     addRecordAndWait("Pipeline Created");
     addRecordAndWait("All Sources Attached");
 
-    EXPECT_FALSE(m_gstProfiler->calculateMetrics().has_value());
+    EXPECT_FALSE(GstProfilerAccessor::calculateMetrics(*m_gstProfiler).has_value());
 }
 
 /**
@@ -570,7 +580,7 @@ TEST_F(GstProfilerTests, CalculateMetricsReturnsValuesForNonEncryptedPlayback)
     addRecordAndWait("Pipeline State Changed", "PAUSED");
     addRecordAndWait("Pipeline State Changed", "PLAYING");
 
-    const auto metrics = m_gstProfiler->calculateMetrics();
+    const auto metrics = GstProfilerAccessor::calculateMetrics(*m_gstProfiler);
     ASSERT_TRUE(metrics.has_value());
     EXPECT_TRUE(metrics->preparation.has_value());
     EXPECT_TRUE(metrics->videoDownload.has_value());
