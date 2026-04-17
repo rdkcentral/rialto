@@ -24,6 +24,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <vector>
 
 namespace firebolt::rialto::server
 {
@@ -54,6 +55,7 @@ public:
         std::uint32_t m_bytesWritten;
         std::uint32_t m_maxMediaBytes;
         IMediaPipeline::MediaSegmentVector m_segments;
+        std::vector<std::vector<uint8_t>> m_segmentBuffers;
     };
 
     ActiveRequests();
