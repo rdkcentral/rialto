@@ -143,7 +143,7 @@ void GstProfiler::scheduleGstElementRecord(GstElement *element)
     else
     {
         gchar *rawName = m_gstWrapper->gstElementGetName(element);
-        elementInfo = rawName ? rawName : "<null>";
+        elementInfo = classifyElementName(rawName ? rawName : "<null>");
         if (rawName)
             m_glibWrapper->gFree(rawName);
     }
@@ -254,6 +254,24 @@ const gchar *GstProfiler::getElementClass(GstElement *element)
     }
 
     return NULL;
+}
+
+std::string GstProfiler::classifyElementName(std::string name) const
+{
+    std::string lower = name;
+    std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c) { return std::tolower(c); });
+
+    if (lower.find("vid") != std::string::npos || lower.find("video") != std::string::npos)
+    {
+        return "Video";
+    }
+
+    if (lower.find("aud") != std::string::npos || lower.find("audio") != std::string::npos)
+    {
+        return "Audio";
+    }
+
+    return name;
 }
 
 std::optional<GstProfiler::PipelineMetrics> GstProfiler::calculateMetrics() const
