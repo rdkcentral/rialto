@@ -115,6 +115,7 @@ private:
 
     std::optional<std::string> checkElement(GstElement *element);
     const gchar *getElementClass(GstElement *element);
+    std::string classifyElementName(std::string name) const;
 
     std::optional<GstProfiler::PipelineMetrics> calculateMetrics() const;
 
