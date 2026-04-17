@@ -66,6 +66,7 @@ public:
     virtual void scheduleGstElementRecord(GstElement *element) = 0;
 
     virtual void logRecord(RecordId id) = 0;
+    virtual void dumpToFile() const = 0;
     virtual void logPipeline() const = 0;
 };
 } // namespace firebolt::rialto::server

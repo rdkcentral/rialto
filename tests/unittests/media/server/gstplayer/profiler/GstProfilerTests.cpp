@@ -21,9 +21,11 @@
 #include "GstWrapperMock.h"
 
 #include <cstdlib>
+#include <fstream>
 #include <glib.h>
 #include <gst/gst.h>
 #include <gtest/gtest.h>
+#include <random>
 #include <string_view>
 #include <thread>
 
@@ -48,6 +50,7 @@ protected:
     std::shared_ptr<StrictMock<GlibWrapperMock>> m_glibWrapperMock;
     std::unique_ptr<GstProfiler> m_gstProfiler;
     std::optional<std::string> m_profilerEnabledEnv;
+    std::optional<std::string> m_profilerDumpFileNameEnv;
     GstElement *m_realElement{nullptr};
 
     GstElement m_pipeline = {};
@@ -56,8 +59,8 @@ protected:
 
     void SetUp() override
     {
-        if (const char *env = std::getenv("PROFILER_ENABLED"))
-            m_profilerEnabledEnv = env;
+        saveEnv("PROFILER_ENABLED", m_profilerEnabledEnv);
+        saveEnv("PROFILER_DUMP_FILE_NAME", m_profilerDumpFileNameEnv);
 
         m_gstWrapperMock = std::make_shared<StrictMock<GstWrapperMock>>();
         m_glibWrapperMock = std::make_shared<StrictMock<GlibWrapperMock>>();
@@ -79,9 +82,23 @@ protected:
             setenv("PROFILER_ENABLED", m_profilerEnabledEnv->c_str(), 1);
         else
             unsetenv("PROFILER_ENABLED");
+
+        if (m_profilerDumpFileNameEnv)
+            setenv("PROFILER_DUMP_FILE_NAME", m_profilerDumpFileNameEnv->c_str(), 1);
+        else
+            unsetenv("PROFILER_DUMP_FILE_NAME");
     }
 
     void setProfilerEnabledEnv(bool enabled) { setenv("PROFILER_ENABLED", enabled ? "true" : "false", 1); }
+    void setProfilerDumpFileEnv(const std::string &path) { setenv("PROFILER_DUMP_FILE_NAME", path.c_str(), 1); }
+
+    static void saveEnv(const char *name, std::optional<std::string> &value)
+    {
+        if (const char *env = std::getenv(name))
+            value = env;
+        else
+            value = std::nullopt;
+    }
 
     void createGstProfiler(GstElement *pipeline = nullptr)
     {
@@ -171,6 +188,53 @@ TEST_F(GstProfilerTests, LogRecord)
     createGstProfiler();
 
     EXPECT_NO_THROW(m_gstProfiler->logRecord(1));
+}
+
+TEST_F(GstProfilerTests, DumpToFileCreatesAndAppendsDump)
+{
+    setProfilerEnabledEnv(true);
+    const auto suffix = std::to_string(std::random_device{}());
+    const std::string path = std::string{"/tmp/rialto_gst_profiler_ut_dump_"} + suffix + ".txt";
+    setProfilerDumpFileEnv(path);
+    createGstProfiler();
+
+    ASSERT_TRUE(m_gstProfiler->createRecord("Pipeline Created").has_value());
+    ASSERT_TRUE(m_gstProfiler->createRecord("Pipeline Terminated").has_value());
+
+    EXPECT_NO_THROW(m_gstProfiler->dumpToFile());
+    EXPECT_NO_THROW(m_gstProfiler->dumpToFile());
+
+    std::ifstream in(path);
+    ASSERT_TRUE(in.good());
+
+    const std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    EXPECT_NE(content.find("Pipeline Created"), std::string::npos);
+    EXPECT_NE(content.find("Pipeline Terminated"), std::string::npos);
+    EXPECT_NE(content.find("Pipeline Created"), content.rfind("Pipeline Created"));
+
+    std::remove(path.c_str());
+}
+
+TEST_F(GstProfilerTests, DumpToFileUsesCachedEnvValue)
+{
+    setProfilerEnabledEnv(true);
+    const auto suffix = std::to_string(std::random_device{}());
+    const std::string path = std::string{"/tmp/rialto_gst_profiler_cached_dump_"} + suffix + ".txt";
+    setProfilerDumpFileEnv(path);
+    createGstProfiler();
+
+    unsetenv("PROFILER_DUMP_FILE_NAME");
+    ASSERT_TRUE(m_gstProfiler->createRecord("CachedDumpStage").has_value());
+
+    EXPECT_NO_THROW(m_gstProfiler->dumpToFile());
+
+    std::ifstream in(path);
+    ASSERT_TRUE(in.good());
+
+    const std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    EXPECT_NE(content.find("CachedDumpStage"), std::string::npos);
+
+    std::remove(path.c_str());
 }
 
 /**

@@ -64,6 +64,7 @@ public:
     void scheduleGstElementRecord(GstElement *element) override;
 
     void logRecord(const RecordId id) override;
+    void dumpToFile() const override;
     void logPipeline() const override;
 
 private:

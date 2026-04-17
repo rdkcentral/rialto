@@ -49,21 +49,24 @@ public:
 
     void log(const RecordId id) override;
 
-    bool dump(const std::string &path) const override;
+    bool dumpToFile() const override;
     const std::vector<Record> &getRecords() const override;
 
 private:
     static bool parseEnv(const char *value, bool defaultValue);
+    static std::optional<std::string> parseOptionalEnv(const char *value);
     const Record *findById(RecordId id);
 
     std::string m_module;
     bool m_enabled;
+    std::optional<std::string> m_dumpFileName;
 
     mutable std::mutex m_mutex;
     RecordId m_id{1};
     std::vector<Record> m_records;
 
     static constexpr const char *kProfilerEnv = "PROFILER_ENABLED";
+    static constexpr const char *kProfilerDumpFileEnv = "PROFILER_DUMP_FILE_NAME";
     static constexpr size_t kMaxRecords = 100;
 };
 

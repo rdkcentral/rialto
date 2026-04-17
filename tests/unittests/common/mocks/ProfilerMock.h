@@ -42,7 +42,7 @@ public:
 
     MOCK_METHOD(void, log, (RecordId id), (override));
 
-    MOCK_METHOD(bool, dump, (const std::string &path), (const, override));
+    MOCK_METHOD(bool, dumpToFile, (), (const, override));
 
     MOCK_METHOD(const std::vector<Record> &, getRecords, (), (const, override));
 };

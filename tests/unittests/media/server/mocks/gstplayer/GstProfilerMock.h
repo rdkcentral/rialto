@@ -42,6 +42,7 @@ public:
     MOCK_METHOD(void, scheduleGstElementRecord, (GstElement * element), (override));
 
     MOCK_METHOD(void, logRecord, (RecordId id), (override));
+    MOCK_METHOD(void, dumpToFile, (), (const, override));
     MOCK_METHOD(void, logPipeline, (), (const, override));
 };
 } // namespace firebolt::rialto::server
