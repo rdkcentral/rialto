@@ -144,6 +144,8 @@ public:
 
     bool switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
 
+    bool getDuration(int64_t &duration) override;
+
 private:
     /**
      * @brief The media player client ipc.

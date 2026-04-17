@@ -1355,6 +1355,11 @@ bool MediaPipelineServerInternal::switchSourceInternal(const std::unique_ptr<Med
     return true;
 }
 
+bool MediaPipelineServerInternal::getDuration(int64_t &duration)
+{
+    return false;
+}
+
 AddSegmentStatus MediaPipelineServerInternal::addSegment(uint32_t needDataRequestId,
                                                          const std::unique_ptr<MediaSegment> &mediaSegment)
 {

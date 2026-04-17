@@ -346,6 +346,22 @@ message GetPositionResponse {
 }
 
 /**
+ * @fn void getDuration(int session_id)
+ * @brief Get the playback Duration in nanoseconds.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ *
+ * This method is considered to be sychronous, it returns current playback duration
+ *
+ */
+message GetDurationRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetDurationResponse {
+    optional int64 duration = 1 [default = -1];
+}
+
+/**
  * @fn void setPlaybackRate(int session_id, double rate)
  * @brief Set the playback position in nanoseconds.
  *
@@ -1253,4 +1269,12 @@ service MediaPipelineModule {
      */
     rpc getUseBuffering(GetUseBufferingRequest) returns (GetUseBufferingResponse) {
     }
+
+    /**
+     * @brief Gets the current duration of the playback
+     * @see GetDurationRequest
+     */
+    rpc getDuration(GetDurationRequest) returns (GetDurationResponse) {
+    }
+
 }
