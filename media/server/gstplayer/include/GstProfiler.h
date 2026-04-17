@@ -31,6 +31,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
 
 namespace firebolt::rialto::server
 {

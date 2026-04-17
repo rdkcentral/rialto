@@ -25,6 +25,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
+#include <memory>
 #include <string>
 
 namespace firebolt::rialto::common
