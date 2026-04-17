@@ -163,6 +163,14 @@ void GstProfiler::logRecord(GstProfiler::RecordId id)
     m_profiler->log(static_cast<firebolt::rialto::common::IProfiler::RecordId>(id));
 }
 
+void GstProfiler::dumpToFile() const
+{
+    if (!m_enabled || !m_profiler)
+        return;
+
+    (void)m_profiler->dumpToFile();
+}
+
 void GstProfiler::logPipeline() const
 {
     if (!m_enabled || !m_profiler)

@@ -51,7 +51,8 @@ std::unique_ptr<IProfiler> ProfilerFactory::createProfiler(std::string moduleNam
 }
 
 Profiler::Profiler(std::string module)
-    : m_module(std::move(module)), m_enabled(parseEnv(std::getenv(kProfilerEnv), false))
+    : m_module(std::move(module)), m_enabled(parseEnv(std::getenv(kProfilerEnv), false)),
+      m_dumpFileName(parseOptionalEnv(std::getenv(kProfilerDumpFileEnv)))
 {
 }
 
@@ -121,8 +122,11 @@ void Profiler::log(const RecordId id)
     }
 }
 
-bool Profiler::dump(const std::string &path) const
+bool Profiler::dumpToFile() const
 {
+    if (!m_dumpFileName)
+        return true;
+
     if (!m_enabled)
         return false;
 
@@ -132,7 +136,7 @@ bool Profiler::dump(const std::string &path) const
         copy = m_records;
     }
 
-    std::ofstream out(path, std::ios::out | std::ios::trunc);
+    std::ofstream out(*m_dumpFileName, std::ios::out | std::ios::app);
     if (!out.is_open())
         return false;
 
@@ -171,6 +175,14 @@ bool Profiler::parseEnv(const char *value, bool defaultValue)
         return false;
 
     return defaultValue;
+}
+
+std::optional<std::string> Profiler::parseOptionalEnv(const char *value)
+{
+    if (!value || value[0] == '\0')
+        return std::nullopt;
+
+    return std::string{value};
 }
 
 const Profiler::Record *Profiler::findById(Profiler::RecordId id)

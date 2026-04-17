@@ -114,14 +114,17 @@ public:
     virtual void log(RecordId id) = 0;
 
     /**
-     * @brief Dumps all records into file.
-     *
-     * @param[in] path : Full path to the output file
+     * @brief Dumps all records into pre-configured file.
      *
      * @retval true if file is created and records are dumped, false otherwise.
      */
-    virtual bool dump(const std::string &path) const = 0;
+    virtual bool dumpToFile() const = 0;
 
+    /**
+     * @brief Retrieves existing records.
+     *
+     * @retval Reference to existing Record vector.
+     */
     virtual const std::vector<Record> &getRecords() const = 0;
 
 protected:

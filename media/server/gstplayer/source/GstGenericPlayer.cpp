@@ -328,6 +328,7 @@ void GstGenericPlayer::termPipeline()
     auto recordId = m_context.gstProfiler->createRecord("Pipeline Terminated");
     if (recordId)
         m_context.gstProfiler->logRecord(recordId.value());
+    m_context.gstProfiler->dumpToFile();
 
     // Delete the pipeline
     m_gstWrapper->gstObjectUnref(m_context.pipeline);

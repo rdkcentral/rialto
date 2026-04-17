@@ -46,11 +46,8 @@ class ProfilerTests : public ::testing::Test
 protected:
     void SetUp() override
     {
-        const char *envValue = std::getenv("PROFILER_ENABLED");
-        if (envValue)
-            m_originalProfilerEnabled = envValue;
-        else
-            m_originalProfilerEnabled = std::nullopt;
+        saveEnv("PROFILER_ENABLED", m_originalProfilerEnabled);
+        saveEnv("PROFILER_DUMP_FILE_NAME", m_originalProfilerDumpFileName);
 
         factory = IProfilerFactory::createFactory();
         ASSERT_TRUE(factory);
@@ -62,15 +59,31 @@ protected:
 
     void TearDown() override
     {
-        if (m_originalProfilerEnabled)
-            setenv("PROFILER_ENABLED", m_originalProfilerEnabled->c_str(), 1);
+        restoreEnv("PROFILER_ENABLED", m_originalProfilerEnabled);
+        restoreEnv("PROFILER_DUMP_FILE_NAME", m_originalProfilerDumpFileName);
+    }
+
+    static void saveEnv(const char *name, std::optional<std::string> &value)
+    {
+        const char *envValue = std::getenv(name);
+        if (envValue)
+            value = envValue;
         else
-            unsetenv("PROFILER_ENABLED");
+            value = std::nullopt;
+    }
+
+    static void restoreEnv(const char *name, const std::optional<std::string> &value)
+    {
+        if (value)
+            setenv(name, value->c_str(), 1);
+        else
+            unsetenv(name);
     }
 
     std::shared_ptr<IProfilerFactory> factory;
     std::unique_ptr<IProfiler> profiler;
     std::optional<std::string> m_originalProfilerEnabled;
+    std::optional<std::string> m_originalProfilerDumpFileName;
 };
 
 TEST_F(ProfilerTests, RecordAndFindByStage)
@@ -123,11 +136,14 @@ TEST_F(ProfilerTests, GetRecordsReturnsRecordedEntries)
 TEST_F(ProfilerTests, DumpCreatesFile)
 {
     (void)profiler->record("StageDump", "InfoDump");
-
     const auto suffix = std::to_string(std::random_device{}());
     const std::string path = std::string{"/tmp/rialto_profiler_ut_dump_"} + suffix + ".txt";
+    setenv("PROFILER_DUMP_FILE_NAME", path.c_str(), 1);
 
-    ASSERT_TRUE(profiler->dump(path));
+    auto dumpProfiler = factory->createProfiler("UnitTestModule");
+    ASSERT_TRUE(dumpProfiler);
+    ASSERT_TRUE(dumpProfiler->record("StageDump", "InfoDump").has_value());
+    ASSERT_TRUE(dumpProfiler->dumpToFile());
 
     std::ifstream in(path);
     ASSERT_TRUE(in.good());
@@ -135,6 +151,56 @@ TEST_F(ProfilerTests, DumpCreatesFile)
     const std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
     EXPECT_FALSE(content.empty());
     EXPECT_NE(content.find("StageDump"), std::string::npos);
+
+    std::remove(path.c_str());
+}
+
+TEST_F(ProfilerTests, DumpAppendsToExistingFile)
+{
+    const auto suffix = std::to_string(std::random_device{}());
+    const std::string path = std::string{"/tmp/rialto_profiler_ut_append_"} + suffix + ".txt";
+    setenv("PROFILER_DUMP_FILE_NAME", path.c_str(), 1);
+
+    auto dumpProfiler = factory->createProfiler("UnitTestModule");
+    ASSERT_TRUE(dumpProfiler);
+    ASSERT_TRUE(dumpProfiler->record("Stage1").has_value());
+    ASSERT_TRUE(dumpProfiler->dumpToFile());
+
+    ASSERT_TRUE(dumpProfiler->record("Stage2").has_value());
+    ASSERT_TRUE(dumpProfiler->dumpToFile());
+
+    std::ifstream in(path);
+    ASSERT_TRUE(in.good());
+
+    const std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    EXPECT_NE(content.find("Stage1"), std::string::npos);
+    EXPECT_NE(content.find("Stage2"), std::string::npos);
+    EXPECT_LT(content.find("Stage1"), content.rfind("Stage2"));
+
+    std::remove(path.c_str());
+}
+
+TEST_F(ProfilerTests, DumpToFileUsesCachedEnvValue)
+{
+    const auto suffix = std::to_string(std::random_device{}());
+    const std::string path = std::string{"/tmp/rialto_profiler_ut_configured_"} + suffix + ".txt";
+    setenv("PROFILER_DUMP_FILE_NAME", path.c_str(), 1);
+
+    auto configuredProfiler = factory->createProfiler("UnitTestModule");
+    ASSERT_TRUE(configuredProfiler);
+    ASSERT_TRUE(configuredProfiler->record("StageConfigured").has_value());
+    ASSERT_TRUE(configuredProfiler->dumpToFile());
+
+    unsetenv("PROFILER_DUMP_FILE_NAME");
+    ASSERT_TRUE(configuredProfiler->record("StageConfiguredCached").has_value());
+    ASSERT_TRUE(configuredProfiler->dumpToFile());
+
+    std::ifstream in(path);
+    ASSERT_TRUE(in.good());
+
+    const std::string content((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    EXPECT_NE(content.find("StageConfigured"), std::string::npos);
+    EXPECT_NE(content.find("StageConfiguredCached"), std::string::npos);
 
     std::remove(path.c_str());
 }
@@ -176,7 +242,15 @@ TEST_F(ProfilerTests, GetRecordsDoesNotContainMissingStage)
     EXPECT_EQ(findRecord(profiler->getRecords(), "MissingStage"), nullptr);
 }
 
-TEST_F(ProfilerTests, DumpReturnsFalseForInvalidPath)
+TEST_F(ProfilerTests, DumpToFileReturnsFalseForInvalidPath)
 {
-    EXPECT_FALSE(profiler->dump("/proc/rialto_profiler_ut_dump.txt"));
+    setenv("PROFILER_DUMP_FILE_NAME", "/proc/rialto_profiler_ut_dump.txt", 1);
+    auto dumpProfiler = factory->createProfiler("UnitTestModule");
+    ASSERT_TRUE(dumpProfiler);
+    EXPECT_FALSE(dumpProfiler->dumpToFile());
+}
+
+TEST_F(ProfilerTests, DumpToFileSucceedsWhenEnvMissing)
+{
+    EXPECT_TRUE(profiler->dumpToFile());
 }
