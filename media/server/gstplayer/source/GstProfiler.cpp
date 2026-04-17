@@ -73,7 +73,8 @@ GstProfiler::GstProfiler(GstElement *pipeline, const std::shared_ptr<firebolt::r
     : m_pipeline{pipeline}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
 {
     auto profilerFactory = firebolt::rialto::common::IProfilerFactory::createFactory();
-    m_profiler = profilerFactory ? profilerFactory->createProfiler(std::string{k_module}) : nullptr;
+    m_profiler = profilerFactory ? std::shared_ptr<IProfiler>{profilerFactory->createProfiler(std::string{k_module})}
+                                 : nullptr;
     m_enabled = (m_profiler != nullptr) && m_profiler->isEnabled();
 
     if (m_enabled && m_pipeline)
@@ -148,11 +149,27 @@ void GstProfiler::scheduleGstElementRecord(GstElement *element)
             m_glibWrapper->gFree(rawName);
     }
 
-    auto *probeCtx = new ProbeCtx{this, stage.value(), std::move(elementInfo)};
-    m_gstWrapper->gstPadAddProbe(pad, GST_PAD_PROBE_TYPE_BUFFER, &GstProfiler::probeCb, probeCtx,
-                                 &GstProfiler::probeCtxDestroy);
+    auto probeCtx = std::make_unique<ProbeCtx>(ProbeCtx{m_profiler, stage.value(), std::move(elementInfo)});
+    const auto probeId = m_gstWrapper->gstPadAddProbe(pad, GST_PAD_PROBE_TYPE_BUFFER, &GstProfiler::probeCb,
+                                                      probeCtx.get(), &GstProfiler::probeCtxDestroy);
+    if (probeId != 0)
+    {
+        // Ownership transfers to GStreamer on successful installation and probeCtxDestroy()
+        // deletes the context when the probe is removed.
+        probeCtx.release();
+    }
 
     m_gstWrapper->gstObjectUnref(pad);
+}
+
+const std::vector<IGstProfiler::Record> &GstProfiler::getRecords() const
+{
+    static const std::vector<Record> kEmptyRecords{};
+
+    if (!m_profiler)
+        return kEmptyRecords;
+
+    return m_profiler->getRecords();
 }
 
 void GstProfiler::logRecord(GstProfiler::RecordId id)
@@ -200,7 +217,6 @@ void GstProfiler::logPipeline() const
 GstPadProbeReturn GstProfiler::probeCb(GstPad *pad, GstPadProbeInfo *info, gpointer user_data)
 {
     auto *probeCtx = static_cast<ProbeCtx *>(user_data);
-    GstProfiler *self = probeCtx->self;
     GstBuffer *buffer = GST_PAD_PROBE_INFO_BUFFER(info);
 
     if (!(info->type & GST_PAD_PROBE_TYPE_BUFFER))
@@ -209,10 +225,13 @@ GstPadProbeReturn GstProfiler::probeCb(GstPad *pad, GstPadProbeInfo *info, gpoin
     if (!buffer)
         return GST_PAD_PROBE_OK;
 
-    const auto id = self->m_profiler->record(probeCtx->stage, probeCtx->info);
+    if (!probeCtx->profiler)
+        return GST_PAD_PROBE_REMOVE;
+
+    const auto id = probeCtx->profiler->record(probeCtx->stage, probeCtx->info);
     if (id)
     {
-        self->m_profiler->log(id.value());
+        probeCtx->profiler->log(id.value());
     }
 
     return GST_PAD_PROBE_REMOVE;
@@ -242,18 +261,8 @@ std::optional<std::string> GstProfiler::checkElement(GstElement *element)
 
 const gchar *GstProfiler::getElementClass(GstElement *element)
 {
-    GstElementFactory *factory = m_gstWrapper->gstElementGetFactory(element);
-    if (factory)
-    {
-        return gst_element_factory_get_klass(factory);
-    }
-    else
-    {
-        return m_gstWrapper->gstElementClassGetMetadata(GST_ELEMENT_CLASS(G_OBJECT_GET_CLASS(element)),
-                                                        GST_ELEMENT_METADATA_KLASS);
-    }
-
-    return NULL;
+    return m_gstWrapper->gstElementClassGetMetadata(GST_ELEMENT_CLASS(G_OBJECT_GET_CLASS(element)),
+                                                    GST_ELEMENT_METADATA_KLASS);
 }
 
 std::string GstProfiler::classifyElementName(std::string name) const

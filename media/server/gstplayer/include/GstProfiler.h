@@ -32,6 +32,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace firebolt::rialto::server
 {
@@ -63,15 +64,18 @@ public:
     std::optional<RecordId> createRecord(std::string stage, std::string info) override;
 
     void scheduleGstElementRecord(GstElement *element) override;
+    const std::vector<Record> &getRecords() const override;
 
     void logRecord(const RecordId id) override;
     void dumpToFile() const override;
     void logPipeline() const override;
 
 private:
+    friend class GstProfilerAccessor;
+
     struct ProbeCtx
     {
-        GstProfiler *self;
+        std::shared_ptr<IProfiler> profiler;
         std::string stage;
         std::string info;
     };
@@ -131,7 +135,7 @@ private:
     GstElement *m_pipeline = nullptr;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
-    std::unique_ptr<IProfiler> m_profiler;
+    std::shared_ptr<IProfiler> m_profiler;
     bool m_enabled = false;
     static constexpr std::string_view k_module = "GstProfiler";
 };

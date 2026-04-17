@@ -25,6 +25,7 @@
 #include <gmock/gmock.h>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::server
 {
@@ -40,6 +41,7 @@ public:
     MOCK_METHOD(std::optional<RecordId>, createRecord, (std::string stage, std::string info), (override));
 
     MOCK_METHOD(void, scheduleGstElementRecord, (GstElement * element), (override));
+    MOCK_METHOD((const std::vector<Record> &), getRecords, (), (const, override));
 
     MOCK_METHOD(void, logRecord, (RecordId id), (override));
     MOCK_METHOD(void, dumpToFile, (), (const, override));

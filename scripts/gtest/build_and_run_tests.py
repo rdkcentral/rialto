@@ -129,7 +129,7 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
     for key in suites:
         executeCmd = []
         cmdEnv = os.environ.copy()
-        cmdEnv.setdefault("PROFILER_ENABLED", "false")
+        cmdEnv["PROFILER_ENABLED"] = "false"
         cmdEnv.update(suites[key].get("env", {}))
 
         # Valgrind command must come before the test executable

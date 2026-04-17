@@ -48,6 +48,7 @@ protected:
     {
         saveEnv("PROFILER_ENABLED", m_originalProfilerEnabled);
         saveEnv("PROFILER_DUMP_FILE_NAME", m_originalProfilerDumpFileName);
+        setenv("PROFILER_ENABLED", "true", 1);
 
         factory = IProfilerFactory::createFactory();
         ASSERT_TRUE(factory);
