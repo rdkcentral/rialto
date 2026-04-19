@@ -35,7 +35,7 @@ NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActive
 {
     if (PlaybackState::PLAYING != currentPlaybackState)
     {
-         RIALTO_SERVER_LOG_DEBUG("<<TRACE>>Pipeline in prerolling state. Sending smaller frame count for %s",
+         RIALTO_SERVER_LOG_DEBUG("Pipeline in prerolling state. Sending smaller frame count for %s",
                                  common::convertMediaSourceType(m_mediaSourceType));
          m_frameCount = kPrerollNumFrames;
     }
