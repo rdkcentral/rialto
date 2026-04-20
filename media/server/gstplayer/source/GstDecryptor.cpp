@@ -123,9 +123,12 @@ static const char *toString(const firebolt::rialto::KeyStatus &keyStatus)
         return "released";
     }
     case firebolt::rialto::KeyStatus::INTERNAL_ERROR:
-    default:
     {
         return "internal-error";
+    }
+    default:
+    {
+        return "unknown";
     }
     }
 }
