@@ -26,7 +26,7 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{24};
+constexpr int kFrameCountInPausedState{10};
 } // namespace
 
 namespace firebolt::rialto::server::ct
