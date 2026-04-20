@@ -108,6 +108,10 @@ public:
  *   GetUseBuffering
  *   Expect that GetUseBuffering propagated to the server and gets the property
  *
+ *  Step 13: Get Duration
+ *   GetDuration
+ *   Expect that GetDuration propagated to the server and gets the duration
+ *
  * Test Teardown:
  *  Terminate the media session.
  *  Memory region created for the shared buffer is closed.
@@ -174,5 +178,10 @@ TEST_F(PipelinePropertyTest, setAndGetPipelineProperties)
     // Step 12: Get UseBuffering
     MediaPipelineTestMethods::shouldGetUseBuffering(useBuffering);
     MediaPipelineTestMethods::getUseBuffering(useBuffering);
+
+    // Step 13: Get Duration
+    constexpr int64_t duration{123456789};
+    MediaPipelineTestMethods::shouldGetDuration(duration);
+    MediaPipelineTestMethods::getDuration(duration);
 }
 } // namespace firebolt::rialto::client::ct
