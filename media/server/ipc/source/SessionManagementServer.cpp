@@ -145,6 +145,7 @@ void SessionManagementServer::start()
             while (m_ipcServer->process() && m_isRunning.load())
             {
                 m_ipcServer->wait(kPollInterval);
+                RIALTO_SERVER_LOG_DEBUG("Polling is called only during shutdown");
             }
             RIALTO_SERVER_LOG_MIL("Session Management Server event loop finished.");
         });
