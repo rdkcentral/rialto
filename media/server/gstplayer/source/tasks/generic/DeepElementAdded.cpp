@@ -100,7 +100,16 @@ void DeepElementAdded::execute() const
                 if (audioSinkParentName && m_glibWrapper->gStrrstr(audioSinkParentName, "bin"))
                 {
                     RIALTO_SERVER_LOG_DEBUG("curAudioPlaysinkBin = %s", audioSinkParentName);
+                    if (m_context.playbackGroup.m_curAudioPlaysinkBin)
+                    {
+                        // Unref previous audio playsink bin, if exists
+                        m_gstWrapper->gstObjectUnref(m_context.playbackGroup.m_curAudioPlaysinkBin);
+                    }
                     m_context.playbackGroup.m_curAudioPlaysinkBin = audioSinkParent;
+                }
+                else
+                {
+                    m_gstWrapper->gstObjectUnref(audioSinkParent);
                 }
                 m_glibWrapper->gFree(audioSinkParentName);
             }

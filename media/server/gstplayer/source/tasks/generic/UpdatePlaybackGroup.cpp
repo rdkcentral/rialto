@@ -68,7 +68,8 @@ void UpdatePlaybackGroup::execute() const
                     {
                         m_player.setUseBuffering();
                     }
-                    if (m_context.playbackGroup.m_linkTypefindParser)
+                    if (m_context.playbackGroup.m_linkTypefindParser && m_context.playbackGroup.m_curAudioTypefind &&
+                        m_context.playbackGroup.m_curAudioParse)
                     {
                         if (m_gstWrapper->gstElementLink(m_context.playbackGroup.m_curAudioTypefind,
                                                          m_context.playbackGroup.m_curAudioParse))

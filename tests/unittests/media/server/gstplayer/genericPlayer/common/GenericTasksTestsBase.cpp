@@ -2122,6 +2122,7 @@ void GenericTasksTestsBase::shouldHaveNullParentSink()
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetParent(testContext->m_element))
         .WillOnce(Return(GST_OBJECT(&testContext->m_audioParentSink)));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetName(&testContext->m_audioParentSink)).WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(&testContext->m_audioParentSink));
     EXPECT_CALL(*testContext->m_glibWrapper, gFree(nullptr));
 }
 
@@ -2132,11 +2133,16 @@ void GenericTasksTestsBase::shouldHaveNonBinParentSink()
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetName(&testContext->m_audioParentSink))
         .WillOnce(Return(testContext->m_elementName));
     EXPECT_CALL(*testContext->m_glibWrapper, gStrrstr(testContext->m_elementName, StrEq("bin"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(&testContext->m_audioParentSink));
     EXPECT_CALL(*testContext->m_glibWrapper, gFree(testContext->m_elementName));
 }
 
 void GenericTasksTestsBase::shouldHaveBinParentSink()
 {
+    // Previous bin should be unrefed
+    testContext->m_context.playbackGroup.m_curAudioPlaysinkBin = &testContext->m_childElement;
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(&testContext->m_childElement));
+
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetParent(testContext->m_element))
         .WillOnce(Return(GST_OBJECT(&testContext->m_audioParentSink)));
     EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetName(&testContext->m_audioParentSink))
@@ -2262,6 +2268,7 @@ void GenericTasksTestsBase::shouldTriggerSetUseBuffering()
 void GenericTasksTestsBase::shouldLinkTypefindAndParser()
 {
     testContext->m_context.playbackGroup.m_linkTypefindParser = true;
+    testContext->m_context.playbackGroup.m_curAudioParse = &testContext->m_childElement;
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstElementLink(testContext->m_element, testContext->m_context.playbackGroup.m_curAudioParse))
         .WillOnce(Return(TRUE));
@@ -2270,6 +2277,7 @@ void GenericTasksTestsBase::shouldLinkTypefindAndParser()
 void GenericTasksTestsBase::shouldFailToLinkTypefindAndParser()
 {
     testContext->m_context.playbackGroup.m_linkTypefindParser = true;
+    testContext->m_context.playbackGroup.m_curAudioParse = &testContext->m_childElement;
     EXPECT_CALL(*testContext->m_gstWrapper,
                 gstElementLink(testContext->m_element, testContext->m_context.playbackGroup.m_curAudioParse))
         .WillOnce(Return(FALSE));

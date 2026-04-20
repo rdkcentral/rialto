@@ -2276,6 +2276,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldReattachAmlhalasinkAudioSourceWithFirs
     EXPECT_CALL(*m_gstWrapperMock, gstElementSyncStateWithParent(&decodeBin)).WillOnce(Return(TRUE));
     // end of reattachSource: caps was updated to configCaps inside performAudioTrackCodecChannelSwitch
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&configCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&playsinkBin));
 
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> source =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceAudio>("audio/aac", false);
