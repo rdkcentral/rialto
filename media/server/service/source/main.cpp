@@ -32,6 +32,7 @@ int main(int argc, char *argv[])
     const char kSrcRev[] = SRCREV;
     const char kTags[] = TAGS;
 
+    RDKPerf perf(__FUNCTION__);
     if (std::strlen(kSrcRev) > 0)
     {
         if (std::strlen(kTags) > 0)
@@ -58,9 +59,9 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    GstPerf* rialto_perf = new GstPerf("rialtoseesionserver_perf");                
+                   
     appSessionServer->startService();
-    delete rialto_perf;
+    
 #ifdef FREE_MEM_BEFORE_EXIT
     RIALTO_SERVER_LOG_INFO("Calling ShutdownProtobufLibrary");
     google::protobuf::ShutdownProtobufLibrary();
