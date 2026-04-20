@@ -235,6 +235,8 @@ protected:
     void checkPlaybackGroupAdded();
     void setUseBufferingPending();
     void shouldTriggerSetUseBuffering();
+    void shouldLinkTypefindAndParser();
+    void shouldFailToLinkTypefindAndParser();
 
     // Stop test methods
     void shouldStopGstPlayer();

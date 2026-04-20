@@ -301,6 +301,11 @@ void GstGenericPlayer::termPipeline()
         m_gstWrapper->gstObjectUnref(m_context.videoSink);
         m_context.videoSink = nullptr;
     }
+    if (m_context.playbackGroup.m_curAudioPlaysinkBin)
+    {
+        m_gstWrapper->gstObjectUnref(m_context.playbackGroup.m_curAudioPlaysinkBin);
+        m_context.playbackGroup.m_curAudioPlaysinkBin = nullptr;
+    }
 
     // Delete the pipeline
     m_gstWrapper->gstObjectUnref(m_context.pipeline);
