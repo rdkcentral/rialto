@@ -20,6 +20,7 @@
 #include <condition_variable>
 #include <gtest/gtest.h>
 #include <mutex>
+#include <thread>
 
 #include "ITimer.h"
 
@@ -62,6 +63,33 @@ TEST(TimerTests, ShouldCancelTimer)
     timer->cancel();
     EXPECT_FALSE(timer->isActive());
     EXPECT_FALSE(callFlag);
+}
+
+TEST(TimerTests, ShouldCancelFromSameThread)
+{
+    std::mutex mtx;
+    std::condition_variable cv;
+    bool cancelled = false;
+
+    std::shared_ptr<ITimer> timer;
+    timer = ITimerFactory::getFactory()->createTimer(
+        std::chrono::milliseconds{50},
+        [&]()
+        {
+            timer->cancel();
+            {
+                std::lock_guard<std::mutex> lock{mtx};
+                cancelled = true;
+            }
+            cv.notify_one();
+        },
+        TimerType::ONE_SHOT);
+
+    std::unique_lock<std::mutex> lock{mtx};
+    cv.wait_for(lock, kEnoughTimeForTestToComplete, [&] { return cancelled; });
+
+    EXPECT_TRUE(cancelled);
+    EXPECT_FALSE(timer->isActive());
 }
 
 TEST(TimerTests, ShouldTimeoutPeriodicTimer)
