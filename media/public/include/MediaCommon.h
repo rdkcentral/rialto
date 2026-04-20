@@ -453,6 +453,10 @@ enum class PlaybackError
 {
     UNKNOWN,
     DECRYPTION, /* Player failed to decrypt a buffer and the frame has been dropped */
+    KEY,        /* Unknown or expired key */
+    HDCPPROTECTION,       /* HDCP output-protection problem */
+    HDCPCOMPLIANCE,       /* HDCP Compliance Check Failure */
+    DRM,        /* DRM failure */
 };
 
 /**

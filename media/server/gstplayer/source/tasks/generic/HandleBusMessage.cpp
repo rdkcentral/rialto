@@ -22,6 +22,7 @@
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
+#include <cstring>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -41,6 +42,15 @@ HandleBusMessage::HandleBusMessage(GenericPlayerContext &context, IGstGenericPla
 HandleBusMessage::~HandleBusMessage()
 {
     RIALTO_SERVER_LOG_DEBUG("HandleBusMessage finished");
+}
+
+bool HandleBusMessage::warningContains(const GError *error,
+                       const gchar *debugMessage,
+                       const char *value)
+{
+    return ((error != nullptr) && (std::strstr(error->message, value) != nullptr)) ||
+           ((debugMessage != nullptr) &&
+            (std::strstr(debugMessage, value) != nullptr));
 }
 
 void HandleBusMessage::execute() const
@@ -248,7 +258,24 @@ void HandleBusMessage::execute() const
         {
             RIALTO_SERVER_LOG_WARN("Decrypt error %s - %d: %s (%s)", GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)),
                                    err->code, err->message, debug);
-            rialtoError = PlaybackError::DECRYPTION;
+
+            if (warningContains(err, debug, "expired"))
+            {
+                rialtoError = PlaybackError::KEY;
+            }
+            else if (warningContains(err, debug, "OUTPUT_RESTRICTED"))
+            {
+                rialtoError = PlaybackError::HDCPPROTECTION;
+            }
+            else if (warningContains(err, debug, "INTERNAL_ERROR"))
+            {
+                rialtoError = PlaybackError::DRM;
+            }
+            else
+            {
+                rialtoError = PlaybackError::DECRYPTION;
+            }
+
         }
         else
         {
@@ -262,12 +289,12 @@ void HandleBusMessage::execute() const
             if (g_strrstr(kName, "video"))
             {
                 m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
-                                                       PlaybackError::DECRYPTION);
+                                                       rialtoError);
             }
             else if (g_strrstr(kName, "audio"))
             {
                 m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
-                                                       PlaybackError::DECRYPTION);
+                                                       rialtoError);
             }
             else
             {
