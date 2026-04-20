@@ -191,5 +191,15 @@ TEST_F(PipelinePropertyTest, setAndGetPipelineProperties)
     constexpr int64_t duration{123456789};
     MediaPipelineTestMethods::shouldGetDuration(duration);
     MediaPipelineTestMethods::getDuration(duration);
+
+    // Step 14: Set Report Decode Errors
+    bool reportDecodeErrors{true};
+    MediaPipelineTestMethods::shouldSetReportDecodeErrors(reportDecodeErrors);
+    MediaPipelineTestMethods::setReportDecodeErrors(reportDecodeErrors);
+
+    // Step 15: Get Queued Frames
+    uint32_t queuedFrames{123};
+    MediaPipelineTestMethods::shouldGetQueuedFrames(queuedFrames);
+    MediaPipelineTestMethods::getQueuedFrames(queuedFrames);
 }
 } // namespace firebolt::rialto::client::ct
