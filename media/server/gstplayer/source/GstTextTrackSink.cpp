@@ -159,12 +159,19 @@ static void gst_rialto_text_track_sink_finalize(GObject *object) // NOLINT(build
 
 static gboolean gst_rialto_text_track_sink_start(GstBaseSink *sink) // NOLINT(build/function_format)
 {
-    const std::string kDisplay{"westeros-asplayer-subtitles"};
+    const char *wayland_display = std::getenv("WAYLAND_DISPLAY");
+    if (!wayland_display)
+    {
+        GST_ERROR_OBJECT(sink, "Failed to get WAYLAND_DISPLAY env variable");
+        return false;
+    }
+
+    std::string display{wayland_display};
     GstRialtoTextTrackSink *self = GST_RIALTO_TEXT_TRACK_SINK(sink);
     try
     {
         self->priv->m_textTrackSession =
-            firebolt::rialto::server::ITextTrackSessionFactory::getFactory().createTextTrackSession(kDisplay);
+            firebolt::rialto::server::ITextTrackSessionFactory::getFactory().createTextTrackSession(display);
     }
     catch (const std::exception &e)
     {
