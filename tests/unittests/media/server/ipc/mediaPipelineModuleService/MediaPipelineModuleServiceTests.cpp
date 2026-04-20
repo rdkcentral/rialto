@@ -281,6 +281,38 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetImmediateOutput)
     sendGetImmediateOutputRequestAndReceiveFail();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldSetReportDecodeErrors)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillSetReportDecodeErrors();
+    sendSetReportDecodeErrorsRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetReportDecodeErrors)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToSetReportDecodeErrors();
+    sendSetReportDecodeErrorsRequestAndReceiveFail();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetQueuedFrames)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillGetQueuedFrames();
+    sendGetQueuedFramesRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetQueuedFrames)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToGetQueuedFrames();
+    sendGetQueuedFramesRequestAndReceiveFail();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldGetStats)
 {
     mediaPipelineServiceWillCreateSession();
