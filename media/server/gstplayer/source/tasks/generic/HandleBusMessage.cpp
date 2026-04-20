@@ -263,11 +263,11 @@ void HandleBusMessage::execute() const
             {
                 rialtoError = PlaybackError::KEY;
             }
-            else if (warningContains(err, debug, "OUTPUT_RESTRICTED"))
+            else if (warningContains(err, debug, "output-restricted"))
             {
                 rialtoError = PlaybackError::HDCPPROTECTION;
             }
-            else if (warningContains(err, debug, "INTERNAL_ERROR"))
+            else if (warningContains(err, debug, "internal-error"))
             {
                 rialtoError = PlaybackError::DRM;
             }
