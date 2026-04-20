@@ -68,6 +68,20 @@ void UpdatePlaybackGroup::execute() const
                     {
                         m_player.setUseBuffering();
                     }
+                    if (m_context.playbackGroup.m_linkTypefindParser && m_context.playbackGroup.m_curAudioTypefind &&
+                        m_context.playbackGroup.m_curAudioParse)
+                    {
+                        if (m_gstWrapper->gstElementLink(m_context.playbackGroup.m_curAudioTypefind,
+                                                         m_context.playbackGroup.m_curAudioParse))
+                        {
+                            RIALTO_SERVER_LOG_DEBUG("Linked typefind to parser");
+                            m_context.playbackGroup.m_linkTypefindParser = false;
+                        }
+                        else
+                        {
+                            RIALTO_SERVER_LOG_DEBUG("Failed to link typefind to parser");
+                        }
+                    }
                 }
                 m_glibWrapper->gFree(elementName);
                 m_gstWrapper->gstObjectUnref(typeFindParent);
