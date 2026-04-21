@@ -243,7 +243,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetDurationFailure)
 }
 
 /**
- * Test that GetDuration returns success if the gstreamer API succeeds and gets playback rate
+ * Test that GetDuration returns success if the gstreamer API succeeds and gets the duration
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetDurationSuccess)
 {

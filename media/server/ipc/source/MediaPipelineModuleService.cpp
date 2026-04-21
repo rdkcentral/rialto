@@ -674,7 +674,7 @@ void MediaPipelineModuleService::getDuration(::google::protobuf::RpcController *
     int64_t duration{};
     if (!m_mediaPipelineService.getDuration(request->session_id(), duration))
     {
-        RIALTO_SERVER_LOG_ERROR("Get Duration failed");
+        RIALTO_SERVER_LOG_ERROR("Get duration failed");
         controller->SetFailed("Operation failed");
     }
     else
