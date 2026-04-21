@@ -233,13 +233,15 @@ public:
                 [&](GstElement *element, GstFormat format, gint64 *duration)
                 {
                     *duration = kDuration;
+                    workerFinished();
                     return TRUE;
                 }));
     }
 
     void willFailToGetDuration()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstElementQueryDuration(&m_pipeline, GST_FORMAT_TIME, _)).WillOnce(Return(FALSE));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementQueryDuration(&m_pipeline, GST_FORMAT_TIME, _))
+            .WillOnce(DoAll(Invoke(this, &MediaPipelineTest::workerFinished), Return(FALSE)));
     }
 
     void setImmediateOutput()
@@ -429,12 +431,14 @@ public:
             .send(req)
             .expectSuccess()
             .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.duration(), kDuration); });
+        waitWorker();
     }
 
     void getDurationFailure()
     {
         auto req{createGetDurationRequest(m_sessionId)};
         ConfigureAction<GetDuration>(m_clientStub).send(req).expectFailure();
+        waitWorker();
     }
 
 private:
