@@ -415,7 +415,7 @@ bool GstGenericPlayer::getDuration(std::int64_t &duration)
 {
     // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
     // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
-    if (m_context.pipeline && !m_gstWrapper->gstElementQueryDuration(m_context.pipeline, GST_FORMAT_TIME, &duration))
+    if (!m_context.pipeline || !m_gstWrapper->gstElementQueryDuration(m_context.pipeline, GST_FORMAT_TIME, &duration))
     {
         RIALTO_SERVER_LOG_WARN("Failed to query duration");
         return false;
