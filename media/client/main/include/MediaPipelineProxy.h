@@ -182,7 +182,7 @@ public:
         return m_mediaPipeline->switchSource(source);
     }
 
-    bool getDuration(int64_t &duration) { return m_mediaPipeline->getDuration(duration); }
+    bool getDuration(int64_t &duration) override { return m_mediaPipeline->getDuration(duration); }
 
     void notifyApplicationState(ApplicationState state) override { m_mediaPipeline->notifyApplicationState(state); }
 

@@ -261,7 +261,7 @@ bool MediaPipelineService::getDuration(int sessionId, std::int64_t &duration)
     auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
-        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
         return false;
     }
     return mediaPipelineIter->second->getDuration(duration);

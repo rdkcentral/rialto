@@ -415,11 +415,11 @@ public:
     /**
      * @brief Queries an element (usually top-level pipeline or playbin element) for the total stream duration in nanoseconds.
      *
-     * @param[in] element  : a GstElement to invoke the duration query on.
-     * @param[in] format   : the GstFormat requested
-     * @param[in] duration :  A location in which to store the total duration, or NULL.
+     * @param[in] element   : a GstElement to invoke the duration query on.
+     * @param[in] format    : the GstFormat requested
+     * @param[out] duration :  A location in which to store the total duration, or NULL.
      *
-     * @retval The requested pad, NULL otherwise.
+     * @retval TRUE on success, FALSE otherwise.
      */
     virtual gboolean gstElementQueryDuration(GstElement *element, GstFormat format, gint64 *duration) = 0;
 

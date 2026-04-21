@@ -1562,7 +1562,7 @@ public:
     /**
      * @brief Get the playback duration in nanoseconds.
      *
-     * This method is sychronous, it returns current playback duration
+     * This method is synchronous, it returns current playback duration
      *
      * @param[out] duration : The playback duration in nanoseconds
      *

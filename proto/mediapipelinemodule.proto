@@ -351,7 +351,7 @@ message GetPositionResponse {
  *
  * @param[in]  session_id   The id of the A/V session.
  *
- * This method is considered to be sychronous, it returns current playback duration
+ * This method is considered to be synchronous, it returns current playback duration
  *
  */
 message GetDurationRequest {
