@@ -29,7 +29,8 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCount{24};
+constexpr int kFrameCountInPausedState{10};
+constexpr int kFrameCountInPlayingState{24};
 } // namespace
 
 using testing::_;
@@ -300,8 +301,8 @@ TEST_F(EncryptedPlaybackTest, EncryptedPlayback)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushEncryptedAudioData(kFrameCount);
-        pushEncryptedVideoData(kFrameCount);
+        pushEncryptedAudioData(kFrameCountInPausedState);
+        pushEncryptedVideoData(kFrameCountInPausedState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -319,8 +320,8 @@ TEST_F(EncryptedPlaybackTest, EncryptedPlayback)
 
     // Step 10: Write 1 encrypted audio frame
     // Step 11: Write 1 encrypted video frame
-    pushEncryptedAudioData(kFrameCount);
-    pushEncryptedVideoData(kFrameCount);
+    pushEncryptedAudioData(kFrameCountInPlayingState);
+    pushEncryptedVideoData(kFrameCountInPlayingState);
 
     // Step 12: End of audio stream
     // Step 13: End of video stream
