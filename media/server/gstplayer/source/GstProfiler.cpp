@@ -62,18 +62,79 @@ std::unique_ptr<IGstProfiler> GstProfilerFactory::createGstProfiler(GstElement *
     return std::make_unique<GstProfiler>(pipeline, gstWrapper, glibWrapper);
 }
 
+namespace
+{
 inline constexpr std::array kKlassTokens{
     std::string_view{"Source"},
     std::string_view{"Decryptor"},
     std::string_view{"Decoder"},
 };
+inline constexpr std::string_view kModuleName{"GstProfiler"};
+
+using Clock = std::chrono::system_clock;
+using IProfiler = firebolt::rialto::common::IProfiler;
+
+struct ProbeCtx
+{
+    std::shared_ptr<IProfiler> profiler;
+    std::string stage;
+    std::string info;
+};
+
+GstPadProbeReturn probeCb(GstPad *pad, GstPadProbeInfo *info, gpointer userData)
+{
+    auto *probeCtx = static_cast<ProbeCtx *>(userData);
+
+    if (!(info->type & GST_PAD_PROBE_TYPE_BUFFER))
+        return GST_PAD_PROBE_OK;
+
+    if (!GST_PAD_PROBE_INFO_BUFFER(info))
+        return GST_PAD_PROBE_OK;
+
+    if (!probeCtx->profiler)
+        return GST_PAD_PROBE_REMOVE;
+
+    const auto id = probeCtx->profiler->record(probeCtx->stage, probeCtx->info);
+    if (id)
+    {
+        probeCtx->profiler->log(id.value());
+    }
+
+    return GST_PAD_PROBE_REMOVE;
+}
+
+void probeCtxDestroy(gpointer data)
+{
+    delete static_cast<ProbeCtx *>(data);
+}
+
+std::optional<int64_t> diffMs(const std::optional<Clock::time_point> &end, const std::optional<Clock::time_point> &start)
+{
+    if (!end || !start)
+        return std::nullopt;
+
+    return std::chrono::duration_cast<std::chrono::milliseconds>(*end - *start).count();
+}
+
+std::optional<Clock::time_point> maxTime(const std::optional<Clock::time_point> &a,
+                                         const std::optional<Clock::time_point> &b)
+{
+    if (a && b)
+        return std::max(*a, *b);
+    if (a)
+        return a;
+    if (b)
+        return b;
+    return std::nullopt;
+}
+} // namespace
 
 GstProfiler::GstProfiler(GstElement *pipeline, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                          const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
     : m_pipeline{pipeline}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}
 {
     auto profilerFactory = firebolt::rialto::common::IProfilerFactory::createFactory();
-    m_profiler = profilerFactory ? std::shared_ptr<IProfiler>{profilerFactory->createProfiler(std::string{k_module})}
+    m_profiler = profilerFactory ? std::shared_ptr<IProfiler>{profilerFactory->createProfiler(std::string{kModuleName})}
                                  : nullptr;
     m_enabled = (m_profiler != nullptr) && m_profiler->isEnabled();
 
@@ -92,24 +153,24 @@ bool GstProfiler::isEnabled() const
     return m_enabled;
 }
 
-std::optional<GstProfiler::RecordId> GstProfiler::createRecord(std::string stage)
+std::optional<GstProfiler::RecordId> GstProfiler::createRecord(const std::string &stage)
 {
     if (!m_enabled || !m_profiler)
         return std::nullopt;
 
-    auto id = m_profiler->record(std::move(stage));
+    auto id = m_profiler->record(stage);
     if (!id)
         return std::nullopt;
 
     return static_cast<GstProfiler::RecordId>(*id);
 }
 
-std::optional<GstProfiler::RecordId> GstProfiler::createRecord(std::string stage, std::string info)
+std::optional<GstProfiler::RecordId> GstProfiler::createRecord(const std::string &stage, const std::string &info)
 {
     if (!m_enabled || !m_profiler)
         return std::nullopt;
 
-    auto id = m_profiler->record(std::move(stage), std::move(info));
+    auto id = m_profiler->record(stage, info);
     if (!id)
         return std::nullopt;
 
@@ -124,7 +185,7 @@ void GstProfiler::scheduleGstElementRecord(GstElement *element)
     if (!element)
         return;
 
-    auto stage = checkElement(element);
+    auto stage = getFirstBufferExitStage(element);
     if (!stage)
         return;
 
@@ -144,19 +205,17 @@ void GstProfiler::scheduleGstElementRecord(GstElement *element)
     else
     {
         gchar *rawName = m_gstWrapper->gstElementGetName(element);
-        elementInfo = classifyElementName(rawName ? rawName : "<null>");
+        elementInfo = deriveElementInfoFromName(rawName ? rawName : "<null>");
         if (rawName)
             m_glibWrapper->gFree(rawName);
     }
 
-    auto probeCtx = std::make_unique<ProbeCtx>(ProbeCtx{m_profiler, stage.value(), std::move(elementInfo)});
-    const auto probeId = m_gstWrapper->gstPadAddProbe(pad, GST_PAD_PROBE_TYPE_BUFFER, &GstProfiler::probeCb,
-                                                      probeCtx.get(), &GstProfiler::probeCtxDestroy);
-    if (probeId != 0)
+    auto *probeCtx = new ProbeCtx{m_profiler, stage.value(), std::move(elementInfo)};
+    const auto probeId =
+        m_gstWrapper->gstPadAddProbe(pad, GST_PAD_PROBE_TYPE_BUFFER, &probeCb, probeCtx, &probeCtxDestroy);
+    if (probeId == 0)
     {
-        // Ownership transfers to GStreamer on successful installation and probeCtxDestroy()
-        // deletes the context when the probe is removed.
-        probeCtx.release();
+        delete probeCtx;
     }
 
     m_gstWrapper->gstObjectUnref(pad);
@@ -188,7 +247,7 @@ void GstProfiler::dumpToFile() const
     (void)m_profiler->dumpToFile();
 }
 
-void GstProfiler::logPipeline() const
+void GstProfiler::logPipelineSummary() const
 {
     if (!m_enabled || !m_profiler)
         return;
@@ -214,37 +273,9 @@ void GstProfiler::logPipeline() const
     }
 }
 
-GstPadProbeReturn GstProfiler::probeCb(GstPad *pad, GstPadProbeInfo *info, gpointer user_data)
+std::optional<std::string> GstProfiler::getFirstBufferExitStage(GstElement *element)
 {
-    auto *probeCtx = static_cast<ProbeCtx *>(user_data);
-    GstBuffer *buffer = GST_PAD_PROBE_INFO_BUFFER(info);
-
-    if (!(info->type & GST_PAD_PROBE_TYPE_BUFFER))
-        return GST_PAD_PROBE_OK;
-
-    if (!buffer)
-        return GST_PAD_PROBE_OK;
-
-    if (!probeCtx->profiler)
-        return GST_PAD_PROBE_REMOVE;
-
-    const auto id = probeCtx->profiler->record(probeCtx->stage, probeCtx->info);
-    if (id)
-    {
-        probeCtx->profiler->log(id.value());
-    }
-
-    return GST_PAD_PROBE_REMOVE;
-}
-
-void GstProfiler::probeCtxDestroy(gpointer data)
-{
-    delete static_cast<ProbeCtx *>(data);
-}
-
-std::optional<std::string> GstProfiler::checkElement(GstElement *element)
-{
-    const gchar *klass = getElementClass(element);
+    const gchar *klass = getElementClassMetadata(element);
     if (!klass)
         return std::nullopt;
 
@@ -259,13 +290,13 @@ std::optional<std::string> GstProfiler::checkElement(GstElement *element)
     return std::nullopt;
 }
 
-const gchar *GstProfiler::getElementClass(GstElement *element)
+const gchar *GstProfiler::getElementClassMetadata(GstElement *element)
 {
     return m_gstWrapper->gstElementClassGetMetadata(GST_ELEMENT_CLASS(G_OBJECT_GET_CLASS(element)),
                                                     GST_ELEMENT_METADATA_KLASS);
 }
 
-std::string GstProfiler::classifyElementName(std::string name) const
+std::string GstProfiler::deriveElementInfoFromName(const std::string &name) const
 {
     std::string lower = name;
     std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c) { return std::tolower(c); });
@@ -357,27 +388,6 @@ std::optional<GstProfiler::PipelineMetrics> GstProfiler::calculateMetrics() cons
     metrics.totalWithoutApp = diffMs(timestamps.pipelinePlaying, firstMediaReady);
 
     return metrics;
-}
-
-std::optional<int64_t> GstProfiler::diffMs(const std::optional<Clock::time_point> &end,
-                                           const std::optional<Clock::time_point> &start)
-{
-    if (!end || !start)
-        return std::nullopt;
-
-    return std::chrono::duration_cast<std::chrono::milliseconds>(*end - *start).count();
-}
-
-std::optional<GstProfiler::Clock::time_point> GstProfiler::maxTime(const std::optional<Clock::time_point> &a,
-                                                                   const std::optional<Clock::time_point> &b)
-{
-    if (a && b)
-        return std::max(*a, *b);
-    if (a)
-        return a;
-    if (b)
-        return b;
-    return std::nullopt;
 }
 
 } // namespace firebolt::rialto::server

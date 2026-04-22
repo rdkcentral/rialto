@@ -44,8 +44,8 @@ public:
 
     bool isEnabled() const noexcept override;
 
-    std::optional<RecordId> record(std::string stage) override;
-    std::optional<RecordId> record(std::string stage, std::string info) override;
+    std::optional<RecordId> record(const std::string &stage) override;
+    std::optional<RecordId> record(const std::string &stage, const std::string &info) override;
 
     void log(const RecordId id) override;
 
@@ -53,9 +53,7 @@ public:
     const std::vector<Record> &getRecords() const override;
 
 private:
-    static bool parseEnv(const char *value, bool defaultValue);
-    static std::optional<std::string> parseOptionalEnv(const char *value);
-    const Record *findById(RecordId id);
+    std::optional<Record> findById(RecordId id) const;
 
     std::string m_module;
     bool m_enabled;
@@ -64,10 +62,6 @@ private:
     mutable std::mutex m_mutex;
     RecordId m_id{1};
     std::vector<Record> m_records;
-
-    static constexpr const char *kProfilerEnv = "PROFILER_ENABLED";
-    static constexpr const char *kProfilerDumpFileEnv = "PROFILER_DUMP_FILE_NAME";
-    static constexpr size_t kMaxRecords = 100;
 };
 
 }; // namespace firebolt::rialto::common

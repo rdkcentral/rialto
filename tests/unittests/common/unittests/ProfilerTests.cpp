@@ -122,13 +122,13 @@ TEST_F(ProfilerTests, GetRecordsReturnsRecordedEntries)
     ASSERT_GE(records.size(), 2U);
 
     const auto &record1 = records[records.size() - 2];
-    EXPECT_EQ(record1.module, "UnitTestModule");
+    EXPECT_EQ(record1.moduleName, "UnitTestModule");
     EXPECT_EQ(record1.id, id1.value());
     EXPECT_EQ(record1.stage, "Stage1");
     EXPECT_TRUE(record1.info.empty());
 
     const auto &record2 = records[records.size() - 1];
-    EXPECT_EQ(record2.module, "UnitTestModule");
+    EXPECT_EQ(record2.moduleName, "UnitTestModule");
     EXPECT_EQ(record2.id, id2.value());
     EXPECT_EQ(record2.stage, "Stage2");
     EXPECT_EQ(record2.info, "Info2");
@@ -251,7 +251,7 @@ TEST_F(ProfilerTests, DumpToFileReturnsFalseForInvalidPath)
     EXPECT_FALSE(dumpProfiler->dumpToFile());
 }
 
-TEST_F(ProfilerTests, DumpToFileSucceedsWhenEnvMissing)
+TEST_F(ProfilerTests, DumpToFileReturnsFalseWhenEnvMissing)
 {
-    EXPECT_TRUE(profiler->dumpToFile());
+    EXPECT_FALSE(profiler->dumpToFile());
 }

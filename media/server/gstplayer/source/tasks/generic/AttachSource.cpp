@@ -108,7 +108,7 @@ void AttachSource::addSource() const
     }
     if (appSrc)
     {
-        auto recordId = m_context.gstProfiler->createRecord("Created AppSrc Element", std::move(profilerInfo));
+        auto recordId = m_context.gstProfiler->createRecord("Created AppSrc Element", profilerInfo);
         if (recordId)
             m_context.gstProfiler->logRecord(recordId.value());
     }

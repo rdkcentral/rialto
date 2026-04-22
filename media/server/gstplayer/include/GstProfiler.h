@@ -48,37 +48,29 @@ public:
 class GstProfiler : public IGstProfiler
 {
 public:
-    using Clock = std::chrono::system_clock;
-    using IGstWrapper = firebolt::rialto::wrappers::IGstWrapper;
-    using IGlibWrapper = firebolt::rialto::wrappers::IGlibWrapper;
-    using IProfiler = firebolt::rialto::common::IProfiler;
     using RecordId = IGstProfiler::RecordId;
 
-    GstProfiler(GstElement *pipeline, const std::shared_ptr<IGstWrapper> &gstWrapper,
-                const std::shared_ptr<IGlibWrapper> &glibWrapper);
+    GstProfiler(GstElement *pipeline, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper);
     ~GstProfiler() override;
 
     bool isEnabled() const override;
 
-    std::optional<RecordId> createRecord(std::string stage) override;
-    std::optional<RecordId> createRecord(std::string stage, std::string info) override;
+    std::optional<RecordId> createRecord(const std::string &stage) override;
+    std::optional<RecordId> createRecord(const std::string &stage, const std::string &info) override;
 
     void scheduleGstElementRecord(GstElement *element) override;
     const std::vector<Record> &getRecords() const override;
 
     void logRecord(const RecordId id) override;
     void dumpToFile() const override;
-    void logPipeline() const override;
+    void logPipelineSummary() const override;
 
 private:
-    friend class GstProfilerAccessor;
-
-    struct ProbeCtx
-    {
-        std::shared_ptr<IProfiler> profiler;
-        std::string stage;
-        std::string info;
-    };
+    using Clock = std::chrono::system_clock;
+    using IGstWrapper = firebolt::rialto::wrappers::IGstWrapper;
+    using IGlibWrapper = firebolt::rialto::wrappers::IGlibWrapper;
+    using IProfiler = firebolt::rialto::common::IProfiler;
 
     struct PipelineStageTimestamps
     {
@@ -118,26 +110,17 @@ private:
         std::optional<int64_t> totalWithoutApp;
     };
 
-    std::optional<std::string> checkElement(GstElement *element);
-    const gchar *getElementClass(GstElement *element);
-    std::string classifyElementName(std::string name) const;
+    std::optional<std::string> getFirstBufferExitStage(GstElement *element);
+    const gchar *getElementClassMetadata(GstElement *element);
+    std::string deriveElementInfoFromName(const std::string &name) const;
 
     std::optional<GstProfiler::PipelineMetrics> calculateMetrics() const;
-
-    static GstPadProbeReturn probeCb(GstPad *pad, GstPadProbeInfo *info, gpointer user_data);
-    static void probeCtxDestroy(gpointer data);
-
-    static std::optional<int64_t> diffMs(const std::optional<Clock::time_point> &end,
-                                         const std::optional<Clock::time_point> &start);
-    static std::optional<Clock::time_point> maxTime(const std::optional<Clock::time_point> &a,
-                                                    const std::optional<Clock::time_point> &b);
 
     GstElement *m_pipeline = nullptr;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
     std::shared_ptr<IProfiler> m_profiler;
     bool m_enabled = false;
-    static constexpr std::string_view k_module = "GstProfiler";
 };
 } // namespace firebolt::rialto::server
 #endif // FIREBOLT_RIALTO_SERVER_GST_PROFILER_H_
