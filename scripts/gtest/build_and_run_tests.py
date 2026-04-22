@@ -73,6 +73,8 @@ def buildAndRunGTests(args, f, buildDefines, suitesToRun):
     os.environ["RIALTO_CONSOLE_LOG"] = "1"
     # Set env variable to enable debug prints
     os.environ["RIALTO_DEBUG"] = "5"
+    # Disable profiler by default. Suites can override this via their env settings.
+    os.environ["PROFILER_ENABLED"] = "false"
 
     # Clean if required
     if args['clean'] == True:
@@ -129,7 +131,6 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
     for key in suites:
         executeCmd = []
         cmdEnv = os.environ.copy()
-        cmdEnv["PROFILER_ENABLED"] = "false"
         cmdEnv.update(suites[key].get("env", {}))
 
         # Valgrind command must come before the test executable

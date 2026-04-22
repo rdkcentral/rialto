@@ -20,14 +20,18 @@
 #include "GlibWrapperMock.h"
 #include "GstWrapperMock.h"
 
+#include <cstdio>
 #include <cstdlib>
 #include <fstream>
 #include <glib.h>
 #include <gst/gst.h>
 #include <gtest/gtest.h>
+#include <iterator>
+#include <memory>
+#include <optional>
 #include <random>
+#include <string>
 #include <string_view>
-#include <thread>
 
 #include "GstProfiler.h"
 
@@ -40,18 +44,6 @@ using ::testing::Return;
 using ::testing::ReturnNull;
 using ::testing::StrEq;
 using ::testing::StrictMock;
-
-namespace firebolt::rialto::server
-{
-class GstProfilerAccessor
-{
-public:
-    static std::optional<GstProfiler::PipelineMetrics> calculateMetrics(const GstProfiler &profiler)
-    {
-        return profiler.calculateMetrics();
-    }
-};
-} // namespace firebolt::rialto::server
 
 class GstProfilerTests : public ::testing::Test
 {
@@ -129,19 +121,6 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstElementClassGetMetadata(_, _)).WillOnce(Return("Source"));
 
         EXPECT_CALL(*m_glibWrapperMock, gStrrstr(_, _)).WillOnce(Return(const_cast<gchar *>("Source")));
-    }
-
-    void addRecordAndWait(const std::string &stage, const std::optional<std::string> &info = std::nullopt)
-    {
-        std::optional<IGstProfiler::RecordId> id;
-
-        if (info)
-            id = m_gstProfiler->createRecord(stage, *info);
-        else
-            id = m_gstProfiler->createRecord(stage);
-
-        ASSERT_TRUE(id.has_value());
-        std::this_thread::sleep_for(std::chrono::milliseconds{2});
     }
 };
 
@@ -248,12 +227,12 @@ TEST_F(GstProfilerTests, DumpToFileUsesCachedEnvValue)
 /**
  * Test that GstProfiler can log pipeline metrics.
  */
-TEST_F(GstProfilerTests, LogPipeline)
+TEST_F(GstProfilerTests, LogPipelineSummary)
 {
     setProfilerEnabledEnv(true);
     createGstProfiler();
 
-    EXPECT_NO_THROW(m_gstProfiler->logPipeline());
+    EXPECT_NO_THROW(m_gstProfiler->logPipelineSummary());
 }
 
 /**
@@ -548,54 +527,6 @@ TEST_F(GstProfilerTests, DestroyAfterCreateWithPipeline)
 }
 
 /**
- * Test that metrics calculation returns null when required records are missing.
- */
-TEST_F(GstProfilerTests, CalculateMetricsReturnsNulloptWhenRecordsMissing)
-{
-    setProfilerEnabledEnv(true);
-    createGstProfiler();
-
-    addRecordAndWait("Pipeline Created");
-    addRecordAndWait("All Sources Attached");
-
-    EXPECT_FALSE(GstProfilerAccessor::calculateMetrics(*m_gstProfiler).has_value());
-}
-
-/**
- * Test that metrics calculation succeeds for a full clear pipeline path.
- */
-TEST_F(GstProfilerTests, CalculateMetricsReturnsValuesForNonEncryptedPlayback)
-{
-    setProfilerEnabledEnv(true);
-    createGstProfiler();
-
-    addRecordAndWait("Pipeline Created");
-    addRecordAndWait("All Sources Attached");
-    addRecordAndWait("First Segment Received", "Video");
-    addRecordAndWait("First Segment Received", "Audio");
-    addRecordAndWait("Source FB Exit", "Video");
-    addRecordAndWait("Source FB Exit", "Audio");
-    addRecordAndWait("Decoder FB Exit", "Video");
-    addRecordAndWait("Decoder FB Exit", "Audio");
-    addRecordAndWait("Pipeline State Changed", "PAUSED");
-    addRecordAndWait("Pipeline State Changed", "PLAYING");
-
-    const auto metrics = GstProfilerAccessor::calculateMetrics(*m_gstProfiler);
-    ASSERT_TRUE(metrics.has_value());
-    EXPECT_TRUE(metrics->preparation.has_value());
-    EXPECT_TRUE(metrics->videoDownload.has_value());
-    EXPECT_TRUE(metrics->audioDownload.has_value());
-    EXPECT_TRUE(metrics->videoSource.has_value());
-    EXPECT_TRUE(metrics->audioSource.has_value());
-    EXPECT_TRUE(metrics->videoDecode.has_value());
-    EXPECT_TRUE(metrics->audioDecode.has_value());
-    EXPECT_TRUE(metrics->preRoll.has_value());
-    EXPECT_TRUE(metrics->play.has_value());
-    EXPECT_TRUE(metrics->total.has_value());
-    EXPECT_TRUE(metrics->totalWithoutApp.has_value());
-}
-
-/**
  * Test that public API can be called multiple times.
  */
 TEST_F(GstProfilerTests, MultipleCalls)
@@ -612,6 +543,6 @@ TEST_F(GstProfilerTests, MultipleCalls)
         [[maybe_unused]] const auto id2 = m_gstProfiler->createRecord("AllSourcesAttached", "audio+video");
         m_gstProfiler->logRecord(1);
         m_gstProfiler->scheduleGstElementRecord(m_realElement);
-        m_gstProfiler->logPipeline();
+        m_gstProfiler->logPipelineSummary();
     });
 }

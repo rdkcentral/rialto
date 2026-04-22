@@ -66,7 +66,7 @@ public:
 
     struct Record
     {
-        std::string module;
+        std::string moduleName;
         uint64_t id{0};
         std::string stage;
         std::string info;
@@ -94,7 +94,7 @@ public:
      *
      * @retval Record identifier for created record or std::nullopt.
      */
-    virtual std::optional<RecordId> record(std::string stage) = 0;
+    virtual std::optional<RecordId> record(const std::string &stage) = 0;
 
     /**
      * @brief Creates a record for given stage and info.
@@ -104,7 +104,7 @@ public:
      *
      * @retval Record identifier for created record or std::nullopt.
      */
-    virtual std::optional<RecordId> record(std::string stage, std::string info) = 0;
+    virtual std::optional<RecordId> record(const std::string &stage, const std::string &info) = 0;
 
     /**
      * @brief Logs a record for given identifier.

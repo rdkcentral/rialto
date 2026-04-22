@@ -22,11 +22,46 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <fstream>
 #include <memory>
 #include <string>
+
+namespace
+{
+inline constexpr const char *kProfilerEnv{"PROFILER_ENABLED"};
+inline constexpr const char *kProfilerDumpFileEnv{"PROFILER_DUMP_FILE_NAME"};
+inline constexpr std::size_t kMaxRecords{100};
+
+bool getProfilerEnabled()
+{
+    const char *value = std::getenv(kProfilerEnv);
+    if (!value || (value[0] == '\0'))
+        return false;
+
+    std::string stringValue(value);
+    std::transform(stringValue.begin(), stringValue.end(), stringValue.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+    if (stringValue == "1" || stringValue == "true" || stringValue == "yes" || stringValue == "on")
+        return true;
+    if (stringValue == "0" || stringValue == "false" || stringValue == "no" || stringValue == "off")
+        return false;
+
+    return false;
+}
+
+std::optional<std::string> getDumpFileName()
+{
+    const char *value = std::getenv(kProfilerDumpFileEnv);
+    if (!value || value[0] == '\0')
+        return std::nullopt;
+
+    return std::string{value};
+}
+} // namespace
 
 namespace firebolt::rialto::common
 {
@@ -52,8 +87,7 @@ std::unique_ptr<IProfiler> ProfilerFactory::createProfiler(std::string moduleNam
 }
 
 Profiler::Profiler(std::string module)
-    : m_module(std::move(module)), m_enabled(parseEnv(std::getenv(kProfilerEnv), false)),
-      m_dumpFileName(parseOptionalEnv(std::getenv(kProfilerDumpFileEnv)))
+    : m_module(std::move(module)), m_enabled(getProfilerEnabled()), m_dumpFileName(getDumpFileName())
 {
 }
 
@@ -62,7 +96,7 @@ bool Profiler::isEnabled() const noexcept
     return m_enabled;
 }
 
-std::optional<Profiler::RecordId> Profiler::record(std::string stage)
+std::optional<Profiler::RecordId> Profiler::record(const std::string &stage)
 {
     if (!m_enabled)
         return std::nullopt;
@@ -77,12 +111,12 @@ std::optional<Profiler::RecordId> Profiler::record(std::string stage)
 
     const Profiler::RecordId id = m_id++;
 
-    m_records.push_back(Record{m_module, id, std::move(stage), std::string{}, now});
+    m_records.push_back(Record{m_module, id, stage, std::string{}, now});
 
     return id;
 }
 
-std::optional<Profiler::RecordId> Profiler::record(std::string stage, std::string info)
+std::optional<Profiler::RecordId> Profiler::record(const std::string &stage, const std::string &info)
 {
     if (!m_enabled)
         return std::nullopt;
@@ -97,7 +131,7 @@ std::optional<Profiler::RecordId> Profiler::record(std::string stage, std::strin
 
     const Profiler::RecordId id = m_id++;
 
-    m_records.push_back(Record{m_module, id, std::move(stage), std::move(info), now});
+    m_records.push_back(Record{m_module, id, stage, info, now});
 
     return id;
 }
@@ -107,9 +141,7 @@ void Profiler::log(const RecordId id)
     if (!m_enabled)
         return;
 
-    std::lock_guard<std::mutex> lock(m_mutex);
-
-    const auto *record = findById(id);
+    const auto record = findById(id);
     if (record)
     {
         const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(record->time.time_since_epoch()).count();
@@ -118,7 +150,7 @@ void Profiler::log(const RecordId id)
         const auto tsStr = std::to_string(static_cast<std::int64_t>(ms));
 
         RIALTO_COMMON_LOG_MIL("PROFILER | RECORD | MODULE[%s] ID[%s] STAGE[%s] INFO[%s] TIMESTAMP[%s]",
-                              record->module.c_str(), idStr.c_str(), record->stage.c_str(), record->info.c_str(),
+                              record->moduleName.c_str(), idStr.c_str(), record->stage.c_str(), record->info.c_str(),
                               tsStr.c_str());
     }
 }
@@ -126,7 +158,7 @@ void Profiler::log(const RecordId id)
 bool Profiler::dumpToFile() const
 {
     if (!m_dumpFileName)
-        return true;
+        return false;
 
     if (!m_enabled)
         return false;
@@ -145,7 +177,7 @@ bool Profiler::dumpToFile() const
     {
         const auto us = std::chrono::duration_cast<std::chrono::microseconds>(record.time.time_since_epoch()).count();
 
-        out << "MODULE[" << record.module << "] " << "ID[" << record.id << "] " << "STAGE[" << record.stage << "] "
+        out << "MODULE[" << record.moduleName << "] " << "ID[" << record.id << "] " << "STAGE[" << record.stage << "] "
             << "INFO[" << record.info << "] " << "TIMESTAMP[" << us << "]" << '\n';
     }
 
@@ -161,39 +193,16 @@ const std::vector<IProfiler::Record> &Profiler::getRecords() const
     return m_records;
 }
 
-bool Profiler::parseEnv(const char *value, bool defaultValue)
+std::optional<Profiler::Record> Profiler::findById(Profiler::RecordId id) const
 {
-    if (!value || (value[0] == '\0'))
-        return defaultValue;
+    std::lock_guard<std::mutex> lock(m_mutex);
 
-    std::string stringValue(value);
-    std::transform(stringValue.begin(), stringValue.end(), stringValue.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-    if (stringValue == "1" || stringValue == "true" || stringValue == "yes" || stringValue == "on")
-        return true;
-    if (stringValue == "0" || stringValue == "false" || stringValue == "no" || stringValue == "off")
-        return false;
-
-    return defaultValue;
-}
-
-std::optional<std::string> Profiler::parseOptionalEnv(const char *value)
-{
-    if (!value || value[0] == '\0')
-        return std::nullopt;
-
-    return std::string{value};
-}
-
-const Profiler::Record *Profiler::findById(Profiler::RecordId id)
-{
     const auto it = std::find_if(m_records.begin(), m_records.end(), [&](const auto &record) { return record.id == id; });
 
     if (it != m_records.end())
-        return &(*it);
+        return *it;
 
-    return nullptr;
+    return std::nullopt;
 }
 
 }; // namespace firebolt::rialto::common

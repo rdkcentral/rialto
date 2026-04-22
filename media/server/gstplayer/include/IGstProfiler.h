@@ -24,14 +24,13 @@
 #include "IGstWrapper.h"
 #include "IProfiler.h"
 
+#include <gst/gst.h>
+
 #include <cstdint>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
-
-struct _GstElement;
-using GstElement = _GstElement;
 
 namespace firebolt::rialto::server
 {
@@ -63,15 +62,15 @@ public:
 
     virtual bool isEnabled() const = 0;
 
-    virtual std::optional<RecordId> createRecord(std::string stage) = 0;
-    virtual std::optional<RecordId> createRecord(std::string stage, std::string info) = 0;
+    virtual std::optional<RecordId> createRecord(const std::string &stage) = 0;
+    virtual std::optional<RecordId> createRecord(const std::string &stage, const std::string &info) = 0;
 
     virtual void scheduleGstElementRecord(GstElement *element) = 0;
     virtual const std::vector<Record> &getRecords() const = 0;
 
     virtual void logRecord(RecordId id) = 0;
     virtual void dumpToFile() const = 0;
-    virtual void logPipeline() const = 0;
+    virtual void logPipelineSummary() const = 0;
 };
 } // namespace firebolt::rialto::server
 

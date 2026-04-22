@@ -37,8 +37,8 @@ public:
 
     MOCK_METHOD(bool, isEnabled, (), (const, noexcept, override));
 
-    MOCK_METHOD(std::optional<RecordId>, record, (std::string stage), (override));
-    MOCK_METHOD(std::optional<RecordId>, record, (std::string stage, std::string info), (override));
+    MOCK_METHOD(std::optional<RecordId>, record, (const std::string &stage), (override));
+    MOCK_METHOD(std::optional<RecordId>, record, (const std::string &stage, const std::string &info), (override));
 
     MOCK_METHOD(void, log, (RecordId id), (override));
 
