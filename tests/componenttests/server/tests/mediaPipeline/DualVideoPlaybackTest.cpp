@@ -35,7 +35,7 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPlayingState{24};
+constexpr int kFrameCountInPlayingState{10};
 constexpr GType kSecondaryGstPlayFlagsType{static_cast<GType>(234)};
 const std::string kDummyStateName{"dummy"};
 } // namespace
