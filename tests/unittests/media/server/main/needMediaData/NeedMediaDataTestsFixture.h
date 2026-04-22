@@ -41,7 +41,7 @@ public:
 
     void needMediaDataWillBeSentInPlayingState();
     void needMediaDataWillNotBeSent();
-     void needMediaDataWillBeSentBelowPlayingState();
+    void needMediaDataWillBeSentBelowPlayingState();
 
 private:
     std::unique_ptr<firebolt::rialto::server::NeedMediaData> m_sut;
