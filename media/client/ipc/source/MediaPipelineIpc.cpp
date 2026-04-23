@@ -535,6 +535,37 @@ bool MediaPipelineIpc::getPosition(int64_t &position)
     return true;
 }
 
+bool MediaPipelineIpc::getDuration(int64_t &duration)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetDurationRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetDurationResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getDuration(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get duration due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    duration = response.duration();
+    return true;
+}
+
 bool MediaPipelineIpc::setImmediateOutput(int32_t sourceId, bool immediateOutput)
 {
     if (!reattachChannelIfRequired())

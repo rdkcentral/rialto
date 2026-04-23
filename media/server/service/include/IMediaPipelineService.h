@@ -93,6 +93,7 @@ public:
     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
     virtual bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
     virtual bool isVideoMaster(bool &isVideoMaster) = 0;
+    virtual bool getDuration(int sessionId, std::int64_t &duration) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

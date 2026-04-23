@@ -1424,6 +1424,20 @@ void MediaPipelineTestMethods::getPosition(const int64_t expectedPosition)
     EXPECT_EQ(returnPosition, expectedPosition);
 }
 
+void MediaPipelineTestMethods::shouldGetDuration(const int64_t duration)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getDuration(_, getDurationRequestMatcher(kSessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getDurationResponse(duration)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getDuration(const int64_t expectedDuration)
+{
+    int64_t returnDuration;
+    EXPECT_EQ(m_mediaPipeline->getDuration(returnDuration), true);
+    EXPECT_EQ(returnDuration, expectedDuration);
+}
+
 void MediaPipelineTestMethods::shouldSetImmediateOutput(bool immediateOutput)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,

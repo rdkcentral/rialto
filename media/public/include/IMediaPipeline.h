@@ -1558,6 +1558,17 @@ public:
      * @retval true on success.
      */
     virtual bool switchSource(const std::unique_ptr<MediaSource> &source) = 0;
+
+    /**
+     * @brief Get the playback duration in nanoseconds.
+     *
+     * This method is synchronous, it returns current playback duration
+     *
+     * @param[out] duration : The playback duration in nanoseconds
+     *
+     * @retval true on success.
+     */
+    virtual bool getDuration(int64_t &duration) = 0;
 };
 
 }; // namespace firebolt::rialto

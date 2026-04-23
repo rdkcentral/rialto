@@ -39,6 +39,7 @@ constexpr bool kSyncOff{true};
 constexpr int32_t kStreamSyncMode{1};
 constexpr int32_t kBufferingLimit{4321};
 constexpr bool kUseBuffering{true};
+constexpr int64_t kDuration{434523241};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -225,6 +226,24 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
+    void willGetDuration()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstElementQueryDuration(&m_pipeline, GST_FORMAT_TIME, _))
+            .WillOnce(Invoke(
+                [&](GstElement *element, GstFormat format, gint64 *duration)
+                {
+                    *duration = kDuration;
+                    workerFinished();
+                    return TRUE;
+                }));
+    }
+
+    void willFailToGetDuration()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstElementQueryDuration(&m_pipeline, GST_FORMAT_TIME, _))
+            .WillOnce(DoAll(Invoke(this, &MediaPipelineTest::workerFinished), Return(FALSE)));
+    }
+
     void setImmediateOutput()
     {
         auto req{createSetImmediateOutputRequest(m_sessionId, m_videoSourceId, kImmediateOutput)};
@@ -405,6 +424,23 @@ public:
         ConfigureAction<GetUseBuffering>(m_clientStub).send(req).expectFailure();
     }
 
+    void getDurationSuccess()
+    {
+        auto req{createGetDurationRequest(m_sessionId)};
+        ConfigureAction<GetDuration>(m_clientStub)
+            .send(req)
+            .expectSuccess()
+            .matchResponse([&](const auto &resp) { EXPECT_EQ(resp.duration(), kDuration); });
+        waitWorker();
+    }
+
+    void getDurationFailure()
+    {
+        auto req{createGetDurationRequest(m_sessionId)};
+        ConfigureAction<GetDuration>(m_clientStub).send(req).expectFailure();
+        waitWorker();
+    }
+
 private:
     GstElement *m_element{nullptr};
     GstStructure m_testStructure;
@@ -498,18 +534,21 @@ private:
  *  Step 15: Get Use Buffering
  *   Will get the UseBuffering property of the decodebin on the Rialto Server
  *
- *  Step 16: Remove sources
+ *  Step 16: Get Duration
+ *   Will get the duration of the playback on the Rialto Server
+ *
+ *  Step 17: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 17: Stop
+ *  Step 18: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 18: Destroy media session
+ *  Step 19: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -589,7 +628,11 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
     // Step 15: Get Use Buffering
     getUseBuffering();
 
-    // Step 16: Remove sources
+    // Step 16: Get Duration
+    willGetDuration();
+    getDurationSuccess();
+
+    // Step 17: Remove sources
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
@@ -703,18 +746,22 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetSuccess)
  *   Rialto client sends UseBufferingRequest and waits for response
  *   UseBufferingResponse is false because the sessionId is wrong
  *
- *  Step 16: Remove sources
+ * Step 16: Fail to Get Duration
+ *  Rialto client sends GetDurationRequest and waits for response
+ *  GetDurationResponse is false because the server couldn't process it
+ *
+ *  Step 17: Remove sources
  *   Remove the audio source.
  *   Expect that audio source is removed.
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 17: Stop
+ *  Step 18: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 18: Destroy media session
+ *  Step 19: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -794,15 +841,19 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetFailures)
     // Step 15: Fail to Set Use Buffering
     setUseBufferingFailure();
 
-    // Step 16: Remove sources
+    // Step 16: Fail to Get Duration
+    willFailToGetDuration();
+    getDurationFailure();
+
+    // Step 17: Remove sources
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 17: Stop
+    // Step 18: Stop
     willStop();
     stop();
 
-    // Step 18: Destroy media session
+    // Step 19: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

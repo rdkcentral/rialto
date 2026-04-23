@@ -249,6 +249,22 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetPosition)
     sendGetPositionRequestAndReceiveResponseWithoutPositionMatch();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldGetDuration)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillGetDuration();
+    sendGetDurationRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetDuration)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToGetDuration();
+    sendGetDurationRequestAndReceiveResponseWithoutDurationMatch();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldSetImmediateOutput)
 {
     mediaPipelineServiceWillCreateSession();

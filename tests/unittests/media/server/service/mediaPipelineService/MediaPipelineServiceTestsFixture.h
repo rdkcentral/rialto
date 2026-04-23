@@ -64,6 +64,8 @@ public:
     void mediaPipelineWillFailToHaveData();
     void mediaPipelineWillGetPosition();
     void mediaPipelineWillFailToGetPosition();
+    void mediaPipelineWillGetDuration();
+    void mediaPipelineWillFailToGetDuration();
     void mediaPipelineWillSetImmediateOutput();
     void mediaPipelineWillFailToSetImmediateOutput();
     void mediaPipelineWillSetReportDecodeErrors();
@@ -160,6 +162,8 @@ public:
     void haveDataShouldFail();
     void getPositionShouldSucceed();
     void getPositionShouldFail();
+    void getDurationShouldSucceed();
+    void getDurationShouldFail();
     void setReportDecodeErrorsShouldSucceed();
     void setReportDecodeErrorsShouldFail();
     void setImmediateOutputShouldSucceed();

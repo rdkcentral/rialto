@@ -175,6 +175,8 @@ public:
 
     bool switchSource(const std::unique_ptr<MediaSource> &source) override;
 
+    bool getDuration(int64_t &duration) override;
+
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
     std::weak_ptr<IMediaPipelineClient> getClient() override;
