@@ -1490,6 +1490,14 @@ public:
      */
     virtual gulong gstPadAddProbe(GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
                                   GDestroyNotify destroyData) = 0;
+
+    /**
+     * @brief Removes a probe from the pad.
+     *
+     * @param[in] pad : The GstPad to remove the probe from.
+     * @param[in] id : The probe id returned by gstPadAddProbe.
+     */
+    virtual void gstPadRemoveProbe(GstPad *pad, gulong id) = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

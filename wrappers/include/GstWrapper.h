@@ -622,6 +622,8 @@ public:
     {
         return gst_pad_add_probe(pad, mask, callback, userData, destroyData);
     }
+
+    void gstPadRemoveProbe(GstPad *pad, gulong id) override { gst_pad_remove_probe(pad, id); }
 };
 
 }; // namespace firebolt::rialto::wrappers

@@ -31,13 +31,17 @@ using namespace firebolt::rialto::common;
 
 namespace
 {
-const IProfiler::Record *findRecord(const std::vector<IProfiler::Record> &records, const std::string &stage,
-                                    const std::optional<std::string> &info = std::nullopt)
+std::optional<IProfiler::Record> findRecord(const std::vector<IProfiler::Record> &records, const std::string &stage,
+                                            const std::optional<std::string> &info = std::nullopt)
 {
     const auto it = std::find_if(records.begin(), records.end(), [&](const auto &record)
                                  { return record.stage == stage && (!info.has_value() || record.info == info.value()); });
 
-    return it != records.end() ? &(*it) : nullptr;
+    if (it != records.end())
+    {
+        return *it;
+    }
+    return std::nullopt;
 }
 } // namespace
 
@@ -92,8 +96,8 @@ TEST_F(ProfilerTests, RecordAndFindByStage)
     const auto id = profiler->record("Stage1");
     ASSERT_TRUE(id.has_value());
 
-    const auto *found = findRecord(profiler->getRecords(), "Stage1");
-    ASSERT_NE(found, nullptr);
+    const auto found = findRecord(profiler->getRecords(), "Stage1");
+    ASSERT_TRUE(found.has_value());
 
     EXPECT_EQ(found->id, id.value());
 }
@@ -103,11 +107,11 @@ TEST_F(ProfilerTests, RecordAndFindByStageAndInfo)
     const auto id = profiler->record("Stage1", "InfoA");
     ASSERT_TRUE(id.has_value());
 
-    const auto *found = findRecord(profiler->getRecords(), "Stage1", "InfoA");
-    ASSERT_NE(found, nullptr);
+    const auto found = findRecord(profiler->getRecords(), "Stage1", "InfoA");
+    ASSERT_TRUE(found.has_value());
     EXPECT_EQ(found->id, id.value());
 
-    EXPECT_EQ(findRecord(profiler->getRecords(), "Stage1", "InfoB"), nullptr);
+    EXPECT_FALSE(findRecord(profiler->getRecords(), "Stage1", "InfoB").has_value());
 }
 
 TEST_F(ProfilerTests, GetRecordsReturnsRecordedEntries)
@@ -118,7 +122,7 @@ TEST_F(ProfilerTests, GetRecordsReturnsRecordedEntries)
     const auto id2 = profiler->record("Stage2", "Info2");
     ASSERT_TRUE(id2.has_value());
 
-    const auto &records = profiler->getRecords();
+    const auto records = profiler->getRecords();
     ASSERT_GE(records.size(), 2U);
 
     const auto &record1 = records[records.size() - 2];
@@ -240,7 +244,7 @@ TEST_F(ProfilerTests, GetRecordsDoesNotContainMissingStage)
 {
     ASSERT_TRUE(profiler->record("Stage1").has_value());
 
-    EXPECT_EQ(findRecord(profiler->getRecords(), "MissingStage"), nullptr);
+    EXPECT_FALSE(findRecord(profiler->getRecords(), "MissingStage").has_value());
 }
 
 TEST_F(ProfilerTests, DumpToFileReturnsFalseForInvalidPath)

@@ -22,6 +22,7 @@
 
 #include "IGlibWrapper.h"
 #include "IGstProfiler.h"
+#include "IGstProfilerPrivate.h"
 #include "IGstWrapper.h"
 #include "IProfiler.h"
 
@@ -45,7 +46,7 @@ public:
     static std::weak_ptr<IGstProfilerFactory> m_factory;
 };
 
-class GstProfiler : public IGstProfiler
+class GstProfiler : public IGstProfiler, public IGstProfilerPrivate
 {
 public:
     using RecordId = IGstProfiler::RecordId;
@@ -54,13 +55,11 @@ public:
                 const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper);
     ~GstProfiler() override;
 
-    bool isEnabled() const override;
-
     std::optional<RecordId> createRecord(const std::string &stage) override;
     std::optional<RecordId> createRecord(const std::string &stage, const std::string &info) override;
 
     void scheduleGstElementRecord(GstElement *element) override;
-    const std::vector<Record> &getRecords() const override;
+    std::vector<Record> getRecords() const override;
 
     void logRecord(const RecordId id) override;
     void dumpToFile() const override;
@@ -113,13 +112,25 @@ private:
     std::optional<std::string> getFirstBufferExitStage(GstElement *element);
     const gchar *getElementClassMetadata(GstElement *element);
     std::string deriveElementInfoFromName(const std::string &name) const;
+    GstPadProbeReturn handleProbeCb(GstPad *pad, GstPadProbeInfo *info) override;
+    void removeProbeCtx(GstPad *pad);
 
     std::optional<GstProfiler::PipelineMetrics> calculateMetrics() const;
+
+    struct ProbeCtx
+    {
+        std::shared_ptr<IProfiler> profiler;
+        std::string stage;
+        std::string info;
+        GstPad *pad;
+        gulong id;
+    };
 
     GstElement *m_pipeline = nullptr;
     std::shared_ptr<IGstWrapper> m_gstWrapper;
     std::shared_ptr<IGlibWrapper> m_glibWrapper;
     std::shared_ptr<IProfiler> m_profiler;
+    std::vector<ProbeCtx> m_probeCtxs;
     bool m_enabled = false;
 };
 } // namespace firebolt::rialto::server

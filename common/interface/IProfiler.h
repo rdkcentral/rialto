@@ -123,9 +123,9 @@ public:
     /**
      * @brief Retrieves existing records.
      *
-     * @retval Reference to existing Record vector.
+     * @retval Snapshot copy of existing records.
      */
-    virtual const std::vector<Record> &getRecords() const = 0;
+    virtual std::vector<Record> getRecords() const = 0;
 
 protected:
     IProfiler() = default;

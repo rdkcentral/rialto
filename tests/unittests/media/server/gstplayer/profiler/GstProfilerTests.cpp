@@ -131,7 +131,7 @@ TEST_F(GstProfilerTests, CreateWithNullPipeline)
 {
     setProfilerEnabledEnv(true);
     createGstProfiler();
-    EXPECT_TRUE(m_gstProfiler->isEnabled());
+    EXPECT_TRUE(m_gstProfiler->createRecord("CreateWithNullPipeline").has_value());
 }
 
 /**
@@ -141,7 +141,7 @@ TEST_F(GstProfilerTests, CreateWithPipeline)
 {
     setProfilerEnabledEnv(true);
     createGstProfiler(&m_pipeline);
-    EXPECT_TRUE(m_gstProfiler->isEnabled());
+    EXPECT_TRUE(m_gstProfiler->createRecord("CreateWithPipeline").has_value());
 }
 
 /**
@@ -243,7 +243,6 @@ TEST_F(GstProfilerTests, DisabledProfilerPreventsRecordCreationAndScheduling)
     setProfilerEnabledEnv(false);
     createGstProfiler();
 
-    EXPECT_FALSE(m_gstProfiler->isEnabled());
     EXPECT_FALSE(m_gstProfiler->createRecord("Pipeline Created").has_value());
 
     EXPECT_NO_THROW(m_gstProfiler->scheduleGstElementRecord(m_realElement));
@@ -257,7 +256,7 @@ TEST_F(GstProfilerTests, EnabledProfilerAllowsScheduling)
     setProfilerEnabledEnv(true);
     EXPECT_NO_THROW(m_gstProfiler = std::make_unique<GstProfiler>(nullptr, m_gstWrapperMock, m_glibWrapperMock));
     ASSERT_NE(m_gstProfiler, nullptr);
-    ASSERT_TRUE(m_gstProfiler->isEnabled());
+    ASSERT_TRUE(m_gstProfiler->createRecord("EnabledProfilerAllowsScheduling").has_value());
 
     expectElementRecognizedAsSource(m_realElement);
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(m_realElement, StrEq("src"))).WillOnce(Return(nullptr));
@@ -305,13 +304,11 @@ TEST_F(GstProfilerTests, ScheduleElementRecord)
             [](GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
                GDestroyNotify destroyData) -> gulong
             {
-                if (destroyData)
-                {
-                    destroyData(userData);
-                }
+                EXPECT_EQ(destroyData, nullptr);
                 return 1;
             }));
 
+    EXPECT_CALL(*m_gstWrapperMock, gstPadRemoveProbe(&m_pad, 1));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pad));
 
     EXPECT_NO_THROW(m_gstProfiler->scheduleGstElementRecord(m_realElement));
@@ -335,21 +332,16 @@ TEST_F(GstProfilerTests, ScheduleElementRecordCreatesProbeRecordWithVideoInfo)
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(_, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
         .WillOnce(Return(true));
 
+    GstPadProbeCallback callback = nullptr;
+    gpointer userData = nullptr;
     EXPECT_CALL(*m_gstWrapperMock, gstPadAddProbe(&m_pad, _, _, _, _))
         .WillOnce(Invoke(
-            [](GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
-               GDestroyNotify destroyData) -> gulong
+            [&callback, &userData](GstPad *pad, GstPadProbeType mask, GstPadProbeCallback probeCallback,
+                                   gpointer probeUserData, GDestroyNotify destroyData) -> gulong
             {
-                GstBuffer *buffer = gst_buffer_new();
-                GstPadProbeInfo info{};
-                info.type = GST_PAD_PROBE_TYPE_BUFFER;
-                info.data = buffer;
-
-                EXPECT_EQ(callback(pad, &info, userData), GST_PAD_PROBE_REMOVE);
-
-                gst_buffer_unref(buffer);
-                if (destroyData)
-                    destroyData(userData);
+                callback = probeCallback;
+                userData = probeUserData;
+                EXPECT_EQ(destroyData, nullptr);
 
                 return 1;
             }));
@@ -358,7 +350,18 @@ TEST_F(GstProfilerTests, ScheduleElementRecordCreatesProbeRecordWithVideoInfo)
 
     m_gstProfiler->scheduleGstElementRecord(m_realElement);
 
-    const auto &records = m_gstProfiler->getRecords();
+    ASSERT_NE(callback, nullptr);
+    ASSERT_NE(userData, nullptr);
+    GstBuffer *buffer = gst_buffer_new();
+    GstPadProbeInfo info{};
+    info.type = GST_PAD_PROBE_TYPE_BUFFER;
+    info.data = buffer;
+
+    EXPECT_EQ(callback(&m_pad, &info, userData), GST_PAD_PROBE_REMOVE);
+
+    gst_buffer_unref(buffer);
+
+    const auto records = m_gstProfiler->getRecords();
     ASSERT_FALSE(records.empty());
     EXPECT_EQ(records.back().stage, "Source FB Exit");
     EXPECT_EQ(records.back().info, "Video");
@@ -388,21 +391,16 @@ TEST_F(GstProfilerTests, ScheduleElementRecordCreatesProbeRecordWithVideoInfoFro
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetName(m_realElement)).WillOnce(Return(rawName));
     EXPECT_CALL(*m_glibWrapperMock, gFree(rawName)).WillOnce(Invoke([](gpointer ptr) { g_free(ptr); }));
 
+    GstPadProbeCallback callback = nullptr;
+    gpointer userData = nullptr;
     EXPECT_CALL(*m_gstWrapperMock, gstPadAddProbe(&m_pad, _, _, _, _))
         .WillOnce(Invoke(
-            [](GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
-               GDestroyNotify destroyData) -> gulong
+            [&callback, &userData](GstPad *pad, GstPadProbeType mask, GstPadProbeCallback probeCallback,
+                                   gpointer probeUserData, GDestroyNotify destroyData) -> gulong
             {
-                GstBuffer *buffer = gst_buffer_new();
-                GstPadProbeInfo info{};
-                info.type = GST_PAD_PROBE_TYPE_BUFFER;
-                info.data = buffer;
-
-                EXPECT_EQ(callback(pad, &info, userData), GST_PAD_PROBE_REMOVE);
-
-                gst_buffer_unref(buffer);
-                if (destroyData)
-                    destroyData(userData);
+                callback = probeCallback;
+                userData = probeUserData;
+                EXPECT_EQ(destroyData, nullptr);
 
                 return 1;
             }));
@@ -411,7 +409,18 @@ TEST_F(GstProfilerTests, ScheduleElementRecordCreatesProbeRecordWithVideoInfoFro
 
     m_gstProfiler->scheduleGstElementRecord(m_realElement);
 
-    const auto &records = m_gstProfiler->getRecords();
+    ASSERT_NE(callback, nullptr);
+    ASSERT_NE(userData, nullptr);
+    GstBuffer *buffer = gst_buffer_new();
+    GstPadProbeInfo info{};
+    info.type = GST_PAD_PROBE_TYPE_BUFFER;
+    info.data = buffer;
+
+    EXPECT_EQ(callback(&m_pad, &info, userData), GST_PAD_PROBE_REMOVE);
+
+    gst_buffer_unref(buffer);
+
+    const auto records = m_gstProfiler->getRecords();
     ASSERT_FALSE(records.empty());
     EXPECT_EQ(records.back().stage, "Source FB Exit");
     EXPECT_EQ(records.back().info, "Video");
@@ -441,21 +450,16 @@ TEST_F(GstProfilerTests, ScheduleElementRecordFallsBackToRawElementName)
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetName(m_realElement)).WillOnce(Return(rawName));
     EXPECT_CALL(*m_glibWrapperMock, gFree(rawName)).WillOnce(Invoke([](gpointer ptr) { g_free(ptr); }));
 
+    GstPadProbeCallback callback = nullptr;
+    gpointer userData = nullptr;
     EXPECT_CALL(*m_gstWrapperMock, gstPadAddProbe(&m_pad, _, _, _, _))
         .WillOnce(Invoke(
-            [](GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
-               GDestroyNotify destroyData) -> gulong
+            [&callback, &userData](GstPad *pad, GstPadProbeType mask, GstPadProbeCallback probeCallback,
+                                   gpointer probeUserData, GDestroyNotify destroyData) -> gulong
             {
-                GstBuffer *buffer = gst_buffer_new();
-                GstPadProbeInfo info{};
-                info.type = GST_PAD_PROBE_TYPE_BUFFER;
-                info.data = buffer;
-
-                EXPECT_EQ(callback(pad, &info, userData), GST_PAD_PROBE_REMOVE);
-
-                gst_buffer_unref(buffer);
-                if (destroyData)
-                    destroyData(userData);
+                callback = probeCallback;
+                userData = probeUserData;
+                EXPECT_EQ(destroyData, nullptr);
 
                 return 1;
             }));
@@ -464,7 +468,18 @@ TEST_F(GstProfilerTests, ScheduleElementRecordFallsBackToRawElementName)
 
     m_gstProfiler->scheduleGstElementRecord(m_realElement);
 
-    const auto &records = m_gstProfiler->getRecords();
+    ASSERT_NE(callback, nullptr);
+    ASSERT_NE(userData, nullptr);
+    GstBuffer *buffer = gst_buffer_new();
+    GstPadProbeInfo info{};
+    info.type = GST_PAD_PROBE_TYPE_BUFFER;
+    info.data = buffer;
+
+    EXPECT_EQ(callback(&m_pad, &info, userData), GST_PAD_PROBE_REMOVE);
+
+    gst_buffer_unref(buffer);
+
+    const auto records = m_gstProfiler->getRecords();
     ASSERT_FALSE(records.empty());
     EXPECT_EQ(records.back().stage, "Source FB Exit");
     EXPECT_EQ(records.back().info, "custom-element");

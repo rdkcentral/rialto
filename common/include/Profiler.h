@@ -50,7 +50,7 @@ public:
     void log(const RecordId id) override;
 
     bool dumpToFile() const override;
-    const std::vector<Record> &getRecords() const override;
+    std::vector<Record> getRecords() const override;
 
 private:
     std::optional<Record> findById(RecordId id) const;

@@ -44,7 +44,7 @@ public:
 
     MOCK_METHOD(bool, dumpToFile, (), (const, override));
 
-    MOCK_METHOD(const std::vector<Record> &, getRecords, (), (const, override));
+    MOCK_METHOD(std::vector<Record>, getRecords, (), (const, override));
 };
 } // namespace firebolt::rialto::common
 

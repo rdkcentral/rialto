@@ -232,6 +232,7 @@ public:
                 (GstPad * pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
                  GDestroyNotify destroyData),
                 (override));
+    MOCK_METHOD(void, gstPadRemoveProbe, (GstPad * pad, gulong id), (override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

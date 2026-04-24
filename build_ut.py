@@ -36,7 +36,7 @@ suiteInfo = {
     "client" : {"suite" : "RialtoClientUnitTests", "path" : "/tests/unittests/media/client/main/"},
     "clientipc" : {"suite" : "RialtoClientIpcUnitTests", "path" : "/tests/unittests/media/client/ipc/"},
     "playercommon" : {"suite" : "RialtoPlayerCommonUnitTests", "path" : "/tests/unittests/media/common/"},
-    "common" : {"suite" : "RialtoCommonUnitTests", "path" : "/tests/unittests/common/unittests/", "env" : {"PROFILER_ENABLED" : "true"}},
+    "common" : {"suite" : "RialtoCommonUnitTests", "path" : "/tests/unittests/common/unittests/"},
     "logging" : {"suite" : "RialtoLoggingUnitTests", "path" : "/tests/unittests/logging/"},
     "manager" : {"suite" : "RialtoServerManagerUnitTests", "path" : "/tests/unittests/serverManager/"},
     "ipc" : {"suite" : "RialtoIpcUnitTests", "path" : "/tests/unittests/ipc/"},
