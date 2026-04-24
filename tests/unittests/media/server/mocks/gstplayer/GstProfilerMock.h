@@ -35,13 +35,11 @@ public:
     GstProfilerMock() = default;
     ~GstProfilerMock() override = default;
 
-    MOCK_METHOD(bool, isEnabled, (), (const, override));
-
     MOCK_METHOD(std::optional<RecordId>, createRecord, (const std::string &stage), (override));
     MOCK_METHOD(std::optional<RecordId>, createRecord, (const std::string &stage, const std::string &info), (override));
 
     MOCK_METHOD(void, scheduleGstElementRecord, (GstElement * element), (override));
-    MOCK_METHOD((const std::vector<Record> &), getRecords, (), (const, override));
+    MOCK_METHOD(std::vector<Record>, getRecords, (), (const, override));
 
     MOCK_METHOD(void, logRecord, (RecordId id), (override));
     MOCK_METHOD(void, dumpToFile, (), (const, override));

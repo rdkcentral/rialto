@@ -18,7 +18,7 @@
  */
 
 #include "GstProfiler.h"
-#include "RialtoCommonLogging.h"
+#include "RialtoServerLogging.h"
 #include "Utils.h"
 
 #include <algorithm>
@@ -46,7 +46,7 @@ std::shared_ptr<IGstProfilerFactory> IGstProfilerFactory::getFactory()
         }
         catch (const std::exception &e)
         {
-            RIALTO_COMMON_LOG_ERROR("Failed to create the gst profiler factory, reason: %s", e.what());
+            RIALTO_SERVER_LOG_ERROR("Failed to create the gst profiler factory, reason: %s", e.what());
         }
 
         GstProfilerFactory::m_factory = factory;
@@ -74,38 +74,11 @@ inline constexpr std::string_view kModuleName{"GstProfiler"};
 using Clock = std::chrono::system_clock;
 using IProfiler = firebolt::rialto::common::IProfiler;
 
-struct ProbeCtx
-{
-    std::shared_ptr<IProfiler> profiler;
-    std::string stage;
-    std::string info;
-};
-
 GstPadProbeReturn probeCb(GstPad *pad, GstPadProbeInfo *info, gpointer userData)
 {
-    auto *probeCtx = static_cast<ProbeCtx *>(userData);
-
-    if (!(info->type & GST_PAD_PROBE_TYPE_BUFFER))
-        return GST_PAD_PROBE_OK;
-
-    if (!GST_PAD_PROBE_INFO_BUFFER(info))
-        return GST_PAD_PROBE_OK;
-
-    if (!probeCtx->profiler)
-        return GST_PAD_PROBE_REMOVE;
-
-    const auto id = probeCtx->profiler->record(probeCtx->stage, probeCtx->info);
-    if (id)
-    {
-        probeCtx->profiler->log(id.value());
-    }
-
-    return GST_PAD_PROBE_REMOVE;
-}
-
-void probeCtxDestroy(gpointer data)
-{
-    delete static_cast<ProbeCtx *>(data);
+    firebolt::rialto::server::IGstProfilerPrivate *self =
+        static_cast<firebolt::rialto::server::IGstProfilerPrivate *>(userData);
+    return self->handleProbeCb(pad, info);
 }
 
 std::optional<int64_t> diffMs(const std::optional<Clock::time_point> &end, const std::optional<Clock::time_point> &start)
@@ -144,13 +117,19 @@ GstProfiler::GstProfiler(GstElement *pipeline, const std::shared_ptr<firebolt::r
 
 GstProfiler::~GstProfiler()
 {
+    while (!m_probeCtxs.empty())
+    {
+        auto &probeCtx = m_probeCtxs.back();
+        if (probeCtx.id != 0)
+        {
+            m_gstWrapper->gstPadRemoveProbe(probeCtx.pad, probeCtx.id);
+        }
+        m_gstWrapper->gstObjectUnref(probeCtx.pad);
+        m_probeCtxs.pop_back();
+    }
+
     if (m_enabled && m_pipeline)
         m_gstWrapper->gstObjectUnref(m_pipeline);
-}
-
-bool GstProfiler::isEnabled() const
-{
-    return m_enabled;
 }
 
 std::optional<GstProfiler::RecordId> GstProfiler::createRecord(const std::string &stage)
@@ -210,23 +189,21 @@ void GstProfiler::scheduleGstElementRecord(GstElement *element)
             m_glibWrapper->gFree(rawName);
     }
 
-    auto *probeCtx = new ProbeCtx{m_profiler, stage.value(), std::move(elementInfo)};
-    const auto probeId =
-        m_gstWrapper->gstPadAddProbe(pad, GST_PAD_PROBE_TYPE_BUFFER, &probeCb, probeCtx, &probeCtxDestroy);
+    const auto probeId = m_gstWrapper->gstPadAddProbe(pad, GST_PAD_PROBE_TYPE_BUFFER, &probeCb,
+                                                      static_cast<IGstProfilerPrivate *>(this), nullptr);
     if (probeId == 0)
     {
-        delete probeCtx;
+        m_gstWrapper->gstObjectUnref(pad);
+        return;
     }
 
-    m_gstWrapper->gstObjectUnref(pad);
+    m_probeCtxs.emplace_back(ProbeCtx{m_profiler, stage.value(), std::move(elementInfo), pad, probeId});
 }
 
-const std::vector<IGstProfiler::Record> &GstProfiler::getRecords() const
+std::vector<IGstProfiler::Record> GstProfiler::getRecords() const
 {
-    static const std::vector<Record> kEmptyRecords{};
-
     if (!m_profiler)
-        return kEmptyRecords;
+        return {};
 
     return m_profiler->getRecords();
 }
@@ -244,7 +221,10 @@ void GstProfiler::dumpToFile() const
     if (!m_enabled || !m_profiler)
         return;
 
-    (void)m_profiler->dumpToFile();
+    if (!m_profiler->dumpToFile())
+    {
+        RIALTO_SERVER_LOG_WARN("Failed to dump profiler records to file");
+    }
 }
 
 void GstProfiler::logPipelineSummary() const
@@ -255,7 +235,7 @@ void GstProfiler::logPipelineSummary() const
     const auto metrics = calculateMetrics();
     if (metrics)
     {
-        RIALTO_COMMON_LOG_MIL("PROFILER | TUNETIME: %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  "
+        RIALTO_SERVER_LOG_MIL("PROFILER | TUNETIME: %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  %lld,  "
                               "%lld,  %lld,  %lld,  %lld",
                               metrics->preparation ? static_cast<long long>(*metrics->preparation) : -1,     // NOLINT
                               metrics->videoDownload ? static_cast<long long>(*metrics->videoDownload) : -1, // NOLINT
@@ -271,6 +251,32 @@ void GstProfiler::logPipelineSummary() const
                               metrics->total ? static_cast<long long>(*metrics->total) : -1,             // NOLINT
                               metrics->totalWithoutApp ? static_cast<long long>(*metrics->totalWithoutApp) : -1); // NOLINT
     }
+}
+
+GstPadProbeReturn GstProfiler::handleProbeCb(GstPad *pad, GstPadProbeInfo *info)
+{
+    if (!(info->type & GST_PAD_PROBE_TYPE_BUFFER))
+        return GST_PAD_PROBE_OK;
+
+    if (!GST_PAD_PROBE_INFO_BUFFER(info))
+        return GST_PAD_PROBE_OK;
+
+    const auto probeCtx =
+        std::find_if(m_probeCtxs.begin(), m_probeCtxs.end(), [pad](const auto &ctx) { return ctx.pad == pad; });
+    if (probeCtx == m_probeCtxs.end())
+        return GST_PAD_PROBE_REMOVE;
+
+    if (probeCtx->profiler)
+    {
+        const auto id = probeCtx->profiler->record(probeCtx->stage, probeCtx->info);
+        if (id)
+        {
+            probeCtx->profiler->log(id.value());
+        }
+    }
+
+    removeProbeCtx(pad);
+    return GST_PAD_PROBE_REMOVE;
 }
 
 std::optional<std::string> GstProfiler::getFirstBufferExitStage(GstElement *element)
@@ -314,9 +320,20 @@ std::string GstProfiler::deriveElementInfoFromName(const std::string &name) cons
     return name;
 }
 
+void GstProfiler::removeProbeCtx(GstPad *pad)
+{
+    const auto probeCtx =
+        std::find_if(m_probeCtxs.begin(), m_probeCtxs.end(), [pad](const auto &ctx) { return ctx.pad == pad; });
+    if (probeCtx == m_probeCtxs.end())
+        return;
+
+    m_gstWrapper->gstObjectUnref(probeCtx->pad);
+    m_probeCtxs.erase(probeCtx);
+}
+
 std::optional<GstProfiler::PipelineMetrics> GstProfiler::calculateMetrics() const
 {
-    const auto &records = m_profiler->getRecords();
+    const auto records = m_profiler->getRecords();
 
     PipelineStageTimestamps timestamps;
 

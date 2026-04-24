@@ -184,12 +184,12 @@ bool Profiler::dumpToFile() const
     return static_cast<bool>(out);
 }
 
-const std::vector<IProfiler::Record> &Profiler::getRecords() const
+std::vector<IProfiler::Record> Profiler::getRecords() const
 {
-    static const std::vector<IProfiler::Record> empty{};
     if (!m_enabled)
-        return empty;
+        return {};
 
+    std::lock_guard<std::mutex> lock(m_mutex);
     return m_records;
 }
 
