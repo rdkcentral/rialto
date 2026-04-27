@@ -63,7 +63,6 @@ private:
     std::atomic<bool> m_active;
 
     int m_id{-1};
-    TimerType m_timerType;
 
     std::chrono::milliseconds m_timeout;
     std::function<void()> m_callback;

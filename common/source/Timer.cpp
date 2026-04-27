@@ -60,7 +60,7 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
                .add(timeout, timerType, [this, callback]{
                    if (m_active && callback)
                        callback();
-                   if (m_timerType == TimerType::ONE_SHOT)
+                   if (timerType == TimerType::ONE_SHOT)
                        m_active = false;
                });
 }
