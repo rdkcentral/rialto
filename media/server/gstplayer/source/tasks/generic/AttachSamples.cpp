@@ -23,6 +23,8 @@
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
 #include <utility>
+#include "rdk_perf.h"
+
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -85,7 +87,8 @@ AttachSamples::~AttachSamples()
 
 void AttachSamples::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing AttachSamples");
+   RDKPerf perf(__FUNCTION__); 
+   RIALTO_SERVER_LOG_DEBUG("Executing AttachSamples");
     for (AudioData audioData : m_audioData)
     {
         m_player.updateAudioCaps(audioData.rate, audioData.channels, audioData.codecData);
