@@ -286,7 +286,6 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedMessage)
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
     EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
-    EXPECT_CALL(m_gstPlayer, enableBroadcomDecoderWorkaround());
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
                                                                     &m_gstPlayerClient, m_gstWrapper,
                                                                     m_glibWrapper,      &m_message,
@@ -317,7 +316,6 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedMessageWhenSyncFlus
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kFlushOngoing));
     EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
-    EXPECT_CALL(m_gstPlayer, enableBroadcomDecoderWorkaround());
     firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
                                                                     &m_gstPlayerClient, m_gstWrapper,
                                                                     m_glibWrapper,      &m_message,

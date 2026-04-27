@@ -39,7 +39,6 @@ namespace
 {
 constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
 constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
-constexpr std::chrono::milliseconds kBroadcomDecoderWorkaroundTimerMs{10};
 constexpr int32_t kSampleRate{13};
 constexpr int32_t kNumberOfChannels{4};
 constexpr int32_t kInvalidSampleRate{0};
@@ -86,6 +85,7 @@ constexpr bool kShowVideoWindow{true};
 constexpr gint64 kPosition{123};
 constexpr double kVolume{0.5};
 constexpr firebolt::rialto::PlaybackInfo kPlaybackInfo{kPosition, kVolume};
+constexpr bool kIsLive{false};
 } // namespace
 
 bool operator==(const GstRialtoProtectionData &lhs, const GstRialtoProtectionData &rhs)
@@ -115,11 +115,11 @@ protected:
     GParamSpec m_showVideoWindowSpec{};
     GstEvent m_event{};
 
-    GstGenericPlayerPrivateTest(bool isLive = false)
+    GstGenericPlayerPrivateTest()
     {
         gstPlayerWillBeCreated();
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
-                                                   m_videoReq, isLive, m_gstWrapperMock, m_glibWrapperMock,
+                                                   m_videoReq, kIsLive, m_gstWrapperMock, m_glibWrapperMock,
                                                    m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
                                                    std::move(m_flushWatcher), m_gstSrcFactoryMock, m_timerFactoryMock,
                                                    std::move(m_taskFactory), std::move(workerThreadFactory),
@@ -208,27 +208,6 @@ protected:
             .WillOnce(Return(kVolume));
 
         EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo));
-    }
-};
-
-class GstGenericPlayerPrivateTestWithLiveContent : public GstGenericPlayerPrivateTest
-{
-public:
-    GstGenericPlayerPrivateTestWithLiveContent() : GstGenericPlayerPrivateTest(true) {}
-    ~GstGenericPlayerPrivateTestWithLiveContent() override = default;
-
-    void expectGetVideoDecoder(GstElement *element)
-    {
-        EXPECT_CALL(*m_gstWrapperMock, gstBinIterateRecurse(GST_BIN(&m_pipeline))).WillOnce(Return(&m_it));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorNext(&m_it, _)).WillOnce(Return(GST_ITERATOR_OK));
-        EXPECT_CALL(*m_glibWrapperMock, gValueGetObject(_)).WillOnce(Return(element));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(element)).WillOnce(Return(m_factory));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                                               GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO)))
-            .WillOnce(Return(TRUE));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(element)).WillOnce(Return(element));
-        EXPECT_CALL(*m_glibWrapperMock, gValueUnset(_));
-        EXPECT_CALL(*m_gstWrapperMock, gstIteratorFree(&m_it));
     }
 };
 
@@ -2374,90 +2353,3 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSetShowVideoWindow)
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement));
     EXPECT_TRUE(m_sut->setShowVideoWindow());
 }
-
-// TEST_F(GstGenericPlayerPrivateTest, shouldNotEnableBroadcomDecoderWorkaroundWhenNotLive)
-// {
-//     m_sut->enableBroadcomDecoderWorkaround();
-// }
-
-// TEST_F(GstGenericPlayerPrivateTestWithLiveContent, shouldNotEnableBroadcomDecoderWorkaroundWhenNotBroadcom)
-// {
-//     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("brcmaudiosink"))).WillOnce(Return(nullptr));
-//     m_sut->enableBroadcomDecoderWorkaround();
-// }
-
-// TEST_F(GstGenericPlayerPrivateTestWithLiveContent, shouldEnableBroadcomDecoderWorkaround)
-// {
-//     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("brcmaudiosink")))
-//         .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_sinkFactory)));
-//     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_sinkFactory));
-//     std::unique_ptr<common::ITimer> workaroundTimer{std::make_unique<StrictMock<TimerMock>>()};
-//     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*workaroundTimer), cancel());
-//     EXPECT_CALL(*m_timerFactoryMock, createTimer(kBroadcomDecoderWorkaroundTimerMs, _, common::TimerType::PERIODIC))
-//         .WillOnce(Return(ByMove(std::move(workaroundTimer))));
-//     m_sut->enableBroadcomDecoderWorkaround();
-// }
-
-// TEST_F(GstGenericPlayerPrivateTestWithLiveContent, shouldLaunchBroadcomDecoderWorkaround)
-// {
-//     constexpr double kDefaultInitialRateCorrectionSpeed{1.000001};
-//     constexpr double kDefaultRateCorrectionSpeed{1.0};
-//     GstStructure structureCorrectionRate{};
-//     GstEvent eventCorrectionRate{};
-//     GstStructure structureDefaultRate{};
-//     GstEvent eventDefaultRate{};
-//     GstElement videoDecoder{};
-
-//     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("brcmaudiosink")))
-//         .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_sinkFactory)));
-//     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_sinkFactory));
-//     std::unique_ptr<common::ITimer> workaroundTimer{std::make_unique<StrictMock<TimerMock>>()};
-//     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*workaroundTimer), cancel()).Times(2);
-
-//     std::function<void()> timerCallback;
-//     EXPECT_CALL(*m_timerFactoryMock, createTimer(kBroadcomDecoderWorkaroundTimerMs, _, common::TimerType::PERIODIC))
-//         .WillOnce(Invoke(
-//             [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback, common::TimerType timerType)
-//             {
-//                 timerCallback = callback;
-//                 return std::move(workaroundTimer);
-//             }));
-//     m_sut->enableBroadcomDecoderWorkaround();
-
-//     expectGetVideoDecoder(&videoDecoder);
-//     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&videoDecoder, StrEq("queued_frames"), _))
-//         .WillOnce(Invoke(
-//             [&](gpointer object, const gchar *first_property_name, void *data)
-//             {
-//                 uint32_t *queuedFramesPtr = reinterpret_cast<uint32_t *>(data);
-//                 *queuedFramesPtr = 7;
-//             }));
-//     EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&videoDecoder));
-//     EXPECT_CALL(*m_gstWrapperMock, gstStructureNewDoubleStub(StrEq("custom-instant-rate-change"), StrEq("rate"),
-//                                                              G_TYPE_DOUBLE, kDefaultInitialRateCorrectionSpeed))
-//         .WillOnce(Return(&structureCorrectionRate));
-//     EXPECT_CALL(*m_gstWrapperMock, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &structureCorrectionRate))
-//         .WillOnce(Return(&eventCorrectionRate));
-//     EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(_, &eventCorrectionRate)).WillOnce(Return(TRUE));
-//     EXPECT_CALL(*m_gstWrapperMock, gstStructureNewDoubleStub(StrEq("custom-instant-rate-change"), StrEq("rate"),
-//                                                              G_TYPE_DOUBLE, kDefaultRateCorrectionSpeed))
-//         .WillOnce(Return(&structureDefaultRate));
-//     EXPECT_CALL(*m_gstWrapperMock, gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, &structureDefaultRate))
-//         .WillOnce(Return(&eventDefaultRate));
-//     EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(_, &eventDefaultRate)).WillOnce(Return(TRUE));
-
-//     timerCallback();
-// }
-
-// TEST_F(GstGenericPlayerPrivateTestWithLiveContent, shouldCancelBroadcomDecoderWorkaround)
-// {
-//     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("brcmaudiosink")))
-//         .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_sinkFactory)));
-//     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_sinkFactory));
-//     std::unique_ptr<common::ITimer> workaroundTimer{std::make_unique<StrictMock<TimerMock>>()};
-//     EXPECT_CALL(dynamic_cast<StrictMock<TimerMock> &>(*workaroundTimer), cancel());
-//     EXPECT_CALL(*m_timerFactoryMock, createTimer(kBroadcomDecoderWorkaroundTimerMs, _, common::TimerType::PERIODIC))
-//         .WillOnce(Return(ByMove(std::move(workaroundTimer))));
-//     m_sut->enableBroadcomDecoderWorkaround();
-//     m_sut->cancelBroadcomDecoderWorkaroundTimer();
-// }

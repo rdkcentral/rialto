@@ -93,13 +93,6 @@ void HandleBusMessage::execute() const
                     // Subsequent newState==GST_STATE_PAUSED, pending!=GST_STATE_PAUSED transition will
                     // indicate that the pipeline is prerolled and it reached GST_STATE_PAUSED state after seek.
                     m_gstPlayerClient->notifyPlaybackState(PlaybackState::PAUSED);
-
-                    // If we finished the READY->PAUSED transition or prerolling,
-                    // enable hack for Broadcom decoder issue with audio cuts during playback rate change
-                    if ((oldState == GST_STATE_READY) || (pending == GST_STATE_PLAYING))
-                    {
-                        m_player.enableBroadcomDecoderWorkaround();
-                    }
                 }
 
                 if (m_player.hasSourceType(MediaSourceType::SUBTITLE))

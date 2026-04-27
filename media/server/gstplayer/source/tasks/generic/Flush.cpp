@@ -73,7 +73,6 @@ void Flush::execute() const
     m_context.initialPositions.erase(sourceElem->second.appSrc);
 
     m_gstPlayerClient->invalidateActiveRequests(m_type);
-    m_player.cancelBroadcomDecoderWorkaroundTimer();
 
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
     {

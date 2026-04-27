@@ -198,8 +198,6 @@ private:
     void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
     bool isAsync(const MediaSourceType &mediaSourceType) const;
     void notifyPlaybackInfo() override;
-    void enableBroadcomDecoderWorkaround() override;
-    void cancelBroadcomDecoderWorkaroundTimer() override;
 
 private:
     /**
@@ -494,18 +492,6 @@ private:
      * @brief The ongoing state change operations counter
      */
     std::atomic<uint32_t> m_ongoingStateChangesNumber{0};
-
-    /**
-     * @brief Flag used to check if the stream is live
-     *        This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
-     */
-    bool m_isLive;
-
-    /**
-     * @brief Periodic timer to check, if we can do the "fake" playback rate change to change rate control mode in
-     * Broadcom decoder. This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
-     */
-    std::unique_ptr<firebolt::rialto::common::ITimer> m_playbackRateChangeTimer{nullptr};
 };
 
 } // namespace firebolt::rialto::server
