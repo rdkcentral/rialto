@@ -128,6 +128,7 @@ protected:
     void shouldRenderFrame();
     void shouldRenderFrameFailure();
     void shouldGetPosition(const int64_t position);
+    void shouldGetDuration(const int64_t duration);
     void shouldSetImmediateOutput(bool immediateOutput);
     void shouldGetImmediateOutput(bool immediateOutput);
     void shouldSetReportDecodeErrors(bool reportDecodeErrors);
@@ -248,6 +249,7 @@ protected:
     void renderFrame();
     void renderFrameFailure();
     void getPosition(const int64_t expectedPosition);
+    void getDuration(const int64_t expectedDuration);
     void setImmediateOutput(bool immediateOutput);
     void getImmediateOutput(bool immediateOutput);
     void setReportDecodeErrors(bool reportDecodeErrors);

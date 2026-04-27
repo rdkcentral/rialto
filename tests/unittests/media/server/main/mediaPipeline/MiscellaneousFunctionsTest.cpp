@@ -28,6 +28,7 @@ class RialtoServerMediaPipelineMiscellaneousFunctionsTest : public MediaPipeline
 {
 protected:
     const int64_t m_kPosition{4028596027};
+    const int64_t m_kDuration{8057192054};
     const double m_kPlaybackRate{1.5};
     uint64_t m_kRenderedFrames{3141};
     uint64_t m_kDroppedFrames{95};
@@ -219,6 +220,44 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
             }));
     EXPECT_TRUE(m_mediaPipeline->getPosition(targetPosition));
     EXPECT_EQ(targetPosition, m_kPosition);
+}
+
+/**
+ * Test that GetDuration returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetDurationFailureDueToUninitializedPlayer)
+{
+    int64_t targetDuration{};
+    EXPECT_FALSE(m_mediaPipeline->getDuration(targetDuration));
+}
+
+/**
+ * Test that GetDuration returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetDurationFailure)
+{
+    loadGstPlayer();
+    int64_t targetDuration{};
+    EXPECT_CALL(*m_gstPlayerMock, getDuration(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getDuration(targetDuration));
+}
+
+/**
+ * Test that GetDuration returns success if the gstreamer API succeeds and gets the duration
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetDurationSuccess)
+{
+    loadGstPlayer();
+    int64_t targetDuration{};
+    EXPECT_CALL(*m_gstPlayerMock, getDuration(_))
+        .WillOnce(Invoke(
+            [&](int64_t &pos)
+            {
+                pos = m_kDuration;
+                return true;
+            }));
+    EXPECT_TRUE(m_mediaPipeline->getDuration(targetDuration));
+    EXPECT_EQ(targetDuration, m_kDuration);
 }
 
 /**

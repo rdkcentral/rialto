@@ -636,6 +636,13 @@ bool MediaPipeline::switchSource(const std::unique_ptr<MediaSource> &source)
     return m_mediaPipelineIpc->switchSource(source);
 }
 
+bool MediaPipeline::getDuration(int64_t &duration)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->getDuration(duration);
+}
+
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 {
     // Find the needDataRequest for this needDataRequestId

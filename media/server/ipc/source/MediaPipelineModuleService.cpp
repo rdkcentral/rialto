@@ -665,6 +665,25 @@ void MediaPipelineModuleService::getPosition(::google::protobuf::RpcController *
     done->Run();
 }
 
+void MediaPipelineModuleService::getDuration(::google::protobuf::RpcController *controller,
+                                             const ::firebolt::rialto::GetDurationRequest *request,
+                                             ::firebolt::rialto::GetDurationResponse *response,
+                                             ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    int64_t duration{};
+    if (!m_mediaPipelineService.getDuration(request->session_id(), duration))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get duration failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_duration(duration);
+    }
+    done->Run();
+}
+
 void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcController *controller,
                                                     const ::firebolt::rialto::SetImmediateOutputRequest *request,
                                                     ::firebolt::rialto::SetImmediateOutputResponse *response,

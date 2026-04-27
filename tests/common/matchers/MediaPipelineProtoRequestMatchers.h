@@ -352,6 +352,13 @@ MATCHER_P(getPositionRequestMatcher, sessionId, "")
     return ((kRequest->session_id() == sessionId));
 }
 
+MATCHER_P(getDurationRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetDurationRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetDurationRequest *>(arg);
+    return ((kRequest->session_id() == sessionId));
+}
+
 MATCHER_P2(setImmediateOutputRequestMatcher, sessionId, sourceId, "")
 {
     const ::firebolt::rialto::SetImmediateOutputRequest *kRequest =
