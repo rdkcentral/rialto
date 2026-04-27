@@ -35,6 +35,7 @@
 #include "Utils.h"
 #include "WorkerThread.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
+#include "rdk_perf.h"
 
 namespace
 {
@@ -1410,6 +1411,7 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
 
 void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::string &typeStr)
 {
+    
     auto initialPosition = m_context.initialPositions.find(source);
     if (m_context.initialPositions.end() == initialPosition)
     {
@@ -1419,6 +1421,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
     // GstAppSrc does not replace segment, if it's the same as previous one.
     // It causes problems with position reporing in amlogic devices, so we need to push
     // two segments with different reset time value.
+    RDKPerf perf(__FUNCTION__);
     pushAdditionalSegmentIfRequired(source);
 
     for (const auto &[position, resetTime, appliedRate, stopPosition] : initialPosition->second)
