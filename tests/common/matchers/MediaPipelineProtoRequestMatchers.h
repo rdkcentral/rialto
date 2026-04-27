@@ -352,6 +352,13 @@ MATCHER_P(getPositionRequestMatcher, sessionId, "")
     return ((kRequest->session_id() == sessionId));
 }
 
+MATCHER_P(getDurationRequestMatcher, sessionId, "")
+{
+    const ::firebolt::rialto::GetDurationRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetDurationRequest *>(arg);
+    return ((kRequest->session_id() == sessionId));
+}
+
 MATCHER_P2(setImmediateOutputRequestMatcher, sessionId, sourceId, "")
 {
     const ::firebolt::rialto::SetImmediateOutputRequest *kRequest =
@@ -363,6 +370,20 @@ MATCHER_P2(getImmediateOutputRequestMatcher, sessionId, sourceId, "")
 {
     const ::firebolt::rialto::GetImmediateOutputRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::GetImmediateOutputRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+}
+
+MATCHER_P2(setReportDecodeErrorsRequestMatcher, sessionId, sourceId, "")
+{
+    const ::firebolt::rialto::SetReportDecodeErrorsRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::SetReportDecodeErrorsRequest *>(arg);
+    return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
+}
+
+MATCHER_P2(getQueuedFramesRequestMatcher, sessionId, sourceId, "")
+{
+    const ::firebolt::rialto::GetQueuedFramesRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetQueuedFramesRequest *>(arg);
     return (kRequest->session_id() == sessionId) && (kRequest->source_id() == sourceId);
 }
 

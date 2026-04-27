@@ -132,6 +132,10 @@ public:
 
     bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
 
+    bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) override;
+
+    bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) override;
+
     bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
 
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
@@ -187,6 +191,8 @@ public:
     bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) override;
 
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
+
+    bool getDuration(int64_t &duration) override;
 
     bool flush(int32_t sourceId, bool resetTime, bool &async) override;
 

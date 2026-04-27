@@ -36,25 +36,11 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install build-essential
-          sudo apt-get install cmake
-          sudo apt-get install libunwind-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libgstreamer1.0-dev
-
-      - name: Install protobuf
-        run: |
-          sudo apt-get install protobuf-compiler
+          sudo sh -x install_dependencies_for_native_build.sh
 
       - name: Build Rialto
         run: |
-          cmake . -B build -DNATIVE_BUILD=ON -DRIALTO_BUILD_TYPE="Debug" &> output_file.txt
-          if [ $? -eq 0 ]
-          then
-            make -C build &>> output_file.txt
-          else
-            exit 1
-          fi
-
+          sh -x build_native.sh &> output_file.txt
 
       - name: Report Build Status Success
         if: success()

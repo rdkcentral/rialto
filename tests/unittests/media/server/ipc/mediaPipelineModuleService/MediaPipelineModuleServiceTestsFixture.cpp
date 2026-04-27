@@ -86,6 +86,8 @@ constexpr uint64_t kDroppedFrames{321};
 constexpr uint32_t kDuration{30};
 constexpr bool kImmediateOutputVal1{false};
 constexpr bool kImmediateOutputVal2{true};
+constexpr bool kReportDecodeErrorsVal{false};
+constexpr uint32_t kQueuedFramesVal{123};
 constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
 constexpr uint32_t kBufferingLimit{12341};
@@ -494,6 +496,24 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetPosition(
     EXPECT_CALL(m_mediaPipelineServiceMock, getPosition(kHardcodedSessionId, _)).WillOnce(Return(false));
 }
 
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetDuration()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getDuration(kHardcodedSessionId, _))
+        .WillOnce(Invoke(
+            [&](int, std::int64_t &pos)
+            {
+                pos = kDuration;
+                return true;
+            }));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetDuration()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getDuration(kHardcodedSessionId, _)).WillOnce(Return(false));
+}
+
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetImmediateOutput()
 {
     expectRequestSuccess();
@@ -519,6 +539,33 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetImmediate
 {
     expectRequestFailure();
     EXPECT_CALL(m_mediaPipelineServiceMock, getImmediateOutput(kHardcodedSessionId, _, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillSetReportDecodeErrors()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setReportDecodeErrors(kHardcodedSessionId, _, kReportDecodeErrorsVal))
+        .WillOnce(Return(true));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToSetReportDecodeErrors()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, setReportDecodeErrors(kHardcodedSessionId, _, kReportDecodeErrorsVal))
+        .WillOnce(Return(false));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetQueuedFrames()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getQueuedFrames(kHardcodedSessionId, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(kQueuedFramesVal), Return(true)));
+}
+
+void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToGetQueuedFrames()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_mediaPipelineServiceMock, getQueuedFrames(kHardcodedSessionId, _, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillGetStats()
@@ -1108,6 +1155,28 @@ void MediaPipelineModuleServiceTests::sendGetPositionRequestAndReceiveResponseWi
     m_service->getPosition(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
+void MediaPipelineModuleServiceTests::sendGetDurationRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetDurationRequest request;
+    firebolt::rialto::GetDurationResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getDuration(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(response.duration(), kDuration);
+}
+
+void MediaPipelineModuleServiceTests::sendGetDurationRequestAndReceiveResponseWithoutDurationMatch()
+{
+    firebolt::rialto::GetDurationRequest request;
+    firebolt::rialto::GetDurationResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getDuration(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
 void MediaPipelineModuleServiceTests::sendSetImmediateOutputRequestAndReceiveResponse()
 {
     firebolt::rialto::SetImmediateOutputRequest request;
@@ -1150,6 +1219,50 @@ void MediaPipelineModuleServiceTests::sendGetImmediateOutputRequestAndReceiveFai
     request.set_session_id(kHardcodedSessionId);
 
     m_service->getImmediateOutput(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetReportDecodeErrorsRequestAndReceiveResponse()
+{
+    firebolt::rialto::SetReportDecodeErrorsRequest request;
+    firebolt::rialto::SetReportDecodeErrorsResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_report_decode_errors(kReportDecodeErrorsVal);
+
+    m_service->setReportDecodeErrors(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendSetReportDecodeErrorsRequestAndReceiveFail()
+{
+    firebolt::rialto::SetReportDecodeErrorsRequest request;
+    firebolt::rialto::SetReportDecodeErrorsResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+    request.set_report_decode_errors(kReportDecodeErrorsVal);
+
+    m_service->setReportDecodeErrors(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void MediaPipelineModuleServiceTests::sendGetQueuedFramesRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetQueuedFramesRequest request;
+    firebolt::rialto::GetQueuedFramesResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getQueuedFrames(m_controllerMock.get(), &request, &response, m_closureMock.get());
+
+    EXPECT_EQ(response.queued_frames(), kQueuedFramesVal);
+}
+
+void MediaPipelineModuleServiceTests::sendGetQueuedFramesRequestAndReceiveFail()
+{
+    firebolt::rialto::GetQueuedFramesRequest request;
+    firebolt::rialto::GetQueuedFramesResponse response;
+
+    request.set_session_id(kHardcodedSessionId);
+
+    m_service->getQueuedFrames(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void MediaPipelineModuleServiceTests::sendGetStatsRequestAndReceiveResponse()

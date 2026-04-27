@@ -114,6 +114,10 @@ public:
 
     bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
 
+    bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) override;
+
+    bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) override;
+
     bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
 
     bool getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
@@ -170,6 +174,8 @@ public:
     bool getUseBuffering(bool &useBuffering) override;
 
     bool switchSource(const std::unique_ptr<MediaSource> &source) override;
+
+    bool getDuration(int64_t &duration) override;
 
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
@@ -397,6 +403,30 @@ protected:
      * @retval true on success.
      */
     bool setImmediateOutputInternal(int32_t sourceId, bool immediateOutput);
+
+    /**
+     * @brief Sets the "Report Decode Errors" property for this source.
+     *
+     * This method is asynchronous
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] reportDecodeErrors : The desired Set Report Decode Errors mode on the sink
+     *
+     * @retval true on success.
+     */
+    bool setReportDecodeErrorsInternal(int32_t sourceId, bool reportDecodeErrors);
+
+    /**
+     * @brief Gets the queued frames for this source.
+     *
+     * This method is asynchronous
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] queuedFrames : Number of queued frames
+     *
+     * @retval true on success.
+     */
+    bool getQueuedFramesInternal(int32_t sourceId, uint32_t &queuedFrames);
 
     /**
      * @brief Gets the "Immediate Output" property for this source.
