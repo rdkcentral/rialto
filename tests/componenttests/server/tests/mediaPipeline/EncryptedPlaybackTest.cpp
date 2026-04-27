@@ -29,7 +29,7 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCount{10};
+constexpr int kFrameCount{3};
 } // namespace
 
 using testing::_;

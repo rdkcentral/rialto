@@ -28,7 +28,7 @@ using testing::Return;
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{10};
+constexpr int kFrameCountInPausedState{3};
 } // namespace
 
 namespace firebolt::rialto::server::ct

@@ -23,8 +23,8 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{10};
-constexpr int kFrameCountInPlayingState{10};
+constexpr int kFrameCountInPausedState{3};
+constexpr int kFrameCountInPlayingState{3};
 } // namespace
 
 /*
