@@ -26,6 +26,7 @@
 #include "Ocdm.h"
 #include "OcdmSystem.h"
 #include "RdkGstreamerUtilsWrapper.h"
+#include "RdkPerfWrapper.h"
 #include "TextTrackPluginWrapperFactory.h"
 #include "ThunderWrapper.h"
 #endif // WRAPPERS_ENABLED
@@ -124,5 +125,16 @@ std::shared_ptr<IThunderWrapperFactory> &FactoryAccessor::thunderWrapperFactory(
     }
 #endif // WRAPPERS_ENABLED
     return m_thunderWrapperFactory;
+}
+
+std::shared_ptr<IRdkPerfWrapperFactory> &FactoryAccessor::rdkPerfWrapperFactory()
+{
+#ifdef WRAPPERS_ENABLED
+    if (!m_rdkPerfWrapperFactory)
+    {
+        m_rdkPerfWrapperFactory = std::make_shared<RdkPerfWrapperFactory>();
+    }
+#endif // WRAPPERS_ENABLED
+    return m_rdkPerfWrapperFactory;
 }
 } // namespace firebolt::rialto::wrappers

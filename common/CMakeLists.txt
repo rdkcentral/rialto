@@ -27,7 +27,7 @@ add_subdirectory(public)
 add_library(
         RialtoCommon
         STATIC
-        
+
         source/EventThread.cpp
         source/LinuxUtils.cpp
         source/Timer.cpp
@@ -43,7 +43,6 @@ target_include_directories(
         RialtoCommon
 
         PUBLIC
-        
         interface
         $<TARGET_PROPERTY:RialtoCommonPublic,INTERFACE_INCLUDE_DIRECTORIES>
 
@@ -53,8 +52,7 @@ target_include_directories(
 
 target_link_libraries (
         RialtoCommon
-        PUBLIC
-        rdkperf
+
         PRIVATE
         RialtoLogging
     )

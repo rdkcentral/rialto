@@ -66,9 +66,11 @@ GenericPlayerTaskFactory::GenericPlayerTaskFactory(
     IGstGenericPlayerClient *client, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkPerfWrapperFactory> &rdkPerfWrapperFactory,
     const std::shared_ptr<IGstTextTrackSinkFactory> &gstTextTrackSinkFactory)
     : m_client{client}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_gstTextTrackSinkFactory{gstTextTrackSinkFactory}
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_rdkPerfWrapperFactory{rdkPerfWrapperFactory},
+      m_gstTextTrackSinkFactory{gstTextTrackSinkFactory}
 {
 }
 
@@ -144,7 +146,8 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createPlay(IGstGenericPla
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReadShmDataAndAttachSamples(
     GenericPlayerContext &context, IGstGenericPlayerPrivate &player, const std::shared_ptr<IDataReader> &dataReader) const
 {
-    return std::make_unique<tasks::generic::ReadShmDataAndAttachSamples>(context, m_gstWrapper, player, dataReader);
+    return std::make_unique<tasks::generic::ReadShmDataAndAttachSamples>(context, m_gstWrapper, m_rdkPerfWrapperFactory,
+                                                                         player, dataReader);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReportPosition(GenericPlayerContext &context,

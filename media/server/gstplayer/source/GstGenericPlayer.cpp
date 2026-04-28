@@ -34,8 +34,8 @@
 #include "TypeConverters.h"
 #include "Utils.h"
 #include "WorkerThread.h"
-#include "tasks/generic/GenericPlayerTaskFactory.h"
 #include "rdk_perf.h"
+#include "tasks/generic/GenericPlayerTaskFactory.h"
 
 namespace
 {
@@ -90,6 +90,7 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
     {
         auto gstWrapperFactory = firebolt::rialto::wrappers::IGstWrapperFactory::getFactory();
         auto glibWrapperFactory = firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory();
+        auto rdkPerfWrapperFactory = firebolt::rialto::wrappers::IRdkPerfWrapperFactory::createFactory();
         std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper;
         std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper;
         std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper;
@@ -106,12 +107,17 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
         {
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
+        if (!rdkPerfWrapperFactory)
+        {
+            throw std::runtime_error("Cannot create RdkPerfWrapperFactory");
+        }
         gstPlayer = std::make_unique<
             GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper, glibWrapper,
-                              rdkGstreamerUtilsWrapper, IGstInitialiser::instance(), std::make_unique<FlushWatcher>(),
-                              IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
+                              rdkGstreamerUtilsWrapper, rdkPerfWrapperFactory, IGstInitialiser::instance(),
+                              std::make_unique<FlushWatcher>(), IGstSrcFactory::getFactory(),
+                              common::ITimerFactory::getFactory(),
                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
-                                                                         rdkGstreamerUtilsWrapper,
+                                                                         rdkGstreamerUtilsWrapper, rdkPerfWrapperFactory,
                                                                          IGstTextTrackSinkFactory::createFactory()),
                               std::make_unique<WorkerThreadFactory>(), std::make_unique<GstDispatcherThreadFactory>(),
                               IGstProtectionMetadataHelperFactory::createFactory());
@@ -130,14 +136,15 @@ GstGenericPlayer::GstGenericPlayer(
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkPerfWrapperFactory> &rdkPerfWrapperFactory,
     const IGstInitialiser &gstInitialiser, std::unique_ptr<IFlushWatcher> &&flushWatcher,
     const std::shared_ptr<IGstSrcFactory> &gstSrcFactory, std::shared_ptr<common::ITimerFactory> timerFactory,
     std::unique_ptr<IGenericPlayerTaskFactory> taskFactory, std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
     std::shared_ptr<IGstProtectionMetadataHelperFactory> gstProtectionMetadataFactory)
     : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_timerFactory{timerFactory},
-      m_taskFactory{std::move(taskFactory)}, m_flushWatcher{std::move(flushWatcher)}
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_rdkPerfWrapperFactory{rdkPerfWrapperFactory},
+      m_timerFactory{timerFactory}, m_taskFactory{std::move(taskFactory)}, m_flushWatcher{std::move(flushWatcher)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is constructed.");
 
@@ -1463,7 +1470,6 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
 
 void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::string &typeStr)
 {
-    
     auto initialPosition = m_context.initialPositions.find(source);
     if (m_context.initialPositions.end() == initialPosition)
     {
@@ -1473,7 +1479,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
     // GstAppSrc does not replace segment, if it's the same as previous one.
     // It causes problems with position reporing in amlogic devices, so we need to push
     // two segments with different reset time value.
-    RDKPerf perf(__FUNCTION__);
+    auto perf = m_rdkPerfWrapperFactory->createRdkPerfWrapper(__FUNCTION__);
     pushAdditionalSegmentIfRequired(source);
 
     for (const auto &[position, resetTime, appliedRate, stopPosition] : initialPosition->second)

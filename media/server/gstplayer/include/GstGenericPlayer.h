@@ -31,6 +31,7 @@
 #include "IGstProtectionMetadataHelperFactory.h"
 #include "IGstSrc.h"
 #include "IGstWrapper.h"
+#include "IRdkPerfWrapper.h"
 #include "ITimer.h"
 #include "IWorkerThread.h"
 #include "tasks/IGenericPlayerTaskFactory.h"
@@ -80,6 +81,8 @@ public:
      * @param[in] videoRequirements            : The video requirements for the playback.
      * @param[in] gstWrapper                   : The gstreamer wrapper.
      * @param[in] glibWrapper                  : The glib wrapper.
+     * @param[in] rdkGstreamerUtilsWrapper     : The rdk gstreamer utils wrapper
+     * @param[in] rdkPerfWrapperFactory        : The rdk perf wrapper factory
      * @param[in] gstInitialiser               : The gst initialiser
      * @param[in] flushWatcher                 : The flush watcher
      * @param[in] gstSrcFactory                : The gstreamer rialto src factory.
@@ -87,12 +90,14 @@ public:
      * @param[in] taskFactory                  : The task factory
      * @param[in] workerThreadFactory          : The worker thread factory
      * @param[in] gstDispatcherThreadFactory   : The gst dispatcher thread factory
+     * @param[in] gstProtectionMetadataFactory : The gst protection metadata helper factory
      */
     GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
                      const VideoRequirements &videoRequirements,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IRdkPerfWrapperFactory> &rdkPerfWrapperFactory,
                      const IGstInitialiser &gstInitialiser, std::unique_ptr<IFlushWatcher> &&flushWatcher,
                      const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory,
@@ -430,6 +435,11 @@ private:
      * @brief The rdk gstreamer utils wrapper object
      */
     std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
+
+    /**
+     * @brief The rdk perf wrapper factory object
+     */
+    std::shared_ptr<firebolt::rialto::wrappers::IRdkPerfWrapperFactory> m_rdkPerfWrapperFactory;
 
     /**
      * @brief Thread for handling player tasks.
