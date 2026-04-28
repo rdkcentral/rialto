@@ -53,14 +53,14 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 }
 
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
-    : m_active{true}
+    : m_active{true},m_timerType{timerType}
 {
 
     m_id = firebolt::rialto::common::TimerFdManager::instance()
                .add(timeout, timerType, [this, callback]{
                    if (m_active && callback)
                        callback();
-                   if (timerType == TimerType::ONE_SHOT)
+                   if (m_timerType == TimerType::ONE_SHOT)
                        m_active = false;
                });
 }
