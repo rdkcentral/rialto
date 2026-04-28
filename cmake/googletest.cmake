@@ -96,7 +96,7 @@ macro( add_gtests TESTNAME )
     gtest_discover_tests( ${TESTNAME}
             # set a working directory so your project root so that you can find
             # test data via paths relative to the project root
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+            WORKING_DIRECTORY ${PROJECT_DIR}
             )
 
     set_target_properties( ${TESTNAME} PROPERTIES FOLDER test )
