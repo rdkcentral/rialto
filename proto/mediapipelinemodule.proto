@@ -67,7 +67,7 @@ message DestroySessionResponse {
 }
 
 /**
- * @fn void load(MediaType type, string mime_type, string url)
+ * @fn void load(MediaType type, string mime_type, string url, bool isLive)
  * @brief Loads the media pipeline.
  *
  * @param[in]  session_id   The id of the A/V session.

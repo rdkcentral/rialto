@@ -27,7 +27,7 @@ protected:
     firebolt::rialto::LoadRequest_MediaType m_protoType = firebolt::rialto::LoadRequest_MediaType_MSE;
     const std::string m_mimeType = "mime";
     const std::string m_url = "mse://1";
-    const bool m_isLive = false;
+    const bool m_isLive = true;
 
     virtual void SetUp()
     {

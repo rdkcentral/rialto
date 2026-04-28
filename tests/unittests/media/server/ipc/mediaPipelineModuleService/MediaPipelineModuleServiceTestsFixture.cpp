@@ -95,7 +95,7 @@ constexpr bool kUseBuffering{true};
 constexpr uint64_t kStopPosition{2423};
 constexpr bool kFramed{true};
 constexpr bool kIsVideoMaster{true};
-constexpr bool kIsLive{false};
+constexpr bool kIsLive{true};
 } // namespace
 
 MATCHER_P(AttachedSourceMatcher, source, "")

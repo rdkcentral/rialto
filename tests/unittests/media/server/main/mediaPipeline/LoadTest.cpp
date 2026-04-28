@@ -32,7 +32,7 @@ protected:
     MediaType m_type = MediaType::MSE;
     const std::string m_kMimeType = "mime";
     const std::string m_kUrl = "mse://1";
-    const bool m_kIsLive = false;
+    const bool m_kIsLive = true;
 
     RialtoServerMediaPipelineLoadTest() { createMediaPipeline(); }
 

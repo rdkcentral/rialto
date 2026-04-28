@@ -274,7 +274,7 @@ struct GenericPlayerContext
      * @brief Flag used to check if the stream is live
      *        This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
      */
-    bool isLive;
+    bool isLive{false};
 };
 } // namespace firebolt::rialto::server
 
