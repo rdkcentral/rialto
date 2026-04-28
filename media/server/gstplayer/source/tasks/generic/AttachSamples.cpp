@@ -24,6 +24,8 @@
 #include "TypeConverters.h"
 #include <utility>
 
+#include <cinttypes>
+
 namespace firebolt::rialto::server::tasks::generic
 {
 AttachSamples::AttachSamples(GenericPlayerContext &context,
@@ -37,6 +39,15 @@ AttachSamples::AttachSamples(GenericPlayerContext &context,
         GstBuffer *gstBuffer = m_player.createBuffer(*mediaSegment);
         if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::VIDEO)
         {
+            RIALTO_SERVER_LOG_WARN("[VIDHATHRI-PTS_TRACE] SERVER received VIDEO frame: "
+                                   "PTS=%" PRId64 " ms "
+                                   "DTS=%" PRId64 " ms "
+                                   "duration=%" PRId64 " "
+                                   "size=%zu",
+                                   mediaSegment->getTimeStamp() / 1000000,
+                                   mediaSegment->getDuration() / 1000000,
+                                   mediaSegment->getDuration(),
+                                   mediaSegment->getDataLength());
             try
             {
                 IMediaPipeline::MediaSegmentVideo &videoSegment =
