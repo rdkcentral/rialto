@@ -52,7 +52,7 @@ constexpr GType kGstPlayFlagsType{static_cast<GType>(123)};
 constexpr unsigned kNeededDataLength{1};
 constexpr std::chrono::milliseconds kWorkerTimeout{200};
 GstAudioClippingMeta kClippingMeta{};
-constexpr int kNeedDataFrameCount{24};
+constexpr int kNeedDataFrameCount{3};
 } // namespace
 
 namespace firebolt::rialto::server::ct
