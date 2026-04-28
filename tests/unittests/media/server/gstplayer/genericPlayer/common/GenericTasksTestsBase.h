@@ -398,6 +398,7 @@ protected:
     void shouldReadSubtitleData();
     void shouldReadUnknownData();
     void shouldNotAttachUnknownSamples();
+    void shouldCreatePerfWrapper();
     void triggerReadShmDataAndAttachSamplesAudio();
     void triggerReadShmDataAndAttachSamplesVideo();
     void triggerReadShmDataAndAttachSamples();

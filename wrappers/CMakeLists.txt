@@ -79,8 +79,7 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
         source/TextTrackPluginWrapper.cpp
         source/TextTrackWrapper.cpp
         source/ThunderWrapper.cpp
-        source/RdkPerfWrapper.cpp
-        source/RdkPerfWrapperFactoryAccessor.cpp)
+        source/RdkPerfWrapper.cpp)
 endif()
 
 add_library(
@@ -96,6 +95,7 @@ add_library(
         source/RdkGstreamerUtilsWrapperAccessor.cpp
         source/TextTrackPluginWrapperFactoryAccessor.cpp
         source/ThunderWrapperFactoryAccessor.cpp
+        source/RdkPerfWrapperFactoryAccessor.cpp
         ${WRAPPER_SOURCES}
         ${JSONCPP_WRAPPER_SOURCE_FILES}
     )

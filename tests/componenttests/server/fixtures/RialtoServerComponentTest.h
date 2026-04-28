@@ -38,6 +38,7 @@
 #include "OcdmSystemMock.h"
 #include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
+#include "RdkPerfWrapperFactoryMock.h"
 #include "ServerManagerStub.h"
 #include "TextTrackPluginWrapperFactoryMock.h"
 #include "TextTrackPluginWrapperMock.h"
@@ -111,6 +112,8 @@ protected:
         std::make_shared<testing::StrictMock<wrappers::RdkGstreamerUtilsWrapperMock>>()};
     std::shared_ptr<testing::StrictMock<wrappers::TextTrackPluginWrapperFactoryMock>> m_textTrackPluginWrapperFactoryMock{
         std::make_shared<testing::StrictMock<wrappers::TextTrackPluginWrapperFactoryMock>>()};
+    std::shared_ptr<testing::StrictMock<wrappers::RdkPerfWrapperFactoryMock>> m_rdkPerfWrapperFactoryMock{
+        std::make_shared<testing::StrictMock<wrappers::RdkPerfWrapperFactoryMock>>()};
     std::shared_ptr<testing::StrictMock<wrappers::TextTrackPluginWrapperMock>> m_textTrackPluginWrapperMock{
         std::make_shared<testing::StrictMock<wrappers::TextTrackPluginWrapperMock>>()};
     std::shared_ptr<testing::StrictMock<wrappers::TextTrackWrapperMock>> m_textTrackWrapperMock{

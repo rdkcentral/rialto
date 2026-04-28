@@ -31,6 +31,7 @@
 
 using testing::_;
 using testing::AtLeast;
+using testing::Invoke;
 using testing::Return;
 using testing::StrEq;
 
@@ -66,6 +67,7 @@ RialtoServerComponentTest::~RialtoServerComponentTest()
     wrappers::IFactoryAccessor::instance().ocdmFactory() = nullptr;
     wrappers::IFactoryAccessor::instance().ocdmSystemFactory() = nullptr;
     wrappers::IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = nullptr;
+    wrappers::IFactoryAccessor::instance().rdkPerfWrapperFactory() = nullptr;
     wrappers::IFactoryAccessor::instance().textTrackPluginWrapperFactory() = nullptr;
     wrappers::IFactoryAccessor::instance().thunderWrapperFactory() = nullptr;
 }
@@ -136,12 +138,16 @@ void RialtoServerComponentTest::configureWrappers() const
     EXPECT_CALL(*m_thunderWrapperFactoryMock, getThunderWrapper())
         .Times(AtLeast(0))
         .WillRepeatedly(Return(m_thunderWrapperMock));
+    EXPECT_CALL(*m_rdkPerfWrapperFactoryMock, createRdkPerfWrapper(_))
+        .Times(AtLeast(0))
+        .WillRepeatedly(Invoke([](const char *perfName) { return nullptr; }));
     wrappers::IFactoryAccessor::instance().glibWrapperFactory() = m_glibWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().linuxWrapperFactory() = m_linuxWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().ocdmFactory() = m_ocdmFactoryMock;
     wrappers::IFactoryAccessor::instance().ocdmSystemFactory() = m_ocdmSystemFactoryMock;
     wrappers::IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = m_rdkGstreamerUtilsWrapperFactoryMock;
+    wrappers::IFactoryAccessor::instance().rdkPerfWrapperFactory() = m_rdkPerfWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().textTrackPluginWrapperFactory() = m_textTrackPluginWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().thunderWrapperFactory() = m_thunderWrapperFactoryMock;
 }

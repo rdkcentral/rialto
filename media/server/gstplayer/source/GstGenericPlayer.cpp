@@ -34,7 +34,6 @@
 #include "TypeConverters.h"
 #include "Utils.h"
 #include "WorkerThread.h"
-#include "rdk_perf.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 
 namespace

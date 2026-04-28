@@ -58,7 +58,6 @@ int main(int argc, char *argv[])
     {
         return EXIT_FAILURE;
     }
-
     appSessionServer->startService();
 
 #ifdef FREE_MEM_BEFORE_EXIT

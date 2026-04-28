@@ -119,10 +119,10 @@ protected:
         gstPlayerWillBeCreated();
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
                                                    m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
-                                                   m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
-                                                   std::move(m_flushWatcher), m_gstSrcFactoryMock, m_timerFactoryMock,
-                                                   std::move(m_taskFactory), std::move(workerThreadFactory),
-                                                   std::move(gstDispatcherThreadFactory),
+                                                   m_rdkGstreamerUtilsWrapperMock, m_rdkPerfWrapperFactoryMock,
+                                                   m_gstInitialiserMock, std::move(m_flushWatcher), m_gstSrcFactoryMock,
+                                                   m_timerFactoryMock, std::move(m_taskFactory),
+                                                   std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
                                                    m_gstProtectionMetadataFactoryMock);
         m_realElement = initRealElement();
     }
@@ -891,6 +891,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAttachAudioDataWhenAttachingSampleFail
                 SegmentData{kPosition, kResetTime, kAppliedRate, kStopPosition});
             context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
         });
+    EXPECT_CALL(*m_rdkPerfWrapperFactoryMock, createRdkPerfWrapper(_)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstSegmentNew()).WillOnce(Return(&segment));
     EXPECT_CALL(*m_gstWrapperMock, gstSegmentInit(&segment, GST_FORMAT_TIME));
     EXPECT_CALL(*m_gstWrapperMock,
@@ -926,6 +927,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAttachAudioSample)
                 SegmentData{kPosition, kDoNotResetTime, kAppliedRate, kStopPosition});
             context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
         });
+    EXPECT_CALL(*m_rdkPerfWrapperFactoryMock, createRdkPerfWrapper(_)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&audioSrc)).WillOnce(Return(&caps));
     EXPECT_CALL(*m_gstWrapperMock, gstSegmentNew()).WillOnce(Return(&segment));
     EXPECT_CALL(*m_gstWrapperMock, gstSegmentInit(&segment, GST_FORMAT_TIME));
@@ -969,6 +971,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAttachAdditionalAudioSample)
             context.currentPosition[GST_ELEMENT(&audioSrc)] =
                 SegmentData{kPosition, kResetTime, kAppliedRate, kStopPosition};
         });
+    EXPECT_CALL(*m_rdkPerfWrapperFactoryMock, createRdkPerfWrapper(_)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&audioSrc)).WillRepeatedly(Return(&caps));
     EXPECT_CALL(*m_gstWrapperMock, gstSegmentNew()).WillRepeatedly(Return(&segment));
     EXPECT_CALL(*m_gstWrapperMock, gstSegmentInit(&segment, GST_FORMAT_TIME)).Times(2);
@@ -1013,6 +1016,7 @@ TEST_F(GstGenericPlayerPrivateTest, undefinedStopPositionInSetSourcePosition)
                 SegmentData{kPosition, kDoNotResetTime, kAppliedRate, kUndefinedPosition});
             context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
         });
+    EXPECT_CALL(*m_rdkPerfWrapperFactoryMock, createRdkPerfWrapper(_)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&audioSrc)).WillOnce(Return(&caps));
     EXPECT_CALL(*m_gstWrapperMock, gstSegmentNew()).WillOnce(Return(&segment));
     EXPECT_CALL(*m_gstWrapperMock, gstSegmentInit(&segment, GST_FORMAT_TIME));
@@ -1152,6 +1156,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldAttachVideoSample)
                 SegmentData{kPosition, kResetTime, kAppliedRate, kStopPosition});
             context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
         });
+    EXPECT_CALL(*m_rdkPerfWrapperFactoryMock, createRdkPerfWrapper(_)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&videoSrc)).WillOnce(Return(&caps));
     EXPECT_CALL(*m_gstWrapperMock, gstSegmentNew()).WillOnce(Return(&segment));
     EXPECT_CALL(*m_gstWrapperMock, gstSegmentInit(&segment, GST_FORMAT_TIME));

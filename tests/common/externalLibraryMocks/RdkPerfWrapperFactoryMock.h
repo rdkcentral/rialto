@@ -17,33 +17,20 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_WRAPPERS_RDK_PERF_WRAPPER_H_
-#define FIREBOLT_RIALTO_WRAPPERS_RDK_PERF_WRAPPER_H_
+#ifndef FIREBOLT_RIALTO_WRAPPERS_RDK_PERF_WRAPPER_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_WRAPPERS_RDK_PERF_WRAPPER_FACTORY_MOCK_H_
 
 #include "IRdkPerfWrapper.h"
-#include "rdk_perf.h"
+#include <gmock/gmock.h>
 #include <memory>
 
 namespace firebolt::rialto::wrappers
 {
-class RdkPerfWrapperFactory : public IRdkPerfWrapperFactory
+class RdkPerfWrapperFactoryMock : public IRdkPerfWrapperFactory
 {
 public:
-    RdkPerfWrapperFactory() = default;
-    ~RdkPerfWrapperFactory() override = default;
-
-    std::unique_ptr<IRdkPerfWrapper> createRdkPerfWrapper(const char *szName) const override;
-};
-
-class RdkPerfWrapper : public IRdkPerfWrapper
-{
-public:
-    explicit RdkPerfWrapper(const char *szName);
-    ~RdkPerfWrapper() override = default;
-
-private:
-    RDKPerf m_perf;
+    MOCK_METHOD(std::unique_ptr<IRdkPerfWrapper>, createRdkPerfWrapper, (const char *), (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 
-#endif // FIREBOLT_RIALTO_WRAPPERS_RDK_PERF_WRAPPER_H_
+#endif // FIREBOLT_RIALTO_WRAPPERS_RDK_PERF_WRAPPER_FACTORY_MOCK_H_
