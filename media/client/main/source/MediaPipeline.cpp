@@ -313,6 +313,16 @@ bool MediaPipeline::setImmediateOutput(int32_t sourceId, bool immediateOutput)
     return m_mediaPipelineIpc->setImmediateOutput(sourceId, immediateOutput);
 }
 
+bool MediaPipeline::setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors)
+{
+    return m_mediaPipelineIpc->setReportDecodeErrors(sourceId, reportDecodeErrors);
+}
+
+bool MediaPipeline::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
+{
+    return m_mediaPipelineIpc->getQueuedFrames(sourceId, queuedFrames);
+}
+
 bool MediaPipeline::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
 {
     return m_mediaPipelineIpc->getImmediateOutput(sourceId, immediateOutput);
@@ -624,6 +634,13 @@ bool MediaPipeline::switchSource(const std::unique_ptr<MediaSource> &source)
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->switchSource(source);
+}
+
+bool MediaPipeline::getDuration(int64_t &duration)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->getDuration(duration);
 }
 
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)

@@ -452,6 +452,43 @@ TEST_F(GstGenericPlayerTest, shouldFailToGetImmediateOutputInPlayingStateIfPrope
     EXPECT_FALSE(m_sut->getImmediateOutput(MediaSourceType::VIDEO, immediateOutputState));
 }
 
+TEST_F(GstGenericPlayerTest, shouldSetReportDecodeErrors)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetReportDecodeErrors(_, _, MediaSourceType::VIDEO, true))
+        .WillOnce(Return(ByMove(std::move(task))));
+
+    EXPECT_TRUE(m_sut->setReportDecodeErrors(MediaSourceType::VIDEO, true));
+}
+
+TEST_F(GstGenericPlayerTest, shouldGetQueuedFramesInPlayingState)
+{
+    setPipelineState(GST_STATE_PLAYING);
+    const uint32_t kTestQueuedFramesValue{123};
+    const std::string kPropertyStr{"queued-frames"};
+
+    expectGetVideoDecoder(m_element);
+    willGetElementProperty(kPropertyStr, kTestQueuedFramesValue);
+
+    uint32_t queuedFrames;
+    EXPECT_TRUE(m_sut->getQueuedFrames(queuedFrames));
+    EXPECT_EQ(queuedFrames, kTestQueuedFramesValue);
+}
+
+TEST_F(GstGenericPlayerTest, shouldFailToGetQueuedFramesInPlayingStateIfPropertyDoesntExist)
+{
+    setPipelineState(GST_STATE_PLAYING);
+
+    expectGetVideoDecoder(m_element);
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("queued-frames"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).Times(1);
+
+    uint32_t queuedFrames;
+    EXPECT_FALSE(m_sut->getQueuedFrames(queuedFrames));
+}
+
 TEST_F(GstGenericPlayerTest, shouldGetStatsInPlayingState)
 {
     constexpr guint64 kRenderedFrames{1234};
@@ -1125,4 +1162,26 @@ TEST_F(GstGenericPlayerTest, shouldSwitchSource)
     EXPECT_CALL(m_taskFactoryMock, createSwitchSource(_, Ref(source))).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->switchSource(source);
+}
+
+TEST_F(GstGenericPlayerTest, shouldReturnInvalidDurationWhenQueryFails)
+{
+    int64_t targetDuration{};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryDuration(_, GST_FORMAT_TIME, _)).WillOnce(Return(FALSE));
+    EXPECT_FALSE(m_sut->getDuration(targetDuration));
+}
+
+TEST_F(GstGenericPlayerTest, shouldReturnDuration)
+{
+    constexpr gint64 kExpectedDuration{123};
+    int64_t targetDuration{};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryDuration(_, GST_FORMAT_TIME, _))
+        .WillOnce(Invoke(
+            [&](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = kExpectedDuration;
+                return TRUE;
+            }));
+    EXPECT_TRUE(m_sut->getDuration(targetDuration));
+    EXPECT_EQ(kExpectedDuration, targetDuration);
 }

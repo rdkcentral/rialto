@@ -18,18 +18,14 @@
  */
 
 #include "ActiveRequests.h"
+#include "RialtoServerLogging.h"
 #include <cstring>
+#include <limits>
 #include <stdexcept>
 
 namespace firebolt::rialto::server
 {
-ActiveRequests::ActiveRequestsData::~ActiveRequestsData()
-{
-    for (std::unique_ptr<IMediaPipeline::MediaSegment> &segment : m_segments)
-    {
-        delete[] segment->getData();
-    }
-}
+ActiveRequests::ActiveRequestsData::~ActiveRequestsData() {}
 
 AddSegmentStatus ActiveRequests::ActiveRequestsData::addSegment(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment)
 {
@@ -38,10 +34,10 @@ AddSegmentStatus ActiveRequests::ActiveRequestsData::addSegment(const std::uniqu
 
     std::unique_ptr<IMediaPipeline::MediaSegment> copiedSegment = segment->copy();
 
-    uint8_t *data = new uint8_t[segment->getDataLength()];
-    std::memcpy(data, segment->getData(), segment->getDataLength());
+    m_segmentBuffers.emplace_back(segment->getDataLength());
+    std::memcpy(m_segmentBuffers.back().data(), segment->getData(), segment->getDataLength());
 
-    copiedSegment->setData(segment->getDataLength(), data);
+    copiedSegment->setData(m_segmentBuffers.back().size(), m_segmentBuffers.back().data());
     m_segments.push_back(std::move(copiedSegment));
 
     m_bytesWritten += segment->getDataLength();
@@ -53,7 +49,23 @@ ActiveRequests::ActiveRequests() : m_currentId{0} {}
 std::uint32_t ActiveRequests::insert(const MediaSourceType &mediaSourceType, std::uint32_t maxMediaBytes)
 {
     std::unique_lock<std::mutex> lock{m_mutex};
-    m_requestMap.insert(std::make_pair(m_currentId, ActiveRequestsData(mediaSourceType, maxMediaBytes)));
+
+    if (m_currentId == std::numeric_limits<std::uint32_t>::max())
+    {
+        m_currentId = 1;
+    }
+
+    auto [it, inserted] = m_requestMap.emplace(m_currentId, ActiveRequestsData(mediaSourceType, maxMediaBytes));
+    if (!inserted)
+    {
+        do
+        {
+            ++m_currentId;
+        } while (m_requestMap.find(m_currentId) != m_requestMap.end());
+
+        m_requestMap.emplace(m_currentId, ActiveRequestsData(mediaSourceType, maxMediaBytes));
+    }
+
     return m_currentId++;
 }
 

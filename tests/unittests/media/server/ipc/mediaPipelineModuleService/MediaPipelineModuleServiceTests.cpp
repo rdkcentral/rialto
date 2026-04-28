@@ -249,6 +249,22 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetPosition)
     sendGetPositionRequestAndReceiveResponseWithoutPositionMatch();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldGetDuration)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillGetDuration();
+    sendGetDurationRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetDuration)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToGetDuration();
+    sendGetDurationRequestAndReceiveResponseWithoutDurationMatch();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldSetImmediateOutput)
 {
     mediaPipelineServiceWillCreateSession();
@@ -279,6 +295,38 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetImmediateOutput)
     sendCreateSessionRequestAndReceiveResponse();
     mediaPipelineServiceWillFailToGetImmediateOutput();
     sendGetImmediateOutputRequestAndReceiveFail();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSetReportDecodeErrors)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillSetReportDecodeErrors();
+    sendSetReportDecodeErrorsRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToSetReportDecodeErrors)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToSetReportDecodeErrors();
+    sendSetReportDecodeErrorsRequestAndReceiveFail();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldGetQueuedFrames)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillGetQueuedFrames();
+    sendGetQueuedFramesRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetQueuedFrames)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToGetQueuedFrames();
+    sendGetQueuedFramesRequestAndReceiveFail();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldGetStats)
