@@ -268,8 +268,8 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush,kFrameCount);
-        pushVideoData(kFramesToPush,kFrameCount);
+        pushAudioData(kFramesToPush, kFrameCount);
+        pushVideoData(kFramesToPush, kFrameCount);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -286,7 +286,7 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
 
     // Step 9: Set Source Position
     setSourcePosition();
-    pushAudioSample();
+    pushAudioSample(kFrameCount);
 
     // Step 10: End of audio stream
     // Step 11: End of video stream

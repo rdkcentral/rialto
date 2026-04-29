@@ -249,8 +249,8 @@ TEST_F(NonFatalPlayerErrorUpdatesTest, warningMessage)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush,kFrameCountInPausedState);
-        pushVideoData(kFramesToPush,kFrameCountInPausedState);
+        pushAudioData(kFramesToPush, kFrameCountInPausedState);
+        pushVideoData(kFramesToPush, kFrameCountInPausedState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);

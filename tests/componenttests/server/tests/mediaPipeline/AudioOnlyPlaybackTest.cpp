@@ -155,11 +155,11 @@ TEST_F(MediaPipelineTest, AudioOnlyPlayback)
 
     // Step 5: Write 1 audio frame
     // Step 6: Notify buffered
-     gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
+    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush,kFrameCountInPausedState);
+        pushAudioData(kFramesToPush, kFrameCountInPausedState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -176,7 +176,7 @@ TEST_F(MediaPipelineTest, AudioOnlyPlayback)
     play();
 
     // Step 9: Write 1 audio frame
-    pushAudioData(kFramesToPush,kFrameCountInPausedState);
+    pushAudioData(kFramesToPush, kFrameCountInPausedState);
 
     // Step 10: End of audio stream
     willEos(&m_audioAppSrc);

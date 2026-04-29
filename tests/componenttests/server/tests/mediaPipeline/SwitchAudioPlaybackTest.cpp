@@ -33,6 +33,8 @@ using testing::StrEq;
 namespace
 {
 constexpr int kFramesToPush{3};
+constexpr int kFrameCountInPausedState{3};
+constexpr int kFrameCountInPlayingState{24};
 constexpr bool kResetTime{false};
 constexpr bool kAsync{true};
 } // namespace
@@ -245,11 +247,12 @@ TEST_F(SwitchAudioPlaybackTest, SwitchAudio)
     pause();
 
     // Step 5: Write video and audio frames
+    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush);
-        pushVideoData(kFramesToPush);
+        pushAudioData(kFramesToPush, kFrameCountInPausedState);
+        pushVideoData(kFramesToPush, kFrameCountInPausedState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -279,8 +282,8 @@ TEST_F(SwitchAudioPlaybackTest, SwitchAudio)
     switchAudioSource();
 
     // Step 10: Write video and audio frames
-    pushAudioData(kFramesToPush);
-    pushVideoData(kFramesToPush);
+    pushAudioData(kFramesToPush, kFrameCountInPausedState);
+    pushVideoData(kFramesToPush, kFrameCountInPausedState);
 
     // Step 11: Play
     willPlay();

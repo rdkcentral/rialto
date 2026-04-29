@@ -214,8 +214,8 @@ TEST_F(PositionUpdatesTest, PositionUpdate)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush,kFrameCountInPausedState);
-        pushVideoData(kFramesToPush,kFrameCountInPausedState);
+        pushAudioData(kFramesToPush, kFrameCountInPausedState);
+        pushVideoData(kFramesToPush, kFrameCountInPausedState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -231,8 +231,8 @@ TEST_F(PositionUpdatesTest, PositionUpdate)
 
     // Step 9: Write 1 audio frame
     // Step 10: Write 1 video frame
-    pushAudioData(kFramesToPush,kFrameCountInPlayingState);
-    pushVideoData(kFramesToPush,kFrameCountInPlayingState);
+    pushAudioData(kFramesToPush, kFrameCountInPlayingState);
+    pushVideoData(kFramesToPush, kFrameCountInPlayingState);
 
     // Step 11: Expect position update
     waitForPositionUpdate();
@@ -411,8 +411,8 @@ TEST_F(PositionUpdatesTest, GetPositionSuccess)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush,kFrameCountInPausedState);
-        pushVideoData(kFramesToPush,kFrameCountInPausedState);
+        pushAudioData(kFramesToPush, kFrameCountInPausedState);
+        pushVideoData(kFramesToPush, kFrameCountInPausedState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -429,8 +429,8 @@ TEST_F(PositionUpdatesTest, GetPositionSuccess)
 
     // Step 9: Write 1 audio frame
     // Step 10: Write 1 video frame
-    pushAudioData(kFramesToPush,kFrameCountInPlayingState);
-    pushVideoData(kFramesToPush,kFrameCountInPlayingState);
+    pushAudioData(kFramesToPush, kFrameCountInPlayingState);
+    pushVideoData(kFramesToPush, kFrameCountInPlayingState);
 
     // Step 11: Get Position
     getPosition();

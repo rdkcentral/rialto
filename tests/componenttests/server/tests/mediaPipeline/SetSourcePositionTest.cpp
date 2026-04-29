@@ -200,8 +200,8 @@ TEST_F(SetSourcePositionTest, setSourcePositionSuccess)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush,kFrameCount);
-        pushVideoData(kFramesToPush,kFrameCount);
+        pushAudioData(kFramesToPush, kFrameCount);
+        pushVideoData(kFramesToPush, kFrameCount);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
