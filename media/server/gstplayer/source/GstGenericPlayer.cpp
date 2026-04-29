@@ -1329,7 +1329,7 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
         {
 #ifdef RIALTO_ENABLE_BUFFER_SIZE_LOGGING
             gsize bufferSize = gst_buffer_get_size(buffer);
-            GST_DEBUG("Pushing %s buffer of size: %zu bytes",
+            RIALTO_SERVER_LOG_DEBUG("Pushing %s buffer of size: %zu bytes",
                      common::convertMediaSourceType(mediaType), bufferSize);
 #endif
             m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(streamInfo.appSrc), buffer);

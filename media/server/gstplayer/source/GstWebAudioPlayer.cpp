@@ -168,6 +168,8 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
     // See GstPlayerConfig.h to adjust these values.
 #if GST_CHECK_VERSION(1, 20, 0)
     m_gstWrapper->gstAppSrcSetMaxBuffers(GST_APP_SRC(m_context.source), kWebAudioMaxBuffers);
+    // Also set max-bytes on 1.20+ to keep current-level-bytes bounded and prevent underflow in WriteBuffer
+    m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(m_context.source), kWebAudioMaxBytes);
 #else
     m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(m_context.source), kWebAudioMaxBytes);
 #endif
