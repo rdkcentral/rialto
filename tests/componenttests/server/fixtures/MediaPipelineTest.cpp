@@ -524,7 +524,7 @@ void MediaPipelineTest::gstNeedData(GstAppSrc *appSrc, int frameCount)
     EXPECT_EQ(receivedNeedData->frame_count(), frameCount);
     needDataPtr = receivedNeedData;
 }
-void MediaPipelineTest::pushAudioData(unsigned dataCountToPush)
+void MediaPipelineTest::pushAudioData(unsigned dataCountToPush, int needDataFrameCount)
 {
     // First, generate new data
     std::vector<std::unique_ptr<IMediaPipeline::MediaSegment>> segments(dataCountToPush);
