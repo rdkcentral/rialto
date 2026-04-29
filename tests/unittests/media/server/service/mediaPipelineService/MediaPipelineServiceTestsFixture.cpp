@@ -69,6 +69,7 @@ const std::string kTextTrackIdentifier{"TextTrackIdentifier"};
 constexpr uint32_t kBufferingLimit{4324};
 constexpr bool kUseBuffering{true};
 constexpr uint64_t kStopPosition{23412};
+constexpr uint32_t kQueuedFrames{123};
 } // namespace
 
 namespace firebolt::rialto
@@ -222,6 +223,22 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToGetPosition()
     EXPECT_CALL(m_mediaPipelineMock, getPosition(_)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillGetDuration()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getDuration(_))
+        .WillOnce(Invoke(
+            [&](int64_t &pos)
+            {
+                pos = kDuration;
+                return true;
+            }));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetDuration()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getDuration(_)).WillOnce(Return(false));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillSetImmediateOutput()
 {
     EXPECT_CALL(m_mediaPipelineMock, setImmediateOutput(_, _)).WillOnce(Return(true));
@@ -240,6 +257,26 @@ void MediaPipelineServiceTests::mediaPipelineWillGetImmediateOutput()
 void MediaPipelineServiceTests::mediaPipelineWillFailToGetImmediateOutput()
 {
     EXPECT_CALL(m_mediaPipelineMock, getImmediateOutput(_, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillSetReportDecodeErrors()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setReportDecodeErrors(_, _)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToSetReportDecodeErrors()
+{
+    EXPECT_CALL(m_mediaPipelineMock, setReportDecodeErrors(_, _)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetQueuedFrames()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getQueuedFrames(_, _)).WillOnce(DoAll(SetArgReferee<1>(123), Return(true)));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetQueuedFrames()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getQueuedFrames(_, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillGetStats()
@@ -707,6 +744,19 @@ void MediaPipelineServiceTests::getPositionShouldFail()
     EXPECT_FALSE(m_sut->getPosition(kSessionId, targetPosition));
 }
 
+void MediaPipelineServiceTests::getDurationShouldSucceed()
+{
+    std::int64_t targetDuration{};
+    EXPECT_TRUE(m_sut->getDuration(kSessionId, targetDuration));
+    EXPECT_EQ(targetDuration, kDuration);
+}
+
+void MediaPipelineServiceTests::getDurationShouldFail()
+{
+    std::int64_t targetDuration{};
+    EXPECT_FALSE(m_sut->getDuration(kSessionId, targetDuration));
+}
+
 void MediaPipelineServiceTests::getStatsShouldSucceed()
 {
     std::uint64_t renderedFrames;
@@ -744,6 +794,29 @@ void MediaPipelineServiceTests::getImmediateOutputShouldFail()
 {
     bool immOp;
     EXPECT_FALSE(m_sut->getImmediateOutput(kSessionId, kSourceId, immOp));
+}
+
+void MediaPipelineServiceTests::setReportDecodeErrorsShouldSucceed()
+{
+    EXPECT_TRUE(m_sut->setReportDecodeErrors(kSessionId, kSourceId, true));
+}
+
+void MediaPipelineServiceTests::setReportDecodeErrorsShouldFail()
+{
+    EXPECT_FALSE(m_sut->setReportDecodeErrors(kSessionId, kSourceId, true));
+}
+
+void MediaPipelineServiceTests::getQueuedFramesShouldSucceed()
+{
+    uint32_t queuedFr;
+    EXPECT_TRUE(m_sut->getQueuedFrames(kSessionId, kSourceId, queuedFr));
+    EXPECT_EQ(queuedFr, kQueuedFrames);
+}
+
+void MediaPipelineServiceTests::getQueuedFramesShouldFail()
+{
+    uint32_t queuedFr;
+    EXPECT_FALSE(m_sut->getQueuedFrames(kSessionId, kSourceId, queuedFr));
 }
 
 void MediaPipelineServiceTests::getSupportedMimeTypesSucceed()

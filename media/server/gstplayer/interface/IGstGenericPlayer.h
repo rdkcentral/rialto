@@ -187,6 +187,15 @@ public:
     virtual bool getPosition(std::int64_t &position) = 0;
 
     /**
+     * @brief Get the playback duration in nanoseconds.
+     *
+     * @param[out] duration : The playback duration in nanoseconds.
+     *
+     * @retval True on success
+     */
+    virtual bool getDuration(std::int64_t &duration) = 0;
+
+    /**
      * @brief Sets the "Immediate Output" property for this source.
      *
      * @param[in] mediaSourceType : The media source type
@@ -195,6 +204,25 @@ public:
      * @retval true on success.
      */
     virtual bool setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput) = 0;
+
+    /**
+     * @brief Sets the "Report Decode Error" property for this source.
+     *
+     * @param[in] mediaSourceType : The media source type
+     * @param[in] reportDecodeErrors : Set report decode error
+     *
+     * @retval true on success.
+     */
+    virtual bool setReportDecodeErrors(const MediaSourceType &mediaSourceType, bool reportDecodeErrors) = 0;
+
+    /**
+     * @brief Gets the queued frames for this source.
+     *
+     * @param[out] queuedFrames : Get queued frames mode on the decoder
+     *
+     * @retval true on success.
+     */
+    virtual bool getQueuedFrames(uint32_t &queuedFrames) = 0;
 
     /**
      * @brief Gets the "Immediate Output" property for this source.

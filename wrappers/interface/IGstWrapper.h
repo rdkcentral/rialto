@@ -422,6 +422,17 @@ public:
     virtual gboolean gstElementQueryPosition(GstElement *element, GstFormat format, gint64 *cur) = 0;
 
     /**
+     * @brief Queries an element (usually top-level pipeline or playbin element) for the total stream duration in nanoseconds.
+     *
+     * @param[in] element   : a GstElement to invoke the duration query on.
+     * @param[in] format    : the GstFormat requested
+     * @param[out] duration :  A location in which to store the total duration, or NULL.
+     *
+     * @retval TRUE on success, FALSE otherwise.
+     */
+    virtual gboolean gstElementQueryDuration(GstElement *element, GstFormat format, gint64 *duration) = 0;
+
+    /**
      * @brief Create a new ghost pad.
      *
      * @param[in] name      : The name of the new pad, NULL to set default.

@@ -665,6 +665,25 @@ void MediaPipelineModuleService::getPosition(::google::protobuf::RpcController *
     done->Run();
 }
 
+void MediaPipelineModuleService::getDuration(::google::protobuf::RpcController *controller,
+                                             const ::firebolt::rialto::GetDurationRequest *request,
+                                             ::firebolt::rialto::GetDurationResponse *response,
+                                             ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    int64_t duration{};
+    if (!m_mediaPipelineService.getDuration(request->session_id(), duration))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get duration failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_duration(duration);
+    }
+    done->Run();
+}
+
 void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcController *controller,
                                                     const ::firebolt::rialto::SetImmediateOutputRequest *request,
                                                     ::firebolt::rialto::SetImmediateOutputResponse *response,
@@ -676,6 +695,40 @@ void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcContr
     {
         RIALTO_SERVER_LOG_ERROR("Set Immediate Output failed");
         controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::setReportDecodeErrors(::google::protobuf::RpcController *controller,
+                                                       const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
+                                                       ::firebolt::rialto::SetReportDecodeErrorsResponse *response,
+                                                       ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setReportDecodeErrors(request->session_id(), request->source_id(),
+                                                      request->report_decode_errors()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Report Decode Error failed");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getQueuedFrames(::google::protobuf::RpcController *controller,
+                                                 const ::firebolt::rialto::GetQueuedFramesRequest *request,
+                                                 ::firebolt::rialto::GetQueuedFramesResponse *response,
+                                                 ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    uint32_t queuedFramesNumber;
+    if (!m_mediaPipelineService.getQueuedFrames(request->session_id(), request->source_id(), queuedFramesNumber))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get queued frames failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_queued_frames(queuedFramesNumber);
     }
     done->Run();
 }

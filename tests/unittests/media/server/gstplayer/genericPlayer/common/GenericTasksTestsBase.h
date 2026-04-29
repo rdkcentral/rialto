@@ -235,6 +235,8 @@ protected:
     void checkPlaybackGroupAdded();
     void setUseBufferingPending();
     void shouldTriggerSetUseBuffering();
+    void shouldLinkTypefindAndParser();
+    void shouldFailToLinkTypefindAndParser();
 
     // Stop test methods
     void shouldStopGstPlayer();
@@ -276,6 +278,10 @@ protected:
     void shouldSetAudioMute();
     void shouldSetVideoMute();
     void shouldSetSubtitleMute();
+
+    // report-decode-errors decoder property test method
+    void shouldSetReportDecodeErrors();
+    void triggerSetReportDecodeErrors();
 
     // immediate-output sink property test methods
     void shouldSetImmediateOutput();

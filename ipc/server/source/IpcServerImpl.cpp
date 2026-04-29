@@ -1303,9 +1303,10 @@ bool ServerImpl::isClientConnected(uint64_t clientId) const
  */
 void ServerImpl::disconnectClient(uint64_t clientId)
 {
-    std::unique_lock<std::mutex> locker(m_clientsLock);
-    m_condemnedClients.insert(clientId);
-    locker.unlock();
+    {
+        std::lock_guard<std::mutex> locker(m_clientsLock);
+        m_condemnedClients.insert(clientId);
+    }
 
     wakeEventLoop();
 }

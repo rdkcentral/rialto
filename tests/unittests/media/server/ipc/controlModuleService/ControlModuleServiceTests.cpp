@@ -106,3 +106,12 @@ TEST_F(ControlModuleServiceTests, FactoryCreatesObject)
 {
     testFactoryCreatesObject();
 }
+
+TEST_F(ControlModuleServiceTests, shouldRegisterClientWithoutSchemaVersion)
+{
+    clientWillConnect();
+    sendClientConnected();
+    controlServiceWillRegisterClient();
+    sendRegisterClientRequestAndReceiveResponse(std::nullopt);
+    controlServiceWillRemoveControl();
+}

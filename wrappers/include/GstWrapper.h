@@ -198,6 +198,11 @@ public:
         return gst_element_query_position(element, format, cur);
     }
 
+    gboolean gstElementQueryDuration(GstElement *element, GstFormat format, gint64 *duration) override
+    {
+        return gst_element_query_duration(element, format, duration);
+    }
+
     GstPad *gstGhostPadNew(const gchar *name, GstPad *target) override { return gst_ghost_pad_new(name, target); }
 
     void gstPadSetQueryFunction(GstPad *pad, GstPadQueryFunction query) override
