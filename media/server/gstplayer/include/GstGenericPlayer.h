@@ -154,6 +154,7 @@ private:
     void scheduleEnoughData(GstAppSrc *src) override;
     void scheduleAudioUnderflow() override;
     void scheduleVideoUnderflow() override;
+    void scheduleFirstVideoFrameReceived() override;
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
     bool setImmediateOutput() override;
