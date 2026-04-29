@@ -45,6 +45,7 @@ public:
     void setupAppSrcCallbacks(GstAppSrc *appSrc);
     void setupElement(GstElement *element);
     void sendStateChanged(GstState oldState, GstState newState, GstState pendingState, bool handleParseCall = false);
+    void needData(GstAppSrc *appSrc, guint dataLength);
     void sendEos();
     void sendQos(GstElement *src);
     void sendWarning(GstElement *src, GError *error, const gchar *debug);
