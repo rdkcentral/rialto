@@ -98,7 +98,7 @@ if ( RIALTO_LOG_DEBUG_ENABLED )
     add_compile_definitions( RIALTO_LOG_DEBUG_ENABLED )
 endif()
 
-add_compile_definitions( RIALTO_ENABLE_BUFFER_SIZE_LOGGING )
+# add_compile_definitions( RIALTO_ENABLE_BUFFER_SIZE_LOGGING )
 
 #check if TextTrack plugin exists in Thunder
 find_path( TEXT_TRACK_INCLUDE_DIR NAMES WPEFramework/interfaces/ITextTrack.h )

@@ -28,8 +28,8 @@
 #include <memory>
 #include <mutex>
 
-#include "IGstSrc.h"
 #include "GstPlayerConfig.h"
+#include "IGstSrc.h"
 
 namespace firebolt::rialto::server
 {

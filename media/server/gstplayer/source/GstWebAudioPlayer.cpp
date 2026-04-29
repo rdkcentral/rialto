@@ -163,7 +163,7 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
         RIALTO_SERVER_LOG_ERROR("Failed to create the appsrc");
         return false;
     }
-    
+
     // Set queue limits: Use buffer-based on GStreamer 1.20+, byte-based on older versions.
     // See GstPlayerConfig.h to adjust these values.
 #if GST_CHECK_VERSION(1, 20, 0)

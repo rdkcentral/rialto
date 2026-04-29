@@ -19,8 +19,8 @@
 
 #include <stdexcept>
 
-#include "GstSrc.h"
 #include "GstPlayerConfig.h"
+#include "GstSrc.h"
 #include "GstTextTrackSinkFactory.h"
 #include "RialtoServerLogging.h"
 #include <MediaCommon.h>
@@ -402,7 +402,7 @@ void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement
     // The buffer counts are computed to maintain similar memory footprint as the byte limits.
     // To validate these assumptions, build with -DRIALTO_ENABLE_BUFFER_SIZE_LOGGING to log actual buffer sizes.
     // See GstPlayerConfig.h to adjust these values.
-    
+
 #if GST_CHECK_VERSION(1, 20, 0)
     // Queue size in buffer counts (for GStreamer >= 1.20)
     // See GstPlayerConfig.h for detailed documentation on these values.
