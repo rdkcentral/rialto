@@ -148,7 +148,7 @@ TEST_F(ProcessAudioGapTest, ProcessAudioGap)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
+    indicateAllSourcesAttached();
 
     // Step 4: Play
     willPlay();
@@ -252,7 +252,7 @@ TEST_F(ProcessAudioGapTest, ProcessAudioGapFailure)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
+    indicateAllSourcesAttached();
 
     // Step 4: Play
     willPlay();

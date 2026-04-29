@@ -178,7 +178,7 @@ TEST_F(AudioSourceSwitchTest, SwitchAudioSource)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
+    indicateAllSourcesAttached();
 
     // Step 4: Pause
     willPause();
