@@ -30,6 +30,7 @@
 #include "GstTextTrackSinkFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
+#include "RdkPerfWrapperFactoryMock.h"
 
 #include <memory>
 #include <string>
@@ -61,6 +62,8 @@ public:
         std::make_shared<StrictMock<firebolt::rialto::server::DataReaderMock>>()};
     std::shared_ptr<firebolt::rialto::server::GstTextTrackSinkFactoryMock> m_gstTextTrackSinkFactoryMock{
         std::make_shared<StrictMock<firebolt::rialto::server::GstTextTrackSinkFactoryMock>>()};
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::RdkPerfWrapperFactoryMock>> m_rdkPerfWrapperFactory{
+        std::make_shared<StrictMock<firebolt::rialto::wrappers::RdkPerfWrapperFactoryMock>>()};
 
     // Gstreamer members
     GstElement *m_element{};

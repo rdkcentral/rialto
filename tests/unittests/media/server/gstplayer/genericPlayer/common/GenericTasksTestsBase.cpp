@@ -3067,10 +3067,16 @@ void GenericTasksTestsBase::shouldNotAttachUnknownSamples()
     EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::UNKNOWN));
 }
 
+void GenericTasksTestsBase::shouldCreatePerfWrapper()
+{
+    EXPECT_CALL(*testContext->m_rdkPerfWrapperFactory, createRdkPerfWrapper(_)).WillOnce(Return(nullptr));
+}
+
 void GenericTasksTestsBase::triggerReadShmDataAndAttachSamplesAudio()
 {
     firebolt::rialto::server::tasks::generic::ReadShmDataAndAttachSamples task{testContext->m_context,
                                                                                testContext->m_gstWrapper,
+                                                                               testContext->m_rdkPerfWrapperFactory,
                                                                                testContext->m_gstPlayer,
                                                                                testContext->m_dataReader};
     task.execute();
@@ -3084,6 +3090,7 @@ void GenericTasksTestsBase::triggerReadShmDataAndAttachSamplesVideo()
 {
     firebolt::rialto::server::tasks::generic::ReadShmDataAndAttachSamples task{testContext->m_context,
                                                                                testContext->m_gstWrapper,
+                                                                               testContext->m_rdkPerfWrapperFactory,
                                                                                testContext->m_gstPlayer,
                                                                                testContext->m_dataReader};
     task.execute();
@@ -3096,6 +3103,7 @@ void GenericTasksTestsBase::triggerReadShmDataAndAttachSamples()
 {
     firebolt::rialto::server::tasks::generic::ReadShmDataAndAttachSamples task{testContext->m_context,
                                                                                testContext->m_gstWrapper,
+                                                                               testContext->m_rdkPerfWrapperFactory,
                                                                                testContext->m_gstPlayer,
                                                                                testContext->m_dataReader};
     task.execute();

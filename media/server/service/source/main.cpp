@@ -22,6 +22,7 @@
 
 #include "IApplicationSessionServer.h"
 #include "IGstInitialiser.h"
+#include "IRdkPerfWrapper.h"
 #include "RialtoServerLogging.h"
 
 // NOLINT(build/filename_format)
@@ -31,6 +32,7 @@ int main(int argc, char *argv[])
     const char kSrcRev[] = SRCREV;
     const char kTags[] = TAGS;
 
+    auto perf = firebolt::rialto::wrappers::IRdkPerfWrapperFactory::createFactory()->createRdkPerfWrapper(__FUNCTION__);
     if (std::strlen(kSrcRev) > 0)
     {
         if (std::strlen(kTags) > 0)

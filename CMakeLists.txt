@@ -213,6 +213,7 @@ if( NATIVE_BUILD )
     add_subdirectory( stubs/opencdm )
     add_subdirectory( stubs/wpeframework-core )
     add_subdirectory( stubs/wpeframework-com )
+    add_subdirectory( stubs/rdk_perf )
 
     add_compile_options(-DFREE_MEM_BEFORE_EXIT)
     add_compile_options(-ggdb)

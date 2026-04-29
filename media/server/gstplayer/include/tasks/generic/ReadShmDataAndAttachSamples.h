@@ -25,6 +25,7 @@
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
+#include "IRdkPerfWrapper.h"
 #include <memory>
 
 namespace firebolt::rialto::server::tasks::generic
@@ -32,9 +33,10 @@ namespace firebolt::rialto::server::tasks::generic
 class ReadShmDataAndAttachSamples : public IPlayerTask
 {
 public:
-    ReadShmDataAndAttachSamples(GenericPlayerContext &context,
-                                const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                                IGstGenericPlayerPrivate &player, const std::shared_ptr<IDataReader> &dataReader);
+    ReadShmDataAndAttachSamples(
+        GenericPlayerContext &context, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+        const std::shared_ptr<firebolt::rialto::wrappers::IRdkPerfWrapperFactory> &rdkPerfWrapperFactory,
+        IGstGenericPlayerPrivate &player, const std::shared_ptr<IDataReader> &dataReader);
     ~ReadShmDataAndAttachSamples() override;
     void execute() const override;
 
@@ -42,6 +44,7 @@ private:
     void attachData(const firebolt::rialto::MediaSourceType mediaType, GstBuffer *buffer) const;
     GenericPlayerContext &m_context;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IRdkPerfWrapperFactory> m_rdkPerfWrapperFactory;
     IGstGenericPlayerPrivate &m_player;
     std::shared_ptr<IDataReader> m_dataReader;
 };

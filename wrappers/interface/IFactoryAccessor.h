@@ -26,6 +26,7 @@
 #include "IOcdm.h"
 #include "IOcdmSystem.h"
 #include "IRdkGstreamerUtilsWrapper.h"
+#include "IRdkPerfWrapper.h"
 #include "ITextTrackPluginWrapper.h"
 #include "IThunderWrapper.h"
 #include <memory>
@@ -109,6 +110,13 @@ public:
      * @retval non-const (by purpose) reference to the factory instance ptr
      */
     virtual std::shared_ptr<IThunderWrapperFactory> &thunderWrapperFactory() = 0;
+
+    /**
+     * @brief Access the IRdkPerfWrapperFactory instance.
+     *
+     * @retval non-const (by purpose) reference to the factory instance ptr
+     */
+    virtual std::shared_ptr<IRdkPerfWrapperFactory> &rdkPerfWrapperFactory() = 0;
 
 protected:
     /**

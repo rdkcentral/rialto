@@ -35,6 +35,7 @@
 #include "GstSrcMock.h"
 #include "GstWrapperMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
+#include "RdkPerfWrapperFactoryMock.h"
 #include "TimerFactoryMock.h"
 #include "WorkerThreadFactoryMock.h"
 #include "WorkerThreadMock.h"
@@ -73,6 +74,8 @@ public:
     std::shared_ptr<StrictMock<GlibWrapperMock>> m_glibWrapperMock{std::make_shared<StrictMock<GlibWrapperMock>>()};
     std::shared_ptr<StrictMock<RdkGstreamerUtilsWrapperMock>> m_rdkGstreamerUtilsWrapperMock{
         std::make_shared<StrictMock<RdkGstreamerUtilsWrapperMock>>()};
+    std::shared_ptr<StrictMock<RdkPerfWrapperFactoryMock>> m_rdkPerfWrapperFactoryMock{
+        std::make_shared<StrictMock<RdkPerfWrapperFactoryMock>>()};
     std::shared_ptr<StrictMock<GstSrcFactoryMock>> m_gstSrcFactoryMock{std::make_shared<StrictMock<GstSrcFactoryMock>>()};
     std::shared_ptr<StrictMock<GstSrcMock>> m_gstSrcMock{std::make_shared<StrictMock<GstSrcMock>>()};
     std::shared_ptr<StrictMock<TimerFactoryMock>> m_timerFactoryMock{std::make_shared<StrictMock<TimerFactoryMock>>()};

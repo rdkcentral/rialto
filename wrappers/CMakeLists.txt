@@ -56,6 +56,7 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
         ${OCdm_INCLUDE_DIRS}
         ${WPEFRAMEWORK_CORE_INCLUDE_DIRS}
         ${WPEFRAMEWORK_COM_INCLUDE_DIRS}
+        ${rdkperf_INCLUDE_DIRS}
     )
 
     set(WRAPPER_LIBS
@@ -63,6 +64,7 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
         ocdm::ocdm
         WPEFrameworkCore::WPEFrameworkCore
         WPEFrameworkCOM::WPEFrameworkCOM
+        rdkperf
         ${CMAKE_DL_LIBS})
 
     set(WRAPPER_SOURCES
@@ -76,7 +78,8 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
         source/RdkGstreamerUtilsWrapper.cpp
         source/TextTrackPluginWrapper.cpp
         source/TextTrackWrapper.cpp
-        source/ThunderWrapper.cpp)
+        source/ThunderWrapper.cpp
+        source/RdkPerfWrapper.cpp)
 endif()
 
 add_library(
@@ -92,6 +95,7 @@ add_library(
         source/RdkGstreamerUtilsWrapperAccessor.cpp
         source/TextTrackPluginWrapperFactoryAccessor.cpp
         source/ThunderWrapperFactoryAccessor.cpp
+        source/RdkPerfWrapperFactoryAccessor.cpp
         ${WRAPPER_SOURCES}
         ${JSONCPP_WRAPPER_SOURCE_FILES}
     )

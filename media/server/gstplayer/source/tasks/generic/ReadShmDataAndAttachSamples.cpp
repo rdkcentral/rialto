@@ -29,8 +29,10 @@ namespace firebolt::rialto::server::tasks::generic
 {
 ReadShmDataAndAttachSamples::ReadShmDataAndAttachSamples(
     GenericPlayerContext &context, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkPerfWrapperFactory> &rdkPerfWrapperFactory,
     IGstGenericPlayerPrivate &player, const std::shared_ptr<IDataReader> &dataReader)
-    : m_context{context}, m_gstWrapper{gstWrapper}, m_player{player}, m_dataReader{dataReader}
+    : m_context{context}, m_gstWrapper{gstWrapper}, m_rdkPerfWrapperFactory{rdkPerfWrapperFactory}, m_player{player},
+      m_dataReader{dataReader}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing ReadShmDataAndAttachSamples");
 }
@@ -43,6 +45,7 @@ ReadShmDataAndAttachSamples::~ReadShmDataAndAttachSamples()
 void ReadShmDataAndAttachSamples::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing ReadShmDataAndAttachSamples");
+    auto perf = m_rdkPerfWrapperFactory->createRdkPerfWrapper(__FUNCTION__);
     // Read media segments from shared memory
     IMediaPipeline::MediaSegmentVector mediaSegments = m_dataReader->readData();
 
