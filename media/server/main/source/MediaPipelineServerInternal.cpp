@@ -1560,6 +1560,28 @@ void MediaPipelineServerInternal::notifyBufferUnderflow(MediaSourceType mediaSou
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
 
+void MediaPipelineServerInternal::notifyFirstFrameReceived(MediaSourceType mediaSourceType)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, mediaSourceType]()
+    {
+        if (m_mediaPipelineClient)
+        {
+            const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+            if (m_attachedSources.cend() == kSourceIter)
+            {
+                RIALTO_SERVER_LOG_WARN("First frame notification failed - sourceId not found for %s",
+                                       common::convertMediaSourceType(mediaSourceType));
+                return;
+            }
+            m_mediaPipelineClient->notifyFirstFrameReceived(kSourceIter->second);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
 void MediaPipelineServerInternal::notifyPlaybackError(MediaSourceType mediaSourceType, PlaybackError error)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

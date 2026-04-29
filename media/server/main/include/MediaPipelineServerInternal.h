@@ -193,6 +193,8 @@ public:
 
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
 
+    void notifyFirstFrameReceived(MediaSourceType mediaSourceType) override;
+
     void notifyPlaybackError(MediaSourceType mediaSourceType, PlaybackError error) override;
 
     void notifySourceFlushed(MediaSourceType mediaSourceType) override;

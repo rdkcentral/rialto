@@ -170,6 +170,15 @@ TEST_F(SetupElementTest, shouldReportVideoUnderflow)
     triggerVideoUnderflowCallback();
 }
 
+TEST_F(SetupElementTest, shouldReportFirstVideoFrame)
+{
+    shouldSetupVideoDecoderElementWithFirstVideoFrameCallback();
+    triggerSetupElement();
+
+    shouldSetFirstVideoFrameCallback();
+    triggerFirstVideoFrameCallback();
+}
+
 TEST_F(SetupElementTest, shouldReportAudioUnderflow)
 {
     shouldSetupAudioDecoderElementOnly();
