@@ -1674,6 +1674,14 @@ void GstGenericPlayer::scheduleVideoUnderflow()
     }
 }
 
+void GstGenericPlayer::scheduleFirstVideoFrameReceived()
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::VIDEO));
+    }
+}
+
 void GstGenericPlayer::scheduleAllSourcesAttached()
 {
     allSourcesAttached();

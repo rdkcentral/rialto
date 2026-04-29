@@ -240,6 +240,17 @@ void MediaPipelineClient::notifyBufferUnderflow(int32_t sourceId)
     m_ipcClient->sendEvent(event);
 }
 
+void MediaPipelineClient::notifyFirstFrameReceived(int32_t sourceId)
+{
+    RIALTO_SERVER_LOG_DEBUG("Sending FirstFrameReceivedEvent...");
+
+    auto event = std::make_shared<firebolt::rialto::FirstFrameReceivedEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_source_id(sourceId);
+
+    m_ipcClient->sendEvent(event);
+}
+
 void MediaPipelineClient::notifyPlaybackError(int32_t sourceId, PlaybackError error)
 {
     RIALTO_SERVER_LOG_DEBUG("Sending notifyPlaybackError...");
