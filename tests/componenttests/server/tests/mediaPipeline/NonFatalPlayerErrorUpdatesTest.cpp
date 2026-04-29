@@ -31,6 +31,7 @@ using testing::StrEq;
 namespace
 {
 constexpr unsigned kFramesToPush{1};
+constexpr int kFrameCountInPausedState{3};
 const std::string kAudioDecryptorName{"rialtodecryptoraudio_0"};
 const std::string kVideoDecryptorName{"rialtodecryptorvideo_0"};
 } // namespace
@@ -234,7 +235,7 @@ TEST_F(NonFatalPlayerErrorUpdatesTest, warningMessage)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
+    indicateAllSourcesAttached();
 
     // Step 4: Pause
     willPause();
@@ -243,11 +244,13 @@ TEST_F(NonFatalPlayerErrorUpdatesTest, warningMessage)
     // Step 5: Write 1 audio frame
     // Step 6: Write 1 video frame
     // Step 7: Notify buffered and Paused
+    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
+    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush);
-        pushVideoData(kFramesToPush);
+        pushAudioData(kFramesToPush,kFrameCountInPausedState);
+        pushVideoData(kFramesToPush,kFrameCountInPausedState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
