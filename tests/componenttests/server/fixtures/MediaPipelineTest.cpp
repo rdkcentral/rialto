@@ -473,7 +473,6 @@ void MediaPipelineTest::setupSource()
 
 void MediaPipelineTest::indicateAllSourcesAttached()
 {
-
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange(m_clientStub);
 
     auto allSourcesAttachedReq{createAllSourcesAttachedRequest(m_sessionId)};

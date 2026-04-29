@@ -305,7 +305,6 @@ TEST_F(EncryptedPlaybackTest, EncryptedPlayback)
 
         pushEncryptedAudioData(kFrameCountInPausedState);
         pushEncryptedVideoData(kFrameCountInPausedState);
-        
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);

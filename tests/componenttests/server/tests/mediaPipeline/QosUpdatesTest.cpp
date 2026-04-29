@@ -307,8 +307,8 @@ TEST_F(QosUpdatesTest, QosUpdates)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush,kFrameCountInPausedState);
-        pushVideoData(kFramesToPush,kFrameCountInPausedState);
+        pushAudioData(kFramesToPush, kFrameCountInPausedState);
+        pushVideoData(kFramesToPush, kFrameCountInPausedState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -500,8 +500,8 @@ TEST_F(QosUpdatesTest, StatsFailure)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush,kFrameCountInPausedState);
-        pushVideoData(kFramesToPush,kFrameCountInPausedState);
+        pushAudioData(kFramesToPush, kFrameCountInPausedState);
+        pushVideoData(kFramesToPush, kFrameCountInPausedState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
