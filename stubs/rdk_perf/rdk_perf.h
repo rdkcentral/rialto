@@ -22,6 +22,6 @@
 class RDKPerf
 {
 public:
-    RDKPerf(const char *szName);
+    explicit RDKPerf(const char *szName);
     ~RDKPerf() = default;
 };
