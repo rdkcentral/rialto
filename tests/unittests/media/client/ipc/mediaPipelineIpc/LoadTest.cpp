@@ -27,6 +27,7 @@ protected:
     firebolt::rialto::LoadRequest_MediaType m_protoType = firebolt::rialto::LoadRequest_MediaType_MSE;
     const std::string m_mimeType = "mime";
     const std::string m_url = "mse://1";
+    const bool m_isLive = true;
 
     virtual void SetUp()
     {
@@ -51,10 +52,10 @@ TEST_F(RialtoClientMediaPipelineIpcLoadTest, Success)
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("load"), m_controllerMock.get(),
-                                           loadRequestMatcher(m_sessionId, m_protoType, m_mimeType, m_url), _,
+                                           loadRequestMatcher(m_sessionId, m_protoType, m_mimeType, m_url, m_isLive), _,
                                            m_blockingClosureMock.get()));
 
-    EXPECT_EQ(m_mediaPipelineIpc->load(m_type, m_mimeType, m_url), true);
+    EXPECT_EQ(m_mediaPipelineIpc->load(m_type, m_mimeType, m_url, m_isLive), true);
 }
 
 /**
@@ -65,7 +66,7 @@ TEST_F(RialtoClientMediaPipelineIpcLoadTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaPipelineIpc->load(m_type, m_mimeType, m_url), false);
+    EXPECT_EQ(m_mediaPipelineIpc->load(m_type, m_mimeType, m_url, m_isLive), false);
 
     // Reattach channel on destroySession
     EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
@@ -83,7 +84,7 @@ TEST_F(RialtoClientMediaPipelineIpcLoadTest, ReconnectChannel)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("load"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->load(m_type, m_mimeType, m_url), true);
+    EXPECT_EQ(m_mediaPipelineIpc->load(m_type, m_mimeType, m_url, m_isLive), true);
 }
 
 /**
@@ -95,5 +96,5 @@ TEST_F(RialtoClientMediaPipelineIpcLoadTest, LoadFailure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("load"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaPipelineIpc->load(m_type, m_mimeType, m_url), false);
+    EXPECT_EQ(m_mediaPipelineIpc->load(m_type, m_mimeType, m_url, m_isLive), false);
 }

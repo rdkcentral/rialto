@@ -75,7 +75,7 @@ public:
 
     bool allSourcesAttached() override;
 
-    bool load(MediaType type, const std::string &mimeType, const std::string &url) override;
+    bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override;
 
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 

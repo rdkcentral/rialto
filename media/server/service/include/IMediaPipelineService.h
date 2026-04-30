@@ -44,7 +44,7 @@ public:
     virtual bool createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
                                std::uint32_t maxWidth, std::uint32_t maxHeight) = 0;
     virtual bool destroySession(int sessionId) = 0;
-    virtual bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url) = 0;
+    virtual bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url, bool isLive) = 0;
     virtual bool attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
     virtual bool removeSource(int sessionId, std::int32_t sourceId) = 0;
     virtual bool allSourcesAttached(int sessionId) = 0;

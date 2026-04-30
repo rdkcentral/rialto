@@ -313,6 +313,12 @@ void SetupElement::execute() const
         {
             m_player.setBufferingLimit();
         }
+        if (m_context.isLive &&
+            m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_element), "enable-rate-correction"))
+        {
+            RIALTO_SERVER_LOG_INFO("Enabling rate correction for broadcom decoder.");
+            m_glibWrapper->gObjectSet(m_element, "enable-rate-correction", TRUE, nullptr);
+        }
     }
     else if (isAudioSink(*m_gstWrapper, m_element))
     {

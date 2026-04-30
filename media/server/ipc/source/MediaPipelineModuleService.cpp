@@ -392,7 +392,7 @@ void MediaPipelineModuleService::load(::google::protobuf::RpcController *control
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_mediaPipelineService.load(request->session_id(), convertMediaType(request->type()), request->mime_type(),
-                                     request->url()))
+                                     request->url(), request->is_live()))
     {
         RIALTO_SERVER_LOG_ERROR("Load failed");
         controller->SetFailed("Operation failed");

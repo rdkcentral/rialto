@@ -203,11 +203,11 @@ MediaPipeline::~MediaPipeline()
     m_mediaPipelineIpc.reset();
 }
 
-bool MediaPipeline::load(MediaType type, const std::string &mimeType, const std::string &url)
+bool MediaPipeline::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaPipelineIpc->load(type, mimeType, url);
+    return m_mediaPipelineIpc->load(type, mimeType, url, isLive);
 }
 
 bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source)
