@@ -68,6 +68,7 @@ void SetPosition::execute() const
     // Clear local cache of any active data requests for player session
     m_gstPlayerClient->clearActiveRequestsCache();
     m_context.lastAudioSampleTimestamps = m_position;
+    RIALTO_SERVER_LOG_MIL("lastAudioSampleTimestamps [%lld]", m_context.lastAudioSampleTimestamps);
 
     if (!m_context.pipeline)
     {

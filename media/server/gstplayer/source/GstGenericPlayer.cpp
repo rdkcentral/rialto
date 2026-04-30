@@ -807,6 +807,7 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
             // This needs to be done before gstAppSrcPushBuffer() is
             // called because it can free the memory
             m_context.lastAudioSampleTimestamps = static_cast<int64_t>(GST_BUFFER_PTS(streamInfo.buffers.back()));
+            RIALTO_SERVER_LOG_MIL("lastAudioSampleTimestamps [%lld]", m_context.lastAudioSampleTimestamps);
         }
 
         for (GstBuffer *buffer : streamInfo.buffers)
@@ -1091,6 +1092,7 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
     }
 
     m_context.lastAudioSampleTimestamps = currentDispPts;
+    RIALTO_SERVER_LOG_MIL("lastAudioSampleTimestamps [%lld]", m_context.lastAudioSampleTimestamps);
     if (caps)
         m_gstWrapper->gstCapsUnref(caps);
     if (oldCaps)
