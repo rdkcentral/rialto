@@ -28,7 +28,9 @@
 #include "MessageBuilders.h"
 #include "SegmentBuilder.h"
 #include <gst/audio/audio.h>
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 using testing::_;
@@ -471,10 +473,18 @@ void MediaPipelineTest::setupSource()
     m_gstreamerStub.setupRialtoSource();
 }
 
-void MediaPipelineTest::indicateAllSourcesAttached()
+void MediaPipelineTest::indicateAllSourcesAttached(const std::vector<GstAppSrc *> &appsrcs)
 {
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange(m_clientStub);
     std::map<int, std::unique_ptr<ExpectMessage<firebolt::rialto::NeedMediaDataEvent>>> expectedNeedDataMap;
+    for (const GstAppSrc *appSrc : appsrcs)
+    {
+        const int kSourceId = ((appSrc == &m_audioAppSrc) ? m_audioSourceId : m_videoSourceId);
+        auto expectation{std::make_unique<ExpectMessage<firebolt::rialto::NeedMediaDataEvent>>(m_clientStub)};
+        expectation->setFilter([kSourceId](const firebolt::rialto::NeedMediaDataEvent &msg)
+                               { return msg.source_id() == kSourceId; });
+        expectedNeedDataMap.emplace(kSourceId, std::move(expectation));
+    }
 
     auto allSourcesAttachedReq{createAllSourcesAttachedRequest(m_sessionId)};
     ConfigureAction<AllSourcesAttached>(m_clientStub).send(allSourcesAttachedReq).expectSuccess();
@@ -487,7 +497,7 @@ void MediaPipelineTest::indicateAllSourcesAttached()
         ASSERT_TRUE(receivedNeedData);
         EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
         EXPECT_EQ(receivedNeedData->source_id(), sourceId);
-        EXPECT_EQ(receivedNeedData->frame_count(), 3);
+        EXPECT_EQ(receivedNeedData->frame_count(), kFrameCountInPausedState);
         needDataPtr = receivedNeedData;
     }
 
@@ -522,20 +532,6 @@ void MediaPipelineTest::notifyPaused()
     ASSERT_TRUE(receivedPlaybackInfo);
 }
 
-void MediaPipelineTest::gstNeedData(GstAppSrc *appSrc, int frameCount)
-{
-    const int kSourceId = ((appSrc == &m_audioAppSrc) ? m_audioSourceId : m_videoSourceId);
-    auto &needDataPtr = ((appSrc == &m_audioAppSrc) ? m_lastAudioNeedData : m_lastVideoNeedData);
-
-    ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
-    m_gstreamerStub.needData(appSrc, kNeededDataLength);
-    auto receivedNeedData{expectedNeedData.getMessage()};
-    ASSERT_TRUE(receivedNeedData);
-    EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
-    EXPECT_EQ(receivedNeedData->source_id(), kSourceId);
-    EXPECT_EQ(receivedNeedData->frame_count(), frameCount);
-    needDataPtr = receivedNeedData;
-}
 void MediaPipelineTest::pushAudioData(unsigned dataCountToPush, int needDataFrameCount)
 {
     // First, generate new data

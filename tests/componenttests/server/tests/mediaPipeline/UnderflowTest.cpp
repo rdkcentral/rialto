@@ -30,8 +30,6 @@ using testing::StrEq;
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{3};
-constexpr int kFrameCountInPlayingState{24};
 const std::string kElementName{"Decoder"};
 constexpr gulong kSignalId{123};
 } // namespace
@@ -360,7 +358,7 @@ TEST_F(UnderflowTest, underflow)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 6: Pause
     willPause();
@@ -369,13 +367,11 @@ TEST_F(UnderflowTest, underflow)
     // Step 7: Write 1 audio frame
     // Step 8: Write 1 video frame
     // Step 9: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCountInPausedState);
-        pushVideoData(kFramesToPush, kFrameCountInPausedState);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);

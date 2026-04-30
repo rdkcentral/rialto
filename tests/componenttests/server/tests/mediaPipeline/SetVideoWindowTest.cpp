@@ -162,11 +162,7 @@ TEST_F(SetVideoWindowTest, SetVideoWindow)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-
-    // Suppress background NeedMediaDataEvents from pipeline preroll during this flow.
-    m_clientStub.addSuppression<firebolt::rialto::NeedMediaDataEvent>();
-
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();

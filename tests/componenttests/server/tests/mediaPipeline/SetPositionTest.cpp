@@ -27,10 +27,9 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCount{3};
 constexpr int kPositionInPaused{10};
 constexpr int kPositionInPlaying{0};
-constexpr double kPlaybackRate{1.0};
+constexpr double kSeekPlaybackRate{1.0};
 } // namespace
 
 using testing::Return;
@@ -45,7 +44,7 @@ public:
 
     void willSetPosition(std::int64_t position)
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstElementSeek(&m_pipeline, kPlaybackRate, GST_FORMAT_TIME,
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSeek(&m_pipeline, kSeekPlaybackRate, GST_FORMAT_TIME,
                                                       static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH), GST_SEEK_TYPE_SET,
                                                       position, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
             .WillOnce(Return(TRUE));
@@ -100,7 +99,7 @@ public:
 
     void willFailToSetPosition()
     {
-        EXPECT_CALL(*m_gstWrapperMock, gstElementSeek(&m_pipeline, kPlaybackRate, GST_FORMAT_TIME,
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSeek(&m_pipeline, kSeekPlaybackRate, GST_FORMAT_TIME,
                                                       static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH), GST_SEEK_TYPE_SET,
                                                       kPositionInPaused, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
             .WillOnce(Return(FALSE));
@@ -266,7 +265,7 @@ TEST_F(SetPositionTest, SetPosition)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -275,13 +274,11 @@ TEST_F(SetPositionTest, SetPosition)
     // Step 5: Write 1 audio frame
     // Step 6: Write 1 video frame
     // Step 7: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCount);
-    gstNeedData(&m_videoAppSrc, kFrameCount);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCount);
-        pushVideoData(kFramesToPush, kFrameCount);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -437,7 +434,7 @@ TEST_F(SetPositionTest, SetPositionFailure)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -446,13 +443,11 @@ TEST_F(SetPositionTest, SetPositionFailure)
     // Step 5: Write 1 audio frame
     // Step 6: Write 1 video frame
     // Step 7: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCount);
-    gstNeedData(&m_videoAppSrc, kFrameCount);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCount);
-        pushVideoData(kFramesToPush, kFrameCount);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);

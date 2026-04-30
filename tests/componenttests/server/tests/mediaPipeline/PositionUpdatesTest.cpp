@@ -27,8 +27,6 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{3};
-constexpr int kFrameCountInPlayingState{24};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -200,7 +198,7 @@ TEST_F(PositionUpdatesTest, PositionUpdate)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -209,13 +207,11 @@ TEST_F(PositionUpdatesTest, PositionUpdate)
     // Step 5: Write 1 audio frame
     // Step 6: Write 1 video frame
     // Step 7: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCountInPausedState);
-        pushVideoData(kFramesToPush, kFrameCountInPausedState);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -397,7 +393,7 @@ TEST_F(PositionUpdatesTest, GetPositionSuccess)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -406,13 +402,11 @@ TEST_F(PositionUpdatesTest, GetPositionSuccess)
     // Step 5: Write 1 audio frame
     // Step 6: Write 1 video frame
     // Step 7: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCountInPausedState);
-        pushVideoData(kFramesToPush, kFrameCountInPausedState);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -546,13 +540,13 @@ TEST_F(PositionUpdatesTest, getPositionFailure)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Get Position Failure
     willSetStateInvalidForQueryPosition();
     getPositionFailure();
 
-    // Step 7: Remove sources
+    // Step 7: Remove sources, kFrameCountInPlayingState
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
