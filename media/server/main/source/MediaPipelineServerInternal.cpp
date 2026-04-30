@@ -299,7 +299,13 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
         return false;
     }
 
-    m_needMediaDataTimers.erase(sourceIter->first);
+    MediaSourceType type = sourceIter->first;
+
+    m_gstPlayer->removeSource(sourceIter->first);
+    m_needMediaDataTimers.erase(type);
+    m_noAvailableSamplesCounter.erase(type);
+    m_isMediaTypeEosMap.erase(type);
+
     m_attachedSources.erase(sourceIter);
     return true;
 }
