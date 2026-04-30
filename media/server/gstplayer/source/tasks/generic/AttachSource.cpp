@@ -118,6 +118,11 @@ void AttachSource::reattachAudioSource() const
         RIALTO_SERVER_LOG_ERROR("Reattaching source failed!");
         return;
     }
+
+    m_context.streamInfo[m_attachedSource->getType()].isDataNeeded = true;
+    m_context.audioSourceRemoved = false;
+    m_player.notifyNeedMediaData(MediaSourceType::AUDIO);
+
     RIALTO_SERVER_LOG_MIL("Audio source reattached");
 }
 } // namespace firebolt::rialto::server::tasks::generic
