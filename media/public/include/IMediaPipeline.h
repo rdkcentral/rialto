@@ -1072,8 +1072,9 @@ public:
      * @param[in] type     : The media type.
      * @param[in] mimeType : The MIME type.
      * @param[in] url      : The URL.
+     * @param[in] isLive   : Indicates if the media is live.
      */
-    virtual bool load(MediaType type, const std::string &mimeType, const std::string &url) = 0;
+    virtual bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) = 0;
 
     /**
      * @brief Attaches a source stream to the backend.

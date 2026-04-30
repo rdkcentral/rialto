@@ -67,13 +67,14 @@ message DestroySessionResponse {
 }
 
 /**
- * @fn void load(MediaType type, string mime_type, string url)
+ * @fn void load(MediaType type, string mime_type, string url, bool isLive)
  * @brief Loads the media pipeline.
  *
  * @param[in]  session_id   The id of the A/V session.
  * @param[in]  type         The type of media.
  * @param[in]  mime_type    The mime type.
  * @param[in]  url          The url.
+ * @param[in]  isLive       Indicates if the media is live.
  *
  */
 message LoadRequest {
@@ -86,6 +87,7 @@ message LoadRequest {
     optional MediaType  type = 2;
     optional string     mime_type = 3;
     optional string     url = 4;
+    optional bool       is_live = 5;
 }
 message LoadResponse {
 }

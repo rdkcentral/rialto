@@ -789,6 +789,21 @@ void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingBufferingLi
     expectSetupAudioDecoderElement();
 }
 
+void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithIsLiveParameter()
+{
+    testContext->m_context.isLive = true;
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(testContext->m_element), StrEq("enable-rate-correction")))
+        .WillOnce(Return(&testContext->m_paramSpec));
+    EXPECT_CALL(*testContext->m_glibWrapper,
+                gObjectSetStub(G_OBJECT(testContext->m_element), StrEq("enable-rate-correction")));
+
+    expectSetupAudioDecoderElement();
+}
+
 void GenericTasksTestsBase::shouldSetupVideoSinkElementWithPendingRenderFrame()
 {
     testContext->m_context.pendingRenderFrame = true;

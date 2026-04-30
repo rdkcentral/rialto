@@ -88,6 +88,7 @@ protected:
     void shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
     void shouldSetupVideoParserElementWithPendingStreamSyncMode();
     void shouldSetupAudioDecoderElementWithPendingBufferingLimit();
+    void shouldSetupAudioDecoderElementWithIsLiveParameter();
     void shouldSetupVideoSinkElementWithPendingRenderFrame();
     void shouldSetupVideoSinkElementWithPendingShowVideoWindow();
     void shouldSetupAudioElementAmlhalasinkWhenNoVideo();
