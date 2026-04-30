@@ -32,6 +32,7 @@ protected:
     MediaType m_type = MediaType::MSE;
     const std::string m_kMimeType = "mime";
     const std::string m_kUrl = "mse://1";
+    const bool m_kIsLive = true;
 
     RialtoServerMediaPipelineLoadTest() { createMediaPipeline(); }
 
@@ -45,11 +46,12 @@ TEST_F(RialtoServerMediaPipelineLoadTest, Success)
 {
     mainThreadWillEnqueueTaskAndWait();
     mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, m_type, VideoRequirementsMatcher(m_videoReq), _))
+    EXPECT_CALL(*m_gstPlayerFactoryMock,
+                createGstGenericPlayer(_, _, m_type, VideoRequirementsMatcher(m_videoReq), m_kIsLive, _))
         .WillOnce(Return(ByMove(std::move(m_gstPlayer))));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyNetworkState(NetworkState::BUFFERING));
 
-    EXPECT_EQ(m_mediaPipeline->load(m_type, m_kMimeType, m_kUrl), true);
+    EXPECT_EQ(m_mediaPipeline->load(m_type, m_kMimeType, m_kUrl, m_kIsLive), true);
 }
 
 /**
@@ -59,9 +61,10 @@ TEST_F(RialtoServerMediaPipelineLoadTest, Success)
 TEST_F(RialtoServerMediaPipelineLoadTest, CreateGstPlayerFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, m_type, VideoRequirementsMatcher(m_videoReq), _))
+    EXPECT_CALL(*m_gstPlayerFactoryMock,
+                createGstGenericPlayer(_, _, m_type, VideoRequirementsMatcher(m_videoReq), m_kIsLive, _))
         .WillOnce(Return(ByMove(nullptr)));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyNetworkState(_)).Times(0);
 
-    EXPECT_EQ(m_mediaPipeline->load(m_type, m_kMimeType, m_kUrl), false);
+    EXPECT_EQ(m_mediaPipeline->load(m_type, m_kMimeType, m_kUrl, m_kIsLive), false);
 }

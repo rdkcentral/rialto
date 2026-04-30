@@ -77,11 +77,12 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     constexpr bool kEnabled{true};
     constexpr uint32_t kBufferingLimit{5326};
     constexpr uint64_t kStopPosition{4234};
+    constexpr bool kIsLive{false};
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, load(MediaType::MSE, StrEq(kMimeType), StrEq(kUrl))).WillOnce(Return(true));
-    EXPECT_TRUE(proxy->load(MediaType::MSE, kMimeType, kUrl));
+    EXPECT_CALL(*mediaPipelineMock, load(MediaType::MSE, StrEq(kMimeType), StrEq(kUrl), kIsLive)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->load(MediaType::MSE, kMimeType, kUrl, kIsLive));
 
     /////////////////////////////////////////////
 

@@ -38,9 +38,9 @@ public:
 
     std::weak_ptr<IMediaPipelineClient> getClient() override { return m_mediaPipeline->getClient(); }
 
-    bool load(MediaType type, const std::string &mimeType, const std::string &url) override
+    bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override
     {
-        return m_mediaPipeline->load(type, mimeType, url);
+        return m_mediaPipeline->load(type, mimeType, url, isLive);
     }
 
     bool attachSource(const std::unique_ptr<MediaSource> &source) override

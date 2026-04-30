@@ -269,6 +269,12 @@ struct GenericPlayerContext
      * @brief Workaround for the gstreamer flush issue
      */
     std::shared_ptr<IFlushOnPrerollController> flushOnPrerollController{std::make_shared<FlushOnPrerollController>()};
+
+    /**
+     * @brief Flag used to check if the stream is live
+     *        This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
+     */
+    bool isLive{false};
 };
 } // namespace firebolt::rialto::server
 

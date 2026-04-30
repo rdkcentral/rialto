@@ -34,7 +34,7 @@ public:
     MOCK_METHOD(bool, createSession, (int, const std::shared_ptr<IMediaPipelineClient> &, std::uint32_t, std::uint32_t),
                 (override));
     MOCK_METHOD(bool, destroySession, (int), (override));
-    MOCK_METHOD(bool, load, (int, MediaType, const std::string &, const std::string &), (override));
+    MOCK_METHOD(bool, load, (int, MediaType, const std::string &, const std::string &, bool), (override));
     MOCK_METHOD(bool, attachSource, (int, const std::unique_ptr<IMediaPipeline::MediaSource> &), (override));
     MOCK_METHOD(bool, removeSource, (int, std::int32_t), (override));
     MOCK_METHOD(bool, allSourcesAttached, (int), (override));
