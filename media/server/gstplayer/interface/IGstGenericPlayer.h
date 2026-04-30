@@ -89,6 +89,14 @@ public:
     virtual void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) = 0;
 
     /**
+     * @brief Unattaches a source.
+     *
+     * @param[in] mediaSourceType : The media source type.
+     *
+     */
+    virtual void removeSource(const MediaSourceType &mediaSourceType) = 0;
+
+    /**
      * @brief Handles notification that all sources were attached
      *
      */

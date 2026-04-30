@@ -301,6 +301,7 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
 
     MediaSourceType type = sourceIter->first;
 
+    m_gstPlayer->removeSource(sourceIter->first);
     m_needMediaDataTimers.erase(type);
     m_noAvailableSamplesCounter.erase(type);
     m_isMediaTypeEosMap.erase(type);
