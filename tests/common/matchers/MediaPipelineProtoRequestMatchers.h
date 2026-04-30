@@ -37,11 +37,11 @@ MATCHER_P2(createSessionRequestMatcher, maxWidth, maxHeight, "")
     return ((kRequest->max_width() == maxWidth) && (kRequest->max_height() == maxHeight));
 }
 
-MATCHER_P4(loadRequestMatcher, sessionId, type, mimeType, url, "")
+MATCHER_P5(loadRequestMatcher, sessionId, type, mimeType, url, isLive, "")
 {
     const ::firebolt::rialto::LoadRequest *kRequest = dynamic_cast<const ::firebolt::rialto::LoadRequest *>(arg);
     return ((kRequest->session_id() == sessionId) && (kRequest->type() == type) &&
-            (kRequest->mime_type() == mimeType) && (kRequest->url() == url));
+            (kRequest->mime_type() == mimeType) && (kRequest->url() == url) && (kRequest->is_live() == isLive));
 }
 
 MATCHER_P(playRequestMatcher, sessionId, "")

@@ -182,7 +182,7 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
     return true;
 }
 
-bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const std::string &url)
+bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
 {
     if (!reattachChannelIfRequired())
     {
@@ -196,6 +196,7 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
     request.set_type(convertLoadRequestMediaType(type));
     request.set_mime_type(mimeType);
     request.set_url(url);
+    request.set_is_live(isLive);
 
     firebolt::rialto::LoadResponse response;
     auto ipcController = m_ipc.createRpcController();

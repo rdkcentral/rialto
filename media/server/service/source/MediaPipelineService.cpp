@@ -113,7 +113,8 @@ bool MediaPipelineService::destroySession(int sessionId)
     return true;
 }
 
-bool MediaPipelineService::load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url)
+bool MediaPipelineService::load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url,
+                                bool isLive)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to load session with id: %d", sessionId);
 
@@ -124,7 +125,7 @@ bool MediaPipelineService::load(int sessionId, MediaType type, const std::string
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->load(type, mimeType, url);
+    return mediaPipelineIter->second->load(type, mimeType, url, isLive);
 }
 
 bool MediaPipelineService::attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source)

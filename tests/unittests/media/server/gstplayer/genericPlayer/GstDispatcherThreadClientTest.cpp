@@ -33,12 +33,13 @@ class GstDispatcherThreadClientTest : public GstGenericPlayerTestCommon
 protected:
     std::unique_ptr<IGstDispatcherThreadClient> m_sut;
     VideoRequirements m_videoReq = {kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
+    const bool m_kIsLive{false};
 
     GstDispatcherThreadClientTest()
     {
         gstPlayerWillBeCreated();
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
-                                                   m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
+                                                   m_videoReq, m_kIsLive, m_gstWrapperMock, m_glibWrapperMock,
                                                    m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
                                                    std::move(m_flushWatcher), m_gstSrcFactoryMock, m_timerFactoryMock,
                                                    std::move(m_taskFactory), std::move(workerThreadFactory),

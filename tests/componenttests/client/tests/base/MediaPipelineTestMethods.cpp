@@ -91,6 +91,7 @@ constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
 const std::vector<std::string> kSupportedProperties{"immediate-output", "testProp2"};
 constexpr uint64_t kStopPosition{452345};
+constexpr bool kIsLive{false};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -1831,7 +1832,7 @@ void MediaPipelineTestMethods::shouldLoadInternal(const int32_t sessionId, const
                                                   const std::string &mimeType, const std::string &url)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                load(_, loadRequestMatcher(sessionId, convertMediaType(mediaType), mimeType, url), _, _))
+                load(_, loadRequestMatcher(sessionId, convertMediaType(mediaType), mimeType, url, kIsLive), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
@@ -1950,7 +1951,7 @@ void MediaPipelineTestMethods::loadInternal(const std::unique_ptr<IMediaPipeline
                                             const MediaType &mediaType, const std::string &mimeType,
                                             const std::string &url, const bool status)
 {
-    EXPECT_EQ(mediaPipeline->load(mediaType, mimeType, url), status);
+    EXPECT_EQ(mediaPipeline->load(mediaType, mimeType, url, kIsLive), status);
 }
 
 void MediaPipelineTestMethods::removeSourceInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline,
