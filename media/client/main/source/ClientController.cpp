@@ -20,6 +20,7 @@
 #include "ClientController.h"
 #include "RialtoClientLogging.h"
 #include "SharedMemoryHandle.h"
+#include <algorithm>
 #include <cstring>
 #include <stdexcept>
 #include <sys/mman.h>
