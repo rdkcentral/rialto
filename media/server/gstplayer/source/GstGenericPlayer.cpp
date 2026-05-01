@@ -19,9 +19,13 @@
 
 #include <chrono>
 #include <cinttypes>
+#include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <limits>
 #include <malloc.h>
+#include <optional>
 #include <stdexcept>
 
 #include "FlushWatcher.h"
@@ -47,6 +51,122 @@ namespace
  */
 constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
 constexpr std::chrono::seconds kSubtitleClockResyncInterval{10};
+
+std::optional<int> getIntEnv(const char *envName)
+{
+    const char *value = std::getenv(envName);
+    if (!value || value[0] == '\0')
+    {
+        return std::nullopt;
+    }
+
+    char *endPtr{nullptr};
+    const long parsedValue{std::strtol(value, &endPtr, 10)};
+    if (endPtr == value || *endPtr != '\0' || parsedValue < std::numeric_limits<int>::min() ||
+        parsedValue > std::numeric_limits<int>::max())
+    {
+        RIALTO_SERVER_LOG_WARN("Ignoring invalid integer value '%s' from %s", value, envName);
+        return std::nullopt;
+    }
+
+    return static_cast<int>(parsedValue);
+}
+
+std::optional<firebolt::rialto::server::Rectangle> getDefaultVideoGeometryFromEnvironment()
+{
+    const char *rectangleValue = std::getenv("RIALTO_VIDEO_WINDOW_RECTANGLE");
+    if (rectangleValue && rectangleValue[0] != '\0')
+    {
+        int x{}, y{}, width{}, height{};
+        if (std::sscanf(rectangleValue, "%d,%d,%d,%d", &x, &y, &width, &height) == 4)
+        {
+            if (width > 0 && height > 0)
+            {
+                return firebolt::rialto::server::Rectangle{x, y, width, height};
+            }
+
+            RIALTO_SERVER_LOG_WARN("Ignoring invalid %s value '%s' because width/height must be positive",
+                                   "RIALTO_VIDEO_WINDOW_RECTANGLE", rectangleValue);
+            return std::nullopt;
+        }
+
+        RIALTO_SERVER_LOG_WARN("Ignoring invalid %s value '%s', expected x,y,width,height",
+                               "RIALTO_VIDEO_WINDOW_RECTANGLE", rectangleValue);
+        return std::nullopt;
+    }
+
+    const std::optional<int> x = getIntEnv("RIALTO_VIDEO_WINDOW_X");
+    const std::optional<int> y = getIntEnv("RIALTO_VIDEO_WINDOW_Y");
+    const std::optional<int> width = getIntEnv("RIALTO_VIDEO_WINDOW_WIDTH");
+    const std::optional<int> height = getIntEnv("RIALTO_VIDEO_WINDOW_HEIGHT");
+
+    if (!x && !y && !width && !height)
+    {
+        return std::nullopt;
+    }
+
+    if (!x || !y || !width || !height)
+    {
+        RIALTO_SERVER_LOG_WARN("Ignoring incomplete video geometry environment. Set all of %s, %s, %s and %s",
+                               "RIALTO_VIDEO_WINDOW_X", "RIALTO_VIDEO_WINDOW_Y", "RIALTO_VIDEO_WINDOW_WIDTH",
+                               "RIALTO_VIDEO_WINDOW_HEIGHT");
+        return std::nullopt;
+    }
+
+    if (*width <= 0 || *height <= 0)
+    {
+        RIALTO_SERVER_LOG_WARN("Ignoring invalid video geometry from environment because width/height must be positive");
+        return std::nullopt;
+    }
+
+    return firebolt::rialto::server::Rectangle{*x, *y, *width, *height};
+}
+
+bool setRenderRectangleProperty(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                                GstElement *videoSink, const firebolt::rialto::server::Rectangle &rectangle)
+{
+    GValue renderRectangle = G_VALUE_INIT;
+    glibWrapper->gValueInit(&renderRectangle, GST_TYPE_ARRAY);
+
+    auto appendCoordinate = [&](int coordinate) {
+        GValue value = G_VALUE_INIT;
+        glibWrapper->gValueInit(&value, G_TYPE_INT);
+        g_value_set_int(&value, coordinate);
+        gstWrapper->gstValueArrayAppendValue(&renderRectangle, &value);
+        glibWrapper->gValueUnset(&value);
+    };
+
+    appendCoordinate(rectangle.x);
+    appendCoordinate(rectangle.y);
+    appendCoordinate(rectangle.width);
+    appendCoordinate(rectangle.height);
+
+    g_object_set_property(G_OBJECT(videoSink), "render-rectangle", &renderRectangle);
+    glibWrapper->gValueUnset(&renderRectangle);
+    return true;
+}
+
+void applyPlaybinSinkOverride(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                              const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                              GstElement *pipeline, const char *envName, const char *propertyName)
+{
+    const char *sinkFactoryName = std::getenv(envName);
+    if (!sinkFactoryName || sinkFactoryName[0] == '\0')
+    {
+        return;
+    }
+
+    GstElement *sink = gstWrapper->gstElementFactoryMake(sinkFactoryName, sinkFactoryName);
+    if (!sink)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create '%s' from %s", sinkFactoryName, envName);
+        return;
+    }
+
+    glibWrapper->gObjectSet(pipeline, propertyName, sink, nullptr);
+    RIALTO_SERVER_LOG_INFO("Overrode playbin %s with %s from %s", propertyName, sinkFactoryName, envName);
+}
 
 bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)
 {
@@ -255,6 +375,18 @@ void GstGenericPlayer::initMsePipeline()
 {
     // Make playbin
     m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin", "media_pipeline");
+
+    if (const auto defaultGeometry = getDefaultVideoGeometryFromEnvironment())
+    {
+        m_context.pendingGeometry = *defaultGeometry;
+        RIALTO_SERVER_LOG_MIL("Loaded default video geometry from environment: x=%d y=%d width=%d height=%d",
+                              defaultGeometry->x, defaultGeometry->y, defaultGeometry->width,
+                              defaultGeometry->height);
+    }
+
+    applyPlaybinSinkOverride(m_gstWrapper, m_glibWrapper, m_context.pipeline, "RIALTO_PLAYBIN_AUDIO_SINK", "audio-sink");
+    applyPlaybinSinkOverride(m_gstWrapper, m_glibWrapper, m_context.pipeline, "RIALTO_PLAYBIN_VIDEO_SINK", "video-sink");
+
     // Set pipeline flags
     setPlaybinFlags(true);
 
@@ -1849,18 +1981,31 @@ bool GstGenericPlayer::setVideoSinkRectangle()
     GstElement *videoSink{getSink(MediaSourceType::VIDEO)};
     if (videoSink)
     {
+        const Rectangle pendingGeometry = m_context.pendingGeometry;
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
         {
-            std::string rect =
-                std::to_string(m_context.pendingGeometry.x) + ',' + std::to_string(m_context.pendingGeometry.y) + ',' +
-                std::to_string(m_context.pendingGeometry.width) + ',' + std::to_string(m_context.pendingGeometry.height);
+            std::string rect = std::to_string(pendingGeometry.x) + ',' + std::to_string(pendingGeometry.y) + ',' +
+                               std::to_string(pendingGeometry.width) + ',' +
+                               std::to_string(pendingGeometry.height);
             m_glibWrapper->gObjectSet(videoSink, "rectangle", rect.c_str(), nullptr);
+            result = true;
+        }
+        else if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "render-rectangle"))
+        {
+            result = setRenderRectangleProperty(m_gstWrapper, m_glibWrapper, videoSink, pendingGeometry);
+        }
+
+        if (result)
+        {
+            RIALTO_SERVER_LOG_MIL("Applied video geometry x=%d y=%d width=%d height=%d to sink '%s'",
+                                  pendingGeometry.x, pendingGeometry.y, pendingGeometry.width,
+                                  pendingGeometry.height, GST_ELEMENT_NAME(videoSink));
             m_context.pendingGeometry.clear();
             result = true;
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to set the video rectangle");
+            RIALTO_SERVER_LOG_ERROR("Failed to set video geometry on sink '%s'", GST_ELEMENT_NAME(videoSink));
         }
         m_gstWrapper->gstObjectUnref(videoSink);
     }
