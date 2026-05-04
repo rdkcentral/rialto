@@ -273,6 +273,7 @@ uid_t NamedSocket::getSocketOwnerId(const std::string &socketOwner) const
     const int64_t bufferSizeLong = sysconf(_SC_GETPW_R_SIZE_MAX);
     if (!socketOwner.empty() && bufferSizeLong > 0)
     {
+        const size_t kBufferSize = static_cast<size_t>(bufferSizeLong);
         errno = 0;
         passwd passwordStruct{};
         passwd *passwordResult = nullptr;
@@ -297,6 +298,7 @@ gid_t NamedSocket::getSocketGroupId(const std::string &socketGroup) const
     const int64_t bufferSizeLong = sysconf(_SC_GETGR_R_SIZE_MAX);
     if (!socketGroup.empty() && bufferSizeLong > 0)
     {
+        const size_t kBufferSize = static_cast<size_t>(bufferSizeLong);
         errno = 0;
         group groupStruct{};
         group *groupResult = nullptr;
