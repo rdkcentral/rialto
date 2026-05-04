@@ -28,6 +28,7 @@
 #include "IClientController.h"
 #include "IControlClient.h"
 #include "IControlIpc.h"
+#include "IPrivateMetricsIpc.h"
 
 namespace firebolt::rialto::client
 {
@@ -38,10 +39,11 @@ public:
     IClientController &getClientController() const override;
 };
 
-class ClientController : public IClientController, public IControlClient
+class ClientController : public IClientController, public IControlClient, public IPrivateMetricsIpcClient
 {
 public:
-    explicit ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory);
+    explicit ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory,
+                              const std::shared_ptr<IPrivateMetricsIpcFactory> &privateMetricsIpcFactory);
     ~ClientController() override;
 
     std::shared_ptr<ISharedMemoryHandle> getSharedMemoryHandle() override;
@@ -50,6 +52,7 @@ public:
 
 private:
     void notifyApplicationState(ApplicationState state) override;
+    void reportClientMetrics(std::uint64_t sampleId, std::uint32_t reason) override;
 
     /**
      * @brief Initalised the shared memory for media playback.
@@ -80,6 +83,26 @@ private:
      */
     void changeStateAndNotifyClients(ApplicationState state);
 
+    /**
+     * @brief Gets the monotonic timestamp in milliseconds.
+     */
+    std::uint64_t getMonotonicTimeMs() const;
+
+    /**
+     * @brief Gets the epoch timestamp in milliseconds.
+     */
+    std::uint64_t getEpochTimeMs() const;
+
+    /**
+     * @brief Gets accumulated process CPU time in milliseconds.
+     */
+    std::uint64_t getProcessCpuTimeMs() const;
+
+    /**
+     * @brief Gets the process name used for metrics reporting.
+     */
+    std::string getProcessName() const;
+
 private:
     /**
      * @brief Mutex protection for class attributes.
@@ -105,6 +128,11 @@ private:
      * @brief The rialto control ipc factory.
      */
     std::shared_ptr<IControlIpc> m_controlIpc;
+
+    /**
+     * @brief The rialto private metrics ipc instance.
+     */
+    std::shared_ptr<IPrivateMetricsIpc> m_privateMetricsIpc;
 
     /**
      * @brief List of clients to notify.
