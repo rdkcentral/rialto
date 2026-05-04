@@ -41,9 +41,9 @@ protected:
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
                                                    m_videoReq, m_kIsLive, m_gstWrapperMock, m_glibWrapperMock,
                                                    m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
-                                                   std::move(m_flushWatcher), m_gstSrcFactoryMock, m_timerFactoryMock,
-                                                   std::move(m_taskFactory), std::move(workerThreadFactory),
-                                                   std::move(gstDispatcherThreadFactory),
+                                                   std::move(m_flushWatcher), m_gstSrcFactoryMock,
+                                                   m_gstProfilerFactoryMock, m_timerFactoryMock, std::move(m_taskFactory),
+                                                   std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
                                                    m_gstProtectionMetadataFactoryMock);
     }
 

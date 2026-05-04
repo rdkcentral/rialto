@@ -35,6 +35,7 @@
 
 using testing::_;
 using testing::AtLeast;
+using testing::AtMost;
 using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
@@ -91,6 +92,7 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_playsink));
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_READY))
         .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&m_pipeline)).Times(AtMost(1));
 
     // In case of longer testruns, GstPlayer may request to query position and volume
     EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).Times(AtLeast(0));

@@ -270,6 +270,7 @@ GenericTasksTestsBase::GenericTasksTestsBase()
     testContext->m_context.gstSrc = testContext->m_gstSrc;
     testContext->m_context.source = testContext->m_element;
     testContext->m_context.decryptionService = testContext->m_decryptionServiceMock.get();
+    testContext->m_context.gstProfiler = std::move(testContext->m_gstProfilerMock);
 }
 
 GenericTasksTestsBase::~GenericTasksTestsBase()

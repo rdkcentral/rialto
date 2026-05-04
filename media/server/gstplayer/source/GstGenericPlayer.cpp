@@ -27,6 +27,7 @@
 #include "FlushWatcher.h"
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
+#include "GstProfiler.h"
 #include "GstProtectionMetadata.h"
 #include "IGstTextTrackSinkFactory.h"
 #include "IMediaPipeline.h"
@@ -106,10 +107,12 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
         {
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
+
         gstPlayer = std::make_unique<
             GstGenericPlayer>(client, decryptionService, type, videoRequirements, isLive, gstWrapper, glibWrapper,
                               rdkGstreamerUtilsWrapper, IGstInitialiser::instance(), std::make_unique<FlushWatcher>(),
-                              IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
+                              IGstSrcFactory::getFactory(), IGstProfilerFactory::getFactory(),
+                              common::ITimerFactory::getFactory(),
                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
                                                                          rdkGstreamerUtilsWrapper,
                                                                          IGstTextTrackSinkFactory::createFactory()),
@@ -131,13 +134,14 @@ GstGenericPlayer::GstGenericPlayer(
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
     const IGstInitialiser &gstInitialiser, std::unique_ptr<IFlushWatcher> &&flushWatcher,
-    const std::shared_ptr<IGstSrcFactory> &gstSrcFactory, std::shared_ptr<common::ITimerFactory> timerFactory,
+    const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+    const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory, std::shared_ptr<common::ITimerFactory> timerFactory,
     std::unique_ptr<IGenericPlayerTaskFactory> taskFactory, std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
     std::shared_ptr<IGstProtectionMetadataHelperFactory> gstProtectionMetadataFactory)
     : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_timerFactory{timerFactory},
-      m_taskFactory{std::move(taskFactory)}, m_flushWatcher{std::move(flushWatcher)}
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_gstProfilerFactory{gstProfilerFactory},
+      m_timerFactory{timerFactory}, m_taskFactory{std::move(taskFactory)}, m_flushWatcher{std::move(flushWatcher)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is constructed.");
 
@@ -149,6 +153,10 @@ GstGenericPlayer::GstGenericPlayer(
     if ((!gstSrcFactory) || (!(m_context.gstSrc = gstSrcFactory->getGstSrc())))
     {
         throw std::runtime_error("Cannot create GstSrc");
+    }
+    if (!m_gstProfilerFactory)
+    {
+        throw std::runtime_error("No gst profiler factory provided");
     }
 
     if (!timerFactory)
@@ -228,6 +236,12 @@ void GstGenericPlayer::initMsePipeline()
     // Set pipeline flags
     setPlaybinFlags(true);
 
+    m_context.gstProfiler = m_gstProfilerFactory->createGstProfiler(m_context.pipeline, m_gstWrapper, m_glibWrapper);
+    if (!m_context.gstProfiler)
+    {
+        throw std::runtime_error("Cannot create GstProfiler");
+    }
+
     // Set callbacks
     m_glibWrapper->gSignalConnect(m_context.pipeline, "source-setup", G_CALLBACK(&GstGenericPlayer::setupSource), this);
     m_glibWrapper->gSignalConnect(m_context.pipeline, "element-setup", G_CALLBACK(&GstGenericPlayer::setupElement), this);
@@ -253,6 +267,9 @@ void GstGenericPlayer::initMsePipeline()
         GST_WARNING("Failed to set pipeline to READY state");
     }
     RIALTO_SERVER_LOG_MIL("New RialtoServer's pipeline created");
+    auto recordId = m_context.gstProfiler->createRecord("Pipeline Created");
+    if (recordId)
+        m_context.gstProfiler->logRecord(recordId.value());
 }
 
 void GstGenericPlayer::resetWorkerThread()
@@ -314,6 +331,11 @@ void GstGenericPlayer::termPipeline()
         m_gstWrapper->gstObjectUnref(m_context.playbackGroup.m_curAudioPlaysinkBin);
         m_context.playbackGroup.m_curAudioPlaysinkBin = nullptr;
     }
+
+    auto recordId = m_context.gstProfiler->createRecord("Pipeline Terminated");
+    if (recordId)
+        m_context.gstProfiler->logRecord(recordId.value());
+    m_context.gstProfiler->dumpToFile();
 
     // Delete the pipeline
     m_gstWrapper->gstObjectUnref(m_context.pipeline);
@@ -1486,7 +1508,9 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
                               common::convertMediaSourceType(mediaSourceType), GST_TIME_ARGS(segment->start),
                               GST_TIME_ARGS(segment->stop), segment->rate, segment->applied_rate, resetTime);
-
+        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", typeStr);
+        if (recordId)
+            m_context.gstProfiler->logRecord(recordId.value());
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
         // We can't pass buffer in GstSample, because implementation of gst_app_src_push_sample
         // uses gst_buffer_copy, which loses RialtoProtectionMeta (that causes problems with EME
