@@ -20,12 +20,15 @@
 #include "ClientController.h"
 #include "ControlIpcFactoryMock.h"
 #include "ControlIpcMock.h"
+#include "PrivateMetricsIpcFactoryMock.h"
+#include "PrivateMetricsIpcMock.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
 
 using ::testing::_;
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::StrictMock;
 
@@ -34,10 +37,14 @@ class ClientControllerCreateTest : public ::testing::Test
 protected:
     std::shared_ptr<StrictMock<ControlIpcFactoryMock>> m_controlIpcFactoryMock;
     std::shared_ptr<StrictMock<ControlIpcMock>> m_controlIpcMock;
+    std::shared_ptr<StrictMock<PrivateMetricsIpcFactoryMock>> m_privateMetricsIpcFactoryMock;
+    std::shared_ptr<NiceMock<PrivateMetricsIpcMock>> m_privateMetricsIpcMock;
 
     ClientControllerCreateTest()
         : m_controlIpcFactoryMock{std::make_shared<StrictMock<ControlIpcFactoryMock>>()},
-          m_controlIpcMock{std::make_shared<StrictMock<ControlIpcMock>>()}
+          m_controlIpcMock{std::make_shared<StrictMock<ControlIpcMock>>()},
+          m_privateMetricsIpcFactoryMock{std::make_shared<StrictMock<PrivateMetricsIpcFactoryMock>>()},
+          m_privateMetricsIpcMock{std::make_shared<NiceMock<PrivateMetricsIpcMock>>()}
     {
     }
 
@@ -45,6 +52,8 @@ protected:
     {
         m_controlIpcMock.reset();
         m_controlIpcFactoryMock.reset();
+        m_privateMetricsIpcMock.reset();
+        m_privateMetricsIpcFactoryMock.reset();
     }
 };
 
@@ -54,8 +63,10 @@ TEST_F(ClientControllerCreateTest, CreateDestroy)
 
     // Create
     EXPECT_CALL(*m_controlIpcFactoryMock, createControlIpc(_)).WillOnce(Return(m_controlIpcMock));
+    EXPECT_CALL(*m_privateMetricsIpcFactoryMock, createPrivateMetricsIpc(_)).WillOnce(Return(m_privateMetricsIpcMock));
 
-    EXPECT_NO_THROW(controller = std::make_unique<ClientController>(m_controlIpcFactoryMock));
+    EXPECT_NO_THROW(controller =
+                        std::make_unique<ClientController>(m_controlIpcFactoryMock, m_privateMetricsIpcFactoryMock));
 
     // Destroy
     controller.reset();
@@ -67,6 +78,7 @@ TEST_F(ClientControllerCreateTest, CreateControlIpcFailure)
 
     EXPECT_CALL(*m_controlIpcFactoryMock, createControlIpc(_)).WillOnce(Return(nullptr));
 
-    EXPECT_THROW(controller = std::make_unique<ClientController>(m_controlIpcFactoryMock), std::runtime_error);
+    EXPECT_THROW(controller = std::make_unique<ClientController>(m_controlIpcFactoryMock, m_privateMetricsIpcFactoryMock),
+                 std::runtime_error);
     EXPECT_EQ(controller, nullptr);
 }
