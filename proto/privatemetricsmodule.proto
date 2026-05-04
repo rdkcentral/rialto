@@ -1,0 +1,66 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2026 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto2";
+
+package firebolt.rialto;
+
+option cc_generic_services = true;
+
+enum MetricsSampleReason {
+    METRICS_SAMPLE_REASON_UNKNOWN = 0;
+    METRICS_SAMPLE_REASON_CONNECTED = 1;
+    METRICS_SAMPLE_REASON_PERIODIC = 2;
+}
+
+message ClientProcessMetrics {
+    optional uint64 sample_id = 1;
+    optional MetricsSampleReason reason = 2 [default = METRICS_SAMPLE_REASON_UNKNOWN];
+    optional string app_name = 3;
+    optional uint32 process_id = 4;
+    optional uint64 monotonic_time_ms = 5;
+    optional uint64 epoch_time_ms = 6;
+    optional uint64 process_cpu_time_ms = 7;
+}
+
+message ReportClientMetricsRequest {
+    optional ClientProcessMetrics metrics = 1;
+}
+
+message ReportClientMetricsResponse {
+}
+
+message NotifyClientReadyRequest {
+}
+
+message NotifyClientReadyResponse {
+}
+
+message MetricsSampleRequestEvent {
+    optional uint64 sample_id = 1;
+    optional MetricsSampleReason reason = 2 [default = METRICS_SAMPLE_REASON_UNKNOWN];
+}
+
+service PrivateMetricsModule {
+    rpc notifyClientReady(NotifyClientReadyRequest) returns (NotifyClientReadyResponse) {
+    }
+
+    rpc reportClientMetrics(ReportClientMetricsRequest) returns (ReportClientMetricsResponse) {
+    }
+}
