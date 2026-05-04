@@ -29,6 +29,7 @@ add_library (
         source/MediaPipelineIpc.cpp
         source/MediaPipelineCapabilitiesIpc.cpp
         source/ControlIpc.cpp
+        source/PrivateMetricsIpc.cpp
         source/MediaKeysIpc.cpp
         source/MediaKeysCapabilitiesIpc.cpp
         source/RialtoCommonIpc.cpp

@@ -21,10 +21,13 @@
 #include "RialtoClientLogging.h"
 #include "SharedMemoryHandle.h"
 #include <algorithm>
+#include <chrono>
 #include <cstring>
+#include <fstream>
 #include <stdexcept>
 #include <sys/mman.h>
 #include <sys/un.h>
+#include <sys/times.h>
 #include <unistd.h>
 
 namespace
@@ -45,11 +48,13 @@ IClientControllerAccessor &IClientControllerAccessor::instance()
 
 IClientController &ClientControllerAccessor::getClientController() const
 {
-    static ClientController ClientController{IControlIpcFactory::createFactory()};
+    static ClientController ClientController{IControlIpcFactory::createFactory(),
+                                             IPrivateMetricsIpcFactory::createFactory()};
     return ClientController;
 }
 
-ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory)
+ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory,
+                                   const std::shared_ptr<IPrivateMetricsIpcFactory> &privateMetricsIpcFactory)
     : m_currentState{ApplicationState::UNKNOWN}, m_registrationRequired{true}
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
@@ -77,6 +82,12 @@ ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &Co
     if (nullptr == m_controlIpc)
     {
         throw std::runtime_error("Failed to create the ControlIpc object");
+    }
+
+    m_privateMetricsIpc = privateMetricsIpcFactory->createPrivateMetricsIpc(this);
+    if (nullptr == m_privateMetricsIpc)
+    {
+        throw std::runtime_error("Failed to create the PrivateMetricsIpc object");
     }
 }
 
@@ -278,5 +289,60 @@ void ClientController::changeStateAndNotifyClients(ApplicationState state)
     {
         client->notifyApplicationState(state);
     }
+}
+
+void ClientController::reportClientMetrics(std::uint64_t sampleId, std::uint32_t reason)
+{
+    if (!m_privateMetricsIpc->reportClientMetrics(sampleId, reason, getProcessName(), static_cast<std::uint32_t>(getpid()),
+                                                  getMonotonicTimeMs(), getEpochTimeMs(), getProcessCpuTimeMs()))
+    {
+        RIALTO_CLIENT_LOG_WARN("Failed to report client process metrics");
+    }
+}
+
+std::uint64_t ClientController::getMonotonicTimeMs() const
+{
+    using std::chrono::duration_cast;
+    using std::chrono::milliseconds;
+    using std::chrono::steady_clock;
+
+    return static_cast<std::uint64_t>(duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count());
+}
+
+std::uint64_t ClientController::getEpochTimeMs() const
+{
+    using std::chrono::duration_cast;
+    using std::chrono::milliseconds;
+    using std::chrono::system_clock;
+
+    return static_cast<std::uint64_t>(duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count());
+}
+
+std::uint64_t ClientController::getProcessCpuTimeMs() const
+{
+    struct tms processTimes
+    {};
+    const clock_t kCurrentTicks{times(&processTimes)};
+    const long kTicksPerSecond{sysconf(_SC_CLK_TCK)};
+    if ((static_cast<clock_t>(-1) == kCurrentTicks) || (kTicksPerSecond <= 0))
+    {
+        RIALTO_CLIENT_LOG_WARN("Failed to sample client process CPU usage");
+        return 0;
+    }
+
+    const auto kProcessTicks{processTimes.tms_utime + processTimes.tms_stime};
+    return static_cast<std::uint64_t>((static_cast<double>(kProcessTicks) * 1000.0) /
+                                      static_cast<double>(kTicksPerSecond));
+}
+
+std::string ClientController::getProcessName() const
+{
+    std::ifstream comm{"/proc/self/comm"};
+    std::string processName;
+    if (std::getline(comm, processName) && !processName.empty())
+    {
+        return processName;
+    }
+    return "unknown";
 }
 } // namespace firebolt::rialto::client

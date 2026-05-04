@@ -21,8 +21,8 @@
 include( FindProtobuf )
 set( Protobuf_IMPORT_DIRS "${CMAKE_SYSROOT}/usr/include" "${CMAKE_CURRENT_LIST_DIR}/../ipc/common/proto" )
 protobuf_generate_cpp( PROTO_SRCS PROTO_HEADERS rialtocommon.proto mediapipelinemodule.proto  mediapipelinecapabilitiesmodule.proto
-        mediakeysmodule.proto mediakeyscapabilitiesmodule.proto controlmodule.proto webaudioplayermodule.proto rialtoipc.proto 
-        rialtoipc-transport.proto metadata.proto servermanagermodule.proto)
+        mediakeysmodule.proto mediakeyscapabilitiesmodule.proto controlmodule.proto privatemetricsmodule.proto
+        webaudioplayermodule.proto rialtoipc.proto rialtoipc-transport.proto metadata.proto servermanagermodule.proto)
 
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
@@ -90,4 +90,3 @@ if( ENABLE_PROTO_OPTIMIZATION )
                 DESTINATION ${CMAKE_INSTALL_LIBDIR}
                 )
 endif()
-

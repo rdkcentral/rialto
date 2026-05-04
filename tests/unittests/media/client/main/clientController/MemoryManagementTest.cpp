@@ -27,12 +27,15 @@
 #include "ControlClientMock.h"
 #include "ControlIpcFactoryMock.h"
 #include "ControlIpcMock.h"
+#include "PrivateMetricsIpcFactoryMock.h"
+#include "PrivateMetricsIpcMock.h"
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;
 
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::SetArgReferee;
 using ::testing::StrictMock;
@@ -45,19 +48,26 @@ protected:
 
     std::shared_ptr<StrictMock<ControlIpcFactoryMock>> m_controlIpcFactoryMock;
     std::shared_ptr<StrictMock<ControlIpcMock>> m_controlIpcMock;
+    std::shared_ptr<StrictMock<PrivateMetricsIpcFactoryMock>> m_privateMetricsIpcFactoryMock;
+    std::shared_ptr<NiceMock<PrivateMetricsIpcMock>> m_privateMetricsIpcMock;
     std::shared_ptr<StrictMock<ControlClientMock>> m_controlClientMock;
     std::unique_ptr<ClientController> m_sut;
 
     ClientControllerMemoryManagementTest()
         : m_controlIpcFactoryMock{std::make_shared<StrictMock<ControlIpcFactoryMock>>()},
           m_controlIpcMock{std::make_shared<StrictMock<ControlIpcMock>>()},
+          m_privateMetricsIpcFactoryMock{std::make_shared<StrictMock<PrivateMetricsIpcFactoryMock>>()},
+          m_privateMetricsIpcMock{std::make_shared<NiceMock<PrivateMetricsIpcMock>>()},
           m_controlClientMock{std::make_shared<StrictMock<ControlClientMock>>()}
     {
         // Create a valid file descriptor
         m_fd = memfd_create("memfdfile", 0);
 
         EXPECT_CALL(*m_controlIpcFactoryMock, createControlIpc(_)).WillOnce(Return(m_controlIpcMock));
-        EXPECT_NO_THROW(m_sut = std::make_unique<ClientController>(m_controlIpcFactoryMock));
+        EXPECT_CALL(*m_privateMetricsIpcFactoryMock, createPrivateMetricsIpc(_))
+            .WillOnce(Return(m_privateMetricsIpcMock));
+        EXPECT_NO_THROW(m_sut =
+                            std::make_unique<ClientController>(m_controlIpcFactoryMock, m_privateMetricsIpcFactoryMock));
     }
 
     ~ClientControllerMemoryManagementTest()
@@ -66,6 +76,8 @@ protected:
 
         m_controlIpcMock.reset();
         m_controlIpcFactoryMock.reset();
+        m_privateMetricsIpcMock.reset();
+        m_privateMetricsIpcFactoryMock.reset();
 
         close(m_fd);
     }
