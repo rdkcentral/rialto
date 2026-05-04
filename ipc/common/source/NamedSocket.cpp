@@ -268,9 +268,11 @@ bool NamedSocket::getSocketLock()
 uid_t NamedSocket::getSocketOwnerId(const std::string &socketOwner) const
 {
     uid_t ownerId = kNoOwnerChange;
-    const size_t kBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (!socketOwner.empty() && kBufferSize > 0)
+    // sysconf returns long; -1 on error. Store as long to avoid unsigned conversion issues.
+    const long bufferSizeLong = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (!socketOwner.empty() && bufferSizeLong > 0)
     {
+        const size_t kBufferSize = static_cast<size_t>(bufferSizeLong);
         errno = 0;
         passwd passwordStruct{};
         passwd *passwordResult = nullptr;
@@ -291,9 +293,11 @@ uid_t NamedSocket::getSocketOwnerId(const std::string &socketOwner) const
 gid_t NamedSocket::getSocketGroupId(const std::string &socketGroup) const
 {
     gid_t groupId = kNoGroupChange;
-    const size_t kBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (!socketGroup.empty() && kBufferSize > 0)
+    // sysconf returns long; -1 on error. Store as long to avoid unsigned conversion issues.
+    const long bufferSizeLong = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (!socketGroup.empty() && bufferSizeLong > 0)
     {
+        const size_t kBufferSize = static_cast<size_t>(bufferSizeLong);
         errno = 0;
         group groupStruct{};
         group *groupResult = nullptr;
