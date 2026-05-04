@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 
 #include "FlushOnPrerollController.h"
+#include "IGstProfiler.h"
 #include "IGstSrc.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
@@ -275,6 +276,11 @@ struct GenericPlayerContext
      *        This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
      */
     bool isLive{false};
+
+    /**
+     * @brief Profiler for player pipeline
+     */
+    std::unique_ptr<IGstProfiler> gstProfiler;
 };
 } // namespace firebolt::rialto::server
 

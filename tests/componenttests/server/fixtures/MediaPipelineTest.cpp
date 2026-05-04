@@ -35,6 +35,7 @@
 
 using testing::_;
 using testing::AtLeast;
+using testing::AtMost;
 using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
@@ -91,6 +92,7 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_playsink));
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_READY))
         .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&m_pipeline)).Times(AtMost(1));
 
     // In case of longer testruns, GstPlayer may request to query position and volume
     EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).Times(AtLeast(0));
@@ -128,7 +130,7 @@ void MediaPipelineTest::gstPlayerWillBeDestructed()
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline)).Times(testing::Between(1, 2));
 }
 
 void MediaPipelineTest::audioSourceWillBeAttached()

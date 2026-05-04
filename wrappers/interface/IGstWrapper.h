@@ -1476,6 +1476,28 @@ public:
      * @retval The parent GstObject. Unref after usage. NULL if pad has no parent.
      */
     virtual GstObject *gstPadGetParent(GstPad *pad) = 0;
+
+    /**
+     * @brief Adds probe to the pad.
+     *
+     * @param[in] pad : The GstPad to add the probe to.
+     * @param[in] mask : The probe mask.
+     * @param[in] callback : GstPadProbeCallback that will be called with notifications of the pad state.
+     * @param[in] userData : User data passed to the callback.
+     * @param[in] destroyData : GDestroyNotify for user_data.
+     *
+     * @retval An id or 0 if no probe is pending. The id can be used to remove the probe with gst_pad_remove_probe.
+     */
+    virtual gulong gstPadAddProbe(GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
+                                  GDestroyNotify destroyData) = 0;
+
+    /**
+     * @brief Removes a probe from the pad.
+     *
+     * @param[in] pad : The GstPad to remove the probe from.
+     * @param[in] id : The probe id returned by gstPadAddProbe.
+     */
+    virtual void gstPadRemoveProbe(GstPad *pad, gulong id) = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

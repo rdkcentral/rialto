@@ -51,6 +51,12 @@ protected:
     GParamSpec m_rectangleSpec{};
     const bool m_kIsLive{false};
 
+    void expectCreateProfiler()
+    {
+        EXPECT_CALL(*m_gstProfilerFactoryMock, createGstProfiler(&m_pipeline, _, _))
+            .WillOnce(Return(ByMove(std::move(m_gstProfiler))));
+    }
+
     void expectCreatePipeline()
     {
         EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
@@ -60,6 +66,7 @@ protected:
         expectSetSignalCallbacks();
         expectSetUri();
         expectCheckPlaySink();
+        expectCreateProfiler();
 
         EXPECT_CALL(*m_gstSrcMock, initSrc());
         EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
@@ -76,8 +83,8 @@ protected:
                                                              m_videoReq, m_kIsLive, m_gstWrapperMock, m_glibWrapperMock,
                                                              m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
                                                              std::move(m_flushWatcher), m_gstSrcFactoryMock,
-                                                             m_timerFactoryMock, std::move(m_taskFactory),
-                                                             std::move(workerThreadFactory),
+                                                             m_gstProfilerFactoryMock, m_timerFactoryMock,
+                                                             std::move(m_taskFactory), std::move(workerThreadFactory),
                                                              std::move(gstDispatcherThreadFactory),
                                                              m_gstProtectionMetadataFactoryMock));
         EXPECT_NE(m_gstPlayer, nullptr);
@@ -147,6 +154,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, FactoryCreatesObject)
     expectCheckPlaySink();
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_READY))
         .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&m_pipeline)).WillOnce(Return(&m_pipeline));
 
     std::shared_ptr<firebolt::rialto::server::IGstGenericPlayerFactory> factory =
         firebolt::rialto::server::IGstGenericPlayerFactory::getFactory();
@@ -158,7 +166,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, FactoryCreatesObject)
     // Destroy expectations
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(nullptr, nullptr, nullptr, nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(_, GST_STATE_NULL)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(_)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(_)).Times(3);
     player.reset();
 
     // Cleanup
@@ -341,8 +349,9 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, CreateWesterossinkFailsCreateCont
                                                                   m_videoReq, m_kIsLive, m_gstWrapperMock,
                                                                   m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
                                                                   m_gstInitialiserMock, std::move(m_flushWatcher),
-                                                                  m_gstSrcFactoryMock, m_timerFactoryMock,
-                                                                  std::move(m_taskFactory), std::move(workerThreadFactory),
+                                                                  m_gstSrcFactoryMock, m_gstProfilerFactoryMock,
+                                                                  m_timerFactoryMock, std::move(m_taskFactory),
+                                                                  std::move(workerThreadFactory),
                                                                   std::move(gstDispatcherThreadFactory),
                                                                   m_gstProtectionMetadataFactoryMock),
                  std::runtime_error);
@@ -359,8 +368,8 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, GstSrcFactoryNull)
                                                                   m_videoReq, m_kIsLive, m_gstWrapperMock,
                                                                   m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
                                                                   m_gstInitialiserMock, std::move(m_flushWatcher),
-                                                                  nullptr, m_timerFactoryMock, std::move(m_taskFactory),
-                                                                  std::move(workerThreadFactory),
+                                                                  nullptr, m_gstProfilerFactoryMock, m_timerFactoryMock,
+                                                                  std::move(m_taskFactory), std::move(workerThreadFactory),
                                                                   std::move(gstDispatcherThreadFactory),
                                                                   m_gstProtectionMetadataFactoryMock),
                  std::runtime_error);
@@ -379,7 +388,8 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, TimerFactoryFails)
                                                                   m_videoReq, m_kIsLive, m_gstWrapperMock,
                                                                   m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
                                                                   m_gstInitialiserMock, std::move(m_flushWatcher),
-                                                                  m_gstSrcFactoryMock, nullptr, std::move(m_taskFactory),
+                                                                  m_gstSrcFactoryMock, m_gstProfilerFactoryMock,
+                                                                  nullptr, std::move(m_taskFactory),
                                                                   std::move(workerThreadFactory),
                                                                   std::move(gstDispatcherThreadFactory),
                                                                   m_gstProtectionMetadataFactoryMock),
@@ -399,8 +409,9 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, GstSrcFactoryFails)
                                                                   m_videoReq, m_kIsLive, m_gstWrapperMock,
                                                                   m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
                                                                   m_gstInitialiserMock, std::move(m_flushWatcher),
-                                                                  m_gstSrcFactoryMock, m_timerFactoryMock,
-                                                                  std::move(m_taskFactory), std::move(workerThreadFactory),
+                                                                  m_gstSrcFactoryMock, m_gstProfilerFactoryMock,
+                                                                  m_timerFactoryMock, std::move(m_taskFactory),
+                                                                  std::move(workerThreadFactory),
                                                                   std::move(gstDispatcherThreadFactory),
                                                                   m_gstProtectionMetadataFactoryMock),
                  std::runtime_error);
@@ -421,15 +432,15 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, UnknownMediaType)
     EXPECT_CALL(*m_gstProtectionMetadataFactoryMock, createProtectionMetadataWrapper(_))
         .WillOnce(Return(ByMove(std::move(m_gstProtectionMetadataWrapper))));
 
-    EXPECT_THROW(m_gstPlayer = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock,
-                                                                  MediaType::UNKNOWN, m_videoReq, m_kIsLive,
-                                                                  m_gstWrapperMock, m_glibWrapperMock,
-                                                                  m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
-                                                                  std::move(m_flushWatcher), m_gstSrcFactoryMock,
-                                                                  m_timerFactoryMock, std::move(m_taskFactory),
-                                                                  std::move(workerThreadFactory),
-                                                                  std::move(gstDispatcherThreadFactory),
-                                                                  m_gstProtectionMetadataFactoryMock),
+    EXPECT_THROW(m_gstPlayer =
+                     std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::UNKNOWN,
+                                                        m_videoReq, m_kIsLive, m_gstWrapperMock, m_glibWrapperMock,
+                                                        m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
+                                                        std::move(m_flushWatcher), m_gstSrcFactoryMock,
+                                                        m_gstProfilerFactoryMock, m_timerFactoryMock,
+                                                        std::move(m_taskFactory), std::move(workerThreadFactory),
+                                                        std::move(gstDispatcherThreadFactory),
+                                                        m_gstProtectionMetadataFactoryMock),
                  std::runtime_error);
     EXPECT_EQ(m_gstPlayer, nullptr);
 }
@@ -448,6 +459,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, PlaysinkNotFound)
     expectSetUri();
 
     expectSetMessageCallback();
+    expectCreateProfiler();
 
     EXPECT_CALL(*m_gstSrcMock, initSrc());
     EXPECT_CALL(m_workerThreadFactoryMock, createWorkerThread()).WillOnce(Return(ByMove(std::move(workerThread))));
@@ -463,7 +475,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, PlaysinkNotFound)
             std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type, m_videoReq, m_kIsLive,
                                                m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
                                                m_gstInitialiserMock, std::move(m_flushWatcher), m_gstSrcFactoryMock,
-                                               m_timerFactoryMock, std::move(m_taskFactory),
+                                               m_gstProfilerFactoryMock, m_timerFactoryMock, std::move(m_taskFactory),
                                                std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
                                                m_gstProtectionMetadataFactoryMock));
     EXPECT_NE(m_gstPlayer, nullptr);
@@ -486,6 +498,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, SetNativeAudioForBrcmAudioSink)
     expectSetUri();
     expectCheckPlaySink();
     expectSetMessageCallback();
+    expectCreateProfiler();
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_READY))
         .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
@@ -499,7 +512,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, SetNativeAudioForBrcmAudioSink)
             std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, m_type, m_videoReq, m_kIsLive,
                                                m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
                                                m_gstInitialiserMock, std::move(m_flushWatcher), m_gstSrcFactoryMock,
-                                               m_timerFactoryMock, std::move(m_taskFactory),
+                                               m_gstProfilerFactoryMock, m_timerFactoryMock, std::move(m_taskFactory),
                                                std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
                                                m_gstProtectionMetadataFactoryMock));
     EXPECT_NE(m_gstPlayer, nullptr);
