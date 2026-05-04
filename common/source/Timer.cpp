@@ -69,13 +69,17 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
 Timer::~Timer()
 {
 
-   m_active = false;
-   rialto::common::TimerFdManager::instance().cancel(m_id);
+   if( m_active || (m_timerType == TimerType::ONE_SHOT)){
+      m_active = false;
+      rialto::common::TimerFdManager::instance().cancel(m_id);
+   }
 
 }
 
 void Timer::cancel()
 {
+   m_active = false;
+   rialto::common::TimerFdManager::instance().cancel(m_id);
 }
 
 bool Timer::isActive() const
