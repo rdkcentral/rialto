@@ -499,7 +499,7 @@ void MediaPipelineTest::indicateAllSourcesAttached(const std::vector<GstAppSrc *
         ASSERT_TRUE(receivedNeedData);
         EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
         EXPECT_EQ(receivedNeedData->source_id(), sourceId);
-        EXPECT_EQ(receivedNeedData->frame_count(), kFrameCountInPausedState);
+        EXPECT_EQ(receivedNeedData->frame_count(), kPrerollNumFrames);
         needDataPtr = receivedNeedData;
     }
 

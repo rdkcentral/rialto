@@ -54,7 +54,7 @@ constexpr double kRate{1.0};
 constexpr uint64_t kRenderedFrames{54321};
 constexpr uint64_t kDroppedFrames{76};
 constexpr uint64_t kStopPosition{234234};
-constexpr int kFrameCountInPausedState{3};
+constexpr int kPrerollNumFrames{3};
 constexpr int kFrameCountInPlayingState{24};
 } // namespace firebolt::rialto::server::ct
 

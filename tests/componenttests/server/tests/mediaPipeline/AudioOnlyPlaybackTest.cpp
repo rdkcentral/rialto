@@ -23,7 +23,7 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{3};
+constexpr int kPrerollNumFrames{3};
 constexpr int kFrameCountInPlayingState{24};
 } // namespace
 
