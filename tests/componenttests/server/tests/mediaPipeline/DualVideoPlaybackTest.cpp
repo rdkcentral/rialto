@@ -344,7 +344,7 @@ public:
         ASSERT_TRUE(receivedNeedData);
         EXPECT_EQ(receivedNeedData->session_id(), m_secondarySessionId);
         EXPECT_EQ(receivedNeedData->source_id(), m_secondaryVideoSourceId);
-        EXPECT_EQ(receivedNeedData->frame_count(), kFrameCountInPausedState);
+        EXPECT_EQ(receivedNeedData->frame_count(), kPrerollNumFrames);
         m_lastSecondaryNeedData = receivedNeedData;
 
         auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};

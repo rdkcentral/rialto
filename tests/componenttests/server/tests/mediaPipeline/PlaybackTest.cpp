@@ -180,8 +180,8 @@ TEST_F(MediaPipelineTest, playback)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCountInPausedState);
-        pushVideoData(kFramesToPush, kFrameCountInPausedState);
+        pushAudioData(kFramesToPush, kPrerollNumFrames);
+        pushVideoData(kFramesToPush, kPrerollNumFrames);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);

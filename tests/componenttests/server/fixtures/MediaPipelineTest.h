@@ -69,10 +69,10 @@ public:
     void indicateAllSourcesAttached(const std::vector<GstAppSrc *> &appsrcs);
     void pause();
     void notifyPaused();
-    void pushAudioData(unsigned dataCountToPush, int needDataFrameCount = kFrameCountInPausedState);
-    void pushVideoData(unsigned dataCountToPush, int needDataFrameCount = kFrameCountInPausedState);
-    void pushAudioSample(int needDataFrameCount = kFrameCountInPausedState);
-    void pushVideoSample(int needDataFrameCount = kFrameCountInPausedState);
+    void pushAudioData(unsigned dataCountToPush, int needDataFrameCount = kPrerollNumFrames);
+    void pushVideoData(unsigned dataCountToPush, int needDataFrameCount = kPrerollNumFrames);
+    void pushAudioSample(int needDataFrameCount = kPrerollNumFrames);
+    void pushVideoSample(int needDataFrameCount = kPrerollNumFrames);
     void play();
     void eosAudio(unsigned dataCountToPush);
     void eosVideo(unsigned dataCountToPush);

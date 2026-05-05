@@ -299,8 +299,8 @@ TEST_F(EncryptedPlaybackTest, EncryptedPlayback)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushEncryptedAudioData(kFrameCountInPausedState);
-        pushEncryptedVideoData(kFrameCountInPausedState);
+        pushEncryptedAudioData(kPrerollNumFrames);
+        pushEncryptedVideoData(kPrerollNumFrames);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
