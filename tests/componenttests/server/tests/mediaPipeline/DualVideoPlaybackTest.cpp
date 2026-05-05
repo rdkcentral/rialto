@@ -344,7 +344,7 @@ public:
         ASSERT_TRUE(receivedNeedData);
         EXPECT_EQ(receivedNeedData->session_id(), m_secondarySessionId);
         EXPECT_EQ(receivedNeedData->source_id(), m_secondaryVideoSourceId);
-        EXPECT_EQ(receivedNeedData->frame_count(), kFrameCountInPlayingState);
+        EXPECT_EQ(receivedNeedData->frame_count(), kPrerollNumFrames);
         m_lastSecondaryNeedData = receivedNeedData;
 
         auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
@@ -689,8 +689,8 @@ TEST_F(DualVideoPlaybackTest, playbackFullDualVideo)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush);
-        pushVideoData(kFramesToPush);
+        pushAudioData(kFramesToPush, kFrameCountInPlayingState);
+        pushVideoData(kFramesToPush, kFrameCountInPlayingState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -941,8 +941,8 @@ TEST_F(DualVideoPlaybackTest, playbackNoResouceManagerSecondaryVideo)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush);
-        pushVideoData(kFramesToPush);
+        pushAudioData(kFramesToPush, kFrameCountInPlayingState);
+        pushVideoData(kFramesToPush, kFrameCountInPlayingState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
