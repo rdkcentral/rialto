@@ -53,7 +53,7 @@ namespace rialto::servermanager::service
 ServerManagerService::ServerManagerService(std::unique_ptr<IServiceContext> &&context, unsigned numOfPreloadedServers)
     : m_kContext{std::move(context)}
 {
-    RIALTO_SERVER_MANAGER_LOG_MIL("RialtoServerManager is starting...");
+    RIALTO_SERVER_MANAGER_LOG_MIL("RCTest RialtoServerManager is starting...");
     m_kContext->getSessionServerAppManager().preloadSessionServers(numOfPreloadedServers);
 }
 
