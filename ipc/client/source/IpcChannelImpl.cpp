@@ -765,26 +765,27 @@ void ChannelImpl::processErrorFromServer(const transport::MethodCallError &error
 {
     RIALTO_IPC_LOG_DEBUG("processing error from server");
 
-    std::unique_lock<std::mutex> locker(m_lock);
-
-    // find the original request
+    MethodCall methodCall;
     const uint64_t kSerialId = error.reply_id();
-    auto it = m_methodCalls.find(kSerialId);
-    if (it == m_methodCalls.end())
+
     {
-        RIALTO_IPC_LOG_ERROR("failed to find request for received reply with id %" PRIu64 "", error.reply_id());
-        return;
+        std::unique_lock<std::mutex> locker(m_lock);
+
+        // find the original request
+        auto it = m_methodCalls.find(kSerialId);
+        if (it == m_methodCalls.end())
+        {
+            RIALTO_IPC_LOG_ERROR("failed to find request for received reply with id %" PRIu64 "", error.reply_id());
+            return;
+        }
+
+        // take the method call and remove from the map of outstanding calls
+        methodCall = it->second;
+        m_methodCalls.erase(it);
+
+        // update the timeout timer now a method call has been processed
+        updateTimeoutTimer();
     }
-
-    // take the method call and remove from the map of outstanding calls
-    MethodCall methodCall = it->second;
-    m_methodCalls.erase(it);
-
-    // update the timeout timer now a method call has been processed
-    updateTimeoutTimer();
-
-    // can now drop the lock
-    locker.unlock();
 
     RIALTO_IPC_LOG_DEBUG("error{ serial %" PRIu64 " } - %s", kSerialId, error.error_reason().c_str());
 
@@ -1154,20 +1155,21 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
                                   method->options().GetExtension(::firebolt::rialto::ipc::no_reply);
 
     // finally, send the message
-    std::unique_lock<std::mutex> locker(m_lock);
+    google::protobuf::Closure *doneClosure = nullptr;
+    {
+        std::unique_lock<std::mutex> locker(m_lock);
 
-    if (m_sock < 0)
-    {
-        locker.unlock();
-        completeWithError(&methodCall, "Not connected");
-    }
-    else if (sendmsg(m_sock, header, MSG_NOSIGNAL) != static_cast<ssize_t>(kRequiredDataLen))
-    {
-        locker.unlock();
-        completeWithError(&methodCall, "Failed to send message");
-    }
-    else
-    {
+        if (m_sock < 0)
+        {
+            completeWithError(&methodCall, "Not connected");
+            return;
+        }
+        else if (sendmsg(m_sock, header, MSG_NOSIGNAL) != static_cast<ssize_t>(kRequiredDataLen))
+        {
+            completeWithError(&methodCall, "Failed to send message");
+            return;
+        }
+
         RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", kSerialId, call->service_name().c_str(),
                              call->method_name().c_str(), request->ShortDebugString().c_str());
 
@@ -1176,8 +1178,7 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
             // no reply from server is expected, however if the caller supplied
             // a closure (it shouldn't) we should still call it now to indicate
             // the method call has been made
-            if (done)
-                done->Run();
+            doneClosure = done;
         }
         else
         {
@@ -1187,6 +1188,12 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
             // update the single timeout timer
             updateTimeoutTimer();
         }
+    }
+
+    // Invoke closure outside the lock to avoid deadlock if the user closure re-enters
+    if (kNoReplyExpected && doneClosure)
+    {
+        doneClosure->Run();
     }
 }
 
