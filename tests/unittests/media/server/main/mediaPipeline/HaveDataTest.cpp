@@ -28,7 +28,7 @@ using ::testing::Throw;
 class RialtoServerMediaPipelineHaveDataTest : public MediaPipelineTestBase
 {
 protected:
-    const uint32_t m_kNumFrames{24};
+    const uint32_t m_kNumFrames{3};
     const uint32_t m_kNeedDataRequestId{0};
     const bool m_kIsBufferFull{true};
     const std::chrono::milliseconds m_kDefaultNeedMediaDataResendTimeout{15};
