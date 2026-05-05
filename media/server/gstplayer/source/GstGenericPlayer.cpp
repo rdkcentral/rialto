@@ -809,6 +809,13 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
             m_context.lastAudioSampleTimestamps = static_cast<int64_t>(GST_BUFFER_PTS(streamInfo.buffers.back()));
             RIALTO_SERVER_LOG_MIL("lastAudioSampleTimestamps [%lld]", m_context.lastAudioSampleTimestamps);
         }
+        if (mediaType == firebolt::rialto::MediaSourceType::VIDEO)
+        {
+            // This needs to be done before gstAppSrcPushBuffer() is
+            // called because it can free the memory
+            int64_t lastVideoSampleTimestamps = static_cast<int64_t>(GST_BUFFER_PTS(streamInfo.buffers.back()));
+            RIALTO_SERVER_LOG_MIL("lastVideoSampleTimestamps [%lld]", lastVideoSampleTimestamps);
+        }
 
         for (GstBuffer *buffer : streamInfo.buffers)
         {
