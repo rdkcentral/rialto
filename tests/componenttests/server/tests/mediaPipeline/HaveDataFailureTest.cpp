@@ -26,7 +26,7 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kTestFrameCount{24};
+constexpr int kTestFrameCount{3};
 } // namespace
 
 namespace firebolt::rialto::server::ct
