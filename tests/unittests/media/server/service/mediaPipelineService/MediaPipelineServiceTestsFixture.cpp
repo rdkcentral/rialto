@@ -69,6 +69,7 @@ const std::string kTextTrackIdentifier{"TextTrackIdentifier"};
 constexpr uint32_t kBufferingLimit{4324};
 constexpr bool kUseBuffering{true};
 constexpr uint64_t kStopPosition{23412};
+constexpr bool kIsLive{false};
 } // namespace
 
 namespace firebolt::rialto

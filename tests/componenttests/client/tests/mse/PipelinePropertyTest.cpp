@@ -186,5 +186,10 @@ TEST_F(PipelinePropertyTest, setAndGetPipelineProperties)
     // Step 12: Get UseBuffering
     MediaPipelineTestMethods::shouldGetUseBuffering(useBuffering);
     MediaPipelineTestMethods::getUseBuffering(useBuffering);
+
+    // Step 13: Get Duration
+    constexpr int64_t duration{123456789};
+    MediaPipelineTestMethods::shouldGetDuration(duration);
+    MediaPipelineTestMethods::getDuration(duration);
 }
 } // namespace firebolt::rialto::client::ct

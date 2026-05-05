@@ -158,6 +158,8 @@ public:
     void haveDataShouldFail();
     void getPositionShouldSucceed();
     void getPositionShouldFail();
+    void getDurationShouldSucceed();
+    void getDurationShouldFail();
     void setImmediateOutputShouldSucceed();
     void setImmediateOutputShouldFail();
     void getImmediateOutputShouldSucceed();
