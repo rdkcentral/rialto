@@ -478,24 +478,24 @@ void MediaPipelineTest::setupSource()
 void MediaPipelineTest::indicateAllSourcesAttached(const std::vector<GstAppSrc *> &appsrcs)
 {
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange(m_clientStub);
-    std::map<int, std::unique_ptr<ExpectMessage<firebolt::rialto::NeedMediaDataEvent>>> expectedNeedDataMap;
+    std::vector<std::pair<int, std::unique_ptr<ExpectMessage<firebolt::rialto::NeedMediaDataEvent>>>> expectedNeedData;
     for (const GstAppSrc *appSrc : appsrcs)
     {
         const int kSourceId = ((appSrc == &m_audioAppSrc) ? m_audioSourceId : m_videoSourceId);
         auto expectation{std::make_unique<ExpectMessage<firebolt::rialto::NeedMediaDataEvent>>(m_clientStub)};
         expectation->setFilter([kSourceId](const firebolt::rialto::NeedMediaDataEvent &msg)
                                { return msg.source_id() == kSourceId; });
-        expectedNeedDataMap.emplace(kSourceId, std::move(expectation));
+        expectedNeedData.emplace_back(kSourceId, std::move(expectation));
     }
 
     auto allSourcesAttachedReq{createAllSourcesAttachedRequest(m_sessionId)};
     ConfigureAction<AllSourcesAttached>(m_clientStub).send(allSourcesAttachedReq).expectSuccess();
 
-    for (const auto &[sourceId, expectedNeedData] : expectedNeedDataMap)
+    for (const auto &[sourceId, expectedNeedDataEntry] : expectedNeedData)
     {
         auto &needDataPtr = ((sourceId == m_audioSourceId) ? m_lastAudioNeedData : m_lastVideoNeedData);
 
-        auto receivedNeedData{expectedNeedData->getMessage()};
+        auto receivedNeedData{expectedNeedDataEntry->getMessage()};
         ASSERT_TRUE(receivedNeedData);
         EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
         EXPECT_EQ(receivedNeedData->source_id(), sourceId);
