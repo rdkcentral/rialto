@@ -19,6 +19,7 @@
 
 #include "NamedSocket.h"
 #include "IpcLogging.h"
+#include <cstdint>
 #include <grp.h>
 #include <pwd.h>
 #include <stdexcept>
@@ -268,8 +269,8 @@ bool NamedSocket::getSocketLock()
 uid_t NamedSocket::getSocketOwnerId(const std::string &socketOwner) const
 {
     uid_t ownerId = kNoOwnerChange;
-    // sysconf returns long; -1 on error. Store as long to avoid unsigned conversion issues.
-    const long bufferSizeLong = sysconf(_SC_GETPW_R_SIZE_MAX);
+    // sysconf returns long; -1 on error. Store as int64_t to avoid unsigned conversion issues.
+    const int64_t bufferSizeLong = sysconf(_SC_GETPW_R_SIZE_MAX);
     if (!socketOwner.empty() && bufferSizeLong > 0)
     {
         const size_t kBufferSize = static_cast<size_t>(bufferSizeLong);
@@ -293,8 +294,8 @@ uid_t NamedSocket::getSocketOwnerId(const std::string &socketOwner) const
 gid_t NamedSocket::getSocketGroupId(const std::string &socketGroup) const
 {
     gid_t groupId = kNoGroupChange;
-    // sysconf returns long; -1 on error. Store as long to avoid unsigned conversion issues.
-    const long bufferSizeLong = sysconf(_SC_GETPW_R_SIZE_MAX);
+    // sysconf returns long; -1 on error. Store as int64_t to avoid unsigned conversion issues.
+    const int64_t bufferSizeLong = sysconf(_SC_GETGR_R_SIZE_MAX);
     if (!socketGroup.empty() && bufferSizeLong > 0)
     {
         const size_t kBufferSize = static_cast<size_t>(bufferSizeLong);
