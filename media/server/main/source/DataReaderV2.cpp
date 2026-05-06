@@ -222,12 +222,20 @@ IMediaPipeline::MediaSegmentVector DataReaderV2::readData() const
         if (!metadata.ParseFromArray(currentReadPosition, *metadataSize))
         {
             RIALTO_SERVER_LOG_ERROR("Metadata parsing failed!");
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Metadata parsing failed!");
+            TELEMETRY_EVENT_STRING("Rialto Server - DataReaderV2", telemetryBuff);
             return IMediaPipeline::MediaSegmentVector{};
         }
         auto newSegment{createSegment(metadata, m_mediaSourceType)};
         if (!newSegment)
         {
             RIALTO_SERVER_LOG_ERROR("Segment parsing failed!");
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Segment parsing failed!");
+            TELEMETRY_EVENT_STRING("Rialto Server - DataReaderV2", telemetryBuff);
             return IMediaPipeline::MediaSegmentVector{};
         }
         currentReadPosition += *metadataSize;

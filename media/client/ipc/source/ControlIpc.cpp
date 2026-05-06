@@ -115,6 +115,10 @@ bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get the shared memory due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get the shared memory due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - ControllIpc", telemetryBuff);
         return false;
     }
 
@@ -152,6 +156,10 @@ bool ControlIpc::registerClient()
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to register client due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to register client due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - ControllIpc", telemetryBuff);
         return false;
     }
 
@@ -181,6 +189,13 @@ bool ControlIpc::registerClient()
         RIALTO_CLIENT_LOG_ERROR("Server and Client proto schema versions are not compatible. Server schema version: "
                                 "%s, Client schema version: %s",
                                 kServerSchemaVersion.str().c_str(), kCurrentSchemaVersion.str().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                 "Server and Client proto schema versions are not compatible. Server schema version: "
+                 "%s, Client schema version: %s",
+                 kServerSchemaVersion.str().c_str(), kCurrentSchemaVersion.str().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - ControllIpc", telemetryBuff);
+
         return false;
     }
 
@@ -260,6 +275,9 @@ void ControlIpc::onPing(const std::shared_ptr<firebolt::rialto::PingEvent> &even
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to ack due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to ack due to '%s'", ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - ControllIpc", telemetryBuff);
     }
 }
 }; // namespace firebolt::rialto::client

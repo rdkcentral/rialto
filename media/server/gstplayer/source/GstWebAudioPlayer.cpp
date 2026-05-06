@@ -151,6 +151,10 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
     if (!m_context.pipeline)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the webaudiopipeline");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to create the webaudiopipeline");
+        TELEMETRY_EVENT_STRING("Rialto Server - GstWebAudioPlayer", telemetryBuff);
         return false;
     }
 
@@ -161,6 +165,10 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
     if (!m_context.source)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the appsrc");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to create the appsrc");
+        TELEMETRY_EVENT_STRING("Rialto Server - GstWebAudioPlayer", telemetryBuff);
         return false;
     }
     m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(m_context.source), kMaxWebAudioBytes);
@@ -439,6 +447,10 @@ bool GstWebAudioPlayer::changePipelineState(GstState newState)
     if (m_gstWrapper->gstElementSetState(m_context.pipeline, newState) == GST_STATE_CHANGE_FAILURE)
     {
         RIALTO_SERVER_LOG_ERROR("Change state failed - Gstreamer returned an error");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Change state failed - Gstreamer returned an error");
+        TELEMETRY_EVENT_STRING("Rialto Server - GstWebAudioPlayer", telemetryBuff);
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyState(WebAudioPlayerState::FAILURE);
         return false;

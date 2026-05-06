@@ -67,6 +67,11 @@ bool CdmService::createMediaKeys(int mediaKeysHandle, std::string keySystem)
     {
         RIALTO_SERVER_LOG_ERROR("Skip to create media keys handle: %d - Session Server in Inactive state",
                                 mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Skip to create media keys handle: %d - Session Server in Inactive state",
+                                mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return false;
     }
 
@@ -75,12 +80,20 @@ bool CdmService::createMediaKeys(int mediaKeysHandle, std::string keySystem)
         if (m_mediaKeys.find(mediaKeysHandle) != m_mediaKeys.end())
         {
             RIALTO_SERVER_LOG_ERROR("Media keys handle: %d already exists", mediaKeysHandle);
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Media keys handle: %d already exists", mediaKeysHandle);
+            TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
             return false;
         }
         m_mediaKeys.emplace(std::make_pair(mediaKeysHandle, m_mediaKeysFactory->createMediaKeysServerInternal(keySystem)));
         if (!m_mediaKeys.at(mediaKeysHandle))
         {
             RIALTO_SERVER_LOG_ERROR("Could not create MediaKeys for media keys handle: %d", mediaKeysHandle);
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Could not create MediaKeys for media keys handle: %d", mediaKeysHandle);
+            TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
             m_mediaKeys.erase(mediaKeysHandle);
             return false;
         }
@@ -100,6 +113,10 @@ bool CdmService::destroyMediaKeys(int mediaKeysHandle)
         if (mediaKeysIter == m_mediaKeys.end())
         {
             RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Media keys handle: %d does not exists", mediaKeysHandle);
+            TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
             return false;
         }
         for (auto it = m_sessionInfo.begin(); it != m_sessionInfo.end();)
@@ -130,6 +147,10 @@ MediaKeyErrorStatus CdmService::createKeySession(int mediaKeysHandle, KeySession
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
 
@@ -160,6 +181,10 @@ MediaKeyErrorStatus CdmService::generateRequest(int mediaKeysHandle, int32_t key
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     if (LimitedDurationLicense::NOT_SPECIFIED != ldlState && m_sessionInfo.find(keySessionId) != m_sessionInfo.end())
@@ -178,6 +203,10 @@ MediaKeyErrorStatus CdmService::loadSession(int mediaKeysHandle, int32_t keySess
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     return mediaKeysIter->second->loadSession(keySessionId);
@@ -193,6 +222,10 @@ MediaKeyErrorStatus CdmService::updateSession(int mediaKeysHandle, int32_t keySe
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     return mediaKeysIter->second->updateSession(keySessionId, responseData);
@@ -207,6 +240,10 @@ MediaKeyErrorStatus CdmService::closeKeySession(int mediaKeysHandle, int32_t key
     if (mediaKeysHandleIter == m_sessionInfo.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle for mksId: %d does not exists", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     if (mediaKeysHandleIter->second.refCounter > 0)
@@ -232,6 +269,10 @@ MediaKeyErrorStatus CdmService::removeKeySessionInternal(int mediaKeysHandle, in
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
 
@@ -257,6 +298,10 @@ MediaKeyErrorStatus CdmService::getCdmKeySessionId(int mediaKeysHandle, int32_t 
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
 
@@ -273,6 +318,10 @@ bool CdmService::containsKey(int mediaKeysHandle, int32_t keySessionId, const st
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return false;
     }
 
@@ -289,6 +338,10 @@ MediaKeyErrorStatus CdmService::setDrmHeader(int mediaKeysHandle, int32_t keySes
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     if (m_sessionInfo.find(keySessionId) != m_sessionInfo.end())
@@ -307,6 +360,10 @@ MediaKeyErrorStatus CdmService::deleteDrmStore(int mediaKeysHandle)
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     return mediaKeysIter->second->deleteDrmStore();
@@ -321,6 +378,10 @@ MediaKeyErrorStatus CdmService::deleteKeyStore(int mediaKeysHandle)
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
 
@@ -336,6 +397,10 @@ MediaKeyErrorStatus CdmService::getDrmStoreHash(int mediaKeysHandle, std::vector
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     return mediaKeysIter->second->getDrmStoreHash(drmStoreHash);
@@ -350,6 +415,10 @@ MediaKeyErrorStatus CdmService::getKeyStoreHash(int mediaKeysHandle, std::vector
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     return mediaKeysIter->second->getKeyStoreHash(keyStoreHash);
@@ -364,6 +433,10 @@ MediaKeyErrorStatus CdmService::getLdlSessionsLimit(int mediaKeysHandle, uint32_
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     return mediaKeysIter->second->getLdlSessionsLimit(ldlLimit);
@@ -378,6 +451,10 @@ MediaKeyErrorStatus CdmService::getLastDrmError(int mediaKeysHandle, int32_t key
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     return mediaKeysIter->second->getLastDrmError(keySessionId, errorCode);
@@ -392,6 +469,10 @@ MediaKeyErrorStatus CdmService::getDrmTime(int mediaKeysHandle, uint64_t &drmTim
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     return mediaKeysIter->second->getDrmTime(drmTime);
@@ -406,6 +487,10 @@ MediaKeyErrorStatus CdmService::releaseKeySession(int mediaKeysHandle, int32_t k
     if (mediaKeysHandleIter == m_sessionInfo.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle for mksId: %d does not exists", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     if (mediaKeysHandleIter->second.refCounter > 0)
@@ -504,6 +589,10 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
     if (mediaKeysHandleIter == m_sessionInfo.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle for mksId: %d does not exists", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->decrypt(keySessionId, encrypted, caps);
@@ -519,6 +608,10 @@ bool CdmService::isExtendedInterfaceUsed(int32_t keySessionId)
     if (mediaKeysHandleIter == m_sessionInfo.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle for mksId: %d does not exists", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return false;
     }
     return mediaKeysHandleIter->second.isExtendedInterfaceUsed;
@@ -533,6 +626,10 @@ MediaKeyErrorStatus CdmService::selectKeyId(int32_t keySessionId, const std::vec
     if (mediaKeysHandleIter == m_sessionInfo.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle for mksId: %d does not exists", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     if (m_sessionInfo.find(keySessionId) != m_sessionInfo.end())
@@ -549,6 +646,10 @@ void CdmService::incrementSessionIdUsageCounter(int32_t keySessionId)
     if (mediaKeysHandleIter == m_sessionInfo.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle for mksId: %d does not exists", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return;
     }
     ++mediaKeysHandleIter->second.refCounter;
@@ -561,6 +662,10 @@ void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
     if (mediaKeysHandleIter == m_sessionInfo.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle for mksId: %d does not exists", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return;
     }
     if (mediaKeysHandleIter->second.refCounter > 0)
@@ -576,6 +681,10 @@ void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
                 m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->closeKeySession(keySessionId))
             {
                 RIALTO_SERVER_LOG_ERROR("Failed to close the key session %d", keySessionId);
+                char telemetryBuff[128] = {0};
+                snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                        "Failed to close the key session %d", keySessionId);
+                TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
             }
         }
         if (mediaKeysHandleIter->second.shouldBeReleased)
@@ -606,6 +715,10 @@ MediaKeyErrorStatus CdmService::getMetricSystemData(int mediaKeysHandle, std::ve
     if (mediaKeysIter == m_mediaKeys.end())
     {
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Media keys handle: %d does not exists", mediaKeysHandle);
+        TELEMETRY_EVENT_STRING("Rialto Server - CdmService", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     return mediaKeysIter->second->getMetricSystemData(buffer);

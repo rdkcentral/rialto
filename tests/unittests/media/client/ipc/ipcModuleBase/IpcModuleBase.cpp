@@ -86,7 +86,10 @@ void IpcModuleBase::expectIpcApiCallFailure()
 
     EXPECT_CALL(*m_blockingClosureMock, wait()).RetiresOnSaturation();
     EXPECT_CALL(*m_controllerMock, Failed()).WillOnce(Return(true)).RetiresOnSaturation();
-    EXPECT_CALL(*m_controllerMock, ErrorText()).WillOnce(Return("Failed for some reason...")).RetiresOnSaturation();
+    EXPECT_CALL(*m_controllerMock, ErrorText())
+        .Times(2)
+        .WillRepeatedly(Return("Failed for some reason..."))
+        .RetiresOnSaturation();
 }
 
 void IpcModuleBase::expectIpcApiCallDisconnected()

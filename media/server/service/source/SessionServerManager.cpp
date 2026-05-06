@@ -69,17 +69,29 @@ try
     if (argc != 2)
     {
         RIALTO_SERVER_LOG_ERROR("Wrong number of arguments. Rialto Server Service will close now.");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Wrong number of arguments. Rialto Server Service will close now.");
+        TELEMETRY_EVENT_STRING("Rialto Server - SessionServerManager", telemetryBuff);
         return false;
     }
     std::string socketStr{argv[1]};
     if (!isNumber(socketStr))
     {
         RIALTO_SERVER_LOG_ERROR("Rialto App Management socket is not a number.");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Rialto App Management socket is not a number.");
+        TELEMETRY_EVENT_STRING("Rialto Server - SessionServerManager", telemetryBuff);
         return false;
     }
     if (!m_applicationManagementServer->initialize(std::stoi(socketStr)))
     {
         RIALTO_SERVER_LOG_ERROR("Initialization of Application Management server failed.");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Initialization of Application Management server failed.");
+        TELEMETRY_EVENT_STRING("Rialto Server - SessionServerManager", telemetryBuff);
         return false;
     }
     m_applicationManagementServer->start();
@@ -88,6 +100,10 @@ try
 catch (const std::exception &e)
 {
     RIALTO_SERVER_LOG_ERROR("Exception caught during service initialization: %s", e.what());
+    char telemetryBuff[128] = {0};
+    snprintf(telemetryBuff, sizeof(telemetryBuff),
+                            "Exception caught during service initialization: %s", e.what());
+    TELEMETRY_EVENT_STRING("Rialto Server - SessionServerManager", telemetryBuff);
     return false;
 }
 
@@ -113,6 +129,10 @@ bool SessionServerManager::configureIpc(const std::string &socketName, unsigned 
     if (!m_sessionManagementServer->initialize(socketName, socketPermissions, socketOwner, socketGroup))
     {
         RIALTO_SERVER_LOG_ERROR("configureIpc failed - SessionManagementServer failed to initialize");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "configureIpc failed - SessionManagementServer failed to initialize");
+        TELEMETRY_EVENT_STRING("Rialto Server - SessionServerManager", telemetryBuff);
         return false;
     }
     return true;
@@ -123,6 +143,10 @@ bool SessionServerManager::configureIpc(int32_t socketFd)
     if (!m_sessionManagementServer->initialize(socketFd))
     {
         RIALTO_SERVER_LOG_ERROR("configureIpc failed - SessionManagementServer failed to initialize");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "configureIpc failed - SessionManagementServer failed to initialize");
+        TELEMETRY_EVENT_STRING("Rialto Server - SessionServerManager", telemetryBuff);
         return false;
     }
     return true;
@@ -200,11 +224,19 @@ bool SessionServerManager::switchToActive()
     if (!m_playbackService.switchToActive())
     {
         RIALTO_SERVER_LOG_ERROR("Player service failed to switch to active state");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Player service failed to switch to active state");
+        TELEMETRY_EVENT_STRING("Rialto Server - SessionServerManager", telemetryBuff);
         return false;
     }
     if (!m_cdmService.switchToActive())
     {
         RIALTO_SERVER_LOG_ERROR("Cdm service failed to switch to active state");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Cdm service failed to switch to active state");
+        TELEMETRY_EVENT_STRING("Rialto Server - SessionServerManager", telemetryBuff);
         m_playbackService.switchToInactive();
         return false;
     }

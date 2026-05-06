@@ -50,6 +50,10 @@ std::shared_ptr<IWebAudioPlayerServerInternalFactory> IWebAudioPlayerServerInter
     catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the web audio player factory, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to create the web audio player factory, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerServerInternal", telemetryBuff);
     }
 
     return factory;
@@ -82,6 +86,10 @@ std::unique_ptr<IWebAudioPlayerServerInternal> WebAudioPlayerServerInternalFacto
     catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the web audio player, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to create the web audio player, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerServerInternal", telemetryBuff);
     }
 
     return webAudioPlayer;
@@ -141,6 +149,10 @@ bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
     if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId))
     {
         RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Unable to map shm partition");
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerServerInternal", telemetryBuff);
         return false;
     }
 
@@ -255,6 +267,10 @@ bool WebAudioPlayerServerInternal::getBufferAvailable(uint32_t &availableFrames,
     if (!webAudioShmInfo)
     {
         RIALTO_SERVER_LOG_ERROR("WebAudioShmInfo is null");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "WebAudioShmInfo is null");
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerServerInternal", telemetryBuff);
         return false;
     }
 
@@ -284,6 +300,10 @@ bool WebAudioPlayerServerInternal::getBufferDelay(uint32_t &delayFrames)
         if (queuedFrames > std::numeric_limits<uint32_t>::max())
         {
             RIALTO_SERVER_LOG_ERROR("Queued frames are larger than the max uint32_t");
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Queued frames are larger than the max uint32_t");
+            TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerServerInternal", telemetryBuff);
         }
         else
         {
@@ -317,6 +337,10 @@ bool WebAudioPlayerServerInternal::writeBufferInternal(const uint32_t numberOfFr
     if (!m_expectWriteBuffer)
     {
         RIALTO_SERVER_LOG_ERROR("No getBufferAvailable to match with this writeBuffer call");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "No getBufferAvailable to match with this writeBuffer call");
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerServerInternal", telemetryBuff);
         return false;
     }
     m_expectWriteBuffer = false;
@@ -532,6 +556,10 @@ bool WebAudioPlayerServerInternal::initGstWebAudioPlayer(const std::string &audi
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to load gstreamer player");
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerServerInternal", telemetryBuff);
         return false;
     }
 

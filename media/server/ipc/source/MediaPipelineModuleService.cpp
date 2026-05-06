@@ -332,6 +332,10 @@ void MediaPipelineModuleService::createSession(::google::protobuf::RpcController
     if (!ipcController)
     {
         RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "ipc library provided incompatible controller object");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineModuleService", telemetryBuff);
         controller->SetFailed("ipc library provided incompatible controller object");
         done->Run();
         return;
@@ -366,6 +370,10 @@ void MediaPipelineModuleService::destroySession(::google::protobuf::RpcControlle
     if (!ipcController)
     {
         RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "ipc library provided incompatible controller object");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineModuleService", telemetryBuff);
         controller->SetFailed("ipc library provided incompatible controller object");
         done->Run();
         return;

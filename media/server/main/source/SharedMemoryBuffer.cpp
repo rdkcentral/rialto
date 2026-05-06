@@ -164,6 +164,10 @@ SharedMemoryBuffer::SharedMemoryBuffer(unsigned numOfPlaybacks, unsigned numOfWe
     if (m_dataBufferFd == -1)
     {
         RIALTO_SERVER_LOG_ERROR("Shared Memory Buffer initialization failed");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Shared Memory Buffer initialization failed");
+        TELEMETRY_EVENT_STRING("Rialto Server - SharedMemoryBuffer", telemetryBuff);
         throw std::runtime_error("Shared Memory Buffer initialization failed");
     }
 }

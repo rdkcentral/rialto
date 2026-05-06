@@ -70,6 +70,10 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
         if (m_mediaPipelines.size() == static_cast<size_t>(m_playbackService.getMaxPlaybacks()))
         {
             RIALTO_SERVER_LOG_ERROR("Unable to create a session with id: %d. Max session number reached.", sessionId);
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Unable to create a session with id: %d. Max session number reached.", sessionId);
+            TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
             return false;
         }
         if (m_mediaPipelines.find(sessionId) != m_mediaPipelines.end())
@@ -105,6 +109,10 @@ bool MediaPipelineService::destroySession(int sessionId)
         if (mediaPipelineIter == m_mediaPipelines.end())
         {
             RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Session with id: %d does not exists", sessionId);
+            TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
             return false;
         }
         m_mediaPipelines.erase(mediaPipelineIter);
@@ -123,6 +131,10 @@ bool MediaPipelineService::load(int sessionId, MediaType type, const std::string
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->load(type, mimeType, url, isLive);
@@ -137,6 +149,10 @@ bool MediaPipelineService::attachSource(int sessionId, const std::unique_ptr<IMe
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->attachSource(source);
@@ -151,6 +167,10 @@ bool MediaPipelineService::removeSource(int sessionId, std::int32_t sourceId)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->removeSource(sourceId);
@@ -165,6 +185,10 @@ bool MediaPipelineService::allSourcesAttached(int sessionId)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->allSourcesAttached();
@@ -179,6 +203,10 @@ bool MediaPipelineService::play(int sessionId, bool &async)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->play(async);
@@ -193,6 +221,10 @@ bool MediaPipelineService::pause(int sessionId)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->pause();
@@ -207,6 +239,10 @@ bool MediaPipelineService::stop(int sessionId)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->stop();
@@ -221,6 +257,10 @@ bool MediaPipelineService::setPlaybackRate(int sessionId, double rate)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setPlaybackRate(rate);
@@ -235,6 +275,10 @@ bool MediaPipelineService::setPosition(int sessionId, std::int64_t position)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setPosition(position);
@@ -249,6 +293,10 @@ bool MediaPipelineService::getPosition(int sessionId, std::int64_t &position)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->getPosition(position);
@@ -277,6 +325,10 @@ bool MediaPipelineService::setImmediateOutput(int sessionId, int32_t sourceId, b
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setImmediateOutput(sourceId, immediateOutput);
@@ -291,6 +343,10 @@ bool MediaPipelineService::getImmediateOutput(int sessionId, int32_t sourceId, b
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->getImmediateOutput(sourceId, immediateOutput);
@@ -305,6 +361,10 @@ bool MediaPipelineService::getStats(int sessionId, int32_t sourceId, uint64_t &r
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->getStats(sourceId, renderedFrames, droppedFrames);
@@ -320,6 +380,10 @@ bool MediaPipelineService::setVideoWindow(int sessionId, std::uint32_t x, std::u
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setVideoWindow(x, y, width, height);
@@ -335,6 +399,10 @@ bool MediaPipelineService::haveData(int sessionId, MediaSourceStatus status, std
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->haveData(status, numFrames, needDataRequestId);
@@ -349,6 +417,10 @@ bool MediaPipelineService::renderFrame(int sessionId)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->renderFrame();
@@ -362,6 +434,10 @@ bool MediaPipelineService::setVolume(int sessionId, double targetVolume, uint32_
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setVolume(targetVolume, volumeDuration, easeType);
@@ -376,6 +452,10 @@ bool MediaPipelineService::getVolume(int sessionId, double &volume)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->getVolume(volume);
@@ -390,6 +470,10 @@ bool MediaPipelineService::setMute(int sessionId, std::int32_t sourceId, bool mu
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setMute(sourceId, mute);
@@ -404,6 +488,10 @@ bool MediaPipelineService::getMute(int sessionId, std::int32_t sourceId, bool &m
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->getMute(sourceId, mute);
@@ -418,6 +506,10 @@ bool MediaPipelineService::setTextTrackIdentifier(int sessionId, const std::stri
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setTextTrackIdentifier(textTrackIdentifier);
@@ -432,6 +524,10 @@ bool MediaPipelineService::getTextTrackIdentifier(int sessionId, std::string &te
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->getTextTrackIdentifier(textTrackIdentifier);
@@ -446,6 +542,10 @@ bool MediaPipelineService::setLowLatency(int sessionId, bool lowLatency)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setLowLatency(lowLatency);
@@ -460,6 +560,10 @@ bool MediaPipelineService::setSync(int sessionId, bool sync)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setSync(sync);
@@ -474,6 +578,10 @@ bool MediaPipelineService::getSync(int sessionId, bool &sync)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->getSync(sync);
@@ -488,6 +596,10 @@ bool MediaPipelineService::setSyncOff(int sessionId, bool syncOff)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setSyncOff(syncOff);
@@ -502,6 +614,10 @@ bool MediaPipelineService::setStreamSyncMode(int sessionId, int32_t sourceId, in
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setStreamSyncMode(sourceId, streamSyncMode);
@@ -516,6 +632,10 @@ bool MediaPipelineService::getStreamSyncMode(int sessionId, int32_t &streamSyncM
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->getStreamSyncMode(streamSyncMode);
@@ -530,6 +650,10 @@ bool MediaPipelineService::flush(int sessionId, std::int32_t sourceId, bool rese
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->flush(sourceId, resetTime, isAsync);
@@ -545,6 +669,10 @@ bool MediaPipelineService::setSourcePosition(int sessionId, int32_t sourceId, in
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setSourcePosition(sourceId, position, resetTime, appliedRate, stopPosition);
@@ -559,6 +687,10 @@ bool MediaPipelineService::setSubtitleOffset(int sessionId, int32_t sourceId, in
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setSubtitleOffset(sourceId, position);
@@ -574,6 +706,10 @@ bool MediaPipelineService::processAudioGap(int sessionId, int64_t position, uint
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->processAudioGap(position, duration, discontinuityGap, audioAac);
@@ -588,6 +724,10 @@ bool MediaPipelineService::setBufferingLimit(int sessionId, uint32_t limitBuffer
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setBufferingLimit(limitBufferingMs);
@@ -602,6 +742,10 @@ bool MediaPipelineService::getBufferingLimit(int sessionId, uint32_t &limitBuffe
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->getBufferingLimit(limitBufferingMs);
@@ -616,6 +760,10 @@ bool MediaPipelineService::setUseBuffering(int sessionId, bool useBuffering)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->setUseBuffering(useBuffering);
@@ -630,6 +778,10 @@ bool MediaPipelineService::getUseBuffering(int sessionId, bool &useBuffering)
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->getUseBuffering(useBuffering);
@@ -644,6 +796,10 @@ bool MediaPipelineService::switchSource(int sessionId, const std::unique_ptr<IMe
     if (mediaPipelineIter == m_mediaPipelines.end())
     {
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Session with id: %d does not exists", sessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineService", telemetryBuff);
         return false;
     }
     return mediaPipelineIter->second->switchSource(source);

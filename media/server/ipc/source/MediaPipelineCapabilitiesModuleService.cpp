@@ -88,6 +88,10 @@ void MediaPipelineCapabilitiesModuleService::getSupportedMimeTypes(
     if (!ipcController)
     {
         RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "ipc library provided incompatible controller object");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineCapabilitiesModuleService", telemetryBuff);
         controller->SetFailed("ipc library provided incompatible controller object");
         done->Run();
         return;
@@ -113,6 +117,10 @@ void MediaPipelineCapabilitiesModuleService::isMimeTypeSupported(
     if (!ipcController)
     {
         RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "ipc library provided incompatible controller object");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineCapabilitiesModuleService", telemetryBuff);
         controller->SetFailed("ipc library provided incompatible controller object");
         done->Run();
         return;
@@ -133,6 +141,10 @@ void MediaPipelineCapabilitiesModuleService::getSupportedProperties(
     if (!ipcController)
     {
         RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "ipc library provided incompatible controller object");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineCapabilitiesModuleService", telemetryBuff);
         controller->SetFailed("ipc library provided incompatible controller object");
         done->Run();
         return;
@@ -162,6 +174,10 @@ void MediaPipelineCapabilitiesModuleService::isVideoMaster(::google::protobuf::R
     if (!ipcController)
     {
         RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "ipc library provided incompatible controller object");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineCapabilitiesModuleService", telemetryBuff);
         controller->SetFailed("ipc library provided incompatible controller object");
         done->Run();
         return;

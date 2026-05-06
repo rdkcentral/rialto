@@ -82,6 +82,10 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
     if (!m_ipcServer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - Ipc server instance is NULL");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to initialize SessionManagementServer - Ipc server instance is NULL");
+        TELEMETRY_EVENT_STRING("Rialto Server - SessionManagementServer", telemetryBuff);
         return false;
     }
 
@@ -93,6 +97,12 @@ bool SessionManagementServer::initialize(const std::string &socketName, unsigned
         RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - can't add socket '%s' to the ipc "
                                 "server",
                                 socketName.c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to initialize SessionManagementServer - can't add socket '%s' to the ipc "
+                                "server",
+                                socketName.c_str());
+        TELEMETRY_EVENT_STRING("Rialto Server - SessionManagementServer", telemetryBuff);
         return false;
     }
 
@@ -110,6 +120,10 @@ bool SessionManagementServer::initialize(int32_t socketFd)
     if (!m_ipcServer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - Ipc server instance is NULL");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to initialize SessionManagementServer - Ipc server instance is NULL");
+        TELEMETRY_EVENT_STRING("Rialto Server - SessionManagementServer", telemetryBuff);
         return false;
     }
 
@@ -121,6 +135,12 @@ bool SessionManagementServer::initialize(int32_t socketFd)
         RIALTO_SERVER_LOG_ERROR("Failed to initialize SessionManagementServer - can't add socket fd %d to the ipc "
                                 "server",
                                 socketFd);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to initialize SessionManagementServer - can't add socket fd %d to the ipc "
+                                "server",
+                                socketFd);
+        TELEMETRY_EVENT_STRING("Rialto Server - SessionManagementServer", telemetryBuff);
         return false;
     }
 

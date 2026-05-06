@@ -41,6 +41,10 @@ void SwitchSource::execute() const
     if (!m_player.reattachSource(m_source))
     {
         RIALTO_SERVER_LOG_WARN("Switch audio source failed");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Switch audio source failed");
+        TELEMETRY_EVENT_STRING("Rialto Server - SwitchSource", telemetryBuff);
         return;
     }
     RIALTO_SERVER_LOG_MIL("%s source switched", common::convertMediaSourceType(m_source->getType()));

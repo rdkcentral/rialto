@@ -49,6 +49,10 @@ TextTrackSession::TextTrackSession(const std::string &displayName,
     if (!sessionId)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create TextTrack session");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to create TextTrack session");
+        TELEMETRY_EVENT_STRING("Rialto Server - TextTrackSession", telemetryBuff);
         throw std::runtime_error("Failed to create TextTrack session");
     }
 

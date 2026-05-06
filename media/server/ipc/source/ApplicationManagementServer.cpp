@@ -68,6 +68,10 @@ bool ApplicationManagementServer::initialize(int socket)
     if (!m_ipcServer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to initialize ApplicationManagementServer - Ipc server instance is NULL");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to initialize ApplicationManagementServer - Ipc server instance is NULL");
+        TELEMETRY_EVENT_STRING("Rialto Server - ApplicationManagementServer", telemetryBuff);
         return false;
     }
 
@@ -76,6 +80,10 @@ bool ApplicationManagementServer::initialize(int socket)
     if (!m_ipcClient)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to initialize ApplicationManagementServer - Client is NULL");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to initialize ApplicationManagementServer - Client is NULL");
+        TELEMETRY_EVENT_STRING("Rialto Server - ApplicationManagementServer", telemetryBuff);
         return false;
     }
     m_ipcClient->exportService(m_service);

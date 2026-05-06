@@ -55,6 +55,10 @@ TextTrackAccessor::TextTrackAccessor(
     if (!createTextTrackControlInterface())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create TextTrack interfaces");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to create TextTrack interfaces");
+        TELEMETRY_EVENT_STRING("Rialto Server - TextTrackAccessor", telemetryBuff);
         throw std::runtime_error("Failed to create TextTrack interfaces");
     }
 }
@@ -73,6 +77,11 @@ std::optional<uint32_t> TextTrackAccessor::openSession(const std::string &displa
 
     RIALTO_SERVER_LOG_ERROR("Failed to create TextTrack session with display '%s'; error '%s'", displayName.c_str(),
                             m_thunderWrapper->errorToString(result));
+    char telemetryBuff[128] = {0};
+    snprintf(telemetryBuff, sizeof(telemetryBuff),
+                            "Failed to create TextTrack session with display '%s'; error '%s'", displayName.c_str(),
+                        m_thunderWrapper->errorToString(result));
+    TELEMETRY_EVENT_STRING("Rialto Server - TextTrackAccessor", telemetryBuff);
     return std::nullopt;
 }
 
@@ -101,6 +110,11 @@ bool TextTrackAccessor::pause(uint32_t sessionId)
 
     RIALTO_SERVER_LOG_ERROR("Failed to pause TextTrack session %u; error %s", sessionId,
                             m_thunderWrapper->errorToString(result));
+    char telemetryBuff[128] = {0};
+    snprintf(telemetryBuff, sizeof(telemetryBuff),
+                            "Failed to pause TextTrack session %u; error %s", sessionId,
+                            m_thunderWrapper->errorToString(result));
+    TELEMETRY_EVENT_STRING("Rialto Server - TextTrackAccessor", telemetryBuff);
     return false;
 }
 
@@ -115,6 +129,11 @@ bool TextTrackAccessor::play(uint32_t sessionId)
 
     RIALTO_SERVER_LOG_ERROR("Failed to resume TextTrack session %u; error %s", sessionId,
                             m_thunderWrapper->errorToString(result));
+    char telemetryBuff[128] = {0};
+    snprintf(telemetryBuff, sizeof(telemetryBuff),
+                            "Failed to resume TextTrack session %u; error %s", sessionId,
+                            m_thunderWrapper->errorToString(result));
+    TELEMETRY_EVENT_STRING("Rialto Server - TextTrackAccessor", telemetryBuff);
     return false;
 }
 
@@ -131,6 +150,11 @@ bool TextTrackAccessor::mute(uint32_t sessionId, bool mute)
 
         RIALTO_SERVER_LOG_ERROR("Failed to mute TextTrack session %u; error %s", sessionId,
                                 m_thunderWrapper->errorToString(result));
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to mute TextTrack session %u; error %s", sessionId,
+                                m_thunderWrapper->errorToString(result));
+        TELEMETRY_EVENT_STRING("Rialto Server - TextTrackAccessor", telemetryBuff);
     }
     else
     {
@@ -143,6 +167,11 @@ bool TextTrackAccessor::mute(uint32_t sessionId, bool mute)
 
         RIALTO_SERVER_LOG_ERROR("Failed to unmute TextTrack session %u; error %s", sessionId,
                                 m_thunderWrapper->errorToString(result));
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to unmute TextTrack session %u; error %s", sessionId,
+                                m_thunderWrapper->errorToString(result));
+        TELEMETRY_EVENT_STRING("Rialto Server - TextTrackAccessor", telemetryBuff);
     }
 
     return false;
@@ -159,6 +188,11 @@ bool TextTrackAccessor::setPosition(uint32_t sessionId, uint64_t mediaTimestampM
 
     RIALTO_SERVER_LOG_ERROR("Failed to set position of TextTrack session %u to  %" PRIu64 "; error %s", sessionId,
                             mediaTimestampMs, m_thunderWrapper->errorToString(result));
+    char telemetryBuff[128] = {0};
+    snprintf(telemetryBuff, sizeof(telemetryBuff),
+                            "Failed to set position of TextTrack session %u to  %" PRIu64 "; error %s", sessionId,
+                            mediaTimestampMs, m_thunderWrapper->errorToString(result));
+    TELEMETRY_EVENT_STRING("Rialto Server - TextTrackAccessor", telemetryBuff);
     return false;
 }
 
@@ -193,6 +227,11 @@ bool TextTrackAccessor::sendData(uint32_t sessionId, const std::string &data, Da
 
     RIALTO_SERVER_LOG_ERROR("Failed to send data to TextTrack session %u; error %s", sessionId,
                             m_thunderWrapper->errorToString(result));
+    char telemetryBuff[128] = {0};
+    snprintf(telemetryBuff, sizeof(telemetryBuff),
+                            "Failed to send data to TextTrack session %u; error %s", sessionId,
+                            m_thunderWrapper->errorToString(result));
+    TELEMETRY_EVENT_STRING("Rialto Server - TextTrackAccessor", telemetryBuff);
     return false;
 }
 
@@ -219,6 +258,10 @@ bool TextTrackAccessor::createTextTrackControlInterface()
             else
             {
                 RIALTO_SERVER_LOG_ERROR("Failed to create TextTrack interface");
+                char telemetryBuff[128] = {0};
+                snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                        "Failed to create TextTrack interfaces");
+                TELEMETRY_EVENT_STRING("Rialto Server - TextTrackAccessor", telemetryBuff);
             }
         }
         else
@@ -247,6 +290,11 @@ bool TextTrackAccessor::setSessionWebVTTSelection(uint32_t sessionId)
 
     RIALTO_SERVER_LOG_ERROR("Failed to set WebVTT selection for session %u; error %s", sessionId,
                             m_thunderWrapper->errorToString(result));
+    char telemetryBuff[128] = {0};
+    snprintf(telemetryBuff, sizeof(telemetryBuff),
+                            "Failed to set WebVTT selection for session %u; error %s", sessionId,
+                            m_thunderWrapper->errorToString(result));
+    TELEMETRY_EVENT_STRING("Rialto Server - TextTrackAccessor", telemetryBuff);
     return false;
 }
 
@@ -261,6 +309,11 @@ bool TextTrackAccessor::setSessionTTMLSelection(uint32_t sessionId)
 
     RIALTO_SERVER_LOG_ERROR("Failed to set TTML selection for session %u; error %s", sessionId,
                             m_thunderWrapper->errorToString(result));
+    char telemetryBuff[128] = {0};
+    snprintf(telemetryBuff, sizeof(telemetryBuff),
+                            "Failed to set TTML selection for session %u; error %s", sessionId,
+                            m_thunderWrapper->errorToString(result));
+    TELEMETRY_EVENT_STRING("Rialto Server - TextTrackAccessor", telemetryBuff);
     return false;
 }
 
@@ -276,6 +329,11 @@ bool TextTrackAccessor::setSessionCCSelection(uint32_t sessionId, const std::str
 
     RIALTO_SERVER_LOG_ERROR("Failed to set CC selection service '%s' for session %u; error %s", service.c_str(),
                             sessionId, m_thunderWrapper->errorToString(result));
+    char telemetryBuff[128] = {0};
+    snprintf(telemetryBuff, sizeof(telemetryBuff),
+                            "Failed to set CC selection service '%s' for session %u; error %s", service.c_str(),
+                            sessionId, m_thunderWrapper->errorToString(result));
+    TELEMETRY_EVENT_STRING("Rialto Server - TextTrackAccessor", telemetryBuff);
     return false;
 }
 

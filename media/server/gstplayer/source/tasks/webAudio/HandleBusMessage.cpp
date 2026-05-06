@@ -124,6 +124,11 @@ void HandleBusMessage::execute() const
 
         RIALTO_SERVER_LOG_ERROR("Error from %s - %d: %s (%s)", GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)), err->code,
                                 err->message, debug);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Error from %s - %d: %s (%s)", GST_OBJECT_NAME(GST_MESSAGE_SRC(m_message)), err->code,
+                                err->message, debug);
+        TELEMETRY_EVENT_STRING("Rialto Server - HandleBusMessage", telemetryBuff);
         m_gstPlayerClient->notifyState(WebAudioPlayerState::FAILURE);
 
         m_glibWrapper->gFree(debug);

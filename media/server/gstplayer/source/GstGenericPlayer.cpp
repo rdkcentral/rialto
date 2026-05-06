@@ -659,6 +659,10 @@ GstGenericPlayer::createAudioAttributes(const std::unique_ptr<IMediaPipeline::Me
     else
     {
         RIALTO_SERVER_LOG_ERROR("Failed to cast source");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to cast source");
+        TELEMETRY_EVENT_STRING("Rialto Server - GstGenericPlayer", telemetryBuff);
     }
 
     return audioAttributes;
@@ -1247,6 +1251,10 @@ GstBuffer *GstGenericPlayer::createBuffer(const IMediaPipeline::MediaSegment &me
         if (!m_protectionMetadataWrapper->addProtectionMetadata(gstBuffer, data))
         {
             RIALTO_SERVER_LOG_ERROR("Failed to add protection metadata");
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Failed to add protection metadata");
+            TELEMETRY_EVENT_STRING("Rialto Server - GstGenericPlayer", telemetryBuff);
             if (keyId)
             {
                 m_gstWrapper->gstBufferUnref(keyId);
@@ -1741,6 +1749,10 @@ GstStateChangeReturn GstGenericPlayer::changePipelineState(GstState newState)
     if (!m_context.pipeline)
     {
         RIALTO_SERVER_LOG_ERROR("Change state failed - pipeline is nullptr");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Change state failed - pipeline is nullptr");
+        TELEMETRY_EVENT_STRING("Rialto Server - GstGenericPlayer", telemetryBuff);
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
         --m_ongoingStateChangesNumber;
@@ -1751,6 +1763,10 @@ GstStateChangeReturn GstGenericPlayer::changePipelineState(GstState newState)
     if (result == GST_STATE_CHANGE_FAILURE)
     {
         RIALTO_SERVER_LOG_ERROR("Change state failed - Gstreamer returned an error");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Change state failed - Gstreamer returned an error");
+        TELEMETRY_EVENT_STRING("Rialto Server - GstGenericPlayer", telemetryBuff);
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
     }

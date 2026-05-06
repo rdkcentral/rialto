@@ -139,6 +139,10 @@ void ControlModuleService::registerClient(::google::protobuf::RpcController *con
     if (!ipcController)
     {
         RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "ipc library provided incompatible controller object");
+        TELEMETRY_EVENT_STRING("Rialto Server - ControlModuleService", telemetryBuff);
         controller->SetFailed("ipc library provided incompatible controller object");
         done->Run();
         return;
@@ -154,6 +158,10 @@ void ControlModuleService::registerClient(::google::protobuf::RpcController *con
         if (!kCurrentSchemaVersion.isCompatible(kClientSchemaVersion))
         {
             RIALTO_SERVER_LOG_ERROR("Server and client schema versions not compatible");
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Server and client schema versions not compatible");
+            TELEMETRY_EVENT_STRING("Rialto Server - ControlModuleService", telemetryBuff);
             controller->SetFailed("Server and client schema versions not compatible");
             done->Run();
             return;

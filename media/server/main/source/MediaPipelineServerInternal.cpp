@@ -154,6 +154,10 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
         if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId))
         {
             RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Unable to map shm partition");
+            TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineServerInternal", telemetryBuff);
         }
         else
         {
@@ -220,6 +224,10 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load gstreamer player");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to load gstreamer player");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineServerInternal", telemetryBuff);
         return false;
     }
 
@@ -1201,6 +1209,10 @@ bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, in
     if (!m_gstPlayer)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set source position - Gstreamer player has not been loaded");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to set source position - Gstreamer player has not been loaded");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineServerInternal", telemetryBuff);
         return false;
     }
     auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
@@ -1208,6 +1220,10 @@ bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, in
     if (sourceIter == m_attachedSources.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set source position - Source with id: %d not found", sourceId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to set source position - Source with id: %d not found", sourceId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaPipelineServerInternal", telemetryBuff);
         return false;
     }
 

@@ -68,6 +68,10 @@ std::shared_ptr<IMediaKeysServerInternalFactory> IMediaKeysServerInternalFactory
     catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the media keys factory, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to create the media keys factory, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
     }
 
     return factory;
@@ -93,6 +97,10 @@ MediaKeysServerInternalFactory::createMediaKeysServerInternal(const std::string 
     catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the media keys, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to create the media keys, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
     }
 
     return mediaKeys;
@@ -173,6 +181,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::selectKeyIdInternal(int32_t keySess
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to find the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
@@ -180,6 +192,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::selectKeyIdInternal(int32_t keySess
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to select key id");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to select key id");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return status;
     }
 
@@ -203,6 +219,10 @@ bool MediaKeysServerInternal::containsKeyInternal(int32_t keySessionId, const st
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to find the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return false;
     }
 
@@ -262,6 +282,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::generateRequestInternal(int32_t key
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to find the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
@@ -269,6 +293,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::generateRequestInternal(int32_t key
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to generate request for the key session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to generate request for the key session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return status;
     }
     return status;
@@ -291,6 +319,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::loadSessionInternal(int32_t keySess
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to find the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
@@ -298,6 +330,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::loadSessionInternal(int32_t keySess
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to load the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return status;
     }
     return status;
@@ -321,6 +357,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::updateSessionInternal(int32_t keySe
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to find the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
@@ -328,6 +368,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::updateSessionInternal(int32_t keySe
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to update the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to update the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return status;
     }
     return status;
@@ -351,6 +395,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::setDrmHeaderInternal(int32_t keySes
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to find the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
@@ -358,6 +406,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::setDrmHeaderInternal(int32_t keySes
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set drm header");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to set drm header");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return status;
     }
 
@@ -381,6 +433,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::closeKeySessionInternal(int32_t key
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to find the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
@@ -388,6 +444,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::closeKeySessionInternal(int32_t key
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to close the key session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to close the key session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return status;
     }
     return status;
@@ -410,6 +470,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::removeKeySessionInternal(int32_t ke
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to find the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
@@ -494,6 +558,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::getLastDrmErrorInternal(int32_t key
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to find the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
@@ -543,6 +611,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::releaseKeySessionInternal(int32_t k
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to find the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
@@ -556,6 +628,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionIdInternal(int32_t 
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to find the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
@@ -586,6 +662,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to find the session %d", keySessionId);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
@@ -593,6 +673,10 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to decrypt buffer.");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysServerInternal", telemetryBuff);
         return status;
     }
     RIALTO_SERVER_LOG_INFO("Successfully decrypted buffer.");

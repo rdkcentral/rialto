@@ -67,6 +67,10 @@ bool WebAudioPlayerService::createWebAudioPlayer(int handle,
         if (m_webAudioPlayers.size() == static_cast<size_t>(m_playbackService.getMaxWebAudioPlayers()))
         {
             RIALTO_SERVER_LOG_ERROR("Unable to create WebAudioPlayer with id: %d. Max instance number reached.", handle);
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Unable to create WebAudioPlayer with id: %d. Max instance number reached.", handle);
+            TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerService", telemetryBuff);
             return false;
         }
         if (m_webAudioPlayers.find(handle) != m_webAudioPlayers.end())
@@ -104,6 +108,10 @@ bool WebAudioPlayerService::destroyWebAudioPlayer(int handle)
         if (webAudioPlayerIter == m_webAudioPlayers.end())
         {
             RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "WebAudioPlayer with handle: %d does not exists", handle);
+            TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerService", telemetryBuff);
             return false;
         }
         m_webAudioPlayers.erase(webAudioPlayerIter);
@@ -121,6 +129,10 @@ bool WebAudioPlayerService::play(int handle)
     if (webAudioPlayerIter == m_webAudioPlayers.end())
     {
         RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "WebAudioPlayer with handle: %d does not exists", handle);
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerService", telemetryBuff);
         return false;
     }
     return webAudioPlayerIter->second->play();
@@ -135,6 +147,10 @@ bool WebAudioPlayerService::pause(int handle)
     if (webAudioPlayerIter == m_webAudioPlayers.end())
     {
         RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "WebAudioPlayer with handle: %d does not exists", handle);
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerService", telemetryBuff);
         return false;
     }
     return webAudioPlayerIter->second->pause();
@@ -149,6 +165,10 @@ bool WebAudioPlayerService::setEos(int handle)
     if (webAudioPlayerIter == m_webAudioPlayers.end())
     {
         RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "WebAudioPlayer with handle: %d does not exists", handle);
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerService", telemetryBuff);
         return false;
     }
     return webAudioPlayerIter->second->setEos();
@@ -165,6 +185,10 @@ bool WebAudioPlayerService::getBufferAvailable(int handle, uint32_t &availableFr
     if (webAudioPlayerIter == m_webAudioPlayers.end())
     {
         RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "WebAudioPlayer with handle: %d does not exists", handle);
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerService", telemetryBuff);
         return false;
     }
     return webAudioPlayerIter->second->getBufferAvailable(availableFrames, webAudioShmInfo);
@@ -179,6 +203,10 @@ bool WebAudioPlayerService::getBufferDelay(int handle, uint32_t &delayFrames)
     if (webAudioPlayerIter == m_webAudioPlayers.end())
     {
         RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "WebAudioPlayer with handle: %d does not exists", handle);
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerService", telemetryBuff);
         return false;
     }
     return webAudioPlayerIter->second->getBufferDelay(delayFrames);
@@ -193,6 +221,10 @@ bool WebAudioPlayerService::writeBuffer(int handle, const uint32_t numberOfFrame
     if (webAudioPlayerIter == m_webAudioPlayers.end())
     {
         RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "WebAudioPlayer with handle: %d does not exists", handle);
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerService", telemetryBuff);
         return false;
     }
     return webAudioPlayerIter->second->writeBuffer(numberOfFrames, data);
@@ -208,6 +240,10 @@ bool WebAudioPlayerService::getDeviceInfo(int handle, uint32_t &preferredFrames,
     if (webAudioPlayerIter == m_webAudioPlayers.end())
     {
         RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "WebAudioPlayer with handle: %d does not exists", handle);
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerService", telemetryBuff);
         return false;
     }
     return webAudioPlayerIter->second->getDeviceInfo(preferredFrames, maximumFrames, supportDeferredPlay);
@@ -222,6 +258,10 @@ bool WebAudioPlayerService::setVolume(int handle, double volume)
     if (webAudioPlayerIter == m_webAudioPlayers.end())
     {
         RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "WebAudioPlayer with handle: %d does not exists", handle);
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerService", telemetryBuff);
         return false;
     }
     return webAudioPlayerIter->second->setVolume(volume);
@@ -236,6 +276,10 @@ bool WebAudioPlayerService::getVolume(int handle, double &volume)
     if (webAudioPlayerIter == m_webAudioPlayers.end())
     {
         RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d does not exists", handle);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "WebAudioPlayer with handle: %d does not exists", handle);
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayerService", telemetryBuff);
         return false;
     }
     return webAudioPlayerIter->second->getVolume(volume);

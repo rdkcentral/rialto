@@ -37,6 +37,10 @@ std::shared_ptr<IMediaKeySessionFactory> IMediaKeySessionFactory::createFactory(
     catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the media key session factory, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to create the media key session factory, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeySession", telemetryBuff);
     }
 
     return factory;
@@ -56,6 +60,10 @@ MediaKeySessionFactory::createMediaKeySession(const std::string &keySystem, int3
     catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the media key session, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to create the media key session factory, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeySession", telemetryBuff);
     }
 
     return mediaKeys;
@@ -97,11 +105,19 @@ MediaKeySession::~MediaKeySession()
             if (MediaKeyErrorStatus::OK != closeKeySession())
             {
                 RIALTO_SERVER_LOG_ERROR("Failed to close the key session");
+                char telemetryBuff[128] = {0};
+                snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                        "Failed to close the key session");
+                TELEMETRY_EVENT_STRING("Rialto Server - MediaKeySession", telemetryBuff);
             }
         }
         if (MediaKeyErrorStatus::OK != m_ocdmSession->destructSession())
         {
             RIALTO_SERVER_LOG_ERROR("Failed to destruct the key session");
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Failed to destruct the key session");
+            TELEMETRY_EVENT_STRING("Rialto Server - MediaKeySession", telemetryBuff);
         }
     }
 
@@ -198,6 +214,10 @@ MediaKeyErrorStatus MediaKeySession::loadSession()
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to load the key session");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to load the key session");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeySession", telemetryBuff);
     }
 
     if ((checkForOcdmErrors("loadSession")) && (MediaKeyErrorStatus::OK == status))
@@ -227,6 +247,10 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
         if (MediaKeyErrorStatus::OK != status)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to update the key session");
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Failed to update the key session");
+            TELEMETRY_EVENT_STRING("Rialto Server - MediaKeySession", telemetryBuff);
         }
     }
 
@@ -246,6 +270,10 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to decrypt buffer");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeySession", telemetryBuff);
     }
 
     if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))
@@ -281,6 +309,10 @@ MediaKeyErrorStatus MediaKeySession::closeKeySession()
         if (MediaKeyErrorStatus::OK != status)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to Close the key session");
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                    "Failed to close the key session");
+            TELEMETRY_EVENT_STRING("Rialto Server - MediaKeySession", telemetryBuff);
         }
     }
     m_isSessionClosed = (MediaKeyErrorStatus::OK == status);
@@ -352,6 +384,10 @@ MediaKeyErrorStatus MediaKeySession::setDrmHeader(const std::vector<uint8_t> &re
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to set drm header");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to set drm header");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeySession", telemetryBuff);
     }
 
     if ((checkForOcdmErrors("setDrmHeader")) && (MediaKeyErrorStatus::OK == status))
@@ -487,6 +523,10 @@ bool MediaKeySession::checkForOcdmErrors(const char *operationStr)
     if (m_ocdmError)
     {
         RIALTO_SERVER_LOG_ERROR("MediaKeySession received an onError callback, operation '%s' failed", operationStr);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "MediaKeySession received an onError callback, operation '%s' failed", operationStr);
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeySession", telemetryBuff);
         error = true;
     }
     m_ongoingOcdmOperation = false;

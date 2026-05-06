@@ -41,6 +41,10 @@ std::shared_ptr<IWebAudioPlayerFactory> IWebAudioPlayerFactory::createFactory()
     catch (const std::exception &e)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create the web audio player factory, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to create the web audio player factory, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayer", telemetryBuff);
     }
 
     return factory;
@@ -79,6 +83,10 @@ WebAudioPlayerFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient>
     catch (const std::exception &e)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create the web audio player, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to create the web audio player, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Server - WebAudioPlayer", telemetryBuff);
     }
 
     return webAudioPlayer;

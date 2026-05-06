@@ -45,6 +45,10 @@ void SetSourcePosition::execute() const
     if (MediaSourceType::UNKNOWN == m_type)
     {
         RIALTO_SERVER_LOG_WARN("failed to set source position - source type is unknown");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to set source position - source type is unknown");
+        TELEMETRY_EVENT_STRING("Rialto Server - SetSourcePosition", telemetryBuff);
         return;
     }
 
@@ -59,6 +63,11 @@ void SetSourcePosition::execute() const
     {
         RIALTO_SERVER_LOG_WARN("failed to set source position - %s source is NULL",
                                common::convertMediaSourceType(m_type));
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to set source position - %s source is NULL",
+                               common::convertMediaSourceType(m_type));
+        TELEMETRY_EVENT_STRING("Rialto Server - SetSourcePosition", telemetryBuff);
         return;
     }
 

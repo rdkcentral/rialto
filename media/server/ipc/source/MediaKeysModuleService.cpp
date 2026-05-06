@@ -131,6 +131,10 @@ std::shared_ptr<IMediaKeysModuleServiceFactory> IMediaKeysModuleServiceFactory::
     catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the media keys module service factory, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                 "Failed to create the media keys module service factory, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysModuleService", telemetryBuff);
     }
 
     return factory;
@@ -147,6 +151,10 @@ std::shared_ptr<IMediaKeysModuleService> MediaKeysModuleServiceFactory::create(s
     catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the media keys module service, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to create the media keys module service, reason: %s",
+                 e.what());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysModuleService", telemetryBuff);
     }
 
     return mediaKeysModule;
@@ -195,6 +203,10 @@ void MediaKeysModuleService::createMediaKeys(::google::protobuf::RpcController *
     if (!ipcController)
     {
         RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "ipc library provided incompatible controller object");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysModuleService", telemetryBuff);
         controller->SetFailed("ipc library provided incompatible controller object");
         done->Run();
         return;
@@ -226,6 +238,10 @@ void MediaKeysModuleService::destroyMediaKeys(::google::protobuf::RpcController 
     if (!ipcController)
     {
         RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "ipc library provided incompatible controller object");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysModuleService", telemetryBuff);
         controller->SetFailed("ipc library provided incompatible controller object");
         done->Run();
         return;
@@ -268,6 +284,10 @@ void MediaKeysModuleService::createKeySession(::google::protobuf::RpcController 
     if (!ipcController)
     {
         RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "ipc library provided incompatible controller object");
+        TELEMETRY_EVENT_STRING("Rialto Server - MediaKeysModuleService", telemetryBuff);
         controller->SetFailed("ipc library provided incompatible controller object");
         done->Run();
         return;

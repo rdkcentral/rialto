@@ -75,6 +75,10 @@ void AttachSource::addSource() const
     if (!caps)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create caps from media source");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                "Failed to create caps from media source");
+        TELEMETRY_EVENT_STRING("Rialto Server - AttachSource", telemetryBuff);
         return;
     }
     std::string profilerInfo;

@@ -19,6 +19,7 @@
 
 set(RialtoLogging_HEADERS
     include/RialtoLogging.h
+    include/RialtoTelemetry.h
     )
 
 set(RialtoLogging_SOURCES
@@ -34,10 +35,28 @@ set(RialtoLogging_INCLUDES
     )
 
 add_library(RialtoLogging STATIC ${RialtoLogging_HEADERS} ${RialtoLogging_SOURCES})
-target_include_directories(RialtoLogging PUBLIC "$<BUILD_INTERFACE:${RialtoLogging_INCLUDES}>")
-set_target_properties(RialtoLogging PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
-set_target_properties(RialtoLogging PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(RialtoLogging PUBLIC
+    "$<BUILD_INTERFACE:${RialtoLogging_INCLUDES}>"
+)
 
+# Telemetry support
+if(CMAKE_TELEMETRY_2_0_REQUIRED)
+    message(STATUS "Telemetry 2.0 support enabled")
+    target_compile_definitions(RialtoLogging PUBLIC RIALTO_TELEMETRY_SUPPORT=1)
+    target_include_directories(RialtoLogging PUBLIC ${TELEMETRY_INCLUDE_DIRS})
+    target_link_libraries(RialtoLogging PUBLIC ${TELEMETRY_LIBRARIES})
+else()
+    message(STATUS "Telemetry support disabled (stub mode)")
+endif()
+
+set_target_properties(RialtoLogging PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+    POSITION_INDEPENDENT_CODE ON
+)
+
+# EthanLog support
 find_package(EthanLog)
 if (EthanLog_FOUND AND RIALTO_ENABLE_ETHAN_LOG)
     message(STATUS "EthanLog is enabled")
@@ -45,9 +64,21 @@ if (EthanLog_FOUND AND RIALTO_ENABLE_ETHAN_LOG)
     target_include_directories(RialtoEthanLog PUBLIC "$<BUILD_INTERFACE:${RialtoLogging_INCLUDES}>")
     target_compile_definitions(RialtoEthanLog PRIVATE USE_ETHANLOG)
     target_link_libraries(RialtoEthanLog PUBLIC EthanLog::EthanLog)
-    set_target_properties(RialtoEthanLog PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
-    set_target_properties(RialtoEthanLog PROPERTIES POSITION_INDEPENDENT_CODE ON)
-else ()
+    if(CMAKE_TELEMETRY_2_0_REQUIRED)
+        message(STATUS "Telemetry 2.0 support enabled")
+        target_compile_definitions(RialtoLogging PUBLIC RIALTO_TELEMETRY_SUPPORT=1)
+        target_include_directories(RialtoLogging PUBLIC ${TELEMETRY_INCLUDE_DIRS})
+        target_link_libraries(RialtoLogging PUBLIC ${TELEMETRY_LIBRARIES})
+    else()
+        message(STATUS "Telemetry support disabled (stub mode)")
+    endif()
+    set_target_properties(RialtoEthanLog PROPERTIES
+        CXX_STANDARD 17
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+        POSITION_INDEPENDENT_CODE ON
+    )
+else()
     message(STATUS "EthanLog is disabled")
     add_library(RialtoEthanLog ALIAS RialtoLogging)
-endif ()
+endif()

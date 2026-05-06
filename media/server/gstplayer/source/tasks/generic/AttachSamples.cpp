@@ -49,6 +49,10 @@ AttachSamples::AttachSamples(GenericPlayerContext &context,
             {
                 // Catching error, but continuing as best as we can
                 RIALTO_SERVER_LOG_ERROR("Failed to get the video segment, reason: %s", e.what());
+                char telemetryBuff[128] = {0};
+                snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                        "Failed to get the video segment, reason: %s", e.what());
+                TELEMETRY_EVENT_STRING("Rialto Server - AttachSamples", telemetryBuff);
             }
         }
         else if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::AUDIO)
@@ -69,6 +73,10 @@ AttachSamples::AttachSamples(GenericPlayerContext &context,
             {
                 // Catching error, but continuing as best as we can
                 RIALTO_SERVER_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
+                char telemetryBuff[128] = {0};
+                snprintf(telemetryBuff, sizeof(telemetryBuff),
+                                        "Failed to get the audio segment, reason: %s", e.what());
+                TELEMETRY_EVENT_STRING("Rialto Server - AttachSamples", telemetryBuff);
             }
         }
         else if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::SUBTITLE)
