@@ -334,6 +334,10 @@ void Client::onDisconnected() const
     }
     RIALTO_SERVER_MANAGER_LOG_WARN("Connection to serverId: %d broken, server probably crashed. Starting recovery",
                                    m_serverId);
+    char telemetryBuff[128] = {0};
+    snprintf(telemetryBuff, sizeof(telemetryBuff),
+             "Connection to serverId: %d broken, server probably crashed. Starting recovery", m_serverId);
+    TELEMETRY_EVENT_STRING("Rialto Server Manager - Client", telemetryBuff);
     m_sessionServerAppManager->restartServer(m_serverId);
 }
 

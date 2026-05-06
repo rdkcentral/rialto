@@ -240,6 +240,9 @@ bool SessionServerAppManager::connectSessionServer(const std::shared_ptr<ISessio
     if (!kSessionServer)
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Unable to connect Session Server - pointer is null!");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Unable to connect Session Server - pointer is null!");
+        TELEMETRY_EVENT_STRING("Rialto Server Manager - SessionServerAppManager", telemetryBuff);
         return false;
     }
     if (!m_ipcController->createClient(kSessionServer->getServerId(), kSessionServer->getAppManagementSocketName()))
@@ -247,6 +250,12 @@ bool SessionServerAppManager::connectSessionServer(const std::shared_ptr<ISessio
         RIALTO_SERVER_MANAGER_LOG_ERROR("Failed to establish RialtoServerManager - RialtoSessionServer connection for "
                                         "session server with id: %d",
                                         kSessionServer->getServerId());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                 "Failed to establish RialtoServerManager - RialtoSessionServer connection for "
+                 "session server with id: %d",
+                 kSessionServer->getServerId());
+        TELEMETRY_EVENT_STRING("Rialto Server Manager - SessionServerAppManager", telemetryBuff);
         kSessionServer->kill();
         if (m_healthcheckService)
         {
@@ -307,6 +316,10 @@ bool SessionServerAppManager::changeSessionServerState(const std::string &appNam
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed - session server not found.", appName.c_str(),
                                         toString(newState));
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Change state of %s to %s failed - session server not found.",
+                 appName.c_str(), toString(newState));
+        TELEMETRY_EVENT_STRING("Rialto Server Manager - SessionServerAppManager", telemetryBuff);
         return false;
     }
     sessionServer->setExpectedState(newState);
@@ -317,6 +330,10 @@ bool SessionServerAppManager::changeSessionServerState(const std::string &appNam
     if (!m_ipcController->performSetState(sessionServer->getServerId(), newState))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed.", appName.c_str(), toString(newState));
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Change state of %s to %s failed.", appName.c_str(),
+                 toString(newState));
+        TELEMETRY_EVENT_STRING("Rialto Server Manager - SessionServerAppManager", telemetryBuff);
         handleStateChangeFailure(sessionServer, newState);
         return false;
     }
@@ -501,6 +518,10 @@ bool SessionServerAppManager::configureSessionServerWithSocketName(const std::sh
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         kSessionServer->getServerId());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Configuration of server with id %d failed - ipc error.",
+                 kSessionServer->getServerId());
+        TELEMETRY_EVENT_STRING("Rialto Server Manager - SessionServerAppManager", telemetryBuff);
         return false;
     }
     RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of server with id %d succeeded.", kSessionServer->getServerId());
@@ -522,6 +543,10 @@ bool SessionServerAppManager::configureSessionServerWithSocketFd(const std::shar
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         kSessionServer->getServerId());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Configuration of server with id %d failed - ipc error.",
+                 kSessionServer->getServerId());
+        TELEMETRY_EVENT_STRING("Rialto Server Manager - SessionServerAppManager", telemetryBuff);
         return false;
     }
     RIALTO_SERVER_MANAGER_LOG_INFO("Configuration of server with id %d succeeded.", kSessionServer->getServerId());

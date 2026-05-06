@@ -22,6 +22,7 @@
 #include "IMediaPipelineCapabilitiesIpcFactory.h"
 #include "MediaPipelineCapabilities.h"
 #include "RialtoClientLogging.h"
+#include <cstdio>
 
 namespace firebolt::rialto
 {
@@ -36,6 +37,10 @@ std::shared_ptr<IMediaPipelineCapabilitiesFactory> IMediaPipelineCapabilitiesFac
     catch (const std::exception &e)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create the media pipeline capabilities factory, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                 "Failed to create the media pipeline capabilities factory, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineCapabilities", telemetryBuff);
     }
 
     return factory;
@@ -52,6 +57,10 @@ std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesFactory::cr
     catch (const std::exception &e)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create the media pipeline capabilities, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to create the media pipeline capabilities, reason: %s",
+                 e.what());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineCapabilities", telemetryBuff);
     }
 
     return mediaPipelineCapabilities;

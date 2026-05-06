@@ -141,6 +141,11 @@ void HealthcheckService::handleError(int serverId)
     {
         RIALTO_SERVER_MANAGER_LOG_WARN(
             "Max num of failed pings reached for server with id: %d. Starting recovery action", serverId);
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                 "Max num of failed pings reached for server with id: %d. Starting recovery action", serverId);
+        TELEMETRY_EVENT_STRING("Rialto Server Manager - HealthcheckService", telemetryBuff);
+
         failedPingsNum = 0;
         m_sessionServerAppManager.restartServer(serverId);
     }

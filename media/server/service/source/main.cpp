@@ -23,6 +23,7 @@
 #include "IApplicationSessionServer.h"
 #include "IGstInitialiser.h"
 #include "RialtoServerLogging.h"
+#include "RialtoTelemetry.h"
 
 // NOLINT(build/filename_format)
 
@@ -47,6 +48,7 @@ int main(int argc, char *argv[])
         RIALTO_SERVER_LOG_WARN("Failed to get git commit ID!");
     }
 
+    TELEMETRY_INIT("rialto-server");
     firebolt::rialto::server::IGstInitialiser::instance().initialise(&argc, &argv);
 
     auto appSessionServer =
