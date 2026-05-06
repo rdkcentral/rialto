@@ -126,7 +126,6 @@ protected:
     void expectCheckPlaySink();
     void expectSetMessageCallback();
     void expectGetDecoder(GstElement *element);
-    void expectGetVideoDecoder(GstElement *element);
     void expectGetVideoParser(GstElement *element);
     void expectGetAVSink(const std::string &sinkName, GstElement *elementObj);
     void expectGetSink(const std::string &sinkName, GstElement *elementObj);

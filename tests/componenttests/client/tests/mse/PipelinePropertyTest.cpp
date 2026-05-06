@@ -187,17 +187,7 @@ TEST_F(PipelinePropertyTest, setAndGetPipelineProperties)
     MediaPipelineTestMethods::shouldGetUseBuffering(useBuffering);
     MediaPipelineTestMethods::getUseBuffering(useBuffering);
 
-    // Step 13: Set Report Decode Errors
-    bool reportDecodeErrors{true};
-    MediaPipelineTestMethods::shouldSetReportDecodeErrors(reportDecodeErrors);
-    MediaPipelineTestMethods::setReportDecodeErrors(reportDecodeErrors);
-
-    // Step 14: Get Queued Frames
-    uint32_t queuedFrames{123};
-    MediaPipelineTestMethods::shouldGetQueuedFrames(queuedFrames);
-    MediaPipelineTestMethods::getQueuedFrames(queuedFrames);
-
-    // Step 15: Get Duration
+    // Step 13: Get Duration
     constexpr int64_t duration{123456789};
     MediaPipelineTestMethods::shouldGetDuration(duration);
     MediaPipelineTestMethods::getDuration(duration);
