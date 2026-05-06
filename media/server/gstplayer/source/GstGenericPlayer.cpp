@@ -1697,24 +1697,11 @@ void GstGenericPlayer::cancelUnderflow(firebolt::rialto::MediaSourceType mediaSo
 
 void GstGenericPlayer::play(bool &async)
 {
-    if (0 == m_ongoingStateChangesNumber)
+    ++m_ongoingStateChangesNumber;
+    async = true;
+    if (m_workerThread)
     {
-        // Operation called on main thread, because PAUSED->PLAYING change is synchronous and needs to be done fast.
-        //
-        // m_context.pipeline can be used, because it's modified only in GstGenericPlayer
-        // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
-        ++m_ongoingStateChangesNumber;
-        async = (changePipelineState(GST_STATE_PLAYING) == GST_STATE_CHANGE_ASYNC);
-        RIALTO_SERVER_LOG_MIL("State change to PLAYING requested");
-    }
-    else
-    {
-        ++m_ongoingStateChangesNumber;
-        async = true;
-        if (m_workerThread)
-        {
-            m_workerThread->enqueueTask(m_taskFactory->createPlay(*this));
-        }
+        m_workerThread->enqueueTask(m_taskFactory->createPlay(*this));
     }
 }
 
