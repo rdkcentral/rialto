@@ -97,8 +97,9 @@ void HealthcheckService::onAckReceived(int serverId, int pingId, bool success)
     {
         if (success && m_failedPings[serverId].find(pingId) != m_failedPings[serverId].end())
         {
-            RIALTO_SERVER_MANAGER_LOG_WARN(
-                "Late ack received for server id: %d, ping id: %d. Removing from failed pings list", serverId, pingId);
+            RIALTO_SERVER_MANAGER_LOG_WARN("Late ack received for server id: %d, Current ping id: %d, received ping "
+                                           "id: %d. Removing from failed pings list",
+                                           serverId, m_currentPingId, pingId);
             m_failedPings[serverId].erase(pingId);
         }
         else
