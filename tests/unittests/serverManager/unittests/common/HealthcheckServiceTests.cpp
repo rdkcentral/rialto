@@ -285,3 +285,22 @@ TEST_F(HealthcheckServiceTests, WillFailToFailPingWithWrongId)
     // There should be no error indication here.
     triggerOnPingFailed(pingId + 1);
 }
+
+TEST_F(HealthcheckServiceTests, WillSkipRestartingServerWhenAcksAreReceivedLater)
+{
+    int pingId{-1};
+    timerWillBeCreated();
+    createSut();
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    const int firstPingId{pingId};
+    triggerOnPingSent(pingId);
+    errorIndicationWillBeSent();
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+    triggerOnAckReceived(kServerId, firstPingId, kSuccess);
+    triggerOnPingSent(pingId);
+    errorIndicationWillBeSent();
+    pingWillBeSent(pingId);
+    triggerPingTimeout();
+}
