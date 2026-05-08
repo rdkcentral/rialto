@@ -286,7 +286,7 @@ TEST_F(HealthcheckServiceTests, WillFailToFailPingWithWrongId)
     triggerOnPingFailed(pingId + 1);
 }
 
-TEST_F(HealthcheckServiceTests, WillSkipSendingErrorWhenAcksAreReceivedLater)
+TEST_F(HealthcheckServiceTests, WillSkipRestartingServerWhenAcksAreReceivedLater)
 {
     int pingId{-1};
     timerWillBeCreated();
