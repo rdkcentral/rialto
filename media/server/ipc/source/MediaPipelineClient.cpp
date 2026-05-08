@@ -126,6 +126,22 @@ firebolt::rialto::PlaybackErrorEvent_PlaybackError convertPlaybackError(const fi
     {
         return firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION;
     }
+    case firebolt::rialto::PlaybackError::KEY:
+    {
+        return firebolt::rialto::PlaybackErrorEvent_PlaybackError_KEY;
+    }
+    case firebolt::rialto::PlaybackError::HDCPPROTECTION:
+    {
+        return firebolt::rialto::PlaybackErrorEvent_PlaybackError_HDCPPROTECTION;
+    }
+    case firebolt::rialto::PlaybackError::HDCPCOMPLIANCE:
+    {
+        return firebolt::rialto::PlaybackErrorEvent_PlaybackError_HDCPCOMPLIANCE;
+    }
+	case firebolt::rialto::PlaybackError::DRM:
+    {
+        return firebolt::rialto::PlaybackErrorEvent_PlaybackError_DRM;
+    }
     }
     return firebolt::rialto::PlaybackErrorEvent_PlaybackError_UNKNOWN;
 }

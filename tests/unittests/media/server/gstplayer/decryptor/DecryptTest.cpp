@@ -31,6 +31,7 @@ using namespace firebolt::rialto::wrappers;
 
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::SetArgReferee;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
@@ -213,6 +214,15 @@ protected:
             .WillOnce(Return(TRUE));
         EXPECT_CALL(*m_glibWrapperMock, gErrorFree(&m_gError));
     }
+
+    void expectGetKeyStatus(KeyStatus keyStatus)
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferMap(&m_key, _, GST_MAP_READ))
+            .WillOnce(DoAll(SetArgPointee<1>(m_keyMap), Return(TRUE)));
+        EXPECT_CALL(*m_gstWrapperMock, gstBufferUnmap(&m_key, _));
+        EXPECT_CALL(*m_decryptionServiceMock, getKeyStatus(m_keySessionId, m_keyVector, _))
+            .WillOnce(DoAll(SetArgReferee<2>(keyStatus), Return(MediaKeyErrorStatus::OK)));
+    }
 };
 
 /**
@@ -255,6 +265,7 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, DecryptionServiceDecryptFailure)
     expectGetInfoFromProtectionMeta();
     expectWidevineKeySystem();
     expectAddGstProtectionMeta(true);
+    expectGetKeyStatus(KeyStatus::OUTPUT_RESTRICTED);
     expectDecryptWarning();
 
     EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))

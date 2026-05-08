@@ -380,6 +380,18 @@ MediaKeyErrorStatus MediaKeySession::getLastDrmError(uint32_t &errorCode)
     return status;
 }
 
+MediaKeyErrorStatus MediaKeySession::getKeyStatus(const std::vector<uint8_t> &keyId, KeyStatus &keyStatus)
+{
+    if (keyId.empty())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get key status, key id is empty");
+        return MediaKeyErrorStatus::FAIL;
+    }
+
+    keyStatus = m_ocdmSession->getStatus(keyId.data(), keyId.size());
+    return MediaKeyErrorStatus::OK;
+}
+
 MediaKeyErrorStatus MediaKeySession::selectKeyId(const std::vector<uint8_t> &keyId)
 {
     if (m_selectedKeyId == keyId)

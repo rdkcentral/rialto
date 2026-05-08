@@ -600,6 +600,37 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
     return status;
 }
 
+MediaKeyErrorStatus MediaKeysServerInternal::getKeyStatus(int32_t keySessionId, const std::vector<uint8_t> &keyId,
+                                                          KeyStatus &keyStatus)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    MediaKeyErrorStatus status;
+    auto task = [&]() { status = getKeyStatusInternal(keySessionId, keyId, keyStatus); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return status;
+}
+
+MediaKeyErrorStatus MediaKeysServerInternal::getKeyStatusInternal(int32_t keySessionId, const std::vector<uint8_t> &keyId,
+                                                                  KeyStatus &keyStatus)
+{
+    auto sessionIter = m_mediaKeySessions.find(keySessionId);
+    if (sessionIter == m_mediaKeySessions.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
+        return MediaKeyErrorStatus::BAD_SESSION_ID;
+    }
+
+    MediaKeyErrorStatus status = sessionIter->second->getKeyStatus(keyId, keyStatus);
+    if (MediaKeyErrorStatus::OK != status)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get key status");
+    }
+
+    return status;
+}
+
 void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");

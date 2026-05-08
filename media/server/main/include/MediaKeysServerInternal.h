@@ -113,6 +113,9 @@ public:
 
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
 
+    MediaKeyErrorStatus getKeyStatus(int32_t keySessionId, const std::vector<uint8_t> &keyId,
+                                     KeyStatus &keyStatus) override;
+
     MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) override;
 
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
@@ -232,6 +235,18 @@ private:
      * @retval an error status.
      */
     MediaKeyErrorStatus decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps);
+
+    /**
+     * @brief Gets the status of the specified key internally, only to be called on the main thread.
+     *
+     * @param[in] keySessionId : The session id for the session.
+     * @param[in] keyId        : The key id.
+     * @param[out] keyStatus   : The key status.
+     *
+     * @retval an error status.
+     */
+    MediaKeyErrorStatus getKeyStatusInternal(int32_t keySessionId, const std::vector<uint8_t> &keyId,
+                                             KeyStatus &keyStatus);
 
     /**
      * @brief Selects the specified keyId for the key session internally, only to be called on the main thread.

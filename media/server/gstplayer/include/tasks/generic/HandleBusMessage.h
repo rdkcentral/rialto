@@ -44,6 +44,8 @@ public:
 
 private:
     bool allSourcesEos() const;
+    static bool warningContains(const GError *error, const gchar *debugMessage,
+				const char *value);
 
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
