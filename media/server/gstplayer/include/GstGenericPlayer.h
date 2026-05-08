@@ -483,11 +483,6 @@ private:
      * @brief The object used to check flushing state for all sources
      */
     std::unique_ptr<IFlushWatcher> m_flushWatcher;
-
-    /**
-     * @brief The ongoing state change operations counter
-     */
-    std::atomic<uint32_t> m_ongoingStateChangesNumber{0};
 };
 
 } // namespace firebolt::rialto::server
