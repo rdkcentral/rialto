@@ -1697,7 +1697,6 @@ void GstGenericPlayer::cancelUnderflow(firebolt::rialto::MediaSourceType mediaSo
 
 void GstGenericPlayer::play(bool &async)
 {
-    ++m_ongoingStateChangesNumber;
     async = true;
     if (m_workerThread)
     {
@@ -1707,7 +1706,6 @@ void GstGenericPlayer::play(bool &async)
 
 void GstGenericPlayer::pause()
 {
-    ++m_ongoingStateChangesNumber;
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createPause(m_context, *this));
@@ -1716,7 +1714,6 @@ void GstGenericPlayer::pause()
 
 void GstGenericPlayer::stop()
 {
-    ++m_ongoingStateChangesNumber;
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createStop(m_context, *this));
@@ -1730,7 +1727,6 @@ GstStateChangeReturn GstGenericPlayer::changePipelineState(GstState newState)
         RIALTO_SERVER_LOG_ERROR("Change state failed - pipeline is nullptr");
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
-        --m_ongoingStateChangesNumber;
         return GST_STATE_CHANGE_FAILURE;
     }
     m_context.flushOnPrerollController->setTargetState(newState);
@@ -1741,7 +1737,6 @@ GstStateChangeReturn GstGenericPlayer::changePipelineState(GstState newState)
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
     }
-    --m_ongoingStateChangesNumber;
     return result;
 }
 

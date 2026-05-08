@@ -82,13 +82,6 @@ void MediaPipelineTestBase::mainThreadWillEnqueueTaskAndWait()
         .RetiresOnSaturation();
 }
 
-void MediaPipelineTestBase::mainThreadWillEnqueuePriorityTaskAndWait()
-{
-    EXPECT_CALL(*m_mainThreadMock, enqueuePriorityTaskAndWait(m_kMainThreadClientId, _))
-        .WillOnce(Invoke([](uint32_t clientId, firebolt::rialto::server::IMainThread::Task task) { task(); }))
-        .RetiresOnSaturation();
-}
-
 void MediaPipelineTestBase::loadGstPlayer()
 {
     mainThreadWillEnqueueTaskAndWait();
