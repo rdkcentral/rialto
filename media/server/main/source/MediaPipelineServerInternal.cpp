@@ -347,7 +347,7 @@ bool MediaPipelineServerInternal::play(bool &async)
     bool result;
     auto task = [&]() { result = playInternal(async); };
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
