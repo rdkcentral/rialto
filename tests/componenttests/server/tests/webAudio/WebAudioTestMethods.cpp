@@ -175,7 +175,11 @@ void WebAudioTestMethods::willCreateWebAudioPlayer()
 
     // EXPECTS coming from...
     //   GstWebAudioPlayerTestCommon::expectInitAppSrc()
+#if GST_CHECK_VERSION(1, 20, 0)
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBuffers(&m_appSrc, 20));
+#else
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(&m_appSrc, 10 * 1024));
+#endif
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_appSrc), StrEq("format")));
 
     // EXPECTS coming from...

@@ -157,6 +157,16 @@ public:
 
     void gstAppSrcSetMaxBytes(GstAppSrc *appsrc, guint64 max) override { gst_app_src_set_max_bytes(appsrc, max); }
 
+    void gstAppSrcSetMaxBuffers(GstAppSrc *appsrc, guint max) override
+    {
+#if GST_CHECK_VERSION(1, 20, 0)
+        gst_app_src_set_max_buffers(appsrc, max);
+#else
+        (void)appsrc;
+        (void)max;
+#endif
+    }
+
     void gstAppSrcSetStreamType(GstAppSrc *appsrc, GstAppStreamType type) override
     {
         gst_app_src_set_stream_type(appsrc, type);

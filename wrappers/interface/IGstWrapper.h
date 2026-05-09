@@ -340,6 +340,15 @@ public:
     virtual void gstAppSrcSetMaxBytes(GstAppSrc *appsrc, guint64 max) = 0;
 
     /**
+     * @brief Set the maximum buffers that can be set on the appsrc queue.
+     *        Requires GStreamer >= 1.20.
+     *
+     * @param[in] appsrc    : The appsrc.
+     * @param[in] max       : Max buffers to set.
+     */
+    virtual void gstAppSrcSetMaxBuffers(GstAppSrc *appsrc, guint max) = 0;
+
+    /**
      * @brief Set the stream type on the appsrc.
      *
      * @param[in] appsrc    : The appsrc.

@@ -63,6 +63,7 @@ public:
                 (GstAppSrc * appsrc, GstAppSrcCallbacks *callbacks, gpointer userData, GDestroyNotify notify),
                 (override));
     MOCK_METHOD(void, gstAppSrcSetMaxBytes, (GstAppSrc * appsrc, guint64 max), (override));
+    MOCK_METHOD(void, gstAppSrcSetMaxBuffers, (GstAppSrc * appsrc, guint max), (override));
     MOCK_METHOD(void, gstAppSrcSetStreamType, (GstAppSrc * appsrc, GstAppStreamType type), (override));
     MOCK_METHOD(gboolean, gstBinAdd, (GstBin * bin, GstElement *element), (override));
     MOCK_METHOD(void, gstBaseTransformSetInPlace, (GstBaseTransform * trans, gboolean in_place), (override));

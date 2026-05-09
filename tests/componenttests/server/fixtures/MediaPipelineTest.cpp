@@ -184,7 +184,13 @@ void MediaPipelineTest::willSetupAndAddSource(GstAppSrc *appSrc)
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("stream-type")));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("min-percent")));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("handle-segment-change")));
+#if GST_CHECK_VERSION(1, 20, 0)
+    // GStreamer 1.20+ uses buffer-based limits
+    const guint kMaxBuffers = ((appSrc == &m_audioAppSrc) ? 32 : 40);
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBuffers(appSrc, kMaxBuffers));
+#else
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(appSrc, kMaxBytes));
+#endif
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(appSrc, GST_APP_STREAM_TYPE_SEEKABLE));
     EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_rialtoSource), GST_ELEMENT(appSrc)));
