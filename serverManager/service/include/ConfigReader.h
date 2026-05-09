@@ -49,6 +49,7 @@ public:
     std::optional<unsigned int> getNumOfPreloadedServers() override;
     std::optional<rialto::servermanager::service::LoggingLevels> getLoggingLevels() override;
     std::optional<unsigned int> getNumOfPingsBeforeRecovery() override;
+    std::optional<std::string> getSubtitlesDisplayName() override;
 
 private:
     void parseEnvironmentVariables(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
@@ -62,6 +63,7 @@ private:
     void parseNumOfPreloadedServers(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseLogLevel(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
     void parseNumOfPingsBeforeRecovery(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
+    void parseSubtitlesDisplayName(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root);
 
     std::list<std::string> getListOfStrings(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,
                                             const std::string &valueName) const;
@@ -84,6 +86,7 @@ private:
     std::optional<unsigned int> m_numOfPreloadedServers;
     std::optional<rialto::servermanager::service::LoggingLevels> m_loggingLevels;
     std::optional<unsigned int> m_numOfPingsBeforeRecovery;
+    std::optional<std::string> m_subtitlesDisplayName;
 };
 
 } // namespace rialto::servermanager::service

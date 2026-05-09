@@ -52,6 +52,7 @@ const std::string kSocketOwner{};
 const std::string kSocketGroup{};
 const std::string kAppId{"app"};
 const std::string kClientDisplayName{"westeros-rialto"};
+const std::string kSubtitlesDisplayName{"westeros-asplayer-subtitles"};
 } // namespace
 
 SessionServerManagerTests::SessionServerManagerTests()
@@ -168,6 +169,7 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
     EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(kMaxPlaybacks));
     EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(kMaxWebAudioPlayers));
     EXPECT_CALL(m_playbackServiceMock, setClientDisplayName(kClientDisplayName));
+    EXPECT_CALL(m_playbackServiceMock, setSubtitlesDisplayName(kSubtitlesDisplayName));
     EXPECT_CALL(m_playbackServiceMock, setResourceManagerAppName(kAppId));
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
@@ -176,7 +178,8 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
     EXPECT_TRUE(m_sut);
     EXPECT_TRUE(
         m_sut->configureIpc(kSessionManagementSocket, kSessionManagementSocketPermissions, kSocketOwner, kSocketGroup));
-    EXPECT_FALSE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId));
+    EXPECT_FALSE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName,
+                                          kSubtitlesDisplayName, kAppId));
 }
 
 void SessionServerManagerTests::willSetConfiguration()
@@ -188,6 +191,7 @@ void SessionServerManagerTests::willSetConfiguration()
     EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(kMaxPlaybacks));
     EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(kMaxWebAudioPlayers));
     EXPECT_CALL(m_playbackServiceMock, setClientDisplayName(kClientDisplayName));
+    EXPECT_CALL(m_playbackServiceMock, setSubtitlesDisplayName(kSubtitlesDisplayName));
     EXPECT_CALL(m_playbackServiceMock, setResourceManagerAppName(kAppId));
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
@@ -197,7 +201,8 @@ void SessionServerManagerTests::willSetConfiguration()
     EXPECT_TRUE(m_sut);
     EXPECT_TRUE(
         m_sut->configureIpc(kSessionManagementSocket, kSessionManagementSocketPermissions, kSocketOwner, kSocketGroup));
-    EXPECT_TRUE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId));
+    EXPECT_TRUE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName,
+                                         kSubtitlesDisplayName, kAppId));
 }
 
 void SessionServerManagerTests::willFailToSetConfigurationWithFdWhenSessionManagementServerFailsToInit()
@@ -214,6 +219,7 @@ void SessionServerManagerTests::willSetConfigurationWithFd()
     EXPECT_CALL(m_playbackServiceMock, setMaxPlaybacks(kMaxPlaybacks));
     EXPECT_CALL(m_playbackServiceMock, setMaxWebAudioPlayers(kMaxWebAudioPlayers));
     EXPECT_CALL(m_playbackServiceMock, setClientDisplayName(kClientDisplayName));
+    EXPECT_CALL(m_playbackServiceMock, setSubtitlesDisplayName(kSubtitlesDisplayName));
     EXPECT_CALL(m_playbackServiceMock, setResourceManagerAppName(kAppId));
     EXPECT_CALL(m_playbackServiceMock, switchToInactive());
     EXPECT_CALL(m_cdmServiceMock, switchToInactive());
@@ -222,7 +228,8 @@ void SessionServerManagerTests::willSetConfigurationWithFd()
         .WillOnce(Return(true));
     EXPECT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->configureIpc(kFd));
-    EXPECT_TRUE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId));
+    EXPECT_TRUE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName,
+                                         kSubtitlesDisplayName, kAppId));
 }
 
 void SessionServerManagerTests::willFailToSetUnsupportedState()

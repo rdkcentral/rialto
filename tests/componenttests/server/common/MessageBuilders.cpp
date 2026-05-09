@@ -33,6 +33,7 @@ namespace firebolt::rialto::server::ct
     constexpr int kLogLevel{kAllLogs};
     constexpr int kMaxPlaybacks{2};
     const std::string kDisplayName{"waylanddisplay"};
+    const std::string kSubtitlesDisplayName{"westeros-asplayer-subtitles"};
     ::rialto::LogLevels logLevels;
     logLevels.set_defaultloglevels(kLogLevel);
     logLevels.set_clientloglevels(kLogLevel);
@@ -44,6 +45,7 @@ namespace firebolt::rialto::server::ct
     ::rialto::SetConfigurationRequest request;
     request.set_sessionmanagementsocketname(kSocketName);
     request.set_clientdisplayname(kDisplayName);
+    request.set_subtitlesdisplayname(kSubtitlesDisplayName);
     request.mutable_resources()->set_maxplaybacks(kMaxPlaybacks);
     request.mutable_resources()->set_maxwebaudioplayers(kMaxPlaybacks);
     request.set_socketpermissions(kDefaultPermissions);
