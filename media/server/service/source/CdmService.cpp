@@ -411,6 +411,9 @@ MediaKeyErrorStatus CdmService::releaseKeySession(int mediaKeysHandle, int32_t k
     if (mediaKeysHandleIter->second.refCounter > 0)
     {
         RIALTO_SERVER_LOG_INFO("Deferring releasing of key session %d", keySessionId);
+        RIALTO_SERVER_LOG_WARN("DPS:::::: Deferring releasing of key session %d (refCounter=%d) - "
+                               "platform secure heap teardown will be delayed",
+                               keySessionId, mediaKeysHandleIter->second.refCounter);
         mediaKeysHandleIter->second.shouldBeReleased = true;
         return MediaKeyErrorStatus::OK;
     }
