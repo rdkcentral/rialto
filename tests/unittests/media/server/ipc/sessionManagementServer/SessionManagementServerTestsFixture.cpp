@@ -28,6 +28,7 @@
 #include "SessionManagementServer.h"
 #include "WebAudioPlayerModuleServiceFactoryMock.h"
 #include <fcntl.h>
+#include <future>
 #include <string>
 #include <sys/stat.h>
 #include <utility>
@@ -162,7 +163,16 @@ void SessionManagementServerTests::serverWillFailToInitializeWithFd()
 
 void SessionManagementServerTests::serverWillStart()
 {
-    EXPECT_CALL(*m_serverMock, process()).WillOnce(Return(false));
+    auto promise = std::make_shared<std::promise<void>>();
+    m_serverStartedFuture = promise->get_future();
+    EXPECT_CALL(*m_serverMock, process())
+        .WillOnce(Invoke(
+            [promise]()
+            {
+                promise->set_value();
+                return false;
+            }));
+    EXPECT_CALL(*m_serverMock, wake()).Times(testing::AtMost(1));
 }
 
 void SessionManagementServerTests::clientWillConnect()
@@ -231,6 +241,7 @@ void SessionManagementServerTests::sendServerInitializeWithFdAndExpectFailure()
 void SessionManagementServerTests::sendServerStart()
 {
     m_sut->start();
+    m_serverStartedFuture.wait();
 }
 
 void SessionManagementServerTests::sendConnectClient()

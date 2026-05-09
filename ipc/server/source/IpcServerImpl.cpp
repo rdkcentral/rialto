@@ -443,6 +443,11 @@ bool ServerImpl::wait(int timeoutMSecs)
     return true;
 }
 
+void ServerImpl::wake() const
+{
+    wakeEventLoop();
+}
+
 bool ServerImpl::process()
 {
     if (m_pollFd < 0)
