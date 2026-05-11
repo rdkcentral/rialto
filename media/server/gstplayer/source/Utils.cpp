@@ -29,7 +29,7 @@
 namespace
 {
 const char *underflowSignals[]{"buffer-underflow-callback", "vidsink-underflow-callback", "underrun-callback"};
-const char *firstVideoFrameSignals[]{"first-video-frame-callback"};
+const char *firstFrameSignals[]{"first-video-frame-callback"};
 
 bool isType(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element, GstElementFactoryListType type)
 {
@@ -126,8 +126,8 @@ std::optional<std::string> getUnderflowSignalName(const firebolt::rialto::wrappe
     return std::nullopt;
 }
 
-std::optional<std::string> getFirstVideoFrameSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper,
-                                                        GstElement *element)
+std::optional<std::string> getFirstFrameSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper,
+                                                   GstElement *element)
 {
     GType type = glibWrapper.gObjectType(element);
     guint nsignals{0};
@@ -137,11 +137,11 @@ std::optional<std::string> getFirstVideoFrameSignalName(const firebolt::rialto::
     {
         GSignalQuery query;
         glibWrapper.gSignalQuery(signals[i], &query);
-        const auto signalNameIt = std::find_if(std::begin(firstVideoFrameSignals), std::end(firstVideoFrameSignals),
+        const auto signalNameIt = std::find_if(std::begin(firstFrameSignals), std::end(firstFrameSignals),
                                                [&](const auto *signalName)
                                                { return strcmp(signalName, query.signal_name) == 0; });
 
-        if (std::end(firstVideoFrameSignals) != signalNameIt)
+        if (std::end(firstFrameSignals) != signalNameIt)
         {
             glibWrapper.gFree(signals);
             return std::string(*signalNameIt);
