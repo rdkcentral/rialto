@@ -1,0 +1,23 @@
+# openspec/config.yaml
+schema: spec-driven
+
+project:
+  name: Rialto Media Pipeline
+  description: API and implementation for the Rialto media pipeline.
+
+
+# ✅ CORRECT (String format)
+context: |
+  Primary Language: C++
+  Build System: CMake
+  Testing Framework: GTest
+  Repository: Rialto Media Pipeline
+
+
+
+
+
+
+# This ensures the AI always looks at the project.md for rules
+rules_file: "openspec/project.md"
+
