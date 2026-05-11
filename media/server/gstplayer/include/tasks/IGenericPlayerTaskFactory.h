@@ -377,7 +377,7 @@ public:
                                                          bool underflowEnabled, MediaSourceType sourceType) const = 0;
 
     /**
-     * @brief Creates an FirstFrameReceived task.
+     * @brief Creates a FirstFrameReceived task.
      *
      * @param[in] context          : The GstGenericPlayer context
      * @param[in] player           : The GstPlayer instance
