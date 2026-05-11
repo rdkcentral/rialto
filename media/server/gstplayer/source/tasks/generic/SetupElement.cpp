@@ -283,13 +283,20 @@ void SetupElement::execute() const
             }
         }
 
-        std::optional<std::string> firstVideoFrameSignalName = getFirstVideoFrameSignalName(*m_glibWrapper, m_element);
-        if (firstVideoFrameSignalName && isVideo(*m_gstWrapper, m_element))
+        std::optional<std::string> firstFrameSignalName = getFirstFrameSignalName(*m_glibWrapper, m_element);
+        if (firstFrameSignalName)
         {
-            RIALTO_SERVER_LOG_INFO("Connecting first video frame callback for signal: %s",
-                                   firstVideoFrameSignalName.value().c_str());
-            m_glibWrapper->gSignalConnect(m_element, firstVideoFrameSignalName.value().c_str(),
-                                          G_CALLBACK(firstVideoFrameCallback), &m_player);
+            if (isAudio(*m_gstWrapper, m_element))
+            {
+                // TODO
+            }
+            else if (isVideo(*m_gstWrapper, m_element))
+            {
+                RIALTO_SERVER_LOG_INFO("Connecting first video frame callback for signal: %s",
+                                       firstFrameSignalName.value().c_str());
+                m_glibWrapper->gSignalConnect(m_element, firstFrameSignalName.value().c_str(),
+                                              G_CALLBACK(firstVideoFrameCallback), &m_player);
+            }
         }
     }
 
