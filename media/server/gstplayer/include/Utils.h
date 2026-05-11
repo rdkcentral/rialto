@@ -41,8 +41,8 @@ bool isAudio(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstEleme
 bool isVideo(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element);
 std::optional<std::string> getUnderflowSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper,
                                                   GstElement *element);
-std::optional<std::string> getFirstVideoFrameSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper,
-                                                        GstElement *element);
+std::optional<std::string> getFirstFrameSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper,
+                                                   GstElement *element);
 GstCaps *createCapsFromMediaSource(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                                    const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                                    const std::unique_ptr<IMediaPipeline::MediaSource> &source);
