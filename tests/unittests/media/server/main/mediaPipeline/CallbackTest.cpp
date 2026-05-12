@@ -269,3 +269,29 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifySourceFlushedFailureSourceId
 
     m_gstPlayerCallback->notifySourceFlushed(mediaSourceType);
 }
+
+/**
+ * Test a notification of first audio frame received is forwarded to the registered client.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyFirstFrameReceived)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::AUDIO;
+    int sourceId = attachSource(mediaSourceType, "audio/x-opus");
+
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyFirstFrameReceived(sourceId));
+
+    m_gstPlayerCallback->notifyFirstFrameReceived(mediaSourceType);
+}
+
+/**
+ * Test a notification of first audio frame received fails when sourceId cannot be found.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyFirstFrameReceivedFailureSourceIdNotFound)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::AUDIO;
+
+    mainThreadWillEnqueueTask();
+
+    m_gstPlayerCallback->notifyFirstFrameReceived(mediaSourceType);
+}

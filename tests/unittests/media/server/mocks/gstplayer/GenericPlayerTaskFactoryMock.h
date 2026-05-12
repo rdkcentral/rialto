@@ -143,6 +143,8 @@ public:
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSynchroniseSubtitleClock,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFirstFrameReceived,
+                (GenericPlayerContext & context, IGstGenericPlayerClient *client), (const, override));
 };
 } // namespace firebolt::rialto::server
 

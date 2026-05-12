@@ -43,6 +43,7 @@ add_gtests (
         tests/mse/AudioVideoPlaybackWriteSegmentsTest.cpp
         tests/mse/CreateMediaPipelineFailuresTest.cpp
         tests/mse/DualVideoPlaybackTest.cpp
+        tests/mse/FirstFrameReceivedNotificationTest.cpp
         tests/mse/FlushTest.cpp
         tests/mse/MediaPipelineCapabilitiesTest.cpp
         tests/mse/MuteTest.cpp

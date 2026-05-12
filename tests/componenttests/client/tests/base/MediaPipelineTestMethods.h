@@ -176,6 +176,7 @@ protected:
     void shouldNotifyPlaybackErrorAudio();
     void shouldNotifyPlaybackErrorVideo();
     void shouldNotifySourceFlushed();
+    void shouldNotifyFirstFrameReceived();
 
     // MediaPipelineCapabilities Expect methods
     void shouldGetSupportedAudioMimeTypes();
@@ -304,6 +305,7 @@ protected:
     void sendNotifyPlaybackErrorAudio();
     void sendNotifyPlaybackErrorVideo();
     void sendNotifySourceFlushed();
+    void sendNotifyFirstFrameReceived();
 
     // Check methods
     void checkMseAudioSegmentWritten(int32_t segmentId);

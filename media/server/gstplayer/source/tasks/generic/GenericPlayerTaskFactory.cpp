@@ -58,6 +58,7 @@
 #include "tasks/generic/SynchroniseSubtitleClock.h"
 #include "tasks/generic/Underflow.h"
 #include "tasks/generic/UpdatePlaybackGroup.h"
+#include "tasks/generic/FirstFrameReceived.h"
 
 namespace firebolt::rialto::server
 {
@@ -351,5 +352,11 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSynchroniseSubtitle
                                                                                       IGstGenericPlayerPrivate &player) const
 {
     return std::make_unique<tasks::generic::SynchroniseSubtitleClock>(context, player, m_gstWrapper, m_glibWrapper);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFirstFrameReceived(GenericPlayerContext &context,
+                                                                                IGstGenericPlayerClient *client) const
+{
+    return std::make_unique<tasks::generic::FirstFrameReceived>(context, client);
 }
 } // namespace firebolt::rialto::server

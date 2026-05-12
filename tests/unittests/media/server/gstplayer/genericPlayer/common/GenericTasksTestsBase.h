@@ -104,6 +104,13 @@ protected:
     void triggerVideoUnderflowCallback();
     void shouldSetAudioUnderflowCallback();
     void triggerAudioUnderflowCallback();
+    void shouldSetupAudioSinkElementWithFirstFrameSignal();
+    void shouldSetupAudioSinkElementWithFirstFrameCallbackSignal();
+    void shouldSetupAudioSinkElementWithFirstFrameProbe();
+    void shouldSetAudioFirstFrameCallback();
+    void triggerAudioFirstFrameCallback();
+    void shouldSetAudioFirstFrameProbeCallback();
+    void triggerAudioFirstFrameProbeCallback();
     void shouldAddFirstAutoVideoSinkChild();
     void shouldAddFirstAutoAudioSinkChild();
     void shouldNotAddAutoVideoSinkChild();
@@ -265,6 +272,11 @@ protected:
     void setUnderflowEnabled(bool isUnderflowEnabled);
     void triggerVideoUnderflow();
     void shouldNotifyVideoUnderflow();
+
+    // FirstFrameReceived test methods
+    void triggerFirstFrameReceived();
+    void shouldNotifyFirstFrameReceived();
+    void setContextAudioFirstFrameReceived(bool isReceived);
 
     // Shutdown test methods
     void shouldStopWorkerThread();
@@ -433,6 +445,8 @@ private:
     // SetupElement helper methods
     void expectVideoUnderflowSignalConnection();
     void expectAudioUnderflowSignalConnection();
+    void expectAudioFirstFrameSignalConnection(const char *signalName);
+    void expectAudioFirstFrameProbe();
     void expectSetupVideoSinkElement();
     void expectSetupVideoDecoderElement();
     void expectSetupAudioSinkElement();

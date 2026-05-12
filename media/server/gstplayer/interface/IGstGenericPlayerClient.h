@@ -177,6 +177,13 @@ public:
      * @param[in] playbackInfo : The current playback information.
      */
     virtual void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) = 0;
+
+    /**
+     * @brief Notifies the client that the first audio frame has been received.
+     *
+     * @param[in] mediaSourceType : The type of the source that produced the first frame.
+     */
+    virtual void notifyFirstFrameReceived(MediaSourceType mediaSourceType) = 0;
 };
 
 }; // namespace firebolt::rialto::server

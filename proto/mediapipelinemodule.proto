@@ -1004,6 +1004,17 @@ message SourceFlushedEvent {
     optional int32 source_id = 2 [default = -1];
 }
 
+/**
+ * @brief Event sent by the server when the first audio frame has been received.
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ * @param source_id         The id of the audio media source that produced the first frame.
+ */
+message FirstFrameReceivedEvent {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+
 service MediaPipelineModule {
     /**
      * @brief Creates a new playback session.

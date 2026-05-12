@@ -131,6 +131,7 @@ public:
     void mediaClientWillSendPlaybackErrorEvent();
     void mediaClientWillSendSourceFlushedEvent();
     void mediaClientWillSendPlaybackInfoEvent();
+    void mediaClientWillSendFirstFrameReceivedEvent();
 
     void sendClientConnected();
     void sendClientDisconnected();
@@ -198,6 +199,7 @@ public:
     void sendPlaybackErrorEvent();
     void sendSourceFlushedEvent();
     void sendPlaybackInfoEvent();
+    void sendFirstFrameReceivedEvent();
     void sendRenderFrameRequestAndReceiveResponse();
 
 private:

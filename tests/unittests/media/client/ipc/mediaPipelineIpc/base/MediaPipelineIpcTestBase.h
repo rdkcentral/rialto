@@ -67,7 +67,8 @@ protected:
         BufferUnderflowEvent,
         PlaybackErrorEvent,
         SourceFlushedEvent,
-        PlaybackInfoEvent
+        PlaybackInfoEvent,
+        FirstFrameReceivedEvent
     };
 
     // Callbacks
@@ -80,6 +81,7 @@ protected:
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_playbackErrorCb;
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_sourceFlushedCb;
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_playbackInfoCb;
+    std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_firstFrameReceivedCb;
 
     void SetUp();
     void TearDown();

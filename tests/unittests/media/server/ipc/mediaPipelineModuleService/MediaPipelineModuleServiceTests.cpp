@@ -377,6 +377,14 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackInfoEvent)
     sendPlaybackInfoEvent();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldSendFirstFrameReceivedEvent)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaClientWillSendFirstFrameReceivedEvent();
+    sendFirstFrameReceivedEvent();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldRenderFrame)
 {
     mediaPipelineServiceWillCreateSession();

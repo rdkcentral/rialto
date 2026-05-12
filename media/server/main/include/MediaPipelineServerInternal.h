@@ -199,6 +199,8 @@ public:
 
     void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) override;
 
+    void notifyFirstFrameReceived(MediaSourceType mediaSourceType) override;
+
 protected:
     /**
      * @brief The media player client.

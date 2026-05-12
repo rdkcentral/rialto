@@ -225,6 +225,13 @@ MATCHER_P(SourceFlushedEventMatcher, kSourceId, "")
     return (kSourceId == event->source_id());
 }
 
+MATCHER_P(FirstFrameReceivedEventMatcher, kSourceId, "")
+{
+    std::shared_ptr<firebolt::rialto::FirstFrameReceivedEvent> event =
+        std::dynamic_pointer_cast<firebolt::rialto::FirstFrameReceivedEvent>(arg);
+    return (kSourceId == event->source_id());
+}
+
 MATCHER_P(PlaybackInfoEventMatcher, kExpectedPlaybackInfo, "")
 {
     std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> event =
@@ -881,6 +888,16 @@ void MediaPipelineModuleServiceTests::mediaClientWillSendSourceFlushedEvent()
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackInfoEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(PlaybackInfoEventMatcher(firebolt::rialto::PlaybackInfo{kPosition, kVolume})));
+}
+
+void MediaPipelineModuleServiceTests::mediaClientWillSendFirstFrameReceivedEvent()
+{
+    EXPECT_CALL(*m_clientMock, sendEvent(FirstFrameReceivedEventMatcher(kSourceId)));
+}
+
+void MediaPipelineModuleServiceTests::mediaClientWillSendFirstFrameReceivedEvent()
+{
+    EXPECT_CALL(*m_clientMock, sendEvent(FirstFrameReceivedEventMatcher(kSourceId)));
 }
 
 void MediaPipelineModuleServiceTests::sendClientConnected()
@@ -1601,6 +1618,12 @@ void MediaPipelineModuleServiceTests::sendPlaybackInfoEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
     m_mediaPipelineClient->notifyPlaybackInfo(firebolt::rialto::PlaybackInfo{kPosition, kVolume});
+}
+
+void MediaPipelineModuleServiceTests::sendFirstFrameReceivedEvent()
+{
+    ASSERT_TRUE(m_mediaPipelineClient);
+    m_mediaPipelineClient->notifyFirstFrameReceived(kSourceId);
 }
 
 void MediaPipelineModuleServiceTests::expectRequestSuccess()
