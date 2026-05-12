@@ -72,7 +72,7 @@ This feature is especially relevant in systems where “playback started” does
 ### High-Level Design
 Add a new first-frame event flow with the following stages:
 
-1. Detect the first audio frame in the GStreamer player layer using a platform-agnostic strategy.
+1. Detect the first audio frame received in the GStreamer player layer using a platform-agnostic strategy.
 2. Convert the detection into a scheduled internal Rialto task.
 3. Notify the server-side media pipeline/client layer.
 4. Send a new IPC/protobuf event to the client process.
@@ -122,11 +122,14 @@ The GStreamer integration layer should detect the first audio frame using one of
 - a fallback static sink-pad probe if no supported indication exists
 
 The first available valid mechanism should be used.
+The checking should be happening in element set up class
+
+A task should be added in Generic tasks to notify the pipeline
 
 ### Step 2: Schedule internal handling
 The callback/action/probe path should not perform heavy work directly on the GStreamer thread.
 
-Instead, it should schedule an internal task, for example:
+Instead, it should schedule an internal task as,
 - `FirstFrameReceived`
 
 This keeps behavior aligned with existing Rialto task-based event handling patterns.
@@ -152,6 +155,12 @@ The client-facing Rialto interface should expose a notification method such as:
 This allows applications or upper layers to respond when the first audio frame becomes available.
 
 ---
+
+## Constraints
+
+### API names
+The name of API should be strictly as notifyFirstFrameReceived where ever applicable
+The name of API should not be notifyFirstFrameRendered, since we are probing before a audio frame is rendered
 
 ## Proposed API Changes
 
