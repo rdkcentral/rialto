@@ -114,45 +114,116 @@ These are useful examples for requirements and validation, but the Rialto implem
 
 ## Proposed Event Flow
 
-### Step 1: Detect first frame in the playback backend
-The GStreamer integration layer should detect the first audio frame using one of the following mechanisms:
+### Step 1: Detect first audio frame in the playback backend
+The GStreamer integration layer shall detect the first audio frame using one of the following mechanisms:
 
-- a supported first-frame indication such as `first-audio-frame`
-- a supported first-frame indication such as `first-audio-frame-callback`
-- a fallback static sink-pad probe if no supported indication exists
+- a supported first-frame signal such as `first-audio-frame`
+- a supported first-frame signal such as `first-audio-frame-callback`
+- a fallback sink-pad buffer probe if no supported signal is available
 
-The first available valid mechanism should be used.
-The checking should be happening in element set up class
-
-A task should be added in Generic tasks to notify the pipeline
+The first available valid mechanism should be used. Detection should be wired during element setup.
 
 ### Step 2: Schedule internal handling
-The callback/action/probe path should not perform heavy work directly on the GStreamer thread.
+The callback/signal/probe path shall not perform notification logic directly on the GStreamer thread.
 
-Instead, it should schedule an internal task as,
+Instead, it shall schedule:
+
+- `IGstGenericPlayerPrivate::scheduleAudioFirstFrame()`
+
+which shall enqueue a worker-thread task:
+
 - `FirstFrameReceived`
 
-This keeps behavior aligned with existing Rialto task-based event handling patterns.
+### Step 3: Notify the server-side player client
+The `FirstFrameReceived` task shall notify the gstplayer client through:
 
-### Step 3: Notify the server pipeline
-The scheduled task should inform the server-side media pipeline or player client that the first frame for a given media source has been received.
+- `IGstGenericPlayerClient::notifyFirstFrameReceived(MediaSourceType::AUDIO)`
 
-### Step 4: Send IPC event
-The server IPC layer should construct and send a new event message, for example:
+### Step 4: Forward through server internal logic
+`MediaPipelineServerInternal` shall receive the notification, map `MediaSourceType::AUDIO` to the attached `sourceId`, and forward it through:
+
+- `IMediaPipelineClient::notifyFirstFrameReceived(sourceId)`
+
+### Step 5: Send IPC event
+The server IPC layer shall construct and send:
+
 - `FirstFrameReceivedEvent`
 
-The event should contain enough context to identify:
-- playback session
-- associated media source
+The event shall contain:
+- `session_id`
+- `source_id`
 
-### Step 5: Receive event on client side
-The client IPC layer should subscribe to the new event and dispatch it to the client-side media pipeline.
+### Step 6: Receive event on the client IPC side
+The client IPC layer (`MediaPipelineIpc`) shall subscribe to `FirstFrameReceivedEvent`, validate the session id, and forward it through:
 
-### Step 6: Notify public client API
-The client-facing Rialto interface should expose a notification method such as:
+- `IMediaPipelineIpcClient::notifyFirstFrameReceived(sourceId)`
+
+### Step 7: Forward through the client main layer
+The client main layer (`client::MediaPipeline`) shall implement:
+
 - `notifyFirstFrameReceived(int32_t sourceId)`
 
-This allows applications or upper layers to respond when the first audio frame becomes available.
+and forward the notification to the public client interface through:
+
+- `IMediaPipelineClient::notifyFirstFrameReceived(sourceId)`
+
+### Step 8: Notify the application-facing client
+The application-facing public Rialto client callback shall receive:
+
+- `notifyFirstFrameReceived(int32_t sourceId)`
+
+This is the final delivery point of the first-audio-frame notification.
+
+---
+
+## End-to-End Signal Path
+
+For clarity, the complete notification path is:
+
+```text
+GStreamer signal / fallback pad probe
+    ->
+SetupElement callback / probe callback
+    ->
+IGstGenericPlayerPrivate::scheduleAudioFirstFrame()
+    ->
+GstGenericPlayer worker-thread queue
+    ->
+FirstFrameReceived task
+    ->
+IGstGenericPlayerClient::notifyFirstFrameReceived(MediaSourceType::AUDIO)
+    ->
+MediaPipelineServerInternal::notifyFirstFrameReceived(MediaSourceType::AUDIO)
+    ->
+map audio MediaSourceType to sourceId
+    ->
+IMediaPipelineClient::notifyFirstFrameReceived(sourceId)
+    ->
+server::ipc::MediaPipelineClient::notifyFirstFrameReceived(sourceId)
+    ->
+FirstFrameReceivedEvent { session_id, source_id }
+    ->
+client::MediaPipelineIpc::onFirstFrameReceived(event)
+    ->
+IMediaPipelineIpcClient::notifyFirstFrameReceived(sourceId)
+    ->
+client::MediaPipeline::notifyFirstFrameReceived(sourceId)
+    ->
+IMediaPipelineClient::notifyFirstFrameReceived(sourceId)
+    ->
+application callback
+```
+
+---
+
+## Architectural Note
+
+The client-main forwarding step is mandatory.
+
+`MediaPipelineIpc` is only the client-side IPC transport layer. It does not notify the application directly.  
+The notification must continue through `client::MediaPipeline`, which is the concrete `IMediaPipelineIpcClient` implementation that forwards events to the public `IMediaPipelineClient`.
+
+Without this step, the event reaches the client IPC layer but does not reach the application callback.
 
 ---
 

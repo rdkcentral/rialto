@@ -877,6 +877,17 @@ void MediaPipeline::notifyBufferUnderflow(int32_t sourceId)
     }
 }
 
+void MediaPipeline::notifyFirstFrameReceived(int32_t sourceId)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifyFirstFrameReceived(sourceId);
+    }
+}
+
 void MediaPipeline::notifyPlaybackError(int32_t sourceId, PlaybackError error)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");

@@ -49,6 +49,7 @@
 - [x] 10.1 Add `onFirstFrameReceived` handler declaration to `media/client/ipc/include/MediaPipelineIpc.h`
 - [x] 10.2 Register subscription to `FirstFrameReceivedEvent` in `MediaPipelineIpc` constructor / subscription setup (following the same pattern as `onBufferUnderflow`)
 - [x] 10.3 Implement `MediaPipelineIpc::onFirstFrameReceived(event)` in `media/client/ipc/source/MediaPipelineIpc.cpp`: check `session_id`, call `m_mediaPipelineIpcClient->notifyFirstFrameReceived(source_id)`
+- [x] 10.4 Add `notifyFirstFrameReceived(int32_t sourceId)` override declaration to `media/client/main/include/MediaPipeline.h` and implement `MediaPipeline::notifyFirstFrameReceived(sourceId)` in `media/client/main/source/MediaPipeline.cpp` to forward the notification to the public `IMediaPipelineClient`
 
 ## 11. Unit Tests – GstPlayer Layer
 
@@ -67,8 +68,11 @@
 
 - [x] 13.1 Add a component test for server-side first-frame propagation: simulate first-audio-frame signal from GStreamer stub, verify `FirstFrameReceivedEvent` is sent to client
 - [x] 13.2 Add a component test for client-side first-frame reception: send `FirstFrameReceivedEvent` from stub, verify `IMediaPipelineClient::notifyFirstFrameReceived` is called with correct source ID
+- [x] 13.4 Add unit tests for `client::MediaPipeline::notifyFirstFrameReceived` verifying the public `IMediaPipelineClient::notifyFirstFrameReceived(sourceId)` callback is invoked
 
 ## 14. CMake and Build Integration
 
 - [x] 14.1 Add `FirstFrameReceived.cpp` to the relevant CMakeLists for the gstplayer tasks target
 - [x] 14.2 Verify all new test files are added to their respective CMakeLists targets
+
+
