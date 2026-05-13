@@ -46,6 +46,7 @@ add_gtests (
         mediaPipeline/DualVideoPlaybackTest.cpp
         mediaPipeline/EncryptedPlaybackTest.cpp
         mediaPipeline/FailureTests.cpp
+        mediaPipeline/FirstFrameNotificationTest.cpp
         mediaPipeline/FlushTest.cpp
         mediaPipeline/HaveDataFailureTest.cpp
         mediaPipeline/MuteTest.cpp
