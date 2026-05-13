@@ -1375,6 +1375,18 @@ void MediaPipelineTestMethods::sendNotifyBufferUnderflowVideo()
     waitEvent();
 }
 
+void MediaPipelineTestMethods::shouldNotifyFirstFrameReceivedVideo()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyFirstFrameReceived(kVideoSourceId))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::sendNotifyFirstFrameReceivedVideo()
+{
+    getServerStub()->notifyFirstFrameReceivedEvent(kSessionId, kVideoSourceId);
+    waitEvent();
+}
+
 void MediaPipelineTestMethods::shouldNotifyPlaybackErrorAudio()
 {
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackError(kAudioSourceId, PlaybackError::DECRYPTION))
