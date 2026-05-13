@@ -74,6 +74,7 @@ add_library(
         source/tasks/generic/SynchroniseSubtitleClock.cpp
         source/tasks/generic/Underflow.cpp
         source/tasks/generic/UpdatePlaybackGroup.cpp
+        source/tasks/generic/FirstFrameReceived.cpp
 
         source/tasks/webAudio/Eos.cpp
         source/tasks/webAudio/HandleBusMessage.cpp

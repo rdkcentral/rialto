@@ -111,3 +111,15 @@ TEST_F(RialtoClientMediaPipelineCallbackTest, PlaybackInfo)
 
     m_mediaPipelineCallback->notifyPlaybackInfo(playbackInfo);
 }
+
+/**
+ * Test a notification of first frame received is forwarded to the registered client.
+ */
+TEST_F(RialtoClientMediaPipelineCallbackTest, NotifyFirstFrameReceived)
+{
+    int32_t sourceId = 1;
+
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyFirstFrameReceived(sourceId));
+
+    m_mediaPipelineCallback->notifyFirstFrameReceived(sourceId);
+}

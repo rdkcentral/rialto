@@ -274,4 +274,15 @@ void MediaPipelineClient::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
 
     m_ipcClient->sendEvent(event);
 }
+
+void MediaPipelineClient::notifyFirstFrameReceived(int32_t sourceId)
+{
+    RIALTO_SERVER_LOG_DEBUG("Sending FirstFrameReceivedEvent...");
+
+    auto event = std::make_shared<firebolt::rialto::FirstFrameReceivedEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_source_id(sourceId);
+
+    m_ipcClient->sendEvent(event);
+}
 } // namespace firebolt::rialto::server::ipc

@@ -62,6 +62,11 @@ public:
     virtual void scheduleVideoUnderflow() = 0;
 
     /**
+     * @brief Schedules audio first frame received task. Called by the worker thread.
+     */
+    virtual void scheduleAudioFirstFrame() = 0;
+
+    /**
      * @brief Schedules all sources attached task. Called by the worker thread.
      */
     virtual void scheduleAllSourcesAttached() = 0;

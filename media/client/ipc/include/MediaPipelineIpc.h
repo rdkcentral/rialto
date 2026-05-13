@@ -231,6 +231,8 @@ private:
 
     void onPlaybackInfo(const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event);
 
+    void onFirstFrameReceived(const std::shared_ptr<firebolt::rialto::FirstFrameReceivedEvent> &event);
+
     /**
      * @brief Create a new player session.
      *

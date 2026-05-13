@@ -131,6 +131,9 @@ public:
     std::unique_ptr<IPlayerTask> createSynchroniseSubtitleClock(GenericPlayerContext &context,
                                                                 IGstGenericPlayerPrivate &player) const override;
 
+    std::unique_ptr<IPlayerTask> createFirstFrameReceived(GenericPlayerContext &context,
+                                                          IGstGenericPlayerClient *client) const override;
+
 private:
     IGstGenericPlayerClient *m_client;
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;

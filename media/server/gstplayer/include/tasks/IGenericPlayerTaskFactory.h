@@ -529,6 +529,17 @@ public:
      */
     virtual std::unique_ptr<IPlayerTask> createSynchroniseSubtitleClock(GenericPlayerContext &context,
                                                                         IGstGenericPlayerPrivate &player) const = 0;
+
+    /**
+     * @brief Creates a FirstFrameReceived task.
+     *
+     * @param[in] context : The GstGenericPlayer context
+     * @param[in] client  : The GstGenericPlayer client instance
+     *
+     * @retval the new FirstFrameReceived task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createFirstFrameReceived(GenericPlayerContext &context,
+                                                                  IGstGenericPlayerClient *client) const = 0;
 };
 
 } // namespace firebolt::rialto::server

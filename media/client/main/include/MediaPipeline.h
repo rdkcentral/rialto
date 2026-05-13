@@ -160,6 +160,8 @@ public:
 
     void notifySourceFlushed(int32_t sourceId) override;
 
+    void notifyFirstFrameReceived(int32_t sourceId) override;
+
     void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) override;
 
     bool renderFrame() override;

@@ -69,6 +69,7 @@
 #include "tasks/generic/SynchroniseSubtitleClock.h"
 #include "tasks/generic/Underflow.h"
 #include "tasks/generic/UpdatePlaybackGroup.h"
+#include "tasks/generic/FirstFrameReceived.h"
 
 using testing::_;
 using testing::Return;
@@ -386,4 +387,11 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSynchroniseSubtitleClock)
     auto task = m_sut.createSynchroniseSubtitleClock(m_context, m_gstPlayer);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SynchroniseSubtitleClock &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateFirstFrameReceived)
+{
+    auto task = m_sut.createFirstFrameReceived(m_context, &m_gstPlayerClient);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::FirstFrameReceived &>(*task));
 }

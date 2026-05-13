@@ -1411,6 +1411,18 @@ void MediaPipelineTestMethods::sendNotifySourceFlushed()
     waitEvent();
 }
 
+void MediaPipelineTestMethods::shouldNotifyFirstFrameReceived()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyFirstFrameReceived(kAudioSourceId))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::sendNotifyFirstFrameReceived()
+{
+    getServerStub()->notifyFirstFrameReceived(kSessionId, kAudioSourceId);
+    waitEvent();
+}
+
 void MediaPipelineTestMethods::shouldGetPosition(const int64_t position)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock, getPosition(_, getPositionRequestMatcher(kSessionId), _, _))

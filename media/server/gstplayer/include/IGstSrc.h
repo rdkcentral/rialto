@@ -75,6 +75,7 @@ struct StreamInfo
     bool isDataPushed{false};
     std::list<GstBuffer *> buffers{};
     bool underflowOccured{false};
+    bool firstAudioFrameReceived{false};
 };
 /**
  * @brief Definition of a stream info map.

@@ -42,6 +42,7 @@ public:
     MOCK_METHOD(void, notifyPlaybackError, (MediaSourceType mediaSourceType, PlaybackError error), (override));
     MOCK_METHOD(void, notifySourceFlushed, (MediaSourceType mediaSourceType), (override));
     MOCK_METHOD(void, notifyPlaybackInfo, (const PlaybackInfo &playbackInfo), (override));
+    MOCK_METHOD(void, notifyFirstFrameReceived, (MediaSourceType mediaSourceType), (override));
 };
 } // namespace firebolt::rialto::server
 

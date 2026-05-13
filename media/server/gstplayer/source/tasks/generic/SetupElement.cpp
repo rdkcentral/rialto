@@ -62,6 +62,36 @@ void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
 }
 
 /**
+ * @brief Callback for a first-audio-frame signal from an audio element. Called by the GStreamer thread.
+ *
+ * @param[in] object : the object that emitted the signal
+ * @param[in] self   : The pointer to IGstGenericPlayerPrivate
+ */
+void firstAudioFrameCallback(GstElement *object, gpointer self)
+{
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->scheduleAudioFirstFrame();
+}
+
+/**
+ * @brief Pad probe callback for fallback first-audio-frame detection. Called by the GStreamer thread.
+ *
+ * @param[in] pad    : the pad being probed
+ * @param[in] info   : probe info (buffer)
+ * @param[in] self   : The pointer to IGstGenericPlayerPrivate
+ *
+ * @retval GST_PAD_PROBE_REMOVE to unregister the probe after the first detection.
+ */
+GstPadProbeReturn audioFirstFrameProbeCallback(GstPad *pad, GstPadProbeInfo *info, gpointer self)
+{
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->scheduleAudioFirstFrame();
+    return GST_PAD_PROBE_REMOVE;
+}
+
+/**
  * @brief Callback for a autovideosink when a child has been added to the sink.
  *
  * @param[in] obj        : the parent element (autovideosink)
@@ -267,6 +297,34 @@ void SetupElement::execute() const
                                        underflowSignalName.value().c_str());
                 m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(),
                                               G_CALLBACK(videoUnderflowCallback), &m_player);
+            }
+        }
+    }
+
+    if (isAudioSink(*m_gstWrapper, m_element))
+    {
+        std::optional<std::string> firstFrameSignalName = getFirstAudioFrameSignalName(*m_glibWrapper, m_element);
+        if (firstFrameSignalName)
+        {
+            RIALTO_SERVER_LOG_INFO("Connecting first-audio-frame callback for signal: %s",
+                                   firstFrameSignalName.value().c_str());
+            m_glibWrapper->gSignalConnect(m_element, firstFrameSignalName.value().c_str(),
+                                          G_CALLBACK(firstAudioFrameCallback), &m_player);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_INFO("No first-audio-frame signal found, installing fallback pad probe");
+            GstPad *sinkPad = m_gstWrapper->gstElementGetStaticPad(m_element, "sink");
+            if (sinkPad)
+            {
+                m_gstWrapper->gstPadAddProbe(sinkPad, GST_PAD_PROBE_TYPE_BUFFER, audioFirstFrameProbeCallback,
+                                             &m_player, nullptr);
+                m_gstWrapper->gstObjectUnref(sinkPad);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_WARN("Could not get sink pad for first-audio-frame probe on element: %s",
+                                       GST_ELEMENT_NAME(m_element));
             }
         }
     }

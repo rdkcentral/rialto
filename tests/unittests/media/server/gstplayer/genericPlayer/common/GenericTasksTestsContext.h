@@ -99,6 +99,7 @@ public:
     guint m_signals[1]{123};
     GCallback m_audioUnderflowCallback;
     GCallback m_videoUnderflowCallback;
+    GCallback m_firstAudioFrameCallback;
     GCallback m_childAddedCallback;
     GCallback m_childRemovedCallback;
     gchar m_capsStr{};
@@ -113,9 +114,11 @@ public:
     gchar m_xEac3Str[13]{"audio/x-eac3"};
     gpointer m_videoUserData{};
     gpointer m_audioUserData{};
+    gpointer m_firstAudioFrameUserData{};
     GValue m_value{};
     GParamSpec m_paramSpec{};
     GObject m_gObj{};
+    GstPadProbeCallback m_audioFirstFrameProbeCallback{nullptr};
 
     // Standard members
     bool m_underflowEnabled{false};

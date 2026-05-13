@@ -48,6 +48,7 @@ public:
     void notifyPlaybackError(int32_t sourceId, PlaybackError error) override;
     void notifySourceFlushed(int32_t sourceId) override;
     void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) override;
+    void notifyFirstFrameReceived(int32_t sourceId) override;
 
 private:
     int m_sessionId;

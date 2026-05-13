@@ -213,3 +213,32 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyPlaybackInfo)
 
     m_playbackInfoCb(playbackInfoEvent);
 }
+
+/**
+ * Test that a first frame received notification over IPC is forwarded to the client.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyFirstFrameReceived)
+{
+    auto firstFrameReceivedEvent = std::make_shared<firebolt::rialto::FirstFrameReceivedEvent>();
+    firstFrameReceivedEvent->set_session_id(m_sessionId);
+    firstFrameReceivedEvent->set_source_id(m_sourceId);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+    EXPECT_CALL(*m_clientMock, notifyFirstFrameReceived(m_sourceId));
+
+    m_firstFrameReceivedCb(firstFrameReceivedEvent);
+}
+
+/**
+ * Test that if the session id of the first frame event is not the same as the playback session the event will be ignored.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, InvalidSessionIdFirstFrameReceived)
+{
+    auto firstFrameReceivedEvent = std::make_shared<firebolt::rialto::FirstFrameReceivedEvent>();
+    firstFrameReceivedEvent->set_session_id(-1);
+    firstFrameReceivedEvent->set_source_id(m_sourceId);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+
+    m_firstFrameReceivedCb(firstFrameReceivedEvent);
+}
