@@ -126,7 +126,9 @@ bool IpcModule::reattachChannelIfRequired()
 
 std::shared_ptr<ipc::IChannel> IpcModule::getConnectedChannel()
 {
-    std::shared_ptr<ipc::IChannel> ipcChannel = m_ipc.getChannel().lock();
+    // Split for Coverity clarity due to independent lifetime
+    std::weak_ptr<ipc::IChannel> weakChannel = m_ipc.getChannel();
+    std::shared_ptr<ipc::IChannel> ipcChannel = weakChannel.lock();
     if (ipcChannel && ipcChannel->isConnected())
     {
         return ipcChannel;
