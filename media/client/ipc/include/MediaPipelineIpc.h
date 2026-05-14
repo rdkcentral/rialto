@@ -216,6 +216,13 @@ private:
     void onBufferUnderflow(const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event);
 
     /**
+     * @brief Handler for a first frame received notification from the server.
+     *
+     * @param[in] event : The first frame received event structure.
+     */
+    void onFirstFrameReceived(const std::shared_ptr<firebolt::rialto::FirstFrameReceivedEvent> &event);
+
+    /**
      * @brief Handler for a playback error notification from the server.
      *
      * @param[in] event : The playback error event structure.

@@ -39,6 +39,7 @@ add_library(
         source/tasks/generic/DeepElementAdded.cpp
         source/tasks/generic/EnoughData.cpp
         source/tasks/generic/Eos.cpp
+        source/tasks/generic/FirstFrameReceived.cpp
         source/tasks/generic/FinishSetupSource.cpp
         source/tasks/generic/Flush.cpp
         source/tasks/generic/GenericPlayerTaskFactory.cpp
