@@ -62,7 +62,7 @@ void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
 }
 
 /**
- * @brief Callback for first video frame event from sink. Called by the Gstreamer thread.
+ * @brief Callback for first video frame event from the emitting video element. Called by the Gstreamer thread.
  *
  * @param[in] object     : the object that emitted the signal
  * @param[in] fifoDepth  : the fifo depth (may be 0)
