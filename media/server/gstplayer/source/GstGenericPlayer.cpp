@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <array>
 #include <chrono>
 #include <cinttypes>
 #include <cstring>
@@ -1798,13 +1799,24 @@ bool GstGenericPlayer::setVideoSinkRectangle()
     GstElement *videoSink{getSink(MediaSourceType::VIDEO)};
     if (videoSink)
     {
-        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
+        const std::array<const char *, 2> kRectProperties{"rectangle", "render-rectangle"};
+        const char *foundProperty{nullptr};
+        for (const char *prop : kRectProperties)
+        {
+            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), prop))
+            {
+                foundProperty = prop;
+                break;
+            }
+        }
+        if (foundProperty)
         {
             std::string rect =
                 std::to_string(m_context.pendingGeometry.x) + ',' + std::to_string(m_context.pendingGeometry.y) + ',' +
                 std::to_string(m_context.pendingGeometry.width) + ',' + std::to_string(m_context.pendingGeometry.height);
-            m_glibWrapper->gObjectSet(videoSink, "rectangle", rect.c_str(), nullptr);
+            m_glibWrapper->gObjectSet(videoSink, foundProperty, rect.c_str(), nullptr);
             m_context.pendingGeometry.clear();
+            RIALTO_SERVER_LOG_WARN("Set video rectangle to %s", rect.c_str());
             result = true;
         }
         else

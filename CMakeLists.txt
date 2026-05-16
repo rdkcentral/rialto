@@ -245,7 +245,7 @@ if( CMAKE_BUILD_FLAG STREQUAL "UnitTests" )
     # Turn off link time optimisation to speed up compilation
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
 
-    include( cmake/googletest.cmake )
+    include( cmake/FetchGoogleTest.cmake )
 
     add_subdirectory( tests/common EXCLUDE_FROM_ALL )
     add_subdirectory( tests/unittests EXCLUDE_FROM_ALL )
@@ -258,7 +258,7 @@ if( CMAKE_BUILD_FLAG STREQUAL "ComponentTests" )
     # Turn off link time optimisation to speed up compilation
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
 
-    include( cmake/googletest.cmake )
+    include( cmake/FetchGoogleTest.cmake )
 
     add_subdirectory( tests/common EXCLUDE_FROM_ALL )
     add_subdirectory( tests/componenttests EXCLUDE_FROM_ALL )
