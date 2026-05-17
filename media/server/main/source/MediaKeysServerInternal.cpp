@@ -18,6 +18,8 @@
  */
 
 #include <stdexcept>
+#include <chrono>
+#include <thread>
 
 #include "MediaKeysServerInternal.h"
 #include "RialtoServerLogging.h"
@@ -51,6 +53,9 @@ std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
 
 namespace firebolt::rialto::server
 {
+constexpr std::chrono::milliseconds kOutputRestrictedRetryInterval{250};
+constexpr std::chrono::seconds kOutputRestrictedRetryTimeout{6};
+
 int32_t generateSessionId()
 {
     static int32_t keySessionId{0};
@@ -573,10 +578,20 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
+    MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
+    const auto deadline = std::chrono::steady_clock::now() + kOutputRestrictedRetryTimeout;
+    do
+    {
+        auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        if (status != MediaKeyErrorStatus::OUTPUT_RESTRICTED)
+        {
+            break;
+        }
+        RIALTO_SERVER_LOG_WARN("Decrypt returned OUTPUT_RESTRICTED, retrying after delay");
+        std::this_thread::sleep_for(kOutputRestrictedRetryInterval);
+    } while (std::chrono::steady_clock::now() < deadline);
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return status;
 }
 
