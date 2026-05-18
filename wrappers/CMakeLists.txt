@@ -60,7 +60,6 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
 
     set(WRAPPER_LIBS
         rdkgstreamerutils
-        rdkgstreamerutilsplatform
         ocdm::ocdm
         WPEFrameworkCore::WPEFrameworkCore
         WPEFrameworkCOM::WPEFrameworkCOM

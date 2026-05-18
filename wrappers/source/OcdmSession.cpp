@@ -222,7 +222,32 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
             }
         }
 
+        // Pre-decrypt key status check: return OUTPUT_RESTRICTED immediately (no sleep) so
+        // the caller (MediaKeysServerInternal::decrypt) can retry from the GStreamer thread.
+        if (!keyId.empty())
+        {
+            const KeyStatus preStatus =
+                opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
+            if (preStatus == OutputRestricted || preStatus == OutputRestrictedHDCP22)
+            {
+                return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+            }
+        }
+
         OpenCDMError result = m_ocdmGstSessionDecryptBufferOnce(m_session, encrypted, caps);
+
+        // Post-decrypt status check: a failed decrypt during HDCP reauth may not carry a
+        // specific error code, so confirm via key status before signalling the caller to retry.
+        if (result != ERROR_NONE && !keyId.empty())
+        {
+            const KeyStatus postStatus =
+                opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
+            if (postStatus == OutputRestricted || postStatus == OutputRestrictedHDCP22)
+            {
+                return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+            }
+        }
+
         return convertOpenCdmError(result);
     }
 

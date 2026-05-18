@@ -579,8 +579,19 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
-    auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    const auto deadline = std::chrono::steady_clock::now() + kOutputRestrictedRetryTimeout;
+    do
+    {
+        auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        if (status != MediaKeyErrorStatus::OUTPUT_RESTRICTED)
+        {
+            break;
+        }
+        RIALTO_SERVER_LOG_WARN("Decrypt returned OUTPUT_RESTRICTED, retrying after delay");
+        std::this_thread::sleep_for(kOutputRestrictedRetryInterval);
+    } while (std::chrono::steady_clock::now() < deadline);
+
     return status;
 }
 
