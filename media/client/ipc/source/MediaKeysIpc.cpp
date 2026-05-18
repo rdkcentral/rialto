@@ -123,6 +123,10 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &errorStatus)
     {
         return "FAIL";
     }
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+    {
+        return "OUTPUT_RESTRICTED";
+    }
     }
     return "UNKNOWN";
 }
