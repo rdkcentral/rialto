@@ -161,6 +161,10 @@ ProtoMediaKeyErrorStatus MediaKeysIpcTestBase::convertMediaKeyErrorStatus(firebo
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::BUFFER_TOO_SMALL;
     }
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::OUTPUT_RESTRICTED;
+    }
     case firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE:
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::INVALID_STATE;

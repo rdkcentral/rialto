@@ -43,6 +43,8 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &status)
         return "INTERFACE_NOT_IMPLEMENTED";
     case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
         return "BUFFER_TOO_SMALL";
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+        return "OUTPUT_RESTRICTED";
     case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
         return "NOT_SUPPORTED";
     case firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE:

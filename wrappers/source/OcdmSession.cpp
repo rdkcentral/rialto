@@ -226,9 +226,9 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
         // the caller (MediaKeysServerInternal::decrypt) can retry from the GStreamer thread.
         if (!keyId.empty())
         {
-            const KeyStatus preStatus =
-                opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
-            if (preStatus == OutputRestricted || preStatus == OutputRestrictedHDCP22)
+            const KeyStatus preStatus = getStatus(keyId.data(), static_cast<uint8_t>(keyId.size()));
+            if (preStatus == firebolt::rialto::KeyStatus::OutputRestricted || 
+                preStatus == firebolt::rialto::KeyStatus::OutputRestrictedHDCP22)
             {
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
             }
@@ -240,9 +240,9 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
         // specific error code, so confirm via key status before signalling the caller to retry.
         if (result != ERROR_NONE && !keyId.empty())
         {
-            const KeyStatus postStatus =
-                opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
-            if (postStatus == OutputRestricted || postStatus == OutputRestrictedHDCP22)
+            const KeyStatus postStatus = getStatus(keyId.data(), static_cast<uint8_t>(keyId.size()));
+            if (postStatus == firebolt::rialto::KeyStatus::OutputRestricted || 
+                postStatus == firebolt::rialto::KeyStatus::OutputRestrictedHDCP22)
             {
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
             }

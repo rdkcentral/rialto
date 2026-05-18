@@ -43,6 +43,10 @@ convertMediaKeyErrorStatus(const firebolt::rialto::ProtoMediaKeyErrorStatus &err
     {
         return firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL;
     }
+    case firebolt::rialto::ProtoMediaKeyErrorStatus::OUTPUT_RESTRICTED:
+    {
+        return firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+    }
     case firebolt::rialto::ProtoMediaKeyErrorStatus::NOT_SUPPORTED:
     {
         return firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED;
@@ -110,6 +114,10 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &errorStatus)
     case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
     {
         return "BUFFER_TOO_SMALL";
+    }
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+    {
+        return "OUTPUT_RESTRICTED";
     }
     case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
     {
