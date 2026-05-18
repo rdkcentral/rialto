@@ -125,6 +125,9 @@ OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient 
                            (OcdmGstSessionDecryptExFn)dlsym(RTLD_DEFAULT, "opencdm_gstreamer_session_decrypt_ex");
                        m_ocdmGstSessionDecryptBufferOnce =
                            (OcdmGstSessionDecryptBufferOnceFn)dlsym(RTLD_DEFAULT, "opencdm_gstreamer_session_decrypt_buffer_once");
+			   if(m_ocdmGstSessionDecryptBufferOnce != NULL){
+			   printf("DEBUG PURPOSE : m_ocdmGstSessionDecryptBufferOnce exists\n");
+			   }
                    });
 }
 
@@ -194,6 +197,7 @@ MediaKeyErrorStatus OcdmSession::update(const uint8_t response[], uint32_t respo
 
 MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *caps)
 {
+    printf("DEBUG PURPOSE : OcdmSession::decryptBuffer()\n");
     if (!m_session)
     {
         return MediaKeyErrorStatus::FAIL;
@@ -230,6 +234,8 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             if (preStatus == OutputRestricted || preStatus == OutputRestrictedHDCP22)
             {
+
+                printf("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning MediaKeyErrorStatus::OUTPUT_RESTRICTED(Pre decrypt)\n");
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
             }
         }
@@ -244,6 +250,7 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             if (postStatus == OutputRestricted || postStatus == OutputRestrictedHDCP22)
             {
+                printf("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning MediaKeyErrorStatus::OUTPUT_RESTRICTED(Post decrypt)\n");
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
             }
         }
