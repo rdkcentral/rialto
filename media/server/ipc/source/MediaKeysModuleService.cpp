@@ -131,6 +131,10 @@ std::shared_ptr<IMediaKeysModuleServiceFactory> IMediaKeysModuleServiceFactory::
     catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the media keys module service factory, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                 "Failed to create the media keys module service factory, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysModuleService", telemetryBuff);
     }
 
     return factory;
@@ -147,6 +151,10 @@ std::shared_ptr<IMediaKeysModuleService> MediaKeysModuleServiceFactory::create(s
     catch (const std::exception &e)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the media keys module service, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to create the media keys module service, reason: %s",
+                 e.what());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysModuleService", telemetryBuff);
     }
 
     return mediaKeysModule;

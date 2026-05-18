@@ -16,6 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <cstdio>
 
 #include "MediaPipelineCapabilitiesIpc.h"
 #include "RialtoClientLogging.h"
@@ -34,6 +35,10 @@ std::shared_ptr<IMediaPipelineCapabilitiesIpcFactory> IMediaPipelineCapabilities
     catch (const std::exception &e)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create the media pipeline capabilities ipc factory, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                 "Failed to create the media pipeline capabilities ipc factory, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineCapabilitiesIpc", telemetryBuff);
     }
 
     return factory;
@@ -51,6 +56,10 @@ std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesIpcFactory:
     catch (const std::exception &e)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create the media pipeline capabilities ipc, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff),
+                 "Failed to create the media pipeline capabilities ipc, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineCapabilitiesIpc", telemetryBuff);
     }
 
     return mediaPipelineCapabilitiesIpc;
@@ -108,6 +117,10 @@ std::vector<std::string> MediaPipelineCapabilitiesIpc::getSupportedMimeTypes(Med
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get supported mime types due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get supported mime types due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineCapabilitiesIpc", telemetryBuff);
         return {};
     }
 
@@ -138,6 +151,10 @@ bool MediaPipelineCapabilitiesIpc::isMimeTypeSupported(const std::string &mimeTy
     {
         RIALTO_CLIENT_LOG_ERROR("failed to check if mime type '%s' is supported due to '%s'", mimeType.c_str(),
                                 ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to check if mime type '%s' is supported due to '%s'",
+                 mimeType.c_str(), ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineCapabilitiesIpc", telemetryBuff);
         return false;
     }
 
@@ -171,6 +188,9 @@ std::vector<std::string> MediaPipelineCapabilitiesIpc::getSupportedProperties(Me
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed due to '%s'", ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineCapabilitiesIpc", telemetryBuff);
         return std::vector<std::string>{};
     }
 
@@ -198,6 +218,9 @@ bool MediaPipelineCapabilitiesIpc::isVideoMaster(bool &isVideoMaster)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed due to '%s'", ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineCapabilitiesIpc", telemetryBuff);
         return false;
     }
 

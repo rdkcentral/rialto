@@ -44,6 +44,9 @@ std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
     catch (const std::exception &e)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create the media keys factory, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to create the media keys factory, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeys", telemetryBuff);
     }
 
     return factory;
@@ -70,6 +73,9 @@ MediaKeysFactory::createMediaKeys(const std::string &keySystem,
     catch (const std::exception &e)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create the media keys, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to create the media keys, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeys", telemetryBuff);
     }
 
     return mediaKeys;

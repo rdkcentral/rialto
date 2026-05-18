@@ -141,6 +141,10 @@ std::shared_ptr<IMediaKeysIpcFactory> IMediaKeysIpcFactory::createFactory()
     catch (const std::exception &e)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create the media keys ipc factory, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to create the media keys ipc factory, reason: %s",
+                 e.what());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysIpc", telemetryBuff);
     }
 
     return factory;
@@ -158,6 +162,9 @@ std::unique_ptr<IMediaKeys> MediaKeysIpcFactory::createMediaKeysIpc(const std::s
     catch (const std::exception &e)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create the media keys ipc, reason: %s", e.what());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to create the media keys ipc, reason: %s", e.what());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysIpc", telemetryBuff);
     }
 
     return mediaKeysIpc;
@@ -257,6 +264,10 @@ bool MediaKeysIpc::createMediaKeys(const std::string &keySystem)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to create media keys due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to create media keys due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysIpc", telemetryBuff);
         return false;
     }
 
@@ -288,6 +299,10 @@ void MediaKeysIpc::destroyMediaKeys()
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to destroy media keys due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to destroy media keys due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysIpc", telemetryBuff);
     }
 }
 
@@ -327,6 +342,10 @@ bool MediaKeysIpc::containsKey(int32_t keySessionId, const std::vector<uint8_t> 
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("containsKey failed due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "containsKey failed due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysIpc", telemetryBuff);
         return false;
     }
 
@@ -910,12 +929,20 @@ MediaKeysIpc::getMediaKeyErrorStatusFromResponse(const std::string methodName,
     if (controller->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("%s failed due to '%s'", methodName.c_str(), controller->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "%s failed due to '%s'", methodName.c_str(),
+                 controller->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysIpc", telemetryBuff);
         return MediaKeyErrorStatus::FAIL;
     }
     MediaKeyErrorStatus returnStatus = convertMediaKeyErrorStatus(status);
     if (MediaKeyErrorStatus::OK != returnStatus)
     {
         RIALTO_CLIENT_LOG_ERROR("%s failed due to MediaKeyErrorStatus '%s'", methodName.c_str(), toString(returnStatus));
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "%s failed due to MediaKeyErrorStatus '%s'", methodName.c_str(),
+                 toString(returnStatus));
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaKeysIpc", telemetryBuff);
         return returnStatus;
     }
 
