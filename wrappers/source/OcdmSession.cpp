@@ -226,7 +226,7 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
         // the caller (MediaKeysServerInternal::decrypt) can retry from the GStreamer thread.
         if (!keyId.empty())
         {
-            const KeyStatus preStatus =
+            const ::KeyStatus preStatus =
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             if (preStatus == OutputRestricted || preStatus == OutputRestrictedHDCP22)
             {
@@ -240,7 +240,7 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
         // specific error code, so confirm via key status before signalling the caller to retry.
         if (result != ERROR_NONE && !keyId.empty())
         {
-            const KeyStatus postStatus =
+            const ::KeyStatus postStatus =
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             if (postStatus == OutputRestricted || postStatus == OutputRestrictedHDCP22)
             {
