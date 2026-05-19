@@ -221,6 +221,17 @@ GstGenericPlayer::GstGenericPlayer(
 GstGenericPlayer::~GstGenericPlayer()
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is destructed.");
+
+    // Block late callbacks first.
+    m_isShuttingDown.store(true, std::memory_order_release);
+
+    // Disconnect deep-element callback before worker teardown.
+    if (m_context.pipeline && m_deepElementAddedHandlerId != 0)
+    {
+        g_signal_handler_disconnect(m_context.pipeline, m_deepElementAddedHandlerId);
+        m_deepElementAddedHandlerId = 0;
+    }
+
     m_gstDispatcherThread.reset();
 
     resetWorkerThread();
@@ -244,8 +255,9 @@ void GstGenericPlayer::initMsePipeline()
     // Set callbacks
     m_glibWrapper->gSignalConnect(m_context.pipeline, "source-setup", G_CALLBACK(&GstGenericPlayer::setupSource), this);
     m_glibWrapper->gSignalConnect(m_context.pipeline, "element-setup", G_CALLBACK(&GstGenericPlayer::setupElement), this);
-    m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added",
-                                  G_CALLBACK(&GstGenericPlayer::deepElementAdded), this);
+    m_deepElementAddedHandlerId =
+        m_glibWrapper->gSignalConnect(m_context.pipeline, "deep-element-added",
+                                      G_CALLBACK(&GstGenericPlayer::deepElementAdded), this);
 
     // Set uri
     m_glibWrapper->gObjectSet(m_context.pipeline, "uri", "rialto://", nullptr);
@@ -273,6 +285,13 @@ void GstGenericPlayer::initMsePipeline()
 
 void GstGenericPlayer::resetWorkerThread()
 {
+    std::lock_guard<std::mutex> lock{m_workerThreadMutex};
+
+    if (!m_workerThread)
+    {
+        return;
+    }
+
     // Shutdown task thread
     m_workerThread->enqueueTask(m_taskFactory->createShutdown(*this));
     m_workerThread->join();
@@ -365,7 +384,19 @@ void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, G
 
 void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElement *element, GstGenericPlayer *self)
 {
+    if (!self)
+    {
+        return;
+    }
+
+    if (self->m_isShuttingDown.load(std::memory_order_acquire))
+    {
+        return;
+    }
+
     RIALTO_SERVER_LOG_DEBUG("Deep element %s added to the pipeline", GST_ELEMENT_NAME(element));
+
+    std::lock_guard<std::mutex> lock{self->m_workerThreadMutex};
     if (self->m_workerThread)
     {
         self->m_workerThread->enqueueTask(
