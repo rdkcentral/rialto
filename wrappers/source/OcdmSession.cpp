@@ -122,10 +122,10 @@ OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient 
     std::call_once(flag,
                    []()
                    {
+          	       void* handle = dlopen("libocdm.so", RTLD_LAZY);
                        m_ocdmGstSessionDecryptEx =
                            (OcdmGstSessionDecryptExFn)dlsym(RTLD_DEFAULT, "opencdm_gstreamer_session_decrypt_ex");
-                       m_ocdmGstSessionDecryptBufferOnce =
-                           (OcdmGstSessionDecryptBufferOnceFn)dlsym(RTLD_DEFAULT, "opencdm_gstreamer_session_decrypt_buffer_once");
+                       m_ocdmGstSessionDecryptBufferOnce = (OcdmGstSessionDecryptBufferOnceFn)dlsym(handle,"opencdm_gstreamer_session_decrypt_buffer_once");
 			   if(m_ocdmGstSessionDecryptBufferOnce != NULL){
 			   RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : m_ocdmGstSessionDecryptBufferOnce exists\n");
 			   }
