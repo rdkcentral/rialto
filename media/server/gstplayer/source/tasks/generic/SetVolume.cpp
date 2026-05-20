@@ -68,7 +68,8 @@ void SetVolume::execute() const
         RIALTO_SERVER_LOG_ERROR("Setting volume failed. Pipeline is NULL");
         return;
     }
-    bool isImmediateVolumeChange = (m_volumeDuration == 0);
+    // Disabled to use immediate volume change to use "audio-fade" property in all instances if that property is supported.
+    bool isImmediateVolumeChange = /*(m_volumeDuration == 0)*/ false;
     GstElement *audioSink = m_player.getSink(firebolt::rialto::MediaSourceType::AUDIO);
 
     if (isImmediateVolumeChange)
