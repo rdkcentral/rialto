@@ -1434,7 +1434,8 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
         return false;
     }
     auto it = m_isMediaTypeEosMap.find(mediaSourceType);
-    if (it != m_isMediaTypeEosMap.end() && it->second)
+    // Do not block NeedMediaData based on stale EOS flag after seek.
+    if (it != m_isMediaTypeEosMap.end() && it->second && m_currentPlaybackState != PlaybackState::SEEKING)
     {
         RIALTO_SERVER_LOG_INFO("EOS, NeedMediaData not needed for %s", common::convertMediaSourceType(mediaSourceType));
         return false;

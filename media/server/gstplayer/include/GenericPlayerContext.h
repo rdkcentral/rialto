@@ -26,6 +26,7 @@
 #include "ITimer.h"
 #include "MediaCommon.h"
 #include <gst/gst.h>
+#include <atomic>
 #include <list>
 #include <map>
 #include <memory>
@@ -252,6 +253,25 @@ struct GenericPlayerContext
      *        property read-write.
      */
     std::mutex propertyMutex;
+
+    /**
+     * @brief Flag to indicate that a seek (SetPosition) is currently in flight.
+     *        Must be atomic for safe access from both the position timer thread
+     *        and the task worker thread.
+     */
+    std::atomic<bool> seekInProgress{false};
+
+    /**
+     * @brief The target position of the in-flight seek in nanoseconds.
+     *        Must be atomic for safe access across threads.
+     */
+    std::atomic<int64_t> pendingSeekPosition{-1};
+
+    /**
+     * @brief Last known valid position returned by gst_element_query_position.
+     *        Must be atomic for safe access across threads.
+     */
+    std::atomic<int64_t> lastKnownPosition{-1};
 
     /**
      * @brief Flag used to check if audio fade is enabled

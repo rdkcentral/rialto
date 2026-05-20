@@ -400,14 +400,30 @@ void GstGenericPlayer::setPlaybackRate(double rate)
 
 bool GstGenericPlayer::getPosition(std::int64_t &position)
 {
-    // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
-    // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
-    position = getPosition(m_context.pipeline);
-    if (position == -1)
+    const bool seekInProgress = m_context.seekInProgress.load();
+    if (seekInProgress)
     {
-        return false;
+        position = m_context.pendingSeekPosition.load();
+        RIALTO_SERVER_LOG_INFO(
+            "[Shibu][SEEK_TRACE][SERVER] getPosition -> seek in progress, returning pendingSeekPosition=%" PRId64,
+            position);
+        return true;
     }
 
+    gint64 gstPosition = GST_CLOCK_TIME_NONE;
+    if (m_context.pipeline && m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &gstPosition) &&
+        GST_CLOCK_TIME_IS_VALID(gstPosition))
+    {
+        position = static_cast<int64_t>(gstPosition);
+        m_context.lastKnownPosition.store(position);
+        RIALTO_SERVER_LOG_INFO("[Shibu][SEEK_TRACE][SERVER] getPosition -> GStreamer position=%" PRId64, position);
+        return true;
+    }
+
+    position = m_context.lastKnownPosition.load();
+    RIALTO_SERVER_LOG_WARN(
+        "[Shibu][SEEK_TRACE][SERVER] getPosition -> GStreamer returned invalid (-1), falling back to lastKnownPosition=%" PRId64,
+        position);
     return true;
 }
 
@@ -1741,6 +1757,19 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
                                m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetStateNext(element)));
 
         m_gstWrapper->gstStateUnlock(element);
+        if (m_context.seekInProgress && m_context.pendingSeekPosition >= 0)
+        {
+            RIALTO_SERVER_LOG_INFO("[Shibu]Preroll state during seek, returning pending seek position: %"
+                                   GST_TIME_FORMAT,
+                                   GST_TIME_ARGS(m_context.pendingSeekPosition));
+            return m_context.pendingSeekPosition;
+        }
+        if (m_context.lastKnownPosition >= 0)
+        {
+            RIALTO_SERVER_LOG_WARN("[Shibu]Preroll state, returning last known position: %" GST_TIME_FORMAT,
+                                   GST_TIME_ARGS(m_context.lastKnownPosition));
+            return m_context.lastKnownPosition;
+        }
         return -1;
     }
     m_gstWrapper->gstStateUnlock(element);
@@ -1748,9 +1777,49 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
     gint64 position = -1;
     if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
     {
-        RIALTO_SERVER_LOG_WARN("Failed to query position");
+        RIALTO_SERVER_LOG_WARN("[Shibu]Failed to query position");
+        if (m_context.seekInProgress && m_context.pendingSeekPosition >= 0)
+        {
+            RIALTO_SERVER_LOG_INFO("[Shibu]Query failed during seek, returning pending seek position: %"
+                                   GST_TIME_FORMAT,
+                                   GST_TIME_ARGS(m_context.pendingSeekPosition));
+            return m_context.pendingSeekPosition;
+        }
+        if (m_context.lastKnownPosition >= 0)
+        {
+            RIALTO_SERVER_LOG_WARN("[Shibu]Query failed, returning last known position: %" GST_TIME_FORMAT,
+                                   GST_TIME_ARGS(m_context.lastKnownPosition));
+            return m_context.lastKnownPosition;
+        }
         return -1;
     }
+
+    // gstElementQueryPosition() can return true but still write -1 into position
+    // during pipeline flush/preroll after seek.
+    if (position < 0)
+    {
+        RIALTO_SERVER_LOG_WARN("[Shibu]gstElementQueryPosition succeeded but returned invalid position: %" PRId64
+                               " - pipeline in flush/preroll state",
+                               position);
+        if (m_context.seekInProgress && m_context.pendingSeekPosition >= 0)
+        {
+            RIALTO_SERVER_LOG_INFO("[Shibu]Seek in progress, returning pending seek position: %" GST_TIME_FORMAT,
+                                   GST_TIME_ARGS(m_context.pendingSeekPosition));
+            return m_context.pendingSeekPosition;
+        }
+        if (m_context.lastKnownPosition >= 0)
+        {
+            RIALTO_SERVER_LOG_WARN("[Shibu]Returning last known position: %" GST_TIME_FORMAT,
+                                   GST_TIME_ARGS(m_context.lastKnownPosition));
+            return m_context.lastKnownPosition;
+        }
+        RIALTO_SERVER_LOG_WARN("[Shibu]No valid fallback available, suppressing -1");
+        return -1;
+    }
+
+    m_context.lastKnownPosition = position;
+    RIALTO_SERVER_LOG_INFO("[Shibu]Position query successful: %" GST_TIME_FORMAT,
+                           GST_TIME_ARGS(m_context.lastKnownPosition));
 
     return position;
 }

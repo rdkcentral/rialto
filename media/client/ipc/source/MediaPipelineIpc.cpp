@@ -20,6 +20,7 @@
 #include "RialtoClientLogging.h"
 #include "RialtoCommonIpc.h"
 #include "mediapipelinemodule.pb.h"
+#include <cinttypes>
 #include <IMediaPipeline.h>
 #include <unordered_map>
 
@@ -1113,6 +1114,8 @@ bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime, bool &async)
 bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                                          uint64_t stopPosition)
 {
+    RIALTO_CLIENT_LOG_INFO("[Shibu][SEEK_TRACE][8] MediaPipelineIpc::setSourcePosition -> sending IPC to server, sourceId=%d, position=%" PRId64,
+                           sourceId, position);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");

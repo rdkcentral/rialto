@@ -24,6 +24,7 @@
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
 #include "tasks/generic/NeedData.h"
+#include <cinttypes>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -76,11 +77,22 @@ void SetPosition::execute() const
         m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
         return;
     }
+
+    // Pre-seed caches before exposing seekInProgress to the reader thread.
+    // This guarantees getPosition() can immediately return the requested target.
+    m_context.lastKnownPosition.store(m_position);
+    m_context.pendingSeekPosition.store(m_position);
+    m_context.seekInProgress.store(true);
+    RIALTO_SERVER_LOG_INFO("[Shibu][SEEK_TRACE][SERVER] GstGenericPlayer::setPosition -> seek target=%" PRId64
+                           ", seekInProgress=true",
+                           m_position);
     if (!m_gstWrapper->gstElementSeek(m_context.pipeline, m_context.playbackRate, GST_FORMAT_TIME,
                                       static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH), GST_SEEK_TYPE_SET, m_position,
                                       GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
     {
-        RIALTO_SERVER_LOG_ERROR("Seek failed - gstreamer error");
+        RIALTO_SERVER_LOG_ERROR("[Shibu]Seek failed - gstreamer error");
+        m_context.seekInProgress.store(false);
+        m_context.pendingSeekPosition.store(-1);
         m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
         return;
     }

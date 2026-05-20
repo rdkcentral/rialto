@@ -22,6 +22,7 @@
 #include "IGstGenericPlayerClient.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
+#include <cinttypes>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -103,6 +104,18 @@ void HandleBusMessage::execute() const
             }
             case GST_STATE_PLAYING:
             {
+                if (m_context.seekInProgress)
+                {
+                    const auto pendingSeekPosition = m_context.pendingSeekPosition.load();
+                    m_context.lastKnownPosition.store(pendingSeekPosition);
+                    m_context.seekInProgress = false;
+                    m_context.pendingSeekPosition = -1;
+                    printf(
+                        "[Shibu]HandleBusMessage: PLAYING seek complete lastKnownPosition=%lld seekInProgress=0 "
+                        "pendingSeekPosition=%lld\n",
+                        static_cast<long long>(m_context.lastKnownPosition.load()),
+                        static_cast<long long>(m_context.pendingSeekPosition.load()));
+                }
                 // If async flush was requested before HandleBusMessage task creation (but it was not executed yet)
                 // or if async flush was created after HandleBusMessage task creation (but before its execution)
                 // we can't report playback state, because async flush causes state loss - reported state is probably invalid.
@@ -277,6 +290,20 @@ void HandleBusMessage::execute() const
 
         m_glibWrapper->gFree(debug);
         m_glibWrapper->gErrorFree(err);
+        break;
+    }
+    case GST_MESSAGE_ASYNC_DONE:
+    {
+        if (m_context.seekInProgress.load())
+        {
+            const auto pendingSeekPosition = m_context.pendingSeekPosition.load();
+            m_context.lastKnownPosition.store(pendingSeekPosition);
+            m_context.seekInProgress.store(false);
+            m_context.pendingSeekPosition.store(-1);
+            RIALTO_SERVER_LOG_INFO(
+                "[Shibu][SEEK_TRACE][SERVER] GST_MESSAGE_ASYNC_DONE -> lastKnownPosition latched to pendingSeekPosition=%" PRId64 ", seekInProgress cleared",
+                pendingSeekPosition);
+        }
         break;
     }
     default:

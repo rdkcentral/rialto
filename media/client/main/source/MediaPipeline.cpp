@@ -284,6 +284,8 @@ bool MediaPipeline::setPlaybackRate(double rate)
 
 bool MediaPipeline::setPosition(int64_t position)
 {
+    RIALTO_CLIENT_LOG_INFO("[Shibu][SEEK_TRACE][9] MediaPipeline::setPosition -> state check for position=%" PRId64,
+                           position);
     switch (m_currentState)
     {
     case State::PLAYING:
@@ -572,7 +574,8 @@ bool MediaPipeline::flush(int32_t sourceId, bool resetTime, bool &async)
 bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                                       uint64_t stopPosition)
 {
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
+    RIALTO_CLIENT_LOG_INFO("[Shibu][SEEK_TRACE][7] MediaPipeline::setSourcePosition -> sourceId=%d, position=%" PRId64,
+                           sourceId, position);
 
     return m_mediaPipelineIpc->setSourcePosition(sourceId, position, resetTime, appliedRate, stopPosition);
 }

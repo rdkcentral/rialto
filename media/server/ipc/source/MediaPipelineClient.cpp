@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineClient.h"
+#include <cinttypes>
 #include "RialtoServerLogging.h"
 #include "mediapipelinemodule.pb.h"
 #include <IIpcServer.h>
@@ -265,7 +266,16 @@ void MediaPipelineClient::notifySourceFlushed(int32_t sourceId)
 
 void MediaPipelineClient::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
 {
-    RIALTO_SERVER_LOG_DEBUG("Sending PlaybackInfoEvent...");
+    RIALTO_SERVER_LOG_DEBUG("[Shibu]Sending PlaybackInfoEvent...");
+
+    // SAFETY NET: Never forward current_position=-1 over IPC.
+    if (playbackInfo.currentPosition < 0)
+    {
+        RIALTO_SERVER_LOG_WARN("[Shibu]Suppressing PlaybackInfoEvent: invalid current_position=%" PRId64
+                               " - pipeline in flush/preroll/teardown state",
+                               playbackInfo.currentPosition);
+        return;
+    }
 
     auto event = std::make_shared<firebolt::rialto::PlaybackInfoEvent>();
     event->set_session_id(m_sessionId);
