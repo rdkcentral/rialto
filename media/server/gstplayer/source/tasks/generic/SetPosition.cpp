@@ -76,11 +76,16 @@ void SetPosition::execute() const
         m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
         return;
     }
+    m_context.seekInProgress = true;
+    m_context.pendingSeekPosition = m_position;
+    RIALTO_SERVER_LOG_INFO("Seek in progress set, target: %" GST_TIME_FORMAT, GST_TIME_ARGS(m_position));
     if (!m_gstWrapper->gstElementSeek(m_context.pipeline, m_context.playbackRate, GST_FORMAT_TIME,
                                       static_cast<GstSeekFlags>(GST_SEEK_FLAG_FLUSH), GST_SEEK_TYPE_SET, m_position,
                                       GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE))
     {
         RIALTO_SERVER_LOG_ERROR("Seek failed - gstreamer error");
+        m_context.seekInProgress = false;
+        m_context.pendingSeekPosition = -1;
         m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
         return;
     }

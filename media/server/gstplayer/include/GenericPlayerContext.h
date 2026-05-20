@@ -129,6 +129,12 @@ struct GenericPlayerContext
      */
     bool isPlaying{false};
 
+    bool seekInProgress{false};
+
+    int64_t pendingSeekPosition{-1};
+
+    int64_t lastKnownPosition{-1};
+
     /**
      * @brief Flag used to check, if EOS has been notified to the client
      *

@@ -108,6 +108,12 @@ void HandleBusMessage::execute() const
             }
             case GST_STATE_PLAYING:
             {
+                if (m_context.seekInProgress)
+                {
+                    m_context.lastKnownPosition = m_context.pendingSeekPosition;
+                    m_context.seekInProgress = false;
+                    m_context.pendingSeekPosition = -1;
+                }
                 // If async flush was requested before HandleBusMessage task creation (but it was not executed yet)
                 // or if async flush was created after HandleBusMessage task creation (but before its execution)
                 // we can't report playback state, because async flush causes state loss - reported state is probably invalid.
@@ -282,6 +288,16 @@ void HandleBusMessage::execute() const
 
         m_glibWrapper->gFree(debug);
         m_glibWrapper->gErrorFree(err);
+        break;
+    }
+    case GST_MESSAGE_ASYNC_DONE:
+    {
+        if (m_context.seekInProgress)
+        {
+            m_context.lastKnownPosition = m_context.pendingSeekPosition;
+            m_context.seekInProgress = false;
+            m_context.pendingSeekPosition = -1;
+        }
         break;
     }
     default:

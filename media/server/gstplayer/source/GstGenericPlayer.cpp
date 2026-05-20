@@ -1761,6 +1761,14 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
                                m_gstWrapper->gstElementStateGetName(m_gstWrapper->gstElementGetStateNext(element)));
 
         m_gstWrapper->gstStateUnlock(element);
+        if (m_context.seekInProgress && m_context.pendingSeekPosition >= 0)
+        {
+            return m_context.pendingSeekPosition;
+        }
+        if (m_context.lastKnownPosition >= 0)
+        {
+            return m_context.lastKnownPosition;
+        }
         return -1;
     }
     m_gstWrapper->gstStateUnlock(element);
@@ -1769,8 +1777,18 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
     if (!m_gstWrapper->gstElementQueryPosition(m_context.pipeline, GST_FORMAT_TIME, &position))
     {
         RIALTO_SERVER_LOG_WARN("Failed to query position");
+        if (m_context.seekInProgress && m_context.pendingSeekPosition >= 0)
+        {
+            return m_context.pendingSeekPosition;
+        }
+        if (m_context.lastKnownPosition >= 0)
+        {
+            return m_context.lastKnownPosition;
+        }
         return -1;
     }
+
+    m_context.lastKnownPosition = position;
 
     return position;
 }
