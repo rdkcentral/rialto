@@ -18,9 +18,39 @@
  */
 
 #include <stdexcept>
+#include <chrono>
+#include <thread>
 
 #include "MediaKeysServerInternal.h"
 #include "RialtoServerLogging.h"
+
+/*namespace
+{
+const char *toString(const firebolt::rialto::MediaKeyErrorStatus &status)
+{
+    switch (status)
+    {
+    case firebolt::rialto::MediaKeyErrorStatus::OK:
+        return "OK";
+    case firebolt::rialto::MediaKeyErrorStatus::FAIL:
+        return "FAIL";
+    case firebolt::rialto::MediaKeyErrorStatus::BAD_SESSION_ID:
+        return "BAD_SESSION_ID";
+    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+        return "INTERFACE_NOT_IMPLEMENTED";
+    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+        return "BUFFER_TOO_SMALL";
+    case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
+        return "NOT_SUPPORTED";
+    case firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE:
+        return "INVALID_STATE";
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+        return "OUTPUT_RESTRICTED";
+    }
+    return "Unknown";
+}
+} */// namespace
+
 
 namespace firebolt::rialto
 {
@@ -51,6 +81,9 @@ std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
 
 namespace firebolt::rialto::server
 {
+constexpr std::chrono::milliseconds kOutputRestrictedRetryInterval{250};
+constexpr std::chrono::seconds kOutputRestrictedRetryTimeout{6};
+
 int32_t generateSessionId()
 {
     static int32_t keySessionId{0};
@@ -569,12 +602,51 @@ MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionIdInternal(int32_t 
 
 MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
+    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: entry:decrypt");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
+    MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
+    const auto deadline = std::chrono::steady_clock::now() + kOutputRestrictedRetryTimeout;
+    do
+    {
+        auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+	RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session id :%d", keySessionId);
+        switch (status)
+        {
+	    case firebolt::rialto::MediaKeyErrorStatus::OK:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : OK");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::FAIL:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : FAIL");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::BAD_SESSION_ID:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : BAD_SESSION_ID");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : INTERFACE_NOT_IMPLEMENTED");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+	         RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : BUFFER_TOO_SMALL");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : NOT_SUPPORTED");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : INVALID_STATE");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : OUTPUT_RESTRICTED");
+		 break;
+    	}
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        if (status != MediaKeyErrorStatus::OUTPUT_RESTRICTED)
+        {
+            break;
+        }
+        RIALTO_SERVER_LOG_WARN("Decrypt returned OUTPUT_RESTRICTED, retrying after delay");
+        std::this_thread::sleep_for(kOutputRestrictedRetryInterval);
+    } while (std::chrono::steady_clock::now() < deadline);
+
     return status;
 }
 
@@ -596,12 +668,6 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
     RIALTO_SERVER_LOG_INFO("Successfully decrypted buffer.");
 
     return status;
-}
-
-bool MediaKeysServerInternal::isNetflixPlayreadyKeySystem() const
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-    return m_kKeySystem.find("netflix") != std::string::npos;
 }
 
 void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
