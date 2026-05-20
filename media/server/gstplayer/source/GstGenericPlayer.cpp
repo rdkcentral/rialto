@@ -509,7 +509,8 @@ void GstGenericPlayer::notifyPlaybackInfo()
 {
     PlaybackInfo info;
     getPosition(info.currentPosition);
-    getVolume(info.volume);
+    // Disabled query of volume level from 32s timer of Notify Playback Info
+    // getVolume(info.volume);
     m_gstPlayerClient->notifyPlaybackInfo(info);
 }
 
