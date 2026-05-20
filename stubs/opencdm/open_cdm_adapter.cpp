@@ -24,4 +24,10 @@ extern "C"
     {
         return ERROR_NONE;
     }
+
+    OpenCDMError opencdm_gstreamer_session_decrypt_buffer_once(struct OpenCDMSession *session, GstBuffer *buffer,
+                                                               GstCaps *caps)
+    {
+        return ERROR_NONE;
+    }
 }

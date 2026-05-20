@@ -199,7 +199,7 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
         return MediaKeyErrorStatus::FAIL;
     }
 
-    if (m_ocdmGstSessionDecryptBufferOnce)
+    if (true)
     {
         // Extract key ID from the buffer's protection metadata
         std::vector<uint8_t> keyId;
@@ -234,7 +234,7 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
             }
         }
 
-        OpenCDMError result = m_ocdmGstSessionDecryptBufferOnce(m_session, encrypted, caps);
+        OpenCDMError result = opencdm_gstreamer_session_decrypt_buffer_once(m_session, encrypted, caps);
 
         // Post-decrypt status check: a failed decrypt during HDCP reauth may not carry a
         // specific error code, so confirm via key status before signalling the caller to retry.
