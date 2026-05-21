@@ -81,8 +81,8 @@ std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
 
 namespace firebolt::rialto::server
 {
-constexpr std::chrono::milliseconds kOutputRestrictedRetryInterval{250};
-constexpr std::chrono::seconds kOutputRestrictedRetryTimeout{6};
+constexpr std::chrono::seconds kOutputRestrictedRetryInterval{1};
+constexpr std::chrono::seconds kOutputRestrictedRetryTimeout{4};
 
 int32_t generateSessionId()
 {
