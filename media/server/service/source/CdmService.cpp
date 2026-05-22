@@ -580,7 +580,7 @@ void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
 
 void CdmService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure)
 {
-    std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+  //  std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     for (const auto &mediaKeyPair : m_mediaKeys)
     {
         auto &mediaKeys = mediaKeyPair.second;
