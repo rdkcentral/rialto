@@ -682,7 +682,7 @@ void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbea
     RIALTO_SERVER_LOG_DEBUG("entry:");
     auto task = [&]() { heartbeatHandler.reset(); };
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::getMetricSystemData(std::vector<uint8_t> &buffer)
