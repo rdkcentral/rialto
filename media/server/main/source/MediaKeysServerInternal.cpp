@@ -150,7 +150,7 @@ MediaKeysServerInternal::MediaKeysServerInternal(
 MediaKeysServerInternal::~MediaKeysServerInternal()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    m_isShuttingDown = true;
     auto task = [&]()
     {
         m_ocdmSystem.reset();
@@ -588,8 +588,15 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
         {
             break;
         }
+	if (m_isShuttingDown.load())
+        {
+            RIALTO_SERVER_LOG_ERROR("Decrypt retry aborted — shutdown in progress");
+            break;
+        }
         RIALTO_SERVER_LOG_WARN("Decrypt returned OUTPUT_RESTRICTED, retrying after delay");
+
         std::this_thread::sleep_for(kOutputRestrictedRetryInterval);
+
     } while (std::chrono::steady_clock::now() < deadline);
 
     return status;

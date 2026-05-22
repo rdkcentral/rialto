@@ -498,23 +498,18 @@ bool CdmService::isServerCertificateSupported(const std::string &keySystem)
 MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
 
-    RIALTO_SERVER_LOG_ERROR("CdmService requested to decrypt, key session id: %d", keySessionId);
-
-    // Acquire mutex ONLY to resolve the pointer — then release immediately
     IMediaKeysServerInternal *mediaKeys{nullptr};
     {
         std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
-        auto mediaKeysHandleIter{m_sessionInfo.find(keySessionId)};
-        if (mediaKeysHandleIter == m_sessionInfo.end())
-        {
-            RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exist", keySessionId);
-            return MediaKeyErrorStatus::FAIL;
-        }
-        mediaKeys = m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle].get();
+        auto iter = m_sessionInfo.find(keySessionId);
+        if (iter == m_sessionInfo.end()) return MediaKeyErrorStatus::FAIL;
+        mediaKeys = m_mediaKeys[iter->second.mediaKeysHandle].get();
+        // Increment ref counter to prevent destruction while in use
+        ++iter->second.refCounter;
     }
-    // Mutex released — ping() can now proceed freely
-
-    return mediaKeys->decrypt(keySessionId, encrypted, caps);
+    auto status = mediaKeys->decrypt(keySessionId, encrypted, caps);
+    decrementSessionIdUsageCounter(keySessionId);  // May trigger deferred release
+    return status;
 
 }
 
