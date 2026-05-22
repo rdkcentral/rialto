@@ -679,7 +679,7 @@ bool MediaKeysServerInternal::isNetflixPlayreadyKeySystem() const
 
 void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
+    RIALTO_SERVER_LOG_ERROR("entry:");
     auto task = [&]() { heartbeatHandler.reset(); };
 
     m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
