@@ -494,6 +494,7 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to decrypt, key session id: %d", keySessionId);
 
+    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : CdmService : decrypt entry");
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysHandleIter{m_sessionInfo.find(keySessionId)};
     if (mediaKeysHandleIter == m_sessionInfo.end())
@@ -580,12 +581,14 @@ void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
 
 void CdmService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure)
 {
-    std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+//    std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: ping entry")
     for (const auto &mediaKeyPair : m_mediaKeys)
     {
         auto &mediaKeys = mediaKeyPair.second;
         mediaKeys->ping(heartbeatProcedure->createHandler());
     }
+    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: ping exit")
 }
 
 MediaKeyErrorStatus CdmService::getMetricSystemData(int mediaKeysHandle, std::vector<uint8_t> &buffer)
