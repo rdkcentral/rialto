@@ -639,7 +639,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
 		 break;
     	}
 
-        //if (status != MediaKeyErrorStatus::OUTPUT_RESTRICTED)
+        if (status != MediaKeyErrorStatus::OUTPUT_RESTRICTED)
         {
             break;
         }
