@@ -501,7 +501,9 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
         return MediaKeyErrorStatus::FAIL;
     }
+    RIALTO_SERVER_LOG_ERROR("ping_cmd_service_is_entry");
     return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->decrypt(keySessionId, encrypted, caps);
+    RIALTO_SERVER_LOG_ERROR("ping_cmd_service_is_exit");
 }
 
 bool CdmService::isNetflixPlayreadyKeySystem(int32_t keySessionId)
@@ -581,11 +583,13 @@ void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
 void CdmService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure)
 {
   //  std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+    RIALTO_SERVER_LOG_ERROR("ping_cmd_service_is_entry");
     for (const auto &mediaKeyPair : m_mediaKeys)
     {
         auto &mediaKeys = mediaKeyPair.second;
         mediaKeys->ping(heartbeatProcedure->createHandler());
     }
+    RIALTO_SERVER_LOG_ERROR("ping_cmd_service_is_exited");
 }
 
 MediaKeyErrorStatus CdmService::getMetricSystemData(int mediaKeysHandle, std::vector<uint8_t> &buffer)
