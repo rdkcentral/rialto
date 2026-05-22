@@ -639,7 +639,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
 		 break;
     	}
 
-        if (status != MediaKeyErrorStatus::OUTPUT_RESTRICTED)
+        //if (status != MediaKeyErrorStatus::OUTPUT_RESTRICTED)
         {
             break;
         }
@@ -682,7 +682,7 @@ void MediaKeysServerInternal::ping(std::unique_ptr<IHeartbeatHandler> &&heartbea
     RIALTO_SERVER_LOG_ERROR("entry:");
     auto task = [&]() { heartbeatHandler.reset(); };
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 	RIALTO_SERVER_LOG_ERROR("exit:");
 }
 
