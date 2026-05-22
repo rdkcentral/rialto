@@ -123,6 +123,10 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &errorStatus)
     {
         return "FAIL";
     }
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+    {
+        return "OUTPUT_RESTRICTED";
+    }
     }
     return "UNKNOWN";
 }
@@ -334,7 +338,7 @@ bool MediaKeysIpc::containsKey(int32_t keySessionId, const std::vector<uint8_t> 
 }
 
 MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
-                                                   bool isLDL, int32_t &keySessionId)
+		 bool isLDL, int32_t &keySessionId)
 {
     if (!reattachChannelIfRequired())
     {
@@ -414,6 +418,7 @@ MediaKeyErrorStatus MediaKeysIpc::generateRequest(int32_t keySessionId, InitData
         RIALTO_CLIENT_LOG_WARN("Recieved unknown init data type");
         break;
     }
+
 
     firebolt::rialto::GenerateRequestRequest request;
     request.set_media_keys_handle(m_mediaKeysHandle);

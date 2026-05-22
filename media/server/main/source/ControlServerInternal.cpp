@@ -98,7 +98,7 @@ ControlServerInternal::~ControlServerInternal()
 
 void ControlServerInternal::ack(int32_t ackId)
 {
-    RIALTO_SERVER_LOG_DEBUG("Control with id: %d received ack for ping: %d", m_controlId, ackId);
+    RIALTO_SERVER_LOG_ERROR("Control with id: %d received ack for ping: %d", m_controlId, ackId);
     auto task = [&]()
     {
         if (!m_heartbeatHandler)
@@ -114,6 +114,7 @@ void ControlServerInternal::ack(int32_t ackId)
         m_heartbeatHandler.reset();
     };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    RIALTO_SERVER_LOG_ERROR("Control with id: %d received ack for ping: %d task exit", m_controlId, ackId);
 }
 
 void ControlServerInternal::setApplicationState(const ApplicationState &state)
