@@ -30,6 +30,7 @@ class DecryptionServiceMock : public IDecryptionService
 {
 public:
     MOCK_METHOD(MediaKeyErrorStatus, decrypt, (int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps), (override));
+    MOCK_METHOD(void, invalidateDecryptRequests, (), (override));
     MOCK_METHOD(bool, isExtendedInterfaceUsed, (int32_t keySessionId), (override));
     MOCK_METHOD(MediaKeyErrorStatus, selectKeyId, (int32_t keySessionId, const std::vector<uint8_t> &keyId), (override));
     MOCK_METHOD(void, incrementSessionIdUsageCounter, (int32_t keySessionId), (override));

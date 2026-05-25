@@ -65,6 +65,11 @@ void Flush::execute() const
     streamInfo.isDataNeeded = false;
     streamInfo.isNeedDataPending = false;
 
+    if (m_context.decryptionService)
+    {
+        m_context.decryptionService->invalidateDecryptRequests();
+    }
+
     for (auto &buffer : streamInfo.buffers)
     {
         m_gstWrapper->gstBufferUnref(buffer);

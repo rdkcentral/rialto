@@ -578,16 +578,41 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    const uint64_t kDecryptGeneration = m_decryptGeneration.load();
     MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
     const auto deadline = std::chrono::steady_clock::now() + kOutputRestrictedRetryTimeout;
     do
     {
-        auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
+        if (kDecryptGeneration != m_decryptGeneration.load())
+        {
+            RIALTO_SERVER_LOG_WARN("Decrypt request invalidated before enqueue");
+            status = MediaKeyErrorStatus::FAIL;
+            break;
+        }
+
+        auto task = [&]()
+        {
+            if (kDecryptGeneration != m_decryptGeneration.load())
+            {
+                RIALTO_SERVER_LOG_WARN("Decrypt request invalidated before execution");
+                status = MediaKeyErrorStatus::FAIL;
+                return;
+            }
+            status = decryptInternal(keySessionId, encrypted, caps);
+        };
         m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
         if (status != MediaKeyErrorStatus::OUTPUT_RESTRICTED)
         {
             break;
         }
+
+        if (kDecryptGeneration != m_decryptGeneration.load())
+        {
+            RIALTO_SERVER_LOG_WARN("Decrypt retry invalidated");
+            status = MediaKeyErrorStatus::FAIL;
+            break;
+        }
+
 	if (m_isShuttingDown.load())
         {
             RIALTO_SERVER_LOG_ERROR("Decrypt retry aborted — shutdown in progress");
@@ -600,6 +625,12 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     } while (std::chrono::steady_clock::now() < deadline);
 
     return status;
+}
+
+void MediaKeysServerInternal::invalidateDecryptRequests()
+{
+    ++m_decryptGeneration;
+    RIALTO_SERVER_LOG_INFO("Invalidated pending decrypt requests");
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)

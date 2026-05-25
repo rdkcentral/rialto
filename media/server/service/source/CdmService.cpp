@@ -513,6 +513,18 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
 
 }
 
+void CdmService::invalidateDecryptRequests()
+{
+    std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+    for (auto &mediaKeyPair : m_mediaKeys)
+    {
+        if (mediaKeyPair.second)
+        {
+            mediaKeyPair.second->invalidateDecryptRequests();
+        }
+    }
+}
+
 bool CdmService::isExtendedInterfaceUsed(int32_t keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if extended interface is used, key session id: %d",

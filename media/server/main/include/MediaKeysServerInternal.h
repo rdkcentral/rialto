@@ -116,6 +116,8 @@ public:
 
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
 
+    void invalidateDecryptRequests() override;
+
     MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) override;
 
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
@@ -151,6 +153,7 @@ private:
      */
     uint32_t m_mainThreadClientId;
 
+    std::atomic_uint64_t m_decryptGeneration{0};
 
     std::atomic_bool m_isShuttingDown{false};
 
