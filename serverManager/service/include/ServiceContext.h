@@ -43,8 +43,8 @@ public:
     common::ISessionServerAppManager &getSessionServerAppManager() override;
 
 private:
-    std::unique_ptr<common::ISessionServerAppManager> m_sessionServerAppManager;
     std::unique_ptr<ipc::IController> m_ipcController;
+    std::unique_ptr<common::ISessionServerAppManager> m_sessionServerAppManager;
 };
 } // namespace rialto::servermanager::service
 
