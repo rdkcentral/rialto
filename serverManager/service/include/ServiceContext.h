@@ -38,7 +38,7 @@ public:
                    std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckInterval,
                    unsigned numOfFailedPingsBeforeRecovery, unsigned int socketPermissions,
                    const std::string &socketOwner, const std::string &socketGroup);
-    virtual ~ServiceContext() = default;
+    ~ServiceContext() override;
 
     common::ISessionServerAppManager &getSessionServerAppManager() override;
 
