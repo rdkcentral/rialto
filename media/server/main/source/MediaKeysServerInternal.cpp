@@ -579,6 +579,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     const uint64_t kDecryptGeneration = m_decryptGeneration.load();
+    bool didRetryAfterOutputRestricted{false};
     MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
     const auto deadline = std::chrono::steady_clock::now() + kOutputRestrictedRetryTimeout;
     do
@@ -606,6 +607,8 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
             break;
         }
 
+        didRetryAfterOutputRestricted = true;
+
         if (kDecryptGeneration != m_decryptGeneration.load())
         {
             RIALTO_SERVER_LOG_WARN("Decrypt retry invalidated");
@@ -623,6 +626,13 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
         std::this_thread::sleep_for(kOutputRestrictedRetryInterval);
 
     } while (std::chrono::steady_clock::now() < deadline);
+
+    // If a decrypt recovered after retrying, invalidate accumulated stale callers
+    // that started waiting during the OUTPUT_RESTRICTED window.
+    if (didRetryAfterOutputRestricted && status == MediaKeyErrorStatus::OK)
+    {
+        invalidateDecryptRequests();
+    }
 
     return status;
 }
