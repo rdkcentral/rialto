@@ -29,6 +29,7 @@
 #include "ISessionServerAppManager.h"
 #include "IStateObserver.h"
 #include "SessionServerAppFactory.h"
+#include <atomic>
 #include <memory>
 #include <set>
 #include <string>
@@ -62,6 +63,7 @@ public:
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
     void restartServer(int serverId) override;
     void onServerStartupTimeout(int serverId) override;
+    void setShuttingDown() override;
 
 private:
     bool connectSessionServer(const std::shared_ptr<ISessionServerApp> &sessionServer);
@@ -99,7 +101,7 @@ private:
     std::shared_ptr<service::IStateObserver> m_stateObserver;
     std::unique_ptr<IHealthcheckService> m_healthcheckService;
     const firebolt::rialto::ipc::INamedSocketFactory &m_namedSocketFactory;
-    bool m_isShuttingDown;
+    std::atomic_bool m_isShuttingDown;
 };
 } // namespace rialto::servermanager::common
 
