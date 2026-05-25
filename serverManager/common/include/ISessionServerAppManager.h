@@ -52,6 +52,7 @@ public:
     virtual bool setLogLevels(const service::LoggingLevels &logLevels) const = 0;
     virtual void restartServer(int serverId) = 0;
     virtual void onServerStartupTimeout(int serverId) = 0;
+    virtual void setShuttingDown() = 0;
 };
 } // namespace rialto::servermanager::common
 
