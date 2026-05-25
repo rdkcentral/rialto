@@ -602,7 +602,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionIdInternal(int32_t 
 
 MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
-    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: entry:decrypt");
+    //RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: entry:decrypt");
 
     MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
     const auto deadline = std::chrono::steady_clock::now() + kOutputRestrictedRetryTimeout;
