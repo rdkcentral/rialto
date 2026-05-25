@@ -602,7 +602,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionIdInternal(int32_t 
 
 MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
-    //RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: entry:decrypt");
+   // RIALTO_SERVER_LOG_DEBUG("DEBUG PURPOSE: entry:decrypt");
 
     MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
     const auto deadline = std::chrono::steady_clock::now() + kOutputRestrictedRetryTimeout;
@@ -610,8 +610,8 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     {
         auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
         m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-	RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session id :%d", keySessionId);
-        switch (status)
+	    RIALTO_SERVER_LOG_DEBUG("DEBUG PURPOSE : Key session id :%d", keySessionId);
+      /*  switch (status)
         {
 	    case firebolt::rialto::MediaKeyErrorStatus::OK:
         	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : OK");
@@ -637,7 +637,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
 	    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
         	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : OUTPUT_RESTRICTED");
 		 break;
-    	}
+    	}*/
 
         if (status != MediaKeyErrorStatus::OUTPUT_RESTRICTED)
         {
