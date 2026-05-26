@@ -55,6 +55,9 @@ std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
 
 namespace firebolt::rialto::server
 {
+
+constexpr std::chrono::milliseconds kOutputRestrictedRetryInterval{100};
+
 int32_t generateSessionId()
 {
     static int32_t keySessionId{0};
@@ -573,29 +576,21 @@ MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionIdInternal(int32_t 
 
 MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
-    RIALTO_SERVER_LOG_DEBUG("entry:");
+    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: entry:decrypt");
 
-    MediaKeyErrorStatus status;
+    MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
+    
     auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
-
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+	RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session id :%d", keySessionId);
 
-    if (MediaKeyErrorStatus::OUTPUT_RESTRICTED == status)
-    {
-        RIALTO_SERVER_LOG_WARN("Output restricted, retrying decrypt after 250ms");
-        std::this_thread::sleep_for(std::chrono::milliseconds(250));
-        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-
-        if (MediaKeyErrorStatus::OUTPUT_RESTRICTED == status)
+        if (status == MediaKeyErrorStatus::OUTPUT_RESTRICTED)
         {
-            RIALTO_SERVER_LOG_WARN("Output restricted after retry, returning failure");
+             std::this_thread::sleep_for(kOutputRestrictedRetryInterval);
+			 auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
+             m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+			RIALTO_SERVER_LOG_WARN("Decrypt returned OUTPUT_RESTRICTED, retrying once after delay");
         }
-        else if (MediaKeyErrorStatus::OK == status)
-        {
-            RIALTO_SERVER_LOG_INFO("Decrypt succeeded after retry (transient HDCP glitch recovered)");
-        }
-    }
-
     return status;
 }
 
