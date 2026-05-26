@@ -605,7 +605,6 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: entry:decrypt");
 
     MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
-    const auto deadline = std::chrono::steady_clock::now() + kOutputRestrictedRetryTimeout;
     
     auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
