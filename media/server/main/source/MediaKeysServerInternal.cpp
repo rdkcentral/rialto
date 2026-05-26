@@ -17,7 +17,9 @@
  * limitations under the License.
  */
 
+#include <chrono>
 #include <stdexcept>
+#include <thread>
 
 #include "MediaKeysServerInternal.h"
 #include "RialtoServerLogging.h"
@@ -38,6 +40,8 @@ const char *mediaKeyErrorStatusToString(const MediaKeyErrorStatus &status)
         return "BUFFER_TOO_SMALL";
     case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
         return "NOT_SUPPORTED";
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+        return "OUTPUT_RESTRICTED";
     default:
         return "FAIL";
     }
@@ -577,6 +581,23 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+
+    if (MediaKeyErrorStatus::OUTPUT_RESTRICTED == status)
+    {
+        RIALTO_SERVER_LOG_WARN("Output restricted, retrying decrypt after 250ms");
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+
+        if (MediaKeyErrorStatus::OUTPUT_RESTRICTED == status)
+        {
+            RIALTO_SERVER_LOG_WARN("Output restricted after retry, returning failure");
+        }
+        else if (MediaKeyErrorStatus::OK == status)
+        {
+            RIALTO_SERVER_LOG_INFO("Decrypt succeeded after retry (transient HDCP glitch recovered)");
+        }
+    }
+
     return status;
 }
 

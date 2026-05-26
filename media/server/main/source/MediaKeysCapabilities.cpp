@@ -47,6 +47,8 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &status)
         return "NOT_SUPPORTED";
     case firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE:
         return "INVALID_STATE";
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+        return "OUTPUT_RESTRICTED";
     }
     return "Unknown";
 }

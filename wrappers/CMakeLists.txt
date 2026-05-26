@@ -110,6 +110,8 @@ target_include_directories(
 
         PRIVATE
         include
+        ../common/interface/
+        ../logging/include/
         ${GStreamerApp_INCLUDE_DIRS}
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         ${WRAPPER_INCLUDES}
