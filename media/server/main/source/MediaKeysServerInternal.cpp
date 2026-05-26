@@ -83,7 +83,7 @@ namespace firebolt::rialto::server
 {
 constexpr std::chrono::milliseconds kOutputRestrictedRetryInterval{250};
 constexpr std::chrono::seconds kOutputRestrictedRetryTimeout{6};
-constexpr std::chrono::seconds kStaleThreshold{4};
+constexpr GstClockTime kStaleThreshold{4 * GST_SECOND};
 
 int32_t generateSessionId()
 {
@@ -608,18 +608,28 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: entry:decrypt");
 
     MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
-    // Check if this buffer is stale (timestamp too far behind current position)
-    if (m_outputWasRestricted && GST_BUFFER_PTS_IS_VALID(encrypted))
+
+    if (GST_BUFFER_PTS_IS_VALID(encrypted))
     {
         GstClockTime bufferPts = GST_BUFFER_PTS(encrypted);
-        GstClockTime currentPos = getCurrentPlaybackPosition();
-        if (currentPos > bufferPts && (currentPos - bufferPts) > kStaleThreshold) // e.g., 4 seconds
+
+        if (!m_hasCurrentPositionPts.load() || bufferPts > m_currentPositionPts.load())
         {
-            RIALTO_SERVER_LOG_WARN("Dropping stale segment (%.3fs behind) after HDCP recovery",
-                                   (currentPos - bufferPts) / 1e9);
+            m_currentPositionPts = bufferPts;
+            m_hasCurrentPositionPts = true;
+        }
+
+        // After OUTPUT_RESTRICTED recovery, drop buffered segments that are behind live playback.
+        const GstClockTime currentPos = m_currentPositionPts.load();
+        if (m_outputWasRestricted.load() && m_hasCurrentPositionPts.load() && currentPos > bufferPts &&
+            (currentPos - bufferPts) > kStaleThreshold)
+        {
+            const double lagSeconds = static_cast<double>(currentPos - bufferPts) / GST_SECOND;
+            RIALTO_SERVER_LOG_WARN("Dropping stale segment (%.3fs behind) after HDCP recovery", lagSeconds);
             return MediaKeyErrorStatus::OK; // Drop silently, pretend decrypt succeeded
         }
     }
+
     const auto deadline = std::chrono::steady_clock::now() + kOutputRestrictedRetryTimeout;
     do
     {

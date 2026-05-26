@@ -157,6 +157,10 @@ private:
 
     std::atomic_bool m_outputWasRestricted{false};
 
+    std::atomic<GstClockTime> m_currentPositionPts{0};
+
+    std::atomic_bool m_hasCurrentPositionPts{false};
+
     /**
      * @brief Creates a session internally, only to be called on the main thread.
      *
