@@ -292,7 +292,8 @@ enum class MediaKeyErrorStatus
     NOT_SUPPORTED,             /**< The request parameters are not supported. */
     INVALID_STATE,             /**< The object is in an invalid state for the operation. */
     INTERFACE_NOT_IMPLEMENTED, /**< The interface is not implemented. */
-    BUFFER_TOO_SMALL           /**< The size of the buffer is too small. */
+    BUFFER_TOO_SMALL,           /**< The size of the buffer is too small. */
+    OUTPUT_RESTRICTED
 };
 
 /**
@@ -473,6 +474,7 @@ struct PlaybackInfo
     int64_t currentPosition{-1}; /**< The current playback position */
     double volume{1.0};          /**< The current volume */
 };
+
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_
