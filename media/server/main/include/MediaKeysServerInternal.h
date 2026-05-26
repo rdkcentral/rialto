@@ -155,6 +155,8 @@ private:
 
     std::atomic_bool m_isShuttingDown{false};
 
+    std::atomic_bool m_outputWasRestricted{false};
+
     /**
      * @brief Creates a session internally, only to be called on the main thread.
      *

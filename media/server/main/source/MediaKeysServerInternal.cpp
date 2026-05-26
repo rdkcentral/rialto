@@ -83,6 +83,7 @@ namespace firebolt::rialto::server
 {
 constexpr std::chrono::milliseconds kOutputRestrictedRetryInterval{250};
 constexpr std::chrono::seconds kOutputRestrictedRetryTimeout{6};
+constexpr std::chrono::seconds kStaleThreshold{4};
 
 int32_t generateSessionId()
 {
@@ -173,6 +174,8 @@ MediaKeysServerInternal::MediaKeysServerInternal(
     {
         throw std::runtime_error("MediaKeys construction failed");
     }
+
+     m_outputWasRestricted = false;
 }
 
 MediaKeysServerInternal::~MediaKeysServerInternal()
@@ -602,9 +605,21 @@ MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionIdInternal(int32_t 
 
 MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
-   // RIALTO_SERVER_LOG_DEBUG("DEBUG PURPOSE: entry:decrypt");
+    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: entry:decrypt");
 
     MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
+    // Check if this buffer is stale (timestamp too far behind current position)
+    if (m_outputWasRestricted && GST_BUFFER_PTS_IS_VALID(encrypted))
+    {
+        GstClockTime bufferPts = GST_BUFFER_PTS(encrypted);
+        GstClockTime currentPos = getCurrentPlaybackPosition();
+        if (currentPos > bufferPts && (currentPos - bufferPts) > kStaleThreshold) // e.g., 4 seconds
+        {
+            RIALTO_SERVER_LOG_WARN("Dropping stale segment (%.3fs behind) after HDCP recovery",
+                                   (currentPos - bufferPts) / 1e9);
+            return MediaKeyErrorStatus::OK; // Drop silently, pretend decrypt succeeded
+        }
+    }
     const auto deadline = std::chrono::steady_clock::now() + kOutputRestrictedRetryTimeout;
     do
     {
@@ -641,13 +656,16 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
 
         if (status != MediaKeyErrorStatus::OUTPUT_RESTRICTED)
         {
+            m_outputWasRestricted = false;
             break;
         }
-	if (m_isShuttingDown.load())
+        m_outputWasRestricted = true;
+	    if (m_isShuttingDown.load())
         {
             RIALTO_SERVER_LOG_ERROR("Decrypt retry aborted — shutdown in progress");
             break;
         }
+
         RIALTO_SERVER_LOG_WARN("Decrypt returned OUTPUT_RESTRICTED, retrying after delay");
 
         std::this_thread::sleep_for(kOutputRestrictedRetryInterval);
