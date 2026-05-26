@@ -28,6 +28,9 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
 
 namespace firebolt::rialto::server
 {
@@ -148,6 +151,15 @@ private:
      * @brief This objects id registered on the main thread
      */
     uint32_t m_mainThreadClientId;
+
+
+    std::atomic_bool m_isShuttingDown{false};
+
+    std::atomic_bool m_outputWasRestricted{false};
+
+    std::atomic<GstClockTime> m_currentPositionPts{0};
+
+    std::atomic_bool m_hasCurrentPositionPts{false};
 
     /**
      * @brief Creates a session internally, only to be called on the main thread.

@@ -66,6 +66,10 @@ convertMediaKeyErrorStatus(const firebolt::rialto::MediaKeyErrorStatus &errorSta
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::FAIL;
     }
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+    {
+        // TODO
+    }
     }
     return firebolt::rialto::ProtoMediaKeyErrorStatus::FAIL;
 }
@@ -100,6 +104,7 @@ firebolt::rialto::InitDataType covertInitDataType(firebolt::rialto::GenerateRequ
         return firebolt::rialto::InitDataType::UNKNOWN;
     }
 }
+
 } // namespace
 
 namespace firebolt::rialto::server::ipc
@@ -277,11 +282,12 @@ void MediaKeysModuleService::generateRequest(::google::protobuf::RpcController *
                                              ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
     MediaKeyErrorStatus status = m_cdmService.generateRequest(request->media_keys_handle(), request->key_session_id(),
                                                               covertInitDataType(request->init_data_type()),
                                                               std::vector<std::uint8_t>{request->init_data().begin(),
                                                                                         request->init_data().end()});
+
+
     response->set_error_status(convertMediaKeyErrorStatus(status));
     done->Run();
 }

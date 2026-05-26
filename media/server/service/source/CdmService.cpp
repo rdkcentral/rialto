@@ -492,8 +492,23 @@ bool CdmService::isServerCertificateSupported(const std::string &keySystem)
 
 MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
-    RIALTO_SERVER_LOG_DEBUG("CdmService requested to decrypt, key session id: %d", keySessionId);
 
+    IMediaKeysServerInternal *mediaKeys{nullptr};
+    {
+        std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+        auto iter = m_sessionInfo.find(keySessionId);
+        if (iter == m_sessionInfo.end()) return MediaKeyErrorStatus::FAIL;
+        mediaKeys = m_mediaKeys[iter->second.mediaKeysHandle].get();
+        // Increment ref counter to prevent destruction while in use
+        ++iter->second.refCounter;
+    }
+    auto status = mediaKeys->decrypt(keySessionId, encrypted, caps);
+    decrementSessionIdUsageCounter(keySessionId);  // May trigger deferred release
+    return status;
+
+/*    RIALTO_SERVER_LOG_DEBUG("CdmService requested to decrypt, key session id: %d", keySessionId);
+
+    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : CdmService : decrypt entry");
     std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
     auto mediaKeysHandleIter{m_sessionInfo.find(keySessionId)};
     if (mediaKeysHandleIter == m_sessionInfo.end())
@@ -501,7 +516,7 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
         RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
         return MediaKeyErrorStatus::FAIL;
     }
-    return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->decrypt(keySessionId, encrypted, caps);
+    return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->decrypt(keySessionId, encrypted, caps);*/
 }
 
 bool CdmService::isNetflixPlayreadyKeySystem(int32_t keySessionId)
@@ -580,12 +595,28 @@ void CdmService::decrementSessionIdUsageCounter(int32_t keySessionId)
 
 void CdmService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure)
 {
-    std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+
+    std::unique_lock<std::mutex> lock{m_mediaKeysMutex, std::try_to_lock};
+    if (!lock.owns_lock())
+    {
+        // Server is alive but busy in decrypt retry — acknowledge ping
+        RIALTO_SERVER_LOG_WARN("CdmService::ping - mutex busy (decrypt in progress), skipping CDM ping");
+        return;  // HeartbeatProcedure destructor sends success ack
+    }
     for (const auto &mediaKeyPair : m_mediaKeys)
     {
         auto &mediaKeys = mediaKeyPair.second;
         mediaKeys->ping(heartbeatProcedure->createHandler());
     }
+
+    /*std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: ping entry");
+    for (const auto &mediaKeyPair : m_mediaKeys)
+    {
+        auto &mediaKeys = mediaKeyPair.second;
+        mediaKeys->ping(heartbeatProcedure->createHandler());
+    }
+    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: ping exit");*/
 }
 
 MediaKeyErrorStatus CdmService::getMetricSystemData(int mediaKeysHandle, std::vector<uint8_t> &buffer)
