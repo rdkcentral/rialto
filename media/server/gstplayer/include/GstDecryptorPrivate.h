@@ -94,6 +94,16 @@ private:
     std::unique_ptr<IGstProtectionMetadataHelper> m_metadataWrapper;
 
     /**
+     * @brief Counter for consecutive HDCP output protection failures.
+     */
+    uint32_t m_hdcpFailureCount{0};
+
+    /**
+     * @brief Threshold of consecutive HDCP failures before notifying AAMP.
+     */
+    static constexpr uint32_t kHdcpFailureThreshold{5};
+
+    /**
      * @brief Creates the protection meta structure.
      *
      * @param[in]  protectionData   : The rialto protection data.

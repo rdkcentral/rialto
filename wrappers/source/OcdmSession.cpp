@@ -23,7 +23,7 @@
 #include "opencdm/open_cdm_ext.h"
 #include <dlfcn.h>
 #include <mutex>
-
+#include "RialtoCommonLogging.h"
 namespace
 {
 LicenseType convertLicenseType(const firebolt::rialto::KeySessionType &sessionType)
@@ -109,6 +109,7 @@ const firebolt::rialto::KeyStatus convertKeyStatus(const KeyStatus &ocdmKeyStatu
 namespace firebolt::rialto::wrappers
 {
 OcdmSession::OcdmGstSessionDecryptExFn OcdmSession::m_ocdmGstSessionDecryptEx{nullptr};
+OcdmSession::OcdmGstSessionDecryptBufferOnceFn OcdmSession::m_ocdmGstSessionDecryptBufferOnce{nullptr};
 
 OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient *client)
     : m_systemHandle(systemHandle), m_ocdmSessionClient(client), m_session(nullptr)
@@ -119,8 +120,13 @@ OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient 
     std::call_once(flag,
                    []()
                    {
+          	       void* handle = dlopen("libocdm.so", RTLD_LAZY);
                        m_ocdmGstSessionDecryptEx =
                            (OcdmGstSessionDecryptExFn)dlsym(RTLD_DEFAULT, "opencdm_gstreamer_session_decrypt_ex");
+                       m_ocdmGstSessionDecryptBufferOnce = (OcdmGstSessionDecryptBufferOnceFn)dlsym(handle,"opencdm_gstreamer_session_decrypt_buffer_once");
+			   if(m_ocdmGstSessionDecryptBufferOnce != NULL){
+			   RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : m_ocdmGstSessionDecryptBufferOnce exists\n");
+			   }
                    });
 }
 

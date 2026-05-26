@@ -308,13 +308,35 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
             {
                 firebolt::rialto::MediaKeyErrorStatus status =
                     m_decryptionService->decrypt(protectionData->keySessionId, buffer, caps);
-                if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
+                if (firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED == status)
+                {
+                    m_hdcpFailureCount++;
+                    GST_WARNING_OBJECT(self, "HDCP output protection failure (count: %u/%u)",
+                                       m_hdcpFailureCount, kHdcpFailureThreshold);
+                    if (m_hdcpFailureCount >= kHdcpFailureThreshold)
+                    {
+                        GST_ERROR_OBJECT(self, "HDCP failure threshold reached, posting HDCPProtectionFailure");
+                        GstStructure *hdcpFailureMsg = m_gstWrapper->gstStructureNew(
+                            "HDCPProtectionFailure", "message", G_TYPE_STRING,
+                            "HDCP Output Protection Error", NULL);
+                        m_gstWrapper->gstElementPostMessage(
+                            GST_ELEMENT_CAST(self),
+                            m_gstWrapper->gstMessageNewApplication(GST_OBJECT_CAST(self), hdcpFailureMsg));
+                        m_hdcpFailureCount = 0;
+                    }
+                }
+                else if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
                 {
                     GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
+                    if (m_hdcpFailureCount > 0)
+                    {
+                        m_hdcpFailureCount = 0;
+                    }
                 }
                 else
                 {
                     GST_TRACE_OBJECT(self, "Decryption successful");
+                    m_hdcpFailureCount = 0;
                     returnStatus = GST_FLOW_OK;
                 }
             }

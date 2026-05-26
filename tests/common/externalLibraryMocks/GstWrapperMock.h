@@ -193,6 +193,7 @@ public:
     MOCK_METHOD(gboolean, gstElementPostMessage, (GstElement * element, GstMessage *message), (const, override));
     MOCK_METHOD(GstMessage *, gstMessageNewWarning, (GstObject * src, GError *error, const gchar *debug),
                 (const, override));
+    MOCK_METHOD(GstMessage *, gstMessageNewApplication, (GstObject * src, GstStructure *structure), (const, override));
     MOCK_METHOD(void, gstMessageParseWarning, (GstMessage * message, GError **gerror, gchar **debug), (const, override));
     MOCK_METHOD(GstStructure *, gstCapsGetStructure, (const GstCaps *caps, guint index), (const, override));
     MOCK_METHOD(gboolean, gstObjectSetName, (GstObject * object, const gchar *name), (const, override));
