@@ -94,14 +94,9 @@ private:
     std::unique_ptr<IGstProtectionMetadataHelper> m_metadataWrapper;
 
     /**
-     * @brief Counter for consecutive HDCP output protection failures.
+     * @brief The flag indicating, if the output restricted error occured in the previous decryption attempt.
      */
-    uint32_t m_hdcpFailureCount{0};
-
-    /**
-     * @brief Threshold of consecutive HDCP failures before notifying AAMP.
-     */
-    static constexpr uint32_t kHdcpFailureThreshold{5};
+    bool m_hdcpOutputRestricted{false};
 
     /**
      * @brief Creates the protection meta structure.
