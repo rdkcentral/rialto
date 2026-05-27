@@ -441,8 +441,11 @@ TEST_F(SessionServerAppManagerTests, SessionServerShouldRessurectFromSuspendedWi
 
 TEST_F(SessionServerAppManagerTests, SessionServerShouldSkipRestartWhenShuttingDown)
 {
+    sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
+    ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
     triggerSetShuttingDown();
     triggerRestartServer();
+    sessionServerWillKillRunningApplication();
 }
 
 TEST_F(SessionServerAppManagerTests, SessionServerShouldReportStartupTimeout)
