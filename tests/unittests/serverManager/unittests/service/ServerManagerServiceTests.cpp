@@ -19,6 +19,7 @@
 
 #include "RialtoLogging.h"
 #include "ServerManagerServiceTestsFixture.h"
+#include "ServiceContext.h"
 #include "gtest/gtest.h"
 
 namespace
@@ -27,6 +28,12 @@ const std::string kAppName{"YouTube"};
 const firebolt::rialto::common::SessionServerState kAppState{firebolt::rialto::common::SessionServerState::INACTIVE};
 const std::string kAppSocket{getenv("RIALTO_SOCKET_PATH")};
 const firebolt::rialto::common::AppConfig kAppConfig{kAppSocket};
+
+void createAndDestroyServiceContext()
+{
+    rialto::servermanager::service::ServiceContext
+        context{nullptr, {}, "", std::chrono::milliseconds{0}, std::chrono::seconds{0}, 0, 0, "", ""};
+}
 } // namespace
 
 TEST_F(ServerManagerServiceTests, initiateApplicationShouldReturnTrueIfOperationSucceeded)
@@ -81,4 +88,9 @@ TEST_F(ServerManagerServiceTests, registerLogHandlerShouldSucceed)
 TEST_F(ServerManagerServiceTests, registerLogHandlerShouldFailWhenPtrIsNull)
 {
     EXPECT_FALSE(triggerRegisterLogHandler(nullptr));
+}
+
+TEST(ServiceContextTests, DestructorShouldMarkSessionServerAppManagerAsShuttingDown)
+{
+    ASSERT_NO_THROW(createAndDestroyServiceContext());
 }
