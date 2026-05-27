@@ -88,6 +88,7 @@ public:
     void triggerSendPingEvents();
     void triggerRestartServer();
     void triggerOnServerStartupTimeout();
+    void triggerSetShuttingDown();
 
 private:
     std::unique_ptr<rialto::servermanager::ipc::IController> m_controller;
