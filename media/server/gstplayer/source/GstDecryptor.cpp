@@ -310,34 +310,31 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
                     m_decryptionService->decrypt(protectionData->keySessionId, buffer, caps);
                 if (firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED == status)
                 {
-                    m_hdcpFailureCount++;
-                    GST_WARNING_OBJECT(self, "HDCP output protection failure (count: %u/%u)",
-                                       m_hdcpFailureCount, kHdcpFailureThreshold);
-                    if (m_hdcpFailureCount >= kHdcpFailureThreshold)
+                    m_hdcpOutputRestricted = true;
+                    m_metadataWrapper->removeProtectionMetadata(buffer);
+                    return GST_BASE_TRANSFORM_FLOW_DROPPED;
+                }
+                else if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
+                {
+                    GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
+                    m_hdcpOutputRestricted = false;
+                }
+                else
+                {
+                    GST_TRACE_OBJECT(self, "Decryption successful");
+                    returnStatus = GST_FLOW_OK;
+
+                    if (m_hdcpOutputRestricted)
                     {
-                        GST_ERROR_OBJECT(self, "HDCP failure threshold reached, posting HDCPProtectionFailure");
+                        GST_WARNING_OBJECT(self, "HDCP output protection failure");
                         GstStructure *hdcpFailureMsg = m_gstWrapper->gstStructureNew(
                             "HDCPProtectionFailure", "message", G_TYPE_STRING,
                             "HDCP Output Protection Error", NULL);
                         m_gstWrapper->gstElementPostMessage(
                             GST_ELEMENT_CAST(self),
                             m_gstWrapper->gstMessageNewApplication(GST_OBJECT_CAST(self), hdcpFailureMsg));
-                        m_hdcpFailureCount = 0;
+                        m_hdcpOutputRestricted = false;
                     }
-                }
-                else if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
-                {
-                    GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
-                    if (m_hdcpFailureCount > 0)
-                    {
-                        m_hdcpFailureCount = 0;
-                    }
-                }
-                else
-                {
-                    GST_TRACE_OBJECT(self, "Decryption successful");
-                    m_hdcpFailureCount = 0;
-                    returnStatus = GST_FLOW_OK;
                 }
             }
         }
