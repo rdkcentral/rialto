@@ -90,7 +90,7 @@ TEST_F(ServerManagerServiceTests, registerLogHandlerShouldFailWhenPtrIsNull)
     EXPECT_FALSE(triggerRegisterLogHandler(nullptr));
 }
 
-TEST(ServiceContextTests, DestructorShouldMarkSessionServerAppManagerAsShuttingDown)
+TEST(ServiceContextTests, DestructorShouldNotThrow)
 {
     ASSERT_NO_THROW(createAndDestroyServiceContext());
 }
