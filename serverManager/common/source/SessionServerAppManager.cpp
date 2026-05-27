@@ -397,6 +397,7 @@ void SessionServerAppManager::handleAck(int serverId, int pingId, bool success)
 
 void SessionServerAppManager::shutdownAllSessionServers()
 {
+    setShuttingDown();
     m_healthcheckService.reset();
     for (const auto &kSessionServer : m_sessionServerApps)
     {
