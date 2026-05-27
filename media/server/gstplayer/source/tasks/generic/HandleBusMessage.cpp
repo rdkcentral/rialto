@@ -275,10 +275,11 @@ void HandleBusMessage::execute() const
     }
     case GST_MESSAGE_APPLICATION:
     {
+            RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Received application message");
         const GstStructure *structure = gst_message_get_structure(m_message);
         if (structure && m_gstWrapper->gstStructureHasName(structure, "HDCPProtectionFailure"))
         {
-            RIALTO_SERVER_LOG_WARN("Received HDCPProtectionFailure application message");
+            RIALTO_SERVER_LOG_ERROR("Received HDCPProtectionFailure application message");
             if (m_gstPlayerClient)
             {
                 const gchar *kElementName = GST_ELEMENT_NAME(GST_ELEMENT(GST_MESSAGE_SRC(m_message)));
