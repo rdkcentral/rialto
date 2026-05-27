@@ -187,4 +187,31 @@ void MainThread::enqueuePriorityTaskAndWait(uint32_t clientId, Task task)
         newTask->cv->wait(lockTask);
     }
 }
+bool MainThread::enqueueTaskAndWaitFor(uint32_t clientId, Task task,
+                                       std::chrono::milliseconds timeout)
+{
+    std::shared_ptr<TaskInfo> newTask = std::make_shared<TaskInfo>();
+    newTask->clientId = clientId;
+    newTask->task = task;
+    newTask->mutex = std::make_unique<std::mutex>();
+    newTask->cv = std::make_unique<std::condition_variable>();
+
+    {
+        std::unique_lock<std::mutex> lockTask(*(newTask->mutex));
+        {
+            std::unique_lock<std::mutex> lockQueue(m_taskQueueMutex);
+            m_taskQueue.push_back(newTask);
+        }
+        m_taskQueueCv.notify_one();
+
+        // Wait with timeout instead of indefinitely
+        if (newTask->cv->wait_for(lockTask, timeout) == std::cv_status::timeout)
+        {
+            RIALTO_SERVER_LOG_ERROR("enqueueTaskAndWaitFor: timed out after %lld ms",
+                                    static_cast<long long>(timeout.count()));
+            return false;  // Task may still be in queue or partially executed
+        }
+    }
+    return true;
+}
 } // namespace firebolt::rialto::server
