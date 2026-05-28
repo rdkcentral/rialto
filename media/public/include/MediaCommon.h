@@ -453,8 +453,8 @@ struct CodecData
 enum class PlaybackError
 {
     UNKNOWN,
-    DECRYPTION,        /* Player failed to decrypt a buffer and the frame has been dropped */
-    OUTPUT_PROTECTION  /* HDCP output protection failure - triggers retune in AAMP */
+    DECRYPTION,       /* Player failed to decrypt a buffer and the frame has been dropped */
+    OUTPUT_PROTECTION /* HDCP output protection failure */
 };
 
 /**

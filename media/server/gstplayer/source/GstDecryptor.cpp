@@ -326,14 +326,14 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
 
                     if (m_hdcpOutputRestricted)
                     {
-			    RIALTO_SERVER_LOG_ERROR("HDCP output protection failure");
+                        RIALTO_SERVER_LOG_ERROR("HDCP output protection failure");
                         GST_WARNING_OBJECT(self, "HDCP output protection failure");
-                        GstStructure *hdcpFailureMsg = m_gstWrapper->gstStructureNew(
-                            "HDCPProtectionFailure", "message", G_TYPE_STRING,
-                            "HDCP Output Protection Error", NULL);
-                        m_gstWrapper->gstElementPostMessage(
-                            GST_ELEMENT_CAST(self),
-                            m_gstWrapper->gstMessageNewApplication(GST_OBJECT_CAST(self), hdcpFailureMsg));
+                        GstStructure *hdcpFailureMsg =
+                            m_gstWrapper->gstStructureNew("HDCPProtectionFailure", "message", G_TYPE_STRING,
+                                                          "HDCP Output Protection Error", NULL);
+                        m_gstWrapper->gstElementPostMessage(GST_ELEMENT_CAST(self),
+                                                            m_gstWrapper->gstMessageNewApplication(GST_OBJECT_CAST(self),
+                                                                                                   hdcpFailureMsg));
                         m_hdcpOutputRestricted = false;
                     }
                 }

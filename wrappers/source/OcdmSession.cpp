@@ -19,11 +19,11 @@
 
 #include "OcdmSession.h"
 #include "OcdmCommon.h"
+#include "RialtoCommonLogging.h"
 #include "opencdm/open_cdm_adapter.h"
 #include "opencdm/open_cdm_ext.h"
 #include <dlfcn.h>
 #include <mutex>
-#include "RialtoCommonLogging.h"
 namespace
 {
 LicenseType convertLicenseType(const firebolt::rialto::KeySessionType &sessionType)
@@ -120,13 +120,16 @@ OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient 
     std::call_once(flag,
                    []()
                    {
-          	       void* handle = dlopen("libocdm.so", RTLD_LAZY);
+                       void *handle = dlopen("libocdm.so", RTLD_LAZY);
                        m_ocdmGstSessionDecryptEx =
                            (OcdmGstSessionDecryptExFn)dlsym(RTLD_DEFAULT, "opencdm_gstreamer_session_decrypt_ex");
-                       m_ocdmGstSessionDecryptBufferOnce = (OcdmGstSessionDecryptBufferOnceFn)dlsym(handle,"opencdm_gstreamer_session_decrypt_buffer_once");
-			   if(m_ocdmGstSessionDecryptBufferOnce != NULL){
-			   RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : m_ocdmGstSessionDecryptBufferOnce exists\n");
-			   }
+                       m_ocdmGstSessionDecryptBufferOnce =
+                           (OcdmGstSessionDecryptBufferOnceFn)dlsym(handle,
+                                                                    "opencdm_gstreamer_session_decrypt_buffer_once");
+                       if (m_ocdmGstSessionDecryptBufferOnce != NULL)
+                       {
+                           RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : m_ocdmGstSessionDecryptBufferOnce exists\n");
+                       }
                    });
 }
 
@@ -196,7 +199,7 @@ MediaKeyErrorStatus OcdmSession::update(const uint8_t response[], uint32_t respo
 
 MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *caps)
 {
-   // RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer()\n");
+    // RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer()\n");
     if (!m_session)
     {
         return MediaKeyErrorStatus::FAIL;
@@ -233,13 +236,14 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             if (preStatus == OutputRestricted || preStatus == OutputRestrictedHDCP22)
             {
-
-                RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning MediaKeyErrorStatus::OUTPUT_RESTRICTED(Pre decrypt)\n");
+                RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning "
+                                        "MediaKeyErrorStatus::OUTPUT_RESTRICTED(Pre decrypt)\n");
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
-            } else {
-                    // RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning no error(Pre decrypt)\n");
             }
-
+            else
+            {
+                // RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning no error(Pre decrypt)\n");
+            }
         }
 
         OpenCDMError result = m_ocdmGstSessionDecryptBufferOnce(m_session, encrypted, caps);
@@ -252,11 +256,14 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             if (postStatus == OutputRestricted || postStatus == OutputRestrictedHDCP22)
             {
-                RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning MediaKeyErrorStatus::OUTPUT_RESTRICTED(Post decrypt)\n");
+                RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning "
+                                        "MediaKeyErrorStatus::OUTPUT_RESTRICTED(Post decrypt)\n");
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
-            } else {
-		    //RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning no error(Post decrypt)\n");
-	    }
+            }
+            else
+            {
+                // RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning no error(Post decrypt)\n");
+            }
         }
 
         return convertOpenCdmError(result);
