@@ -24,7 +24,6 @@
 #include <functional>
 #include <memory>
 #include <utility>
-#include <chrono>
 
 namespace firebolt::rialto::server
 {
@@ -112,11 +111,6 @@ public:
      * @param[in]  task     : Task to queue.
      */
     virtual void enqueuePriorityTaskAndWait(uint32_t clientId, Task task) = 0;
-
-    /**
-    * @brief Enqueue a task and wait with timeout. Returns false on timeout.
-    */
-    virtual bool enqueueTaskAndWaitFor(uint32_t clientId, Task task, std::chrono::milliseconds timeout) = 0;
 };
 } // namespace firebolt::rialto::server
 

@@ -71,8 +71,7 @@ public:
     void enqueueTask(uint32_t clientId, Task task) override;
     void enqueueTaskAndWait(uint32_t clientId, Task task) override;
     void enqueuePriorityTaskAndWait(uint32_t clientId, Task task) override;
-    bool enqueueTaskAndWaitFor(uint32_t clientId, Task task,
-                           std::chrono::milliseconds timeout) override;
+
 private:
     /**
      * @brief Information of a task.
