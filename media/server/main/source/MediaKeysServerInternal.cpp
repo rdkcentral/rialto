@@ -586,9 +586,6 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
 
         if (status == MediaKeyErrorStatus::OUTPUT_RESTRICTED)
         {
-             /*std::this_thread::sleep_for(kOutputRestrictedRetryInterval);
-			 auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
-             m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);*/
 			RIALTO_SERVER_LOG_WARN("Decrypt returned OUTPUT_RESTRICTED");
         }
     return status;
