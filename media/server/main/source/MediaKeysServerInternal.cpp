@@ -17,9 +17,7 @@
  * limitations under the License.
  */
 
-#include <chrono>
 #include <stdexcept>
-#include <thread>
 
 #include "MediaKeysServerInternal.h"
 #include "RialtoServerLogging.h"
@@ -55,9 +53,6 @@ std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
 
 namespace firebolt::rialto::server
 {
-
-constexpr std::chrono::milliseconds kOutputRestrictedRetryInterval{100};
-
 int32_t generateSessionId()
 {
     static int32_t keySessionId{0};
@@ -581,15 +576,15 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: entry:decrypt");
 
     MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
-    
+
     auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-	RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session id :%d", keySessionId);
+    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session id :%d", keySessionId);
 
-        if (status == MediaKeyErrorStatus::OUTPUT_RESTRICTED)
-        {
-			RIALTO_SERVER_LOG_WARN("Decrypt returned OUTPUT_RESTRICTED");
-        }
+    if (status == MediaKeyErrorStatus::OUTPUT_RESTRICTED)
+    {
+        RIALTO_SERVER_LOG_WARN("Decrypt returned OUTPUT_RESTRICTED");
+    }
     return status;
 }
 

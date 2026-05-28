@@ -281,7 +281,7 @@ void HandleBusMessage::execute() const
     }
     case GST_MESSAGE_APPLICATION:
     {
-            RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Received application message");
+        RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Received application message");
         const GstStructure *structure = gst_message_get_structure(m_message);
         if (structure && m_gstWrapper->gstStructureHasName(structure, "HDCPProtectionFailure"))
         {
@@ -301,10 +301,7 @@ void HandleBusMessage::execute() const
                 }
                 else
                 {
-                    RIALTO_SERVER_LOG_WARN("Unknown source for HDCPProtectionFailure from '%s', defaulting to VIDEO",
-                                           kElementName);
-                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
-                                                           PlaybackError::OUTPUT_PROTECTION);
+                    RIALTO_SERVER_LOG_WARN("Unknown source for HDCPProtectionFailure from '%s'", kElementName);
                 }
             }
         }

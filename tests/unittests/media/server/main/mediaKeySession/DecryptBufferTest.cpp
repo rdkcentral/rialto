@@ -19,6 +19,9 @@
 
 #include "MediaKeySessionTestBase.h"
 
+using testing::DoAll;
+using testing::SetArgReferee;
+
 class RialtoServerMediaKeySessionDecryptBufferTest : public MediaKeySessionTestBase
 {
 protected:
@@ -48,8 +51,25 @@ TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OcdmSessionFailure)
     createKeySession(kWidevineKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps)).WillOnce(Return(MediaKeyErrorStatus::FAIL));
+    EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(_)).WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+}
+
+/**
+ * Test that method returns failure when decryption fails
+ */
+TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OcdmSessionOutputRestricted)
+{
+    constexpr uint32_t kHdcpOutputProtectionFailure{4427};
+
+    createKeySession(kWidevineKeySystem);
+
+    EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps)).WillOnce(Return(MediaKeyErrorStatus::FAIL));
+    EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(_))
+        .WillOnce(DoAll(SetArgReferee<0>(kHdcpOutputProtectionFailure), Return(MediaKeyErrorStatus::OK)));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OUTPUT_RESTRICTED, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
 }
 
 /**
