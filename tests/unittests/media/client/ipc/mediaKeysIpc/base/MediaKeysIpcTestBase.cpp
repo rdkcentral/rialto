@@ -165,6 +165,10 @@ ProtoMediaKeyErrorStatus MediaKeysIpcTestBase::convertMediaKeyErrorStatus(firebo
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::INVALID_STATE;
     }
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::OUTPUT_RESTRICTED;
+    }
     case firebolt::rialto::MediaKeyErrorStatus::FAIL:
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::FAIL;

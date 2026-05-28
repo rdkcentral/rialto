@@ -273,6 +273,32 @@ void HandleBusMessage::execute() const
         m_glibWrapper->gErrorFree(err);
         break;
     }
+    case GST_MESSAGE_APPLICATION:
+    {
+        const GstStructure *structure = gst_message_get_structure(m_message);
+        if (structure && m_gstWrapper->gstStructureHasName(structure, "HDCPProtectionFailure"))
+        {
+            if (m_gstPlayerClient)
+            {
+                const gchar *kElementName = GST_ELEMENT_NAME(GST_ELEMENT(GST_MESSAGE_SRC(m_message)));
+                if (g_strrstr(kElementName, "video"))
+                {
+                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
+                                                           PlaybackError::OUTPUT_PROTECTION);
+                }
+                else if (g_strrstr(kElementName, "audio"))
+                {
+                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
+                                                           PlaybackError::OUTPUT_PROTECTION);
+                }
+                else
+                {
+                    RIALTO_SERVER_LOG_WARN("Unknown source for HDCPProtectionFailure from '%s'", kElementName);
+                }
+            }
+        }
+        break;
+    }
     default:
         break;
     }
