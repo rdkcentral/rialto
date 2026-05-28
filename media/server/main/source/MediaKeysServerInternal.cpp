@@ -581,23 +581,18 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
     RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: entry:decrypt");
 
     MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
-   
+    
     auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
-    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session id :%d", keySessionId);
-    static constexpr auto kDecryptTimeout = std::chrono::milliseconds(500);
-    if (!m_mainThread->enqueueTaskAndWaitFor(m_mainThreadClientId, task, kDecryptTimeout))
-    {
-        RIALTO_SERVER_LOG_ERROR("Decrypt task timed out - main thread may be blocked");
-        return MediaKeyErrorStatus::FAIL;
-    }
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+	RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session id :%d", keySessionId);
 
-    if (status == MediaKeyErrorStatus::OUTPUT_RESTRICTED)
-    {
+        if (status == MediaKeyErrorStatus::OUTPUT_RESTRICTED)
+        {
              /*std::this_thread::sleep_for(kOutputRestrictedRetryInterval);
 			 auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
              m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);*/
-      	RIALTO_SERVER_LOG_WARN("Decrypt returned OUTPUT_RESTRICTED");
-    }
+			RIALTO_SERVER_LOG_WARN("Decrypt returned OUTPUT_RESTRICTED");
+        }
     return status;
 }
 
