@@ -573,18 +573,13 @@ MediaKeyErrorStatus MediaKeysServerInternal::getCdmKeySessionIdInternal(int32_t 
 
 MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
-    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: entry:decrypt");
+    RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
 
     auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session id :%d", keySessionId);
 
-    if (status == MediaKeyErrorStatus::OUTPUT_RESTRICTED)
-    {
-        RIALTO_SERVER_LOG_WARN("Decrypt returned OUTPUT_RESTRICTED");
-    }
     return status;
 }
 
