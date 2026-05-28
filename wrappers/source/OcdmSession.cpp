@@ -199,7 +199,6 @@ MediaKeyErrorStatus OcdmSession::update(const uint8_t response[], uint32_t respo
 
 MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *caps)
 {
-    // RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer()\n");
     if (!m_session)
     {
         return MediaKeyErrorStatus::FAIL;
@@ -240,10 +239,6 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
                                         "MediaKeyErrorStatus::OUTPUT_RESTRICTED(Pre decrypt)\n");
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
             }
-            else
-            {
-                // RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning no error(Pre decrypt)\n");
-            }
         }
 
         OpenCDMError result = m_ocdmGstSessionDecryptBufferOnce(m_session, encrypted, caps);
@@ -259,10 +254,6 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
                 RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning "
                                         "MediaKeyErrorStatus::OUTPUT_RESTRICTED(Post decrypt)\n");
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
-            }
-            else
-            {
-                // RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning no error(Post decrypt)\n");
             }
         }
 
