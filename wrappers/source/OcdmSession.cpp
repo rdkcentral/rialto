@@ -19,7 +19,6 @@
 
 #include "OcdmSession.h"
 #include "OcdmCommon.h"
-#include "RialtoCommonLogging.h"
 #include "opencdm/open_cdm_adapter.h"
 #include "opencdm/open_cdm_ext.h"
 #include <dlfcn.h>
@@ -126,10 +125,6 @@ OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient 
                        m_ocdmGstSessionDecryptBufferOnce =
                            (OcdmGstSessionDecryptBufferOnceFn)dlsym(handle,
                                                                     "opencdm_gstreamer_session_decrypt_buffer_once");
-                       if (m_ocdmGstSessionDecryptBufferOnce != NULL)
-                       {
-                           RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : m_ocdmGstSessionDecryptBufferOnce exists\n");
-                       }
                    });
 }
 
@@ -235,8 +230,6 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             if (preStatus == OutputRestricted || preStatus == OutputRestrictedHDCP22)
             {
-                RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning "
-                                        "MediaKeyErrorStatus::OUTPUT_RESTRICTED(Pre decrypt)\n");
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
             }
         }
@@ -251,8 +244,6 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             if (postStatus == OutputRestricted || postStatus == OutputRestrictedHDCP22)
             {
-                RIALTO_COMMON_LOG_ERROR("DEBUG PURPOSE : OcdmSession::decryptBuffer() : returning "
-                                        "MediaKeyErrorStatus::OUTPUT_RESTRICTED(Post decrypt)\n");
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
             }
         }
