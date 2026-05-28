@@ -1544,6 +1544,9 @@ void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::P
         case firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION:
             playbackError = PlaybackError::DECRYPTION;
             break;
+        case firebolt::rialto::PlaybackErrorEvent_PlaybackError_OUTPUT_PROTECTION:
+            playbackError = PlaybackError::OUTPUT_PROTECTION;
+            break;
         default:
             RIALTO_CLIENT_LOG_WARN("Received unknown playback error");
             break;

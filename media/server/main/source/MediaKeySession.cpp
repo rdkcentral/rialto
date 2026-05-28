@@ -240,11 +240,20 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
 
 MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps)
 {
+    constexpr uint32_t kHdcpOutputProtectionFailure{4427};
+
     initOcdmErrorChecking();
 
     MediaKeyErrorStatus status = m_ocdmSession->decryptBuffer(encrypted, caps);
     if (MediaKeyErrorStatus::OK != status)
     {
+        uint32_t lastDrmError{0};
+        m_ocdmSession->getLastDrmError(lastDrmError);
+        if (lastDrmError == kHdcpOutputProtectionFailure)
+        {
+            RIALTO_SERVER_LOG_WARN("Decrypt failed due to HDCP output protection (DRM error %u)", lastDrmError);
+            return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+        }
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
     }
 
