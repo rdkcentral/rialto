@@ -262,8 +262,8 @@ struct GenericPlayerContext
     std::atomic_bool audioFadeEnabled{false};
 
     /**
-     * @brief The last known value of a fade volume for PlaybackInfo message
-     *        fade-volume can't be queried too often, it causes some decoder issues
+     * @brief The last known fade volume value used for PlaybackInfo messages.
+     *        The "fade-volume" property must not be queried too frequently as it can cause decoder issues.
      */
     std::atomic<double> audioFadeVolume{1.0};
 
