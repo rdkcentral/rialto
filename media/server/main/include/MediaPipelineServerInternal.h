@@ -306,11 +306,6 @@ protected:
     std::shared_mutex m_getPropertyMutex;
 
     /**
-     * @brief Flag to check, if setting volume is in progress
-     */
-    std::atomic_bool m_isSetVolumeInProgress{false};
-
-    /**
      * @brief Load internally, only to be called on the main thread.
      *
      * @param[in] type     : The media type.

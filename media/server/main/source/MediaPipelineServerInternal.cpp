@@ -828,7 +828,6 @@ bool MediaPipelineServerInternal::setVolume(double targetVolume, uint32_t volume
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    m_isSetVolumeInProgress = true;
     bool result;
     auto task = [&]() { result = setVolumeInternal(targetVolume, volumeDuration, easeType); };
 
@@ -846,7 +845,6 @@ bool MediaPipelineServerInternal::setVolumeInternal(double targetVolume, uint32_
         return false;
     }
     m_gstPlayer->setVolume(targetVolume, volumeDuration, easeType);
-    m_isSetVolumeInProgress = false;
     return true;
 }
 
@@ -854,16 +852,11 @@ bool MediaPipelineServerInternal::getVolume(double &currentVolume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (m_isSetVolumeInProgress)
-    {
-        bool result;
-        auto task = [&]() { result = getVolumeInternal(currentVolume); };
+    bool result;
+    auto task = [&]() { result = getVolumeInternal(currentVolume); };
 
-        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-        return result;
-    }
-    std::shared_lock lock{m_getPropertyMutex};
-    return getVolumeInternal(currentVolume);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
 }
 
 bool MediaPipelineServerInternal::getVolumeInternal(double &currentVolume)

@@ -103,6 +103,7 @@ void SetVolume::execute() const
 
         m_glibWrapper->gObjectSet(audioSink, "audio-fade", fadeStr, nullptr);
         m_context.audioFadeEnabled = true;
+        m_context.audioFadeVolume = m_targetVolume;
     }
     else if (m_rdkGstreamerUtilsWrapper->isSocAudioFadeSupported())
     {
@@ -110,6 +111,7 @@ void SetVolume::execute() const
         auto rguEaseType = convertEaseTypeToRguEase(m_easeType);
         m_rdkGstreamerUtilsWrapper->doAudioEasingonSoc(m_targetVolume, m_volumeDuration, rguEaseType);
         m_context.audioFadeEnabled = true;
+        m_context.audioFadeVolume = m_targetVolume;
     }
     else
     {
