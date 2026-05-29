@@ -86,6 +86,7 @@ protected:
     void shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
     void shouldSetupVideoParserElementWithPendingStreamSyncMode();
     void shouldSetupAudioDecoderElementWithPendingBufferingLimit();
+    void shouldSetupAudioDecoderElementWithIsLiveParameter();
     void shouldSetupVideoSinkElementWithPendingRenderFrame();
     void shouldSetupVideoSinkElementWithPendingShowVideoWindow();
     void shouldSetupAudioElementAmlhalasinkWhenNoVideo();
@@ -235,6 +236,8 @@ protected:
     void checkPlaybackGroupAdded();
     void setUseBufferingPending();
     void shouldTriggerSetUseBuffering();
+    void shouldLinkTypefindAndParser();
+    void shouldFailToLinkTypefindAndParser();
 
     // Stop test methods
     void shouldStopGstPlayer();

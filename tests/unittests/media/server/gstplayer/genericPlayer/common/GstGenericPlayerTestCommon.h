@@ -29,6 +29,8 @@
 #include "GstGenericPlayer.h"
 #include "GstGenericPlayerClientMock.h"
 #include "GstInitialiserMock.h"
+#include "GstProfilerFactoryMock.h"
+#include "GstProfilerMock.h"
 #include "GstProtectionMetadataHelperFactoryMock.h"
 #include "GstProtectionMetadataHelperMock.h"
 #include "GstSrcFactoryMock.h"
@@ -47,6 +49,7 @@ using namespace firebolt::rialto;
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::wrappers;
 
+using ::testing::NiceMock;
 using ::testing::StrictMock;
 
 namespace
@@ -75,6 +78,10 @@ public:
         std::make_shared<StrictMock<RdkGstreamerUtilsWrapperMock>>()};
     std::shared_ptr<StrictMock<GstSrcFactoryMock>> m_gstSrcFactoryMock{std::make_shared<StrictMock<GstSrcFactoryMock>>()};
     std::shared_ptr<StrictMock<GstSrcMock>> m_gstSrcMock{std::make_shared<StrictMock<GstSrcMock>>()};
+    std::shared_ptr<StrictMock<GstProfilerFactoryMock>> m_gstProfilerFactoryMock{
+        std::make_shared<StrictMock<GstProfilerFactoryMock>>()};
+    std::unique_ptr<NiceMock<GstProfilerMock>> m_gstProfiler{std::make_unique<NiceMock<GstProfilerMock>>()};
+    NiceMock<GstProfilerMock> *m_gstProfilerMock{m_gstProfiler.get()};
     std::shared_ptr<StrictMock<TimerFactoryMock>> m_timerFactoryMock{std::make_shared<StrictMock<TimerFactoryMock>>()};
     std::unique_ptr<IGenericPlayerTaskFactory> m_taskFactory{std::make_unique<StrictMock<GenericPlayerTaskFactoryMock>>()};
     StrictMock<GenericPlayerTaskFactoryMock> &m_taskFactoryMock{

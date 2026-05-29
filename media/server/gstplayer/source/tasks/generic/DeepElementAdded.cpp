@@ -19,6 +19,7 @@
 
 #include "tasks/generic/DeepElementAdded.h"
 #include "RialtoServerLogging.h"
+#include "Utils.h"
 
 namespace
 {
@@ -53,6 +54,8 @@ DeepElementAdded::DeepElementAdded(GenericPlayerContext &context, IGstGenericPla
                 m_glibWrapper->gSignalConnect(G_OBJECT(m_element), "have-type", G_CALLBACK(onHaveType), &m_player);
                 m_callbackRegistered = true;
             }
+
+            m_context.gstProfiler->scheduleGstElementRecord(m_element);
         }
     }
 }
@@ -69,42 +72,48 @@ void DeepElementAdded::execute() const
     m_context.playbackGroup.m_gstPipeline = GST_ELEMENT(m_pipeline);
 
     RIALTO_SERVER_LOG_DEBUG("Element = %p Bin = %p Pipeline = %p", m_element, m_bin, m_pipeline);
-    if (m_callbackRegistered)
-    {
-        m_context.playbackGroup.m_curAudioTypefind = m_element;
-    }
     if (m_elementName)
     {
         if (m_gstWrapper->gstObjectCast(m_bin) == m_gstWrapper->gstObjectCast(m_context.playbackGroup.m_curAudioDecodeBin))
         {
-            if (m_glibWrapper->gStrrstr(m_elementName, "parse"))
+            if (isAudioParser(*m_gstWrapper, m_element))
             {
                 RIALTO_SERVER_LOG_DEBUG("curAudioParse = %s", m_elementName);
                 m_context.playbackGroup.m_curAudioParse = m_element;
             }
-            else if (m_glibWrapper->gStrrstr(m_elementName, "dec"))
+            else if (isAudioDecoder(*m_gstWrapper, m_element))
             {
                 RIALTO_SERVER_LOG_DEBUG("curAudioDecoder = %s", m_elementName);
                 m_context.playbackGroup.m_curAudioDecoder = m_element;
             }
-        }
-        else
-        {
-            if (m_glibWrapper->gStrrstr(m_elementName, "audiosink"))
+            else if (m_callbackRegistered && m_glibWrapper->gStrrstr(m_elementName, "typefind"))
             {
-                GstElement *audioSinkParent =
-                    reinterpret_cast<GstElement *>(m_gstWrapper->gstElementGetParent(m_element));
-                if (audioSinkParent)
+                RIALTO_SERVER_LOG_DEBUG("curAudioTypefind = %s", m_elementName);
+                m_context.playbackGroup.m_curAudioTypefind = m_element;
+            }
+        }
+        else if (isAudioSink(*m_gstWrapper, m_element))
+        {
+            GstElement *audioSinkParent = reinterpret_cast<GstElement *>(m_gstWrapper->gstElementGetParent(m_element));
+            if (audioSinkParent)
+            {
+                gchar *audioSinkParentName = m_gstWrapper->gstElementGetName(audioSinkParent);
+                RIALTO_SERVER_LOG_DEBUG("audioSinkParentName = %s", audioSinkParentName);
+                if (audioSinkParentName && m_glibWrapper->gStrrstr(audioSinkParentName, "bin"))
                 {
-                    gchar *audioSinkParentName = m_gstWrapper->gstElementGetName(audioSinkParent);
-                    RIALTO_SERVER_LOG_DEBUG("audioSinkParentName = %s", audioSinkParentName);
-                    if (audioSinkParentName && m_glibWrapper->gStrrstr(audioSinkParentName, "bin"))
+                    RIALTO_SERVER_LOG_DEBUG("curAudioPlaysinkBin = %s", audioSinkParentName);
+                    if (m_context.playbackGroup.m_curAudioPlaysinkBin)
                     {
-                        RIALTO_SERVER_LOG_DEBUG("curAudioPlaysinkBin = %s", audioSinkParentName);
-                        m_context.playbackGroup.m_curAudioPlaysinkBin = audioSinkParent;
+                        // Unref previous audio playsink bin, if exists
+                        m_gstWrapper->gstObjectUnref(m_context.playbackGroup.m_curAudioPlaysinkBin);
                     }
-                    m_glibWrapper->gFree(audioSinkParentName);
+                    m_context.playbackGroup.m_curAudioPlaysinkBin = audioSinkParent;
                 }
+                else
+                {
+                    m_gstWrapper->gstObjectUnref(audioSinkParent);
+                }
+                m_glibWrapper->gFree(audioSinkParentName);
             }
         }
     }

@@ -120,6 +120,9 @@ add_gtests(RialtoServerGstPlayerUnitTests
     #FlushWatcher unittests
     flushWatcher/FlushWatcherTests.cpp
 
+    #GstProfiler unittests
+    profiler/GstProfilerTests.cpp
+
 )
 
 target_include_directories(RialtoServerGstPlayerUnitTests

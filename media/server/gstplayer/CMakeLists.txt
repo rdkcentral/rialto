@@ -96,6 +96,7 @@ add_library(
         source/GstGenericPlayer.cpp
         source/GstInitialiser.cpp
         source/GstLogForwarding.cpp
+        source/GstProfiler.cpp
         source/GstProtectionMetadata.cpp
         source/GstProtectionMetadataHelper.cpp
         source/GstSrc.cpp

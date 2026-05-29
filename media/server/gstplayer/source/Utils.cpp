@@ -64,6 +64,11 @@ bool isVideoParser(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, Gs
     return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
 }
 
+bool isAudioParser(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
+{
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
+}
+
 bool isVideoSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
     return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);

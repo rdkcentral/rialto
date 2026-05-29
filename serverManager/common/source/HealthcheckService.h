@@ -53,7 +53,7 @@ private:
     std::mutex m_mutex;
     int m_currentPingId;
     std::set<int> m_remainingPings;
-    std::map<int, unsigned> m_failedPings;
+    std::map<int, std::set<int>> m_failedPings;
 };
 } // namespace rialto::servermanager::common
 

@@ -42,6 +42,7 @@ const std::string kDummyStateName{"dummy"};
 
 using testing::_;
 using testing::AtLeast;
+using testing::AtMost;
 using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
@@ -98,6 +99,7 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryPlaysink));
         EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_secondaryPipeline, GST_STATE_READY))
             .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&m_secondaryPipeline)).Times(AtMost(1));
 
         // In case of longer testruns, GstPlayer may request to query position
         EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(&m_secondaryPipeline, GST_FORMAT_TIME, _))
@@ -279,7 +281,7 @@ public:
             .WillOnce(Return(&m_secondaryBus));
         EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_secondaryBus, nullptr, nullptr, nullptr));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryBus));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryPipeline));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryPipeline)).Times(testing::Between(1, 2));
     }
 
     void createSecondaryFullSession()
@@ -342,7 +344,7 @@ public:
         ASSERT_TRUE(receivedNeedData);
         EXPECT_EQ(receivedNeedData->session_id(), m_secondarySessionId);
         EXPECT_EQ(receivedNeedData->source_id(), m_secondaryVideoSourceId);
-        EXPECT_EQ(receivedNeedData->frame_count(), kFrameCountInPlayingState);
+        EXPECT_EQ(receivedNeedData->frame_count(), kPrerollNumFrames);
         m_lastSecondaryNeedData = receivedNeedData;
 
         auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
@@ -687,8 +689,8 @@ TEST_F(DualVideoPlaybackTest, playbackFullDualVideo)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush);
-        pushVideoData(kFramesToPush);
+        pushAudioData(kFramesToPush, kFrameCountInPlayingState);
+        pushVideoData(kFramesToPush, kFrameCountInPlayingState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -939,8 +941,8 @@ TEST_F(DualVideoPlaybackTest, playbackNoResouceManagerSecondaryVideo)
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush);
-        pushVideoData(kFramesToPush);
+        pushAudioData(kFramesToPush, kFrameCountInPlayingState);
+        pushVideoData(kFramesToPush, kFrameCountInPlayingState);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);

@@ -92,7 +92,7 @@ public:
      */
     virtual ~MediaPipelineServerInternal();
 
-    bool load(MediaType type, const std::string &mimeType, const std::string &url) override;
+    bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override;
 
     bool attachSource(const std::unique_ptr<MediaSource> &source) override;
 
@@ -170,6 +170,8 @@ public:
     bool getUseBuffering(bool &useBuffering) override;
 
     bool switchSource(const std::unique_ptr<MediaSource> &source) override;
+
+    bool getDuration(int64_t &duration) override;
 
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
@@ -314,10 +316,11 @@ protected:
      * @param[in] type     : The media type.
      * @param[in] mimeType : The MIME type.
      * @param[in] url      : The URL.
+     * @param[in] isLive   : Indicates if the media is live.
      *
      * @retval true on success.
      */
-    bool loadInternal(MediaType type, const std::string &mimeType, const std::string &url);
+    bool loadInternal(MediaType type, const std::string &mimeType, const std::string &url, bool isLive);
 
     /**
      * @brief Attach source internally, only to be called on the main thread.

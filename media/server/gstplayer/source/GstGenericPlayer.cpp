@@ -26,6 +26,7 @@
 #include "FlushWatcher.h"
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
+#include "GstProfiler.h"
 #include "GstProtectionMetadata.h"
 #include "IGstTextTrackSinkFactory.h"
 #include "IMediaPipeline.h"
@@ -80,7 +81,7 @@ std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
 
 std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlayer(
     IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-    const VideoRequirements &videoRequirements,
+    const VideoRequirements &videoRequirements, bool isLive,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory)
 {
     std::unique_ptr<IGstGenericPlayer> gstPlayer;
@@ -105,10 +106,12 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
         {
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
+
         gstPlayer = std::make_unique<
-            GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper, glibWrapper,
+            GstGenericPlayer>(client, decryptionService, type, videoRequirements, isLive, gstWrapper, glibWrapper,
                               rdkGstreamerUtilsWrapper, IGstInitialiser::instance(), std::make_unique<FlushWatcher>(),
-                              IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
+                              IGstSrcFactory::getFactory(), IGstProfilerFactory::getFactory(),
+                              common::ITimerFactory::getFactory(),
                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
                                                                          rdkGstreamerUtilsWrapper,
                                                                          IGstTextTrackSinkFactory::createFactory()),
@@ -125,28 +128,34 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
 
 GstGenericPlayer::GstGenericPlayer(
     IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-    const VideoRequirements &videoRequirements,
+    const VideoRequirements &videoRequirements, bool isLive,
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
     const IGstInitialiser &gstInitialiser, std::unique_ptr<IFlushWatcher> &&flushWatcher,
-    const std::shared_ptr<IGstSrcFactory> &gstSrcFactory, std::shared_ptr<common::ITimerFactory> timerFactory,
+    const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+    const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory, std::shared_ptr<common::ITimerFactory> timerFactory,
     std::unique_ptr<IGenericPlayerTaskFactory> taskFactory, std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
     std::shared_ptr<IGstProtectionMetadataHelperFactory> gstProtectionMetadataFactory)
     : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_timerFactory{timerFactory},
-      m_taskFactory{std::move(taskFactory)}, m_flushWatcher{std::move(flushWatcher)}
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_gstProfilerFactory{gstProfilerFactory},
+      m_timerFactory{timerFactory}, m_taskFactory{std::move(taskFactory)}, m_flushWatcher{std::move(flushWatcher)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is constructed.");
 
     gstInitialiser.waitForInitialisation();
 
+    m_context.isLive = isLive;
     m_context.decryptionService = &decryptionService;
 
     if ((!gstSrcFactory) || (!(m_context.gstSrc = gstSrcFactory->getGstSrc())))
     {
         throw std::runtime_error("Cannot create GstSrc");
+    }
+    if (!m_gstProfilerFactory)
+    {
+        throw std::runtime_error("No gst profiler factory provided");
     }
 
     if (!timerFactory)
@@ -226,6 +235,12 @@ void GstGenericPlayer::initMsePipeline()
     // Set pipeline flags
     setPlaybinFlags(true);
 
+    m_context.gstProfiler = m_gstProfilerFactory->createGstProfiler(m_context.pipeline, m_gstWrapper, m_glibWrapper);
+    if (!m_context.gstProfiler)
+    {
+        throw std::runtime_error("Cannot create GstProfiler");
+    }
+
     // Set callbacks
     m_glibWrapper->gSignalConnect(m_context.pipeline, "source-setup", G_CALLBACK(&GstGenericPlayer::setupSource), this);
     m_glibWrapper->gSignalConnect(m_context.pipeline, "element-setup", G_CALLBACK(&GstGenericPlayer::setupElement), this);
@@ -251,6 +266,9 @@ void GstGenericPlayer::initMsePipeline()
         GST_WARNING("Failed to set pipeline to READY state");
     }
     RIALTO_SERVER_LOG_MIL("New RialtoServer's pipeline created");
+    auto recordId = m_context.gstProfiler->createRecord("Pipeline Created");
+    if (recordId)
+        m_context.gstProfiler->logRecord(recordId.value());
 }
 
 void GstGenericPlayer::resetWorkerThread()
@@ -301,6 +319,16 @@ void GstGenericPlayer::termPipeline()
         m_gstWrapper->gstObjectUnref(m_context.videoSink);
         m_context.videoSink = nullptr;
     }
+    if (m_context.playbackGroup.m_curAudioPlaysinkBin)
+    {
+        m_gstWrapper->gstObjectUnref(m_context.playbackGroup.m_curAudioPlaysinkBin);
+        m_context.playbackGroup.m_curAudioPlaysinkBin = nullptr;
+    }
+
+    auto recordId = m_context.gstProfiler->createRecord("Pipeline Terminated");
+    if (recordId)
+        m_context.gstProfiler->logRecord(recordId.value());
+    m_context.gstProfiler->dumpToFile();
 
     // Delete the pipeline
     m_gstWrapper->gstObjectUnref(m_context.pipeline);
@@ -403,6 +431,18 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
         return false;
     }
 
+    return true;
+}
+
+bool GstGenericPlayer::getDuration(std::int64_t &duration)
+{
+    // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
+    // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
+    if (!m_context.pipeline || !m_gstWrapper->gstElementQueryDuration(m_context.pipeline, GST_FORMAT_TIME, &duration))
+    {
+        RIALTO_SERVER_LOG_WARN("Failed to query duration");
+        return false;
+    }
     return true;
 }
 
@@ -1440,6 +1480,9 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
                               typeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
                               segment->rate, segment->applied_rate, resetTime);
+        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", typeStr);
+        if (recordId)
+            m_context.gstProfiler->logRecord(recordId.value());
 
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
         // We can't pass buffer in GstSample, because implementation of gst_app_src_push_sample
@@ -1654,30 +1697,15 @@ void GstGenericPlayer::cancelUnderflow(firebolt::rialto::MediaSourceType mediaSo
 
 void GstGenericPlayer::play(bool &async)
 {
-    if (0 == m_ongoingStateChangesNumber)
+    async = true;
+    if (m_workerThread)
     {
-        // Operation called on main thread, because PAUSED->PLAYING change is synchronous and needs to be done fast.
-        //
-        // m_context.pipeline can be used, because it's modified only in GstGenericPlayer
-        // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
-        ++m_ongoingStateChangesNumber;
-        async = (changePipelineState(GST_STATE_PLAYING) == GST_STATE_CHANGE_ASYNC);
-        RIALTO_SERVER_LOG_MIL("State change to PLAYING requested");
-    }
-    else
-    {
-        ++m_ongoingStateChangesNumber;
-        async = true;
-        if (m_workerThread)
-        {
-            m_workerThread->enqueueTask(m_taskFactory->createPlay(*this));
-        }
+        m_workerThread->enqueueTask(m_taskFactory->createPlay(*this));
     }
 }
 
 void GstGenericPlayer::pause()
 {
-    ++m_ongoingStateChangesNumber;
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createPause(m_context, *this));
@@ -1686,7 +1714,6 @@ void GstGenericPlayer::pause()
 
 void GstGenericPlayer::stop()
 {
-    ++m_ongoingStateChangesNumber;
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createStop(m_context, *this));
@@ -1700,7 +1727,6 @@ GstStateChangeReturn GstGenericPlayer::changePipelineState(GstState newState)
         RIALTO_SERVER_LOG_ERROR("Change state failed - pipeline is nullptr");
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
-        --m_ongoingStateChangesNumber;
         return GST_STATE_CHANGE_FAILURE;
     }
     m_context.flushOnPrerollController->setTargetState(newState);
@@ -1711,7 +1737,6 @@ GstStateChangeReturn GstGenericPlayer::changePipelineState(GstState newState)
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
     }
-    --m_ongoingStateChangesNumber;
     return result;
 }
 

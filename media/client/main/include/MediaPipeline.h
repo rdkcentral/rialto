@@ -110,7 +110,7 @@ public:
      */
     virtual ~MediaPipeline();
 
-    bool load(MediaType type, const std::string &mimeType, const std::string &url) override;
+    bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override;
 
     bool attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
 
@@ -187,6 +187,8 @@ public:
     bool setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode) override;
 
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
+
+    bool getDuration(int64_t &duration) override;
 
     bool flush(int32_t sourceId, bool resetTime, bool &async) override;
 

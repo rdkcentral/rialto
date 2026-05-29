@@ -188,6 +188,11 @@ public:
         return gst_element_query_position(element, format, cur);
     }
 
+    gboolean gstElementQueryDuration(GstElement *element, GstFormat format, gint64 *duration) override
+    {
+        return gst_element_query_duration(element, format, duration);
+    }
+
     GstPad *gstGhostPadNew(const gchar *name, GstPad *target) override { return gst_ghost_pad_new(name, target); }
 
     void gstPadSetQueryFunction(GstPad *pad, GstPadQueryFunction query) override
@@ -611,6 +616,14 @@ public:
     gboolean gstBinRemove(GstBin *bin, GstElement *element) override { return gst_bin_remove(bin, element); }
 
     GstObject *gstPadGetParent(GstPad *pad) override { return gst_pad_get_parent(pad); }
+
+    gulong gstPadAddProbe(GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
+                          GDestroyNotify destroyData) override
+    {
+        return gst_pad_add_probe(pad, mask, callback, userData, destroyData);
+    }
+
+    void gstPadRemoveProbe(GstPad *pad, gulong id) override { gst_pad_remove_probe(pad, id); }
 };
 
 }; // namespace firebolt::rialto::wrappers

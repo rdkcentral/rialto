@@ -192,18 +192,19 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 
-bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url)
+bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = loadInternal(type, mimeType, url); };
+    auto task = [&]() { result = loadInternal(type, mimeType, url, isLive); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string &mimeType, const std::string &url)
+bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string &mimeType, const std::string &url,
+                                               bool isLive)
 {
     std::unique_lock lock{m_getPropertyMutex};
     /* If gstreamer player already created, destroy the old one first */
@@ -214,7 +215,7 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
 
     m_gstPlayer =
         m_kGstPlayerFactory
-            ->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements,
+            ->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements, isLive,
                                      firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory::getFactory());
     if (!m_gstPlayer)
     {
@@ -346,7 +347,7 @@ bool MediaPipelineServerInternal::play(bool &async)
     bool result;
     auto task = [&]() { result = playInternal(async); };
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -479,6 +480,20 @@ bool MediaPipelineServerInternal::getPosition(int64_t &position)
         return false;
     }
     return m_gstPlayer->getPosition(position);
+}
+
+bool MediaPipelineServerInternal::getDuration(int64_t &duration)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    std::shared_lock lock{m_getPropertyMutex};
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get duration - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->getDuration(duration);
 }
 
 bool MediaPipelineServerInternal::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)

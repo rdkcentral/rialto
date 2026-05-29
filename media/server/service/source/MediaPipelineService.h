@@ -55,7 +55,7 @@ public:
     bool createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
                        std::uint32_t maxWidth, std::uint32_t maxHeight) override;
     bool destroySession(int sessionId) override;
-    bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url) override;
+    bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override;
     bool attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     bool removeSource(int sessionId, std::int32_t sourceId) override;
     bool allSourcesAttached(int sessionId) override;
@@ -65,6 +65,7 @@ public:
     bool setPlaybackRate(int sessionId, double rate) override;
     bool setPosition(int sessionId, std::int64_t position) override;
     bool getPosition(int sessionId, std::int64_t &position) override;
+    bool getDuration(int sessionId, std::int64_t &duration) override;
     bool setImmediateOutput(int sessionId, int32_t sourceId, bool immediateOutput) override;
     bool getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput) override;
     bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;

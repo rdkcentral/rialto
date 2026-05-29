@@ -75,7 +75,7 @@ public:
 
     bool allSourcesAttached() override;
 
-    bool load(MediaType type, const std::string &mimeType, const std::string &url) override;
+    bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override;
 
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
@@ -143,6 +143,8 @@ public:
     bool getUseBuffering(bool &useBuffering) override;
 
     bool switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
+
+    bool getDuration(int64_t &duration) override;
 
 private:
     /**

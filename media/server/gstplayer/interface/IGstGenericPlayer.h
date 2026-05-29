@@ -59,12 +59,13 @@ public:
      * @param[in] decryptionService : The decryption service.
      * @param[in] type              : The media type the gstreamer player shall support.
      * @param[in] videoRequirements : The video requirements for the playback.
+     * @param[in] isLive            : Indicates if the media is live.
      *
      * @retval the new player instance or null on error.
      */
     virtual std::unique_ptr<IGstGenericPlayer>
     createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                           const VideoRequirements &videoRequirements,
+                           const VideoRequirements &videoRequirements, bool isLive,
                            const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
                                &rdkGstreamerUtilsWrapperFactory) = 0;
 };
@@ -185,6 +186,15 @@ public:
      * @retval True on success
      */
     virtual bool getPosition(std::int64_t &position) = 0;
+
+    /**
+     * @brief Get the playback duration in nanoseconds.
+     *
+     * @param[out] duration : The playback duration in nanoseconds.
+     *
+     * @retval True on success
+     */
+    virtual bool getDuration(std::int64_t &duration) = 0;
 
     /**
      * @brief Sets the "Immediate Output" property for this source.
