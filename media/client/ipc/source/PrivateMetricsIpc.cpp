@@ -95,7 +95,8 @@ PrivateMetricsIpc::~PrivateMetricsIpc()
 
 bool PrivateMetricsIpc::reportClientMetrics(std::uint64_t sampleId, std::uint32_t reason, const std::string &appName,
                                             std::uint32_t processId, std::uint64_t monotonicTimeMs,
-                                            std::uint64_t epochTimeMs, std::uint64_t processCpuTimeMs)
+                                            std::uint64_t epochTimeMs, std::uint64_t processCpuTimeMs,
+                                            std::uint64_t processMemoryKb)
 {
     if (!reattachChannelIfRequired())
     {
@@ -112,11 +113,13 @@ bool PrivateMetricsIpc::reportClientMetrics(std::uint64_t sampleId, std::uint32_
     metrics->set_monotonic_time_ms(monotonicTimeMs);
     metrics->set_epoch_time_ms(epochTimeMs);
     metrics->set_process_cpu_time_ms(processCpuTimeMs);
+    metrics->set_process_memory_kb(processMemoryKb);
 
-    RIALTO_CLIENT_LOG_MIL("Reporting metrics sample=%" PRIu64 ", reason=%s, app='%s', pid=%u, cpu_ms=%" PRIu64,
+    RIALTO_CLIENT_LOG_MIL("Reporting metrics sample=%" PRIu64 ", reason=%s, app='%s', pid=%u, cpu_ms=%" PRIu64
+                          ", mem_kb=%" PRIu64,
                           sampleId,
                           sampleReasonToString(static_cast<firebolt::rialto::MetricsSampleReason>(reason)),
-                          appName.c_str(), processId, processCpuTimeMs);
+                          appName.c_str(), processId, processCpuTimeMs, processMemoryKb);
 
     firebolt::rialto::ReportClientMetricsResponse response;
     auto ipcController = m_ipc.createRpcController();

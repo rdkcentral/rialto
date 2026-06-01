@@ -35,6 +35,8 @@ public:
     MOCK_METHOD(void, clientConnected, (const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient), (override));
     MOCK_METHOD(void, clientDisconnected, (const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient),
                 (override));
+    MOCK_METHOD(void, setMetricsService, (const std::shared_ptr<IPrivateMetricsModuleService> &metricsService),
+                (override));
     MOCK_METHOD(void, createSession,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::CreateSessionRequest *request,
                  ::firebolt::rialto::CreateSessionResponse *response, ::google::protobuf::Closure *done),

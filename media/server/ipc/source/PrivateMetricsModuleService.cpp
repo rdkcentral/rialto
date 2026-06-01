@@ -18,11 +18,14 @@
  */
 
 #include "PrivateMetricsModuleService.h"
+#include "LogMetricsReporter.h"
 #include "RialtoServerLogging.h"
 #include <IIpcController.h>
 #include <chrono>
 #include <cinttypes>
+#include <fstream>
 #include <optional>
+#include <string>
 #include <sys/times.h>
 #include <unistd.h>
 #include <vector>
@@ -67,7 +70,9 @@ std::shared_ptr<IPrivateMetricsModuleService> PrivateMetricsModuleServiceFactory
     return privateMetricsModule;
 }
 
-PrivateMetricsModuleService::PrivateMetricsModuleService() : m_isRunning{true}, m_nextSampleId{1}
+PrivateMetricsModuleService::PrivateMetricsModuleService()
+    : m_isRunning{true}, m_nextSampleId{1}, m_reporter{std::make_unique<LogMetricsReporter>()},
+      m_thresholdChecker{MetricsThresholdConfig{}, m_reporter.get()}
 {
     m_metricsThread = std::thread(&PrivateMetricsModuleService::runMetricsSampler, this);
 }
@@ -226,8 +231,7 @@ PrivateMetricsModuleService::ProcessMetricsSample PrivateMetricsModuleService::g
     using std::chrono::steady_clock;
     using std::chrono::system_clock;
 
-    struct tms processTimes
-    {};
+    struct tms processTimes{};
     const clock_t kCurrentTicks{times(&processTimes)};
     const long kTicksPerSecond{sysconf(_SC_CLK_TCK)};
     std::uint64_t processCpuTimeMs{0};
@@ -242,10 +246,101 @@ PrivateMetricsModuleService::ProcessMetricsSample PrivateMetricsModuleService::g
         RIALTO_SERVER_LOG_WARN("Failed to sample server process CPU usage");
     }
 
+    std::uint64_t processMemoryKb{0};
+    {
+        std::ifstream status{"/proc/self/status"};
+        std::string line;
+        while (std::getline(status, line))
+        {
+            if (line.rfind("VmRSS:", 0) == 0)
+            {
+                if (std::sscanf(line.c_str(), "VmRSS: %" SCNu64, &processMemoryKb) != 1)
+                {
+                    RIALTO_SERVER_LOG_WARN("Failed to parse server process memory usage");
+                }
+                break;
+            }
+        }
+    }
+
+    std::uint64_t cgroupMemoryUsageKb{0};
+    std::uint64_t cgroupMemoryLimitKb{0};
+    {
+        auto readFileValue = [](const std::string &path) -> std::uint64_t
+        {
+            std::ifstream file{path};
+            if (!file.is_open())
+            {
+                return 0;
+            }
+            std::string content;
+            if (!std::getline(file, content) || content.empty() || content == "max")
+            {
+                return 0;
+            }
+            std::uint64_t value{0};
+            if (std::sscanf(content.c_str(), "%" SCNu64, &value) == 1)
+            {
+                return value;
+            }
+            return 0;
+        };
+
+        // Resolve the process's cgroup path from /proc/self/cgroup
+        // cgroup v2 format: "0::<relative-path>"
+        auto getCgroupBasePath = [&readFileValue]() -> std::string
+        {
+            std::ifstream cgroupFile{"/proc/self/cgroup"};
+            if (!cgroupFile.is_open())
+            {
+                return {};
+            }
+            std::string line;
+            while (std::getline(cgroupFile, line))
+            {
+                // cgroup v2 line starts with "0::"
+                if (line.rfind("0::", 0) == 0)
+                {
+                    std::string relativePath{line.substr(3)};
+                    if (!relativePath.empty() && relativePath != "/")
+                    {
+                        return "/sys/fs/cgroup" + relativePath;
+                    }
+                    return "/sys/fs/cgroup";
+                }
+            }
+            return {};
+        };
+
+        std::uint64_t usageBytes{0};
+        std::uint64_t limitBytes{0};
+
+        // cgroup v2: read from process's own cgroup path
+        std::string cgroupBase{getCgroupBasePath()};
+        if (!cgroupBase.empty())
+        {
+            usageBytes = readFileValue(cgroupBase + "/memory.current");
+            limitBytes = readFileValue(cgroupBase + "/memory.max");
+        }
+
+        if (usageBytes == 0)
+        {
+            // cgroup v1 fallback
+            usageBytes = readFileValue("/sys/fs/cgroup/memory/memory.usage_in_bytes");
+            limitBytes = readFileValue("/sys/fs/cgroup/memory/memory.limit_in_bytes");
+        }
+
+        cgroupMemoryUsageKb = usageBytes / 1024;
+        cgroupMemoryLimitKb = limitBytes / 1024;
+    }
+
     return ProcessMetricsSample{
         static_cast<std::uint64_t>(duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count()),
         static_cast<std::uint64_t>(duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count()),
-        processCpuTimeMs};
+        processCpuTimeMs,
+        processMemoryKb,
+        cgroupMemoryUsageKb,
+        cgroupMemoryLimitKb};
 }
 
 void PrivateMetricsModuleService::logMetrics(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient,
@@ -265,10 +360,14 @@ void PrivateMetricsModuleService::logMetrics(const std::shared_ptr<::firebolt::r
     if (!previousSample.has_value() || !previousSample->clientMetrics.has_process_cpu_time_ms())
     {
         RIALTO_SERVER_LOG_MIL("Metrics baseline: sample=%" PRIu64 ", reason=%s, app='%s', client_pid=%u, "
-                              "client_cpu_ms=%" PRIu64 ", server_cpu_ms=%" PRIu64,
+                              "client_cpu_ms=%" PRIu64 ", server_cpu_ms=%" PRIu64 ", "
+                              "client_mem_kb=%" PRIu64 ", server_mem_kb=%" PRIu64 ", "
+                              "cgroup_mem_kb=%" PRIu64 "/%" PRIu64,
                               clientMetrics.sample_id(), sampleReasonToString(clientMetrics.reason()),
                               clientMetrics.app_name().c_str(), clientMetrics.process_id(),
-                              clientMetrics.process_cpu_time_ms(), serverMetrics.processCpuTimeMs);
+                              clientMetrics.process_cpu_time_ms(), serverMetrics.processCpuTimeMs,
+                              clientMetrics.process_memory_kb(), serverMetrics.processMemoryKb,
+                              serverMetrics.cgroupMemoryUsageKb, serverMetrics.cgroupMemoryLimitKb);
         return;
     }
 
@@ -286,13 +385,63 @@ void PrivateMetricsModuleService::logMetrics(const std::shared_ptr<::firebolt::r
         previousClientMetrics.process_cpu_time_ms() + previousServerMetrics.processCpuTimeMs,
         serverMetrics.monotonicTimeMs, previousServerMetrics.monotonicTimeMs)};
 
-    RIALTO_SERVER_LOG_MIL("Metrics sample=%" PRIu64 ", reason=%s, app='%s', client_pid=%u, client_cpu=%.2f%%, "
-                          "server_cpu=%.2f%%, combined_cpu=%.2f%%, client_cpu_ms=%" PRIu64 ", "
-                          "server_cpu_ms=%" PRIu64,
-                          clientMetrics.sample_id(), sampleReasonToString(clientMetrics.reason()),
-                          clientMetrics.app_name().c_str(), clientMetrics.process_id(), kClientCpuPercentage,
-                          kServerCpuPercentage, kCombinedCpuPercentage, clientMetrics.process_cpu_time_ms(),
-                          serverMetrics.processCpuTimeMs);
+    // Report via pluggable reporter
+    if (m_reporter)
+    {
+        PeriodicMetricsReport periodicReport;
+        periodicReport.sampleId = clientMetrics.sample_id();
+        periodicReport.reason = sampleReasonToString(clientMetrics.reason());
+        periodicReport.appName = clientMetrics.app_name();
+        periodicReport.clientPid = clientMetrics.process_id();
+        periodicReport.clientCpuPercent = kClientCpuPercentage;
+        periodicReport.serverCpuPercent = kServerCpuPercentage;
+        periodicReport.combinedCpuPercent = kCombinedCpuPercentage;
+        periodicReport.clientCpuTimeMs = clientMetrics.process_cpu_time_ms();
+        periodicReport.serverCpuTimeMs = serverMetrics.processCpuTimeMs;
+        periodicReport.clientMemoryKb = clientMetrics.process_memory_kb();
+        periodicReport.serverMemoryKb = serverMetrics.processMemoryKb;
+        periodicReport.cgroupMemoryUsageKb = serverMetrics.cgroupMemoryUsageKb;
+        periodicReport.cgroupMemoryLimitKb = serverMetrics.cgroupMemoryLimitKb;
+        m_reporter->reportPeriodicSample(periodicReport);
+    }
+
+    // Only feed PERIODIC samples into aggregators — STATE_TRANSITION samples have
+    // unreliable CPU percentages due to tiny time deltas between rapid samples.
+    if (clientMetrics.reason() == firebolt::rialto::METRICS_SAMPLE_REASON_PERIODIC)
+    {
+        MetricsSample sample;
+        sample.clientCpuPercent = kClientCpuPercentage;
+        sample.serverCpuPercent = kServerCpuPercentage;
+        sample.combinedCpuPercent = kCombinedCpuPercentage;
+        sample.clientMemoryKb = clientMetrics.process_memory_kb();
+        sample.serverMemoryKb = serverMetrics.processMemoryKb;
+        sample.cgroupMemoryUsageKb = serverMetrics.cgroupMemoryUsageKb;
+        sample.cgroupMemoryLimitKb = serverMetrics.cgroupMemoryLimitKb;
+
+        {
+            std::lock_guard<std::mutex> lock{m_mutex};
+
+            // Feed into per-session aggregators
+            for (auto &[sessionId, sessionState] : m_sessionStates)
+            {
+                sessionState.aggregator.addSample(sample);
+            }
+
+            // Feed into global aggregator
+            if (m_currentApplicationState == ApplicationState::RUNNING)
+            {
+                m_globalAggregator.addSample(sample);
+            }
+        }
+    }
+
+    // Check thresholds (only for PERIODIC samples with reliable CPU data)
+    if (clientMetrics.reason() == firebolt::rialto::METRICS_SAMPLE_REASON_PERIODIC)
+    {
+        m_thresholdChecker.checkSample(kClientCpuPercentage, kServerCpuPercentage, kCombinedCpuPercentage,
+                                       clientMetrics.process_memory_kb(), serverMetrics.processMemoryKb,
+                                       serverMetrics.cgroupMemoryUsageKb, serverMetrics.cgroupMemoryLimitKb);
+    }
 }
 
 const char *PrivateMetricsModuleService::sampleReasonToString(::firebolt::rialto::MetricsSampleReason reason) const
@@ -303,9 +452,159 @@ const char *PrivateMetricsModuleService::sampleReasonToString(::firebolt::rialto
         return "CONNECTED";
     case firebolt::rialto::METRICS_SAMPLE_REASON_PERIODIC:
         return "PERIODIC";
+    case firebolt::rialto::METRICS_SAMPLE_REASON_STATE_TRANSITION:
+        return "STATE_TRANSITION";
     case firebolt::rialto::METRICS_SAMPLE_REASON_UNKNOWN:
     default:
         return "UNKNOWN";
+    }
+}
+
+const char *PrivateMetricsModuleService::playbackStateToString(PlaybackState state)
+{
+    switch (state)
+    {
+    case PlaybackState::IDLE:
+        return "IDLE";
+    case PlaybackState::PLAYING:
+        return "PLAYING";
+    case PlaybackState::PAUSED:
+        return "PAUSED";
+    case PlaybackState::SEEKING:
+        return "SEEKING";
+    case PlaybackState::SEEK_DONE:
+        return "SEEK_DONE";
+    case PlaybackState::STOPPED:
+        return "STOPPED";
+    case PlaybackState::END_OF_STREAM:
+        return "END_OF_STREAM";
+    case PlaybackState::FAILURE:
+        return "FAILURE";
+    case PlaybackState::UNKNOWN:
+    default:
+        return "UNKNOWN";
+    }
+}
+
+const char *PrivateMetricsModuleService::applicationStateToString(ApplicationState state)
+{
+    switch (state)
+    {
+    case ApplicationState::RUNNING:
+        return "RUNNING";
+    case ApplicationState::INACTIVE:
+        return "INACTIVE";
+    case ApplicationState::UNKNOWN:
+    default:
+        return "UNKNOWN";
+    }
+}
+
+void PrivateMetricsModuleService::notifyPlaybackStateChanged(int sessionId, PlaybackState oldState,
+                                                             PlaybackState newState)
+{
+    RIALTO_SERVER_LOG_MIL("Metrics: PlaybackState changed session=%d, %s -> %s", sessionId,
+                          playbackStateToString(oldState), playbackStateToString(newState));
+
+    using std::chrono::duration_cast;
+    using std::chrono::milliseconds;
+    using std::chrono::steady_clock;
+    const auto kNowMs{
+        static_cast<std::uint64_t>(duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count())};
+
+    std::lock_guard<std::mutex> lock{m_mutex};
+    auto sessionIter{m_sessionStates.find(sessionId)};
+    if (m_sessionStates.end() == sessionIter)
+    {
+        // First state notification for this session — create entry
+        SessionMetricsState sessionState;
+        sessionState.currentPlaybackState = newState;
+        sessionState.aggregator.begin(playbackStateToString(newState), kNowMs);
+        m_sessionStates.emplace(sessionId, std::move(sessionState));
+        return;
+    }
+
+    auto &sessionState{sessionIter->second};
+
+    // Finalize old state and emit report
+    if (sessionState.aggregator.hasData())
+    {
+        auto report{sessionState.aggregator.finalize(kNowMs)};
+        logStateReport(report, "session=" + std::to_string(sessionId));
+    }
+
+    if (newState == PlaybackState::STOPPED || newState == PlaybackState::END_OF_STREAM ||
+        newState == PlaybackState::FAILURE)
+    {
+        // Terminal state — remove session tracking
+        m_sessionStates.erase(sessionIter);
+    }
+    else
+    {
+        // Begin accumulating for new state
+        sessionState.currentPlaybackState = newState;
+        sessionState.aggregator.begin(playbackStateToString(newState), kNowMs);
+    }
+
+    // Request immediate sample for clean boundary
+    for (const auto &client : m_clients)
+    {
+        if (client.second.isReady)
+        {
+            requestMetricsSample(client.first, firebolt::rialto::METRICS_SAMPLE_REASON_STATE_TRANSITION);
+        }
+    }
+}
+
+void PrivateMetricsModuleService::notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState)
+{
+    RIALTO_SERVER_LOG_MIL("Metrics: ApplicationState changed %s -> %s", applicationStateToString(oldState),
+                          applicationStateToString(newState));
+
+    using std::chrono::duration_cast;
+    using std::chrono::milliseconds;
+    using std::chrono::steady_clock;
+    const auto kNowMs{
+        static_cast<std::uint64_t>(duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count())};
+
+    std::lock_guard<std::mutex> lock{m_mutex};
+    m_currentApplicationState = newState;
+
+    if (oldState == ApplicationState::RUNNING && newState != ApplicationState::RUNNING)
+    {
+        // Leaving RUNNING — finalize global aggregator
+        if (m_globalAggregator.hasData())
+        {
+            auto report{m_globalAggregator.finalize(kNowMs)};
+            logStateReport(report, "global");
+        }
+        m_globalAggregator.reset();
+    }
+
+    if (newState == ApplicationState::RUNNING && oldState != ApplicationState::RUNNING)
+    {
+        // Entering RUNNING — start fresh global accumulation
+        m_globalAggregator.begin(applicationStateToString(newState), kNowMs);
+    }
+
+    // Request immediate sample for clean boundary
+    for (const auto &client : m_clients)
+    {
+        if (client.second.isReady)
+        {
+            requestMetricsSample(client.first, firebolt::rialto::METRICS_SAMPLE_REASON_STATE_TRANSITION);
+        }
+    }
+}
+
+void PrivateMetricsModuleService::logStateReport(const StateMetricsReport &report, const std::string &context)
+{
+    if (m_reporter)
+    {
+        StateTransitionReport transitionReport;
+        transitionReport.context = context;
+        transitionReport.metrics = report;
+        m_reporter->reportStateTransition(transitionReport);
     }
 }
 
@@ -314,13 +613,19 @@ double PrivateMetricsModuleService::calculateCpuPercentage(std::uint64_t current
                                                            std::uint64_t currentMonotonicTimeMs,
                                                            std::uint64_t previousMonotonicTimeMs) const
 {
+    constexpr std::uint64_t kMinElapsedMs{100};
     if ((currentCpuTimeMs < previousCpuTimeMs) || (currentMonotonicTimeMs <= previousMonotonicTimeMs))
     {
         return 0.0;
     }
 
-    return (static_cast<double>(currentCpuTimeMs - previousCpuTimeMs) /
-            static_cast<double>(currentMonotonicTimeMs - previousMonotonicTimeMs)) *
-           100.0;
+    const auto kElapsedMs{currentMonotonicTimeMs - previousMonotonicTimeMs};
+    if (kElapsedMs < kMinElapsedMs)
+    {
+        // Time delta too small for meaningful CPU percentage
+        return 0.0;
+    }
+
+    return (static_cast<double>(currentCpuTimeMs - previousCpuTimeMs) / static_cast<double>(kElapsedMs)) * 100.0;
 }
 } // namespace firebolt::rialto::server::ipc

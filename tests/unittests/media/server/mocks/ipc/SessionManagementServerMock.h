@@ -41,6 +41,7 @@ public:
                 (RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                  RIALTO_DEBUG_LEVEL ipcLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels),
                 (override));
+    MOCK_METHOD(void, notifyApplicationStateChanged, (ApplicationState oldState, ApplicationState newState), (override));
 };
 } // namespace firebolt::rialto::server::ipc
 

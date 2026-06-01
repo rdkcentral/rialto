@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_IPC_I_SESSION_MANAGEMENT_SERVER_H_
 #define FIREBOLT_RIALTO_SERVER_IPC_I_SESSION_MANAGEMENT_SERVER_H_
 
+#include "ControlCommon.h"
 #include "RialtoServerLogging.h"
 #include <memory>
 #include <string>
@@ -44,6 +45,7 @@ public:
     virtual void stop() = 0;
     virtual void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                               RIALTO_DEBUG_LEVEL ipcLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels) = 0;
+    virtual void notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState) = 0;
 };
 } // namespace firebolt::rialto::server::ipc
 

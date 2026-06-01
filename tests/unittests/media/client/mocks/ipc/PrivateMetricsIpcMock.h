@@ -33,7 +33,8 @@ public:
 
     MOCK_METHOD(bool, reportClientMetrics,
                 (std::uint64_t sampleId, std::uint32_t reason, const std::string &appName, std::uint32_t processId,
-                 std::uint64_t monotonicTimeMs, std::uint64_t epochTimeMs, std::uint64_t processCpuTimeMs),
+                 std::uint64_t monotonicTimeMs, std::uint64_t epochTimeMs, std::uint64_t processCpuTimeMs,
+                 std::uint64_t processMemoryKb),
                 (override));
 };
 } // namespace firebolt::rialto::client
