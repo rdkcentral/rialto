@@ -288,6 +288,16 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleFirstVideoFrameReceived)
     m_sut->scheduleFirstVideoFrameReceived();
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleFirstAudioFrameReceived)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createFirstFrameReceived(_, _, MediaSourceType::AUDIO))
+        .WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->scheduleFirstAudioFrameReceived();
+}
+
 TEST_F(GstGenericPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkIsNull)
 {
     EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq(kVideoSinkStr), _));

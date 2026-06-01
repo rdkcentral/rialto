@@ -82,6 +82,7 @@ void AttachSource::addSource() const
     GstElement *appSrc = nullptr;
     if (m_attachedSource->getType() == MediaSourceType::AUDIO)
     {
+        m_context.firstAudioFrameReceived = false;
         RIALTO_SERVER_LOG_MIL("Adding Audio appsrc with caps %s", capsStr);
         appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
         profilerInfo = "audsrc";
@@ -124,6 +125,8 @@ void AttachSource::addSource() const
 
 void AttachSource::reattachAudioSource() const
 {
+    m_context.firstAudioFrameReceived = false;
+
     if (!m_player.reattachSource(m_attachedSource))
     {
         RIALTO_SERVER_LOG_ERROR("Reattaching source failed!");

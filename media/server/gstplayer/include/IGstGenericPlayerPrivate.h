@@ -67,6 +67,29 @@ public:
     virtual void scheduleFirstVideoFrameReceived() = 0;
 
     /**
+     * @brief Schedules first audio frame received task. Called by the worker thread.
+     */
+    virtual void scheduleFirstAudioFrameReceived() = 0;
+
+    /**
+     * @brief Stores audio first-frame fallback probe state.
+     *
+     * @param[in] pad : sink pad with installed probe
+     * @param[in] id  : probe id
+     */
+    virtual void setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id) = 0;
+
+    /**
+     * @brief Removes and clears audio first-frame fallback probe state.
+     */
+    virtual void clearAudioFirstFrameFallbackProbe() = 0;
+
+    /**
+     * @brief Clears audio first-frame fallback probe state without removing the probe.
+     */
+    virtual void clearAudioFirstFrameFallbackProbeState() = 0;
+
+    /**
      * @brief Schedules all sources attached task. Called by the worker thread.
      */
     virtual void scheduleAllSourcesAttached() = 0;
