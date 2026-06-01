@@ -20,6 +20,7 @@
 #include "SetSourcePosition.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
+#include <inttypes.h>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -41,6 +42,11 @@ SetSourcePosition::~SetSourcePosition()
 void SetSourcePosition::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetSourcePosition for %s source", common::convertMediaSourceType(m_type));
+    RIALTO_SERVER_LOG_INFO("[SEEK-FIX] SetSourcePosition::execute: type=%s, position=%" PRId64
+                           " ns (%.3f sec), resetTime=%d, appliedRate=%.2f, stopPosition=%" PRIu64,
+                           common::convertMediaSourceType(m_type), m_position,
+                           static_cast<double>(m_position) / 1000000000.0,
+                           m_resetTime, m_appliedRate, m_stopPosition);
 
     if (MediaSourceType::UNKNOWN == m_type)
     {
@@ -66,6 +72,10 @@ void SetSourcePosition::execute() const
     {
         m_context.initialPositions[source].emplace_back(
             SegmentData{m_position, m_resetTime, m_appliedRate, m_stopPosition});
+        RIALTO_SERVER_LOG_INFO("[SEEK-FIX] SetSourcePosition: stored initialPosition for %s source: "
+                               "position=%" PRId64 " ns (%.3f sec), resetTime=%d, appliedRate=%.2f",
+                               common::convertMediaSourceType(m_type), m_position,
+                               static_cast<double>(m_position) / 1000000000.0, m_resetTime, m_appliedRate);
     }
     else if (MediaSourceType::SUBTITLE == m_type)
     {
