@@ -22,6 +22,7 @@
 #include "SharedMemoryHandle.h"
 #include <algorithm>
 #include <chrono>
+#include <cinttypes>
 #include <cstring>
 #include <fstream>
 #include <stdexcept>
@@ -295,7 +296,8 @@ void ClientController::changeStateAndNotifyClients(ApplicationState state)
 void ClientController::reportClientMetrics(std::uint64_t sampleId, std::uint32_t reason)
 {
     if (!m_privateMetricsIpc->reportClientMetrics(sampleId, reason, getProcessName(), static_cast<std::uint32_t>(getpid()),
-                                                  getMonotonicTimeMs(), getEpochTimeMs(), getProcessCpuTimeMs()))
+                                                  getMonotonicTimeMs(), getEpochTimeMs(), getProcessCpuTimeMs(),
+                                                  getProcessMemoryKb()))
     {
         RIALTO_CLIENT_LOG_WARN("Failed to report client process metrics");
     }
@@ -345,5 +347,24 @@ std::string ClientController::getProcessName() const
         return processName;
     }
     return "unknown";
+}
+
+std::uint64_t ClientController::getProcessMemoryKb() const
+{
+    std::ifstream status{"/proc/self/status"};
+    std::string line;
+    while (std::getline(status, line))
+    {
+        if (line.rfind("VmRSS:", 0) == 0)
+        {
+            std::uint64_t memKb{0};
+            if (std::sscanf(line.c_str(), "VmRSS: %" SCNu64, &memKb) == 1)
+            {
+                return memKb;
+            }
+        }
+    }
+    RIALTO_CLIENT_LOG_WARN("Failed to sample client process memory usage");
+    return 0;
 }
 } // namespace firebolt::rialto::client

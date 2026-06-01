@@ -99,6 +99,11 @@ private:
     std::uint64_t getProcessCpuTimeMs() const;
 
     /**
+     * @brief Gets process RSS memory usage in kilobytes.
+     */
+    std::uint64_t getProcessMemoryKb() const;
+
+    /**
      * @brief Gets the process name used for metrics reporting.
      */
     std::string getProcessName() const;

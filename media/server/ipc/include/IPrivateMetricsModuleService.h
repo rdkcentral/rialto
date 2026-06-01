@@ -20,6 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_IPC_I_PRIVATE_METRICS_MODULE_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_IPC_I_PRIVATE_METRICS_MODULE_SERVICE_H_
 
+#include "ControlCommon.h"
+#include "MediaCommon.h"
 #include "privatemetricsmodule.pb.h"
 #include <IIpcServer.h>
 #include <memory>
@@ -53,6 +55,9 @@ public:
 
     virtual void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) = 0;
     virtual void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) = 0;
+
+    virtual void notifyPlaybackStateChanged(int sessionId, PlaybackState oldState, PlaybackState newState) = 0;
+    virtual void notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState) = 0;
 };
 } // namespace firebolt::rialto::server::ipc
 
