@@ -210,7 +210,9 @@ bool SessionServerManager::switchToActive()
     }
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::ACTIVE))
     {
+        ApplicationState oldState = ApplicationState::INACTIVE; // switching from inactive/uninitialized to active
         m_controlService.setApplicationState(ApplicationState::RUNNING);
+        m_sessionManagementServer->notifyApplicationStateChanged(oldState, ApplicationState::RUNNING);
         m_currentState.store(common::SessionServerState::ACTIVE);
         RIALTO_SERVER_LOG_MIL("RialtoServer state is ACTIVE now");
         return true;
@@ -231,7 +233,9 @@ bool SessionServerManager::switchToInactive()
     m_cdmService.switchToInactive();
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::INACTIVE))
     {
+        ApplicationState oldState = ApplicationState::RUNNING; // switching from active to inactive
         m_controlService.setApplicationState(ApplicationState::INACTIVE);
+        m_sessionManagementServer->notifyApplicationStateChanged(oldState, ApplicationState::INACTIVE);
         m_currentState.store(common::SessionServerState::INACTIVE);
         RIALTO_SERVER_LOG_MIL("RialtoServer state is INACTIVE now");
         return true;
