@@ -304,6 +304,8 @@ void GstGenericPlayer::resetWorkerThread()
 
 void GstGenericPlayer::termPipeline()
 {
+    clearAudioFirstFrameFallbackProbe();
+
     if (m_finishSourceSetupTimer && m_finishSourceSetupTimer->isActive())
     {
         m_finishSourceSetupTimer->cancel();
@@ -538,6 +540,11 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
 
 void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
 {
+    if (mediaSourceType == MediaSourceType::AUDIO)
+    {
+        m_context.firstAudioFrameReceived = false;
+        clearAudioFirstFrameFallbackProbe();
+    }
     m_flushWatcher->setFlushed(mediaSourceType);
 }
 
@@ -1723,6 +1730,50 @@ void GstGenericPlayer::scheduleFirstVideoFrameReceived()
     {
         m_workerThread->enqueueTask(m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::VIDEO));
     }
+}
+
+void GstGenericPlayer::scheduleFirstAudioFrameReceived()
+{
+    if (m_context.firstAudioFrameReceived)
+    {
+        return;
+    }
+
+    m_context.firstAudioFrameReceived = true;
+
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::AUDIO));
+    }
+}
+
+void GstGenericPlayer::setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id)
+{
+    clearAudioFirstFrameFallbackProbe();
+
+    m_context.audioFirstFrameProbePad = pad;
+    m_context.audioFirstFrameProbeId = id;
+}
+
+void GstGenericPlayer::clearAudioFirstFrameFallbackProbe()
+{
+    if (m_context.audioFirstFrameProbePad && m_context.audioFirstFrameProbeId != 0)
+    {
+        m_gstWrapper->gstPadRemoveProbe(m_context.audioFirstFrameProbePad, m_context.audioFirstFrameProbeId);
+    }
+
+    clearAudioFirstFrameFallbackProbeState();
+}
+
+void GstGenericPlayer::clearAudioFirstFrameFallbackProbeState()
+{
+    if (m_context.audioFirstFrameProbePad)
+    {
+        m_gstWrapper->gstObjectUnref(m_context.audioFirstFrameProbePad);
+        m_context.audioFirstFrameProbePad = nullptr;
+    }
+
+    m_context.audioFirstFrameProbeId = 0;
 }
 
 void GstGenericPlayer::scheduleAllSourcesAttached()
