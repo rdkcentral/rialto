@@ -504,6 +504,11 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
 
 void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
 {
+    if (mediaSourceType == MediaSourceType::AUDIO)
+    {
+        m_context.firstAudioFrameReceived = false;
+        clearAudioFirstFrameFallbackProbe();
+    }
     m_flushWatcher->setFlushed(mediaSourceType);
 }
 
@@ -1733,11 +1738,6 @@ void GstGenericPlayer::scheduleAllSourcesAttached()
     allSourcesAttached();
 }
 
-    if (mediaSourceType == MediaSourceType::AUDIO)
-    {
-        m_context.firstAudioFrameReceived = false;
-        clearAudioFirstFrameFallbackProbe();
-    }
 
 void GstGenericPlayer::cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource)
 {
