@@ -27,6 +27,7 @@ enum MetricsSampleReason {
     METRICS_SAMPLE_REASON_UNKNOWN = 0;
     METRICS_SAMPLE_REASON_CONNECTED = 1;
     METRICS_SAMPLE_REASON_PERIODIC = 2;
+    METRICS_SAMPLE_REASON_STATE_TRANSITION = 3;
 }
 
 message ClientProcessMetrics {
@@ -37,6 +38,7 @@ message ClientProcessMetrics {
     optional uint64 monotonic_time_ms = 5;
     optional uint64 epoch_time_ms = 6;
     optional uint64 process_cpu_time_ms = 7;
+    optional uint64 process_memory_kb = 8;
 }
 
 message ReportClientMetricsRequest {

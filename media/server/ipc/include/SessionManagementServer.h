@@ -68,6 +68,7 @@ public:
     void stop() override;
     void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                       RIALTO_DEBUG_LEVEL ipcLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels) override;
+    void notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState) override;
 
 private:
     void onClientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);

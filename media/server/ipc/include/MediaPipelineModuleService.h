@@ -46,6 +46,7 @@ public:
 
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
+    void setMetricsService(const std::shared_ptr<IPrivateMetricsModuleService> &metricsService) override;
 
     void createSession(::google::protobuf::RpcController *controller,
                        const ::firebolt::rialto::CreateSessionRequest *request,
@@ -164,6 +165,7 @@ public:
 
 private:
     service::IMediaPipelineService &m_mediaPipelineService;
+    std::shared_ptr<IPrivateMetricsModuleService> m_metricsService;
     std::map<std::shared_ptr<::firebolt::rialto::ipc::IClient>, std::set<int>> m_clientSessions;
 };
 } // namespace firebolt::rialto::server::ipc

@@ -61,6 +61,7 @@ SessionManagementServer::SessionManagementServer(
       m_controlModule{controlModuleFactory->create(playbackService, controlService)}
 {
     m_ipcServer = ipcFactory->create();
+    m_mediaPipelineModule->setMetricsService(m_privateMetricsModule);
 }
 
 SessionManagementServer::~SessionManagementServer()
@@ -162,6 +163,14 @@ void SessionManagementServer::setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, 
                                            RIALTO_DEBUG_LEVEL ipcLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels)
 {
     m_setLogLevelsService.setLogLevels(defaultLogLevels, clientLogLevels, ipcLogLevels, commonLogLevels);
+}
+
+void SessionManagementServer::notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState)
+{
+    if (m_privateMetricsModule)
+    {
+        m_privateMetricsModule->notifyApplicationStateChanged(oldState, newState);
+    }
 }
 
 void SessionManagementServer::onClientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)

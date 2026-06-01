@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineClient.h"
+#include "IPrivateMetricsModuleService.h"
 #include "RialtoServerLogging.h"
 #include "mediapipelinemodule.pb.h"
 #include <IIpcServer.h>
@@ -133,8 +134,9 @@ firebolt::rialto::PlaybackErrorEvent_PlaybackError convertPlaybackError(const fi
 
 namespace firebolt::rialto::server::ipc
 {
-MediaPipelineClient::MediaPipelineClient(int sessionId, const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
-    : m_sessionId{sessionId}, m_ipcClient{ipcClient}
+MediaPipelineClient::MediaPipelineClient(int sessionId, const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient,
+                                         IPrivateMetricsModuleService *metricsService)
+    : m_sessionId{sessionId}, m_ipcClient{ipcClient}, m_metricsService{metricsService}
 {
 }
 
@@ -175,6 +177,17 @@ void MediaPipelineClient::notifyNetworkState(NetworkState state)
 void MediaPipelineClient::notifyPlaybackState(PlaybackState state)
 {
     RIALTO_SERVER_LOG_DEBUG("Sending PlaybackStateChangeEvent...");
+
+    if (m_metricsService)
+    {
+        PlaybackState oldState = m_currentPlaybackState;
+        m_currentPlaybackState = state;
+        m_metricsService->notifyPlaybackStateChanged(m_sessionId, oldState, state);
+    }
+    else
+    {
+        m_currentPlaybackState = state;
+    }
 
     auto event = std::make_shared<firebolt::rialto::PlaybackStateChangeEvent>();
     event->set_session_id(m_sessionId);
