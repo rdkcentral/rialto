@@ -238,12 +238,12 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
         }
 
         OpenCDMError result = m_ocdmGstSessionDecryptBufferOnce(m_session, encrypted, caps);
+        RIALTO_COMMON_LOG_MIL("OCDM result casted to int is %d", static_cast<int>(result));
 
         // Post-decrypt status check: a failed decrypt during HDCP reauth may not carry a
         // specific error code, so confirm via key status before signalling the caller to retry.
         if (result != ERROR_NONE && !keyId.empty())
         {
-            RIALTO_COMMON_LOG_ERROR("OCDM result casted to int is %d", static_cast<int>(result));
             const ::KeyStatus postStatus =
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             RIALTO_COMMON_LOG_ERROR("OCDM post status casted to int is %d", static_cast<int>(postStatus));
