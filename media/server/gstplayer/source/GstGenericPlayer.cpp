@@ -509,7 +509,14 @@ void GstGenericPlayer::notifyPlaybackInfo()
 {
     PlaybackInfo info;
     getPosition(info.currentPosition);
-    getVolume(info.volume);
+    if (m_context.audioFadeEnabled)
+    {
+        info.volume = m_context.audioFadeVolume;
+    }
+    else
+    {
+        getVolume(info.volume);
+    }
     m_gstPlayerClient->notifyPlaybackInfo(info);
 }
 
@@ -2349,6 +2356,7 @@ bool GstGenericPlayer::getVolume(double &currentVolume)
             currentVolume = static_cast<double>(fadeVolume) / 100.0;
             RIALTO_SERVER_LOG_INFO("Fade volume is supported: %f", currentVolume);
         }
+        m_context.audioFadeVolume = currentVolume;
     }
     else
     {

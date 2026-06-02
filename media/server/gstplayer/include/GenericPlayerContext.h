@@ -262,6 +262,12 @@ struct GenericPlayerContext
     std::atomic_bool audioFadeEnabled{false};
 
     /**
+     * @brief The last known fade volume value used for PlaybackInfo messages.
+     *        The "fade-volume" property must not be queried too frequently as it can cause decoder issues.
+     */
+    std::atomic<double> audioFadeVolume{1.0};
+
+    /**
      * @brief Workaround for the gstreamer flush issue
      */
     std::shared_ptr<IFlushOnPrerollController> flushOnPrerollController{std::make_shared<FlushOnPrerollController>()};
