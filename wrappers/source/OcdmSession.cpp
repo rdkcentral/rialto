@@ -21,6 +21,7 @@
 #include "OcdmCommon.h"
 #include "opencdm/open_cdm_adapter.h"
 #include "opencdm/open_cdm_ext.h"
+#include "RialtoCommonLogging.h"
 #include <dlfcn.h>
 #include <mutex>
 namespace
@@ -230,6 +231,7 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             if (preStatus == OutputRestricted || preStatus == OutputRestrictedHDCP22)
             {
+                RIALTO_COMMON_LOG_ERROR("Pre-decrypt key status is OUTPUT_RESTRICTED");
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
             }
         }
@@ -240,10 +242,12 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
         // specific error code, so confirm via key status before signalling the caller to retry.
         if (result != ERROR_NONE && !keyId.empty())
         {
+            RIALTO_COMMON_LOG_ERROR("OCDM result casted to int is %d", static_cast<int>(result));
             const ::KeyStatus postStatus =
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             if (postStatus == OutputRestricted || postStatus == OutputRestrictedHDCP22)
             {
+                RIALTO_COMMON_LOG_ERROR("Post-decrypt key status is OUTPUT_RESTRICTED");
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
             }
         }

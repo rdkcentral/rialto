@@ -231,7 +231,7 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
     {
         uint32_t lastDrmError{0};
         m_ocdmSession->getLastDrmError(lastDrmError);
-        if (lastDrmError == kHdcpOutputProtectionFailure)
+        if (lastDrmError == kHdcpOutputProtectionFailure || MediaKeyErrorStatus::OUTPUT_RESTRICTED == status)
         {
             RIALTO_SERVER_LOG_WARN("Decrypt failed due to HDCP output protection (DRM error %u)", lastDrmError);
             return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
@@ -241,6 +241,7 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
 
     if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))
     {
+        RIALTO_SERVER_LOG_WARN("Return status OK, but there were errors reported by OCDM. Returning FAIL");
         status = MediaKeyErrorStatus::FAIL;
     }
 
@@ -417,6 +418,7 @@ void MediaKeySession::onProcessChallenge(const char url[], const uint8_t challen
 
 void MediaKeySession::onKeyUpdated(const uint8_t keyId[], const uint8_t keyIdLength)
 {
+    RIALTO_SERVER_LOG_MIL("On key updated received for keyId of length %u", keyIdLength);
     std::vector<unsigned char> keyIdVec = std::vector<unsigned char>{keyId, keyId + keyIdLength};
     auto task = [&, keyIdVec]()
     {
@@ -432,6 +434,7 @@ void MediaKeySession::onKeyUpdated(const uint8_t keyId[], const uint8_t keyIdLen
 
 void MediaKeySession::onAllKeysUpdated()
 {
+    RIALTO_SERVER_LOG_MIL("On all keys updated received");
     auto task = [&]()
     {
         std::shared_ptr<IMediaKeysClient> client = m_mediaKeysClient.lock();
