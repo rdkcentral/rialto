@@ -76,6 +76,8 @@ public:
 
     gpointer gTypeClassRef(GType type) override { return g_type_class_ref(type); }
 
+    void gTypeClassUnref(gpointer g_class) override { g_type_class_unref(g_class); }
+
     GType gTypeFromName(const gchar *name) override { return g_type_from_name(name); }
 
     GFlagsValue *gFlagsGetValueByNick(GFlagsClass *flags_class, const gchar *nick) override

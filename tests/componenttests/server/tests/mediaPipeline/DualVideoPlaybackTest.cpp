@@ -76,6 +76,7 @@ public:
         EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kSecondaryGstPlayFlagsType))
             .Times(4)
             .WillRepeatedly(Return(&m_flagsClass));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeClassUnref(&m_flagsClass)).Times(4);
         EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio")))
             .WillOnce(Return(&m_audioFlag))
             .RetiresOnSaturation();

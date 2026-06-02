@@ -341,7 +341,9 @@ unsigned GstGenericPlayer::getGstPlayFlag(const char *nick)
     GFlagsClass *flagsClass =
         static_cast<GFlagsClass *>(m_glibWrapper->gTypeClassRef(m_glibWrapper->gTypeFromName("GstPlayFlags")));
     GFlagsValue *flag = m_glibWrapper->gFlagsGetValueByNick(flagsClass, nick);
-    return flag ? flag->value : 0;
+    unsigned result = flag ? flag->value : 0;
+    m_glibWrapper->gTypeClassUnref(flagsClass);
+    return result;
 }
 
 void GstGenericPlayer::setupSource(GstElement *pipeline, GstElement *source, GstGenericPlayer *self)

@@ -113,6 +113,13 @@ public:
     virtual gpointer gTypeClassRef(GType type) = 0;
 
     /**
+     * @brief Decrements the reference count of the class structure being passed in.
+     *
+     * @param[in] g_class  : Pointer to the class structure to decrement.
+     */
+    virtual void gTypeClassUnref(gpointer g_class) = 0;
+
+    /**
      * @brief Gets the type from the name.
      *
      * @param[in] name  : The name of the type to find
