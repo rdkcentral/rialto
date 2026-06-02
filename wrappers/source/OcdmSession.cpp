@@ -228,7 +228,8 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
         if (!keyId.empty())
         {
             const ::KeyStatus preStatus =
-                opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
+            opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
+            RIALTO_COMMON_LOG_MIL("OCDM pre status casted to int is %d", static_cast<int>(preStatus));
             if (preStatus == OutputRestricted || preStatus == OutputRestrictedHDCP22)
             {
                 RIALTO_COMMON_LOG_ERROR("Pre-decrypt key status is OUTPUT_RESTRICTED");
@@ -245,6 +246,7 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
             RIALTO_COMMON_LOG_ERROR("OCDM result casted to int is %d", static_cast<int>(result));
             const ::KeyStatus postStatus =
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
+            RIALTO_COMMON_LOG_ERROR("OCDM post status casted to int is %d", static_cast<int>(postStatus));
             if (postStatus == OutputRestricted || postStatus == OutputRestrictedHDCP22)
             {
                 RIALTO_COMMON_LOG_ERROR("Post-decrypt key status is OUTPUT_RESTRICTED");
