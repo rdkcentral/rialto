@@ -197,6 +197,8 @@ public:
 
     void notifySourceFlushed(MediaSourceType mediaSourceType) override;
 
+    void notifyOutputProtectionRecovered(MediaSourceType mediaSourceType) override;
+
     void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) override;
 
 protected:

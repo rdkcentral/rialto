@@ -99,6 +99,18 @@ TEST_F(RialtoClientMediaPipelineCallbackTest, SourceFlushed)
 }
 
 /**
+ * Test a notification of output protection recovered is forwarded to the registered client.
+ */
+TEST_F(RialtoClientMediaPipelineCallbackTest, OutputProtectionRecovered)
+{
+    int32_t sourceId = 1;
+
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyOutputProtectionRecovered(sourceId));
+
+    m_mediaPipelineCallback->notifyOutputProtectionRecovered(sourceId);
+}
+
+/**
  * Test a notification of playbackInfo is forwarded to the registered client.
  */
 TEST_F(RialtoClientMediaPipelineCallbackTest, PlaybackInfo)

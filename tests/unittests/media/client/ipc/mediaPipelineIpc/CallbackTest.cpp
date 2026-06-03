@@ -195,6 +195,34 @@ TEST_F(RialtoClientMediaPipelineIpcCallbackTest, InvalidSessionIdSourceFlushed)
 }
 
 /**
+ * Test that an output protection recovered notification over IPC is forwarded to the client.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyOutputProtectionRecovered)
+{
+    auto outputProtectionRecoveredEvent = std::make_shared<firebolt::rialto::OutputProtectionRecoveredEvent>();
+    outputProtectionRecoveredEvent->set_session_id(m_sessionId);
+    outputProtectionRecoveredEvent->set_source_id(m_sourceId);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+    EXPECT_CALL(*m_clientMock, notifyOutputProtectionRecovered(m_sourceId));
+
+    m_outputProtectionRecoveredCb(outputProtectionRecoveredEvent);
+}
+
+/**
+ * Test that if the session id of the event is not the same as the playback session the event will be ignored.
+ */
+TEST_F(RialtoClientMediaPipelineIpcCallbackTest, InvalidSessionIdOutputProtectionRecovered)
+{
+    auto outputProtectionRecoveredEvent = std::make_shared<firebolt::rialto::OutputProtectionRecoveredEvent>();
+    outputProtectionRecoveredEvent->set_session_id(-1);
+
+    EXPECT_CALL(*m_eventThreadMock, addImpl(_)).WillOnce(Invoke([](std::function<void()> &&func) { func(); }));
+
+    m_outputProtectionRecoveredCb(outputProtectionRecoveredEvent);
+}
+
+/**
  * Test that a playback info notification over IPC is forwarded to the client.
  */
 TEST_F(RialtoClientMediaPipelineIpcCallbackTest, NotifyPlaybackInfo)

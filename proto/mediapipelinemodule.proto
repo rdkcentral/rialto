@@ -964,6 +964,7 @@ message PlaybackErrorEvent {
     enum PlaybackError {
         UNKNOWN = 0;            ///< An unknown or undefined network state.
         DECRYPTION = 1;         ///< Player failed to decrypt a buffer and the frame has been dropped.
+        OUTPUT_PROTECTION = 2;  ///< HDCP output protection failure - triggers retune.
     }
 
     optional int32 session_id = 1 [default = -1];
@@ -1000,6 +1001,17 @@ message PlaybackInfoEvent {
  * @param source_id         The id of the media source the request is for.
  */
 message SourceFlushedEvent {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+
+/**
+ * @brief Event sent by the server when output protection has recovered.
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ * @param source_id         The id of the media source the request is for.
+ */
+message OutputProtectionRecoveredEvent {
     optional int32 session_id = 1 [default = -1];
     optional int32 source_id = 2 [default = -1];
 }

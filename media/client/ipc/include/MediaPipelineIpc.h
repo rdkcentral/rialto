@@ -229,6 +229,13 @@ private:
      */
     void onSourceFlushed(const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event);
 
+    /**
+     * @brief Handler for output protection recovered notification from the server.
+     *
+     * @param[in] event : The output protection recovered event structure.
+     */
+    void onOutputProtectionRecovered(const std::shared_ptr<firebolt::rialto::OutputProtectionRecoveredEvent> &event);
+
     void onPlaybackInfo(const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event);
 
     /**

@@ -284,6 +284,49 @@ void HandleBusMessage::execute() const
         m_glibWrapper->gErrorFree(err);
         break;
     }
+    case GST_MESSAGE_APPLICATION:
+    {
+        const GstStructure *structure = gst_message_get_structure(m_message);
+        if (structure && m_gstPlayerClient &&
+            (m_gstWrapper->gstStructureHasName(structure, "HDCPProtectionFailure") ||
+             m_gstWrapper->gstStructureHasName(structure, "HDCPProtectionRecovered")))
+        {
+            const gchar *kElementName = GST_ELEMENT_NAME(GST_ELEMENT(GST_MESSAGE_SRC(m_message)));
+            if (m_gstWrapper->gstStructureHasName(structure, "HDCPProtectionFailure"))
+            {
+                if (g_strrstr(kElementName, "video"))
+                {
+                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
+                                                           PlaybackError::OUTPUT_PROTECTION);
+                }
+                else if (g_strrstr(kElementName, "audio"))
+                {
+                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
+                                                           PlaybackError::OUTPUT_PROTECTION);
+                }
+                else
+                {
+                    RIALTO_SERVER_LOG_WARN("Unknown source for HDCPProtectionFailure from '%s'", kElementName);
+                }
+            }
+            else if (m_gstWrapper->gstStructureHasName(structure, "HDCPProtectionRecovered"))
+            {
+                if (g_strrstr(kElementName, "video"))
+                {
+                    m_gstPlayerClient->notifyOutputProtectionRecovered(firebolt::rialto::MediaSourceType::VIDEO);
+                }
+                else if (g_strrstr(kElementName, "audio"))
+                {
+                    m_gstPlayerClient->notifyOutputProtectionRecovered(firebolt::rialto::MediaSourceType::AUDIO);
+                }
+                else
+                {
+                    RIALTO_SERVER_LOG_WARN("Unknown source for HDCPProtectionRecovered from '%s'", kElementName);
+                }
+            }
+        }
+        break;
+    }
     default:
         break;
     }

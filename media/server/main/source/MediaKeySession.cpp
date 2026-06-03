@@ -245,6 +245,7 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
     MediaKeyErrorStatus status = m_ocdmSession->decryptBuffer(encrypted, caps);
     if (MediaKeyErrorStatus::OK != status)
     {
+        // TODO Check keys status for output restricted
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
     }
 

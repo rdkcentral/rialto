@@ -172,6 +172,13 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::OutputProtectionRecoveredEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::OutputProtectionRecoveredEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onOutputProtectionRecovered, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     eventTag = ipcChannel->subscribe<firebolt::rialto::PlaybackInfoEvent>(
         [this](const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event)
         { m_eventThread->add(&MediaPipelineIpc::onPlaybackInfo, this, event); });
@@ -1544,6 +1551,9 @@ void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::P
         case firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION:
             playbackError = PlaybackError::DECRYPTION;
             break;
+        case firebolt::rialto::PlaybackErrorEvent_PlaybackError_OUTPUT_PROTECTION:
+            playbackError = PlaybackError::OUTPUT_PROTECTION;
+            break;
         default:
             RIALTO_CLIENT_LOG_WARN("Received unknown playback error");
             break;
@@ -1559,6 +1569,16 @@ void MediaPipelineIpc::onSourceFlushed(const std::shared_ptr<firebolt::rialto::S
     if (event->session_id() == m_sessionId)
     {
         m_mediaPipelineIpcClient->notifySourceFlushed(event->source_id());
+    }
+}
+
+void MediaPipelineIpc::onOutputProtectionRecovered(
+    const std::shared_ptr<firebolt::rialto::OutputProtectionRecoveredEvent> &event)
+{
+    // Ignore event if not for this session
+    if (event->session_id() == m_sessionId)
+    {
+        m_mediaPipelineIpcClient->notifyOutputProtectionRecovered(event->source_id());
     }
 }
 

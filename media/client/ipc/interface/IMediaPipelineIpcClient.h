@@ -116,6 +116,13 @@ public:
     virtual void notifySourceFlushed(int32_t sourceId) = 0;
 
     /**
+     * @brief Notifies the client that output protection has recovered.
+     *
+     * @param[in] sourceId  : The id of the source that recovered output protection.
+     */
+    virtual void notifyOutputProtectionRecovered(int32_t sourceId) = 0;
+
+    /**
      * @brief Notifies the client about the current playback state
      *
      * Notification shall be sent every 32ms after reaching the PLAYING state.

@@ -225,6 +225,13 @@ MATCHER_P(SourceFlushedEventMatcher, kSourceId, "")
     return (kSourceId == event->source_id());
 }
 
+MATCHER_P(OutputProtectionRecoveredEventMatcher, kSourceId, "")
+{
+    std::shared_ptr<firebolt::rialto::OutputProtectionRecoveredEvent> event =
+        std::dynamic_pointer_cast<firebolt::rialto::OutputProtectionRecoveredEvent>(arg);
+    return (kSourceId == event->source_id());
+}
+
 MATCHER_P(PlaybackInfoEventMatcher, kExpectedPlaybackInfo, "")
 {
     std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> event =
@@ -876,6 +883,11 @@ void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackErrorEvent()
 void MediaPipelineModuleServiceTests::mediaClientWillSendSourceFlushedEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(SourceFlushedEventMatcher(kSourceId)));
+}
+
+void MediaPipelineModuleServiceTests::mediaClientWillSendOutputProtectionRecoveredEvent()
+{
+    EXPECT_CALL(*m_clientMock, sendEvent(OutputProtectionRecoveredEventMatcher(kSourceId)));
 }
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackInfoEvent()
@@ -1595,6 +1607,12 @@ void MediaPipelineModuleServiceTests::sendSourceFlushedEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
     m_mediaPipelineClient->notifySourceFlushed(kSourceId);
+}
+
+void MediaPipelineModuleServiceTests::sendOutputProtectionRecoveredEvent()
+{
+    ASSERT_TRUE(m_mediaPipelineClient);
+    m_mediaPipelineClient->notifyOutputProtectionRecovered(kSourceId);
 }
 
 void MediaPipelineModuleServiceTests::sendPlaybackInfoEvent()

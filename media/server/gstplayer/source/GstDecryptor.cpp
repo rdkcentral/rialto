@@ -308,14 +308,42 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
             {
                 firebolt::rialto::MediaKeyErrorStatus status =
                     m_decryptionService->decrypt(protectionData->keySessionId, buffer, caps);
-                if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
+                if (firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED == status)
+                {
+                    m_hdcpOutputRestricted = true;
+                    m_metadataWrapper->removeProtectionMetadata(buffer);
+
+                    GST_WARNING_OBJECT(self, "HDCP output protection failure");
+                    GstStructure *hdcpFailureMsg =
+                        m_gstWrapper->gstStructureNew("HDCPProtectionFailure", "message", G_TYPE_STRING,
+                                                        "HDCP Output Protection Error", NULL);
+                    m_gstWrapper->gstElementPostMessage(GST_ELEMENT_CAST(self),
+                                                        m_gstWrapper->gstMessageNewApplication(GST_OBJECT_CAST(self),
+                                                                                                hdcpFailureMsg));
+
+                    return GST_BASE_TRANSFORM_FLOW_DROPPED;
+                }
+                else if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
                 {
                     GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
+                    m_hdcpOutputRestricted = false;
                 }
                 else
                 {
                     GST_TRACE_OBJECT(self, "Decryption successful");
                     returnStatus = GST_FLOW_OK;
+
+                    if (m_hdcpOutputRestricted)
+                    {
+                        GST_INFO_OBJECT(self, "HDCP output protection recovered");
+                        GstStructure *hdcpRecoveryMsg =
+                            m_gstWrapper->gstStructureNew("HDCPProtectionRecovered", "message", G_TYPE_STRING,
+                                                          "HDCP Output Protection Recovered", NULL);
+                        m_gstWrapper->gstElementPostMessage(
+                            GST_ELEMENT_CAST(self),
+                            m_gstWrapper->gstMessageNewApplication(GST_OBJECT_CAST(self), hdcpRecoveryMsg));
+                        m_hdcpOutputRestricted = false;
+                    }
                 }
             }
         }

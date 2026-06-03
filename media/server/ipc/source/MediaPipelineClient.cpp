@@ -126,6 +126,10 @@ firebolt::rialto::PlaybackErrorEvent_PlaybackError convertPlaybackError(const fi
     {
         return firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION;
     }
+    case firebolt::rialto::PlaybackError::OUTPUT_PROTECTION:
+    {
+        return firebolt::rialto::PlaybackErrorEvent_PlaybackError_OUTPUT_PROTECTION;
+    }
     }
     return firebolt::rialto::PlaybackErrorEvent_PlaybackError_UNKNOWN;
 }
@@ -257,6 +261,17 @@ void MediaPipelineClient::notifySourceFlushed(int32_t sourceId)
     RIALTO_SERVER_LOG_DEBUG("Sending SourceFlushedEvent...");
 
     auto event = std::make_shared<firebolt::rialto::SourceFlushedEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_source_id(sourceId);
+
+    m_ipcClient->sendEvent(event);
+}
+
+void MediaPipelineClient::notifyOutputProtectionRecovered(int32_t sourceId)
+{
+    RIALTO_SERVER_LOG_DEBUG("Sending OutputProtectionRecoveredEvent...");
+
+    auto event = std::make_shared<firebolt::rialto::OutputProtectionRecoveredEvent>();
     event->set_session_id(m_sessionId);
     event->set_source_id(sourceId);
 

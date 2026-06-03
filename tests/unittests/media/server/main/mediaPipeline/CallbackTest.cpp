@@ -269,3 +269,29 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifySourceFlushedFailureSourceId
 
     m_gstPlayerCallback->notifySourceFlushed(mediaSourceType);
 }
+
+/**
+ * Test an output protection recovery notification is forwarded to the registered client.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyOutputProtectionRecovered)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    int sourceId = attachSource(mediaSourceType, "video/mp4");
+
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyOutputProtectionRecovered(sourceId));
+
+    m_gstPlayerCallback->notifyOutputProtectionRecovered(mediaSourceType);
+}
+
+/**
+ * Test an output protection recovery notification fails when sourceid cannot be found.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyOutputProtectionRecoveredFailureSourceIdNotFound)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+
+    mainThreadWillEnqueueTask();
+
+    m_gstPlayerCallback->notifyOutputProtectionRecovered(mediaSourceType);
+}

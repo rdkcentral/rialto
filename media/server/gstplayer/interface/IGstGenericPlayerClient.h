@@ -170,6 +170,13 @@ public:
     virtual void notifySourceFlushed(MediaSourceType mediaSourceType) = 0;
 
     /**
+     * @brief Notifies the client that output protection has recovered.
+     *
+     * @param[in] mediaSourceType  : The type of the source where recovery was detected.
+     */
+    virtual void notifyOutputProtectionRecovered(MediaSourceType mediaSourceType) = 0;
+
+    /**
      * @brief Notifies the client about the current playback state
      *
      * Notification shall be sent every 32ms after reaching the PLAYING state.
