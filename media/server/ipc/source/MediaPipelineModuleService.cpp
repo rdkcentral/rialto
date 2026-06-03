@@ -270,13 +270,16 @@ std::shared_ptr<IMediaPipelineModuleServiceFactory> IMediaPipelineModuleServiceF
 }
 
 std::shared_ptr<IMediaPipelineModuleService>
-MediaPipelineModuleServiceFactory::create(service::IMediaPipelineService &mediaPipelineService) const
+//MediaPipelineModuleServiceFactory::create(service::IMediaPipelineService &mediaPipelineService) const
+MediaPipelineModuleServiceFactory::create(service::IMediaPipelineService &mediaPipelineService,
+                                          service::IPlaybackService &playbackService) const
 {
     std::shared_ptr<IMediaPipelineModuleService> mediaPipelineModule;
 
     try
     {
-        mediaPipelineModule = std::make_shared<MediaPipelineModuleService>(mediaPipelineService);
+        //mediaPipelineModule = std::make_shared<MediaPipelineModuleService>(mediaPipelineService);
+        mediaPipelineModule = std::make_shared<MediaPipelineModuleService>(mediaPipelineService, playbackService);
     }
     catch (const std::exception &e)
     {
@@ -286,8 +289,12 @@ MediaPipelineModuleServiceFactory::create(service::IMediaPipelineService &mediaP
     return mediaPipelineModule;
 }
 
-MediaPipelineModuleService::MediaPipelineModuleService(service::IMediaPipelineService &mediaPipelineService)
-    : m_mediaPipelineService{mediaPipelineService}
+//MediaPipelineModuleService::MediaPipelineModuleService(service::IMediaPipelineService &mediaPipelineService)
+    //: m_mediaPipelineService{mediaPipelineService}
+MediaPipelineModuleService::MediaPipelineModuleService(service::IMediaPipelineService &mediaPipelineService,
+                                                         service::IPlaybackService &playbackService)
+    : m_mediaPipelineService{mediaPipelineService},
+      m_playbackService{playbackService}
 {
 }
 
@@ -362,6 +369,16 @@ void MediaPipelineModuleService::destroySession(::google::protobuf::RpcControlle
                                                 ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    //DRM
+    if (!m_playbackService.isActive())
+    {
+        RIALTO_SERVER_LOG_WARN("VIDHATHRI-Server is inactive, rejecting destroySession for session %d",
+                               request->session_id());
+        controller->SetFailed("Server inactive");
+        done->Run();
+        return;  // ← IMPORTANT: Return here!
+    }
+    
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {
@@ -540,6 +557,16 @@ void MediaPipelineModuleService::removeSource(::google::protobuf::RpcController 
                                               ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    //DRM
+    if (!m_playbackService.isActive())
+    {
+        RIALTO_SERVER_LOG_WARN("VIDHATHRI-Server is inactive, rejecting removeSource for session %d",
+                               request->session_id());
+        controller->SetFailed("Server inactive");
+        done->Run();
+        return;  // ← IMPORTANT: Return here!
+    }
+
     if (!m_mediaPipelineService.removeSource(request->session_id(), request->source_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Remove source failed");
@@ -567,6 +594,16 @@ void MediaPipelineModuleService::play(::google::protobuf::RpcController *control
                                       ::firebolt::rialto::PlayResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    //DRM
+    if (!m_playbackService.isActive())
+    {
+        RIALTO_SERVER_LOG_WARN("VIDHATHRI-Server is inactive, rejecting play for session %d",
+                               request->session_id());
+        controller->SetFailed("Server inactive");
+        done->Run();
+        return;  // ← IMPORTANT: Return here!
+    }
+
     bool async{false};
     if (!m_mediaPipelineService.play(request->session_id(), async))
     {
@@ -582,6 +619,16 @@ void MediaPipelineModuleService::pause(::google::protobuf::RpcController *contro
                                        ::firebolt::rialto::PauseResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    //DRM
+    if (!m_playbackService.isActive())
+    {
+        RIALTO_SERVER_LOG_WARN("VIDHATHRI-Server is inactive, rejecting pause for session %d",
+                               request->session_id());
+        controller->SetFailed("Server inactive");
+        done->Run();
+        return;  // ← IMPORTANT: Return here!
+    }
+
     if (!m_mediaPipelineService.pause(request->session_id()))
     {
         RIALTO_SERVER_LOG_ERROR("pause failed");
@@ -595,6 +642,16 @@ void MediaPipelineModuleService::stop(::google::protobuf::RpcController *control
                                       ::firebolt::rialto::StopResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    //DRM
+    if (!m_playbackService.isActive())
+    {
+        RIALTO_SERVER_LOG_WARN("VIDHATHRI-Server is inactive, rejecting stop for session %d",
+                               request->session_id());
+        controller->SetFailed("Server inactive");
+        done->Run();
+        return;  // ← IMPORTANT: Return here!
+   }
+
     if (!m_mediaPipelineService.stop(request->session_id()))
     {
         RIALTO_SERVER_LOG_ERROR("Stop failed");
@@ -623,6 +680,16 @@ void MediaPipelineModuleService::haveData(::google::protobuf::RpcController *con
                                           ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    //DRM
+    if (!m_playbackService.isActive())
+    {
+        RIALTO_SERVER_LOG_WARN("VIDAHTHRI-Server is inactive, rejecting haveData for session %d",
+                               request->session_id());
+        controller->SetFailed("Server inactive");
+        done->Run();
+        return;  // ← IMPORTANT: Return here!
+    }
+
     firebolt::rialto::MediaSourceStatus status{convertMediaSourceStatus(request->status())};
     if (!m_mediaPipelineService.haveData(request->session_id(), status, request->num_frames(), request->request_id()))
     {
@@ -975,6 +1042,16 @@ void MediaPipelineModuleService::flush(::google::protobuf::RpcController *contro
                                        ::firebolt::rialto::FlushResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    //DRM
+    if (!m_playbackService.isActive())
+    {
+        RIALTO_SERVER_LOG_WARN("VIDHATHRI-Server is inactive, rejecting flush for session %d",
+                               request->session_id());
+        controller->SetFailed("Server inactive");
+        done->Run();
+        return;  // ← IMPORTANT: Return here!
+    }
 
     bool isAsync{false};
     if (!m_mediaPipelineService.flush(request->session_id(), request->source_id(), request->reset_time(), isAsync))
