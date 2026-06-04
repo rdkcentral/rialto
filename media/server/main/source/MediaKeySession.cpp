@@ -19,6 +19,7 @@
 
 #include <stdexcept>
 #include <utility>
+#include <gst/gstprotection.h>
 
 #include "MediaKeySession.h"
 #include "MediaKeysCommon.h"
@@ -245,8 +246,42 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
     MediaKeyErrorStatus status = m_ocdmSession->decryptBuffer(encrypted, caps);
     if (MediaKeyErrorStatus::OK != status)
     {
-        // TODO Check keys status for output restricted
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
+
+        // Extract key ID from the buffer's protection metadata
+        std::vector<uint8_t> keyId;
+        GstProtectionMeta *pm = reinterpret_cast<GstProtectionMeta *>(gst_buffer_get_protection_meta(encrypted));
+        if (pm)
+        {
+            const GValue *kidValue = gst_structure_get_value(pm->info, "kid");
+            if (kidValue)
+            {
+                GstBuffer *kidBuf = gst_value_get_buffer(kidValue);
+                if (kidBuf)
+                {
+                    GstMapInfo kidMap;
+                    if (gst_buffer_map(kidBuf, &kidMap, GST_MAP_READ))
+                    {
+                        keyId.assign(kidMap.data, kidMap.data + kidMap.size);
+                        gst_buffer_unmap(kidBuf, &kidMap);
+                    }
+                }
+            }
+        }
+
+        if (!keyId.empty())
+        {
+            KeyStatus keyStatus = m_ocdmSession->getStatus(keyId.data(), static_cast<uint8_t>(keyId.size()));
+            if (keyStatus == KeyStatus::OUTPUT_RESTRICTED)
+            {
+                RIALTO_SERVER_LOG_ERROR("Output restricted for the key id");
+                status = MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer, key status is not usable for the key id");
+            }
+        }
     }
 
     if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))
