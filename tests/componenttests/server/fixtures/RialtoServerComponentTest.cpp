@@ -68,6 +68,7 @@ RialtoServerComponentTest::~RialtoServerComponentTest()
     wrappers::IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = nullptr;
     wrappers::IFactoryAccessor::instance().textTrackPluginWrapperFactory() = nullptr;
     wrappers::IFactoryAccessor::instance().thunderWrapperFactory() = nullptr;
+    wrappers::IFactoryAccessor::instance().deviceSettingsWrapperFactory() = nullptr;
 }
 
 void RialtoServerComponentTest::configureSutInActiveState()
@@ -136,6 +137,9 @@ void RialtoServerComponentTest::configureWrappers() const
     EXPECT_CALL(*m_thunderWrapperFactoryMock, getThunderWrapper())
         .Times(AtLeast(0))
         .WillRepeatedly(Return(m_thunderWrapperMock));
+    EXPECT_CALL(*m_deviceSettingsWrapperFactoryMock, getDeviceSettingsWrapper())
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(m_deviceSettingsWrapperMock));
     wrappers::IFactoryAccessor::instance().glibWrapperFactory() = m_glibWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().linuxWrapperFactory() = m_linuxWrapperFactoryMock;
@@ -144,6 +148,7 @@ void RialtoServerComponentTest::configureWrappers() const
     wrappers::IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = m_rdkGstreamerUtilsWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().textTrackPluginWrapperFactory() = m_textTrackPluginWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().thunderWrapperFactory() = m_thunderWrapperFactoryMock;
+    wrappers::IFactoryAccessor::instance().deviceSettingsWrapperFactory() = m_deviceSettingsWrapperFactoryMock;
 }
 
 void RialtoServerComponentTest::startSut()

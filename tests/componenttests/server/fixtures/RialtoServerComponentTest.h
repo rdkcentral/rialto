@@ -25,6 +25,8 @@
 #include <memory>
 
 #include "ClientStub.h"
+#include "DeviceSettingsWrapperFactoryMock.h"
+#include "DeviceSettingsWrapperMock.h"
 #include "GlibWrapperFactoryMock.h"
 #include "GlibWrapperMock.h"
 #include "GstWrapperFactoryMock.h"
@@ -119,6 +121,10 @@ protected:
         std::make_shared<testing::StrictMock<wrappers::ThunderWrapperFactoryMock>>()};
     std::shared_ptr<testing::StrictMock<wrappers::ThunderWrapperMock>> m_thunderWrapperMock{
         std::make_shared<testing::StrictMock<wrappers::ThunderWrapperMock>>()};
+    std::shared_ptr<testing::StrictMock<wrappers::DeviceSettingsWrapperFactoryMock>> m_deviceSettingsWrapperFactoryMock{
+        std::make_shared<testing::StrictMock<wrappers::DeviceSettingsWrapperFactoryMock>>()};
+    std::shared_ptr<testing::StrictMock<wrappers::DeviceSettingsWrapperMock>> m_deviceSettingsWrapperMock{
+        std::make_shared<testing::StrictMock<wrappers::DeviceSettingsWrapperMock>>()};
 
     // GstCapabilities data
     GstCaps m_audioCaps;

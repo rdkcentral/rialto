@@ -20,6 +20,7 @@
 #ifndef MEDIA_KEY_SESSION_TEST_BASE_H_
 #define MEDIA_KEY_SESSION_TEST_BASE_H_
 
+#include "DeviceSettingsWrapperMock.h"
 #include "MainThreadFactoryMock.h"
 #include "MainThreadMock.h"
 #include "MediaKeySession.h"
@@ -59,6 +60,7 @@ protected:
     StrictMock<OcdmSessionMock> *m_ocdmSessionMock;
     std::shared_ptr<StrictMock<MainThreadFactoryMock>> m_mainThreadFactoryMock;
     std::shared_ptr<StrictMock<MainThreadMock>> m_mainThreadMock;
+    std::shared_ptr<StrictMock<DeviceSettingsWrapperMock>> m_deviceSettingsWrapperMock;
 
     // Common variables
     const int32_t m_kKeySessionId = 123;

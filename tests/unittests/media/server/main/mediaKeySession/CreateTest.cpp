@@ -17,6 +17,8 @@
  * limitations under the License.
  */
 
+#include "DeviceSettingsWrapperFactoryMock.h"
+#include "IFactoryAccessor.h"
 #include "MediaKeySessionTestBase.h"
 
 class RialtoServerCreateMediaKeySessionTest : public MediaKeySessionTestBase
@@ -32,10 +34,10 @@ TEST_F(RialtoServerCreateMediaKeySessionTest, Create)
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_ocdmSystemMock, createSession(_)).WillOnce(Return(ByMove(std::move(m_ocdmSession))));
 
-    EXPECT_NO_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(kNetflixKeySystem, m_kKeySessionId,
-                                                                          *m_ocdmSystemMock, m_keySessionType,
-                                                                          m_mediaKeysClientMock, m_isLDL,
-                                                                          m_mainThreadFactoryMock));
+    EXPECT_NO_THROW(
+        m_mediaKeySession = std::make_unique<MediaKeySession>(kNetflixKeySystem, m_kKeySessionId, *m_ocdmSystemMock,
+                                                              m_keySessionType, m_mediaKeysClientMock, m_isLDL,
+                                                              m_mainThreadFactoryMock, m_deviceSettingsWrapperMock));
     EXPECT_NE(m_mediaKeySession, nullptr);
 
     destroyKeySession();
@@ -46,14 +48,18 @@ TEST_F(RialtoServerCreateMediaKeySessionTest, Create)
  */
 TEST_F(RialtoServerCreateMediaKeySessionTest, FactoryCreatesObject)
 {
+    auto factoryMock = std::make_shared<StrictMock<DeviceSettingsWrapperFactoryMock>>();
+    IFactoryAccessor::instance().deviceSettingsWrapperFactory() = factoryMock;
     std::shared_ptr<firebolt::rialto::server::IMediaKeySessionFactory> factory =
         firebolt::rialto::server::IMediaKeySessionFactory::createFactory();
     EXPECT_NE(factory, nullptr);
 
+    EXPECT_CALL(*factoryMock, getDeviceSettingsWrapper()).WillOnce(Return(m_deviceSettingsWrapperMock));
     EXPECT_CALL(*m_ocdmSystemMock, createSession(_)).WillOnce(Return(ByMove(std::move(m_ocdmSession))));
     EXPECT_NE(factory->createMediaKeySession(kNetflixKeySystem, m_kKeySessionId, *m_ocdmSystemMock, m_keySessionType,
                                              m_mediaKeysClientMock, m_isLDL),
               nullptr);
+    IFactoryAccessor::instance().deviceSettingsWrapperFactory() = nullptr;
 }
 
 /**
@@ -64,10 +70,10 @@ TEST_F(RialtoServerCreateMediaKeySessionTest, CreateMainThreadFailure)
 {
     EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(nullptr));
 
-    EXPECT_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(kNetflixKeySystem, m_kKeySessionId,
-                                                                       *m_ocdmSystemMock, m_keySessionType,
-                                                                       m_mediaKeysClientMock, m_isLDL,
-                                                                       m_mainThreadFactoryMock),
+    EXPECT_THROW(m_mediaKeySession =
+                     std::make_unique<MediaKeySession>(kNetflixKeySystem, m_kKeySessionId, *m_ocdmSystemMock,
+                                                       m_keySessionType, m_mediaKeysClientMock, m_isLDL,
+                                                       m_mainThreadFactoryMock, m_deviceSettingsWrapperMock),
                  std::runtime_error);
 }
 
@@ -81,9 +87,9 @@ TEST_F(RialtoServerCreateMediaKeySessionTest, CreateOcdmSessionFailure)
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
     EXPECT_CALL(*m_ocdmSystemMock, createSession(_)).WillOnce(Return(ByMove(std::move(nullptr))));
 
-    EXPECT_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(kNetflixKeySystem, m_kKeySessionId,
-                                                                       *m_ocdmSystemMock, m_keySessionType,
-                                                                       m_mediaKeysClientMock, m_isLDL,
-                                                                       m_mainThreadFactoryMock),
+    EXPECT_THROW(m_mediaKeySession =
+                     std::make_unique<MediaKeySession>(kNetflixKeySystem, m_kKeySessionId, *m_ocdmSystemMock,
+                                                       m_keySessionType, m_mediaKeysClientMock, m_isLDL,
+                                                       m_mainThreadFactoryMock, m_deviceSettingsWrapperMock),
                  std::runtime_error);
 }

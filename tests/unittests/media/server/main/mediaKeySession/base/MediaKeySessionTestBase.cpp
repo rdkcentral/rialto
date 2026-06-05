@@ -28,7 +28,8 @@ MediaKeySessionTestBase::MediaKeySessionTestBase()
       m_ocdmSystemMock{std::make_shared<StrictMock<OcdmSystemMock>>()},
       m_ocdmSession{std::make_unique<StrictMock<OcdmSessionMock>>()}, m_ocdmSessionMock{m_ocdmSession.get()},
       m_mainThreadFactoryMock{std::make_shared<StrictMock<MainThreadFactoryMock>>()},
-      m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()}
+      m_mainThreadMock{std::make_shared<StrictMock<MainThreadMock>>()},
+      m_deviceSettingsWrapperMock{std::make_shared<StrictMock<DeviceSettingsWrapperMock>>()}
 {
 }
 
@@ -42,7 +43,8 @@ void MediaKeySessionTestBase::createKeySession(const std::string &keySystem)
 
     EXPECT_NO_THROW(m_mediaKeySession = std::make_unique<MediaKeySession>(keySystem, m_kKeySessionId, *m_ocdmSystemMock,
                                                                           m_keySessionType, m_mediaKeysClientMock,
-                                                                          m_isLDL, m_mainThreadFactoryMock));
+                                                                          m_isLDL, m_mainThreadFactoryMock,
+                                                                          m_deviceSettingsWrapperMock));
     EXPECT_NE(m_mediaKeySession, nullptr);
 }
 

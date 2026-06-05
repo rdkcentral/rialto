@@ -52,6 +52,7 @@ TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OcdmSessionFailure)
 
     EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps)).WillOnce(Return(MediaKeyErrorStatus::FAIL));
     EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(_)).WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_CALL(*m_deviceSettingsWrapperMock, isHdmiConnected()).WillOnce(Return(true));
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
 }
