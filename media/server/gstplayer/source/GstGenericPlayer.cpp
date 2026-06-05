@@ -223,9 +223,31 @@ GstGenericPlayer::~GstGenericPlayer()
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is destructed.");
     m_gstDispatcherThread.reset();
 
-    resetWorkerThread();
+    try
+    {
+        resetWorkerThread();
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Exception during resetWorkerThread in destructor: %s", e.what());
+    }
+    catch (...)
+    {
+        RIALTO_SERVER_LOG_ERROR("Unknown exception during resetWorkerThread in destructor");
+    }
 
-    termPipeline();
+    try
+    {
+        termPipeline();
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Exception during termPipeline in destructor: %s", e.what());
+    }
+    catch (...)
+    {
+        RIALTO_SERVER_LOG_ERROR("Unknown exception during termPipeline in destructor");
+    }
 }
 
 void GstGenericPlayer::initMsePipeline()

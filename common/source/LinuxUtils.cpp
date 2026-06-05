@@ -19,6 +19,7 @@
 
 #include "LinuxUtils.h"
 #include "RialtoCommonLogging.h"
+#include <cstdint>
 #include <grp.h>
 #include <pwd.h>
 #include <sys/stat.h>
@@ -32,9 +33,11 @@ constexpr gid_t kNoGroupChange = -1; // -1 means chown() won't change the group
 uid_t getFileOwnerId(const std::string &fileOwner)
 {
     uid_t ownerId = kNoOwnerChange;
-    const size_t kBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (!fileOwner.empty() && kBufferSize > 0)
+    // sysconf returns long; -1 on error. Store as int64_t to avoid unsigned conversion issues.
+    const int64_t bufferSizeLong = sysconf(_SC_GETPW_R_SIZE_MAX);
+    if (!fileOwner.empty() && bufferSizeLong > 0)
     {
+        const size_t kBufferSize = static_cast<size_t>(bufferSizeLong);
         errno = 0;
         passwd passwordStruct{};
         passwd *passwordResult = nullptr;
@@ -55,9 +58,11 @@ uid_t getFileOwnerId(const std::string &fileOwner)
 gid_t getFileGroupId(const std::string &fileGroup)
 {
     gid_t groupId = kNoGroupChange;
-    const size_t kBufferSize = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (!fileGroup.empty() && kBufferSize > 0)
+    // sysconf returns long; -1 on error. Store as int64_t to avoid unsigned conversion issues.
+    const int64_t bufferSizeLong = sysconf(_SC_GETGR_R_SIZE_MAX);
+    if (!fileGroup.empty() && bufferSizeLong > 0)
     {
+        const size_t kBufferSize = static_cast<size_t>(bufferSizeLong);
         errno = 0;
         group groupStruct{};
         group *groupResult = nullptr;
