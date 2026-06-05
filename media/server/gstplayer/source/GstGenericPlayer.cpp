@@ -2037,7 +2037,7 @@ bool GstGenericPlayer::setSyncOff()
 
             if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "sync-off"))
             {
-                gboolean syncOffGboolean{decoder ? TRUE : FALSE};
+                gboolean syncOffGboolean{syncOff ? TRUE : FALSE};
                 m_glibWrapper->gObjectSet(decoder, "sync-off", syncOffGboolean, nullptr);
                 result = true;
             }
@@ -2135,8 +2135,13 @@ bool GstGenericPlayer::setRenderFrame()
                 RIALTO_SERVER_LOG_INFO("Rendering preroll");
 
                 m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 1, nullptr);
-                m_gstWrapper->gstElementSendEvent(sink, m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true,
-                                                                                      false));
+                gboolean sendRet = m_gstWrapper->gstElementSendEvent(
+                    sink,
+                    m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true, false));
+                if (!sendRet)
+                {
+                    RIALTO_SERVER_LOG_WARN("Failed to send step event for rendering preroll frame");
+                }
                 m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 0, nullptr);
                 result = true;
             }
