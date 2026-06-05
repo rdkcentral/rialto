@@ -51,11 +51,13 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
     find_package( ocdm REQUIRED )
     find_package( WPEFrameworkCore REQUIRED )
     find_package( WPEFrameworkCOM REQUIRED )
+    find_package( DeviceSettings REQUIRED )
 
     set(WRAPPER_INCLUDES
         ${OCdm_INCLUDE_DIRS}
         ${WPEFRAMEWORK_CORE_INCLUDE_DIRS}
         ${WPEFRAMEWORK_COM_INCLUDE_DIRS}
+        ${DEVICE_SETTINGS_INCLUDE_DIRS}
     )
 
     set(WRAPPER_LIBS
@@ -63,9 +65,14 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
         ocdm::ocdm
         WPEFrameworkCore::WPEFrameworkCore
         WPEFrameworkCOM::WPEFrameworkCOM
+        # ${DEVICE_SETTINGS_LIBRARIES}
+        -lIARMBus
+        -lds
+        -ldshalcli
         ${CMAKE_DL_LIBS})
 
     set(WRAPPER_SOURCES
+        source/DeviceSettingsWrapper.cpp
         source/GlibWrapper.cpp
         source/GstWrapper.cpp
         source/LinuxWrapper.cpp
@@ -83,6 +90,7 @@ add_library(
         RialtoWrappers
 
         STATIC
+        source/DeviceSettingsWrapperFactoryAccessor.cpp
         source/FactoryAccessor.cpp
         source/GlibWrapperFactoryAccessor.cpp
         source/GstWrapperFactoryAccessor.cpp
@@ -110,6 +118,8 @@ target_include_directories(
 
         PRIVATE
         include
+        ../common/interface/
+        ../logging/include/
         ${GStreamerApp_INCLUDE_DIRS}
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         ${WRAPPER_INCLUDES}

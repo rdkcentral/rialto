@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_WRAPPERS_I_FACTORY_ACCESSOR_H_
 #define FIREBOLT_RIALTO_WRAPPERS_I_FACTORY_ACCESSOR_H_
 
+#include "IDeviceSettingsWrapper.h"
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include "ILinuxWrapper.h"
@@ -109,6 +110,12 @@ public:
      * @retval non-const (by purpose) reference to the factory instance ptr
      */
     virtual std::shared_ptr<IThunderWrapperFactory> &thunderWrapperFactory() = 0;
+
+    /** @brief Access the IDeviceSettingsWrapperFactory instance.
+     *
+     * @retval non-const (by purpose) reference to the factory instance ptr
+     */
+    virtual std::shared_ptr<IDeviceSettingsWrapperFactory> &deviceSettingsWrapperFactory() = 0;
 
 protected:
     /**

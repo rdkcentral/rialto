@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_MEDIA_KEY_SESSION_H_
 #define FIREBOLT_RIALTO_SERVER_MEDIA_KEY_SESSION_H_
 
+#include "IDeviceSettingsWrapper.h"
 #include "IMainThread.h"
 #include "IMediaKeySession.h"
 #include "IOcdmSessionClient.h"
@@ -63,11 +64,13 @@ public:
      * @param[in]  client               : Client object for callbacks.
      * @param[in]  isLDL                : Is this an LDL.
      * @param[in]  mainThreadFactory    : The main thread factory.
+     * @param[in]  deviceSettingsWrapper: The device settings wrapper.
      */
     MediaKeySession(const std::string &keySystem, int32_t keySessionId,
                     const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
                     std::weak_ptr<IMediaKeysClient> client, bool isLDL,
-                    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory);
+                    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+                    const std::shared_ptr<firebolt::rialto::wrappers::IDeviceSettingsWrapper> &deviceSettingsWrapper);
 
     /**
      * @brief Virtual destructor.
@@ -186,6 +189,11 @@ private:
      * @brief Mutex protecting the ocdm error checking.
      */
     std::mutex m_ocdmErrorMutex;
+
+    /**
+     * @brief Device settings wrapper
+     */
+    std::shared_ptr<firebolt::rialto::wrappers::IDeviceSettingsWrapper> m_deviceSettingsWrapper;
 
     /**
      * @brief Posts a getChallenge task onto the main thread.

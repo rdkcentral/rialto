@@ -48,8 +48,14 @@ std::unique_ptr<IMediaKeySession> MediaKeySessionFactory::createMediaKeySession(
     std::unique_ptr<IMediaKeySession> mediaKeys;
     try
     {
+        auto deviceSettingsWrapperFactory = firebolt::rialto::wrappers::IDeviceSettingsWrapperFactory::getFactory();
+        if (!deviceSettingsWrapperFactory)
+        {
+            throw std::runtime_error("Failed to get the device settings wrapper factory");
+        }
         mediaKeys = std::make_unique<server::MediaKeySession>(keySystem, keySessionId, ocdmSystem, sessionType, client,
-                                                              isLDL, server::IMainThreadFactory::createFactory());
+                                                              isLDL, server::IMainThreadFactory::createFactory(),
+                                                              deviceSettingsWrapperFactory->getDeviceSettingsWrapper());
     }
     catch (const std::exception &e)
     {
@@ -59,13 +65,14 @@ std::unique_ptr<IMediaKeySession> MediaKeySessionFactory::createMediaKeySession(
     return mediaKeys;
 }
 
-MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessionId,
-                                 const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem, KeySessionType sessionType,
-                                 std::weak_ptr<IMediaKeysClient> client, bool isLDL,
-                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory)
+MediaKeySession::MediaKeySession(
+    const std::string &keySystem, int32_t keySessionId, const firebolt::rialto::wrappers::IOcdmSystem &ocdmSystem,
+    KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL,
+    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    const std::shared_ptr<firebolt::rialto::wrappers::IDeviceSettingsWrapper> &deviceSettingsWrapper)
     : m_kKeySystem(keySystem), m_kKeySessionId(keySessionId), m_kSessionType(sessionType), m_mediaKeysClient(client),
       m_kIsLDL(isLDL), m_isSessionConstructed(false), m_isSessionClosed(false), m_licenseRequested(false),
-      m_ongoingOcdmOperation(false), m_ocdmError(false)
+      m_ongoingOcdmOperation(false), m_ocdmError(false), m_deviceSettingsWrapper{deviceSettingsWrapper}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
@@ -80,6 +87,11 @@ MediaKeySession::MediaKeySession(const std::string &keySystem, int32_t keySessio
     if (!m_ocdmSession)
     {
         throw std::runtime_error("Ocdm session could not be created");
+    }
+
+    if (!m_deviceSettingsWrapper)
+    {
+        throw std::runtime_error("Failed to get the device settings wrapper");
     }
     RIALTO_SERVER_LOG_MIL("New OCDM session created");
 }
@@ -234,6 +246,11 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
         if (lastDrmError == kHdcpOutputProtectionFailure)
         {
             RIALTO_SERVER_LOG_WARN("Decrypt failed due to HDCP output protection (DRM error %u)", lastDrmError);
+            return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+        }
+        if (!m_deviceSettingsWrapper->isHdmiConnected())
+        {
+            RIALTO_SERVER_LOG_WARN("Decrypt failed, but HDMI is connected. DRM error %u", lastDrmError);
             return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
         }
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");

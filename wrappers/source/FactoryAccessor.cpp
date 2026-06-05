@@ -20,6 +20,7 @@
 #include "FactoryAccessor.h"
 
 #ifdef WRAPPERS_ENABLED
+#include "DeviceSettingsWrapper.h"
 #include "GlibWrapper.h"
 #include "GstWrapper.h"
 #include "LinuxWrapper.h"
@@ -124,5 +125,16 @@ std::shared_ptr<IThunderWrapperFactory> &FactoryAccessor::thunderWrapperFactory(
     }
 #endif // WRAPPERS_ENABLED
     return m_thunderWrapperFactory;
+}
+
+std::shared_ptr<IDeviceSettingsWrapperFactory> &FactoryAccessor::deviceSettingsWrapperFactory()
+{
+#ifdef WRAPPERS_ENABLED
+    if (!m_deviceSettingsWrapperFactory)
+    {
+        m_deviceSettingsWrapperFactory = std::make_shared<DeviceSettingsWrapperFactory>();
+    }
+#endif // WRAPPERS_ENABLED
+    return m_deviceSettingsWrapperFactory;
 }
 } // namespace firebolt::rialto::wrappers
