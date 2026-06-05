@@ -86,7 +86,7 @@ bool DeviceSettingsWrapper::isHdmiConnected() const
     return m_hdmiConnected.load();
 }
 
-void DeviceSettingsWrapper::OnDisplayHDMIHotPlug(dsDisplayEvent_t displayEvent)
+void DeviceSettingsWrapper::OnDisplayHDMIHotPlug(dsDisplayEvent_t displayEvent) // NOLINT(build/function_format)
 {
     m_hdmiConnected.store(displayEvent == dsDISPLAY_EVENT_CONNECTED);
     RIALTO_COMMON_LOG_MIL("DeviceSettingsWrapper HDMI Callback triggered, HDMI %s",

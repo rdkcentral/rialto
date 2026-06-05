@@ -23,6 +23,7 @@
 #include "IDeviceSettingsWrapper.h"
 #include "host.hpp"
 #include <atomic>
+#include <memory>
 
 namespace firebolt::rialto::wrappers
 {
