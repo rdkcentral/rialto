@@ -20,6 +20,8 @@
 #include "DeviceSettingsWrapper.h"
 #include "RialtoCommonLogging.h"
 #include "manager.hpp"
+#include <libIARM.h>
+#include <libIBus.h>
 
 namespace firebolt::rialto::wrappers
 {
@@ -34,6 +36,25 @@ DeviceSettingsWrapper::DeviceSettingsWrapper()
 {
     try
     {
+        IARM_Result_t result;
+        if (IARM_RESULT_SUCCESS == (result = IARM_Bus_Init("RIALTO")))
+        {
+            RIALTO_COMMON_LOG_MIL("IARM Interface Inited Successfully\n");
+        }
+        else
+        {
+            RIALTO_COMMON_LOG_MIL("IARM Interface Inited Externally : %d\n", result);
+        }
+
+        if (IARM_RESULT_SUCCESS == (result = IARM_Bus_Connect()))
+        {
+            RIALTO_COMMON_LOG_MIL("IARM Interface Connected in Rialto\n");
+        }
+        else
+        {
+            RIALTO_COMMON_LOG_MIL("IARM Interface Connected Externally :%d\n", result);
+        }
+
         device::Manager::Initialize();
         device::Host::getInstance().Register(baseInterface<device::Host::IDisplayDeviceEvents>(),
                                              "Rialto::DisplaySettings");
@@ -51,6 +72,7 @@ DeviceSettingsWrapper::~DeviceSettingsWrapper()
     {
         device::Host::getInstance().UnRegister(baseInterface<device::Host::IDisplayDeviceEvents>());
         device::Manager::DeInitialize();
+
         RIALTO_COMMON_LOG_MIL("DeviceSettingsWrapper Callback unregistered");
     }
     catch (...)

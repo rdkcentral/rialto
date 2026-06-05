@@ -34,6 +34,7 @@ if( DEVICE_SETTINGS_FOUND )
     set( DEVICE_SETTINGS_INCLUDE_DIRS
             ${DEVICE_SETTINGS_INCLUDE_DIR}/rdk/ds
             ${DEVICE_SETTINGS_INCLUDE_DIR}/rdk/halif/ds-hal
+            ${DEVICE_SETTINGS_INCLUDE_DIR}/rdk/iarmbus
     )
 endif()
 
@@ -41,5 +42,5 @@ if( DEVICE_SETTINGS_FOUND AND NOT TARGET DeviceSettings )
     add_library( DeviceSettings SHARED IMPORTED )
     set_target_properties( DeviceSettings PROPERTIES
             IMPORTED_LOCATION "${DEVICE_SETTINGS_LIBRARY}"
-            INTERFACE_INCLUDE_DIRECTORIES "${DEVICE_SETTINGS_INCLUDE_DIR}/rdk/ds ${DEVICE_SETTINGS_INCLUDE_DIR}/rdk/halif/ds-hal" )
+            INTERFACE_INCLUDE_DIRECTORIES "${DEVICE_SETTINGS_INCLUDE_DIR}/rdk/ds ${DEVICE_SETTINGS_INCLUDE_DIR}/rdk/halif/ds-hal ${DEVICE_SETTINGS_INCLUDE_DIR}/rdk/iarmbus" )
 endif()
