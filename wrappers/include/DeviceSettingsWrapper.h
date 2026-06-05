@@ -22,6 +22,13 @@
 
 #include "IDeviceSettingsWrapper.h"
 #include "host.hpp"
+#include "videoResolution.hpp"
+#include "videoOutputPort.hpp"
+#include "videoOutputPortType.hpp"
+#include "dsMgr.h"
+#include "dsDisplay.h"
+#include "audioOutputPort.hpp"
+#include "dsAudio.h"
 #include <atomic>
 #include <memory>
 
@@ -36,7 +43,7 @@ public:
     std::shared_ptr<IDeviceSettingsWrapper> getDeviceSettingsWrapper() override;
 };
 
-class DeviceSettingsWrapper : public IDeviceSettingsWrapper, public device::Host::IDisplayDeviceEvents
+class DeviceSettingsWrapper : public IDeviceSettingsWrapper, public device::Host::IDisplayDeviceEvents, public device::Host::IVideoOutputPortEvents
 {
 public:
     DeviceSettingsWrapper();
