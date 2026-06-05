@@ -250,7 +250,7 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
         }
         if (!m_deviceSettingsWrapper->isHdmiConnected())
         {
-            RIALTO_SERVER_LOG_WARN("Decrypt failed, but HDMI is connected. DRM error %u", lastDrmError);
+            RIALTO_SERVER_LOG_WARN("Decrypt failed, but HDMI is not connected. Returning OUTPUT_RESTRICTED");
             return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
         }
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
