@@ -255,8 +255,7 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
     {
         GST_TRACE_OBJECT(self, "Clear sample");
         returnStatus = GST_FLOW_OK;
-    }
-    else
+    }else
     {
         if (!m_decryptionService)
         {
@@ -312,6 +311,10 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
                 {
                     m_hdcpOutputRestricted = true;
                     m_metadataWrapper->removeProtectionMetadata(buffer);
+		    if (++m_hdcpDropCount % 100 == 1)
+		    {
+                       GST_WARNING_OBJECT(self, "HDCP restricted, dropped %u frames without decrypt", m_hdcpDropCount);
+                    }
                     return GST_BASE_TRANSFORM_FLOW_DROPPED;
                 }
                 else if (firebolt::rialto::MediaKeyErrorStatus::OK != status)

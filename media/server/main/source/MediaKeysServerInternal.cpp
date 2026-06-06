@@ -168,12 +168,11 @@ MediaKeysServerInternal::~MediaKeysServerInternal()
 
 void MediaKeysServerInternal::handleHdmiChange(bool connected)
 {
-    bool prev = m_hdmiConnected.exchange(connected);
-    if (prev == connected)
-        return;
+    m_hdmiConnected.exchange(connected);
+    //if (prev == connected)
+    //    return;
 
-    std::cout << "[Rialto] Pipeline HDMI state = "
-              << (connected ? "CONNECTED" : "DISCONNECTED") << "\n";
+    RIALTO_SERVER_LOG_ERROR("[Rialto] Pipeline HDMI state = %s",(connected ? "CONNECTED" : "DISCONNECTED"));
 
 }
 
@@ -603,19 +602,25 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
 MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
 {
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
+    MediaKeyErrorStatus status = MediaKeyErrorStatus::FAIL;
     if (sessionIter == m_mediaKeySessions.end())
     {
         RIALTO_SERVER_LOG_ERROR("Failed to find the session %d", keySessionId);
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
-
-    MediaKeyErrorStatus status = sessionIter->second->decrypt(encrypted, caps);
-    if (MediaKeyErrorStatus::OK != status && (m_hdmiMonitor->isConnected() == true))
-    {
-        RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");
-        return status;
+    if (m_hdmiConnected.load() || m_firstDecrypt.load()){
+	    status = sessionIter->second->decrypt(encrypted, caps);
+	    if (MediaKeyErrorStatus::OK != status)
+	    {
+        	RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");
+	        return status;
+    	    }
+    } else {
+	    RIALTO_SERVER_LOG_ERROR("Bypassing decrypt because HDCP is not enabled");
+	    return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
     }
     RIALTO_SERVER_LOG_INFO("Successfully decrypted buffer.");
+    
 
     return status;
 }

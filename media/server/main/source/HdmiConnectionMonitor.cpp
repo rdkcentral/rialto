@@ -1,5 +1,6 @@
 #include "Module.h"
 #include "HdmiConnectionMonitor.h"
+#include "RialtoServerLogging.h"
 
 #include <WPEFramework/core/core.h>
 
@@ -13,7 +14,7 @@ namespace firebolt::rialto::server
 namespace
 {
     constexpr const char *THUNDER_ACCESS = "127.0.0.1:9998";
-    constexpr const char *HDCP_CALLSIGN = "HdcpProfile";
+    constexpr const char *HDCP_CALLSIGN = "org.rdk.HdcpProfile";
     constexpr const char *EVENT_NAME = "onDisplayConnectionChanged";
     constexpr uint32_t kDefaultWaitTimeMs = 10000;
 }
@@ -30,7 +31,7 @@ HdmiConnectionMonitor::~HdmiConnectionMonitor()
 {
     if (m_hdcpConnection)
     {
-        std::cout << "[Rialto] Unsubscribing HdcpProfile event\n";
+        RIALTO_SERVER_LOG_ERROR("[Rialto] Unsubscribing HdcpProfile event");
 
         m_hdcpConnection->Unsubscribe(kDefaultWaitTimeMs, EVENT_NAME);
         m_hdcpConnection.reset();
@@ -46,7 +47,7 @@ bool HdmiConnectionMonitor::isConnected() const
 /* ================= Connect (AAMP-style) ================= */
 void HdmiConnectionMonitor::connect()
 {
-    std::cout << "[Rialto] Connecting to Thunder\n";
+    RIALTO_SERVER_LOG_ERROR("[Rialto] Connecting to Thunder");
 
     /* ===== Set Thunder access point ===== */
     Core::SystemInfo::SetEnvironment(_T("THUNDER_ACCESS"), _T(THUNDER_ACCESS));
@@ -59,7 +60,7 @@ void HdmiConnectionMonitor::connect()
 
     if (!m_hdcpConnection)
     {
-        std::cerr << "[Rialto] ERROR: Failed to create HDCP connection\n";
+        RIALTO_SERVER_LOG_ERROR("[Rialto] ERROR: Failed to create HDCP connection");
         return;
     }
 
@@ -74,13 +75,12 @@ void HdmiConnectionMonitor::connect()
         parameters,
         response);
 
-    if (status == Core::ERROR_NONE && response.HasLabel("connected"))
+    if (status == Core::ERROR_NONE && response.HasLabel("isConnected"))
     {
-        bool connected = response["connected"].Boolean();
+        bool connected = response["isConnected"].Boolean();
         m_hdmiConnected.store(connected);
 
-        std::cout << "[Rialto] Initial HDMI state = "
-                  << (connected ? "CONNECTED" : "DISCONNECTED") << "\n";
+        RIALTO_SERVER_LOG_ERROR("[Rialto] Initial HDMI state = %s",(connected ? "CONNECTED" : "DISCONNECTED"));
     }
 }
 
@@ -90,7 +90,7 @@ void HdmiConnectionMonitor::subscribe()
     if (!m_hdcpConnection)
         return;
 
-    std::cout << "[Rialto] Subscribing to event\n";
+    RIALTO_SERVER_LOG_ERROR("[Rialto] Subscribing to event");
 
     m_hdcpConnection->Subscribe<Core::JSON::VariantContainer>(
         kDefaultWaitTimeMs,
@@ -105,24 +105,41 @@ void HdmiConnectionMonitor::subscribe()
 void HdmiConnectionMonitor::onDisplayConnectionChanged(
     const Core::JSON::VariantContainer &params)
 {
-    if (!params.HasLabel("connected"))
+	JsonObject resultContext = params["HDCPStatus"].Object();
+	std::string output;
+	params.ToString(output);
+
+	RIALTO_SERVER_LOG_ERROR("[Rialto] Event received with data :%s",output.c_str());
+    bool connected = false;
+    bool hdcpStatus = false;
+
+    if (!(resultContext.HasLabel("isConnected") || resultContext.HasLabel("hdcpReason")))
     {
-        std::cerr << "[Rialto] ERROR: Missing 'connected'\n";
+        RIALTO_SERVER_LOG_ERROR("[Rialto] ERROR: Missing connected");
         return;
     }
 
-    bool connected = params["connected"].Boolean();
-
+    bool isConnected = resultContext["isConnected"].Boolean();
+    if (strcmp(resultContext["hdcpReason"].String().c_str(),"2")){
+        RIALTO_SERVER_LOG_ERROR("[Rialto] HDCP reason is 2");
+ 	   hdcpStatus = true;
+    }
+    if (isConnected && hdcpStatus) {
+        RIALTO_SERVER_LOG_ERROR("[Rialto] HDMI connected");
+	    connected = true;
+    }
     bool prev = m_hdmiConnected.exchange(connected);
 
-    if (prev == connected)
-        return;
+    if (prev == connected) {
+        RIALTO_SERVER_LOG_ERROR("[Rialto] Previous was same as connected");
+        //return;
+    }
 
-    std::cout << "[Rialto] HDMI state changed → "
-              << (connected ? "CONNECTED" : "DISCONNECTED") << std::endl;
+    RIALTO_SERVER_LOG_ERROR("[Rialto] HDMI state changed → %s",(connected ? "CONNECTED" : "DISCONNECTED") );
 
     if (m_callback)
     {
+        RIALTO_SERVER_LOG_ERROR("[Rialto] Callback sent");
         m_callback(connected);
     }
 }

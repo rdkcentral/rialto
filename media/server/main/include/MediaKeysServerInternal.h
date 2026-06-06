@@ -153,7 +153,8 @@ private:
 
     // HDMI state
     std::unique_ptr<HdmiConnectionMonitor> m_hdmiMonitor;
-    std::atomic<bool> m_hdmiConnected{false};
+    std::atomic<bool> m_hdmiConnected{true};
+    std::atomic<bool> m_firstDecrypt{true};
 
     void handleHdmiChange(bool connected);
 

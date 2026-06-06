@@ -97,6 +97,7 @@ private:
      * @brief The flag indicating, if the output restricted error occured in the previous decryption attempt.
      */
     bool m_hdcpOutputRestricted{false};
+    uint32_t m_hdcpDropCount{0};
 
     /**
      * @brief Creates the protection meta structure.
