@@ -63,6 +63,7 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
         ocdm::ocdm
         WPEFrameworkCore::WPEFrameworkCore
         WPEFrameworkCOM::WPEFrameworkCOM
+        RialtoEthanLog
         ${CMAKE_DL_LIBS})
 
     set(WRAPPER_SOURCES
@@ -110,6 +111,7 @@ target_include_directories(
 
         PRIVATE
         include
+        ../common/interface/
         ${GStreamerApp_INCLUDE_DIRS}
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         ${WRAPPER_INCLUDES}
