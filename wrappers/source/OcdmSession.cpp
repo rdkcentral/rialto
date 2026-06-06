@@ -25,6 +25,9 @@
 #include <mutex>
 namespace
 {
+constexpr uint32_t kWidevineStatusKeyUsageBlockedByPolicy{105};
+constexpr uint32_t kWidevineStatusKeyUsageBlockedByPolicyHdcp22{902};
+
 LicenseType convertLicenseType(const firebolt::rialto::KeySessionType &sessionType)
 {
     switch (sessionType)
@@ -103,12 +106,19 @@ const firebolt::rialto::KeyStatus convertKeyStatus(const KeyStatus &ocdmKeyStatu
     }
     }
 }
+
+bool isOutputRestrictedDecryptStatus(const uint32_t decryptStatus)
+{
+    return (decryptStatus == kWidevineStatusKeyUsageBlockedByPolicy) ||
+           (decryptStatus == kWidevineStatusKeyUsageBlockedByPolicyHdcp22);
+}
 } // namespace
 
 namespace firebolt::rialto::wrappers
 {
 OcdmSession::OcdmGstSessionDecryptExFn OcdmSession::m_ocdmGstSessionDecryptEx{nullptr};
 OcdmSession::OcdmGstSessionDecryptBufferOnceFn OcdmSession::m_ocdmGstSessionDecryptBufferOnce{nullptr};
+OcdmSession::OcdmSessionLastDecryptStatusFn OcdmSession::m_ocdmSessionLastDecryptStatus{nullptr};
 
 OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient *client)
     : m_systemHandle(systemHandle), m_ocdmSessionClient(client), m_session(nullptr)
@@ -125,6 +135,9 @@ OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient 
                        m_ocdmGstSessionDecryptBufferOnce =
                            (OcdmGstSessionDecryptBufferOnceFn)dlsym(handle,
                                                                     "opencdm_gstreamer_session_decrypt_buffer_once");
+                       m_ocdmSessionLastDecryptStatus =
+                           (OcdmSessionLastDecryptStatusFn)dlsym(handle,
+                                                                 "opencdm_session_last_decrypt_status");
                    });
 }
 
@@ -248,11 +261,32 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
             }
         }
 
+        if (result != ERROR_NONE && m_ocdmSessionLastDecryptStatus)
+        {
+            uint32_t lastDecryptStatus{0};
+            if ((m_ocdmSessionLastDecryptStatus(m_session, &lastDecryptStatus) == ERROR_NONE) &&
+                isOutputRestrictedDecryptStatus(lastDecryptStatus))
+            {
+                return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+            }
+        }
+
         return convertOpenCdmError(result);
     }
 
     // Fallback: adapter without _once handles retries internally.
     OpenCDMError status = opencdm_gstreamer_session_decrypt_buffer(m_session, encrypted, caps);
+
+    if (status != ERROR_NONE && m_ocdmSessionLastDecryptStatus)
+    {
+        uint32_t lastDecryptStatus{0};
+        if ((m_ocdmSessionLastDecryptStatus(m_session, &lastDecryptStatus) == ERROR_NONE) &&
+            isOutputRestrictedDecryptStatus(lastDecryptStatus))
+        {
+            return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+        }
+    }
+
     return convertOpenCdmError(status);
 }
 
