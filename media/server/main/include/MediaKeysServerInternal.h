@@ -28,6 +28,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include "HdmiConnectionMonitor.h"
 
 namespace firebolt::rialto::server
 {
@@ -148,6 +149,13 @@ private:
      * @brief This objects id registered on the main thread
      */
     uint32_t m_mainThreadClientId;
+
+
+    // HDMI state
+    std::unique_ptr<HdmiConnectionMonitor> m_hdmiMonitor;
+    std::atomic<bool> m_hdmiConnected{false};
+
+    void handleHdmiChange(bool connected);
 
     /**
      * @brief Creates a session internally, only to be called on the main thread.

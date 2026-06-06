@@ -142,6 +142,13 @@ MediaKeysServerInternal::MediaKeysServerInternal(
     {
         throw std::runtime_error("MediaKeys construction failed");
     }
+
+    m_hdmiMonitor = std::make_unique<HdmiConnectionMonitor>(
+        [this](bool connected)
+        {
+            handleHdmiChange(connected);
+        });
+
 }
 
 MediaKeysServerInternal::~MediaKeysServerInternal()
@@ -156,6 +163,18 @@ MediaKeysServerInternal::~MediaKeysServerInternal()
     };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+}
+
+
+void MediaKeysServerInternal::handleHdmiChange(bool connected)
+{
+    bool prev = m_hdmiConnected.exchange(connected);
+    if (prev == connected)
+        return;
+
+    std::cout << "[Rialto] Pipeline HDMI state = "
+              << (connected ? "CONNECTED" : "DISCONNECTED") << "\n";
+
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)
@@ -591,7 +610,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
     }
 
     MediaKeyErrorStatus status = sessionIter->second->decrypt(encrypted, caps);
-    if (MediaKeyErrorStatus::OK != status)
+    if (MediaKeyErrorStatus::OK != status && (m_hdmiMonitor->isConnected() == true))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");
         return status;

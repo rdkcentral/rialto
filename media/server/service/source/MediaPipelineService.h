@@ -37,6 +37,7 @@
 #include <thread>
 #include <vector>
 
+
 namespace firebolt::rialto::server::service
 {
 class MediaPipelineService : public IMediaPipelineService

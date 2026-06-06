@@ -22,6 +22,7 @@ set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
+find_package( WPEFramework REQUIRED )
 add_subdirectory(common)
 add_subdirectory(gstplayer)
 add_subdirectory(main)

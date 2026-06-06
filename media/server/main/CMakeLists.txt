@@ -40,6 +40,7 @@ add_library(
         source/NeedMediaData.cpp
         source/SharedMemoryBuffer.cpp
         source/MediaKeysServerInternal.cpp
+	source/HdmiConnectionMonitor.cpp
         source/MediaKeysCapabilities.cpp
         source/MediaKeySession.cpp
         source/MainThread.cpp
@@ -56,6 +57,7 @@ target_include_directories(
         PUBLIC
         interface
         ${GStreamerApp_INCLUDE_DIRS}
+	${WPEFRAMEWORK_INCLUDE_DIRS}
 
         PRIVATE
         include
