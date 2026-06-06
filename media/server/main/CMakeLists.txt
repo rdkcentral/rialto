@@ -91,6 +91,8 @@ target_link_libraries(
         RialtoCommon
         RialtoProtobuf
         Threads::Threads
+        WPEFrameworkCore
+        WPEFrameworkWebSocket
         )
 
 install(

@@ -1,12 +1,7 @@
+#include "Module.h"
 #include "HdmiConnectionMonitor.h"
 
 #include <WPEFramework/core/core.h>
-#include <WPEFramework/core/JSON.h>
-//#include <WPEFramework/core/ProxyType.h>
-//#include <interfaces/IJsonRpc.h>
-#include <WPEFramework/plugins/Types.h>
-
-#include <securityagent/SecurityTokenUtil.h>
 
 #include <iostream>
 
@@ -20,6 +15,7 @@ namespace
     constexpr const char *THUNDER_ACCESS = "127.0.0.1:9998";
     constexpr const char *HDCP_CALLSIGN = "HdcpProfile";
     constexpr const char *EVENT_NAME = "onDisplayConnectionChanged";
+    constexpr uint32_t kDefaultWaitTimeMs = 10000;
 }
 
 /* ================= Constructor ================= */
@@ -36,7 +32,7 @@ HdmiConnectionMonitor::~HdmiConnectionMonitor()
     {
         std::cout << "[Rialto] Unsubscribing HdcpProfile event\n";
 
-        m_hdcpConnection->Unsubscribe(EVENT_NAME);
+        m_hdcpConnection->Unsubscribe(kDefaultWaitTimeMs, EVENT_NAME);
         m_hdcpConnection.reset();
     }
 }
@@ -50,26 +46,16 @@ bool HdmiConnectionMonitor::isConnected() const
 /* ================= Connect (AAMP-style) ================= */
 void HdmiConnectionMonitor::connect()
 {
-    std::string token;
+    std::cout << "[Rialto] Connecting to Thunder\n";
 
-    /* ===== SecurityAgent (AAMP pattern) ===== */
-    if (!SecurityTokenUtil::getSecurityToken(HDCP_CALLSIGN, token))
-    {
-        std::cerr << "[Rialto] Failed to get security token\n";
-        return;
-    }
+    /* ===== Set Thunder access point ===== */
+    Core::SystemInfo::SetEnvironment(_T("THUNDER_ACCESS"), _T(THUNDER_ACCESS));
 
-    std::string query = "token=" + token;
-
-    std::cout << "[Rialto] Connecting with SecurityAgent\n";
-
-    /* ===== JSONRPC LinkType (exact AAMP style) ===== */
+    /* ===== JSONRPC LinkType (Thunder R4) ===== */
     m_hdcpConnection = std::make_unique<
         JSONRPC::LinkType<Core::JSON::IElement>>(
-        THUNDER_ACCESS,
         HDCP_CALLSIGN,
-        false,
-        query);
+        false);
 
     if (!m_hdcpConnection)
     {
@@ -106,7 +92,8 @@ void HdmiConnectionMonitor::subscribe()
 
     std::cout << "[Rialto] Subscribing to event\n";
 
-    m_hdcpConnection->Subscribe(
+    m_hdcpConnection->Subscribe<Core::JSON::VariantContainer>(
+        kDefaultWaitTimeMs,
         EVENT_NAME,
         [this](const Core::JSON::VariantContainer &params)
         {

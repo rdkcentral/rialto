@@ -4,8 +4,9 @@
 #include <functional>
 #include <memory>
 
+#include "Module.h"
 #include <WPEFramework/core/JSON.h>
-#include <WPEFramework/core/JSONRPC.h>
+#include <WPEFramework/websocket/JSONRPCLink.h>
 
 namespace firebolt::rialto::server
 {
@@ -25,7 +26,7 @@ private:
     void connect();
     void subscribe();
 
-    // Event handler (AAMP-style payload)
+    // Event handler
     void onDisplayConnectionChanged(
         const WPEFramework::Core::JSON::VariantContainer &params);
 
@@ -36,8 +37,8 @@ private:
     // Callback to pipeline/service
     Callback m_callback;
 
-    // AAMP-style Thunder connection
-    WPEFramework::Core::JSONRPC::LinkType<WPEFramework::Core::JSON::IElement> *m_hdcpConnection;
+    // Thunder JSONRPC connection (R4 API)
+    std::unique_ptr<WPEFramework::JSONRPC::LinkType<WPEFramework::Core::JSON::IElement>> m_hdcpConnection;
 };
 
 } // namespace firebolt::rialto::server
