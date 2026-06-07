@@ -19,7 +19,6 @@
 
 #include "OcdmSession.h"
 #include "OcdmCommon.h"
-#include "RialtoCommonLogging.h"
 #include "opencdm/open_cdm_adapter.h"
 #include "opencdm/open_cdm_ext.h"
 #include <dlfcn.h>
@@ -265,26 +264,11 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
         if (result != ERROR_NONE && m_ocdmSessionLastDecryptStatus)
         {
             uint32_t lastDecryptStatus{0};
-            const OpenCDMError lastStatusRet = m_ocdmSessionLastDecryptStatus(m_session, &lastDecryptStatus);
-            RIALTO_COMMON_LOG_ERROR("VRN OcdmSession decryptBuffer(_once): decrypt failed result=%u, "
-                                    "lastDecryptStatusRet=%u, lastDecryptStatus=%u",
-                                    static_cast<uint32_t>(result), static_cast<uint32_t>(lastStatusRet),
-                                    lastDecryptStatus);
-
-            if ((lastStatusRet == ERROR_NONE) && isOutputRestrictedDecryptStatus(lastDecryptStatus))
+            if ((m_ocdmSessionLastDecryptStatus(m_session, &lastDecryptStatus) == ERROR_NONE) &&
+                isOutputRestrictedDecryptStatus(lastDecryptStatus))
             {
-                RIALTO_COMMON_LOG_ERROR("VRN OcdmSession decryptBuffer(_once): mapping decrypt failure to "
-                                        "OUTPUT_RESTRICTED (status=%u)",
-                                        lastDecryptStatus);
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
             }
-        }
-        else if (result != ERROR_NONE)
-        {
-            RIALTO_COMMON_LOG_ERROR(
-                "VRN OcdmSession decryptBuffer(_once): decrypt failed result=%u and LastDecryptStatus API is "
-                "unavailable",
-                static_cast<uint32_t>(result));
         }
 
         return convertOpenCdmError(result);
@@ -296,26 +280,11 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
     if (status != ERROR_NONE && m_ocdmSessionLastDecryptStatus)
     {
         uint32_t lastDecryptStatus{0};
-        const OpenCDMError lastStatusRet = m_ocdmSessionLastDecryptStatus(m_session, &lastDecryptStatus);
-        RIALTO_COMMON_LOG_ERROR("VRN OcdmSession decryptBuffer(fallback): decrypt failed status=%u, "
-                    "lastDecryptStatusRet=%u, lastDecryptStatus=%u",
-                    static_cast<uint32_t>(status), static_cast<uint32_t>(lastStatusRet),
-                    lastDecryptStatus);
-
-        if ((lastStatusRet == ERROR_NONE) && isOutputRestrictedDecryptStatus(lastDecryptStatus))
+        if ((m_ocdmSessionLastDecryptStatus(m_session, &lastDecryptStatus) == ERROR_NONE) &&
+            isOutputRestrictedDecryptStatus(lastDecryptStatus))
         {
-            RIALTO_COMMON_LOG_ERROR("VRN OcdmSession decryptBuffer(fallback): mapping decrypt failure to "
-                                    "OUTPUT_RESTRICTED (status=%u)",
-                                    lastDecryptStatus);
             return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
         }
-    }
-    else if (status != ERROR_NONE)
-    {
-        RIALTO_COMMON_LOG_ERROR(
-            "VRN OcdmSession decryptBuffer(fallback): decrypt failed status=%u and LastDecryptStatus API is "
-            "unavailable",
-            static_cast<uint32_t>(status));
     }
 
     return convertOpenCdmError(status);
