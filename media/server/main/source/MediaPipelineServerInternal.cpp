@@ -141,6 +141,15 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    // Destroy GstPlayer first, while the main thread client is still registered.
+    // This ensures that during the worker thread drain in ~GstGenericPlayer,
+    // any callbacks (notifyNeedMediaData, notifyPlaybackState, etc.) that
+    // enqueue tasks on the main thread can still be accepted (even if they
+    // become no-ops). This prevents use-after-free when worker thread tasks
+    // reference this object or try to use the unregistered client ID.
+    m_gstPlayer.reset();
+    RIALTO_SERVER_LOG_DEBUG("gstplayer reset");
+
     m_mainThread = mainThreadFactory->getMainThread();
     if (!m_mainThread)
     {
@@ -172,6 +181,11 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    // Destroy GstPlayer first, while the main thread client is still registered.
+    // This ensures that during the worker thread drain in ~GstGenericPlayer,
+    // any callbacks (notifyNeedMediaData, notifyPlaybackState, etc.) that
+    // enqueue tasks on the main thread can still be accepted and won't crash.
+    m_gstPlayer.reset();
     auto task = [&]()
     {
         for (const auto &timer : m_needMediaDataTimers)
@@ -1600,9 +1614,13 @@ void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourc
 
 void MediaPipelineServerInternal::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
 {
-    if (m_mediaPipelineClient)
+    if (m_gstPlayer && m_mediaPipelineClient)
     {
         m_mediaPipelineClient->notifyPlaybackInfo(playbackInfo);
+    }
+    else
+    {
+	    RIALTO_SERVER_LOG_WARN("notifyPlaybackInfo skipped due to invalid gstPlayer");
     }
 }
 
