@@ -236,7 +236,7 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
             RIALTO_SERVER_LOG_WARN("Decrypt failed due to HDCP output protection (DRM error %u)", lastDrmError);
             return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
         }
-        RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer");
+        RIALTO_SERVER_LOG_DEBUG("Failed to decrypt buffer");
     }
 
     if ((checkForOcdmErrors("decrypt")) && (MediaKeyErrorStatus::OK == status))
