@@ -95,6 +95,7 @@ private:
     using OcdmGstSessionDecryptExFn = OpenCDMError (*)(struct OpenCDMSession *, GstBuffer *, GstBuffer *,
                                                        const uint32_t, GstBuffer *, GstBuffer *, uint32_t, GstCaps *);
     using OcdmGstSessionDecryptBufferOnceFn = OpenCDMError (*)(struct OpenCDMSession *, GstBuffer *, GstCaps *);
+    using OcdmSessionLastDecryptStatusFn = OpenCDMError (*)(const struct OpenCDMSession *, uint32_t *);
     /**
      * @brief The System handle.
      */
@@ -117,6 +118,7 @@ private:
 
     static OcdmGstSessionDecryptExFn m_ocdmGstSessionDecryptEx;
     static OcdmGstSessionDecryptBufferOnceFn m_ocdmGstSessionDecryptBufferOnce;
+    static OcdmSessionLastDecryptStatusFn m_ocdmSessionLastDecryptStatus;
     /**
      * @brief Requests the processing of the challenge data.
      *

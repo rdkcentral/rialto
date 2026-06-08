@@ -593,7 +593,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionI
     MediaKeyErrorStatus status = sessionIter->second->decrypt(encrypted, caps);
     if (MediaKeyErrorStatus::OK != status)
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to decrypt buffer.");
+        RIALTO_SERVER_LOG_DEBUG("Failed to decrypt buffer.");
         return status;
     }
     RIALTO_SERVER_LOG_INFO("Successfully decrypted buffer.");
