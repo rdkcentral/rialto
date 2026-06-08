@@ -260,7 +260,8 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
             }
         }
-
+#if 0
+#errrrr123
         if (result != ERROR_NONE && m_ocdmSessionLastDecryptStatus)
         {
             uint32_t lastDecryptStatus{0};
@@ -270,13 +271,14 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
             }
         }
-
+#endif
         return convertOpenCdmError(result);
     }
 
     // Fallback: adapter without _once handles retries internally.
     OpenCDMError status = opencdm_gstreamer_session_decrypt_buffer(m_session, encrypted, caps);
-
+#if 0
+#errrrr123
     if (status != ERROR_NONE && m_ocdmSessionLastDecryptStatus)
     {
         uint32_t lastDecryptStatus{0};
@@ -286,6 +288,7 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
             return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
         }
     }
+#endif
 
     return convertOpenCdmError(status);
 }
