@@ -94,7 +94,7 @@ private:
     std::unique_ptr<IGstProtectionMetadataHelper> m_metadataWrapper;
 
     /**
-     * @brief The flag indicating, if the output restricted error occured in the previous decryption attempt.
+     * @brief The flag indicating if the output restricted error occurred in the previous decryption attempt.
      */
     bool m_hdcpOutputRestricted{false};
 

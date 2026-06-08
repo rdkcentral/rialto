@@ -23,6 +23,7 @@
 #include "opencdm/open_cdm_ext.h"
 #include <dlfcn.h>
 #include <mutex>
+#include <vector>
 namespace
 {
 LicenseType convertLicenseType(const firebolt::rialto::KeySessionType &sessionType)
@@ -103,6 +104,13 @@ const firebolt::rialto::KeyStatus convertKeyStatus(const KeyStatus &ocdmKeyStatu
     }
     }
 }
+
+void *getOcdmLibraryHandle()
+{
+    // Keep the library handle for the lifetime of the process so the optional symbols remain valid.
+    static void *handle = dlopen("libocdm.so", RTLD_LAZY | RTLD_LOCAL);
+    return handle;
+}
 } // namespace
 
 namespace firebolt::rialto::wrappers
@@ -119,12 +127,14 @@ OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient 
     std::call_once(flag,
                    []()
                    {
-                       void *handle = dlopen("libocdm.so", RTLD_LAZY);
                        m_ocdmGstSessionDecryptEx =
                            (OcdmGstSessionDecryptExFn)dlsym(RTLD_DEFAULT, "opencdm_gstreamer_session_decrypt_ex");
-                       m_ocdmGstSessionDecryptBufferOnce =
-                           (OcdmGstSessionDecryptBufferOnceFn)dlsym(handle,
-                                                                    "opencdm_gstreamer_session_decrypt_buffer_once");
+                       if (void *handle = getOcdmLibraryHandle())
+                       {
+                           void *decryptBufferOnce = dlsym(handle, "opencdm_gstreamer_session_decrypt_buffer_once");
+                           m_ocdmGstSessionDecryptBufferOnce =
+                               reinterpret_cast<OcdmGstSessionDecryptBufferOnceFn>(decryptBufferOnce);
+                       }
                    });
 }
 
