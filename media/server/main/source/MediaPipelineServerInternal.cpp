@@ -141,14 +141,6 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    // Destroy GstPlayer first, while the main thread client is still registered.
-    // This ensures that during the worker thread drain in ~GstGenericPlayer,
-    // any callbacks (notifyNeedMediaData, notifyPlaybackState, etc.) that
-    // enqueue tasks on the main thread can still be accepted (even if they
-    // become no-ops). This prevents use-after-free when worker thread tasks
-    // reference this object or try to use the unregistered client ID.
-    m_gstPlayer.reset();
-    RIALTO_SERVER_LOG_DEBUG("gstplayer reset");
 
     m_mainThread = mainThreadFactory->getMainThread();
     if (!m_mainThread)
