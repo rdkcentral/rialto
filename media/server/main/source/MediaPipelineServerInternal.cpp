@@ -172,6 +172,12 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
+    // Destroy GstPlayer first, while the main thread client is still registered.
+    // This ensures that during the worker thread drain in ~GstGenericPlayer,
+    // any callbacks (notifyNeedMediaData, notifyPlaybackState, etc.) that
+    // enqueue tasks on the main thread can still be accepted and won't crash.
+    m_gstPlayer.reset();
+    
     auto task = [&]()
     {
         for (const auto &timer : m_needMediaDataTimers)
@@ -1587,9 +1593,13 @@ void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourc
 
 void MediaPipelineServerInternal::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
 {
-    if (m_mediaPipelineClient)
+    if (m_gstPlayer && m_mediaPipelineClient)
     {
         m_mediaPipelineClient->notifyPlaybackInfo(playbackInfo);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("notifyPlaybackInfo skipped due to invalid gstPlayer");
     }
 }
 
