@@ -170,6 +170,19 @@ TEST_F(SetupElementTest, shouldReportVideoUnderflow)
     triggerVideoUnderflowCallback();
 }
 
+TEST_F(SetupElementTest, shouldNotReportVideoUnderflowWhenFifoDepthIsNonZero)
+{
+    shouldSetupVideoDecoderElementOnly();
+    triggerSetupElement();
+
+    ASSERT_TRUE(testContext->m_videoUnderflowCallback);
+    EXPECT_CALL(testContext->m_gstPlayer, scheduleVideoUnderflow()).Times(0);
+
+    auto videoUnderflowCallback = reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+        testContext->m_videoUnderflowCallback);
+    videoUnderflowCallback(testContext->m_element, 1, nullptr, &testContext->m_gstPlayer);
+}
+
 TEST_F(SetupElementTest, shouldReportAudioUnderflow)
 {
     shouldSetupAudioDecoderElementOnly();
@@ -177,6 +190,19 @@ TEST_F(SetupElementTest, shouldReportAudioUnderflow)
 
     shouldSetAudioUnderflowCallback();
     triggerAudioUnderflowCallback();
+}
+
+TEST_F(SetupElementTest, shouldNotReportAudioUnderflowWhenFifoDepthIsNonZero)
+{
+    shouldSetupAudioDecoderElementOnly();
+    triggerSetupElement();
+
+    ASSERT_TRUE(testContext->m_audioUnderflowCallback);
+    EXPECT_CALL(testContext->m_gstPlayer, scheduleAudioUnderflow()).Times(0);
+
+    auto audioUnderflowCallback = reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+        testContext->m_audioUnderflowCallback);
+    audioUnderflowCallback(testContext->m_element, 1, nullptr, &testContext->m_gstPlayer);
 }
 
 TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildAdded)
