@@ -39,6 +39,12 @@ namespace
  */
 void audioUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueDepth, gpointer self)
 {
+    if (fifoDepth > 0)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Ignoring audio underflow callback - fifoDepth is %u", fifoDepth);
+        return;
+    }
+
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
     player->scheduleAudioUnderflow();
@@ -56,6 +62,12 @@ void audioUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
  */
 void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueDepth, gpointer self)
 {
+    if (fifoDepth > 0)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Ignoring video underflow callback - fifoDepth is %u", fifoDepth);
+        return;
+    }
+
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
     player->scheduleVideoUnderflow();
