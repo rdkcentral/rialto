@@ -37,8 +37,7 @@ enum ProtoMediaKeyErrorStatus {
     INVALID_STATE = 4;              ///< The object is in an invalid state for the operation. */
     INTERFACE_NOT_IMPLEMENTED = 5;  ///< The interface is not implemented. */
     BUFFER_TOO_SMALL = 6;           ///< The buffer size is too small. */
-    OUTPUT_RESTRICTED = 7;           ///< The buffer size is too small. */
-};
+    OUTPUT_RESTRICTED = 7;          ///< HDCP output protection failure. */
 
 /**
  * @brief Event to notify that a license is required.
