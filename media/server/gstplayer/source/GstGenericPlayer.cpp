@@ -1883,6 +1883,11 @@ void GstGenericPlayer::cancelUnderflow(firebolt::rialto::MediaSourceType mediaSo
     }
 }
 
+bool GstGenericPlayer::isVideoHandleSet() const
+{
+    return m_context.isVideoHandleSet;
+}
+
 void GstGenericPlayer::play(bool &async)
 {
     async = true;

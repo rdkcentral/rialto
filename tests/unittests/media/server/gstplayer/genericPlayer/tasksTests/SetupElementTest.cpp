@@ -18,6 +18,7 @@
  */
 
 #include "GenericTasksTestsBase.h"
+#include "GenericTasksTestsContext.h"
 
 class SetupElementTest : public GenericTasksTestsBase
 {
@@ -170,6 +171,35 @@ TEST_F(SetupElementTest, shouldReportVideoUnderflow)
     triggerVideoUnderflowCallback();
 }
 
+TEST_F(SetupElementTest, shouldNotReportVideoUnderflowWhenFifoDepthIsNonZero)
+{
+    shouldSetupVideoDecoderElementOnly();
+    triggerSetupElement();
+
+    ASSERT_TRUE(testContext->m_videoUnderflowCallback);
+    EXPECT_CALL(testContext->m_gstPlayer, scheduleVideoUnderflow()).Times(0);
+    EXPECT_CALL(testContext->m_gstPlayer, isVideoHandleSet()).WillOnce(Return(true));
+
+    auto videoUnderflowCallback = reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+        testContext->m_videoUnderflowCallback);
+    videoUnderflowCallback(testContext->m_element, 1, nullptr, &testContext->m_gstPlayer);
+}
+
+TEST_F(SetupElementTest, shouldNotReportVideoUnderflowWhenQueueDepthIsNonZero)
+{
+    shouldSetupVideoDecoderElementOnly();
+    triggerSetupElement();
+
+    ASSERT_TRUE(testContext->m_videoUnderflowCallback);
+    EXPECT_CALL(testContext->m_gstPlayer, scheduleVideoUnderflow()).Times(0);
+    EXPECT_CALL(testContext->m_gstPlayer, isVideoHandleSet()).WillOnce(Return(true));
+
+    guint queueDepth = 1;
+    auto videoUnderflowCallback = reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+        testContext->m_videoUnderflowCallback);
+    videoUnderflowCallback(testContext->m_element, 0, &queueDepth, &testContext->m_gstPlayer);
+}
+
 TEST_F(SetupElementTest, shouldReportFirstVideoFrame)
 {
     shouldSetupVideoDecoderElementWithFirstVideoFrameCallback();
@@ -186,6 +216,19 @@ TEST_F(SetupElementTest, shouldReportAudioUnderflow)
 
     shouldSetAudioUnderflowCallback();
     triggerAudioUnderflowCallback();
+}
+
+TEST_F(SetupElementTest, shouldNotReportAudioUnderflowWhenFifoDepthIsNonZero)
+{
+    shouldSetupAudioDecoderElementOnly();
+    triggerSetupElement();
+
+    ASSERT_TRUE(testContext->m_audioUnderflowCallback);
+    EXPECT_CALL(testContext->m_gstPlayer, scheduleAudioUnderflow()).Times(0);
+
+    auto audioUnderflowCallback = reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+        testContext->m_audioUnderflowCallback);
+    audioUnderflowCallback(testContext->m_element, 1, nullptr, &testContext->m_gstPlayer);
 }
 
 TEST_F(SetupElementTest, shouldReportFirstAudioFrameFromSignal)

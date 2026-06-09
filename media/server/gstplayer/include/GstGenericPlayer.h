@@ -191,6 +191,7 @@ private:
     void stopSubtitleClockResyncTimer() override;
     void stopWorkerThread() override;
     void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) override;
+    bool isVideoHandleSet() const override;
     void setPendingPlaybackRate() override;
     void renderFrame() override;
     void handleBusMessage(GstMessage *message) override;
