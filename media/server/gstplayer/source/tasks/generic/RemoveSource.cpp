@@ -57,6 +57,10 @@ void RemoveSource::execute() const
     sourceElem->second.isDataNeeded = false;
     sourceElem->second.isNeedDataPending = false;
 
+    // Reset Eos info
+    m_context.endOfStreamInfo.clear();
+    m_context.eosNotified = false;
+
     RIALTO_SERVER_LOG_MIL("%s source removed", common::convertMediaSourceType(m_type));
 }
 } // namespace firebolt::rialto::server::tasks::generic
