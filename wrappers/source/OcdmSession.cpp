@@ -23,6 +23,7 @@
 #include "opencdm/open_cdm_ext.h"
 #include <dlfcn.h>
 #include <mutex>
+#include <vector>
 
 namespace
 {
@@ -109,6 +110,7 @@ const firebolt::rialto::KeyStatus convertKeyStatus(const KeyStatus &ocdmKeyStatu
 namespace firebolt::rialto::wrappers
 {
 OcdmSession::OcdmGstSessionDecryptExFn OcdmSession::m_ocdmGstSessionDecryptEx{nullptr};
+OcdmSession::OcdmGstSessionDecryptBufferOnceFn OcdmSession::m_ocdmGstSessionDecryptBufferOnce{nullptr};
 
 OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient *client)
     : m_systemHandle(systemHandle), m_ocdmSessionClient(client), m_session(nullptr)
@@ -121,6 +123,8 @@ OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient 
                    {
                        m_ocdmGstSessionDecryptEx =
                            (OcdmGstSessionDecryptExFn)dlsym(RTLD_DEFAULT, "opencdm_gstreamer_session_decrypt_ex");
+                       m_ocdmGstSessionDecryptBufferOnce =
+                           (OcdmGstSessionDecryptBufferOnceFn)dlsym(RTLD_DEFAULT, "opencdm_gstreamer_session_decrypt_buffer_once");
                    });
 }
 
@@ -195,6 +199,59 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
         return MediaKeyErrorStatus::FAIL;
     }
 
+    if (m_ocdmGstSessionDecryptBufferOnce)
+    {
+        // Extract key ID from the buffer's protection metadata
+        std::vector<uint8_t> keyId;
+        GstProtectionMeta *pm = reinterpret_cast<GstProtectionMeta *>(gst_buffer_get_protection_meta(encrypted));
+        if (pm)
+        {
+            const GValue *kidValue = gst_structure_get_value(pm->info, "kid");
+            if (kidValue)
+            {
+                GstBuffer *kidBuf = gst_value_get_buffer(kidValue);
+                if (kidBuf)
+                {
+                    GstMapInfo kidMap;
+                    if (gst_buffer_map(kidBuf, &kidMap, GST_MAP_READ))
+                    {
+                        keyId.assign(kidMap.data, kidMap.data + kidMap.size);
+                        gst_buffer_unmap(kidBuf, &kidMap);
+                    }
+                }
+            }
+        }
+
+        // Pre-decrypt key status check: return OUTPUT_RESTRICTED immediately (no sleep) so
+        // the caller (MediaKeysServerInternal::decrypt) can retry from the GStreamer thread.
+        if (!keyId.empty())
+        {
+            const ::KeyStatus preStatus =
+                opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
+            if (preStatus == OutputRestricted || preStatus == OutputRestrictedHDCP22)
+            {
+                return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+            }
+        }
+
+        OpenCDMError result = m_ocdmGstSessionDecryptBufferOnce(m_session, encrypted, caps);
+
+        // Post-decrypt status check: a failed decrypt during HDCP reauth may not carry a
+        // specific error code, so confirm via key status before signalling the caller to retry.
+        if (result != ERROR_NONE && !keyId.empty())
+        {
+            const ::KeyStatus postStatus =
+                opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
+            if (postStatus == OutputRestricted || postStatus == OutputRestrictedHDCP22)
+            {
+                return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
+            }
+        }
+
+        return convertOpenCdmError(result);
+    }
+
+    // Fallback: adapter without _once handles retries internally.
     OpenCDMError status = opencdm_gstreamer_session_decrypt_buffer(m_session, encrypted, caps);
     return convertOpenCdmError(status);
 }

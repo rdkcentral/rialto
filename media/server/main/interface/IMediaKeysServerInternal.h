@@ -90,6 +90,11 @@ public:
     virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) = 0;
 
     /**
+     * @brief Invalidates pending decrypt retries and queued decrypt work.
+     */
+    virtual void invalidateDecryptRequests() = 0;
+
+    /**
      * @brief Checks, if MediaKeys main thread is not deadlocked
      *
      * @param[in] heartbeatHandler    : The heartbeat handler instance.

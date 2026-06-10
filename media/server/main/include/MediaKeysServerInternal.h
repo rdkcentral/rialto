@@ -28,6 +28,9 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
 
 namespace firebolt::rialto::server
 {
@@ -113,6 +116,8 @@ public:
 
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
 
+    void invalidateDecryptRequests() override;
+
     MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) override;
 
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
@@ -147,6 +152,10 @@ private:
      * @brief This objects id registered on the main thread
      */
     uint32_t m_mainThreadClientId;
+
+    std::atomic_uint64_t m_decryptGeneration{0};
+
+    std::atomic_bool m_isShuttingDown{false};
 
     /**
      * @brief Creates a session internally, only to be called on the main thread.

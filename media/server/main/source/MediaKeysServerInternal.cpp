@@ -18,6 +18,8 @@
  */
 
 #include <stdexcept>
+#include <chrono>
+#include <thread>
 
 #include "MediaKeysServerInternal.h"
 #include "RialtoServerLogging.h"
@@ -51,6 +53,9 @@ std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
 
 namespace firebolt::rialto::server
 {
+constexpr std::chrono::milliseconds kOutputRestrictedRetryInterval{250};
+constexpr std::chrono::seconds kOutputRestrictedRetryTimeout{6};
+
 int32_t generateSessionId()
 {
     static int32_t keySessionId{0};
@@ -145,7 +150,7 @@ MediaKeysServerInternal::MediaKeysServerInternal(
 MediaKeysServerInternal::~MediaKeysServerInternal()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    m_isShuttingDown = true;
     auto task = [&]()
     {
         m_ocdmSystem.reset();
@@ -573,11 +578,69 @@ MediaKeyErrorStatus MediaKeysServerInternal::decrypt(int32_t keySessionId, GstBu
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    MediaKeyErrorStatus status;
-    auto task = [&]() { status = decryptInternal(keySessionId, encrypted, caps); };
+    const uint64_t kDecryptGeneration = m_decryptGeneration.load();
+    bool didRetryAfterOutputRestricted{false};
+    MediaKeyErrorStatus status{MediaKeyErrorStatus::FAIL};
+    const auto deadline = std::chrono::steady_clock::now() + kOutputRestrictedRetryTimeout;
+    do
+    {
+        if (kDecryptGeneration != m_decryptGeneration.load())
+        {
+            RIALTO_SERVER_LOG_WARN("Decrypt request invalidated before enqueue");
+            status = MediaKeyErrorStatus::FAIL;
+            break;
+        }
 
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        auto task = [&]()
+        {
+            if (kDecryptGeneration != m_decryptGeneration.load())
+            {
+                RIALTO_SERVER_LOG_WARN("Decrypt request invalidated before execution");
+                status = MediaKeyErrorStatus::FAIL;
+                return;
+            }
+            status = decryptInternal(keySessionId, encrypted, caps);
+        };
+        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+        if (status != MediaKeyErrorStatus::OUTPUT_RESTRICTED)
+        {
+            break;
+        }
+
+        didRetryAfterOutputRestricted = true;
+
+        if (kDecryptGeneration != m_decryptGeneration.load())
+        {
+            RIALTO_SERVER_LOG_WARN("Decrypt retry invalidated");
+            status = MediaKeyErrorStatus::FAIL;
+            break;
+        }
+
+	if (m_isShuttingDown.load())
+        {
+            RIALTO_SERVER_LOG_ERROR("Decrypt retry aborted — shutdown in progress");
+            break;
+        }
+        RIALTO_SERVER_LOG_WARN("Decrypt returned OUTPUT_RESTRICTED, retrying after delay");
+
+        std::this_thread::sleep_for(kOutputRestrictedRetryInterval);
+
+    } while (std::chrono::steady_clock::now() < deadline);
+
+    // If a decrypt recovered after retrying, invalidate accumulated stale callers
+    // that started waiting during the OUTPUT_RESTRICTED window.
+    if (didRetryAfterOutputRestricted && status == MediaKeyErrorStatus::OK)
+    {
+        invalidateDecryptRequests();
+    }
+
     return status;
+}
+
+void MediaKeysServerInternal::invalidateDecryptRequests()
+{
+    ++m_decryptGeneration;
+    RIALTO_SERVER_LOG_INFO("Invalidated pending decrypt requests");
 }
 
 MediaKeyErrorStatus MediaKeysServerInternal::decryptInternal(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)

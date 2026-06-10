@@ -412,6 +412,14 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
         return AddSegmentStatus::ERROR;
     }
 
+    if (m_attachedSources.isFlushing(mediaSegment->getId()))
+    {
+        RIALTO_CLIENT_LOG_WARN("Source %d is flushing. Ignoring segment for request id %u", mediaSegment->getId(),
+                               needDataRequestId);
+        discardNeedDataRequest(needDataRequestId);
+        return AddSegmentStatus::ERROR;
+    }
+
     std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
     auto needDataRequestIt = m_needDataRequestMap.find(needDataRequestId);
     if (needDataRequestIt == m_needDataRequestMap.end())
@@ -421,6 +429,14 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
     }
 
     std::shared_ptr<NeedDataRequest> needDataRequest = needDataRequestIt->second;
+    if (m_attachedSources.isFlushing(needDataRequest->sourceId))
+    {
+        RIALTO_CLIENT_LOG_WARN("Source %d is flushing. Ignoring segment for request id %u", needDataRequest->sourceId,
+                               needDataRequestId);
+        m_needDataRequestMap.erase(needDataRequestIt);
+        return AddSegmentStatus::ERROR;
+    }
+
     std::shared_ptr<ISharedMemoryHandle> shmHandle = m_clientController.getSharedMemoryHandle();
     if (nullptr == shmHandle || nullptr == shmHandle->getShm())
     {

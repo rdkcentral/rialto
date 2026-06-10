@@ -443,6 +443,29 @@ TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentNoData)
 }
 
 /**
+ * Test that addSegment rejects a segment when its source is already flushing.
+ */
+TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentFlushingSource)
+{
+    constexpr uint32_t kSecondRequestId = 5U;
+    constexpr int32_t kSecondSourceId = 2;
+
+    attachSource(kSecondSourceId);
+
+    bool isAsync{false};
+    EXPECT_CALL(*m_mediaPipelineIpcMock, flush(m_sourceId, m_kResetTime, _)).WillOnce(Return(true));
+    EXPECT_EQ(m_mediaPipeline->flush(m_sourceId, m_kResetTime, isAsync), true);
+
+    needData(kSecondSourceId, m_frameCount, kSecondRequestId, m_shmInfo);
+
+    std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
+    std::unique_ptr<IMediaPipeline::MediaSegment> frame = createFrame(MediaSourceType::AUDIO, data.size(), data.data());
+
+    EXPECT_CALL(*m_clientControllerMock, getSharedMemoryHandle()).Times(0);
+    EXPECT_EQ(m_mediaPipeline->addSegment(kSecondRequestId, frame), AddSegmentStatus::ERROR);
+}
+
+/**
  * Test that an add segment call with getting shared memory failure returns false
  */
 TEST_F(RialtoClientMediaPipelineDataTest, AddSegmentGetSharedMemoryFailure)
