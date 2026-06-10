@@ -90,6 +90,18 @@ public:
     virtual MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) = 0;
 
     /**
+     * @brief Get the status of the specified key in a session.
+     *
+     * @param[in] keySessionId : The session id for the session.
+     * @param[in] keyId        : The key id.
+     * @param[out] keyStatus   : The key status.
+     *
+     * @retval an error status.
+     */
+    virtual MediaKeyErrorStatus getKeyStatus(int32_t keySessionId, const std::vector<uint8_t> &keyId,
+                                             KeyStatus &keyStatus) = 0;
+
+    /**
      * @brief Checks, if MediaKeys main thread is not deadlocked
      *
      * @param[in] heartbeatHandler    : The heartbeat handler instance.

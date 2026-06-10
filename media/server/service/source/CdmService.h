@@ -83,6 +83,8 @@ public:
     bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) override;
     bool isServerCertificateSupported(const std::string &keySystem) override;
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
+    MediaKeyErrorStatus getKeyStatus(int32_t keySessionId, const std::vector<uint8_t> &keyId,
+                                     KeyStatus &keyStatus) override;
     bool isExtendedInterfaceUsed(int32_t keySessionId) override;
     MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
     void incrementSessionIdUsageCounter(int32_t keySessionId) override;

@@ -69,3 +69,19 @@ TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OnErrorFailure)
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
 }
+
+/**
+ * Test that key status can be retrieved successfully.
+ */
+TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, GetKeyStatus)
+{
+    createKeySession(kWidevineKeySystem);
+
+    std::vector<uint8_t> keyId{1, 2, 3, 4};
+    KeyStatus keyStatus{KeyStatus::INTERNAL_ERROR};
+
+    EXPECT_CALL(*m_ocdmSessionMock, getStatus(_, keyId.size())).WillOnce(Return(KeyStatus::OUTPUT_RESTRICTED));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->getKeyStatus(keyId, keyStatus));
+    EXPECT_EQ(KeyStatus::OUTPUT_RESTRICTED, keyStatus);
+}

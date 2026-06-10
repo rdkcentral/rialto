@@ -42,6 +42,7 @@ public:
     MOCK_METHOD(bool, containsKey, (const std::vector<uint8_t> &keyId), (override));
     MOCK_METHOD(MediaKeyErrorStatus, setDrmHeader, (const std::vector<uint8_t> &requestData), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getLastDrmError, (uint32_t & errorCode), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getKeyStatus, (const std::vector<uint8_t> &keyId, KeyStatus &keyStatus), (override));
     MOCK_METHOD(MediaKeyErrorStatus, selectKeyId, (const std::vector<uint8_t> &keyId), (override));
 };
 } // namespace firebolt::rialto::server

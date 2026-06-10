@@ -509,6 +509,21 @@ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypt
     return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->decrypt(keySessionId, encrypted, caps);
 }
 
+MediaKeyErrorStatus CdmService::getKeyStatus(int32_t keySessionId, const std::vector<uint8_t> &keyId,
+                                             KeyStatus &keyStatus)
+{
+    RIALTO_SERVER_LOG_DEBUG("CdmService requested to get key status, key session id: %d", keySessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
+    auto mediaKeysHandleIter{m_sessionInfo.find(keySessionId)};
+    if (mediaKeysHandleIter == m_sessionInfo.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Media keys handle for mksId: %d does not exists", keySessionId);
+        return MediaKeyErrorStatus::FAIL;
+    }
+    return m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->getKeyStatus(keySessionId, keyId, keyStatus);
+}
+
 bool CdmService::isExtendedInterfaceUsed(int32_t keySessionId)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to check if extended interface is used, key session id: %d",

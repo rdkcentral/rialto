@@ -98,6 +98,60 @@ static const char *toString(const firebolt::rialto::CipherMode &cipherMode)
     }
 }
 
+static const char *toString(const firebolt::rialto::KeyStatus &keyStatus)
+{
+    switch (keyStatus)
+    {
+    case firebolt::rialto::KeyStatus::USABLE:
+    {
+        return "usable";
+    }
+    case firebolt::rialto::KeyStatus::EXPIRED:
+    {
+        return "expired";
+    }
+    case firebolt::rialto::KeyStatus::OUTPUT_RESTRICTED:
+    {
+        return "output-restricted";
+    }
+    case firebolt::rialto::KeyStatus::PENDING:
+    {
+        return "pending";
+    }
+    case firebolt::rialto::KeyStatus::RELEASED:
+    {
+        return "released";
+    }
+    case firebolt::rialto::KeyStatus::INTERNAL_ERROR:
+    {
+        return "internal-error";
+    }
+    default:
+    {
+        return "unknown";
+    }
+    }
+}
+
+static std::vector<uint8_t> extractKeyId(const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                         GstBuffer *key)
+{
+    if (!key)
+    {
+        return {};
+    }
+
+    GstMapInfo keyMap;
+    if (!gstWrapper->gstBufferMap(key, &keyMap, GST_MAP_READ))
+    {
+        return {};
+    }
+
+    std::vector<uint8_t> keyId(keyMap.data, keyMap.data + keyMap.size);
+    gstWrapper->gstBufferUnmap(key, &keyMap);
+    return keyId;
+}
+
 static void gst_rialto_decryptor_class_init(GstRialtoDecryptorClass *klass) // NOLINT(build/function_format)
 {
     GST_DEBUG_CATEGORY_INIT(gst_rialto_decryptor_debug_category, "rialtodecryptor", 0, "Decryptor for Rialto");
@@ -251,6 +305,7 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
     GstRialtoDecryptor *self = GST_RIALTO_DECRYPTOR(m_decryptorElement);
     GstRialtoProtectionData *protectionData = m_metadataWrapper->getProtectionMetadataData(buffer);
     GstFlowReturn returnStatus = GST_BASE_TRANSFORM_FLOW_DROPPED; // By default drop frame on failure
+    std::vector<uint8_t> keyId;
     if (!protectionData)
     {
         GST_TRACE_OBJECT(self, "Clear sample");
@@ -264,6 +319,7 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
         }
         else
         {
+
             if (protectionData->cipherMode == firebolt::rialto::CipherMode::CBC1 ||
                 protectionData->cipherMode == firebolt::rialto::CipherMode::CENS)
             {
@@ -285,9 +341,9 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
                 GstMapInfo keyMap;
                 if (m_gstWrapper->gstBufferMap(protectionData->key, &keyMap, GST_MAP_READ))
                 {
-                    std::vector<uint8_t> playreadyKey(keyMap.data, keyMap.data + keyMap.size);
+                    keyId.assign(keyMap.data, keyMap.data + keyMap.size);
                     m_gstWrapper->gstBufferUnmap(protectionData->key, &keyMap);
-                    m_decryptionService->selectKeyId(protectionData->keySessionId, playreadyKey);
+                    m_decryptionService->selectKeyId(protectionData->keySessionId, keyId);
                     m_gstWrapper->gstBufferUnref(protectionData->key);
                     protectionData->key = m_gstWrapper->gstBufferNew();
                 }
@@ -327,6 +383,38 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
     {
         // Notify dropped frame upstream as a non-fatal message
         std::string message = "Failed to decrypt buffer, dropping frame and continuing";
+        if (m_decryptionService)
+        {
+            if (keyId.empty())
+            {
+                keyId = extractKeyId(m_gstWrapper, protectionData->key);
+            }
+
+            if (!keyId.empty())
+            {
+                firebolt::rialto::KeyStatus keyStatus{firebolt::rialto::KeyStatus::INTERNAL_ERROR};
+                if (firebolt::rialto::MediaKeyErrorStatus::OK ==
+                    m_decryptionService->getKeyStatus(protectionData->keySessionId, keyId, keyStatus))
+                {
+                    GST_WARNING_OBJECT(self, "Key status after decrypt failure: %s", toString(keyStatus));
+                    message += "[";
+                    message += toString(keyStatus);
+                    message += "]";
+                }
+                else
+                {
+                    GST_WARNING_OBJECT(self, "Failed to get key status after decrypt failure");
+                }
+            }
+            else
+            {
+                GST_WARNING_OBJECT(self, "Failed to extract key id after decrypt failure");
+            }
+        }
+        else
+        {
+            GST_WARNING_OBJECT(self, "No decryption service available after decrypt failure");
+        }
         GError *gError{m_glibWrapper->gErrorNewLiteral(GST_STREAM_ERROR, GST_STREAM_ERROR_DECRYPT, message.c_str())};
         gboolean result =
             m_gstWrapper->gstElementPostMessage(GST_ELEMENT_CAST(self),

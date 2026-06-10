@@ -172,6 +172,16 @@ public:
     virtual MediaKeyErrorStatus getLastDrmError(uint32_t &errorCode) = 0;
 
     /**
+     * @brief Get the status of the specified key in the session.
+     *
+     * @param[in] keyId       : The key id.
+     * @param[out] keyStatus  : The key status.
+     *
+     * @retval an error status.
+     */
+    virtual MediaKeyErrorStatus getKeyStatus(const std::vector<uint8_t> &keyId, KeyStatus &keyStatus) = 0;
+
+    /**
      * @brief Selects the specified keyId for the key session. Netflix specific API.
      *
      * @param[in] keyId        : The key id to select.

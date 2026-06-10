@@ -92,6 +92,8 @@ public:
 
     MediaKeyErrorStatus getLastDrmError(uint32_t &errorCode) override;
 
+    MediaKeyErrorStatus getKeyStatus(const std::vector<uint8_t> &keyId, KeyStatus &keyStatus) override;
+
     MediaKeyErrorStatus selectKeyId(const std::vector<uint8_t> &keyId) override;
 
     void onProcessChallenge(const char url[], const uint8_t challenge[], const uint16_t challengeLength) override;
