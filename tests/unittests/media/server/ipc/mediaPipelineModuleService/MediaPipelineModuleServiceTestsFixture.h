@@ -127,6 +127,7 @@ public:
     void mediaClientWillSendPostionChangeEvent();
     void mediaClientWillSendQosEvent();
     void mediaClientWillSendPlaybackErrorEvent();
+    void mediaClientWillSendFirstFrameReceivedEvent();
     void mediaClientWillSendSourceFlushedEvent();
     void mediaClientWillSendPlaybackInfoEvent();
 
@@ -192,6 +193,7 @@ public:
     void sendPostionChangeEvent();
     void sendQosEvent();
     void sendPlaybackErrorEvent();
+    void sendFirstFrameReceivedEvent();
     void sendSourceFlushedEvent();
     void sendPlaybackInfoEvent();
     void sendRenderFrameRequestAndReceiveResponse();

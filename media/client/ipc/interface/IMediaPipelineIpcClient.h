@@ -97,6 +97,15 @@ public:
     virtual void notifyBufferUnderflow(int32_t sourceId) = 0;
 
     /**
+     * @brief Notifies the client that the first frame has been received.
+     *
+     * Notification shall be sent whenever a video/audio first frame is received
+     *
+     * @param[in] sourceId  : The id of the source that received the first frame
+     */
+    virtual void notifyFirstFrameReceived(int32_t sourceId) = 0;
+
+    /**
      * @brief Notifies the client that a non-fatal error has occurred in the player.
      *
      * PlaybackState remains unchanged when an error occurs.
