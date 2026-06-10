@@ -25,6 +25,7 @@
 #include "tasks/generic/EnoughData.h"
 #include "tasks/generic/Eos.h"
 #include "tasks/generic/FinishSetupSource.h"
+#include "tasks/generic/FirstFrameReceived.h"
 #include "tasks/generic/Flush.h"
 #include "tasks/generic/HandleBusMessage.h"
 #include "tasks/generic/NeedData.h"
@@ -262,6 +263,13 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(GenericPl
                                                                        MediaSourceType sourceType) const
 {
     return std::make_unique<tasks::generic::Underflow>(context, player, m_client, underflowEnabled, sourceType);
+}
+
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFirstFrameReceived(GenericPlayerContext &context,
+                                                                                IGstGenericPlayerPrivate &player,
+                                                                                MediaSourceType sourceType) const
+{
+    return std::make_unique<tasks::generic::FirstFrameReceived>(context, player, m_client, sourceType);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUpdatePlaybackGroup(GenericPlayerContext &context,

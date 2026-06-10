@@ -62,6 +62,21 @@ void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
 }
 
 /**
+ * @brief Callback for first video frame event from the emitting video element. Called by the Gstreamer thread.
+ *
+ * @param[in] object     : the object that emitted the signal
+ * @param[in] fifoDepth  : the fifo depth (may be 0)
+ * @param[in] queueDepth : the queue depth (may be NULL)
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
+void firstVideoFrameCallback(GstElement *object, guint fifoDepth, gpointer queueDepth, gpointer self)
+{
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->scheduleFirstVideoFrameReceived();
+}
+
+/**
  * @brief Callback for a autovideosink when a child has been added to the sink.
  *
  * @param[in] obj        : the parent element (autovideosink)
@@ -267,6 +282,18 @@ void SetupElement::execute() const
                                        underflowSignalName.value().c_str());
                 m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(),
                                               G_CALLBACK(videoUnderflowCallback), &m_player);
+            }
+        }
+
+        std::optional<std::string> firstFrameSignalName = getFirstFrameSignalName(*m_glibWrapper, m_element);
+        if (firstFrameSignalName)
+        {
+            if (isVideo(*m_gstWrapper, m_element))
+            {
+                RIALTO_SERVER_LOG_INFO("Connecting first video frame callback for signal: %s",
+                                       firstFrameSignalName.value().c_str());
+                m_glibWrapper->gSignalConnect(m_element, firstFrameSignalName.value().c_str(),
+                                              G_CALLBACK(firstVideoFrameCallback), &m_player);
             }
         }
     }
