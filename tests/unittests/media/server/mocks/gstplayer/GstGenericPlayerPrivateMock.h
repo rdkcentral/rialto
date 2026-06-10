@@ -36,6 +36,7 @@ public:
     MOCK_METHOD(void, scheduleEnoughData, (GstAppSrc * src), (override));
     MOCK_METHOD(void, scheduleAudioUnderflow, (), (override));
     MOCK_METHOD(void, scheduleVideoUnderflow, (), (override));
+    MOCK_METHOD(void, scheduleFirstVideoFrameReceived, (), (override));
     MOCK_METHOD(void, scheduleAllSourcesAttached, (), (override));
     MOCK_METHOD(bool, setVideoSinkRectangle, (), (override));
     MOCK_METHOD(bool, setImmediateOutput, (), (override));

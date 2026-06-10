@@ -269,3 +269,29 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifySourceFlushedFailureSourceId
 
     m_gstPlayerCallback->notifySourceFlushed(mediaSourceType);
 }
+
+/**
+ * Test a notification of first frame received is forwarded to the registered client.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyFirstFrameReceived)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    int sourceId = attachSource(mediaSourceType, "video/mp4");
+
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyFirstFrameReceived(sourceId));
+
+    m_gstPlayerCallback->notifyFirstFrameReceived(mediaSourceType);
+}
+
+/**
+ * Test a notification of first frame received fails when sourceid cannot be found.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyFirstFrameReceivedFailureSourceIdNotFound)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+
+    mainThreadWillEnqueueTask();
+
+    m_gstPlayerCallback->notifyFirstFrameReceived(mediaSourceType);
+}
