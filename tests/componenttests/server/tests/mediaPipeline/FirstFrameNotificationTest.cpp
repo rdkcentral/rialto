@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2026 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,20 +36,18 @@ constexpr gulong kSignalId{123};
 
 namespace firebolt::rialto::server::ct
 {
-class UnderflowTest : public MediaPipelineTest
+class FirstFrameNotificationTest : public MediaPipelineTest
 {
 public:
-    UnderflowTest()
+    FirstFrameNotificationTest()
     {
         m_elementFactory = gst_element_factory_find("fakesrc");
-        m_audioDecoder = gst_element_factory_create(m_elementFactory, nullptr);
         m_videoDecoder = gst_element_factory_create(m_elementFactory, nullptr);
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillRepeatedly(Return(m_elementFactory));
     }
 
-    ~UnderflowTest() override
+    ~FirstFrameNotificationTest() override
     {
-        gst_object_unref(m_audioDecoder);
         gst_object_unref(m_videoDecoder);
         gst_object_unref(m_elementFactory);
     }
@@ -61,10 +59,6 @@ public:
         EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillRepeatedly(Return(FALSE));
         EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillRepeatedly(Return(FALSE));
         EXPECT_CALL(*m_gstWrapperMock, gstIsBaseParse(_)).WillRepeatedly(Return(FALSE));
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementFactoryListIsType(m_elementFactory,
-                                                GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-            .WillRepeatedly(Return(FALSE));
         EXPECT_CALL(*m_glibWrapperMock, gSignalListIds(_, _))
             .WillRepeatedly(Invoke(
                 [&](GType itype, guint *n_ids)
@@ -74,38 +68,8 @@ public:
                 }));
         EXPECT_CALL(*m_glibWrapperMock, gSignalQuery(m_signals[0], _))
             .WillRepeatedly(Invoke([&](guint signal_id, GSignalQuery *query)
-                                   { query->signal_name = "buffer-underflow-callback"; }));
-        EXPECT_CALL(*m_glibWrapperMock, gFree(m_signals)).Times(4);
-    }
-
-    void willSetupAudioDecoder()
-    {
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_audioDecoder)).WillOnce(Return(m_audioDecoder));
-
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
-            .WillOnce(Return(TRUE));
-
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-            .WillOnce(Return(TRUE));
-
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                                      GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-            .WillOnce(Return(TRUE))
-            .RetiresOnSaturation();
-        EXPECT_CALL(*m_glibWrapperMock, gObjectType(m_audioDecoder)).WillRepeatedly(Return(G_TYPE_PARAM));
-        EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(_, _, _, _))
-            .WillOnce(Invoke(
-                [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
-                {
-                    m_audioUnderflowCallback = c_handler;
-                    m_audioUnderflowData = data;
-                    return kSignalId;
-                }))
-            .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioDecoder))
-            .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+                                   { query->signal_name = "first-video-frame-callback"; }));
+        EXPECT_CALL(*m_glibWrapperMock, gFree(m_signals)).Times(2);
     }
 
     void willSetupVideoDecoder()
@@ -114,27 +78,24 @@ public:
 
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
             .WillOnce(Return(TRUE));
-
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-            .WillOnce(Return(FALSE));
-
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
             .WillOnce(Return(TRUE));
-
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstElementFactoryListIsType(m_elementFactory,
+                                                GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+            .WillOnce(Return(FALSE))
+            .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER |
                                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
             .WillOnce(Return(FALSE))
             .RetiresOnSaturation();
-
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory,
                                                 GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
             .WillOnce(Return(FALSE))
             .RetiresOnSaturation();
-
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory,
                                                 GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
@@ -142,23 +103,17 @@ public:
             .RetiresOnSaturation();
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectType(m_videoDecoder)).WillRepeatedly(Return(G_TYPE_PARAM));
-        EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(_, StrEq("buffer-underflow-callback"), _, _))
+        EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(_, StrEq("first-video-frame-callback"), _, _))
             .WillOnce(Invoke(
                 [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
                 {
-                    m_videoUnderflowCallback = c_handler;
-                    m_videoUnderflowData = data;
+                    m_firstVideoFrameCallback = c_handler;
+                    m_firstVideoFrameData = data;
                     return kSignalId;
                 }))
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoDecoder))
             .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
-    }
-
-    void setupAudioDecoder()
-    {
-        m_gstreamerStub.setupElement(m_audioDecoder);
-        waitWorker();
     }
 
     void setupVideoDecoder()
@@ -167,57 +122,38 @@ public:
         waitWorker();
     }
 
-    void audioUnderflow()
+    void firstVideoFrameReceived()
     {
-        ExpectMessage<BufferUnderflowEvent> expectedBufferUnderflow{m_clientStub};
-        expectedBufferUnderflow.setFilter([&](const auto &msg) { return msg.source_id() == m_audioSourceId; });
+        ExpectMessage<FirstFrameReceivedEvent> expectedFirstFrameReceived{m_clientStub};
+        expectedFirstFrameReceived.setFilter([&](const auto &msg) { return msg.source_id() == m_videoSourceId; });
 
-        ASSERT_TRUE(m_audioUnderflowCallback);
-        ASSERT_TRUE(m_audioUnderflowData);
+        ASSERT_TRUE(m_firstVideoFrameCallback);
+        ASSERT_TRUE(m_firstVideoFrameData);
         reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
-            m_audioUnderflowCallback)(m_audioDecoder, 0, nullptr, m_audioUnderflowData);
+            m_firstVideoFrameCallback)(m_videoDecoder, 0, nullptr, m_firstVideoFrameData);
 
-        auto receivedBufferUnderflow{expectedBufferUnderflow.getMessage()};
-        ASSERT_TRUE(receivedBufferUnderflow);
-        EXPECT_EQ(receivedBufferUnderflow->session_id(), m_sessionId);
-        EXPECT_EQ(receivedBufferUnderflow->source_id(), m_audioSourceId);
-    }
-
-    void videoUnderflow()
-    {
-        ExpectMessage<BufferUnderflowEvent> expectedBufferUnderflow{m_clientStub};
-        expectedBufferUnderflow.setFilter([&](const auto &msg) { return msg.source_id() == m_videoSourceId; });
-
-        ASSERT_TRUE(m_videoUnderflowCallback);
-        ASSERT_TRUE(m_videoUnderflowData);
-        reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
-            m_videoUnderflowCallback)(m_audioDecoder, 0, nullptr, m_videoUnderflowData);
-
-        auto receivedBufferUnderflow{expectedBufferUnderflow.getMessage()};
-        ASSERT_TRUE(receivedBufferUnderflow);
-        EXPECT_EQ(receivedBufferUnderflow->session_id(), m_sessionId);
-        EXPECT_EQ(receivedBufferUnderflow->source_id(), m_videoSourceId);
+        auto receivedFirstFrameReceived{expectedFirstFrameReceived.getMessage()};
+        ASSERT_TRUE(receivedFirstFrameReceived);
+        EXPECT_EQ(receivedFirstFrameReceived->session_id(), m_sessionId);
+        EXPECT_EQ(receivedFirstFrameReceived->source_id(), m_videoSourceId);
     }
 
 private:
     GstElementFactory *m_elementFactory{nullptr};
-    GstElement *m_audioDecoder{nullptr};
     GstElement *m_videoDecoder{nullptr};
     guint m_signals[1]{123};
-    GCallback m_audioUnderflowCallback;
-    gpointer m_audioUnderflowData{nullptr};
-    GCallback m_videoUnderflowCallback;
-    gpointer m_videoUnderflowData{nullptr};
+    GCallback m_firstVideoFrameCallback;
+    gpointer m_firstVideoFrameData{nullptr};
 };
+
 /*
- * Component Test:Underflow test
+ * Component Test: First frame notification test
  * Test Objective:
- *  Test if Rialto Server handles gstreamer underflow signals correctly. Underflow should be forwarded to Rialto Client
- *  with BufferUnderflowEvent message
+ *  Test if Rialto Server handles gstreamer first frame signals correctly. The notification should be forwarded to
+ *  Rialto Client with FirstFrameReceivedEvent message.
  *
  * Sequence Diagrams:
- *  Underflow
- *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Playback+Design
+ *  First frame notification
  *
  * Test Setup:
  *  Language: C++
@@ -241,83 +177,55 @@ private:
  *   Expect that GstPlayer instance is created.
  *   Expect that client is notified that the NetworkState has changed to BUFFERING.
  *
- *  Step 3: Setup Audio Decoder
- *   Call SetupElement callback with Audio Decoder
- *   Audio Underflow callback should be registered
- *
- *  Step 4: Setup Video Decoder
+ *  Step 3: Setup Video Decoder
  *   Call SetupElement callback with Video Decoder
- *   Video Underflow callback should be registered
+ *   First frame callback should be registered.
  *
- *  Step 5: Attach all sources
- *   Attach the audio source.
- *   Expect that audio source is attached.
+ *  Step 4: Attach video source
  *   Attach the video source.
  *   Expect that video source is attached.
- *   Expect that rialto source is setup
+ *   Expect that rialto source is setup.
  *   Expect that all sources are attached.
  *   Expect that the Playback state has changed to IDLE.
  *
- *  Step 6: Pause
+ *  Step 5: Pause
  *   Pause the content.
  *   Expect that gstreamer pipeline is paused.
  *
- *  Step 7: Write 1 audio frame
- *   Gstreamer Stub notifies, that it needs audio data
- *   Expect that server notifies the client that it needs 3 frames of audio data.
- *   Write 1 frame of audio data to the shared buffer.
- *   Send HaveData message
- *   Expect that server notifies the client that it needs 3 frames of audio data.
- *
- *  Step 8: Write 1 video frame
- *   Gstreamer Stub notifies, that it needs video data
+ *  Step 6: Write 1 video frame
+ *   Gstreamer Stub notifies, that it needs video data.
  *   Expect that server notifies the client that it needs 3 frames of video data.
  *   Write 1 frame of video data to the shared buffer.
- *   Send HaveData message
+ *   Send HaveData message.
  *   Expect that server notifies the client that it needs 3 frames of video data.
  *
- *  Step 9: Notify buffered and Paused
+ *  Step 7: Notify buffered and Paused
  *   Expect that server notifies the client that the Network state has changed to BUFFERED.
- *   Gstreamer Stub notifies, that pipeline state is in PAUSED state
+ *   Gstreamer Stub notifies, that pipeline state is in PAUSED state.
  *   Expect that server notifies the client that the Network state has changed to PAUSED.
  *
- *  Step 10: Play
- *   Play the content.
- *   Expect that gstreamer pipeline is in playing state
- *   Expect that server notifies the client that the Playback state has changed to PLAYING.
+ *  Step 8: First video frame received
+ *   Rialto Server will receive first video frame signal.
+ *   Rialto Server should send FirstFrameReceivedEvent with video source.
  *
- *  Step 11: Audio Underflow
- *   Rialto Server will receive Audio Underflow signal
- *   Rialto Server should send BufferUnderflowEvent with audio source
+ *  Step 9: End of video stream
+ *   Send video haveData with one frame and EOS status.
+ *   Expect that Gstreamer is notified about end of stream.
  *
- *  Step 12: Video Underflow
- *   Rialto Server will receive Video Underflow signal
- *   Rialto Server should send BufferUnderflowEvent with video source
- *
- *  Step 13: End of audio stream
- *   Send audio haveData with one frame and EOS status
- *   Expect that Gstreamer is notified about end of stream
- *
- *  Step 14: End of video stream
- *   Send video haveData with one frame and EOS status
- *   Expect that Gstreamer is notified about end of stream
- *
- *  Step 15: Notify end of stream
- *   Simulate, that gst_message_eos is received by Rialto Server
+ *  Step 10: Notify end of stream
+ *   Simulate, that gst_message_eos is received by Rialto Server.
  *   Expect that server notifies the client that the Network state has changed to END_OF_STREAM.
  *
- *  Step 16: Remove sources
- *   Remove the audio source.
- *   Expect that audio source is removed.
+ *  Step 11: Remove source
  *   Remove the video source.
  *   Expect that video source is removed.
  *
- *  Step 17: Stop
+ *  Step 12: Stop
  *   Stop the playback.
  *   Expect that stop propagated to the gstreamer pipeline.
  *   Expect that server notifies the client that the Playback state has changed to STOPPED.
  *
- *  Step 18: Destroy media session
+ *  Step 13: Destroy media session
  *   Send DestroySessionRequest.
  *   Expect that the session is destroyed on the server.
  *
@@ -326,11 +234,11 @@ private:
  *  Server is terminated.
  *
  * Expected Results:
- *  Underflow signals are handled by Rialto Server
+ *  First frame signal is handled by Rialto Server.
  *
  * Code:
  */
-TEST_F(UnderflowTest, underflow)
+TEST_F(FirstFrameNotificationTest, firstFrameNotification)
 {
     // Step 1: Create a new media session
     createSession();
@@ -339,38 +247,29 @@ TEST_F(UnderflowTest, underflow)
     gstPlayerWillBeCreated();
     load();
 
-    // Step 3: Setup Audio Decoder
+    // Step 3: Setup Video Decoder
     setupElementsCommon();
-    willSetupAudioDecoder();
-    setupAudioDecoder();
-
-    // Step 4: Setup Video Decoder
     willSetupVideoDecoder();
     setupVideoDecoder();
 
-    // Step 5: Attach all sources
-    audioSourceWillBeAttached();
-    attachAudioSource();
+    // Step 4: Attach video source
     videoSourceWillBeAttached();
     attachVideoSource();
     sourceWillBeSetup();
     setupSource();
-    willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
+    indicateAllSourcesAttached({&m_videoAppSrc});
 
-    // Step 6: Pause
+    // Step 5: Pause
     willPause();
     pause();
 
-    // Step 7: Write 1 audio frame
-    // Step 8: Write 1 video frame
-    // Step 9: Notify buffered and Paused
+    // Step 6: Write 1 video frame
+    // Step 7: Notify buffered and Paused
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush);
         pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
@@ -381,35 +280,24 @@ TEST_F(UnderflowTest, underflow)
     willNotifyPaused();
     notifyPaused();
 
-    // Step 10: Play
-    willPlay();
-    play();
+    // Step 8: First video frame received
+    firstVideoFrameReceived();
 
-    // Step 11: Audio Underflow
-    audioUnderflow();
-
-    // Step 12: Video Underflow
-    videoUnderflow();
-
-    // Step 13: End of audio stream
-    // Step 14: End of video stream
-    willEos(&m_audioAppSrc);
-    eosAudio(kFramesToPush);
+    // Step 9: End of video stream
     willEos(&m_videoAppSrc);
     eosVideo(kFramesToPush);
 
-    // Step 15: Notify end of stream
+    // Step 10: Notify end of stream
     gstNotifyEos();
 
-    // Step 16: Remove sources
-    removeSource(m_audioSourceId);
+    // Step 11: Remove source
     removeSource(m_videoSourceId);
 
-    // Step 17: Stop
+    // Step 12: Stop
     willStop();
     stop();
 
-    // Step 18: Destroy media session
+    // Step 13: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

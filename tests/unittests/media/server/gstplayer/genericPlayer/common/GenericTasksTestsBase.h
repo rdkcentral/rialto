@@ -78,6 +78,7 @@ protected:
     // SetupElement test methods
     void shouldSetupVideoSinkElementOnly();
     void shouldSetupVideoDecoderElementOnly();
+    void shouldSetupVideoDecoderElementWithFirstVideoFrameCallback();
     void shouldSetupVideoElementWithPendingGeometry();
     void shouldSetupVideoElementWithPendingImmediateOutput();
     void shouldSetupAudioSinkElementWithPendingLowLatency();
@@ -99,9 +100,11 @@ protected:
     void shouldSetupAudioSinkElementOnly();
     void shouldSetupAudioDecoderElementOnly();
     void shouldSetVideoUnderflowCallback();
+    void shouldSetFirstVideoFrameCallback();
     void shouldSetupBaseParse();
     void triggerSetupElement();
     void triggerVideoUnderflowCallback();
+    void triggerFirstVideoFrameCallback();
     void shouldSetAudioUnderflowCallback();
     void triggerAudioUnderflowCallback();
     void shouldAddFirstAutoVideoSinkChild();
@@ -432,9 +435,11 @@ protected:
 private:
     // SetupElement helper methods
     void expectVideoUnderflowSignalConnection();
+    void expectFirstVideoFrameSignalConnection();
     void expectAudioUnderflowSignalConnection();
     void expectSetupVideoSinkElement();
     void expectSetupVideoDecoderElement();
+    void expectSetupVideoDecoderElementWithFirstVideoFrameCallback();
     void expectSetupAudioSinkElement();
     void expectSetupAudioDecoderElement();
     void expectSetupVideoParserElement();

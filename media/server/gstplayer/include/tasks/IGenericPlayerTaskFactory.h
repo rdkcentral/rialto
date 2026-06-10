@@ -377,6 +377,19 @@ public:
                                                          bool underflowEnabled, MediaSourceType sourceType) const = 0;
 
     /**
+     * @brief Creates a FirstFrameReceived task.
+     *
+     * @param[in] context          : The GstGenericPlayer context
+     * @param[in] player           : The GstPlayer instance
+     * @param[in] sourceType       : Source type (audio or video).
+     *
+     * @retval the new FirstFrameReceived task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createFirstFrameReceived(GenericPlayerContext &context,
+                                                                  IGstGenericPlayerPrivate &player,
+                                                                  MediaSourceType sourceType) const = 0;
+
+    /**
      * @brief Creates an UpdatePlaybackGroup task.
      *
      * @param[in] context       : The GstGenericPlayer context

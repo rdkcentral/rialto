@@ -105,6 +105,16 @@ void MediaPipelineModuleStub::notifyBufferUnderflowEvent(int sessionId, int32_t 
     getClient()->sendEvent(event);
 }
 
+void MediaPipelineModuleStub::notifyFirstFrameReceivedEvent(int sessionId, int32_t sourceId)
+{
+    waitForClientConnect();
+
+    auto event = std::make_shared<firebolt::rialto::FirstFrameReceivedEvent>();
+    event->set_session_id(sessionId);
+    event->set_source_id(sourceId);
+    getClient()->sendEvent(event);
+}
+
 void MediaPipelineModuleStub::notifyPlaybackErrorEvent(int sessionId, int32_t sourceId, PlaybackError error)
 {
     waitForClientConnect();

@@ -99,6 +99,7 @@ public:
     guint m_signals[1]{123};
     GCallback m_audioUnderflowCallback;
     GCallback m_videoUnderflowCallback;
+    GCallback m_firstVideoFrameCallback;
     GCallback m_childAddedCallback;
     GCallback m_childRemovedCallback;
     gchar m_capsStr{};
