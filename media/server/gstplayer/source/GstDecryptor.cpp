@@ -233,7 +233,7 @@ GstRialtoDecryptorPrivate::GstRialtoDecryptorPrivate(
     GstBaseTransform *parentElement,
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> &gstWrapperFactory,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapperFactory> &glibWrapperFactory)
-    : m_decryptorElement(parentElement)
+    : m_decryptorElement(parentElement), m_hdcpOutputRestricted(false)
 {
     if ((!gstWrapperFactory) || (!(m_gstWrapper = gstWrapperFactory->getGstWrapper())))
     {
@@ -308,14 +308,33 @@ GstFlowReturn GstRialtoDecryptorPrivate::decrypt(GstBuffer *buffer, GstCaps *cap
             {
                 firebolt::rialto::MediaKeyErrorStatus status =
                     m_decryptionService->decrypt(protectionData->keySessionId, buffer, caps);
-                if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
+                if (firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED == status)
+                {
+                    m_hdcpOutputRestricted = true;
+                    m_metadataWrapper->removeProtectionMetadata(buffer);
+                    return GST_BASE_TRANSFORM_FLOW_DROPPED;
+                }
+                else if (firebolt::rialto::MediaKeyErrorStatus::OK != status)
                 {
                     GST_ERROR_OBJECT(self, "Failed decrypt the buffer");
+                    m_hdcpOutputRestricted = false;
                 }
                 else
                 {
                     GST_TRACE_OBJECT(self, "Decryption successful");
                     returnStatus = GST_FLOW_OK;
+
+                    if (m_hdcpOutputRestricted)
+                    {
+                        GST_WARNING_OBJECT(self, "HDCP output protection failure");
+                        GstStructure *hdcpFailureMsg =
+                            m_gstWrapper->gstStructureNew("HDCPProtectionFailure", "message", G_TYPE_STRING,
+                                                          "HDCP Output Protection Error", NULL);
+                        m_gstWrapper->gstElementPostMessage(GST_ELEMENT_CAST(self),
+                                                            m_gstWrapper->gstMessageNewApplication(GST_OBJECT_CAST(self),
+                                                                                                   hdcpFailureMsg));
+                        m_hdcpOutputRestricted = false;
+                    }
                 }
             }
         }

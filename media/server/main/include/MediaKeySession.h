@@ -174,6 +174,11 @@ private:
     bool m_ocdmError;
 
     /**
+     * @brief True when a decrypt error has already been logged and no successful decrypt happened since.
+     */
+    bool m_decryptErrorLogged;
+
+    /**
      * @brief Mutex protecting the ocdm error checking.
      */
     std::mutex m_ocdmErrorMutex;

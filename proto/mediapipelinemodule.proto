@@ -946,6 +946,7 @@ message PlaybackErrorEvent {
     enum PlaybackError {
         UNKNOWN = 0;            ///< An unknown or undefined network state.
         DECRYPTION = 1;         ///< Player failed to decrypt a buffer and the frame has been dropped.
+        OUTPUT_PROTECTION = 2;  ///< HDCP output protection failure - triggers retune.
     }
 
     optional int32 session_id = 1 [default = -1];
