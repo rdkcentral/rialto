@@ -67,7 +67,7 @@ void RemoveSource::execute() const
     m_context.initialPositions.erase(streamInfo.appSrc);
 
     // Reset Eos info
-    m_context.endOfStreamInfo.clear();
+    m_context.endOfStreamInfo.erase(m_type);
     m_context.eosNotified = false;
 
     RIALTO_SERVER_LOG_MIL("%s source removed", common::convertMediaSourceType(m_type));
