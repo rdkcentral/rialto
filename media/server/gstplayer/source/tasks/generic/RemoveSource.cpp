@@ -46,11 +46,14 @@ void RemoveSource::execute() const
         return;
     }
     m_context.audioSourceRemoved = true;
-    m_gstPlayerClient->invalidateActiveRequests(m_type);
+    if (m_gstPlayerClient)
+    {
+        m_gstPlayerClient->invalidateActiveRequests(m_type);
+    }
     auto sourceElem = m_context.streamInfo.find(m_type);
     if (sourceElem == m_context.streamInfo.end())
     {
-        RIALTO_SERVER_LOG_WARN("failed to remove source - source is NULL");
+        RIALTO_SERVER_LOG_WARN("Failed to remove source - streamInfo not found");
         return;
     }
     StreamInfo &streamInfo = sourceElem->second;
