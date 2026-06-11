@@ -409,6 +409,12 @@ void GenericTasksTestsBase::setContextSetupSourceFinished()
     testContext->m_context.setupSourceFinished = true;
 }
 
+void GenericTasksTestsBase::setContextAudioInitialPosition()
+{
+    testContext->m_context.initialPositions[&testContext->m_appSrcAudio].emplace_back(
+        firebolt::rialto::server::SegmentData{kPosition, kResetTime, kAppliedRate, kStopPosition});
+}
+
 void GenericTasksTestsBase::expectVideoUnderflowSignalConnection()
 {
     EXPECT_CALL(*testContext->m_glibWrapper, gObjectType(testContext->m_element)).WillRepeatedly(Return(G_TYPE_PARAM));
@@ -3051,6 +3057,11 @@ void GenericTasksTestsBase::triggerRenderFrame()
 void GenericTasksTestsBase::shouldInvalidateActiveAudioRequests()
 {
     EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::AUDIO));
+}
+
+void GenericTasksTestsBase::shouldUnrefAudioBuffer()
+{
+    EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_audioBuffer));
 }
 
 void GenericTasksTestsBase::triggerRemoveSourceAudio()

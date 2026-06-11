@@ -50,17 +50,21 @@ TEST_F(RemoveSourceTest, shouldNotRemoveVideoSource)
 
 TEST_F(RemoveSourceTest, shouldRemoveAudioSource)
 {
+    setContextAudioInitialPosition();
     shouldInvalidateActiveAudioRequests();
+    shouldUnrefAudioBuffer();
     triggerRemoveSourceAudio();
     checkNoMoreNeedData();
     checkNoNeedDataPendingForBothSources();
     checkAudioSourceRemoved();
     checkBuffersEmpty();
+    checkInitialPositionNotSet(firebolt::rialto::MediaSourceType::AUDIO);
 }
 
 TEST_F(RemoveSourceTest, shouldRemoveAudioSourceFlushEventError)
 {
     shouldInvalidateActiveAudioRequests();
+    shouldUnrefAudioBuffer();
     triggerRemoveSourceAudio();
     checkNoMoreNeedData();
     checkNoNeedDataPendingForBothSources();

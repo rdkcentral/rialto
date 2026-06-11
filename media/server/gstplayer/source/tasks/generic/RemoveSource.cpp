@@ -53,9 +53,15 @@ void RemoveSource::execute() const
         RIALTO_SERVER_LOG_WARN("failed to remove source - source is NULL");
         return;
     }
-    sourceElem->second.buffers.clear();
-    sourceElem->second.isDataNeeded = false;
-    sourceElem->second.isNeedDataPending = false;
+    StreamInfo &streamInfo = sourceElem->second;
+    for (auto &buffer : streamInfo.buffers)
+    {
+        m_gstWrapper->gstBufferUnref(buffer);
+    }
+    streamInfo.buffers.clear();
+    streamInfo.isDataNeeded = false;
+    streamInfo.isNeedDataPending = false;
+    m_context.initialPositions.erase(streamInfo.appSrc);
 
     // Reset Eos info
     m_context.endOfStreamInfo.clear();
