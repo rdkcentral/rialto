@@ -208,6 +208,29 @@ protected:
 
         EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo));
     }
+
+    void willNotifyPlaybackInfoWithAudioFade()
+    {
+        modifyContext(
+            [&](GenericPlayerContext &context)
+            {
+                context.audioFadeEnabled = true;
+                context.audioFadeVolume = kVolume;
+            });
+        EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).WillOnce(Return());
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillOnce(Return(GST_STATE_PLAYING));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+        EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).WillOnce(Return());
+        EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(_, GST_FORMAT_TIME, _))
+            .WillOnce(Invoke(
+                [&](GstElement *element, GstFormat format, gint64 *cur)
+                {
+                    *cur = kPosition;
+                    return TRUE;
+                }));
+
+        EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo));
+    }
 };
 
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleNeedData)
@@ -1655,6 +1678,16 @@ TEST_F(GstGenericPlayerPrivateTest, shouldStartPositionReportingTimer)
 TEST_F(GstGenericPlayerPrivateTest, shouldStartPlaybackInfoTimer)
 {
     willNotifyPlaybackInfo();
+    std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
+        .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));
+
+    m_sut->startNotifyPlaybackInfoTimer();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotifyPlaybackInfoWithAudioFade)
+{
+    willNotifyPlaybackInfoWithAudioFade();
     std::unique_ptr<common::ITimer> playbackInfoTimerMock = std::make_unique<StrictMock<TimerMock>>();
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPlaybackInfoTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Return(ByMove(std::move(playbackInfoTimerMock))));

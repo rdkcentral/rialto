@@ -223,9 +223,31 @@ GstGenericPlayer::~GstGenericPlayer()
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is destructed.");
     m_gstDispatcherThread.reset();
 
-    resetWorkerThread();
+    try
+    {
+        resetWorkerThread();
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Exception during resetWorkerThread in destructor: %s", e.what());
+    }
+    catch (...)
+    {
+        RIALTO_SERVER_LOG_ERROR("Unknown exception during resetWorkerThread in destructor");
+    }
 
-    termPipeline();
+    try
+    {
+        termPipeline();
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Exception during termPipeline in destructor: %s", e.what());
+    }
+    catch (...)
+    {
+        RIALTO_SERVER_LOG_ERROR("Unknown exception during termPipeline in destructor");
+    }
 }
 
 void GstGenericPlayer::initMsePipeline()
@@ -516,7 +538,14 @@ void GstGenericPlayer::notifyPlaybackInfo()
 {
     PlaybackInfo info;
     getPosition(info.currentPosition);
-    getVolume(info.volume);
+    if (m_context.audioFadeEnabled)
+    {
+        info.volume = m_context.audioFadeVolume;
+    }
+    else
+    {
+        getVolume(info.volume);
+    }
     m_gstPlayerClient->notifyPlaybackInfo(info);
 }
 
@@ -2409,6 +2438,7 @@ bool GstGenericPlayer::getVolume(double &currentVolume)
             currentVolume = static_cast<double>(fadeVolume) / 100.0;
             RIALTO_SERVER_LOG_INFO("Fade volume is supported: %f", currentVolume);
         }
+        m_context.audioFadeVolume = currentVolume;
     }
     else
     {

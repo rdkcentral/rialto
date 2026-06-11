@@ -264,6 +264,39 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, DecryptionServiceDecryptFailure)
 }
 
 /**
+ * Test GstRialtoDecryptorPrivate posts an HDCP protection message after decryption recovers.
+ */
+TEST_F(RialtoServerDecryptorPrivateDecryptTest, ShouldPostOutputProtectionMessageAfterRestrictedDecryptRecovers)
+{
+    GstStructure hdcpFailureStructure{};
+    GstMessage hdcpFailureMessage{};
+
+    expectGetInfoFromProtectionMeta();
+    expectWidevineKeySystem();
+    expectAddGstProtectionMeta(true);
+
+    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED));
+
+    EXPECT_EQ(GST_BASE_TRANSFORM_FLOW_DROPPED, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+
+    expectGetInfoFromProtectionMeta();
+    expectWidevineKeySystem();
+    expectAddGstProtectionMeta(true);
+    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureNewStringStub(StrEq("HDCPProtectionFailure"), StrEq("message"),
+                                                             G_TYPE_STRING, StrEq("HDCP Output Protection Error")))
+        .WillOnce(Return(&hdcpFailureStructure));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageNewApplication(GST_OBJECT_CAST(&m_decryptorBase), &hdcpFailureStructure))
+        .WillOnce(Return(&hdcpFailureMessage));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementPostMessage(GST_ELEMENT_CAST(&m_decryptorBase), &hdcpFailureMessage))
+        .WillOnce(Return(TRUE));
+
+    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+}
+
+/**
  * Test GstRialtoDecryptorPrivate decrypt returns success for a playready encrypted sample with mapping problem.
  */
 TEST_F(RialtoServerDecryptorPrivateDecryptTest, PlayreadySuccessEncrypted)
