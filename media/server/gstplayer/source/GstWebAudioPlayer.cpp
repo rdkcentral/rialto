@@ -410,13 +410,12 @@ uint32_t GstWebAudioPlayer::writeBuffer(uint8_t *mainPtr, uint32_t mainLength, u
 {
     // Must block and wait for the data to be written from the shared buffer.
     std::unique_lock<std::mutex> lock(m_context.writeBufferMutex);
-    uint32_t initialBytesWritten = m_context.lastBytesWritten;
+    uint32_t initialCompletionCounter = m_context.writeCompletionCounter;
     m_workerThread->enqueueTask(m_taskFactory->createWriteBuffer(m_context, mainPtr, mainLength, wrapPtr, wrapLength));
-    bool success = m_context.writeBufferCond.wait_for(
-        lock, std::chrono::milliseconds(kMaxWriteBufferTimeoutMs),
-        [this, initialBytesWritten]() {
-            return m_context.lastBytesWritten != initialBytesWritten;
-        });
+    bool success =
+        m_context.writeBufferCond.wait_for(lock, std::chrono::milliseconds(kMaxWriteBufferTimeoutMs),
+                                           [this, initialCompletionCounter]()
+                                           { return m_context.writeCompletionCounter != initialCompletionCounter; });
     if (!success)
     {
         RIALTO_SERVER_LOG_ERROR("Timed out writing to the gstreamer buffers");
@@ -475,4 +474,4 @@ void GstWebAudioPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandl
     }
 }
 
-}; // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server

@@ -28,8 +28,8 @@
 
 namespace
 {
-constexpr uid_t kNoOwnerChange = -1; // -1 means chown() won't change the owner
-constexpr gid_t kNoGroupChange = -1; // -1 means chown() won't change the group
+constexpr uid_t kNoOwnerChange = -1;        // -1 means chown() won't change the owner
+constexpr gid_t kNoGroupChange = -1;        // -1 means chown() won't change the group
 constexpr size_t kDefaultBufferSize = 4096; // Fallback buffer size
 
 uid_t getFileOwnerId(const std::string &fileOwner)
@@ -38,21 +38,27 @@ uid_t getFileOwnerId(const std::string &fileOwner)
     if (!fileOwner.empty())
     {
         int64_t bufferSizeLong = sysconf(_SC_GETPW_R_SIZE_MAX);
-        const size_t kBufferSize =
-            (bufferSizeLong > 0) ? static_cast<size_t>(bufferSizeLong) : kDefaultBufferSize;
+        const size_t kBufferSize = (bufferSizeLong > 0) ? static_cast<size_t>(bufferSizeLong) : kDefaultBufferSize;
 
         errno = 0;
         passwd passwordStruct{};
         passwd *passwordResult = nullptr;
         std::vector<char> buffer(kBufferSize);
         int result = getpwnam_r(fileOwner.c_str(), &passwordStruct, buffer.data(), buffer.size(), &passwordResult);
-        if (result == 0 && passwordResult)
+        if (result == 0)
         {
-            ownerId = passwordResult->pw_uid;
+            if (passwordResult)
+            {
+                ownerId = passwordResult->pw_uid;
+            }
+            else
+            {
+                RIALTO_COMMON_LOG_WARN("Owner name '%s' not found", fileOwner.c_str());
+            }
         }
         else
         {
-            RIALTO_COMMON_LOG_SYS_WARN(result, "Failed to determine ownerId for '%s'", fileOwner.c_str());
+            RIALTO_COMMON_LOG_SYS_WARN(result, "Failed to lookup ownerId for '%s'", fileOwner.c_str());
         }
     }
     return ownerId;
@@ -64,21 +70,27 @@ gid_t getFileGroupId(const std::string &fileGroup)
     if (!fileGroup.empty())
     {
         int64_t bufferSizeLong = sysconf(_SC_GETGR_R_SIZE_MAX);
-        const size_t kBufferSize =
-            (bufferSizeLong > 0) ? static_cast<size_t>(bufferSizeLong) : kDefaultBufferSize;
+        const size_t kBufferSize = (bufferSizeLong > 0) ? static_cast<size_t>(bufferSizeLong) : kDefaultBufferSize;
 
         errno = 0;
         group groupStruct{};
         group *groupResult = nullptr;
         std::vector<char> buffer(kBufferSize);
         int result = getgrnam_r(fileGroup.c_str(), &groupStruct, buffer.data(), buffer.size(), &groupResult);
-        if (result == 0 && groupResult)
+        if (result == 0)
         {
-            groupId = groupResult->gr_gid;
+            if (groupResult)
+            {
+                groupId = groupResult->gr_gid;
+            }
+            else
+            {
+                RIALTO_COMMON_LOG_WARN("Group name '%s' not found", fileGroup.c_str());
+            }
         }
         else
         {
-            RIALTO_COMMON_LOG_SYS_WARN(result, "Failed to determine groupId for '%s'", fileGroup.c_str());
+            RIALTO_COMMON_LOG_SYS_WARN(result, "Failed to lookup groupId for '%s'", fileGroup.c_str());
         }
     }
     return groupId;
