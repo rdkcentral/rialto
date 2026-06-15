@@ -21,6 +21,7 @@
 #include "OcdmCommon.h"
 #include "opencdm/open_cdm_adapter.h"
 #include "opencdm/open_cdm_ext.h"
+#include "RialtoCommonLogging.h"
 #include <dlfcn.h>
 #include <mutex>
 #include <vector>
