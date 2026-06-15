@@ -90,7 +90,7 @@ public:
     virtual void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) = 0;
 
     /**
-     * @brief Unattaches a source.
+     * @brief Removes a source from gstreamer.
      *
      * @param[in] mediaSourceType : The media source type.
      *

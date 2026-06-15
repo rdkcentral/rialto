@@ -33,7 +33,7 @@ class RemoveSource : public IPlayerTask
 {
 public:
     RemoveSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                 std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, const MediaSourceType &type);
+                 const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper, const MediaSourceType &type);
     ~RemoveSource() override;
     void execute() const override;
 
