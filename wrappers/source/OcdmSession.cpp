@@ -22,6 +22,8 @@
 #include "opencdm/open_cdm_adapter.h"
 #include "opencdm/open_cdm_ext.h"
 #include "RialtoCommonLogging.h"
+#include <iomanip>
+#include <sstream>
 #include <dlfcn.h>
 #include <mutex>
 #include <vector>
@@ -44,8 +46,22 @@ LicenseType convertLicenseType(const firebolt::rialto::KeySessionType &sessionTy
     }
     }
 }
-const char *convertInitDataType(const firebolt::rialto::InitDataType &initDataType)
+std::string bytesToHex(const std::vector<uint8_t> &bytes)
 {
+    std::ostringstream oss;
+    for (size_t i = 0; i < bytes.size(); ++i)
+    {
+        oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(bytes[i]);
+        if (i + 1 < bytes.size())
+        {
+            oss << ' ';
+        }
+    }
+    return oss.str();
+}
+
+const char *convertInitDataType(const firebolt::rialto::InitDataType &initDataType)
+
     switch (initDataType)
     {
     case firebolt::rialto::InitDataType::CENC:
@@ -237,9 +253,10 @@ MediaKeyErrorStatus OcdmSession::decryptBuffer(GstBuffer *encrypted, GstCaps *ca
         // the caller (MediaKeysServerInternal::decrypt) can retry from the GStreamer thread.
         if (!keyId.empty())
         {
-            const ::KeyStatus preStatus =
+           const ::KeyStatus preStatus =
                 opencdm_session_status(m_session, keyId.data(), static_cast<uint8_t>(keyId.size()));
             RIALTO_COMMON_LOG_MIL("OCDM pre status casted to int is %d", static_cast<int>(preStatus));
+            RIALTO_COMMON_LOG_MIL("keyId (%zu bytes): %s", keyId.size(), bytesToHex(keyId).c_str());
             if (preStatus == OutputRestricted || preStatus == OutputRestrictedHDCP22)
             {
                 return MediaKeyErrorStatus::OUTPUT_RESTRICTED;
