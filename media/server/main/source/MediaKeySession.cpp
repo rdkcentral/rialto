@@ -276,6 +276,34 @@ MediaKeyErrorStatus MediaKeySession::decrypt(GstBuffer *encrypted, GstCaps *caps
         status = MediaKeyErrorStatus::FAIL;
     }
 
+     switch (status)
+        {
+	    case firebolt::rialto::MediaKeyErrorStatus::OK:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : OK");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::FAIL:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : FAIL");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::BAD_SESSION_ID:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : BAD_SESSION_ID");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : INTERFACE_NOT_IMPLEMENTED");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+	         RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : BUFFER_TOO_SMALL");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : NOT_SUPPORTED");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : INVALID_STATE");
+		 break;
+	    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+        	 RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Key session status : OUTPUT_RESTRICTED");
+		 break;
+    	}
+
     return status;
 }
 
