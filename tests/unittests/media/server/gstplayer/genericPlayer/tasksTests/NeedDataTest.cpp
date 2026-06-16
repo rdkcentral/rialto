@@ -70,6 +70,16 @@ TEST_F(NeedDataTest, shouldSkipToNotifyNeedAudioDataWhenAnotherOneIsPending)
     checkNeedDataPendingForAudioOnly();
 }
 
+TEST_F(NeedDataTest, shouldSkipToNotifyNeedAudioDataWhenAudioSourceIsRemoved)
+{
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextStreamInfo(firebolt::rialto::MediaSourceType::VIDEO);
+    setContextAudioSourceRemoved();
+    triggerNeedDataAudio();
+    checkNeedDataForAudioOnly();
+    checkNoNeedDataPendingForBothSources();
+}
+
 TEST_F(NeedDataTest, shouldNotifyNeedVideoData)
 {
     setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
