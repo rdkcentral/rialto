@@ -59,6 +59,11 @@ void NeedData::execute() const
 
             if (m_gstPlayerClient && !elem.second.isNeedDataPending)
             {
+                if (sourceType == MediaSourceType::AUDIO && m_context.audioSourceRemoved)
+                {
+                    RIALTO_SERVER_LOG_DEBUG("Audio source is removed, no need to request data");
+                    break;
+                }
                 elem.second.isNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(sourceType);
             }
             break;
