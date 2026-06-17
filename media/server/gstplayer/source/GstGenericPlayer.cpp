@@ -223,9 +223,31 @@ GstGenericPlayer::~GstGenericPlayer()
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is destructed.");
     m_gstDispatcherThread.reset();
 
-    resetWorkerThread();
+    try
+    {
+        resetWorkerThread();
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Exception during resetWorkerThread in destructor: %s", e.what());
+    }
+    catch (...)
+    {
+        RIALTO_SERVER_LOG_ERROR("Unknown exception during resetWorkerThread in destructor");
+    }
 
-    termPipeline();
+    try
+    {
+        termPipeline();
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Exception during termPipeline in destructor: %s", e.what());
+    }
+    catch (...)
+    {
+        RIALTO_SERVER_LOG_ERROR("Unknown exception during termPipeline in destructor");
+    }
 }
 
 void GstGenericPlayer::initMsePipeline()
@@ -380,6 +402,14 @@ void GstGenericPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, *this, attachedSource));
+    }
+}
+
+void GstGenericPlayer::removeSource(const MediaSourceType &mediaSourceType)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createRemoveSource(m_context, *this, mediaSourceType));
     }
 }
 
@@ -1667,7 +1697,7 @@ void GstGenericPlayer::scheduleAudioUnderflow()
 {
     if (m_workerThread)
     {
-        bool underflowEnabled = m_context.isPlaying;
+        bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
         m_workerThread->enqueueTask(
             m_taskFactory->createUnderflow(m_context, *this, underflowEnabled, MediaSourceType::AUDIO));
     }
@@ -1680,6 +1710,14 @@ void GstGenericPlayer::scheduleVideoUnderflow()
         bool underflowEnabled = m_context.isPlaying;
         m_workerThread->enqueueTask(
             m_taskFactory->createUnderflow(m_context, *this, underflowEnabled, MediaSourceType::VIDEO));
+    }
+}
+
+void GstGenericPlayer::scheduleFirstVideoFrameReceived()
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::VIDEO));
     }
 }
 

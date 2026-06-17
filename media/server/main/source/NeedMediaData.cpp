@@ -31,7 +31,7 @@ NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActive
                              const ISharedMemoryBuffer &shmBuffer, int sessionId, MediaSourceType mediaSourceType,
                              std::int32_t sourceId, PlaybackState currentPlaybackState)
     : m_client{client}, m_activeRequests{activeRequests}, m_mediaSourceType{mediaSourceType}, m_frameCount{kMaxFrames},
-      m_sourceId{sourceId}
+      m_sourceId{sourceId}, m_maxMediaBytes{0}
 {
     if (PlaybackState::PLAYING != currentPlaybackState)
     {

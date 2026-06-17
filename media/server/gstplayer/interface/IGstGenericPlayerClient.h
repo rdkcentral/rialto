@@ -151,6 +151,15 @@ public:
     virtual void notifyBufferUnderflow(MediaSourceType mediaSourceType) = 0;
 
     /**
+     * @brief Notifies the client that the first frame has been received.
+     *
+     * Notification shall be sent whenever a video/audio first frame is received
+     *
+     * @param[in] mediaSourceType  : The type of the source that received the first frame
+     */
+    virtual void notifyFirstFrameReceived(MediaSourceType mediaSourceType) = 0;
+
+    /**
      * @brief Notifies the client that a non-fatal error has occurred in the player.
      *
      * PlaybackState remains unchanged when an error occurs.

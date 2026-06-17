@@ -513,6 +513,11 @@ public:
         return gst_message_new_warning(src, error, debug);
     }
 
+    GstMessage *gstMessageNewApplication(GstObject *src, GstStructure *structure) const override
+    {
+        return gst_message_new_application(src, structure);
+    }
+
     void gstMessageParseWarning(GstMessage *message, GError **gerror, gchar **debug) const override
     {
         gst_message_parse_warning(message, gerror, debug);

@@ -919,3 +919,61 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForUnknownSrcTypeDecrypti
 
     g_object_unref(element);
 }
+
+/**
+ * Test HandleBusMessage notifies output protection errors for HDCP application messages from video decryptors.
+ */
+TEST_F(HandleBusMessageTest, shouldHandleApplicationMessageForVideoOutputProtection)
+{
+    GstObject *decryptor = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
+    gst_object_set_name(decryptor, "rialtodecryptorvideo_0");
+    GstStructure *hdcpFailureStructure =
+        gst_structure_new("HDCPProtectionFailure", "message", G_TYPE_STRING, "HDCP Output Protection Error", NULL);
+    GstMessage *message = gst_message_new_application(decryptor, hdcpFailureStructure);
+
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(*m_gstWrapper, gstStructureHasName(hdcpFailureStructure, StrEq("HDCPProtectionFailure")))
+        .WillOnce(Return(true));
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
+                                                       firebolt::rialto::PlaybackError::OUTPUT_PROTECTION));
+    EXPECT_CALL(*m_gstWrapper, gstMessageUnref(message));
+
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      message,
+                                                                    m_flushWatcherMock};
+    task.execute();
+
+    gst_message_unref(message);
+    g_object_unref(decryptor);
+}
+
+/**
+ * Test HandleBusMessage notifies output protection errors for HDCP application messages from audio decryptors.
+ */
+TEST_F(HandleBusMessageTest, shouldHandleApplicationMessageForAudioOutputProtection)
+{
+    GstObject *decryptor = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
+    gst_object_set_name(decryptor, "rialtodecryptoraudio_0");
+    GstStructure *hdcpFailureStructure =
+        gst_structure_new("HDCPProtectionFailure", "message", G_TYPE_STRING, "HDCP Output Protection Error", NULL);
+    GstMessage *message = gst_message_new_application(decryptor, hdcpFailureStructure);
+
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(*m_gstWrapper, gstStructureHasName(hdcpFailureStructure, StrEq("HDCPProtectionFailure")))
+        .WillOnce(Return(true));
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
+                                                       firebolt::rialto::PlaybackError::OUTPUT_PROTECTION));
+    EXPECT_CALL(*m_gstWrapper, gstMessageUnref(message));
+
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      message,
+                                                                    m_flushWatcherMock};
+    task.execute();
+
+    gst_message_unref(message);
+    g_object_unref(decryptor);
+}

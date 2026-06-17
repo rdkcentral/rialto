@@ -36,6 +36,7 @@
 #include "tasks/generic/EnoughData.h"
 #include "tasks/generic/Eos.h"
 #include "tasks/generic/FinishSetupSource.h"
+#include "tasks/generic/FirstFrameReceived.h"
 #include "tasks/generic/Flush.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 #include "tasks/generic/HandleBusMessage.h"
@@ -45,6 +46,7 @@
 #include "tasks/generic/Play.h"
 #include "tasks/generic/ProcessAudioGap.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
+#include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetBufferingLimit.h"
@@ -180,6 +182,13 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateReadShmDataAndAttachSamples)
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::ReadShmDataAndAttachSamples &>(*task));
 }
 
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateRemoveSource)
+{
+    auto task = m_sut.createRemoveSource(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::RemoveSource &>(*task));
+}
+
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateReportPosition)
 {
     auto task = m_sut.createReportPosition(m_context, m_gstPlayer);
@@ -293,6 +302,13 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUnderflow)
     auto task = m_sut.createUnderflow(m_context, m_gstPlayer, enabled, firebolt::rialto::MediaSourceType::VIDEO);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::Underflow &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateFirstFrameReceived)
+{
+    auto task = m_sut.createFirstFrameReceived(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::VIDEO);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::FirstFrameReceived &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetPlaybackRate)

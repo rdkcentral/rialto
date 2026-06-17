@@ -72,12 +72,16 @@ protected:
     void setContextVideoBuffer();
     void setContextPlaybackRate();
     void setContextSourceNull();
+    void setContextAudioSourceRemoved();
     void setContextStreamInfoEmpty();
+    void setContextNeedDataAudioOnly();
     void setContextSetupSourceFinished();
+    void setContextAudioInitialPosition();
 
     // SetupElement test methods
     void shouldSetupVideoSinkElementOnly();
     void shouldSetupVideoDecoderElementOnly();
+    void shouldSetupVideoDecoderElementWithFirstVideoFrameCallback();
     void shouldSetupVideoElementWithPendingGeometry();
     void shouldSetupVideoElementWithPendingImmediateOutput();
     void shouldSetupAudioSinkElementWithPendingLowLatency();
@@ -99,9 +103,11 @@ protected:
     void shouldSetupAudioSinkElementOnly();
     void shouldSetupAudioDecoderElementOnly();
     void shouldSetVideoUnderflowCallback();
+    void shouldSetFirstVideoFrameCallback();
     void shouldSetupBaseParse();
     void triggerSetupElement();
     void triggerVideoUnderflowCallback();
+    void triggerFirstVideoFrameCallback();
     void shouldSetAudioUnderflowCallback();
     void triggerAudioUnderflowCallback();
     void shouldAddFirstAutoVideoSinkChild();
@@ -191,6 +197,7 @@ protected:
     void shouldReattachAudioSource();
     void shouldFailToReattachAudioSource();
     void triggerReattachAudioSource();
+    void checkNewAudioSourceAttached();
     void triggerFailToCastAudioSource();
     void triggerFailToCastVideoSource();
     void triggerFailToCastDolbyVisionSource();
@@ -399,6 +406,15 @@ protected:
     void triggerReadShmDataAndAttachSamplesVideo();
     void triggerReadShmDataAndAttachSamples();
 
+    // RemoveSource test methods
+    void shouldInvalidateActiveAudioRequests();
+    void shouldUnrefAudioBuffer();
+    void shouldRequestAudioData();
+    void triggerRemoveSourceAudio();
+    void triggerRemoveSourceVideo();
+    void checkAudioSourceRemoved();
+    void checkAudioSourceNotRemoved();
+
     // Flush test methods
     void shouldFlushAudio();
     void shouldFlushVideo();
@@ -432,9 +448,11 @@ protected:
 private:
     // SetupElement helper methods
     void expectVideoUnderflowSignalConnection();
+    void expectFirstVideoFrameSignalConnection();
     void expectAudioUnderflowSignalConnection();
     void expectSetupVideoSinkElement();
     void expectSetupVideoDecoderElement();
+    void expectSetupVideoDecoderElementWithFirstVideoFrameCallback();
     void expectSetupAudioSinkElement();
     void expectSetupAudioDecoderElement();
     void expectSetupVideoParserElement();

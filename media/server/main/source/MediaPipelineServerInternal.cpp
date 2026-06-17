@@ -302,6 +302,7 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
 
     MediaSourceType type = sourceIter->first;
 
+    m_gstPlayer->removeSource(type);
     m_needMediaDataTimers.erase(type);
     m_noAvailableSamplesCounter.erase(type);
     m_isMediaTypeEosMap.erase(type);
@@ -1547,6 +1548,28 @@ void MediaPipelineServerInternal::notifyBufferUnderflow(MediaSourceType mediaSou
                 return;
             }
             m_mediaPipelineClient->notifyBufferUnderflow(kSourceIter->second);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::notifyFirstFrameReceived(MediaSourceType mediaSourceType)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, mediaSourceType]()
+    {
+        if (m_mediaPipelineClient)
+        {
+            const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+            if (m_attachedSources.cend() == kSourceIter)
+            {
+                RIALTO_SERVER_LOG_WARN("First frame notification failed - sourceId not found for %s",
+                                       common::convertMediaSourceType(mediaSourceType));
+                return;
+            }
+            m_mediaPipelineClient->notifyFirstFrameReceived(kSourceIter->second);
         }
     };
 
