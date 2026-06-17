@@ -139,6 +139,9 @@ public:
     MOCK_METHOD(void, gValueUnset, (GValue * value), (const, override));
     MOCK_METHOD(GError *, gErrorNewLiteral, (GQuark domain, gint code, const gchar *message), (const, override));
     MOCK_METHOD(GValue *, gValueInit, (GValue * value, GType type), (const, override));
+    MOCK_METHOD(void, gThreadPoolStopUnusedThreads, (), (const, override));
+    MOCK_METHOD(void, gThreadPoolSetMaxUnusedThreads, (gint maxThreads), (const, override));
+    MOCK_METHOD(void, gThreadPoolSetMaxIdleTime, (guint interval), (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 

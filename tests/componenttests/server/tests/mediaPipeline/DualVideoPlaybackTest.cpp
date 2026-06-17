@@ -283,6 +283,8 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_secondaryBus, nullptr, nullptr, nullptr));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryBus));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryPipeline)).Times(testing::Between(1, 2));
+        EXPECT_CALL(*m_glibWrapperMock, gThreadPoolStopUnusedThreads()).Times(testing::Between(1, 2));
+        ;
     }
 
     void createSecondaryFullSession()

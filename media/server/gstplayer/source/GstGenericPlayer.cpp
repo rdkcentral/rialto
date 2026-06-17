@@ -21,6 +21,7 @@
 #include <cinttypes>
 #include <cstring>
 #include <ctime>
+#include <malloc.h>
 #include <stdexcept>
 
 #include "FlushWatcher.h"
@@ -354,6 +355,9 @@ void GstGenericPlayer::termPipeline()
 
     // Delete the pipeline
     m_gstWrapper->gstObjectUnref(m_context.pipeline);
+
+    m_glibWrapper->gThreadPoolStopUnusedThreads();
+    malloc_trim(0);
 
     RIALTO_SERVER_LOG_MIL("RialtoServer's pipeline terminated");
 }

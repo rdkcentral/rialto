@@ -39,6 +39,7 @@ const char *kAudioFade = "audio-fade";
 const GstElementFactoryListType kExpectedFactoryListType{
     GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_PARSER |
     GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+const GType kDummyType{3};
 }; // namespace
 namespace firebolt::rialto::server::ct
 {
@@ -66,8 +67,9 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(kExpectedFactoryListType, GST_RANK_NONE))
             .WillOnce(Return(m_listOfFactories));
         // The next calls should ensure that an object is created and then freed
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(m_elementFactory, nullptr)).WillOnce(Return(&m_object));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_object));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(m_elementFactory)).WillOnce(Return(kDummyType));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&m_elementClass));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_elementClass));
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
             .WillRepeatedly(DoAll(SetArgPointee<1>(kNumPropertiesOnSink), Return(m_dummyParamsPtr)));
@@ -105,6 +107,7 @@ private:
     GstElement m_object;
     GstElementFactory *m_elementFactory;
     GstRegistry m_registry{};
+    GstElementClass m_elementClass{};
 };
 
 /*
