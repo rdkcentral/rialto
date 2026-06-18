@@ -330,7 +330,7 @@ void SetupElement::execute() const
             }
             else if (isAudio(*m_gstWrapper, m_element))
             {
-                RIALTO_SERVER_LOG_INFO("Connecting first audio frame callback for signal: %s",
+                RIALTO_SERVER_LOG_ERROR("Connecting first audio frame callback for signal: %s",
                                        firstFrameSignalName.value().c_str());
                 m_glibWrapper->gSignalConnect(m_element, firstFrameSignalName.value().c_str(),
                                               G_CALLBACK(firstAudioFrameCallback), &m_player);
@@ -347,7 +347,7 @@ void SetupElement::execute() const
 
                 if (probeId != 0)
                 {
-                    RIALTO_SERVER_LOG_INFO("Installed first audio frame fallback probe on sink");
+                    RIALTO_SERVER_LOG_ERROR("Installed first audio frame fallback probe on sink");
                     m_player.setAudioFirstFrameFallbackProbe(sinkPad, probeId);
                 }
                 else
