@@ -161,16 +161,20 @@ TEST_F(AttachSourceTest, shouldFailToAttachUnknownSource)
     triggerAttachUnknownSource();
 }
 
-TEST_F(AttachSourceTest, shouldSwitchAudioSourceWhenSourceIsReattached)
+TEST_F(AttachSourceTest, shouldReattachAudioSource)
 {
     setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextAudioSourceRemoved();
     shouldReattachAudioSource();
+    shouldRequestAudioData();
     triggerReattachAudioSource();
+    checkNewAudioSourceAttached();
 }
 
-TEST_F(AttachSourceTest, shouldFailToSwitchAudioSourceWhenSourceIsReattached)
+TEST_F(AttachSourceTest, shouldFailToReattachAudioSource)
 {
     setContextStreamInfo(firebolt::rialto::MediaSourceType::AUDIO);
+    setContextAudioSourceRemoved();
     shouldFailToReattachAudioSource();
     triggerReattachAudioSource();
 }

@@ -39,6 +39,7 @@ add_library(
         source/tasks/generic/DeepElementAdded.cpp
         source/tasks/generic/EnoughData.cpp
         source/tasks/generic/Eos.cpp
+        source/tasks/generic/FirstFrameReceived.cpp
         source/tasks/generic/FinishSetupSource.cpp
         source/tasks/generic/Flush.cpp
         source/tasks/generic/GenericPlayerTaskFactory.cpp
@@ -49,6 +50,7 @@ add_library(
         source/tasks/generic/Play.cpp
         source/tasks/generic/ProcessAudioGap.cpp
         source/tasks/generic/ReadShmDataAndAttachSamples.cpp
+        source/tasks/generic/RemoveSource.cpp
         source/tasks/generic/RenderFrame.cpp
         source/tasks/generic/ReportPosition.cpp
         source/tasks/generic/SetBufferingLimit.cpp

@@ -18,6 +18,7 @@
  */
 
 #include "GenericTasksTestsBase.h"
+#include "GenericTasksTestsContext.h"
 
 class SetupElementTest : public GenericTasksTestsBase
 {
@@ -178,9 +179,17 @@ TEST_F(SetupElementTest, shouldNotReportVideoUnderflowWhenFifoDepthIsNonZero)
     ASSERT_TRUE(testContext->m_videoUnderflowCallback);
     EXPECT_CALL(testContext->m_gstPlayer, scheduleVideoUnderflow()).Times(0);
 
-    auto videoUnderflowCallback = reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
-        testContext->m_videoUnderflowCallback);
-    videoUnderflowCallback(testContext->m_element, 1, nullptr, &testContext->m_gstPlayer);
+    reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+        testContext->m_videoUnderflowCallback)(testContext->m_element, 1, nullptr, &testContext->m_gstPlayer);
+}
+
+TEST_F(SetupElementTest, shouldReportFirstVideoFrame)
+{
+    shouldSetupVideoDecoderElementWithFirstVideoFrameCallback();
+    triggerSetupElement();
+
+    shouldSetFirstVideoFrameCallback();
+    triggerFirstVideoFrameCallback();
 }
 
 TEST_F(SetupElementTest, shouldReportAudioUnderflow)
@@ -200,9 +209,8 @@ TEST_F(SetupElementTest, shouldNotReportAudioUnderflowWhenFifoDepthIsNonZero)
     ASSERT_TRUE(testContext->m_audioUnderflowCallback);
     EXPECT_CALL(testContext->m_gstPlayer, scheduleAudioUnderflow()).Times(0);
 
-    auto audioUnderflowCallback = reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
-        testContext->m_audioUnderflowCallback);
-    audioUnderflowCallback(testContext->m_element, 1, nullptr, &testContext->m_gstPlayer);
+    reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+        testContext->m_audioUnderflowCallback)(testContext->m_element, 1, nullptr, &testContext->m_gstPlayer);
 }
 
 TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildAdded)

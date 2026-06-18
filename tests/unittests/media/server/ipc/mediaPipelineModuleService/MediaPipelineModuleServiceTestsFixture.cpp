@@ -204,6 +204,13 @@ MATCHER_P2(PlaybackErrorEventMatcher, kExpectedSourceId, kExpectedPlaybackError,
     return ((kExpectedSourceId == event->source_id()) && (kExpectedPlaybackError == event->error()));
 }
 
+MATCHER_P(FirstFrameReceivedEventMatcher, kSourceId, "")
+{
+    std::shared_ptr<firebolt::rialto::FirstFrameReceivedEvent> event =
+        std::dynamic_pointer_cast<firebolt::rialto::FirstFrameReceivedEvent>(arg);
+    return (kSourceId == event->source_id());
+}
+
 MATCHER_P(PlaybackStateChangeEventMatcher, kPlaybackState, "")
 {
     std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> event =
@@ -871,6 +878,11 @@ void MediaPipelineModuleServiceTests::mediaClientWillSendQosEvent()
 void MediaPipelineModuleServiceTests::mediaClientWillSendPlaybackErrorEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(PlaybackErrorEventMatcher(kSourceId, convertPlaybackError(kPlaybackError))));
+}
+
+void MediaPipelineModuleServiceTests::mediaClientWillSendFirstFrameReceivedEvent()
+{
+    EXPECT_CALL(*m_clientMock, sendEvent(FirstFrameReceivedEventMatcher(kSourceId)));
 }
 
 void MediaPipelineModuleServiceTests::mediaClientWillSendSourceFlushedEvent()
@@ -1589,6 +1601,12 @@ void MediaPipelineModuleServiceTests::sendPlaybackErrorEvent()
 {
     ASSERT_TRUE(m_mediaPipelineClient);
     m_mediaPipelineClient->notifyPlaybackError(kSourceId, kPlaybackError);
+}
+
+void MediaPipelineModuleServiceTests::sendFirstFrameReceivedEvent()
+{
+    ASSERT_TRUE(m_mediaPipelineClient);
+    m_mediaPipelineClient->notifyFirstFrameReceived(kSourceId);
 }
 
 void MediaPipelineModuleServiceTests::sendSourceFlushedEvent()

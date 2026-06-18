@@ -110,6 +110,7 @@ public:
     virtual ~GstGenericPlayer();
 
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
+    void removeSource(const MediaSourceType &mediaSourceType) override;
     void allSourcesAttached() override;
     void play(bool &async) override;
     void pause() override;
@@ -154,6 +155,7 @@ private:
     void scheduleEnoughData(GstAppSrc *src) override;
     void scheduleAudioUnderflow() override;
     void scheduleVideoUnderflow() override;
+    void scheduleFirstVideoFrameReceived() override;
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
     bool setImmediateOutput() override;

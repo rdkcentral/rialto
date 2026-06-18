@@ -1213,6 +1213,16 @@ public:
     virtual GstMessage *gstMessageNewWarning(GstObject *src, GError *error, const gchar *debug) const = 0;
 
     /**
+     * @brief Creates a new application-typed message.
+     *
+     * @param[in] src       : the origin of the message.
+     * @param[in] structure : the structure for the message (takes ownership).
+     *
+     * @retval New application message.
+     */
+    virtual GstMessage *gstMessageNewApplication(GstObject *src, GstStructure *structure) const = 0;
+
+    /**
      * @brief Get the GError and error string from the message.
      *
      * @param[in]  message  : a message of type WARNING.

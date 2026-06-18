@@ -158,6 +158,13 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::FirstFrameReceivedEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::FirstFrameReceivedEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onFirstFrameReceived, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     eventTag = ipcChannel->subscribe<firebolt::rialto::PlaybackErrorEvent>(
         [this](const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event)
         { m_eventThread->add(&MediaPipelineIpc::onPlaybackError, this, event); });
@@ -1533,6 +1540,15 @@ void MediaPipelineIpc::onBufferUnderflow(const std::shared_ptr<firebolt::rialto:
     }
 }
 
+void MediaPipelineIpc::onFirstFrameReceived(const std::shared_ptr<firebolt::rialto::FirstFrameReceivedEvent> &event)
+{
+    // Ignore event if not for this session
+    if (event->session_id() == m_sessionId)
+    {
+        m_mediaPipelineIpcClient->notifyFirstFrameReceived(event->source_id());
+    }
+}
+
 void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event)
 {
     // Ignore event if not for this session
@@ -1543,6 +1559,9 @@ void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::P
         {
         case firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION:
             playbackError = PlaybackError::DECRYPTION;
+            break;
+        case firebolt::rialto::PlaybackErrorEvent_PlaybackError_OUTPUT_PROTECTION:
+            playbackError = PlaybackError::OUTPUT_PROTECTION;
             break;
         default:
             RIALTO_CLIENT_LOG_WARN("Received unknown playback error");
