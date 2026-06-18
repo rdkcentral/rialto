@@ -187,7 +187,7 @@ public:
 
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(m_elementFactory)).WillOnce(Return(kDummyType));
         EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&m_elementClass));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_elementClass));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeClassUnref(&m_elementClass));
     }
 
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};

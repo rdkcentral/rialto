@@ -69,7 +69,7 @@ public:
         // The next calls should ensure that an object is created and then freed
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(m_elementFactory)).WillOnce(Return(kDummyType));
         EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&m_elementClass));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectUnref(&m_elementClass));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeClassUnref(&m_elementClass));
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
             .WillRepeatedly(DoAll(SetArgPointee<1>(kNumPropertiesOnSink), Return(m_dummyParamsPtr)));

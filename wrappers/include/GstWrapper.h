@@ -101,7 +101,7 @@ public:
         return gst_element_factory_make(factoryname, name);
     }
 
-    GType gstElementFactoryGetElementType(GstElementFactory *factory)
+    GType gstElementFactoryGetElementType(GstElementFactory *factory) override
     {
         return gst_element_factory_get_element_type(factory);
     }

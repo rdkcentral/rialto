@@ -284,7 +284,7 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
                 }
                 m_glibWrapper->gFree(props);
             }
-            m_glibWrapper->gObjectUnref(elementClass);
+            m_glibWrapper->gTypeClassUnref(elementClass);
         }
     }
 
