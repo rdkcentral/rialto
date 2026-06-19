@@ -1763,12 +1763,26 @@ void GstGenericPlayer::setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id)
 
 void GstGenericPlayer::clearAudioFirstFrameFallbackProbe()
 {
-    if (m_context.audioFirstFrameProbePad && m_context.audioFirstFrameProbeId != 0)
+    GstPad *pad{nullptr};
+    gulong id{0};
+
     {
-        m_gstWrapper->gstPadRemoveProbe(m_context.audioFirstFrameProbePad, m_context.audioFirstFrameProbeId);
+        std::lock_guard<std::mutex> lock{m_context.propertyMutex};
+        pad = m_context.audioFirstFrameProbePad;
+        id = m_context.audioFirstFrameProbeId;
+        m_context.audioFirstFrameProbePad = nullptr;
+        m_context.audioFirstFrameProbeId = 0;
     }
 
-    clearAudioFirstFrameFallbackProbeState();
+    if (pad && id != 0)
+    {
+        m_gstWrapper->gstPadRemoveProbe(pad, id);
+    }
+
+    if (pad)
+    {
+        m_gstWrapper->gstObjectUnref(pad);
+    }
 }
 
 void GstGenericPlayer::clearAudioFirstFrameFallbackProbeState()
