@@ -293,7 +293,7 @@ struct GenericPlayerContext
     /**
      * @brief True when first audio frame has already been scheduled for the current audio source lifecycle.
      */
-    bool firstAudioFrameReceived{false};
+    std::atomic_bool firstAudioFrameReceived{false};
 
     /**
      * @brief Fallback probe id for first audio frame detection on sink pad.
