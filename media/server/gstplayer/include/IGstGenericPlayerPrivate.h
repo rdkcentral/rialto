@@ -67,7 +67,7 @@ public:
     virtual void scheduleFirstVideoFrameReceived() = 0;
 
     /**
-     * @brief Schedules first audio frame received task. Called by the worker thread.
+     * @brief Schedules first audio frame received task. Called by a GStreamer thread callback.
      */
     virtual void scheduleFirstAudioFrameReceived() = 0;
 
