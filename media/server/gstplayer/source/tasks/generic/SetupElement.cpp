@@ -88,7 +88,6 @@ void firstAudioFrameCallback(GstElement *object, guint fifoDepth, gpointer queue
 {
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
-    player->clearAudioFirstFrameFallbackProbe();
     player->scheduleFirstAudioFrameReceived();
 }
 
