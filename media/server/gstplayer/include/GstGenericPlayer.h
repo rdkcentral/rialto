@@ -207,6 +207,23 @@ private:
     void initMsePipeline();
 
     /**
+     * @brief Broadcom-audio-sink minimum-preroll gate.
+     *
+     * When the pipeline uses a Broadcom brcmaudiosink, its DSP emits a brief
+     * warm-up transient (~64ms tone + ~15ms silence) at the first PAUSED->PLAYING
+     * transition after fresh data. If the Buffered->Play interval is too short
+     * this transient falls inside Netflix AVAF's Eyepatch measurement window
+     * and the test reports a spurious second "AudioTone".
+     *
+     * If the audio sink is a brcmaudiosink and less than the configured minimum
+     * time has elapsed since the BUFFERED notification, this method blocks the
+     * caller until the minimum is met. Threshold defaults to 500ms and can be
+     * overridden via the RIALTO_MIN_PREROLL_MS_BRCM_AUDIO environment variable
+     * (0 disables the gate).
+     */
+    void waitForMinPrerollIfBrcmAudioSink();
+
+    /**
      * @brief Gets the flag from gstreamer.
      *
      * @param[in] nick : The name of the flag in gstreamer.

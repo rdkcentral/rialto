@@ -26,6 +26,7 @@
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
+#include <chrono>
 #include <gst/gst.h>
 #include <list>
 #include <map>
@@ -121,6 +122,16 @@ struct GenericPlayerContext
      * Flag can be used only in worker thread
      */
     bool bufferedNotificationSent{false};
+
+    /**
+     * @brief Wall-clock timestamp of the moment BUFFERED notification was sent.
+     *
+     * Used by the Broadcom-audio-sink minimum-preroll gate in play() to
+     * suppress the brcmaudiodecoder DSP warm-up transient that Netflix AVAF
+     * certification captures as a spurious second "AudioTone". Value is only
+     * valid when bufferedNotificationSent == true.
+     */
+    std::chrono::steady_clock::time_point bufferedNotificationTimestamp{};
 
     /**
      * @brief Flag used to check, if the playback is in the playing state

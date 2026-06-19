@@ -1732,8 +1732,71 @@ void GstGenericPlayer::cancelUnderflow(firebolt::rialto::MediaSourceType mediaSo
     }
 }
 
+void GstGenericPlayer::waitForMinPrerollIfBrcmAudioSink()
+{
+    // Only meaningful once Buffered has been reported and only on the first Play.
+    if (!m_context.bufferedNotificationSent || m_context.isPlaying)
+    {
+        return;
+    }
+
+    // Threshold: default 500ms, overridable via environment variable.
+    // 0 disables the gate entirely (e.g. for non-Broadcom builds or debugging).
+    static const uint32_t kDefaultMinPrerollMs{500};
+    uint32_t minPrerollMs{kDefaultMinPrerollMs};
+    if (const char *env = std::getenv("RIALTO_MIN_PREROLL_MS_BRCM_AUDIO"))
+    {
+        char *end{nullptr};
+        const long parsed = std::strtol(env, &end, 10);
+        if (end != env && parsed >= 0 && parsed <= 10000)
+        {
+            minPrerollMs = static_cast<uint32_t>(parsed);
+        }
+    }
+    if (minPrerollMs == 0)
+    {
+        return;
+    }
+
+    // Only apply the gate when the audio sink is a Broadcom brcmaudiosink.
+    GstElement *audioSink{getSink(MediaSourceType::AUDIO)};
+    if (!audioSink)
+    {
+        return;
+    }
+    const gchar *kSinkName = GST_ELEMENT_NAME(audioSink);
+    const bool kIsBrcmAudioSink =
+        kSinkName && m_glibWrapper->gStrHasPrefix(kSinkName, "brcmaudiosink");
+    m_gstWrapper->gstObjectUnref(audioSink);
+    if (!kIsBrcmAudioSink)
+    {
+        return;
+    }
+
+    const auto kNow = std::chrono::steady_clock::now();
+    const auto kElapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                kNow - m_context.bufferedNotificationTimestamp)
+                                .count();
+    if (kElapsedMs >= minPrerollMs)
+    {
+        RIALTO_SERVER_LOG_MIL("brcmaudiosink preroll already sufficient (%lldms >= %ums)",
+                              static_cast<long long>(kElapsedMs), minPrerollMs);
+        return;
+    }
+
+    const uint32_t kWaitMs = minPrerollMs - static_cast<uint32_t>(kElapsedMs);
+    RIALTO_SERVER_LOG_MIL("brcmaudiosink preroll gate: waiting %ums (elapsed %lldms, min %ums) "
+                          "to avoid DSP warm-up transient",
+                          kWaitMs, static_cast<long long>(kElapsedMs), minPrerollMs);
+    std::this_thread::sleep_for(std::chrono::milliseconds(kWaitMs));
+}
+
 void GstGenericPlayer::play(bool &async)
 {
+    // Broadcom brcmaudiosink DSP warm-up gate: block briefly if Buffered
+    // was reached less than the configured minimum ago, so the hardware
+    // warm-up tone falls before (not inside) the AVAF measurement window.
+    waitForMinPrerollIfBrcmAudioSink();
     async = true;
     if (m_workerThread)
     {
