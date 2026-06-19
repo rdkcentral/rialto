@@ -207,6 +207,24 @@ private:
     void initMsePipeline();
 
     /**
+     * @brief Wait for audio to be sufficiently prerolled before entering PLAYING.
+     *
+     * The Rialto client→server IPC path adds variable latency between when the
+     * Netflix app requests Play and when audio buffers reach brcmaudiodecoder.
+     * When the state change to PLAYING fires before enough audio is queued in the
+     * server pipeline, the hardware audio sink's initial ~64ms warm-up tone plus
+     * ~15ms clock-lock silence falls INSIDE the Netflix Eyepatch AVAF measurement
+     * window (which starts at FirstFrameDetected), causing the certification test
+     * PLAY-DRM-NONDRM-AL1-DDP51 to intermittently report 2 AudioTones instead of 1.
+     *
+     * This helper polls the last audio PTS pushed into the pipeline and delays the
+     * PLAYING transition until it exceeds a preroll threshold, or a bounded timeout
+     * elapses — whichever comes first. No-op if there is no audio source, or when
+     * enough audio is already buffered.
+     */
+    void waitForAudioPrerollBeforePlaying();
+
+    /**
      * @brief Gets the flag from gstreamer.
      *
      * @param[in] nick : The name of the flag in gstreamer.

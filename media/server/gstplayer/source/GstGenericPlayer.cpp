@@ -22,6 +22,7 @@
 #include <cstring>
 #include <ctime>
 #include <stdexcept>
+#include <thread>
 
 #include "FlushWatcher.h"
 #include "GstDispatcherThread.h"
@@ -1322,7 +1323,12 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
     if (elem != m_context.streamInfo.end())
     {
         StreamInfo &streamInfo = elem->second;
-        if (streamInfo.buffers.empty() || !streamInfo.isDataNeeded)
+        //if (streamInfo.buffers.empty() || !streamInfo.isDataNeeded)
+        if (streamInfo.buffers.empty())
+        {
+            return;
+        }
+        if (!streamInfo.isDataNeeded)
         {
             return;
         }
@@ -1732,8 +1738,57 @@ void GstGenericPlayer::cancelUnderflow(firebolt::rialto::MediaSourceType mediaSo
     }
 }
 
+void GstGenericPlayer::waitForAudioPrerollBeforePlaying()
+{
+    // Called from GstGenericPlayer::play() on the client-facing thread (NOT the
+    // GStreamer worker thread). Sleeping here does not block the worker thread,
+    // which continues processing ReadShmDataAndAttachSamples tasks and pushing
+    // audio buffers into the appsrc.  As a result m_context.lastAudioSampleTimestamps
+    // advances during our wait, allowing the check to pass without deadlock.
+    //
+    // Why this is needed:
+    //   The Rialto client -> server IPC path introduces variable latency between
+    //   when the Netflix app calls Play() and when audio buffers actually reach
+    //   brcmaudiodecoder.  When the PAUSED->PLAYING transition fires with too
+    //   little audio pushed, the hardware decoder's ~64 ms warm-up tone plus
+    //   ~15 ms clock-lock silence falls INSIDE the Netflix AVAF Eyepatch
+    //   measurement window (which starts at FirstFrameDetected), causing the
+    //   PLAY-DRM-NONDRM-AL1-DDP51 certification test to intermittently report
+    //   2 AudioTones instead of 1 and fail.  Comparing passing vs failing Rialto
+    //   runs on the same image showed the delta was purely how much audio was
+    //   queued before Play (~992 ms buffered on PASS vs ~608 ms on FAIL).
+    //   Delaying Play here until the audio pipeline is well-primed removes that
+    //   race and makes Rialto behave like the non-Rialto path (always PASS).
+    constexpr int64_t kAudioPrerollTargetNs{800 * GST_MSECOND};
+    constexpr int kPollIntervalMs{10};
+    constexpr int kMaxWaitMs{200};
+
+    auto audioIt = m_context.streamInfo.find(MediaSourceType::AUDIO);
+    if (audioIt == m_context.streamInfo.end() || !audioIt->second.appSrc)
+    {
+        return;
+    }
+
+    if (m_context.lastAudioSampleTimestamps >= kAudioPrerollTargetNs)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Audio preroll already sufficient (%" PRId64 " ns)",
+                                m_context.lastAudioSampleTimestamps);
+        return;
+    }
+
+    int waitedMs{0};
+    while (m_context.lastAudioSampleTimestamps < kAudioPrerollTargetNs && waitedMs < kMaxWaitMs)
+    {
+        std::this_thread::sleep_for(std::chrono::milliseconds(kPollIntervalMs));
+        waitedMs += kPollIntervalMs;
+    }
+    RIALTO_SERVER_LOG_MIL("Audio preroll wait finished: waited %d ms, lastAudioPts=%" PRId64 " ns",
+                          waitedMs, m_context.lastAudioSampleTimestamps);
+}
+
 void GstGenericPlayer::play(bool &async)
 {
+    waitForAudioPrerollBeforePlaying();
     async = true;
     if (m_workerThread)
     {
