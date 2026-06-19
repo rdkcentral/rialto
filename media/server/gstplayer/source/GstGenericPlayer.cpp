@@ -1728,17 +1728,13 @@ void GstGenericPlayer::scheduleFirstVideoFrameReceived()
 
 void GstGenericPlayer::scheduleFirstAudioFrameReceived()
 {
-    if (m_context.firstAudioFrameReceived)
+    if (m_context.firstAudioFrameReceived || !m_workerThread)
     {
         return;
     }
 
     m_context.firstAudioFrameReceived = true;
-
-    if (m_workerThread)
-    {
-        m_workerThread->enqueueTask(m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::AUDIO));
-    }
+    m_workerThread->enqueueTask(m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::AUDIO));
 }
 
 void GstGenericPlayer::setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id)
