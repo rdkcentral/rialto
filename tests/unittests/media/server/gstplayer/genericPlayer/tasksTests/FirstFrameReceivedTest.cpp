@@ -29,10 +29,7 @@ using testing::StrictMock;
 namespace
 {
 constexpr firebolt::rialto::MediaSourceType kSourceType{firebolt::rialto::MediaSourceType::VIDEO};
-<<<<<<< HEAD
 constexpr firebolt::rialto::MediaSourceType kAudioSourceType{firebolt::rialto::MediaSourceType::AUDIO};
-=======
->>>>>>> master
 } // namespace
 
 class FirstFrameReceivedTest : public testing::Test
@@ -59,7 +56,7 @@ TEST_F(FirstFrameReceivedTest, shouldNotNotifyFirstFrameReceivedWhenClientIsNull
 
     task.execute();
 }
-<<<<<<< HEAD
+
 
 TEST_F(FirstFrameReceivedTest, shouldNotifyFirstAudioFrameReceived)
 {
@@ -70,5 +67,4 @@ TEST_F(FirstFrameReceivedTest, shouldNotifyFirstAudioFrameReceived)
 
     task.execute();
 }
-=======
->>>>>>> master
+
