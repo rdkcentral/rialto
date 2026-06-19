@@ -704,6 +704,35 @@ TEST_F(CdmServiceTests, shouldFailToReleaseKeySessionWhenNoMediaKeys)
     releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
 }
 
+TEST_F(CdmServiceTests, shouldFailToReleaseKeySessionAfterSwitchToInactive)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
+
+    triggerSwitchToInactive();
+
+    releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+}
+
+TEST_F(CdmServiceTests, shouldNotCrashOnDeferredReleaseAfterSwitchToInactive)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
+
+    incrementSessionIdUsageCounter();
+    releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+
+    triggerSwitchToInactive();
+
+    decrementSessionIdUsageCounter();
+}
+
 TEST_F(CdmServiceTests, shouldFailToReleaseKeySessionWhenMediaKeysFails)
 {
     triggerSwitchToActiveSuccess();
