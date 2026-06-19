@@ -1773,13 +1773,19 @@ void GstGenericPlayer::clearAudioFirstFrameFallbackProbe()
 
 void GstGenericPlayer::clearAudioFirstFrameFallbackProbeState()
 {
-    if (m_context.audioFirstFrameProbePad)
+    GstPad *pad{nullptr};
+
     {
-        m_gstWrapper->gstObjectUnref(m_context.audioFirstFrameProbePad);
+        std::lock_guard<std::mutex> lock{m_context.propertyMutex};
+        pad = m_context.audioFirstFrameProbePad;
         m_context.audioFirstFrameProbePad = nullptr;
+        m_context.audioFirstFrameProbeId = 0;
     }
 
-    m_context.audioFirstFrameProbeId = 0;
+    if (pad)
+    {
+        m_gstWrapper->gstObjectUnref(pad);
+    }
 }
 
 void GstGenericPlayer::scheduleAllSourcesAttached()
