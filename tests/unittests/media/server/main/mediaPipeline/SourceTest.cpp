@@ -97,6 +97,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, RemoveSourceSuccess)
     std::int32_t sourceId{mediaSource->getId()};
 
     mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, removeSource(MediaSourceType::AUDIO));
     EXPECT_EQ(m_mediaPipeline->removeSource(sourceId), true);
 }
 
@@ -136,6 +137,7 @@ TEST_F(RialtoServerMediaPipelineSourceTest, AttachRemoveAttachSourceDifferentId)
     std::int32_t firstSourceId{mediaSource->getId()};
 
     mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, removeSource(MediaSourceType::AUDIO));
     EXPECT_EQ(m_mediaPipeline->removeSource(firstSourceId), true);
 
     mainThreadWillEnqueueTaskAndWait();
