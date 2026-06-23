@@ -89,7 +89,7 @@ constexpr auto kAudioSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaS
 constexpr auto kVideoSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::VIDEO)};
 constexpr auto kSubtitleSourceId{static_cast<std::int32_t>(firebolt::rialto::MediaSourceType::SUBTITLE)};
 constexpr gint64 kItHappenedInThePast = 1238450934;
-constexpr gint64 kItWillHappenInTheFuture = 3823530248;
+constexpr gint64 kItWillHappenInTheFuture = 9823530248;
 constexpr int64_t kDuration{9000000000};
 constexpr int32_t kSampleRate{13};
 constexpr int32_t kNumberOfChannels{4};
@@ -1431,6 +1431,20 @@ void GenericTasksTestsBase::shouldAttachAllAudioSamples()
         .Times(2);
     EXPECT_CALL(testContext->m_gstPlayer, attachData(MediaSourceType::AUDIO)).Times(2);
     EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaData(MediaSourceType::AUDIO));
+}
+
+void GenericTasksTestsBase::shouldAttachAllAudioSamplesWithDelay()
+{
+    testContext->m_context.streamPosition = kItHappenedInThePast - 10;
+    std::shared_ptr<firebolt::rialto::CodecData> kNullCodecData{};
+    EXPECT_CALL(testContext->m_gstPlayer, createBuffer(_)).Times(2).WillRepeatedly(Return(&testContext->m_audioBuffer));
+    EXPECT_CALL(testContext->m_gstPlayer, updateAudioCaps(kSampleRate, kNumberOfChannels, kNullCodecData));
+    EXPECT_CALL(testContext->m_gstPlayer, updateAudioCaps(kSampleRate, kNumberOfChannels, kCodecDataBuffer));
+    EXPECT_CALL(testContext->m_gstPlayer,
+                addAudioClippingToBuffer(&testContext->m_audioBuffer, kClippingStart, kClippingEnd))
+        .Times(2);
+    EXPECT_CALL(testContext->m_gstPlayer, attachData(MediaSourceType::AUDIO)).Times(2);
+    EXPECT_CALL(testContext->m_gstPlayer, notifyNeedMediaDataWithDelay(MediaSourceType::AUDIO));
 }
 
 void GenericTasksTestsBase::shouldAttachData(firebolt::rialto::MediaSourceType sourceType)

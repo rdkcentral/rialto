@@ -107,6 +107,11 @@ void Flush::execute() const
     m_context.endOfStreamInfo.erase(m_type);
     m_context.eosNotified = false;
 
+    if (m_resetTime)
+    {
+        m_context.streamPosition.store(-1);
+    }
+
     // Notify client, that flush has been finished
     m_gstPlayerClient->notifySourceFlushed(m_type);
 
