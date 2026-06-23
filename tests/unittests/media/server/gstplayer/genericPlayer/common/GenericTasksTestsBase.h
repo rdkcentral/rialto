@@ -72,8 +72,11 @@ protected:
     void setContextVideoBuffer();
     void setContextPlaybackRate();
     void setContextSourceNull();
+    void setContextAudioSourceRemoved();
     void setContextStreamInfoEmpty();
+    void setContextNeedDataAudioOnly();
     void setContextSetupSourceFinished();
+    void setContextAudioInitialPosition();
 
     // SetupElement test methods
     void shouldSetupVideoSinkElementOnly();
@@ -194,6 +197,7 @@ protected:
     void shouldReattachAudioSource();
     void shouldFailToReattachAudioSource();
     void triggerReattachAudioSource();
+    void checkNewAudioSourceAttached();
     void triggerFailToCastAudioSource();
     void triggerFailToCastVideoSource();
     void triggerFailToCastDolbyVisionSource();
@@ -401,6 +405,15 @@ protected:
     void triggerReadShmDataAndAttachSamplesAudio();
     void triggerReadShmDataAndAttachSamplesVideo();
     void triggerReadShmDataAndAttachSamples();
+
+    // RemoveSource test methods
+    void shouldInvalidateActiveAudioRequests();
+    void shouldUnrefAudioBuffer();
+    void shouldRequestAudioData();
+    void triggerRemoveSourceAudio();
+    void triggerRemoveSourceVideo();
+    void checkAudioSourceRemoved();
+    void checkAudioSourceNotRemoved();
 
     // Flush test methods
     void shouldFlushAudio();
