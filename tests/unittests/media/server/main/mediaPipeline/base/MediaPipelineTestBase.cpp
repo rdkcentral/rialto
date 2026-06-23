@@ -82,22 +82,15 @@ void MediaPipelineTestBase::mainThreadWillEnqueueTaskAndWait()
         .RetiresOnSaturation();
 }
 
-void MediaPipelineTestBase::mainThreadWillEnqueuePriorityTaskAndWait()
-{
-    EXPECT_CALL(*m_mainThreadMock, enqueuePriorityTaskAndWait(m_kMainThreadClientId, _))
-        .WillOnce(Invoke([](uint32_t clientId, firebolt::rialto::server::IMainThread::Task task) { task(); }))
-        .RetiresOnSaturation();
-}
-
 void MediaPipelineTestBase::loadGstPlayer()
 {
     mainThreadWillEnqueueTaskAndWait();
     mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, _, _, _))
+    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<0>(&m_gstPlayerCallback), Return(ByMove(std::move(m_gstPlayer)))));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyNetworkState(NetworkState::BUFFERING));
 
-    EXPECT_EQ(m_mediaPipeline->load(MediaType::MSE, "mime", "mse://1"), true);
+    EXPECT_EQ(m_mediaPipeline->load(MediaType::MSE, "mime", "mse://1", false), true);
     ASSERT_NE(m_gstPlayerCallback, nullptr);
 }
 

@@ -77,22 +77,26 @@ void AttachSource::addSource() const
         RIALTO_SERVER_LOG_ERROR("Failed to create caps from media source");
         return;
     }
+    std::string profilerInfo;
     gchar *capsStr = m_gstWrapper->gstCapsToString(caps);
     GstElement *appSrc = nullptr;
     if (m_attachedSource->getType() == MediaSourceType::AUDIO)
     {
         RIALTO_SERVER_LOG_MIL("Adding Audio appsrc with caps %s", capsStr);
         appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
+        profilerInfo = "audsrc";
     }
     else if (m_attachedSource->getType() == MediaSourceType::VIDEO)
     {
         RIALTO_SERVER_LOG_MIL("Adding Video appsrc with caps %s", capsStr);
         appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "vidsrc");
+        profilerInfo = "vidsrc";
     }
     else if (m_attachedSource->getType() == MediaSourceType::SUBTITLE)
     {
         RIALTO_SERVER_LOG_MIL("Adding Subtitle appsrc with caps %s", capsStr);
         appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "subsrc");
+        profilerInfo = "subsrc";
 
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_context.pipeline), "text-sink"))
         {
@@ -102,6 +106,13 @@ void AttachSource::addSource() const
             m_glibWrapper->gObjectSet(m_context.pipeline, "text-sink", elem, nullptr);
         }
     }
+    if (appSrc)
+    {
+        auto recordId = m_context.gstProfiler->createRecord("Created AppSrc Element", profilerInfo);
+        if (recordId)
+            m_context.gstProfiler->logRecord(recordId.value());
+    }
+
     m_glibWrapper->gFree(capsStr);
 
     m_gstWrapper->gstAppSrcSetCaps(GST_APP_SRC(appSrc), caps);
@@ -118,6 +129,11 @@ void AttachSource::reattachAudioSource() const
         RIALTO_SERVER_LOG_ERROR("Reattaching source failed!");
         return;
     }
+
+    m_context.streamInfo[m_attachedSource->getType()].isDataNeeded = true;
+    m_context.audioSourceRemoved = false;
+    m_player.notifyNeedMediaData(MediaSourceType::AUDIO);
+
     RIALTO_SERVER_LOG_MIL("Audio source reattached");
 }
 } // namespace firebolt::rialto::server::tasks::generic

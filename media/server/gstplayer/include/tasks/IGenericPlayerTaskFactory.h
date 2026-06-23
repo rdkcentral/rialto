@@ -177,6 +177,19 @@ public:
                                       const std::shared_ptr<IDataReader> &dataReader) const = 0;
 
     /**
+     * @brief Creates a Remove Source task.
+     *
+     * @param[in] context : The GstPlayer context
+     * @param[in] player  : The GstGenericPlayer instance
+     * @param[in] type    : The media source type to remove
+     *
+     * @retval the new Remove Source task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createRemoveSource(GenericPlayerContext &context,
+                                                            IGstGenericPlayerPrivate &player,
+                                                            const firebolt::rialto::MediaSourceType &type) const = 0;
+
+    /**
      * @brief Creates a ReportPosition task.
      *
      * @param[in] context       : The GstGenericPlayer context
@@ -375,6 +388,19 @@ public:
      */
     virtual std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                                          bool underflowEnabled, MediaSourceType sourceType) const = 0;
+
+    /**
+     * @brief Creates a FirstFrameReceived task.
+     *
+     * @param[in] context          : The GstGenericPlayer context
+     * @param[in] player           : The GstPlayer instance
+     * @param[in] sourceType       : Source type (audio or video).
+     *
+     * @retval the new FirstFrameReceived task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createFirstFrameReceived(GenericPlayerContext &context,
+                                                                  IGstGenericPlayerPrivate &player,
+                                                                  MediaSourceType sourceType) const = 0;
 
     /**
      * @brief Creates an UpdatePlaybackGroup task.

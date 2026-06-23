@@ -34,7 +34,7 @@ public:
     MOCK_METHOD(bool, createSession, (int, const std::shared_ptr<IMediaPipelineClient> &, std::uint32_t, std::uint32_t),
                 (override));
     MOCK_METHOD(bool, destroySession, (int), (override));
-    MOCK_METHOD(bool, load, (int, MediaType, const std::string &, const std::string &), (override));
+    MOCK_METHOD(bool, load, (int, MediaType, const std::string &, const std::string &, bool), (override));
     MOCK_METHOD(bool, attachSource, (int, const std::unique_ptr<IMediaPipeline::MediaSource> &), (override));
     MOCK_METHOD(bool, removeSource, (int, std::int32_t), (override));
     MOCK_METHOD(bool, allSourcesAttached, (int), (override));
@@ -44,6 +44,7 @@ public:
     MOCK_METHOD(bool, setPlaybackRate, (int, double), (override));
     MOCK_METHOD(bool, setPosition, (int, int64_t), (override));
     MOCK_METHOD(bool, getPosition, (int sessionId, int64_t &position), (override));
+    MOCK_METHOD(bool, getDuration, (int sessionId, int64_t &duration), (override));
     MOCK_METHOD(bool, setImmediateOutput, (int sessionId, int32_t sourceId, bool immediateOutput), (override));
     MOCK_METHOD(bool, getImmediateOutput, (int sessionId, int32_t sourceId, bool &immediateOutput), (override));
     MOCK_METHOD(bool, getStats, (int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames),

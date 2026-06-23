@@ -392,7 +392,7 @@ void MediaPipelineModuleService::load(::google::protobuf::RpcController *control
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_mediaPipelineService.load(request->session_id(), convertMediaType(request->type()), request->mime_type(),
-                                     request->url()))
+                                     request->url(), request->is_live()))
     {
         RIALTO_SERVER_LOG_ERROR("Load failed");
         controller->SetFailed("Operation failed");
@@ -661,6 +661,25 @@ void MediaPipelineModuleService::getPosition(::google::protobuf::RpcController *
     else
     {
         response->set_position(position);
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getDuration(::google::protobuf::RpcController *controller,
+                                             const ::firebolt::rialto::GetDurationRequest *request,
+                                             ::firebolt::rialto::GetDurationResponse *response,
+                                             ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    int64_t duration{};
+    if (!m_mediaPipelineService.getDuration(request->session_id(), duration))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get duration failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_duration(duration);
     }
     done->Run();
 }

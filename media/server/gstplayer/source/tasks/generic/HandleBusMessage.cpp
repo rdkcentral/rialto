@@ -54,13 +54,18 @@ void HandleBusMessage::execute() const
         {
             GstState oldState, newState, pending;
             m_gstWrapper->gstMessageParseStateChanged(m_message, &oldState, &newState, &pending);
-            RIALTO_SERVER_LOG_MIL("State changed (old: %s, new: %s, pending: %s)",
-                                  m_gstWrapper->gstElementStateGetName(oldState),
-                                  m_gstWrapper->gstElementStateGetName(newState),
-                                  m_gstWrapper->gstElementStateGetName(pending));
+            const char *oldStateName = m_gstWrapper->gstElementStateGetName(oldState);
+            const char *newStateName = m_gstWrapper->gstElementStateGetName(newState);
+            const char *pendingStateName = m_gstWrapper->gstElementStateGetName(pending);
+            RIALTO_SERVER_LOG_MIL("State changed (old: %s, new: %s, pending: %s)", oldStateName, newStateName,
+                                  pendingStateName);
+            auto recordId = m_context.gstProfiler->createRecord("Pipeline State Changed", newStateName);
+            if (recordId)
+                m_context.gstProfiler->logRecord(recordId.value());
+            if (newState == GST_STATE_PLAYING)
+                m_context.gstProfiler->logPipelineSummary();
 
-            std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +
-                                   std::string(m_gstWrapper->gstElementStateGetName(newState));
+            std::string filename = std::string(oldStateName) + "-" + std::string(newStateName);
             m_gstWrapper->gstDebugBinToDotFileWithTs(GST_BIN(m_context.pipeline), GST_DEBUG_GRAPH_SHOW_ALL,
                                                      filename.c_str());
             if (!m_gstPlayerClient)
@@ -277,6 +282,32 @@ void HandleBusMessage::execute() const
 
         m_glibWrapper->gFree(debug);
         m_glibWrapper->gErrorFree(err);
+        break;
+    }
+    case GST_MESSAGE_APPLICATION:
+    {
+        const GstStructure *structure = gst_message_get_structure(m_message);
+        if (structure && m_gstWrapper->gstStructureHasName(structure, "HDCPProtectionFailure"))
+        {
+            if (m_gstPlayerClient)
+            {
+                const gchar *kElementName = GST_ELEMENT_NAME(GST_ELEMENT(GST_MESSAGE_SRC(m_message)));
+                if (g_strrstr(kElementName, "video"))
+                {
+                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
+                                                           PlaybackError::OUTPUT_PROTECTION);
+                }
+                else if (g_strrstr(kElementName, "audio"))
+                {
+                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
+                                                           PlaybackError::OUTPUT_PROTECTION);
+                }
+                else
+                {
+                    RIALTO_SERVER_LOG_WARN("Unknown source for HDCPProtectionFailure from '%s'", kElementName);
+                }
+            }
+        }
         break;
     }
     default:

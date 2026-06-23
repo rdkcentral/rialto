@@ -73,6 +73,8 @@ def buildAndRunGTests(args, f, buildDefines, suitesToRun):
     os.environ["RIALTO_CONSOLE_LOG"] = "1"
     # Set env variable to enable debug prints
     os.environ["RIALTO_DEBUG"] = "5"
+    # Enable profiler for all test suites.
+    os.environ["PROFILER_ENABLED"] = "true"
 
     # Clean if required
     if args['clean'] == True:
@@ -147,7 +149,8 @@ def runTests (suites, doListTests, gtestFilter, outputDir, resultsFile, xmlFile,
 
         # Run the command
         if resultsFile != None:
-            status = runcmd(executeCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile, stderr=subprocess.STDOUT)
+            status = runcmd(executeCmd, cwd=os.getcwd() + '/' + outputDir, stdout=resultsFile,
+                            stderr=subprocess.STDOUT)
         else:
             status = runcmd(executeCmd, cwd=os.getcwd() + '/' + outputDir, stderr=subprocess.STDOUT)
 

@@ -184,7 +184,7 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
                              const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
                              IClientController &clientController)
     : m_mediaPipelineClient(client), m_clientController{clientController}, m_currentAppState{ApplicationState::UNKNOWN},
-      m_mediaFrameWriterFactory(mediaFrameWriterFactory), m_currentState(State::IDLE)
+      m_mediaFrameWriterFactory(mediaFrameWriterFactory), m_currentState(State::IDLE), m_attachingSource(false)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
@@ -203,11 +203,11 @@ MediaPipeline::~MediaPipeline()
     m_mediaPipelineIpc.reset();
 }
 
-bool MediaPipeline::load(MediaType type, const std::string &mimeType, const std::string &url)
+bool MediaPipeline::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaPipelineIpc->load(type, mimeType, url);
+    return m_mediaPipelineIpc->load(type, mimeType, url, isLive);
 }
 
 bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source)
@@ -545,28 +545,29 @@ bool MediaPipeline::flush(int32_t sourceId, bool resetTime, bool &async)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    std::unique_lock<std::mutex> flushLock{m_flushMutex};
-    if (m_mediaPipelineIpc->flush(sourceId, resetTime, async))
     {
-        m_attachedSources.setFlushing(sourceId, true);
-        flushLock.unlock();
-
-        // Clear all need datas for flushed source
-        std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
-        for (auto it = m_needDataRequestMap.begin(); it != m_needDataRequestMap.end();)
+        std::unique_lock<std::mutex> flushLock{m_flushMutex};
+        if (!m_mediaPipelineIpc->flush(sourceId, resetTime, async))
         {
-            if (it->second->sourceId == sourceId)
-            {
-                it = m_needDataRequestMap.erase(it);
-            }
-            else
-            {
-                ++it;
-            }
+            return false;
         }
-        return true;
+        m_attachedSources.setFlushing(sourceId, true);
     }
-    return false;
+
+    // Clear all need datas for flushed source
+    std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
+    for (auto it = m_needDataRequestMap.begin(); it != m_needDataRequestMap.end();)
+    {
+        if (it->second->sourceId == sourceId)
+        {
+            it = m_needDataRequestMap.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+    return true;
 }
 
 bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
@@ -624,6 +625,13 @@ bool MediaPipeline::switchSource(const std::unique_ptr<MediaSource> &source)
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->switchSource(source);
+}
+
+bool MediaPipeline::getDuration(int64_t &duration)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineIpc->getDuration(duration);
 }
 
 void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
@@ -867,6 +875,17 @@ void MediaPipeline::notifyBufferUnderflow(int32_t sourceId)
     if (client)
     {
         client->notifyBufferUnderflow(sourceId);
+    }
+}
+
+void MediaPipeline::notifyFirstFrameReceived(int32_t sourceId)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
+    if (client)
+    {
+        client->notifyFirstFrameReceived(sourceId);
     }
 }
 

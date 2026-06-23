@@ -192,18 +192,19 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 
-bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url)
+bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = loadInternal(type, mimeType, url); };
+    auto task = [&]() { result = loadInternal(type, mimeType, url, isLive); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string &mimeType, const std::string &url)
+bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string &mimeType, const std::string &url,
+                                               bool isLive)
 {
     std::unique_lock lock{m_getPropertyMutex};
     /* If gstreamer player already created, destroy the old one first */
@@ -214,7 +215,7 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
 
     m_gstPlayer =
         m_kGstPlayerFactory
-            ->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements,
+            ->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements, isLive,
                                      firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory::getFactory());
     if (!m_gstPlayer)
     {
@@ -301,6 +302,7 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
 
     MediaSourceType type = sourceIter->first;
 
+    m_gstPlayer->removeSource(type);
     m_needMediaDataTimers.erase(type);
     m_noAvailableSamplesCounter.erase(type);
     m_isMediaTypeEosMap.erase(type);
@@ -346,7 +348,7 @@ bool MediaPipelineServerInternal::play(bool &async)
     bool result;
     auto task = [&]() { result = playInternal(async); };
 
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
@@ -479,6 +481,20 @@ bool MediaPipelineServerInternal::getPosition(int64_t &position)
         return false;
     }
     return m_gstPlayer->getPosition(position);
+}
+
+bool MediaPipelineServerInternal::getDuration(int64_t &duration)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    std::shared_lock lock{m_getPropertyMutex};
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get duration - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->getDuration(duration);
 }
 
 bool MediaPipelineServerInternal::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
@@ -813,7 +829,6 @@ bool MediaPipelineServerInternal::setVolume(double targetVolume, uint32_t volume
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    m_isSetVolumeInProgress = true;
     bool result;
     auto task = [&]() { result = setVolumeInternal(targetVolume, volumeDuration, easeType); };
 
@@ -831,7 +846,6 @@ bool MediaPipelineServerInternal::setVolumeInternal(double targetVolume, uint32_
         return false;
     }
     m_gstPlayer->setVolume(targetVolume, volumeDuration, easeType);
-    m_isSetVolumeInProgress = false;
     return true;
 }
 
@@ -839,16 +853,11 @@ bool MediaPipelineServerInternal::getVolume(double &currentVolume)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (m_isSetVolumeInProgress)
-    {
-        bool result;
-        auto task = [&]() { result = getVolumeInternal(currentVolume); };
+    bool result;
+    auto task = [&]() { result = getVolumeInternal(currentVolume); };
 
-        m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-        return result;
-    }
-    std::shared_lock lock{m_getPropertyMutex};
-    return getVolumeInternal(currentVolume);
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
 }
 
 bool MediaPipelineServerInternal::getVolumeInternal(double &currentVolume)
@@ -1539,6 +1548,28 @@ void MediaPipelineServerInternal::notifyBufferUnderflow(MediaSourceType mediaSou
                 return;
             }
             m_mediaPipelineClient->notifyBufferUnderflow(kSourceIter->second);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::notifyFirstFrameReceived(MediaSourceType mediaSourceType)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, mediaSourceType]()
+    {
+        if (m_mediaPipelineClient)
+        {
+            const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+            if (m_attachedSources.cend() == kSourceIter)
+            {
+                RIALTO_SERVER_LOG_WARN("First frame notification failed - sourceId not found for %s",
+                                       common::convertMediaSourceType(mediaSourceType));
+                return;
+            }
+            m_mediaPipelineClient->notifyFirstFrameReceived(kSourceIter->second);
         }
     };
 

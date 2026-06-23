@@ -34,6 +34,7 @@ public:
     virtual ~GstGenericPlayerMock() = default;
 
     MOCK_METHOD(void, attachSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource), (override));
+    MOCK_METHOD(void, removeSource, (const MediaSourceType &mediaSourceType), (override));
     MOCK_METHOD(void, allSourcesAttached, (), (override));
     MOCK_METHOD(void, play, (bool &async), (override));
     MOCK_METHOD(void, pause, (), (override));
@@ -42,6 +43,7 @@ public:
     MOCK_METHOD(void, attachSamples, (const std::shared_ptr<IDataReader> &dataReader), (override));
     MOCK_METHOD(void, setPosition, (std::int64_t position), (override));
     MOCK_METHOD(bool, getPosition, (std::int64_t & position), (override));
+    MOCK_METHOD(bool, getDuration, (std::int64_t & duration), (override));
     MOCK_METHOD(bool, setImmediateOutput, (const MediaSourceType &mediaSourceType, bool immediateOutput), (override));
     MOCK_METHOD(bool, getImmediateOutput, (const MediaSourceType &mediaSourceType, bool &immediateOutput), (override));
     MOCK_METHOD(bool, getStats,

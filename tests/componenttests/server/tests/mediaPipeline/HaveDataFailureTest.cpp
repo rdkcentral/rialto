@@ -26,7 +26,7 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{24};
+constexpr int kTestFrameCount{3};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -50,7 +50,7 @@ public:
         ASSERT_TRUE(receivedNeedData);
         EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
         EXPECT_EQ(receivedNeedData->source_id(), needData->source_id());
-        EXPECT_EQ(receivedNeedData->frame_count(), kFrameCountInPausedState);
+        EXPECT_EQ(receivedNeedData->frame_count(), kTestFrameCount);
         needData = receivedNeedData;
     }
 };

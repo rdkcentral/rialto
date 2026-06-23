@@ -77,6 +77,12 @@ TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingBufferingLimit)
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupAudioElementWithIsLiveParameter)
+{
+    shouldSetupAudioDecoderElementWithIsLiveParameter();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingRenderFrame)
 {
     shouldSetupVideoSinkElementWithPendingRenderFrame();
@@ -162,6 +168,15 @@ TEST_F(SetupElementTest, shouldReportVideoUnderflow)
 
     shouldSetVideoUnderflowCallback();
     triggerVideoUnderflowCallback();
+}
+
+TEST_F(SetupElementTest, shouldReportFirstVideoFrame)
+{
+    shouldSetupVideoDecoderElementWithFirstVideoFrameCallback();
+    triggerSetupElement();
+
+    shouldSetFirstVideoFrameCallback();
+    triggerFirstVideoFrameCallback();
 }
 
 TEST_F(SetupElementTest, shouldReportAudioUnderflow)

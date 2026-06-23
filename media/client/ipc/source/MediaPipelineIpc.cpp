@@ -158,6 +158,13 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::FirstFrameReceivedEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::FirstFrameReceivedEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onFirstFrameReceived, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     eventTag = ipcChannel->subscribe<firebolt::rialto::PlaybackErrorEvent>(
         [this](const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event)
         { m_eventThread->add(&MediaPipelineIpc::onPlaybackError, this, event); });
@@ -182,7 +189,7 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
     return true;
 }
 
-bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const std::string &url)
+bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
 {
     if (!reattachChannelIfRequired())
     {
@@ -196,6 +203,7 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
     request.set_type(convertLoadRequestMediaType(type));
     request.set_mime_type(mimeType);
     request.set_url(url);
+    request.set_is_live(isLive);
 
     firebolt::rialto::LoadResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -532,6 +540,37 @@ bool MediaPipelineIpc::getPosition(int64_t &position)
     }
 
     position = response.position();
+    return true;
+}
+
+bool MediaPipelineIpc::getDuration(int64_t &duration)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetDurationRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetDurationResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getDuration(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get duration due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    duration = response.duration();
     return true;
 }
 
@@ -1501,6 +1540,15 @@ void MediaPipelineIpc::onBufferUnderflow(const std::shared_ptr<firebolt::rialto:
     }
 }
 
+void MediaPipelineIpc::onFirstFrameReceived(const std::shared_ptr<firebolt::rialto::FirstFrameReceivedEvent> &event)
+{
+    // Ignore event if not for this session
+    if (event->session_id() == m_sessionId)
+    {
+        m_mediaPipelineIpcClient->notifyFirstFrameReceived(event->source_id());
+    }
+}
+
 void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event)
 {
     // Ignore event if not for this session
@@ -1511,6 +1559,9 @@ void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::P
         {
         case firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION:
             playbackError = PlaybackError::DECRYPTION;
+            break;
+        case firebolt::rialto::PlaybackErrorEvent_PlaybackError_OUTPUT_PROTECTION:
+            playbackError = PlaybackError::OUTPUT_PROTECTION;
             break;
         default:
             RIALTO_CLIENT_LOG_WARN("Received unknown playback error");

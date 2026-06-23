@@ -37,7 +37,8 @@ public:
                 (override));
     MOCK_METHOD(bool, removeSource, (int32_t sourceId), (override));
     MOCK_METHOD(bool, allSourcesAttached, (), (override));
-    MOCK_METHOD(bool, load, (MediaType type, const std::string &mimeType, const std::string &url), (override));
+    MOCK_METHOD(bool, load, (MediaType type, const std::string &mimeType, const std::string &url, bool isLive),
+                (override));
     MOCK_METHOD(bool, setVideoWindow, (uint32_t x, uint32_t y, uint32_t width, uint32_t height), (override));
     MOCK_METHOD(bool, play, (bool &async), (override));
     MOCK_METHOD(bool, pause, (), (override));
@@ -74,6 +75,7 @@ public:
     MOCK_METHOD(bool, setUseBuffering, (bool useBuffering), (override));
     MOCK_METHOD(bool, getUseBuffering, (bool &useBuffering), (override));
     MOCK_METHOD(bool, switchSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &source), (override));
+    MOCK_METHOD(bool, getDuration, (int64_t & duration), (override));
 };
 } // namespace firebolt::rialto::client
 
