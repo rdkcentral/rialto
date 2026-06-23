@@ -113,6 +113,13 @@ public:
     virtual gpointer gTypeClassRef(GType type) = 0;
 
     /**
+     * @brief Decrements the reference count of the class structure being passed in.
+     *
+     * @param[in] g_class  : Pointer to the class structure to decrement.
+     */
+    virtual void gTypeClassUnref(gpointer g_class) = 0;
+
+    /**
      * @brief Gets the type from the name.
      *
      * @param[in] name  : The name of the type to find
@@ -323,6 +330,29 @@ public:
      * @retval The GValue structure that has been passed in.
      */
     virtual GValue *gValueInit(GValue *value, GType type) const = 0;
+
+    /**
+     * @brief Stops all currently unused threads. This does not change the maximal number of unused threads.
+     */
+    virtual void gThreadPoolStopUnusedThreads() const = 0;
+
+    /**
+     * @brief Sets the maximal number of unused threads to max_threads. If max_threads is -1, no limit is imposed on the
+     * number of unused threads.
+     *
+     * @param[in] maxThreads : Maximal number of unused threads.
+     *
+     */
+    virtual void gThreadPoolSetMaxUnusedThreads(gint maxThreads) const = 0;
+
+    /**
+     * @brief This function will set the maximum interval that a thread waiting in the pool for new tasks can be idle
+     * for before being stopped.
+     *
+     * @param[in] interval : The maximum interval (in milliseconds) a thread can be idle.
+     *
+     */
+    virtual void gThreadPoolSetMaxIdleTime(guint interval) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers
