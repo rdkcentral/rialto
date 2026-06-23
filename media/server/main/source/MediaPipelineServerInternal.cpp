@@ -1692,10 +1692,6 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
         return;
     }
 
-    RIALTO_SERVER_LOG_DEBUG("Schedule %s need media data with delay: %lld ms",
-                            common::convertMediaSourceType(mediaSourceType),
-                            getNeedMediaDataTimeout(mediaSourceType).count());
-
     m_needMediaDataTimers[mediaSourceType] =
         m_timerFactory
             ->createTimer(getNeedMediaDataTimeout(mediaSourceType),
@@ -1725,7 +1721,6 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
 
 std::chrono::milliseconds MediaPipelineServerInternal::getNeedMediaDataTimeout(MediaSourceType mediaSourceType)
 {
-    constexpr std::chrono::milliseconds kDefaultNeedMediaDataResendTimeMs{15};
     constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMsForLowLatency{5};
     if ((mediaSourceType == MediaSourceType::VIDEO && m_IsLowLatencyVideoPlayer) ||
         (mediaSourceType == MediaSourceType::AUDIO && m_IsLowLatencyAudioPlayer))
