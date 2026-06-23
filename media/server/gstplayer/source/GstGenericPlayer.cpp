@@ -26,6 +26,7 @@
 #include <limits>
 #include <malloc.h>
 #include <optional>
+#include <malloc.h>
 #include <stdexcept>
 
 #include "FlushWatcher.h"
@@ -451,6 +452,9 @@ void GstGenericPlayer::termPipeline()
     // Delete the pipeline
     m_gstWrapper->gstObjectUnref(m_context.pipeline);
 
+    m_glibWrapper->gThreadPoolStopUnusedThreads();
+    malloc_trim(0);
+
     RIALTO_SERVER_LOG_MIL("RialtoServer's pipeline terminated");
 }
 
@@ -459,7 +463,9 @@ unsigned GstGenericPlayer::getGstPlayFlag(const char *nick)
     GFlagsClass *flagsClass =
         static_cast<GFlagsClass *>(m_glibWrapper->gTypeClassRef(m_glibWrapper->gTypeFromName("GstPlayFlags")));
     GFlagsValue *flag = m_glibWrapper->gFlagsGetValueByNick(flagsClass, nick);
-    return flag ? flag->value : 0;
+    unsigned result = flag ? flag->value : 0;
+    m_glibWrapper->gTypeClassUnref(flagsClass);
+    return result;
 }
 
 void GstGenericPlayer::setupSource(GstElement *pipeline, GstElement *source, GstGenericPlayer *self)
