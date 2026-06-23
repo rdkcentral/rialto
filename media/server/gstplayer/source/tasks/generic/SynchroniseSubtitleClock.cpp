@@ -80,7 +80,6 @@ void SynchroniseSubtitleClock::execute() const
         else
         {
             RIALTO_SERVER_LOG_ERROR("Failed to create current-pts event");
-            m_gstWrapper->gstStructureFree(structure);
         }
     }
     else

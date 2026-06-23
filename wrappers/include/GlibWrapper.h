@@ -76,8 +76,6 @@ public:
 
     gpointer gTypeClassRef(GType type) override { return g_type_class_ref(type); }
 
-    void gTypeClassUnref(gpointer g_class) override { g_type_class_unref(g_class); }
-
     GType gTypeFromName(const gchar *name) override { return g_type_from_name(name); }
 
     GFlagsValue *gFlagsGetValueByNick(GFlagsClass *flags_class, const gchar *nick) override
@@ -139,15 +137,6 @@ public:
     }
 
     GValue *gValueInit(GValue *value, GType type) const override { return g_value_init(value, type); }
-
-    void gThreadPoolStopUnusedThreads() const override { g_thread_pool_stop_unused_threads(); }
-
-    void gThreadPoolSetMaxUnusedThreads(gint maxThreads) const override
-    {
-        g_thread_pool_set_max_unused_threads(maxThreads);
-    }
-
-    void gThreadPoolSetMaxIdleTime(guint interval) const override { g_thread_pool_set_max_idle_time(interval); }
 };
 
 }; // namespace firebolt::rialto::wrappers

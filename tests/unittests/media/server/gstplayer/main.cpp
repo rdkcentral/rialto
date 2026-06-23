@@ -17,8 +17,6 @@
  * limitations under the License.
  */
 
-#include "GlibWrapperFactoryMock.h"
-#include "GlibWrapperMock.h"
 #include "GstInitialiser.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
@@ -41,12 +39,6 @@ void initialiseGstreamer()
     EXPECT_CALL(*gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(gstWrapperMock));
     IFactoryAccessor::instance().gstWrapperFactory() = gstWrapperFactoryMock;
 
-    std::shared_ptr<StrictMock<GlibWrapperFactoryMock>> glibWrapperFactoryMock{
-        std::make_shared<StrictMock<GlibWrapperFactoryMock>>()};
-    std::shared_ptr<StrictMock<GlibWrapperMock>> glibWrapperMock{std::make_shared<StrictMock<GlibWrapperMock>>()};
-    EXPECT_CALL(*glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(glibWrapperMock));
-    IFactoryAccessor::instance().glibWrapperFactory() = glibWrapperFactoryMock;
-
     // Hack to mock GstPlugin to cover one of ifs in code
     uint8_t dummyMemory;
     GstPlugin *plugin{reinterpret_cast<GstPlugin *>(&dummyMemory)};
@@ -55,13 +47,10 @@ void initialiseGstreamer()
     EXPECT_CALL(*gstWrapperMock, gstRegistryFindPlugin(nullptr, _)).WillOnce(Return(plugin));
     EXPECT_CALL(*gstWrapperMock, gstRegistryRemovePlugin(nullptr, plugin));
     EXPECT_CALL(*gstWrapperMock, gstObjectUnref(plugin));
-    EXPECT_CALL(*glibWrapperMock, gThreadPoolSetMaxUnusedThreads(2));
-    EXPECT_CALL(*glibWrapperMock, gThreadPoolSetMaxIdleTime(5 * 1000));
     firebolt::rialto::server::IGstInitialiser::instance().initialise(nullptr, nullptr);
     firebolt::rialto::server::IGstInitialiser::instance().waitForInitialisation();
 
     IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
-    IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
 }
 
 int main(int argc, char **argv) // NOLINT(build/filename_format)

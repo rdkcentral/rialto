@@ -260,15 +260,17 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
             continue;
         }
 
-        GType elementType = m_gstWrapper->gstElementFactoryGetElementType(factory);
-        if (elementType == G_TYPE_INVALID)
-            continue;
-        gpointer elementClass = m_glibWrapper->gTypeClassRef(elementType);
-        if (elementClass)
+        GstElement *elementObj{nullptr};
+
+        // We instantiate an object because fetching the class, even after gstPluginFeatureLoad,
+        // was found to sometimes return a class with no properties. A code branch is
+        // kept with this feature "supportedPropertiesViaClass"
+        elementObj = m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
+        if (elementObj)
         {
             GParamSpec **props;
             guint nProps;
-            props = m_glibWrapper->gObjectClassListProperties(G_OBJECT_CLASS(elementClass), &nProps);
+            props = m_glibWrapper->gObjectClassListProperties(G_OBJECT_GET_CLASS(elementObj), &nProps);
             if (props)
             {
                 for (guint j = 0; j < nProps && !propertiesToLookFor.empty(); ++j)
@@ -284,7 +286,7 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
                 }
                 m_glibWrapper->gFree(props);
             }
-            m_glibWrapper->gTypeClassUnref(elementClass);
+            m_gstWrapper->gstObjectUnref(elementObj);
         }
     }
 

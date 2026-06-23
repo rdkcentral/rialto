@@ -78,7 +78,6 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("playbin"), _)).WillOnce(Return(&m_pipeline));
     EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(4).WillRepeatedly(Return(kGstPlayFlagsType));
     EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(4).WillRepeatedly(Return(&m_flagsClass));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeClassUnref(&m_flagsClass)).Times(4);
 
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio"))).WillOnce(Return(&m_audioFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
@@ -132,7 +131,6 @@ void MediaPipelineTest::gstPlayerWillBeDestructed()
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline)).Times(testing::Between(1, 2));
-    EXPECT_CALL(*m_glibWrapperMock, gThreadPoolStopUnusedThreads()).Times(testing::Between(1, 2));
 }
 
 void MediaPipelineTest::audioSourceWillBeAttached()

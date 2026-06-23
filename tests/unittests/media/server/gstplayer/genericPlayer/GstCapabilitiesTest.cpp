@@ -50,7 +50,6 @@ namespace
 const GstElementFactoryListType kExpectedFactoryListType{
     GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_PARSER |
     GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
-const GType kDummyType{3};
 }; // namespace
 template <typename T> class GListWrapper
 {
@@ -185,9 +184,9 @@ public:
             .WillOnce(Return(m_listOfFactories));
         EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
 
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(m_elementFactory)).WillOnce(Return(kDummyType));
-        EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&m_elementClass));
-        EXPECT_CALL(*m_glibWrapperMock, gTypeClassUnref(&m_elementClass));
+        // The next calls should ensure that an object is created and then freed
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(m_elementFactory, nullptr)).WillOnce(Return(&m_object));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_object));
     }
 
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};
@@ -207,7 +206,6 @@ public:
     // Common sink factory type variables to be used in tests
     char m_dummySink = 0;
     GstElementFactory *m_sinkFactory{reinterpret_cast<GstElementFactory *>(&m_dummySink)};
-    GstElementClass m_elementClass{};
     GstStaticPadTemplate m_sinkPadTemplateSink;
     GstStaticPadTemplate m_sinkPadTemplateSrc;
     GstCaps m_sinkTemplateCaps;
@@ -406,7 +404,7 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesForBlacklistedFactories)
     EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(listOfFactories)).Times(1);
 
     // element will never be created from blacklisted factory list
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(_)).Times(0);
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(_, nullptr)).Times(0);
 
     std::vector<std::string> kParamNames{"test-name-123", "test2"};
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
@@ -457,27 +455,6 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithNoPropertiesSupported)
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(kNumParamsSupportedByServer), Return(dummySinkParamsPtr)));
     EXPECT_CALL(*m_glibWrapperMock, gFree(dummySinkParamsPtr)).Times(1);
-    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(false));
-
-    std::vector<std::string> kParamNames{"test-name-123", "test2", "audio-fade"};
-    std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
-
-    EXPECT_EQ(supportedProperties, std::vector<std::string>{});
-
-    gst_plugin_feature_list_free(m_listOfFactories);
-    m_listOfFactories = nullptr;
-}
-
-TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithInvalidType)
-{
-    createSutWithNoDecoderAndNoSink();
-
-    m_listOfFactories = g_list_append(m_listOfFactories, m_elementFactory);
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(kExpectedFactoryListType, GST_RANK_NONE))
-        .WillOnce(Return(m_listOfFactories));
-    EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
-
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(m_elementFactory)).WillOnce(Return(G_TYPE_INVALID));
     EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(false));
 
     std::vector<std::string> kParamNames{"test-name-123", "test2", "audio-fade"};

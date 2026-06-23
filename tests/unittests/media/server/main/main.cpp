@@ -17,8 +17,6 @@
  * limitations under the License.
  */
 
-#include "GlibWrapperFactoryMock.h"
-#include "GlibWrapperMock.h"
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "IFactoryAccessor.h"
@@ -38,22 +36,13 @@ void initialiseGstreamer()
     EXPECT_CALL(*gstWrapperFactoryMock, getGstWrapper()).WillOnce(Return(gstWrapperMock));
     IFactoryAccessor::instance().gstWrapperFactory() = gstWrapperFactoryMock;
 
-    std::shared_ptr<StrictMock<GlibWrapperFactoryMock>> glibWrapperFactoryMock{
-        std::make_shared<StrictMock<GlibWrapperFactoryMock>>()};
-    std::shared_ptr<StrictMock<GlibWrapperMock>> glibWrapperMock{std::make_shared<StrictMock<GlibWrapperMock>>()};
-    EXPECT_CALL(*glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(glibWrapperMock));
-    IFactoryAccessor::instance().glibWrapperFactory() = glibWrapperFactoryMock;
-
     EXPECT_CALL(*gstWrapperMock, gstInit(nullptr, nullptr));
     EXPECT_CALL(*gstWrapperMock, gstRegistryGet()).WillOnce(Return(nullptr));
     EXPECT_CALL(*gstWrapperMock, gstRegistryFindPlugin(nullptr, _)).WillOnce(Return(nullptr));
-    EXPECT_CALL(*glibWrapperMock, gThreadPoolSetMaxUnusedThreads(2));
-    EXPECT_CALL(*glibWrapperMock, gThreadPoolSetMaxIdleTime(5 * 1000));
     firebolt::rialto::server::IGstInitialiser::instance().initialise(nullptr, nullptr);
     firebolt::rialto::server::IGstInitialiser::instance().waitForInitialisation();
 
     IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
-    IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
 }
 
 int main(int argc, char **argv) // NOLINT(build/filename_format)
