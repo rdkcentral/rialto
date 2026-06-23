@@ -504,7 +504,7 @@ bool MediaKeySession::checkForOcdmErrors(const char *operationStr)
     std::lock_guard<std::mutex> lock(m_ocdmErrorMutex);
     if (m_ocdmError)
     {
-        RIALTO_SERVER_LOG_ERROR("MediaKeySession received an onError callback, operation '%s' failed", operationStr);
+        RIALTO_SERVER_LOG_ERROR("MediaKeySession recved an onError callback, operation '%s' failed", operationStr);
         error = true;
     }
     m_ongoingOcdmOperation = false;
