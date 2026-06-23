@@ -202,6 +202,8 @@ void RialtoServerComponentTest::initialiseGstreamer()
                        EXPECT_CALL(*m_gstWrapperMock, gstInit(nullptr, nullptr));
                        EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(nullptr));
                        EXPECT_CALL(*m_gstWrapperMock, gstRegistryFindPlugin(nullptr, _)).WillOnce(Return(nullptr));
+                       EXPECT_CALL(*m_glibWrapperMock, gThreadPoolSetMaxUnusedThreads(2));
+                       EXPECT_CALL(*m_glibWrapperMock, gThreadPoolSetMaxIdleTime(5 * 1000));
                        firebolt::rialto::server::IGstInitialiser::instance().initialise(nullptr, nullptr);
                    });
 }

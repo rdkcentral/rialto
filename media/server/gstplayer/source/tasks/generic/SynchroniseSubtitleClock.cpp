@@ -73,7 +73,28 @@ void SynchroniseSubtitleClock::execute() const
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to send current-pts event to source");
+            RIALTO_SERVER_LOG_WARN("subtitle source not found");
+            return;
+        }
+
+        GstStructure *structure = m_gstWrapper->gstStructureNew("current-pts", "pts", G_TYPE_UINT64, position, nullptr);
+        GstEvent *event = m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, structure);
+
+        if (event)
+        {
+            if (m_gstWrapper->gstElementSendEvent(source, event))
+            {
+                RIALTO_SERVER_LOG_DEBUG("Sent current-pts event to subtitlesource");
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to send current-pts event to source");
+            }
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to create current-pts event");
+            m_gstWrapper->gstStructureFree(structure);
         }
     }
     else
