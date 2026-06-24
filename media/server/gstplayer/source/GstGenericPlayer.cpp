@@ -1496,8 +1496,13 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
         GstSegment *segment{m_gstWrapper->gstSegmentNew()};
         m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
-        if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, seekFlag,
-                                            GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_SET, stopPosition, nullptr))
+
+        if (!m_gstWrapper->gstSegmentDoSeek(segment,
+                                            ((m_context.pendingPlaybackRate != kNoPendingPlaybackRate)
+                                                 ? m_context.pendingPlaybackRate
+                                                 : m_context.playbackRate),
+                                            GST_FORMAT_TIME, seekFlag, GST_SEEK_TYPE_SET, position, GST_SEEK_TYPE_SET,
+                                            stopPosition, nullptr))
         {
             RIALTO_SERVER_LOG_WARN("Segment seek failed.");
             m_gstWrapper->gstSegmentFree(segment);
