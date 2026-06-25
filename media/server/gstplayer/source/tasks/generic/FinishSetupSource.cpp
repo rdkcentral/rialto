@@ -67,7 +67,6 @@ void appSrcEnoughData(GstAppSrc *src, gpointer user_data)
  */
 gboolean appSrcSeekData(GstAppSrc *src, guint64 offset, gpointer user_data)
 {
-    appSrcEnoughData(src, user_data);
     return TRUE;
 }
 } // namespace
