@@ -193,7 +193,18 @@ MediaKeysIpc::~MediaKeysIpc()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    destroyMediaKeys();
+    try
+    {
+        destroyMediaKeys();
+    }
+    catch (const std::exception &ex)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Exception during destroyMediaKeys: %s", ex.what());
+    }
+    catch (...)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Unknown exception during destroyMediaKeys");
+    }
 
     detachChannel();
 
