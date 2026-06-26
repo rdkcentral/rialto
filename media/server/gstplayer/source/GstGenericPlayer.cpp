@@ -1521,8 +1521,8 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
         segment->applied_rate = appliedRate;
         RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
-                              common::convertMediaSourceType(mediaSourceType), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
-                              segment->rate, segment->applied_rate, resetTime);
+                              common::convertMediaSourceType(mediaSourceType), GST_TIME_ARGS(segment->start),
+                              GST_TIME_ARGS(segment->stop), segment->rate, segment->applied_rate, resetTime);
         auto recordId = m_context.gstProfiler->createRecord("First Segment Received", typeStr);
         if (recordId)
             m_context.gstProfiler->logRecord(recordId.value());
