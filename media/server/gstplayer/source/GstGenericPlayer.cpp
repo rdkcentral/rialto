@@ -1523,7 +1523,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
                               common::convertMediaSourceType(mediaSourceType), GST_TIME_ARGS(segment->start),
                               GST_TIME_ARGS(segment->stop), segment->rate, segment->applied_rate, resetTime);
-        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", typeStr);
+        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", common::convertMediaSourceType(mediaSourceType));
         if (recordId)
             m_context.gstProfiler->logRecord(recordId.value());
 
