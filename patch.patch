@@ -1,0 +1,386 @@
+From feda9d75dd606ac48286909115c4f81015431755 Mon Sep 17 00:00:00 2001
+From: Krishna Priya Kanagaraj <krishnapriya_kanagaraj@comcast.com>
+Date: Tue, 26 May 2026 11:59:42 +0000
+Subject: [PATCH] add getSupportedRobustnessLevels to rialto
+
+---
+ .../ipc/include/MediaKeysCapabilitiesIpc.h    |  2 ++
+ .../ipc/source/MediaKeysCapabilitiesIpc.cpp   | 35 +++++++++++++++++++
+ .../main/include/MediaKeysCapabilities.h      |  2 ++
+ .../main/source/MediaKeysCapabilities.cpp     |  7 ++++
+ media/public/include/IMediaKeysCapabilities.h | 10 ++++++
+ .../MediaKeysCapabilitiesModuleService.h      |  4 +++
+ .../MediaKeysCapabilitiesModuleService.cpp    | 34 +++++++++++++++++-
+ .../main/include/MediaKeysCapabilities.h      |  2 ++
+ .../main/source/MediaKeysCapabilities.cpp     | 12 +++++++
+ media/server/service/include/ICdmService.h    |  1 +
+ media/server/service/source/CdmService.cpp    | 20 +++++++++++
+ media/server/service/source/CdmService.h      |  1 +
+ proto/mediakeyscapabilitiesmodule.proto       | 22 ++++++++++++
+ wrappers/include/OcdmSystem.h                 |  1 +
+ wrappers/interface/IOcdmSystem.h              |  9 +++++
+ wrappers/source/OcdmSystem.cpp                | 25 +++++++++++++
+ 16 files changed, 186 insertions(+), 1 deletion(-)
+
+diff --git a/media/client/ipc/include/MediaKeysCapabilitiesIpc.h b/media/client/ipc/include/MediaKeysCapabilitiesIpc.h
+index fd02f1b3..7bc829c9 100644
+--- a/media/client/ipc/include/MediaKeysCapabilitiesIpc.h
++++ b/media/client/ipc/include/MediaKeysCapabilitiesIpc.h
+@@ -80,6 +80,8 @@ public:
+ 
+     bool isServerCertificateSupported(const std::string &keySystem) override;
+ 
++    bool getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels) override;
++
+ private:
+     /**
+      * @brief The ipc protobuf media keys capabilities stub.
+diff --git a/media/client/ipc/source/MediaKeysCapabilitiesIpc.cpp b/media/client/ipc/source/MediaKeysCapabilitiesIpc.cpp
+index 4227f384..9bf31e6e 100644
+--- a/media/client/ipc/source/MediaKeysCapabilitiesIpc.cpp
++++ b/media/client/ipc/source/MediaKeysCapabilitiesIpc.cpp
+@@ -213,4 +213,39 @@ bool MediaKeysCapabilitiesIpc::isServerCertificateSupported(const std::string &k
+     return response.is_supported();
+ }
+ 
++}
++
++bool MediaKeysCapabilitiesIpc::getSupportedRobustnessLevels(const std::string &keySystem,
++                                                            std::vector<std::string> &robustnessLevels)
++{
++    if (!reattachChannelIfRequired())
++    {
++        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
++        return false;
++    }
++
++    firebolt::rialto::GetSupportedRobustnessLevelsRequest request;
++    request.set_key_system(keySystem);
++
++    firebolt::rialto::GetSupportedRobustnessLevelsResponse response;
++    auto ipcController = m_ipc.createRpcController();
++    auto blockingClosure = m_ipc.createBlockingClosure();
++    m_mediaKeysCapabilitiesStub->getSupportedRobustnessLevels(ipcController.get(), &request, &response,
++                                                              blockingClosure.get());
++
++    // wait for the call to complete
++    blockingClosure->wait();
++
++    // check the result
++    if (ipcController->Failed())
++    {
++        RIALTO_CLIENT_LOG_ERROR("failed to get supported robustness levels due to '%s'",
++                                ipcController->ErrorText().c_str());
++        return false;
++    }
++
++    robustnessLevels.assign(response.robustness_levels().begin(), response.robustness_levels().end());
++    return true;
++}
++
+ }; // namespace firebolt::rialto::client
+diff --git a/media/client/main/include/MediaKeysCapabilities.h b/media/client/main/include/MediaKeysCapabilities.h
+index cece33a3..c4dd39a8 100644
+--- a/media/client/main/include/MediaKeysCapabilities.h
++++ b/media/client/main/include/MediaKeysCapabilities.h
+@@ -81,6 +81,8 @@ public:
+ 
+     bool isServerCertificateSupported(const std::string &keySystem) override;
+ 
++    bool getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels) override;
++
+ private:
+     /**
+      * @brief The media keys capabilities ipc object.
+diff --git a/media/client/main/source/MediaKeysCapabilities.cpp b/media/client/main/source/MediaKeysCapabilities.cpp
+index 7ed7bc99..d8261118 100644
+--- a/media/client/main/source/MediaKeysCapabilities.cpp
++++ b/media/client/main/source/MediaKeysCapabilities.cpp
+@@ -120,4 +120,11 @@ bool MediaKeysCapabilities::isServerCertificateSupported(const std::string &keyS
+     return m_mediaKeysCapabilitiesIpc->isServerCertificateSupported(keySystem);
+ }
+ 
++bool MediaKeysCapabilities::getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels)
++{
++    RIALTO_CLIENT_LOG_DEBUG("entry:");
++
++    return m_mediaKeysCapabilitiesIpc->getSupportedRobustnessLevels(keySystem, robustnessLevels);
++}
++
+ }; // namespace firebolt::rialto::client
+diff --git a/media/public/include/IMediaKeysCapabilities.h b/media/public/include/IMediaKeysCapabilities.h
+index 3e4ab10c..0933f28c 100644
+--- a/media/public/include/IMediaKeysCapabilities.h
++++ b/media/public/include/IMediaKeysCapabilities.h
+@@ -115,6 +115,16 @@ public:
+      * @retval true if server certificate is supported
+      */
+     virtual bool isServerCertificateSupported(const std::string &keySystem) = 0;
++
++    /**
++     * @brief Gets the robustness levels supported by the specified key system.
++     *
++     * @param[in]  keySystem          : The key system.
++     * @param[out] robustnessLevels   : The supported robustness levels.
++     *
++     * @retval true if operation was successful
++     */
++    virtual bool getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels) = 0;
+ };
+ 
+ }; // namespace firebolt::rialto
+diff --git a/media/server/ipc/include/MediaKeysCapabilitiesModuleService.h b/media/server/ipc/include/MediaKeysCapabilitiesModuleService.h
+index d7713b54..94299054 100644
+--- a/media/server/ipc/include/MediaKeysCapabilitiesModuleService.h
++++ b/media/server/ipc/include/MediaKeysCapabilitiesModuleService.h
+@@ -62,6 +62,10 @@ public:
+                                       const ::firebolt::rialto::IsServerCertificateSupportedRequest *request,
+                                       ::firebolt::rialto::IsServerCertificateSupportedResponse *response,
+                                       ::google::protobuf::Closure *done) override;
++    void getSupportedRobustnessLevels(::google::protobuf::RpcController *controller,
++                                      const ::firebolt::rialto::GetSupportedRobustnessLevelsRequest *request,
++                                      ::firebolt::rialto::GetSupportedRobustnessLevelsResponse *response,
++                                      ::google::protobuf::Closure *done) override;
+ 
+ private:
+     service::ICdmService &m_cdmService;
+diff --git a/media/server/ipc/source/MediaKeysCapabilitiesModuleService.cpp b/media/server/ipc/source/MediaKeysCapabilitiesModuleService.cpp
+index b33a2bdf..a16e741e 100644
+--- a/media/server/ipc/source/MediaKeysCapabilitiesModuleService.cpp
++++ b/media/server/ipc/source/MediaKeysCapabilitiesModuleService.cpp
+@@ -168,4 +168,36 @@ void MediaKeysCapabilitiesModuleService::isServerCertificateSupported(
+     done->Run();
+ }
+ 
+-} // namespace firebolt::rialto::server::ipc
++void MediaKeysCapabilitiesModuleService::getSupportedRobustnessLevels(
++    ::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetSupportedRobustnessLevelsRequest *request,
++    ::firebolt::rialto::GetSupportedRobustnessLevelsResponse *response, ::google::protobuf::Closure *done)
++{
++    RIALTO_SERVER_LOG_DEBUG("entry:");
++    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
++    if (!ipcController)
++    {
++        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
++        controller->SetFailed("ipc library provided incompatible controller object");
++        done->Run();
++        return;
++    }
++
++    std::vector<std::string> robustnessLevels;
++    bool status = m_cdmService.getSupportedRobustnessLevels(request->key_system(), robustnessLevels);
++    if (status)
++    {
++        for (const auto &level : robustnessLevels)
++        {
++            response->add_robustness_levels(level);
++        }
++    }
++    else
++    {
++        RIALTO_SERVER_LOG_ERROR("Failed to get supported robustness levels");
++        controller->SetFailed("Operation failed");
++    }
++
++    done->Run();
++}
++
++} // namespace firebolt::rialto::server::ipc
+\ No newline at end of file
+diff --git a/media/server/main/include/MediaKeysCapabilities.h b/media/server/main/include/MediaKeysCapabilities.h
+index 92cff1e4..ddffeb20 100644
+--- a/media/server/main/include/MediaKeysCapabilities.h
++++ b/media/server/main/include/MediaKeysCapabilities.h
+@@ -73,6 +73,8 @@ public:
+ 
+     bool isServerCertificateSupported(const std::string &keySystem) override;
+ 
++    bool getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels) override;
++
+ private:
+     /**
+      * @brief The IOcdm instance.
+diff --git a/media/server/main/source/MediaKeysCapabilities.cpp b/media/server/main/source/MediaKeysCapabilities.cpp
+index b22836fb..6a52e8e9 100644
+--- a/media/server/main/source/MediaKeysCapabilities.cpp
++++ b/media/server/main/source/MediaKeysCapabilities.cpp
+@@ -173,4 +173,16 @@ bool MediaKeysCapabilities::isServerCertificateSupported(const std::string &keyS
+     return ocdmSystem->supportsServerCertificate();
+ }
+ 
++bool MediaKeysCapabilities::getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels)
++{
++    std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem> ocdmSystem =
++        m_ocdmSystemFactory->createOcdmSystem(keySystem);
++    if (!ocdmSystem)
++    {
++        RIALTO_SERVER_LOG_ERROR("Failed to create the ocdm system object");
++        return false;
++    }
++    return ocdmSystem->getSupportedRobustnessLevels(robustnessLevels);
++}
++
+ }; // namespace firebolt::rialto::server
+diff --git a/media/server/service/include/ICdmService.h b/media/server/service/include/ICdmService.h
+index d33d7b17..a93c684e 100644
+--- a/media/server/service/include/ICdmService.h
++++ b/media/server/service/include/ICdmService.h
+@@ -77,6 +77,7 @@ public:
+     virtual bool supportsKeySystem(const std::string &keySystem) = 0;
+     virtual bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) = 0;
+     virtual bool isServerCertificateSupported(const std::string &keySystem) = 0;
++    virtual bool getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels) = 0;
+ 
+     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
+ };
+diff --git a/media/server/service/source/CdmService.cpp b/media/server/service/source/CdmService.cpp
+index 01dbad6d..7391ced5 100644
+--- a/media/server/service/source/CdmService.cpp
++++ b/media/server/service/source/CdmService.cpp
+@@ -495,6 +495,26 @@ bool CdmService::isServerCertificateSupported(const std::string &keySystem)
+     return mediaKeysCapabilities->isServerCertificateSupported(keySystem);
+ }
+ 
++bool CdmService::getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels)
++{
++    RIALTO_SERVER_LOG_DEBUG("CdmService requested to getSupportedRobustnessLevels");
++
++    if (!m_isActive)
++    {
++        RIALTO_SERVER_LOG_ERROR("Skip getSupportedRobustnessLevels: Session Server in Inactive state");
++        return false;
++    }
++
++    auto mediaKeysCapabilities = m_mediaKeysCapabilitiesFactory->getMediaKeysCapabilities();
++    if (!mediaKeysCapabilities)
++    {
++        RIALTO_SERVER_LOG_ERROR("MediaKeysCapabilities is null");
++        return false;
++    }
++
++    return mediaKeysCapabilities->getSupportedRobustnessLevels(keySystem, robustnessLevels);
++}
++
+ MediaKeyErrorStatus CdmService::decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps)
+ {
+     RIALTO_SERVER_LOG_DEBUG("CdmService requested to decrypt, key session id: %d", keySessionId);
+diff --git a/media/server/service/source/CdmService.h b/media/server/service/source/CdmServiceP0+r4B33\P0+r4B34\P0+r4B35\P0+r6B42\.h
+index b9763968..f03cb5c4 100644
+--- a/media/server/service/source/CdmService.h
++++ b/media/server/service/source/CdmService.h
+@@ -82,6 +82,7 @@ public:
+     bool supportsKeySystem(const std::string &keySystem) override;
+     bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) override;
+     bool isServerCertificateSupported(const std::string &keySystem) override;
++    bool getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels) override;
+     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
+     bool isExtendedInterfaceUsed(int32_t keySessionId) override;
+     MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
+diff --git a/proto/mediakeyscapabilitiesmodule.proto b/proto/mediakeyscapabilitiesmodule.proto
+index 347b67bb..eae3ac12 100644
+--- a/proto/mediakeyscapabilitiesmodule.proto
++++ b/proto/mediakeyscapabilitiesmodule.proto
+@@ -83,6 +83,21 @@ message IsServerCertificateSupportedResponse {
+   optional bool is_supported = 1;
+ }
+ 
++/**
++ * @fn bool, vector<string> getSupportedRobustnessLevels(const std::string &keySystem)
++ * @brief Returns supported robustness levels for a key system.
++ *
++ * @param[in]  key_system   The key system to query.
++ *
++ * @returns the supported robustness levels.
++ */
++message GetSupportedRobustnessLevelsRequest {
++  optional string key_system = 1;
++}
++message GetSupportedRobustnessLevelsResponse {
++  repeated string robustness_levels = 1;
++}
++
+ service MediaKeysCapabilitiesModule {
+     /**
+      * @brief Returns the EME key systems supported by Rialto.
+@@ -111,4 +126,11 @@ service MediaKeysCapabilitiesModule {
+      */
+     rpc isServerCertificateSupported(IsServerCertificateSupportedRequest) returns (IsServerCertificateSupportedResponse) {
+     }
++
++    /**
++     * @brief Gets the robustness levels supported by the specified key system.
++     * @see GetSupportedRobustnessLevelsRequest
++     */
++    rpc getSupportedRobustnessLevels(GetSupportedRobustnessLevelsRequest) returns (GetSupportedRobustnessLevelsResponse) {
++    }
+ }
+diff --git a/wrappers/include/OcdmSystem.h b/wrappers/include/OcdmSystem.h
+index 48a9c2a1..acf6e568 100644
+--- a/wrappers/include/OcdmSystem.h
++++ b/wrappers/include/OcdmSystem.h
+@@ -63,6 +63,7 @@ public:
+     MediaKeyErrorStatus getMetricSystemData(uint32_t &bufferLength, std::vector<uint8_t> &buffer) override;
+     std::unique_ptr<IOcdmSession> createSession(IOcdmSessionClient *client) const override;
+     bool supportsServerCertificate() const override;
++    bool getSupportedRobustnessLevels(std::vector<std::string> &robustnessLevels) override;
+ 
+ private:
+     /**
+diff --git a/wrappers/interface/IOcdmSystem.h b/wrappers/interface/IOcdmSystem.h
+index 0e8977d6..92700120 100644
+--- a/wrappers/interface/IOcdmSystem.h
++++ b/wrappers/interface/IOcdmSystem.h
+@@ -148,6 +148,15 @@ public:
+      */
+     virtual bool supportsServerCertificate() const = 0;
+ 
++    /**
++     * @brief Gets the robustness levels supported by the underlying CDM for this key system.
++     *
++     * @param[out] robustnessLevels : The supported robustness levels.
++     *
++     * @retval true if robustness levels were retrieved successfully
++     */
++    virtual bool getSupportedRobustnessLevels(std::vector<std::string> &robustnessLevels) = 0;
++
+     /**
+      * @brief Get metrics for a DRM system
+      *
+diff --git a/wrappers/source/OcdmSystem.cpp b/wrappers/source/OcdmSystem.cpp
+index ba7d1594..d5272501 100644
+--- a/wrappers/source/OcdmSystem.cpp
++++ b/wrappers/source/OcdmSystem.cpp
+@@ -118,6 +118,31 @@ bool OcdmSystem::supportsServerCertificate() const
+     return OpenCDMBool::OPENCDM_BOOL_TRUE == opencdm_system_supports_server_certificate(m_systemHandle);
+ }
+ 
++bool OcdmSystem::getSupportedRobustnessLevels(std::vector<std::string> &robustnessLevels)
++{
++    char **buffer = nullptr;
++    uint16_t count = 0;
++    OpenCDMError status = opencdm_system_supported_robustness(m_systemHandle, &buffer, &count);
++    if (status == ERROR_NONE && buffer != nullptr && count > 0)
++    {
++        for (uint16_t i = 0; i < count; ++i)
++        {
++            if (buffer[i] != nullptr)
++            {
++                robustnessLevels.push_back(std::string(buffer[i]));
++                free(buffer[i]);
++            }
++        }
++        free(buffer);
++        return true;
++    }
++    if (buffer != nullptr)
++    {
++        free(buffer);
++    }
++    return false;
++}
++
+ MediaKeyErrorStatus OcdmSystem::getMetricSystemData(uint32_t &bufferLength, std::vector<uint8_t> &buffer)
+ {
+     OpenCDMError status = opencdm_get_metric_system_data(m_systemHandle, &bufferLength, buffer.data());
+-- 
+2.44.4

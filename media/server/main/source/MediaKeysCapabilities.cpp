@@ -175,4 +175,16 @@ bool MediaKeysCapabilities::isServerCertificateSupported(const std::string &keyS
     return ocdmSystem->supportsServerCertificate();
 }
 
+bool MediaKeysCapabilities::getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels)
+{
+    std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem> ocdmSystem =
+        m_ocdmSystemFactory->createOcdmSystem(keySystem);
+    if (!ocdmSystem)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the ocdm system object");
+        return false;
+    }
+    return ocdmSystem->getSupportedRobustnessLevels(robustnessLevels);
+}
+
 }; // namespace firebolt::rialto::server
