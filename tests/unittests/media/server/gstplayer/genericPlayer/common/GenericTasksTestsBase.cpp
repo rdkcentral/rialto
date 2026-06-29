@@ -3246,21 +3246,31 @@ void GenericTasksTestsBase::shouldFlushAudioSrcFailure()
 void GenericTasksTestsBase::shouldReadAudioData()
 {
     EXPECT_CALL(*testContext->m_dataReader, readData()).WillOnce(Invoke([&]() { return buildAudioSamples(); }));
+    EXPECT_CALL(*testContext->m_dataReader, isBufferFull()).WillOnce(Return(true));
+}
+
+void GenericTasksTestsBase::shouldReadAudioDataFromShmWithAvailableSpace()
+{
+    EXPECT_CALL(*testContext->m_dataReader, readData()).WillOnce(Invoke([&]() { return buildAudioSamples(); }));
+    EXPECT_CALL(*testContext->m_dataReader, isBufferFull()).WillOnce(Return(false));
 }
 
 void GenericTasksTestsBase::shouldReadVideoData()
 {
     EXPECT_CALL(*testContext->m_dataReader, readData()).WillOnce(Invoke([&]() { return buildVideoSamples(); }));
+    EXPECT_CALL(*testContext->m_dataReader, isBufferFull()).WillOnce(Return(true));
 }
 
 void GenericTasksTestsBase::shouldReadSubtitleData()
 {
     EXPECT_CALL(*testContext->m_dataReader, readData()).WillOnce(Invoke([&]() { return buildSubtitleSamples(); }));
+    EXPECT_CALL(*testContext->m_dataReader, isBufferFull()).WillOnce(Return(true));
 }
 
 void GenericTasksTestsBase::shouldReadUnknownData()
 {
     EXPECT_CALL(*testContext->m_dataReader, readData()).WillOnce(Invoke([&]() { return buildUnknownSamples(); }));
+    EXPECT_CALL(*testContext->m_dataReader, isBufferFull()).WillOnce(Return(true));
 }
 
 void GenericTasksTestsBase::shouldNotAttachUnknownSamples()

@@ -46,6 +46,8 @@ const char *toString(const firebolt::rialto::MediaSourceStatus &status)
         return "CODEC_CHANGED";
     case firebolt::rialto::MediaSourceStatus::NO_AVAILABLE_SAMPLES:
         return "NO_AVAILABLE_SAMPLES";
+    case firebolt::rialto::MediaSourceStatus::NO_SPACE_FOR_SAMPLES:
+        return "NO_SPACE_FOR_SAMPLES";
     }
     return "Unknown";
 }
@@ -711,10 +713,12 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         RIALTO_SERVER_LOG_WARN("NeedData RequestID is not valid: %u", needDataRequestId);
         return true;
     }
+    const std::uint32_t kMaxNumFrames = m_activeRequests->getMaxFrames(needDataRequestId);
     m_activeRequests->erase(needDataRequestId);
 
     unsigned int &counter = m_noAvailableSamplesCounter[mediaSourceType];
-    if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
+    if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS &&
+        status != MediaSourceStatus::NO_SPACE_FOR_SAMPLES)
     {
         // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS.
 
@@ -764,8 +768,9 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
 
     if (0 != numFrames)
     {
+        const bool kIsBufferFull = kMaxNumFrames == numFrames || status == MediaSourceStatus::NO_SPACE_FOR_SAMPLES;
         std::shared_ptr<IDataReader> dataReader =
-            m_dataReaderFactory->createDataReader(mediaSourceType, buffer, regionOffset, numFrames);
+            m_dataReaderFactory->createDataReader(mediaSourceType, buffer, regionOffset, numFrames, kIsBufferFull);
         if (!dataReader)
         {
             RIALTO_SERVER_LOG_ERROR("Metadata version not supported for %s request id: %u",

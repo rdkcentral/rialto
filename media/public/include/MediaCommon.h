@@ -114,11 +114,12 @@ enum class MediaType
  */
 enum class MediaSourceStatus
 {
-    OK,                  /**< Source data provided without error. */
-    EOS,                 /**< Source reached the end of stream. */
-    ERROR,               /**< There was an error providing source data. */
-    CODEC_CHANGED,       /**< The codec has changed and the decoder must be reconfigured */
-    NO_AVAILABLE_SAMPLES /**< Could not retrieve media samples. */
+    OK,                   /**< Source data provided without error. */
+    EOS,                  /**< Source reached the end of stream. */
+    ERROR,                /**< There was an error providing source data. */
+    CODEC_CHANGED,        /**< The codec has changed and the decoder must be reconfigured */
+    NO_AVAILABLE_SAMPLES, /**< Could not retrieve media samples. */
+    NO_SPACE_FOR_SAMPLES  /**< Could not copy data to shared buffer space. */
 };
 
 /**

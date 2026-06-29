@@ -28,7 +28,6 @@
 namespace
 {
 constexpr auto kDelayThreshold{5 * GST_SECOND};
-constexpr auto kMaxFrames{24U};
 } // namespace
 
 namespace firebolt::rialto::server::tasks::generic
@@ -110,7 +109,7 @@ void ReadShmDataAndAttachSamples::execute() const
         RIALTO_SERVER_LOG_DEBUG("%s data received. First ts: %" GST_TIME_FORMAT " last ts: %" GST_TIME_FORMAT,
                                 common::convertMediaSourceType(kMediaType), GST_TIME_ARGS(kFirstTimestamp),
                                 GST_TIME_ARGS(kLastTimestamp));
-        if (mediaSegments.size() < kMaxFrames && m_context.streamPosition.load() != -1 &&
+        if (!m_dataReader->isBufferFull() && m_context.streamPosition.load() != -1 &&
             kLastTimestamp >= m_context.streamPosition.load() + kDelayThreshold)
         {
             RIALTO_SERVER_LOG_DEBUG("Received %zu segments, current pos: %" GST_TIME_FORMAT
