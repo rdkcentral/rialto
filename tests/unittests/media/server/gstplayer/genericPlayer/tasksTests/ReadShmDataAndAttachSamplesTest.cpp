@@ -68,7 +68,7 @@ TEST_F(ReadShmDataAndAttachSamplesTest, shouldSkipAttachingUnknownSamples)
 
 TEST_F(ReadShmDataAndAttachSamplesTest, shouldAttachAllAudioSamplesWithDelay)
 {
-    shouldReadAudioData();
+    shouldReadAudioDataFromShmWithAvailableSpace();
     shouldAttachAllAudioSamplesWithDelay();
     triggerReadShmDataAndAttachSamplesAudio();
 }

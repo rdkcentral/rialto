@@ -399,6 +399,7 @@ protected:
 
     // ReadShmDataAndAttachSamples test methods
     void shouldReadAudioData();
+    void shouldReadAudioDataFromShmWithAvailableSpace();
     void shouldReadVideoData();
     void shouldReadSubtitleData();
     void shouldReadUnknownData();
