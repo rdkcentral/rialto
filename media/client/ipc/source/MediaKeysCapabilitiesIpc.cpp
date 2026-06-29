@@ -213,7 +213,6 @@ bool MediaKeysCapabilitiesIpc::isServerCertificateSupported(const std::string &k
     return response.is_supported();
 }
 
-}
 
 bool MediaKeysCapabilitiesIpc::getSupportedRobustnessLevels(const std::string &keySystem,
                                                             std::vector<std::string> &robustnessLevels)
