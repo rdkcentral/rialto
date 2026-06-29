@@ -120,6 +120,7 @@ bool OcdmSystem::supportsServerCertificate() const
 
 bool OcdmSystem::getSupportedRobustnessLevels(std::vector<std::string> &robustnessLevels)
 {
+    robustnessLevels.clear();
     char **buffer = nullptr;
     uint16_t count = 0;
     OpenCDMError status = opencdm_system_supported_robustness(m_systemHandle, &buffer, &count);
