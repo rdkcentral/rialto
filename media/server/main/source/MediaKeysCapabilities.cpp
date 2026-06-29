@@ -177,6 +177,7 @@ bool MediaKeysCapabilities::isServerCertificateSupported(const std::string &keyS
 
 bool MediaKeysCapabilities::getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels)
 {
+    robustnessLevels.clear();
     std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem> ocdmSystem =
         m_ocdmSystemFactory->createOcdmSystem(keySystem);
     if (!ocdmSystem)
