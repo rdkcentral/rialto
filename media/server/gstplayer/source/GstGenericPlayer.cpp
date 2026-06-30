@@ -1347,7 +1347,7 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
         }
         else
         {
-            pushSampleIfRequired(streamInfo.appSrc, common::convertMediaSourceType(mediaType));
+            pushSampleIfRequired(streamInfo.appSrc, mediaType);
         }
         if (mediaType == firebolt::rialto::MediaSourceType::AUDIO)
         {
@@ -1491,7 +1491,7 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
     return false;
 }
 
-void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::string &typeStr)
+void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourceType &mediaSourceType)
 {
     auto initialPosition = m_context.initialPositions.find(source);
     if (m_context.initialPositions.end() == initialPosition)
@@ -1507,7 +1507,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
     for (const auto &[position, resetTime, appliedRate, stopPosition] : initialPosition->second)
     {
         GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
-        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
+        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", common::convertMediaSourceType(mediaSourceType));
         GstSegment *segment{m_gstWrapper->gstSegmentNew()};
         m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
         if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, seekFlag,
@@ -1521,9 +1521,10 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         segment->applied_rate = appliedRate;
         RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
-                              typeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
-                              segment->rate, segment->applied_rate, resetTime);
-        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", typeStr);
+                              common::convertMediaSourceType(mediaSourceType), GST_TIME_ARGS(segment->start),
+                              GST_TIME_ARGS(segment->stop), segment->rate, segment->applied_rate, resetTime);
+        auto recordId = m_context.gstProfiler->createRecord("First Segment Received",
+                                                            common::convertMediaSourceType(mediaSourceType));
         if (recordId)
             m_context.gstProfiler->logRecord(recordId.value());
 
@@ -1537,6 +1538,11 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         m_gstWrapper->gstCapsUnref(currentCaps);
 
         m_gstWrapper->gstSegmentFree(segment);
+
+        if (MediaSourceType::AUDIO == mediaSourceType)
+        {
+            m_context.audioGstSegmentPosition = position;
+        }
     }
     m_context.currentPosition[source] = initialPosition->second.back();
     m_context.initialPositions.erase(initialPosition);
