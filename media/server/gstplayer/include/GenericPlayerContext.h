@@ -289,6 +289,21 @@ struct GenericPlayerContext
      * @brief Profiler for player pipeline
      */
     std::unique_ptr<IGstProfiler> gstProfiler;
+
+    /**
+     * @brief True when first audio frame has already been scheduled for the current audio source lifecycle.
+     */
+    std::atomic_bool firstAudioFrameReceived{false};
+
+    /**
+     * @brief Fallback probe id for first audio frame detection on sink pad.
+     */
+    gulong audioFirstFrameProbeId{0};
+
+    /**
+     * @brief Fallback sink pad that owns audio first frame probe.
+     */
+    GstPad *audioFirstFrameProbePad{nullptr};
 };
 } // namespace firebolt::rialto::server
 
