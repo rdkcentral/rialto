@@ -41,6 +41,7 @@ void Underflow::execute() const
     RIALTO_SERVER_LOG_WARN("Executing Underflow for %s source", common::convertMediaSourceType(m_sourceType));
     if (!m_underflowEnabled)
     {
+        RIALTO_SERVER_LOG_WARN("Underflow is NOT enabled");
         return;
     }
 
@@ -50,15 +51,29 @@ void Underflow::execute() const
         StreamInfo &streamInfo = elem->second;
         if (streamInfo.underflowOccured)
         {
+            RIALTO_SERVER_LOG_WARN("Underflow OCCURED");
             return;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("Underflow did not occur, should set to true");
         }
 
         streamInfo.underflowOccured = true;
 
         if (m_gstPlayerClient)
         {
+            RIALTO_SERVER_LOG_WARN("Underflow: Client exists and it is notified");
             m_gstPlayerClient->notifyBufferUnderflow(m_sourceType);
         }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("Underflow: Client is not valid");
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Underflow element was not found");
     }
 }
 
