@@ -57,6 +57,8 @@ void CdmService::switchToInactive()
     {
         std::lock_guard<std::mutex> lock{m_mediaKeysMutex};
         m_mediaKeys.clear();
+        m_mediaKeysClients.clear();
+        m_sessionInfo.clear();
     }
 }
 
