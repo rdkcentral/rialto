@@ -156,6 +156,10 @@ private:
     void scheduleAudioUnderflow() override;
     void scheduleVideoUnderflow() override;
     void scheduleFirstVideoFrameReceived() override;
+    void scheduleFirstAudioFrameReceived() override;
+    void setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id) override;
+    void clearAudioFirstFrameFallbackProbe() override;
+    void clearAudioFirstFrameFallbackProbeState() override;
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
     bool setImmediateOutput() override;
