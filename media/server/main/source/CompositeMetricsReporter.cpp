@@ -19,7 +19,7 @@
 
 #include "CompositeMetricsReporter.h"
 
-namespace firebolt::rialto::server::ipc
+namespace firebolt::rialto::server
 {
 void CompositeMetricsReporter::addReporter(std::unique_ptr<IMetricsReporter> reporter)
 {
@@ -52,4 +52,4 @@ void CompositeMetricsReporter::reportThresholdExceeded(const ThresholdAlert &ale
         reporter->reportThresholdExceeded(alert);
     }
 }
-} // namespace firebolt::rialto::server::ipc
+} // namespace firebolt::rialto::server

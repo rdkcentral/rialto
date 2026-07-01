@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_IPC_I_PRIVATE_METRICS_MODULE_SERVICE_H_
 
 #include "ControlCommon.h"
+#include "IPrivateMetricsService.h"
 #include "MediaCommon.h"
 #include "privatemetricsmodule.pb.h"
 #include <IIpcServer.h>
@@ -38,7 +39,8 @@ public:
 
     static std::shared_ptr<IPrivateMetricsModuleServiceFactory> createFactory();
 
-    virtual std::shared_ptr<IPrivateMetricsModuleService> create() const = 0;
+    virtual std::shared_ptr<IPrivateMetricsModuleService>
+    create(service::IPrivateMetricsService &metricsService) const = 0;
 };
 
 class IPrivateMetricsModuleService : public ::firebolt::rialto::PrivateMetricsModule,

@@ -24,6 +24,7 @@
 #include "ICdmService.h"
 #include "IControlService.h"
 #include "IPlaybackService.h"
+#include "IPrivateMetricsService.h"
 #include "ISessionManagementServer.h"
 #include "ISessionServerManager.h"
 #include <memory>
@@ -40,7 +41,8 @@ public:
     createApplicationManagementServer(service::ISessionServerManager &sessionServerManager) const = 0;
     virtual std::unique_ptr<ISessionManagementServer>
     createSessionManagementServer(service::IPlaybackService &playbackService, service::ICdmService &cdmService,
-                                  service::IControlService &controlService) const = 0;
+                                  service::IControlService &controlService,
+                                  service::IPrivateMetricsService &metricsService) const = 0;
 };
 } // namespace firebolt::rialto::server::ipc
 

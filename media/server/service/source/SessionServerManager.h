@@ -26,6 +26,7 @@
 #include "IHeartbeatProcedure.h"
 #include "IIpcFactory.h"
 #include "IPlaybackService.h"
+#include "IPrivateMetricsService.h"
 #include "ISessionManagementServer.h"
 #include "ISessionServerManager.h"
 #include <atomic>
@@ -72,6 +73,7 @@ private:
     ICdmService &m_cdmService;
     IControlService &m_controlService;
     std::unique_ptr<IHeartbeatProcedureFactory> m_heartbeatProcedureFactory;
+    std::unique_ptr<IPrivateMetricsService> m_privateMetricsService;
     std::unique_ptr<ipc::IApplicationManagementServer> m_applicationManagementServer;
     std::unique_ptr<ipc::ISessionManagementServer> m_sessionManagementServer;
     std::mutex m_serviceMutex;

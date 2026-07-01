@@ -56,30 +56,44 @@ The protocol uses a **server-initiated push** model:
 ```mermaid
 sequenceDiagram
     participant Client as Client (ClientController)
-    participant Server as Server (PrivateMetricsModuleService)
+    participant IPC as PrivateMetricsModuleService (ipc)
+    participant Svc as PrivateMetricsService (service)
+    participant Main as MetricsCollector (main)
 
-    Note over Client,Server: Client connects via IPC socket
-    Server->>Client: exportService(PrivateMetricsModule)
-    Client->>Server: notifyClientReady()
-    Server->>Client: MetricsSampleRequestEvent(id=1, reason=CONNECTED)
-    Client->>Server: reportClientMetrics(ClientProcessMetrics)
-    Note over Server: Stores baseline (no CPU% yet)
+    Note over Client,Main: Client connects via IPC socket
+    IPC->>Client: exportService(PrivateMetricsModule)
+    Client->>IPC: notifyClientReady()
+    IPC->>Svc: clientReady(clientId, ipcClient)
+    Svc->>Main: creates MetricsCollector(clientId)
+    Main->>IPC: requestSample(clientId, CONNECTED)
+    IPC->>Client: MetricsSampleRequestEvent(id=1, reason=CONNECTED)
+    Client->>IPC: reportClientMetrics(clientId, metrics)
+    IPC->>Svc: reportMetrics(clientId, metrics)
+    Svc->>Main: processMetrics(metrics)
+    Note over Main: Stores baseline (no CPU% yet)
 
-    loop Every 15 seconds
-        Server->>Client: MetricsSampleRequestEvent(id=N, reason=PERIODIC)
-        Client->>Server: reportClientMetrics(ClientProcessMetrics)
-        Note over Server: Compute CPU%, feed aggregators, check thresholds
+    loop Every 15 seconds (ITimer periodic)
+        Main->>IPC: requestSample(clientId, PERIODIC)
+        IPC->>Client: MetricsSampleRequestEvent(id=N, reason=PERIODIC)
+        Client->>IPC: reportClientMetrics(clientId, metrics)
+        IPC->>Svc: reportMetrics(clientId, metrics)
+        Svc->>Main: processMetrics(metrics)
+        Note over Main: Compute CPU%, feed aggregators, check thresholds
     end
 
-    Note over Server: Playback state changes
-    Server->>Client: MetricsSampleRequestEvent(id=N, reason=STATE_TRANSITION)
-    Client->>Server: reportClientMetrics(ClientProcessMetrics)
+    Note over Main: Playback state changes
+    Main->>IPC: requestSample(clientId, STATE_TRANSITION)
+    IPC->>Client: MetricsSampleRequestEvent(id=N, reason=STATE_TRANSITION)
+    Client->>IPC: reportClientMetrics(clientId, metrics)
+    IPC->>Svc: reportMetrics(clientId, metrics)
+    Svc->>Main: processMetrics(metrics)
 ```
 
 Key design points:
 - The **server drives timing** — the client never spontaneously reports; it only responds to requests
 - The `sample_id` field correlates requests with responses and provides ordering
 - The `reason` field is echoed back by the client so the server knows how to handle the response
+- The `client_id` maps each client to its per-client `MetricsCollector` in `server/main`
 - The service is exported per-client on connection, allowing multi-client support
 
 ### Client Side (`ClientController` + `PrivateMetricsIpc`)
@@ -96,53 +110,100 @@ When the client library initializes (via `ClientController`), it:
    - `process_id`: `getpid()`
 4. Sends the data back via `reportClientMetrics()`
 
-### Server Side (`PrivateMetricsModuleService`)
+### Server-Side Architecture
 
-The server maintains per-client state:
+The server follows Rialto's standard three-layer architecture (ipc → service → main):
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│  server/ipc (PrivateMetricsModuleService)                    │
+│    - Receives protobuf RPC calls                             │
+│    - Sends MetricsSampleRequestEvent to IPC clients          │
+│    - Generates unique client IDs on notifyClientReady        │
+│    - Implements IMetricsCollectorClient (callback from main) │
+│    - Delegates ALL business logic to service layer           │
+└────────────────────────┬─────────────────────────────────────┘
+                         │
+┌────────────────────────▼─────────────────────────────────────┐
+│  server/service (IPrivateMetricsService)                     │
+│    - Routes calls between ipc and main                       │
+│    - Maps client IDs to MetricsCollector instances            │
+│    - Creates/destroys MetricsCollector instances              │
+└────────────────────────┬─────────────────────────────────────┘
+                         │
+┌────────────────────────▼─────────────────────────────────────┐
+│  server/main (MetricsCollector)                              │
+│    - Owns ITimer (periodic, 15s)                             │
+│    - Owns MetricsAccumulator, StateMetricsAggregator         │
+│    - Owns MetricsThresholdChecker                            │
+│    - Owns IMetricsReporter                                   │
+│    - Computes CPU%, feeds aggregators, checks thresholds     │
+│    - Receives playback/application state notifications       │
+│    - Samples /proc, cgroup for server-side metrics           │
+└──────────────────────────────────────────────────────────────┘
+```
+
+#### IPC Layer (`server/ipc`)
+
+`PrivateMetricsModuleService`:
+- Receives `notifyClientReady` → generates unique client ID → calls service layer → returns ID in response
+- Receives `reportClientMetrics` → extracts client ID and metrics → delegates to service layer
+- Implements `IMetricsCollectorClient` so `MetricsCollector` can request samples back through IPC
+- Maintains mapping of client IDs to IPC client connections
+- **No business logic** — no CPU calculation, no aggregation, no thresholds
+
+#### Service Layer (`server/service`)
+
+`IPrivateMetricsService` / `PrivateMetricsService`:
+- `clientReady(clientId, client)` → creates `MetricsCollector` in main layer
+- `clientDisconnected(clientId)` → destroys `MetricsCollector`
+- `reportMetrics(clientId, metrics)` → finds collector, calls `processMetrics()`
+- `notifyPlaybackStateChanged(sessionId, oldState, newState)` → routes to all collectors
+- `notifyApplicationStateChanged(oldState, newState)` → routes to all collectors
+
+#### Main Layer (`server/main`)
+
+`MetricsCollector` (one per connected client):
+- Created by `PrivateMetricsService` when client is ready
+- Constructor creates `ITimer` (periodic, 15s) — timer callback requests sample via `IMetricsCollectorClient`
+- `processMetrics()` — CPU calculation, aggregator feeding, threshold checking, reporting
+- `notifyPlaybackStateChanged()` — finalize/begin state aggregators
+- `notifyApplicationStateChanged()` — finalize/begin global aggregator
+- Destructor cancels timer (ITimer destructor handles this automatically)
+
+### Timer Model
+
+Uses the existing `ITimer` framework (`common/interface/ITimer.h`):
 
 ```cpp
-struct ClientMetricsState {
-    bool isReady{false};
-    std::optional<MetricsSamplePair> latestMetrics;  // previous sample for delta computation
-};
+// In MetricsCollector constructor:
+m_timer = m_timerFactory->createTimer(
+    std::chrono::seconds{15},
+    [this]() { onTimerFired(); },
+    TimerType::PERIODIC
+);
+
+// Timer callback:
+void MetricsCollector::onTimerFired()
+{
+    m_client->requestMetricsSample(m_clientId, m_nextSampleId++, MetricsSampleReason::PERIODIC);
+}
 ```
 
-On receiving `reportClientMetrics`:
-1. Takes its own `ProcessMetricsSample` (server CPU, memory, cgroup)
-2. If a previous sample exists, computes CPU percentages from time deltas
-3. Passes the paired client+server data through the reporting/aggregation pipeline
-4. Stores the sample as `latestMetrics` for next delta computation
-
-### Threading Model
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  m_metricsThread (sampler)                                  │
-│    - Sleeps 15s via condition_variable                      │
-│    - Wakes and sends MetricsSampleRequestEvent to clients   │
-│    - Can be woken early by m_wakeup.notify_all() on stop    │
-└─────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────┐
-│  IPC event loop thread                                      │
-│    - Receives reportClientMetrics RPC calls                 │
-│    - Calls logMetrics() → reporter → aggregator → threshold │
-│    - Receives notifyPlaybackState events                    │
-│    - Calls notifyPlaybackStateChanged()                     │
-└─────────────────────────────────────────────────────────────┘
-```
-
-The `m_mutex` protects shared state (`m_clients`, `m_sessionStates`, `m_globalAggregator`) accessed from both threads.
+- `ITimer` manages its own thread internally
+- `cancel()` or destructor stops the timer cleanly
+- No need for `std::thread`, `std::condition_variable`, or `std::atomic<bool> m_isRunning`
 
 ### Lifecycle
 
-1. **Server start**: `SessionManagementServer` creates `PrivateMetricsModuleService` via factory
-2. **Client connects**: `clientConnected()` → registers client, exports service
-3. **Client ready**: `notifyClientReady()` → marks client ready, requests initial sample
-4. **Periodic collection**: sampler thread fires every 15s
-5. **State changes**: `MediaPipelineClient` and `SessionServerManager` notify as states transition
-6. **Client disconnects**: `clientDisconnected()` → removes client state
-7. **Server stop**: destructor sets `m_isRunning=false`, wakes sampler thread, joins it
+1. **Server start**: `SessionManagementServer` creates `PrivateMetricsModuleService` (ipc) + `PrivateMetricsService` (service)
+2. **Client connects**: `clientConnected()` → registers IPC client, exports service
+3. **Client ready**: `notifyClientReady()` → generates client ID → service creates `MetricsCollector` → timer starts → requests initial sample
+4. **Periodic collection**: `ITimer` fires every 15s → `MetricsCollector::onTimerFired()` → requests sample via `IMetricsCollectorClient`
+5. **Client responds**: `reportClientMetrics()` → IPC extracts data → service routes → `MetricsCollector::processMetrics()`
+6. **State changes**: `MediaPipelineClient` notifies playback state → routed through service → `MetricsCollector::notifyPlaybackStateChanged()`
+7. **Client disconnects**: `clientDisconnected()` → service destroys `MetricsCollector` (timer auto-cancelled in destructor)
+8. **Server stop**: service destructor destroys all collectors
 
 ## System Architecture
 
@@ -156,16 +217,20 @@ graph TD
     end
 
     subgraph Server Process
-        IPC --> SMS2[SessionManagementServer]
-        SMS2 --> PMS[PrivateMetricsModuleService]
-        PMS -->|samples /proc, cgroup| OS[OS Interfaces]
-        PMS --> AGG[StateMetricsAggregator]
-        PMS --> THR[MetricsThresholdChecker]
-        PMS --> REP[IMetricsReporter]
+        IPC --> PMS[PrivateMetricsModuleService<br/>server/ipc]
+        PMS -->|IMetricsCollectorClient| MC
+
+        PMS --> PSVC[PrivateMetricsService<br/>server/service]
+        PSVC --> MC[MetricsCollector<br/>server/main]
+
+        MC -->|ITimer periodic| TIMER[ITimer 15s]
+        MC -->|samples /proc, cgroup| OS[OS Interfaces]
+        MC --> AGG[StateMetricsAggregator]
+        MC --> THR[MetricsThresholdChecker]
+        MC --> REP[IMetricsReporter]
 
         MPC[MediaPipelineClient] -->|notifyPlaybackStateChanged| PMS
-        SMS[SessionServerManager] -->|notifyApplicationStateChanged| SMS2
-        SMS2 --> PMS
+        SMS[SessionServerManager] -->|notifyApplicationStateChanged| PMS
 
         REP --> LOG[LogMetricsReporter]
         REP --> COMP[CompositeMetricsReporter]
@@ -350,9 +415,16 @@ Metrics threshold WARNING: server_cpu=88.24 exceeds 80.00
 
 | File | Purpose |
 |------|---------|
-| `media/server/ipc/include/IPrivateMetricsModuleService.h` | Server metrics service interface |
-| `media/server/ipc/include/PrivateMetricsModuleService.h` | Concrete service with sampler thread and aggregators |
-| `media/server/ipc/source/PrivateMetricsModuleService.cpp` | Core sampling, aggregation, wiring |
+| `media/server/ipc/include/IPrivateMetricsModuleService.h` | Thin IPC service interface |
+| `media/server/ipc/include/PrivateMetricsModuleService.h` | IPC service: RPC handlers + event sending only |
+| `media/server/ipc/source/PrivateMetricsModuleService.cpp` | IPC service implementation |
+| `media/server/service/include/IPrivateMetricsService.h` | Service-layer interface (routing) |
+| `media/server/service/source/PrivateMetricsService.h` | Service implementation header |
+| `media/server/service/source/PrivateMetricsService.cpp` | Service: maps clientId to MetricsCollector |
+| `media/server/main/interface/IMetricsCollector.h` | MetricsCollector interface |
+| `media/server/main/interface/IMetricsCollectorClient.h` | Callback: main→ipc for sending events |
+| `media/server/main/include/MetricsCollector.h` | Business logic header |
+| `media/server/main/source/MetricsCollector.cpp` | Business logic: CPU calc, aggregation, thresholds |
 | `media/server/ipc/source/MediaPipelineClient.cpp` | Playback state hook |
 | `media/server/ipc/source/MediaPipelineModuleService.cpp` | Passes metrics service to pipeline clients |
 | `media/server/ipc/source/SessionManagementServer.cpp` | Application state hook, owns metrics service |
@@ -362,15 +434,15 @@ Metrics threshold WARNING: server_cpu=88.24 exceeds 80.00
 
 | File | Purpose |
 |------|---------|
-| `media/server/ipc/include/MetricsAccumulator.h` | Welford's online mean/variance |
-| `media/server/ipc/include/StateMetricsAggregator.h` | Per-state multi-metric accumulation |
-| `media/server/ipc/include/IMetricsReporter.h` | Reporter interface + report structs |
-| `media/server/ipc/include/LogMetricsReporter.h` | Log-based reporter |
-| `media/server/ipc/include/CompositeMetricsReporter.h` | Multi-reporter fanout |
-| `media/server/ipc/include/MetricsThresholdChecker.h` | Threshold config + checker |
-| `media/server/ipc/source/LogMetricsReporter.cpp` | Reporter implementation |
-| `media/server/ipc/source/CompositeMetricsReporter.cpp` | Fanout implementation |
-| `media/server/ipc/source/MetricsThresholdChecker.cpp` | Threshold checking logic |
+| `media/server/main/include/MetricsAccumulator.h` | Welford's online mean/variance |
+| `media/server/main/include/StateMetricsAggregator.h` | Per-state multi-metric accumulation |
+| `media/server/main/include/IMetricsReporter.h` | Reporter interface + report structs |
+| `media/server/main/include/LogMetricsReporter.h` | Log-based reporter |
+| `media/server/main/include/CompositeMetricsReporter.h` | Multi-reporter fanout |
+| `media/server/main/include/MetricsThresholdChecker.h` | Threshold config + checker |
+| `media/server/main/source/LogMetricsReporter.cpp` | Reporter implementation |
+| `media/server/main/source/CompositeMetricsReporter.cpp` | Fanout implementation |
+| `media/server/main/source/MetricsThresholdChecker.cpp` | Threshold checking logic |
 
 ### Protocol
 

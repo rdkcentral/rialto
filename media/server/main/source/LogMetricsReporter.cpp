@@ -21,22 +21,18 @@
 #include "RialtoServerLogging.h"
 #include <cinttypes>
 
-namespace firebolt::rialto::server::ipc
+namespace firebolt::rialto::server
 {
 void LogMetricsReporter::reportPeriodicSample(const PeriodicMetricsReport &report)
 {
-    // Don't report the periodic samples as milestone logs, 
-    // as they are expected to be emitted frequently and 
-    // may not indicate a significant event on their own. 
-    // Instead, log them at INFO level.
     RIALTO_SERVER_LOG_INFO("Metrics sample=%" PRIu64 ", reason=%s, app='%s', client_pid=%u, client_cpu=%.2f%%, "
-                          "server_cpu=%.2f%%, combined_cpu=%.2f%%, client_cpu_ms=%" PRIu64 ", "
-                          "server_cpu_ms=%" PRIu64 ", client_mem_kb=%" PRIu64 ", server_mem_kb=%" PRIu64 ", "
-                          "cgroup_mem_kb=%" PRIu64 "/%" PRIu64,
-                          report.sampleId, report.reason.c_str(), report.appName.c_str(), report.clientPid,
-                          report.clientCpuPercent, report.serverCpuPercent, report.combinedCpuPercent,
-                          report.clientCpuTimeMs, report.serverCpuTimeMs, report.clientMemoryKb,
-                          report.serverMemoryKb, report.cgroupMemoryUsageKb, report.cgroupMemoryLimitKb);
+                           "server_cpu=%.2f%%, combined_cpu=%.2f%%, client_cpu_ms=%" PRIu64 ", "
+                           "server_cpu_ms=%" PRIu64 ", client_mem_kb=%" PRIu64 ", server_mem_kb=%" PRIu64 ", "
+                           "cgroup_mem_kb=%" PRIu64 "/%" PRIu64,
+                           report.sampleId, report.reason.c_str(), report.appName.c_str(), report.clientPid,
+                           report.clientCpuPercent, report.serverCpuPercent, report.combinedCpuPercent,
+                           report.clientCpuTimeMs, report.serverCpuTimeMs, report.clientMemoryKb,
+                           report.serverMemoryKb, report.cgroupMemoryUsageKb, report.cgroupMemoryLimitKb);
 }
 
 void LogMetricsReporter::reportStateTransition(const StateTransitionReport &report)
@@ -50,11 +46,10 @@ void LogMetricsReporter::reportStateTransition(const StateTransitionReport &repo
                           "server_mem_kb={min=%.0f, max=%.0f, mean=%.0f}, "
                           "cgroup_mem_kb={min=%.0f, max=%.0f, mean=%.0f}",
                           report.context.c_str(), r.stateName.c_str(), r.durationMs, r.clientCpu.count,
-                          r.clientCpu.min, r.clientCpu.max, r.clientCpu.mean, r.clientCpu.stddev,
-                          r.serverCpu.min, r.serverCpu.max, r.serverCpu.mean, r.serverCpu.stddev,
-                          r.combinedCpu.min, r.combinedCpu.max, r.combinedCpu.mean, r.combinedCpu.stddev,
-                          r.clientMemoryKb.min, r.clientMemoryKb.max, r.clientMemoryKb.mean,
-                          r.serverMemoryKb.min, r.serverMemoryKb.max, r.serverMemoryKb.mean,
+                          r.clientCpu.min, r.clientCpu.max, r.clientCpu.mean, r.clientCpu.stddev, r.serverCpu.min,
+                          r.serverCpu.max, r.serverCpu.mean, r.serverCpu.stddev, r.combinedCpu.min, r.combinedCpu.max,
+                          r.combinedCpu.mean, r.combinedCpu.stddev, r.clientMemoryKb.min, r.clientMemoryKb.max,
+                          r.clientMemoryKb.mean, r.serverMemoryKb.min, r.serverMemoryKb.max, r.serverMemoryKb.mean,
                           r.cgroupMemoryUsageKb.min, r.cgroupMemoryUsageKb.max, r.cgroupMemoryUsageKb.mean);
 }
 
@@ -64,4 +59,4 @@ void LogMetricsReporter::reportThresholdExceeded(const ThresholdAlert &alert)
     RIALTO_SERVER_LOG_WARN("Metrics threshold %s: %s=%.2f exceeds %.2f", severity, alert.metricName.c_str(),
                            alert.currentValue, alert.thresholdValue);
 }
-} // namespace firebolt::rialto::server::ipc
+} // namespace firebolt::rialto::server
