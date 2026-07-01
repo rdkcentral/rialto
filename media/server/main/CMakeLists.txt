@@ -53,6 +53,10 @@ add_library(
         source/CompositeMetricsReporter.cpp
         source/MetricsThresholdChecker.cpp
         source/NeedDataDelayCalculator.cpp
+        source/MetricsCollector.cpp
+        source/LogMetricsReporter.cpp
+        source/CompositeMetricsReporter.cpp
+        source/MetricsThresholdChecker.cpp
         )
 
 target_include_directories(
