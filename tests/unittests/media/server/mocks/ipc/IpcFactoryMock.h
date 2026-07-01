@@ -35,7 +35,7 @@ public:
                 (service::ISessionServerManager & sessionServerManager), (const, override));
     MOCK_METHOD(std::unique_ptr<ISessionManagementServer>, createSessionManagementServer,
                 (service::IPlaybackService & playbackService, service::ICdmService &cdmService,
-                 service::IControlService &controlService),
+                 service::IControlService &controlService, service::IPrivateMetricsService &metricsService),
                 (const, override));
 };
 } // namespace firebolt::rialto::server::ipc

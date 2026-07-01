@@ -20,19 +20,14 @@
 #ifndef FIREBOLT_RIALTO_SERVER_IPC_PRIVATE_METRICS_MODULE_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_IPC_PRIVATE_METRICS_MODULE_SERVICE_H_
 
-#include "IMetricsReporter.h"
+#include "IMetricsCollectorClient.h"
 #include "IPrivateMetricsModuleService.h"
-#include "MetricsThresholdChecker.h"
-#include "StateMetricsAggregator.h"
+#include "IPrivateMetricsService.h"
 #include <atomic>
-#include <condition_variable>
 #include <cstdint>
 #include <map>
 #include <memory>
 #include <mutex>
-#include <optional>
-#include <string>
-#include <thread>
 
 namespace firebolt::rialto::server::ipc
 {
@@ -42,21 +37,25 @@ public:
     PrivateMetricsModuleServiceFactory() = default;
     ~PrivateMetricsModuleServiceFactory() override = default;
 
-    std::shared_ptr<IPrivateMetricsModuleService> create() const override;
+    std::shared_ptr<IPrivateMetricsModuleService>
+    create(service::IPrivateMetricsService &metricsService) const override;
 };
 
-class PrivateMetricsModuleService : public IPrivateMetricsModuleService
+class PrivateMetricsModuleService : public IPrivateMetricsModuleService,
+                                    public firebolt::rialto::server::IMetricsCollectorClient
 {
 public:
-    PrivateMetricsModuleService();
+    explicit PrivateMetricsModuleService(service::IPrivateMetricsService &metricsService);
     ~PrivateMetricsModuleService() override;
 
+    // IPrivateMetricsModuleService
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
 
     void notifyPlaybackStateChanged(int sessionId, PlaybackState oldState, PlaybackState newState) override;
     void notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState) override;
 
+    // PrivateMetricsModule RPC handlers
     void reportClientMetrics(::google::protobuf::RpcController *controller,
                              const ::firebolt::rialto::ReportClientMetricsRequest *request,
                              ::firebolt::rialto::ReportClientMetricsResponse *response,
@@ -66,69 +65,19 @@ public:
                            ::firebolt::rialto::NotifyClientReadyResponse *response,
                            ::google::protobuf::Closure *done) override;
 
-private:
-    struct ProcessMetricsSample
-    {
-        std::uint64_t monotonicTimeMs;
-        std::uint64_t epochTimeMs;
-        std::uint64_t processCpuTimeMs;
-        std::uint64_t processMemoryKb;
-        std::uint64_t cgroupMemoryUsageKb;
-        std::uint64_t cgroupMemoryLimitKb;
-    };
-
-    struct MetricsSamplePair
-    {
-        ::firebolt::rialto::ClientProcessMetrics clientMetrics;
-        ProcessMetricsSample serverMetrics;
-    };
-
-    struct ClientMetricsState
-    {
-        bool isReady{false};
-        std::optional<MetricsSamplePair> latestMetrics;
-    };
-
-    struct SessionMetricsState
-    {
-        PlaybackState currentPlaybackState{PlaybackState::UNKNOWN};
-        StateMetricsAggregator aggregator;
-    };
-
-    void runMetricsSampler();
-    void requestMetricsSample(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient,
-                              ::firebolt::rialto::MetricsSampleReason reason);
-    ProcessMetricsSample getProcessMetricsSample() const;
-    void logMetrics(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient,
-                    const ::firebolt::rialto::ClientProcessMetrics &clientMetrics,
-                    const ProcessMetricsSample &serverMetrics);
-    void logStateReport(const StateMetricsReport &report, const std::string &context);
-    const char *sampleReasonToString(::firebolt::rialto::MetricsSampleReason reason) const;
-    static const char *playbackStateToString(PlaybackState state);
-    static const char *applicationStateToString(ApplicationState state);
-    double calculateCpuPercentage(std::uint64_t currentCpuTimeMs, std::uint64_t previousCpuTimeMs,
-                                  std::uint64_t currentMonotonicTimeMs, std::uint64_t previousMonotonicTimeMs) const;
+    // IMetricsCollectorClient
+    void requestMetricsSample(int clientId, std::uint64_t sampleId,
+                              firebolt::rialto::server::MetricsSampleReason reason) override;
 
 private:
-    std::atomic<bool> m_isRunning;
-    std::atomic<std::uint64_t> m_nextSampleId;
-    std::thread m_metricsThread;
-    std::condition_variable m_wakeup;
+    service::IPrivateMetricsService &m_metricsService;
+    std::atomic<int> m_nextClientId{1};
     std::mutex m_mutex;
-    std::map<std::shared_ptr<::firebolt::rialto::ipc::IClient>, ClientMetricsState> m_clients;
 
-    // Per-session state tracking (sessionId -> session state)
-    std::map<int, SessionMetricsState> m_sessionStates;
-
-    // Global aggregator (active across all sessions while RUNNING)
-    StateMetricsAggregator m_globalAggregator;
-    ApplicationState m_currentApplicationState{ApplicationState::UNKNOWN};
-
-    // Pluggable metrics reporter (log, telemetry, or composite)
-    std::unique_ptr<IMetricsReporter> m_reporter;
-
-    // Threshold checker
-    MetricsThresholdChecker m_thresholdChecker;
+    // Map IPC client pointer → client ID
+    std::map<std::shared_ptr<::firebolt::rialto::ipc::IClient>, int> m_clientIds;
+    // Map client ID → IPC client pointer (for sending events back)
+    std::map<int, std::shared_ptr<::firebolt::rialto::ipc::IClient>> m_ipcClients;
 };
 } // namespace firebolt::rialto::server::ipc
 

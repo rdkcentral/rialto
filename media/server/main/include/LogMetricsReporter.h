@@ -17,33 +17,26 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_IPC_COMPOSITE_METRICS_REPORTER_H_
-#define FIREBOLT_RIALTO_SERVER_IPC_COMPOSITE_METRICS_REPORTER_H_
+#ifndef FIREBOLT_RIALTO_SERVER_LOG_METRICS_REPORTER_H_
+#define FIREBOLT_RIALTO_SERVER_LOG_METRICS_REPORTER_H_
 
 #include "IMetricsReporter.h"
-#include <memory>
-#include <vector>
 
-namespace firebolt::rialto::server::ipc
+namespace firebolt::rialto::server
 {
 /**
- * @brief Fans out metrics to multiple reporters (log + remote telemetry, etc.)
+ * @brief Outputs metrics to the Rialto log system (default reporter).
  */
-class CompositeMetricsReporter : public IMetricsReporter
+class LogMetricsReporter : public IMetricsReporter
 {
 public:
-    CompositeMetricsReporter() = default;
-    ~CompositeMetricsReporter() override = default;
-
-    void addReporter(std::unique_ptr<IMetricsReporter> reporter);
+    LogMetricsReporter() = default;
+    ~LogMetricsReporter() override = default;
 
     void reportPeriodicSample(const PeriodicMetricsReport &report) override;
     void reportStateTransition(const StateTransitionReport &report) override;
     void reportThresholdExceeded(const ThresholdAlert &alert) override;
-
-private:
-    std::vector<std::unique_ptr<IMetricsReporter>> m_reporters;
 };
-} // namespace firebolt::rialto::server::ipc
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_IPC_COMPOSITE_METRICS_REPORTER_H_
+#endif // FIREBOLT_RIALTO_SERVER_LOG_METRICS_REPORTER_H_

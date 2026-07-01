@@ -67,7 +67,7 @@ SessionServerManagerTests::SessionServerManagerTests()
 {
     EXPECT_CALL(m_ipcFactoryMock, createApplicationManagementServer(_))
         .WillOnce(Return(ByMove(std::move(m_applicationManagementServer))));
-    EXPECT_CALL(m_ipcFactoryMock, createSessionManagementServer(_, _, _))
+    EXPECT_CALL(m_ipcFactoryMock, createSessionManagementServer(_, _, _, _))
         .WillOnce(Return(ByMove(std::move(m_sessionManagementServer))));
     m_sut = std::make_unique<SessionServerManager>(m_ipcFactoryMock, m_playbackServiceMock, m_cdmServiceMock,
                                                    m_controlServiceMock, std::move(m_heartbeatProcedureFactory));
