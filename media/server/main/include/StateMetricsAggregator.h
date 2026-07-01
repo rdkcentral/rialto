@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_IPC_STATE_METRICS_AGGREGATOR_H_
-#define FIREBOLT_RIALTO_SERVER_IPC_STATE_METRICS_AGGREGATOR_H_
+#ifndef FIREBOLT_RIALTO_SERVER_STATE_METRICS_AGGREGATOR_H_
+#define FIREBOLT_RIALTO_SERVER_STATE_METRICS_AGGREGATOR_H_
 
 #include "MetricsAccumulator.h"
 #include <cstdint>
 #include <string>
 
-namespace firebolt::rialto::server::ipc
+namespace firebolt::rialto::server
 {
 /**
  * @brief A single metrics sample to be fed into the aggregator.
@@ -126,6 +126,6 @@ private:
     MetricsAccumulator m_cgroupUsage;
     MetricsAccumulator m_cgroupLimit;
 };
-} // namespace firebolt::rialto::server::ipc
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_IPC_STATE_METRICS_AGGREGATOR_H_
+#endif // FIREBOLT_RIALTO_SERVER_STATE_METRICS_AGGREGATOR_H_

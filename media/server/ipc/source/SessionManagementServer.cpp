@@ -49,7 +49,8 @@ SessionManagementServer::SessionManagementServer(
     const std::shared_ptr<IWebAudioPlayerModuleServiceFactory> &webAudioPlayerModuleFactory,
     const std::shared_ptr<IPrivateMetricsModuleServiceFactory> &privateMetricsModuleFactory,
     const std::shared_ptr<IControlModuleServiceFactory> &controlModuleFactory, service::IPlaybackService &playbackService,
-    service::ICdmService &cdmService, service::IControlService &controlService)
+    service::ICdmService &cdmService, service::IControlService &controlService,
+    service::IPrivateMetricsService &metricsService)
     : m_isRunning{false},
       m_mediaPipelineModule{mediaPipelineModuleFactory->create(playbackService.getMediaPipelineService())},
       m_mediaPipelineCapabilitiesModule{
@@ -57,7 +58,7 @@ SessionManagementServer::SessionManagementServer(
       m_mediaKeysModule{mediaKeysModuleFactory->create(cdmService)},
       m_mediaKeysCapabilitiesModule{mediaKeysCapabilitiesModuleFactory->create(cdmService)},
       m_webAudioPlayerModule{webAudioPlayerModuleFactory->create(playbackService.getWebAudioPlayerService())},
-      m_privateMetricsModule{privateMetricsModuleFactory->create()},
+      m_privateMetricsModule{privateMetricsModuleFactory->create(metricsService)},
       m_controlModule{controlModuleFactory->create(playbackService, controlService)}
 {
     m_ipcServer = ipcFactory->create();

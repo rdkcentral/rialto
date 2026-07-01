@@ -36,9 +36,6 @@ add_library (
         source/ControlClientServerInternal.cpp
         source/ControlModuleService.cpp
         source/PrivateMetricsModuleService.cpp
-        source/LogMetricsReporter.cpp
-        source/CompositeMetricsReporter.cpp
-        source/MetricsThresholdChecker.cpp
         source/ServerManagerModuleService.cpp
         source/SessionManagementServer.cpp
         source/SetLogLevelsService.cpp

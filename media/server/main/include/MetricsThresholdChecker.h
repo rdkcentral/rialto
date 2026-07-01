@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_IPC_METRICS_THRESHOLD_CHECKER_H_
-#define FIREBOLT_RIALTO_SERVER_IPC_METRICS_THRESHOLD_CHECKER_H_
+#ifndef FIREBOLT_RIALTO_SERVER_METRICS_THRESHOLD_CHECKER_H_
+#define FIREBOLT_RIALTO_SERVER_METRICS_THRESHOLD_CHECKER_H_
 
 #include "IMetricsReporter.h"
 #include <cstdint>
 #include <string>
 #include <vector>
 
-namespace firebolt::rialto::server::ipc
+namespace firebolt::rialto::server
 {
 /**
  * @brief Configuration for a single metric threshold.
@@ -88,6 +88,6 @@ private:
     ThresholdState m_serverMemState;
     ThresholdState m_cgroupMemState;
 };
-} // namespace firebolt::rialto::server::ipc
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_IPC_METRICS_THRESHOLD_CHECKER_H_
+#endif // FIREBOLT_RIALTO_SERVER_METRICS_THRESHOLD_CHECKER_H_

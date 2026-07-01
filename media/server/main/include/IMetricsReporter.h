@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_IPC_I_METRICS_REPORTER_H_
-#define FIREBOLT_RIALTO_SERVER_IPC_I_METRICS_REPORTER_H_
+#ifndef FIREBOLT_RIALTO_SERVER_I_METRICS_REPORTER_H_
+#define FIREBOLT_RIALTO_SERVER_I_METRICS_REPORTER_H_
 
 #include "StateMetricsAggregator.h"
 #include <cstdint>
 #include <memory>
 #include <string>
 
-namespace firebolt::rialto::server::ipc
+namespace firebolt::rialto::server
 {
 /**
  * @brief Periodic sample data reported each sampling interval.
@@ -52,7 +52,7 @@ struct PeriodicMetricsReport
  */
 struct StateTransitionReport
 {
-    std::string context;   // e.g. "session=1" or "global"
+    std::string context; // e.g. "session=1" or "global"
     StateMetricsReport metrics;
 };
 
@@ -95,6 +95,6 @@ public:
     virtual void reportStateTransition(const StateTransitionReport &report) = 0;
     virtual void reportThresholdExceeded(const ThresholdAlert &alert) = 0;
 };
-} // namespace firebolt::rialto::server::ipc
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_IPC_I_METRICS_REPORTER_H_
+#endif // FIREBOLT_RIALTO_SERVER_I_METRICS_REPORTER_H_

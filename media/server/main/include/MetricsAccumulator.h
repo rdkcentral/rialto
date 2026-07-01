@@ -17,14 +17,14 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_IPC_METRICS_ACCUMULATOR_H_
-#define FIREBOLT_RIALTO_SERVER_IPC_METRICS_ACCUMULATOR_H_
+#ifndef FIREBOLT_RIALTO_SERVER_METRICS_ACCUMULATOR_H_
+#define FIREBOLT_RIALTO_SERVER_METRICS_ACCUMULATOR_H_
 
 #include <cmath>
 #include <cstdint>
 #include <limits>
 
-namespace firebolt::rialto::server::ipc
+namespace firebolt::rialto::server
 {
 struct MetricsStatistics
 {
@@ -97,6 +97,6 @@ private:
     double m_mean{0.0};
     double m_m2{0.0};
 };
-} // namespace firebolt::rialto::server::ipc
+} // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_IPC_METRICS_ACCUMULATOR_H_
+#endif // FIREBOLT_RIALTO_SERVER_METRICS_ACCUMULATOR_H_

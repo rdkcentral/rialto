@@ -19,7 +19,7 @@
 
 #include "MetricsThresholdChecker.h"
 
-namespace firebolt::rialto::server::ipc
+namespace firebolt::rialto::server
 {
 MetricsThresholdChecker::MetricsThresholdChecker(MetricsThresholdConfig config, IMetricsReporter *reporter)
     : m_config{std::move(config)}, m_reporter{reporter}
@@ -99,4 +99,4 @@ void MetricsThresholdChecker::checkMetric(const MetricsThreshold &threshold, dou
         }
     }
 }
-} // namespace firebolt::rialto::server::ipc
+} // namespace firebolt::rialto::server
