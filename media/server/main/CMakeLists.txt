@@ -48,6 +48,10 @@ add_library(
         source/HeartbeatProcedure.cpp
         source/TextTrackAccessor.cpp
         source/TextTrackSession.cpp
+        source/MetricsCollector.cpp
+        source/LogMetricsReporter.cpp
+        source/CompositeMetricsReporter.cpp
+        source/MetricsThresholdChecker.cpp
         )
 
 target_include_directories(
