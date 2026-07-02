@@ -38,6 +38,7 @@
 #include "tasks/IPlayerTask.h"
 #include <IMediaPipeline.h>
 #include <atomic>
+#include <mutex>
 #include <memory>
 #include <string>
 #include <utility>
@@ -443,6 +444,21 @@ private:
      * @brief Thread for handling player tasks.
      */
     std::unique_ptr<IWorkerThread> m_workerThread;
+
+    /**
+     * @brief Teardown fence for async GStreamer callbacks.
+     */
+    std::atomic<bool> m_isShuttingDown{false};
+
+    /**
+     * @brief Protects worker thread access from callback and teardown threads.
+     */
+    mutable std::mutex m_workerThreadMutex;
+
+    /**
+     * @brief deep-element-added signal handler id.
+     */
+    gulong m_deepElementAddedHandlerId{0};
 
     /**
      * @brief Thread for handling gst bus callbacks
