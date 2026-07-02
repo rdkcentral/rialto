@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2026 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,32 +17,30 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_DATA_READERV2_H_
-#define FIREBOLT_RIALTO_SERVER_DATA_READERV2_H_
+#ifndef FIREBOLT_RIALTO_SERVER_NEED_DATA_DELAY_CALCULATOR_H_
+#define FIREBOLT_RIALTO_SERVER_NEED_DATA_DELAY_CALCULATOR_H_
 
-#include "IDataReader.h"
 #include "MediaCommon.h"
-#include <cstdint>
+#include <chrono>
+#include <map>
 
 namespace firebolt::rialto::server
 {
-class DataReaderV2 : public IDataReader
+class NeedDataDelayCalculator
 {
 public:
-    DataReaderV2(const MediaSourceType &mediaSourceType, std::uint8_t *buffer, std::uint32_t dataOffset,
-                 std::uint32_t numFrames, bool isBufferFull);
-    ~DataReaderV2() override = default;
+    NeedDataDelayCalculator() = default;
+    ~NeedDataDelayCalculator() = default;
 
-    IMediaPipeline::MediaSegmentVector readData() const override;
-    bool isBufferFull() const override;
+    std::chrono::milliseconds getNeedMediaDataDelay(MediaSourceType mediaSourceType);
+    void increaseNeedMediaDataDelay(MediaSourceType mediaSourceType);
+    void decreaseNeedMediaDataDelay(MediaSourceType mediaSourceType);
+    void resetMediaDataDelay(MediaSourceType mediaSourceType);
+    void resetMediaDataDelay();
 
 private:
-    MediaSourceType m_mediaSourceType;
-    std::uint8_t *m_buffer;
-    std::uint32_t m_dataOffset;
-    std::uint32_t m_numFrames;
-    bool m_isBufferFull;
+    std::map<MediaSourceType, std::chrono::milliseconds> m_delays;
 };
 } // namespace firebolt::rialto::server
 
-#endif // FIREBOLT_RIALTO_SERVER_DATA_READERV2_H_
+#endif // FIREBOLT_RIALTO_SERVER_NEED_DATA_DELAY_CALCULATOR_H_

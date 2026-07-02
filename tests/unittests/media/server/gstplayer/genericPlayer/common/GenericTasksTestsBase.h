@@ -149,6 +149,7 @@ protected:
 
     // AttachSamples test methods
     void shouldAttachAllAudioSamples();
+    void shouldAttachAllAudioSamplesWithDelay();
     void shouldAttachData(firebolt::rialto::MediaSourceType sourceType);
     void triggerAttachSamplesAudio();
     void shouldAttachAllVideoSamples();
@@ -394,6 +395,7 @@ protected:
 
     // ReadShmDataAndAttachSamples test methods
     void shouldReadAudioData();
+    void shouldReadAudioDataFromShmWithAvailableSpace();
     void shouldReadVideoData();
     void shouldReadSubtitleData();
     void shouldReadUnknownData();

@@ -33,8 +33,8 @@ public:
     class ActiveRequestsData
     {
     public:
-        ActiveRequestsData(MediaSourceType type, std::uint32_t maxMediaBytes)
-            : m_type(type), m_bytesWritten(0), m_maxMediaBytes(maxMediaBytes)
+        ActiveRequestsData(MediaSourceType type, std::uint32_t maxMediaBytes, std::uint32_t maxFrames)
+            : m_type(type), m_bytesWritten(0), m_maxMediaBytes(maxMediaBytes), m_maxFrames(maxFrames)
         {
         }
         ~ActiveRequestsData();
@@ -47,12 +47,14 @@ public:
         AddSegmentStatus addSegment(const std::unique_ptr<IMediaPipeline::MediaSegment> &segment);
 
         MediaSourceType getType() const { return m_type; }
+        std::uint32_t getMaxFrames() const { return m_maxFrames; }
         const IMediaPipeline::MediaSegmentVector &getSegments() const { return m_segments; }
 
     private:
         MediaSourceType m_type;
         std::uint32_t m_bytesWritten;
         std::uint32_t m_maxMediaBytes;
+        std::uint32_t m_maxFrames;
         IMediaPipeline::MediaSegmentVector m_segments;
     };
 
@@ -63,8 +65,10 @@ public:
     ActiveRequests &operator=(const ActiveRequests &) = delete;
     ActiveRequests &operator=(ActiveRequests &&) = delete;
 
-    std::uint32_t insert(const MediaSourceType &mediaSourceType, std::uint32_t maxMediaBytes) override;
+    std::uint32_t insert(const MediaSourceType &mediaSourceType, std::uint32_t maxMediaBytes,
+                         std::uint32_t maxFrames) override;
     MediaSourceType getType(std::uint32_t requestId) const override;
+    std::uint32_t getMaxFrames(std::uint32_t requestId) const override;
     void erase(std::uint32_t requestId) override;
     void erase(const MediaSourceType &mediaSourceType) override;
     void clear() override;
