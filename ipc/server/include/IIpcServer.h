@@ -218,6 +218,13 @@ public:
     virtual bool wait(int timeoutMSecs) = 0;
 
     /**
+     * @brief Wakes any thread currently blocked in `wait()`.
+     *
+     * \\threadsafe
+     */
+    virtual void wake() const = 0;
+
+    /**
      * @brief This is the heart of the server, it is where we wait for new incoming
      * connections or data from clients, and send data back to clients.
      *
