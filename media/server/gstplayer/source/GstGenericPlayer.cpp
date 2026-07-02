@@ -322,6 +322,13 @@ void GstGenericPlayer::termPipeline()
         streamInfo.buffers.clear();
     }
 
+    if (m_context.pipeline)
+    {
+        m_gstWrapper->gstElementSendEvent(m_context.pipeline, m_gstWrapper->gstEventNewFlushStart());
+        m_gstWrapper->gstElementSendEvent(m_context.pipeline, m_gstWrapper->gstEventNewFlushStop(FALSE));
+        RIALTO_SERVER_LOG_WARN("DPS::Sent flush events to drain encrypted buffers before Stop");
+    }
+    
     m_taskFactory->createStop(m_context, *this)->execute();
     GstBus *bus = m_gstWrapper->gstPipelineGetBus(GST_PIPELINE(m_context.pipeline));
     m_gstWrapper->gstBusSetSyncHandler(bus, nullptr, nullptr, nullptr);
