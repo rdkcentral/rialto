@@ -40,7 +40,7 @@ Flush::~Flush()
 
 void Flush::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing Flush for %s source", common::convertMediaSourceType(m_type));
+    RIALTO_SERVER_LOG_MIL("Executing Flush for %s source", common::convertMediaSourceType(m_type));
 
     // Get source first
     GstElement *source{nullptr};
