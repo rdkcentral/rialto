@@ -25,14 +25,14 @@ namespace firebolt::rialto::server
 {
 void LogMetricsReporter::reportPeriodicSample(const PeriodicMetricsReport &report)
 {
-    RIALTO_SERVER_LOG_INFO("Metrics sample=%" PRIu64 ", reason=%s, app='%s', client_pid=%u, client_cpu=%.2f%%, "
-                           "server_cpu=%.2f%%, combined_cpu=%.2f%%, client_cpu_ms=%" PRIu64 ", "
-                           "server_cpu_ms=%" PRIu64 ", client_mem_kb=%" PRIu64 ", server_mem_kb=%" PRIu64 ", "
-                           "cgroup_mem_kb=%" PRIu64 "/%" PRIu64,
-                           report.sampleId, report.reason.c_str(), report.appName.c_str(), report.clientPid,
-                           report.clientCpuPercent, report.serverCpuPercent, report.combinedCpuPercent,
-                           report.clientCpuTimeMs, report.serverCpuTimeMs, report.clientMemoryKb,
-                           report.serverMemoryKb, report.cgroupMemoryUsageKb, report.cgroupMemoryLimitKb);
+    RIALTO_SERVER_LOG_MIL("Metrics sample=%" PRIu64 ", reason=%s, app='%s', client_pid=%u, client_cpu=%.2f%%, "
+                          "server_cpu=%.2f%%, combined_cpu=%.2f%%, client_cpu_ms=%" PRIu64 ", "
+                          "server_cpu_ms=%" PRIu64 ", client_mem_kb=%" PRIu64 ", server_mem_kb=%" PRIu64 ", "
+                          "shm_mem_kb=%" PRIu64 ", cgroup_mem_kb=%" PRIu64 "/%" PRIu64,
+                          report.sampleId, report.reason.c_str(), report.appName.c_str(), report.clientPid,
+                          report.clientCpuPercent, report.serverCpuPercent, report.combinedCpuPercent,
+                          report.clientCpuTimeMs, report.serverCpuTimeMs, report.clientMemoryKb,
+                          report.serverMemoryKb, report.shmMemoryKb, report.cgroupMemoryUsageKb, report.cgroupMemoryLimitKb);
 }
 
 void LogMetricsReporter::reportStateTransition(const StateTransitionReport &report)

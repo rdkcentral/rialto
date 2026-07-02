@@ -236,11 +236,12 @@ bool SessionServerManager::switchToInactive()
     }
     m_playbackService.switchToInactive();
     m_cdmService.switchToInactive();
+    // Record INACTIVE memory snapshot immediately after resource teardown,
+    // before the manager ACK — ensures we capture it even if the socket breaks.
+    m_sessionManagementServer->notifyApplicationStateChanged(ApplicationState::RUNNING, ApplicationState::INACTIVE);
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::INACTIVE))
     {
-        ApplicationState oldState = ApplicationState::RUNNING; // switching from active to inactive
         m_controlService.setApplicationState(ApplicationState::INACTIVE);
-        m_sessionManagementServer->notifyApplicationStateChanged(oldState, ApplicationState::INACTIVE);
         m_currentState.store(common::SessionServerState::INACTIVE);
         RIALTO_SERVER_LOG_MIL("RialtoServer state is INACTIVE now");
         return true;

@@ -87,6 +87,8 @@ MetricsCollector::~MetricsCollector()
 
 void MetricsCollector::onTimerFired()
 {
+    RIALTO_SERVER_LOG_MIL("Metrics: periodic timer fired for client %d, requesting sample=%" PRIu64, m_clientId,
+                          m_nextSampleId);
     m_client->requestMetricsSample(m_clientId, m_nextSampleId++, MetricsSampleReason::PERIODIC);
 }
 
@@ -148,6 +150,7 @@ void MetricsCollector::processMetrics(const ClientMetricsData &metrics)
         periodicReport.serverMemoryKb = kServerMetrics.processMemoryKb;
         periodicReport.cgroupMemoryUsageKb = kServerMetrics.cgroupMemoryUsageKb;
         periodicReport.cgroupMemoryLimitKb = kServerMetrics.cgroupMemoryLimitKb;
+        periodicReport.shmMemoryKb = kServerMetrics.shmMemoryKb;
         m_reporter->reportPeriodicSample(periodicReport);
     }
 
@@ -396,10 +399,24 @@ MetricsCollector::ProcessMetricsSample MetricsCollector::getServerMetrics() cons
         cgroupMemoryLimitKb = limitBytes / 1024;
     }
 
+    std::uint64_t shmMemoryKb{0};
+    {
+        std::ifstream smaps{"/proc/self/smaps_rollup"};
+        std::string sline;
+        while (std::getline(smaps, sline))
+        {
+            if (sline.rfind("Pss_Shmem:", 0) == 0)
+            {
+                std::sscanf(sline.c_str(), "Pss_Shmem: %" SCNu64, &shmMemoryKb);
+                break;
+            }
+        }
+    }
+
     return ProcessMetricsSample{
         static_cast<std::uint64_t>(duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count()),
         static_cast<std::uint64_t>(duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count()),
-        processCpuTimeMs, processMemoryKb, cgroupMemoryUsageKb, cgroupMemoryLimitKb};
+        processCpuTimeMs, processMemoryKb, cgroupMemoryUsageKb, cgroupMemoryLimitKb, shmMemoryKb};
 }
 
 double MetricsCollector::calculateCpuPercentage(std::uint64_t currentCpuTimeMs, std::uint64_t previousCpuTimeMs,

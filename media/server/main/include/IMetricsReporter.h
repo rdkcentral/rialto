@@ -45,6 +45,7 @@ struct PeriodicMetricsReport
     std::uint64_t serverMemoryKb{0};
     std::uint64_t cgroupMemoryUsageKb{0};
     std::uint64_t cgroupMemoryLimitKb{0};
+    std::uint64_t shmMemoryKb{0};
 };
 
 /**

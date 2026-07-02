@@ -23,6 +23,7 @@
 #include "RialtoServerLogging.h"
 #include <exception>
 #include <future>
+#include <malloc.h>
 #include <string>
 #include <utility>
 #include <vector>
@@ -72,6 +73,9 @@ void PlaybackService::switchToInactive()
     m_mediaPipelineService->clearMediaPipelines();
     m_webAudioPlayerService->clearWebAudioPlayers();
     m_shmBuffer.reset();
+    // Return freed heap pages to the OS now that pipelines and shared memory
+    // have been released, so the process has a low memory footprint while idle.
+    ::malloc_trim(0);
 }
 
 void PlaybackService::setMaxPlaybacks(int maxPlaybacks)
