@@ -30,6 +30,7 @@ class RialtoServerMediaPipelineHaveDataTest : public MediaPipelineTestBase
 protected:
     const uint32_t m_kNumFrames{3};
     const uint32_t m_kNeedDataRequestId{0};
+    const bool m_kIsBufferFull{true};
     const std::chrono::milliseconds m_kDefaultNeedMediaDataResendTimeout{15};
     const std::chrono::milliseconds m_kLowLatencyNeedMediaDataResendTimeout{5};
 
@@ -221,6 +222,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithS
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId)).WillOnce(Return(mediaSourceType));
+    EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(m_kNeedDataRequestId)).WillOnce(Return(m_kNumFrames));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_timerMock, isActive()).WillOnce(Return(true));
     EXPECT_CALL(*m_timerMock, cancel());
@@ -238,6 +240,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithS
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId)).WillOnce(Return(mediaSourceType));
+    EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(m_kNeedDataRequestId)).WillOnce(Return(m_kNumFrames));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_timerMock, isActive()).Times(2).WillRepeatedly(Return(true));
     EXPECT_CALL(*m_timerMock, cancel());
@@ -246,6 +249,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithS
     EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNumFrames, m_kNeedDataRequestId));
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_activeRequestsMock, getType(kNextNeedDataRequestId)).WillOnce(Return(mediaSourceType));
+    EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(kNextNeedDataRequestId)).WillOnce(Return(m_kNumFrames));
     EXPECT_CALL(*m_activeRequestsMock, erase(kNextNeedDataRequestId));
     EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNumFrames, kNextNeedDataRequestId));
 }
@@ -269,6 +273,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithR
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId)).WillOnce(Return(mediaSourceType));
+    EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(m_kNeedDataRequestId)).WillOnce(Return(m_kNumFrames));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kDefaultNeedMediaDataResendTimeout, _, _))
         .WillOnce(Invoke(
@@ -291,7 +296,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithR
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
         .WillOnce(Return(0));
-    EXPECT_CALL(*m_activeRequestsMock, insert(mediaSourceType, _)).WillOnce(Return(0));
+    EXPECT_CALL(*m_activeRequestsMock, insert(mediaSourceType, _, m_kNumFrames)).WillOnce(Return(0));
     EXPECT_CALL(*m_mediaPipelineClientMock,
                 notifyNeedMediaData(sourceId, m_kNumFrames, 0, _)); // params tested in NeedMediaDataTests
     mainThreadWillEnqueueTask();
@@ -307,6 +312,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataFailureDueTo
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId))
         .WillOnce(Return(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(m_kNeedDataRequestId)).WillOnce(Return(m_kNumFrames));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::FAILURE));
@@ -323,6 +329,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataFailureDueTo
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId))
         .WillOnce(Return(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(m_kNeedDataRequestId)).WillOnce(Return(m_kNumFrames));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId,
@@ -344,13 +351,14 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataFailureDueTo
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId))
         .WillOnce(Return(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(m_kNeedDataRequestId)).WillOnce(Return(m_kNumFrames));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId,
                                                          firebolt::rialto::MediaSourceType::VIDEO))
         .WillOnce(Return(offset));
     EXPECT_CALL(*m_dataReaderFactoryMock,
-                createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, m_kNumFrames))
+                createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, m_kNumFrames, m_kIsBufferFull))
         .WillOnce(Return(dataReader));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackState(PlaybackState::FAILURE));
     EXPECT_FALSE(m_mediaPipeline->haveData(status, m_kNumFrames, m_kNeedDataRequestId));
@@ -367,13 +375,64 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccess)
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId))
         .WillOnce(Return(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(m_kNeedDataRequestId)).WillOnce(Return(m_kNumFrames));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId,
                                                          firebolt::rialto::MediaSourceType::VIDEO))
         .WillOnce(Return(offset));
     EXPECT_CALL(*m_dataReaderFactoryMock,
-                createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, m_kNumFrames))
+                createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, m_kNumFrames, m_kIsBufferFull))
+        .WillOnce(Return(dataReader));
+    EXPECT_CALL(*m_gstPlayerMock, attachSamples(dataReader));
+    EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNumFrames, m_kNeedDataRequestId));
+}
+
+TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithSmallerNumberOfFramesAndBufferFull)
+{
+    auto status = firebolt::rialto::MediaSourceStatus::NO_SPACE_FOR_SAMPLES;
+    std::uint8_t data{123};
+    int offset = 0;
+    std::shared_ptr<IDataReader> dataReader{std::make_shared<DataReaderMock>()};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    ASSERT_TRUE(m_activeRequestsMock);
+    EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId))
+        .WillOnce(Return(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(m_kNeedDataRequestId)).WillOnce(Return(m_kNumFrames + 10));
+    EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId,
+                                                         firebolt::rialto::MediaSourceType::VIDEO))
+        .WillOnce(Return(offset));
+    EXPECT_CALL(*m_dataReaderFactoryMock,
+                createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, m_kNumFrames, m_kIsBufferFull))
+        .WillOnce(Return(dataReader));
+    EXPECT_CALL(*m_gstPlayerMock, attachSamples(dataReader));
+    EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNumFrames, m_kNeedDataRequestId));
+}
+
+TEST_F(RialtoServerMediaPipelineHaveDataTest,
+       ServerInternalHaveDataSuccessWithSmallerNumberOfFramesAndPartiallyFilledBuffer)
+{
+    auto status = firebolt::rialto::MediaSourceStatus::OK;
+    std::uint8_t data{123};
+    int offset = 0;
+    constexpr bool kBufferIsNotFull{false};
+    std::shared_ptr<IDataReader> dataReader{std::make_shared<DataReaderMock>()};
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+    ASSERT_TRUE(m_activeRequestsMock);
+    EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId))
+        .WillOnce(Return(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(m_kNeedDataRequestId)).WillOnce(Return(m_kNumFrames + 10));
+    EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId,
+                                                         firebolt::rialto::MediaSourceType::VIDEO))
+        .WillOnce(Return(offset));
+    EXPECT_CALL(*m_dataReaderFactoryMock, createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset,
+                                                           m_kNumFrames, kBufferIsNotFull))
         .WillOnce(Return(dataReader));
     EXPECT_CALL(*m_gstPlayerMock, attachSamples(dataReader));
     EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNumFrames, m_kNeedDataRequestId));
@@ -390,13 +449,14 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataAudioSuccess
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId))
         .WillOnce(Return(firebolt::rialto::MediaSourceType::AUDIO));
+    EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(m_kNeedDataRequestId)).WillOnce(Return(m_kNumFrames));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId,
                                                          firebolt::rialto::MediaSourceType::AUDIO))
         .WillOnce(Return(offset));
     EXPECT_CALL(*m_dataReaderFactoryMock,
-                createDataReader(firebolt::rialto::MediaSourceType::AUDIO, &data, offset, m_kNumFrames))
+                createDataReader(firebolt::rialto::MediaSourceType::AUDIO, &data, offset, m_kNumFrames, m_kIsBufferFull))
         .WillOnce(Return(dataReader));
     EXPECT_CALL(*m_gstPlayerMock, attachSamples(dataReader));
     EXPECT_TRUE(m_mediaPipeline->haveData(status, m_kNumFrames, m_kNeedDataRequestId));
@@ -413,13 +473,14 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessWithE
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId))
         .WillOnce(Return(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(m_kNeedDataRequestId)).WillOnce(Return(m_kNumFrames));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId,
                                                          firebolt::rialto::MediaSourceType::VIDEO))
         .WillOnce(Return(offset));
     EXPECT_CALL(*m_dataReaderFactoryMock,
-                createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, m_kNumFrames))
+                createDataReader(firebolt::rialto::MediaSourceType::VIDEO, &data, offset, m_kNumFrames, m_kIsBufferFull))
         .WillOnce(Return(dataReader));
     EXPECT_CALL(*m_gstPlayerMock, attachSamples(dataReader));
     EXPECT_CALL(*m_gstPlayerMock, setEos(firebolt::rialto::MediaSourceType::VIDEO));
@@ -436,6 +497,7 @@ TEST_F(RialtoServerMediaPipelineHaveDataTest, ServerInternalHaveDataSuccessEosWi
     ASSERT_TRUE(m_activeRequestsMock);
     EXPECT_CALL(*m_activeRequestsMock, getType(m_kNeedDataRequestId))
         .WillOnce(Return(firebolt::rialto::MediaSourceType::VIDEO));
+    EXPECT_CALL(*m_activeRequestsMock, getMaxFrames(m_kNeedDataRequestId)).WillOnce(Return(m_kNumFrames));
     EXPECT_CALL(*m_activeRequestsMock, erase(m_kNeedDataRequestId));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getBuffer()).WillOnce(Return(&data));
     EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId,
