@@ -101,6 +101,7 @@ public:
     GCallback m_videoUnderflowCallback;
     GCallback m_firstVideoFrameCallback;
     GCallback m_firstAudioFrameCallback;
+    GstPadProbeCallback m_firstAudioFrameProbeCallback{};
     GCallback m_childAddedCallback;
     GCallback m_childRemovedCallback;
     gchar m_capsStr{};
@@ -115,6 +116,7 @@ public:
     gchar m_xEac3Str[13]{"audio/x-eac3"};
     gpointer m_videoUserData{};
     gpointer m_audioUserData{};
+    gpointer m_firstAudioFrameProbeUserData{};
     GValue m_value{};
     GParamSpec m_paramSpec{};
     GObject m_gObj{};

@@ -1041,6 +1041,127 @@ void GenericTasksTestsBase::shouldSetupAudioDecoderElementOnly()
     expectSetupAudioDecoderElement();
 }
 
+void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithFirstAudioFrameCallback()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
+
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryListIsType(testContext->m_elementFactory, _))
+        .WillRepeatedly(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
+        .WillRepeatedly(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillRepeatedly(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillRepeatedly(Return(TRUE));
+
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectType(testContext->m_element)).WillRepeatedly(Return(G_TYPE_PARAM));
+    EXPECT_CALL(*testContext->m_glibWrapper, gSignalListIds(_, _))
+        .WillRepeatedly(Invoke(
+            [&](GType itype, guint *n_ids)
+            {
+                *n_ids = 1;
+                return testContext->m_signals;
+            }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gFree(testContext->m_signals)).Times(2);
+
+    testing::InSequence sequence;
+    EXPECT_CALL(*testContext->m_glibWrapper, gSignalQuery(testContext->m_signals[0], _))
+        .WillOnce(Invoke([&](guint signal_id, GSignalQuery *query) { query->signal_name = "buffer-underflow-callback"; }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gSignalConnect(_, StrEq("buffer-underflow-callback"), _, _))
+        .WillOnce(Invoke(
+            [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+            {
+                testContext->m_audioUnderflowCallback = c_handler;
+                return kSignalId;
+            }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gSignalQuery(testContext->m_signals[0], _))
+        .WillOnce(
+            Invoke([&](guint signal_id, GSignalQuery *query) { query->signal_name = "first-audio-frame-callback"; }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gSignalConnect(_, StrEq("first-audio-frame-callback"), _, _))
+        .WillOnce(Invoke(
+            [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+            {
+                testContext->m_firstAudioFrameCallback = c_handler;
+                testContext->m_audioUserData = data;
+                return kSignalId;
+            }));
+
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
+}
+
+void GenericTasksTestsBase::shouldSetupAudioSinkElementWithFirstAudioFrameProbe()
+{
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetFactory(_)).WillRepeatedly(Return(testContext->m_elementFactory));
+
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementFactoryListIsType(testContext->m_elementFactory, _))
+        .WillRepeatedly(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_SINK))
+        .WillRepeatedly(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillRepeatedly(Return(TRUE));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstElementFactoryListIsType(testContext->m_elementFactory,
+                                            GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+        .WillRepeatedly(Return(TRUE));
+
+    EXPECT_CALL(*testContext->m_glibWrapper, gObjectType(testContext->m_element)).WillRepeatedly(Return(G_TYPE_PARAM));
+    EXPECT_CALL(*testContext->m_glibWrapper, gSignalListIds(_, _))
+        .WillRepeatedly(Invoke(
+            [&](GType itype, guint *n_ids)
+            {
+                *n_ids = 1;
+                return testContext->m_signals;
+            }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gFree(testContext->m_signals)).Times(2);
+
+    testing::InSequence sequence;
+    EXPECT_CALL(*testContext->m_glibWrapper, gSignalQuery(testContext->m_signals[0], _))
+        .WillOnce(Invoke([&](guint signal_id, GSignalQuery *query) { query->signal_name = "buffer-underflow-callback"; }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gSignalConnect(_, StrEq("buffer-underflow-callback"), _, _))
+        .WillOnce(Invoke(
+            [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+            {
+                testContext->m_audioUnderflowCallback = c_handler;
+                return kSignalId;
+            }));
+    EXPECT_CALL(*testContext->m_glibWrapper, gSignalQuery(testContext->m_signals[0], _))
+        .WillOnce(Invoke([&](guint signal_id, GSignalQuery *query) { query->signal_name = "not-first-frame-signal"; }));
+
+    EXPECT_CALL(*testContext->m_gstWrapper, gstElementGetStaticPad(testContext->m_element, StrEq("sink")))
+        .WillOnce(Return(&testContext->m_pad));
+    EXPECT_CALL(*testContext->m_gstWrapper,
+                gstPadAddProbe(&testContext->m_pad, GST_PAD_PROBE_TYPE_BUFFER, _, &testContext->m_gstPlayer, nullptr))
+        .WillOnce(Invoke(
+            [&](GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
+                GDestroyNotify destroyData)
+            {
+                testContext->m_firstAudioFrameProbeCallback = callback;
+                testContext->m_firstAudioFrameProbeUserData = userData;
+                return kSignalId;
+            }));
+    EXPECT_CALL(testContext->m_gstPlayer, setAudioFirstFrameFallbackProbe(&testContext->m_pad, kSignalId));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(_));
+}
+
 void GenericTasksTestsBase::shouldSetVideoUnderflowCallback()
 {
     ASSERT_TRUE(testContext->m_videoUnderflowCallback);
@@ -1051,6 +1172,22 @@ void GenericTasksTestsBase::shouldSetFirstVideoFrameCallback()
 {
     ASSERT_TRUE(testContext->m_firstVideoFrameCallback);
     EXPECT_CALL(testContext->m_gstPlayer, scheduleFirstVideoFrameReceived());
+}
+
+void GenericTasksTestsBase::shouldSetFirstAudioFrameCallback()
+{
+    ASSERT_TRUE(testContext->m_firstAudioFrameCallback);
+    ASSERT_TRUE(testContext->m_audioUserData);
+    EXPECT_CALL(testContext->m_gstPlayer, clearAudioFirstFrameFallbackProbe());
+    EXPECT_CALL(testContext->m_gstPlayer, scheduleFirstAudioFrameReceived());
+}
+
+void GenericTasksTestsBase::shouldSetFirstAudioFrameFallbackProbeCallback()
+{
+    ASSERT_TRUE(testContext->m_firstAudioFrameProbeCallback);
+    ASSERT_TRUE(testContext->m_firstAudioFrameProbeUserData);
+    EXPECT_CALL(testContext->m_gstPlayer, clearAudioFirstFrameFallbackProbeState());
+    EXPECT_CALL(testContext->m_gstPlayer, scheduleFirstAudioFrameReceived());
 }
 
 void GenericTasksTestsBase::shouldSetupBaseParse()
@@ -1071,6 +1208,12 @@ void GenericTasksTestsBase::triggerFirstVideoFrameCallback()
         testContext->m_firstVideoFrameCallback)(testContext->m_element, 0, nullptr, &testContext->m_gstPlayer);
 }
 
+void GenericTasksTestsBase::triggerFirstAudioFrameCallback()
+{
+    reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+        testContext->m_firstAudioFrameCallback)(testContext->m_element, 0, nullptr, testContext->m_audioUserData);
+}
+
 void GenericTasksTestsBase::shouldSetAudioUnderflowCallback()
 {
     ASSERT_TRUE(testContext->m_audioUnderflowCallback);
@@ -1081,6 +1224,17 @@ void GenericTasksTestsBase::triggerAudioUnderflowCallback()
 {
     reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
         testContext->m_audioUnderflowCallback)(testContext->m_element, 0, nullptr, &testContext->m_gstPlayer);
+}
+
+void GenericTasksTestsBase::triggerFirstAudioFrameFallbackProbeCallback()
+{
+    GstPadProbeInfo info{};
+    info.type = GST_PAD_PROBE_TYPE_BUFFER;
+    info.data = &testContext->m_audioBuffer;
+
+    EXPECT_EQ(GST_PAD_PROBE_REMOVE,
+              testContext->m_firstAudioFrameProbeCallback(&testContext->m_pad, &info,
+                                                          testContext->m_firstAudioFrameProbeUserData));
 }
 
 void GenericTasksTestsBase::shouldAddAutoVideoSinkChildCallback()
