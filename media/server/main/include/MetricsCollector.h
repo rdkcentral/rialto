@@ -64,6 +64,7 @@ private:
         std::uint64_t processMemoryKb{0};
         std::uint64_t cgroupMemoryUsageKb{0};
         std::uint64_t cgroupMemoryLimitKb{0};
+        std::uint64_t shmMemoryKb{0};
     };
 
     struct PreviousSample
