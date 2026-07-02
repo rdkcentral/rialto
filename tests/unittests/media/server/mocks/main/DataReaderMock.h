@@ -29,6 +29,7 @@ class DataReaderMock : public IDataReader
 {
 public:
     MOCK_METHOD(IMediaPipeline::MediaSegmentVector, readData, (), (const, override));
+    MOCK_METHOD(bool, isBufferFull, (), (const, override));
 };
 } // namespace firebolt::rialto::server
 

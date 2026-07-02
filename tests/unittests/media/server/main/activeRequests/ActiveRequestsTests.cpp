@@ -20,6 +20,12 @@
 #include "ActiveRequests.h"
 #include <gtest/gtest.h>
 
+namespace
+{
+constexpr std::uint32_t kMaxFrames{10};
+constexpr std::uint32_t kDefaultMaxFrames{24};
+} // namespace
+
 class ActiveRequestsTests : public testing::Test
 {
 protected:
@@ -45,7 +51,8 @@ TEST_F(ActiveRequestsTests, addSegmentShouldReturnErrorForInvalidData)
 {
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSegment> segment =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegment>();
-    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
     EXPECT_EQ(m_sut.addSegment(0, segment), firebolt::rialto::AddSegmentStatus::ERROR);
 }
 
@@ -60,7 +67,7 @@ TEST_F(ActiveRequestsTests, addSegmentShouldReturnErrorForInvalidId)
 
 TEST_F(ActiveRequestsTests, addSegmentsOverLimitShouldReturnNoSpace)
 {
-    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, 5));
+    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, 5, kMaxFrames));
     std::vector<uint8_t> data{'T', 'E', 'S', 'T'};
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSegment> segment =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegment>();
@@ -76,23 +83,32 @@ TEST_F(ActiveRequestsTests, addSegmentsOverLimitShouldReturnNoSpace)
 TEST_F(ActiveRequestsTests, shouldGenerateGetAndEraseIds)
 {
     EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(0));
-    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(kDefaultMaxFrames, m_sut.getMaxFrames(0));
+    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(0));
+    EXPECT_EQ(kMaxFrames, m_sut.getMaxFrames(0));
     m_sut.erase(0);
     EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(0));
 
     EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(1));
-    EXPECT_EQ(1, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(kDefaultMaxFrames, m_sut.getMaxFrames(1));
+    EXPECT_EQ(1, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::VIDEO, m_sut.getType(1));
+    EXPECT_EQ(kMaxFrames, m_sut.getMaxFrames(1));
     m_sut.erase(1);
     EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(1));
+    EXPECT_EQ(kDefaultMaxFrames, m_sut.getMaxFrames(1));
 }
 
 TEST_F(ActiveRequestsTests, shouldClearIds)
 {
     EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(0));
-    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
-    EXPECT_EQ(1, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
+    EXPECT_EQ(1, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(0));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::VIDEO, m_sut.getType(1));
     m_sut.clear();
@@ -103,10 +119,14 @@ TEST_F(ActiveRequestsTests, shouldClearIds)
 TEST_F(ActiveRequestsTests, shouldEraseAudioIds)
 {
     EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(0));
-    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
-    EXPECT_EQ(1, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max()));
-    EXPECT_EQ(2, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
-    EXPECT_EQ(3, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
+    EXPECT_EQ(1, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
+    EXPECT_EQ(2, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
+    EXPECT_EQ(3, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(0));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::VIDEO, m_sut.getType(1));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(2));
@@ -121,10 +141,14 @@ TEST_F(ActiveRequestsTests, shouldEraseAudioIds)
 TEST_F(ActiveRequestsTests, shouldEraseVideoIds)
 {
     EXPECT_EQ(firebolt::rialto::MediaSourceType::UNKNOWN, m_sut.getType(0));
-    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
-    EXPECT_EQ(1, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max()));
-    EXPECT_EQ(2, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max()));
-    EXPECT_EQ(3, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
+    EXPECT_EQ(1, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
+    EXPECT_EQ(2, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
+    EXPECT_EQ(3, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(0));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::VIDEO, m_sut.getType(1));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::VIDEO, m_sut.getType(2));
@@ -142,7 +166,8 @@ TEST_F(ActiveRequestsTests, shouldAddAndGetSegments)
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSegment> segment =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegmentAudio>();
     segment->setData(data.size(), data.data());
-    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
     EXPECT_EQ(m_sut.addSegment(0, segment), firebolt::rialto::AddSegmentStatus::OK);
     const firebolt::rialto::IMediaPipeline::MediaSegmentVector &kSegments = m_sut.getSegments(0);
     ASSERT_EQ(1, kSegments.size());
@@ -151,24 +176,24 @@ TEST_F(ActiveRequestsTests, shouldAddAndGetSegments)
 
 TEST_F(ActiveRequestsTests, insertShouldHandleDuplicateId)
 {
-    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, 100));
+    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, 100, kMaxFrames));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(0));
 
-    EXPECT_EQ(1, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, 100));
+    EXPECT_EQ(1, m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, 100, kMaxFrames));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::VIDEO, m_sut.getType(1));
 
-    EXPECT_EQ(2, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, 100));
+    EXPECT_EQ(2, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, 100, kMaxFrames));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(2));
 }
 
 TEST_F(ActiveRequestsTests, insertShouldResolveDuplicateIdCollision)
 {
-    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, 100));
+    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, 100, kMaxFrames));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(0));
 
-    m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, 100);
+    m_sut.insert(firebolt::rialto::MediaSourceType::VIDEO, 100, kMaxFrames);
 
-    EXPECT_EQ(2, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, 100));
+    EXPECT_EQ(2, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, 100, kMaxFrames));
     EXPECT_EQ(firebolt::rialto::MediaSourceType::AUDIO, m_sut.getType(2));
 }
 
@@ -178,7 +203,8 @@ TEST_F(ActiveRequestsTests, shouldAddAndRemoveSegments)
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSegment> segment =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSegment>();
     segment->setData(data.size(), data.data());
-    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max()));
+    EXPECT_EQ(0, m_sut.insert(firebolt::rialto::MediaSourceType::AUDIO, std::numeric_limits<std::uint32_t>::max(),
+                              kMaxFrames));
     EXPECT_EQ(m_sut.addSegment(0, segment), firebolt::rialto::AddSegmentStatus::OK);
     m_sut.clear();
     EXPECT_THROW(m_sut.getSegments(0), std::runtime_error);

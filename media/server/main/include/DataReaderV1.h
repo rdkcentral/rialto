@@ -56,10 +56,11 @@ class DataReaderV1 : public IDataReader
 
 public:
     DataReaderV1(const MediaSourceType &mediaSourceType, std::uint8_t *buffer, std::uint32_t metadataOffset,
-                 std::uint32_t numFrames);
+                 std::uint32_t numFrames, bool isBufferFull);
     ~DataReaderV1() override = default;
 
     IMediaPipeline::MediaSegmentVector readData() const override;
+    bool isBufferFull() const override;
 
 private:
     std::vector<MetadataV1> readMetadata() const;
@@ -69,6 +70,7 @@ private:
     std::uint8_t *m_buffer;
     std::uint32_t m_metadataOffset;
     std::uint32_t m_numFrames;
+    bool m_isBufferFull;
 
     template <typename SegmentType> std::unique_ptr<SegmentType> createSegment(const MetadataV1 &metadata) const
     {
