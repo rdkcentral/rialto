@@ -99,6 +99,17 @@ void CdmServiceTests::supportsServerCertificateWillReturnTrue()
     EXPECT_CALL(m_mediaKeysCapabilitiesMock, isServerCertificateSupported(kKeySystems[0])).WillOnce(Return(true));
 }
 
+void CdmServiceTests::getSupportedRobustnessLevelsWillSucceed()
+{
+    EXPECT_CALL(m_mediaKeysCapabilitiesMock, getSupportedRobustnessLevels(kKeySystems[0], _))
+        .WillOnce(DoAll(SetArgReferee<1>(kRobustnessLevels), Return(true)));
+}
+
+void CdmServiceTests::getSupportedRobustnessLevelsWillFail()
+{
+    EXPECT_CALL(m_mediaKeysCapabilitiesMock, getSupportedRobustnessLevels(kKeySystems[0], _)).WillOnce(Return(false));
+}
+
 void CdmServiceTests::triggerSwitchToActiveSuccess()
 {
     EXPECT_TRUE(m_sut.switchToActive());
@@ -423,6 +434,19 @@ void CdmServiceTests::supportsServerCertificateReturnTrue()
 void CdmServiceTests::supportsServerCertificateReturnFalse()
 {
     EXPECT_FALSE(m_sut.isServerCertificateSupported(kKeySystems[0]));
+}
+
+void CdmServiceTests::getSupportedRobustnessLevelsShouldSucceed()
+{
+    std::vector<std::string> levels;
+    EXPECT_TRUE(m_sut.getSupportedRobustnessLevels(kKeySystems[0], levels));
+    EXPECT_EQ(levels, kRobustnessLevels);
+}
+
+void CdmServiceTests::getSupportedRobustnessLevelsShouldFail()
+{
+    std::vector<std::string> levels;
+    EXPECT_FALSE(m_sut.getSupportedRobustnessLevels(kKeySystems[0], levels));
 }
 
 void CdmServiceTests::incrementSessionIdUsageCounter()
