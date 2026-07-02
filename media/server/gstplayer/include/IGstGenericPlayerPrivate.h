@@ -170,6 +170,11 @@ public:
     virtual void notifyNeedMediaData(const MediaSourceType mediaSource) = 0;
 
     /**
+     * @brief Sends NeedMediaData notification with a delay. Called by the worker thread.
+     */
+    virtual void notifyNeedMediaDataWithDelay(const MediaSourceType mediaSource) = 0;
+
+    /**
      * @brief Constructs a new buffer with data from media segment. Does not perform decryption.
      *        Called by the worker thread.
      */

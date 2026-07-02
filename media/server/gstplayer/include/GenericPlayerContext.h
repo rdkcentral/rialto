@@ -304,6 +304,11 @@ struct GenericPlayerContext
      * @brief Fallback sink pad that owns audio first frame probe.
      */
     GstPad *audioFirstFrameProbePad{nullptr};
+
+    /**
+     * @brief Current position of the stream in nanoseconds.
+     */
+    std::atomic<int64_t> streamPosition{-1};
 };
 } // namespace firebolt::rialto::server
 
