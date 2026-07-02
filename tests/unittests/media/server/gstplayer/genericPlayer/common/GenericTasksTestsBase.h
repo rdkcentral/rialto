@@ -26,7 +26,10 @@
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 
+#include <memory>
 #include <string>
+
+class GenericTasksTestsContext;
 
 using ::testing::_;
 using ::testing::A;
@@ -473,6 +476,9 @@ private:
     template <typename T> void expectSetProperty(const std::string &propertyName, const T &value);
     void expectPropertyDoesntExist(const std::string &propertyName);
     std::string getFadeString(double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType);
+
+protected:
+    std::shared_ptr<GenericTasksTestsContext> testContext;
 };
 
 #endif // GENERIC_TASKS_TESTS_BASE_H_
