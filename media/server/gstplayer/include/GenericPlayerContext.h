@@ -289,6 +289,11 @@ struct GenericPlayerContext
      * @brief Profiler for player pipeline
      */
     std::unique_ptr<IGstProfiler> gstProfiler;
+
+    /**
+     * @brief Current position of the stream in nanoseconds.
+     */
+    std::atomic<int64_t> streamPosition{-1};
 };
 } // namespace firebolt::rialto::server
 

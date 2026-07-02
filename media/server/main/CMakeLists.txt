@@ -48,6 +48,7 @@ add_library(
         source/HeartbeatProcedure.cpp
         source/TextTrackAccessor.cpp
         source/TextTrackSession.cpp
+        source/NeedDataDelayCalculator.cpp
         )
 
 target_include_directories(

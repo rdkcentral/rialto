@@ -1688,6 +1688,9 @@ MediaPipelineIpc::convertHaveDataRequestMediaSourceStatus(MediaSourceStatus stat
     case MediaSourceStatus::NO_AVAILABLE_SAMPLES:
         protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_NO_AVAILABLE_SAMPLES;
         break;
+    case MediaSourceStatus::NO_SPACE_FOR_SAMPLES:
+        protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_NO_SPACE_FOR_SAMPLES;
+        break;
     default:
         break;
     }
