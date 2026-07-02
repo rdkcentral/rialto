@@ -188,11 +188,6 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
 
         m_shmBuffer.reset();
         m_mainThread->unregisterClient(m_mainThreadClientId);
-
-        // Destroy GstPlayer first, while the main thread client is still registered.
-        // This ensures that during the worker thread drain in ~GstGenericPlayer,
-        // any callbacks (notifyNeedMediaData, notifyPlaybackState, etc.) that
-        // enqueue tasks on the main thread can still be accepted and won't crash.
         m_gstPlayer.reset();
     };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
