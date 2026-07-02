@@ -213,4 +213,38 @@ bool MediaKeysCapabilitiesIpc::isServerCertificateSupported(const std::string &k
     return response.is_supported();
 }
 
+
+bool MediaKeysCapabilitiesIpc::getSupportedRobustnessLevels(const std::string &keySystem,
+                                                            std::vector<std::string> &robustnessLevels)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetSupportedRobustnessLevelsRequest request;
+    request.set_key_system(keySystem);
+
+    firebolt::rialto::GetSupportedRobustnessLevelsResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaKeysCapabilitiesStub->getSupportedRobustnessLevels(ipcController.get(), &request, &response,
+                                                              blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get supported robustness levels due to '%s'",
+                                ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    robustnessLevels.assign(response.robustness_levels().begin(), response.robustness_levels().end());
+    return true;
+}
+
 }; // namespace firebolt::rialto::client

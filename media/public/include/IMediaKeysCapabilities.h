@@ -115,6 +115,16 @@ public:
      * @retval true if server certificate is supported
      */
     virtual bool isServerCertificateSupported(const std::string &keySystem) = 0;
+
+    /**
+     * @brief Gets the robustness levels supported by the specified key system.
+     *
+     * @param[in]  keySystem          : The key system.
+     * @param[out] robustnessLevels   : The supported robustness levels.
+     *
+     * @retval true if operation was successful
+     */
+    virtual bool getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels) = 0;
 };
 
 }; // namespace firebolt::rialto

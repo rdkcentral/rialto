@@ -120,4 +120,11 @@ bool MediaKeysCapabilities::isServerCertificateSupported(const std::string &keyS
     return m_mediaKeysCapabilitiesIpc->isServerCertificateSupported(keySystem);
 }
 
+bool MediaKeysCapabilities::getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaKeysCapabilitiesIpc->getSupportedRobustnessLevels(keySystem, robustnessLevels);
+}
+
 }; // namespace firebolt::rialto::client

@@ -815,6 +815,34 @@ TEST_F(CdmServiceTests, shouldGetServerCertificateSupportedIfSupportedInActiveSt
     supportsServerCertificateReturnTrue();
 }
 
+TEST_F(CdmServiceTests, shouldFailToGetSupportedRobustnessLevelsInInactiveState)
+{
+    getSupportedRobustnessLevelsShouldFail();
+}
+
+TEST_F(CdmServiceTests, shouldFailToGetSupportedRobustnessLevelsIfCreationFailureInActiveState)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysCapabilitiesFactoryWillReturnNullptr();
+    getSupportedRobustnessLevelsShouldFail();
+}
+
+TEST_F(CdmServiceTests, shouldFailToGetSupportedRobustnessLevelsIfApiFailureInActiveState)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    getSupportedRobustnessLevelsWillFail();
+    getSupportedRobustnessLevelsShouldFail();
+}
+
+TEST_F(CdmServiceTests, shouldGetSupportedRobustnessLevelsInActiveState)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    getSupportedRobustnessLevelsWillSucceed();
+    getSupportedRobustnessLevelsShouldSucceed();
+}
+
 TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingExtendedInterfaceWhenNoMediaKeys)
 {
     triggerSwitchToActiveSuccess();
