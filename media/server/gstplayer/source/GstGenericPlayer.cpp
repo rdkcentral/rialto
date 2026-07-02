@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <atomic>
 #include <chrono>
 #include <cinttypes>
 #include <cstring>
@@ -543,6 +544,10 @@ void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
 
 void GstGenericPlayer::notifyPlaybackInfo()
 {
+    static std::atomic<int> notifyCount{0};
+    const int currentCount = ++notifyCount;
+    const auto start = std::chrono::steady_clock::now();
+
     PlaybackInfo info;
     getPosition(info.currentPosition);
     m_context.streamPosition.store(info.currentPosition);
@@ -555,6 +560,15 @@ void GstGenericPlayer::notifyPlaybackInfo()
         getVolume(info.volume);
     }
     m_gstPlayerClient->notifyPlaybackInfo(info);
+
+    const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::steady_clock::now() - start);
+
+    if ((currentCount % 1) == 0)
+    {
+        RIALTO_SERVER_LOG_INFO("notifyPlaybackInfo cycle %d took %lld us", currentCount,
+                               static_cast<long long>(elapsed.count()));
+    }
 }
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
@@ -2308,8 +2322,12 @@ void GstGenericPlayer::startNotifyPlaybackInfoTimer()
     static constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
     if (m_playbackInfoTimer && m_playbackInfoTimer->isActive())
     {
+        RIALTO_SERVER_LOG_DEBUG("NotifyPlaybackInfoTimer already active, skipping start");
         return;
     }
+
+    RIALTO_SERVER_LOG_DEBUG("Starting NotifyPlaybackInfoTimer (interval %d ms)",
+                           static_cast<int>(kPlaybackInfoTimerMs.count()));
 
     notifyPlaybackInfo();
 
