@@ -164,6 +164,9 @@ void SessionManagementServer::setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, 
 void SessionManagementServer::onClientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)
 {
     RIALTO_SERVER_LOG_MIL("Client app connected");
+    char telemetryBuff[128] = {0};
+    snprintf(telemetryBuff, sizeof(telemetryBuff), "Client app connected");
+    TELEMETRY_EVENT_STRING("RialtoMain", telemetryBuff);
     m_controlModule->clientConnected(client);
     m_mediaPipelineModule->clientConnected(client);
     m_mediaPipelineCapabilitiesModule->clientConnected(client);

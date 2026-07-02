@@ -20,6 +20,7 @@
 #include "ClientController.h"
 #include "RialtoClientLogging.h"
 #include "SharedMemoryHandle.h"
+#include <cstdio>
 #include <cstring>
 #include <stdexcept>
 #include <sys/mman.h>
@@ -174,6 +175,9 @@ try
     if (!m_controlIpc->getSharedMemory(shmFd, shmBufferLen))
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to get the shared memory");
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get the shared memory");
+        TELEMETRY_EVENT_STRING("Rialto Client - ClientController", telemetryBuff);
         return false;
     }
     m_shmHandle = std::make_shared<SharedMemoryHandle>(shmFd, shmBufferLen);
@@ -216,6 +220,9 @@ void ClientController::notifyApplicationState(ApplicationState state)
         if (!initSharedMemory())
         {
             RIALTO_CLIENT_LOG_ERROR("Could not initalise the shared memory");
+            char telemetryBuff[128] = {0};
+            snprintf(telemetryBuff, sizeof(telemetryBuff), "Could not initalise the shared memory");
+            TELEMETRY_EVENT_STRING("Rialto Client - ClientController", telemetryBuff);
             return;
         }
         // Inform clients after memory initialisation

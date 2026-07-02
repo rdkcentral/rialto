@@ -59,6 +59,7 @@ target_link_libraries(
 
         PRIVATE
         RialtoServerIpc
+        RialtoLogging
         RialtoServerMain
         RialtoServerService
         protobuf::libprotobuf
