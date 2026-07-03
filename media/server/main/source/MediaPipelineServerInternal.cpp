@@ -188,9 +188,9 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
 
         m_shmBuffer.reset();
         m_mainThread->unregisterClient(m_mainThreadClientId);
-        m_gstPlayer.reset();
     };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_gstPlayer.reset();
 }
 
 bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url)
