@@ -101,6 +101,10 @@ convertMediaSourceStatus(const firebolt::rialto::HaveDataRequest_MediaSourceStat
     {
         return firebolt::rialto::MediaSourceStatus::NO_AVAILABLE_SAMPLES;
     }
+    case firebolt::rialto::HaveDataRequest_MediaSourceStatus_NO_SPACE_FOR_SAMPLES:
+    {
+        return firebolt::rialto::MediaSourceStatus::NO_SPACE_FOR_SAMPLES;
+    }
     }
     return firebolt::rialto::MediaSourceStatus::ERROR;
 }

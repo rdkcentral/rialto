@@ -33,6 +33,7 @@ public:
 
     MOCK_METHOD(void, notifyPlaybackState, (PlaybackState state), (override));
     MOCK_METHOD(bool, notifyNeedMediaData, (MediaSourceType mediaSourceType), (override));
+    MOCK_METHOD(bool, notifyNeedMediaDataWithDelay, (MediaSourceType mediaSourceType), (override));
     MOCK_METHOD(void, notifyPosition, (std::int64_t position), (override));
     MOCK_METHOD(void, notifyNetworkState, (NetworkState state), (override));
     MOCK_METHOD(void, clearActiveRequestsCache, (), (override));
