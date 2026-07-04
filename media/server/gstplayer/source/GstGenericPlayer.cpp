@@ -312,8 +312,7 @@ void GstGenericPlayer::termPipeline()
     m_finishSourceSetupTimer.reset();
 
     stopNotifyPlaybackInfoTimer();
-    m_playbackInfoTimer.reset();
-
+    
     for (auto &elem : m_context.streamInfo)
     {
         StreamInfo &streamInfo = elem.second;
