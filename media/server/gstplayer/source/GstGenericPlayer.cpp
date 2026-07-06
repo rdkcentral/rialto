@@ -236,7 +236,7 @@ GstGenericPlayer::~GstGenericPlayer()
     {
         RIALTO_SERVER_LOG_ERROR("Unknown exception during resetWorkerThread in destructor");
     }
-
+        
     try
     {
         termPipeline();
@@ -310,7 +310,6 @@ void GstGenericPlayer::termPipeline()
     }
 
     m_finishSourceSetupTimer.reset();
-
     stopNotifyPlaybackInfoTimer();
     
     for (auto &elem : m_context.streamInfo)
