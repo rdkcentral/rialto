@@ -25,11 +25,11 @@
 #include <utility>
 
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::ByMove;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::StrEq;
-using ::testing::AnyNumber;
 
 void GstGenericPlayerTestCommon::gstPlayerWillBeCreated()
 {
