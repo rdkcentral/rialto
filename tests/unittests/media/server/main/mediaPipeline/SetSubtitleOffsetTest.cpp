@@ -46,6 +46,7 @@ TEST_F(RialtoServerMediaPipelineSetSubtitleOffsetTest, SetSubtitleOffsetSuccess)
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
 
+    EXPECT_CALL(m_textTrackAccessorFactoryMock, getTextTrackAccessor()).WillOnce(Return(m_textTrackAccessorMock));
     EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
     EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
     std::int32_t sourceId{mediaSource->getId()};

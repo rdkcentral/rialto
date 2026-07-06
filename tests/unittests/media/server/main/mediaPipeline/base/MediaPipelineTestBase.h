@@ -33,6 +33,8 @@
 #include "MediaPipelineServerInternal.h"
 #include "MediaSourceUtil.h"
 #include "SharedMemoryBufferMock.h"
+#include "TextTrackAccessorFactoryMock.h"
+#include "TextTrackAccessorMock.h"
 #include "TimerFactoryMock.h"
 #include "TimerMock.h"
 #include <gtest/gtest.h>
@@ -78,6 +80,8 @@ protected:
     std::shared_ptr<StrictMock<MainThreadMock>> m_mainThreadMock;
     std::shared_ptr<StrictMock<TimerFactoryMock>> m_timerFactoryMock;
     std::unique_ptr<StrictMock<TimerMock>> m_timerMock;
+    StrictMock<TextTrackAccessorFactoryMock> m_textTrackAccessorFactoryMock;
+    std::shared_ptr<StrictMock<TextTrackAccessorMock>> m_textTrackAccessorMock;
     StrictMock<DecryptionServiceMock> m_decryptionServiceMock;
     IGstGenericPlayerClient *m_gstPlayerCallback;
 

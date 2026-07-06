@@ -25,6 +25,7 @@
 #include "IGstGenericPlayer.h"
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
+#include "ITextTrackAccessor.h"
 #include "ITimer.h"
 #include "NeedDataDelayCalculator.h"
 #include <map>
@@ -75,6 +76,8 @@ public:
      * @param[in] sessionId         : The session id
      * @param[in] shmBuffer         : The shared memory buffer
      * @param[in] mainThreadFactory : The main thread factory.
+     * @param[in] timerFactory      : The timer factory
+     * @param[in] textTrackAccessorFactory : The text track accessor factory
      * @param[in] dataReaderFactory : The data reader factory
      * @param[in] activeRequests    : The active requests
      * @param[in] decryptionService : The decryption service
@@ -85,6 +88,7 @@ public:
                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
                                 const std::shared_ptr<common::ITimerFactory> &timerFactory,
+                                const ITextTrackAccessorFactory &textTrackAccessorFactory,
                                 std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
                                 std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService);
 
@@ -249,6 +253,11 @@ protected:
      * @brief Factory creating timers
      */
     std::shared_ptr<common::ITimerFactory> m_timerFactory;
+
+    /**
+     * @brief Factory creating TextTrackAccessor
+     */
+    const ITextTrackAccessorFactory &m_textTrackAccessorFactory;
 
     /**
      * @brief Object containing all active NeedDataRequests

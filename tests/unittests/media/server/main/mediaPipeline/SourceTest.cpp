@@ -231,3 +231,20 @@ TEST_F(RialtoServerMediaPipelineSourceTest, SwitchSourceNoGstPlayerFailure)
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_EQ(m_mediaPipeline->switchSource(mediaSource), false);
 }
+
+/**
+ * Test that Subtitle AttachSource returns failure if the TextTrack library is not available in the HW configuration.
+ */
+TEST_F(RialtoServerMediaPipelineSourceTest, SubtitleAttachSourceNoTextTrackLibraryFailure)
+{
+    const char *kMimeType{"text/plain"};
+    const char *kTextTrackId{"subtitle1"};
+    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
+        std::make_unique<IMediaPipeline::MediaSourceSubtitle>(kMimeType, kTextTrackId);
+
+    loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_CALL(m_textTrackAccessorFactoryMock, getTextTrackAccessor()).WillOnce(Return(nullptr));
+    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), false);
+}
