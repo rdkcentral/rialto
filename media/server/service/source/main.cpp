@@ -19,10 +19,12 @@
 
 #include <cstring>
 #include <google/protobuf/service.h>
+#include <cstdio>
 
 #include "IApplicationSessionServer.h"
 #include "IGstInitialiser.h"
 #include "RialtoServerLogging.h"
+#include "RialtoTelemetry.h"
 
 // NOLINT(build/filename_format)
 
@@ -47,6 +49,19 @@ int main(int argc, char *argv[])
         RIALTO_SERVER_LOG_WARN("Failed to get git commit ID!");
     }
 
+    printf("main.cpp: Telemetry init");
+
+#ifdef RIALTO_TELEMETRY_SUPPORT
+    RIALTO_SERVER_LOG_MIL("Rialto telemetry ENABLED");
+#endif
+
+    TELEMETRY_INIT("rialto-server");
+    RIALTO_SERVER_LOG_MIL("Rialto telemetry intialized");
+
+    char telemetryBuff[128] = {0};
+    snprintf(telemetryBuff, sizeof(telemetryBuff), "Rialto telemetry initialized");
+    TELEMETRY_EVENT_STRING("RialtoMain", telemetryBuff);
+
     firebolt::rialto::server::IGstInitialiser::instance().initialise(&argc, &argv);
 
     auto appSessionServer =
@@ -54,6 +69,7 @@ int main(int argc, char *argv[])
 
     if (!appSessionServer->init(argc, argv))
     {
+        TELEMETRY_UNINIT();
         return EXIT_FAILURE;
     }
     appSessionServer->startService();

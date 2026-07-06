@@ -178,6 +178,9 @@ bool WebAudioPlayerIpc::play()
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to play due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to play due to '%s'", ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - WebAudioPlayerIpc", telemetryBuff);
         return false;
     }
 
@@ -207,6 +210,9 @@ bool WebAudioPlayerIpc::pause()
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to pause due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to pause due to '%s'", ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - WebAudioPlayerIpc", telemetryBuff);
         return false;
     }
 
@@ -236,6 +242,10 @@ bool WebAudioPlayerIpc::setEos()
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to set eos due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set eos due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - WebAudioPlayerIpc", telemetryBuff);
         return false;
     }
 
@@ -272,6 +282,10 @@ bool WebAudioPlayerIpc::getBufferAvailable(uint32_t &availableFrames,
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to get buffer available due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get buffer available due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - WebAudioPlayerIpc", telemetryBuff);
         return false;
     }
 
@@ -307,6 +321,10 @@ bool WebAudioPlayerIpc::getBufferDelay(uint32_t &delayFrames)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to get buffer delay source due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get buffer delay source due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - WebAudioPlayerIpc", telemetryBuff);
         return false;
     }
 
@@ -340,6 +358,10 @@ bool WebAudioPlayerIpc::writeBuffer(const uint32_t numberOfFrames)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to write to the buffer due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to write to the buffer due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - WebAudioPlayerIpc", telemetryBuff);
         return false;
     }
 
@@ -369,6 +391,10 @@ bool WebAudioPlayerIpc::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maxim
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to get device info source due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get device info source due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - WebAudioPlayerIpc", telemetryBuff);
         return false;
     }
 
@@ -403,6 +429,10 @@ bool WebAudioPlayerIpc::setVolume(double volume)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to set volume due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set volume due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - WebAudioPlayerIpc", telemetryBuff);
         return false;
     }
 
@@ -432,6 +462,10 @@ bool WebAudioPlayerIpc::getVolume(double &volume)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to get volume due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get volume due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - WebAudioPlayerIpc", telemetryBuff);
         return false;
     }
 
@@ -476,6 +510,10 @@ bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, c
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create web audio player due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to create web audio player due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - WebAudioPlayerIpc", telemetryBuff);
         return false;
     }
 
@@ -507,6 +545,10 @@ void WebAudioPlayerIpc::destroyWebAudioPlayer()
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to destroy web audio player due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to destroy web audio player due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - WebAudioPlayerIpc", telemetryBuff);
     }
 }
 

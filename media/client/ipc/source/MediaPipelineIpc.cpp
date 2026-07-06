@@ -217,6 +217,10 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to load media due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to load media due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -253,6 +257,10 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to attach source due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to attach source due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -286,6 +294,10 @@ bool MediaPipelineIpc::removeSource(int32_t sourceId)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to remove source due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to remove source due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -316,6 +328,10 @@ bool MediaPipelineIpc::allSourcesAttached()
     {
         RIALTO_CLIENT_LOG_ERROR("failed to notify about all sources attached due to '%s'",
                                 ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to notify about all sources attached due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -350,6 +366,10 @@ bool MediaPipelineIpc::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, ui
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set the video window due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set the video window due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -380,6 +400,9 @@ bool MediaPipelineIpc::play(bool &async)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to play due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to play due to '%s'", ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -412,6 +435,9 @@ bool MediaPipelineIpc::pause()
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to pause due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to pause due to '%s'", ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -442,6 +468,9 @@ bool MediaPipelineIpc::stop()
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to stop due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to stop due to '%s'", ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -475,6 +504,9 @@ bool MediaPipelineIpc::haveData(MediaSourceStatus status, uint32_t numFrames, ui
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to stop due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to stop due to '%s'", ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -506,6 +538,10 @@ bool MediaPipelineIpc::setPosition(int64_t position)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set position due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set position due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -536,6 +572,10 @@ bool MediaPipelineIpc::getPosition(int64_t &position)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get position due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get position due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -600,6 +640,10 @@ bool MediaPipelineIpc::setImmediateOutput(int32_t sourceId, bool immediateOutput
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set immediate-output due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set immediate-output due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -631,6 +675,10 @@ bool MediaPipelineIpc::getImmediateOutput(int32_t sourceId, bool &immediateOutpu
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get immediate-output due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get immediate-output due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
     else
@@ -666,6 +714,10 @@ bool MediaPipelineIpc::getStats(int32_t sourceId, uint64_t &renderedFrames, uint
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get stats due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get stats due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -699,6 +751,10 @@ bool MediaPipelineIpc::setPlaybackRate(double rate)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set playback rate due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set playback rate due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -728,6 +784,10 @@ bool MediaPipelineIpc::renderFrame()
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to render frame due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to render frame due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -761,6 +821,10 @@ bool MediaPipelineIpc::setVolume(double targetVolume, uint32_t volumeDuration, E
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set volume due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set volume due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -791,6 +855,10 @@ bool MediaPipelineIpc::getVolume(double &volume)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get volume due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get volume due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
     volume = response.volume();
@@ -824,6 +892,10 @@ bool MediaPipelineIpc::setMute(int32_t sourceId, bool mute)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set mute due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set mute due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -855,6 +927,10 @@ bool MediaPipelineIpc::getMute(std::int32_t sourceId, bool &mute)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get mute due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get mute due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -888,6 +964,10 @@ bool MediaPipelineIpc::setTextTrackIdentifier(const std::string &textTrackIdenti
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set text track identifier due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set text track identifier due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -918,6 +998,10 @@ bool MediaPipelineIpc::getTextTrackIdentifier(std::string &textTrackIdentifier)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get mute due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get mute due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -950,6 +1034,10 @@ bool MediaPipelineIpc::setLowLatency(bool lowLatency)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set low-latency due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set low-latency due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -981,6 +1069,10 @@ bool MediaPipelineIpc::setSync(bool sync)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set sync due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set sync due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1011,6 +1103,10 @@ bool MediaPipelineIpc::getSync(bool &sync)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get sync due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get sync due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1044,6 +1140,10 @@ bool MediaPipelineIpc::setSyncOff(bool syncOff)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set sync-off due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set sync-off due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1076,6 +1176,10 @@ bool MediaPipelineIpc::setStreamSyncMode(int32_t sourceId, int32_t streamSyncMod
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set stream-sync-mode due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set stream-sync-mode due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1106,6 +1210,10 @@ bool MediaPipelineIpc::getStreamSyncMode(int32_t &streamSyncMode)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get stream-sync-mode due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get stream-sync-mode due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1140,6 +1248,9 @@ bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime, bool &async)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to flush due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to flush due to '%s'", ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1179,6 +1290,10 @@ bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position, boo
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set source position due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set source position due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1211,6 +1326,10 @@ bool MediaPipelineIpc::setSubtitleOffset(int32_t sourceId, int64_t position)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set subtitle offset due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set subtitle offset due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1245,6 +1364,10 @@ bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, int6
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to process audio gap due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to process audio gap due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1276,6 +1399,10 @@ bool MediaPipelineIpc::setBufferingLimit(uint32_t limitBufferingMs)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set buffering limit due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set buffering limit due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1306,6 +1433,10 @@ bool MediaPipelineIpc::getBufferingLimit(uint32_t &limitBufferingMs)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get buffering limit due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get buffering limit due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1339,6 +1470,10 @@ bool MediaPipelineIpc::setUseBuffering(bool useBuffering)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set use buffering due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to set use buffering due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1369,6 +1504,10 @@ bool MediaPipelineIpc::getUseBuffering(bool &useBuffering)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to get use buffering due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to get use buffering due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1407,6 +1546,10 @@ bool MediaPipelineIpc::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to attach source due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to attach source due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1617,6 +1760,10 @@ bool MediaPipelineIpc::createSession(const VideoRequirements &videoRequirements)
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to create session due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to create session due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
         return false;
     }
 
@@ -1648,6 +1795,10 @@ void MediaPipelineIpc::destroySession()
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to destroy session due to '%s'", ipcController->ErrorText().c_str());
+        char telemetryBuff[128] = {0};
+        snprintf(telemetryBuff, sizeof(telemetryBuff), "Failed to destroy session due to '%s'",
+                 ipcController->ErrorText().c_str());
+        TELEMETRY_EVENT_STRING("Rialto Client - MediaPipelineIpc", telemetryBuff);
     }
 }
 

@@ -21,6 +21,7 @@
 #define RIALTO_CLIENT_LOGGING_H_
 
 #include "RialtoLogging.h"
+#include <cstdio>
 
 #ifdef __cplusplus
 extern "C"
