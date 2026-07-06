@@ -716,6 +716,17 @@ TEST_F(CdmServiceTests, shouldFailToReleaseKeySessionWhenMediaKeysFails)
     destroyMediaKeysShouldSucceed();
 }
 
+TEST_F(CdmServiceTests, shouldFailToReleaseKeySessionAfterSwitchToInactive)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
+    triggerSwitchToInactive();
+    releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+}
+
 TEST_F(CdmServiceTests, shouldGetNoKeySystemsFromGetSupportedKeySystemsInInactiveState)
 {
     getSupportedKeySystemsReturnNon();

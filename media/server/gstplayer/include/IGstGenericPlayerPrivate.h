@@ -62,6 +62,11 @@ public:
     virtual void scheduleVideoUnderflow() = 0;
 
     /**
+     * @brief Schedules first video frame received task. Called by the worker thread.
+     */
+    virtual void scheduleFirstVideoFrameReceived() = 0;
+
+    /**
      * @brief Schedules all sources attached task. Called by the worker thread.
      */
     virtual void scheduleAllSourcesAttached() = 0;
@@ -140,6 +145,11 @@ public:
      * @brief Sends NeedMediaData notification. Called by the worker thread.
      */
     virtual void notifyNeedMediaData(const MediaSourceType mediaSource) = 0;
+
+    /**
+     * @brief Sends NeedMediaData notification with a delay. Called by the worker thread.
+     */
+    virtual void notifyNeedMediaDataWithDelay(const MediaSourceType mediaSource) = 0;
 
     /**
      * @brief Constructs a new buffer with data from media segment. Does not perform decryption.

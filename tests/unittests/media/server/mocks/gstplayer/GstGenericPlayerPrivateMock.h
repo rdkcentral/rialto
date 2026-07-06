@@ -36,6 +36,7 @@ public:
     MOCK_METHOD(void, scheduleEnoughData, (GstAppSrc * src), (override));
     MOCK_METHOD(void, scheduleAudioUnderflow, (), (override));
     MOCK_METHOD(void, scheduleVideoUnderflow, (), (override));
+    MOCK_METHOD(void, scheduleFirstVideoFrameReceived, (), (override));
     MOCK_METHOD(void, scheduleAllSourcesAttached, (), (override));
     MOCK_METHOD(bool, setVideoSinkRectangle, (), (override));
     MOCK_METHOD(bool, setImmediateOutput, (), (override));
@@ -48,6 +49,7 @@ public:
     MOCK_METHOD(bool, setUseBuffering, (), (override));
     MOCK_METHOD(bool, setShowVideoWindow, (), (override));
     MOCK_METHOD(void, notifyNeedMediaData, (const MediaSourceType mediaSource), (override));
+    MOCK_METHOD(void, notifyNeedMediaDataWithDelay, (const MediaSourceType mediaSource), (override));
     MOCK_METHOD(GstBuffer *, createBuffer, (const IMediaPipeline::MediaSegment &mediaSegment), (const, override));
     MOCK_METHOD(void, attachData, (const firebolt::rialto::MediaSourceType mediaType), (override));
     MOCK_METHOD(void, updateAudioCaps, (int32_t rate, int32_t channels, const std::shared_ptr<CodecData> &codecData),
@@ -70,7 +72,6 @@ public:
     MOCK_METHOD(void, removeAutoVideoSinkChild, (GObject * object), (override));
     MOCK_METHOD(void, removeAutoAudioSinkChild, (GObject * object), (override));
     MOCK_METHOD(GstElement *, getSink, (const MediaSourceType &mediaSourceType), (const, override));
-
     MOCK_METHOD(void, addAudioClippingToBuffer, (GstBuffer * buffer, uint64_t clippingStart, uint64_t clippingEnd),
                 (const, override));
     MOCK_METHOD(void, pushSampleIfRequired, (GstElement * source, const std::string &typeStr), (override));

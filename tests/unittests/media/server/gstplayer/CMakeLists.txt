@@ -35,6 +35,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/EnoughDataTest.cpp
     genericPlayer/tasksTests/EosTest.cpp
     genericPlayer/tasksTests/FinishSetupSourceTest.cpp
+    genericPlayer/tasksTests/FirstFrameReceivedTest.cpp
     genericPlayer/tasksTests/FlushTest.cpp
     genericPlayer/tasksTests/GenericPlayerTaskFactoryTest.cpp
     genericPlayer/tasksTests/HandleBusMessageTest.cpp
@@ -44,6 +45,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/PlayTest.cpp
     genericPlayer/tasksTests/ProcessAudioGapTest.cpp
     genericPlayer/tasksTests/ReadShmDataAndAttachSamplesTest.cpp
+    genericPlayer/tasksTests/RemoveSourceTest.cpp
     genericPlayer/tasksTests/RenderFrameTest.cpp
     genericPlayer/tasksTests/ReportPositionTest.cpp
     genericPlayer/tasksTests/SetBufferingLimitTest.cpp
@@ -119,6 +121,9 @@ add_gtests(RialtoServerGstPlayerUnitTests
 
     #FlushWatcher unittests
     flushWatcher/FlushWatcherTests.cpp
+
+    #GstProfiler unittests
+    profiler/GstProfilerTests.cpp
 
 )
 

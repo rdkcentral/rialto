@@ -78,6 +78,7 @@ void Flush::execute() const
     {
         m_context.flushOnPrerollController->waitIfRequired(m_type);
 
+        RIALTO_SERVER_LOG_MIL("Sending flush event for %s source.", common::convertMediaSourceType(m_type));
         // Flush source
         GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
         if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
@@ -105,6 +106,11 @@ void Flush::execute() const
     // Reset Eos info
     m_context.endOfStreamInfo.erase(m_type);
     m_context.eosNotified = false;
+
+    if (m_resetTime)
+    {
+        m_context.streamPosition.store(-1);
+    }
 
     // Notify client, that flush has been finished
     m_gstPlayerClient->notifySourceFlushed(m_type);

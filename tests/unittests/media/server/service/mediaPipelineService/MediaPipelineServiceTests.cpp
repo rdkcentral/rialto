@@ -322,6 +322,26 @@ TEST_F(MediaPipelineServiceTests, shouldGetPosition)
     getPositionShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToGetDurationForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getDurationShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetDuration)
+{
+    initSession();
+    mediaPipelineWillFailToGetDuration();
+    getDurationShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetDuration)
+{
+    initSession();
+    mediaPipelineWillGetDuration();
+    getDurationShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldFailToSetImmediateOutputForNotExistingSession)
 {
     createMediaPipelineShouldSuccess();

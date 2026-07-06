@@ -41,6 +41,7 @@ class GstGenericPlayerTest : public GstGenericPlayerTestCommon
 protected:
     std::unique_ptr<IGstGenericPlayer> m_sut;
     VideoRequirements m_videoReq = {kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
+    bool m_isLive{false};
     GstElement *m_pipeline;
     GstIterator m_it{};
     char m_dummy{0};
@@ -52,11 +53,11 @@ protected:
     {
         gstPlayerWillBeCreated();
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
-                                                   m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
+                                                   m_videoReq, m_isLive, m_gstWrapperMock, m_glibWrapperMock,
                                                    m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
-                                                   std::move(m_flushWatcher), m_gstSrcFactoryMock, m_timerFactoryMock,
-                                                   std::move(m_taskFactory), std::move(workerThreadFactory),
-                                                   std::move(gstDispatcherThreadFactory),
+                                                   std::move(m_flushWatcher), m_gstSrcFactoryMock,
+                                                   m_gstProfilerFactoryMock, m_timerFactoryMock, std::move(m_taskFactory),
+                                                   std::move(workerThreadFactory), std::move(gstDispatcherThreadFactory),
                                                    m_gstProtectionMetadataFactoryMock);
         m_element = fakeElement();
     }
@@ -146,6 +147,16 @@ TEST_F(GstGenericPlayerTest, shouldAttachSource)
     m_sut->attachSource(source);
 }
 
+TEST_F(GstGenericPlayerTest, shouldRemoveSource)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createRemoveSource(_, _, MediaSourceType::AUDIO))
+        .WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->removeSource(MediaSourceType::AUDIO);
+}
+
 TEST_F(GstGenericPlayerTest, shouldAllSourcesAttached)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
@@ -157,36 +168,11 @@ TEST_F(GstGenericPlayerTest, shouldAllSourcesAttached)
 
 TEST_F(GstGenericPlayerTest, shouldPlayOnWorkerThread)
 {
-    // Pause first
-    std::unique_ptr<IPlayerTask> pauseTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*pauseTask), execute());
-    EXPECT_CALL(m_taskFactoryMock, createPause(_, _)).WillOnce(Return(ByMove(std::move(pauseTask))));
-
-    m_sut->pause();
-
-    // ...
-
     bool async = false;
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createPlay(_)).WillOnce(Return(ByMove(std::move(task))));
 
-    m_sut->play(async);
-    EXPECT_TRUE(async);
-}
-
-TEST_F(GstGenericPlayerTest, shouldPlayImmediatelySynchronously)
-{
-    bool async = false;
-    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(_, GST_STATE_PLAYING)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
-    m_sut->play(async);
-    EXPECT_FALSE(async);
-}
-
-TEST_F(GstGenericPlayerTest, shouldPlayImmediatelyAsynchronously)
-{
-    bool async = false;
-    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(_, GST_STATE_PLAYING)).WillOnce(Return(GST_STATE_CHANGE_ASYNC));
     m_sut->play(async);
     EXPECT_TRUE(async);
 }
@@ -1125,4 +1111,26 @@ TEST_F(GstGenericPlayerTest, shouldSwitchSource)
     EXPECT_CALL(m_taskFactoryMock, createSwitchSource(_, Ref(source))).WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->switchSource(source);
+}
+
+TEST_F(GstGenericPlayerTest, shouldReturnInvalidDurationWhenQueryFails)
+{
+    int64_t targetDuration{};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryDuration(_, GST_FORMAT_TIME, _)).WillOnce(Return(FALSE));
+    EXPECT_FALSE(m_sut->getDuration(targetDuration));
+}
+
+TEST_F(GstGenericPlayerTest, shouldReturnDuration)
+{
+    constexpr gint64 kExpectedDuration{123};
+    int64_t targetDuration{};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementQueryDuration(_, GST_FORMAT_TIME, _))
+        .WillOnce(Invoke(
+            [&](GstElement *element, GstFormat format, gint64 *cur)
+            {
+                *cur = kExpectedDuration;
+                return TRUE;
+            }));
+    EXPECT_TRUE(m_sut->getDuration(targetDuration));
+    EXPECT_EQ(kExpectedDuration, targetDuration);
 }

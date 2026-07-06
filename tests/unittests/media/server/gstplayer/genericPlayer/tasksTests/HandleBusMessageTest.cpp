@@ -23,6 +23,7 @@
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerClientMock.h"
 #include "GstGenericPlayerPrivateMock.h"
+#include "GstProfilerMock.h"
 #include "GstWrapperMock.h"
 #include "Matchers.h"
 #include <gst/gst.h>
@@ -56,6 +57,8 @@ protected:
     std::shared_ptr<firebolt::rialto::wrappers::GlibWrapperMock> m_glibWrapper{
         std::make_shared<StrictMock<firebolt::rialto::wrappers::GlibWrapperMock>>()};
     StrictMock<firebolt::rialto::server::FlushWatcherMock> m_flushWatcherMock;
+    std::unique_ptr<::testing::NiceMock<firebolt::rialto::server::GstProfilerMock>> m_gstProfilerMock{
+        std::make_unique<::testing::NiceMock<firebolt::rialto::server::GstProfilerMock>>()};
     GstElement m_pipeline{};
     GstAppSrc m_audioSrc{};
     GstAppSrc m_videoSrc{};
@@ -72,6 +75,7 @@ protected:
         m_context.pipeline = &m_pipeline;
         m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::AUDIO, GST_ELEMENT(&m_audioSrc));
         m_context.streamInfo.emplace(firebolt::rialto::MediaSourceType::VIDEO, GST_ELEMENT(&m_videoSrc));
+        m_context.gstProfiler = std::move(m_gstProfilerMock);
     }
 
     void expectFreeErrorMessage()
@@ -227,8 +231,8 @@ TEST_F(HandleBusMessageTest, shouldNotHandleStateChangedMessageWhenGstPlayerClie
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Null"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Null"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
@@ -250,8 +254,8 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToNullMessage)
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Null"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Null"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::STOPPED));
@@ -276,8 +280,8 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedMessage)
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
     EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Paused"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Paused"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PAUSED));
@@ -306,8 +310,8 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedMessageWhenSyncFlus
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
     EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Paused"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Paused"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PAUSED));
@@ -335,8 +339,8 @@ TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPausedMessageWhenAs
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Paused"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Paused"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
@@ -363,8 +367,8 @@ TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPausedMessageWhenAs
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Paused"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Paused"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
@@ -416,8 +420,8 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessage)
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
     EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Playing"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Playing"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayer, startPositionReportingAndCheckAudioUnderflowTimer());
@@ -448,8 +452,8 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessageWhenSyncFlu
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
     EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Playing"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Playing"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayer, startPositionReportingAndCheckAudioUnderflowTimer());
@@ -479,8 +483,8 @@ TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPlayingMessageWhenA
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Playing"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Playing"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
@@ -506,8 +510,8 @@ TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPlayingMessageWhenA
 
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Playing"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Playing"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
@@ -532,8 +536,8 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessageAndSetPendi
     EXPECT_CALL(*m_gstWrapper, gstMessageParseStateChanged(&m_message, _, _, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(oldState), SetArgPointee<2>(newState), SetArgPointee<3>(pending)));
     EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(false));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(2).WillRepeatedly(Return("Ready"));
-    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(2).WillRepeatedly(Return("Playing"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(oldState)).Times(1).WillRepeatedly(Return("Ready"));
+    EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Playing"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayer, startPositionReportingAndCheckAudioUnderflowTimer());
@@ -914,4 +918,62 @@ TEST_F(HandleBusMessageTest, shouldHandleWarningMessageForUnknownSrcTypeDecrypti
     task.execute();
 
     g_object_unref(element);
+}
+
+/**
+ * Test HandleBusMessage notifies output protection errors for HDCP application messages from video decryptors.
+ */
+TEST_F(HandleBusMessageTest, shouldHandleApplicationMessageForVideoOutputProtection)
+{
+    GstObject *decryptor = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
+    gst_object_set_name(decryptor, "rialtodecryptorvideo_0");
+    GstStructure *hdcpFailureStructure =
+        gst_structure_new("HDCPProtectionFailure", "message", G_TYPE_STRING, "HDCP Output Protection Error", NULL);
+    GstMessage *message = gst_message_new_application(decryptor, hdcpFailureStructure);
+
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(*m_gstWrapper, gstStructureHasName(hdcpFailureStructure, StrEq("HDCPProtectionFailure")))
+        .WillOnce(Return(true));
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
+                                                       firebolt::rialto::PlaybackError::OUTPUT_PROTECTION));
+    EXPECT_CALL(*m_gstWrapper, gstMessageUnref(message));
+
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      message,
+                                                                    m_flushWatcherMock};
+    task.execute();
+
+    gst_message_unref(message);
+    g_object_unref(decryptor);
+}
+
+/**
+ * Test HandleBusMessage notifies output protection errors for HDCP application messages from audio decryptors.
+ */
+TEST_F(HandleBusMessageTest, shouldHandleApplicationMessageForAudioOutputProtection)
+{
+    GstObject *decryptor = GST_OBJECT_CAST(g_object_new(GST_TYPE_BIN, nullptr));
+    gst_object_set_name(decryptor, "rialtodecryptoraudio_0");
+    GstStructure *hdcpFailureStructure =
+        gst_structure_new("HDCPProtectionFailure", "message", G_TYPE_STRING, "HDCP Output Protection Error", NULL);
+    GstMessage *message = gst_message_new_application(decryptor, hdcpFailureStructure);
+
+    EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(m_flushWatcherMock, isAsyncFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
+    EXPECT_CALL(*m_gstWrapper, gstStructureHasName(hdcpFailureStructure, StrEq("HDCPProtectionFailure")))
+        .WillOnce(Return(true));
+    EXPECT_CALL(m_gstPlayerClient, notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
+                                                       firebolt::rialto::PlaybackError::OUTPUT_PROTECTION));
+    EXPECT_CALL(*m_gstWrapper, gstMessageUnref(message));
+
+    firebolt::rialto::server::tasks::generic::HandleBusMessage task{m_context,          m_gstPlayer,
+                                                                    &m_gstPlayerClient, m_gstWrapper,
+                                                                    m_glibWrapper,      message,
+                                                                    m_flushWatcherMock};
+    task.execute();
+
+    gst_message_unref(message);
+    g_object_unref(decryptor);
 }

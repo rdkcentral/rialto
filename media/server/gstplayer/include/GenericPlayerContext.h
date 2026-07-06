@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 
 #include "FlushOnPrerollController.h"
+#include "IGstProfiler.h"
 #include "IGstSrc.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
@@ -207,6 +208,13 @@ struct GenericPlayerContext
     IDecryptionService *decryptionService{nullptr};
 
     /**
+     * @brief Flag used to check, if audio source has been recently removed
+     *
+     * Flag can be used only in worker thread
+     */
+    bool audioSourceRemoved{false};
+
+    /**
      * @brief Audio elements of gst pipeline.
      *
      * Attribute can be used only in worker thread
@@ -261,9 +269,31 @@ struct GenericPlayerContext
     std::atomic_bool audioFadeEnabled{false};
 
     /**
+     * @brief The last known fade volume value used for PlaybackInfo messages.
+     *        The "fade-volume" property must not be queried too frequently as it can cause decoder issues.
+     */
+    std::atomic<double> audioFadeVolume{1.0};
+
+    /**
      * @brief Workaround for the gstreamer flush issue
      */
     std::shared_ptr<IFlushOnPrerollController> flushOnPrerollController{std::make_shared<FlushOnPrerollController>()};
+
+    /**
+     * @brief Flag used to check if the stream is live
+     *        This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
+     */
+    bool isLive{false};
+
+    /**
+     * @brief Profiler for player pipeline
+     */
+    std::unique_ptr<IGstProfiler> gstProfiler;
+
+    /**
+     * @brief Current position of the stream in nanoseconds.
+     */
+    std::atomic<int64_t> streamPosition{-1};
 };
 } // namespace firebolt::rialto::server
 

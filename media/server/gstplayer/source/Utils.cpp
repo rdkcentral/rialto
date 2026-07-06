@@ -29,6 +29,7 @@
 namespace
 {
 const char *underflowSignals[]{"buffer-underflow-callback", "vidsink-underflow-callback", "underrun-callback"};
+const char *firstFrameSignals[]{"first-video-frame-callback"};
 
 bool isType(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element, GstElementFactoryListType type)
 {
@@ -62,6 +63,11 @@ bool isAudioDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, G
 bool isVideoParser(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
     return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
+}
+
+bool isAudioParser(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
+{
+    return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
 }
 
 bool isVideoSink(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
@@ -110,6 +116,32 @@ std::optional<std::string> getUnderflowSignalName(const firebolt::rialto::wrappe
                                                { return strcmp(signalName, query.signal_name) == 0; });
 
         if (std::end(underflowSignals) != signalNameIt)
+        {
+            glibWrapper.gFree(signals);
+            return std::string(*signalNameIt);
+        }
+    }
+    glibWrapper.gFree(signals);
+
+    return std::nullopt;
+}
+
+std::optional<std::string> getFirstFrameSignalName(const firebolt::rialto::wrappers::IGlibWrapper &glibWrapper,
+                                                   GstElement *element)
+{
+    GType type = glibWrapper.gObjectType(element);
+    guint nsignals{0};
+    guint *signals = glibWrapper.gSignalListIds(type, &nsignals);
+
+    for (guint i = 0; i < nsignals; i++)
+    {
+        GSignalQuery query;
+        glibWrapper.gSignalQuery(signals[i], &query);
+        const auto signalNameIt = std::find_if(std::begin(firstFrameSignals), std::end(firstFrameSignals),
+                                               [&](const auto *signalName)
+                                               { return strcmp(signalName, query.signal_name) == 0; });
+
+        if (std::end(firstFrameSignals) != signalNameIt)
         {
             glibWrapper.gFree(signals);
             return std::string(*signalNameIt);

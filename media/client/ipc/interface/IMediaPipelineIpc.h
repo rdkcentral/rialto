@@ -106,10 +106,11 @@ public:
      * @param[in] type     : The media type.
      * @param[in] mimeType : The MIME type.
      * @param[in] url      : The URL.
+     * @param[in] isLive   : Indicates if the media is live.
      *
      * @retval true on success.
      */
-    virtual bool load(MediaType type, const std::string &mimeType, const std::string &url) = 0;
+    virtual bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) = 0;
 
     /**
      * @brief Request to set the coordinates of the video window.
@@ -453,6 +454,17 @@ public:
      * @retval true on success.
      */
     virtual bool switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
+
+    /**
+     * @brief Get the playback duration in nanoseconds.
+     *
+     * This method is synchronous, it returns current playback duration
+     *
+     * @param[out] duration : The playback duration in nanoseconds
+     *
+     * @retval true on success.
+     */
+    virtual bool getDuration(int64_t &duration) = 0;
 };
 
 }; // namespace firebolt::rialto::client

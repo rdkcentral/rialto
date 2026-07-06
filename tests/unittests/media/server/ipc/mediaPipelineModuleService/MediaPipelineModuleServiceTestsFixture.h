@@ -74,6 +74,8 @@ public:
     void mediaPipelineServiceWillFailToSetPlaybackRate();
     void mediaPipelineServiceWillGetPosition();
     void mediaPipelineServiceWillFailToGetPosition();
+    void mediaPipelineServiceWillGetDuration();
+    void mediaPipelineServiceWillFailToGetDuration();
     void mediaPipelineServiceWillSetImmediateOutput();
     void mediaPipelineServiceWillFailToSetImmediateOutput();
     void mediaPipelineServiceWillGetImmediateOutput();
@@ -127,6 +129,7 @@ public:
     void mediaClientWillSendPostionChangeEvent();
     void mediaClientWillSendQosEvent();
     void mediaClientWillSendPlaybackErrorEvent();
+    void mediaClientWillSendFirstFrameReceivedEvent();
     void mediaClientWillSendSourceFlushedEvent();
     void mediaClientWillSendPlaybackInfoEvent();
 
@@ -150,6 +153,8 @@ public:
     void sendSetPositionRequestAndReceiveResponse();
     void sendGetPositionRequestAndReceiveResponse();
     void sendGetPositionRequestAndReceiveResponseWithoutPositionMatch();
+    void sendGetDurationRequestAndReceiveResponse();
+    void sendGetDurationRequestAndReceiveResponseWithoutDurationMatch();
     void sendSetImmediateOutputRequestAndReceiveResponse();
     void sendSetImmediateOutputRequestAndReceiveFail();
     void sendGetImmediateOutputRequestAndReceiveResponse();
@@ -192,6 +197,7 @@ public:
     void sendPostionChangeEvent();
     void sendQosEvent();
     void sendPlaybackErrorEvent();
+    void sendFirstFrameReceivedEvent();
     void sendSourceFlushedEvent();
     void sendPlaybackInfoEvent();
     void sendRenderFrameRequestAndReceiveResponse();

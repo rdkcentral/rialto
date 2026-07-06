@@ -75,7 +75,7 @@ public:
         EXPECT_CALL(*m_glibWrapperMock, gSignalQuery(m_signals[0], _))
             .WillRepeatedly(Invoke([&](guint signal_id, GSignalQuery *query)
                                    { query->signal_name = "buffer-underflow-callback"; }));
-        EXPECT_CALL(*m_glibWrapperMock, gFree(m_signals)).Times(2);
+        EXPECT_CALL(*m_glibWrapperMock, gFree(m_signals)).Times(4);
     }
 
     void willSetupAudioDecoder()

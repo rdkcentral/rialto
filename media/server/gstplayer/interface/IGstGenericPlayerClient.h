@@ -88,6 +88,26 @@ public:
     virtual bool notifyNeedMediaData(MediaSourceType mediaSourceType) = 0;
 
     /**
+     * @brief Notifies the client that we need media data with a delay.
+     *
+     * This method notifies the client that we need media data from the
+     * client. This is only used when Media Source Extensions are used.
+     * In that case media is read by JavaScript and buffered by the
+     * browser before being passed to this API for decoding.
+     *
+     * You cannot request data if a data request is currently pending.
+     *
+     * The frames the client sends should meet the criteria:
+     *     numFramesSent <= frameCount
+     *     numBytesSent <= maxBytes
+     *
+     * @param[in] mediaSourceType      : The media type of source to read data from.
+     *
+     * @retval True on success.
+     */
+    virtual bool notifyNeedMediaDataWithDelay(MediaSourceType mediaSourceType) = 0;
+
+    /**
      * @brief Notifies the client of the current playback position.
      *
      * This method notifies the client of the current playback position
@@ -149,6 +169,15 @@ public:
      * @param[in] mediaSourceType  : The type of the source that produced the buffer underflow
      */
     virtual void notifyBufferUnderflow(MediaSourceType mediaSourceType) = 0;
+
+    /**
+     * @brief Notifies the client that the first frame has been received.
+     *
+     * Notification shall be sent whenever a video/audio first frame is received
+     *
+     * @param[in] mediaSourceType  : The type of the source that received the first frame
+     */
+    virtual void notifyFirstFrameReceived(MediaSourceType mediaSourceType) = 0;
 
     /**
      * @brief Notifies the client that a non-fatal error has occurred in the player.

@@ -49,6 +49,7 @@ AttachSamples::AttachSamples(GenericPlayerContext &context,
             {
                 // Catching error, but continuing as best as we can
                 RIALTO_SERVER_LOG_ERROR("Failed to get the video segment, reason: %s", e.what());
+                m_gstWrapper->gstBufferUnref(gstBuffer);
             }
         }
         else if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::AUDIO)
@@ -69,6 +70,7 @@ AttachSamples::AttachSamples(GenericPlayerContext &context,
             {
                 // Catching error, but continuing as best as we can
                 RIALTO_SERVER_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
+                m_gstWrapper->gstBufferUnref(gstBuffer);
             }
         }
         else if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::SUBTITLE)

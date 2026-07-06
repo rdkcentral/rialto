@@ -75,7 +75,7 @@ public:
 
     bool allSourcesAttached() override;
 
-    bool load(MediaType type, const std::string &mimeType, const std::string &url) override;
+    bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override;
 
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
@@ -143,6 +143,8 @@ public:
     bool getUseBuffering(bool &useBuffering) override;
 
     bool switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
+
+    bool getDuration(int64_t &duration) override;
 
 private:
     /**
@@ -212,6 +214,13 @@ private:
      * @param[in] event : The buffer underflow event structure.
      */
     void onBufferUnderflow(const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event);
+
+    /**
+     * @brief Handler for a first frame received notification from the server.
+     *
+     * @param[in] event : The first frame received event structure.
+     */
+    void onFirstFrameReceived(const std::shared_ptr<firebolt::rialto::FirstFrameReceivedEvent> &event);
 
     /**
      * @brief Handler for a playback error notification from the server.
