@@ -1178,16 +1178,14 @@ void GenericTasksTestsBase::shouldSetFirstAudioFrameCallback()
 {
     ASSERT_TRUE(testContext->m_firstAudioFrameCallback);
     ASSERT_TRUE(testContext->m_audioUserData);
-    EXPECT_CALL(testContext->m_gstPlayer, clearAudioFirstFrameFallbackProbe());
-    EXPECT_CALL(testContext->m_gstPlayer, scheduleFirstAudioFrameReceived());
+    EXPECT_CALL(testContext->m_gstPlayer, scheduleFirstAudioFrameFromSignal());
 }
 
 void GenericTasksTestsBase::shouldSetFirstAudioFrameFallbackProbeCallback()
 {
     ASSERT_TRUE(testContext->m_firstAudioFrameProbeCallback);
     ASSERT_TRUE(testContext->m_firstAudioFrameProbeUserData);
-    EXPECT_CALL(testContext->m_gstPlayer, clearAudioFirstFrameFallbackProbeState());
-    EXPECT_CALL(testContext->m_gstPlayer, scheduleFirstAudioFrameReceived());
+    EXPECT_CALL(testContext->m_gstPlayer, scheduleFirstAudioFrameFromFallbackProbe());
 }
 
 void GenericTasksTestsBase::shouldSetupBaseParse()
@@ -3300,6 +3298,7 @@ void GenericTasksTestsBase::triggerRenderFrame()
 
 void GenericTasksTestsBase::shouldInvalidateActiveAudioRequests()
 {
+    EXPECT_CALL(testContext->m_gstPlayer, clearAudioFirstFrameFallbackProbe());
     EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::AUDIO));
 }
 

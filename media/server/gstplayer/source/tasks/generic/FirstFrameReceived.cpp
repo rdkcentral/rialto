@@ -24,8 +24,10 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 FirstFrameReceived::FirstFrameReceived(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                       IGstGenericPlayerClient *client, MediaSourceType sourceType)
-    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_sourceType{sourceType}
+                                       IGstGenericPlayerClient *client, MediaSourceType sourceType,
+                                       AudioFirstFrameAction audioAction)
+    : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_sourceType{sourceType},
+      m_audioAction{audioAction}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing FirstFrameReceived");
 }
@@ -38,6 +40,32 @@ FirstFrameReceived::~FirstFrameReceived()
 void FirstFrameReceived::execute() const
 {
     RIALTO_SERVER_LOG_WARN("Executing FirstFrameReceived for %s source", common::convertMediaSourceType(m_sourceType));
+
+    if (m_sourceType == MediaSourceType::AUDIO)
+    {
+        if (m_audioAction == AudioFirstFrameAction::CLEAR_PROBE)
+        {
+            m_player.clearAudioFirstFrameFallbackProbe();
+        }
+        else if (m_audioAction == AudioFirstFrameAction::CLEAR_PROBE_STATE)
+        {
+            m_player.clearAudioFirstFrameFallbackProbeState();
+        }
+
+        if (m_context.audioSourceRemoved)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Ignoring first audio frame notification - audio source removed");
+            return;
+        }
+
+        if (m_context.firstAudioFrameReceived)
+        {
+            RIALTO_SERVER_LOG_DEBUG("First audio frame notification already sent");
+            return;
+        }
+
+        m_context.firstAudioFrameReceived = true;
+    }
 
     if (m_gstPlayerClient)
     {

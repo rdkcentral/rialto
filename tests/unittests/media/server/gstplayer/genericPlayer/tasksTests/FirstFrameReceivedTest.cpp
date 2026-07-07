@@ -62,6 +62,7 @@ TEST_F(FirstFrameReceivedTest, shouldNotifyFirstAudioFrameReceived)
     firebolt::rialto::server::tasks::generic::FirstFrameReceived task{m_context, m_gstPlayer, &m_gstPlayerClient,
                                                                       kAudioSourceType};
 
+    EXPECT_CALL(m_gstPlayer, clearAudioFirstFrameFallbackProbe());
     EXPECT_CALL(m_gstPlayerClient, notifyFirstFrameReceived(kAudioSourceType));
 
     task.execute();

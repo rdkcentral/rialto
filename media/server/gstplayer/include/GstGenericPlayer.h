@@ -157,6 +157,8 @@ private:
     void scheduleVideoUnderflow() override;
     void scheduleFirstVideoFrameReceived() override;
     void scheduleFirstAudioFrameReceived() override;
+    void scheduleFirstAudioFrameFromSignal() override;
+    void scheduleFirstAudioFrameFromFallbackProbe() override;
     void setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id) override;
     void clearAudioFirstFrameFallbackProbe() override;
     void clearAudioFirstFrameFallbackProbeState() override;
@@ -198,7 +200,6 @@ private:
     void addAutoAudioSinkChild(GObject *object) override;
     void removeAutoVideoSinkChild(GObject *object) override;
     void removeAutoAudioSinkChild(GObject *object) override;
-    void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
     bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     bool hasSourceType(const MediaSourceType &mediaSourceType) const override;
     GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
@@ -411,6 +412,14 @@ private:
      * @param[in] enableAudio : Whether to enable audio flags.
      */
     void setPlaybinFlags(bool enableAudio = true);
+
+    /**
+     * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
+     *
+     * @param[in] source : The Gst Source element, that should receive new sample
+     * @param[in] typeStr : The media source type name used for logging
+     */
+    void pushSampleIfRequired(GstElement *source, const std::string &typeStr);
 
 private:
     /**

@@ -306,6 +306,11 @@ struct GenericPlayerContext
     GstPad *audioFirstFrameProbePad{nullptr};
 
     /**
+     * @brief The audio position set in the GstSegment.
+     */
+    int64_t audioGstSegmentPosition{-1};
+
+    /**
      * @brief Current position of the stream in nanoseconds.
      */
     std::atomic<int64_t> streamPosition{-1};

@@ -36,6 +36,7 @@
 #include "TypeConverters.h"
 #include "Utils.h"
 #include "WorkerThread.h"
+#include "tasks/generic/FirstFrameReceived.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 
 namespace
@@ -304,14 +305,13 @@ void GstGenericPlayer::resetWorkerThread()
 
 void GstGenericPlayer::termPipeline()
 {
-    clearAudioFirstFrameFallbackProbe();
-
     if (m_finishSourceSetupTimer && m_finishSourceSetupTimer->isActive())
     {
         m_finishSourceSetupTimer->cancel();
     }
 
     m_finishSourceSetupTimer.reset();
+    clearAudioFirstFrameFallbackProbe();
 
     for (auto &elem : m_context.streamInfo)
     {
@@ -540,11 +540,6 @@ GstElement *GstGenericPlayer::getSink(const MediaSourceType &mediaSourceType) co
 
 void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
 {
-    if (mediaSourceType == MediaSourceType::AUDIO)
-    {
-        m_context.firstAudioFrameReceived = false;
-        clearAudioFirstFrameFallbackProbe();
-    }
     m_flushWatcher->setFlushed(mediaSourceType);
 }
 
@@ -1565,6 +1560,11 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         m_gstWrapper->gstCapsUnref(currentCaps);
 
         m_gstWrapper->gstSegmentFree(segment);
+
+        if (typeStr == common::convertMediaSourceType(MediaSourceType::AUDIO))
+        {
+            m_context.audioGstSegmentPosition = position;
+        }
     }
     m_context.currentPosition[source] = initialPosition->second.back();
     m_context.initialPositions.erase(initialPosition);
@@ -1755,46 +1755,80 @@ void GstGenericPlayer::scheduleFirstVideoFrameReceived()
 
 void GstGenericPlayer::scheduleFirstAudioFrameReceived()
 {
-    if (m_context.firstAudioFrameReceived)
-    {
-        return;
-    }
-
-    m_context.firstAudioFrameReceived = true;
-
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::AUDIO));
     }
 }
 
+void GstGenericPlayer::scheduleFirstAudioFrameFromSignal()
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(
+            std::make_unique<tasks::generic::FirstFrameReceived>(m_context, *this, m_gstPlayerClient,
+                                                                 MediaSourceType::AUDIO,
+                                                                 tasks::generic::AudioFirstFrameAction::CLEAR_PROBE));
+    }
+}
+
+void GstGenericPlayer::scheduleFirstAudioFrameFromFallbackProbe()
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(
+            std::make_unique<tasks::generic::FirstFrameReceived>(m_context, *this, m_gstPlayerClient,
+                                                                 MediaSourceType::AUDIO,
+                                                                 tasks::generic::AudioFirstFrameAction::CLEAR_PROBE_STATE));
+    }
+}
+
 void GstGenericPlayer::setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id)
 {
-    clearAudioFirstFrameFallbackProbe();
-
+    GstPad *oldPad{m_context.audioFirstFrameProbePad};
+    gulong oldId{m_context.audioFirstFrameProbeId};
     m_context.audioFirstFrameProbePad = pad;
     m_context.audioFirstFrameProbeId = id;
+
+    if (oldPad && oldId != 0)
+    {
+        m_gstWrapper->gstPadRemoveProbe(oldPad, oldId);
+    }
+
+    if (oldPad)
+    {
+        m_gstWrapper->gstObjectUnref(oldPad);
+    }
 }
 
 void GstGenericPlayer::clearAudioFirstFrameFallbackProbe()
 {
-    if (m_context.audioFirstFrameProbePad && m_context.audioFirstFrameProbeId != 0)
+    GstPad *pad{m_context.audioFirstFrameProbePad};
+    gulong id{m_context.audioFirstFrameProbeId};
+    m_context.audioFirstFrameProbePad = nullptr;
+    m_context.audioFirstFrameProbeId = 0;
+
+    if (pad && id != 0)
     {
-        m_gstWrapper->gstPadRemoveProbe(m_context.audioFirstFrameProbePad, m_context.audioFirstFrameProbeId);
+        m_gstWrapper->gstPadRemoveProbe(pad, id);
     }
 
-    clearAudioFirstFrameFallbackProbeState();
+    if (pad)
+    {
+        m_gstWrapper->gstObjectUnref(pad);
+    }
 }
 
 void GstGenericPlayer::clearAudioFirstFrameFallbackProbeState()
 {
-    if (m_context.audioFirstFrameProbePad)
-    {
-        m_gstWrapper->gstObjectUnref(m_context.audioFirstFrameProbePad);
-        m_context.audioFirstFrameProbePad = nullptr;
-    }
-
+    GstPad *pad{m_context.audioFirstFrameProbePad};
+    m_context.audioFirstFrameProbePad = nullptr;
     m_context.audioFirstFrameProbeId = 0;
+
+    if (pad)
+    {
+        m_gstWrapper->gstObjectUnref(pad);
+    }
 }
 
 void GstGenericPlayer::scheduleAllSourcesAttached()
@@ -2364,9 +2398,9 @@ void GstGenericPlayer::startNotifyPlaybackInfoTimer()
 
     notifyPlaybackInfo();
 
-    m_playbackInfoTimer =
-        m_timerFactory
-            ->createTimer(kPlaybackInfoTimerMs, [this]() { notifyPlaybackInfo(); }, firebolt::rialto::common::TimerType::PERIODIC);
+    const auto kNotifyPlaybackInfo = [this]() { notifyPlaybackInfo(); };
+    m_playbackInfoTimer = m_timerFactory->createTimer(kPlaybackInfoTimerMs, kNotifyPlaybackInfo,
+                                                      firebolt::rialto::common::TimerType::PERIODIC);
 }
 
 void GstGenericPlayer::stopNotifyPlaybackInfoTimer()

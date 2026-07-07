@@ -348,6 +348,24 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleFirstAudioFrameReceived)
     m_sut->scheduleFirstAudioFrameReceived();
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleFirstAudioFrameFromSignal)
+{
+    EXPECT_CALL(m_gstPlayerClient, notifyFirstFrameReceived(MediaSourceType::AUDIO));
+
+    m_sut->scheduleFirstAudioFrameFromSignal();
+
+    modifyContext([&](const GenericPlayerContext &context) { EXPECT_TRUE(context.firstAudioFrameReceived); });
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleFirstAudioFrameFromFallbackProbe)
+{
+    EXPECT_CALL(m_gstPlayerClient, notifyFirstFrameReceived(MediaSourceType::AUDIO));
+
+    m_sut->scheduleFirstAudioFrameFromFallbackProbe();
+
+    modifyContext([&](const GenericPlayerContext &context) { EXPECT_TRUE(context.firstAudioFrameReceived); });
+}
+
 TEST_F(GstGenericPlayerPrivateTest, shouldSetAudioFirstFrameFallbackProbe)
 {
     GstPad pad{};

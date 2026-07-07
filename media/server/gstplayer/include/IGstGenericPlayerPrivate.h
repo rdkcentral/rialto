@@ -72,6 +72,16 @@ public:
     virtual void scheduleFirstAudioFrameReceived() = 0;
 
     /**
+     * @brief Schedules first audio frame received from signal path. Called by the Gstreamer thread.
+     */
+    virtual void scheduleFirstAudioFrameFromSignal() = 0;
+
+    /**
+     * @brief Schedules first audio frame received from fallback probe path. Called by the Gstreamer thread.
+     */
+    virtual void scheduleFirstAudioFrameFromFallbackProbe() = 0;
+
+    /**
      * @brief Stores audio first-frame fallback probe state.
      *
      * @param[in] pad : sink pad with installed probe
@@ -313,14 +323,6 @@ public:
      * @retval The sink, NULL if not found. Please call getObjectUnref() if it's non-null
      */
     virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
-
-    /**
-     * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
-     *
-     * @param[in] source          : The Gst Source element, that should receive new sample
-     * @param[in] typeStr         : The media source type string
-     */
-    virtual void pushSampleIfRequired(GstElement *source, const std::string &typeStr) = 0;
 
     /**
      * @brief Reattaches source (or switches it)

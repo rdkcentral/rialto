@@ -178,7 +178,7 @@ public:
     {
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, _, _))
             .Times(AnyNumber())
-            .WillOnce(Invoke(
+            .WillRepeatedly(Invoke(
                 [&](gpointer object, const gchar *first_property_name, void *element)
                 {
                     GstElement **elementPtr = reinterpret_cast<GstElement **>(element);

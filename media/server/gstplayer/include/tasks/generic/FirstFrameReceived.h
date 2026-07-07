@@ -27,11 +27,18 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
+enum class AudioFirstFrameAction
+{
+    CLEAR_PROBE,
+    CLEAR_PROBE_STATE
+};
+
 class FirstFrameReceived : public IPlayerTask
 {
 public:
     FirstFrameReceived(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                       MediaSourceType sourceType);
+                       MediaSourceType sourceType,
+                       AudioFirstFrameAction audioAction = AudioFirstFrameAction::CLEAR_PROBE);
     ~FirstFrameReceived() override;
 
     void execute() const override;
@@ -41,6 +48,7 @@ private:
     IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
     MediaSourceType m_sourceType;
+    AudioFirstFrameAction m_audioAction;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

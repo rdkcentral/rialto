@@ -38,6 +38,8 @@ public:
     MOCK_METHOD(void, scheduleVideoUnderflow, (), (override));
     MOCK_METHOD(void, scheduleFirstVideoFrameReceived, (), (override));
     MOCK_METHOD(void, scheduleFirstAudioFrameReceived, (), (override));
+    MOCK_METHOD(void, scheduleFirstAudioFrameFromSignal, (), (override));
+    MOCK_METHOD(void, scheduleFirstAudioFrameFromFallbackProbe, (), (override));
     MOCK_METHOD(void, setAudioFirstFrameFallbackProbe, (GstPad * pad, gulong id), (override));
     MOCK_METHOD(void, clearAudioFirstFrameFallbackProbe, (), (override));
     MOCK_METHOD(void, clearAudioFirstFrameFallbackProbeState, (), (override));
@@ -78,7 +80,6 @@ public:
     MOCK_METHOD(GstElement *, getSink, (const MediaSourceType &mediaSourceType), (const, override));
     MOCK_METHOD(void, addAudioClippingToBuffer, (GstBuffer * buffer, uint64_t clippingStart, uint64_t clippingEnd),
                 (const, override));
-    MOCK_METHOD(void, pushSampleIfRequired, (GstElement * source, const std::string &typeStr), (override));
     MOCK_METHOD(bool, reattachSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &source), (override));
     MOCK_METHOD(void, setSourceFlushed, (const MediaSourceType &mediaSourceType), (override));
     MOCK_METHOD(void, startSubtitleClockResyncTimer, (), (override));
