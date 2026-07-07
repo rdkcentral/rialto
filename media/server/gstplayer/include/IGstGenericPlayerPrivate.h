@@ -299,14 +299,6 @@ public:
     virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
 
     /**
-     * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
-     *
-     * @param[in] source          : The Gst Source element, that should receive new sample
-     * @param[in] typeStr         : The media source type string
-     */
-    virtual void pushSampleIfRequired(GstElement *source, const std::string &typeStr) = 0;
-
-    /**
      * @brief Reattaches source (or switches it)
      *
      * @param[in] source          : The new media source
