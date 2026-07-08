@@ -1370,7 +1370,7 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
         }
         else
         {
-            pushSampleIfRequired(streamInfo.appSrc, common::convertMediaSourceType(mediaType));
+            pushSampleIfRequired(streamInfo.appSrc, mediaType);
         }
         if (mediaType == firebolt::rialto::MediaSourceType::AUDIO)
         {
@@ -1514,8 +1514,10 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
     return false;
 }
 
-void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::string &typeStr)
+void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourceType &mediaSourceType)
 {
+    const std::string kTypeStr{common::convertMediaSourceType(mediaSourceType)};
+
     auto initialPosition = m_context.initialPositions.find(source);
     if (m_context.initialPositions.end() == initialPosition)
     {
@@ -1530,7 +1532,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
     for (const auto &[position, resetTime, appliedRate, stopPosition] : initialPosition->second)
     {
         GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
-        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
+        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", kTypeStr.c_str());
         GstSegment *segment{m_gstWrapper->gstSegmentNew()};
         m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
         if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, seekFlag,
@@ -1544,9 +1546,9 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         segment->applied_rate = appliedRate;
         RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
-                              typeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
+                              kTypeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
                               segment->rate, segment->applied_rate, resetTime);
-        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", typeStr);
+        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", kTypeStr);
         if (recordId)
             m_context.gstProfiler->logRecord(recordId.value());
 
@@ -1561,7 +1563,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
 
         m_gstWrapper->gstSegmentFree(segment);
 
-        if (typeStr == common::convertMediaSourceType(MediaSourceType::AUDIO))
+        if (mediaSourceType == MediaSourceType::AUDIO)
         {
             m_context.audioGstSegmentPosition = position;
         }
@@ -1753,33 +1755,12 @@ void GstGenericPlayer::scheduleFirstVideoFrameReceived()
     }
 }
 
-void GstGenericPlayer::scheduleFirstAudioFrameReceived()
-{
-    if (m_workerThread)
-    {
-        m_workerThread->enqueueTask(m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::AUDIO));
-    }
-}
-
-void GstGenericPlayer::scheduleFirstAudioFrameFromSignal()
+void GstGenericPlayer::scheduleFirstAudioFrameReceived(AudioFirstFrameAction audioAction)
 {
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(
-            std::make_unique<tasks::generic::FirstFrameReceived>(m_context, *this, m_gstPlayerClient,
-                                                                 MediaSourceType::AUDIO,
-                                                                 tasks::generic::AudioFirstFrameAction::CLEAR_PROBE));
-    }
-}
-
-void GstGenericPlayer::scheduleFirstAudioFrameFromFallbackProbe()
-{
-    if (m_workerThread)
-    {
-        m_workerThread->enqueueTask(
-            std::make_unique<tasks::generic::FirstFrameReceived>(m_context, *this, m_gstPlayerClient,
-                                                                 MediaSourceType::AUDIO,
-                                                                 tasks::generic::AudioFirstFrameAction::CLEAR_PROBE_STATE));
+            m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::AUDIO, audioAction));
     }
 }
 

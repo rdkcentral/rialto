@@ -37,9 +37,7 @@ public:
     MOCK_METHOD(void, scheduleAudioUnderflow, (), (override));
     MOCK_METHOD(void, scheduleVideoUnderflow, (), (override));
     MOCK_METHOD(void, scheduleFirstVideoFrameReceived, (), (override));
-    MOCK_METHOD(void, scheduleFirstAudioFrameReceived, (), (override));
-    MOCK_METHOD(void, scheduleFirstAudioFrameFromSignal, (), (override));
-    MOCK_METHOD(void, scheduleFirstAudioFrameFromFallbackProbe, (), (override));
+    MOCK_METHOD(void, scheduleFirstAudioFrameReceived, (AudioFirstFrameAction audioAction), (override));
     MOCK_METHOD(void, setAudioFirstFrameFallbackProbe, (GstPad * pad, gulong id), (override));
     MOCK_METHOD(void, clearAudioFirstFrameFallbackProbe, (), (override));
     MOCK_METHOD(void, clearAudioFirstFrameFallbackProbeState, (), (override));

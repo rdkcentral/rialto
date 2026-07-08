@@ -22,6 +22,7 @@
 #include "MediaPipelineTest.h"
 #include <gst/gst.h>
 
+#include <cstring>
 #include <functional>
 
 using testing::_;

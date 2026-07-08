@@ -1178,14 +1178,14 @@ void GenericTasksTestsBase::shouldSetFirstAudioFrameCallback()
 {
     ASSERT_TRUE(testContext->m_firstAudioFrameCallback);
     ASSERT_TRUE(testContext->m_audioUserData);
-    EXPECT_CALL(testContext->m_gstPlayer, scheduleFirstAudioFrameFromSignal());
+    EXPECT_CALL(testContext->m_gstPlayer, scheduleFirstAudioFrameReceived(AudioFirstFrameAction::CLEAR_PROBE));
 }
 
 void GenericTasksTestsBase::shouldSetFirstAudioFrameFallbackProbeCallback()
 {
     ASSERT_TRUE(testContext->m_firstAudioFrameProbeCallback);
     ASSERT_TRUE(testContext->m_firstAudioFrameProbeUserData);
-    EXPECT_CALL(testContext->m_gstPlayer, scheduleFirstAudioFrameFromFallbackProbe());
+    EXPECT_CALL(testContext->m_gstPlayer, scheduleFirstAudioFrameReceived(AudioFirstFrameAction::CLEAR_PROBE_STATE));
 }
 
 void GenericTasksTestsBase::shouldSetupBaseParse()
@@ -3426,7 +3426,9 @@ void GenericTasksTestsBase::triggerReadShmDataAndAttachSamples()
 
 void GenericTasksTestsBase::shouldFlushAudio()
 {
+    testContext->m_context.firstAudioFrameReceived = true;
     EXPECT_CALL(*testContext->m_gstWrapper, gstBufferUnref(&testContext->m_audioBuffer));
+    EXPECT_CALL(testContext->m_gstPlayer, clearAudioFirstFrameFallbackProbe());
     EXPECT_CALL(testContext->m_gstPlayerClient, invalidateActiveRequests(firebolt::rialto::MediaSourceType::AUDIO));
     EXPECT_CALL(testContext->m_gstPlayerClient, notifySourceFlushed(firebolt::rialto::MediaSourceType::AUDIO));
     EXPECT_CALL(testContext->m_gstPlayer, setSourceFlushed(firebolt::rialto::MediaSourceType::AUDIO));
@@ -3465,6 +3467,7 @@ void GenericTasksTestsBase::checkAudioFlushed()
               testContext->m_context.endOfStreamInfo.end());
     EXPECT_NE(testContext->m_context.endOfStreamInfo.find(firebolt::rialto::MediaSourceType::VIDEO),
               testContext->m_context.endOfStreamInfo.end());
+    EXPECT_FALSE(testContext->m_context.firstAudioFrameReceived);
 }
 
 void GenericTasksTestsBase::checkVideoFlushed()

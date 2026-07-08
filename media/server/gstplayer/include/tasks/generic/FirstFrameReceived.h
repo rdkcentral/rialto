@@ -21,18 +21,13 @@
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_FIRST_FRAME_RECEIVED_H_
 
 #include "GenericPlayerContext.h"
+#include "GstPlayerTypes.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
-enum class AudioFirstFrameAction
-{
-    CLEAR_PROBE,
-    CLEAR_PROBE_STATE
-};
-
 class FirstFrameReceived : public IPlayerTask
 {
 public:

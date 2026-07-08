@@ -88,7 +88,7 @@ void firstAudioFrameCallback(GstElement *object, guint fifoDepth, gpointer queue
 {
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
-    player->scheduleFirstAudioFrameFromSignal();
+    player->scheduleFirstAudioFrameReceived(firebolt::rialto::server::AudioFirstFrameAction::CLEAR_PROBE);
 }
 
 /**
@@ -103,7 +103,7 @@ GstPadProbeReturn firstAudioFrameProbeCallback(GstPad *pad, GstPadProbeInfo *inf
 
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
-    player->scheduleFirstAudioFrameFromFallbackProbe();
+    player->scheduleFirstAudioFrameReceived(firebolt::rialto::server::AudioFirstFrameAction::CLEAR_PROBE_STATE);
     return GST_PAD_PROBE_REMOVE;
 }
 

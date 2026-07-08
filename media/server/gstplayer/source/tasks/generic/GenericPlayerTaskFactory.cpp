@@ -275,9 +275,10 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(GenericPl
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFirstFrameReceived(GenericPlayerContext &context,
                                                                                 IGstGenericPlayerPrivate &player,
-                                                                                MediaSourceType sourceType) const
+                                                                                MediaSourceType sourceType,
+                                                                                AudioFirstFrameAction audioAction) const
 {
-    return std::make_unique<tasks::generic::FirstFrameReceived>(context, player, m_client, sourceType);
+    return std::make_unique<tasks::generic::FirstFrameReceived>(context, player, m_client, sourceType, audioAction);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUpdatePlaybackGroup(GenericPlayerContext &context,

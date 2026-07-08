@@ -82,7 +82,6 @@ void AttachSource::addSource() const
     GstElement *appSrc = nullptr;
     if (m_attachedSource->getType() == MediaSourceType::AUDIO)
     {
-        m_context.firstAudioFrameReceived = false;
         RIALTO_SERVER_LOG_MIL("Adding Audio appsrc with caps %s", capsStr);
         appSrc = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
         profilerInfo = "audsrc";

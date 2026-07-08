@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_GENERIC_PLAYER_PRIVATE_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_GENERIC_PLAYER_PRIVATE_H_
 
+#include "GstPlayerTypes.h"
 #include "IMediaPipeline.h"
 
 #include <gst/app/gstappsrc.h>
@@ -67,19 +68,9 @@ public:
     virtual void scheduleFirstVideoFrameReceived() = 0;
 
     /**
-     * @brief Schedules first audio frame received task. Called by the worker thread.
+     * @brief Schedules first audio frame received task. Called by the Gstreamer thread.
      */
-    virtual void scheduleFirstAudioFrameReceived() = 0;
-
-    /**
-     * @brief Schedules first audio frame received from signal path. Called by the Gstreamer thread.
-     */
-    virtual void scheduleFirstAudioFrameFromSignal() = 0;
-
-    /**
-     * @brief Schedules first audio frame received from fallback probe path. Called by the Gstreamer thread.
-     */
-    virtual void scheduleFirstAudioFrameFromFallbackProbe() = 0;
+    virtual void scheduleFirstAudioFrameReceived(AudioFirstFrameAction audioAction) = 0;
 
     /**
      * @brief Stores audio first-frame fallback probe state.

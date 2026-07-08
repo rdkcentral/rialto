@@ -332,38 +332,33 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleFirstVideoFrameReceived)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createFirstFrameReceived(_, _, MediaSourceType::VIDEO))
+    EXPECT_CALL(m_taskFactoryMock,
+                createFirstFrameReceived(_, _, MediaSourceType::VIDEO, AudioFirstFrameAction::CLEAR_PROBE))
         .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleFirstVideoFrameReceived();
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldScheduleFirstAudioFrameReceived)
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleFirstAudioFrameFromSignal)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createFirstFrameReceived(_, _, MediaSourceType::AUDIO))
+    EXPECT_CALL(m_taskFactoryMock,
+                createFirstFrameReceived(_, _, MediaSourceType::AUDIO, AudioFirstFrameAction::CLEAR_PROBE))
         .WillOnce(Return(ByMove(std::move(task))));
 
-    m_sut->scheduleFirstAudioFrameReceived();
-}
-
-TEST_F(GstGenericPlayerPrivateTest, shouldScheduleFirstAudioFrameFromSignal)
-{
-    EXPECT_CALL(m_gstPlayerClient, notifyFirstFrameReceived(MediaSourceType::AUDIO));
-
-    m_sut->scheduleFirstAudioFrameFromSignal();
-
-    modifyContext([&](const GenericPlayerContext &context) { EXPECT_TRUE(context.firstAudioFrameReceived); });
+    m_sut->scheduleFirstAudioFrameReceived(AudioFirstFrameAction::CLEAR_PROBE);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldScheduleFirstAudioFrameFromFallbackProbe)
 {
-    EXPECT_CALL(m_gstPlayerClient, notifyFirstFrameReceived(MediaSourceType::AUDIO));
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock,
+                createFirstFrameReceived(_, _, MediaSourceType::AUDIO, AudioFirstFrameAction::CLEAR_PROBE_STATE))
+        .WillOnce(Return(ByMove(std::move(task))));
 
-    m_sut->scheduleFirstAudioFrameFromFallbackProbe();
-
-    modifyContext([&](const GenericPlayerContext &context) { EXPECT_TRUE(context.firstAudioFrameReceived); });
+    m_sut->scheduleFirstAudioFrameReceived(AudioFirstFrameAction::CLEAR_PROBE_STATE);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldSetAudioFirstFrameFallbackProbe)

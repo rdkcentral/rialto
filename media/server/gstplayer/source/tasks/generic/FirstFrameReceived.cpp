@@ -39,7 +39,7 @@ FirstFrameReceived::~FirstFrameReceived()
 
 void FirstFrameReceived::execute() const
 {
-    RIALTO_SERVER_LOG_WARN("Executing FirstFrameReceived for %s source", common::convertMediaSourceType(m_sourceType));
+    RIALTO_SERVER_LOG_DEBUG("Executing FirstFrameReceived for %s source", common::convertMediaSourceType(m_sourceType));
 
     if (m_sourceType == MediaSourceType::AUDIO)
     {
