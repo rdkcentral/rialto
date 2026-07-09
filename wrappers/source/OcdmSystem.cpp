@@ -23,8 +23,7 @@
 #include "opencdm/open_cdm_ext.h"
 #include <stdexcept>
 
-extern "C" OpenCDMError opencdm_system_supported_robustness(struct OpenCDMSystem *system, char ***robustness,
-                                                            uint16_t *count);
+extern "C" OpenCDMError opencdm_system_supported_robustness(struct OpenCDMSystem *system, char ***robustness, uint16_t *count);
 
 namespace firebolt::rialto::wrappers
 {
