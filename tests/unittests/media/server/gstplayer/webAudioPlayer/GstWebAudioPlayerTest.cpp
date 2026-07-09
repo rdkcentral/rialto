@@ -156,12 +156,11 @@ TEST_F(GstWebAudioPlayerTest, shouldWriteBuffer)
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
     EXPECT_CALL(m_taskFactoryMock, createWriteBuffer(_, &mainPtr, mainLength, &wrapPtr, wrapLength))
-        .WillOnce(DoAll(WithArgs<0>(Invoke(
-                            [this](WebAudioPlayerContext &context) {
-                                m_testThread =
-                                    std::thread(&GstWebAudioPlayerTest::notifyWriteBuffer, this, std::ref(context));
-                            })),
-                        Return(ByMove(std::move(task)))));
+        .WillOnce(
+            DoAll(WithArgs<0>(Invoke(
+                      [this](WebAudioPlayerContext &context)
+                      { m_testThread = std::thread(&GstWebAudioPlayerTest::notifyWriteBuffer, this, std::ref(context)); })),
+                  Return(ByMove(std::move(task)))));
     executeTaskWhenEnqueued();
 
     uint32_t returnBytes = m_sut->writeBuffer(&mainPtr, mainLength, &wrapPtr, wrapLength);

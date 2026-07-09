@@ -37,8 +37,7 @@ const std::string kKeySystem{"com.netflix.playready"};
 const std::vector<std::string> kRobustnessLevels{"HW_SECURE_ALL", "SW_SECURE_CRYPTO"};
 } // namespace
 
-class RialtoClientMediaKeysCapabilitiesIpcRobustnessTest : public IpcModuleBase
-, public ::testing::Test
+class RialtoClientMediaKeysCapabilitiesIpcRobustnessTest : public IpcModuleBase, public ::testing::Test
 {
 protected:
     std::unique_ptr<IMediaKeysCapabilities> m_mediaKeysCapabilitiesIpc;
