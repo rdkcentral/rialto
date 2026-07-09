@@ -26,6 +26,7 @@
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
 #include "ITimer.h"
+#include "NeedDataDelayCalculator.h"
 #include <map>
 #include <memory>
 #include <shared_mutex>
@@ -181,6 +182,8 @@ public:
 
     bool notifyNeedMediaData(MediaSourceType mediaSourceType) override;
 
+    bool notifyNeedMediaDataWithDelay(MediaSourceType mediaSourceType) override;
+
     void notifyPosition(std::int64_t position) override;
 
     void notifyNetworkState(NetworkState state) override;
@@ -306,6 +309,11 @@ protected:
      * @brief Mutex to protect gstPlayer access in getPosition method
      */
     std::shared_mutex m_getPropertyMutex;
+
+    /**
+     * @brief Object to calculate the delay for scheduling NeedMediaData when no segments were received in haveData() call
+     */
+    NeedDataDelayCalculator m_needDataDelayCalculator;
 
     /**
      * @brief Load internally, only to be called on the main thread.
@@ -478,6 +486,13 @@ protected:
      * @param[in] mediaSourceType    : The media source type.
      */
     bool notifyNeedMediaDataInternal(MediaSourceType mediaSourceType);
+
+    /**
+     * @brief Notify need media data with delay internally, only to be called on the main thread.
+     *
+     * @param[in] mediaSourceType    : The media source type.
+     */
+    bool notifyNeedMediaDataWithDelayInternal(MediaSourceType mediaSourceType);
 
     /**
      * @brief Schedules resending of NeedMediaData after a short delay. Used when no segments were received in the
@@ -722,7 +737,7 @@ protected:
      *
      * @retval NeedMediaData timeout
      */
-    std::chrono::milliseconds getNeedMediaDataTimeout(MediaSourceType mediaSourceType) const;
+    std::chrono::milliseconds getNeedMediaDataTimeout(MediaSourceType mediaSourceType);
 };
 
 }; // namespace firebolt::rialto::server

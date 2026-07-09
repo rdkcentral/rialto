@@ -143,7 +143,7 @@ void MediaPipelineTestBase::expectNotifyNeedData(MediaSourceType sourceType, int
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, sourceType))
         .WillOnce(Return(0));
-    EXPECT_CALL(*m_activeRequestsMock, insert(sourceType, _)).WillOnce(Return(0));
+    EXPECT_CALL(*m_activeRequestsMock, insert(sourceType, _, numFrames)).WillOnce(Return(0));
     EXPECT_CALL(*m_mediaPipelineClientMock,
                 notifyNeedMediaData(sourceId, numFrames, 0, _)); // params tested in NeedMediaDataTests
 }

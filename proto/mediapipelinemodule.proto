@@ -395,8 +395,9 @@ message HaveDataRequest {
         OK = 1;                     ///< Source data provided without error.
         EOS = 2;                    ///< Source reached the end of stream.
         ERROR = 3;                  ///< There was an error providing source data.
-        CODEC_CHANGED = 4;          ///< strThe codec has changed and the decoder must be reconfigured.
+        CODEC_CHANGED = 4;          ///< The codec has changed and the decoder must be reconfigured.
         NO_AVAILABLE_SAMPLES = 5;   ///< Could not retrieve media samples.
+        NO_SPACE_FOR_SAMPLES = 6;   ///< Could not copy data to shared buffer space.
     };
 
     optional int32 session_id = 1 [default = -1];
