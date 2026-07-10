@@ -124,7 +124,8 @@ public:
      *
      * @retval true if operation was successful
      */
-    virtual bool getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels) = 0;
+    virtual bool getSupportedRobustnessLevels(const std::string &keySystem,
+                                              std::vector<std::string> &robustnessLevels) = 0;
 };
 
 }; // namespace firebolt::rialto

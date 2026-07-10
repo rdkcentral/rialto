@@ -31,7 +31,7 @@ public:
     ControlIpcMock() = default;
     virtual ~ControlIpcMock() = default;
 
-    MOCK_METHOD(bool, getSharedMemory, (int32_t & fd, uint32_t &size), (override));
+    MOCK_METHOD(bool, getSharedMemory, (int32_t &fd, uint32_t &size), (override));
     MOCK_METHOD(bool, registerClient, (), (override));
 };
 } // namespace firebolt::rialto::client
