@@ -705,8 +705,8 @@ void MediaKeysTestMethods::shouldGetSupportedRobustnessLevels()
 {
     EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock,
                 getSupportedRobustnessLevels(_, getSupportedRobustnessLevelsRequestMatcher(kKeySystems[0]), _, _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysCapabilitiesModuleMock->getSupportedRobustnessLevelsResponse(
-                            kRobustnessLevels)),
+        .WillOnce(DoAll(SetArgPointee<2>(
+                            m_mediaKeysCapabilitiesModuleMock->getSupportedRobustnessLevelsResponse(kRobustnessLevels)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysCapabilitiesModuleMock),
                                               &MediaKeysCapabilitiesModuleMock::defaultReturn))));
 }
@@ -722,8 +722,8 @@ void MediaKeysTestMethods::shouldNotGetSupportedRobustnessLevels()
 {
     EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock,
                 getSupportedRobustnessLevels(_, getSupportedRobustnessLevelsRequestMatcher(kKeySystems[0]), _, _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysCapabilitiesModuleMock->getSupportedRobustnessLevelsResponse(
-                            kRobustnessLevels)),
+        .WillOnce(DoAll(SetArgPointee<2>(
+                            m_mediaKeysCapabilitiesModuleMock->getSupportedRobustnessLevelsResponse(kRobustnessLevels)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysCapabilitiesModuleMock),
                                               &MediaKeysCapabilitiesModuleMock::failureReturn))));
 }
