@@ -39,7 +39,7 @@ public:
     MOCK_METHOD(void, pause, (), (override));
     MOCK_METHOD(void, setVolume, (double volume), (override));
     MOCK_METHOD(bool, getVolume, (double &volume), (override));
-    MOCK_METHOD(uint32_t, writeBuffer, (uint8_t *mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength),
+    MOCK_METHOD(uint32_t, writeBuffer, (uint8_t * mainPtr, uint32_t mainLength, uint8_t *wrapPtr, uint32_t wrapLength),
                 (override));
     MOCK_METHOD(void, setEos, (), (override));
     MOCK_METHOD(uint64_t, getQueuedBytes, (), (override));

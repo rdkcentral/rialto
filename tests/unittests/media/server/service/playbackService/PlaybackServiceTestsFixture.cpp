@@ -39,8 +39,8 @@ const std::string kClientDisplayName{"westeros-rialto"};
 } // namespace
 
 PlaybackServiceTests::PlaybackServiceTests()
-    : m_mediaPipelineFactoryMock{
-          std::make_shared<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>>()},
+    : m_mediaPipelineFactoryMock{std::make_shared<
+          StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>>()},
       m_mediaPipelineCapabilitiesFactoryMock{
           std::make_shared<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesFactoryMock>>()},
       m_webAudioPlayerFactoryMock{

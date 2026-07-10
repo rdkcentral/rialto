@@ -38,7 +38,7 @@ public:
     MOCK_METHOD(void, setClientDisplayName, (const std::string &clientDisplayName), (const, override));
     MOCK_METHOD(void, setResourceManagerAppName, (const std::string &appName), (const, override));
     MOCK_METHOD(bool, isActive, (), (const, override));
-    MOCK_METHOD(bool, getSharedMemory, (int32_t &fd, uint32_t &size), (const, override));
+    MOCK_METHOD(bool, getSharedMemory, (int32_t & fd, uint32_t &size), (const, override));
     MOCK_METHOD(int, getMaxPlaybacks, (), (const, override));
     MOCK_METHOD(int, getMaxWebAudioPlayers, (), (const, override));
     MOCK_METHOD(std::shared_ptr<ISharedMemoryBuffer>, getShmBuffer, (), (const, override));

@@ -48,7 +48,7 @@ public:
 
     MOCK_METHOD(bool, setPosition, (int64_t position), (override));
 
-    MOCK_METHOD(bool, getPosition, (int64_t &position), (override));
+    MOCK_METHOD(bool, getPosition, (int64_t & position), (override));
     MOCK_METHOD(bool, setImmediateOutput, (int32_t sourceId, bool immediateOutput), (override));
     MOCK_METHOD(bool, getImmediateOutput, (int32_t sourceId, bool &immediateOutput), (override));
     MOCK_METHOD(bool, getStats, (int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames), (override));
@@ -75,7 +75,7 @@ public:
     MOCK_METHOD(bool, getSync, (bool &sync), (override));
     MOCK_METHOD(bool, setSyncOff, (bool syncOff), (override));
     MOCK_METHOD(bool, setStreamSyncMode, (int32_t sourceId, int32_t streamSyncMode), (override));
-    MOCK_METHOD(bool, getStreamSyncMode, (int32_t &streamSyncMode), (override));
+    MOCK_METHOD(bool, getStreamSyncMode, (int32_t & streamSyncMode), (override));
     MOCK_METHOD(bool, flush, (int32_t sourceId, bool resetTime, bool &async), (override));
     MOCK_METHOD(bool, setSourcePosition,
                 (int32_t sourceId, int64_t position, bool resetTime, double appliedRate, uint64_t stopPosition),
@@ -86,11 +86,11 @@ public:
     MOCK_METHOD(bool, processAudioGap, (int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
                 (override));
     MOCK_METHOD(bool, setBufferingLimit, (uint32_t limitBufferingMs), (override));
-    MOCK_METHOD(bool, getBufferingLimit, (uint32_t &limitBufferingMs), (override));
+    MOCK_METHOD(bool, getBufferingLimit, (uint32_t & limitBufferingMs), (override));
     MOCK_METHOD(bool, setUseBuffering, (bool useBuffering), (override));
     MOCK_METHOD(bool, getUseBuffering, (bool &useBuffering), (override));
     MOCK_METHOD(bool, switchSource, (const std::unique_ptr<MediaSource> &source), (override));
-    MOCK_METHOD(bool, getDuration, (int64_t &duration), (override));
+    MOCK_METHOD(bool, getDuration, (int64_t & duration), (override));
 };
 } // namespace firebolt::rialto::client
 

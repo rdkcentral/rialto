@@ -49,8 +49,8 @@ const std::shared_ptr<firebolt::rialto::IWebAudioPlayerClient> webAudioPlayerCli
 } // namespace
 
 WebAudioPlayerServiceTests::WebAudioPlayerServiceTests()
-    : m_webAudioPlayerFactoryMock{
-          std::make_shared<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalFactoryMock>>()},
+    : m_webAudioPlayerFactoryMock{std::make_shared<
+          StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalFactoryMock>>()},
       m_shmBuffer{std::make_shared<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock>>()},
       m_shmBufferMock{dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &>(*m_shmBuffer)},
       m_webAudioPlayer{std::make_unique<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalMock>>()},
