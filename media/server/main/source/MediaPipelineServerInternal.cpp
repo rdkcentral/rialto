@@ -171,7 +171,7 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
 MediaPipelineServerInternal::~MediaPipelineServerInternal()
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    
+
     auto task = [&]()
     {
         for (const auto &timer : m_needMediaDataTimers)
@@ -1587,13 +1587,9 @@ void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourc
 
 void MediaPipelineServerInternal::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
 {
-    if (m_gstPlayer && m_mediaPipelineClient)
+    if (m_mediaPipelineClient)
     {
         m_mediaPipelineClient->notifyPlaybackInfo(playbackInfo);
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_WARN("notifyPlaybackInfo skipped due to invalid gstPlayer");
     }
 }
 
