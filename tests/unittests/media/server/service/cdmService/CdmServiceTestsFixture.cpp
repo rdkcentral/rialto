@@ -45,6 +45,7 @@ const uint32_t kSubSampleCount{2};
 constexpr uint32_t kInitWithLast15{1};
 constexpr firebolt::rialto::LimitedDurationLicense kLdlState{firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED};
 constexpr firebolt::rialto::LimitedDurationLicense kLdlStateEnabled{firebolt::rialto::LimitedDurationLicense::ENABLED};
+const std::vector<std::string> kRobustnessLevels{"HW_SECURE_ALL", "SW_SECURE_CRYPTO"};
 } // namespace
 
 CdmServiceTests::CdmServiceTests()
