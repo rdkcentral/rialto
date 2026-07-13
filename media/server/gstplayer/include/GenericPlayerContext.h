@@ -271,6 +271,11 @@ struct GenericPlayerContext
      * @brief Workaround for the gstreamer flush issue
      */
     std::shared_ptr<IFlushOnPrerollController> flushOnPrerollController{std::make_shared<FlushOnPrerollController>()};
+
+    /**
+     * @brief The audio position set in the GstSegment.
+     */
+    int64_t audioGstSegmentPosition{-1};
 };
 } // namespace firebolt::rialto::server
 
