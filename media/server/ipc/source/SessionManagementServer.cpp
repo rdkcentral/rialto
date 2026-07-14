@@ -165,7 +165,7 @@ void SessionManagementServer::onClientConnected(const std::shared_ptr<::firebolt
 {
     RIALTO_SERVER_LOG_MIL("Client app connected");
     char telemetryBuff[128] = {0};
-    snprintf(telemetryBuff, sizeof(telemetryBuff), "Client app connected");
+    snprintf(telemetryBuff, sizeof(telemetryBuff), "client_connected");
     TELEMETRY_EVENT_STRING("RialtoMain", telemetryBuff);
     m_controlModule->clientConnected(client);
     m_mediaPipelineModule->clientConnected(client);
