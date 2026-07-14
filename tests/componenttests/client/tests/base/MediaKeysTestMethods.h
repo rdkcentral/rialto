@@ -105,6 +105,8 @@ protected:
     void shouldNotGetSupportedKeySystemVersion();
     void shouldSupportServerCertificate();
     void shouldNotSupportServerCertificate();
+    void shouldGetSupportedRobustnessLevels();
+    void shouldNotGetSupportedRobustnessLevels();
 
     // Api methods
     void createMediaKeysWidevine();
@@ -145,6 +147,8 @@ protected:
     void destroyMediaKeysCapabilitiesObject();
     void supportsServerCertificate();
     void doesNotSupportServerCertificate();
+    void getSupportedRobustnessLevels();
+    void doesNotGetSupportedRobustnessLevels();
     void releaseKeySession();
     void getMetricSystemData();
     void getMetricSystemDataFailure();
