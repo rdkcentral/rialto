@@ -74,6 +74,7 @@ add_gtests (
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
         mediaKeysCapabilities/CertificateTest.cpp
+        mediaKeysCapabilities/RobustnessTest.cpp
 
         # ClientController tests
         clientController/CreateTest.cpp

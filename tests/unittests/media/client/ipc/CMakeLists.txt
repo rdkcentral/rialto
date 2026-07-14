@@ -102,6 +102,7 @@ add_gtests (
         mediaKeysCapabilitiesIpc/CreateTest.cpp
         mediaKeysCapabilitiesIpc/KeySystemsTest.cpp
         mediaKeysCapabilitiesIpc/CertificateTest.cpp
+        mediaKeysCapabilitiesIpc/RobustnessTest.cpp
 
         # WebAudioPlayer tests
         webAudioPlayerIpc/base/WebAudioPlayerIpcTestBase.cpp

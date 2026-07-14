@@ -69,6 +69,8 @@ public:
     MOCK_METHOD(bool, supportsKeySystem, (const std::string &keySystem), (override));
     MOCK_METHOD(bool, getSupportedKeySystemVersion, (const std::string &keySystem, std::string &version), (override));
     MOCK_METHOD(bool, isServerCertificateSupported, (const std::string &keySystem), (override));
+    MOCK_METHOD(bool, getSupportedRobustnessLevels,
+                (const std::string &keySystem, std::vector<std::string> &robustnessLevels), (override));
     MOCK_METHOD(void, ping, (const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure), (override));
     MOCK_METHOD(MediaKeyErrorStatus, getMetricSystemData, (int mediaKeysHandle, std::vector<uint8_t> &buffer),
                 (override));
