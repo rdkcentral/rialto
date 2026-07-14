@@ -1490,9 +1490,32 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
     // two segments with different reset time value.
     pushAdditionalSegmentIfRequired(source);
 
+    // AMLogic sinks (westerossink / amlhalasink) require GST_SEEK_FLAG_FLUSH
+    // (reset_time=true) on the very first segment pushed for a source. Otherwise
+    // their internal AV-sync / running-time anchor is never armed and
+    // gst_element_query_position(pipeline, TIME, ...) returns 0 for the entire
+    // playback session. The existing pushAdditionalSegmentIfRequired() workaround
+    // only fires when a prior currentPosition already exists (i.e. after a seek).
+    // On the very first push for a source (cold start) currentPosition is absent,
+    // so force resetTime=true here for the first segment of that call.
+    const bool kIsColdStartForSource =
+        m_context.currentPosition.find(source) == m_context.currentPosition.end();
+    bool isFirstSegmentThisCall = true;
+
     for (const auto &[position, resetTime, appliedRate, stopPosition] : initialPosition->second)
     {
-        GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
+        //GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
+        const bool kEffectiveResetTime =
+            (kIsColdStartForSource && isFirstSegmentThisCall) ? true : resetTime;
+        if (kEffectiveResetTime != resetTime)
+        {
+            RIALTO_SERVER_LOG_INFO("Forcing reset_time=true on cold-start %s segment "
+                                   "for AMLogic position reporting",
+                                   typeStr.c_str());
+        }
+        isFirstSegmentThisCall = false;
+
+        GstSeekFlags seekFlag = kEffectiveResetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
         RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
         GstSegment *segment{m_gstWrapper->gstSegmentNew()};
         m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
@@ -1508,7 +1531,8 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
                               typeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
-                              segment->rate, segment->applied_rate, resetTime);
+                              //segment->rate, segment->applied_rate, resetTime);
+                              segment->rate, segment->applied_rate, kEffectiveResetTime);
         auto recordId = m_context.gstProfiler->createRecord("First Segment Received", typeStr);
         if (recordId)
             m_context.gstProfiler->logRecord(recordId.value());
