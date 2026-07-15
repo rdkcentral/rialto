@@ -71,6 +71,7 @@ public:
     const std::string &getAppName() const override;
     int getAppManagementSocketName() const override;
     std::string getClientDisplayName() const override;
+    std::string getSubtitlesDisplayName() const override;
     int getMaxPlaybackSessions() const override;
     int getMaxWebAudioPlayers() const override;
     void cancelStartupTimer() override;
@@ -95,6 +96,7 @@ private:
     firebolt::rialto::common::SessionServerState m_initialState;
     std::string m_sessionManagementSocketName;
     std::string m_clientDisplayName;
+    std::string m_subtitlesDisplayName;
     std::array<int, 2> m_socks;
     std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> m_linuxWrapper;
     std::shared_ptr<firebolt::rialto::common::ITimerFactory> m_timerFactory;

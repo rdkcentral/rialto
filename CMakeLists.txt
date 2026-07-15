@@ -207,6 +207,10 @@ if (NOT NUM_OF_PINGS_BEFORE_RECOVERY)
     set( NUM_OF_PINGS_BEFORE_RECOVERY 3 )
 endif()
 
+if (NOT SUBTITLES_WAYLAND_DISPLAY)
+    set( SUBTITLES_WAYLAND_DISPLAY "\"westeros-asplayer-subtitles\"" )
+endif()
+
 if( NATIVE_BUILD )
     add_compile_options(-Wno-error=attributes)
     add_subdirectory( stubs/rdk_gstreamer_utils )

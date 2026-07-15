@@ -36,6 +36,7 @@ constexpr std::uint32_t kShmSize{2048};
 constexpr std::int32_t kMaxPlaybacks{2};
 constexpr std::int32_t kMaxWebAudioPlayers{2};
 const std::string kClientDisplayName{"westeros-rialto"};
+const std::string kSubtitlesDisplayName{"westeros-asplayer-subtitles"};
 } // namespace
 
 PlaybackServiceTests::PlaybackServiceTests()
@@ -105,6 +106,11 @@ void PlaybackServiceTests::triggerSetClientDisplayName()
     m_sut->setClientDisplayName(kClientDisplayName);
 }
 
+void PlaybackServiceTests::triggerSetSubtitlesDisplayName()
+{
+    m_sut->setSubtitlesDisplayName(kSubtitlesDisplayName);
+}
+
 void PlaybackServiceTests::triggerPing()
 {
     m_sut->ping(m_heartbeatProcedureMock);
@@ -152,4 +158,10 @@ void PlaybackServiceTests::clientDisplayNameShouldBeSet()
 {
     EXPECT_EQ(std::string(getenv("WAYLAND_DISPLAY")), kClientDisplayName);
     unsetenv("WAYLAND_DISPLAY");
+}
+
+void PlaybackServiceTests::subtitlesDisplayNameShouldBeSet()
+{
+    EXPECT_EQ(std::string(getenv("SUBTITLES_WAYLAND_DISPLAY")), kSubtitlesDisplayName);
+    unsetenv("SUBTITLES_WAYLAND_DISPLAY");
 }

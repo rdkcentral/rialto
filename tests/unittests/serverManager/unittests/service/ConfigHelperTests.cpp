@@ -196,6 +196,7 @@ public:
         EXPECT_CALL(*m_configReaderMock, getSocketPermissions()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configReaderMock, getSocketOwner()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configReaderMock, getSocketGroup()).WillOnce(Return(std::nullopt));
+        EXPECT_CALL(*m_configReaderMock, getSubtitlesDisplayName()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configReaderMock, getNumOfPreloadedServers()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configReaderMock, getLoggingLevels()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configReaderMock, getNumOfPingsBeforeRecovery()).WillOnce(Return(std::nullopt));
@@ -214,6 +215,7 @@ public:
         EXPECT_CALL(*m_configReaderMock, getSocketPermissions()).WillRepeatedly(Return(kJsonSocketPermissions));
         EXPECT_CALL(*m_configReaderMock, getSocketOwner()).WillRepeatedly(Return(kJsonSocketPermissions.owner));
         EXPECT_CALL(*m_configReaderMock, getSocketGroup()).WillRepeatedly(Return(kJsonSocketPermissions.group));
+        EXPECT_CALL(*m_configReaderMock, getSubtitlesDisplayName()).WillRepeatedly(Return(std::nullopt));
         EXPECT_CALL(*m_configReaderMock, getNumOfPreloadedServers()).WillRepeatedly(Return(kJsonNumOfPreloadedServers));
         EXPECT_CALL(*m_configReaderMock, getLoggingLevels()).WillRepeatedly(Return(kJsonLoggingLevels));
         EXPECT_CALL(*m_configReaderMock, getNumOfPingsBeforeRecovery())
@@ -241,6 +243,7 @@ public:
         EXPECT_CALL(*m_configOverridesReaderMock, getSocketPermissions()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configOverridesReaderMock, getSocketOwner()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configOverridesReaderMock, getSocketGroup()).WillOnce(Return(std::nullopt));
+        EXPECT_CALL(*m_configOverridesReaderMock, getSubtitlesDisplayName()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configOverridesReaderMock, getNumOfPreloadedServers()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configOverridesReaderMock, getLoggingLevels()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configOverridesReaderMock, getNumOfPingsBeforeRecovery()).WillOnce(Return(std::nullopt));
@@ -266,6 +269,7 @@ public:
             .WillRepeatedly(Return(kJsonOverrideSocketPermissions.owner));
         EXPECT_CALL(*m_configOverridesReaderMock, getSocketGroup())
             .WillRepeatedly(Return(kJsonOverrideSocketPermissions.group));
+        EXPECT_CALL(*m_configOverridesReaderMock, getSubtitlesDisplayName()).WillRepeatedly(Return(std::nullopt));
         EXPECT_CALL(*m_configOverridesReaderMock, getNumOfPreloadedServers())
             .WillRepeatedly(Return(kJsonOverrideNumOfPreloadedServers));
         EXPECT_CALL(*m_configOverridesReaderMock, getLoggingLevels()).WillRepeatedly(Return(kJsonOverrideLoggingLevels));
@@ -294,6 +298,7 @@ public:
         EXPECT_CALL(*m_configSocReaderMock, getSocketPermissions()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configSocReaderMock, getSocketOwner()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configSocReaderMock, getSocketGroup()).WillOnce(Return(std::nullopt));
+        EXPECT_CALL(*m_configSocReaderMock, getSubtitlesDisplayName()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configSocReaderMock, getNumOfPreloadedServers()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configSocReaderMock, getLoggingLevels()).WillOnce(Return(std::nullopt));
         EXPECT_CALL(*m_configSocReaderMock, getNumOfPingsBeforeRecovery()).WillOnce(Return(std::nullopt));
@@ -313,6 +318,7 @@ public:
         EXPECT_CALL(*m_configSocReaderMock, getSocketPermissions()).WillRepeatedly(Return(kJsonSocSocketPermissions));
         EXPECT_CALL(*m_configSocReaderMock, getSocketOwner()).WillRepeatedly(Return(kJsonSocSocketPermissions.owner));
         EXPECT_CALL(*m_configSocReaderMock, getSocketGroup()).WillRepeatedly(Return(kJsonSocSocketPermissions.group));
+        EXPECT_CALL(*m_configSocReaderMock, getSubtitlesDisplayName()).WillRepeatedly(Return(std::nullopt));
         EXPECT_CALL(*m_configSocReaderMock, getNumOfPreloadedServers()).WillRepeatedly(Return(kJsonSocNumOfPreloadedServers));
         EXPECT_CALL(*m_configSocReaderMock, getLoggingLevels()).WillRepeatedly(Return(kJsonSocLoggingLevels));
         EXPECT_CALL(*m_configSocReaderMock, getNumOfPingsBeforeRecovery())
