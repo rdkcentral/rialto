@@ -396,6 +396,7 @@ void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElemen
     RIALTO_SERVER_LOG_DEBUG("Deep element %s added to the pipeline", GST_ELEMENT_NAME(element));
     if (self->m_workerThread)
     {
+        self->m_gstWrapper->gstObjectRef(element);
         self->m_workerThread->enqueueTask(
             self->m_taskFactory->createDeepElementAdded(self->m_context, *self, pipeline, bin, element));
     }

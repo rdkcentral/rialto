@@ -64,6 +64,7 @@ DeepElementAdded::~DeepElementAdded()
 {
     RIALTO_SERVER_LOG_DEBUG("DeepElementAdded finished");
     m_glibWrapper->gFree(m_elementName);
+    m_gstWrapper->gstObjectUnref(m_element);
 }
 
 void DeepElementAdded::execute() const
