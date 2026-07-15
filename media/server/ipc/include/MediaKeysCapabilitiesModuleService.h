@@ -62,6 +62,10 @@ public:
                                       const ::firebolt::rialto::IsServerCertificateSupportedRequest *request,
                                       ::firebolt::rialto::IsServerCertificateSupportedResponse *response,
                                       ::google::protobuf::Closure *done) override;
+    void getSupportedRobustnessLevels(::google::protobuf::RpcController *controller,
+                                      const ::firebolt::rialto::GetSupportedRobustnessLevelsRequest *request,
+                                      ::firebolt::rialto::GetSupportedRobustnessLevelsResponse *response,
+                                      ::google::protobuf::Closure *done) override;
 
 private:
     service::ICdmService &m_cdmService;
