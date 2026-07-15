@@ -96,6 +96,9 @@ void SetPlaybackRate::execute() const
     if (success)
     {
         RIALTO_SERVER_LOG_MIL("Playback rate set to: %lf", m_rate);
+        char telemetryBuff[128] = {0};
+      snprintf(telemetryBuff, sizeof(telemetryBuff), "non1xplaybackrateset");
+    TELEMETRY_EVENT_STRING("RialtoS", telemetryBuff);
         m_context.playbackRate = m_rate;
     }
 
