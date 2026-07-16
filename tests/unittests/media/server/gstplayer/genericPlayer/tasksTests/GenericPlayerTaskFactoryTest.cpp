@@ -116,6 +116,8 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateDeepElementAdded)
     EXPECT_CALL(*m_gstWrapper, gstObjectCast(_)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapper, gstElementGetName(_)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapper, gFree(nullptr));
+    // The task destructor releases the element reference taken when the task is scheduled.
+    EXPECT_CALL(*m_gstWrapper, gstObjectUnref(nullptr));
     auto task = m_sut.createDeepElementAdded(m_context, m_gstPlayer, nullptr, nullptr, nullptr);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::DeepElementAdded &>(*task));
@@ -312,6 +314,8 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetPlaybackRate)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUpdatePlaybackGroup)
 {
+    // The task destructor releases the typefind reference taken when the task is scheduled.
+    EXPECT_CALL(*m_gstWrapper, gstObjectUnref(nullptr));
     auto task = m_sut.createUpdatePlaybackGroup(m_context, m_gstPlayer, nullptr, nullptr);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup &>(*task));
