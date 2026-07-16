@@ -105,7 +105,7 @@ public:
                                                           MediaSourceType sourceType) const override;
     std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context,
                                                            IGstGenericPlayerPrivate &player, GstElement *typefind,
-                                                           const GstCaps *caps) const override;
+                                                           GstCaps *caps) const override;
     std::unique_ptr<IPlayerTask> createRenderFrame(GenericPlayerContext &context,
                                                    IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createPing(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) const override;
