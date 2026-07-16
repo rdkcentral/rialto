@@ -35,6 +35,11 @@ UpdatePlaybackGroup::UpdatePlaybackGroup(GenericPlayerContext &context, IGstGene
 UpdatePlaybackGroup::~UpdatePlaybackGroup()
 {
     RIALTO_SERVER_LOG_DEBUG("UpdatePlaybackGroup finished");
+    m_gstWrapper->gstObjectUnref(m_typefind);
+    if (m_caps)
+    {
+        m_gstWrapper->gstCapsUnref(const_cast<GstCaps *>(m_caps));
+    }
 }
 
 void UpdatePlaybackGroup::execute() const
