@@ -2761,7 +2761,12 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
-    m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, caps));
+    if (m_workerThread)
+    {
+        m_gstWrapper->gstObjectRef(typefind);
+        GstCaps *ownedCaps{caps ? m_gstWrapper->gstCapsCopy(caps) : nullptr};
+        m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, ownedCaps));
+    }
 }
 
 void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)
