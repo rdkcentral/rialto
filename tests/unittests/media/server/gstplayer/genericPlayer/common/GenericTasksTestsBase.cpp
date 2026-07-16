@@ -47,6 +47,7 @@
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
+#include "tasks/generic/SetReportDecodeErrors.h"
 #include "tasks/generic/SetSourcePosition.h"
 #include "tasks/generic/SetStreamSyncMode.h"
 #include "tasks/generic/SetSubtitleOffset.h"
@@ -75,8 +76,6 @@ using namespace firebolt::rialto::server;
 
 namespace
 {
-std::shared_ptr<GenericTasksTestsContext> testContext;
-
 constexpr firebolt::rialto::server::Rectangle kRectangle{1, 2, 3, 4};
 constexpr double kVolume{0.7};
 constexpr uint32_t kVolumeDuration{1000};
@@ -261,9 +260,8 @@ public:
 };
 
 GenericTasksTestsBase::GenericTasksTestsBase()
+    : testContext{std::make_shared<GenericTasksTestsContext>()}
 {
-    testContext = std::make_shared<GenericTasksTestsContext>();
-
     testContext->m_elementFactory = gst_element_factory_find("fakesrc");
     testContext->m_element = gst_element_factory_create(testContext->m_elementFactory, nullptr);
     testContext->m_context.pipeline = &testContext->m_pipeline;
@@ -3552,6 +3550,20 @@ void GenericTasksTestsBase::triggerSetImmediateOutput()
     task.execute();
 
     EXPECT_EQ(testContext->m_context.pendingImmediateOutputForVideo, true);
+}
+
+void GenericTasksTestsBase::shouldSetReportDecodeErrors()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, setReportDecodeErrors()).WillOnce(Return(true));
+}
+
+void GenericTasksTestsBase::triggerSetReportDecodeErrors()
+{
+    firebolt::rialto::server::tasks::generic::SetReportDecodeErrors task{testContext->m_context, testContext->m_gstPlayer,
+                                                                         MediaSourceType::VIDEO, true};
+    task.execute();
+
+    EXPECT_EQ(testContext->m_context.pendingReportDecodeErrorsForVideo, true);
 }
 
 void GenericTasksTestsBase::shouldSetLowLatency()

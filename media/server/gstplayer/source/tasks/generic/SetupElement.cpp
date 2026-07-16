@@ -39,6 +39,12 @@ namespace
  */
 void audioUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueDepth, gpointer self)
 {
+    if (fifoDepth > 0)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Ignoring audio underflow callback - fifoDepth is %u", fifoDepth);
+        return;
+    }
+
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
     player->scheduleAudioUnderflow();
@@ -56,6 +62,12 @@ void audioUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
  */
 void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueDepth, gpointer self)
 {
+    if (fifoDepth > 0)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Ignoring video underflow callback - fifoDepth is %u", fifoDepth);
+        return;
+    }
+
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
     player->scheduleVideoUnderflow();
@@ -261,6 +273,10 @@ void SetupElement::execute() const
                 RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %p", m_element);
                 m_context.isVideoHandleSet = true;
             }
+            if (m_context.pendingReportDecodeErrorsForVideo.has_value())
+            {
+                m_player.setReportDecodeErrors();
+            }
         }
     }
 
@@ -366,7 +382,6 @@ void SetupElement::execute() const
     {
         m_gstWrapper->gstBaseParseSetPtsInterpolation(GST_BASE_PARSE(m_element), FALSE);
     }
-
     m_gstWrapper->gstObjectUnref(m_element);
 }
 } // namespace firebolt::rialto::server::tasks::generic
