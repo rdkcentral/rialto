@@ -104,8 +104,9 @@ protected:
         EXPECT_NE(m_gstSrc, nullptr);
     }
 
-    void expectSettings(guint64 max)
+    void expectSettings()
     {
+        constexpr GstClockTime kMaxBufferingTime{1 * GST_SECOND};
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("block")));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("format")));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("stream-type")));
@@ -114,7 +115,7 @@ protected:
 
         EXPECT_CALL(*m_gstWrapperMock,
                     gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.appSrc), &m_callbacks, this, nullptr));
-        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(GST_APP_SRC(m_streamInfo.appSrc), max));
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxTime(GST_APP_SRC(m_streamInfo.appSrc), kMaxBufferingTime));
         EXPECT_CALL(*m_gstWrapperMock,
                     gstAppSrcSetStreamType(GST_APP_SRC(m_streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE));
     }
@@ -211,15 +212,13 @@ protected:
  */
 TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
 {
-    guint64 videoMaxBytes = 8 * 1024 * 1024;
-
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
     EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h265"))).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps));
 
-    expectSettings(videoMaxBytes);
+    expectSettings();
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
     expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
@@ -236,9 +235,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
  */
 TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoH264WithoutStreamFormat)
 {
-    guint64 videoMaxBytes = 8 * 1024 * 1024;
-
-    expectSettings(videoMaxBytes);
+    expectSettings();
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
     expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
@@ -256,8 +253,6 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoH264WithoutStreamFormat)
  */
 TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithStreamFormat)
 {
-    guint64 videoMaxBytes = 8 * 1024 * 1024;
-
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
     EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(true));
@@ -265,7 +260,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithStreamFormat)
     EXPECT_CALL(*m_gstWrapperMock, gstStructureHasField(&m_dummyStructure, StrEq("codec_data"))).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps));
 
-    expectSettings(videoMaxBytes);
+    expectSettings();
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
     expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
@@ -282,8 +277,6 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithStreamFormat)
  */
 TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithCodecData)
 {
-    guint64 videoMaxBytes = 8 * 1024 * 1024;
-
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
     EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(true));
@@ -291,7 +284,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithCodecData)
     EXPECT_CALL(*m_gstWrapperMock, gstStructureHasField(&m_dummyStructure, StrEq("codec_data"))).WillOnce(Return(true));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps));
 
-    expectSettings(videoMaxBytes);
+    expectSettings();
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
     expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
@@ -319,9 +312,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, FactoryCreatesObject)
  */
 TEST_F(RialtoServerAppSrcGstSrcTest, SetupAudio)
 {
-    guint64 audioMaxBytes = 512 * 1024;
-
-    expectSettings(audioMaxBytes);
+    expectSettings();
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
     expectLinkDecryptor(m_streamInfo.appSrc, m_audioDecryptorName);
@@ -337,8 +328,6 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupAudio)
  */
 TEST_F(RialtoServerAppSrcGstSrcTest, DecryptorFailure)
 {
-    guint64 videoMaxBytes = 8 * 1024 * 1024;
-
     EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(StrEq(m_videoDecryptorName))).WillOnce(Return(m_videoDecryptorName));
     EXPECT_CALL(*m_decryptorFactoryMock,
                 createDecryptorElement(StrEq(m_videoDecryptorName),
@@ -346,7 +335,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, DecryptorFailure)
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapperMock, gFree(PtrStrMatcher(m_videoDecryptorName)));
 
-    expectSettings(videoMaxBytes);
+    expectSettings();
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
     expectLinkPayloader(m_streamInfo.appSrc);
@@ -363,8 +352,6 @@ TEST_F(RialtoServerAppSrcGstSrcTest, DecryptorFailure)
  */
 TEST_F(RialtoServerAppSrcGstSrcTest, PayloaderFailure)
 {
-    guint64 videoMaxBytes = 8 * 1024 * 1024;
-
     EXPECT_CALL(*m_glibWrapperMock, gOnceInitEnter(_)).WillOnce(Return(TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("svppay")))
         .WillOnce(Return(reinterpret_cast<GstElementFactory *>(&m_factory)));
@@ -372,7 +359,7 @@ TEST_F(RialtoServerAppSrcGstSrcTest, PayloaderFailure)
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(reinterpret_cast<GstElementFactory *>(&m_factory), _))
         .WillOnce(Return(nullptr));
 
-    expectSettings(videoMaxBytes);
+    expectSettings();
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
     expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
@@ -388,11 +375,9 @@ TEST_F(RialtoServerAppSrcGstSrcTest, PayloaderFailure)
  */
 TEST_F(RialtoServerAppSrcGstSrcTest, QueueFailure)
 {
-    guint64 videoMaxBytes = 8 * 1024 * 1024;
-
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), _)).WillOnce(Return(nullptr));
 
-    expectSettings(videoMaxBytes);
+    expectSettings();
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
     expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
@@ -409,10 +394,9 @@ TEST_F(RialtoServerAppSrcGstSrcTest, QueueFailure)
  */
 TEST_F(RialtoServerAppSrcGstSrcTest, NotDrm)
 {
-    guint64 videoMaxBytes = 8 * 1024 * 1024;
     m_streamInfo.hasDrm = false;
 
-    expectSettings(videoMaxBytes);
+    expectSettings();
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
     expectLinkQueue(m_streamInfo.appSrc);

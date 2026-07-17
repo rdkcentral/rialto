@@ -162,6 +162,8 @@ public:
 
     void gstAppSrcSetMaxBytes(GstAppSrc *appsrc, guint64 max) override { gst_app_src_set_max_bytes(appsrc, max); }
 
+    void gstAppSrcSetMaxTime(GstAppSrc *appsrc, GstClockTime max) override { gst_app_src_set_max_time(appsrc, max); }
+
     void gstAppSrcSetStreamType(GstAppSrc *appsrc, GstAppStreamType type) override
     {
         gst_app_src_set_stream_type(appsrc, type);

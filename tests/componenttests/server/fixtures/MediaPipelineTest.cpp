@@ -179,14 +179,14 @@ void MediaPipelineTest::sourceWillBeSetup()
 
 void MediaPipelineTest::willSetupAndAddSource(GstAppSrc *appSrc)
 {
-    const guint64 kMaxBytes = ((appSrc == &m_audioAppSrc) ? (512 * 1024) : (8 * 1024 * 1024));
+    constexpr GstClockTime kMaxBufferingTime{1 * GST_SECOND};
     m_gstreamerStub.setupAppSrcCallbacks(appSrc);
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("block")));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("format")));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("stream-type")));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("min-percent")));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(appSrc), StrEq("handle-segment-change")));
-    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(appSrc, kMaxBytes));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxTime(appSrc, kMaxBufferingTime));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(appSrc, GST_APP_STREAM_TYPE_SEEKABLE));
     EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_rialtoSource), GST_ELEMENT(appSrc)));

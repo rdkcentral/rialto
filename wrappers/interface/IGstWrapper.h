@@ -349,6 +349,15 @@ public:
     virtual void gstAppSrcSetMaxBytes(GstAppSrc *appsrc, guint64 max) = 0;
 
     /**
+     * @brief Set the maximum amount of time that can be queued in appsrc. After the maximum amount of time are queued,
+     * appsrc will emit the "enough-data" signal.
+     *
+     * @param[in] appsrc    : The appsrc.
+     * @param[in] max       : The maximum amount of time to queue.
+     */
+    virtual void gstAppSrcSetMaxTime(GstAppSrc *appsrc, GstClockTime max) = 0;
+
+    /**
      * @brief Set the stream type on the appsrc.
      *
      * @param[in] appsrc    : The appsrc.
