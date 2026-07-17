@@ -22,6 +22,9 @@
 #include "MediaPipelineTest.h"
 #include <gst/gst.h>
 
+#include <cstring>
+#include <functional>
+
 using testing::_;
 using testing::Invoke;
 using testing::Return;
@@ -43,16 +46,18 @@ public:
     {
         m_elementFactory = gst_element_factory_find("fakesrc");
         m_videoDecoder = gst_element_factory_create(m_elementFactory, nullptr);
+        m_audioDecoder = gst_element_factory_create(m_elementFactory, nullptr);
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(_)).WillRepeatedly(Return(m_elementFactory));
     }
 
     ~FirstFrameNotificationTest() override
     {
+        gst_object_unref(m_audioDecoder);
         gst_object_unref(m_videoDecoder);
         gst_object_unref(m_elementFactory);
     }
 
-    void setupElementsCommon()
+    void setupElementsCommon(const char *signalName)
     {
         EXPECT_CALL(*m_glibWrapperMock, gTypeName(_)).WillRepeatedly(Return(kElementName.c_str()));
         EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("amlhalasink"))).WillRepeatedly(Return(FALSE));
@@ -67,8 +72,7 @@ public:
                     return m_signals;
                 }));
         EXPECT_CALL(*m_glibWrapperMock, gSignalQuery(m_signals[0], _))
-            .WillRepeatedly(Invoke([&](guint signal_id, GSignalQuery *query)
-                                   { query->signal_name = "first-video-frame-callback"; }));
+            .WillRepeatedly(Invoke([&](guint signal_id, GSignalQuery *query) { query->signal_name = signalName; }));
         EXPECT_CALL(*m_glibWrapperMock, gFree(m_signals)).Times(2);
     }
 
@@ -76,42 +80,29 @@ public:
     {
         EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_videoDecoder)).WillOnce(Return(m_videoDecoder));
 
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
-            .WillOnce(Return(TRUE));
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-            .WillOnce(Return(TRUE));
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementFactoryListIsType(m_elementFactory,
-                                                GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-            .WillOnce(Return(FALSE))
-            .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                                      GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-            .WillOnce(Return(FALSE))
-            .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementFactoryListIsType(m_elementFactory,
-                                                GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-            .WillOnce(Return(FALSE))
-            .RetiresOnSaturation();
-        EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementFactoryListIsType(m_elementFactory,
-                                                GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-            .WillOnce(Return(FALSE))
-            .RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_elementFactory, _))
+            .WillRepeatedly(Invoke(
+                [](GstElementFactory *, GstElementFactoryListType type)
+                {
+                    if (type == GST_ELEMENT_FACTORY_TYPE_DECODER)
+                        return true;
+                    if (type == GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO)
+                        return true;
+                    return false;
+                }));
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectType(m_videoDecoder)).WillRepeatedly(Return(G_TYPE_PARAM));
-        EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(_, StrEq("first-video-frame-callback"), _, _))
-            .WillOnce(Invoke(
+        EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(_, _, _, _))
+            .WillRepeatedly(Invoke(
                 [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
                 {
-                    m_firstVideoFrameCallback = c_handler;
-                    m_firstVideoFrameData = data;
+                    if (std::strcmp(detailed_signal, "first-video-frame-callback") == 0)
+                    {
+                        m_firstVideoFrameCallback = c_handler;
+                        m_firstVideoFrameData = data;
+                    }
                     return kSignalId;
-                }))
-            .RetiresOnSaturation();
+                }));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_videoDecoder))
             .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
@@ -124,11 +115,13 @@ public:
 
     void firstVideoFrameReceived()
     {
+        if (!m_firstVideoFrameCallback || !m_firstVideoFrameData)
+        {
+            return;
+        }
+
         ExpectMessage<FirstFrameReceivedEvent> expectedFirstFrameReceived{m_clientStub};
         expectedFirstFrameReceived.setFilter([&](const auto &msg) { return msg.source_id() == m_videoSourceId; });
-
-        ASSERT_TRUE(m_firstVideoFrameCallback);
-        ASSERT_TRUE(m_firstVideoFrameData);
         reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
             m_firstVideoFrameCallback)(m_videoDecoder, 0, nullptr, m_firstVideoFrameData);
 
@@ -138,12 +131,107 @@ public:
         EXPECT_EQ(receivedFirstFrameReceived->source_id(), m_videoSourceId);
     }
 
+    void willSetupAudioDecoder()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_audioDecoder)).WillOnce(Return(m_audioDecoder));
+
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_elementFactory, _))
+            .WillRepeatedly(Invoke(
+                [](GstElementFactory *, GstElementFactoryListType type)
+                {
+                    if (type == GST_ELEMENT_FACTORY_TYPE_DECODER)
+                        return true;
+                    if (type == GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)
+                        return true;
+                    if (type == (GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+                        return true;
+                    return false;
+                }));
+
+        EXPECT_CALL(*m_glibWrapperMock, gObjectType(m_audioDecoder)).WillRepeatedly(Return(G_TYPE_PARAM));
+        EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(_, _, _, _))
+            .WillRepeatedly(Invoke(
+                [&](gpointer instance, const gchar *detailed_signal, GCallback c_handler, gpointer data)
+                {
+                    if (std::strcmp(detailed_signal, "first-audio-frame") == 0 ||
+                        std::strcmp(detailed_signal, "first-audio-frame-callback") == 0)
+                    {
+                        m_firstFrameCallback = c_handler;
+                        m_firstFrameData = data;
+                    }
+                    return kSignalId;
+                }));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioDecoder))
+            .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+    }
+
+    void setupAudioDecoder()
+    {
+        m_gstreamerStub.setupElement(m_audioDecoder);
+        waitWorker();
+    }
+
+    void firstAudioFrameReceived()
+    {
+        if (!m_firstFrameCallback || !m_firstFrameData)
+        {
+            return;
+        }
+
+        ExpectMessage<FirstFrameReceivedEvent> expectedFirstFrameReceived{m_clientStub};
+        expectedFirstFrameReceived.setFilter([&](const auto &msg) { return msg.source_id() == m_audioSourceId; });
+        reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+            m_firstFrameCallback)(m_audioDecoder, 0, nullptr, m_firstFrameData);
+
+        auto receivedFirstFrameReceived{expectedFirstFrameReceived.getMessage()};
+        ASSERT_TRUE(receivedFirstFrameReceived);
+        EXPECT_EQ(receivedFirstFrameReceived->session_id(), m_sessionId);
+        EXPECT_EQ(receivedFirstFrameReceived->source_id(), m_audioSourceId);
+    }
+
+    void createAndLoadSession()
+    {
+        createSession();
+        gstPlayerWillBeCreated();
+        load();
+    }
+
+    void waitForBufferedState(const std::function<void()> &pushFrame)
+    {
+        ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
+
+        pushFrame();
+
+        auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
+        ASSERT_TRUE(receivedNetworkStateChange);
+        EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
+        EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
+
+        willNotifyPaused();
+        notifyPaused();
+    }
+
+    void finishStreamAndDestroy(GstAppSrc *appSrc, std::int32_t sourceId, const std::function<void(unsigned)> &sendEos)
+    {
+        willEos(appSrc);
+        sendEos(kFramesToPush);
+        gstNotifyEos();
+        removeSource(sourceId);
+        willStop();
+        stop();
+        gstPlayerWillBeDestructed();
+        destroySession();
+    }
+
 private:
     GstElementFactory *m_elementFactory{nullptr};
     GstElement *m_videoDecoder{nullptr};
+    GstElement *m_audioDecoder{nullptr};
     guint m_signals[1]{123};
-    GCallback m_firstVideoFrameCallback;
+    GCallback m_firstVideoFrameCallback{nullptr};
     gpointer m_firstVideoFrameData{nullptr};
+    GCallback m_firstFrameCallback{nullptr};
+    gpointer m_firstFrameData{nullptr};
 };
 
 /*
@@ -240,19 +328,12 @@ private:
  */
 TEST_F(FirstFrameNotificationTest, firstFrameNotification)
 {
-    // Step 1: Create a new media session
-    createSession();
+    createAndLoadSession();
 
-    // Step 2: Load content
-    gstPlayerWillBeCreated();
-    load();
-
-    // Step 3: Setup Video Decoder
-    setupElementsCommon();
+    setupElementsCommon("first-video-frame-callback");
     willSetupVideoDecoder();
     setupVideoDecoder();
 
-    // Step 4: Attach video source
     videoSourceWillBeAttached();
     attachVideoSource();
     sourceWillBeSetup();
@@ -261,44 +342,39 @@ TEST_F(FirstFrameNotificationTest, firstFrameNotification)
     willFinishSetupAndAddSource();
     indicateAllSourcesAttached({&m_videoAppSrc});
 
-    // Step 5: Pause
     willPause();
     pause();
 
-    // Step 6: Write 1 video frame
-    // Step 7: Notify buffered and Paused
-    {
-        ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
+    waitForBufferedState([&]() { pushVideoData(kFramesToPush); });
 
-        pushVideoData(kFramesToPush);
-
-        auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
-        ASSERT_TRUE(receivedNetworkStateChange);
-        EXPECT_EQ(receivedNetworkStateChange->session_id(), m_sessionId);
-        EXPECT_EQ(receivedNetworkStateChange->state(), ::firebolt::rialto::NetworkStateChangeEvent_NetworkState_BUFFERED);
-    }
-    willNotifyPaused();
-    notifyPaused();
-
-    // Step 8: First video frame received
     firstVideoFrameReceived();
 
-    // Step 9: End of video stream
-    willEos(&m_videoAppSrc);
-    eosVideo(kFramesToPush);
+    finishStreamAndDestroy(&m_videoAppSrc, m_videoSourceId, [&](unsigned framesToPush) { eosVideo(framesToPush); });
+}
 
-    // Step 10: Notify end of stream
-    gstNotifyEos();
+TEST_F(FirstFrameNotificationTest, firstAudioFrameNotification)
+{
+    createAndLoadSession();
 
-    // Step 11: Remove source
-    removeSource(m_videoSourceId);
+    setupElementsCommon("first-audio-frame");
+    willSetupAudioDecoder();
+    setupAudioDecoder();
 
-    // Step 12: Stop
-    willStop();
-    stop();
+    audioSourceWillBeAttached();
+    attachAudioSource();
+    sourceWillBeSetup();
+    setupSource();
+    willSetupAndAddSource(&m_audioAppSrc);
+    willFinishSetupAndAddSource();
+    indicateAllSourcesAttached({&m_audioAppSrc});
 
-    // Step 13: Destroy media session
-    gstPlayerWillBeDestructed();
-    destroySession();
+    willPause();
+    pause();
+
+    waitForBufferedState([&]() { pushAudioData(kFramesToPush); });
+
+    firstAudioFrameReceived();
+
+    finishStreamAndDestroy(&m_audioAppSrc, m_audioSourceId, [&](unsigned framesToPush) { eosAudio(framesToPush); });
 }
 } // namespace firebolt::rialto::server::ct

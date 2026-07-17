@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_FIRST_FRAME_RECEIVED_H_
 
 #include "GenericPlayerContext.h"
+#include "GstPlayerTypes.h"
 #include "IGstGenericPlayerClient.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
@@ -31,7 +32,8 @@ class FirstFrameReceived : public IPlayerTask
 {
 public:
     FirstFrameReceived(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                       MediaSourceType sourceType);
+                       MediaSourceType sourceType,
+                       AudioFirstFrameAction audioAction = AudioFirstFrameAction::CLEAR_PROBE);
     ~FirstFrameReceived() override;
 
     void execute() const override;
@@ -41,6 +43,7 @@ private:
     IGstGenericPlayerPrivate &m_player;
     IGstGenericPlayerClient *m_gstPlayerClient;
     MediaSourceType m_sourceType;
+    AudioFirstFrameAction m_audioAction;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

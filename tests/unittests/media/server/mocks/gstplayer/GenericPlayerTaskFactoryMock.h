@@ -48,7 +48,8 @@ public:
                  const firebolt::rialto::MediaSourceType &type),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFirstFrameReceived,
-                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, MediaSourceType sourceType),
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, MediaSourceType sourceType,
+                 AudioFirstFrameAction audioAction),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFinishSetupSource,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
