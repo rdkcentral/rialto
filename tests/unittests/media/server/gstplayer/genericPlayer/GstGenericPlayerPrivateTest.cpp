@@ -1832,12 +1832,27 @@ TEST_F(GstGenericPlayerPrivateTest, shouldUpdatePlaybackGroup)
 {
     GstElement typefind;
     GstCaps caps;
+    GstCaps copiedCaps;
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createUpdatePlaybackGroup(_, _, &typefind, &caps))
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&typefind));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsCopy(&caps)).WillOnce(Return(&copiedCaps));
+    EXPECT_CALL(m_taskFactoryMock, createUpdatePlaybackGroup(_, _, &typefind, &copiedCaps))
         .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->updatePlaybackGroup(&typefind, &caps);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldUpdatePlaybackGroupWithNullCaps)
+{
+    GstElement typefind;
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&typefind));
+    EXPECT_CALL(m_taskFactoryMock, createUpdatePlaybackGroup(_, _, &typefind, nullptr))
+        .WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->updatePlaybackGroup(&typefind, nullptr);
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldAddAutoVideoSinkChildSink)
