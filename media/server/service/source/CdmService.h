@@ -82,6 +82,7 @@ public:
     bool supportsKeySystem(const std::string &keySystem) override;
     bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) override;
     bool isServerCertificateSupported(const std::string &keySystem) override;
+    bool getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels) override;
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
     bool isExtendedInterfaceUsed(int32_t keySessionId) override;
     MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
