@@ -190,6 +190,7 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
         m_mainThread->unregisterClient(m_mainThreadClientId);
     };
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    m_gstPlayer.reset();
 }
 
 bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url)
@@ -1593,9 +1594,13 @@ void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourc
 
 void MediaPipelineServerInternal::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
 {
-    if (m_mediaPipelineClient)
+    if (m_gstPlayer && m_mediaPipelineClient)
     {
         m_mediaPipelineClient->notifyPlaybackInfo(playbackInfo);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("notifyPlaybackInfo skipped due to invalid gstPlayer");
     }
 }
 
