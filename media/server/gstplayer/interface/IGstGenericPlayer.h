@@ -28,6 +28,7 @@
 #include "IDataReader.h"
 #include "IDecryptionService.h"
 #include "IGstGenericPlayerClient.h"
+#include "IGstProfiler.h"
 #include "IHeartbeatHandler.h"
 #include "IMediaPipeline.h"
 #include "IRdkGstreamerUtilsWrapper.h"
@@ -53,21 +54,25 @@ public:
     static std::shared_ptr<IGstGenericPlayerFactory> getFactory();
 
     /**
-     * @brief Creates a IGstGenericPlayer object.
+     * @brief Creates an IGstGenericPlayer object.
      *
-     * @param[in] client            : The gstreamer player client.
-     * @param[in] decryptionService : The decryption service.
-     * @param[in] type              : The media type the gstreamer player shall support.
-     * @param[in] videoRequirements : The video requirements for the playback.
-     * @param[in] isLive            : Indicates if the media is live.
+     * @param[in] client                       : The gstreamer player client.
+     * @param[in] decryptionService            : The decryption service.
+     * @param[in] type                         : The media type the gstreamer player shall support.
+     * @param[in] videoRequirements            : The video requirements for the playback.
+     * @param[in] isLive                       : Indicates if the media is live.
+     * @param[in] rdkGstreamerUtilsWrapperFactory : The rdk gstreamer utils wrapper factory.
+     * @param[in] gstProfilerFactory           : The gst profiler factory. If nullptr (the default), the concrete
+     *                                                factory falls back to IGstProfilerFactory::getFactory(). This avoids
+     *                                                evaluating the real singleton at call sites of mocked implementations.
      *
      * @retval the new player instance or null on error.
      */
-    virtual std::unique_ptr<IGstGenericPlayer>
-    createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                           const VideoRequirements &videoRequirements, bool isLive,
-                           const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
-                               &rdkGstreamerUtilsWrapperFactory) = 0;
+    virtual std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(
+        IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+        const VideoRequirements &videoRequirements, bool isLive,
+        const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory,
+        const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory = nullptr) = 0;
 };
 
 class IGstGenericPlayer

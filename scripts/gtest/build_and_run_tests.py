@@ -30,11 +30,43 @@ from .utils import *
 valgrindOutput = "valgrind_report"
 valgrindIgnore = "rialto.supp"
 
+# Argparse type helper: only accept integers >= 1. Values like 0 (make treats
+# as unlimited jobs) or negatives would defeat the purpose of --jobs on
+# memory-constrained hosts.
+def positiveInt(value):
+    try:
+        intValue = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"must be an integer >= 1, got {value!r}")
+    if intValue < 1:
+        raise argparse.ArgumentTypeError(f"must be >= 1, got {value}")
+    return intValue
+
+# Argparse type helper: only accept a non-empty, relative path that does not
+# escape the working directory. This protects the destructive --clean path
+# from unsafe --output values (empty string, absolute path, "..", etc.) and
+# fails at parse time with a clean CLI message rather than a Python traceback.
+def safeRelativePath(value):
+    if not value:
+        raise argparse.ArgumentTypeError("must not be empty")
+    if os.path.isabs(value):
+        raise argparse.ArgumentTypeError(f"must be a relative path, got {value!r}")
+    normalised = os.path.normpath(value)
+    # os.path.normpath collapses internal ".." segments, so a normalised
+    # path escapes the working directory iff it equals ".." or starts with
+    # ".." + separator. We also reject paths that collapse to "." (e.g. "."
+    # itself or "foo/.."), since those would target the working directory.
+    if normalised == ".":
+        raise argparse.ArgumentTypeError(f"must not be the working directory, got {value!r}")
+    if normalised == ".." or normalised.startswith(".." + os.sep):
+        raise argparse.ArgumentTypeError(f"must not escape the working directory, got {value!r}")
+    return normalised
+
 # Get the arguments supported by the googletest script
 def getGenericArguments(argParser, suiteInfo):
     # Get arguments
-    argParser.add_argument("-o", "--output", default="build",
-                        help="Location to write the build files to (default 'build').")
+    argParser.add_argument("-o", "--output", type=safeRelativePath, default=safeRelativePath("build"),
+                        help="Location to write the build files to (default 'build'). Must be a relative path.")
     argParser.add_argument("-f", "--file", nargs='?', const="",
                         help="Write the build and test output to a file (default '" + getDefaultResultsOutputFileName() + ".log') \n" \
                              + "Valgrind output also written to file, default file name only \n" \
@@ -63,6 +95,8 @@ def getGenericArguments(argParser, suiteInfo):
                              + "Note: Valgrind can only write output to one source (log or xml). \n" \
                              + "Note: Requires version valgrind 3.17.0+ installed. \n")
     argParser.add_argument("-cov", "--coverage", action='store_true', help="Generates the full coverage report")
+    argParser.add_argument("-j", "--jobs", type=positiveInt, default=multiprocessing.cpu_count(),
+                        help="Number of parallel make jobs, must be >= 1 (default: number of CPUs).")
 
 # Builds and runs googletests for the given suites
 def buildAndRunGTests(args, f, buildDefines, suitesToRun):
@@ -73,12 +107,14 @@ def buildAndRunGTests(args, f, buildDefines, suitesToRun):
     os.environ["RIALTO_CONSOLE_LOG"] = "1"
     # Set env variable to enable debug prints
     os.environ["RIALTO_DEBUG"] = "5"
-    # Enable profiler for all test suites.
-    os.environ["PROFILER_ENABLED"] = "true"
 
-    # Clean if required
+    # Clean if required. args['output'] is validated at CLI parse time by
+    # safeRelativePath(), so "rm -rf" here cannot target an unsafe location.
+    # The "--" terminator prevents any value starting with "-" (which the
+    # validator would accept as a relative path) from being misinterpreted by
+    # rm as an option like --no-preserve-root.
     if args['clean'] == True:
-        executeCmd = ["rm", "-rf", args['output'], valgrindOutput + ".log"]
+        executeCmd = ["rm", "-rf", "--", args['output'], valgrindOutput + ".log"]
         runcmd(executeCmd, cwd=os.getcwd())
 
     # Get xml output file name if any
@@ -92,7 +128,7 @@ def buildAndRunGTests(args, f, buildDefines, suitesToRun):
 
     # Build the test executables
     if args['noBuild'] == False:
-        buildTargets(suitesToRun, buildDefines, args['output'], f, args['valgrind'], args['coverage'])
+        buildTargets(suitesToRun, buildDefines, args['output'], f, args['valgrind'], args['coverage'], args['jobs'])
 
     # Run the tests with the optional settings
     if args['noTest'] == False:
@@ -101,7 +137,7 @@ def buildAndRunGTests(args, f, buildDefines, suitesToRun):
 
 
 # Build the target executables
-def buildTargets (suites, buildDefines, outputDir, resultsFile, debug, coverage):
+def buildTargets (suites, buildDefines, outputDir, resultsFile, debug, coverage, jobs=multiprocessing.cpu_count()):
     # Run cmake
     cmakeCmd = ["cmake", "-B", outputDir]
     for define in buildDefines:
@@ -113,7 +149,7 @@ def buildTargets (suites, buildDefines, outputDir, resultsFile, debug, coverage)
     runcmd(cmakeCmd, cwd=os.getcwd())
 
     # Make targets
-    jarg = "-j" + str(multiprocessing.cpu_count())
+    jarg = "-j" + str(jobs)
     makeCmd = ["make", jarg]
     for key in suites:
         makeCmd.append(suites[key]["suite"])

@@ -84,7 +84,8 @@ std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
 std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlayer(
     IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
     const VideoRequirements &videoRequirements, bool isLive,
-    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory)
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory,
+    const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory)
 {
     std::unique_ptr<IGstGenericPlayer> gstPlayer;
 
@@ -109,10 +110,21 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
 
+        // Fall back to the default profiler factory if the caller explicitly
+        // passed nullptr. IGstProfilerFactory::getFactory() can itself return
+        // nullptr on allocation failure, so re-check afterwards and fail with
+        // a clear error rather than passing null on and reporting the generic
+        // "No gst profiler factory provided" message from the constructor.
+        auto resolvedGstProfilerFactory = gstProfilerFactory ? gstProfilerFactory : IGstProfilerFactory::getFactory();
+        if (!resolvedGstProfilerFactory)
+        {
+            throw std::runtime_error("Cannot obtain default IGstProfilerFactory");
+        }
+
         gstPlayer = std::make_unique<
             GstGenericPlayer>(client, decryptionService, type, videoRequirements, isLive, gstWrapper, glibWrapper,
                               rdkGstreamerUtilsWrapper, IGstInitialiser::instance(), std::make_unique<FlushWatcher>(),
-                              IGstSrcFactory::getFactory(), IGstProfilerFactory::getFactory(),
+                              IGstSrcFactory::getFactory(), resolvedGstProfilerFactory,
                               common::ITimerFactory::getFactory(),
                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
                                                                          rdkGstreamerUtilsWrapper,
