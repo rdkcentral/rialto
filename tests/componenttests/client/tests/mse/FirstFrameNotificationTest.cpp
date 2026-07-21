@@ -46,7 +46,7 @@ public:
 /*
  * Component Test: First frame notification
  * Test Objective:
- *  Test the first frame notification for video source.
+ *  Test the first frame notification for video and audio sources.
  *
  * Sequence Diagrams:
  *  First frame notification
@@ -67,6 +67,10 @@ public:
  *   Server notifies the client first frame received with source id video.
  *   Expect that the first frame notification is propagated to the client.
  *
+ *  Step 2: Notify first frame received for audio
+ *   Server notifies the client first frame received with source id audio.
+ *   Expect that the first frame notification is propagated to the client.
+ *
  * Test Teardown:
  *  Terminate the media session.
  *  Memory region created for the shared buffer is closed.
@@ -82,5 +86,9 @@ TEST_F(FirstFrameNotificationTest, notification)
     // Step 1: Notify first frame received for video
     MediaPipelineTestMethods::shouldNotifyFirstFrameReceivedVideo();
     MediaPipelineTestMethods::sendNotifyFirstFrameReceivedVideo();
+
+    // Step 2: Notify first frame received for audio
+    MediaPipelineTestMethods::shouldNotifyFirstFrameReceivedAudio();
+    MediaPipelineTestMethods::sendNotifyFirstFrameReceivedAudio();
 }
 } // namespace firebolt::rialto::client::ct

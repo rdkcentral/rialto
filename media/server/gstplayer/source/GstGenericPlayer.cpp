@@ -36,6 +36,7 @@
 #include "TypeConverters.h"
 #include "Utils.h"
 #include "WorkerThread.h"
+#include "tasks/generic/FirstFrameReceived.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 
 namespace
@@ -310,6 +311,8 @@ void GstGenericPlayer::termPipeline()
     }
 
     m_finishSourceSetupTimer.reset();
+    
+    clearAudioFirstFrameFallbackProbe();
     stopNotifyPlaybackInfoTimer();
 
     for (auto &elem : m_context.streamInfo)
@@ -1515,6 +1518,8 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
 
 void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourceType &mediaSourceType)
 {
+    const std::string kTypeStr{common::convertMediaSourceType(mediaSourceType)};
+
     auto initialPosition = m_context.initialPositions.find(source);
     if (m_context.initialPositions.end() == initialPosition)
     {
@@ -1529,7 +1534,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
     for (const auto &[position, resetTime, appliedRate, stopPosition] : initialPosition->second)
     {
         GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
-        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", common::convertMediaSourceType(mediaSourceType));
+        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", kTypeStr.c_str());
         GstSegment *segment{m_gstWrapper->gstSegmentNew()};
         m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
         if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, seekFlag,
@@ -1543,10 +1548,9 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
         segment->applied_rate = appliedRate;
         RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
-                              common::convertMediaSourceType(mediaSourceType), GST_TIME_ARGS(segment->start),
-                              GST_TIME_ARGS(segment->stop), segment->rate, segment->applied_rate, resetTime);
-        auto recordId = m_context.gstProfiler->createRecord("First Segment Received",
-                                                            common::convertMediaSourceType(mediaSourceType));
+                              kTypeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
+                              segment->rate, segment->applied_rate, resetTime);
+        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", kTypeStr);
         if (recordId)
             m_context.gstProfiler->logRecord(recordId.value());
 
@@ -1561,7 +1565,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
 
         m_gstWrapper->gstSegmentFree(segment);
 
-        if (MediaSourceType::AUDIO == mediaSourceType)
+        if (mediaSourceType == MediaSourceType::AUDIO)
         {
             m_context.audioGstSegmentPosition = position;
         }
@@ -1750,6 +1754,63 @@ void GstGenericPlayer::scheduleFirstVideoFrameReceived()
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::VIDEO));
+    }
+}
+
+void GstGenericPlayer::scheduleFirstAudioFrameReceived(AudioFirstFrameAction audioAction)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(
+            m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::AUDIO, audioAction));
+    }
+}
+
+void GstGenericPlayer::setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id)
+{
+    GstPad *oldPad{m_context.audioFirstFrameProbePad};
+    gulong oldId{m_context.audioFirstFrameProbeId};
+    m_context.audioFirstFrameProbePad = pad;
+    m_context.audioFirstFrameProbeId = id;
+
+    if (oldPad && oldId != 0)
+    {
+        m_gstWrapper->gstPadRemoveProbe(oldPad, oldId);
+    }
+
+    if (oldPad)
+    {
+        m_gstWrapper->gstObjectUnref(oldPad);
+    }
+}
+
+void GstGenericPlayer::clearAudioFirstFrameFallbackProbe()
+{
+    GstPad *pad{m_context.audioFirstFrameProbePad};
+    gulong id{m_context.audioFirstFrameProbeId};
+    m_context.audioFirstFrameProbePad = nullptr;
+    m_context.audioFirstFrameProbeId = 0;
+
+    if (pad && id != 0)
+    {
+        m_gstWrapper->gstPadRemoveProbe(pad, id);
+    }
+
+    if (pad)
+    {
+        m_gstWrapper->gstObjectUnref(pad);
+    }
+}
+
+void GstGenericPlayer::clearAudioFirstFrameFallbackProbeState()
+{
+    GstPad *pad{m_context.audioFirstFrameProbePad};
+    m_context.audioFirstFrameProbePad = nullptr;
+    m_context.audioFirstFrameProbeId = 0;
+
+    if (pad)
+    {
+        m_gstWrapper->gstObjectUnref(pad);
     }
 }
 
@@ -2038,7 +2099,7 @@ bool GstGenericPlayer::setSyncOff()
 
             if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "sync-off"))
             {
-                gboolean syncOffGboolean{decoder ? TRUE : FALSE};
+                gboolean syncOffGboolean{syncOff ? TRUE : FALSE};
                 m_glibWrapper->gObjectSet(decoder, "sync-off", syncOffGboolean, nullptr);
                 result = true;
             }
@@ -2136,8 +2197,13 @@ bool GstGenericPlayer::setRenderFrame()
                 RIALTO_SERVER_LOG_INFO("Rendering preroll");
 
                 m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 1, nullptr);
-                m_gstWrapper->gstElementSendEvent(sink, m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true,
-                                                                                      false));
+                gboolean sendRet =
+                    m_gstWrapper->gstElementSendEvent(sink, m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0,
+                                                                                          true, false));
+                if (!sendRet)
+                {
+                    RIALTO_SERVER_LOG_WARN("Failed to send step event for rendering preroll frame");
+                }
                 m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 0, nullptr);
                 result = true;
             }
@@ -2320,9 +2386,9 @@ void GstGenericPlayer::startNotifyPlaybackInfoTimer()
 
     notifyPlaybackInfo();
 
-    m_playbackInfoTimer =
-        m_timerFactory
-            ->createTimer(kPlaybackInfoTimerMs, [this]() { notifyPlaybackInfo(); }, firebolt::rialto::common::TimerType::PERIODIC);
+    const auto kNotifyPlaybackInfo = [this]() { notifyPlaybackInfo(); };
+    m_playbackInfoTimer = m_timerFactory->createTimer(kPlaybackInfoTimerMs, kNotifyPlaybackInfo,
+                                                      firebolt::rialto::common::TimerType::PERIODIC);
 }
 
 void GstGenericPlayer::stopNotifyPlaybackInfoTimer()

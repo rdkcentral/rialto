@@ -332,10 +332,95 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleFirstVideoFrameReceived)
 {
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
-    EXPECT_CALL(m_taskFactoryMock, createFirstFrameReceived(_, _, MediaSourceType::VIDEO))
+    EXPECT_CALL(m_taskFactoryMock,
+                createFirstFrameReceived(_, _, MediaSourceType::VIDEO, AudioFirstFrameAction::CLEAR_PROBE))
         .WillOnce(Return(ByMove(std::move(task))));
 
     m_sut->scheduleFirstVideoFrameReceived();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleFirstAudioFrameFromSignal)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock,
+                createFirstFrameReceived(_, _, MediaSourceType::AUDIO, AudioFirstFrameAction::CLEAR_PROBE))
+        .WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->scheduleFirstAudioFrameReceived(AudioFirstFrameAction::CLEAR_PROBE);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleFirstAudioFrameFromFallbackProbe)
+{
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock,
+                createFirstFrameReceived(_, _, MediaSourceType::AUDIO, AudioFirstFrameAction::CLEAR_PROBE_STATE))
+        .WillOnce(Return(ByMove(std::move(task))));
+
+    m_sut->scheduleFirstAudioFrameReceived(AudioFirstFrameAction::CLEAR_PROBE_STATE);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldSetAudioFirstFrameFallbackProbe)
+{
+    GstPad pad{};
+    m_sut->setAudioFirstFrameFallbackProbe(&pad, 42);
+
+    modifyContext(
+        [&](const GenericPlayerContext &context)
+        {
+            EXPECT_EQ(&pad, context.audioFirstFrameProbePad);
+            EXPECT_EQ(42U, context.audioFirstFrameProbeId);
+        });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstPadRemoveProbe(&pad, 42));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&pad));
+    m_sut->clearAudioFirstFrameFallbackProbe();
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldClearAudioFirstFrameFallbackProbe)
+{
+    GstPad pad{};
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.audioFirstFrameProbePad = &pad;
+            context.audioFirstFrameProbeId = 42;
+        });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstPadRemoveProbe(&pad, 42));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&pad));
+
+    m_sut->clearAudioFirstFrameFallbackProbe();
+
+    modifyContext(
+        [&](const GenericPlayerContext &context)
+        {
+            EXPECT_EQ(nullptr, context.audioFirstFrameProbePad);
+            EXPECT_EQ(0U, context.audioFirstFrameProbeId);
+        });
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldClearAudioFirstFrameFallbackProbeState)
+{
+    GstPad pad{};
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.audioFirstFrameProbePad = &pad;
+            context.audioFirstFrameProbeId = 7;
+        });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&pad));
+
+    m_sut->clearAudioFirstFrameFallbackProbeState();
+
+    modifyContext(
+        [&](const GenericPlayerContext &context)
+        {
+            EXPECT_EQ(nullptr, context.audioFirstFrameProbePad);
+            EXPECT_EQ(0U, context.audioFirstFrameProbeId);
+        });
 }
 
 TEST_F(GstGenericPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkIsNull)
