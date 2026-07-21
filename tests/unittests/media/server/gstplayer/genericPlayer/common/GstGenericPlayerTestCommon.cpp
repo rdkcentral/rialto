@@ -25,7 +25,6 @@
 #include <utility>
 
 using ::testing::_;
-using ::testing::AnyNumber;
 using ::testing::ByMove;
 using ::testing::Invoke;
 using ::testing::Return;
@@ -57,7 +56,7 @@ void GstGenericPlayerTestCommon::gstPlayerWillBeDestroyed()
 {
     expectShutdown();
     expectStop();
-    EXPECT_CALL(*m_timerFactoryMock, createTimer(_, _, _)).Times(AnyNumber());
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(_, _, _)).Times(0);
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
