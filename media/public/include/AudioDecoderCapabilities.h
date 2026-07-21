@@ -48,12 +48,11 @@ enum class AudioCodec
     SBC,
     DOLBY_AC3,
     DOLBY_AC4,
-    DOLBY_MAT,
+    DOLBY_EAC3,
     DOLBY_TRUEHD,
     FLAC,
     VORBIS,
     OPUS,
-    WMA,
     REALAUDIO,
     USAC,
     DTS,
@@ -77,28 +76,7 @@ enum class AacProfile
  */
 enum class DolbyAc3Profile
 {
-    STANDARD,
-    PLUS,
-    PLUS_JOC
-};
-
-/**
- * @brief Dolby MAT profile types
- */
-enum class DolbyMatProfile
-{
-    V1,
-    V2
-};
-
-/**
- * @brief WMA profile types
- */
-enum class WmaProfile
-{
-    STANDARD,
-    PRO,
-    LOSSLESS
+    STANDARD
 };
 
 /**
@@ -140,37 +118,62 @@ enum class AvsProfile
 };
 
 /**
+ * @brief DolbyEac3 profile types (split from DolbyAc3)
+ */
+enum class DolbyEac3Profile
+{
+    PLUS,
+    PLUS_JOC
+};
+
+/**
+ * @brief MPEG Audio profile types
+ */
+enum class MpegAudioProfile
+{
+    LAYER_1,
+    LAYER_2
+};
+
+/**
+ * @brief Per-profile audio capability fields (HFP schema v1.0.0).
+ *
+ * Used as the value type in named-profile codec capability maps and as
+ * the single `base` field in single-profile codec capability structs.
+ * All fields are required (not optional) per HFP schema v1.0.0.
+ */
+struct AudioProfileCapability
+{
+    uint64_t maxBitrateInBps;   /**< Maximum bitrate in bits per second */
+    uint32_t maxChannels;       /**< Maximum number of channels */
+    uint32_t maxSampleRateInHz; /**< Maximum sample rate in Hz */
+    uint32_t maxBitDepth;       /**< Maximum bit depth */
+};
+
+/**
  * @brief PCM codec capabilities
  */
 struct PcmCapability
 {
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    AudioProfileCapability base; /**< Single-profile capability */
 };
 
 /**
  * @brief AAC codec capabilities
+ *
+ * Key: profile enum value. Value: per-profile capability (HFP schema v1.0.0).
  */
 struct AacCapability
 {
-    std::vector<AacProfile> profiles;    /**< Supported AAC profiles */
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    std::map<AacProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
 /**
- * @brief MPEG Audio codec capabilities
+ * @brief MPEG Audio codec capabilities (LAYER_1, LAYER_2 per HFP schema v1.0.0)
  */
 struct MpegAudioCapability
 {
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    std::map<MpegAudioProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
 /**
@@ -178,10 +181,7 @@ struct MpegAudioCapability
  */
 struct Mp3Capability
 {
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    AudioProfileCapability base; /**< Single-profile capability */
 };
 
 /**
@@ -189,10 +189,7 @@ struct Mp3Capability
  */
 struct AlacCapability
 {
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    AudioProfileCapability base; /**< Single-profile capability */
 };
 
 /**
@@ -200,22 +197,17 @@ struct AlacCapability
  */
 struct SbcCapability
 {
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    AudioProfileCapability base; /**< Single-profile capability */
 };
 
 /**
  * @brief Dolby AC3 codec capabilities
+ *
+ * Key: profile enum value. Value: per-profile capability (HFP schema v1.0.0).
  */
 struct DolbyAc3Capability
 {
-    std::vector<DolbyAc3Profile> profiles; /**< Supported Dolby AC3 profiles */
-    uint64_t maxBitrateInBps;              /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                  /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;            /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth;   /**< Maximum bit depth (optional) */
+    std::map<DolbyAc3Profile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
 /**
@@ -223,33 +215,17 @@ struct DolbyAc3Capability
  */
 struct DolbyAc4Capability
 {
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    AudioProfileCapability base; /**< Single-profile capability */
 };
 
-/**
- * @brief Dolby MAT codec capabilities
- */
-struct DolbyMatCapability
-{
-    std::vector<DolbyMatProfile> profiles; /**< Supported Dolby MAT profiles */
-    uint64_t maxBitrateInBps;              /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                  /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;            /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth;   /**< Maximum bit depth (optional) */
-};
+
 
 /**
  * @brief Dolby TrueHD codec capabilities
  */
 struct DolbyTruehdCapability
 {
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    AudioProfileCapability base; /**< Single-profile capability */
 };
 
 /**
@@ -257,10 +233,7 @@ struct DolbyTruehdCapability
  */
 struct FlacCapability
 {
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    AudioProfileCapability base; /**< Single-profile capability */
 };
 
 /**
@@ -268,10 +241,7 @@ struct FlacCapability
  */
 struct VorbisCapability
 {
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    AudioProfileCapability base; /**< Single-profile capability */
 };
 
 /**
@@ -279,75 +249,62 @@ struct VorbisCapability
  */
 struct OpusCapability
 {
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    AudioProfileCapability base; /**< Single-profile capability */
 };
 
-/**
- * @brief WMA codec capabilities
- */
-struct WmaCapability
-{
-    std::vector<WmaProfile> profiles;    /**< Supported WMA profiles */
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
-};
+
 
 /**
  * @brief RealAudio codec capabilities
+ *
+ * Key: profile enum value. Value: per-profile capability (HFP schema v1.0.0).
  */
 struct RealAudioCapability
 {
-    std::vector<RealAudioProfile> profiles; /**< Supported RealAudio profiles */
-    uint64_t maxBitrateInBps;               /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                   /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;             /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth;    /**< Maximum bit depth (optional) */
+    std::map<RealAudioProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
 /**
  * @brief USAC codec capabilities
+ *
+ * Key: profile enum value. Value: per-profile capability (HFP schema v1.0.0).
  */
 struct UsacCapability
 {
-    std::vector<UsacProfile> profiles;   /**< Supported USAC profiles */
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    std::map<UsacProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
 /**
  * @brief DTS codec capabilities
+ *
+ * Key: profile enum value. Value: per-profile capability (HFP schema v1.0.0).
  */
 struct DtsCapability
 {
-    std::vector<DtsProfile> profiles;    /**< Supported DTS profiles */
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    std::map<DtsProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
 /**
  * @brief AVS audio codec capabilities
+ *
+ * Key: profile enum value. Value: per-profile capability (HFP schema v1.0.0).
  */
 struct AvsCapability
 {
-    std::vector<AvsProfile> profiles;    /**< Supported AVS profiles */
-    uint64_t maxBitrateInBps;            /**< Maximum bitrate in bits per second */
-    uint32_t maxChannels;                /**< Maximum number of channels */
-    uint32_t maxSampleRateInHz;          /**< Maximum sample rate in Hz */
-    std::optional<uint32_t> maxBitDepth; /**< Maximum bit depth (optional) */
+    std::map<AvsProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
 /**
  * @brief Audio decoder capability entry for a specific rank
  */
+/**
+ * @brief DolbyEac3 codec capabilities (split from DolbyAc3, HFP schema v1.0.0)
+ */
+struct DolbyEac3Capability
+{
+    std::map<DolbyEac3Profile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
+};
+
 struct AudioDecoderCapability
 {
     std::optional<PcmCapability> pcm;                 /**< PCM capabilities (if supported) */
@@ -358,12 +315,13 @@ struct AudioDecoderCapability
     std::optional<SbcCapability> sbc;                 /**< SBC capabilities (if supported) */
     std::optional<DolbyAc3Capability> dolbyAc3;       /**< Dolby AC3 capabilities (if supported) */
     std::optional<DolbyAc4Capability> dolbyAc4;       /**< Dolby AC4 capabilities (if supported) */
-    std::optional<DolbyMatCapability> dolbyMat;       /**< Dolby MAT capabilities (if supported) */
+    std::optional<DolbyEac3Capability> dolbyEac3;     /**< Dolby EAC3 capabilities (if supported) */
+
     std::optional<DolbyTruehdCapability> dolbyTruehd; /**< Dolby TrueHD capabilities (if supported) */
     std::optional<FlacCapability> flac;               /**< FLAC capabilities (if supported) */
     std::optional<VorbisCapability> vorbis;           /**< Vorbis capabilities (if supported) */
     std::optional<OpusCapability> opus;               /**< Opus capabilities (if supported) */
-    std::optional<WmaCapability> wma;                 /**< WMA capabilities (if supported) */
+
     std::optional<RealAudioCapability> realAudio;     /**< RealAudio capabilities (if supported) */
     std::optional<UsacCapability> usac;               /**< USAC capabilities (if supported) */
     std::optional<DtsCapability> dts;                 /**< DTS capabilities (if supported) */

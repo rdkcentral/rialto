@@ -29,6 +29,7 @@
 
 #include <cstdint>
 #include <map>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -221,24 +222,74 @@ struct Av1Profile
 };
 
 /**
- * @brief Codec capabilities for a specific video codec
+ * @brief Per-codec capability for MPEG-2: profiles and per-codec dynamic ranges.
  */
-struct VideoCodecCapabilities
+struct Mpeg2CodecCapability
 {
-    std::vector<Mpeg2Profile> mpeg2Profiles; /**< MPEG2 profiles (if codec is MPEG2) */
-    std::vector<H264Profile> h264Profiles;   /**< H.264 profiles (if codec is H264) */
-    std::vector<H265Profile> h265Profiles;   /**< H.265 profiles (if codec is H265) */
-    std::vector<Vp9Profile> vp9Profiles;     /**< VP9 profiles (if codec is VP9) */
-    std::vector<Av1Profile> av1Profiles;     /**< AV1 profiles (if codec is AV1) */
+    std::vector<Mpeg2Profile> profiles;       /**< Supported MPEG2 profiles */
+    std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
 };
 
 /**
- * @brief Decoder capability entry for a specific rank
+ * @brief Per-codec capability for H.264/AVC: profiles and per-codec dynamic ranges.
+ */
+struct H264CodecCapability
+{
+    std::vector<H264Profile> profiles;        /**< Supported H.264 profiles */
+    std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
+};
+
+/**
+ * @brief Per-codec capability for H.265/HEVC: profiles and per-codec dynamic ranges.
+ */
+struct H265CodecCapability
+{
+    std::vector<H265Profile> profiles;        /**< Supported H.265 profiles */
+    std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
+};
+
+/**
+ * @brief Per-codec capability for VP9: profiles and per-codec dynamic ranges.
+ */
+struct Vp9CodecCapability
+{
+    std::vector<Vp9Profile> profiles;         /**< Supported VP9 profiles */
+    std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
+};
+
+/**
+ * @brief Per-codec capability for AV1: profiles and per-codec dynamic ranges.
+ */
+struct Av1CodecCapability
+{
+    std::vector<Av1Profile> profiles;         /**< Supported AV1 profiles */
+    std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
+};
+
+/**
+ * @brief Codec capabilities for all supported video codecs.
+ *
+ * Each field is std::nullopt when the codec is absent from the HFP config file.
+ * Dynamic range information is per-codec (HFP schema v1.0.0).
+ */
+struct VideoCodecCapabilities
+{
+    std::optional<Mpeg2CodecCapability> mpeg2; /**< MPEG2 capability (nullopt if absent) */
+    std::optional<H264CodecCapability>  h264;  /**< H.264 capability (nullopt if absent) */
+    std::optional<H265CodecCapability>  h265;  /**< H.265 capability (nullopt if absent) */
+    std::optional<Vp9CodecCapability>   vp9;   /**< VP9 capability (nullopt if absent) */
+    std::optional<Av1CodecCapability>   av1;   /**< AV1 capability (nullopt if absent) */
+};
+
+/**
+ * @brief Decoder capability entry.
+ *
+ * Dynamic range is per-codec inside codecCapabilities (HFP schema v1.0.0).
+ * There is no shared top-level dynamicRanges field.
  */
 struct VideoDecoderCapability
 {
-    VideoCodecCapabilities codecCapabilities; /**< List of supported codec capabilities */
-    std::vector<DynamicRange> dynamicRanges;  /**< List of supported dynamic ranges */
+    VideoCodecCapabilities codecCapabilities; /**< Per-codec capabilities */
 };
 
 /**
