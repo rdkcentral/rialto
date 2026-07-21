@@ -198,6 +198,130 @@ firebolt::rialto::AudioDecoderCapabilities convertAudioDecoderCapabilities(const
 }
 
 
+// ---------- Video converter helpers ----------
+
+firebolt::rialto::DynamicRange convertDynamicRange(VideoCapabilitiesResponse::DynamicRange proto)
+{
+    switch (proto)
+    {
+    case VideoCapabilitiesResponse::DYNAMIC_RANGE_SDR:          return firebolt::rialto::DynamicRange::SDR;
+    case VideoCapabilitiesResponse::DYNAMIC_RANGE_HLG:          return firebolt::rialto::DynamicRange::HLG;
+    case VideoCapabilitiesResponse::DYNAMIC_RANGE_HDR10:        return firebolt::rialto::DynamicRange::HDR10;
+    case VideoCapabilitiesResponse::DYNAMIC_RANGE_HDR10PLUS:    return firebolt::rialto::DynamicRange::HDR10PLUS;
+    case VideoCapabilitiesResponse::DYNAMIC_RANGE_DOLBY_VISION: return firebolt::rialto::DynamicRange::DOLBY_VISION;
+    }
+    return firebolt::rialto::DynamicRange::SDR;
+}
+
+firebolt::rialto::Mpeg2Profile convertMpeg2Profile(const VideoCapabilitiesResponse::Mpeg2Profile &p)
+{
+    firebolt::rialto::Mpeg2Profile r{};
+    if (p.has_type()) { switch(p.type()) {
+        case VideoCapabilitiesResponse::MPEG2_PROFILE_MAIN:   r.type = firebolt::rialto::Mpeg2ProfileType::MPEG2_MAIN; break;
+        case VideoCapabilitiesResponse::MPEG2_PROFILE_SIMPLE: r.type = firebolt::rialto::Mpeg2ProfileType::MPEG2_SIMPLE; break;
+    }}
+    if (p.has_max_level()) { switch(p.max_level()) {
+        case VideoCapabilitiesResponse::MPEG2_LEVEL_LOW:  r.maxLevel = firebolt::rialto::Mpeg2Level::MPEG2_LEVEL_LOW; break;
+        case VideoCapabilitiesResponse::MPEG2_LEVEL_MAIN: r.maxLevel = firebolt::rialto::Mpeg2Level::MPEG2_LEVEL_MAIN; break;
+        case VideoCapabilitiesResponse::MPEG2_LEVEL_HIGH: r.maxLevel = firebolt::rialto::Mpeg2Level::MPEG2_LEVEL_HIGH; break;
+    }}
+    if (p.has_max_bitrate_in_bps()) r.maxBitrateInBps = p.max_bitrate_in_bps();
+    return r;
+}
+
+firebolt::rialto::H264Profile convertH264Profile(const VideoCapabilitiesResponse::H264Profile &p)
+{
+    firebolt::rialto::H264Profile r{};
+    if (p.has_type()) { switch(p.type()) {
+        case VideoCapabilitiesResponse::H264_PROFILE_BASELINE: r.type = firebolt::rialto::H264ProfileType::H264_BASELINE; break;
+        case VideoCapabilitiesResponse::H264_PROFILE_MAIN:     r.type = firebolt::rialto::H264ProfileType::H264_MAIN; break;
+        case VideoCapabilitiesResponse::H264_PROFILE_HIGH:     r.type = firebolt::rialto::H264ProfileType::H264_HIGH; break;
+    }}
+    if (p.has_max_level()) { switch(p.max_level()) {
+        case VideoCapabilitiesResponse::H264_LEVEL_3:   r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_3; break;
+        case VideoCapabilitiesResponse::H264_LEVEL_3_1: r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_3_1; break;
+        case VideoCapabilitiesResponse::H264_LEVEL_4:   r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_4; break;
+        case VideoCapabilitiesResponse::H264_LEVEL_4_1: r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_4_1; break;
+        case VideoCapabilitiesResponse::H264_LEVEL_5:   r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_5; break;
+        case VideoCapabilitiesResponse::H264_LEVEL_5_1: r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_5_1; break;
+        case VideoCapabilitiesResponse::H264_LEVEL_5_2: r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_5_2; break;
+    }}
+    if (p.has_max_bitrate_in_bps()) r.maxBitrateInBps = p.max_bitrate_in_bps();
+    return r;
+}
+
+firebolt::rialto::H265Profile convertH265Profile(const VideoCapabilitiesResponse::H265Profile &p)
+{
+    firebolt::rialto::H265Profile r{};
+    if (p.has_type()) { switch(p.type()) {
+        case VideoCapabilitiesResponse::H265_PROFILE_MAIN:          r.type = firebolt::rialto::H265ProfileType::H265_MAIN; break;
+        case VideoCapabilitiesResponse::H265_PROFILE_MAIN_10:       r.type = firebolt::rialto::H265ProfileType::H265_MAIN_10; break;
+        case VideoCapabilitiesResponse::H265_PROFILE_MAIN_10_HDR10: r.type = firebolt::rialto::H265ProfileType::H265_MAIN_10_HDR10; break;
+    }}
+    if (p.has_max_level()) { switch(p.max_level()) {
+        case VideoCapabilitiesResponse::H265_LEVEL_4:   r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_4; break;
+        case VideoCapabilitiesResponse::H265_LEVEL_4_1: r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_4_1; break;
+        case VideoCapabilitiesResponse::H265_LEVEL_5:   r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_5; break;
+        case VideoCapabilitiesResponse::H265_LEVEL_5_1: r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_5_1; break;
+        case VideoCapabilitiesResponse::H265_LEVEL_5_2: r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_5_2; break;
+        case VideoCapabilitiesResponse::H265_LEVEL_6:   r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_6; break;
+        case VideoCapabilitiesResponse::H265_LEVEL_6_1: r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_6_1; break;
+        case VideoCapabilitiesResponse::H265_LEVEL_6_2: r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_6_2; break;
+    }}
+    if (p.has_max_bitrate_in_bps()) r.maxBitrateInBps = p.max_bitrate_in_bps();
+    return r;
+}
+
+firebolt::rialto::Vp9Profile convertVp9Profile(const VideoCapabilitiesResponse::Vp9Profile &p)
+{
+    firebolt::rialto::Vp9Profile r{};
+    if (p.has_type()) { switch(p.type()) {
+        case VideoCapabilitiesResponse::VP9_PROFILE_0: r.type = firebolt::rialto::Vp9ProfileType::VP9_PROFILE_0; break;
+        case VideoCapabilitiesResponse::VP9_PROFILE_1: r.type = firebolt::rialto::Vp9ProfileType::VP9_PROFILE_1; break;
+        case VideoCapabilitiesResponse::VP9_PROFILE_2: r.type = firebolt::rialto::Vp9ProfileType::VP9_PROFILE_2; break;
+        case VideoCapabilitiesResponse::VP9_PROFILE_3: r.type = firebolt::rialto::Vp9ProfileType::VP9_PROFILE_3; break;
+    }}
+    if (p.has_max_level()) { switch(p.max_level()) {
+        case VideoCapabilitiesResponse::VP9_LEVEL_1:   r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_1; break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_1_1: r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_1_1; break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_2:   r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_2; break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_2_1: r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_2_1; break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_3:   r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_3; break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_3_1: r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_3_1; break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_4:   r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_4; break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_4_1: r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_4_1; break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_5:   r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_5; break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_5_1: r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_5_1; break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_5_2: r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_5_2; break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_6:   r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_6; break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_6_1: r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_6_1; break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_6_2: r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_6_2; break;
+    }}
+    if (p.has_max_bitrate_in_bps()) r.maxBitrateInBps = p.max_bitrate_in_bps();
+    return r;
+}
+
+firebolt::rialto::Av1Profile convertAv1Profile(const VideoCapabilitiesResponse::Av1Profile &p)
+{
+    firebolt::rialto::Av1Profile r{};
+    if (p.has_type()) { switch(p.type()) {
+        case VideoCapabilitiesResponse::AV1_PROFILE_MAIN: r.type = firebolt::rialto::Av1ProfileType::AV1_MAIN; break;
+        case VideoCapabilitiesResponse::AV1_PROFILE_HIGH: r.type = firebolt::rialto::Av1ProfileType::AV1_HIGH; break;
+    }}
+    if (p.has_max_level()) { switch(p.max_level()) {
+        case VideoCapabilitiesResponse::AV1_LEVEL_4_0: r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_4_0; break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_4_1: r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_4_1; break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_5_0: r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_5_0; break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_5_1: r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_5_1; break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_5_2: r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_5_2; break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_6_0: r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_6_0; break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_6_1: r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_6_1; break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_6_2: r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_6_2; break;
+    }}
+    if (p.has_max_bitrate_in_bps()) r.maxBitrateInBps = p.max_bitrate_in_bps();
+    return r;
+}
+
 firebolt::rialto::VideoCodecCapabilities
 convertVideoCodecCapabilities(const VideoCapabilitiesResponse::VideoCodecCapabilities &proto)
 {
