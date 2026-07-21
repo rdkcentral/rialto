@@ -25,38 +25,6 @@ namespace
 const std::string kAudioCapabilitiesFilePath{"/product/hfp/config/hfp-audiodecoder.yaml"};
 const std::string kVideoCapabilitiesFilePath{"/product/hfp/config/hfp-videodecoder.yaml"};
 
-std::vector<firebolt::rialto::AacProfile> getAacProfiles(const YAML::Node &codecData)
-{
-    std::vector<firebolt::rialto::AacProfile> result;
-    if (codecData["profiles"] && codecData["profiles"].IsSequence())
-    {
-        for (std::size_t i = 0; i < codecData["profiles"].size(); ++i)
-        {
-            const std::string kProfileName = codecData["profiles"][i].as<std::string>();
-            if ("LC" == kProfileName)
-            {
-                result.push_back(firebolt::rialto::AacProfile::LC);
-            }
-            else if ("HE_V1" == kProfileName)
-            {
-                result.push_back(firebolt::rialto::AacProfile::HE_V1);
-            }
-            else if ("HE_V2" == kProfileName)
-            {
-                result.push_back(firebolt::rialto::AacProfile::HE_V2);
-            }
-            else if ("ELD" == kProfileName)
-            {
-                result.push_back(firebolt::rialto::AacProfile::ELD);
-            }
-            else if ("X_HE" == kProfileName)
-            {
-                result.push_back(firebolt::rialto::AacProfile::X_HE);
-            }
-        }
-    }
-    return result;
-}
 
 firebolt::rialto::AudioProfileCapability parseAudioProfileCapability(const YAML::Node &node)
 {
