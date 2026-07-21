@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_GENERIC_PLAYER_PRIVATE_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_GENERIC_PLAYER_PRIVATE_H_
 
+#include "GstPlayerTypes.h"
 #include "IMediaPipeline.h"
 
 #include <gst/app/gstappsrc.h>
@@ -65,6 +66,29 @@ public:
      * @brief Schedules first video frame received task. Called by the worker thread.
      */
     virtual void scheduleFirstVideoFrameReceived() = 0;
+
+    /**
+     * @brief Schedules first audio frame received task. Called by the Gstreamer thread.
+     */
+    virtual void scheduleFirstAudioFrameReceived(AudioFirstFrameAction audioAction) = 0;
+
+    /**
+     * @brief Stores audio first-frame fallback probe state.
+     *
+     * @param[in] pad : sink pad with installed probe
+     * @param[in] id  : probe id
+     */
+    virtual void setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id) = 0;
+
+    /**
+     * @brief Removes and clears audio first-frame fallback probe state.
+     */
+    virtual void clearAudioFirstFrameFallbackProbe() = 0;
+
+    /**
+     * @brief Clears audio first-frame fallback probe state without removing the probe.
+     */
+    virtual void clearAudioFirstFrameFallbackProbeState() = 0;
 
     /**
      * @brief Schedules all sources attached task. Called by the worker thread.

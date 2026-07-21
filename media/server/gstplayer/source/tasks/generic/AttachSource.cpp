@@ -124,6 +124,8 @@ void AttachSource::addSource() const
 
 void AttachSource::reattachAudioSource() const
 {
+    m_context.firstAudioFrameReceived = false;
+
     if (!m_player.reattachSource(m_attachedSource))
     {
         RIALTO_SERVER_LOG_ERROR("Reattaching source failed!");
