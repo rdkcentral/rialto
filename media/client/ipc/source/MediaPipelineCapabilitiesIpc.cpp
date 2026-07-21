@@ -24,11 +24,7 @@
 namespace
 {
 using AudioCapabilitiesResponse = firebolt::rialto::GetSupportedAudioCapabilitiesResponse;
-
-std::optional<uint32_t> convertOptionalUint32(bool has, uint32_t value)
-{
-    return has ? std::optional<uint32_t>(value) : std::nullopt;
-}
+using VideoCapabilitiesResponse = firebolt::rialto::GetSupportedVideoCapabilitiesResponse;
 
 firebolt::rialto::AudioProfileCapability convertAudioProfileCapability(
     const AudioCapabilitiesResponse::AudioProfileCapability &proto)
@@ -142,10 +138,6 @@ firebolt::rialto::AudioDecoderCapability convertAudioDecoderCapability(
     const AudioCapabilitiesResponse::AudioDecoderCapability &proto)
 {
     firebolt::rialto::AudioDecoderCapability result;
-
-    auto fromBase = [](const auto &protoCap) {
-        return protoCap.has_base() ? std::optional{convertAudioProfileCapability(protoCap.base())} : std::nullopt;
-    };
 
     if (proto.has_pcm())         result.pcm         = firebolt::rialto::PcmCapability{convertAudioProfileCapability(proto.pcm().base())};
     if (proto.has_mp3())         result.mp3         = firebolt::rialto::Mp3Capability{convertAudioProfileCapability(proto.mp3().base())};
