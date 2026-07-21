@@ -81,6 +81,8 @@ public:
     void cdmServiceWillFailToGetDrmTime();
     void cdmServiceWillReleaseKeySession();
     void cdmServiceWillFailToReleaseKeySession();
+    void cdmServiceWillGetMetricSystemData();
+    void cdmServiceWillFailToGetMetricSystemData();
 
     void mediaClientWillSendLicenseRequestEvent();
     void mediaClientWillSendLicenseRenewalEvent();
@@ -128,6 +130,8 @@ public:
     void sendGetDrmTimeRequestAndReceiveErrorResponse();
     void sendReleaseKeySessionRequestAndReceiveResponse();
     void sendReleaseKeySessionRequestAndReceiveErrorResponse();
+    void sendGetMetricSystemDataRequestAndReceiveResponse();
+    void sendGetMetricSystemDataRequestAndReceiveErrorResponse();
 
     void sendLicenseRequestEvent();
     void sendLicenseRenewalEvent();

@@ -407,6 +407,13 @@ namespace firebolt::rialto::server::ct
     return request;
 }
 
+::firebolt::rialto::GetDurationRequest createGetDurationRequest(int sessionId)
+{
+    ::firebolt::rialto::GetDurationRequest request;
+    request.set_session_id(sessionId);
+    return request;
+}
+
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine()
 {
     ::firebolt::rialto::CreateMediaKeysRequest request;
@@ -430,7 +437,8 @@ namespace firebolt::rialto::server::ct
 }
 
 ::firebolt::rialto::GenerateRequestRequest createGenerateRequestRequest(int mediaKeysHandle, int keySessionId,
-                                                                        const std::vector<unsigned char> &initData)
+                                                                        const std::vector<unsigned char> &initData,
+                                                                        bool extendedInterface)
 {
     ::firebolt::rialto::GenerateRequestRequest request;
     request.set_media_keys_handle(mediaKeysHandle);
@@ -439,6 +447,10 @@ namespace firebolt::rialto::server::ct
     for (auto i : initData)
     {
         request.add_init_data(i);
+    }
+    if (extendedInterface)
+    {
+        request.set_ldl_state(::firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense_DISABLED);
     }
     return request;
 }
@@ -655,6 +667,12 @@ createGetSupportedPropertiesRequest(const ProtoMediaSourceType &mediaType, const
     return request;
 }
 
+::firebolt::rialto::IsVideoMasterRequest createIsVideoMasterRequest()
+{
+    ::firebolt::rialto::IsVideoMasterRequest request;
+    return request;
+}
+
 ::firebolt::rialto::CreateWebAudioPlayerRequest
 createCreateWebAudioPlayerRequest(uint32 pcmRate, uint32 pcmChannels, uint32 pcmSampleSize, bool pcmIsBigEndian,
                                   bool pcmIsSigned, bool pcmIsFloat, const std::string &audioMimeType, uint32 priority)
@@ -742,6 +760,13 @@ createCreateWebAudioPlayerRequest(uint32 pcmRate, uint32 pcmChannels, uint32 pcm
 {
     ::firebolt::rialto::WebAudioGetVolumeRequest request;
     request.set_web_audio_player_handle(webAudioPlayerHandle);
+    return request;
+}
+
+::firebolt::rialto::GetMetricSystemDataRequest createGetMetricSystemDataRequest(int mediaKeysHandle)
+{
+    ::firebolt::rialto::GetMetricSystemDataRequest request;
+    request.set_media_keys_handle(mediaKeysHandle);
     return request;
 }
 

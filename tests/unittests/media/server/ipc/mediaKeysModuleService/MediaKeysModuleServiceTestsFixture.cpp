@@ -39,9 +39,8 @@ namespace
 const std::string keySystem{"expectedKeySystem"};
 constexpr int kHardcodedMediaKeysHandle{2};
 constexpr firebolt::rialto::KeySessionType kKeySessionType{firebolt::rialto::KeySessionType::TEMPORARY};
-constexpr bool kIsLDL{false};
 constexpr int kKeySessionId{3};
-constexpr firebolt::rialto::MediaKeyErrorStatus kErrorStatus{firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE};
+constexpr firebolt::rialto::MediaKeyErrorStatus kErrorStatus{firebolt::rialto::MediaKeyErrorStatus::FAIL};
 constexpr firebolt::rialto::InitDataType kInitDataType{firebolt::rialto::InitDataType::CENC};
 const std::vector<std::uint8_t> kInitData{6, 7, 2};
 const std::vector<std::uint8_t> kResponseData{9, 7, 8};
@@ -50,6 +49,7 @@ const std::vector<uint8_t> kDrmHeader{6, 3, 8};
 const std::vector<unsigned char> kLicenseRequestMessage{3, 2, 1};
 const std::vector<unsigned char> kLicenseRenewalMessage{0, 4, 8};
 const std::string kUrl{"http://"};
+constexpr firebolt::rialto::LimitedDurationLicense kLdlState{firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED};
 } // namespace
 
 MATCHER_P4(LicenseRequestEventMatcher, kKeySessionId, mediaKeysHandle, requestMessage, kUrl, "")
@@ -142,29 +142,31 @@ void MediaKeysModuleServiceTests::cdmServiceWillCreateKeySession()
 {
     expectRequestSuccess();
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_cdmServiceMock, createKeySession(kHardcodedMediaKeysHandle, kKeySessionType, _, kIsLDL, _))
-        .WillOnce(DoAll(SetArgReferee<4>(kKeySessionId), Return(firebolt::rialto::MediaKeyErrorStatus::OK)));
+    EXPECT_CALL(m_cdmServiceMock, createKeySession(kHardcodedMediaKeysHandle, kKeySessionType, _, _))
+        .WillOnce(DoAll(SetArgReferee<3>(kKeySessionId), Return(firebolt::rialto::MediaKeyErrorStatus::OK)));
 }
 
 void MediaKeysModuleServiceTests::cdmServiceWillFailToCreateKeySession()
 {
     expectRequestSuccess();
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_cdmServiceMock, createKeySession(kHardcodedMediaKeysHandle, kKeySessionType, _, kIsLDL, _))
+    EXPECT_CALL(m_cdmServiceMock, createKeySession(kHardcodedMediaKeysHandle, kKeySessionType, _, _))
         .WillOnce(Return(kErrorStatus));
 }
 
 void MediaKeysModuleServiceTests::cdmServiceWillGenerateRequest()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_cdmServiceMock, generateRequest(kHardcodedMediaKeysHandle, kKeySessionId, kInitDataType, kInitData))
+    EXPECT_CALL(m_cdmServiceMock,
+                generateRequest(kHardcodedMediaKeysHandle, kKeySessionId, kInitDataType, kInitData, kLdlState))
         .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
 }
 
 void MediaKeysModuleServiceTests::cdmServiceWillFailToGenerateRequest()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_cdmServiceMock, generateRequest(kHardcodedMediaKeysHandle, kKeySessionId, kInitDataType, kInitData))
+    EXPECT_CALL(m_cdmServiceMock,
+                generateRequest(kHardcodedMediaKeysHandle, kKeySessionId, kInitDataType, kInitData, kLdlState))
         .WillOnce(Return(kErrorStatus));
 }
 
@@ -366,6 +368,19 @@ void MediaKeysModuleServiceTests::cdmServiceWillFailToReleaseKeySession()
     EXPECT_CALL(m_cdmServiceMock, releaseKeySession(kHardcodedMediaKeysHandle, kKeySessionId)).WillOnce(Return(kErrorStatus));
 }
 
+void MediaKeysModuleServiceTests::cdmServiceWillGetMetricSystemData()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getMetricSystemData(kHardcodedMediaKeysHandle, _))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+}
+
+void MediaKeysModuleServiceTests::cdmServiceWillFailToGetMetricSystemData()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getMetricSystemData(kHardcodedMediaKeysHandle, _)).WillOnce(Return(kErrorStatus));
+}
+
 void MediaKeysModuleServiceTests::mediaClientWillSendLicenseRequestEvent()
 {
     EXPECT_CALL(*m_clientMock, sendEvent(LicenseRequestEventMatcher(kKeySessionId, kHardcodedMediaKeysHandle,
@@ -470,7 +485,6 @@ void MediaKeysModuleServiceTests::sendCreateKeySessionRequestAndReceiveResponse(
 
     request.set_media_keys_handle(kHardcodedMediaKeysHandle);
     request.set_session_type(convertKeySessionType(kKeySessionType));
-    request.set_is_ldl(kIsLDL);
 
     m_service->createKeySession(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_GE(response.key_session_id(), -1);
@@ -484,7 +498,6 @@ void MediaKeysModuleServiceTests::sendCreateKeySessionRequestAndReceiveErrorResp
 
     request.set_media_keys_handle(kHardcodedMediaKeysHandle);
     request.set_session_type(convertKeySessionType(kKeySessionType));
-    request.set_is_ldl(kIsLDL);
 
     m_service->createKeySession(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_GE(response.key_session_id(), -1);
@@ -498,7 +511,6 @@ void MediaKeysModuleServiceTests::sendCreateKeySessionRequestWithInvalidIpcAndRe
 
     request.set_media_keys_handle(kHardcodedMediaKeysHandle);
     request.set_session_type(convertKeySessionType(kKeySessionType));
-    request.set_is_ldl(kIsLDL);
 
     m_service->createKeySession(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -511,6 +523,7 @@ void MediaKeysModuleServiceTests::sendGenerateRequestRequestAndReceiveResponse()
     request.set_media_keys_handle(kHardcodedMediaKeysHandle);
     request.set_key_session_id(kKeySessionId);
     request.set_init_data_type(convertInitDataType(kInitDataType));
+    request.set_ldl_state(convertLimitedDurationLicense(kLdlState));
 
     for (auto it = kInitData.begin(); it != kInitData.end(); it++)
     {
@@ -529,6 +542,7 @@ void MediaKeysModuleServiceTests::sendGenerateRequestRequestAndReceiveErrorRespo
     request.set_media_keys_handle(kHardcodedMediaKeysHandle);
     request.set_key_session_id(kKeySessionId);
     request.set_init_data_type(convertInitDataType(kInitDataType));
+    request.set_ldl_state(convertLimitedDurationLicense(kLdlState));
 
     for (auto it = kInitData.begin(); it != kInitData.end(); it++)
     {
@@ -951,4 +965,26 @@ void MediaKeysModuleServiceTests::testFactoryCreatesObject()
         firebolt::rialto::server::ipc::IMediaKeysModuleServiceFactory::createFactory();
     EXPECT_NE(factory, nullptr);
     EXPECT_NE(factory->create(m_cdmServiceMock), nullptr);
+}
+
+void MediaKeysModuleServiceTests::sendGetMetricSystemDataRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetMetricSystemDataRequest request;
+    firebolt::rialto::GetMetricSystemDataResponse response;
+
+    request.set_media_keys_handle(kHardcodedMediaKeysHandle);
+
+    m_service->getMetricSystemData(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK, convertMediaKeyErrorStatus(response.error_status()));
+}
+
+void MediaKeysModuleServiceTests::sendGetMetricSystemDataRequestAndReceiveErrorResponse()
+{
+    firebolt::rialto::GetMetricSystemDataRequest request;
+    firebolt::rialto::GetMetricSystemDataResponse response;
+
+    request.set_media_keys_handle(kHardcodedMediaKeysHandle);
+
+    m_service->getMetricSystemData(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(kErrorStatus, convertMediaKeyErrorStatus(response.error_status()));
 }

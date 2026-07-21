@@ -39,6 +39,7 @@ add_library(
         source/tasks/generic/DeepElementAdded.cpp
         source/tasks/generic/EnoughData.cpp
         source/tasks/generic/Eos.cpp
+        source/tasks/generic/FirstFrameReceived.cpp
         source/tasks/generic/FinishSetupSource.cpp
         source/tasks/generic/Flush.cpp
         source/tasks/generic/GenericPlayerTaskFactory.cpp
@@ -59,6 +60,7 @@ add_library(
         source/tasks/generic/SetPlaybackRate.cpp
         source/tasks/generic/SetPosition.cpp
         source/tasks/generic/SetSourcePosition.cpp
+        source/tasks/generic/SetSubtitleOffset.cpp
         source/tasks/generic/SetStreamSyncMode.cpp
         source/tasks/generic/SetSync.cpp
         source/tasks/generic/SetSyncOff.cpp
@@ -71,6 +73,7 @@ add_library(
         source/tasks/generic/Shutdown.cpp
         source/tasks/generic/Stop.cpp
         source/tasks/generic/SwitchSource.cpp
+        source/tasks/generic/SynchroniseSubtitleClock.cpp
         source/tasks/generic/Underflow.cpp
         source/tasks/generic/UpdatePlaybackGroup.cpp
 
@@ -87,12 +90,15 @@ add_library(
         source/tasks/webAudio/WriteBuffer.cpp
 
         source/CapsBuilder.cpp
+        source/FlushOnPrerollController.cpp
+        source/FlushWatcher.cpp
         source/GstCapabilities.cpp
         source/GstDecryptor.cpp
         source/GstDispatcherThread.cpp
         source/GstGenericPlayer.cpp
         source/GstInitialiser.cpp
         source/GstLogForwarding.cpp
+        source/GstProfiler.cpp
         source/GstProtectionMetadata.cpp
         source/GstProtectionMetadataHelper.cpp
         source/GstSrc.cpp

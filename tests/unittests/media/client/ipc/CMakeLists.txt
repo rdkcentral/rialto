@@ -35,6 +35,7 @@ add_gtests (
         mediaPipelineIpc/SetPositionTest.cpp
         mediaPipelineIpc/SetPlaybackRateTest.cpp
         mediaPipelineIpc/GetPositionTest.cpp
+        mediaPipelineIpc/GetDurationTest.cpp
         mediaPipelineIpc/SetImmediateOutputTest.cpp
         mediaPipelineIpc/GetImmediateOutputTest.cpp
         mediaPipelineIpc/GetStatsTest.cpp
@@ -51,6 +52,7 @@ add_gtests (
         mediaPipelineIpc/GetStreamSyncModeTest.cpp
         mediaPipelineIpc/FlushTest.cpp
         mediaPipelineIpc/SetSourcePositionTest.cpp
+        mediaPipelineIpc/SetSubtitleOffsetTest.cpp
         mediaPipelineIpc/ProcessAudioGapTest.cpp
         mediaPipelineIpc/TextTrackIdentifierTests.cpp
         mediaPipelineIpc/BufferingLimitTest.cpp
@@ -92,11 +94,13 @@ add_gtests (
         mediaKeysIpc/GetLastDrmErrorTest.cpp
         mediaKeysIpc/GetDrmTimeTest.cpp
         mediaKeysIpc/ReleaseKeySessionTest.cpp
+        mediaKeysIpc/GetMetricSystemDataTest.cpp
 
         # MediaKeysCapabilitiesIpc tests
         mediaKeysCapabilitiesIpc/CreateTest.cpp
         mediaKeysCapabilitiesIpc/KeySystemsTest.cpp
         mediaKeysCapabilitiesIpc/CertificateTest.cpp
+        mediaKeysCapabilitiesIpc/RobustnessTest.cpp
 
         # WebAudioPlayer tests
         webAudioPlayerIpc/base/WebAudioPlayerIpcTestBase.cpp
@@ -144,11 +148,3 @@ target_link_libraries(
         RialtoIpcClient
         RialtoProtobuf
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoClientIpcUnitTests
-
-        gcov
-        )
-endif()

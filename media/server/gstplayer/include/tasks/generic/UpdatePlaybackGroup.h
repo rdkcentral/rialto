@@ -34,9 +34,9 @@ class UpdatePlaybackGroup : public IPlayerTask
 {
 public:
     UpdatePlaybackGroup(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                        std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, GstElement *typefind,
-                        const GstCaps *caps);
+                        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                        const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                        GstElement *typefind, const GstCaps *caps);
     ~UpdatePlaybackGroup() override;
     void execute() const override;
 

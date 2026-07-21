@@ -158,6 +158,13 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::FirstFrameReceivedEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::FirstFrameReceivedEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onFirstFrameReceived, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     eventTag = ipcChannel->subscribe<firebolt::rialto::PlaybackErrorEvent>(
         [this](const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event)
         { m_eventThread->add(&MediaPipelineIpc::onPlaybackError, this, event); });
@@ -172,10 +179,17 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
         return false;
     m_eventTags.push_back(eventTag);
 
+    eventTag = ipcChannel->subscribe<firebolt::rialto::PlaybackInfoEvent>(
+        [this](const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event)
+        { m_eventThread->add(&MediaPipelineIpc::onPlaybackInfo, this, event); });
+    if (eventTag < 0)
+        return false;
+    m_eventTags.push_back(eventTag);
+
     return true;
 }
 
-bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const std::string &url)
+bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
 {
     if (!reattachChannelIfRequired())
     {
@@ -189,6 +203,7 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
     request.set_type(convertLoadRequestMediaType(type));
     request.set_mime_type(mimeType);
     request.set_url(url);
+    request.set_is_live(isLive);
 
     firebolt::rialto::LoadResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -341,7 +356,7 @@ bool MediaPipelineIpc::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, ui
     return true;
 }
 
-bool MediaPipelineIpc::play()
+bool MediaPipelineIpc::play(bool &async)
 {
     if (!reattachChannelIfRequired())
     {
@@ -367,6 +382,8 @@ bool MediaPipelineIpc::play()
         RIALTO_CLIENT_LOG_ERROR("failed to play due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
+
+    async = response.async();
 
     return true;
 }
@@ -523,6 +540,37 @@ bool MediaPipelineIpc::getPosition(int64_t &position)
     }
 
     position = response.position();
+    return true;
+}
+
+bool MediaPipelineIpc::getDuration(int64_t &duration)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetDurationRequest request;
+
+    request.set_session_id(m_sessionId);
+
+    firebolt::rialto::GetDurationResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getDuration(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get duration due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    duration = response.duration();
     return true;
 }
 
@@ -1066,7 +1114,7 @@ bool MediaPipelineIpc::getStreamSyncMode(int32_t &streamSyncMode)
     return true;
 }
 
-bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime)
+bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime, bool &async)
 {
     if (!reattachChannelIfRequired())
     {
@@ -1094,6 +1142,9 @@ bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime)
         RIALTO_CLIENT_LOG_ERROR("failed to flush due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
+
+    // Async is true by default
+    async = response.has_async() ? response.async() : true;
 
     return true;
 }
@@ -1128,6 +1179,38 @@ bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position, boo
     if (ipcController->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("failed to set source position due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::setSubtitleOffset(int32_t sourceId, int64_t position)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetSubtitleOffsetRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+    request.set_position(position);
+
+    firebolt::rialto::SetSubtitleOffsetResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setSubtitleOffset(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set subtitle offset due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
@@ -1457,6 +1540,15 @@ void MediaPipelineIpc::onBufferUnderflow(const std::shared_ptr<firebolt::rialto:
     }
 }
 
+void MediaPipelineIpc::onFirstFrameReceived(const std::shared_ptr<firebolt::rialto::FirstFrameReceivedEvent> &event)
+{
+    // Ignore event if not for this session
+    if (event->session_id() == m_sessionId)
+    {
+        m_mediaPipelineIpcClient->notifyFirstFrameReceived(event->source_id());
+    }
+}
+
 void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event)
 {
     // Ignore event if not for this session
@@ -1467,6 +1559,9 @@ void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::P
         {
         case firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION:
             playbackError = PlaybackError::DECRYPTION;
+            break;
+        case firebolt::rialto::PlaybackErrorEvent_PlaybackError_OUTPUT_PROTECTION:
+            playbackError = PlaybackError::OUTPUT_PROTECTION;
             break;
         default:
             RIALTO_CLIENT_LOG_WARN("Received unknown playback error");
@@ -1483,6 +1578,17 @@ void MediaPipelineIpc::onSourceFlushed(const std::shared_ptr<firebolt::rialto::S
     if (event->session_id() == m_sessionId)
     {
         m_mediaPipelineIpcClient->notifySourceFlushed(event->source_id());
+    }
+}
+
+void MediaPipelineIpc::onPlaybackInfo(const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event)
+{
+    if (event->session_id() == m_sessionId)
+    {
+        PlaybackInfo playbackInfo;
+        playbackInfo.currentPosition = event->current_position();
+        playbackInfo.volume = event->volume();
+        m_mediaPipelineIpcClient->notifyPlaybackInfo(playbackInfo);
     }
 }
 
@@ -1581,6 +1687,9 @@ MediaPipelineIpc::convertHaveDataRequestMediaSourceStatus(MediaSourceStatus stat
         break;
     case MediaSourceStatus::NO_AVAILABLE_SAMPLES:
         protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_NO_AVAILABLE_SAMPLES;
+        break;
+    case MediaSourceStatus::NO_SPACE_FOR_SAMPLES:
+        protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_NO_SPACE_FOR_SAMPLES;
         break;
     default:
         break;
@@ -1843,6 +1952,14 @@ bool MediaPipelineIpc::buildAttachSourceRequest(firebolt::rialto::AttachSourceRe
             if (mediaSourceAudio->getAudioConfig().channelMask.has_value())
             {
                 request.mutable_audio_config()->set_channel_mask(mediaSourceAudio->getAudioConfig().channelMask.value());
+            }
+            for (auto &header : mediaSourceAudio->getAudioConfig().streamHeader)
+            {
+                request.mutable_audio_config()->add_stream_header(header.data(), header.size());
+            }
+            if (mediaSourceAudio->getAudioConfig().framed.has_value())
+            {
+                request.mutable_audio_config()->set_framed(mediaSourceAudio->getAudioConfig().framed.value());
             }
         }
     }

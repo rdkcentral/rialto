@@ -26,8 +26,10 @@
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
 #include "ITimer.h"
+#include "NeedDataDelayCalculator.h"
 #include <map>
 #include <memory>
+#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -77,11 +79,12 @@ public:
      * @param[in] activeRequests    : The active requests
      * @param[in] decryptionService : The decryption service
      */
-    MediaPipelineServerInternal(std::shared_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
+    MediaPipelineServerInternal(const std::shared_ptr<IMediaPipelineClient> &client,
+                                const VideoRequirements &videoRequirements,
                                 const std::shared_ptr<IGstGenericPlayerFactory> &gstPlayerFactory, int sessionId,
                                 const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-                                std::shared_ptr<common::ITimerFactory> timerFactory,
+                                const std::shared_ptr<common::ITimerFactory> &timerFactory,
                                 std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
                                 std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService);
 
@@ -90,7 +93,7 @@ public:
      */
     virtual ~MediaPipelineServerInternal();
 
-    bool load(MediaType type, const std::string &mimeType, const std::string &url) override;
+    bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override;
 
     bool attachSource(const std::unique_ptr<MediaSource> &source) override;
 
@@ -98,7 +101,7 @@ public:
 
     bool allSourcesAttached() override;
 
-    bool play() override;
+    bool play(bool &async) override;
 
     bool pause() override;
 
@@ -150,10 +153,12 @@ public:
 
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
 
-    bool flush(int32_t sourceId, bool resetTime) override;
+    bool flush(int32_t sourceId, bool resetTime, bool &async) override;
 
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;
+
+    bool setSubtitleOffset(int32_t sourceId, int64_t position) override;
 
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
@@ -167,6 +172,8 @@ public:
 
     bool switchSource(const std::unique_ptr<MediaSource> &source) override;
 
+    bool getDuration(int64_t &duration) override;
+
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
     std::weak_ptr<IMediaPipelineClient> getClient() override;
@@ -174,6 +181,8 @@ public:
     void notifyPlaybackState(PlaybackState state) override;
 
     bool notifyNeedMediaData(MediaSourceType mediaSourceType) override;
+
+    bool notifyNeedMediaDataWithDelay(MediaSourceType mediaSourceType) override;
 
     void notifyPosition(std::int64_t position) override;
 
@@ -187,9 +196,13 @@ public:
 
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
 
+    void notifyFirstFrameReceived(MediaSourceType mediaSourceType) override;
+
     void notifyPlaybackError(MediaSourceType mediaSourceType, PlaybackError error) override;
 
     void notifySourceFlushed(MediaSourceType mediaSourceType) override;
+
+    void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) override;
 
 protected:
     /**
@@ -278,9 +291,29 @@ protected:
     bool m_wasAllSourcesAttachedCalled;
 
     /**
+     * @brief Flag used to check if low latency is set for video source
+     */
+    bool m_IsLowLatencyVideoPlayer{false};
+
+    /**
+     * @brief Flag used to check if low latency is set for audio source
+     */
+    bool m_IsLowLatencyAudioPlayer{false};
+
+    /**
      * @brief Map of flags used to check if Eos has been set on the media type for this playback
      */
     std::map<MediaSourceType, bool> m_isMediaTypeEosMap;
+
+    /**
+     * @brief Mutex to protect gstPlayer access in getPosition method
+     */
+    std::shared_mutex m_getPropertyMutex;
+
+    /**
+     * @brief Object to calculate the delay for scheduling NeedMediaData when no segments were received in haveData() call
+     */
+    NeedDataDelayCalculator m_needDataDelayCalculator;
 
     /**
      * @brief Load internally, only to be called on the main thread.
@@ -288,10 +321,11 @@ protected:
      * @param[in] type     : The media type.
      * @param[in] mimeType : The MIME type.
      * @param[in] url      : The URL.
+     * @param[in] isLive   : Indicates if the media is live.
      *
      * @retval true on success.
      */
-    bool loadInternal(MediaType type, const std::string &mimeType, const std::string &url);
+    bool loadInternal(MediaType type, const std::string &mimeType, const std::string &url, bool isLive);
 
     /**
      * @brief Attach source internally, only to be called on the main thread.
@@ -321,9 +355,11 @@ protected:
     /**
      * @brief Play internally, only to be called on the main thread.
      *
+     * @param[out] async     : True if play method call is asynchronous
+     *
      * @retval true on success.
      */
-    bool playInternal();
+    bool playInternal(bool &async);
 
     /**
      * @brief Pause internally, only to be called on the main thread.
@@ -356,15 +392,6 @@ protected:
      * @retval true on success.
      */
     bool setPositionInternal(int64_t position);
-
-    /**
-     * @brief Get position internally, only to be called on the main thread.
-     *
-     * @param[out] position : The playback position in nanoseconds
-     *
-     * @retval true on success.
-     */
-    bool getPositionInternal(int64_t &position);
 
     /**
      * @brief Sets the "Immediate Output" property for this source.
@@ -459,6 +486,13 @@ protected:
      * @param[in] mediaSourceType    : The media source type.
      */
     bool notifyNeedMediaDataInternal(MediaSourceType mediaSourceType);
+
+    /**
+     * @brief Notify need media data with delay internally, only to be called on the main thread.
+     *
+     * @param[in] mediaSourceType    : The media source type.
+     */
+    bool notifyNeedMediaDataWithDelayInternal(MediaSourceType mediaSourceType);
 
     /**
      * @brief Schedules resending of NeedMediaData after a short delay. Used when no segments were received in the
@@ -590,12 +624,13 @@ protected:
     /**
      * @brief Flushes a source.
      *
-     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
-     * @param[in] resetTime : True if time should be reset
+     * @param[in]  sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in]  resetTime : True if time should be reset
+     * @param[out] async     : True if flushed source is asynchronous (will preroll after flush)
      *
      * @retval true on success.
      */
-    bool flushInternal(int32_t sourceId, bool resetTime);
+    bool flushInternal(int32_t sourceId, bool resetTime, bool &async);
 
     /**
      * @brief Set the source position in nanoseconds.
@@ -612,6 +647,18 @@ protected:
      */
     bool setSourcePositionInternal(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                                    uint64_t stopPosition);
+
+    /**
+     * @brief Set subtitle offset for a subtitle source.
+     *
+     * This method is used to set the subtitle offset for a subtitle source.
+     *
+     * @param[in] sourceId : The id of the subtitle source
+     * @param[in] position : The subtitle offset position in nanoseconds
+     *
+     * @retval true on success.
+     */
+    bool setSubtitleOffsetInternal(int32_t sourceId, int64_t position);
 
     /**
      * @brief Process audio gap
@@ -681,6 +728,16 @@ protected:
      *
      */
     bool switchSourceInternal(const std::unique_ptr<MediaSource> &source);
+
+    /**
+     * @brief Returns how long should we wait to send next NeedMediaData
+     *        if rialto client returns NO_AVAILABLE_SAMPLES
+     *
+     * @param[in] mediaSourceType : The media source type.
+     *
+     * @retval NeedMediaData timeout
+     */
+    std::chrono::milliseconds getNeedMediaDataTimeout(MediaSourceType mediaSourceType);
 };
 
 }; // namespace firebolt::rialto::server

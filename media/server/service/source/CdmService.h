@@ -34,6 +34,15 @@ namespace firebolt::rialto::server::service
 {
 class CdmService : public ICdmService, public IDecryptionService
 {
+    struct MediaKeySessionInfo
+    {
+        int mediaKeysHandle;
+        bool isExtendedInterfaceUsed{false};
+        uint32_t refCounter{0};
+        bool shouldBeClosed{false};
+        bool shouldBeReleased{false};
+    };
+
 public:
     CdmService(std::shared_ptr<IMediaKeysServerInternalFactory> &&mediaKeysFactory,
                std::shared_ptr<IMediaKeysCapabilitiesFactory> &&mediaKeysCapabilitiesFactory);
@@ -45,10 +54,10 @@ public:
     bool createMediaKeys(int mediaKeysHandle, std::string keySystem) override;
     bool destroyMediaKeys(int mediaKeysHandle) override;
     MediaKeyErrorStatus createKeySession(int mediaKeysHandle, KeySessionType sessionType,
-                                         const std::shared_ptr<IMediaKeysClient> &client, bool isLDL,
-                                         int32_t &keySessionId) override;
+                                         const std::shared_ptr<IMediaKeysClient> &client, int32_t &keySessionId) override;
     MediaKeyErrorStatus generateRequest(int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,
-                                        const std::vector<uint8_t> &initData) override;
+                                        const std::vector<uint8_t> &initData,
+                                        const LimitedDurationLicense &ldlState) override;
     MediaKeyErrorStatus loadSession(int mediaKeysHandle, int32_t keySessionId) override;
     MediaKeyErrorStatus updateSession(int mediaKeysHandle, int32_t keySessionId,
                                       const std::vector<uint8_t> &responseData) override;
@@ -67,13 +76,15 @@ public:
     MediaKeyErrorStatus getLastDrmError(int mediaKeysHandle, int32_t keySessionId, uint32_t &errorCode) override;
     MediaKeyErrorStatus getDrmTime(int mediaKeysHandle, uint64_t &drmTime) override;
     MediaKeyErrorStatus releaseKeySession(int mediaKeysHandle, int32_t keySessionId) override;
+    MediaKeyErrorStatus getMetricSystemData(int mediaKeysHandle, std::vector<uint8_t> &buffer) override;
 
     std::vector<std::string> getSupportedKeySystems() override;
     bool supportsKeySystem(const std::string &keySystem) override;
     bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) override;
     bool isServerCertificateSupported(const std::string &keySystem) override;
+    bool getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels) override;
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
-    bool isNetflixPlayreadyKeySystem(int32_t keySessionId) override;
+    bool isExtendedInterfaceUsed(int32_t keySessionId) override;
     MediaKeyErrorStatus selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
     void incrementSessionIdUsageCounter(int32_t keySessionId) override;
     void decrementSessionIdUsageCounter(int32_t keySessionId) override;
@@ -85,6 +96,7 @@ private:
     std::atomic<bool> m_isActive;
     std::map<int, std::unique_ptr<IMediaKeysServerInternal>> m_mediaKeys;
     std::map<int, std::shared_ptr<IMediaKeysClient>> m_mediaKeysClients;
+    std::map<int32_t, MediaKeySessionInfo> m_sessionInfo;
     std::mutex m_mediaKeysMutex;
 
     MediaKeyErrorStatus removeKeySessionInternal(int mediaKeysHandle, int32_t keySessionId);

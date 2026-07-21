@@ -22,7 +22,7 @@
 #include "core/Serialization.h"
 #include <string>
 
-namespace Thunder::Core
+namespace WPEFramework::Core
 {
 namespace JSON
 {
@@ -54,6 +54,6 @@ bool UTF16ToCodePoint(const uint16_t lowPart, const uint16_t highPart, uint32_t 
 {
     return false;
 }
-} // namespace Thunder::Core
+} // namespace WPEFramework::Core
 
-void DumpCallStack(const Thunder::Core::thread_id threadId, std::list<Thunder::Core::callstack_info> &stack) {}
+void DumpCallStack(const ThreadId threadId, std::list<WPEFramework::Core::callstack_info> &stack) {}

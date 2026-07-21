@@ -42,6 +42,7 @@ add_gtests (
         mediaPipeline/HaveDataTest.cpp
         mediaPipeline/FlushTest.cpp
         mediaPipeline/SetSourcePositionTest.cpp
+        mediaPipeline/SetSubtitleOffsetTest.cpp
         mediaPipeline/ProcessAudioGapTest.cpp
         mediaPipeline/TextTrackIdentifierTest.cpp
 
@@ -67,13 +68,14 @@ add_gtests (
         mediaKeys/GetDrmTimeTest.cpp
         mediaKeys/GetLastDrmErrorTest.cpp
         mediaKeys/SelectKeyIdTest.cpp
-        mediaKeys/IsNetflixPlayreadyKeySystemTest.cpp
         mediaKeys/PingTest.cpp
         mediaKeys/ReleaseKeySessionTest.cpp
+        mediaKeys/GetMetricSystemDataTest.cpp
 
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
         mediaKeysCapabilities/CertificateTest.cpp
+        mediaKeysCapabilities/RobustnessTest.cpp
 
         mediaKeySession/base/MediaKeySessionTestBase.cpp
         mediaKeySession/CreateTest.cpp
@@ -89,10 +91,11 @@ add_gtests (
         mediaKeySession/SetDrmHeaderTest.cpp
         mediaKeySession/GetLastDrmErrorTest.cpp
         mediaKeySession/SelectKeyIdTest.cpp
-        mediaKeySession/IsNetflixPlayreadyKeySystemTest.cpp
 
         sharedMemoryBuffer/SharedMemoryBufferTestsFixture.cpp
         sharedMemoryBuffer/SharedMemoryBufferTests.cpp
+
+        needDataDelayCalculator/NeedDataDelayCalculatorTest.cpp
 
         needMediaData/NeedMediaDataTestsFixture.cpp
         needMediaData/NeedMediaDataTests.cpp
@@ -142,11 +145,3 @@ target_link_libraries(
         RialtoPlayerCommon
         RialtoCommonMisc
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoServerMainUnitTests
-
-        gcov
-        )
-endif()

@@ -149,3 +149,13 @@ TEST_F(MediaPipelineCapabilitiesTest, getSupportedProperties)
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(kMediaType, kProperties)};
     EXPECT_EQ(kProperties, supportedProperties);
 }
+
+TEST_F(MediaPipelineCapabilitiesTest, isVideoMaster)
+{
+    bool isMaster{false};
+
+    EXPECT_CALL(*m_gstCapabilities, isVideoMaster(isMaster)).WillOnce(Return(true));
+
+    createMediaPipelineCapabilities();
+    EXPECT_TRUE(m_sut->isVideoMaster(isMaster));
+}

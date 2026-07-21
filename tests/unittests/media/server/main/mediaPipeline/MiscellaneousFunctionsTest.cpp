@@ -19,6 +19,7 @@
 
 #include "HeartbeatHandlerMock.h"
 #include "MediaPipelineTestBase.h"
+#include <thread>
 
 using ::testing::ByMove;
 using ::testing::SetArgReferee;
@@ -27,6 +28,7 @@ class RialtoServerMediaPipelineMiscellaneousFunctionsTest : public MediaPipeline
 {
 protected:
     const int64_t m_kPosition{4028596027};
+    const int64_t m_kDuration{8057192054};
     const double m_kPlaybackRate{1.5};
     uint64_t m_kRenderedFrames{3141};
     uint64_t m_kDroppedFrames{95};
@@ -42,11 +44,12 @@ protected:
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlaySuccess)
 {
+    bool async{false};
     loadGstPlayer();
     mainThreadWillEnqueueTaskAndWait();
 
-    EXPECT_CALL(*m_gstPlayerMock, play());
-    EXPECT_TRUE(m_mediaPipeline->play());
+    EXPECT_CALL(*m_gstPlayerMock, play(_));
+    EXPECT_TRUE(m_mediaPipeline->play(async));
 }
 
 /**
@@ -54,8 +57,9 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlaySuccess)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlayFailureDueToUninitializedPlayer)
 {
+    bool async{false};
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_FALSE(m_mediaPipeline->play());
+    EXPECT_FALSE(m_mediaPipeline->play(async));
 }
 
 /**
@@ -151,30 +155,6 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionSuccess)
 }
 
 /**
- * Test that SetPosition resets the Eos flag on success
- */
-TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPositionResetEos)
-{
-    loadGstPlayer();
-    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
-    int audioSourceId = attachSource(firebolt::rialto::MediaSourceType::AUDIO, "audio/x-opus");
-    setEos(firebolt::rialto::MediaSourceType::VIDEO);
-    setEos(firebolt::rialto::MediaSourceType::AUDIO);
-
-    mainThreadWillEnqueueTaskAndWait();
-
-    EXPECT_CALL(*m_gstPlayerMock, setPosition(m_kPosition));
-    EXPECT_TRUE(m_mediaPipeline->setPosition(m_kPosition));
-
-    // Expect need data notified to client
-    expectNotifyNeedData(firebolt::rialto::MediaSourceType::VIDEO, videoSourceId, 3);
-    m_gstPlayerCallback->notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO);
-
-    expectNotifyNeedData(firebolt::rialto::MediaSourceType::AUDIO, audioSourceId, 3);
-    m_gstPlayerCallback->notifyNeedMediaData(firebolt::rialto::MediaSourceType::AUDIO);
-}
-
-/**
  * Test that SetPlaybackRate returns failure if the gstreamer player is not initialized
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPlaybackRateFailureDueToUninitializedPlayer)
@@ -209,7 +189,6 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetPlaybackRateSucce
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionFailureDueToUninitializedPlayer)
 {
-    mainThreadWillEnqueuePriorityTaskAndWait();
     int64_t targetPosition{};
     EXPECT_FALSE(m_mediaPipeline->getPosition(targetPosition));
 }
@@ -220,7 +199,6 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionFailureDu
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionFailure)
 {
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
     int64_t targetPosition{};
     EXPECT_CALL(*m_gstPlayerMock, getPosition(_)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getPosition(targetPosition));
@@ -232,7 +210,6 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionFailure)
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
 {
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
     int64_t targetPosition{};
     EXPECT_CALL(*m_gstPlayerMock, getPosition(_))
         .WillOnce(Invoke(
@@ -243,6 +220,44 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
             }));
     EXPECT_TRUE(m_mediaPipeline->getPosition(targetPosition));
     EXPECT_EQ(targetPosition, m_kPosition);
+}
+
+/**
+ * Test that GetDuration returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetDurationFailureDueToUninitializedPlayer)
+{
+    int64_t targetDuration{};
+    EXPECT_FALSE(m_mediaPipeline->getDuration(targetDuration));
+}
+
+/**
+ * Test that GetDuration returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetDurationFailure)
+{
+    loadGstPlayer();
+    int64_t targetDuration{};
+    EXPECT_CALL(*m_gstPlayerMock, getDuration(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getDuration(targetDuration));
+}
+
+/**
+ * Test that GetDuration returns success if the gstreamer API succeeds and gets the duration
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetDurationSuccess)
+{
+    loadGstPlayer();
+    int64_t targetDuration{};
+    EXPECT_CALL(*m_gstPlayerMock, getDuration(_))
+        .WillOnce(Invoke(
+            [&](int64_t &pos)
+            {
+                pos = m_kDuration;
+                return true;
+            }));
+    EXPECT_TRUE(m_mediaPipeline->getDuration(targetDuration));
+    EXPECT_EQ(targetDuration, m_kDuration);
 }
 
 /**
@@ -459,8 +474,8 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVolumeSuccess)
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeFailureDueToUninitializedPlayer)
 {
-    mainThreadWillEnqueueTaskAndWait();
     double resultVolume{};
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->getVolume(resultVolume));
 }
 

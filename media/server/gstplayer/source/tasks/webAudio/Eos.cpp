@@ -24,7 +24,7 @@
 
 namespace firebolt::rialto::server::tasks::webaudio
 {
-Eos::Eos(WebAudioPlayerContext &context, std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper)
+Eos::Eos(WebAudioPlayerContext &context, const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper)
     : m_context{context}, m_gstWrapper{gstWrapper}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Eos");
@@ -42,5 +42,6 @@ void Eos::execute() const
     {
         RIALTO_SERVER_LOG_WARN("Set eos failed - Gstreamer error");
     }
+    RIALTO_SERVER_LOG_MIL("EOS set for webaudio source");
 }
 } // namespace firebolt::rialto::server::tasks::webaudio

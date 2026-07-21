@@ -35,8 +35,8 @@ class HandleBusMessage : public IPlayerTask
 {
 public:
     HandleBusMessage(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player, IGstWebAudioPlayerClient *client,
-                     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper, GstMessage *message);
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper, GstMessage *message);
     ~HandleBusMessage() override;
     void execute() const override;
 

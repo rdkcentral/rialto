@@ -36,7 +36,7 @@ public:
     ProcessAudioGap(GenericPlayerContext &context,
                     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+                    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
                     std::int64_t position, std::uint32_t duration, std::int64_t discontinuityGap, bool audioAac);
     ~ProcessAudioGap() override;
     void execute() const override;

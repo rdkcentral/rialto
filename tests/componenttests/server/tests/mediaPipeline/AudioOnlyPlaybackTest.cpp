@@ -23,7 +23,7 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{3};
+constexpr int kPrerollNumFrames{3};
 constexpr int kFrameCountInPlayingState{24};
 } // namespace
 
@@ -147,7 +147,7 @@ TEST_F(MediaPipelineTest, AudioOnlyPlayback)
     setupSource();
     willSetupAndAddSource(&m_audioAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -155,11 +155,10 @@ TEST_F(MediaPipelineTest, AudioOnlyPlayback)
 
     // Step 5: Write 1 audio frame
     // Step 6: Notify buffered
-    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCountInPausedState);
+        pushAudioData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -186,7 +185,6 @@ TEST_F(MediaPipelineTest, AudioOnlyPlayback)
     gstNotifyEos();
 
     // Step 12: Remove source
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
 
     // Step 13: Stop

@@ -34,16 +34,17 @@ public:
     MOCK_METHOD(bool, createSession, (int, const std::shared_ptr<IMediaPipelineClient> &, std::uint32_t, std::uint32_t),
                 (override));
     MOCK_METHOD(bool, destroySession, (int), (override));
-    MOCK_METHOD(bool, load, (int, MediaType, const std::string &, const std::string &), (override));
+    MOCK_METHOD(bool, load, (int, MediaType, const std::string &, const std::string &, bool), (override));
     MOCK_METHOD(bool, attachSource, (int, const std::unique_ptr<IMediaPipeline::MediaSource> &), (override));
     MOCK_METHOD(bool, removeSource, (int, std::int32_t), (override));
     MOCK_METHOD(bool, allSourcesAttached, (int), (override));
-    MOCK_METHOD(bool, play, (int), (override));
+    MOCK_METHOD(bool, play, (int, bool &), (override));
     MOCK_METHOD(bool, pause, (int), (override));
     MOCK_METHOD(bool, stop, (int), (override));
     MOCK_METHOD(bool, setPlaybackRate, (int, double), (override));
     MOCK_METHOD(bool, setPosition, (int, int64_t), (override));
     MOCK_METHOD(bool, getPosition, (int sessionId, int64_t &position), (override));
+    MOCK_METHOD(bool, getDuration, (int sessionId, int64_t &duration), (override));
     MOCK_METHOD(bool, setImmediateOutput, (int sessionId, int32_t sourceId, bool immediateOutput), (override));
     MOCK_METHOD(bool, getImmediateOutput, (int sessionId, int32_t sourceId, bool &immediateOutput), (override));
     MOCK_METHOD(bool, getStats, (int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames),
@@ -65,11 +66,12 @@ public:
     MOCK_METHOD(bool, setSyncOff, (int sessionId, bool syncOff), (override));
     MOCK_METHOD(bool, setStreamSyncMode, (int sessionId, int32_t sourceId, int32_t streamSyncMode), (override));
     MOCK_METHOD(bool, getStreamSyncMode, (int sessionId, int32_t &streamSyncMode), (override));
-    MOCK_METHOD(bool, flush, (int, std::int32_t, bool), (override));
+    MOCK_METHOD(bool, flush, (int, std::int32_t, bool, bool &isAsync), (override));
     MOCK_METHOD(bool, setSourcePosition,
                 (int sessionId, int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                  uint64_t stopPosition),
                 (override));
+    MOCK_METHOD(bool, setSubtitleOffset, (int sessionId, int32_t sourceId, int64_t position), (override));
     MOCK_METHOD(bool, processAudioGap,
                 (int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
                 (override));
@@ -78,6 +80,7 @@ public:
     MOCK_METHOD(bool, setUseBuffering, (int sessionId, bool useBuffering), (override));
     MOCK_METHOD(bool, getUseBuffering, (int sessionId, bool &useBuffering), (override));
     MOCK_METHOD(bool, switchSource, (int, const std::unique_ptr<IMediaPipeline::MediaSource> &), (override));
+    MOCK_METHOD(bool, isVideoMaster, (bool &isVideoMaster), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedMimeTypes, (MediaSourceType type), (override));
     MOCK_METHOD(bool, isMimeTypeSupported, (const std::string &mimeType), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedProperties,

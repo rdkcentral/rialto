@@ -47,10 +47,14 @@ public:
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
                  const firebolt::rialto::MediaSourceType &type),
                 (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFirstFrameReceived,
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, MediaSourceType sourceType),
+                (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFinishSetupSource,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createHandleBusMessage,
-                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, GstMessage *message),
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, GstMessage *message,
+                 const IFlushWatcher &flushWatcher),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createNeedData,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, GstAppSrc *src), (const, override));
@@ -62,10 +66,11 @@ public:
                  const std::shared_ptr<IDataReader> &dataReader),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createRemoveSource,
-                (GenericPlayerContext & context, (IGstGenericPlayerPrivate & player),
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
                  const firebolt::rialto::MediaSourceType &type),
                 (const, override));
-    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createReportPosition, (GenericPlayerContext & context), (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createReportPosition,
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createCheckAudioUnderflow,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetPlaybackRate, (GenericPlayerContext & context, double rate),
@@ -117,13 +122,14 @@ public:
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFlush,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
-                 const firebolt::rialto::MediaSourceType &type, bool resetTime),
+                 const firebolt::rialto::MediaSourceType &type, bool resetTime, bool isAsync),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSourcePosition,
-                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
-                 const firebolt::rialto::MediaSourceType &type, std::int64_t position, bool resetTime,
-                 double appliedRate, uint64_t stopPosition),
+                (GenericPlayerContext & context, const firebolt::rialto::MediaSourceType &type, std::int64_t position,
+                 bool resetTime, double appliedRate, uint64_t stopPosition),
                 (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetSubtitleOffset,
+                (GenericPlayerContext & context, std::int64_t position), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createProcessAudioGap,
                 (GenericPlayerContext & context, std::int64_t position, std::uint32_t duration,
                  std::int64_t discontinuityGap, bool isAudioAac),
@@ -142,6 +148,8 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSwitchSource,
                 (IGstGenericPlayerPrivate & player, const std::unique_ptr<IMediaPipeline::MediaSource> &source),
                 (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSynchroniseSubtitleClock,
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
 };
 } // namespace firebolt::rialto::server
 

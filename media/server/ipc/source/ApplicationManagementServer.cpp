@@ -79,6 +79,7 @@ bool ApplicationManagementServer::initialize(int socket)
         return false;
     }
     m_ipcClient->exportService(m_service);
+    RIALTO_SERVER_LOG_MIL("ApplicationManagementServer initialized");
     return true;
 }
 
@@ -116,6 +117,6 @@ void ApplicationManagementServer::stop()
 
 void ApplicationManagementServer::onClientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client)
 {
-    RIALTO_SERVER_LOG_INFO("Rialto Server Manager disconnected");
+    RIALTO_SERVER_LOG_WARN("Rialto Server Manager disconnected");
 }
 } // namespace firebolt::rialto::server::ipc

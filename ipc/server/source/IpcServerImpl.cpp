@@ -73,8 +73,8 @@ std::shared_ptr<IServer> ServerFactory::create()
 }
 
 ServerImpl::ServerImpl()
-    : m_pollFd(-1), m_wakeEventFd(-1), m_socketIdCounter(FIRST_LISTENING_SOCKET_ID),
-      m_clientIdCounter(FIRST_CLIENT_ID), m_recvDataBuf{0}, m_recvCtrlBuf{0}
+    : m_pollFd(-1), m_wakeEventFd(-1), m_socketIdCounter(FIRST_LISTENING_SOCKET_ID), m_clientIdCounter(FIRST_CLIENT_ID),
+      m_recvDataBuf{0}, m_recvCtrlBuf{0}
 {
     // create the eventfd use to wake the poll loop
     m_wakeEventFd = eventfd(0, EFD_CLOEXEC);
@@ -139,18 +139,18 @@ ServerImpl::~ServerImpl()
 bool ServerImpl::getSocketLock(Socket *socket)
 {
     std::string lockPath = socket->sockPath + ".lock";
-    int fd = open(lockPath.c_str(), O_CREAT | O_CLOEXEC, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
-    if (fd < 0)
+    int fileDescriptor = open(lockPath.c_str(), O_CREAT | O_CLOEXEC, (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
+    if (fileDescriptor < 0)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to create / open lockfile @ '%s' (check permissions)", lockPath.c_str());
         return false;
     }
 
-    if (flock(fd, LOCK_EX | LOCK_NB) < 0)
+    if (flock(fileDescriptor, LOCK_EX | LOCK_NB) < 0)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to lock lockfile @ '%s', maybe another server is running",
                                  lockPath.c_str());
-        close(fd);
+        close(fileDescriptor);
         return false;
     }
 
@@ -160,7 +160,7 @@ bool ServerImpl::getSocketLock(Socket *socket)
         if (errno != ENOENT)
         {
             RIALTO_IPC_LOG_SYS_ERROR(errno, "did not manage to stat existing socket @ '%s'", socket->sockPath.c_str());
-            close(fd);
+            close(fileDescriptor);
             return false;
         }
     }
@@ -169,7 +169,7 @@ bool ServerImpl::getSocketLock(Socket *socket)
         unlink(socket->sockPath.c_str());
     }
 
-    socket->lockFd = fd;
+    socket->lockFd = fileDescriptor;
     socket->lockPath = std::move(lockPath);
 
     return true;
@@ -209,8 +209,8 @@ void ServerImpl::closeListeningSocket(Socket *socket)
 }
 
 bool ServerImpl::addSocket(const std::string &socketPath,
-                           std::function<void(const std::shared_ptr<IClient> &)> clientConnectedCb,
-                           std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb)
+                           const std::function<void(const std::shared_ptr<IClient> &)> &clientConnectedCb,
+                           const std::function<void(const std::shared_ptr<IClient> &)> &clientDisconnectedCb)
 {
     // store the path
     Socket socket;
@@ -237,7 +237,7 @@ bool ServerImpl::addSocket(const std::string &socketPath,
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
 
-    if (bind(socket.sockFd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+    if (bind(socket.sockFd, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == -1)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "bind error");
 
@@ -289,8 +289,8 @@ bool ServerImpl::addSocket(const std::string &socketPath,
     return true;
 }
 
-bool ServerImpl::addSocket(int fd, std::function<void(const std::shared_ptr<IClient> &)> clientConnectedCb,
-                           std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb)
+bool ServerImpl::addSocket(int fd, const std::function<void(const std::shared_ptr<IClient> &)> &clientConnectedCb,
+                           const std::function<void(const std::shared_ptr<IClient> &)> &clientDisconnectedCb)
 {
     // store the path
     Socket socket;
@@ -616,37 +616,42 @@ void ServerImpl::processNewConnection(uint64_t socketId)
 {
     RIALTO_IPC_LOG_DEBUG("processing new connection");
 
-    std::unique_lock<std::mutex> socketLocker(m_socketsLock);
+    int clientSock;
+    std::string sockPath;
+    std::function<void(const std::shared_ptr<IClient> &)> connectedCb;
+    std::function<void(const std::shared_ptr<IClient> &)> disconnectedCb;
 
-    // find matching socket object
-    auto it = m_sockets.find(socketId);
-    if (it == m_sockets.end())
     {
-        RIALTO_IPC_LOG_ERROR("failed to find listening socket with id %" PRIu64, socketId);
-        return;
+        std::unique_lock<std::mutex> socketLocker(m_socketsLock);
+
+        // find matching socket object
+        auto it = m_sockets.find(socketId);
+        if (it == m_sockets.end())
+        {
+            RIALTO_IPC_LOG_ERROR("failed to find listening socket with id %" PRIu64, socketId);
+            return;
+        }
+
+        const Socket &kSocket = it->second;
+
+        // accept the connection from the client
+        struct sockaddr clientAddr = {0};
+        socklen_t clientAddrLen = sizeof(clientAddr);
+
+        clientSock = accept4(kSocket.sockFd, &clientAddr, &clientAddrLen, SOCK_NONBLOCK | SOCK_CLOEXEC);
+        if (clientSock < 0)
+        {
+            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to accept client connection");
+            return;
+        }
+
+        sockPath = kSocket.sockPath;
+        connectedCb = kSocket.connectedCb;
+        disconnectedCb = kSocket.disconnectedCb;
     }
-
-    const Socket &kSocket = it->second;
-
-    // accept the connection from the client
-    struct sockaddr clientAddr = {0};
-    socklen_t clientAddrLen = sizeof(clientAddr);
-
-    int clientSock = accept4(kSocket.sockFd, &clientAddr, &clientAddrLen, SOCK_NONBLOCK | SOCK_CLOEXEC);
-    if (clientSock < 0)
-    {
-        RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to accept client connection");
-        return;
-    }
-
-    const std::string kSockPath = kSocket.sockPath;
-    std::function<void(const std::shared_ptr<IClient> &)> connectedCb = kSocket.connectedCb;
-    std::function<void(const std::shared_ptr<IClient> &)> disconnectedCb = kSocket.disconnectedCb;
-
-    socketLocker.unlock();
 
     // attempt to add the socket to the client list
-    auto client = addClientSocket(clientSock, kSockPath, std::move(disconnectedCb));
+    auto client = addClientSocket(clientSock, sockPath, std::move(disconnectedCb));
     if (!client)
     {
         close(clientSock);
@@ -675,7 +680,8 @@ static std::vector<FileDescriptor> readMessageFds(const struct msghdr *msg, size
 {
     std::vector<FileDescriptor> fds;
 
-    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg); cmsg != nullptr; cmsg = CMSG_NXTHDR((struct msghdr *)msg, cmsg))
+    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg); cmsg != nullptr;
+         cmsg = CMSG_NXTHDR(const_cast<struct msghdr *>(msg), cmsg))
     {
         if ((cmsg->cmsg_level == SOL_SOCKET) && (cmsg->cmsg_type == SCM_RIGHTS))
         {
@@ -735,31 +741,34 @@ static std::vector<FileDescriptor> readMessageFds(const struct msghdr *msg, size
  */
 void ServerImpl::processClientSocket(uint64_t clientId, unsigned events)
 {
+    int sockFd;
+    std::shared_ptr<ClientImpl> clientObj;
+
     // take the lock while accessing the client list
-    std::unique_lock<std::mutex> locker(m_clientsLock);
-
-    auto it = m_clients.find(clientId);
-    if (it == m_clients.end())
     {
-        // should never happen
-        RIALTO_IPC_LOG_ERROR("received an event from a socket with no matching client");
-        return;
+        std::unique_lock<std::mutex> locker(m_clientsLock);
+
+        auto it = m_clients.find(clientId);
+        if (it == m_clients.end())
+        {
+            // should never happen
+            RIALTO_IPC_LOG_ERROR("received an event from a socket with no matching client");
+            return;
+        }
+
+        // check if the client is marked for closure, if so then just ignore the data
+        if (m_condemnedClients.count(clientId) != 0)
+        {
+            return;
+        }
+
+        // get the socket that corresponds to the client connection
+        sockFd = it->second.sock;
+
+        // get the client object
+        clientObj = it->second.client;
     }
-
-    // check if the client is marked for closure, if so then just ignore the data
-    if (m_condemnedClients.count(clientId) != 0)
-    {
-        return;
-    }
-
-    // get the socket that corresponds to the client connection
-    const int kSockFd = it->second.sock;
-
-    // get the client object
-    std::shared_ptr<ClientImpl> clientObj = it->second.client;
-
-    // can safely release the lock now we have the clientId and client object
-    locker.unlock();
+    // lock is released here automatically
 
     // if there was an error disconnect the socket
     if (events & EPOLLERR)
@@ -785,7 +794,7 @@ void ServerImpl::processClientSocket(uint64_t clientId, unsigned events)
             msg.msg_controllen = sizeof(m_recvCtrlBuf);
 
             // read one message
-            ssize_t rd = TEMP_FAILURE_RETRY(recvmsg(kSockFd, &msg, MSG_CMSG_CLOEXEC));
+            ssize_t rd = TEMP_FAILURE_RETRY(recvmsg(sockFd, &msg, MSG_CMSG_CLOEXEC));
             if (rd < 0)
             {
                 if (errno != EWOULDBLOCK)
@@ -1302,9 +1311,10 @@ bool ServerImpl::isClientConnected(uint64_t clientId) const
  */
 void ServerImpl::disconnectClient(uint64_t clientId)
 {
-    std::unique_lock<std::mutex> locker(m_clientsLock);
-    m_condemnedClients.insert(clientId);
-    locker.unlock();
+    {
+        std::lock_guard<std::mutex> locker(m_clientsLock);
+        m_condemnedClients.insert(clientId);
+    }
 
     wakeEventLoop();
 }
@@ -1392,21 +1402,22 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
     }
 
     // finally, take the lock (so the socket is not closed beneath us) and send the reply
-    std::unique_lock<std::mutex> locker(m_clientsLock);
-
-    auto it = m_clients.find(clientId);
-    if (it == m_clients.end() || it->second.sock < 0)
     {
-        RIALTO_IPC_LOG_WARN("socket closed before event could be sent");
-        return false;
-    }
-    else if (TEMP_FAILURE_RETRY(sendmsg(it->second.sock, header, MSG_NOSIGNAL)) != static_cast<ssize_t>(requiredDataLen))
-    {
-        RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to send the complete event message");
-        return false;
-    }
+        std::unique_lock<std::mutex> locker(m_clientsLock);
 
-    locker.unlock();
+        auto it = m_clients.find(clientId);
+        if (it == m_clients.end() || it->second.sock < 0)
+        {
+            RIALTO_IPC_LOG_WARN("socket closed before event could be sent");
+            return false;
+        }
+        else if (TEMP_FAILURE_RETRY(sendmsg(it->second.sock, header, MSG_NOSIGNAL)) !=
+                 static_cast<ssize_t>(requiredDataLen))
+        {
+            RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to send the complete event message");
+            return false;
+        }
+    }
 
     RIALTO_IPC_LOG_DEBUG("event{ %s } - { %s }", eventMessage->GetTypeName().c_str(),
                          eventMessage->ShortDebugString().c_str());

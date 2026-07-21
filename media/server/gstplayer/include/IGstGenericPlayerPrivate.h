@@ -62,6 +62,11 @@ public:
     virtual void scheduleVideoUnderflow() = 0;
 
     /**
+     * @brief Schedules first video frame received task. Called by the worker thread.
+     */
+    virtual void scheduleFirstVideoFrameReceived() = 0;
+
+    /**
      * @brief Schedules all sources attached task. Called by the worker thread.
      */
     virtual void scheduleAllSourcesAttached() = 0;
@@ -130,9 +135,21 @@ public:
     virtual bool setUseBuffering() = 0;
 
     /**
+     * @brief Sets Show Video Window property. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setShowVideoWindow() = 0;
+
+    /**
      * @brief Sends NeedMediaData notification. Called by the worker thread.
      */
     virtual void notifyNeedMediaData(const MediaSourceType mediaSource) = 0;
+
+    /**
+     * @brief Sends NeedMediaData notification with a delay. Called by the worker thread.
+     */
+    virtual void notifyNeedMediaDataWithDelay(const MediaSourceType mediaSource) = 0;
 
     /**
      * @brief Constructs a new buffer with data from media segment. Does not perform decryption.
@@ -167,9 +184,18 @@ public:
      *
      * @param[in] newState    : The desired state.
      *
-     * @retval true on success.
+     * @retval state change status
      */
-    virtual bool changePipelineState(GstState newState) = 0;
+    virtual GstStateChangeReturn changePipelineState(GstState newState) = 0;
+
+    /**
+     * @brief Gets the current position of the element
+     *
+     * @param[in] element : The GstElement to check.
+     *
+     * @retval position of the element; -1 in case of failure
+     */
+    virtual int64_t getPosition(GstElement *element) = 0;
 
     /**
      * @brief Starts position reporting and check audio underflow. Called by the worker thread.
@@ -180,6 +206,26 @@ public:
      * @brief Stops position reporting and check audio underflow. Called by the worker thread.
      */
     virtual void stopPositionReportingAndCheckAudioUnderflowTimer() = 0;
+
+    /**
+     * @brief Starts notify playback info timer. Called by the worker thread.
+     */
+    virtual void startNotifyPlaybackInfoTimer() = 0;
+
+    /**
+     * @brief Stops notify playback info timer. Called by the worker thread.
+     */
+    virtual void stopNotifyPlaybackInfoTimer() = 0;
+
+    /**
+     * @brief Starts subtitle clock resync. Called by the worker thread.
+     */
+    virtual void startSubtitleClockResyncTimer() = 0;
+
+    /**
+     * @brief Stops subtitle clock resync. Called by the worker thread.
+     */
+    virtual void stopSubtitleClockResyncTimer() = 0;
 
     /**
      * @brief Stops worker thread. Called by the worker thread.
@@ -246,21 +292,6 @@ public:
     virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
 
     /**
-     * @brief Sets the audio and video flags on the pipeline based on the input.
-     *
-     * @param[in] enableAudio : Whether to enable audio flags.
-     */
-    virtual void setPlaybinFlags(bool enableAudio) = 0;
-
-    /**
-     * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
-     *
-     * @param[in] source          : The Gst Source element, that should receive new sample
-     * @param[in] typeStr         : The media source type string
-     */
-    virtual void pushSampleIfRequired(GstElement *source, const std::string &typeStr) = 0;
-
-    /**
      * @brief Reattaches source (or switches it)
      *
      * @param[in] source          : The new media source
@@ -268,6 +299,27 @@ public:
      * @retval True on success
      */
     virtual bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
+
+    /**
+     * @brief Checks if the player has a source of the given type.
+     *
+     * @param[in] mediaSourceType : The source type to check
+     *
+     * @retval True if the player has a source of the given type, false otherwise
+     */
+    virtual bool hasSourceType(const MediaSourceType &mediaSourceType) const = 0;
+
+    /**
+     * @brief Sets source state flushed
+     *
+     * @param[in] mediaSourceType : the source type that has been flushed
+     */
+    virtual void setSourceFlushed(const MediaSourceType &mediaSourceType) = 0;
+
+    /**
+     * @brief Sends PlaybackInfo notification. Called by the worker thread.
+     */
+    virtual void notifyPlaybackInfo() = 0;
 };
 } // namespace firebolt::rialto::server
 

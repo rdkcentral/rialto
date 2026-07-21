@@ -88,9 +88,9 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataInPrerollingSta
 {
     auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
     int sourceId = attachSource(mediaSourceType, "video/h264");
-    int numFrames{3};
+    constexpr int kNumFrames{3};
 
-    expectNotifyNeedData(mediaSourceType, sourceId, numFrames);
+    expectNotifyNeedData(mediaSourceType, sourceId, kNumFrames);
 
     m_gstPlayerCallback->notifyNeedMediaData(mediaSourceType);
 }
@@ -112,6 +112,29 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataInPlayingState)
 }
 
 /**
+ * Test a notification of the need media data is scheduled
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyDelayedNeedMediaData)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    attachSource(mediaSourceType, "video/h264");
+
+    setPlaybackStatePlaying();
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
+        .WillOnce(Return(true));
+    const std::chrono::milliseconds m_kDefaultNeedMediaDataResendTimeout{15};
+    EXPECT_CALL(*m_timerMock, isActive()).WillOnce(Return(true));
+    EXPECT_CALL(*m_timerMock, cancel());
+    EXPECT_CALL(*m_timerFactoryMock, createTimer(m_kDefaultNeedMediaDataResendTimeout, _, _))
+        .WillOnce(Return(ByMove(std::move(m_timerMock))));
+
+    m_gstPlayerCallback->notifyNeedMediaDataWithDelay(mediaSourceType);
+}
+
+/**
  * Test a notification of the need media data is not forwarded when source id is not present
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataFailureDueToSourceIdNotPresent)
@@ -128,6 +151,22 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataFailureDueToSou
 }
 
 /**
+ * Test a notification of the delayed need media data is not forwarded when source id is not present
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyDelayedNeedMediaDataFailureDueToSourceIdNotPresent)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    mainThreadWillEnqueueTaskAndWait();
+    ASSERT_TRUE(m_sharedMemoryBufferMock);
+    ASSERT_TRUE(m_activeRequestsMock);
+    EXPECT_CALL(*m_sharedMemoryBufferMock,
+                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
+        .WillOnce(Return(true));
+
+    m_gstPlayerCallback->notifyNeedMediaDataWithDelay(mediaSourceType);
+}
+
+/**
  * Test a notification of the need media data for audio is ignored if EOS.
  */
 TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataAudioInEos)
@@ -141,6 +180,22 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataAudioInEos)
     expectNotifyNeedDataEos(mediaSourceType);
 
     m_gstPlayerCallback->notifyNeedMediaData(mediaSourceType);
+}
+
+/**
+ * Test a notification of the delayed need media data for audio is ignored if EOS.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyDelayedNeedMediaDataAudioInEos)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::AUDIO;
+    attachSource(mediaSourceType, "audio/x-opus");
+
+    setPlaybackStatePlaying();
+    setEos(mediaSourceType);
+
+    expectNotifyNeedDataEos(mediaSourceType);
+
+    m_gstPlayerCallback->notifyNeedMediaDataWithDelay(mediaSourceType);
 }
 
 /**
@@ -268,4 +323,30 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifySourceFlushedFailureSourceId
     mainThreadWillEnqueueTask();
 
     m_gstPlayerCallback->notifySourceFlushed(mediaSourceType);
+}
+
+/**
+ * Test a notification of first frame received is forwarded to the registered client.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyFirstFrameReceived)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+    int sourceId = attachSource(mediaSourceType, "video/mp4");
+
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyFirstFrameReceived(sourceId));
+
+    m_gstPlayerCallback->notifyFirstFrameReceived(mediaSourceType);
+}
+
+/**
+ * Test a notification of first frame received fails when sourceid cannot be found.
+ */
+TEST_F(RialtoServerMediaPipelineCallbackTest, notifyFirstFrameReceivedFailureSourceIdNotFound)
+{
+    auto mediaSourceType = firebolt::rialto::MediaSourceType::VIDEO;
+
+    mainThreadWillEnqueueTask();
+
+    m_gstPlayerCallback->notifyFirstFrameReceived(mediaSourceType);
 }

@@ -36,7 +36,7 @@ namespace firebolt::rialto::server
 {
 std::shared_ptr<IDataReader> DataReaderFactory::createDataReader(const MediaSourceType &mediaSourceType,
                                                                  std::uint8_t *buffer, std::uint32_t dataOffset,
-                                                                 std::uint32_t numFrames) const
+                                                                 std::uint32_t numFrames, bool isBufferFull) const
 {
     // Version is always first 4 bytes of data
     std::uint8_t *metadata = buffer + dataOffset;
@@ -44,12 +44,13 @@ std::shared_ptr<IDataReader> DataReaderFactory::createDataReader(const MediaSour
     if (1 == version)
     {
         std::uint32_t metadataOffsetWithoutVersion = dataOffset + common::VERSION_SIZE_BYTES;
-        return std::make_shared<DataReaderV1>(mediaSourceType, buffer, metadataOffsetWithoutVersion, numFrames);
+        return std::make_shared<DataReaderV1>(mediaSourceType, buffer, metadataOffsetWithoutVersion, numFrames,
+                                              isBufferFull);
     }
     if (2 == version)
     {
         std::uint32_t v2DataOffset = dataOffset + getMaxMetadataBytes();
-        return std::make_shared<DataReaderV2>(mediaSourceType, buffer, v2DataOffset, numFrames);
+        return std::make_shared<DataReaderV2>(mediaSourceType, buffer, v2DataOffset, numFrames, isBufferFull);
     }
     return nullptr;
 }

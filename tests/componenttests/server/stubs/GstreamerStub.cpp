@@ -93,7 +93,7 @@ void GstreamerStub::setupMessages(bool repeatedCallsToGstPipelineGetBus)
                 gstBusTimedPopFiltered(m_bus, 100 * GST_MSECOND,
                                        static_cast<GstMessageType>(GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_QOS |
                                                                    GST_MESSAGE_EOS | GST_MESSAGE_ERROR |
-                                                                   GST_MESSAGE_WARNING)))
+                                                                   GST_MESSAGE_WARNING | GST_MESSAGE_APPLICATION)))
         .WillRepeatedly(Invoke(
             [&](GstBus *bus, GstClockTime timeout, GstMessageType types)
             {
@@ -114,8 +114,8 @@ void GstreamerStub::setupMessages(bool repeatedCallsToGstPipelineGetBus)
 void GstreamerStub::setupRialtoSource()
 {
     ASSERT_TRUE(m_setupSourceFunc);
-    ((void (*)(GstElement *, GstElement *, gpointer))m_setupSourceFunc)(m_pipeline, m_rialtoSource,
-                                                                        m_setupSourceUserData);
+    reinterpret_cast<void (*)(GstElement *, GstElement *, gpointer)>(m_setupSourceFunc)(m_pipeline, m_rialtoSource,
+                                                                                        m_setupSourceUserData);
 }
 
 void GstreamerStub::setupAppSrcCallbacks(GstAppSrc *appSrc)
@@ -129,7 +129,8 @@ void GstreamerStub::setupAppSrcCallbacks(GstAppSrc *appSrc)
 void GstreamerStub::setupElement(GstElement *element)
 {
     ASSERT_TRUE(m_setupElementFunc);
-    ((void (*)(GstElement *, GstElement *, gpointer))m_setupElementFunc)(m_pipeline, element, m_setupElementUserData);
+    reinterpret_cast<void (*)(GstElement *, GstElement *, gpointer)>(m_setupElementFunc)(m_pipeline, element,
+                                                                                         m_setupElementUserData);
 }
 
 void GstreamerStub::sendStateChanged(GstState oldState, GstState newState, GstState pendingState, bool handleParseCall)
@@ -151,17 +152,6 @@ void GstreamerStub::sendStateChanged(GstState oldState, GstState newState, GstSt
     }
 
     m_cv.notify_one();
-}
-
-void GstreamerStub::needData(GstAppSrc *appSrc, guint dataLength)
-{
-    auto callbacks{m_appSrcCallbacks.find(appSrc)};
-    auto userData{m_appSrcCallbacksUserDatas.find(appSrc)};
-    ASSERT_NE(callbacks, m_appSrcCallbacks.end());
-    ASSERT_NE(userData, m_appSrcCallbacksUserDatas.end());
-    ASSERT_TRUE(callbacks->second.need_data);
-    ASSERT_TRUE(userData->second);
-    ((void (*)(GstAppSrc *, guint, gpointer))callbacks->second.need_data)(appSrc, dataLength, userData->second);
 }
 
 void GstreamerStub::sendEos()

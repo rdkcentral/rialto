@@ -34,8 +34,8 @@ protected:
     ControlIpcGetSharedMemoryTest() = default;
     ~ControlIpcGetSharedMemoryTest() override = default;
 
-    int32_t m_fd;
-    uint32_t m_size;
+    int32_t m_fd{-1};
+    uint32_t m_size{0};
 };
 
 /**

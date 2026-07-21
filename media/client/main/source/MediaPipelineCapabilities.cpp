@@ -102,4 +102,10 @@ std::vector<std::string> MediaPipelineCapabilities::getSupportedProperties(Media
     return m_mediaPipelineCapabilitiesIpc->getSupportedProperties(mediaType, propertyNames);
 }
 
+bool MediaPipelineCapabilities::isVideoMaster(bool &isVideoMaster)
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    return m_mediaPipelineCapabilitiesIpc->isVideoMaster(isVideoMaster);
+}
 }; // namespace firebolt::rialto::client

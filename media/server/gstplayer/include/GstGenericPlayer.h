@@ -21,12 +21,14 @@
 #define FIREBOLT_RIALTO_SERVER_GST_GENERIC_PLAYER_H_
 
 #include "GenericPlayerContext.h"
+#include "IFlushWatcher.h"
 #include "IGlibWrapper.h"
 #include "IGstDispatcherThread.h"
 #include "IGstDispatcherThreadClient.h"
 #include "IGstGenericPlayer.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstInitialiser.h"
+#include "IGstProfiler.h"
 #include "IGstProtectionMetadataHelperFactory.h"
 #include "IGstSrc.h"
 #include "IGstWrapper.h"
@@ -35,8 +37,10 @@
 #include "tasks/IGenericPlayerTaskFactory.h"
 #include "tasks/IPlayerTask.h"
 #include <IMediaPipeline.h>
+#include <atomic>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace firebolt::rialto::server
@@ -57,7 +61,7 @@ public:
 
     std::unique_ptr<IGstGenericPlayer>
     createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                           const VideoRequirements &videoRequirements,
+                           const VideoRequirements &videoRequirements, bool isLive,
                            const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
                                &rdkGstreamerUtilsWrapperFactory) override;
 };
@@ -78,18 +82,22 @@ public:
      * @param[in] gstWrapper                   : The gstreamer wrapper.
      * @param[in] glibWrapper                  : The glib wrapper.
      * @param[in] gstInitialiser               : The gst initialiser
+     * @param[in] flushWatcher                 : The flush watcher
      * @param[in] gstSrcFactory                : The gstreamer rialto src factory.
+     * @param[in] gstProfilerFactory           : The gstreamer rialto profiler factory.
      * @param[in] timerFactory                 : The Timer factory
      * @param[in] taskFactory                  : The task factory
      * @param[in] workerThreadFactory          : The worker thread factory
      * @param[in] gstDispatcherThreadFactory   : The gst dispatcher thread factory
      */
     GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                     const VideoRequirements &videoRequirements,
+                     const VideoRequirements &videoRequirements, bool isLive,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
-                     const IGstInitialiser &gstInitialiser, const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+                     const IGstInitialiser &gstInitialiser, std::unique_ptr<IFlushWatcher> &&flushWatcher,
+                     const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+                     const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory,
                      std::shared_ptr<common::ITimerFactory> timerFactory,
                      std::unique_ptr<IGenericPlayerTaskFactory> taskFactory,
                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
@@ -104,7 +112,7 @@ public:
     void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) override;
     void removeSource(const MediaSourceType &mediaSourceType) override;
     void allSourcesAttached() override;
-    void play() override;
+    void play(bool &async) override;
     void pause() override;
     void stop() override;
     void attachSamples(const IMediaPipeline::MediaSegmentVector &mediaSegments) override;
@@ -114,6 +122,7 @@ public:
     void setEos(const firebolt::rialto::MediaSourceType &type) override;
     void setPlaybackRate(double rate) override;
     bool getPosition(std::int64_t &position) override;
+    bool getDuration(std::int64_t &duration) override;
     bool setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput) override;
     bool getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutput) override;
     bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
@@ -130,9 +139,10 @@ public:
     bool setStreamSyncMode(const MediaSourceType &mediaSourceType, int32_t streamSyncMode) override;
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
-    void flush(const MediaSourceType &mediaSourceType, bool resetTime) override;
+    void flush(const MediaSourceType &mediaSourceType, bool resetTime, bool &async) override;
     void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;
+    void setSubtitleOffset(int64_t position) override;
     void processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
     void setBufferingLimit(uint32_t limitBufferingMs) override;
     bool getBufferingLimit(uint32_t &limitBufferingMs) override;
@@ -145,9 +155,11 @@ private:
     void scheduleEnoughData(GstAppSrc *src) override;
     void scheduleAudioUnderflow() override;
     void scheduleVideoUnderflow() override;
+    void scheduleFirstVideoFrameReceived() override;
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
     bool setImmediateOutput() override;
+    bool setShowVideoWindow() override;
     bool setLowLatency() override;
     bool setSync() override;
     bool setSyncOff() override;
@@ -156,15 +168,21 @@ private:
     bool setBufferingLimit() override;
     bool setUseBuffering() override;
     void notifyNeedMediaData(const MediaSourceType mediaSource) override;
+    void notifyNeedMediaDataWithDelay(const MediaSourceType mediaSource) override;
     GstBuffer *createBuffer(const IMediaPipeline::MediaSegment &mediaSegment) const override;
     void attachData(const firebolt::rialto::MediaSourceType mediaType) override;
     void updateAudioCaps(int32_t rate, int32_t channels, const std::shared_ptr<CodecData> &codecData) override;
     void updateVideoCaps(int32_t width, int32_t height, Fraction frameRate,
                          const std::shared_ptr<CodecData> &codecData) override;
     void addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clippingStart, uint64_t clippingEnd) const override;
-    bool changePipelineState(GstState newState) override;
+    GstStateChangeReturn changePipelineState(GstState newState) override;
+    int64_t getPosition(GstElement *element) override;
     void startPositionReportingAndCheckAudioUnderflowTimer() override;
     void stopPositionReportingAndCheckAudioUnderflowTimer() override;
+    void startNotifyPlaybackInfoTimer() override;
+    void stopNotifyPlaybackInfoTimer() override;
+    void startSubtitleClockResyncTimer() override;
+    void stopSubtitleClockResyncTimer() override;
     void stopWorkerThread() override;
     void cancelUnderflow(firebolt::rialto::MediaSourceType mediaSource) override;
     void setPendingPlaybackRate() override;
@@ -176,10 +194,12 @@ private:
     void addAutoAudioSinkChild(GObject *object) override;
     void removeAutoVideoSinkChild(GObject *object) override;
     void removeAutoAudioSinkChild(GObject *object) override;
-    void setPlaybinFlags(bool enableAudio = true) override;
-    void pushSampleIfRequired(GstElement *source, const std::string &typeStr) override;
     bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
+    bool hasSourceType(const MediaSourceType &mediaSourceType) const override;
     GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
+    void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
+    bool isAsync(const MediaSourceType &mediaSourceType) const;
+    void notifyPlaybackInfo() override;
 
 private:
     /**
@@ -310,11 +330,90 @@ private:
     createAudioAttributes(const std::unique_ptr<IMediaPipeline::MediaSource> &source) const;
 
     /**
+     * @brief Configures audio caps based on audio attributes.
+     *        Called by worker thread only!
+     *
+     * @param[in]     pAttrib    : The audio attributes.
+     * @param[out]    audioaac   : Set to true if AAC, false otherwise.
+     * @param[in]     svpenabled : Whether SVP is enabled.
+     * @param[in,out] appsrcCaps : The caps to configure.
+     */
+    void configAudioCap(firebolt::rialto::wrappers::AudioAttributesPrivate *pAttrib, bool *audioaac, bool svpenabled,
+                        GstCaps **appsrcCaps);
+
+    /**
+     * @brief Halts audio playback by setting playsink to READY and decodebin to PAUSED.
+     *        Called by worker thread only!
+     */
+    void haltAudioPlayback();
+
+    /**
+     * @brief Resumes audio playback by syncing playsink and decodebin with parent.
+     *        Called by worker thread only!
+     */
+    void resumeAudioPlayback();
+
+    /**
+     * @brief First-time codec switch from AC3 to AAC when no decoder exists yet.
+     *        Called by worker thread only!
+     *
+     * @param[in] newAudioCaps : The new audio caps to apply.
+     */
+    void firstTimeSwitchFromAC3toAAC(GstCaps *newAudioCaps);
+
+    /**
+     * @brief Switches the audio codec by unlinking old parser/decoder and linking new ones.
+     *        Called by worker thread only!
+     *
+     * @param[in] isAudioAAC   : Whether the new codec is AAC.
+     * @param[in] newAudioCaps : The new audio caps to apply.
+     *
+     * @retval true if codec was switched, false if same codec.
+     */
+    bool switchAudioCodec(bool isAudioAAC, GstCaps *newAudioCaps);
+
+    /**
+     * @brief Top-level audio track codec channel switch, ported from rdk_gstreamer_utils_soc.
+     *        Called by worker thread only!
+     */
+    bool performAudioTrackCodecChannelSwitch(const void *pSampleAttr,
+                                             firebolt::rialto::wrappers::AudioAttributesPrivate *pAudioAttr,
+                                             uint32_t *pStatus, unsigned int *pui32Delay,
+                                             long long *pAudioChangeTargetPts, // NOLINT(runtime/int)
+                                             const long long *pcurrentDispPts, // NOLINT(runtime/int)
+                                             unsigned int *audioChangeStage, GstCaps **appsrcCaps, bool *audioaac,
+                                             bool svpenabled, GstElement *aSrc, bool *ret);
+
+    /**
      * @brief Sets text track position before pushing data
      *
      * @param[in] source : the subtitle media source
      */
     void setTextTrackPositionIfRequired(GstElement *source);
+
+    /**
+     * @brief GstAppSrc does not replace segment, if it's the same as previous one.
+     *        It causes problems with position reporing in amlogic devices, so we need to push
+     *        two segments with different reset time value.
+     *
+     * @param[in] source : the media source
+     */
+    void pushAdditionalSegmentIfRequired(GstElement *source);
+
+    /**
+     * @brief Sets the audio and video flags on the pipeline based on the input.
+     *
+     * @param[in] enableAudio : Whether to enable audio flags.
+     */
+    void setPlaybinFlags(bool enableAudio = true);
+
+    /**
+     * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
+     *
+     * @param[in] source          : The Gst Source element, that should receive new sample
+     * @param[in] mediaSourceType : The media source type
+     */
+    void pushSampleIfRequired(GstElement *source, const MediaSourceType &mediaSourceType);
 
 private:
     /**
@@ -343,6 +442,11 @@ private:
     std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
 
     /**
+     * @brief Factory creating gst profilers
+     */
+    std::shared_ptr<IGstProfilerFactory> m_gstProfilerFactory;
+
+    /**
      * @brief Thread for handling player tasks.
      */
     std::unique_ptr<IWorkerThread> m_workerThread;
@@ -364,11 +468,25 @@ private:
     std::unique_ptr<firebolt::rialto::common::ITimer> m_finishSourceSetupTimer{nullptr};
 
     /**
-     * @brief Timer reporting playback position and check audio underflow
+     * @brief Timer checking audio underflow
      *
      * Variable can be used only in worker thread
      */
     std::unique_ptr<firebolt::rialto::common::ITimer> m_positionReportingAndCheckAudioUnderflowTimer{nullptr};
+
+    /**
+     * @brief Timer reporting playback information
+     *
+     * Variable can be used only in worker thread
+     */
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_playbackInfoTimer{nullptr};
+
+    /**
+     * @brief Timer to resync subtitle clock with AV clock
+     *
+     * Variable can be used only in worker thread
+     */
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_subtitleClockResyncTimer{nullptr};
 
     /**
      * @brief The GstGenericPlayer task factory
@@ -379,6 +497,11 @@ private:
      * @brief The protection metadata wrapper
      */
     std::unique_ptr<IGstProtectionMetadataHelper> m_protectionMetadataWrapper;
+
+    /**
+     * @brief The object used to check flushing state for all sources
+     */
+    std::unique_ptr<IFlushWatcher> m_flushWatcher;
 };
 
 } // namespace firebolt::rialto::server

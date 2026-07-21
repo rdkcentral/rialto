@@ -28,11 +28,14 @@
 #include "MessageBuilders.h"
 #include "SegmentBuilder.h"
 #include <gst/audio/audio.h>
+#include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 using testing::_;
 using testing::AtLeast;
+using testing::AtMost;
 using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
@@ -64,6 +67,7 @@ MediaPipelineTest::MediaPipelineTest()
 MediaPipelineTest::~MediaPipelineTest()
 {
     positionUpdatesShouldNotBeReceivedFromNow();
+    playbackInfoUpdatesShouldNotBeReceivedFromNow();
 }
 
 void MediaPipelineTest::gstPlayerWillBeCreated()
@@ -74,6 +78,7 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("playbin"), _)).WillOnce(Return(&m_pipeline));
     EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(4).WillRepeatedly(Return(kGstPlayFlagsType));
     EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(4).WillRepeatedly(Return(&m_flagsClass));
+    EXPECT_CALL(*m_glibWrapperMock, gTypeClassUnref(&m_flagsClass)).Times(4);
 
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio"))).WillOnce(Return(&m_audioFlag));
     EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
@@ -86,8 +91,17 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
     EXPECT_CALL(*m_gstWrapperMock, gstBinGetByName(GST_BIN(&m_pipeline), StrEq("playsink"))).WillOnce(Return(&m_playsink));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_playsink, StrEq("send-event-mode")));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_playsink));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_READY))
+        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&m_pipeline)).Times(AtMost(1));
 
-    // In case of longer testruns, GstPlayer may request to query position
+    // In case of longer testruns, GstPlayer may request to query position and volume
+    EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).Times(AtLeast(0));
+    EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).Times(AtLeast(0));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).Times(AtLeast(0)).WillRepeatedly(Return(GST_STATE_PAUSED));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_))
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(&m_pipeline, GST_FORMAT_TIME, _))
         .Times(AtLeast(0))
         .WillRepeatedly(Invoke(
@@ -96,6 +110,18 @@ void MediaPipelineTest::gstPlayerWillBeCreated()
                 *cur = kCurrentPosition;
                 return true;
             }));
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(_, StrEq("audio-sink"), _))
+        .WillRepeatedly(Invoke(
+            [&](gpointer object, const gchar *first_property_name, void *element)
+            {
+                GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
+                *elementPtr = m_audioSink;
+            }));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR))
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(kVolume));
 }
 
 void MediaPipelineTest::gstPlayerWillBeDestructed()
@@ -105,7 +131,8 @@ void MediaPipelineTest::gstPlayerWillBeDestructed()
     EXPECT_CALL(*m_gstWrapperMock, gstPipelineGetBus(GST_PIPELINE(&m_pipeline))).WillOnce(Return(&m_bus));
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline)).Times(testing::Between(1, 2));
+    EXPECT_CALL(*m_glibWrapperMock, gThreadPoolStopUnusedThreads()).Times(testing::Between(1, 2));
 }
 
 void MediaPipelineTest::audioSourceWillBeAttached()
@@ -118,6 +145,8 @@ void MediaPipelineTest::audioSourceWillBeAttached()
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("mpegversion"), G_TYPE_INT, 4));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("rate"), G_TYPE_INT, kSampleRate));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_audioCaps)).WillOnce(Return(&m_audioCapsStr));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(&m_audioCapsStr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("audsrc")))
         .WillOnce(Return(GST_ELEMENT(&m_audioAppSrc)));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_audioAppSrc, &m_audioCaps));
@@ -133,6 +162,8 @@ void MediaPipelineTest::videoSourceWillBeAttached()
                 gstCapsSetSimpleStringStub(&m_videoCaps, StrEq("stream-format"), G_TYPE_STRING, StrEq("raw")));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("width"), G_TYPE_INT, kWidth));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("height"), G_TYPE_INT, kHeight));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_videoCaps)).WillOnce(Return(&m_videoCapsStr));
+    EXPECT_CALL(*m_glibWrapperMock, gFree(&m_videoCapsStr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("vidsrc")))
         .WillOnce(Return(GST_ELEMENT(&m_videoAppSrc)));
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_videoAppSrc, &m_videoCaps));
@@ -159,7 +190,17 @@ void MediaPipelineTest::willSetupAndAddSource(GstAppSrc *appSrc)
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(appSrc, GST_APP_STREAM_TYPE_SEEKABLE));
     EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_rialtoSource), GST_ELEMENT(appSrc)));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(GST_ELEMENT(appSrc), StrEq("src"))).WillOnce(Return(&m_pad));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), _)).WillOnce(Return(&m_queue)).RetiresOnSaturation();
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, StrEq("max-size-buffers"))).RetiresOnSaturation();
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, StrEq("max-size-bytes"))).RetiresOnSaturation();
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, StrEq("max-size-time"))).RetiresOnSaturation();
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_queue, StrEq("silent"))).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_rialtoSource), &m_queue)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstElementSyncStateWithParent(&m_queue)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstElementLink(GST_ELEMENT(appSrc), &m_queue));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(&m_queue, StrEq("src")))
+        .WillOnce(Return(&m_pad))
+        .RetiresOnSaturation();
     EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(StrEq(m_sourceName), &m_pad))
         .WillOnce(Return(&m_ghostPad))
         .RetiresOnSaturation();
@@ -367,25 +408,6 @@ void MediaPipelineTest::willEos(GstAppSrc *appSrc)
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcEndOfStream(appSrc)).WillOnce(Return(GST_FLOW_OK));
 }
 
-void MediaPipelineTest::willRemoveAudioSource()
-{
-    EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStart()).WillOnce(Return(&m_flushStartEvent));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStartEvent))
-        .WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStop(0)).WillOnce(Return(&m_flushStopEvent));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStopEvent))
-        .WillOnce(Return(TRUE));
-
-    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(3).WillRepeatedly(Return(kGstPlayFlagsType));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(3).WillRepeatedly(Return(&m_flagsClass));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("native-video")))
-        .WillOnce(Return(&m_nativeVideoFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("text"))).WillOnce(Return(&m_subtitleFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("flags")))
-        .WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
-}
-
 void MediaPipelineTest::willStop()
 {
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_NULL))
@@ -398,19 +420,6 @@ void MediaPipelineTest::willStop()
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus));
 }
 
-void MediaPipelineTest::willSetAudioAndVideoFlags()
-{
-    EXPECT_CALL(*m_glibWrapperMock, gTypeFromName(StrEq("GstPlayFlags"))).Times(4).WillRepeatedly(Return(kGstPlayFlagsType));
-    EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kGstPlayFlagsType)).Times(4).WillRepeatedly(Return(&m_flagsClass));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryFind(StrEq("brcmaudiosink"))).WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio"))).WillOnce(Return(&m_audioFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("video"))).WillOnce(Return(&m_videoFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("native-video")))
-        .WillOnce(Return(&m_nativeVideoFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("text"))).WillOnce(Return(&m_subtitleFlag));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_pipeline, StrEq("flags")));
-}
-
 void MediaPipelineTest::createSession()
 {
     // Use matchResponse to store session id
@@ -419,6 +428,15 @@ void MediaPipelineTest::createSession()
         .send(request)
         .expectSuccess()
         .matchResponse([&](const ::firebolt::rialto::CreateSessionResponse &resp) { m_sessionId = resp.session_id(); });
+}
+
+void MediaPipelineTest::willSetStateInvalidForQueryPosition()
+{
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).Times(AtLeast(1)).WillRepeatedly(Return(GST_STATE_READY));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateNext(_)).WillRepeatedly(Return(GST_STATE_VOID_PENDING));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillRepeatedly(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateGetName(_)).WillRepeatedly(Return("NotImportant"));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementStateChangeReturnGetName(_)).WillRepeatedly(Return("NotImportant"));
 }
 
 void MediaPipelineTest::load()
@@ -459,12 +477,33 @@ void MediaPipelineTest::setupSource()
     m_gstreamerStub.setupRialtoSource();
 }
 
-void MediaPipelineTest::indicateAllSourcesAttached()
+void MediaPipelineTest::indicateAllSourcesAttached(const std::vector<GstAppSrc *> &appsrcs)
 {
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange(m_clientStub);
+    std::vector<std::pair<int, std::unique_ptr<ExpectMessage<firebolt::rialto::NeedMediaDataEvent>>>> expectedNeedData;
+    for (const GstAppSrc *appSrc : appsrcs)
+    {
+        const int kSourceId = ((appSrc == &m_audioAppSrc) ? m_audioSourceId : m_videoSourceId);
+        auto expectation{std::make_unique<ExpectMessage<firebolt::rialto::NeedMediaDataEvent>>(m_clientStub)};
+        expectation->setFilter([kSourceId](const firebolt::rialto::NeedMediaDataEvent &msg)
+                               { return msg.source_id() == kSourceId; });
+        expectedNeedData.emplace_back(kSourceId, std::move(expectation));
+    }
 
     auto allSourcesAttachedReq{createAllSourcesAttachedRequest(m_sessionId)};
     ConfigureAction<AllSourcesAttached>(m_clientStub).send(allSourcesAttachedReq).expectSuccess();
+
+    for (const auto &[sourceId, expectedNeedDataEntry] : expectedNeedData)
+    {
+        auto &needDataPtr = ((sourceId == m_audioSourceId) ? m_lastAudioNeedData : m_lastVideoNeedData);
+
+        auto receivedNeedData{expectedNeedDataEntry->getMessage()};
+        ASSERT_TRUE(receivedNeedData);
+        EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
+        EXPECT_EQ(receivedNeedData->source_id(), sourceId);
+        EXPECT_EQ(receivedNeedData->frame_count(), kPrerollNumFrames);
+        needDataPtr = receivedNeedData;
+    }
 
     auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
     ASSERT_TRUE(receivedPlaybackStateChange);
@@ -474,6 +513,8 @@ void MediaPipelineTest::indicateAllSourcesAttached()
 
 void MediaPipelineTest::pause()
 {
+    mayReceivePlaybackInfoUpdates();
+
     auto pauseReq{createPauseRequest(m_sessionId)};
     ConfigureAction<Pause>(m_clientStub).send(pauseReq).expectSuccess();
     positionUpdatesShouldNotBeReceivedFromNow();
@@ -481,6 +522,7 @@ void MediaPipelineTest::pause()
 
 void MediaPipelineTest::notifyPaused()
 {
+    ExpectMessage<firebolt::rialto::PlaybackInfoEvent> expectedPlaybackInfo{m_clientStub};
     ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange{m_clientStub};
 
     m_gstreamerStub.sendStateChanged(GST_STATE_NULL, GST_STATE_PAUSED, GST_STATE_NULL);
@@ -489,21 +531,9 @@ void MediaPipelineTest::notifyPaused()
     ASSERT_TRUE(receivedPlaybackStateChange);
     EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_sessionId);
     EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_PAUSED);
-}
 
-void MediaPipelineTest::gstNeedData(GstAppSrc *appSrc, int frameCount)
-{
-    const int kSourceId = ((appSrc == &m_audioAppSrc) ? m_audioSourceId : m_videoSourceId);
-    auto &needDataPtr = ((appSrc == &m_audioAppSrc) ? m_lastAudioNeedData : m_lastVideoNeedData);
-
-    ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
-    m_gstreamerStub.needData(appSrc, kNeededDataLength);
-    auto receivedNeedData{expectedNeedData.getMessage()};
-    ASSERT_TRUE(receivedNeedData);
-    EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
-    EXPECT_EQ(receivedNeedData->source_id(), kSourceId);
-    EXPECT_EQ(receivedNeedData->frame_count(), frameCount);
-    needDataPtr = receivedNeedData;
+    auto receivedPlaybackInfo{expectedPlaybackInfo.getMessage()};
+    ASSERT_TRUE(receivedPlaybackInfo);
 }
 
 void MediaPipelineTest::pushAudioData(unsigned dataCountToPush, int needDataFrameCount)
@@ -760,10 +790,6 @@ void MediaPipelineTest::removeSource(int sourceId)
 {
     auto removeSourceReq{createRemoveSourceRequest(m_sessionId, sourceId)};
     ConfigureAction<RemoveSource>(m_clientStub).send(removeSourceReq).expectSuccess();
-
-    // Sources other than audio do not do anything for RemoveSource
-    if (m_audioSourceId == sourceId)
-        waitWorker();
 }
 
 void MediaPipelineTest::stop()
@@ -781,6 +807,7 @@ void MediaPipelineTest::stop()
     EXPECT_EQ(receivedPlaybackStateChange->state(), ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_STOPPED);
 
     positionUpdatesShouldNotBeReceivedFromNow();
+    playbackInfoUpdatesShouldNotBeReceivedFromNow();
 }
 
 void MediaPipelineTest::destroySession()
@@ -812,6 +839,23 @@ void MediaPipelineTest::positionUpdatesShouldNotBeReceivedFromNow()
     {
         m_clientStub.removeSuppression(m_positionChangeEventSuppressionId);
         m_positionChangeEventSuppressionId = -1;
+    }
+}
+
+void MediaPipelineTest::mayReceivePlaybackInfoUpdates()
+{
+    if (-1 == m_playbackInfoEventSuppressionId)
+    {
+        m_playbackInfoEventSuppressionId = m_clientStub.addSuppression<firebolt::rialto::PlaybackInfoEvent>();
+    }
+}
+
+void MediaPipelineTest::playbackInfoUpdatesShouldNotBeReceivedFromNow()
+{
+    if (-1 != m_playbackInfoEventSuppressionId)
+    {
+        m_clientStub.removeSuppression(m_playbackInfoEventSuppressionId);
+        m_playbackInfoEventSuppressionId = -1;
     }
 }
 

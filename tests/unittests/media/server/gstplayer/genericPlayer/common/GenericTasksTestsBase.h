@@ -34,6 +34,7 @@ using ::testing::ByMove;
 using ::testing::DoAll;
 using ::testing::ElementsAreArray;
 using ::testing::Invoke;
+using ::testing::Ne;
 using ::testing::Ref;
 using ::testing::Return;
 using ::testing::ReturnRef;
@@ -75,10 +76,12 @@ protected:
     void setContextStreamInfoEmpty();
     void setContextNeedDataAudioOnly();
     void setContextSetupSourceFinished();
+    void setContextAudioInitialPosition();
 
     // SetupElement test methods
     void shouldSetupVideoSinkElementOnly();
     void shouldSetupVideoDecoderElementOnly();
+    void shouldSetupVideoDecoderElementWithFirstVideoFrameCallback();
     void shouldSetupVideoElementWithPendingGeometry();
     void shouldSetupVideoElementWithPendingImmediateOutput();
     void shouldSetupAudioSinkElementWithPendingLowLatency();
@@ -87,7 +90,9 @@ protected:
     void shouldSetupAudioDecoderElementWithPendingStreamSyncMode();
     void shouldSetupVideoParserElementWithPendingStreamSyncMode();
     void shouldSetupAudioDecoderElementWithPendingBufferingLimit();
+    void shouldSetupAudioDecoderElementWithIsLiveParameter();
     void shouldSetupVideoSinkElementWithPendingRenderFrame();
+    void shouldSetupVideoSinkElementWithPendingShowVideoWindow();
     void shouldSetupAudioElementAmlhalasinkWhenNoVideo();
     void shouldSetupAudioElementAmlhalasinkWhenVideoExists();
     void shouldSetupAudioElementBrcmAudioSink();
@@ -98,8 +103,11 @@ protected:
     void shouldSetupAudioSinkElementOnly();
     void shouldSetupAudioDecoderElementOnly();
     void shouldSetVideoUnderflowCallback();
+    void shouldSetFirstVideoFrameCallback();
+    void shouldSetupBaseParse();
     void triggerSetupElement();
     void triggerVideoUnderflowCallback();
+    void triggerFirstVideoFrameCallback();
     void shouldSetAudioUnderflowCallback();
     void triggerAudioUnderflowCallback();
     void shouldAddFirstAutoVideoSinkChild();
@@ -115,6 +123,9 @@ protected:
     void triggerAutoVideoSinkChildRemovedCallback();
     void triggerAutoAudioSinkChildRemovedCallback();
     void shouldSetupTextTrackSink();
+    void shouldSetupVideoDecoderForTextTrack();
+    void shouldSetupVideoDecoderForTextTrackWesterosSinkWithDecoder();
+    void shouldSetupVideoDecoderForTextTrackWesterosSinkWithoutDecoder();
 
     // SetVideoGeometry test methods
     void setPipelineToNull();
@@ -142,6 +153,7 @@ protected:
 
     // AttachSamples test methods
     void shouldAttachAllAudioSamples();
+    void shouldAttachAllAudioSamplesWithDelay();
     void shouldAttachData(firebolt::rialto::MediaSourceType sourceType);
     void triggerAttachSamplesAudio();
     void shouldAttachAllVideoSamples();
@@ -164,6 +176,10 @@ protected:
     void triggerAttachBwavAudioSource();
     void shouldAttachXrawAudioSource();
     void triggerAttachXrawAudioSource();
+    void shouldAttachFlacAudioSource();
+    void triggerAttachFlacAudioSource();
+    void shouldAttachMp3AudioSource();
+    void triggerAttachMp3AudioSource();
     void shouldAttachVideoSource(const std::string &mime, const std::string &alignment, const std::string &format);
     void triggerAttachVideoSource(const std::string &mimeType, firebolt::rialto::SegmentAlignment segmentAligment,
                                   firebolt::rialto::StreamFormat streamFormat);
@@ -180,7 +196,6 @@ protected:
     void shouldAttachVideoSourceWithDolbyVisionSource();
     void triggerAttachVideoSourceWithDolbyVisionSource();
     void shouldReattachAudioSource();
-    void shouldEnableAudioFlagsAndSendNeedData();
     void shouldFailToReattachAudioSource();
     void triggerReattachAudioSource();
     void checkNewAudioSourceAttached();
@@ -190,6 +205,7 @@ protected:
 
     // CheckAudioUnderflow test methods
     void shouldQueryPositionAndSetToZero();
+    void shouldBeInWrongStateForQueryPosition();
     void triggerCheckAudioUnderflowNoNotification();
     void shouldNotifyAudioUnderflow();
     void triggerCheckAudioUnderflow();
@@ -228,6 +244,8 @@ protected:
     void checkPlaybackGroupAdded();
     void setUseBufferingPending();
     void shouldTriggerSetUseBuffering();
+    void shouldLinkTypefindAndParser();
+    void shouldFailToLinkTypefindAndParser();
 
     // Stop test methods
     void shouldStopGstPlayer();
@@ -240,6 +258,7 @@ protected:
     void checkNeedDataForBothSources();
     void checkNeedDataForAudioOnly();
     void checkNeedDataForVideoOnly();
+    void setStreamIsDataPushed(firebolt::rialto::MediaSourceType sourceType);
 
     // Eos test methods
     void triggerEosAudio();
@@ -266,8 +285,6 @@ protected:
     void triggerSetUnknownMute();
     void setContextSubtitleSink();
     void shouldSetAudioMute();
-    void shouldFailToSetVideoMuteNoSink();
-    void shouldFailToSetVideoMuteNoProperty();
     void shouldSetVideoMute();
     void shouldSetSubtitleMute();
 
@@ -354,7 +371,6 @@ protected:
     void triggerNeedDataUnknownSrc();
     void shouldNotifyNeedAudioDataSuccess();
     void shouldNotifyNeedVideoDataSuccess();
-    void shouldNotifyNeedSubtitleDataSuccess();
     void checkNeedDataPendingForAudioOnly();
     void checkNeedDataPendingForVideoOnly();
     void shouldNotifyNeedAudioDataFailure();
@@ -383,6 +399,7 @@ protected:
 
     // ReadShmDataAndAttachSamples test methods
     void shouldReadAudioData();
+    void shouldReadAudioDataFromShmWithAvailableSpace();
     void shouldReadVideoData();
     void shouldReadSubtitleData();
     void shouldReadUnknownData();
@@ -393,7 +410,8 @@ protected:
 
     // RemoveSource test methods
     void shouldInvalidateActiveAudioRequests();
-    void shouldDisableAudioFlag();
+    void shouldUnrefAudioBuffer();
+    void shouldRequestAudioData();
     void triggerRemoveSourceAudio();
     void triggerRemoveSourceVideo();
     void checkAudioSourceRemoved();
@@ -414,6 +432,10 @@ protected:
     void checkInitialPositionSet(firebolt::rialto::MediaSourceType sourceType);
     void checkInitialPositionNotSet(firebolt::rialto::MediaSourceType sourceType);
 
+    // Set Subtitle Offset test methods
+    void shouldSetSubtitleOffset();
+    void triggerSetSubtitleOffset();
+
     // ProcessAudioGap test methods
     void triggerProcessAudioGap();
     void shouldProcessAudioGap();
@@ -427,17 +449,24 @@ protected:
 
 private:
     // SetupElement helper methods
+    void expectVideoUnderflowSignalConnection();
+    void expectFirstVideoFrameSignalConnection();
+    void expectAudioUnderflowSignalConnection();
     void expectSetupVideoSinkElement();
     void expectSetupVideoDecoderElement();
+    void expectSetupVideoDecoderElementWithFirstVideoFrameCallback();
     void expectSetupAudioSinkElement();
     void expectSetupAudioDecoderElement();
     void expectSetupVideoParserElement();
+    void expectSetupBaseParseElement();
 
     // AttachSource helper methods
     void expectSetGenericVideoCaps();
     void expectSetChannelAndRateAudioCaps();
     void expectAddChannelAndRateAudioToCaps();
     void expectAddRawAudioDataToCaps();
+    void expectAddStreamHeaderToCaps();
+    void expectAddFramedToCaps();
     void expectSetCaps();
 
     // Set property helpers

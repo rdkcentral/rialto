@@ -91,7 +91,7 @@ TEST_F(RialtoPlayerCommonCreateMediaFrameWriterV1Test, CheckSharedBufferData)
     EXPECT_EQ(readLEUint32(m_shmBuffer), 1U);
 
     // Rest of the metadata should be zeroed
-    uint8_t zeroedMem[kMaxMetadataBytes] = {0};
+    const int8_t zeroedMem[kMaxMetadataBytes] = {0};
     EXPECT_EQ(memcmp(zeroedMem, m_shmBuffer + VERSION_SIZE_BYTES, kMaxMetadataBytes), 0);
 }
 
@@ -111,6 +111,6 @@ TEST_F(RialtoPlayerCommonCreateMediaFrameWriterV1Test, Offset)
     EXPECT_EQ(readLEUint32(m_shmBuffer + m_shmInfo->metadataOffset), 1U);
 
     // Rest of the metadata should be zeroed
-    uint8_t zeroedMem[kMaxMetadataBytes] = {0};
+    const uint8_t zeroedMem[kMaxMetadataBytes] = {0};
     EXPECT_EQ(memcmp(zeroedMem, m_shmBuffer + VERSION_SIZE_BYTES + m_shmInfo->metadataOffset, kMaxMetadataBytes), 0);
 }

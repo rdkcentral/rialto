@@ -33,14 +33,17 @@ public:
 
     MOCK_METHOD(void, notifyPlaybackState, (PlaybackState state), (override));
     MOCK_METHOD(bool, notifyNeedMediaData, (MediaSourceType mediaSourceType), (override));
+    MOCK_METHOD(bool, notifyNeedMediaDataWithDelay, (MediaSourceType mediaSourceType), (override));
     MOCK_METHOD(void, notifyPosition, (std::int64_t position), (override));
     MOCK_METHOD(void, notifyNetworkState, (NetworkState state), (override));
     MOCK_METHOD(void, clearActiveRequestsCache, (), (override));
     MOCK_METHOD(void, invalidateActiveRequests, (const MediaSourceType &type), (override));
     MOCK_METHOD(void, notifyQos, (MediaSourceType mediaSourceType, const QosInfo &qosInfo), (override));
     MOCK_METHOD(void, notifyBufferUnderflow, (MediaSourceType mediaSourceType), (override));
+    MOCK_METHOD(void, notifyFirstFrameReceived, (MediaSourceType mediaSourceType), (override));
     MOCK_METHOD(void, notifyPlaybackError, (MediaSourceType mediaSourceType, PlaybackError error), (override));
     MOCK_METHOD(void, notifySourceFlushed, (MediaSourceType mediaSourceType), (override));
+    MOCK_METHOD(void, notifyPlaybackInfo, (const PlaybackInfo &playbackInfo), (override));
 };
 } // namespace firebolt::rialto::server
 

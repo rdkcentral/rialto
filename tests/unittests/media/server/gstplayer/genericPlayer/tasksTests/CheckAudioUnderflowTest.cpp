@@ -35,6 +35,12 @@ TEST_F(CheckAudioUnderflowTest, shouldNotTriggerAudioUnderflow)
     triggerCheckAudioUnderflowNoNotification();
 }
 
+TEST_F(CheckAudioUnderflowTest, shouldNotTriggerAudioUnderflowWhenPositionFailed)
+{
+    shouldBeInWrongStateForQueryPosition();
+    triggerCheckAudioUnderflowNoNotification();
+}
+
 TEST_F(CheckAudioUnderflowTest, shouldTriggerAudioUnderflow)
 {
     shouldNotifyAudioUnderflow();

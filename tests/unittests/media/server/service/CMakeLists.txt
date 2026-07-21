@@ -64,11 +64,3 @@ target_link_libraries(
         # # Link application source
         RialtoServerService
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoServerServiceUnitTests
-
-        gcov
-        )
-endif()

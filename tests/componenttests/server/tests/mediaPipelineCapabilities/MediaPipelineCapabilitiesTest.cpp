@@ -39,6 +39,7 @@ const char *kAudioFade = "audio-fade";
 const GstElementFactoryListType kExpectedFactoryListType{
     GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_PARSER |
     GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+const GType kDummyType{3};
 }; // namespace
 namespace firebolt::rialto::server::ct
 {
@@ -66,8 +67,9 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(kExpectedFactoryListType, GST_RANK_NONE))
             .WillOnce(Return(m_listOfFactories));
         // The next calls should ensure that an object is created and then freed
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(m_elementFactory, nullptr)).WillOnce(Return(&m_object));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_object));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(m_elementFactory)).WillOnce(Return(kDummyType));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&m_elementClass));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeClassUnref(&m_elementClass));
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
             .WillRepeatedly(DoAll(SetArgPointee<1>(kNumPropertiesOnSink), Return(m_dummyParamsPtr)));
@@ -91,6 +93,12 @@ public:
         m_listOfFactories = nullptr;
     }
 
+    void willCheckIfVideoIsMaster()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(&m_registry));
+        EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&m_registry, StrEq("amlhalasink"))).WillOnce(Return(nullptr));
+    }
+
 private:
     GList *m_listOfFactories{nullptr};
     GParamSpec m_dummyParams[kNumPropertiesOnSink];
@@ -98,6 +106,8 @@ private:
     std::vector<std::string> m_kParamNames{kPropertyName1, kPropertyName3, kPropertyName2, kAudioFade};
     GstElement m_object;
     GstElementFactory *m_elementFactory;
+    GstRegistry m_registry{};
+    GstElementClass m_elementClass{};
 };
 
 /*
@@ -372,4 +382,45 @@ TEST_F(MediaPipelineCapabilitiesTest, checkGetSupportedProperties)
     willCallGetSupportedProperties();
     callGetSupportedProperties();
 }
+
+/*
+ * Component Test: Check, if video is master
+ * Test Objective:
+ *  Test if video is master in Rialto Server
+ *
+ * Sequence Diagrams:
+ *  Capabilities
+ *  https://wiki.rdkcentral.com/display/ASP/Rialto+MSE+Misc+Sequence+Diagrams#RialtoMSEMiscSequenceDiagrams
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipelineCapabilities
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *
+ * Test Steps:
+ *  Step 1: Check is video master
+ *   Client stub requests the server to check, if video is master
+ *   Expect that server returns, that video is master
+ *
+ * Test Teardown:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  Rialto server checks, if mime types are supported.
+ *
+ * Code:
+ */
+TEST_F(MediaPipelineCapabilitiesTest, checkIsVideoMaster)
+{
+    // Step 1: Check is video master
+    willCheckIfVideoIsMaster();
+    ConfigureAction<IsVideoMaster>{m_clientStub}
+        .send(createIsVideoMasterRequest())
+        .expectSuccess()
+        .matchResponse([](const auto &resp) { EXPECT_TRUE(resp.is_video_master()); });
+};
 } // namespace firebolt::rialto::server::ct

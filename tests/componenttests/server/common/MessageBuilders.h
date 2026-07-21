@@ -83,13 +83,15 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::ProcessAudioGapRequest createProcessAudioGapRequest(int sessionId, std::int64_t position,
                                                                         unsigned duration,
                                                                         std::int64_t discontinuityGap, bool audioAac);
+::firebolt::rialto::GetDurationRequest createGetDurationRequest(int sessionId);
 
 // media keys module
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestWidevine();
 ::firebolt::rialto::CreateMediaKeysRequest createCreateMediaKeysRequestNetflix();
 ::firebolt::rialto::CreateKeySessionRequest createCreateKeySessionRequest(int mediaKeysHandle);
 ::firebolt::rialto::GenerateRequestRequest createGenerateRequestRequest(int mediaKeysHandle, int keySessionId,
-                                                                        const std::vector<unsigned char> &initData);
+                                                                        const std::vector<unsigned char> &initData,
+                                                                        bool extendedInterface = false);
 ::firebolt::rialto::UpdateSessionRequest createUpdateSessionRequest(int mediaKeysHandle, int keySessionId,
                                                                     const std::vector<unsigned char> &response);
 ::firebolt::rialto::ContainsKeyRequest createContainsKeyRequest(int mediaKeysHandle, int keySessionId,
@@ -109,6 +111,7 @@ namespace firebolt::rialto::server::ct
 ::firebolt::rialto::GetLdlSessionsLimitRequest createGetLdlSessionsLimitRequest(int mediaKeysHandle);
 ::firebolt::rialto::GetDrmTimeRequest createGetDrmTimeRequest(int mediaKeysHandle);
 ::firebolt::rialto::ReleaseKeySessionRequest createReleaseKeySessionRequest(int mediaKeysHandle, int keySessionId);
+::firebolt::rialto::GetMetricSystemDataRequest createGetMetricSystemDataRequest(int mediaKeysHandle);
 
 // media keys capabilities module
 ::firebolt::rialto::GetSupportedKeySystemsRequest createGetSupportedKeySystemsRequest();
@@ -129,6 +132,7 @@ createGetSupportedMimeTypesRequest(const ProtoMediaSourceType &mediaSourceType);
 ::firebolt::rialto::IsMimeTypeSupportedRequest createIsMimeTypeSupportedRequest(const std::string &mimeType);
 ::firebolt::rialto::GetSupportedPropertiesRequest
 createGetSupportedPropertiesRequest(const ProtoMediaSourceType &mediaType, const std::vector<std::string> &propertyNames);
+::firebolt::rialto::IsVideoMasterRequest createIsVideoMasterRequest();
 
 // web audio player module
 ::firebolt::rialto::CreateWebAudioPlayerRequest

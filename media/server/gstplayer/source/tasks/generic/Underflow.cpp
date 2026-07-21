@@ -18,11 +18,8 @@
  */
 
 #include "tasks/generic/Underflow.h"
-#include "IGstGenericPlayerClient.h"
-#include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
-#include "tasks/generic/Pause.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -41,7 +38,7 @@ Underflow::~Underflow()
 
 void Underflow::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing Underflow for %s source", common::convertMediaSourceType(m_sourceType));
+    RIALTO_SERVER_LOG_WARN("Executing Underflow for %s source", common::convertMediaSourceType(m_sourceType));
     if (!m_underflowEnabled)
     {
         return;

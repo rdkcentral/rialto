@@ -173,7 +173,7 @@ bool ChannelImpl::createConnectedSocket(const std::string &socketPath)
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
 
-    if (::connect(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1)
+    if (::connect(sock, reinterpret_cast<struct sockaddr *>(&addr), sizeof(addr)) == -1)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "failed to connect to %s", socketPath.c_str());
         close(sock);
@@ -454,14 +454,12 @@ bool ChannelImpl::unsubscribe(int eventTag)
     std::lock_guard<std::mutex> locker(m_eventsLock);
     bool success = false;
 
-    for (auto it = m_eventHandlers.begin(); it != m_eventHandlers.end(); it++)
+    auto it = std::find_if(m_eventHandlers.begin(), m_eventHandlers.end(),
+                           [&](const auto &item) { return item.second.id == eventTag; });
+    if (m_eventHandlers.end() != it)
     {
-        if (it->second.id == eventTag)
-        {
-            m_eventHandlers.erase(it);
-            success = true;
-            break;
-        }
+        m_eventHandlers.erase(it);
+        success = true;
     }
 
     return success;
@@ -564,36 +562,35 @@ void ChannelImpl::processTimeoutEvent()
         return;
     }
 
-    // check if any method call has no expired
-    std::unique_lock<std::mutex> locker(m_lock);
-
     // stores the timed-out method calls
     std::vector<MethodCall> timedOuts;
 
-    // remove the method calls that have expired
-    const auto kNow = std::chrono::steady_clock::now();
-    auto it = m_methodCalls.begin();
-    while (it != m_methodCalls.end())
     {
-        if (kNow >= it->second.timeoutDeadline)
+        // check if any method call has now expired
+        std::unique_lock<std::mutex> locker(m_lock);
+
+        // remove the method calls that have expired
+        const auto kNow = std::chrono::steady_clock::now();
+        auto it = m_methodCalls.begin();
+        while (it != m_methodCalls.end())
         {
-            timedOuts.emplace_back(it->second);
-            it = m_methodCalls.erase(it);
+            if (kNow >= it->second.timeoutDeadline)
+            {
+                timedOuts.emplace_back(it->second);
+                it = m_methodCalls.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
         }
-        else
+
+        // if we still have method calls available, then re-calculate the timer for the next timeout
+        if (!m_methodCalls.empty())
         {
-            ++it;
+            updateTimeoutTimer();
         }
     }
-
-    // if we still have method calls available, then re-calculate the timer for the next timeout
-    if (!m_methodCalls.empty())
-    {
-        updateTimeoutTimer();
-    }
-
-    // drop the lock and now terminate the timed out method calls
-    locker.unlock();
 
     for (auto &call : timedOuts)
     {
@@ -641,8 +638,7 @@ void ChannelImpl::updateTimeoutTimer()
         // otherwise, find the next soonest timeout
         std::chrono::steady_clock::time_point nextTimeout = std::chrono::steady_clock::time_point::max();
         auto nextTimeoutCall =
-            std::min_element(m_methodCalls.begin(), m_methodCalls.end(),
-                             [](const auto &elem, const auto &currentMin)
+            std::min_element(m_methodCalls.begin(), m_methodCalls.end(), [](const auto &elem, const auto &currentMin)
                              { return elem.second.timeoutDeadline < currentMin.second.timeoutDeadline; });
         if (nextTimeoutCall != m_methodCalls.end())
         {
@@ -721,28 +717,25 @@ void ChannelImpl::processReplyFromServer(const transport::MethodCallReply &reply
 {
     RIALTO_IPC_LOG_DEBUG("processing reply from server");
 
-    std::unique_lock<std::mutex> locker(m_lock);
-
-    // find the original request
+    MethodCall methodCall;
     const uint64_t kSerialId = reply.reply_id();
-    auto it = m_methodCalls.find(kSerialId);
-    if (it == m_methodCalls.end())
+
     {
-        RIALTO_IPC_LOG_ERROR("failed to find request for received reply with id %" PRIu64 "", reply.reply_id());
-        return;
+        std::lock_guard<std::mutex> locker(m_lock);
+
+        auto it = m_methodCalls.find(kSerialId);
+        if (it == m_methodCalls.end())
+        {
+            RIALTO_IPC_LOG_ERROR("failed to find request for received reply with id %" PRIu64 "", reply.reply_id());
+            return;
+        }
+
+        methodCall = it->second;
+        m_methodCalls.erase(it);
+
+        updateTimeoutTimer();
     }
 
-    // take the method call and remove from the map of outstanding calls
-    MethodCall methodCall = it->second;
-    m_methodCalls.erase(it);
-
-    // update the timeout timer now a method call has been processed
-    updateTimeoutTimer();
-
-    // can now drop the lock
-    locker.unlock();
-
-    // this is an actual reply so try and read it
     if (!methodCall.response->ParseFromString(reply.reply_message()))
     {
         RIALTO_IPC_LOG_ERROR("failed to parse method reply from server");
@@ -772,26 +765,27 @@ void ChannelImpl::processErrorFromServer(const transport::MethodCallError &error
 {
     RIALTO_IPC_LOG_DEBUG("processing error from server");
 
-    std::unique_lock<std::mutex> locker(m_lock);
-
-    // find the original request
+    MethodCall methodCall;
     const uint64_t kSerialId = error.reply_id();
-    auto it = m_methodCalls.find(kSerialId);
-    if (it == m_methodCalls.end())
+
     {
-        RIALTO_IPC_LOG_ERROR("failed to find request for received reply with id %" PRIu64 "", error.reply_id());
-        return;
+        std::unique_lock<std::mutex> locker(m_lock);
+
+        // find the original request
+        auto it = m_methodCalls.find(kSerialId);
+        if (it == m_methodCalls.end())
+        {
+            RIALTO_IPC_LOG_ERROR("failed to find request for received reply with id %" PRIu64 "", error.reply_id());
+            return;
+        }
+
+        // take the method call and remove from the map of outstanding calls
+        methodCall = it->second;
+        m_methodCalls.erase(it);
+
+        // update the timeout timer now a method call has been processed
+        updateTimeoutTimer();
     }
-
-    // take the method call and remove from the map of outstanding calls
-    MethodCall methodCall = it->second;
-    m_methodCalls.erase(it);
-
-    // update the timeout timer now a method call has been processed
-    updateTimeoutTimer();
-
-    // can now drop the lock
-    locker.unlock();
 
     RIALTO_IPC_LOG_DEBUG("error{ serial %" PRIu64 " } - %s", kSerialId, error.error_reason().c_str());
 
@@ -874,7 +868,8 @@ std::vector<FileDescriptor> ChannelImpl::readMessageFds(const struct msghdr *msg
 {
     std::vector<FileDescriptor> fds;
 
-    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg); cmsg != nullptr; cmsg = CMSG_NXTHDR((struct msghdr *)msg, cmsg))
+    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg); cmsg != nullptr;
+         cmsg = CMSG_NXTHDR(const_cast<struct msghdr *>(msg), cmsg))
     {
         if ((cmsg->cmsg_level == SOL_SOCKET) && (cmsg->cmsg_type == SCM_RIGHTS))
         {
@@ -902,14 +897,14 @@ std::vector<FileDescriptor> ChannelImpl::readMessageFds(const struct msghdr *msg
                     }
                     else
                     {
-                        firebolt::rialto::ipc::FileDescriptor fd(kFds[i]);
-                        if (!fd.isValid())
+                        firebolt::rialto::ipc::FileDescriptor fileDescriptor(kFds[i]);
+                        if (!fileDescriptor.isValid())
                         {
                             RIALTO_IPC_LOG_ERROR("received invalid fd (couldn't dup)");
                         }
                         else
                         {
-                            fds.emplace_back(std::move(fd));
+                            fds.emplace_back(std::move(fileDescriptor));
                         }
                     }
 
@@ -1061,8 +1056,8 @@ std::vector<int> ChannelImpl::getMessageFds(const google::protobuf::Message &mes
             else
             {
                 auto reflection = message.GetReflection();
-                int fd = reflection->GetInt32(message, fieldDescriptor);
-                fds.emplace_back(fd);
+                int fileDescriptor = reflection->GetInt32(message, fieldDescriptor);
+                fds.emplace_back(fileDescriptor);
             }
         }
     }
@@ -1160,39 +1155,54 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
                                   method->options().GetExtension(::firebolt::rialto::ipc::no_reply);
 
     // finally, send the message
-    std::unique_lock<std::mutex> locker(m_lock);
+    google::protobuf::Closure *doneClosure = nullptr;
+    std::string errorMessage; // Capture error state
+    {
+        std::unique_lock<std::mutex> locker(m_lock);
 
-    if (m_sock < 0)
-    {
-        locker.unlock();
-        completeWithError(&methodCall, "Not connected");
-    }
-    else if (sendmsg(m_sock, header, MSG_NOSIGNAL) != static_cast<ssize_t>(kRequiredDataLen))
-    {
-        locker.unlock();
-        completeWithError(&methodCall, "Failed to send message");
-    }
-    else
-    {
-        RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", kSerialId, call->service_name().c_str(),
-                             call->method_name().c_str(), request->ShortDebugString().c_str());
-
-        if (kNoReplyExpected)
+        if (m_sock < 0)
         {
-            // no reply from server is expected, however if the caller supplied
-            // a closure (it shouldn't) we should still call it now to indicate
-            // the method call has been made
-            if (done)
-                done->Run();
+            errorMessage = "Not connected";
+        }
+        else if (sendmsg(m_sock, header, MSG_NOSIGNAL) != static_cast<ssize_t>(kRequiredDataLen))
+        {
+            errorMessage = "Failed to send message";
         }
         else
         {
-            // add the message to the queue so we pick-up the reply
-            m_methodCalls.emplace(kSerialId, methodCall);
+            RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", kSerialId, call->service_name().c_str(),
+                                 call->method_name().c_str(), request->ShortDebugString().c_str());
 
-            // update the single timeout timer
-            updateTimeoutTimer();
+            if (kNoReplyExpected)
+            {
+                // no reply from server is expected, however if the caller supplied
+                // a closure (it shouldn't) we should still call it now to indicate
+                // the method call has been made
+                doneClosure = done;
+            }
+            else
+            {
+                // add the message to the queue so we pick-up the reply
+                m_methodCalls.emplace(kSerialId, methodCall);
+
+                // update the single timeout timer
+                updateTimeoutTimer();
+            }
         }
+    }
+    // Lock is released here automatically
+
+    // Handle error case outside lock to avoid deadlock if user closure re-enters
+    if (!errorMessage.empty())
+    {
+        completeWithError(&methodCall, std::move(errorMessage));
+        return;
+    }
+
+    // Invoke closure outside the lock to avoid deadlock if the user closure re-enters
+    if (kNoReplyExpected && doneClosure)
+    {
+        doneClosure->Run();
     }
 }
 

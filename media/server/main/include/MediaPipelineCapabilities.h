@@ -55,7 +55,7 @@ public:
      *
      * @param[in] gstCapabilitiesFactory : The gstreamer capabilities factory.
      */
-    explicit MediaPipelineCapabilities(std::shared_ptr<IGstCapabilitiesFactory> gstCapabilitiesFactory);
+    explicit MediaPipelineCapabilities(const std::shared_ptr<IGstCapabilitiesFactory> &gstCapabilitiesFactory);
 
     /**
      * @brief Virtual destructor.
@@ -66,6 +66,7 @@ public:
     bool isMimeTypeSupported(const std::string &mimeType) override;
     std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
                                                     const std::vector<std::string> &propertyNames) override;
+    bool isVideoMaster(bool &isVideoMaster) override;
 
 private:
     /**

@@ -32,6 +32,7 @@ add_gtests (
         mediaPipeline/SetPositionTest.cpp
         mediaPipeline/SetPlaybackRateTest.cpp
         mediaPipeline/GetPositionTest.cpp
+        mediaPipeline/GetDurationTest.cpp
         mediaPipeline/SetImmediateOutputTest.cpp
         mediaPipeline/GetImmediateOutputTest.cpp
         mediaPipeline/GetStatsTest.cpp
@@ -48,6 +49,7 @@ add_gtests (
         mediaPipeline/GetStreamSyncModeTest.cpp
         mediaPipeline/FlushTest.cpp
         mediaPipeline/SetSourcePositionTest.cpp
+        mediaPipeline/SetSubtitleOffsetTest.cpp
         mediaPipeline/MediaPipelineProxyTest.cpp
         mediaPipeline/ProcessAudioGapTest.cpp
         mediaPipeline/TextTrackIdentifierTest.cpp
@@ -70,6 +72,7 @@ add_gtests (
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
         mediaKeysCapabilities/CertificateTest.cpp
+        mediaKeysCapabilities/RobustnessTest.cpp
 
         # ClientController tests
         clientController/CreateTest.cpp
@@ -121,13 +124,3 @@ target_link_libraries(
         # # Link application source
         RialtoClient
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoClientUnitTests
-
-        gcov
-        )
-endif()
-
-

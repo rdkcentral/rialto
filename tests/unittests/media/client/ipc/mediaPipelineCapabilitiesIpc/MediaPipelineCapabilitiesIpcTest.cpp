@@ -66,6 +66,13 @@ public:
             dynamic_cast<firebolt::rialto::GetSupportedPropertiesResponse *>(response);
         getSupportedPropertiesResponse->add_supported_properties(kPropertyName);
     }
+
+    void setIsVideoMasterResponse(google::protobuf::Message *response)
+    {
+        firebolt::rialto::IsVideoMasterResponse *isVideoMasterResponse =
+            dynamic_cast<firebolt::rialto::IsVideoMasterResponse *>(response);
+        isVideoMasterResponse->set_is_video_master(true);
+    }
 };
 
 TEST_F(MediaPipelineCapabilitiesIpcTest, createMediaPipelineCapabilitiesIpc)
@@ -216,4 +223,54 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedSubtitlesMimeTypesSuccess)
         .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setGetSupportedMimeTypesResponse)));
 
     EXPECT_EQ(m_sut->getSupportedMimeTypes(MediaSourceType::SUBTITLE), m_mimeTypes);
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, IsVideoMasterSuccess)
+{
+    bool isMaster{false};
+
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallSuccess();
+
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("isVideoMaster"), m_controllerMock.get(), _, _, m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setIsVideoMasterResponse)));
+
+    EXPECT_TRUE(m_sut->isVideoMaster(isMaster));
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, IsVideoMastersDisconnected)
+{
+    bool isMaster{false};
+
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallDisconnected();
+
+    EXPECT_FALSE(m_sut->isVideoMaster(isMaster));
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, IsVideoMasterDisconnectedReconnectChannel)
+{
+    bool isMaster{false};
+
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallReconnected();
+
+    EXPECT_CALL(*m_channelMock,
+                CallMethod(methodMatcher("isVideoMaster"), m_controllerMock.get(), _, _, m_blockingClosureMock.get()))
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaPipelineCapabilitiesIpcTest::setIsVideoMasterResponse)));
+
+    EXPECT_TRUE(m_sut->isVideoMaster(isMaster));
+}
+
+TEST_F(MediaPipelineCapabilitiesIpcTest, IsVideoMasterFailure)
+{
+    bool isMaster{false};
+
+    createMediaPipelineCapabilitiesIpc();
+    expectIpcApiCallFailure();
+
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("isVideoMaster"), _, _, _, _));
+
+    EXPECT_FALSE(m_sut->isVideoMaster(isMaster));
 }

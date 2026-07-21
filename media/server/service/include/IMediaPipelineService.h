@@ -44,11 +44,11 @@ public:
     virtual bool createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
                                std::uint32_t maxWidth, std::uint32_t maxHeight) = 0;
     virtual bool destroySession(int sessionId) = 0;
-    virtual bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url) = 0;
+    virtual bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url, bool isLive) = 0;
     virtual bool attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
     virtual bool removeSource(int sessionId, std::int32_t sourceId) = 0;
     virtual bool allSourcesAttached(int sessionId) = 0;
-    virtual bool play(int sessionId) = 0;
+    virtual bool play(int sessionId, bool &async) = 0;
     virtual bool pause(int sessionId) = 0;
     virtual bool stop(int sessionId) = 0;
     virtual bool setPlaybackRate(int sessionId, double rate) = 0;
@@ -74,9 +74,10 @@ public:
     virtual bool setSyncOff(int sessionId, bool syncOff) = 0;
     virtual bool setStreamSyncMode(int sessionId, int32_t sourceId, int32_t streamSyncMode) = 0;
     virtual bool getStreamSyncMode(int sessionId, int32_t &streamSyncMode) = 0;
-    virtual bool flush(int sessionId, std::int32_t sourceId, bool resetTime) = 0;
+    virtual bool flush(int sessionId, std::int32_t sourceId, bool resetTime, bool &isAsync) = 0;
     virtual bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime,
                                    double appliedRate, uint64_t stopPosition) = 0;
+    virtual bool setSubtitleOffset(int sessionId, int32_t sourceId, int64_t position) = 0;
     virtual bool processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,
                                  bool audioAac) = 0;
     virtual bool setBufferingLimit(int sessionId, uint32_t limitBufferingMs) = 0;
@@ -89,6 +90,8 @@ public:
                                                             const std::vector<std::string> &propertyNames) = 0;
     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
     virtual bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
+    virtual bool isVideoMaster(bool &isVideoMaster) = 0;
+    virtual bool getDuration(int sessionId, std::int64_t &duration) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

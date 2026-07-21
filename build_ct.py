@@ -21,6 +21,7 @@
 # Entry script for running rialto componenttests
 
 import argparse
+import os
 from scripts.gtest.build_and_run_tests import getGenericArguments, buildAndRunGTests
 from scripts.gtest.utils import getSuitesToRun, getOutputFile
 from scripts.gtest.generate_coverage import generateCoverageReport, generateSpecificCoverageStats
@@ -50,8 +51,8 @@ if __name__ == "__main__":
 
     # Generate coverage
     if args['coverage'] == True:
-        generateCoverageReport(args['output'], outputFile, suitesToRun)
+        generateCoverageReport(os.getcwd(), args['output'], outputFile)
 
         # Also generate coverage stats for public interfaces source
         files = ["*/main/source/*"]
-        generateSpecificCoverageStats(args['output'], outputFile, files, "coverage_statistics_public_apis")
+        generateSpecificCoverageStats(os.getcwd(), args['output'], outputFile, files, "coverage_statistics_public_apis")

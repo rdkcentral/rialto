@@ -34,18 +34,6 @@ TEST_F(SetMuteTest, shouldSetVideoMute)
     triggerSetVideoMute();
 }
 
-TEST_F(SetMuteTest, shouldFailToSetVideoMuteNoSink)
-{
-    shouldFailToSetVideoMuteNoSink();
-    triggerSetVideoMute();
-}
-
-TEST_F(SetMuteTest, shouldFailToSetVideoMuteNoProperty)
-{
-    shouldFailToSetVideoMuteNoProperty();
-    triggerSetVideoMute();
-}
-
 TEST_F(SetMuteTest, shouldFailToSetAudioMuteWhenPipelineIsNull)
 {
     setContextPipelineNull();

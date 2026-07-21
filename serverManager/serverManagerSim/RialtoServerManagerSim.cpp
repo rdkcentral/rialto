@@ -83,7 +83,7 @@ try
     }
     return 0;
 }
-catch (std::exception &e)
+catch (const std::exception &e)
 {
     return 0;
 }
@@ -91,47 +91,55 @@ catch (std::exception &e)
 
 int main(int argc, char *argv[])
 {
-    fprintf(stderr, "===========================================================================\n");
-    fprintf(stderr, "==                     RIALTO SERVER MANAGER SIM                         ==\n");
-    fprintf(stderr, "==                                                                       ==\n");
-    fprintf(stderr, "== Test application is a Http Server running on localhost:9008           ==\n");
-    fprintf(stderr, "==                                                                       ==\n");
-    fprintf(stderr, "== To set state, send POST HttpRequest /SetState/AppName/NewState        ==\n");
-    fprintf(stderr, "== Available states: Inactive, Active, NotRunning, Error                 ==\n");
-    fprintf(stderr, "== For example:                                                          ==\n");
-    fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/SetState/YouTube/NotRunning          ==\n");
-    fprintf(stderr, "==                                                                       ==\n");
-    fprintf(stderr, "== Custom socket name can be set in POST data. Available values are:     ==\n");
-    fprintf(stderr, "==  - Empty string (socket name will be automatically generated)         ==\n");
-    fprintf(stderr, "==  - Full socket path, e.g. POST -d \"/var/customsocket\"                 ==\n");
-    fprintf(stderr, "==  - Socket name, e.g. POST -d \"sock\" will create /tmp/sock socket      ==\n");
-    fprintf(stderr, "==                                                                       ==\n");
-    fprintf(stderr, "== To get current state, send GET HttpRequest: /GetState/AppName         ==\n");
-    fprintf(stderr, "== For example:                                                          ==\n");
-    fprintf(stderr, "== curl -X GET <BOX_IP>:9008/GetState/YouTube                            ==\n");
-    fprintf(stderr, "==                                                                       ==\n");
-    fprintf(stderr, "== To get application info, send GET HttpRequest: /GetAppInfo/AppName    ==\n");
-    fprintf(stderr, "== For example:                                                          ==\n");
-    fprintf(stderr, "== curl -X GET <BOX_IP>:9008/GetAppInfo/YouTube                          ==\n");
-    fprintf(stderr, "==                                                                       ==\n");
-    fprintf(stderr, "== To set log levels, send POST HttpRequest: /SetLog/<component>/<level> ==\n");
-    fprintf(stderr, "== For example:                                                          ==\n");
-    fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/SetLog/client/error                  ==\n");
-    fprintf(stderr, "==                                                                       ==\n");
-    fprintf(stderr, "== To suspend server, send POST HttpRequest: /Suspend/AppName            ==\n");
-    fprintf(stderr, "== For example:                                                          ==\n");
-    fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/Suspend/YouTube                      ==\n");
-    fprintf(stderr, "==                                                                       ==\n");
-    fprintf(stderr, "== To shutdown Test Service, send POST HttpRequest: /Quit                ==\n");
-    fprintf(stderr, "== For example:                                                          ==\n");
-    fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/Quit                                 ==\n");
-    fprintf(stderr, "==                                                                       ==\n");
-    fprintf(stderr, "===========================================================================\n");
+    try
+    {
+        fprintf(stderr, "===========================================================================\n");
+        fprintf(stderr, "==                     RIALTO SERVER MANAGER SIM                         ==\n");
+        fprintf(stderr, "==                                                                       ==\n");
+        fprintf(stderr, "== Test application is a Http Server running on localhost:9008           ==\n");
+        fprintf(stderr, "==                                                                       ==\n");
+        fprintf(stderr, "== To set state, send POST HttpRequest /SetState/AppName/NewState        ==\n");
+        fprintf(stderr, "== Available states: Inactive, Active, NotRunning, Error                 ==\n");
+        fprintf(stderr, "== For example:                                                          ==\n");
+        fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/SetState/YouTube/NotRunning          ==\n");
+        fprintf(stderr, "==                                                                       ==\n");
+        fprintf(stderr, "== Custom socket name can be set in POST data. Available values are:     ==\n");
+        fprintf(stderr, "==  - Empty string (socket name will be automatically generated)         ==\n");
+        fprintf(stderr, "==  - Full socket path, e.g. POST -d \"/var/customsocket\"                 ==\n");
+        fprintf(stderr, "==  - Socket name, e.g. POST -d \"sock\" will create /tmp/sock socket      ==\n");
+        fprintf(stderr, "==                                                                       ==\n");
+        fprintf(stderr, "== To get current state, send GET HttpRequest: /GetState/AppName         ==\n");
+        fprintf(stderr, "== For example:                                                          ==\n");
+        fprintf(stderr, "== curl -X GET <BOX_IP>:9008/GetState/YouTube                            ==\n");
+        fprintf(stderr, "==                                                                       ==\n");
+        fprintf(stderr, "== To get application info, send GET HttpRequest: /GetAppInfo/AppName    ==\n");
+        fprintf(stderr, "== For example:                                                          ==\n");
+        fprintf(stderr, "== curl -X GET <BOX_IP>:9008/GetAppInfo/YouTube                          ==\n");
+        fprintf(stderr, "==                                                                       ==\n");
+        fprintf(stderr, "== To set log levels, send POST HttpRequest: /SetLog/<component>/<level> ==\n");
+        fprintf(stderr, "== For example:                                                          ==\n");
+        fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/SetLog/client/error                  ==\n");
+        fprintf(stderr, "==                                                                       ==\n");
+        fprintf(stderr, "== To suspend server, send POST HttpRequest: /Suspend/AppName            ==\n");
+        fprintf(stderr, "== For example:                                                          ==\n");
+        fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/Suspend/YouTube                      ==\n");
+        fprintf(stderr, "==                                                                       ==\n");
+        fprintf(stderr, "== To shutdown Test Service, send POST HttpRequest: /Quit                ==\n");
+        fprintf(stderr, "== For example:                                                          ==\n");
+        fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/Quit                                 ==\n");
+        fprintf(stderr, "==                                                                       ==\n");
+        fprintf(stderr, "===========================================================================\n");
 
-    firebolt::rialto::common::ServerManagerConfig config{getEnvironmentVariables(), getNumberOfPreloadedServers(),
-                                                         getSessionServerPath(), getStartupTimeout()};
-    rialto::servermanager::TestService service{config};
-    service.run();
+        firebolt::rialto::common::ServerManagerConfig config{getEnvironmentVariables(), getNumberOfPreloadedServers(),
+                                                             getSessionServerPath(), getStartupTimeout()};
+        rialto::servermanager::TestService service{config};
+        service.run();
 
-    return 0;
+        return 0;
+    }
+    catch (const std::exception &e)
+    {
+        fprintf(stderr, "Fatal error: %s\n", e.what());
+        return 1;
+    }
 }

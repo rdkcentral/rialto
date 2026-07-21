@@ -64,6 +64,9 @@ public:
     MOCK_METHOD(void, getPosition,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetPositionRequest *request,
                  ::firebolt::rialto::GetPositionResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getDuration,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetDurationRequest *request,
+                 ::firebolt::rialto::GetDurationResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, setImmediateOutput,
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::SetImmediateOutputRequest *request,
@@ -140,6 +143,9 @@ public:
     MOCK_METHOD(void, processAudioGap,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::ProcessAudioGapRequest *request,
                  ::firebolt::rialto::ProcessAudioGapResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, isVideoMaster,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::IsVideoMasterRequest *request,
+                 ::firebolt::rialto::IsVideoMasterResponse *response, ::google::protobuf::Closure *done));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
@@ -212,6 +218,13 @@ public:
     {
         firebolt::rialto::GetPositionResponse response;
         response.set_position(position);
+        return response;
+    }
+
+    ::firebolt::rialto::GetDurationResponse getDurationResponse(const int64_t duration)
+    {
+        firebolt::rialto::GetDurationResponse response;
+        response.set_duration(duration);
         return response;
     }
 

@@ -25,7 +25,7 @@ namespace firebolt::rialto::server::tasks::generic
 {
 RemoveSource::RemoveSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                            IGstGenericPlayerClient *client,
-                           std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+                           const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                            const MediaSourceType &type)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type}
 {
@@ -46,34 +46,30 @@ void RemoveSource::execute() const
         return;
     }
     m_context.audioSourceRemoved = true;
-    m_gstPlayerClient->invalidateActiveRequests(m_type);
-    GstElement *source{nullptr};
-    auto sourceElem = m_context.streamInfo.find(m_type);
-    if (sourceElem != m_context.streamInfo.end())
+    if (m_gstPlayerClient)
     {
-        source = sourceElem->second.appSrc;
+        m_gstPlayerClient->invalidateActiveRequests(m_type);
     }
-    if (!source)
+    auto sourceElem = m_context.streamInfo.find(m_type);
+    if (sourceElem == m_context.streamInfo.end())
     {
-        RIALTO_SERVER_LOG_WARN("failed to flush - source is NULL");
+        RIALTO_SERVER_LOG_WARN("Failed to remove source - streamInfo not found");
         return;
     }
-    sourceElem->second.buffers.clear();
-    sourceElem->second.isDataNeeded = false;
-    sourceElem->second.isNeedDataPending = false;
-    m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
-    GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
-    if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
+    StreamInfo &streamInfo = sourceElem->second;
+    for (auto &buffer : streamInfo.buffers)
     {
-        RIALTO_SERVER_LOG_WARN("failed to send flush-start event");
+        m_gstWrapper->gstBufferUnref(buffer);
     }
-    GstEvent *flushStop = m_gstWrapper->gstEventNewFlushStop(FALSE);
-    if (!m_gstWrapper->gstElementSendEvent(source, flushStop))
-    {
-        RIALTO_SERVER_LOG_WARN("failed to send flush-stop event");
-    }
+    streamInfo.buffers.clear();
+    streamInfo.isDataNeeded = false;
+    streamInfo.isNeedDataPending = false;
+    m_context.initialPositions.erase(streamInfo.appSrc);
 
-    // Turn audio off, removing audio sink from playsink
-    m_player.setPlaybinFlags(false);
+    // Reset Eos info
+    m_context.endOfStreamInfo.erase(m_type);
+    m_context.eosNotified = false;
+
+    RIALTO_SERVER_LOG_MIL("%s source removed", common::convertMediaSourceType(m_type));
 }
 } // namespace firebolt::rialto::server::tasks::generic

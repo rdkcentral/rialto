@@ -77,9 +77,21 @@ TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingBufferingLimit)
     triggerSetupElement();
 }
 
+TEST_F(SetupElementTest, shouldSetupAudioElementWithIsLiveParameter)
+{
+    shouldSetupAudioDecoderElementWithIsLiveParameter();
+    triggerSetupElement();
+}
+
 TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingRenderFrame)
 {
     shouldSetupVideoSinkElementWithPendingRenderFrame();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingShowVideoWindow)
+{
+    shouldSetupVideoSinkElementWithPendingShowVideoWindow();
     triggerSetupElement();
 }
 
@@ -158,6 +170,15 @@ TEST_F(SetupElementTest, shouldReportVideoUnderflow)
     triggerVideoUnderflowCallback();
 }
 
+TEST_F(SetupElementTest, shouldReportFirstVideoFrame)
+{
+    shouldSetupVideoDecoderElementWithFirstVideoFrameCallback();
+    triggerSetupElement();
+
+    shouldSetFirstVideoFrameCallback();
+    triggerFirstVideoFrameCallback();
+}
+
 TEST_F(SetupElementTest, shouldReportAudioUnderflow)
 {
     shouldSetupAudioDecoderElementOnly();
@@ -210,5 +231,29 @@ TEST_F(SetupElementTest, shouldReportAutoAudioSinkChildRemoved)
 TEST_F(SetupElementTest, shouldSetupTextTrackSink)
 {
     shouldSetupTextTrackSink();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupBaseParse)
+{
+    shouldSetupBaseParse();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupVideoDecodersForSubtitleSink)
+{
+    shouldSetupVideoDecoderForTextTrack();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupVideoDecodersForSubtitleSinkWesterosSinkWithDecoder)
+{
+    shouldSetupVideoDecoderForTextTrackWesterosSinkWithDecoder();
+    triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldSetupVideoDecodersForSubtitleSinkWesterosSinkWithoutDecoder)
+{
+    shouldSetupVideoDecoderForTextTrackWesterosSinkWithoutDecoder();
     triggerSetupElement();
 }

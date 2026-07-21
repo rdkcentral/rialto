@@ -55,7 +55,6 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoClientCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoPlayerCommon,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries (
@@ -66,6 +65,6 @@ target_link_libraries (
         RialtoIpcCommon
         RialtoCommon
         RialtoPlayerCommon
-        RialtoLogging
+        RialtoEthanLog
         RialtoProtobuf
 )

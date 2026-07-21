@@ -61,6 +61,7 @@ target_link_libraries(
         RialtoServerIpc
         RialtoServerMain
         RialtoServerService
+        protobuf::libprotobuf
 )
 
 if( NATIVE_BUILD )

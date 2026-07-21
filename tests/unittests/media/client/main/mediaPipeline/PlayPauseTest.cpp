@@ -42,9 +42,10 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelinePlayPauseTest, PlaySuccess)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, play()).WillOnce(Return(true));
+    bool async{false};
+    EXPECT_CALL(*m_mediaPipelineIpcMock, play(_)).WillOnce(Return(true));
 
-    EXPECT_EQ(m_mediaPipeline->play(), true);
+    EXPECT_EQ(m_mediaPipeline->play(async), true);
 }
 
 /**
@@ -52,9 +53,10 @@ TEST_F(RialtoClientMediaPipelinePlayPauseTest, PlaySuccess)
  */
 TEST_F(RialtoClientMediaPipelinePlayPauseTest, PlayFailure)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, play()).WillOnce(Return(false));
+    bool async{false};
+    EXPECT_CALL(*m_mediaPipelineIpcMock, play(_)).WillOnce(Return(false));
 
-    EXPECT_EQ(m_mediaPipeline->play(), false);
+    EXPECT_EQ(m_mediaPipeline->play(async), false);
 }
 
 /**

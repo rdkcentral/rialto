@@ -40,8 +40,8 @@ public:
     void initializeWithWrongType();
 
     void needMediaDataWillBeSentInPlayingState();
-    void needMediaDataWillBeSentBelowPlayingState();
     void needMediaDataWillNotBeSent();
+    void needMediaDataWillBeSentBelowPlayingState();
 
 private:
     std::unique_ptr<firebolt::rialto::server::NeedMediaData> m_sut;

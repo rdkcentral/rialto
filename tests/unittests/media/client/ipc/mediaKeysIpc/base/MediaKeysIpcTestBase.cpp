@@ -103,7 +103,7 @@ void MediaKeysIpcTestBase::createKeySession()
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createKeySession"), _, _, _, _))
         .WillOnce(WithArgs<3>(Invoke(this, &MediaKeysIpcTestBase::setCreateKeySessionResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->createKeySession(KeySessionType::PERSISTENT_LICENCE, m_mediaKeysClientMock, false,
+    EXPECT_EQ(m_mediaKeysIpc->createKeySession(KeySessionType::PERSISTENT_LICENCE, m_mediaKeysClientMock,
                                                returnKeySessionid),
               MediaKeyErrorStatus::OK);
 }
@@ -153,9 +153,21 @@ ProtoMediaKeyErrorStatus MediaKeysIpcTestBase::convertMediaKeyErrorStatus(firebo
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::NOT_SUPPORTED;
     }
+    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED;
+    }
+    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::BUFFER_TOO_SMALL;
+    }
     case firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE:
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::INVALID_STATE;
+    }
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::OUTPUT_RESTRICTED;
     }
     case firebolt::rialto::MediaKeyErrorStatus::FAIL:
     {

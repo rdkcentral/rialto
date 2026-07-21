@@ -25,6 +25,11 @@
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
 
+namespace
+{
+constexpr auto kDelayThreshold{5 * GST_SECOND};
+} // namespace
+
 namespace firebolt::rialto::server::tasks::generic
 {
 ReadShmDataAndAttachSamples::ReadShmDataAndAttachSamples(
@@ -85,14 +90,36 @@ void ReadShmDataAndAttachSamples::execute() const
                 RIALTO_SERVER_LOG_ERROR("Failed to get the audio segment, reason: %s", e.what());
             }
         }
-        // no special action for SUBTITLE needed, just attach the buffer
+        else if (mediaSegment->getType() == firebolt::rialto::MediaSourceType::SUBTITLE)
+        {
+            if (mediaSegment->getDisplayOffset())
+            {
+                GST_BUFFER_OFFSET(gstBuffer) = mediaSegment->getDisplayOffset().value();
+            }
+        }
 
         attachData(mediaSegment->getType(), gstBuffer);
     }
     // All segments in vector have the same type
     if (!mediaSegments.empty())
     {
-        m_player.notifyNeedMediaData(mediaSegments.front()->getType());
+        const auto kMediaType{mediaSegments.front()->getType()};
+        const auto kFirstTimestamp{mediaSegments.front()->getTimeStamp()};
+        const auto kLastTimestamp{mediaSegments.back()->getTimeStamp()};
+        RIALTO_SERVER_LOG_DEBUG("%s data received. First ts: %" GST_TIME_FORMAT " last ts: %" GST_TIME_FORMAT,
+                                common::convertMediaSourceType(kMediaType), GST_TIME_ARGS(kFirstTimestamp),
+                                GST_TIME_ARGS(kLastTimestamp));
+        if (!m_dataReader->isBufferFull() && m_context.streamPosition.load() != -1 &&
+            kLastTimestamp >= m_context.streamPosition.load() + kDelayThreshold)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Received %zu segments, current pos: %" GST_TIME_FORMAT
+                                    " last received ts: %" GST_TIME_FORMAT ", scheduling NeedMediaData with delay",
+                                    mediaSegments.size(), GST_TIME_ARGS(m_context.streamPosition.load()),
+                                    GST_TIME_ARGS(kLastTimestamp));
+            m_player.notifyNeedMediaDataWithDelay(kMediaType);
+            return;
+        }
+        m_player.notifyNeedMediaData(kMediaType);
     }
 }
 

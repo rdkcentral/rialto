@@ -31,6 +31,7 @@ add_library(
         source/EventThread.cpp
         source/LinuxUtils.cpp
         source/Timer.cpp
+        source/Profiler.cpp
     )
 
 set_property (
@@ -56,11 +57,3 @@ target_link_libraries (
         PRIVATE
         RialtoLogging
     )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoCommon
-        PRIVATE
-        gcov
-        )
-endif()

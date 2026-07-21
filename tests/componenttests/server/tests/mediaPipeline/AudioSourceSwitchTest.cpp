@@ -26,6 +26,8 @@
 #include "MessageBuilders.h"
 
 using testing::_;
+using testing::AtLeast;
+using testing::Invoke;
 using testing::Return;
 using testing::StrEq;
 
@@ -39,8 +41,15 @@ namespace firebolt::rialto::server::ct
 class AudioSourceSwitchTest : public MediaPipelineTest
 {
 public:
-    AudioSourceSwitchTest() = default;
-    ~AudioSourceSwitchTest() = default;
+    AudioSourceSwitchTest()
+    {
+        GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
+        m_audioSink = gst_element_factory_create(elementFactory, nullptr);
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_audioSink))).WillRepeatedly(Return("audio_sink"));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink)).Times(AtLeast(0));
+        gst_object_unref(elementFactory);
+    }
+    ~AudioSourceSwitchTest() override { gst_object_unref(m_audioSink); }
 
     void willSwitchAudioSource()
     {
@@ -52,11 +61,16 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("mpegversion"), G_TYPE_INT, 4));
         EXPECT_CALL(*m_gstWrapperMock,
                     gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
+        EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillOnce(Return(GST_STATE_PAUSED));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("rate"), G_TYPE_INT, kSampleRate));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_audioAppSrc)).WillOnce(Return(&m_oldCaps));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsIsEqual(&m_audioCaps, &m_oldCaps)).WillOnce(Return(FALSE));
         EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_oldCaps)).WillOnce(Return(&m_oldCapsStr));
         EXPECT_CALL(*m_glibWrapperMock, gFree(&m_oldCapsStr));
+        EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
         EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock,
                     performAudioTrackCodecChannelSwitch(_, _, _, _, _, _, _, _, _, _, kSvpEnabled,
                                                         GST_ELEMENT(&m_audioAppSrc), _))
@@ -164,22 +178,25 @@ TEST_F(AudioSourceSwitchTest, SwitchAudioSource)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
-    // Step 4: Switch Audio Source
+    // Step 4: Pause
+    willPause();
+    pause();
+
+    // Step 5: Switch Audio Source
     willSwitchAudioSource();
     switchAudioSource();
 
-    // Step 5: Remove sources
-    willRemoveAudioSource();
+    // Step 6: Remove sources
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
-    // Step 6: Stop
+    // Step 7: Stop
     willStop();
     stop();
 
-    // Step 7: Destroy media session
+    // Step 8: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }

@@ -114,11 +114,12 @@ enum class MediaType
  */
 enum class MediaSourceStatus
 {
-    OK,                  /**< Source data provided without error. */
-    EOS,                 /**< Source reached the end of stream. */
-    ERROR,               /**< There was an error providing source data. */
-    CODEC_CHANGED,       /**< The codec has changed and the decoder must be reconfigured */
-    NO_AVAILABLE_SAMPLES /**< Could not retrieve media samples. */
+    OK,                   /**< Source data provided without error. */
+    EOS,                  /**< Source reached the end of stream. */
+    ERROR,                /**< There was an error providing source data. */
+    CODEC_CHANGED,        /**< The codec has changed and the decoder must be reconfigured */
+    NO_AVAILABLE_SAMPLES, /**< Could not retrieve media samples. */
+    NO_SPACE_FOR_SAMPLES  /**< Could not copy data to shared buffer space. */
 };
 
 /**
@@ -221,10 +222,13 @@ struct AudioConfig
 {
     uint32_t numberOfChannels = kInvalidAudioChannels; /**< The number of channels. */
     uint32_t sampleRate = kInvalidAudioSampleRate;     /**< The sampling rate.*/
-    std::vector<uint8_t> codecSpecificConfig; /**< The audio specific config. Zero length if no specific config*/
-    std::optional<Format> format;             /**< The Format of the audio samples.*/
-    std::optional<Layout> layout;             /**< The layout of channels within a buffer.*/
-    std::optional<uint64_t> channelMask;      /**< Bitmask of channel positions present. */
+    std::vector<uint8_t> codecSpecificConfig;       /**< The audio specific config. Zero length if no specific config*/
+    std::optional<Format> format;                   /**< The Format of the audio samples.*/
+    std::optional<Layout> layout;                   /**< The layout of channels within a buffer.*/
+    std::optional<uint64_t> channelMask;            /**< Bitmask of channel positions present. */
+    std::vector<std::vector<uint8_t>> streamHeader; /**< Stream header. Zero length if not present.*/
+    std::optional<bool>
+        framed; /**< True if each buffer passed through the pipeline contains a complete, self-contained media unit*/
 };
 
 /**
@@ -283,11 +287,14 @@ struct QosInfo
  */
 enum class MediaKeyErrorStatus
 {
-    OK,             /**< No error. */
-    FAIL,           /**< An unspecified error occurred. */
-    BAD_SESSION_ID, /**< The session id is not recognised. */
-    NOT_SUPPORTED,  /**< The request parameters are not supported. */
-    INVALID_STATE   /**< The object is in an invalid state for the operation. */
+    OK,                        /**< No error. */
+    FAIL,                      /**< An unspecified error occurred. */
+    BAD_SESSION_ID,            /**< The session id is not recognised. */
+    NOT_SUPPORTED,             /**< The request parameters are not supported. */
+    INVALID_STATE,             /**< The object is in an invalid state for the operation. */
+    INTERFACE_NOT_IMPLEMENTED, /**< The interface is not implemented. */
+    BUFFER_TOO_SMALL,          /**< The size of the buffer is too small. */
+    OUTPUT_RESTRICTED          /**< HDCP output protection failure. */
 };
 
 /**
@@ -447,7 +454,8 @@ struct CodecData
 enum class PlaybackError
 {
     UNKNOWN,
-    DECRYPTION, /* Player failed to decrypt a buffer and the frame has been dropped */
+    DECRYPTION,       /* Player failed to decrypt a buffer and the frame has been dropped */
+    OUTPUT_PROTECTION /* HDCP output protection failure */
 };
 
 /**
@@ -460,6 +468,24 @@ enum class EaseType
     EASE_OUT_CUBIC
 };
 
+/**
+ * @brief Struct containing current playback information.
+ */
+struct PlaybackInfo
+{
+    int64_t currentPosition{-1}; /**< The current playback position */
+    double volume{1.0};          /**< The current volume */
+};
+
+/**
+ * @brief Limited duration license state.
+ */
+enum class LimitedDurationLicense
+{
+    NOT_SPECIFIED, /**< The license duration is not specified */
+    ENABLED,       /**< The license has a limited duration */
+    DISABLED       /**< The license does not have a limited duration */
+};
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_

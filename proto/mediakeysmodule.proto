@@ -30,11 +30,14 @@ option cc_generic_services = true;
  * @brief The error return status for session management methods.
  */
 enum ProtoMediaKeyErrorStatus {
-    OK = 0;               ///< No error. */
-    FAIL = 1;             ///< An unspecified error occurred. */
-    BAD_SESSION_ID = 2;   ///< The session id is not recognised. */
-    NOT_SUPPORTED = 3;    ///< The request parameters are not supported. */
-    INVALID_STATE = 4;    ///< The object is in an invalid state for the operation. */
+    OK = 0;                         ///< No error. */
+    FAIL = 1;                       ///< An unspecified error occurred. */
+    BAD_SESSION_ID = 2;             ///< The session id is not recognised. */
+    NOT_SUPPORTED = 3;              ///< The request parameters are not supported. */
+    INVALID_STATE = 4;              ///< The object is in an invalid state for the operation. */
+    INTERFACE_NOT_IMPLEMENTED = 5;  ///< The interface is not implemented. */
+    BUFFER_TOO_SMALL = 6;           ///< The buffer size is too small. */
+    OUTPUT_RESTRICTED = 7;          ///< Output protection prevents the operation from succeeding. */
 };
 
 /**
@@ -201,6 +204,8 @@ message CreateKeySessionResponse {
  * @param[in] key_session_id    The key session id for the session.
  * @param[in] init_data_type    The init data type.
  * @param[in] init_data         The init data.
+ * @param[in]  ldlState         The Limited Duration License state. Most of key systems do not need this parameter,
+ *                              so the default value is NOT_SPECIFIED.
  *
  * @retval an error status.
  */
@@ -213,11 +218,17 @@ message GenerateRequestRequest {
     DRMHEADER = 4;  ///< The init data is in DrmHeader format.
   };
 
+  enum LimitedDurationLicense {
+    NOT_SPECIFIED = 0; ///< The license duration is not specified
+    ENABLED = 1;       ///< The license has a limited duration
+    DISABLED = 2;      ///< The license does not have a limited duration
+  };
+
   optional int32 media_keys_handle = 1 [default = -1];
   optional int32 key_session_id = 2 [default = -1];
   optional InitDataType init_data_type = 3;
   repeated uint32 init_data = 4;
-
+  optional LimitedDurationLicense ldl_state = 5 [default = NOT_SPECIFIED];
 }
 message GenerateRequestResponse {
   optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
@@ -390,6 +401,22 @@ message GetDrmStoreHashRequest {
 message GetDrmStoreHashResponse {
   optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
   repeated uint32 drm_store_hash = 2;
+}
+
+/**
+ * @fn ProtoMediaKeyErrorStatus, vector<uint8> getMetricSystemData(int32 media_keys_handle)
+ * @brief Get metrics for a DRM system
+ *
+ * @param[in] media_keys_handle The handle of the media keys.
+ *
+ * @retval an error status & buffer of system metric data
+ */
+message GetMetricSystemDataRequest {
+  optional int32 media_keys_handle = 1 [default = -1];
+}
+message GetMetricSystemDataResponse {
+  optional ProtoMediaKeyErrorStatus error_status = 1 [default = FAIL];
+  repeated uint32 buffer = 2;
 }
 
 /**
@@ -592,6 +619,13 @@ service MediaKeysModule {
      * @see GetDrmStoreHashRequest
      */
     rpc getDrmStoreHash(GetDrmStoreHashRequest) returns (GetDrmStoreHashResponse) {
+    }
+
+    /**
+     * @brief Gets the buffer data of the system.
+     * @see GetMetricSystemDataRequest
+     */
+    rpc getMetricSystemData(GetMetricSystemDataRequest) returns (GetMetricSystemDataResponse) {
     }
 
     /**

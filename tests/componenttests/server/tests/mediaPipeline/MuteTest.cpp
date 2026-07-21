@@ -144,7 +144,7 @@ TEST_F(MuteTest, Mute)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -159,7 +159,6 @@ TEST_F(MuteTest, Mute)
     getMute();
 
     // Step 7: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 

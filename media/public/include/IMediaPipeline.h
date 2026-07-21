@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -460,7 +461,7 @@ public:
             : m_sourceId(sourceId), m_type(type), m_data(nullptr), m_dataLength(0u), m_timeStamp(timeStamp),
               m_duration(duration), m_encrypted(false), m_mediaKeySessionId(0), m_initWithLast15(0),
               m_alignment(SegmentAlignment::UNDEFINED), m_cipherMode(CipherMode::UNKNOWN), m_crypt(0), m_skip(0),
-              m_encryptionPatternSet(false)
+              m_encryptionPatternSet(false), m_displayOffset(std::nullopt)
         {
         }
 
@@ -542,7 +543,7 @@ public:
          *
          * @retval the media key session id.
          */
-        const int32_t getMediaKeySessionId() const { return m_mediaKeySessionId; }
+        int32_t getMediaKeySessionId() const { return m_mediaKeySessionId; }
 
         /**
          * @brief Returns the key id. Empty if unencrypted.
@@ -570,14 +571,14 @@ public:
          *
          * @retval the initWithLast15 value.
          */
-        const uint32_t getInitWithLast15() const { return m_initWithLast15; }
+        uint32_t getInitWithLast15() const { return m_initWithLast15; }
 
         /**
          * @brief Returns the segment alignment
          *
          * @retval the segment alignment
          */
-        const SegmentAlignment getSegmentAlignment() const { return m_alignment; }
+        SegmentAlignment getSegmentAlignment() const { return m_alignment; }
 
         /**
          * @brief Gets the codec data
@@ -601,12 +602,19 @@ public:
          *
          * @retval if the encryption pattern has been set
          */
-        const bool getEncryptionPattern(uint32_t &crypt, uint32_t &skip) const
+        bool getEncryptionPattern(uint32_t &crypt, uint32_t &skip) const
         {
             crypt = m_crypt;
             skip = m_skip;
             return m_encryptionPatternSet;
         }
+
+        /**
+         * @brief Gets the display offset
+         *
+         * @retval The offset in the source file of the beginning of the media segment.
+         */
+        std::optional<uint64_t> getDisplayOffset() const { return m_displayOffset; }
 
     protected:
         /**
@@ -704,6 +712,11 @@ public:
          * @brief Whether the encryption pattern has been set.
          */
         bool m_encryptionPatternSet;
+
+        /**
+         * @brief The offset in the source file of the beginning of the media segment.
+         */
+        std::optional<uint64_t> m_displayOffset;
 
     public:
         /**
@@ -817,6 +830,13 @@ public:
             m_skip = skip;
             m_encryptionPatternSet = true;
         }
+
+        /**
+         * @brief Sets the display offset
+         *
+         * @param[in] displayOffset : The offset in the source file of the beginning of the media segment.
+         */
+        void setDisplayOffset(uint64_t displayOffset) { m_displayOffset = displayOffset; }
 
         /**
          * @brief Copies the data from other to this.
@@ -1052,8 +1072,9 @@ public:
      * @param[in] type     : The media type.
      * @param[in] mimeType : The MIME type.
      * @param[in] url      : The URL.
+     * @param[in] isLive   : Indicates if the media is live.
      */
-    virtual bool load(MediaType type, const std::string &mimeType, const std::string &url) = 0;
+    virtual bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) = 0;
 
     /**
      * @brief Attaches a source stream to the backend.
@@ -1099,16 +1120,15 @@ public:
     /**
      * @brief Starts playback of the media.
      *
-     * This method is considered to be asynchronous and MUST NOT block
-     * but should request playback and then return.
-     *
      * Once the backend is successfully playing it should notify the
      * media player client of playback state
      * IMediaPipelineClient::PlaybackState::PLAYING.
      *
+     * @param[out] async     : True if play method call is asynchronous
+     *
      * @retval true on success.
      */
-    virtual bool play() = 0;
+    virtual bool play(bool &async) = 0;
 
     /**
      * @brief Pauses playback of the media.
@@ -1408,12 +1428,13 @@ public:
      *
      * This method is called by Rialto Client to flush out all queued data for a media source stream.
      *
-     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
-     * @param[in] resetTime : True if time should be reset
+     * @param[in]  sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in]  resetTime : True if time should be reset
+     * @param[out] async     : True if flushed source is asynchronous (will preroll after flush)
      *
      * @retval true on success.
      */
-    virtual bool flush(int32_t sourceId, bool resetTime) = 0;
+    virtual bool flush(int32_t sourceId, bool resetTime, bool &async) = 0;
 
     /**
      * @brief Set the source position in nanoseconds.
@@ -1430,6 +1451,18 @@ public:
      */
     virtual bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime = false, double appliedRate = 1.0,
                                    uint64_t stopPosition = kUndefinedPosition) = 0;
+
+    /**
+     * @brief Set the subtitle offset in nanoseconds.
+     *
+     * This method sets the subtitle offset for a subtitle source.
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] position : The offset position in nanoseconds.
+     *
+     * @retval true on success.
+     */
+    virtual bool setSubtitleOffset(int32_t sourceId, int64_t position) = 0;
 
     /**
      * @brief Process audio gap
@@ -1502,6 +1535,17 @@ public:
      * @retval true on success.
      */
     virtual bool switchSource(const std::unique_ptr<MediaSource> &source) = 0;
+
+    /**
+     * @brief Get the playback duration in nanoseconds.
+     *
+     * This method is synchronous, it returns current playback duration
+     *
+     * @param[out] duration : The playback duration in nanoseconds
+     *
+     * @retval true on success.
+     */
+    virtual bool getDuration(int64_t &duration) = 0;
 };
 
 }; // namespace firebolt::rialto

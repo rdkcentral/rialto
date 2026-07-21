@@ -55,16 +55,17 @@ public:
     bool createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
                        std::uint32_t maxWidth, std::uint32_t maxHeight) override;
     bool destroySession(int sessionId) override;
-    bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url) override;
+    bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override;
     bool attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     bool removeSource(int sessionId, std::int32_t sourceId) override;
     bool allSourcesAttached(int sessionId) override;
-    bool play(int sessionId) override;
+    bool play(int sessionId, bool &async) override;
     bool pause(int sessionId) override;
     bool stop(int sessionId) override;
     bool setPlaybackRate(int sessionId, double rate) override;
     bool setPosition(int sessionId, std::int64_t position) override;
     bool getPosition(int sessionId, std::int64_t &position) override;
+    bool getDuration(int sessionId, std::int64_t &duration) override;
     bool setImmediateOutput(int sessionId, int32_t sourceId, bool immediateOutput) override;
     bool getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput) override;
     bool getStats(int sessionId, int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
@@ -85,9 +86,10 @@ public:
     bool setSyncOff(int sessionId, bool syncOff) override;
     bool setStreamSyncMode(int sessionId, int32_t sourceId, int32_t streamSyncMode) override;
     bool getStreamSyncMode(int sessionId, int32_t &streamSyncMode) override;
-    bool flush(int sessionId, std::int32_t sourceId, bool resetTime) override;
+    bool flush(int sessionId, std::int32_t sourceId, bool resetTime, bool &isAsync) override;
     bool setSourcePosition(int sessionId, int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;
+    bool setSubtitleOffset(int sessionId, int32_t sourceId, int64_t position) override;
     bool processAudioGap(int sessionId, int64_t position, uint32_t duration, int64_t discontinuityGap,
                          bool audioAac) override;
     bool setBufferingLimit(int sessionId, uint32_t limitBufferingMs) override;
@@ -95,6 +97,7 @@ public:
     bool setUseBuffering(int sessionId, bool useBuffering) override;
     bool getUseBuffering(int sessionId, bool &useBuffering) override;
     bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
+    bool isVideoMaster(bool &isVideoMaster) override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
     std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,

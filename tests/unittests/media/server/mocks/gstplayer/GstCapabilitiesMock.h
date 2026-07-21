@@ -34,6 +34,7 @@ public:
     MOCK_METHOD(bool, isMimeTypeSupported, (const std::string &mimeType), (override));
     MOCK_METHOD(std::vector<std::string>, getSupportedProperties,
                 (MediaSourceType mediaType, const std::vector<std::string> &propertyNames), (override));
+    MOCK_METHOD(bool, isVideoMaster, (bool &isVideoMaster), (override));
 };
 
 } // namespace firebolt::rialto::server

@@ -38,6 +38,7 @@ add_gtests (
         mediaKeys/MediaKeysTestMethods.cpp
         mediaKeys/SessionReadyForDecryptionTest.cpp
         mediaKeys/SetDrmHeaderTest.cpp
+        mediaKeys/GetMetricSystemDataTest.cpp
         mediaKeysCapabilities/MediaKeysCapabilitiesTest.cpp
         mediaPipeline/AudioOnlyPlaybackTest.cpp
         mediaPipeline/AudioSourceSwitchTest.cpp
@@ -45,6 +46,7 @@ add_gtests (
         mediaPipeline/DualVideoPlaybackTest.cpp
         mediaPipeline/EncryptedPlaybackTest.cpp
         mediaPipeline/FailureTests.cpp
+        mediaPipeline/FirstFrameNotificationTest.cpp
         mediaPipeline/FlushTest.cpp
         mediaPipeline/HaveDataFailureTest.cpp
         mediaPipeline/MuteTest.cpp
@@ -55,13 +57,13 @@ add_gtests (
         mediaPipeline/PositionUpdatesTest.cpp
         mediaPipeline/ProcessAudioGapTest.cpp
         mediaPipeline/QosUpdatesTest.cpp
-        mediaPipeline/RemoveAudioPlaybackTest.cpp
         mediaPipeline/RenderFrameTest.cpp
         mediaPipeline/SetPlaybackRateTest.cpp
         mediaPipeline/SetPositionTest.cpp
         mediaPipeline/SetSourcePositionTest.cpp
         mediaPipeline/SetVideoWindowTest.cpp
         mediaPipeline/SourceTest.cpp
+        mediaPipeline/SwitchAudioPlaybackTest.cpp
         mediaPipeline/UnderflowTest.cpp
         mediaPipeline/VolumeTest.cpp
         mediaPipeline/WriteSegmentsTest.cpp
@@ -97,11 +99,3 @@ target_link_libraries(
         RialtoServerComponentTestsFixtures
         RialtoTestCommonUtils
 )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoServerComponentTests
-
-        gcov
-        )
-endif()

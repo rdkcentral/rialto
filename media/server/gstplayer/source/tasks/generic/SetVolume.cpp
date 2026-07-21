@@ -27,9 +27,9 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 SetVolume::SetVolume(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
-                     std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> rdkGstreamerUtilsWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
                      double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType)
     : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
       m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_targetVolume{targetVolume},
@@ -102,6 +102,7 @@ void SetVolume::execute() const
         RIALTO_SERVER_LOG_DEBUG("Fade String: %s", fadeStr);
 
         m_glibWrapper->gObjectSet(audioSink, "audio-fade", fadeStr, nullptr);
+        m_context.audioFadeVolume = m_targetVolume;
         m_context.audioFadeEnabled = true;
     }
     else if (m_rdkGstreamerUtilsWrapper->isSocAudioFadeSupported())
@@ -109,6 +110,7 @@ void SetVolume::execute() const
         RIALTO_SERVER_LOG_DEBUG("SOC audio fading is supported, applying SOC audio fade");
         auto rguEaseType = convertEaseTypeToRguEase(m_easeType);
         m_rdkGstreamerUtilsWrapper->doAudioEasingonSoc(m_targetVolume, m_volumeDuration, rguEaseType);
+        m_context.audioFadeVolume = m_targetVolume;
         m_context.audioFadeEnabled = true;
     }
     else

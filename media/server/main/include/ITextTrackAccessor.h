@@ -45,21 +45,24 @@ public:
     {
         UNKNOWN,
         WebVTT,
-        TTML
+        TTML,
+        CC
     };
 
     ITextTrackAccessor() = default;
     virtual ~ITextTrackAccessor() = default;
     virtual std::optional<uint32_t> openSession(const std::string &displayName) = 0;
     virtual bool closeSession(uint32_t sessionId) = 0;
+    virtual bool resetSession(uint32_t sessionId) = 0;
     virtual bool pause(uint32_t sessionId) = 0;
     virtual bool play(uint32_t sessionId) = 0;
     virtual bool mute(uint32_t sessionId, bool mute) = 0;
     virtual bool setPosition(uint32_t sessionId, uint64_t mediaTimestampMs) = 0;
-    virtual bool sendData(uint32_t sessionId, const std::string &data, DataType datatype, int32_t displayOffsetMs = 0) = 0;
+    virtual bool sendData(uint32_t sessionId, const std::string &data, DataType datatype, int64_t displayOffsetMs = 0) = 0;
     virtual bool setSessionWebVTTSelection(uint32_t sessionId) = 0;
     virtual bool setSessionTTMLSelection(uint32_t sessionId) = 0;
     virtual bool setSessionCCSelection(uint32_t sessionId, const std::string &service) = 0;
+    virtual bool associateVideoDecoder(uint32_t sessionId, const std::string &videoDecoder) = 0;
 };
 
 } // namespace firebolt::rialto::server

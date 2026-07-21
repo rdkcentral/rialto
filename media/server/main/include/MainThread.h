@@ -68,9 +68,9 @@ public:
     int32_t registerClient() override;
     void unregisterClient(uint32_t clientId) override;
 
-    void enqueueTask(uint32_t clientId, Task task) override;
-    void enqueueTaskAndWait(uint32_t clientId, Task task) override;
-    void enqueuePriorityTaskAndWait(uint32_t clientId, Task task) override;
+    void enqueueTask(uint32_t clientId, const Task &task) override;
+    void enqueueTaskAndWait(uint32_t clientId, const Task &task) override;
+    void enqueuePriorityTaskAndWait(uint32_t clientId, const Task &task) override;
 
 private:
     /**
@@ -78,6 +78,7 @@ private:
      */
     struct TaskInfo
     {
+        bool done{false};                            /**< A flag indicating whether the task has completed. */
         uint32_t clientId;                           /**< The id of the client creating the task. */
         Task task;                                   /**< The task to execute. */
         std::unique_ptr<std::mutex> mutex;           /**< Mutex for the task condition variable. */

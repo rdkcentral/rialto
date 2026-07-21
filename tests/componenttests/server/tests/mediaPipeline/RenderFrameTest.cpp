@@ -178,7 +178,7 @@ TEST_F(RenderFrameTest, RenderFrameSuccess)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -189,7 +189,6 @@ TEST_F(RenderFrameTest, RenderFrameSuccess)
     renderFrame();
 
     // Step 6: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
@@ -293,7 +292,7 @@ TEST_F(RenderFrameTest, renderFrameFailure)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -303,7 +302,6 @@ TEST_F(RenderFrameTest, renderFrameFailure)
     renderFrameFailure();
 
     // Step 6: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 

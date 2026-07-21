@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_MEDIA_PIPELINE_TEST_H_
 #define FIREBOLT_RIALTO_SERVER_CT_MEDIA_PIPELINE_TEST_H_
 
+#include "Constants.h"
 #include "GstSrc.h"
 #include "GstreamerStub.h"
 #include "IMediaPipeline.h"
@@ -28,6 +29,7 @@
 #include "mediapipelinemodule.pb.h"
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::server::ct
 {
@@ -56,23 +58,21 @@ public:
     void willNotifyPaused();
     void willPlay();
     void willEos(GstAppSrc *appSrc);
-    void willRemoveAudioSource();
     void willStop();
-    void willSetAudioAndVideoFlags();
+    void willSetStateInvalidForQueryPosition();
 
     void createSession();
     void load();
     void attachAudioSource();
     void attachVideoSource();
     void setupSource();
-    void indicateAllSourcesAttached();
+    void indicateAllSourcesAttached(const std::vector<GstAppSrc *> &appsrcs);
     void pause();
     void notifyPaused();
-    void gstNeedData(GstAppSrc *appSrc, int frameCount);
-    void pushAudioData(unsigned dataCountToPush, int needDataFrameCount);
-    void pushVideoData(unsigned dataCountToPush, int needDataFrameCount);
-    void pushAudioSample(int needDataFrameCount);
-    void pushVideoSample(int needDataFrameCount);
+    void pushAudioData(unsigned dataCountToPush, int needDataFrameCount = kPrerollNumFrames);
+    void pushVideoData(unsigned dataCountToPush, int needDataFrameCount = kPrerollNumFrames);
+    void pushAudioSample(int needDataFrameCount = kPrerollNumFrames);
+    void pushVideoSample(int needDataFrameCount = kPrerollNumFrames);
     void play();
     void eosAudio(unsigned dataCountToPush);
     void eosVideo(unsigned dataCountToPush);
@@ -87,6 +87,8 @@ private:
     void initShm();
     void mayReceivePositionUpdates();
     void positionUpdatesShouldNotBeReceivedFromNow();
+    void mayReceivePlaybackInfoUpdates();
+    void playbackInfoUpdatesShouldNotBeReceivedFromNow();
 
 protected:
     int m_sessionId{-1};
@@ -107,23 +109,27 @@ protected:
     GFlagsValue m_videoFlag{2, "video", "video"};
     GFlagsValue m_nativeVideoFlag{3, "native-video", "native-video"};
     GFlagsValue m_subtitleFlag{4, "subtitle", "subtitle"};
-    GstCaps m_audioCaps{};
-    GstCaps m_videoCaps{};
     gchar m_audioCapsStr{};
     gchar m_videoCapsStr{};
     std::string m_sourceName{"src_0"};
     GstPad m_pad{};
     GstPad m_ghostPad{};
+    GstElement m_queue{};
     GstEvent m_flushStartEvent{};
     GstEvent m_flushStopEvent{};
     GstSegment m_segment{};
     GstSample *m_sample{nullptr};
     std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastAudioNeedData{nullptr};
     std::shared_ptr<::firebolt::rialto::NeedMediaDataEvent> m_lastVideoNeedData{nullptr};
+    GstElement *m_audioSink{nullptr};
 
     // Position Update events may be received in PLAYING state. We have to suppress them
     // to avoid occassional test failures
     int m_positionChangeEventSuppressionId{-1};
+
+    // Playback Info events may be received in PLAYING state. We have to suppress them
+    // to avoid occassional test failures
+    int m_playbackInfoEventSuppressionId{-1};
 
     // Used to synchronise the writing of the data to gstreamer
     testing::Sequence m_writeBufferSeq;

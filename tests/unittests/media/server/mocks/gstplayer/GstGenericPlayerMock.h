@@ -36,13 +36,14 @@ public:
     MOCK_METHOD(void, attachSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource), (override));
     MOCK_METHOD(void, removeSource, (const MediaSourceType &mediaSourceType), (override));
     MOCK_METHOD(void, allSourcesAttached, (), (override));
-    MOCK_METHOD(void, play, (), (override));
+    MOCK_METHOD(void, play, (bool &async), (override));
     MOCK_METHOD(void, pause, (), (override));
     MOCK_METHOD(void, stop, (), (override));
     MOCK_METHOD(void, attachSamples, (const IMediaPipeline::MediaSegmentVector &mediaSegments), (override));
     MOCK_METHOD(void, attachSamples, (const std::shared_ptr<IDataReader> &dataReader), (override));
     MOCK_METHOD(void, setPosition, (std::int64_t position), (override));
     MOCK_METHOD(bool, getPosition, (std::int64_t & position), (override));
+    MOCK_METHOD(bool, getDuration, (std::int64_t & duration), (override));
     MOCK_METHOD(bool, setImmediateOutput, (const MediaSourceType &mediaSourceType, bool immediateOutput), (override));
     MOCK_METHOD(bool, getImmediateOutput, (const MediaSourceType &mediaSourceType, bool &immediateOutput), (override));
     MOCK_METHOD(bool, getStats,
@@ -65,11 +66,12 @@ public:
     MOCK_METHOD(bool, setStreamSyncMode, (const MediaSourceType &mediaSourceType, int32_t streamSyncMode), (override));
     MOCK_METHOD(bool, getStreamSyncMode, (int32_t & streamSyncMode), (override));
     MOCK_METHOD(void, ping, (std::unique_ptr<IHeartbeatHandler> && heartbeatHandler), (override));
-    MOCK_METHOD(void, flush, (const MediaSourceType &mediaSourceType, bool resetTime), (override));
+    MOCK_METHOD(void, flush, (const MediaSourceType &mediaSourceType, bool resetTime, bool &async), (override));
     MOCK_METHOD(void, setSourcePosition,
                 (const MediaSourceType &mediaSourceType, int64_t position, bool resetTime, double appliedRate,
                  uint64_t stopPosition),
                 (override));
+    MOCK_METHOD(void, setSubtitleOffset, (int64_t position), (override));
     MOCK_METHOD(void, processAudioGap, (int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
                 (override));
     MOCK_METHOD(void, setBufferingLimit, (uint32_t limitBufferingMs), (override));

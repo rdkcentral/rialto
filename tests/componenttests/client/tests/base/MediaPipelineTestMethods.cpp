@@ -91,6 +91,7 @@ constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
 const std::vector<std::string> kSupportedProperties{"immediate-output", "testProp2"};
 constexpr uint64_t kStopPosition{452345};
+constexpr bool kIsLive{false};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -353,7 +354,7 @@ int32_t MediaPipelineTestMethods::addSegmentMseAudio()
         std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount),
                                                             kDuration, kSampleRate, kNumberOfChannels);
     mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
-                     (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kAudioSegments[m_audioSegmentCount].c_str()));
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
 
     // Store where the segment should be written so we can check the data
@@ -446,7 +447,7 @@ int32_t MediaPipelineTestMethods::addSegmentEncryptedAudio(int32_t keyIndex)
         std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount),
                                                             kDuration, kSampleRate, kNumberOfChannels);
     mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
-                     (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kAudioSegments[m_audioSegmentCount].c_str()));
     addEncryptedDataToSegment(mseData, keyIndex);
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
 
@@ -485,7 +486,7 @@ int32_t MediaPipelineTestMethods::addSegmentEncryptedVideo(int32_t keyIndex)
         std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount),
                                                             kDuration, kWidth720p, kHeight720p, kFrameRateEmpty);
     mseData->setData(kVideoSegments[m_videoSegmentCount].size(),
-                     (const uint8_t *)kVideoSegments[m_videoSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kVideoSegments[m_videoSegmentCount].c_str()));
     addEncryptedDataToSegment(mseData, keyIndex);
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::OK);
 
@@ -892,7 +893,8 @@ void MediaPipelineTestMethods::shouldNotifyPlaybackStateFailure()
 
 void MediaPipelineTestMethods::playFailure()
 {
-    EXPECT_EQ(m_mediaPipeline->play(), false);
+    bool async{false};
+    EXPECT_EQ(m_mediaPipeline->play(async), false);
 }
 
 void MediaPipelineTestMethods::pauseFailure()
@@ -1064,7 +1066,7 @@ void MediaPipelineTestMethods::addSegmentFailure()
         std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, getTimestamp(m_audioSegmentCount),
                                                             kDuration, kSampleRate, kNumberOfChannels);
     mseData->setData(kAudioSegments[m_audioSegmentCount].size(),
-                     (const uint8_t *)kAudioSegments[m_audioSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kAudioSegments[m_audioSegmentCount].c_str()));
     EXPECT_EQ(m_mediaPipeline->addSegment(m_needDataRequestId, mseData), AddSegmentStatus::ERROR);
 }
 
@@ -1307,9 +1309,21 @@ void MediaPipelineTestMethods::shouldNotifyPosition(const uint32_t expectedPosit
         .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 
+void MediaPipelineTestMethods::shouldNotifyPlaybackInfo(const firebolt::rialto::PlaybackInfo &expectedPlaybackInfo)
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyPlaybackInfo(playbackInfoMatcher(expectedPlaybackInfo)))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
 void MediaPipelineTestMethods::sendNotifyPositionChanged(const int64_t position)
 {
     getServerStub()->notifyPositionChangeEvent(kSessionId, position);
+    waitEvent();
+}
+
+void MediaPipelineTestMethods::sendNotifyPlaybackInfo(const firebolt::rialto::PlaybackInfo &playbackInfo)
+{
+    getServerStub()->notifyPlaybackInfo(kSessionId, playbackInfo);
     waitEvent();
 }
 
@@ -1358,6 +1372,18 @@ void MediaPipelineTestMethods::sendNotifyBufferUnderflowAudio()
 void MediaPipelineTestMethods::sendNotifyBufferUnderflowVideo()
 {
     getServerStub()->notifyBufferUnderflowEvent(kSessionId, kVideoSourceId);
+    waitEvent();
+}
+
+void MediaPipelineTestMethods::shouldNotifyFirstFrameReceivedVideo()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyFirstFrameReceived(kVideoSourceId))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::sendNotifyFirstFrameReceivedVideo()
+{
+    getServerStub()->notifyFirstFrameReceivedEvent(kSessionId, kVideoSourceId);
     waitEvent();
 }
 
@@ -1411,6 +1437,20 @@ void MediaPipelineTestMethods::getPosition(const int64_t expectedPosition)
     EXPECT_EQ(returnPosition, expectedPosition);
 }
 
+void MediaPipelineTestMethods::shouldGetDuration(const int64_t duration)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock, getDuration(_, getDurationRequestMatcher(kSessionId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getDurationResponse(duration)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getDuration(const int64_t expectedDuration)
+{
+    int64_t returnDuration;
+    EXPECT_EQ(m_mediaPipeline->getDuration(returnDuration), true);
+    EXPECT_EQ(returnDuration, expectedDuration);
+}
+
 void MediaPipelineTestMethods::shouldSetImmediateOutput(bool immediateOutput)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
@@ -1461,7 +1501,8 @@ void MediaPipelineTestMethods::shouldFlush()
 
 void MediaPipelineTestMethods::flush()
 {
-    EXPECT_TRUE(m_mediaPipeline->flush(kAudioSourceId, kResetTime));
+    bool isAsync{false};
+    EXPECT_TRUE(m_mediaPipeline->flush(kAudioSourceId, kResetTime, isAsync));
 }
 
 void MediaPipelineTestMethods::shouldFailToFlush()
@@ -1472,7 +1513,8 @@ void MediaPipelineTestMethods::shouldFailToFlush()
 
 void MediaPipelineTestMethods::flushFailure()
 {
-    EXPECT_FALSE(m_mediaPipeline->flush(kAudioSourceId, kResetTime));
+    bool isAsync{false};
+    EXPECT_FALSE(m_mediaPipeline->flush(kAudioSourceId, kResetTime, isAsync));
 }
 
 void MediaPipelineTestMethods::shouldSetSourcePosition()
@@ -1583,6 +1625,30 @@ void MediaPipelineTestMethods::switchSourceMpeg()
         std::make_unique<IMediaPipeline::MediaSourceAudio>(kAudioMpeg.c_str(), kHasNoDrm, audioConfig, kAlignment,
                                                            kStreamFormatRaw, kCodecData);
     EXPECT_EQ(m_mediaPipeline->switchSource(mediaSource), true);
+}
+
+void MediaPipelineTestMethods::shouldCheckIsVideoMaster()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock, isVideoMaster(_, _, _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
+}
+
+void MediaPipelineTestMethods::shouldFailToCheckIsVideoMaster()
+{
+    EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock, isVideoMaster(_, _, _, _))
+        .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::failureReturn)));
+}
+
+void MediaPipelineTestMethods::isVideoMaster()
+{
+    bool isMaster{false};
+    EXPECT_TRUE(m_mediaPipelineCapabilities->isVideoMaster(isMaster));
+}
+
+void MediaPipelineTestMethods::isVideoMasterFailure()
+{
+    bool isMaster{false};
+    EXPECT_FALSE(m_mediaPipelineCapabilities->isVideoMaster(isMaster));
 }
 
 /*************************** Private methods ********************************/
@@ -1792,7 +1858,7 @@ void MediaPipelineTestMethods::shouldLoadInternal(const int32_t sessionId, const
                                                   const std::string &mimeType, const std::string &url)
 {
     EXPECT_CALL(*m_mediaPipelineModuleMock,
-                load(_, loadRequestMatcher(sessionId, convertMediaType(mediaType), mimeType, url), _, _))
+                load(_, loadRequestMatcher(sessionId, convertMediaType(mediaType), mimeType, url, kIsLive), _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn)));
 }
 
@@ -1911,7 +1977,7 @@ void MediaPipelineTestMethods::loadInternal(const std::unique_ptr<IMediaPipeline
                                             const MediaType &mediaType, const std::string &mimeType,
                                             const std::string &url, const bool status)
 {
-    EXPECT_EQ(mediaPipeline->load(mediaType, mimeType, url), status);
+    EXPECT_EQ(mediaPipeline->load(mediaType, mimeType, url, kIsLive), status);
 }
 
 void MediaPipelineTestMethods::removeSourceInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline,
@@ -1974,7 +2040,7 @@ int32_t MediaPipelineTestMethods::addSegmentMseVideoInternal(const std::unique_p
         std::make_unique<IMediaPipeline::MediaSegmentVideo>(kVideoSourceId, getTimestamp(m_videoSegmentCount), duration,
                                                             width, height, frameRate);
     mseData->setData(kVideoSegments[m_videoSegmentCount].size(),
-                     (const uint8_t *)kVideoSegments[m_videoSegmentCount].c_str());
+                     reinterpret_cast<const uint8_t *>(kVideoSegments[m_videoSegmentCount].c_str()));
     EXPECT_EQ(mediaPipeline->addSegment(m_needDataRequestId, mseData), status);
 
     // Store where the segment should be written so we can check the data
@@ -1995,7 +2061,8 @@ void MediaPipelineTestMethods::haveDataInternal(const std::unique_ptr<IMediaPipe
 
 void MediaPipelineTestMethods::playInternal(const std::unique_ptr<IMediaPipeline> &mediaPipeline, const bool status)
 {
-    EXPECT_EQ(mediaPipeline->play(), status);
+    bool async{false};
+    EXPECT_EQ(mediaPipeline->play(async), status);
 }
 
 void MediaPipelineTestMethods::sendNotifyPlaybackStateInternal(const int32_t sessionId, const PlaybackState &state)

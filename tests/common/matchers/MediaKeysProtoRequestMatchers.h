@@ -42,12 +42,11 @@ MATCHER_P(destroyMediaKeysRequestMatcher, mediaKeysHandle, "")
     return (kRequest->media_keys_handle() == mediaKeysHandle);
 }
 
-MATCHER_P3(createKeySessionRequestMatcher, mediaKeysHandle, sessionType, isLdl, "")
+MATCHER_P2(createKeySessionRequestMatcher, mediaKeysHandle, sessionType, "")
 {
     const ::firebolt::rialto::CreateKeySessionRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::CreateKeySessionRequest *>(arg);
-    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->session_type() == sessionType) &&
-            (kRequest->is_ldl() == isLdl));
+    return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->session_type() == sessionType));
 }
 
 MATCHER_P4(generateRequestRequestMatcher, mediaKeysHandle, keySessionId, initDataType, initData, "")
@@ -198,11 +197,25 @@ MATCHER_P(isServerCertificateSupportedRequestMatcher, keySystem, "")
     return (kRequest->key_system() == keySystem);
 }
 
+MATCHER_P(getSupportedRobustnessLevelsRequestMatcher, keySystem, "")
+{
+    const ::firebolt::rialto::GetSupportedRobustnessLevelsRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetSupportedRobustnessLevelsRequest *>(arg);
+    return (kRequest->key_system() == keySystem);
+}
+
 MATCHER_P2(releaseKeySessionRequestMatcher, mediaKeysHandle, keySessionId, "")
 {
     const ::firebolt::rialto::ReleaseKeySessionRequest *kRequest =
         dynamic_cast<const ::firebolt::rialto::ReleaseKeySessionRequest *>(arg);
     return ((kRequest->media_keys_handle() == mediaKeysHandle) && (kRequest->key_session_id() == keySessionId));
+}
+
+MATCHER_P(getMetricSystemDataRequestMatcher, mediaKeysHandle, "")
+{
+    const ::firebolt::rialto::GetMetricSystemDataRequest *kRequest =
+        dynamic_cast<const ::firebolt::rialto::GetMetricSystemDataRequest *>(arg);
+    return (kRequest->media_keys_handle() == mediaKeysHandle);
 }
 
 #endif // MEDIA_KEYS_PROTO_REQUEST_MATCHERS_H_

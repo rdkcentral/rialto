@@ -74,7 +74,7 @@ public:
     int getMaxPlaybackSessions() const override;
     int getMaxWebAudioPlayers() const override;
     void cancelStartupTimer() override;
-    void kill() const override;
+    void kill() override;
     void setExpectedState(const firebolt::rialto::common::SessionServerState &state) override;
     firebolt::rialto::common::SessionServerState getExpectedState() const override;
     bool isNamedSocketInitialized() const override;

@@ -18,7 +18,8 @@
 #
 
 if ( COVERAGE_ENABLED )
-    add_compile_options(-coverage)
+    add_compile_options(--coverage)
+    add_link_options(--coverage)
 endif()
 
 add_gtests (
@@ -27,6 +28,7 @@ add_gtests (
         # gtest code
         TimerTests.cpp
         EventThreadTests.cpp
+        ProfilerTests.cpp
         )
 
 target_include_directories(
@@ -41,11 +43,3 @@ target_link_libraries(
         RialtoCommonUnitTests
         RialtoCommon
 )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoCommonUnitTests
-
-        gcov
-        )
-endif()

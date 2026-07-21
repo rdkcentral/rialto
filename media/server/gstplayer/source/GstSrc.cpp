@@ -48,7 +48,9 @@ static void gstRialtoSrcFinalize(GObject *object)
 {
     GstRialtoSrc *src = GST_RIALTO_SRC(object);
     GstRialtoSrcPrivate *priv = src->priv;
+    GST_OBJECT_LOCK(src);
     g_free(priv->uri);
+    GST_OBJECT_UNLOCK(src);
     priv->~GstRialtoSrcPrivate();
     GST_CALL_PARENT(G_OBJECT_CLASS, finalize, (object));
 }
@@ -389,7 +391,7 @@ void GstSrc::setDefaultStreamFormatIfNeeded(GstElement *appSrc)
     m_gstWrapper->gstCapsUnref(currentCaps);
 }
 
-void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
+void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement *source, StreamInfo &streamInfo,
                                GstAppSrcCallbacks *callbacks, gpointer userData, firebolt::rialto::MediaSourceType type)
 {
     // Configure and add appsrc
@@ -471,22 +473,22 @@ void GstSrc::setupAndAddAppArc(IDecryptionService *decryptionService, GstElement
                 GST_WARNING_OBJECT(src, "Could not create payloader element");
             }
         }
+    }
 
-        // Configure and add buffer queue
-        GstElement *queue = m_gstWrapper->gstElementFactoryMake("queue", nullptr);
-        if (queue)
-        {
-            m_glibWrapper->gObjectSet(G_OBJECT(queue), "max-size-buffers", 10, "max-size-bytes", 0, "max-size-time",
-                                      (gint64)0, "silent", TRUE, nullptr);
-            m_gstWrapper->gstBinAdd(GST_BIN(source), queue);
-            m_gstWrapper->gstElementSyncStateWithParent(queue);
-            m_gstWrapper->gstElementLink(src_elem, queue);
-            src_elem = queue;
-        }
-        else
-        {
-            GST_WARNING_OBJECT(src, "Could not create buffer queue element");
-        }
+    // Configure and add buffer queue
+    GstElement *queue = m_gstWrapper->gstElementFactoryMake("queue", nullptr);
+    if (queue)
+    {
+        m_glibWrapper->gObjectSet(G_OBJECT(queue), "max-size-buffers", 10, "max-size-bytes", 0, "max-size-time",
+                                  (gint64)0, "silent", TRUE, nullptr);
+        m_gstWrapper->gstBinAdd(GST_BIN(source), queue);
+        m_gstWrapper->gstElementSyncStateWithParent(queue);
+        m_gstWrapper->gstElementLink(src_elem, queue);
+        src_elem = queue;
+    }
+    else
+    {
+        GST_WARNING_OBJECT(src, "Could not create buffer queue element");
     }
 
     // Setup pad

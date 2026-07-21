@@ -31,7 +31,7 @@ NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActive
                              const ISharedMemoryBuffer &shmBuffer, int sessionId, MediaSourceType mediaSourceType,
                              std::int32_t sourceId, PlaybackState currentPlaybackState)
     : m_client{client}, m_activeRequests{activeRequests}, m_mediaSourceType{mediaSourceType}, m_frameCount{kMaxFrames},
-      m_sourceId{sourceId}
+      m_sourceId{sourceId}, m_maxMediaBytes{0}
 {
     if (PlaybackState::PLAYING != currentPlaybackState)
     {
@@ -73,7 +73,7 @@ bool NeedMediaData::send() const
     if (client && m_isValid)
     {
         client->notifyNeedMediaData(m_sourceId, m_frameCount,
-                                    m_activeRequests.insert(m_mediaSourceType, m_maxMediaBytes), m_shmInfo);
+                                    m_activeRequests.insert(m_mediaSourceType, m_maxMediaBytes, m_frameCount), m_shmInfo);
         return true;
     }
     return false;

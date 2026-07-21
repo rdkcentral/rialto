@@ -96,8 +96,8 @@ GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uin
                                      std::unique_ptr<IWebAudioPlayerTaskFactory> taskFactory,
                                      std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
                                      std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory)
-    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_taskFactory{
-                                                                                           std::move(taskFactory)}
+    : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
+      m_taskFactory{std::move(taskFactory)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstWebAudioPlayer is constructed.");
 
@@ -125,8 +125,8 @@ GstWebAudioPlayer::GstWebAudioPlayer(IGstWebAudioPlayerClient *client, const uin
     }
 
     if ((!gstDispatcherThreadFactory) ||
-        (!(m_gstDispatcherThread =
-               gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline, m_gstWrapper))))
+        (!(m_gstDispatcherThread = gstDispatcherThreadFactory->createGstDispatcherThread(*this, m_context.pipeline,
+                                                                                         nullptr, m_gstWrapper))))
     {
         termWebAudioPipeline();
         resetWorkerThread();
@@ -153,6 +153,8 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
         RIALTO_SERVER_LOG_ERROR("Failed to create the webaudiopipeline");
         return false;
     }
+
+    RIALTO_SERVER_LOG_MIL("RialtoServer's webaudio pipeline constructed");
 
     // Create and initalise appsrc
     m_context.source = m_gstWrapper->gstElementFactoryMake("appsrc", "audsrc");
@@ -255,6 +257,7 @@ bool GstWebAudioPlayer::linkElementsToSrc(GstElement *sink)
     GstElement *convert{nullptr};
     GstElement *resample{nullptr};
     GstElement *volume{nullptr};
+    GstElement *queue{nullptr};
 
     convert = m_gstWrapper->gstElementFactoryMake("audioconvert", NULL);
     if (!convert)
@@ -282,6 +285,20 @@ bool GstWebAudioPlayer::linkElementsToSrc(GstElement *sink)
             status = false;
         }
     }
+    if (status)
+    {
+        queue = m_gstWrapper->gstElementFactoryMake("queue", NULL);
+        if (!queue)
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed create the queue");
+            status = false;
+        }
+        else
+        {
+            constexpr guint kWebAudioQueueSize{8192};
+            m_glibWrapper->gObjectSet(queue, "max-size-bytes", kWebAudioQueueSize, nullptr);
+        }
+    }
 
     std::queue<GstElement *> elementsToAdd;
     elementsToAdd.push(m_context.source);
@@ -291,6 +308,8 @@ bool GstWebAudioPlayer::linkElementsToSrc(GstElement *sink)
         elementsToAdd.push(resample);
     if (volume)
         elementsToAdd.push(volume);
+    if (queue)
+        elementsToAdd.push(queue);
     elementsToAdd.push(sink);
 
     if (status)
@@ -314,7 +333,7 @@ bool GstWebAudioPlayer::linkElementsToSrc(GstElement *sink)
     {
         if ((!m_gstWrapper->gstElementLink(m_context.source, convert)) ||
             (!m_gstWrapper->gstElementLink(convert, resample)) || (!m_gstWrapper->gstElementLink(resample, volume)) ||
-            (!m_gstWrapper->gstElementLink(volume, sink)))
+            (!m_gstWrapper->gstElementLink(volume, queue)) || (!m_gstWrapper->gstElementLink(queue, sink)))
         {
             RIALTO_SERVER_LOG_ERROR("Failed to link elements");
             status = false;
@@ -350,6 +369,7 @@ void GstWebAudioPlayer::termWebAudioPipeline()
 
         m_gstWrapper->gstObjectUnref(m_context.pipeline);
     }
+    RIALTO_SERVER_LOG_MIL("RialtoServer's webaudio pipeline terminated.");
 }
 
 void GstWebAudioPlayer::resetWorkerThread()
@@ -390,9 +410,13 @@ uint32_t GstWebAudioPlayer::writeBuffer(uint8_t *mainPtr, uint32_t mainLength, u
 {
     // Must block and wait for the data to be written from the shared buffer.
     std::unique_lock<std::mutex> lock(m_context.writeBufferMutex);
+    const uint32_t initialCompletionCounter = m_context.writeCompletionCounter;
     m_workerThread->enqueueTask(m_taskFactory->createWriteBuffer(m_context, mainPtr, mainLength, wrapPtr, wrapLength));
-    std::cv_status status = m_context.writeBufferCond.wait_for(lock, std::chrono::milliseconds(kMaxWriteBufferTimeoutMs));
-    if (std::cv_status::timeout == status)
+    bool success =
+        m_context.writeBufferCond.wait_for(lock, std::chrono::milliseconds(kMaxWriteBufferTimeoutMs),
+                                           [this, initialCompletionCounter]()
+                                           { return m_context.writeCompletionCounter != initialCompletionCounter; });
+    if (!success)
     {
         RIALTO_SERVER_LOG_ERROR("Timed out writing to the gstreamer buffers");
         return 0;
@@ -450,4 +474,4 @@ void GstWebAudioPlayer::ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandl
     }
 }
 
-}; // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::server

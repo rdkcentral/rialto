@@ -34,12 +34,13 @@ public:
     virtual ~ServerMock() = default;
 
     MOCK_METHOD(bool, addSocket,
-                (const std::string &socketPath, std::function<void(const std::shared_ptr<IClient> &)> clientConnectedCb,
-                 std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb),
+                (const std::string &socketPath,
+                 const std::function<void(const std::shared_ptr<IClient> &)> &clientConnectedCb,
+                 const std::function<void(const std::shared_ptr<IClient> &)> &clientDisconnectedCb),
                 (override));
     MOCK_METHOD(bool, addSocket,
-                (int fd, std::function<void(const std::shared_ptr<IClient> &)> clientConnectedCb,
-                 std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb),
+                (int fd, const std::function<void(const std::shared_ptr<IClient> &)> &clientConnectedCb,
+                 const std::function<void(const std::shared_ptr<IClient> &)> &clientDisconnectedCb),
                 (override));
     MOCK_METHOD(std::shared_ptr<IClient>, addClient,
                 (int socketFd, std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb), (override));

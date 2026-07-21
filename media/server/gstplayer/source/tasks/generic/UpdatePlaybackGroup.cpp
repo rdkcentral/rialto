@@ -23,11 +23,11 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 UpdatePlaybackGroup::UpdatePlaybackGroup(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                         std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                                         std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                                         const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                         const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                                          GstElement *typefind, const GstCaps *caps)
-    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_typefind{typefind}, m_caps{caps}
+    : m_context{context}, m_player{player}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_typefind{typefind},
+      m_caps{caps}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing UpdatePlaybackGroup");
 }
@@ -67,6 +67,20 @@ void UpdatePlaybackGroup::execute() const
                     if (m_context.pendingUseBuffering.has_value())
                     {
                         m_player.setUseBuffering();
+                    }
+                    if (m_context.playbackGroup.m_linkTypefindParser && m_context.playbackGroup.m_curAudioTypefind &&
+                        m_context.playbackGroup.m_curAudioParse)
+                    {
+                        if (m_gstWrapper->gstElementLink(m_context.playbackGroup.m_curAudioTypefind,
+                                                         m_context.playbackGroup.m_curAudioParse))
+                        {
+                            RIALTO_SERVER_LOG_DEBUG("Linked typefind to parser");
+                            m_context.playbackGroup.m_linkTypefindParser = false;
+                        }
+                        else
+                        {
+                            RIALTO_SERVER_LOG_DEBUG("Failed to link typefind to parser");
+                        }
                     }
                 }
                 m_glibWrapper->gFree(elementName);

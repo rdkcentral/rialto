@@ -130,12 +130,7 @@ void LicenseRenewalTest::updateOneKey()
  *   Server notifies the client that of license renewal.
  *   Expect that the license renewal notification is processed by the client.
  *
- *  Step 2: Update session
- *   updateSession with the updated license.
- *   Expect that updateSession is processed by the server.
- *   Api call returns with success.
- *
- *  Step 3: Notify key statuses changed
+ *  Step 2: Notify key statuses changed
  *   Server notifies the client of key statuses changed.
  *   Expect that the key statuses changed notification is processed by the client.
  *
@@ -149,20 +144,77 @@ void LicenseRenewalTest::updateOneKey()
  */
 TEST_F(LicenseRenewalTest, licenseRenewal)
 {
-    createMediaKeysNetflix();
+    createMediaKeysWidevine();
     ocdmSessionWillBeCreated();
     createKeySession();
 
     // Step 1: Notify license renewal
     licenseRenew();
 
-    // Step 2: Update session
+    // Step 2: Notify key statuses changed
+    updateOneKey();
+    updateAllKeys();
+}
+
+/*
+ * Component Test: License renewal sequence for netflix playready.
+ * Test Objective:
+ *  Test the notification of license renewal and updating of the new license.
+ *
+ * Sequence Diagrams:
+ *  License Renewal - Cobalt/OCDM, Update MKS - Cobalt/OCDM, "Destroy" MKS - Cobalt/OCDM
+ *   - https://wiki.rdkcentral.com/display/ASP/Rialto+Media+Key+Session+Management+Design
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaKeys
+ *
+ * Test Initialize:
+ *   RialtoServerComponentTest::RialtoServerComponentTest() will set up wrappers and
+ *      starts rialtoServer running in its own thread
+ *   send a CreateMediaKeys message to rialtoServer
+ *   expect a "createSession" call (to OCDM mock)
+ *   send a CreateKeySession message to rialtoServer
+ *   generate request message for playready and send it to the client
+ *   expect the client to process the generate request message
+ *
+ *
+ * Test Steps:
+ *  Step 1: Update session
+ *   updateSession with the updated license.
+ *   Expect that updateSession is processed by the server.
+ *   Api call returns with success.
+ *
+ *  Step 2: Close session
+ *   closeSession.
+ *   Expect that closeSession is processed by the server.
+ *   Api call returns with success.
+ *
+ * Test Tear-down:
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  Client can be notified of license renewal and update the key session successfully.
+ *
+ * Code:
+ */
+TEST_F(LicenseRenewalTest, licenseRenewalNetflix)
+{
+    createMediaKeysNetflix();
+    ocdmSessionWillBeCreated();
+    createKeySession();
+    willGenerateRequestPlayready();
+    generateRequestPlayready();
+
+    // Step 1: Update session
     willUpdateSessionNetflix();
     updateSessionNetflix();
 
-    // Step 3: Notify key statuses changed
-    updateOneKey();
-    updateAllKeys();
+    // Step 2: Close session
+    willCloseKeySessionPlayready();
+    closeKeySessionPlayready();
+    willRelease();
 }
 
 } // namespace firebolt::rialto::server::ct

@@ -73,6 +73,8 @@ public:
 
     void gstInit(int *argc, char ***argv) override { gst_init(argc, argv); }
 
+    void gstDeinit() override { gst_deinit(); }
+
     GstPlugin *gstRegistryFindPlugin(GstRegistry *registry, const gchar *name) override
     {
         return gst_registry_find_plugin(registry, name);
@@ -99,6 +101,11 @@ public:
         return gst_element_factory_make(factoryname, name);
     }
 
+    GType gstElementFactoryGetElementType(GstElementFactory *factory) override
+    {
+        return gst_element_factory_get_element_type(factory);
+    }
+
     GstElement *gstBinGetByName(GstBin *bin, const gchar *name) override { return gst_bin_get_by_name(bin, name); }
 
     gpointer gstObjectRef(gpointer object) override { return gst_object_ref(object); }
@@ -116,12 +123,25 @@ public:
 
     const gchar *gstElementStateGetName(GstState state) override { return gst_element_state_get_name(state); }
 
+    const gchar *gstElementStateChangeReturnGetName(GstStateChangeReturn state) override
+    {
+        return gst_element_state_change_return_get_name(state);
+    }
+
     GstStateChangeReturn gstElementSetState(GstElement *element, GstState state) override
     {
         return gst_element_set_state(element, state);
     }
 
     GstState gstElementGetState(GstElement *element) override { return GST_STATE(element); }
+
+    GstStateChangeReturn gstElementGetStateReturn(GstElement *element) override { return GST_STATE_RETURN(element); }
+
+    GstState gstElementGetStateNext(GstElement *element) override { return GST_STATE_NEXT(element); }
+
+    void gstStateLock(GstElement *element) override { GST_STATE_LOCK(element); }
+
+    void gstStateUnlock(GstElement *element) override { GST_STATE_UNLOCK(element); }
 
     GstState gstElementGetPendingState(GstElement *element) override { return GST_STATE_PENDING(element); }
 
@@ -171,6 +191,11 @@ public:
     gboolean gstElementQueryPosition(GstElement *element, GstFormat format, gint64 *cur) override
     {
         return gst_element_query_position(element, format, cur);
+    }
+
+    gboolean gstElementQueryDuration(GstElement *element, GstFormat format, gint64 *duration) override
+    {
+        return gst_element_query_duration(element, format, duration);
     }
 
     GstPad *gstGhostPadNew(const gchar *name, GstPad *target) override { return gst_ghost_pad_new(name, target); }
@@ -460,6 +485,11 @@ public:
 
     void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const override;
 
+    void gstStructureSetValue(GstStructure *structure, const gchar *fieldname, const GValue *value) const override
+    {
+        gst_structure_set_value(structure, fieldname, value);
+    }
+
     void gstMessageParseError(GstMessage *message, GError **gerror, gchar **debug) const override
     {
         return gst_message_parse_error(message, gerror, debug);
@@ -486,6 +516,11 @@ public:
     GstMessage *gstMessageNewWarning(GstObject *src, GError *error, const gchar *debug) const override
     {
         return gst_message_new_warning(src, error, debug);
+    }
+
+    GstMessage *gstMessageNewApplication(GstObject *src, GstStructure *structure) const override
+    {
+        return gst_message_new_application(src, structure);
     }
 
     void gstMessageParseWarning(GstMessage *message, GError **gerror, gchar **debug) const override
@@ -561,6 +596,44 @@ public:
     }
 
     GstPad *gstBaseSinkPad(GstElement *element) const override { return GST_BASE_SINK_PAD(element); }
+
+    void gstValueArrayAppendValue(GValue *value, const GValue *appendValue) const override
+    {
+        gst_value_array_append_value(value, appendValue);
+    }
+
+    void gstValueSetBuffer(GValue *value, GstBuffer *buffer) const override { gst_value_set_buffer(value, buffer); }
+
+    gboolean gstIsBaseParse(GstElement *element) const { return GST_IS_BASE_PARSE(element); }
+
+    void gstBaseParseSetPtsInterpolation(GstBaseParse *parse, gboolean ptsInterpolate) const override
+    {
+        gst_base_parse_set_pts_interpolation(parse, ptsInterpolate);
+    }
+
+    GstStateChangeReturn gstElementGetState(GstElement *element, GstState *state, GstState *pending,
+                                            GstClockTime timeout) override
+    {
+        return gst_element_get_state(element, state, pending, timeout);
+    }
+
+    GstPad *gstPadGetPeer(GstPad *pad) override { return gst_pad_get_peer(pad); }
+
+    gboolean gstPadUnlink(GstPad *srcpad, GstPad *sinkpad) override { return gst_pad_unlink(srcpad, sinkpad); }
+
+    GstPadLinkReturn gstPadLink(GstPad *srcpad, GstPad *sinkpad) override { return gst_pad_link(srcpad, sinkpad); }
+
+    gboolean gstBinRemove(GstBin *bin, GstElement *element) override { return gst_bin_remove(bin, element); }
+
+    GstObject *gstPadGetParent(GstPad *pad) override { return gst_pad_get_parent(pad); }
+
+    gulong gstPadAddProbe(GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
+                          GDestroyNotify destroyData) override
+    {
+        return gst_pad_add_probe(pad, mask, callback, userData, destroyData);
+    }
+
+    void gstPadRemoveProbe(GstPad *pad, gulong id) override { gst_pad_remove_probe(pad, id); }
 };
 
 }; // namespace firebolt::rialto::wrappers

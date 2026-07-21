@@ -35,7 +35,6 @@ const std::vector<std::string> kKeySystems{"expectedKeySystem1", "expectedKeySys
 const std::string kVersion{"123"};
 constexpr int kMediaKeysHandle{2};
 constexpr firebolt::rialto::KeySessionType kKeySessionType{firebolt::rialto::KeySessionType::TEMPORARY};
-constexpr bool kIsLDL{false};
 constexpr int kKeySessionId{3};
 constexpr firebolt::rialto::InitDataType kInitDataType{firebolt::rialto::InitDataType::CENC};
 const std::vector<std::uint8_t> kInitData{6, 7, 2};
@@ -44,6 +43,9 @@ const std::vector<uint8_t> keyId{1, 4, 7};
 const std::vector<uint8_t> kDrmHeader{4, 9, 3};
 const uint32_t kSubSampleCount{2};
 constexpr uint32_t kInitWithLast15{1};
+constexpr firebolt::rialto::LimitedDurationLicense kLdlState{firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED};
+constexpr firebolt::rialto::LimitedDurationLicense kLdlStateEnabled{firebolt::rialto::LimitedDurationLicense::ENABLED};
+const std::vector<std::string> kRobustnessLevels{"HW_SECURE_ALL", "SW_SECURE_CRYPTO"};
 } // namespace
 
 CdmServiceTests::CdmServiceTests()
@@ -98,6 +100,17 @@ void CdmServiceTests::supportsServerCertificateWillReturnTrue()
     EXPECT_CALL(m_mediaKeysCapabilitiesMock, isServerCertificateSupported(kKeySystems[0])).WillOnce(Return(true));
 }
 
+void CdmServiceTests::getSupportedRobustnessLevelsWillSucceed()
+{
+    EXPECT_CALL(m_mediaKeysCapabilitiesMock, getSupportedRobustnessLevels(kKeySystems[0], _))
+        .WillOnce(DoAll(SetArgReferee<1>(kRobustnessLevels), Return(true)));
+}
+
+void CdmServiceTests::getSupportedRobustnessLevelsWillFail()
+{
+    EXPECT_CALL(m_mediaKeysCapabilitiesMock, getSupportedRobustnessLevels(kKeySystems[0], _)).WillOnce(Return(false));
+}
+
 void CdmServiceTests::triggerSwitchToActiveSuccess()
 {
     EXPECT_TRUE(m_sut.switchToActive());
@@ -126,13 +139,20 @@ void CdmServiceTests::mediaKeysFactoryWillReturnNullptr()
 
 void CdmServiceTests::mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_CALL(m_mediaKeysMock, createKeySession(kKeySessionType, _, kIsLDL, _))
-        .WillOnce(DoAll(SetArgReferee<3>(kKeySessionId), Return(status)));
+    EXPECT_CALL(m_mediaKeysMock, createKeySession(kKeySessionType, _, _))
+        .WillOnce(DoAll(SetArgReferee<2>(kKeySessionId), Return(status)));
 }
 
 void CdmServiceTests::mediaKeysWillGenerateRequestWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_CALL(m_mediaKeysMock, generateRequest(kKeySessionId, kInitDataType, kInitData)).WillOnce(Return(status));
+    EXPECT_CALL(m_mediaKeysMock, generateRequest(kKeySessionId, kInitDataType, kInitData, kLdlState))
+        .WillOnce(Return(status));
+}
+
+void CdmServiceTests::mediaKeysWillGenerateRequestLdlEnabledWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_CALL(m_mediaKeysMock, generateRequest(kKeySessionId, kInitDataType, kInitData, kLdlStateEnabled))
+        .WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillLoadSessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
@@ -212,31 +232,23 @@ void CdmServiceTests::mediaKeysWillReleaseKeySessionWithStatus(firebolt::rialto:
 
 void CdmServiceTests::mediaKeysWillDecryptWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
     EXPECT_CALL(m_mediaKeysMock, decrypt(kKeySessionId, _, _)).WillOnce(Return(status));
 }
 
 void CdmServiceTests::mediaKeysWillSelectKeyIdWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
     EXPECT_CALL(m_mediaKeysMock, selectKeyId(kKeySessionId, keyId)).WillOnce(Return(status));
-}
-
-void CdmServiceTests::mediaKeysWillNotFindMediaKeySession()
-{
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(false));
-}
-
-void CdmServiceTests::mediaKeysWillCheckIfKeySystemIsPlayready(bool result)
-{
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
-    EXPECT_CALL(m_mediaKeysMock, isNetflixPlayreadyKeySystem(kKeySessionId)).WillOnce(Return(result));
 }
 
 void CdmServiceTests::mediaKeysWillPing()
 {
     EXPECT_CALL(*m_heartbeatProcedureMock, createHandler());
     EXPECT_CALL(m_mediaKeysMock, ping(_));
+}
+
+void CdmServiceTests::mediaKeysWillGetMetricSystemDataWithStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_CALL(m_mediaKeysMock, getMetricSystemData(_)).WillOnce(Return(status));
 }
 
 void CdmServiceTests::createMediaKeysShouldSucceed()
@@ -263,21 +275,25 @@ void CdmServiceTests::createKeySessionShouldSucceed()
 {
     int32_t returnKeySessionId = -1;
     EXPECT_EQ(firebolt::rialto::MediaKeyErrorStatus::OK,
-              m_sut.createKeySession(kMediaKeysHandle, kKeySessionType, m_mediaKeysClientMock, kIsLDL,
-                                     returnKeySessionId));
+              m_sut.createKeySession(kMediaKeysHandle, kKeySessionType, m_mediaKeysClientMock, returnKeySessionId));
     EXPECT_GE(returnKeySessionId, -1);
 }
 
 void CdmServiceTests::createKeySessionShouldFailWithReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
     int32_t returnKeySessionId = -1;
-    EXPECT_EQ(status, m_sut.createKeySession(kMediaKeysHandle, kKeySessionType, m_mediaKeysClientMock, kIsLDL,
-                                             returnKeySessionId));
+    EXPECT_EQ(status,
+              m_sut.createKeySession(kMediaKeysHandle, kKeySessionType, m_mediaKeysClientMock, returnKeySessionId));
 }
 
 void CdmServiceTests::generateRequestShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_EQ(status, m_sut.generateRequest(kMediaKeysHandle, kKeySessionId, kInitDataType, kInitData));
+    EXPECT_EQ(status, m_sut.generateRequest(kMediaKeysHandle, kKeySessionId, kInitDataType, kInitData, kLdlState));
+}
+
+void CdmServiceTests::generateRequestWithLdlEnabledShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
+{
+    EXPECT_EQ(status, m_sut.generateRequest(kMediaKeysHandle, kKeySessionId, kInitDataType, kInitData, kLdlStateEnabled));
 }
 
 void CdmServiceTests::loadSessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
@@ -373,9 +389,9 @@ void CdmServiceTests::releaseKeySessionShouldReturnStatus(firebolt::rialto::Medi
     EXPECT_EQ(status, m_sut.releaseKeySession(kMediaKeysHandle, kKeySessionId));
 }
 
-void CdmServiceTests::isNetflixPlayreadyKeySystemShouldReturn(bool result)
+void CdmServiceTests::isExtendedInterfaceUsedShouldReturn(bool result)
 {
-    EXPECT_EQ(result, m_sut.isNetflixPlayreadyKeySystem(kKeySessionId));
+    EXPECT_EQ(result, m_sut.isExtendedInterfaceUsed(kKeySessionId));
 }
 
 void CdmServiceTests::getSupportedKeySystemsShouldSucceed()
@@ -421,28 +437,31 @@ void CdmServiceTests::supportsServerCertificateReturnFalse()
     EXPECT_FALSE(m_sut.isServerCertificateSupported(kKeySystems[0]));
 }
 
-void CdmServiceTests::incrementSessionIdUsageCounter()
+void CdmServiceTests::getSupportedRobustnessLevelsShouldSucceed()
 {
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
-    EXPECT_CALL(m_mediaKeysMock, incrementSessionIdUsageCounter(kKeySessionId));
-    m_sut.incrementSessionIdUsageCounter(kKeySessionId);
+    std::vector<std::string> levels;
+    EXPECT_TRUE(m_sut.getSupportedRobustnessLevels(kKeySystems[0], levels));
+    EXPECT_EQ(levels, kRobustnessLevels);
 }
 
-void CdmServiceTests::incrementSessionIdUsageCounterFails()
+void CdmServiceTests::getSupportedRobustnessLevelsShouldFail()
 {
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(false));
+    std::vector<std::string> levels;
+    EXPECT_FALSE(m_sut.getSupportedRobustnessLevels(kKeySystems[0], levels));
+}
+
+void CdmServiceTests::incrementSessionIdUsageCounter()
+{
     m_sut.incrementSessionIdUsageCounter(kKeySessionId);
 }
 
 void CdmServiceTests::decrementSessionIdUsageCounter()
 {
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(true));
-    EXPECT_CALL(m_mediaKeysMock, decrementSessionIdUsageCounter(kKeySessionId));
     m_sut.decrementSessionIdUsageCounter(kKeySessionId);
 }
 
-void CdmServiceTests::decrementSessionIdUsageCounterFails()
+void CdmServiceTests::getMetricSystemDataShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status)
 {
-    EXPECT_CALL(m_mediaKeysMock, hasSession(kKeySessionId)).WillOnce(Return(false));
-    m_sut.decrementSessionIdUsageCounter(kKeySessionId);
+    std::vector<uint8_t> buffer;
+    EXPECT_EQ(status, m_sut.getMetricSystemData(kMediaKeysHandle, buffer));
 }

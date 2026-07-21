@@ -67,13 +67,14 @@ message DestroySessionResponse {
 }
 
 /**
- * @fn void load(MediaType type, string mime_type, string url)
+ * @fn void load(MediaType type, string mime_type, string url, bool isLive)
  * @brief Loads the media pipeline.
  *
  * @param[in]  session_id   The id of the A/V session.
  * @param[in]  type         The type of media.
  * @param[in]  mime_type    The mime type.
  * @param[in]  url          The url.
+ * @param[in]  isLive       Indicates if the media is live.
  *
  */
 message LoadRequest {
@@ -86,6 +87,7 @@ message LoadRequest {
     optional MediaType  type = 2;
     optional string     mime_type = 3;
     optional string     url = 4;
+    optional bool       is_live = 5;
 }
 message LoadResponse {
 }
@@ -176,6 +178,8 @@ message AttachSourceRequest {
         optional Format format = 4; ///< The Format of the audio samples.
         optional Layout layout = 5; ///< The layout of channels within a buffer.
         optional uint64 channel_mask = 6; ///< Bitmask of channel positions present.
+        repeated bytes stream_header = 7; ///< Stream header. Zero length if not present.
+        optional bool framed = 8;  ///< True if each buffer passed through the pipeline contains a complete, self-contained media unit
     }
 
     message CodecData {
@@ -259,7 +263,8 @@ message SetVideoWindowResponse {
  * @fn void play(int session_id)
  * @brief Starts playback on a session.
  *
- * @param[in]  session_id   The id of the A/V session.
+ * @param[in]   session_id  The id of the A/V session.
+ * @param[out]  async       True if play method call is asynchronous
  *
  * This method is asynchronous. Once the backend is successfully playing it will notify the media player client of
  * playback state.
@@ -269,6 +274,7 @@ message PlayRequest {
     optional int32 session_id = 1 [default = -1];
 }
 message PlayResponse {
+    optional bool async = 1 [default = true];
 }
 
 /**
@@ -342,6 +348,22 @@ message GetPositionResponse {
 }
 
 /**
+ * @fn void getDuration(int session_id)
+ * @brief Get the playback Duration in nanoseconds.
+ *
+ * @param[in]  session_id   The id of the A/V session.
+ *
+ * This method is considered to be synchronous, it returns current playback duration
+ *
+ */
+message GetDurationRequest {
+    optional int32 session_id = 1 [default = -1];
+}
+message GetDurationResponse {
+    optional int64 duration = 1 [default = -1];
+}
+
+/**
  * @fn void setPlaybackRate(int session_id, double rate)
  * @brief Set the playback position in nanoseconds.
  *
@@ -373,8 +395,9 @@ message HaveDataRequest {
         OK = 1;                     ///< Source data provided without error.
         EOS = 2;                    ///< Source reached the end of stream.
         ERROR = 3;                  ///< There was an error providing source data.
-        CODEC_CHANGED = 4;          ///< strThe codec has changed and the decoder must be reconfigured.
+        CODEC_CHANGED = 4;          ///< The codec has changed and the decoder must be reconfigured.
         NO_AVAILABLE_SAMPLES = 5;   ///< Could not retrieve media samples.
+        NO_SPACE_FOR_SAMPLES = 6;   ///< Could not copy data to shared buffer space.
     };
 
     optional int32 session_id = 1 [default = -1];
@@ -603,6 +626,7 @@ message GetStreamSyncModeResponse {
  * @param[in]  session_id   The id of the A/V session.
  * @param[in]  source_id    The id of the media source to flush.
  * @param[in]  reset_time   True if time should be reset
+ * @param[out] async        True if flushed source is asynchronous (will preroll after flush)
  *
  */
 message FlushRequest {
@@ -611,6 +635,7 @@ message FlushRequest {
   optional bool reset_time = 3 [default = false];
 }
 message FlushResponse {
+    optional bool async = 1 [default = true];
 }
 
 /**
@@ -636,6 +661,23 @@ message SetSourcePositionRequest {
     optional uint64 stop_position = 6 [default = 18446744073709551615];
 }
 message SetSourcePositionResponse {
+}
+
+/**
+ * @fn void setSubtitleOffset(int session_id, int source_id, int64 position)
+ * @brief Set the subtitle offset in nanoseconds.
+ *
+ * @param[in]  session_id  The id of the A/V session.
+ * @param[in]  source_id   The id of the media source.
+ * @param[in]  position    The offset position in nanoseconds.
+ *
+ */
+message SetSubtitleOffsetRequest {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+    optional int64 position = 3 [default = -1];
+}
+message SetSubtitleOffsetResponse {
 }
 
 /**
@@ -913,6 +955,19 @@ message BufferUnderflowEvent {
 }
 
 /**
+ * @brief Event sent by the server when the first frame has been received.
+ *
+ * @param session_id        The id of the A/V session the request is for.
+ * @param source_id         The id of the media source the request is for.
+ *
+ * This is sent by the server whenever a video/audio first frame is received
+ */
+message FirstFrameReceivedEvent {
+    optional int32 session_id = 1 [default = -1];
+    optional int32 source_id = 2 [default = -1];
+}
+
+/**
  * @brief Event sent by the server when a non-fatal error has occurred in the player.
  *
  * @param session_id        The id of the A/V session the request is for.
@@ -923,6 +978,7 @@ message PlaybackErrorEvent {
     enum PlaybackError {
         UNKNOWN = 0;            ///< An unknown or undefined network state.
         DECRYPTION = 1;         ///< Player failed to decrypt a buffer and the frame has been dropped.
+        OUTPUT_PROTECTION = 2;  ///< HDCP output protection failure - triggers retune.
     }
 
     optional int32 session_id = 1 [default = -1];
@@ -944,6 +1000,12 @@ message SetLogLevelsEvent {
     optional uint32 clientLogLevels = 2;
     optional uint32 ipcLogLevels = 3;
     optional uint32 commonLogLevels = 4;
+}
+
+message PlaybackInfoEvent {
+    optional int32 session_id = 1 [default = -1];
+    optional int64 current_position = 2 [default = -1];
+    optional double volume = 3 [default = 1.0];
 }
 
 /**
@@ -1183,6 +1245,13 @@ service MediaPipelineModule {
     }
 
     /**
+     * @brief This method sets the subtitle offset for a subtitle source.
+     * @see SetSubtitleOffsetRequest
+     */
+    rpc setSubtitleOffset(SetSubtitleOffsetRequest) returns (SetSubtitleOffsetResponse) {
+    }
+
+    /**
      * @brief This method handles audio gap in order to avoid audio pops during transitions.
      * @see ProcessAudioGapRequest
      */
@@ -1217,4 +1286,12 @@ service MediaPipelineModule {
      */
     rpc getUseBuffering(GetUseBufferingRequest) returns (GetUseBufferingResponse) {
     }
+
+    /**
+     * @brief Gets the current duration of the playback
+     * @see GetDurationRequest
+     */
+    rpc getDuration(GetDurationRequest) returns (GetDurationResponse) {
+    }
+
 }

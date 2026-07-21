@@ -64,6 +64,8 @@ public:
     void mediaPipelineWillFailToHaveData();
     void mediaPipelineWillGetPosition();
     void mediaPipelineWillFailToGetPosition();
+    void mediaPipelineWillGetDuration();
+    void mediaPipelineWillFailToGetDuration();
     void mediaPipelineWillSetImmediateOutput();
     void mediaPipelineWillFailToSetImmediateOutput();
     void mediaPipelineWillGetImmediateOutput();
@@ -112,6 +114,8 @@ public:
     void mediaPipelineWillFailToGetUseBuffering();
     void mediaPipelineWillSwitchSource();
     void mediaPipelineWillFailToSwitchSource();
+    void mediaPipelineWillCheckIfVideoIsMaster();
+    void mediaPipelineWillFailToCheckIfVideoIsMaster();
 
     void mediaPipelineWillPing();
 
@@ -154,6 +158,8 @@ public:
     void haveDataShouldFail();
     void getPositionShouldSucceed();
     void getPositionShouldFail();
+    void getDurationShouldSucceed();
+    void getDurationShouldFail();
     void setImmediateOutputShouldSucceed();
     void setImmediateOutputShouldFail();
     void getImmediateOutputShouldSucceed();
@@ -205,6 +211,8 @@ public:
     void getUseBufferingShouldFail();
     void switchSourceShouldSucceed();
     void switchSourceShouldFail();
+    void isVideoMasterShouldSucceed();
+    void isVideoMasterShouldFail();
 
     void clearMediaPipelines();
     void initSession();

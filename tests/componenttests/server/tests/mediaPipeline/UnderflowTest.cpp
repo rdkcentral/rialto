@@ -30,8 +30,6 @@ using testing::StrEq;
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{3};
-constexpr int kFrameCountInPlayingState{24};
 const std::string kElementName{"Decoder"};
 constexpr gulong kSignalId{123};
 } // namespace
@@ -59,11 +57,10 @@ public:
     void setupElementsCommon()
     {
         EXPECT_CALL(*m_glibWrapperMock, gTypeName(_)).WillRepeatedly(Return(kElementName.c_str()));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
-            .WillRepeatedly(Return(TRUE));
         EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("amlhalasink"))).WillRepeatedly(Return(FALSE));
         EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillRepeatedly(Return(FALSE));
         EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillRepeatedly(Return(FALSE));
+        EXPECT_CALL(*m_gstWrapperMock, gstIsBaseParse(_)).WillRepeatedly(Return(FALSE));
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory,
                                                 GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
@@ -78,17 +75,20 @@ public:
         EXPECT_CALL(*m_glibWrapperMock, gSignalQuery(m_signals[0], _))
             .WillRepeatedly(Invoke([&](guint signal_id, GSignalQuery *query)
                                    { query->signal_name = "buffer-underflow-callback"; }));
-        EXPECT_CALL(*m_glibWrapperMock, gFree(m_signals)).Times(2);
+        EXPECT_CALL(*m_glibWrapperMock, gFree(m_signals)).Times(4);
     }
 
     void willSetupAudioDecoder()
     {
         EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_audioDecoder)).WillOnce(Return(m_audioDecoder));
+
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
+            .WillOnce(Return(TRUE));
+
         EXPECT_CALL(*m_gstWrapperMock,
-                    gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                                      GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-            .WillRepeatedly(Return(FALSE))
-            .RetiresOnSaturation();
+                    gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+            .WillOnce(Return(TRUE));
+
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER |
                                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
@@ -111,11 +111,36 @@ public:
     void willSetupVideoDecoder()
     {
         EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_videoDecoder)).WillOnce(Return(m_videoDecoder));
+
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER))
+            .WillOnce(Return(TRUE));
+
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+            .WillOnce(Return(FALSE));
+
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+            .WillOnce(Return(TRUE));
+
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER |
-                                                                      GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-            .WillRepeatedly(Return(TRUE))
+                                                                      GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+            .WillOnce(Return(FALSE))
             .RetiresOnSaturation();
+
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstElementFactoryListIsType(m_elementFactory,
+                                                GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+            .WillOnce(Return(FALSE))
+            .RetiresOnSaturation();
+
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstElementFactoryListIsType(m_elementFactory,
+                                                GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
+            .WillOnce(Return(FALSE))
+            .RetiresOnSaturation();
+
         EXPECT_CALL(*m_glibWrapperMock, gObjectType(m_videoDecoder)).WillRepeatedly(Return(G_TYPE_PARAM));
         EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(_, StrEq("buffer-underflow-callback"), _, _))
             .WillOnce(Invoke(
@@ -149,8 +174,8 @@ public:
 
         ASSERT_TRUE(m_audioUnderflowCallback);
         ASSERT_TRUE(m_audioUnderflowData);
-        ((void (*)(GstElement *, guint, gpointer, gpointer))m_audioUnderflowCallback)(m_audioDecoder, 0, nullptr,
-                                                                                      m_audioUnderflowData);
+        reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+            m_audioUnderflowCallback)(m_audioDecoder, 0, nullptr, m_audioUnderflowData);
 
         auto receivedBufferUnderflow{expectedBufferUnderflow.getMessage()};
         ASSERT_TRUE(receivedBufferUnderflow);
@@ -165,8 +190,8 @@ public:
 
         ASSERT_TRUE(m_videoUnderflowCallback);
         ASSERT_TRUE(m_videoUnderflowData);
-        ((void (*)(GstElement *, guint, gpointer, gpointer))m_videoUnderflowCallback)(m_audioDecoder, 0, nullptr,
-                                                                                      m_videoUnderflowData);
+        reinterpret_cast<void (*)(GstElement *, guint, gpointer, gpointer)>(
+            m_videoUnderflowCallback)(m_audioDecoder, 0, nullptr, m_videoUnderflowData);
 
         auto receivedBufferUnderflow{expectedBufferUnderflow.getMessage()};
         ASSERT_TRUE(receivedBufferUnderflow);
@@ -333,7 +358,7 @@ TEST_F(UnderflowTest, underflow)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 6: Pause
     willPause();
@@ -342,13 +367,11 @@ TEST_F(UnderflowTest, underflow)
     // Step 7: Write 1 audio frame
     // Step 8: Write 1 video frame
     // Step 9: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCountInPausedState);
-        pushVideoData(kFramesToPush, kFrameCountInPausedState);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -377,7 +400,6 @@ TEST_F(UnderflowTest, underflow)
 
     // Step 15: Notify end of stream
     gstNotifyEos();
-    willRemoveAudioSource();
 
     // Step 16: Remove sources
     removeSource(m_audioSourceId);

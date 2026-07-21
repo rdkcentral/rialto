@@ -35,6 +35,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/EnoughDataTest.cpp
     genericPlayer/tasksTests/EosTest.cpp
     genericPlayer/tasksTests/FinishSetupSourceTest.cpp
+    genericPlayer/tasksTests/FirstFrameReceivedTest.cpp
     genericPlayer/tasksTests/FlushTest.cpp
     genericPlayer/tasksTests/GenericPlayerTaskFactoryTest.cpp
     genericPlayer/tasksTests/HandleBusMessageTest.cpp
@@ -54,6 +55,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/SetPlaybackRateTest.cpp
     genericPlayer/tasksTests/SetPositionTest.cpp
     genericPlayer/tasksTests/SetSourcePositionTest.cpp
+    genericPlayer/tasksTests/SetSubtitleOffsetTest.cpp
     genericPlayer/tasksTests/SetStreamSyncModeTest.cpp
     genericPlayer/tasksTests/SetSyncTest.cpp
     genericPlayer/tasksTests/SetSyncOffTest.cpp
@@ -70,6 +72,7 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/UpdatePlaybackGroupTest.cpp
 
     genericPlayer/CreateTest.cpp
+    genericPlayer/FlushOnPrerollControllerTest.cpp
     genericPlayer/GstGenericPlayerPrivateTest.cpp
     genericPlayer/GstGenericPlayerTest.cpp
     genericPlayer/GstDispatcherThreadClientTest.cpp
@@ -116,6 +119,12 @@ add_gtests(RialtoServerGstPlayerUnitTests
     #WorkerThread unittests
     workerThread/WorkerThreadTest.cpp
 
+    #FlushWatcher unittests
+    flushWatcher/FlushWatcherTests.cpp
+
+    #GstProfiler unittests
+    profiler/GstProfilerTests.cpp
+
 )
 
 target_include_directories(RialtoServerGstPlayerUnitTests
@@ -143,13 +152,5 @@ target_link_libraries(RialtoServerGstPlayerUnitTests
     RialtoCommonMisc
     RialtoTestCommonUtils
 )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoServerGstPlayerUnitTests
-
-        gcov
-        )
-endif()
 
 set_target_properties(RialtoServerGstPlayerUnitTests PROPERTIES COMPILE_FLAGS "-Wno-write-strings")

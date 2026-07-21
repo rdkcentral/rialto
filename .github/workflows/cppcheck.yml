@@ -21,11 +21,11 @@ name: cppcheck
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "master" branch
+  # Triggers the workflow on push or pull request events but only for the "master" and "release/*" branches
   push:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: ["master", "release/*"]
   pull_request:
-    branches: [ "master", "rdkcentral:master" ]
+    branches: ["master", "release/*"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -34,7 +34,7 @@ on:
 jobs:
   build:
     name: cppcheck
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Install cppcheck
         run: |
@@ -59,9 +59,9 @@ jobs:
           path: |
             cppcheck_report.txt
 
-      # Get process_coverage_stats script output
+      # Get cppcheck script output
       - id: get-comment-body
-        if: ${{ failure() && github.ref != 'refs/heads/master' }}
+        if: ${{ failure() && github.event_name == 'pull_request' }}
         run: |
           body="$(cat cppcheck_report.txt)"
           body="${body//'%'/'%25'}"
@@ -69,9 +69,9 @@ jobs:
           body="${body//$'\r'/'%0D'}"
           echo "::set-output name=body::$body"
 
-      # Create comment with coverage info
+      # Create comment with cppcheck info
       - name: Create Comment
-        if: ${{ failure() && github.ref != 'refs/heads/master' }}
+        if: ${{ failure() && github.event_name == 'pull_request' }}
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}

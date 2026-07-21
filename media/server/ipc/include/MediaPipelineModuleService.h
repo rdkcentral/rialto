@@ -84,6 +84,8 @@ public:
                          ::google::protobuf::Closure *done) override;
     void getPosition(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetPositionRequest *request,
                      ::firebolt::rialto::GetPositionResponse *response, ::google::protobuf::Closure *done) override;
+    void getDuration(::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetDurationRequest *request,
+                     ::firebolt::rialto::GetDurationResponse *response, ::google::protobuf::Closure *done) override;
     void setImmediateOutput(::google::protobuf::RpcController *controller,
                             const ::firebolt::rialto::SetImmediateOutputRequest *request,
                             ::firebolt::rialto::SetImmediateOutputResponse *response,
@@ -134,6 +136,10 @@ public:
     void setSourcePosition(::google::protobuf::RpcController *controller,
                            const ::firebolt::rialto::SetSourcePositionRequest *request,
                            ::firebolt::rialto::SetSourcePositionResponse *response,
+                           ::google::protobuf::Closure *done) override;
+    void setSubtitleOffset(::google::protobuf::RpcController *controller,
+                           const ::firebolt::rialto::SetSubtitleOffsetRequest *request,
+                           ::firebolt::rialto::SetSubtitleOffsetResponse *response,
                            ::google::protobuf::Closure *done) override;
     void processAudioGap(::google::protobuf::RpcController *controller,
                          const ::firebolt::rialto::ProcessAudioGapRequest *request,

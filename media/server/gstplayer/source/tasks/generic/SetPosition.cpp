@@ -28,7 +28,8 @@
 namespace firebolt::rialto::server::tasks::generic
 {
 SetPosition::SetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                         std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, std::int64_t position)
+                         const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                         std::int64_t position)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_position{position}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing SetPosition");
@@ -84,13 +85,17 @@ void SetPosition::execute() const
         return;
     }
 
+    RIALTO_SERVER_LOG_MIL("Pipeline seek to: %" GST_TIME_FORMAT, GST_TIME_ARGS(m_position));
+
     // Reset Eos info
     m_context.endOfStreamInfo.clear();
     m_context.eosNotified = false;
 
+    m_context.streamPosition.store(m_position);
+
     m_gstPlayerClient->notifyPlaybackState(PlaybackState::SEEK_DONE);
 
-    // // Trigger NeedMediaData for all attached sources
+    // Trigger NeedMediaData for all attached sources
     for (const auto &streamInfo : m_context.streamInfo)
     {
         if (streamInfo.second.appSrc)

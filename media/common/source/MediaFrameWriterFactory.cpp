@@ -56,7 +56,7 @@ MediaFrameWriterFactory::MediaFrameWriterFactory() : m_metadataVersion{kLatestMe
     {
         m_metadataVersion = std::stoi(envVarStr);
     }
-    catch (std::exception &e)
+    catch (const std::exception &e)
     {
     }
     if (m_metadataVersion > kLatestMetadataVersion)

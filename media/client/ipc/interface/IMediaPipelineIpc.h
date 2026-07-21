@@ -106,10 +106,11 @@ public:
      * @param[in] type     : The media type.
      * @param[in] mimeType : The MIME type.
      * @param[in] url      : The URL.
+     * @param[in] isLive   : Indicates if the media is live.
      *
      * @retval true on success.
      */
-    virtual bool load(MediaType type, const std::string &mimeType, const std::string &url) = 0;
+    virtual bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) = 0;
 
     /**
      * @brief Request to set the coordinates of the video window.
@@ -126,9 +127,11 @@ public:
     /**
      * @brief Request play on the playback session.
      *
+     * @param[out] async     : True if play method call is asynchronous
+     *
      * @retval true on success.
      */
-    virtual bool play() = 0;
+    virtual bool play(bool &async) = 0;
 
     /**
      * @brief Request pause on the playback session.
@@ -346,12 +349,13 @@ public:
      *
      * This method is called by Rialto Client to flush out all queued data for a media source stream.
      *
-     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
-     * @param[in] resetTime : True if time should be reset
+     * @param[in]  sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in]  resetTime : True if time should be reset
+     * @param[out] async     : True if flushed source is asynchronous (will preroll after flush)
      *
      * @retval true on success.
      */
-    virtual bool flush(int32_t sourceId, bool resetTime) = 0;
+    virtual bool flush(int32_t sourceId, bool resetTime, bool &async) = 0;
 
     /**
      * @brief Set the source position in nanoseconds.
@@ -368,6 +372,18 @@ public:
      */
     virtual bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                                    uint64_t stopPosition) = 0;
+
+    /**
+     * @brief Set the subtitle offset in nanoseconds.
+     *
+     * This method sets the subtitle offset for a subtitle source.
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] position : The offset position in nanoseconds.
+     *
+     * @retval true on success.
+     */
+    virtual bool setSubtitleOffset(int32_t sourceId, int64_t position) = 0;
 
     /**
      * @brief Process audio gap
@@ -438,6 +454,17 @@ public:
      * @retval true on success.
      */
     virtual bool switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
+
+    /**
+     * @brief Get the playback duration in nanoseconds.
+     *
+     * This method is synchronous, it returns current playback duration
+     *
+     * @param[out] duration : The playback duration in nanoseconds
+     *
+     * @retval true on success.
+     */
+    virtual bool getDuration(int64_t &duration) = 0;
 };
 
 }; // namespace firebolt::rialto::client

@@ -39,10 +39,16 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &status)
         return "FAIL";
     case firebolt::rialto::MediaKeyErrorStatus::BAD_SESSION_ID:
         return "BAD_SESSION_ID";
+    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+        return "INTERFACE_NOT_IMPLEMENTED";
+    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+        return "BUFFER_TOO_SMALL";
     case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
         return "NOT_SUPPORTED";
     case firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE:
         return "INVALID_STATE";
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+        return "OUTPUT_RESTRICTED";
     }
     return "Unknown";
 }
@@ -87,8 +93,9 @@ std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesFactory::getMediaKe
 
 namespace firebolt::rialto::server
 {
-MediaKeysCapabilities::MediaKeysCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IOcdmFactory> ocdmFactory,
-                                             std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory)
+MediaKeysCapabilities::MediaKeysCapabilities(
+    const std::shared_ptr<firebolt::rialto::wrappers::IOcdmFactory> &ocdmFactory,
+    const std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> &ocdmSystemFactory)
     : m_ocdmSystemFactory{ocdmSystemFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -166,6 +173,20 @@ bool MediaKeysCapabilities::isServerCertificateSupported(const std::string &keyS
         return false;
     }
     return ocdmSystem->supportsServerCertificate();
+}
+
+bool MediaKeysCapabilities::getSupportedRobustnessLevels(const std::string &keySystem,
+                                                         std::vector<std::string> &robustnessLevels)
+{
+    robustnessLevels.clear();
+    std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem> ocdmSystem =
+        m_ocdmSystemFactory->createOcdmSystem(keySystem);
+    if (!ocdmSystem)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the ocdm system object");
+        return false;
+    }
+    return ocdmSystem->getSupportedRobustnessLevels(robustnessLevels);
 }
 
 }; // namespace firebolt::rialto::server

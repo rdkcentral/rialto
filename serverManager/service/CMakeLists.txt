@@ -77,14 +77,6 @@ if( RIALTO_ENABLE_CONFIG_FILE )
         )
 endif()
 
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoServerManager
-        PRIVATE
-        gcov
-        )
-endif()
-
 if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
         include( GNUInstallDirs )
         install (

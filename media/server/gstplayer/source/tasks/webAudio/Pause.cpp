@@ -41,5 +41,6 @@ void Pause::execute() const
     {
         RIALTO_SERVER_LOG_ERROR("Failed to pause the web audio player");
     }
+    RIALTO_SERVER_LOG_MIL("State change to PAUSED requested for webaudio pipeline");
 }
 } // namespace firebolt::rialto::server::tasks::webaudio

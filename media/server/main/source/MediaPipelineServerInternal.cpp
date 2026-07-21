@@ -32,7 +32,6 @@
 
 namespace
 {
-constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMs{100};
 const char *toString(const firebolt::rialto::MediaSourceStatus &status)
 {
     switch (status)
@@ -47,6 +46,8 @@ const char *toString(const firebolt::rialto::MediaSourceStatus &status)
         return "CODEC_CHANGED";
     case firebolt::rialto::MediaSourceStatus::NO_AVAILABLE_SAMPLES:
         return "NO_AVAILABLE_SAMPLES";
+    case firebolt::rialto::MediaSourceStatus::NO_SPACE_FOR_SAMPLES:
+        return "NO_SPACE_FOR_SAMPLES";
     }
     return "Unknown";
 }
@@ -130,10 +131,10 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
 }
 
 MediaPipelineServerInternal::MediaPipelineServerInternal(
-    std::shared_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
+    const std::shared_ptr<IMediaPipelineClient> &client, const VideoRequirements &videoRequirements,
     const std::shared_ptr<IGstGenericPlayerFactory> &gstPlayerFactory, int sessionId,
     const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-    std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
+    const std::shared_ptr<common::ITimerFactory> &timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
     std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService)
     : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
       m_sessionId{sessionId}, m_shmBuffer{shmBuffer}, m_dataReaderFactory{std::move(dataReaderFactory)},
@@ -193,19 +194,21 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 }
 
-bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url)
+bool MediaPipelineServerInternal::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = loadInternal(type, mimeType, url); };
+    auto task = [&]() { result = loadInternal(type, mimeType, url, isLive); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string &mimeType, const std::string &url)
+bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string &mimeType, const std::string &url,
+                                               bool isLive)
 {
+    std::unique_lock lock{m_getPropertyMutex};
     /* If gstreamer player already created, destroy the old one first */
     if (m_gstPlayer)
     {
@@ -214,7 +217,7 @@ bool MediaPipelineServerInternal::loadInternal(MediaType type, const std::string
 
     m_gstPlayer =
         m_kGstPlayerFactory
-            ->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements,
+            ->createGstGenericPlayer(this, m_decryptionService, type, m_kVideoRequirements, isLive,
                                      firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory::getFactory());
     if (!m_gstPlayer)
     {
@@ -299,8 +302,13 @@ bool MediaPipelineServerInternal::removeSourceInternal(int32_t id)
         return false;
     }
 
-    m_gstPlayer->removeSource(sourceIter->first);
-    m_needMediaDataTimers.erase(sourceIter->first);
+    MediaSourceType type = sourceIter->first;
+
+    m_gstPlayer->removeSource(type);
+    m_needMediaDataTimers.erase(type);
+    m_noAvailableSamplesCounter.erase(type);
+    m_isMediaTypeEosMap.erase(type);
+
     m_attachedSources.erase(sourceIter);
     return true;
 }
@@ -335,18 +343,18 @@ bool MediaPipelineServerInternal::allSourcesAttachedInternal()
     return true;
 }
 
-bool MediaPipelineServerInternal::play()
+bool MediaPipelineServerInternal::play(bool &async)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = playInternal(); };
+    auto task = [&]() { result = playInternal(async); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
 }
 
-bool MediaPipelineServerInternal::playInternal()
+bool MediaPipelineServerInternal::playInternal(bool &async)
 {
     if (!m_gstPlayer)
     {
@@ -354,7 +362,7 @@ bool MediaPipelineServerInternal::playInternal()
         return false;
     }
 
-    m_gstPlayer->play();
+    m_gstPlayer->play(async);
     return true;
 }
 
@@ -460,6 +468,8 @@ bool MediaPipelineServerInternal::setPositionInternal(int64_t position)
         isMediaTypeEos.second = false;
     }
 
+    m_needDataDelayCalculator.resetMediaDataDelay();
+
     return true;
 }
 
@@ -467,16 +477,7 @@ bool MediaPipelineServerInternal::getPosition(int64_t &position)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    bool result;
-    auto task = [&]() { result = getPositionInternal(position); };
-
-    m_mainThread->enqueuePriorityTaskAndWait(m_mainThreadClientId, task);
-    return result;
-}
-
-bool MediaPipelineServerInternal::getPositionInternal(int64_t &position)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
+    std::shared_lock lock{m_getPropertyMutex};
 
     if (!m_gstPlayer)
     {
@@ -484,6 +485,20 @@ bool MediaPipelineServerInternal::getPositionInternal(int64_t &position)
         return false;
     }
     return m_gstPlayer->getPosition(position);
+}
+
+bool MediaPipelineServerInternal::getDuration(int64_t &duration)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    std::shared_lock lock{m_getPropertyMutex};
+
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get duration - Gstreamer player has not been loaded");
+        return false;
+    }
+    return m_gstPlayer->getDuration(duration);
 }
 
 bool MediaPipelineServerInternal::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
@@ -539,6 +554,8 @@ bool MediaPipelineServerInternal::setImmediateOutputInternal(int32_t sourceId, b
         RIALTO_SERVER_LOG_ERROR("Failed - Source not found");
         return false;
     }
+
+    m_IsLowLatencyVideoPlayer = immediateOutput;
     return m_gstPlayer->setImmediateOutput(sourceIter->first, immediateOutput);
 }
 
@@ -696,10 +713,12 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
         RIALTO_SERVER_LOG_WARN("NeedData RequestID is not valid: %u", needDataRequestId);
         return true;
     }
+    const std::uint32_t kMaxNumFrames = m_activeRequests->getMaxFrames(needDataRequestId);
     m_activeRequests->erase(needDataRequestId);
 
     unsigned int &counter = m_noAvailableSamplesCounter[mediaSourceType];
-    if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS)
+    if (status != MediaSourceStatus::OK && status != MediaSourceStatus::EOS &&
+        status != MediaSourceStatus::NO_SPACE_FOR_SAMPLES)
     {
         // Incrementing the counter allows us to track the occurrences where the status is other than OK or EOS.
 
@@ -749,8 +768,10 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
 
     if (0 != numFrames)
     {
+        const bool kIsBufferFull = kMaxNumFrames == numFrames || status == MediaSourceStatus::NO_SPACE_FOR_SAMPLES ||
+                                   status == MediaSourceStatus::EOS;
         std::shared_ptr<IDataReader> dataReader =
-            m_dataReaderFactory->createDataReader(mediaSourceType, buffer, regionOffset, numFrames);
+            m_dataReaderFactory->createDataReader(mediaSourceType, buffer, regionOffset, numFrames, kIsBufferFull);
         if (!dataReader)
         {
             RIALTO_SERVER_LOG_ERROR("Metadata version not supported for %s request id: %u",
@@ -975,12 +996,12 @@ bool MediaPipelineServerInternal::getTextTrackIdentifierInternal(std::string &te
     return m_gstPlayer->getTextTrackIdentifier(textTrackIdentifier);
 }
 
-bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime)
+bool MediaPipelineServerInternal::flush(int32_t sourceId, bool resetTime, bool &async)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     bool result;
-    auto task = [&]() { result = flushInternal(sourceId, resetTime); };
+    auto task = [&]() { result = flushInternal(sourceId, resetTime, async); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return result;
@@ -1006,6 +1027,8 @@ bool MediaPipelineServerInternal::setLowLatencyInternal(bool lowLatency)
         RIALTO_SERVER_LOG_ERROR("Failed to set low latency - Gstreamer player has not been loaded");
         return false;
     }
+    m_IsLowLatencyAudioPlayer = lowLatency;
+
     return m_gstPlayer->setLowLatency(lowLatency);
 }
 
@@ -1133,7 +1156,7 @@ bool MediaPipelineServerInternal::getStreamSyncModeInternal(int32_t &streamSyncM
     return m_gstPlayer->getStreamSyncMode(streamSyncMode);
 }
 
-bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime)
+bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime, bool &async)
 {
     if (!m_gstPlayer)
     {
@@ -1148,7 +1171,9 @@ bool MediaPipelineServerInternal::flushInternal(int32_t sourceId, bool resetTime
         return false;
     }
 
-    m_gstPlayer->flush(sourceIter->first, resetTime);
+    m_gstPlayer->flush(sourceIter->first, resetTime, async);
+
+    m_needMediaDataTimers.erase(sourceIter->first);
 
     // Reset Eos on flush
     auto it = m_isMediaTypeEosMap.find(sourceIter->first);
@@ -1197,6 +1222,36 @@ bool MediaPipelineServerInternal::setSourcePositionInternal(int32_t sourceId, in
         it->second = false;
     }
 
+    return true;
+}
+
+bool MediaPipelineServerInternal::setSubtitleOffset(int32_t sourceId, int64_t position)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    bool result;
+    auto task = [&]() { result = setSubtitleOffsetInternal(sourceId, position); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+    return result;
+}
+
+bool MediaPipelineServerInternal::setSubtitleOffsetInternal(int32_t sourceId, int64_t position)
+{
+    if (!m_gstPlayer)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set subtitle offset - Gstreamer player has not been loaded");
+        return false;
+    }
+    auto sourceIter = std::find_if(m_attachedSources.begin(), m_attachedSources.end(),
+                                   [sourceId](const auto &src) { return src.second == sourceId; });
+    if (sourceIter == m_attachedSources.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to set subtitle offset - Source with id: %d not found", sourceId);
+        return false;
+    }
+
+    m_gstPlayer->setSubtitleOffset(position);
     return true;
 }
 
@@ -1376,7 +1431,14 @@ bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourc
     // action being taken
     bool result{true};
 
-    auto task = [&]() { result = notifyNeedMediaDataInternal(mediaSourceType); };
+    auto task = [&]()
+    {
+        result = notifyNeedMediaDataInternal(mediaSourceType);
+        if (result)
+        {
+            m_needDataDelayCalculator.decreaseNeedMediaDataDelay(mediaSourceType);
+        }
+    };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
 
@@ -1411,6 +1473,48 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType me
     }
 
     RIALTO_SERVER_LOG_DEBUG("%s NeedMediaData sent.", common::convertMediaSourceType(mediaSourceType));
+
+    return true;
+}
+
+bool MediaPipelineServerInternal::notifyNeedMediaDataWithDelay(MediaSourceType mediaSourceType)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    // the task won't execute for a disconnected client therefore
+    // set a default value of true which will help to stop any further
+    // action being taken
+    bool result{true};
+
+    auto task = [&]() { result = notifyNeedMediaDataWithDelayInternal(mediaSourceType); };
+
+    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
+
+    return result;
+}
+
+bool MediaPipelineServerInternal::notifyNeedMediaDataWithDelayInternal(MediaSourceType mediaSourceType)
+{
+    m_needMediaDataTimers.erase(mediaSourceType);
+    m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
+    const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+
+    if (m_attachedSources.cend() == kSourceIter)
+    {
+        RIALTO_SERVER_LOG_WARN("NeedMediaData event sending failed for %s - sourceId not found",
+                               common::convertMediaSourceType(mediaSourceType));
+        return false;
+    }
+    auto it = m_isMediaTypeEosMap.find(mediaSourceType);
+    if (it != m_isMediaTypeEosMap.end() && it->second)
+    {
+        RIALTO_SERVER_LOG_INFO("EOS, NeedMediaData not needed for %s", common::convertMediaSourceType(mediaSourceType));
+        return false;
+    }
+
+    scheduleNotifyNeedMediaData(mediaSourceType);
+
+    RIALTO_SERVER_LOG_DEBUG("%s NeedMediaData scheduled.", common::convertMediaSourceType(mediaSourceType));
 
     return true;
 }
@@ -1491,6 +1595,7 @@ void MediaPipelineServerInternal::notifyBufferUnderflow(MediaSourceType mediaSou
 
     auto task = [&, mediaSourceType]()
     {
+        m_needDataDelayCalculator.resetMediaDataDelay(mediaSourceType);
         if (m_mediaPipelineClient)
         {
             const auto kSourceIter = m_attachedSources.find(mediaSourceType);
@@ -1501,6 +1606,28 @@ void MediaPipelineServerInternal::notifyBufferUnderflow(MediaSourceType mediaSou
                 return;
             }
             m_mediaPipelineClient->notifyBufferUnderflow(kSourceIter->second);
+        }
+    };
+
+    m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::notifyFirstFrameReceived(MediaSourceType mediaSourceType)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+
+    auto task = [&, mediaSourceType]()
+    {
+        if (m_mediaPipelineClient)
+        {
+            const auto kSourceIter = m_attachedSources.find(mediaSourceType);
+            if (m_attachedSources.cend() == kSourceIter)
+            {
+                RIALTO_SERVER_LOG_WARN("First frame notification failed - sourceId not found for %s",
+                                       common::convertMediaSourceType(mediaSourceType));
+                return;
+            }
+            m_mediaPipelineClient->notifyFirstFrameReceived(kSourceIter->second);
         }
     };
 
@@ -1547,9 +1674,18 @@ void MediaPipelineServerInternal::notifySourceFlushed(MediaSourceType mediaSourc
             m_mediaPipelineClient->notifySourceFlushed(kSourceIter->second);
             RIALTO_SERVER_LOG_DEBUG("%s source flushed", common::convertMediaSourceType(mediaSourceType));
         }
+        m_needDataDelayCalculator.resetMediaDataDelay(mediaSourceType);
     };
 
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
+}
+
+void MediaPipelineServerInternal::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
+{
+    if (m_mediaPipelineClient)
+    {
+        m_mediaPipelineClient->notifyPlaybackInfo(playbackInfo);
+    }
 }
 
 void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType mediaSourceType)
@@ -1562,9 +1698,10 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
                                 common::convertMediaSourceType(mediaSourceType));
         return;
     }
+
     m_needMediaDataTimers[mediaSourceType] =
         m_timerFactory
-            ->createTimer(kNeedMediaDataResendTimeMs,
+            ->createTimer(getNeedMediaDataTimeout(mediaSourceType),
                           [this, mediaSourceType]()
                           {
                               m_mainThread
@@ -1580,7 +1717,23 @@ void MediaPipelineServerInternal::scheduleNotifyNeedMediaData(MediaSourceType me
                                                                                    mediaSourceType));
                                                         scheduleNotifyNeedMediaData(mediaSourceType);
                                                     }
+                                                    else
+                                                    {
+                                                        m_needDataDelayCalculator.increaseNeedMediaDataDelay(
+                                                            mediaSourceType);
+                                                    }
                                                 });
                           });
+}
+
+std::chrono::milliseconds MediaPipelineServerInternal::getNeedMediaDataTimeout(MediaSourceType mediaSourceType)
+{
+    constexpr std::chrono::milliseconds kNeedMediaDataResendTimeMsForLowLatency{5};
+    if ((mediaSourceType == MediaSourceType::VIDEO && m_IsLowLatencyVideoPlayer) ||
+        (mediaSourceType == MediaSourceType::AUDIO && m_IsLowLatencyAudioPlayer))
+    {
+        return kNeedMediaDataResendTimeMsForLowLatency;
+    }
+    return m_needDataDelayCalculator.getNeedMediaDataDelay(mediaSourceType);
 }
 }; // namespace firebolt::rialto::server

@@ -162,7 +162,7 @@ TEST_F(SetVideoWindowTest, SetVideoWindow)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -173,7 +173,6 @@ TEST_F(SetVideoWindowTest, SetVideoWindow)
     setVideoWindow();
 
     // Step 6: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 

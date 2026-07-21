@@ -77,11 +77,12 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
     constexpr bool kEnabled{true};
     constexpr uint32_t kBufferingLimit{5326};
     constexpr uint64_t kStopPosition{4234};
+    constexpr bool kIsLive{false};
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, load(MediaType::MSE, StrEq(kMimeType), StrEq(kUrl))).WillOnce(Return(true));
-    EXPECT_TRUE(proxy->load(MediaType::MSE, kMimeType, kUrl));
+    EXPECT_CALL(*mediaPipelineMock, load(MediaType::MSE, StrEq(kMimeType), StrEq(kUrl), kIsLive)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->load(MediaType::MSE, kMimeType, kUrl, kIsLive));
 
     /////////////////////////////////////////////
 
@@ -100,8 +101,9 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, play()).WillOnce(Return(true));
-    EXPECT_TRUE(proxy->play());
+    bool async{false};
+    EXPECT_CALL(*mediaPipelineMock, play(_)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->play(async));
 
     /////////////////////////////////////////////
 
@@ -130,6 +132,15 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
         int64_t position;
         EXPECT_TRUE(proxy->getPosition(position));
         EXPECT_EQ(position, kPosition2);
+    }
+
+    /////////////////////////////////////////////
+
+    EXPECT_CALL(*mediaPipelineMock, getDuration(_)).WillOnce(DoAll(SetArgReferee<0>(kDuration), Return(true)));
+    {
+        int64_t duration;
+        EXPECT_TRUE(proxy->getDuration(duration));
+        EXPECT_EQ(duration, kDuration);
     }
 
     /////////////////////////////////////////////
@@ -250,8 +261,9 @@ TEST_F(RialtoClientMediaPipelineProxyTest, TestPassthrough)
 
     /////////////////////////////////////////////
 
-    EXPECT_CALL(*mediaPipelineMock, flush(kSourceId, true)).WillOnce(Return(true));
-    EXPECT_TRUE(proxy->flush(kSourceId, true));
+    bool isAsync{false};
+    EXPECT_CALL(*mediaPipelineMock, flush(kSourceId, true, _)).WillOnce(Return(true));
+    EXPECT_TRUE(proxy->flush(kSourceId, true, isAsync));
 
     /////////////////////////////////////////////
 

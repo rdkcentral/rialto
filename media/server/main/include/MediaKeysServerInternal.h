@@ -54,13 +54,6 @@ namespace firebolt::rialto::server
 class MediaKeysServerInternal : public IMediaKeysServerInternal
 {
 public:
-    struct MediaKeySessionUsage
-    {
-        std::unique_ptr<IMediaKeySession> mediaKeySession;
-        uint32_t bufCounter = 0;
-        bool shouldBeClosed = false;
-        bool shouldBeReleased = false;
-    };
     /**
      * @brief The constructor.
      *
@@ -71,8 +64,8 @@ public:
      *
      */
     MediaKeysServerInternal(const std::string &keySystem, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
-                            std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory,
-                            std::shared_ptr<IMediaKeySessionFactory> mediaKeySessionFactory);
+                            const std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> &ocdmSystemFactory,
+                            const std::shared_ptr<IMediaKeySessionFactory> &mediaKeySessionFactory);
 
     /**
      * @brief Virtual destructor.
@@ -83,11 +76,12 @@ public:
 
     bool containsKey(int32_t keySessionId, const std::vector<uint8_t> &keyId) override;
 
-    MediaKeyErrorStatus createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client, bool isLDL,
+    MediaKeyErrorStatus createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
                                          int32_t &keySessionId) override;
 
     MediaKeyErrorStatus generateRequest(int32_t keySessionId, InitDataType initDataType,
-                                        const std::vector<uint8_t> &initData) override;
+                                        const std::vector<uint8_t> &initData,
+                                        const LimitedDurationLicense &ldlState) override;
 
     MediaKeyErrorStatus loadSession(int32_t keySessionId) override;
 
@@ -119,12 +113,8 @@ public:
 
     MediaKeyErrorStatus decrypt(int32_t keySessionId, GstBuffer *encrypted, GstCaps *caps) override;
 
-    bool hasSession(int32_t keySessionId) const override;
+    MediaKeyErrorStatus getMetricSystemData(std::vector<uint8_t> &buffer) override;
 
-    bool isNetflixPlayreadyKeySystem(int32_t keySessionId) const override;
-
-    void incrementSessionIdUsageCounter(int32_t keySessionId) override;
-    void decrementSessionIdUsageCounter(int32_t keySessionId) override;
     void ping(std::unique_ptr<IHeartbeatHandler> &&heartbeatHandler) override;
 
 private:
@@ -146,12 +136,12 @@ private:
     /**
      * @brief Map containing created sessions.
      */
-    std::map<int32_t, MediaKeySessionUsage> m_mediaKeySessions;
+    std::map<int32_t, std::unique_ptr<IMediaKeySession>> m_mediaKeySessions;
 
     /**
      * @brief KeySystem type of the MediaKeysServerInternal.
      */
-    const std::string m_keySystem;
+    const std::string m_kKeySystem;
 
     /**
      * @brief This objects id registered on the main thread
@@ -163,13 +153,12 @@ private:
      *
      * @param[in]  sessionType : The session type.
      * @param[in]  client      : Client object for callbacks
-     * @param[in]  isLDL       : Is this an LDL
      * @param[out] keySessionId: The key session id
      *
      * @retval an error status.
      */
     MediaKeyErrorStatus createKeySessionInternal(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
-                                                 bool isLDL, int32_t &keySessionId);
+                                                 int32_t &keySessionId);
 
     /**
      * @brief Generate internally, only to be called on the main thread.
@@ -177,11 +166,13 @@ private:
      * @param[in]  keySessionId : The key session id for the session.
      * @param[in]  initDataType : The init data type.
      * @param[in]  initData     : The init data.
+     * @param[in]  ldlState     : The Limited Duration License state. Most of key systems do not need this parameter.
      *
      * @retval an error status.
      */
     MediaKeyErrorStatus generateRequestInternal(int32_t keySessionId, InitDataType initDataType,
-                                                const std::vector<uint8_t> &initData);
+                                                const std::vector<uint8_t> &initData,
+                                                const LimitedDurationLicense &ldlState);
 
     /**
      * @brief Load internally, only to be called on the main thread.
@@ -284,15 +275,6 @@ private:
     MediaKeyErrorStatus getLastDrmErrorInternal(int32_t keySessionId, uint32_t &errorCode);
 
     /**
-     * @brief Checks, if key system of media key session is Netflix Playready internally, only to be called on the main thread.
-     *
-     * @param[in] keySessionId    : The session id for the session.
-     *
-     * @retval true if key system is Playready
-     */
-    bool isNetflixPlayreadyKeySystemInternal(int32_t keySessionId) const;
-
-    /**
      * @brief Releases a key session internally, only to be called on the main thread.
      *
      * @param[in] keySessionId : The key session id.
@@ -300,9 +282,6 @@ private:
      * @retval an error status.
      */
     MediaKeyErrorStatus releaseKeySessionInternal(int32_t keySessionId);
-
-    void incrementSessionIdUsageCounterInternal(int32_t keySessionId);
-    void decrementSessionIdUsageCounterInternal(int32_t keySessionId);
 };
 
 }; // namespace firebolt::rialto::server

@@ -38,9 +38,9 @@ public:
 
     std::weak_ptr<IMediaPipelineClient> getClient() override { return m_mediaPipeline->getClient(); }
 
-    bool load(MediaType type, const std::string &mimeType, const std::string &url) override
+    bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override
     {
-        return m_mediaPipeline->load(type, mimeType, url);
+        return m_mediaPipeline->load(type, mimeType, url, isLive);
     }
 
     bool attachSource(const std::unique_ptr<MediaSource> &source) override
@@ -52,7 +52,7 @@ public:
 
     bool allSourcesAttached() override { return m_mediaPipeline->allSourcesAttached(); }
 
-    bool play() override { return m_mediaPipeline->play(); }
+    bool play(bool &async) override { return m_mediaPipeline->play(async); }
 
     bool pause() override { return m_mediaPipeline->pause(); }
 
@@ -134,12 +134,20 @@ public:
         return m_mediaPipeline->getStreamSyncMode(streamSyncMode);
     }
 
-    bool flush(int32_t sourceId, bool resetTime) override { return m_mediaPipeline->flush(sourceId, resetTime); }
+    bool flush(int32_t sourceId, bool resetTime, bool &async) override
+    {
+        return m_mediaPipeline->flush(sourceId, resetTime, async);
+    }
 
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override
     {
         return m_mediaPipeline->setSourcePosition(sourceId, position, resetTime, appliedRate, stopPosition);
+    }
+
+    bool setSubtitleOffset(int32_t sourceId, int64_t position) override
+    {
+        return m_mediaPipeline->setSubtitleOffset(sourceId, position);
     }
 
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override
@@ -165,6 +173,8 @@ public:
     {
         return m_mediaPipeline->switchSource(source);
     }
+
+    bool getDuration(int64_t &duration) override { return m_mediaPipeline->getDuration(duration); }
 
     void notifyApplicationState(ApplicationState state) override { m_mediaPipeline->notifyApplicationState(state); }
 

@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_TEXT_TRACK_SESSION_H_
 #define FIREBOLT_RIALTO_SERVER_I_TEXT_TRACK_SESSION_H_
 
+#include <gst/gst.h>
 #include <memory>
 #include <string>
 
@@ -41,14 +42,17 @@ public:
     ITextTrackSession() = default;
     virtual ~ITextTrackSession() = default;
 
+    virtual bool resetSession(bool isMuted) = 0;
     virtual bool pause() = 0;
     virtual bool play() = 0;
     virtual bool mute(bool mute) = 0;
     virtual bool setPosition(uint64_t mediaTimestampMs) = 0;
-    virtual bool sendData(const std::string &data, int32_t displayOffsetMs = 0) = 0;
+    virtual bool sendData(const std::string &data, int64_t displayOffsetMs = 0) = 0;
     virtual bool setSessionWebVTTSelection() = 0;
     virtual bool setSessionTTMLSelection() = 0;
     virtual bool setSessionCCSelection(const std::string &service) = 0;
+    virtual bool associateVideoDecoder(gpointer decoderId) = 0;
+    virtual bool isClosedCaptions() const = 0;
 };
 } // namespace firebolt::rialto::server
 #endif // FIREBOLT_RIALTO_SERVER_I_TEXT_TRACK_SESSION_H_

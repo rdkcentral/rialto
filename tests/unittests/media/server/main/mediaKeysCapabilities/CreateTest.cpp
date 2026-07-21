@@ -40,8 +40,8 @@ protected:
 
     RialtoServerCreateMediaKeysCapabilitiesTest()
         : m_ocdmFactoryMock{std::make_shared<StrictMock<OcdmFactoryMock>>()},
-          m_ocdmMock{std::make_shared<StrictMock<OcdmMock>>()}, m_ocdmSystemFactoryMock{
-                                                                    std::make_shared<StrictMock<OcdmSystemFactoryMock>>()}
+          m_ocdmMock{std::make_shared<StrictMock<OcdmMock>>()},
+          m_ocdmSystemFactoryMock{std::make_shared<StrictMock<OcdmSystemFactoryMock>>()}
     {
     }
 };

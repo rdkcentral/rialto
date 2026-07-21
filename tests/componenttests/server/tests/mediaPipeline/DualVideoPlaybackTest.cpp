@@ -42,6 +42,7 @@ const std::string kDummyStateName{"dummy"};
 
 using testing::_;
 using testing::AtLeast;
+using testing::AtMost;
 using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
@@ -75,6 +76,7 @@ public:
         EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kSecondaryGstPlayFlagsType))
             .Times(4)
             .WillRepeatedly(Return(&m_flagsClass));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeClassUnref(&m_flagsClass)).Times(4);
         EXPECT_CALL(*m_glibWrapperMock, gFlagsGetValueByNick(&m_flagsClass, StrEq("audio")))
             .WillOnce(Return(&m_audioFlag))
             .RetiresOnSaturation();
@@ -96,6 +98,9 @@ public:
             .WillOnce(Return(&m_secondaryPlaysink));
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryPlaysink, StrEq("send-event-mode")));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryPlaysink));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_secondaryPipeline, GST_STATE_READY))
+            .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&m_secondaryPipeline)).Times(AtMost(1));
 
         // In case of longer testruns, GstPlayer may request to query position
         EXPECT_CALL(*m_gstWrapperMock, gstElementQueryPosition(&m_secondaryPipeline, GST_FORMAT_TIME, _))
@@ -141,6 +146,8 @@ public:
             .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_videoCaps, StrEq("height"), G_TYPE_INT, kHeight))
             .RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_videoCaps)).WillOnce(Return(&m_videoCapsStr));
+        EXPECT_CALL(*m_glibWrapperMock, gFree(&m_videoCapsStr));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("vidsrc")))
             .WillOnce(Return(GST_ELEMENT(&m_secondaryVideoAppSrc)));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCaps(&m_secondaryVideoAppSrc, &m_videoCaps));
@@ -168,8 +175,19 @@ public:
         EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock,
                     gstBinAdd(GST_BIN(&m_secondaryRialtoSource), GST_ELEMENT(&m_secondaryVideoAppSrc)));
-        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("src")))
-            .WillOnce(Return(&m_pad));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("queue"), _))
+            .WillOnce(Return(&m_secondaryQueue))
+            .RetiresOnSaturation();
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryQueue, StrEq("max-size-buffers"))).RetiresOnSaturation();
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryQueue, StrEq("max-size-bytes"))).RetiresOnSaturation();
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryQueue, StrEq("max-size-time"))).RetiresOnSaturation();
+        EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(&m_secondaryQueue, StrEq("silent"))).RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstBinAdd(GST_BIN(&m_secondaryRialtoSource), &m_secondaryQueue)).RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstElementSyncStateWithParent(&m_secondaryQueue)).RetiresOnSaturation();
+        EXPECT_CALL(*m_gstWrapperMock, gstElementLink(GST_ELEMENT(&m_secondaryVideoAppSrc), &m_secondaryQueue));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStaticPad(&m_secondaryQueue, StrEq("src")))
+            .WillOnce(Return(&m_pad))
+            .RetiresOnSaturation();
         EXPECT_CALL(*m_gstWrapperMock, gstGhostPadNew(StrEq(m_sourceName), &m_pad))
             .WillOnce(Return(&m_ghostPad))
             .RetiresOnSaturation();
@@ -264,7 +282,8 @@ public:
             .WillOnce(Return(&m_secondaryBus));
         EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_secondaryBus, nullptr, nullptr, nullptr));
         EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryBus));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryPipeline));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_secondaryPipeline)).Times(testing::Between(1, 2));
+        EXPECT_CALL(*m_glibWrapperMock, gThreadPoolStopUnusedThreads()).Times(testing::Between(1, 2));
     }
 
     void createSecondaryFullSession()
@@ -318,9 +337,17 @@ public:
     void indicateAllSecondarySourcesAttached()
     {
         ExpectMessage<firebolt::rialto::PlaybackStateChangeEvent> expectedPlaybackStateChange(m_clientStub);
+        ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
 
         auto allSourcesAttachedReq{createAllSourcesAttachedRequest(m_secondarySessionId)};
         ConfigureAction<AllSourcesAttached>(m_clientStub).send(allSourcesAttachedReq).expectSuccess();
+
+        auto receivedNeedData{expectedNeedData.getMessage()};
+        ASSERT_TRUE(receivedNeedData);
+        EXPECT_EQ(receivedNeedData->session_id(), m_secondarySessionId);
+        EXPECT_EQ(receivedNeedData->source_id(), m_secondaryVideoSourceId);
+        EXPECT_EQ(receivedNeedData->frame_count(), kPrerollNumFrames);
+        m_lastSecondaryNeedData = receivedNeedData;
 
         auto receivedPlaybackStateChange{expectedPlaybackStateChange.getMessage()};
         ASSERT_TRUE(receivedPlaybackStateChange);
@@ -344,18 +371,6 @@ public:
         EXPECT_EQ(receivedPlaybackStateChange->session_id(), m_secondarySessionId);
         EXPECT_EQ(receivedPlaybackStateChange->state(),
                   ::firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_PLAYING);
-    }
-
-    void secondaryGstNeedData()
-    {
-        ExpectMessage<firebolt::rialto::NeedMediaDataEvent> expectedNeedData{m_clientStub};
-        m_secondaryGstreamerStub.needData(&m_secondaryVideoAppSrc, 1);
-        auto receivedNeedData{expectedNeedData.getMessage()};
-        ASSERT_TRUE(receivedNeedData);
-        EXPECT_EQ(receivedNeedData->session_id(), m_secondarySessionId);
-        EXPECT_EQ(receivedNeedData->source_id(), m_secondaryVideoSourceId);
-        EXPECT_EQ(receivedNeedData->frame_count(), kFrameCountInPlayingState);
-        m_lastSecondaryNeedData = receivedNeedData;
     }
 
     void pushSecondaryVideoData()
@@ -462,6 +477,7 @@ public:
     int m_secondarySessionId{-1};
     int m_secondaryVideoSourceId{-1};
     GstElement m_secondaryPipeline{};
+    GstElement m_secondaryQueue{};
     GstObject m_westerosFactory{};
     GstElement m_westerosSink{};
     GParamSpec m_rectangleSpec{};
@@ -645,7 +661,7 @@ TEST_F(DualVideoPlaybackTest, playbackFullDualVideo)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Create a secondary media session
     createSecondaryFullSession();
@@ -672,8 +688,6 @@ TEST_F(DualVideoPlaybackTest, playbackFullDualVideo)
     playSecondary();
 
     // Step 9: Push initial data for primary session
-    gstNeedData(&m_audioAppSrc, kFrameCountInPlayingState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPlayingState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
@@ -687,7 +701,6 @@ TEST_F(DualVideoPlaybackTest, playbackFullDualVideo)
     }
 
     // Step 10: Push initial data for secondary session
-    secondaryGstNeedData();
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
@@ -722,7 +735,6 @@ TEST_F(DualVideoPlaybackTest, playbackFullDualVideo)
     destroySecondarySession();
 
     // Step 16: Terminate the primary media session
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
     willStop();
@@ -901,7 +913,7 @@ TEST_F(DualVideoPlaybackTest, playbackNoResouceManagerSecondaryVideo)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Create a secondary media session
     createSecondaryLimitedSession();
@@ -928,8 +940,6 @@ TEST_F(DualVideoPlaybackTest, playbackNoResouceManagerSecondaryVideo)
     playSecondary();
 
     // Step 9: Push initial data for primary session
-    gstNeedData(&m_audioAppSrc, kFrameCountInPlayingState);
-    gstNeedData(&m_videoAppSrc, kFrameCountInPlayingState);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
@@ -943,7 +953,6 @@ TEST_F(DualVideoPlaybackTest, playbackNoResouceManagerSecondaryVideo)
     }
 
     // Step 10: Push initial data for secondary session
-    secondaryGstNeedData();
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
@@ -978,7 +987,6 @@ TEST_F(DualVideoPlaybackTest, playbackNoResouceManagerSecondaryVideo)
     destroySecondarySession();
 
     // Step 16: Terminate the primary media session
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
     willStop();

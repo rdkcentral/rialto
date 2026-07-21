@@ -78,29 +78,3 @@ TEST_F(RialtoServerMediaPipelineSetSourcePositionTest, SetSourcePositionNoSource
     EXPECT_FALSE(m_mediaPipeline->setSourcePosition(m_kDummySourceId, m_kPosition, m_kResetTime, m_kAppliedRate,
                                                     m_kStopPosition));
 }
-
-/**
- * Test that SetSourcePosition resets the Eos flag on success
- */
-TEST_F(RialtoServerMediaPipelineSetSourcePositionTest, SetSourcePositionResetEos)
-{
-    std::unique_ptr<IMediaPipeline::MediaSource> mediaSource =
-        std::make_unique<IMediaPipeline::MediaSourceVideo>(m_kMimeType);
-
-    loadGstPlayer();
-    mainThreadWillEnqueueTaskAndWait();
-
-    EXPECT_CALL(*m_gstPlayerMock, attachSource(Ref(mediaSource)));
-    EXPECT_EQ(m_mediaPipeline->attachSource(mediaSource), true);
-    std::int32_t sourceId{mediaSource->getId()};
-    setEos(firebolt::rialto::MediaSourceType::VIDEO);
-
-    mainThreadWillEnqueueTaskAndWait();
-
-    EXPECT_CALL(*m_gstPlayerMock, setSourcePosition(m_kType, m_kPosition, m_kResetTime, m_kAppliedRate, m_kStopPosition));
-    EXPECT_TRUE(m_mediaPipeline->setSourcePosition(sourceId, m_kPosition, m_kResetTime, m_kAppliedRate, m_kStopPosition));
-
-    // Expect need data notified to client
-    expectNotifyNeedData(firebolt::rialto::MediaSourceType::VIDEO, sourceId, 3);
-    m_gstPlayerCallback->notifyNeedMediaData(firebolt::rialto::MediaSourceType::VIDEO);
-}

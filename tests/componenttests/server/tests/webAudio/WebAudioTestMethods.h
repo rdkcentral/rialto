@@ -109,6 +109,7 @@ protected:
     GstElement m_convert;
     GstElement m_resample;
     GstElement m_volume;
+    GstElement m_queue;
     GstBuffer m_buffer;
     gchar m_capsStr;
 

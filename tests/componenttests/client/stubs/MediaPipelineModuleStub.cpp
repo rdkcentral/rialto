@@ -105,6 +105,16 @@ void MediaPipelineModuleStub::notifyBufferUnderflowEvent(int sessionId, int32_t 
     getClient()->sendEvent(event);
 }
 
+void MediaPipelineModuleStub::notifyFirstFrameReceivedEvent(int sessionId, int32_t sourceId)
+{
+    waitForClientConnect();
+
+    auto event = std::make_shared<firebolt::rialto::FirstFrameReceivedEvent>();
+    event->set_session_id(sessionId);
+    event->set_source_id(sourceId);
+    getClient()->sendEvent(event);
+}
+
 void MediaPipelineModuleStub::notifyPlaybackErrorEvent(int sessionId, int32_t sourceId, PlaybackError error)
 {
     waitForClientConnect();
@@ -123,6 +133,17 @@ void MediaPipelineModuleStub::notifySourceFlushed(int sessionId, int32_t sourceI
     auto event = std::make_shared<firebolt::rialto::SourceFlushedEvent>();
     event->set_session_id(sessionId);
     event->set_source_id(sourceId);
+    getClient()->sendEvent(event);
+}
+
+void MediaPipelineModuleStub::notifyPlaybackInfo(int sessionId, const firebolt::rialto::PlaybackInfo &playbackInfo)
+{
+    waitForClientConnect();
+
+    auto event = std::make_shared<firebolt::rialto::PlaybackInfoEvent>();
+    event->set_session_id(sessionId);
+    event->set_current_position(playbackInfo.currentPosition);
+    event->set_volume(playbackInfo.volume);
     getClient()->sendEvent(event);
 }
 } // namespace firebolt::rialto::client::ct

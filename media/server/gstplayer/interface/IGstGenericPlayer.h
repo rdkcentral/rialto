@@ -59,12 +59,13 @@ public:
      * @param[in] decryptionService : The decryption service.
      * @param[in] type              : The media type the gstreamer player shall support.
      * @param[in] videoRequirements : The video requirements for the playback.
+     * @param[in] isLive            : Indicates if the media is live.
      *
      * @retval the new player instance or null on error.
      */
     virtual std::unique_ptr<IGstGenericPlayer>
     createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                           const VideoRequirements &videoRequirements,
+                           const VideoRequirements &videoRequirements, bool isLive,
                            const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
                                &rdkGstreamerUtilsWrapperFactory) = 0;
 };
@@ -89,7 +90,7 @@ public:
     virtual void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) = 0;
 
     /**
-     * @brief Unattaches a source.
+     * @brief Removes a source from gstreamer.
      *
      * @param[in] mediaSourceType : The media source type.
      *
@@ -105,14 +106,15 @@ public:
     /**
      * @brief Starts playback of the media.
      *
-     * This method is considered to be asynchronous and MUST NOT block
-     * but should request playback and then return.
-     *
      * Once the backend is successfully playing it should notify the
-     * media player client of playback state PlaybackState::PLAYING.
+     * media player client of playback state
+     * IMediaPipelineClient::PlaybackState::PLAYING.
      *
+     * @param[out] async     : True if play method call is asynchronous
+     *
+     * @retval true on success.
      */
-    virtual void play() = 0;
+    virtual void play(bool &async) = 0;
 
     /**
      * @brief Pauses playback of the media.
@@ -192,6 +194,15 @@ public:
      * @retval True on success
      */
     virtual bool getPosition(std::int64_t &position) = 0;
+
+    /**
+     * @brief Get the playback duration in nanoseconds.
+     *
+     * @param[out] duration : The playback duration in nanoseconds.
+     *
+     * @retval True on success
+     */
+    virtual bool getDuration(std::int64_t &duration) = 0;
 
     /**
      * @brief Sets the "Immediate Output" property for this source.
@@ -361,9 +372,10 @@ public:
      *
      * @param[in] mediaSourceType : The media source type to flush.
      * @param[in] resetTime : True if time should be reset
+     * @param[out] async     : True if flushed source is asynchronous (will preroll after flush)
      *
      */
-    virtual void flush(const MediaSourceType &mediaSourceType, bool resetTime) = 0;
+    virtual void flush(const MediaSourceType &mediaSourceType, bool resetTime, bool &async) = 0;
 
     /**
      * @brief Set the source position in nanoseconds.
@@ -378,6 +390,15 @@ public:
      */
     virtual void setSourcePosition(const MediaSourceType &mediaSourceType, int64_t position, bool resetTime,
                                    double appliedRate, uint64_t stopPosition) = 0;
+
+    /**
+     * @brief Sets the subtitle offset.
+     *
+     * This method sets the subtitle offset to synchronize subtitle timing.
+     *
+     * @param[in] position : The subtitle offset position in nanoseconds.
+     */
+    virtual void setSubtitleOffset(int64_t position) = 0;
 
     /**
      * @brief Process audio gap

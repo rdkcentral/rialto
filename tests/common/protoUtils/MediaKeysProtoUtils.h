@@ -68,6 +68,14 @@ convertMediaKeyErrorStatus(const firebolt::rialto::ProtoMediaKeyErrorStatus &err
     {
         return firebolt::rialto::MediaKeyErrorStatus::BAD_SESSION_ID;
     }
+    case firebolt::rialto::ProtoMediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+    {
+        return firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED;
+    }
+    case firebolt::rialto::ProtoMediaKeyErrorStatus::BUFFER_TOO_SMALL:
+    {
+        return firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL;
+    }
     case firebolt::rialto::ProtoMediaKeyErrorStatus::NOT_SUPPORTED:
     {
         return firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED;
@@ -75,6 +83,10 @@ convertMediaKeyErrorStatus(const firebolt::rialto::ProtoMediaKeyErrorStatus &err
     case firebolt::rialto::ProtoMediaKeyErrorStatus::INVALID_STATE:
     {
         return firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE;
+    }
+    case firebolt::rialto::ProtoMediaKeyErrorStatus::OUTPUT_RESTRICTED:
+    {
+        return firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED;
     }
     case firebolt::rialto::ProtoMediaKeyErrorStatus::FAIL:
     {
@@ -101,9 +113,21 @@ convertMediaKeyErrorStatus(const firebolt::rialto::MediaKeyErrorStatus &errorSta
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::NOT_SUPPORTED;
     }
+    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED;
+    }
+    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::BUFFER_TOO_SMALL;
+    }
     case firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE:
     {
         return firebolt::rialto::ProtoMediaKeyErrorStatus::INVALID_STATE;
+    }
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+    {
+        return firebolt::rialto::ProtoMediaKeyErrorStatus::OUTPUT_RESTRICTED;
     }
     case firebolt::rialto::MediaKeyErrorStatus::FAIL:
     {
@@ -144,6 +168,21 @@ convertInitDataType(const firebolt::rialto::InitDataType &initDataType)
         return firebolt::rialto::GenerateRequestRequest_InitDataType::GenerateRequestRequest_InitDataType_DRMHEADER;
     default:
         return firebolt::rialto::GenerateRequestRequest_InitDataType::GenerateRequestRequest_InitDataType_UNKNOWN;
+    }
+}
+
+inline firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense
+convertLimitedDurationLicense(const firebolt::rialto::LimitedDurationLicense &ldlState)
+{
+    switch (ldlState)
+    {
+    case firebolt::rialto::LimitedDurationLicense::ENABLED:
+        return firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense_ENABLED;
+    case firebolt::rialto::LimitedDurationLicense::DISABLED:
+        return firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense_DISABLED;
+    case firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED:
+    default:
+        return firebolt::rialto::GenerateRequestRequest_LimitedDurationLicense_NOT_SPECIFIED;
     }
 }
 

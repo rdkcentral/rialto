@@ -37,11 +37,11 @@ public:
     MOCK_METHOD(bool, destroyMediaKeys, (int mediaKeysHandle), (override));
     MOCK_METHOD(MediaKeyErrorStatus, createKeySession,
                 (int mediaKeysHandle, KeySessionType sessionType, const std::shared_ptr<IMediaKeysClient> &client,
-                 bool isLDL, int32_t &keySessionId),
+                 int32_t &keySessionId),
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, generateRequest,
                 (int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,
-                 const std::vector<uint8_t> &initData),
+                 const std::vector<uint8_t> &initData, const LimitedDurationLicense &ldlState),
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, loadSession, (int mediaKeysHandle, int32_t keySessionId), (override));
     MOCK_METHOD(MediaKeyErrorStatus, updateSession,
@@ -69,7 +69,11 @@ public:
     MOCK_METHOD(bool, supportsKeySystem, (const std::string &keySystem), (override));
     MOCK_METHOD(bool, getSupportedKeySystemVersion, (const std::string &keySystem, std::string &version), (override));
     MOCK_METHOD(bool, isServerCertificateSupported, (const std::string &keySystem), (override));
+    MOCK_METHOD(bool, getSupportedRobustnessLevels,
+                (const std::string &keySystem, std::vector<std::string> &robustnessLevels), (override));
     MOCK_METHOD(void, ping, (const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure), (override));
+    MOCK_METHOD(MediaKeyErrorStatus, getMetricSystemData, (int mediaKeysHandle, std::vector<uint8_t> &buffer),
+                (override));
 };
 } // namespace firebolt::rialto::server::service
 

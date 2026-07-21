@@ -212,6 +212,7 @@ bool SessionServerManager::switchToActive()
     {
         m_controlService.setApplicationState(ApplicationState::RUNNING);
         m_currentState.store(common::SessionServerState::ACTIVE);
+        RIALTO_SERVER_LOG_MIL("RialtoServer state is ACTIVE now");
         return true;
     }
     m_playbackService.switchToInactive();
@@ -232,6 +233,7 @@ bool SessionServerManager::switchToInactive()
     {
         m_controlService.setApplicationState(ApplicationState::INACTIVE);
         m_currentState.store(common::SessionServerState::INACTIVE);
+        RIALTO_SERVER_LOG_MIL("RialtoServer state is INACTIVE now");
         return true;
     }
     if (m_currentState.load() == common::SessionServerState::ACTIVE)
@@ -250,6 +252,7 @@ bool SessionServerManager::switchToInactive()
 
 bool SessionServerManager::switchToNotRunning()
 {
+    RIALTO_SERVER_LOG_MIL("RialtoServer state switch to NOT_RUNNING requested");
     if (m_currentState.load() == common::SessionServerState::NOT_RUNNING)
     {
         RIALTO_SERVER_LOG_DEBUG("Session server already in NotRunning state.");

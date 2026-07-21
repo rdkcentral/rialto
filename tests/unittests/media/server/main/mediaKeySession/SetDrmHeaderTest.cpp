@@ -19,6 +19,18 @@
 
 #include "MediaKeySessionTestBase.h"
 
+MATCHER_P(drmHeaderMatcher, header, "")
+{
+    for (size_t i = 0; i < header.size(); ++i)
+    {
+        if (arg[i] != header[i])
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 class RialtoServerMediaKeySessionSetDrmHeaderTest : public MediaKeySessionTestBase
 {
 protected:
@@ -33,10 +45,15 @@ TEST_F(RialtoServerMediaKeySessionSetDrmHeaderTest, Success)
 {
     createKeySession(kNetflixKeySystem);
 
+    generateRequestPlayready();
+
     EXPECT_CALL(*m_ocdmSessionMock, setDrmHeader(&m_kDrmHeader[0], m_kDrmHeader.size()))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->setDrmHeader(m_kDrmHeader));
+
+    // Close ocdm before destroying
+    expectCloseKeySession(kNetflixKeySystem);
 }
 
 /**
@@ -46,10 +63,15 @@ TEST_F(RialtoServerMediaKeySessionSetDrmHeaderTest, OcdmSessionFailure)
 {
     createKeySession(kNetflixKeySystem);
 
+    generateRequestPlayready();
+
     EXPECT_CALL(*m_ocdmSessionMock, setDrmHeader(&m_kDrmHeader[0], m_kDrmHeader.size()))
         .WillOnce(Return(MediaKeyErrorStatus::FAIL));
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->setDrmHeader(m_kDrmHeader));
+
+    // Close ocdm before destroying
+    expectCloseKeySession(kNetflixKeySystem);
 }
 
 /**
@@ -57,7 +79,9 @@ TEST_F(RialtoServerMediaKeySessionSetDrmHeaderTest, OcdmSessionFailure)
  */
 TEST_F(RialtoServerMediaKeySessionSetDrmHeaderTest, OnErrorFailure)
 {
-    createKeySession(kWidevineKeySystem);
+    createKeySession(kNetflixKeySystem);
+
+    generateRequestPlayready();
 
     EXPECT_CALL(*m_ocdmSessionMock, setDrmHeader(&m_kDrmHeader[0], m_kDrmHeader.size()))
         .WillOnce(Invoke(
@@ -68,4 +92,7 @@ TEST_F(RialtoServerMediaKeySessionSetDrmHeaderTest, OnErrorFailure)
             }));
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->setDrmHeader(m_kDrmHeader));
+
+    // Close ocdm before destroying
+    expectCloseKeySession(kNetflixKeySystem);
 }

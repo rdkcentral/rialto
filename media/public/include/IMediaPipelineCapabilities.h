@@ -107,6 +107,15 @@ public:
      */
     virtual std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
                                                             const std::vector<std::string> &propertyNames) = 0;
+
+    /**
+     * @brief Checks if the platform is video master.
+     *
+     * @param[out] isVideoMaster : The output value. True if video is master otherwise false.
+     *
+     * @retval true on success false otherwise
+     */
+    virtual bool isVideoMaster(bool &isVideoMaster) = 0;
 };
 
 }; // namespace firebolt::rialto

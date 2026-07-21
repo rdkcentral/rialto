@@ -110,7 +110,7 @@ public:
      */
     virtual ~MediaPipeline();
 
-    bool load(MediaType type, const std::string &mimeType, const std::string &url) override;
+    bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override;
 
     bool attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
 
@@ -118,7 +118,7 @@ public:
 
     bool allSourcesAttached() override;
 
-    bool play() override;
+    bool play(bool &async) override;
 
     bool pause() override;
 
@@ -156,9 +156,13 @@ public:
 
     void notifyBufferUnderflow(int32_t sourceId) override;
 
+    void notifyFirstFrameReceived(int32_t sourceId) override;
+
     void notifyPlaybackError(int32_t sourceId, PlaybackError error) override;
 
     void notifySourceFlushed(int32_t sourceId) override;
+
+    void notifyPlaybackInfo(const PlaybackInfo &playbackInfo) override;
 
     bool renderFrame() override;
 
@@ -186,10 +190,14 @@ public:
 
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
 
-    bool flush(int32_t sourceId, bool resetTime) override;
+    bool getDuration(int64_t &duration) override;
+
+    bool flush(int32_t sourceId, bool resetTime, bool &async) override;
 
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;
+
+    bool setSubtitleOffset(int32_t sourceId, int64_t position) override;
 
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 

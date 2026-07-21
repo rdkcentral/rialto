@@ -27,11 +27,13 @@ namespace firebolt::rialto::server::tasks::generic
 {
 HandleBusMessage::HandleBusMessage(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                    IGstGenericPlayerClient *client,
-                                   std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                                   std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
-                                   GstMessage *message)
+                                   const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                   const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
+                                   GstMessage *message, const IFlushWatcher &flushWatcher)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper},
-      m_glibWrapper{glibWrapper}, m_message{message}
+      m_glibWrapper{glibWrapper}, m_message{message}, m_flushWatcher{flushWatcher},
+      m_isFlushOngoingDuringCreation{flushWatcher.isFlushOngoing()},
+      m_isAsyncFlushOngoingDuringCreation{flushWatcher.isAsyncFlushOngoing()}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing HandleBusMessage");
 }
@@ -52,13 +54,18 @@ void HandleBusMessage::execute() const
         {
             GstState oldState, newState, pending;
             m_gstWrapper->gstMessageParseStateChanged(m_message, &oldState, &newState, &pending);
-            RIALTO_SERVER_LOG_INFO("State changed (old: %s, new: %s, pending: %s)",
-                                   m_gstWrapper->gstElementStateGetName(oldState),
-                                   m_gstWrapper->gstElementStateGetName(newState),
-                                   m_gstWrapper->gstElementStateGetName(pending));
+            const char *oldStateName = m_gstWrapper->gstElementStateGetName(oldState);
+            const char *newStateName = m_gstWrapper->gstElementStateGetName(newState);
+            const char *pendingStateName = m_gstWrapper->gstElementStateGetName(pending);
+            RIALTO_SERVER_LOG_MIL("State changed (old: %s, new: %s, pending: %s)", oldStateName, newStateName,
+                                  pendingStateName);
+            auto recordId = m_context.gstProfiler->createRecord("Pipeline State Changed", newStateName);
+            if (recordId)
+                m_context.gstProfiler->logRecord(recordId.value());
+            if (newState == GST_STATE_PLAYING)
+                m_context.gstProfiler->logPipelineSummary();
 
-            std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +
-                                   std::string(m_gstWrapper->gstElementStateGetName(newState));
+            std::string filename = std::string(oldStateName) + "-" + std::string(newStateName);
             m_gstWrapper->gstDebugBinToDotFileWithTs(GST_BIN(m_context.pipeline), GST_DEBUG_GRAPH_SHOW_ALL,
                                                      filename.c_str());
             if (!m_gstPlayerClient)
@@ -74,31 +81,62 @@ void HandleBusMessage::execute() const
             }
             case GST_STATE_PAUSED:
             {
+                m_player.startNotifyPlaybackInfoTimer();
+                m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
                 if (pending != GST_STATE_PAUSED)
                 {
+                    // If async flush was requested before HandleBusMessage task creation (but it was not executed yet)
+                    // or if async flush was created after HandleBusMessage task creation (but before its execution)
+                    // we can't report playback state, because async flush causes state loss - reported state is probably invalid.
+                    if (m_isAsyncFlushOngoingDuringCreation || m_flushWatcher.isAsyncFlushOngoing())
+                    {
+                        RIALTO_SERVER_LOG_WARN("Skip PAUSED notification - flush is ongoing");
+                        break;
+                    }
                     // newState==GST_STATE_PAUSED, pending==GST_STATE_PAUSED state transition is received as a result of
                     // waiting for preroll after seek.
                     // Subsequent newState==GST_STATE_PAUSED, pending!=GST_STATE_PAUSED transition will
                     // indicate that the pipeline is prerolled and it reached GST_STATE_PAUSED state after seek.
                     m_gstPlayerClient->notifyPlaybackState(PlaybackState::PAUSED);
                 }
+
+                if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
+                {
+                    m_player.stopSubtitleClockResyncTimer();
+                }
                 break;
             }
             case GST_STATE_PLAYING:
             {
+                // If async flush was requested before HandleBusMessage task creation (but it was not executed yet)
+                // or if async flush was created after HandleBusMessage task creation (but before its execution)
+                // we can't report playback state, because async flush causes state loss - reported state is probably invalid.
+                if (m_isAsyncFlushOngoingDuringCreation || m_flushWatcher.isAsyncFlushOngoing())
+                {
+                    RIALTO_SERVER_LOG_WARN("Skip PLAYING notification - flush is ongoing");
+                    break;
+                }
                 if (m_context.pendingPlaybackRate != kNoPendingPlaybackRate)
                 {
                     m_player.setPendingPlaybackRate();
                 }
                 m_player.startPositionReportingAndCheckAudioUnderflowTimer();
+                if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
+                {
+                    m_player.startSubtitleClockResyncTimer();
+                }
 
                 m_context.isPlaying = true;
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::PLAYING);
                 break;
             }
             case GST_STATE_VOID_PENDING:
+            {
+                break;
+            }
             case GST_STATE_READY:
             {
+                m_player.stopNotifyPlaybackInfoTimer();
                 break;
             }
             }
@@ -107,6 +145,14 @@ void HandleBusMessage::execute() const
     }
     case GST_MESSAGE_EOS:
     {
+        // If flush was requested before HandleBusMessage task creation (but it was not executed yet)
+        // or if flush was created after HandleBusMessage task creation (but before its execution)
+        // we can't report EOS, because flush clears EOS.
+        if (m_isFlushOngoingDuringCreation || m_flushWatcher.isFlushOngoing())
+        {
+            RIALTO_SERVER_LOG_WARN("Skip EOS notification - flush is ongoing");
+            break;
+        }
         if (m_context.pipeline && GST_MESSAGE_SRC(m_message) == GST_OBJECT(m_context.pipeline))
         {
             RIALTO_SERVER_LOG_MIL("End of stream reached.");
@@ -236,6 +282,32 @@ void HandleBusMessage::execute() const
 
         m_glibWrapper->gFree(debug);
         m_glibWrapper->gErrorFree(err);
+        break;
+    }
+    case GST_MESSAGE_APPLICATION:
+    {
+        const GstStructure *structure = gst_message_get_structure(m_message);
+        if (structure && m_gstWrapper->gstStructureHasName(structure, "HDCPProtectionFailure"))
+        {
+            if (m_gstPlayerClient)
+            {
+                const gchar *kElementName = GST_ELEMENT_NAME(GST_ELEMENT(GST_MESSAGE_SRC(m_message)));
+                if (g_strrstr(kElementName, "video"))
+                {
+                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::VIDEO,
+                                                           PlaybackError::OUTPUT_PROTECTION);
+                }
+                else if (g_strrstr(kElementName, "audio"))
+                {
+                    m_gstPlayerClient->notifyPlaybackError(firebolt::rialto::MediaSourceType::AUDIO,
+                                                           PlaybackError::OUTPUT_PROTECTION);
+                }
+                else
+                {
+                    RIALTO_SERVER_LOG_WARN("Unknown source for HDCPProtectionFailure from '%s'", kElementName);
+                }
+            }
+        }
         break;
     }
     default:

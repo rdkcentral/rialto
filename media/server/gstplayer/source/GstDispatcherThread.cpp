@@ -24,14 +24,17 @@ namespace firebolt::rialto::server
 {
 std::unique_ptr<IGstDispatcherThread> GstDispatcherThreadFactory::createGstDispatcherThread(
     IGstDispatcherThreadClient &client, GstElement *pipeline,
+    const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController,
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper) const
 {
-    return std::make_unique<GstDispatcherThread>(client, pipeline, gstWrapper);
+    return std::make_unique<GstDispatcherThread>(client, pipeline, flushOnPrerollController, gstWrapper);
 }
 
 GstDispatcherThread::GstDispatcherThread(IGstDispatcherThreadClient &client, GstElement *pipeline,
+                                         const std::shared_ptr<IFlushOnPrerollController> &flushOnPrerollController,
                                          const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper)
-    : m_client{client}, m_gstWrapper{gstWrapper}, m_isGstreamerDispatcherActive{true}
+    : m_client{client}, m_flushOnPrerollController{flushOnPrerollController}, m_gstWrapper{gstWrapper},
+      m_isGstreamerDispatcherActive{true}
 {
     RIALTO_SERVER_LOG_INFO("GstDispatcherThread is starting");
     m_gstBusDispatcherThread = std::thread(&GstDispatcherThread::gstBusEventHandler, this, pipeline);
@@ -60,12 +63,13 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
     {
         GstMessage *message =
             m_gstWrapper->gstBusTimedPopFiltered(bus, 100 * GST_MSECOND,
-                                                 static_cast<GstMessageType>(GST_MESSAGE_STATE_CHANGED |
-                                                                             GST_MESSAGE_QOS | GST_MESSAGE_EOS |
-                                                                             GST_MESSAGE_ERROR | GST_MESSAGE_WARNING));
+                                                 static_cast<GstMessageType>(
+                                                     GST_MESSAGE_STATE_CHANGED | GST_MESSAGE_QOS | GST_MESSAGE_EOS |
+                                                     GST_MESSAGE_ERROR | GST_MESSAGE_WARNING | GST_MESSAGE_APPLICATION));
 
         if (message)
         {
+            bool shouldHandleMessage{true};
             if (GST_MESSAGE_SRC(message) == GST_OBJECT(pipeline))
             {
                 switch (GST_MESSAGE_TYPE(message))
@@ -79,10 +83,33 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                     case GST_STATE_NULL:
                     {
                         m_isGstreamerDispatcherActive = false;
+                        if (m_flushOnPrerollController)
+                        {
+                            m_flushOnPrerollController->reset();
+                        }
+                        break;
+                    }
+                    case GST_STATE_PAUSED:
+                    {
+                        if (m_flushOnPrerollController && pending != GST_STATE_PAUSED)
+                        {
+                            m_flushOnPrerollController->stateReached(newState);
+                        }
+                        else if (m_flushOnPrerollController && pending == GST_STATE_PAUSED)
+                        {
+                            m_flushOnPrerollController->setPrerolling();
+                        }
+                        break;
+                    }
+                    case GST_STATE_PLAYING:
+                    {
+                        if (m_flushOnPrerollController)
+                        {
+                            m_flushOnPrerollController->stateReached(newState);
+                        }
+                        break;
                     }
                     case GST_STATE_READY:
-                    case GST_STATE_PAUSED:
-                    case GST_STATE_PLAYING:
                     case GST_STATE_VOID_PENDING:
                     {
                         break;
@@ -101,8 +128,18 @@ void GstDispatcherThread::gstBusEventHandler(GstElement *pipeline)
                 }
                 }
             }
+            else if (GST_MESSAGE_STATE_CHANGED == GST_MESSAGE_TYPE(message))
+            {
+                // Skip handling GST_MESSAGE_STATE_CHANGED for non-pipeline objects.
+                // It signifficantly slows down rialto gst worker thread
+                shouldHandleMessage = false;
+                m_gstWrapper->gstMessageUnref(message);
+            }
 
-            m_client.handleBusMessage(message);
+            if (shouldHandleMessage)
+            {
+                m_client.handleBusMessage(message);
+            }
         }
     }
 

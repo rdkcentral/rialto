@@ -37,9 +37,10 @@ public:
                 (override));
     MOCK_METHOD(bool, removeSource, (int32_t sourceId), (override));
     MOCK_METHOD(bool, allSourcesAttached, (), (override));
-    MOCK_METHOD(bool, load, (MediaType type, const std::string &mimeType, const std::string &url), (override));
+    MOCK_METHOD(bool, load, (MediaType type, const std::string &mimeType, const std::string &url, bool isLive),
+                (override));
     MOCK_METHOD(bool, setVideoWindow, (uint32_t x, uint32_t y, uint32_t width, uint32_t height), (override));
-    MOCK_METHOD(bool, play, (), (override));
+    MOCK_METHOD(bool, play, (bool &async), (override));
     MOCK_METHOD(bool, pause, (), (override));
     MOCK_METHOD(bool, stop, (), (override));
     MOCK_METHOD(bool, haveData, (MediaSourceStatus status, uint32_t numFrames, uint32_t requestId), (override));
@@ -62,10 +63,11 @@ public:
     MOCK_METHOD(bool, setSyncOff, (bool syncOff), (override));
     MOCK_METHOD(bool, setStreamSyncMode, (int32_t sourceId, int32_t streamSyncMode), (override));
     MOCK_METHOD(bool, getStreamSyncMode, (int32_t & streamSyncMode), (override));
-    MOCK_METHOD(bool, flush, (int32_t sourceId, bool resetTime), (override));
+    MOCK_METHOD(bool, flush, (int32_t sourceId, bool resetTime, bool &async), (override));
     MOCK_METHOD(bool, setSourcePosition,
                 (int32_t sourceId, int64_t position, bool resetTime, double appliedRate, uint64_t stopPosition),
                 (override));
+    MOCK_METHOD(bool, setSubtitleOffset, (int32_t sourceId, int64_t position), (override));
     MOCK_METHOD(bool, processAudioGap, (int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
                 (override));
     MOCK_METHOD(bool, setBufferingLimit, (uint32_t limitBufferingMs), (override));
@@ -73,6 +75,7 @@ public:
     MOCK_METHOD(bool, setUseBuffering, (bool useBuffering), (override));
     MOCK_METHOD(bool, getUseBuffering, (bool &useBuffering), (override));
     MOCK_METHOD(bool, switchSource, (const std::unique_ptr<IMediaPipeline::MediaSource> &source), (override));
+    MOCK_METHOD(bool, getDuration, (int64_t & duration), (override));
 };
 } // namespace firebolt::rialto::client
 

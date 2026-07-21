@@ -57,8 +57,8 @@ public:
      * @param[in] ocdmFactory : The ocdm factory.
      * @param[in] ocdmSystemFactory : The ocdmSystem factory.
      */
-    MediaKeysCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IOcdmFactory> ocdmFactory,
-                          std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> ocdmSystemFactory);
+    MediaKeysCapabilities(const std::shared_ptr<firebolt::rialto::wrappers::IOcdmFactory> &ocdmFactory,
+                          const std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystemFactory> &ocdmSystemFactory);
 
     /**
      * @brief Virtual destructor.
@@ -72,6 +72,8 @@ public:
     bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) override;
 
     bool isServerCertificateSupported(const std::string &keySystem) override;
+
+    bool getSupportedRobustnessLevels(const std::string &keySystem, std::vector<std::string> &robustnessLevels) override;
 
 private:
     /**

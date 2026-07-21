@@ -33,6 +33,7 @@ public:
     virtual ~GstWrapperMock() = default;
 
     MOCK_METHOD(void, gstInit, (int *argc, char ***argv), (override));
+    MOCK_METHOD(void, gstDeinit, (), (override));
     MOCK_METHOD(GstPlugin *, gstRegistryFindPlugin, (GstRegistry * registry, const gchar *name), (override));
     MOCK_METHOD(void, gstRegistryRemovePlugin, (GstRegistry * registry, GstPlugin *plugin), (override));
     MOCK_METHOD(void, gstObjectUnref, (gpointer object), (override));
@@ -41,14 +42,20 @@ public:
     MOCK_METHOD(gboolean, gstElementRegister, (GstPlugin * plugin, const gchar *name, guint rank, GType type),
                 (override));
     MOCK_METHOD(GstElement *, gstElementFactoryMake, (const gchar *factoryname, const gchar *name), (override));
+    MOCK_METHOD(GType, gstElementFactoryGetElementType, (GstElementFactory * factory), (override));
     MOCK_METHOD(gpointer, gstObjectRef, (gpointer object), (override));
     MOCK_METHOD(GstElement *, gstBinGetByName, (GstBin * bin, const gchar *name), (override));
     MOCK_METHOD(GstBus *, gstPipelineGetBus, (GstPipeline * pipeline), (override));
     MOCK_METHOD(void, gstMessageParseStateChanged,
                 (GstMessage * message, GstState *oldstate, GstState *newstate, GstState *pending), (override));
     MOCK_METHOD(const gchar *, gstElementStateGetName, (GstState state), (override));
+    MOCK_METHOD(const gchar *, gstElementStateChangeReturnGetName, (GstStateChangeReturn state_ret), (override));
     MOCK_METHOD(GstStateChangeReturn, gstElementSetState, (GstElement * element, GstState state), (override));
     MOCK_METHOD(GstState, gstElementGetState, (GstElement * element), (override));
+    MOCK_METHOD(GstStateChangeReturn, gstElementGetStateReturn, (GstElement * element), (override));
+    MOCK_METHOD(GstState, gstElementGetStateNext, (GstElement * element), (override));
+    MOCK_METHOD(void, gstStateLock, (GstElement * element), (override));
+    MOCK_METHOD(void, gstStateUnlock, (GstElement * element), (override));
     MOCK_METHOD(GstState, gstElementGetPendingState, (GstElement * element), (override));
     MOCK_METHOD(GstObject *, gstElementGetParent, (const GstElement *elem), (const, override));
     MOCK_METHOD(gchar *, gstElementGetName, (GstElement * element), (const, override));
@@ -81,6 +88,7 @@ public:
     MOCK_METHOD(void, gstBusSetSyncHandler, (GstBus *, GstBusSyncHandler, gpointer, GDestroyNotify), (override));
     MOCK_METHOD(GstFlowReturn, gstAppSrcEndOfStream, (GstAppSrc *), (override));
     MOCK_METHOD(gboolean, gstElementQueryPosition, (GstElement *, GstFormat, gint64 *), (override));
+    MOCK_METHOD(gboolean, gstElementQueryDuration, (GstElement *, GstFormat, gint64 *), (override));
     MOCK_METHOD(GstFlowReturn, gstAppSrcPushBuffer, (GstAppSrc *, GstBuffer *), (override));
     MOCK_METHOD(GstBuffer *, gstBufferNew, (), (override));
     MOCK_METHOD(GstBuffer *, gstBufferNewAllocate, (GstAllocator *, gsize, GstAllocationParams *), (override));
@@ -187,6 +195,7 @@ public:
     MOCK_METHOD(gboolean, gstElementPostMessage, (GstElement * element, GstMessage *message), (const, override));
     MOCK_METHOD(GstMessage *, gstMessageNewWarning, (GstObject * src, GError *error, const gchar *debug),
                 (const, override));
+    MOCK_METHOD(GstMessage *, gstMessageNewApplication, (GstObject * src, GstStructure *structure), (const, override));
     MOCK_METHOD(void, gstMessageParseWarning, (GstMessage * message, GError **gerror, gchar **debug), (const, override));
     MOCK_METHOD(GstStructure *, gstCapsGetStructure, (const GstCaps *caps, guint index), (const, override));
     MOCK_METHOD(gboolean, gstObjectSetName, (GstObject * object, const gchar *name), (const, override));
@@ -207,6 +216,25 @@ public:
                 (GstBuffer * buffer, GstFormat format, guint64 start, guint64 end), (const, override));
     MOCK_METHOD(GstPad *, gstElementGetStaticPad, (GstElement * element, const gchar *name), (const, override));
     MOCK_METHOD(GstPad *, gstBaseSinkPad, (GstElement * element), (const, override));
+    MOCK_METHOD(void, gstValueArrayAppendValue, (GValue * value, const GValue *appendValue), (const, override));
+    MOCK_METHOD(void, gstValueSetBuffer, (GValue * value, GstBuffer *buffer), (const, override));
+    MOCK_METHOD(void, gstStructureSetValue, (GstStructure * structure, const gchar *fieldname, const GValue *value),
+                (const, override));
+    MOCK_METHOD(gboolean, gstIsBaseParse, (GstElement * element), (const, override));
+    MOCK_METHOD(void, gstBaseParseSetPtsInterpolation, (GstBaseParse * parse, gboolean ptsInterpolate),
+                (const, override));
+    MOCK_METHOD(GstStateChangeReturn, gstElementGetState,
+                (GstElement * element, GstState *state, GstState *pending, GstClockTime timeout), (override));
+    MOCK_METHOD(GstPad *, gstPadGetPeer, (GstPad * pad), (override));
+    MOCK_METHOD(gboolean, gstPadUnlink, (GstPad * srcpad, GstPad *sinkpad), (override));
+    MOCK_METHOD(GstPadLinkReturn, gstPadLink, (GstPad * srcpad, GstPad *sinkpad), (override));
+    MOCK_METHOD(gboolean, gstBinRemove, (GstBin * bin, GstElement *element), (override));
+    MOCK_METHOD(GstObject *, gstPadGetParent, (GstPad * pad), (override));
+    MOCK_METHOD(gulong, gstPadAddProbe,
+                (GstPad * pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
+                 GDestroyNotify destroyData),
+                (override));
+    MOCK_METHOD(void, gstPadRemoveProbe, (GstPad * pad, gulong id), (override));
 
     GstCaps *gstCapsNewSimple(const char *media_type, const char *fieldname, ...) const override
     {

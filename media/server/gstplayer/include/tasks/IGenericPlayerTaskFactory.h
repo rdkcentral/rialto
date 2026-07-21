@@ -22,6 +22,7 @@
 
 #include "GenericPlayerContext.h"
 #include "IDataReader.h"
+#include "IFlushWatcher.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IHeartbeatHandler.h"
 #include "IMediaPipeline.h"
@@ -119,14 +120,16 @@ public:
     /**
      * @brief Creates a HandleBusMessage task.
      *
-     * @param[in] context    : The GstGenericPlayer context
-     * @param[in] message    : The message to be handled.
+     * @param[in] context      : The GstGenericPlayer context
+     * @param[in] player       : The GstGenericPlayer instance
+     * @param[in] message      : The message to be handled.
+     * @param[in] flushWatcher : Flush watcher instance
      *
      * @retval the new HandleBusMessage task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createHandleBusMessage(GenericPlayerContext &context,
-                                                                IGstGenericPlayerPrivate &player,
-                                                                GstMessage *message) const = 0;
+                                                                IGstGenericPlayerPrivate &player, GstMessage *message,
+                                                                const IFlushWatcher &flushWatcher) const = 0;
 
     /**
      * @brief Creates a NeedData task.
@@ -190,10 +193,12 @@ public:
      * @brief Creates a ReportPosition task.
      *
      * @param[in] context       : The GstGenericPlayer context
+     * @param[in] player        : The GstGenericPlayer instance
      *
      * @retval the new ReportPosition task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createReportPosition(GenericPlayerContext &context) const = 0;
+    virtual std::unique_ptr<IPlayerTask> createReportPosition(GenericPlayerContext &context,
+                                                              IGstGenericPlayerPrivate &player) const = 0;
 
     /**
      * @brief Creates a CheckAudioUnderflow task.
@@ -385,6 +390,19 @@ public:
                                                          bool underflowEnabled, MediaSourceType sourceType) const = 0;
 
     /**
+     * @brief Creates a FirstFrameReceived task.
+     *
+     * @param[in] context          : The GstGenericPlayer context
+     * @param[in] player           : The GstPlayer instance
+     * @param[in] sourceType       : Source type (audio or video).
+     *
+     * @retval the new FirstFrameReceived task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createFirstFrameReceived(GenericPlayerContext &context,
+                                                                  IGstGenericPlayerPrivate &player,
+                                                                  MediaSourceType sourceType) const = 0;
+
+    /**
      * @brief Creates an UpdatePlaybackGroup task.
      *
      * @param[in] context       : The GstGenericPlayer context
@@ -424,18 +442,18 @@ public:
      * @param[in] context   : The GstPlayer context
      * @param[in] type      : The media source type to flush
      * @param[in] resetTime : True if time should be reset
+     * @param[in] isAsync     : True if flushed source is asynchronous
      *
      * @retval the new Flush task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createFlush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                     const firebolt::rialto::MediaSourceType &type,
-                                                     bool resetTime) const = 0;
+                                                     const firebolt::rialto::MediaSourceType &type, bool resetTime,
+                                                     bool isAsync) const = 0;
 
     /**
      * @brief Creates a SetSourcePosition task.
      *
      * @param[in] context   : The GstPlayer context
-     * @param[in] player     : The GstGenericPlayer instance
      * @param[in] type      : The media source type to set position
      * @param[in] position  : The new source position
      * @param[in] resetTime : True if time should be reset
@@ -445,10 +463,20 @@ public:
      * @retval the new SetSourcePosition task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createSetSourcePosition(GenericPlayerContext &context,
-                                                                 IGstGenericPlayerPrivate &player,
                                                                  const firebolt::rialto::MediaSourceType &type,
                                                                  std::int64_t position, bool resetTime,
                                                                  double appliedRate, uint64_t stopPosition) const = 0;
+
+    /**
+     * @brief Creates a SetSubtitleOffset task.
+     *
+     * @param[in] context  : The GstPlayer context
+     * @param[in] position : The subtitle offset position in nanoseconds
+     *
+     * @retval the new SetSubtitleOffset task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetSubtitleOffset(GenericPlayerContext &context,
+                                                                 std::int64_t position) const = 0;
 
     /**
      * @brief Creates a ProcessAudioGap task.
@@ -516,6 +544,17 @@ public:
     virtual std::unique_ptr<IPlayerTask>
     createSwitchSource(IGstGenericPlayerPrivate &player,
                        const std::unique_ptr<IMediaPipeline::MediaSource> &source) const = 0;
+
+    /**
+     * @brief Creates a SynchroniseSubtitleClock task.
+     *
+     * @param[in] context   : The GstGenericPlayer context
+     * @param[in] player    : The GstGenericPlayer instance
+     *
+     * @retval the new SynchroniseSubtitleClock task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSynchroniseSubtitleClock(GenericPlayerContext &context,
+                                                                        IGstGenericPlayerPrivate &player) const = 0;
 };
 
 } // namespace firebolt::rialto::server

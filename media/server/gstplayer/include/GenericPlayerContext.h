@@ -20,6 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 #define FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 
+#include "FlushOnPrerollController.h"
+#include "IGstProfiler.h"
 #include "IGstSrc.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
@@ -104,6 +106,16 @@ struct GenericPlayerContext
     GstElement *subtitleSink{nullptr};
 
     /**
+     * @brief The video sink
+     */
+    GstElement *videoSink{nullptr};
+
+    /**
+     * @brief Flag used to check, if video decoder handle has been set.
+     */
+    bool isVideoHandleSet{false};
+
+    /**
      * @brief Flag used to check, if BUFFERED notification has been sent.
      *
      * Flag can be used only in worker thread
@@ -180,6 +192,11 @@ struct GenericPlayerContext
     bool pendingRenderFrame{false};
 
     /**
+     * @brief Pending show video window
+     */
+    std::optional<bool> pendingShowVideoWindow{};
+
+    /**
      * @brief Last audio sample timestamps
      * TODO(LLDEV-31012) Needed to detect audio stream underflow
      */
@@ -231,6 +248,13 @@ struct GenericPlayerContext
     std::map<GstElement *, std::vector<SegmentData>> initialPositions;
 
     /**
+     * @brief Currently set position of a source. Used to check, if additional segment should be pushed.
+     *
+     * Attribute can be used only in worker thread
+     */
+    std::map<GstElement *, SegmentData> currentPosition;
+
+    /**
      * @brief The mutex, which protects properties, which are read/written by main/worker thread.
      *        This mutex should be removed in future, when we find out better solution for
      *        property read-write.
@@ -243,6 +267,38 @@ struct GenericPlayerContext
      * Attribute can be used only in worker thread
      */
     std::atomic_bool audioFadeEnabled{false};
+
+    /**
+     * @brief The last known fade volume value used for PlaybackInfo messages.
+     *        The "fade-volume" property must not be queried too frequently as it can cause decoder issues.
+     */
+    std::atomic<double> audioFadeVolume{1.0};
+
+    /**
+     * @brief Workaround for the gstreamer flush issue
+     */
+    std::shared_ptr<IFlushOnPrerollController> flushOnPrerollController{std::make_shared<FlushOnPrerollController>()};
+
+    /**
+     * @brief Flag used to check if the stream is live
+     *        This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
+     */
+    bool isLive{false};
+
+    /**
+     * @brief Profiler for player pipeline
+     */
+    std::unique_ptr<IGstProfiler> gstProfiler;
+
+    /**
+     * @brief The audio position set in the GstSegment.
+     */
+    int64_t audioGstSegmentPosition{-1};
+
+    /**
+     * @brief Current position of the stream in nanoseconds.
+     */
+    std::atomic<int64_t> streamPosition{-1};
 };
 } // namespace firebolt::rialto::server
 

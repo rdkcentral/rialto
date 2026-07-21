@@ -144,12 +144,12 @@ protected:
 
     void expectWidevineKeySystem()
     {
-        EXPECT_CALL(*m_decryptionServiceMock, isNetflixPlayreadyKeySystem(m_keySessionId)).WillOnce(Return(false));
+        EXPECT_CALL(*m_decryptionServiceMock, isExtendedInterfaceUsed(m_keySessionId)).WillOnce(Return(false));
     }
 
     void expectPlayreadyKeySystem()
     {
-        EXPECT_CALL(*m_decryptionServiceMock, isNetflixPlayreadyKeySystem(m_keySessionId)).WillOnce(Return(true));
+        EXPECT_CALL(*m_decryptionServiceMock, isExtendedInterfaceUsed(m_keySessionId)).WillOnce(Return(true));
     }
 
     void expectKeyMappingFailure()
@@ -261,6 +261,39 @@ TEST_F(RialtoServerDecryptorPrivateDecryptTest, DecryptionServiceDecryptFailure)
         .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::FAIL));
 
     EXPECT_EQ(GST_BASE_TRANSFORM_FLOW_DROPPED, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+}
+
+/**
+ * Test GstRialtoDecryptorPrivate posts an HDCP protection message after decryption recovers.
+ */
+TEST_F(RialtoServerDecryptorPrivateDecryptTest, ShouldPostOutputProtectionMessageAfterRestrictedDecryptRecovers)
+{
+    GstStructure hdcpFailureStructure{};
+    GstMessage hdcpFailureMessage{};
+
+    expectGetInfoFromProtectionMeta();
+    expectWidevineKeySystem();
+    expectAddGstProtectionMeta(true);
+
+    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED));
+
+    EXPECT_EQ(GST_BASE_TRANSFORM_FLOW_DROPPED, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
+
+    expectGetInfoFromProtectionMeta();
+    expectWidevineKeySystem();
+    expectAddGstProtectionMeta(true);
+    EXPECT_CALL(*m_decryptionServiceMock, decrypt(m_keySessionId, &m_buffer, &m_caps))
+        .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureNewStringStub(StrEq("HDCPProtectionFailure"), StrEq("message"),
+                                                             G_TYPE_STRING, StrEq("HDCP Output Protection Error")))
+        .WillOnce(Return(&hdcpFailureStructure));
+    EXPECT_CALL(*m_gstWrapperMock, gstMessageNewApplication(GST_OBJECT_CAST(&m_decryptorBase), &hdcpFailureStructure))
+        .WillOnce(Return(&hdcpFailureMessage));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementPostMessage(GST_ELEMENT_CAST(&m_decryptorBase), &hdcpFailureMessage))
+        .WillOnce(Return(TRUE));
+
+    EXPECT_EQ(GST_FLOW_OK, m_gstRialtoDecryptorPrivate->decrypt(&m_buffer, &m_caps));
 }
 
 /**

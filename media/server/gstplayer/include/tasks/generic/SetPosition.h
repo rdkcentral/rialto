@@ -34,7 +34,7 @@ class SetPosition : public IPlayerTask
 {
 public:
     SetPosition(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, std::int64_t position);
+                const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper, std::int64_t position);
     ~SetPosition() override;
     void execute() const override;
 

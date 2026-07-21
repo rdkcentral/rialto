@@ -35,6 +35,14 @@ convertMediaKeyErrorStatus(const firebolt::rialto::ProtoMediaKeyErrorStatus &err
     {
         return firebolt::rialto::MediaKeyErrorStatus::BAD_SESSION_ID;
     }
+    case firebolt::rialto::ProtoMediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+    {
+        return firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED;
+    }
+    case firebolt::rialto::ProtoMediaKeyErrorStatus::BUFFER_TOO_SMALL:
+    {
+        return firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL;
+    }
     case firebolt::rialto::ProtoMediaKeyErrorStatus::NOT_SUPPORTED:
     {
         return firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED;
@@ -46,6 +54,10 @@ convertMediaKeyErrorStatus(const firebolt::rialto::ProtoMediaKeyErrorStatus &err
     case firebolt::rialto::ProtoMediaKeyErrorStatus::FAIL:
     {
         return firebolt::rialto::MediaKeyErrorStatus::FAIL;
+    }
+    case firebolt::rialto::ProtoMediaKeyErrorStatus::OUTPUT_RESTRICTED:
+    {
+        return firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED;
     }
     }
     return firebolt::rialto::MediaKeyErrorStatus::FAIL;
@@ -95,6 +107,14 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &errorStatus)
     {
         return "BAD_SESSION_ID";
     }
+    case firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED:
+    {
+        return "INTERFACE_NOT_IMPLEMENTED";
+    }
+    case firebolt::rialto::MediaKeyErrorStatus::BUFFER_TOO_SMALL:
+    {
+        return "BUFFER_TOO_SMALL";
+    }
     case firebolt::rialto::MediaKeyErrorStatus::NOT_SUPPORTED:
     {
         return "NOT_SUPPORTED";
@@ -106,6 +126,10 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &errorStatus)
     case firebolt::rialto::MediaKeyErrorStatus::FAIL:
     {
         return "FAIL";
+    }
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+    {
+        return "OUTPUT_RESTRICTED";
     }
     }
     return "UNKNOWN";
@@ -318,7 +342,7 @@ bool MediaKeysIpc::containsKey(int32_t keySessionId, const std::vector<uint8_t> 
 }
 
 MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
-                                                   bool isLDL, int32_t &keySessionId)
+                                                   int32_t &keySessionId)
 {
     if (!reattachChannelIfRequired())
     {
@@ -346,7 +370,6 @@ MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, s
     firebolt::rialto::CreateKeySessionRequest request;
     request.set_media_keys_handle(m_mediaKeysHandle);
     request.set_session_type(protoSessionType);
-    request.set_is_ldl(isLDL);
 
     firebolt::rialto::CreateKeySessionResponse response;
     // Default error status to FAIL
@@ -371,7 +394,8 @@ MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, s
 }
 
 MediaKeyErrorStatus MediaKeysIpc::generateRequest(int32_t keySessionId, InitDataType initDataType,
-                                                  const std::vector<uint8_t> &initData)
+                                                  const std::vector<uint8_t> &initData,
+                                                  const LimitedDurationLicense &ldlState)
 {
     if (!reattachChannelIfRequired())
     {
@@ -399,10 +423,29 @@ MediaKeyErrorStatus MediaKeysIpc::generateRequest(int32_t keySessionId, InitData
         break;
     }
 
+    GenerateRequestRequest_LimitedDurationLicense protoLimitedDurationLicense{
+        GenerateRequestRequest_LimitedDurationLicense_NOT_SPECIFIED};
+    switch (ldlState)
+    {
+    case LimitedDurationLicense::NOT_SPECIFIED:
+        protoLimitedDurationLicense = GenerateRequestRequest_LimitedDurationLicense_NOT_SPECIFIED;
+        break;
+    case LimitedDurationLicense::ENABLED:
+        protoLimitedDurationLicense = GenerateRequestRequest_LimitedDurationLicense_ENABLED;
+        break;
+    case LimitedDurationLicense::DISABLED:
+        protoLimitedDurationLicense = GenerateRequestRequest_LimitedDurationLicense_DISABLED;
+        break;
+    default:
+        RIALTO_CLIENT_LOG_WARN("Received unknown limited duration license state");
+        break;
+    }
+
     firebolt::rialto::GenerateRequestRequest request;
     request.set_media_keys_handle(m_mediaKeysHandle);
     request.set_key_session_id(keySessionId);
     request.set_init_data_type(protoInitDataType);
+    request.set_ldl_state(protoLimitedDurationLicense);
 
     for (auto it = initData.begin(); it != initData.end(); it++)
     {
@@ -885,6 +928,36 @@ MediaKeysIpc::getMediaKeyErrorStatusFromResponse(const std::string methodName,
     }
 
     return returnStatus;
+}
+
+MediaKeyErrorStatus MediaKeysIpc::getMetricSystemData(std::vector<uint8_t> &buffer)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return MediaKeyErrorStatus::FAIL;
+    }
+
+    firebolt::rialto::GetMetricSystemDataRequest request;
+    request.set_media_keys_handle(m_mediaKeysHandle);
+
+    firebolt::rialto::GetMetricSystemDataResponse response;
+    // Default error status to FAIL
+    response.set_error_status(ProtoMediaKeyErrorStatus::FAIL);
+
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaKeysStub->getMetricSystemData(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    if (ProtoMediaKeyErrorStatus::OK == response.error_status())
+    {
+        buffer = std::vector<uint8_t>(response.buffer().begin(), response.buffer().end());
+    }
+
+    return getMediaKeyErrorStatusFromResponse("getMetricSystemData", ipcController, response.error_status());
 }
 
 }; // namespace firebolt::rialto::client

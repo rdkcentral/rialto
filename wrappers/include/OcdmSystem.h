@@ -24,6 +24,7 @@
 #include "opencdm/open_cdm.h"
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace firebolt::rialto::wrappers
 {
@@ -59,8 +60,10 @@ public:
     MediaKeyErrorStatus getKeyStoreHash(uint8_t keyStoreHash[], uint32_t keyStoreHashLength) override;
     MediaKeyErrorStatus getSecureStoreHash(uint8_t secureStoreHash[], uint32_t secureStoreHashLength) override;
     MediaKeyErrorStatus getDrmTime(uint64_t *time) override;
+    MediaKeyErrorStatus getMetricSystemData(uint32_t &bufferLength, std::vector<uint8_t> &buffer) override;
     std::unique_ptr<IOcdmSession> createSession(IOcdmSessionClient *client) const override;
     bool supportsServerCertificate() const override;
+    bool getSupportedRobustnessLevels(std::vector<std::string> &robustnessLevels) override;
 
 private:
     /**

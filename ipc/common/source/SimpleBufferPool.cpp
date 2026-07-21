@@ -67,8 +67,7 @@ void *SimpleBufferPool::allocateImpl(size_t bytes)
     {
         std::lock_guard<std::mutex> locker(m_staticBufLock);
 
-        auto entry = std::find_if(m_staticBufMetaData.begin(), m_staticBufMetaData.end(),
-                                  [&](const auto &metadata)
+        auto entry = std::find_if(m_staticBufMetaData.begin(), m_staticBufMetaData.end(), [&](const auto &metadata)
                                   { return (metadata.second.free && (metadata.second.size >= bytes)); });
         if (m_staticBufMetaData.end() != entry)
         {

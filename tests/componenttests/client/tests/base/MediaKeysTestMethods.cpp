@@ -32,9 +32,10 @@ const std::string kKeySystemWidevine{"com.widevine.alpha"};
 const std::string kKeySystemPlayready{"com.netflix.playready"};
 constexpr int32_t kMediaKeysHandle{1};
 constexpr firebolt::rialto::KeySessionType kSessionTypeTemp{firebolt::rialto::KeySessionType::TEMPORARY};
-constexpr bool kIsNotLdl{false};
 constexpr firebolt::rialto::MediaKeyErrorStatus kStatusOk{firebolt::rialto::MediaKeyErrorStatus::OK};
 constexpr firebolt::rialto::MediaKeyErrorStatus kStatusFailed{firebolt::rialto::MediaKeyErrorStatus::FAIL};
+constexpr firebolt::rialto::MediaKeyErrorStatus kStatusInterfaceNotImplemented{
+    firebolt::rialto::MediaKeyErrorStatus::INTERFACE_NOT_IMPLEMENTED};
 constexpr firebolt::rialto::InitDataType kInitDataTypeCenc{firebolt::rialto::InitDataType::CENC};
 const std::vector<unsigned char> kLicenseRequestMessage{'r', 'e', 'q', 'u', 'e', 's', 't'};
 const std::vector<unsigned char> kLicensRenewalMessage{'r', 'e', 'n', 'e', 'w', 'a', 'l'};
@@ -60,6 +61,8 @@ const std::string kInvalidKeySystem{"notExpected"};
 const std::vector<std::string> kKeySystems(firebolt::rialto::server::kSupportedKeySystems.begin(),
                                            firebolt::rialto::server::kSupportedKeySystems.end());
 const std::string kVersion{"123"};
+const std::vector<uint8_t> kBuffer{0x1, 0x2, 0x3, 0x4};
+const std::vector<std::string> kRobustnessLevels{"SW_SECURE_CRYPTO", "SW_SECURE_DECODE", "HW_SECURE_CRYPTO"};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -105,8 +108,7 @@ void MediaKeysTestMethods::shouldCreateKeySession()
 {
     EXPECT_CALL(*m_mediaKeysModuleMock,
                 createKeySession(_,
-                                 createKeySessionRequestMatcher(kMediaKeysHandle,
-                                                                convertKeySessionType(kSessionTypeTemp), kIsNotLdl),
+                                 createKeySessionRequestMatcher(kMediaKeysHandle, convertKeySessionType(kSessionTypeTemp)),
                                  _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->createKeySessionResponse(kStatusOk, kKeySessionId)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
@@ -116,8 +118,7 @@ void MediaKeysTestMethods::shouldCreateKeySessionFailure()
 {
     EXPECT_CALL(*m_mediaKeysModuleMock,
                 createKeySession(_,
-                                 createKeySessionRequestMatcher(kMediaKeysHandle,
-                                                                convertKeySessionType(kSessionTypeTemp), kIsNotLdl),
+                                 createKeySessionRequestMatcher(kMediaKeysHandle, convertKeySessionType(kSessionTypeTemp)),
                                  _, _))
         .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->createKeySessionResponse(kStatusFailed, kKeySessionId)),
                         WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
@@ -126,15 +127,14 @@ void MediaKeysTestMethods::shouldCreateKeySessionFailure()
 void MediaKeysTestMethods::createKeySession()
 {
     int32_t keySessionId;
-    EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, kIsNotLdl, keySessionId), kStatusOk);
+    EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, keySessionId), kStatusOk);
     EXPECT_EQ(keySessionId, kKeySessionId);
 }
 
 void MediaKeysTestMethods::createKeySessionFailure()
 {
     int32_t keySessionId;
-    EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, kIsNotLdl, keySessionId),
-              kStatusFailed);
+    EXPECT_EQ(m_mediaKeys->createKeySession(kSessionTypeTemp, m_mediaKeysClientMock, keySessionId), kStatusFailed);
 }
 
 void MediaKeysTestMethods::shouldGenerateRequest()
@@ -699,5 +699,65 @@ void MediaKeysTestMethods::shouldNotSupportServerCertificate()
 void MediaKeysTestMethods::doesNotSupportServerCertificate()
 {
     EXPECT_FALSE(m_mediaKeysCapabilities->isServerCertificateSupported(kKeySystems[0]));
+}
+
+void MediaKeysTestMethods::shouldGetSupportedRobustnessLevels()
+{
+    EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock,
+                getSupportedRobustnessLevels(_, getSupportedRobustnessLevelsRequestMatcher(kKeySystems[0]), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(
+                            m_mediaKeysCapabilitiesModuleMock->getSupportedRobustnessLevelsResponse(kRobustnessLevels)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysCapabilitiesModuleMock),
+                                              &MediaKeysCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::getSupportedRobustnessLevels()
+{
+    std::vector<std::string> robustnessLevels;
+    EXPECT_TRUE(m_mediaKeysCapabilities->getSupportedRobustnessLevels(kKeySystems[0], robustnessLevels));
+    EXPECT_EQ(robustnessLevels, kRobustnessLevels);
+}
+
+void MediaKeysTestMethods::shouldNotGetSupportedRobustnessLevels()
+{
+    EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock,
+                getSupportedRobustnessLevels(_, getSupportedRobustnessLevelsRequestMatcher(kKeySystems[0]), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(
+                            m_mediaKeysCapabilitiesModuleMock->getSupportedRobustnessLevelsResponse(kRobustnessLevels)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysCapabilitiesModuleMock),
+                                              &MediaKeysCapabilitiesModuleMock::failureReturn))));
+}
+
+void MediaKeysTestMethods::doesNotGetSupportedRobustnessLevels()
+{
+    std::vector<std::string> robustnessLevels;
+    EXPECT_FALSE(m_mediaKeysCapabilities->getSupportedRobustnessLevels(kKeySystems[0], robustnessLevels));
+}
+
+void MediaKeysTestMethods::shouldGetMetricSystemData()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock, getMetricSystemData(_, getMetricSystemDataRequestMatcher(kMediaKeysHandle), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->getMetricSystemDataResponse(kStatusOk, kBuffer)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::getMetricSystemData()
+{
+    std::vector<uint8_t> buffer;
+    EXPECT_EQ(m_mediaKeys->getMetricSystemData(buffer), kStatusOk);
+    EXPECT_EQ(kBuffer, buffer);
+}
+
+void MediaKeysTestMethods::shouldFailToGetMetricSystemData()
+{
+    EXPECT_CALL(*m_mediaKeysModuleMock, getMetricSystemData(_, getMetricSystemDataRequestMatcher(kMediaKeysHandle), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaKeysModuleMock->getMetricSystemDataResponse(kStatusFailed, {})),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysModuleMock), &MediaKeysModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::getMetricSystemDataFailure()
+{
+    std::vector<uint8_t> buffer;
+    EXPECT_EQ(m_mediaKeys->getMetricSystemData(buffer), kStatusFailed);
 }
 } // namespace firebolt::rialto::client::ct

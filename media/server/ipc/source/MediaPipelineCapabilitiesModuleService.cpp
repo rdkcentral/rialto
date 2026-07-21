@@ -152,4 +152,32 @@ void MediaPipelineCapabilitiesModuleService::getSupportedProperties(
     done->Run();
 }
 
+void MediaPipelineCapabilitiesModuleService::isVideoMaster(::google::protobuf::RpcController *controller,
+                                                           const ::firebolt::rialto::IsVideoMasterRequest *request,
+                                                           ::firebolt::rialto::IsVideoMasterResponse *response,
+                                                           ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
+    {
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        controller->SetFailed("ipc library provided incompatible controller object");
+        done->Run();
+        return;
+    }
+
+    bool isMaster{false};
+    if (!m_mediaPipelineService.isVideoMaster(isMaster))
+    {
+        RIALTO_SERVER_LOG_ERROR("isVideoMaster check failed");
+        controller->SetFailed("isVideoMaster check failed");
+        done->Run();
+        return;
+    }
+
+    response->set_is_video_master(isMaster);
+
+    done->Run();
+}
 } // namespace firebolt::rialto::server::ipc

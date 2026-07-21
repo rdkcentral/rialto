@@ -65,8 +65,10 @@ protected:
         NeedMediaDataEvent,
         QosEvent,
         BufferUnderflowEvent,
+        FirstFrameReceivedEvent,
         PlaybackErrorEvent,
-        SourceFlushedEvent
+        SourceFlushedEvent,
+        PlaybackInfoEvent
     };
 
     // Callbacks
@@ -76,8 +78,10 @@ protected:
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_positionChangeCb;
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_qosCb;
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_bufferUnderflowCb;
+    std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_firstFrameReceivedCb;
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_playbackErrorCb;
     std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_sourceFlushedCb;
+    std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> m_playbackInfoCb;
 
     void SetUp();
     void TearDown();

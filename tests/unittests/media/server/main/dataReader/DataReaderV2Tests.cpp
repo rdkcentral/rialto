@@ -64,6 +64,8 @@ constexpr SegmentAlignment kSegmentAlignment{SegmentAlignment::AU};
 
 constexpr uint32_t kCryptBlocks{131};
 constexpr uint32_t kSkipBlocks{242};
+constexpr uint64_t kDisplayOffset{35};
+constexpr bool kIsBufferFull{true};
 
 class Check
 {
@@ -115,6 +117,7 @@ public:
         EXPECT_TRUE(m_segment->getCodecData());
         EXPECT_EQ(m_segment->getCodecData()->data, kCodecData.data);
         EXPECT_EQ(m_segment->getCodecData()->type, kCodecData.type);
+        EXPECT_EQ(m_segment->getDisplayOffset().value(), kDisplayOffset);
         return *this;
     }
 
@@ -230,6 +233,7 @@ public:
         m_segment->setExtraData(kExtraData);
         m_segment->setSegmentAlignment(kSegmentAlignment);
         m_segment->setCodecData(std::make_shared<firebolt::rialto::CodecData>(kCodecData));
+        m_segment->setDisplayOffset(kDisplayOffset);
         return *this;
     }
 
@@ -293,7 +297,8 @@ protected:
 
     std::unique_ptr<IMediaPipeline::MediaSegment> readData(const firebolt::rialto::MediaSourceType &sourceType)
     {
-        m_sut = std::make_unique<DataReaderV2>(sourceType, m_shm, kMetaDataSize, kNumFrames);
+        m_sut = std::make_unique<DataReaderV2>(sourceType, m_shm, kMetaDataSize, kNumFrames, kIsBufferFull);
+        EXPECT_EQ(m_sut->isBufferFull(), kIsBufferFull);
         auto result = m_sut->readData();
         if (result.size() != 1)
             return nullptr;
@@ -321,7 +326,7 @@ protected:
     }
 
 private:
-    uint8_t m_shm[kMetaDataSize + kDataSize];
+    uint8_t m_shm[kMetaDataSize + kDataSize]{};
     std::unique_ptr<DataReaderV2> m_sut;
 };
 

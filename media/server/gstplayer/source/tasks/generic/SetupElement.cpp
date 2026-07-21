@@ -62,6 +62,21 @@ void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
 }
 
 /**
+ * @brief Callback for first video frame event from the emitting video element. Called by the Gstreamer thread.
+ *
+ * @param[in] object     : the object that emitted the signal
+ * @param[in] fifoDepth  : the fifo depth (may be 0)
+ * @param[in] queueDepth : the queue depth (may be NULL)
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
+void firstVideoFrameCallback(GstElement *object, guint fifoDepth, gpointer queueDepth, gpointer self)
+{
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->scheduleFirstVideoFrameReceived();
+}
+
+/**
  * @brief Callback for a autovideosink when a child has been added to the sink.
  *
  * @param[in] obj        : the parent element (autovideosink)
@@ -129,8 +144,8 @@ void autoAudioSinkChildRemovedCallback(GstChildProxy *obj, GObject *object, gcha
 namespace firebolt::rialto::server::tasks::generic
 {
 SetupElement::SetupElement(GenericPlayerContext &context,
-                           std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                           std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                           const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                           const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                            IGstGenericPlayerPrivate &player, GstElement *element)
     : m_context{context}, m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_player{player}, m_element{element}
 {
@@ -219,8 +234,77 @@ void SetupElement::execute() const
         m_glibWrapper->gObjectSet(m_element, "sync", FALSE, nullptr);
     }
 
+    if (m_context.subtitleSink)
+    {
+        if (!m_context.isVideoHandleSet && isVideoDecoder(*m_gstWrapper, m_element))
+        {
+            if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "westerossink"))
+            {
+                gpointer decoder{nullptr};
+                m_glibWrapper->gObjectGet(m_element, "videodecoder", &decoder, nullptr);
+                if (decoder)
+                {
+                    m_glibWrapper->gObjectSet(m_context.subtitleSink, "video-decoder", decoder, nullptr);
+                    RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %p", decoder);
+                    m_context.isVideoHandleSet = true;
+                }
+                else
+                {
+                    m_glibWrapper->gObjectSet(m_context.subtitleSink, "video-decoder", m_element, nullptr);
+                    RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %p", m_element);
+                    m_context.isVideoHandleSet = true;
+                }
+            }
+            else if (m_glibWrapper->gStrHasPrefix(GST_ELEMENT_NAME(m_element), "omx"))
+            {
+                m_glibWrapper->gObjectSet(m_context.subtitleSink, "video-decoder", m_element, nullptr);
+                RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %p", m_element);
+                m_context.isVideoHandleSet = true;
+            }
+        }
+    }
+
+    if (isDecoder(*m_gstWrapper, m_element) || isSink(*m_gstWrapper, m_element))
+    {
+        std::optional<std::string> underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
+        if (underflowSignalName)
+        {
+            if (isAudio(*m_gstWrapper, m_element))
+            {
+                RIALTO_SERVER_LOG_INFO("Connecting audio underflow callback for signal: %s",
+                                       underflowSignalName.value().c_str());
+                m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(),
+                                              G_CALLBACK(audioUnderflowCallback), &m_player);
+            }
+            else if (isVideo(*m_gstWrapper, m_element))
+            {
+                RIALTO_SERVER_LOG_INFO("Connecting video underflow callback for signal: %s",
+                                       underflowSignalName.value().c_str());
+                m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(),
+                                              G_CALLBACK(videoUnderflowCallback), &m_player);
+            }
+        }
+
+        std::optional<std::string> firstFrameSignalName = getFirstFrameSignalName(*m_glibWrapper, m_element);
+        if (firstFrameSignalName)
+        {
+            if (isVideo(*m_gstWrapper, m_element))
+            {
+                RIALTO_SERVER_LOG_INFO("Connecting first video frame callback for signal: %s",
+                                       firstFrameSignalName.value().c_str());
+                m_glibWrapper->gSignalConnect(m_element, firstFrameSignalName.value().c_str(),
+                                              G_CALLBACK(firstVideoFrameCallback), &m_player);
+            }
+        }
+    }
+
     if (isVideoSink(*m_gstWrapper, m_element))
     {
+        if (!m_context.videoSink)
+        {
+            m_gstWrapper->gstObjectRef(m_element);
+            m_context.videoSink = m_element;
+        }
         if (!m_context.pendingGeometry.empty())
         {
             m_player.setVideoSinkRectangle();
@@ -233,25 +317,13 @@ void SetupElement::execute() const
         {
             m_player.setRenderFrame();
         }
-    }
-    else if (isVideoDecoder(*m_gstWrapper, m_element))
-    {
-        std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
-        if (!underflowSignalName.empty())
+        if (m_context.pendingShowVideoWindow.has_value())
         {
-            m_glibWrapper->gSignalConnect(m_element, underflowSignalName.c_str(), G_CALLBACK(videoUnderflowCallback),
-                                          &m_player);
+            m_player.setShowVideoWindow();
         }
     }
     else if (isAudioDecoder(*m_gstWrapper, m_element))
     {
-        std::string underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
-        if (!underflowSignalName.empty())
-        {
-            m_glibWrapper->gSignalConnect(m_element, underflowSignalName.c_str(), G_CALLBACK(audioUnderflowCallback),
-                                          &m_player);
-        }
-
         if (m_context.pendingSyncOff.has_value())
         {
             m_player.setSyncOff();
@@ -263,6 +335,12 @@ void SetupElement::execute() const
         if (m_context.pendingBufferingLimit.has_value())
         {
             m_player.setBufferingLimit();
+        }
+        if (m_context.isLive &&
+            m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_element), "enable-rate-correction"))
+        {
+            RIALTO_SERVER_LOG_INFO("Enabling rate correction for broadcom decoder.");
+            m_glibWrapper->gObjectSet(m_element, "enable-rate-correction", TRUE, nullptr);
         }
     }
     else if (isAudioSink(*m_gstWrapper, m_element))
@@ -282,6 +360,11 @@ void SetupElement::execute() const
         {
             m_player.setStreamSyncMode(MediaSourceType::VIDEO);
         }
+    }
+
+    if (m_gstWrapper->gstIsBaseParse(m_element))
+    {
+        m_gstWrapper->gstBaseParseSetPtsInterpolation(GST_BASE_PARSE(m_element), FALSE);
     }
 
     m_gstWrapper->gstObjectUnref(m_element);

@@ -23,6 +23,7 @@
 #include <gst/app/gstappsrc.h>
 #include <gst/audio/audio.h>
 #include <gst/audio/streamvolume.h>
+#include <gst/base/gstbaseparse.h>
 #include <gst/base/gstbasetransform.h>
 #include <gst/base/gstbytewriter.h>
 #include <gst/gst.h>
@@ -76,6 +77,12 @@ public:
      * @param[in] argv    : Vector of C strings each containing a command line argument.
      */
     virtual void gstInit(int *argc, char ***argv) = 0;
+
+    /**
+     * @brief Deinitalise gstreamer.
+     *
+     */
+    virtual void gstDeinit() = 0;
 
     /**
      * @brief Finds the plugin with the given name.
@@ -139,6 +146,15 @@ public:
      * @retval GstElement object or NULL on error.
      */
     virtual GstElement *gstElementFactoryMake(const gchar *factoryname, const gchar *name) = 0;
+
+    /**
+     * @brief Get the element type returned by the requested factory.
+     *
+     * @param[in] factory   : Factory
+     *
+     * @retval GType that the factory produces
+     */
+    virtual GType gstElementFactoryGetElementType(GstElementFactory *factory) = 0;
 
     /**
      * @brief Increment reference count on object.
@@ -216,6 +232,15 @@ public:
     virtual const gchar *gstElementStateGetName(GstState state) = 0;
 
     /**
+     * @brief Gets the state change return as a string.
+     *
+     * @param[in] state: The state change return.
+     *
+     * @retval The string of the state change return.
+     */
+    virtual const gchar *gstElementStateChangeReturnGetName(GstStateChangeReturn state) = 0;
+
+    /**
      * @brief Sets the state of the element.
      *
      * @param[in] element : A GstElement to change state of.
@@ -233,6 +258,38 @@ public:
      * @retval The element's current GstState.
      */
     virtual GstState gstElementGetState(GstElement *element) = 0;
+
+    /**
+     * @brief Gets the return value of the last state change operation.
+     *
+     * @param[in] element : A GstElement to get state return of.
+     *
+     * @retval The element's last state change return value.
+     */
+    virtual GstStateChangeReturn gstElementGetStateReturn(GstElement *element) = 0;
+
+    /**
+     * @brief Gets the next (target) state of the element.
+     *
+     * @param[in] element : A GstElement to get next state of.
+     *
+     * @retval The element's next GstState.
+     */
+    virtual GstState gstElementGetStateNext(GstElement *element) = 0;
+
+    /**
+     * @brief Locks the state mutex of an element.
+     *
+     * @param[in] element : A GstElement to lock the state mutex of.
+     */
+    virtual void gstStateLock(GstElement *element) = 0;
+
+    /**
+     * @brief Unlocks the state mutex of an element.
+     *
+     * @param[in] element : A GstElement to unlock the state mutex of.
+     */
+    virtual void gstStateUnlock(GstElement *element) = 0;
 
     /**
      * @brief Returns a copy of the name of elem. Caller should g_free the return value after usage. For a nameless
@@ -363,6 +420,17 @@ public:
      * @retval The requested pad, NULL otherwise.
      */
     virtual gboolean gstElementQueryPosition(GstElement *element, GstFormat format, gint64 *cur) = 0;
+
+    /**
+     * @brief Queries an element (usually top-level pipeline or playbin element) for the total stream duration in nanoseconds.
+     *
+     * @param[in] element   : a GstElement to invoke the duration query on.
+     * @param[in] format    : the GstFormat requested
+     * @param[out] duration :  A location in which to store the total duration, or NULL.
+     *
+     * @retval TRUE on success, FALSE otherwise.
+     */
+    virtual gboolean gstElementQueryDuration(GstElement *element, GstFormat format, gint64 *duration) = 0;
 
     /**
      * @brief Create a new ghost pad.
@@ -1067,6 +1135,16 @@ public:
     virtual void gstStructureSet(GstStructure *structure, const gchar *firstname, ...) const = 0;
 
     /**
+     * @brief Sets the field with the given name field to value. If the field does not exist, it is created. If the
+     * field exists, the previous value is replaced and freed.
+     *
+     * @param[in] structure  : a GstStructure
+     * @param[in] fieldname  : the name of the field to set
+     * @param[in] fieldname  : the new value of the field
+     */
+    virtual void gstStructureSetValue(GstStructure *structure, const gchar *fieldname, const GValue *value) const = 0;
+
+    /**
      * @brief Gets the error and debug string from the message. Both gerror and debug must be freed by the caller once complete.
      *
      * @param[in]  message  : a gst error message.
@@ -1142,6 +1220,16 @@ public:
      * @retval New warning message.
      */
     virtual GstMessage *gstMessageNewWarning(GstObject *src, GError *error, const gchar *debug) const = 0;
+
+    /**
+     * @brief Creates a new application-typed message.
+     *
+     * @param[in] src       : the origin of the message.
+     * @param[in] structure : the structure for the message (takes ownership).
+     *
+     * @retval New application message.
+     */
+    virtual GstMessage *gstMessageNewApplication(GstObject *src, GstStructure *structure) const = 0;
 
     /**
      * @brief Get the GError and error string from the message.
@@ -1309,6 +1397,126 @@ public:
      * @return given pad or NULL if failed
      */
     virtual GstPad *gstBaseSinkPad(GstElement *element) const = 0;
+
+    /**
+     * @brief Appends append_value to the GstValueArray in value.
+     *
+     * @param value : a GValue of type GST_TYPE_ARRAY
+     * @param appendValue : the value to append
+     */
+    virtual void gstValueArrayAppendValue(GValue *value, const GValue *appendValue) const = 0;
+
+    /**
+     * @brief Sets b as the value of v. Caller retains reference to buffer.
+     *
+     * @param value  : a GValue to receive the data
+     * @param buffer : a GstBuffer to assign to the GstValue
+     */
+    virtual void gstValueSetBuffer(GValue *value, GstBuffer *buffer) const = 0;
+
+    /**
+     * @brief Checks, if element is an instance of GstBaseParse
+     *
+     * @param element  : a GValue to receive the data
+     *
+     * @return TRUE if element is an instance of GstBaseParse
+     */
+    virtual gboolean gstIsBaseParse(GstElement *element) const = 0;
+
+    /**
+     * @brief By default, the base class will guess PTS timestamps using a simple interpolation (previous timestamp +
+     * duration), which is incorrect for data streams with reordering, where PTS can go backward. Sub-classes
+     * implementing such formats should disable PTS interpolation.
+     *
+     * @param parse           : a GstBaseParse
+     * @param ptsInterpolate  : TRUE if parser should interpolate PTS timestamps
+     */
+    virtual void gstBaseParseSetPtsInterpolation(GstBaseParse *parse, gboolean ptsInterpolate) const = 0;
+
+    /**
+     * @brief Gets the state of the element (blocking version with timeout).
+     *
+     * @param[in]  element : A GstElement to get state of.
+     * @param[out] state   : A pointer to GstState to hold the state, or NULL.
+     * @param[out] pending : A pointer to GstState to hold the pending state, or NULL.
+     * @param[in]  timeout : A GstClockTime to specify the timeout.
+     *
+     * @retval GST_STATE_CHANGE_SUCCESS if the element has no more pending state
+     *         and the last state change succeeded, GST_STATE_CHANGE_ASYNC if the
+     *         element is still performing a state change, or other values on failure.
+     */
+    virtual GstStateChangeReturn gstElementGetState(GstElement *element, GstState *state, GstState *pending,
+                                                    GstClockTime timeout) = 0;
+
+    /**
+     * @brief Gets the peer pad of the given pad.
+     *
+     * @param[in] pad : A GstPad to get the peer of.
+     *
+     * @retval The peer GstPad. Unref after usage. NULL if pad has no peer.
+     */
+    virtual GstPad *gstPadGetPeer(GstPad *pad) = 0;
+
+    /**
+     * @brief Unlinks the source pad from the sink pad.
+     *
+     * @param[in] srcpad  : The source GstPad to unlink.
+     * @param[in] sinkpad : The sink GstPad to unlink.
+     *
+     * @retval TRUE if the pads were unlinked, FALSE otherwise.
+     */
+    virtual gboolean gstPadUnlink(GstPad *srcpad, GstPad *sinkpad) = 0;
+
+    /**
+     * @brief Links the source pad to the sink pad.
+     *
+     * @param[in] srcpad  : The source GstPad to link.
+     * @param[in] sinkpad : The sink GstPad to link.
+     *
+     * @retval A result code indicating if the connection worked or what went wrong.
+     */
+    virtual GstPadLinkReturn gstPadLink(GstPad *srcpad, GstPad *sinkpad) = 0;
+
+    /**
+     * @brief Removes an element from the bin.
+     *
+     * @param[in] bin     : The bin to remove the element from.
+     * @param[in] element : The element to remove.
+     *
+     * @retval TRUE if the element could be removed, FALSE otherwise.
+     */
+    virtual gboolean gstBinRemove(GstBin *bin, GstElement *element) = 0;
+
+    /**
+     * @brief Gets the parent of a pad.
+     *
+     * @param[in] pad : The pad to get the parent of.
+     *
+     * @retval The parent GstObject. Unref after usage. NULL if pad has no parent.
+     */
+    virtual GstObject *gstPadGetParent(GstPad *pad) = 0;
+
+    /**
+     * @brief Adds probe to the pad.
+     *
+     * @param[in] pad : The GstPad to add the probe to.
+     * @param[in] mask : The probe mask.
+     * @param[in] callback : GstPadProbeCallback that will be called with notifications of the pad state.
+     * @param[in] userData : User data passed to the callback.
+     * @param[in] destroyData : GDestroyNotify for user_data.
+     *
+     * @retval An id or 0 if no probe is pending. The id can be used to remove the probe with gst_pad_remove_probe.
+     */
+    virtual gulong gstPadAddProbe(GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
+                                  GDestroyNotify destroyData) = 0;
+
+    /**
+     * @brief Removes a probe from the pad.
+     *
+     * @param[in] pad : The GstPad to remove the probe from.
+     * @param[in] id : The probe id returned by gstPadAddProbe.
+     */
+    virtual void gstPadRemoveProbe(GstPad *pad, gulong id) = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

@@ -28,7 +28,7 @@ using testing::Return;
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{3};
+constexpr int kPrerollNumFrames{3};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -182,7 +182,7 @@ TEST_F(PlayPauseStopFailuresTest, PauseFailure)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause will fail
     willFailToPause();
@@ -280,7 +280,7 @@ TEST_F(PlayPauseStopFailuresTest, PlayFailure)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Play will fail
     willFailToPlay();
@@ -378,7 +378,7 @@ TEST_F(PlayPauseStopFailuresTest, StopFailure)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Stop will fail
     willFailToStop();

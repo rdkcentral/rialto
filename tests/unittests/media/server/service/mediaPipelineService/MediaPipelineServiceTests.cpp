@@ -322,6 +322,26 @@ TEST_F(MediaPipelineServiceTests, shouldGetPosition)
     getPositionShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToGetDurationForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getDurationShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetDuration)
+{
+    initSession();
+    mediaPipelineWillFailToGetDuration();
+    getDurationShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetDuration)
+{
+    initSession();
+    mediaPipelineWillGetDuration();
+    getDurationShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldFailToSetImmediateOutputForNotExistingSession)
 {
     createMediaPipelineShouldSuccess();
@@ -817,6 +837,20 @@ TEST_F(MediaPipelineServiceTests, shouldSwitchSource)
     initSession();
     mediaPipelineWillSwitchSource();
     switchSourceShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToCheckIfVideoIsMaster)
+{
+    initSession();
+    mediaPipelineWillFailToCheckIfVideoIsMaster();
+    isVideoMasterShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldCheckIfVideoIsMaster)
+{
+    initSession();
+    mediaPipelineWillCheckIfVideoIsMaster();
+    isVideoMasterShouldSucceed();
 }
 
 TEST_F(MediaPipelineServiceTests, shouldPing)

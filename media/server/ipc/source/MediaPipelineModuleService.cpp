@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <unordered_map>
+#include <utility>
 
 namespace
 {
@@ -99,6 +100,10 @@ convertMediaSourceStatus(const firebolt::rialto::HaveDataRequest_MediaSourceStat
     case firebolt::rialto::HaveDataRequest_MediaSourceStatus_NO_AVAILABLE_SAMPLES:
     {
         return firebolt::rialto::MediaSourceStatus::NO_AVAILABLE_SAMPLES;
+    }
+    case firebolt::rialto::HaveDataRequest_MediaSourceStatus_NO_SPACE_FOR_SAMPLES:
+    {
+        return firebolt::rialto::MediaSourceStatus::NO_SPACE_FOR_SAMPLES;
     }
     }
     return firebolt::rialto::MediaSourceStatus::ERROR;
@@ -391,7 +396,7 @@ void MediaPipelineModuleService::load(::google::protobuf::RpcController *control
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     if (!m_mediaPipelineService.load(request->session_id(), convertMediaType(request->type()), request->mime_type(),
-                                     request->url()))
+                                     request->url(), request->is_live()))
     {
         RIALTO_SERVER_LOG_ERROR("Load failed");
         controller->SetFailed("Operation failed");
@@ -424,10 +429,10 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     std::shared_ptr<CodecData> codecData{};
     if (request->has_codec_data())
     {
-        auto codecDataProto = request->codec_data();
+        const auto &kCodecDataProto = request->codec_data();
         codecData = std::make_shared<CodecData>();
-        codecData->data = std::vector<std::uint8_t>(codecDataProto.data().begin(), codecDataProto.data().end());
-        codecData->type = convertCodecDataType(codecDataProto.type());
+        codecData->data = std::vector<std::uint8_t>(kCodecDataProto.data().begin(), kCodecDataProto.data().end());
+        codecData->type = convertCodecDataType(kCodecDataProto.type());
     }
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource;
     firebolt::rialto::SourceConfigType configType = convertConfigType(request->config_type());
@@ -460,7 +465,19 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
         {
             channelMask = kConfig.channel_mask();
         }
-        AudioConfig audioConfig{numberofchannels, sampleRate, codecSpecificConfig, format, layout, channelMask};
+        std::vector<std::vector<uint8_t>> streamHeaders;
+        for (int i = 0; i < kConfig.stream_header_size(); ++i)
+        {
+            auto streamHeaderStr = kConfig.stream_header(i);
+            streamHeaders.push_back(std::vector<uint8_t>{streamHeaderStr.begin(), streamHeaderStr.end()});
+        }
+        std::optional<bool> framed;
+        if (kConfig.has_framed())
+        {
+            framed = kConfig.framed();
+        }
+        AudioConfig audioConfig{numberofchannels, sampleRate,  std::move(codecSpecificConfig), format,
+                                layout,           channelMask, std::move(streamHeaders),       framed};
 
         mediaSource =
             std::make_unique<IMediaPipeline::MediaSourceAudio>(request->mime_type(), hasDrm, audioConfig,
@@ -554,11 +571,13 @@ void MediaPipelineModuleService::play(::google::protobuf::RpcController *control
                                       ::firebolt::rialto::PlayResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (!m_mediaPipelineService.play(request->session_id()))
+    bool async{false};
+    if (!m_mediaPipelineService.play(request->session_id(), async))
     {
         RIALTO_SERVER_LOG_ERROR("Play failed");
         controller->SetFailed("Operation failed");
     }
+    response->set_async(async);
     done->Run();
 }
 
@@ -646,6 +665,25 @@ void MediaPipelineModuleService::getPosition(::google::protobuf::RpcController *
     else
     {
         response->set_position(position);
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getDuration(::google::protobuf::RpcController *controller,
+                                             const ::firebolt::rialto::GetDurationRequest *request,
+                                             ::firebolt::rialto::GetDurationResponse *response,
+                                             ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    int64_t duration{};
+    if (!m_mediaPipelineService.getDuration(request->session_id(), duration))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get duration failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_duration(duration);
     }
     done->Run();
 }
@@ -942,11 +980,13 @@ void MediaPipelineModuleService::flush(::google::protobuf::RpcController *contro
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
-    if (!m_mediaPipelineService.flush(request->session_id(), request->source_id(), request->reset_time()))
+    bool isAsync{false};
+    if (!m_mediaPipelineService.flush(request->session_id(), request->source_id(), request->reset_time(), isAsync))
     {
         RIALTO_SERVER_LOG_ERROR("Flush failed.");
         controller->SetFailed("Operation failed");
     }
+    response->set_async(isAsync);
 
     done->Run();
 }
@@ -962,6 +1002,20 @@ void MediaPipelineModuleService::setSourcePosition(::google::protobuf::RpcContro
                                                   request->stop_position()))
     {
         RIALTO_SERVER_LOG_ERROR("Set Source Position failed.");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::setSubtitleOffset(::google::protobuf::RpcController *controller,
+                                                   const ::firebolt::rialto::SetSubtitleOffsetRequest *request,
+                                                   ::firebolt::rialto::SetSubtitleOffsetResponse *response,
+                                                   ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setSubtitleOffset(request->session_id(), request->source_id(), request->position()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Subtitle Offset failed.");
         controller->SetFailed("Operation failed");
     }
     done->Run();

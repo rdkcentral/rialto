@@ -75,11 +75,11 @@ public:
 
     bool allSourcesAttached() override;
 
-    bool load(MediaType type, const std::string &mimeType, const std::string &url) override;
+    bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override;
 
     bool setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 
-    bool play() override;
+    bool play(bool &async) override;
 
     bool pause() override;
 
@@ -125,10 +125,12 @@ public:
 
     bool getStreamSyncMode(int32_t &streamSyncMode) override;
 
-    bool flush(int32_t sourceId, bool resetTime) override;
+    bool flush(int32_t sourceId, bool resetTime, bool &async) override;
 
     bool setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                            uint64_t stopPosition) override;
+
+    bool setSubtitleOffset(int32_t sourceId, int64_t position) override;
 
     bool processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac) override;
 
@@ -141,6 +143,8 @@ public:
     bool getUseBuffering(bool &useBuffering) override;
 
     bool switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
+
+    bool getDuration(int64_t &duration) override;
 
 private:
     /**
@@ -212,6 +216,13 @@ private:
     void onBufferUnderflow(const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event);
 
     /**
+     * @brief Handler for a first frame received notification from the server.
+     *
+     * @param[in] event : The first frame received event structure.
+     */
+    void onFirstFrameReceived(const std::shared_ptr<firebolt::rialto::FirstFrameReceivedEvent> &event);
+
+    /**
      * @brief Handler for a playback error notification from the server.
      *
      * @param[in] event : The playback error event structure.
@@ -224,6 +235,8 @@ private:
      * @param[in] event : The source flushed event structure.
      */
     void onSourceFlushed(const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event);
+
+    void onPlaybackInfo(const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event);
 
     /**
      * @brief Create a new player session.

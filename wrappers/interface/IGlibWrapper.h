@@ -113,6 +113,13 @@ public:
     virtual gpointer gTypeClassRef(GType type) = 0;
 
     /**
+     * @brief Decrements the reference count of the class structure being passed in.
+     *
+     * @param[in] g_class  : Pointer to the class structure to decrement.
+     */
+    virtual void gTypeClassUnref(gpointer g_class) = 0;
+
+    /**
      * @brief Gets the type from the name.
      *
      * @param[in] name  : The name of the type to find
@@ -257,7 +264,7 @@ public:
      *
      * @param[in] haystack : A null-terminated string.
      * @param[in] needle   : The null-terminated string to search for.
-     *
+     *7
      * @retval A pointer to the found occurrence, or NULL if not found.
      */
     virtual gchar *gStrrstr(const gchar *haystack, const gchar *needle) const = 0;
@@ -313,6 +320,39 @@ public:
      * @param[in] message   : Error message.
      */
     virtual GError *gErrorNewLiteral(GQuark domain, gint code, const gchar *message) const = 0;
+
+    /**
+     * @brief Initializes value with the default value of type.
+     *
+     * @param[in] value : The value to initialize
+     * @param[in] type  : The type of a value
+     *
+     * @retval The GValue structure that has been passed in.
+     */
+    virtual GValue *gValueInit(GValue *value, GType type) const = 0;
+
+    /**
+     * @brief Stops all currently unused threads. This does not change the maximal number of unused threads.
+     */
+    virtual void gThreadPoolStopUnusedThreads() const = 0;
+
+    /**
+     * @brief Sets the maximal number of unused threads to max_threads. If max_threads is -1, no limit is imposed on the
+     * number of unused threads.
+     *
+     * @param[in] maxThreads : Maximal number of unused threads.
+     *
+     */
+    virtual void gThreadPoolSetMaxUnusedThreads(gint maxThreads) const = 0;
+
+    /**
+     * @brief This function will set the maximum interval that a thread waiting in the pool for new tasks can be idle
+     * for before being stopped.
+     *
+     * @param[in] interval : The maximum interval (in milliseconds) a thread can be idle.
+     *
+     */
+    virtual void gThreadPoolSetMaxIdleTime(guint interval) const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

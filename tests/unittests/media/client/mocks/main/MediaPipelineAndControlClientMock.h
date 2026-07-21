@@ -31,7 +31,8 @@ namespace firebolt::rialto::client
 class MediaPipelineAndControlClientMock : public IMediaPipelineAndIControlClient
 {
 public:
-    MOCK_METHOD(bool, load, (MediaType type, const std::string &mimeType, const std::string &url), (override));
+    MOCK_METHOD(bool, load, (MediaType type, const std::string &mimeType, const std::string &url, bool isLive),
+                (override));
 
     MOCK_METHOD(bool, attachSource, (const std::unique_ptr<MediaSource> &source), (override));
 
@@ -39,7 +40,7 @@ public:
 
     MOCK_METHOD(bool, allSourcesAttached, (), (override));
 
-    MOCK_METHOD(bool, play, (), (override));
+    MOCK_METHOD(bool, play, (bool &async), (override));
     MOCK_METHOD(bool, pause, (), (override));
     MOCK_METHOD(bool, stop, (), (override));
 
@@ -75,10 +76,11 @@ public:
     MOCK_METHOD(bool, setSyncOff, (bool syncOff), (override));
     MOCK_METHOD(bool, setStreamSyncMode, (int32_t sourceId, int32_t streamSyncMode), (override));
     MOCK_METHOD(bool, getStreamSyncMode, (int32_t & streamSyncMode), (override));
-    MOCK_METHOD(bool, flush, (int32_t sourceId, bool resetTime), (override));
+    MOCK_METHOD(bool, flush, (int32_t sourceId, bool resetTime, bool &async), (override));
     MOCK_METHOD(bool, setSourcePosition,
                 (int32_t sourceId, int64_t position, bool resetTime, double appliedRate, uint64_t stopPosition),
                 (override));
+    MOCK_METHOD(bool, setSubtitleOffset, (int32_t sourceId, int64_t position), (override));
     MOCK_METHOD(std::weak_ptr<IMediaPipelineClient>, getClient, (), (override));
     MOCK_METHOD(void, notifyApplicationState, (ApplicationState state), (override));
     MOCK_METHOD(bool, processAudioGap, (int64_t position, uint32_t duration, int64_t discontinuityGap, bool isAudioAac),
@@ -88,6 +90,7 @@ public:
     MOCK_METHOD(bool, setUseBuffering, (bool useBuffering), (override));
     MOCK_METHOD(bool, getUseBuffering, (bool &useBuffering), (override));
     MOCK_METHOD(bool, switchSource, (const std::unique_ptr<MediaSource> &source), (override));
+    MOCK_METHOD(bool, getDuration, (int64_t & duration), (override));
 };
 } // namespace firebolt::rialto::client
 

@@ -243,7 +243,7 @@ void WebAudioPlayerTestMethods::getDeviceInfo()
     EXPECT_TRUE(m_webAudioPlayer->getDeviceInfo(preferredFrames, maximumFrames, supportDeferredPlay));
     EXPECT_EQ(kPreferredFrames, preferredFrames);
     EXPECT_EQ(kMaximumFrames, maximumFrames);
-    EXPECT_EQ(kSupportDeferredPlay, true);
+    EXPECT_EQ(kSupportDeferredPlay, supportDeferredPlay);
 }
 
 void WebAudioPlayerTestMethods::shouldPlay()

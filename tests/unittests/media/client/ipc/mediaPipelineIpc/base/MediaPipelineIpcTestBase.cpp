@@ -112,6 +112,15 @@ void MediaPipelineIpcTestBase::expectSubscribeEvents()
                 return static_cast<int>(EventTags::BufferUnderflowEvent);
             }))
         .RetiresOnSaturation();
+    EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.FirstFrameReceivedEvent", _, _))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_firstFrameReceivedCb = std::move(handler);
+                return static_cast<int>(EventTags::FirstFrameReceivedEvent);
+            }))
+        .RetiresOnSaturation();
     EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.PlaybackErrorEvent", _, _))
         .WillOnce(Invoke(
             [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
@@ -130,6 +139,15 @@ void MediaPipelineIpcTestBase::expectSubscribeEvents()
                 return static_cast<int>(EventTags::SourceFlushedEvent);
             }))
         .RetiresOnSaturation();
+    EXPECT_CALL(*m_channelMock, subscribeImpl("firebolt.rialto.PlaybackInfoEvent", _, _))
+        .WillOnce(Invoke(
+            [this](const std::string &eventName, const google::protobuf::Descriptor *descriptor,
+                   std::function<void(const std::shared_ptr<google::protobuf::Message> &msg)> &&handler)
+            {
+                m_playbackInfoCb = std::move(handler);
+                return static_cast<int>(EventTags::PlaybackInfoEvent);
+            }))
+        .RetiresOnSaturation();
 }
 
 void MediaPipelineIpcTestBase::expectUnsubscribeEvents()
@@ -140,8 +158,10 @@ void MediaPipelineIpcTestBase::expectUnsubscribeEvents()
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::NeedMediaDataEvent))).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::QosEvent))).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::BufferUnderflowEvent))).WillOnce(Return(true));
+    EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::FirstFrameReceivedEvent))).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::PlaybackErrorEvent))).WillOnce(Return(true));
     EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::SourceFlushedEvent))).WillOnce(Return(true));
+    EXPECT_CALL(*m_channelMock, unsubscribe(static_cast<int>(EventTags::PlaybackInfoEvent))).WillOnce(Return(true));
 }
 
 void MediaPipelineIpcTestBase::destroyMediaPipelineIpc()

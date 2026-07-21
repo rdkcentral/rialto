@@ -33,7 +33,7 @@ file(MAKE_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/third-party/Source/com)
 ExternalProject_Add(
   thunder-repo-com
   GIT_REPOSITORY https://github.com/rdkcentral/Thunder.git
-  GIT_TAG ${WPEFRAMEWORK_TAG}
+  GIT_TAG ${THUNDER_TAG}
   PREFIX "git"
   CONFIGURE_COMMAND ""
   BUILD_COMMAND ""

@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <string>
 #include <unistd.h>
+#include <utility>
 #include <vector>
 
 namespace
@@ -70,7 +71,7 @@ std::vector<std::string> split(std::string s, const std::string &delimiter)
         result.push_back(s.substr(0, pos));
         s.erase(0, pos + delimiter.length());
     }
-    result.push_back(s);
+    result.push_back(std::move(s));
     return result;
 }
 

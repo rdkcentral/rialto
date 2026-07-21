@@ -91,7 +91,7 @@ std::uint32_t TextTrackWrapper::sendSessionTimestamp(std::uint32_t sessionId, st
 }
 
 std::uint32_t TextTrackWrapper::sendSessionData(std::uint32_t sessionId, ITextTrackWrapper::DataType type,
-                                                std::int32_t displayOffsetMs, const std::string &data) const
+                                                std::int64_t displayOffsetMs, const std::string &data) const
 {
     return m_textTrackControlInterface->SendSessionData(sessionId, convertDataType(type), displayOffsetMs, data);
 }
@@ -109,6 +109,16 @@ std::uint32_t TextTrackWrapper::setSessionTTMLSelection(std::uint32_t sessionId)
 std::uint32_t TextTrackWrapper::setSessionClosedCaptionsService(std::uint32_t sessionId, const std::string &service) const
 {
     return m_textTrackControlInterface->SetSessionClosedCaptionsService(sessionId, service);
+}
+
+std::uint32_t TextTrackWrapper::resetSession(std::uint32_t sessionId) const
+{
+    return m_textTrackControlInterface->ResetSession(sessionId);
+}
+
+std::uint32_t TextTrackWrapper::associateVideoDecoder(std::uint32_t sessionId, const std::string &videoDecoder) const
+{
+    return m_textTrackControlInterface->AssociateVideoDecoder(sessionId, videoDecoder);
 }
 } // namespace firebolt::rialto::wrappers
 

@@ -249,6 +249,22 @@ TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetPosition)
     sendGetPositionRequestAndReceiveResponseWithoutPositionMatch();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldGetDuration)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillGetDuration();
+    sendGetDurationRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldFailToGetDuration)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaPipelineServiceWillFailToGetDuration();
+    sendGetDurationRequestAndReceiveResponseWithoutDurationMatch();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldSetImmediateOutput)
 {
     mediaPipelineServiceWillCreateSession();
@@ -345,12 +361,28 @@ TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackErrorEvent)
     sendPlaybackErrorEvent();
 }
 
+TEST_F(MediaPipelineModuleServiceTests, shouldSendFirstFrameReceivedEvent)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaClientWillSendFirstFrameReceivedEvent();
+    sendFirstFrameReceivedEvent();
+}
+
 TEST_F(MediaPipelineModuleServiceTests, shouldSendSourceFlushedEvent)
 {
     mediaPipelineServiceWillCreateSession();
     sendCreateSessionRequestAndReceiveResponse();
     mediaClientWillSendSourceFlushedEvent();
     sendSourceFlushedEvent();
+}
+
+TEST_F(MediaPipelineModuleServiceTests, shouldSendPlaybackInfoEvent)
+{
+    mediaPipelineServiceWillCreateSession();
+    sendCreateSessionRequestAndReceiveResponse();
+    mediaClientWillSendPlaybackInfoEvent();
+    sendPlaybackInfoEvent();
 }
 
 TEST_F(MediaPipelineModuleServiceTests, shouldRenderFrame)

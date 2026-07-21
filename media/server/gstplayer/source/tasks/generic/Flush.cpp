@@ -20,14 +20,15 @@
 #include "tasks/generic/Flush.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
+#include "tasks/generic/NeedData.h"
 
 namespace firebolt::rialto::server::tasks::generic
 {
 Flush::Flush(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-             std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper, const MediaSourceType &type,
-             bool resetTime)
+             const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper, const MediaSourceType &type,
+             bool resetTime, bool isAsync)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper}, m_type{type},
-      m_resetTime{resetTime}
+      m_resetTime{resetTime}, m_isAsync{isAsync}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Flush");
 }
@@ -69,12 +70,15 @@ void Flush::execute() const
         m_gstWrapper->gstBufferUnref(buffer);
     }
     streamInfo.buffers.clear();
+    m_context.initialPositions.erase(sourceElem->second.appSrc);
 
     m_gstPlayerClient->invalidateActiveRequests(m_type);
 
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
     {
-        m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
+        m_context.flushOnPrerollController->waitIfRequired(m_type);
+
+        RIALTO_SERVER_LOG_MIL("Sending flush event for %s source.", common::convertMediaSourceType(m_type));
         // Flush source
         GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
         if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
@@ -87,6 +91,11 @@ void Flush::execute() const
         {
             RIALTO_SERVER_LOG_WARN("failed to send flush-stop event for %s", common::convertMediaSourceType(m_type));
         }
+
+        if (m_isAsync)
+        {
+            m_context.flushOnPrerollController->setFlushing(m_type);
+        }
     }
     else
     {
@@ -98,7 +107,24 @@ void Flush::execute() const
     m_context.endOfStreamInfo.erase(m_type);
     m_context.eosNotified = false;
 
+    if (m_resetTime)
+    {
+        m_context.streamPosition.store(-1);
+    }
+
     // Notify client, that flush has been finished
     m_gstPlayerClient->notifySourceFlushed(m_type);
+
+    // Notify GstGenericPlayer, that flush has been finished
+    m_player.setSourceFlushed(m_type);
+
+    if (m_context.setupSourceFinished)
+    {
+        // Trigger NeedData for source
+        NeedData task{m_context, m_player, m_gstPlayerClient, GST_APP_SRC(source)};
+        task.execute();
+    }
+
+    RIALTO_SERVER_LOG_MIL("%s source flushed.", common::convertMediaSourceType(m_type));
 }
 } // namespace firebolt::rialto::server::tasks::generic

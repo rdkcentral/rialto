@@ -23,6 +23,7 @@
 #include "ITextTrackAccessor.h"
 #include "ITextTrackSession.h"
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace firebolt::rialto::server
@@ -38,19 +39,24 @@ class TextTrackSession : public ITextTrackSession
 public:
     TextTrackSession(const std::string &displayName, const ITextTrackAccessorFactory &textTrackAccessorFactory);
     ~TextTrackSession() override;
+    bool resetSession(bool isMuted) override;
     bool pause() override;
     bool play() override;
     bool mute(bool mute) override;
     bool setPosition(uint64_t mediaTimestampMs) override;
-    bool sendData(const std::string &data, int32_t displayOffsetMs = 0) override;
+    bool sendData(const std::string &data, int64_t displayOffsetMs = 0) override;
     bool setSessionWebVTTSelection() override;
     bool setSessionTTMLSelection() override;
     bool setSessionCCSelection(const std::string &service) override;
+    bool associateVideoDecoder(gpointer decoderId) override;
+    bool isClosedCaptions() const override;
 
 private:
     std::shared_ptr<ITextTrackAccessor> m_textTrackAccessor;
     ITextTrackAccessor::DataType m_dataType{ITextTrackAccessor::DataType::UNKNOWN};
     uint32_t m_sessionId{0};
+    std::optional<std::string> m_ccService;
+    std::optional<gpointer> m_videoDecoderId;
 };
 } // namespace firebolt::rialto::server
 #endif // FIREBOLT_RIALTO_SERVER_TEXT_TRACK_SESSION_H_

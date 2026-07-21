@@ -25,7 +25,6 @@ class RialtoClientMediaKeysIpcCreateKeySessionTest : public MediaKeysIpcTestBase
 {
 protected:
     KeySessionType m_keySessionType = KeySessionType::PERSISTENT_LICENCE;
-    bool m_isLdl = false;
 
     RialtoClientMediaKeysIpcCreateKeySessionTest() { createMediaKeysIpc(); }
 
@@ -51,13 +50,12 @@ TEST_F(RialtoClientMediaKeysIpcCreateKeySessionTest, Success)
 
     EXPECT_CALL(*m_channelMock,
                 CallMethod(methodMatcher("createKeySession"), m_controllerMock.get(),
-                           createKeySessionRequestMatcher(m_mediaKeysHandle, convertKeySessionType(m_keySessionType),
-                                                          m_isLdl),
+                           createKeySessionRequestMatcher(m_mediaKeysHandle, convertKeySessionType(m_keySessionType)),
                            _, m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(
             Invoke(this, &RialtoClientMediaKeysIpcCreateKeySessionTest::setCreateKeySessionResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->createKeySession(m_keySessionType, m_mediaKeysClientMock, m_isLdl, returnKeySessionid),
+    EXPECT_EQ(m_mediaKeysIpc->createKeySession(m_keySessionType, m_mediaKeysClientMock, returnKeySessionid),
               MediaKeyErrorStatus::OK);
     EXPECT_EQ(returnKeySessionid, m_kKeySessionId);
 
@@ -76,7 +74,7 @@ TEST_F(RialtoClientMediaKeysIpcCreateKeySessionTest, ChannelDisconnected)
     expectIpcApiCallDisconnected();
     expectUnsubscribeEvents();
 
-    EXPECT_EQ(m_mediaKeysIpc->createKeySession(m_keySessionType, m_mediaKeysClientMock, m_isLdl, returnKeySessionid),
+    EXPECT_EQ(m_mediaKeysIpc->createKeySession(m_keySessionType, m_mediaKeysClientMock, returnKeySessionid),
               MediaKeyErrorStatus::FAIL);
 
     // Reattach channel on destroySession
@@ -98,7 +96,7 @@ TEST_F(RialtoClientMediaKeysIpcCreateKeySessionTest, ReconnectChannel)
         .WillOnce(WithArgs<3>(
             Invoke(this, &RialtoClientMediaKeysIpcCreateKeySessionTest::setCreateKeySessionResponseSuccess)));
 
-    EXPECT_EQ(m_mediaKeysIpc->createKeySession(m_keySessionType, m_mediaKeysClientMock, m_isLdl, returnKeySessionid),
+    EXPECT_EQ(m_mediaKeysIpc->createKeySession(m_keySessionType, m_mediaKeysClientMock, returnKeySessionid),
               MediaKeyErrorStatus::OK);
 }
 
@@ -112,7 +110,7 @@ TEST_F(RialtoClientMediaKeysIpcCreateKeySessionTest, Failure)
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("createKeySession"), _, _, _, _));
 
-    EXPECT_EQ(m_mediaKeysIpc->createKeySession(m_keySessionType, m_mediaKeysClientMock, m_isLdl, returnKeySessionid),
+    EXPECT_EQ(m_mediaKeysIpc->createKeySession(m_keySessionType, m_mediaKeysClientMock, returnKeySessionid),
               MediaKeyErrorStatus::FAIL);
 }
 
@@ -128,6 +126,6 @@ TEST_F(RialtoClientMediaKeysIpcCreateKeySessionTest, ErrorReturn)
         .WillOnce(
             WithArgs<3>(Invoke(this, &RialtoClientMediaKeysIpcCreateKeySessionTest::setCreateKeySessionResponseFailed)));
 
-    EXPECT_EQ(m_mediaKeysIpc->createKeySession(m_keySessionType, m_mediaKeysClientMock, m_isLdl, returnKeySessionid),
+    EXPECT_EQ(m_mediaKeysIpc->createKeySession(m_keySessionType, m_mediaKeysClientMock, returnKeySessionid),
               m_errorStatus);
 }

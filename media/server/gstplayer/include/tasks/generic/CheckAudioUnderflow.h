@@ -33,7 +33,7 @@ class CheckAudioUnderflow : public IPlayerTask
 {
 public:
     CheckAudioUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, IGstGenericPlayerClient *client,
-                        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper);
+                        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper);
     ~CheckAudioUnderflow() override = default;
     void execute() const override;
 

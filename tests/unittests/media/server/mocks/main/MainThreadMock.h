@@ -32,9 +32,9 @@ class MainThreadMock : public IMainThread
 public:
     MOCK_METHOD(int32_t, registerClient, (), (override));
     MOCK_METHOD(void, unregisterClient, (uint32_t clientId), (override));
-    MOCK_METHOD(void, enqueueTask, (uint32_t clientId, Task task), (override));
-    MOCK_METHOD(void, enqueueTaskAndWait, (uint32_t clientId, Task task), (override));
-    MOCK_METHOD(void, enqueuePriorityTaskAndWait, (uint32_t clientId, Task task), (override));
+    MOCK_METHOD(void, enqueueTask, (uint32_t clientId, const Task &task), (override));
+    MOCK_METHOD(void, enqueueTaskAndWait, (uint32_t clientId, const Task &task), (override));
+    MOCK_METHOD(void, enqueuePriorityTaskAndWait, (uint32_t clientId, const Task &task), (override));
 };
 } // namespace firebolt::rialto::server::mock
 

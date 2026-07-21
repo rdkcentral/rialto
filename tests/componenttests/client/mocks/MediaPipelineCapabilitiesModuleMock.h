@@ -46,6 +46,11 @@ public:
                  ::firebolt::rialto::GetSupportedPropertiesResponse *response, ::google::protobuf::Closure *done),
                 (override));
 
+    MOCK_METHOD(void, isVideoMaster,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::IsVideoMasterRequest *request,
+                 ::firebolt::rialto::IsVideoMasterResponse *response, ::google::protobuf::Closure *done),
+                (override));
+
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
     {
         done->Run();

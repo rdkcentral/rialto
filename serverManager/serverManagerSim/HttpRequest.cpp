@@ -19,6 +19,7 @@
 
 #include "HttpRequest.h"
 #include <cstring>
+#include <utility>
 
 namespace
 {
@@ -26,19 +27,18 @@ std::vector<std::string> splitUri(std::string uri)
 {
     std::vector<std::string> result;
     size_t pos = 0;
-    std::string token;
     while ((pos = uri.find("/")) != std::string::npos)
     {
-        token = uri.substr(0, pos);
+        std::string token = uri.substr(0, pos);
         if (!token.empty())
         {
-            result.push_back(token);
+            result.push_back(std::move(token));
         }
         uri.erase(0, pos + 1);
     }
     if (!uri.empty())
     {
-        result.push_back(uri);
+        result.push_back(std::move(uri));
     }
     return result;
 }
@@ -47,9 +47,8 @@ std::vector<std::string> splitUri(std::string uri)
 namespace rialto::servermanager
 {
 HttpRequest::HttpRequest(mg_connection *conn, const mg_request_info *request_info)
-    : m_connection{conn}, m_method{request_info->request_method}, m_postData{request_info->post_data
-                                                                                 ? request_info->post_data
-                                                                                 : ""}
+    : m_connection{conn}, m_method{request_info->request_method},
+      m_postData{request_info->post_data ? request_info->post_data : ""}
 {
     auto uri = splitUri(request_info->uri);
     if (uri.size() > 0)

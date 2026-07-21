@@ -33,7 +33,7 @@ class Eos : public IPlayerTask
 {
 public:
     Eos(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-        std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
+        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
         const firebolt::rialto::MediaSourceType &type);
     ~Eos() override;
     void execute() const override;

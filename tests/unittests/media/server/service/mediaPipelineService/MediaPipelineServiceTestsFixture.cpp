@@ -69,6 +69,7 @@ const std::string kTextTrackIdentifier{"TextTrackIdentifier"};
 constexpr uint32_t kBufferingLimit{4324};
 constexpr bool kUseBuffering{true};
 constexpr uint64_t kStopPosition{23412};
+constexpr bool kIsLive{false};
 } // namespace
 
 namespace firebolt::rialto
@@ -98,12 +99,12 @@ MediaPipelineServiceTests::MediaPipelineServiceTests()
 
 void MediaPipelineServiceTests::mediaPipelineWillLoad()
 {
-    EXPECT_CALL(m_mediaPipelineMock, load(kType, kMimeType, kUrl)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, load(kType, kMimeType, kUrl, kIsLive)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToLoad()
 {
-    EXPECT_CALL(m_mediaPipelineMock, load(kType, kMimeType, kUrl)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, load(kType, kMimeType, kUrl, kIsLive)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillAttachSource()
@@ -138,12 +139,12 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToAllSourcesAttached()
 
 void MediaPipelineServiceTests::mediaPipelineWillPlay()
 {
-    EXPECT_CALL(m_mediaPipelineMock, play()).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, play(_)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToPlay()
 {
-    EXPECT_CALL(m_mediaPipelineMock, play()).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, play(_)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillPause()
@@ -220,6 +221,22 @@ void MediaPipelineServiceTests::mediaPipelineWillGetPosition()
 void MediaPipelineServiceTests::mediaPipelineWillFailToGetPosition()
 {
     EXPECT_CALL(m_mediaPipelineMock, getPosition(_)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetDuration()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getDuration(_))
+        .WillOnce(Invoke(
+            [&](int64_t &pos)
+            {
+                pos = kDuration;
+                return true;
+            }));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToGetDuration()
+{
+    EXPECT_CALL(m_mediaPipelineMock, getDuration(_)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillSetImmediateOutput()
@@ -383,12 +400,12 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToGetMute()
 
 void MediaPipelineServiceTests::mediaPipelineWillFlush()
 {
-    EXPECT_CALL(m_mediaPipelineMock, flush(kSourceId, kResetTime)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, flush(kSourceId, kResetTime, _)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToFlush()
 {
-    EXPECT_CALL(m_mediaPipelineMock, flush(kSourceId, kResetTime)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, flush(kSourceId, kResetTime, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillSetSourcePosition()
@@ -486,6 +503,16 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToSwitchSource()
     EXPECT_CALL(m_mediaPipelineMock, switchSource(_)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillCheckIfVideoIsMaster()
+{
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isVideoMaster(_)).WillOnce(Return(true));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillFailToCheckIfVideoIsMaster()
+{
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isVideoMaster(_)).WillOnce(Return(false));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillPing()
 {
     EXPECT_CALL(*m_heartbeatProcedureMock, createHandler())
@@ -570,12 +597,12 @@ void MediaPipelineServiceTests::destroySessionShouldFail()
 
 void MediaPipelineServiceTests::loadShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->load(kSessionId, kType, kMimeType, kUrl));
+    EXPECT_TRUE(m_sut->load(kSessionId, kType, kMimeType, kUrl, kIsLive));
 }
 
 void MediaPipelineServiceTests::loadShouldFail()
 {
-    EXPECT_FALSE(m_sut->load(kSessionId, kType, kMimeType, kUrl));
+    EXPECT_FALSE(m_sut->load(kSessionId, kType, kMimeType, kUrl, kIsLive));
 }
 
 void MediaPipelineServiceTests::attachSourceShouldSucceed()
@@ -614,12 +641,14 @@ void MediaPipelineServiceTests::allSourcesAttachedShouldFail()
 
 void MediaPipelineServiceTests::playShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->play(kSessionId));
+    bool isAsync{false};
+    EXPECT_TRUE(m_sut->play(kSessionId, isAsync));
 }
 
 void MediaPipelineServiceTests::playShouldFail()
 {
-    EXPECT_FALSE(m_sut->play(kSessionId));
+    bool isAsync{false};
+    EXPECT_FALSE(m_sut->play(kSessionId, isAsync));
 }
 
 void MediaPipelineServiceTests::pauseShouldSucceed()
@@ -693,6 +722,19 @@ void MediaPipelineServiceTests::getPositionShouldFail()
 {
     std::int64_t targetPosition{};
     EXPECT_FALSE(m_sut->getPosition(kSessionId, targetPosition));
+}
+
+void MediaPipelineServiceTests::getDurationShouldSucceed()
+{
+    std::int64_t targetDuration{};
+    EXPECT_TRUE(m_sut->getDuration(kSessionId, targetDuration));
+    EXPECT_EQ(targetDuration, kDuration);
+}
+
+void MediaPipelineServiceTests::getDurationShouldFail()
+{
+    std::int64_t targetDuration{};
+    EXPECT_FALSE(m_sut->getDuration(kSessionId, targetDuration));
 }
 
 void MediaPipelineServiceTests::getStatsShouldSucceed()
@@ -882,12 +924,14 @@ void MediaPipelineServiceTests::getStreamSyncModeShouldFail()
 
 void MediaPipelineServiceTests::flushShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->flush(kSessionId, kSourceId, kResetTime));
+    bool isAsync{false};
+    EXPECT_TRUE(m_sut->flush(kSessionId, kSourceId, kResetTime, isAsync));
 }
 
 void MediaPipelineServiceTests::flushShouldFail()
 {
-    EXPECT_FALSE(m_sut->flush(kSessionId, kSourceId, kResetTime));
+    bool isAsync{false};
+    EXPECT_FALSE(m_sut->flush(kSessionId, kSourceId, kResetTime, isAsync));
 }
 
 void MediaPipelineServiceTests::setSourcePositionShouldSucceed()
@@ -991,6 +1035,18 @@ void MediaPipelineServiceTests::switchSourceShouldFail()
     std::unique_ptr<firebolt::rialto::IMediaPipeline::MediaSource> mediaSource =
         std::make_unique<firebolt::rialto::IMediaPipeline::MediaSourceVideo>("video/h264");
     EXPECT_FALSE(m_sut->switchSource(kSessionId, mediaSource));
+}
+
+void MediaPipelineServiceTests::isVideoMasterShouldSucceed()
+{
+    bool isMaster{false};
+    EXPECT_TRUE(m_sut->isVideoMaster(isMaster));
+}
+
+void MediaPipelineServiceTests::isVideoMasterShouldFail()
+{
+    bool isMaster{false};
+    EXPECT_FALSE(m_sut->isVideoMaster(isMaster));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()

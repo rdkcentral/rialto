@@ -21,6 +21,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 #include "GstCapabilities.h"
 #include "GstMimeMapping.h"
@@ -162,14 +163,33 @@ GstCapabilities::GstCapabilities(
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
     const IGstInitialiser &gstInitialiser)
-    : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}
+    : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
+      m_gstInitialiser{gstInitialiser}
 {
-    gstInitialiser.waitForInitialisation();
-    fillSupportedMimeTypes();
+    m_initialisationThread = std::thread(
+        [this]()
+        {
+            std::unique_lock lock{m_initialisationMutex};
+
+            m_gstInitialiser.waitForInitialisation();
+            fillSupportedMimeTypes();
+            m_isInitialised = true;
+            m_initialisationCv.notify_all();
+        });
+}
+
+GstCapabilities::~GstCapabilities()
+{
+    if (m_initialisationThread.joinable())
+    {
+        m_initialisationThread.join();
+    }
 }
 
 std::vector<std::string> GstCapabilities::getSupportedMimeTypes(MediaSourceType sourceType)
 {
+    waitForInitialisation();
+
     std::vector<std::string> supportedMimeTypesSource;
     std::string type;
     if (sourceType == MediaSourceType::VIDEO)
@@ -182,7 +202,7 @@ std::vector<std::string> GstCapabilities::getSupportedMimeTypes(MediaSourceType 
     }
     else if (sourceType == MediaSourceType::SUBTITLE)
     {
-        return {"text/vtt", "text/ttml"};
+        return {"text/vtt", "text/ttml", "text/cc"};
     }
     else
     {
@@ -198,12 +218,15 @@ std::vector<std::string> GstCapabilities::getSupportedMimeTypes(MediaSourceType 
 
 bool GstCapabilities::isMimeTypeSupported(const std::string &mimeType)
 {
+    waitForInitialisation();
     return m_supportedMimeTypes.find(mimeType) != m_supportedMimeTypes.end();
 }
 
 std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType mediaType,
                                                                  const std::vector<std::string> &propertyNames)
 {
+    waitForInitialisation();
+
     // Get gstreamer element factories. The following flag settings will fetch both SINK and DECODER types
     // of gstreamer classes...
     GstElementFactoryListType factoryListType{GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER |
@@ -237,33 +260,31 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
             continue;
         }
 
-        GstElement *elementObj{nullptr};
-
-        // We instantiate an object because fetching the class, even after gstPluginFeatureLoad,
-        // was found to sometimes return a class with no properties. A code branch is
-        // kept with this feature "supportedPropertiesViaClass"
-        elementObj = m_gstWrapper->gstElementFactoryCreate(factory, nullptr);
-        if (elementObj)
+        GType elementType = m_gstWrapper->gstElementFactoryGetElementType(factory);
+        if (elementType == G_TYPE_INVALID)
+            continue;
+        gpointer elementClass = m_glibWrapper->gTypeClassRef(elementType);
+        if (elementClass)
         {
             GParamSpec **props;
             guint nProps;
-            props = m_glibWrapper->gObjectClassListProperties(G_OBJECT_GET_CLASS(elementObj), &nProps);
+            props = m_glibWrapper->gObjectClassListProperties(G_OBJECT_CLASS(elementClass), &nProps);
             if (props)
             {
                 for (guint j = 0; j < nProps && !propertiesToLookFor.empty(); ++j)
                 {
-                    const std::string kPropName{props[j]->name};
-                    auto it = propertiesToLookFor.find(kPropName);
+                    std::string propName{props[j]->name};
+                    auto it = propertiesToLookFor.find(propName);
                     if (it != propertiesToLookFor.end())
                     {
-                        RIALTO_SERVER_LOG_DEBUG("Found property '%s'", kPropName.c_str());
-                        propertiesFound.push_back(kPropName);
+                        RIALTO_SERVER_LOG_DEBUG("Found property '%s'", propName.c_str());
+                        propertiesFound.push_back(std::move(propName));
                         propertiesToLookFor.erase(it);
                     }
                 }
                 m_glibWrapper->gFree(props);
             }
-            m_gstWrapper->gstObjectUnref(elementObj);
+            m_glibWrapper->gTypeClassUnref(elementClass);
         }
     }
 
@@ -407,9 +428,34 @@ void GstCapabilities::addAllUniqueSinkPadsCapsToVector(std::vector<GstCaps *> &c
 
 bool GstCapabilities::isCapsInVector(const std::vector<GstCaps *> &capsVector, GstCaps *caps) const
 {
-    return std::find_if(capsVector.begin(), capsVector.end(),
-                        [&](const GstCaps *comparedCaps)
+    return std::find_if(capsVector.begin(), capsVector.end(), [&](const GstCaps *comparedCaps)
                         { return m_gstWrapper->gstCapsIsStrictlyEqual(caps, comparedCaps); }) != capsVector.end();
+}
+
+void GstCapabilities::waitForInitialisation()
+{
+    std::unique_lock lock{m_initialisationMutex};
+    m_initialisationCv.wait(lock, [this]() { return m_isInitialised; });
+}
+
+bool GstCapabilities::isVideoMaster(bool &isVideoMaster)
+{
+    waitForInitialisation();
+
+    GstRegistry *reg = m_gstWrapper->gstRegistryGet();
+    if (!reg)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed get the gst registry");
+        return false;
+    }
+    GstPluginFeature *feature{nullptr};
+    isVideoMaster = true;
+    if (nullptr != (feature = m_gstWrapper->gstRegistryLookupFeature(reg, "amlhalasink")))
+    {
+        isVideoMaster = false;
+        m_gstWrapper->gstObjectUnref(feature);
+    }
+    return true;
 }
 
 } // namespace firebolt::rialto::server

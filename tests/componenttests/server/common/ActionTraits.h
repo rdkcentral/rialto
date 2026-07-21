@@ -344,6 +344,14 @@ struct ProcessAudioGap
     static constexpr auto m_kFunction{&Stub::processAudioGap};
 };
 
+struct GetDuration
+{
+    using RequestType = ::firebolt::rialto::GetDurationRequest;
+    using ResponseType = ::firebolt::rialto::GetDurationResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getDuration};
+};
+
 // mediakeys module
 struct CreateMediaKeys
 {
@@ -580,6 +588,14 @@ struct GetSupportedProperties
     static constexpr auto m_kFunction{&Stub::getSupportedProperties};
 };
 
+struct IsVideoMaster
+{
+    using RequestType = ::firebolt::rialto::IsVideoMasterRequest;
+    using ResponseType = ::firebolt::rialto::IsVideoMasterResponse;
+    using Stub = ::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::isVideoMaster};
+};
+
 // web audio player module
 struct CreateWebAudioPlayer
 {
@@ -667,6 +683,14 @@ struct WebAudioGetVolume
     using ResponseType = ::firebolt::rialto::WebAudioGetVolumeResponse;
     using Stub = ::firebolt::rialto::WebAudioPlayerModule_Stub;
     static constexpr auto m_kFunction{&Stub::getVolume};
+};
+
+struct GetMetricSystemData
+{
+    using RequestType = ::firebolt::rialto::GetMetricSystemDataRequest;
+    using ResponseType = ::firebolt::rialto::GetMetricSystemDataResponse;
+    using Stub = ::firebolt::rialto::MediaKeysModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getMetricSystemData};
 };
 
 } // namespace firebolt::rialto::server::ct

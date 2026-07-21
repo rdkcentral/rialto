@@ -126,6 +126,10 @@ firebolt::rialto::PlaybackErrorEvent_PlaybackError convertPlaybackError(const fi
     {
         return firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION;
     }
+    case firebolt::rialto::PlaybackError::OUTPUT_PROTECTION:
+    {
+        return firebolt::rialto::PlaybackErrorEvent_PlaybackError_OUTPUT_PROTECTION;
+    }
     }
     return firebolt::rialto::PlaybackErrorEvent_PlaybackError_UNKNOWN;
 }
@@ -240,6 +244,17 @@ void MediaPipelineClient::notifyBufferUnderflow(int32_t sourceId)
     m_ipcClient->sendEvent(event);
 }
 
+void MediaPipelineClient::notifyFirstFrameReceived(int32_t sourceId)
+{
+    RIALTO_SERVER_LOG_DEBUG("Sending FirstFrameReceivedEvent...");
+
+    auto event = std::make_shared<firebolt::rialto::FirstFrameReceivedEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_source_id(sourceId);
+
+    m_ipcClient->sendEvent(event);
+}
+
 void MediaPipelineClient::notifyPlaybackError(int32_t sourceId, PlaybackError error)
 {
     RIALTO_SERVER_LOG_DEBUG("Sending notifyPlaybackError...");
@@ -259,6 +274,18 @@ void MediaPipelineClient::notifySourceFlushed(int32_t sourceId)
     auto event = std::make_shared<firebolt::rialto::SourceFlushedEvent>();
     event->set_session_id(m_sessionId);
     event->set_source_id(sourceId);
+
+    m_ipcClient->sendEvent(event);
+}
+
+void MediaPipelineClient::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
+{
+    RIALTO_SERVER_LOG_DEBUG("Sending PlaybackInfoEvent...");
+
+    auto event = std::make_shared<firebolt::rialto::PlaybackInfoEvent>();
+    event->set_session_id(m_sessionId);
+    event->set_current_position(playbackInfo.currentPosition);
+    event->set_volume(playbackInfo.volume);
 
     m_ipcClient->sendEvent(event);
 }

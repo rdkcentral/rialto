@@ -128,6 +128,7 @@ protected:
     void shouldRenderFrame();
     void shouldRenderFrameFailure();
     void shouldGetPosition(const int64_t position);
+    void shouldGetDuration(const int64_t duration);
     void shouldSetImmediateOutput(bool immediateOutput);
     void shouldGetImmediateOutput(bool immediateOutput);
     void shouldGetStats(uint64_t renderedFrames, uint64_t droppedFrames);
@@ -139,6 +140,8 @@ protected:
     void shouldFailToProcessAudioGap();
     void shouldSwitchSourceEacs();
     void shouldSwitchSourceMpeg();
+    void shouldCheckIsVideoMaster();
+    void shouldFailToCheckIsVideoMaster();
 
     // MediaPipelineClient Expect methods
     void shouldNotifyNetworkStateBuffering();
@@ -165,10 +168,12 @@ protected:
     void shouldNotifyNeedDataVideo(const size_t framesToWrite);
     void shouldNotifyNeedDataVideoSecondary(const size_t framesToWrite);
     void shouldNotifyPosition(const uint32_t expectedPosition);
+    void shouldNotifyPlaybackInfo(const firebolt::rialto::PlaybackInfo &expectedPlaybackInfo);
     void shouldNotifyQosAudio();
     void shouldNotifyQosVideo();
     void shouldNotifyBufferUnderflowAudio();
     void shouldNotifyBufferUnderflowVideo();
+    void shouldNotifyFirstFrameReceivedVideo();
     void shouldNotifyPlaybackErrorAudio();
     void shouldNotifyPlaybackErrorVideo();
     void shouldNotifySourceFlushed();
@@ -243,6 +248,7 @@ protected:
     void renderFrame();
     void renderFrameFailure();
     void getPosition(const int64_t expectedPosition);
+    void getDuration(const int64_t expectedDuration);
     void setImmediateOutput(bool immediateOutput);
     void getImmediateOutput(bool immediateOutput);
     void getStats(uint64_t expectedFrames, uint64_t expectedDropped);
@@ -263,6 +269,8 @@ protected:
     void processAudioGapFailure();
     void switchSourceEac();
     void switchSourceMpeg();
+    void isVideoMaster();
+    void isVideoMasterFailure();
 
     // Event methods
     void sendNotifyNetworkStateBuffering();
@@ -289,10 +297,12 @@ protected:
     void sendNotifyPlaybackStateSeeking();
     void sendNotifyPlaybackStateSeekDone();
     void sendNotifyPositionChanged(const int64_t position);
+    void sendNotifyPlaybackInfo(const firebolt::rialto::PlaybackInfo &playbackInfo);
     void sendNotifyQosAudio();
     void sendNotifyQosVideo();
     void sendNotifyBufferUnderflowAudio();
     void sendNotifyBufferUnderflowVideo();
+    void sendNotifyFirstFrameReceivedVideo();
     void sendNotifyPlaybackErrorAudio();
     void sendNotifyPlaybackErrorVideo();
     void sendNotifySourceFlushed();

@@ -27,8 +27,8 @@ namespace firebolt::rialto::server::tasks::webaudio
 {
 HandleBusMessage::HandleBusMessage(WebAudioPlayerContext &context, IGstWebAudioPlayerPrivate &player,
                                    IGstWebAudioPlayerClient *client,
-                                   std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-                                   std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+                                   const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+                                   const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                                    GstMessage *message)
     : m_context{context}, m_player{player}, m_gstPlayerClient{client}, m_gstWrapper{gstWrapper},
       m_glibWrapper{glibWrapper}, m_message{message}
@@ -52,10 +52,10 @@ void HandleBusMessage::execute() const
         {
             GstState oldState, newState, pending;
             m_gstWrapper->gstMessageParseStateChanged(m_message, &oldState, &newState, &pending);
-            RIALTO_SERVER_LOG_INFO("State changed (old: %s, new: %s, pending: %s)",
-                                   m_gstWrapper->gstElementStateGetName(oldState),
-                                   m_gstWrapper->gstElementStateGetName(newState),
-                                   m_gstWrapper->gstElementStateGetName(pending));
+            RIALTO_SERVER_LOG_MIL("State changed (old: %s, new: %s, pending: %s)",
+                                  m_gstWrapper->gstElementStateGetName(oldState),
+                                  m_gstWrapper->gstElementStateGetName(newState),
+                                  m_gstWrapper->gstElementStateGetName(pending));
 
             std::string filename = std::string(m_gstWrapper->gstElementStateGetName(oldState)) + "-" +
                                    std::string(m_gstWrapper->gstElementStateGetName(newState));

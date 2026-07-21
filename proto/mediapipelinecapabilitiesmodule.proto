@@ -56,6 +56,21 @@ message IsMimeTypeSupportedResponse {
 }
 
 /**
+ * @fn void isVideoMaster(bool &isVideoMaster)
+ * @brief Checks if the platform is video master.
+ *
+ * @param[out] is_video_master True if video is master otherwise false.
+ *
+ * @retval true on success false otherwise
+*/
+
+message IsVideoMasterRequest {
+}
+message IsVideoMasterResponse {
+    optional bool is_video_master = 1;
+}
+
+/**
  * @fn vector<string> getSupportedProperties(MediaSourceType media_type, const vector<string> &property_names)
  * @brief Has any gstreamer sink or decoder got a named property
  *
@@ -92,5 +107,12 @@ service MediaPipelineCapabilitiesModule {
      * @see GetSupportedPropertiesRequest
      */
     rpc getSupportedProperties(GetSupportedPropertiesRequest) returns (GetSupportedPropertiesResponse) {
+    }
+
+    /**
+     * @brief Checks if the platform is video master.
+     * @see IsVideoMasterRequest
+     */
+    rpc isVideoMaster(IsVideoMasterRequest) returns (IsVideoMasterResponse) {
     }
 }

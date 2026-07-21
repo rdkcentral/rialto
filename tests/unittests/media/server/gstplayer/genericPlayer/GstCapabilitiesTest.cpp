@@ -27,7 +27,9 @@
 #include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 
+#include <condition_variable>
 #include <gtest/gtest.h>
+#include <mutex>
 #include <unordered_map>
 
 using namespace firebolt::rialto;
@@ -36,6 +38,7 @@ using namespace firebolt::rialto::wrappers;
 
 using ::testing::_;
 using ::testing::DoAll;
+using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
@@ -47,6 +50,7 @@ namespace
 const GstElementFactoryListType kExpectedFactoryListType{
     GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_PARSER |
     GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+const GType kDummyType{3};
 }; // namespace
 template <typename T> class GListWrapper
 {
@@ -71,10 +75,12 @@ public:
     GstCapabilitiesTest()
         // valid values of GstCaps are not needed, only addresses will be used
         : m_capsMap{{"audio/mpeg, mpegversion=(int)4", {}},
+                    {"audio/mpeg, mpegversion=(int)1, layer=(int)3", {}},
                     {"audio/x-eac3", {}},
                     {"audio/x-opus", {}},
                     {"audio/x-opus, channel-mapping-family=(int)0", {}},
                     {"audio/b-wav", {}},
+                    {"audio/x-flac", {}},
                     {"audio/x-raw", {}},
                     {"video/x-av1", {}},
                     {"video/x-h264", {}},
@@ -144,15 +150,30 @@ public:
 
     void createSutWithNoDecoderAndNoSink()
     {
+        // Some expectations are met in a thread in GstCapabilities constructor
+        // We have to wait for full object construction before adding new expectations
+        // Without that gtest may crash
+        std::mutex mutex;
+        std::condition_variable cv;
+        bool initialised{false};
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
             .WillOnce(Return(nullptr));
         EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
-            .WillOnce(Return(nullptr));
+            .WillOnce(Invoke(
+                [&](auto type, auto rank)
+                {
+                    std::unique_lock lock{mutex};
+                    initialised = true;
+                    cv.notify_one();
+                    return nullptr;
+                }));
         EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
         m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
                                                   m_gstInitialiserMock);
+        std::unique_lock lock{mutex};
+        cv.wait_for(lock, std::chrono::milliseconds{200}, [&]() { return initialised; });
     }
 
     void expectGetSupportedPropertiesCommon()
@@ -164,9 +185,9 @@ public:
             .WillOnce(Return(m_listOfFactories));
         EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
 
-        // The next calls should ensure that an object is created and then freed
-        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(m_elementFactory, nullptr)).WillOnce(Return(&m_object));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_object));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(m_elementFactory)).WillOnce(Return(kDummyType));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeClassRef(kDummyType)).WillOnce(Return(&m_elementClass));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeClassUnref(&m_elementClass));
     }
 
     std::shared_ptr<StrictMock<GstWrapperMock>> m_gstWrapperMock{std::make_shared<StrictMock<GstWrapperMock>>()};
@@ -186,6 +207,7 @@ public:
     // Common sink factory type variables to be used in tests
     char m_dummySink = 0;
     GstElementFactory *m_sinkFactory{reinterpret_cast<GstElementFactory *>(&m_dummySink)};
+    GstElementClass m_elementClass{};
     GstStaticPadTemplate m_sinkPadTemplateSink;
     GstStaticPadTemplate m_sinkPadTemplateSrc;
     GstCaps m_sinkTemplateCaps;
@@ -384,7 +406,7 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesForBlacklistedFactories)
     EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(listOfFactories)).Times(1);
 
     // element will never be created from blacklisted factory list
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryCreate(_, nullptr)).Times(0);
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(_)).Times(0);
 
     std::vector<std::string> kParamNames{"test-name-123", "test2"};
     std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
@@ -435,6 +457,27 @@ TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithNoPropertiesSupported)
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassListProperties(_, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(kNumParamsSupportedByServer), Return(dummySinkParamsPtr)));
     EXPECT_CALL(*m_glibWrapperMock, gFree(dummySinkParamsPtr)).Times(1);
+    EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(false));
+
+    std::vector<std::string> kParamNames{"test-name-123", "test2", "audio-fade"};
+    std::vector<std::string> supportedProperties{m_sut->getSupportedProperties(MediaSourceType::VIDEO, kParamNames)};
+
+    EXPECT_EQ(supportedProperties, std::vector<std::string>{});
+
+    gst_plugin_feature_list_free(m_listOfFactories);
+    m_listOfFactories = nullptr;
+}
+
+TEST_F(GstCapabilitiesTest, getSupportedPropertiesWithInvalidType)
+{
+    createSutWithNoDecoderAndNoSink();
+
+    m_listOfFactories = g_list_append(m_listOfFactories, m_elementFactory);
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(kExpectedFactoryListType, GST_RANK_NONE))
+        .WillOnce(Return(m_listOfFactories));
+    EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listOfFactories)).Times(1);
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryGetElementType(m_elementFactory)).WillOnce(Return(G_TYPE_INVALID));
     EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock, isSocAudioFadeSupported()).WillOnce(Return(false));
 
     std::vector<std::string> kParamNames{"test-name-123", "test2", "audio-fade"};
@@ -565,6 +608,9 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
         .WillOnce(Return(true));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/x-raw"], &m_sinkTemplateCaps))
         .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstCapsCanIntersect(&m_capsMap["audio/mpeg, mpegversion=(int)1, layer=(int)3"], &m_sinkTemplateCaps))
+        .WillOnce(Return(true));
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -574,6 +620,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
 
     EXPECT_TRUE(m_sut->isMimeTypeSupported("video/h264"));
     EXPECT_TRUE(m_sut->isMimeTypeSupported("audio/x-raw"));
+    EXPECT_TRUE(m_sut->isMimeTypeSupported("audio/mp3"));
     EXPECT_FALSE(m_sut->isMimeTypeSupported("video/x-av1"));
     EXPECT_FALSE(m_sut->isMimeTypeSupported("audio/x-opus"));
 }
@@ -847,7 +894,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPads_Two
 
 TEST_F(GstCapabilitiesTest, CreateGstCapabilities_GetSubtitlesMimeTypes)
 {
-    const std::vector<std::string> kSubtitleMimeTypes{"text/vtt", "text/ttml"};
+    const std::vector<std::string> kSubtitleMimeTypes{"text/vtt", "text/ttml", "text/cc"};
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
@@ -858,4 +905,40 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_GetSubtitlesMimeTypes)
                                               m_gstInitialiserMock);
 
     EXPECT_EQ(m_sut->getSupportedMimeTypes(MediaSourceType::SUBTITLE), kSubtitleMimeTypes);
+}
+
+TEST_F(GstCapabilitiesTest, shouldFailToCheckIfVideoIsMasterWhenRegistryIsNull)
+{
+    createSutWithNoDecoderAndNoSink();
+
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(nullptr));
+    bool isVideoMaster{false};
+    EXPECT_FALSE(m_sut->isVideoMaster(isVideoMaster));
+}
+
+TEST_F(GstCapabilitiesTest, shouldCheckIfVideoIsMasterAndReturnTrue)
+{
+    createSutWithNoDecoderAndNoSink();
+
+    GstRegistry registry{};
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(&registry));
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&registry, StrEq("amlhalasink"))).WillOnce(Return(nullptr));
+    bool isVideoMaster{false};
+    EXPECT_TRUE(m_sut->isVideoMaster(isVideoMaster));
+    EXPECT_TRUE(isVideoMaster);
+}
+
+TEST_F(GstCapabilitiesTest, shouldCheckIfVideoIsMasterAndReturnFalse)
+{
+    createSutWithNoDecoderAndNoSink();
+
+    GstRegistry registry{};
+    GstObject feature{};
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(&registry));
+    EXPECT_CALL(*m_gstWrapperMock, gstRegistryLookupFeature(&registry, StrEq("amlhalasink")))
+        .WillOnce(Return(GST_PLUGIN_FEATURE(&feature)));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(GST_PLUGIN_FEATURE(&feature)));
+    bool isVideoMaster{false};
+    EXPECT_TRUE(m_sut->isVideoMaster(isVideoMaster));
+    EXPECT_FALSE(isVideoMaster);
 }

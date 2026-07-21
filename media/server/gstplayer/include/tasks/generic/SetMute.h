@@ -33,8 +33,8 @@ class SetMute : public IPlayerTask
 {
 public:
     SetMute(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-            std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper,
-            std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper,
+            const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
+            const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
             const MediaSourceType &mediaSourceType, bool mute);
     ~SetMute() override;
     void execute() const override;

@@ -28,12 +28,16 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCount{3};
 constexpr bool kResetTime{false};
 constexpr double kAppliedRate{2.0};
+constexpr bool kAsync{true};
 } // namespace
 
+using testing::_;
+using testing::AtLeast;
+using testing::Invoke;
 using testing::Return;
+using testing::StrEq;
 
 namespace firebolt::rialto::server::ct
 {
@@ -44,11 +48,27 @@ class FlushTest : public MediaPipelineTest
     GstSegment m_segment{};
 
 public:
-    FlushTest() = default;
-    ~FlushTest() override = default;
+    FlushTest()
+    {
+        GstElementFactory *elementFactory = gst_element_factory_find("fakesrc");
+        m_audioSink = gst_element_factory_create(elementFactory, nullptr);
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_audioSink))).WillRepeatedly(Return("audio_sink"));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_audioSink)).Times(AtLeast(0));
+        gst_object_unref(elementFactory);
+    }
+
+    ~FlushTest() override { gst_object_unref(m_audioSink); }
 
     void willFlush()
     {
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(_)).WillRepeatedly(Return("GstStreamVolume"));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(m_audioSink, StrEq("async"), _))
+            .WillOnce(Invoke(
+                [&](gpointer object, const gchar *first_property_name, void *element)
+                {
+                    gboolean *asyncPtr = reinterpret_cast<gboolean *>(element);
+                    *asyncPtr = static_cast<gboolean>(kAsync);
+                }));
         EXPECT_CALL(*m_gstWrapperMock, gstEventNewFlushStart()).WillOnce(Return(&m_flushStartEvent));
         EXPECT_CALL(*m_gstWrapperMock, gstElementSendEvent(GST_ELEMENT(&m_audioAppSrc), &m_flushStartEvent))
             .WillOnce(Return(true));
@@ -64,28 +84,23 @@ public:
         expectedSourceFlushed.setFilter([&](const SourceFlushedEvent &event)
                                         { return event.source_id() == m_audioSourceId; });
 
+        // After successful Flush, NeedData for source is sent.
+        ExpectMessage<NeedMediaDataEvent> expectedAudioNeedData{m_clientStub};
+        expectedAudioNeedData.setFilter([&](const NeedMediaDataEvent &event)
+                                        { return event.source_id() == m_audioSourceId; });
+
         // Send FlushRequest and expect success
         auto request{createFlushRequest(m_sessionId, m_audioSourceId, kResetTime)};
-        ConfigureAction<Flush>(m_clientStub).send(request).expectSuccess();
+        ConfigureAction<Flush>(m_clientStub)
+            .send(request)
+            .expectSuccess()
+            .matchResponse([&](const FlushResponse &response) { EXPECT_EQ(kAsync, response.async()); });
 
         // Check received SourceFlushedEvent events
         auto receivedSourceFlushed{expectedSourceFlushed.getMessage()};
         ASSERT_TRUE(receivedSourceFlushed);
         EXPECT_EQ(receivedSourceFlushed->session_id(), m_sessionId);
         EXPECT_EQ(receivedSourceFlushed->source_id(), m_audioSourceId);
-    }
-
-    void setSourcePosition()
-    {
-        // After successful SetSourcePosition, NeedData for source is sent.
-        ExpectMessage<NeedMediaDataEvent> expectedAudioNeedData{m_clientStub};
-        expectedAudioNeedData.setFilter([&](const NeedMediaDataEvent &event)
-                                        { return event.source_id() == m_audioSourceId; });
-
-        // Send SetSourcePositionRequest and expect success
-        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition, kResetTime, kAppliedRate,
-                                                    kStopPosition)};
-        ConfigureAction<SetSourcePosition>(m_clientStub).send(request).expectSuccess();
 
         // Check received NeedDataReqs
         auto receivedAudioNeedData{expectedAudioNeedData.getMessage()};
@@ -93,6 +108,14 @@ public:
         EXPECT_EQ(receivedAudioNeedData->session_id(), m_sessionId);
         EXPECT_EQ(receivedAudioNeedData->source_id(), m_audioSourceId);
         m_lastAudioNeedData = receivedAudioNeedData;
+    }
+
+    void setSourcePosition()
+    {
+        // Send SetSourcePositionRequest and expect success
+        auto request{createSetSourcePositionRequest(m_sessionId, m_audioSourceId, kPosition, kResetTime, kAppliedRate,
+                                                    kStopPosition)};
+        ConfigureAction<SetSourcePosition>(m_clientStub).send(request).expectSuccess();
     }
 
     void flushFailure()
@@ -230,7 +253,7 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
@@ -239,13 +262,11 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
     // Step 5: Write 1 audio frame
     // Step 6: Write 1 video frame
     // Step 7: Notify buffered and Paused
-    gstNeedData(&m_audioAppSrc, kFrameCount);
-    gstNeedData(&m_videoAppSrc, kFrameCount);
     {
         ExpectMessage<firebolt::rialto::NetworkStateChangeEvent> expectedNetworkStateChange{m_clientStub};
 
-        pushAudioData(kFramesToPush, kFrameCount);
-        pushVideoData(kFramesToPush, kFrameCount);
+        pushAudioData(kFramesToPush);
+        pushVideoData(kFramesToPush);
 
         auto receivedNetworkStateChange{expectedNetworkStateChange.getMessage()};
         ASSERT_TRUE(receivedNetworkStateChange);
@@ -262,7 +283,7 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
 
     // Step 9: Set Source Position
     setSourcePosition();
-    pushAudioSample(kFrameCount);
+    pushAudioSample();
 
     // Step 10: End of audio stream
     // Step 11: End of video stream
@@ -275,7 +296,6 @@ TEST_F(FlushTest, flushAudioSourceSuccess)
     gstNotifyEos();
 
     // Step 13: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 

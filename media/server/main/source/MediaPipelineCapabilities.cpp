@@ -61,7 +61,7 @@ std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesFactory::cr
 
 namespace firebolt::rialto::server
 {
-MediaPipelineCapabilities::MediaPipelineCapabilities(std::shared_ptr<IGstCapabilitiesFactory> gstCapabilitiesFactory)
+MediaPipelineCapabilities::MediaPipelineCapabilities(const std::shared_ptr<IGstCapabilitiesFactory> &gstCapabilitiesFactory)
     : m_kGstCapabilitiesFactory{gstCapabilitiesFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -92,6 +92,11 @@ std::vector<std::string> MediaPipelineCapabilities::getSupportedProperties(Media
                                                                            const std::vector<std::string> &propertyNames)
 {
     return m_gstCapabilities->getSupportedProperties(mediaType, propertyNames);
+}
+
+bool MediaPipelineCapabilities::isVideoMaster(bool &isVideoMaster)
+{
+    return m_gstCapabilities->isVideoMaster(isVideoMaster);
 }
 
 }; // namespace firebolt::rialto::server

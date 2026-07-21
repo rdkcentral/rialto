@@ -48,10 +48,11 @@ public:
     virtual bool createMediaKeys(int mediaKeysHandle, std::string keySystem) = 0;
     virtual bool destroyMediaKeys(int mediaKeysHandle) = 0;
     virtual MediaKeyErrorStatus createKeySession(int mediaKeysHandle, KeySessionType sessionType,
-                                                 const std::shared_ptr<IMediaKeysClient> &client, bool isLDL,
+                                                 const std::shared_ptr<IMediaKeysClient> &client,
                                                  int32_t &keySessionId) = 0;
     virtual MediaKeyErrorStatus generateRequest(int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,
-                                                const std::vector<uint8_t> &initData) = 0;
+                                                const std::vector<uint8_t> &initData,
+                                                const LimitedDurationLicense &ldlState) = 0;
     virtual MediaKeyErrorStatus loadSession(int mediaKeysHandle, int32_t keySessionId) = 0;
     virtual MediaKeyErrorStatus updateSession(int mediaKeysHandle, int32_t keySessionId,
                                               const std::vector<uint8_t> &responseData) = 0;
@@ -70,11 +71,14 @@ public:
     virtual MediaKeyErrorStatus getLastDrmError(int mediaKeysHandle, int32_t keySessionId, uint32_t &errorCode) = 0;
     virtual MediaKeyErrorStatus getDrmTime(int mediaKeysHandle, uint64_t &drmTime) = 0;
     virtual MediaKeyErrorStatus releaseKeySession(int mediaKeysHandle, int32_t keySessionId) = 0;
+    virtual MediaKeyErrorStatus getMetricSystemData(int mediaKeysHandle, std::vector<uint8_t> &buffer) = 0;
 
     virtual std::vector<std::string> getSupportedKeySystems() = 0;
     virtual bool supportsKeySystem(const std::string &keySystem) = 0;
     virtual bool getSupportedKeySystemVersion(const std::string &keySystem, std::string &version) = 0;
     virtual bool isServerCertificateSupported(const std::string &keySystem) = 0;
+    virtual bool getSupportedRobustnessLevels(const std::string &keySystem,
+                                              std::vector<std::string> &robustnessLevels) = 0;
 
     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
 };

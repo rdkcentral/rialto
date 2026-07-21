@@ -17,10 +17,12 @@
  * limitations under the License.
  */
 
+#include <cstring>
+#include <google/protobuf/service.h>
+
 #include "IApplicationSessionServer.h"
 #include "IGstInitialiser.h"
 #include "RialtoServerLogging.h"
-#include <cstring>
 
 // NOLINT(build/filename_format)
 
@@ -55,5 +57,11 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     appSessionServer->startService();
+
+#ifdef FREE_MEM_BEFORE_EXIT
+    RIALTO_SERVER_LOG_INFO("Calling ShutdownProtobufLibrary");
+    google::protobuf::ShutdownProtobufLibrary();
+#endif
+
     return EXIT_SUCCESS;
 }

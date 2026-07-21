@@ -44,6 +44,7 @@ add_gtests (
         tests/mse/CreateMediaPipelineFailuresTest.cpp
         tests/mse/DualVideoPlaybackTest.cpp
         tests/mse/FlushTest.cpp
+        tests/mse/FirstFrameNotificationTest.cpp
         tests/mse/MediaPipelineCapabilitiesTest.cpp
         tests/mse/MuteTest.cpp
         tests/mse/PipelinePropertyTest.cpp
@@ -85,6 +86,7 @@ add_gtests (
         tests/eme/SelectKeyIdTest.cpp
         tests/eme/SessionFailuresTest.cpp
         tests/eme/MediaKeysCapabilitiesTest.cpp
+        tests/eme/GetMetricSystemDataTest.cpp
         )
 
 add_subdirectory(mocks)
@@ -126,13 +128,3 @@ target_link_libraries(
         RialtoPlayerCommon
         RialtoProtobuf
         )
-
-if ( COVERAGE_ENABLED )
-    target_link_libraries(
-        RialtoClientComponentTests
-
-        gcov
-        )
-endif()
-
-

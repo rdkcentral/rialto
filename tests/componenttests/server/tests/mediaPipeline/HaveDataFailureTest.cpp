@@ -26,7 +26,7 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{3};
+constexpr int kTestFrameCount{3};
 } // namespace
 
 namespace firebolt::rialto::server::ct
@@ -50,7 +50,7 @@ public:
         ASSERT_TRUE(receivedNeedData);
         EXPECT_EQ(receivedNeedData->session_id(), m_sessionId);
         EXPECT_EQ(receivedNeedData->source_id(), needData->source_id());
-        EXPECT_EQ(receivedNeedData->frame_count(), kFrameCountInPausedState);
+        EXPECT_EQ(receivedNeedData->frame_count(), kTestFrameCount);
         needData = receivedNeedData;
     }
 };
@@ -155,22 +155,19 @@ TEST_F(HaveDataFailureTest, HaveDataError)
     willSetupAndAddSource(&m_audioAppSrc);
     willSetupAndAddSource(&m_videoAppSrc);
     willFinishSetupAndAddSource();
-    indicateAllSourcesAttached();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
 
     // Step 4: Pause
     willPause();
     pause();
 
     // Step 5: Audio HaveData Failure
-    gstNeedData(&m_audioAppSrc, kFrameCountInPausedState);
     failHaveData(m_lastAudioNeedData);
 
     // Step 6: Video HaveData Failure
-    gstNeedData(&m_videoAppSrc, kFrameCountInPausedState);
     failHaveData(m_lastVideoNeedData);
 
     // Step 14: Remove sources
-    willRemoveAudioSource();
     removeSource(m_audioSourceId);
     removeSource(m_videoSourceId);
 
