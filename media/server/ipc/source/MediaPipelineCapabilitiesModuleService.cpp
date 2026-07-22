@@ -569,7 +569,6 @@ void MediaPipelineCapabilitiesModuleService::getSupportedAudioCapabilities(
     ::firebolt::rialto::GetSupportedAudioCapabilitiesResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    (void)request;
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {
@@ -593,7 +592,6 @@ void MediaPipelineCapabilitiesModuleService::getSupportedVideoCapabilities(
     ::firebolt::rialto::GetSupportedVideoCapabilitiesResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    (void)request;
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
     if (!ipcController)
     {
