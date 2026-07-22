@@ -158,6 +158,10 @@ private:
     void scheduleAudioUnderflow() override;
     void scheduleVideoUnderflow() override;
     void scheduleFirstVideoFrameReceived() override;
+    void scheduleFirstAudioFrameReceived(AudioFirstFrameAction audioAction) override;
+    void setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id) override;
+    void clearAudioFirstFrameFallbackProbe() override;
+    void clearAudioFirstFrameFallbackProbeState() override;
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
     bool setImmediateOutput() override;
@@ -413,7 +417,7 @@ private:
     /**
      * @brief Pushes GstSample if playback position has changed or new segment needs to be sent.
      *
-     * @param[in] source          : The Gst Source element, that should receive new sample
+     * @param[in] source : The Gst Source element, that should receive new sample
      * @param[in] mediaSourceType : The media source type
      */
     void pushSampleIfRequired(GstElement *source, const MediaSourceType &mediaSourceType);

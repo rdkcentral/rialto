@@ -29,11 +29,13 @@
 #include <sys/un.h>
 #include <unistd.h>
 #include <utility>
+#include <vector>
 
 namespace
 {
-constexpr uid_t kNoOwnerChange = -1; // -1 means chown() won't change the owner
-constexpr gid_t kNoGroupChange = -1; // -1 means chown() won't change the group
+constexpr uid_t kNoOwnerChange = -1;        // -1 means chown() won't change the owner
+constexpr gid_t kNoGroupChange = -1;        // -1 means chown() won't change the group
+constexpr size_t kDefaultBufferSize = 4096; // Fallback buffer size
 } // namespace
 
 namespace firebolt::rialto::ipc
@@ -269,23 +271,30 @@ bool NamedSocket::getSocketLock()
 uid_t NamedSocket::getSocketOwnerId(const std::string &socketOwner) const
 {
     uid_t ownerId = kNoOwnerChange;
-    // sysconf returns long; -1 on error. Store as int64_t to avoid unsigned conversion issues.
-    const int64_t bufferSizeLong = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (!socketOwner.empty() && bufferSizeLong > 0)
+    if (!socketOwner.empty())
     {
-        const size_t kBufferSize = static_cast<size_t>(bufferSizeLong);
+        const int64_t bufferSizeLong = sysconf(_SC_GETPW_R_SIZE_MAX);
+        const size_t kBufferSize = (bufferSizeLong > 0) ? static_cast<size_t>(bufferSizeLong) : kDefaultBufferSize;
+
         errno = 0;
         passwd passwordStruct{};
         passwd *passwordResult = nullptr;
-        char buffer[kBufferSize];
-        int result = getpwnam_r(socketOwner.c_str(), &passwordStruct, buffer, kBufferSize, &passwordResult);
-        if (result == 0 && passwordResult)
+        std::vector<char> buffer(kBufferSize);
+        int result = getpwnam_r(socketOwner.c_str(), &passwordStruct, buffer.data(), buffer.size(), &passwordResult);
+        if (result == 0)
         {
-            ownerId = passwordResult->pw_uid;
+            if (passwordResult)
+            {
+                ownerId = passwordResult->pw_uid;
+            }
+            else
+            {
+                RIALTO_IPC_LOG_WARN("Owner name '%s' not found", socketOwner.c_str());
+            }
         }
         else
         {
-            RIALTO_IPC_LOG_SYS_WARN(errno, "Failed to determine ownerId for '%s'", socketOwner.c_str());
+            RIALTO_IPC_LOG_SYS_WARN(result, "Failed to lookup ownerId for '%s'", socketOwner.c_str());
         }
     }
     return ownerId;
@@ -294,23 +303,30 @@ uid_t NamedSocket::getSocketOwnerId(const std::string &socketOwner) const
 gid_t NamedSocket::getSocketGroupId(const std::string &socketGroup) const
 {
     gid_t groupId = kNoGroupChange;
-    // sysconf returns long; -1 on error. Store as int64_t to avoid unsigned conversion issues.
-    const int64_t bufferSizeLong = sysconf(_SC_GETGR_R_SIZE_MAX);
-    if (!socketGroup.empty() && bufferSizeLong > 0)
+    if (!socketGroup.empty())
     {
-        const size_t kBufferSize = static_cast<size_t>(bufferSizeLong);
+        const int64_t bufferSizeLong = sysconf(_SC_GETGR_R_SIZE_MAX);
+        const size_t kBufferSize = (bufferSizeLong > 0) ? static_cast<size_t>(bufferSizeLong) : kDefaultBufferSize;
+
         errno = 0;
         group groupStruct{};
         group *groupResult = nullptr;
-        char buffer[kBufferSize];
-        int result = getgrnam_r(socketGroup.c_str(), &groupStruct, buffer, kBufferSize, &groupResult);
-        if (result == 0 && groupResult)
+        std::vector<char> buffer(kBufferSize);
+        int result = getgrnam_r(socketGroup.c_str(), &groupStruct, buffer.data(), buffer.size(), &groupResult);
+        if (result == 0)
         {
-            groupId = groupResult->gr_gid;
+            if (groupResult)
+            {
+                groupId = groupResult->gr_gid;
+            }
+            else
+            {
+                RIALTO_IPC_LOG_WARN("Group name '%s' not found", socketGroup.c_str());
+            }
         }
         else
         {
-            RIALTO_IPC_LOG_SYS_WARN(errno, "Failed to determine groupId for '%s'", socketGroup.c_str());
+            RIALTO_IPC_LOG_SYS_WARN(result, "Failed to lookup groupId for '%s'", socketGroup.c_str());
         }
     }
     return groupId;

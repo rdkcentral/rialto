@@ -175,6 +175,7 @@ protected:
     void shouldNotifyQosVideo();
     void shouldNotifyBufferUnderflowAudio();
     void shouldNotifyBufferUnderflowVideo();
+    void shouldNotifyFirstFrameReceivedAudio();
     void shouldNotifyFirstFrameReceivedVideo();
     void shouldNotifyPlaybackErrorAudio();
     void shouldNotifyPlaybackErrorVideo();
@@ -306,6 +307,7 @@ protected:
     void sendNotifyQosVideo();
     void sendNotifyBufferUnderflowAudio();
     void sendNotifyBufferUnderflowVideo();
+    void sendNotifyFirstFrameReceivedAudio();
     void sendNotifyFirstFrameReceivedVideo();
     void sendNotifyPlaybackErrorAudio();
     void sendNotifyPlaybackErrorVideo();

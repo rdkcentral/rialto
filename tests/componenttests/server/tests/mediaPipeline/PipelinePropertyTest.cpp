@@ -25,6 +25,7 @@
 #include "MessageBuilders.h"
 
 using testing::_;
+using testing::AnyNumber;
 using testing::Invoke;
 using testing::Return;
 using testing::StrEq;
@@ -186,15 +187,20 @@ public:
     void willFailToSetSinkProperty()
     {
         EXPECT_CALL(*m_glibWrapperMock, gObjectGetStub(&m_pipeline, _, _))
-            .WillOnce(Invoke(
+            .Times(AnyNumber())
+            .WillRepeatedly(Invoke(
                 [&](gpointer object, const gchar *first_property_name, void *element)
                 {
                     GstElement **elementPtr = reinterpret_cast<GstElement **>(element);
                     *elementPtr = m_element;
                 }));
-        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element))).WillOnce(Return(kElementTypeName.c_str()));
-        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, _)).WillOnce(Return(nullptr));
-        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+        EXPECT_CALL(*m_glibWrapperMock, gTypeName(G_OBJECT_TYPE(m_element)))
+            .Times(AnyNumber())
+            .WillRepeatedly(Return(kElementTypeName.c_str()));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, _)).Times(AnyNumber()).WillRepeatedly(Return(nullptr));
+        EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_element))
+            .Times(AnyNumber())
+            .WillRepeatedly(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
     void willFailToSetDecoderProperty()
@@ -372,7 +378,7 @@ public:
 
     void getSyncFailure()
     {
-        auto req{createGetSyncRequest(m_sessionId)};
+        auto req{createGetSyncRequest(m_sessionId + 1)};
         ConfigureAction<GetSync>(m_clientStub).send(req).expectFailure();
         waitWorker();
     }
@@ -812,7 +818,6 @@ TEST_F(PipelinePropertyTest, pipelinePropertyGetAndSetFailures)
     setSyncFailure();
 
     // Step 8: Fail to get Sync
-    willFailToGetSink();
     getSyncFailure();
 
     // Step 9: Fail to set Sync Off

@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_I_GENERIC_PLAYER_TASK_FACTORY_H_
 
 #include "GenericPlayerContext.h"
+#include "GstPlayerTypes.h"
 #include "IDataReader.h"
 #include "IFlushWatcher.h"
 #include "IGstGenericPlayerPrivate.h"
@@ -398,9 +399,9 @@ public:
      *
      * @retval the new FirstFrameReceived task instance.
      */
-    virtual std::unique_ptr<IPlayerTask> createFirstFrameReceived(GenericPlayerContext &context,
-                                                                  IGstGenericPlayerPrivate &player,
-                                                                  MediaSourceType sourceType) const = 0;
+    virtual std::unique_ptr<IPlayerTask>
+    createFirstFrameReceived(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, MediaSourceType sourceType,
+                             AudioFirstFrameAction audioAction = AudioFirstFrameAction::CLEAR_PROBE) const = 0;
 
     /**
      * @brief Creates an UpdatePlaybackGroup task.
