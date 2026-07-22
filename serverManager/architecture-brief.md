@@ -110,6 +110,7 @@ Detailed initialization behavior from current code paths:
 - When config-file support is enabled, config is read in precedence order: base (`RIALTO_CONFIG_PATH`), SoC (`RIALTO_CONFIG_SOC_PATH`), then overrides (`RIALTO_CONFIG_OVERRIDES_PATH`).
 - If a more important file provides non-empty `envVariables`, they replace previously loaded `envVariables` and clear any previously loaded `extraEnvVariables`.
 - `extraEnvVariables` (when present) are applied after `envVariables` and can overwrite keys.
+- The more important file (`RIALTO_CONFIG_OVERRIDES_PATH`) must clearly specify the extraEnvVariables , if they are empty any previously loaded `extraEnvVariables` will be cleared
 - Effective config includes: number of preloaded servers, session server binary path, startup timeout, and healthcheck interval.
 - During preload loop, each server instance performs `NOT_RUNNING -> UNINITIALIZED` and is placed in a free-preload pool only after successful READY signaling.
 - Startup timeout failure path performs forced cleanup (kill process, unbind/free socket if created) and reports an error state.
