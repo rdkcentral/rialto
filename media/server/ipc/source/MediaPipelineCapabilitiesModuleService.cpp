@@ -565,7 +565,7 @@ void MediaPipelineCapabilitiesModuleService::isVideoMaster(::google::protobuf::R
 
 void MediaPipelineCapabilitiesModuleService::getSupportedAudioCapabilities(
     ::google::protobuf::RpcController *controller,
-    const ::firebolt::rialto::GetSupportedAudioCapabilitiesRequest *request,
+    const ::firebolt::rialto::GetSupportedAudioCapabilitiesRequest * /*request*/,
     ::firebolt::rialto::GetSupportedAudioCapabilitiesResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -588,7 +588,7 @@ void MediaPipelineCapabilitiesModuleService::getSupportedAudioCapabilities(
 
 void MediaPipelineCapabilitiesModuleService::getSupportedVideoCapabilities(
     ::google::protobuf::RpcController *controller,
-    const ::firebolt::rialto::GetSupportedVideoCapabilitiesRequest *request,
+    const ::firebolt::rialto::GetSupportedVideoCapabilitiesRequest * /*request*/,
     ::firebolt::rialto::GetSupportedVideoCapabilitiesResponse *response, ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
