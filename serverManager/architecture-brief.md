@@ -231,7 +231,7 @@ Connection-info contract detail:
 
 ### Matrix Notes
 - Observer contract: each completed transition edge should result in manager-to-host `stateChanged(appId, state)` notification.
-- Connection info usage: after leaving not-running, app manager should query `getAppConnectionInfo(appId)` promptly unless socket name was pre-supplied.
+- Connection info usage: after leaving Uninitialized, app manager should query `getAppConnectionInfo(appId)` promptly unless socket name was pre-supplied.
 
 ## Healthcheck Outcome Matrix
 | Condition | Detection point | Manager action | Notification | Recovery behavior |
@@ -281,7 +281,7 @@ How code is organized and written in this subsystem:
     - Healthcheck and startup timers are treated as first-class failure detectors with policy-driven recovery.
 - Testing approaches:
     - Unit tests in `tests/unittests/` validate lifecycle logic, configuration behavior, and edge-case handling.
-    - Component/integration tests in `tests/componenttests/` validate multi-process and IPC behavior.
+    - Component/integration tests are not available for Rialto Server Manager.
     - `RialtoServerManagerSim` provides HTTP-driven integration workflows for state/control-path validation.
 
 ## Public API Surface
