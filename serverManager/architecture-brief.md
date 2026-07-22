@@ -215,6 +215,7 @@ Sequence details add practical contracts for integrators:
 Connection-info contract detail:
 - After transition out of not-running, app manager is expected to query `getAppConnectionInfo()` promptly so the socket name can be passed into container/app launch context.
 - If app manager provided socket name up front, returned connection info acts as confirmation rather than discovery.
+- out of Uninitialized. Preloaded servers do not have socket name assigned yet.
 
 ## Transition Matrix
 | Transition | Trigger/API | Preconditions | Core actions | Success path/events | Failure path/events |
