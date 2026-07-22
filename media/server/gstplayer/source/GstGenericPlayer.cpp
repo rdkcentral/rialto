@@ -269,6 +269,7 @@ void GstGenericPlayer::termPipeline()
     }
 
     m_finishSourceSetupTimer.reset();
+    stopNotifyPlaybackInfoTimer();
 
     for (auto &elem : m_context.streamInfo)
     {
@@ -345,6 +346,7 @@ void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElemen
     RIALTO_SERVER_LOG_DEBUG("Deep element %s added to the pipeline", GST_ELEMENT_NAME(element));
     if (self->m_workerThread)
     {
+        self->m_gstWrapper->gstObjectRef(element);
         self->m_workerThread->enqueueTask(
             self->m_taskFactory->createDeepElementAdded(self->m_context, *self, pipeline, bin, element));
     }
@@ -482,7 +484,14 @@ void GstGenericPlayer::notifyPlaybackInfo()
 {
     PlaybackInfo info;
     getPosition(info.currentPosition);
-    getVolume(info.volume);
+    if (m_context.audioFadeEnabled)
+    {
+        info.volume = m_context.audioFadeVolume;
+    }
+    else
+    {
+        getVolume(info.volume);
+    }
     m_gstPlayerClient->notifyPlaybackInfo(info);
 }
 
@@ -1453,11 +1462,6 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
                               common::convertMediaSourceType(mediaSourceType), GST_TIME_ARGS(segment->start),
                               GST_TIME_ARGS(segment->stop), segment->rate, segment->applied_rate, resetTime);
-        auto recordId = m_context.gstProfiler->createRecord("First Segment Received",
-                                                            common::convertMediaSourceType(mediaSourceType));
-        if (recordId)
-            m_context.gstProfiler->logRecord(recordId.value());
-
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
         // We can't pass buffer in GstSample, because implementation of gst_app_src_push_sample
         // uses gst_buffer_copy, which loses RialtoProtectionMeta (that causes problems with EME
@@ -2655,7 +2659,12 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
-    m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, caps));
+    if (m_workerThread)
+    {
+        m_gstWrapper->gstObjectRef(typefind);
+        GstCaps *ownedCaps{caps ? m_gstWrapper->gstCapsCopy(caps) : nullptr};
+        m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, ownedCaps));
+    }
 }
 
 void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)

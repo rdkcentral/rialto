@@ -268,6 +268,11 @@ struct GenericPlayerContext
     std::atomic_bool audioFadeEnabled{false};
 
     /**
+     * @brief Volume level when audio fade is active
+     */
+    std::atomic<double> audioFadeVolume{1.0};
+
+    /**
      * @brief Workaround for the gstreamer flush issue
      */
     std::shared_ptr<IFlushOnPrerollController> flushOnPrerollController{std::make_shared<FlushOnPrerollController>()};
@@ -277,11 +282,6 @@ struct GenericPlayerContext
      *        This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
      */
     bool isLive{false};
-
-    /**
-     * @brief Profiler for player pipeline
-     */
-    std::unique_ptr<IGstProfiler> gstProfiler;
 
     /**
      * @brief The audio position set in the GstSegment.
