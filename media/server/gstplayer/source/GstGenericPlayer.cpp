@@ -400,6 +400,7 @@ void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElemen
     RIALTO_SERVER_LOG_DEBUG("Deep element %s added to the pipeline", GST_ELEMENT_NAME(element));
     if (self->m_workerThread)
     {
+        self->m_gstWrapper->gstObjectRef(element);
         self->m_workerThread->enqueueTask(
             self->m_taskFactory->createDeepElementAdded(self->m_context, *self, pipeline, bin, element));
     }
@@ -2902,7 +2903,12 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
-    m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, caps));
+    if (m_workerThread)
+    {
+        m_gstWrapper->gstObjectRef(typefind);
+        GstCaps *ownedCaps{caps ? m_gstWrapper->gstCapsCopy(caps) : nullptr};
+        m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, ownedCaps));
+    }
 }
 
 void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)
