@@ -124,7 +124,9 @@ public:
     bool getPosition(std::int64_t &position) override;
     bool getDuration(std::int64_t &duration) override;
     bool setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput) override;
+    bool setReportDecodeErrors(const MediaSourceType &mediaSourceType, bool reportDecodeErrors) override;
     bool getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutput) override;
+    bool getQueuedFrames(uint32_t &queuedFrames) override;
     bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames, uint64_t &droppedFrames) override;
     void setVolume(double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType) override;
     bool getVolume(double &volume) override;
@@ -163,6 +165,7 @@ private:
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
     bool setImmediateOutput() override;
+    bool setReportDecodeErrors() override;
     bool setShowVideoWindow() override;
     bool setLowLatency() override;
     bool setSync() override;
