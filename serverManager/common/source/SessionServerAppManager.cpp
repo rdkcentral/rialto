@@ -47,6 +47,11 @@ SessionServerAppManager::~SessionServerAppManager()
     m_eventThread.reset();
 }
 
+void SessionServerAppManager::setShuttingDown()
+{
+    m_isShuttingDown = true;
+}
+
 void SessionServerAppManager::preloadSessionServers(unsigned numOfPreloadedServers)
 {
     m_eventThread->add(
@@ -392,7 +397,7 @@ void SessionServerAppManager::handleAck(int serverId, int pingId, bool success)
 
 void SessionServerAppManager::shutdownAllSessionServers()
 {
-    m_isShuttingDown = true;
+    setShuttingDown();
     m_healthcheckService.reset();
     for (const auto &kSessionServer : m_sessionServerApps)
     {
