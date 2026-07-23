@@ -19,6 +19,7 @@
 
 #include <stdexcept>
 
+#include "GstPlayerConfig.h"
 #include "GstSrc.h"
 #include "GstTextTrackSinkFactory.h"
 #include "RialtoServerLogging.h"
@@ -399,10 +400,34 @@ void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement
                               GST_APP_STREAM_TYPE_STREAM, "min-percent", 20, "handle-segment-change", TRUE, nullptr);
     m_gstWrapper->gstAppSrcSetCallbacks(GST_APP_SRC(streamInfo.appSrc), callbacks, userData, nullptr);
 
+    // Queue size limits: we support both byte-based (GStreamer < 1.20) and buffer-based (>= 1.20) limits.
+    // The buffer counts are computed to maintain similar memory footprint as the byte limits.
+    // To validate these assumptions, build with -DRIALTO_ENABLE_BUFFER_SIZE_LOGGING to log actual buffer sizes.
+    // See GstPlayerConfig.h to adjust these values.
+
+#if GST_CHECK_VERSION(1, 20, 0)
+    // Queue size in buffer counts (for GStreamer >= 1.20)
+    // See GstPlayerConfig.h for detailed documentation on these values.
+    const std::unordered_map<firebolt::rialto::MediaSourceType, uint32_t> queueBuffers =
+        {{firebolt::rialto::MediaSourceType::VIDEO, kVideoMaxBuffers},
+         {firebolt::rialto::MediaSourceType::AUDIO, kAudioMaxBuffers},
+         {firebolt::rialto::MediaSourceType::SUBTITLE, kSubtitleMaxBuffers}};
+
+    auto buffersIt = queueBuffers.find(type);
+    if (buffersIt != queueBuffers.end())
+    {
+        m_gstWrapper->gstAppSrcSetMaxBuffers(GST_APP_SRC(streamInfo.appSrc), buffersIt->second);
+    }
+    else
+    {
+        GST_WARNING_OBJECT(source, "Could not find max-buffers value for appsrc");
+    }
+#else
+    // Queue size in bytes (for GStreamer < 1.20)
     const std::unordered_map<firebolt::rialto::MediaSourceType, uint32_t> queueSize =
-        {{firebolt::rialto::MediaSourceType::VIDEO, 8 * 1024 * 1024},
-         {firebolt::rialto::MediaSourceType::AUDIO, 512 * 1024},
-         {firebolt::rialto::MediaSourceType::SUBTITLE, 256 * 1024}};
+        {{firebolt::rialto::MediaSourceType::VIDEO, kVideoMaxBytes},
+         {firebolt::rialto::MediaSourceType::AUDIO, kAudioMaxBytes},
+         {firebolt::rialto::MediaSourceType::SUBTITLE, kSubtitleMaxBytes}};
 
     auto sizeIt = queueSize.find(type);
     if (sizeIt != queueSize.end())
@@ -413,6 +438,7 @@ void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement
     {
         GST_WARNING_OBJECT(source, "Could not find max-bytes value for appsrc");
     }
+#endif
 
     m_gstWrapper->gstAppSrcSetStreamType(GST_APP_SRC(streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE);
 

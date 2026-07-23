@@ -163,7 +163,16 @@ bool GstWebAudioPlayer::initWebAudioPipeline(const uint32_t priority)
         RIALTO_SERVER_LOG_ERROR("Failed to create the appsrc");
         return false;
     }
-    m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(m_context.source), kMaxWebAudioBytes);
+
+    // Set queue limits: Use buffer-based on GStreamer 1.20+, byte-based on older versions.
+    // See GstPlayerConfig.h to adjust these values.
+#if GST_CHECK_VERSION(1, 20, 0)
+    m_gstWrapper->gstAppSrcSetMaxBuffers(GST_APP_SRC(m_context.source), kWebAudioMaxBuffers);
+    // Also set max-bytes on 1.20+ to keep current-level-bytes bounded and prevent underflow in WriteBuffer
+    m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(m_context.source), kWebAudioMaxBytes);
+#else
+    m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(m_context.source), kWebAudioMaxBytes);
+#endif
     m_glibWrapper->gObjectSet(m_context.source, "format", GST_FORMAT_TIME, nullptr);
 
     // Perform sink specific initalisation
