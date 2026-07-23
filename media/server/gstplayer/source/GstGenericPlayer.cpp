@@ -269,6 +269,7 @@ void GstGenericPlayer::termPipeline()
     }
 
     m_finishSourceSetupTimer.reset();
+    stopNotifyPlaybackInfoTimer();
 
     for (auto &elem : m_context.streamInfo)
     {
@@ -345,6 +346,7 @@ void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElemen
     RIALTO_SERVER_LOG_DEBUG("Deep element %s added to the pipeline", GST_ELEMENT_NAME(element));
     if (self->m_workerThread)
     {
+        self->m_gstWrapper->gstObjectRef(element);
         self->m_workerThread->enqueueTask(
             self->m_taskFactory->createDeepElementAdded(self->m_context, *self, pipeline, bin, element));
     }
@@ -482,7 +484,14 @@ void GstGenericPlayer::notifyPlaybackInfo()
 {
     PlaybackInfo info;
     getPosition(info.currentPosition);
-    getVolume(info.volume);
+    if (m_context.audioFadeEnabled)
+    {
+        info.volume = m_context.audioFadeVolume;
+    }
+    else
+    {
+        getVolume(info.volume);
+    }
     m_gstPlayerClient->notifyPlaybackInfo(info);
 }
 
@@ -1277,7 +1286,7 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
         }
         else
         {
-            pushSampleIfRequired(streamInfo.appSrc, common::convertMediaSourceType(mediaType));
+            pushSampleIfRequired(streamInfo.appSrc, mediaType);
         }
         if (mediaType == firebolt::rialto::MediaSourceType::AUDIO)
         {
@@ -1421,7 +1430,7 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
     return false;
 }
 
-void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::string &typeStr)
+void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourceType &mediaSourceType)
 {
     auto initialPosition = m_context.initialPositions.find(source);
     if (m_context.initialPositions.end() == initialPosition)
@@ -1437,7 +1446,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
     for (const auto &[position, resetTime, appliedRate, stopPosition] : initialPosition->second)
     {
         GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
-        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
+        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", common::convertMediaSourceType(mediaSourceType));
         GstSegment *segment{m_gstWrapper->gstSegmentNew()};
         m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
         if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, seekFlag,
@@ -1451,9 +1460,8 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         segment->applied_rate = appliedRate;
         RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
-                              typeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
-                              segment->rate, segment->applied_rate, resetTime);
-
+                              common::convertMediaSourceType(mediaSourceType), GST_TIME_ARGS(segment->start),
+                              GST_TIME_ARGS(segment->stop), segment->rate, segment->applied_rate, resetTime);
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
         // We can't pass buffer in GstSample, because implementation of gst_app_src_push_sample
         // uses gst_buffer_copy, which loses RialtoProtectionMeta (that causes problems with EME
@@ -1464,6 +1472,11 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         m_gstWrapper->gstCapsUnref(currentCaps);
 
         m_gstWrapper->gstSegmentFree(segment);
+
+        if (MediaSourceType::AUDIO == mediaSourceType)
+        {
+            m_context.audioGstSegmentPosition = position;
+        }
     }
     m_context.currentPosition[source] = initialPosition->second.back();
     m_context.initialPositions.erase(initialPosition);
@@ -2646,7 +2659,12 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
-    m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, caps));
+    if (m_workerThread)
+    {
+        m_gstWrapper->gstObjectRef(typefind);
+        GstCaps *ownedCaps{caps ? m_gstWrapper->gstCapsCopy(caps) : nullptr};
+        m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, ownedCaps));
+    }
 }
 
 void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)

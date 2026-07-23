@@ -268,9 +268,25 @@ struct GenericPlayerContext
     std::atomic_bool audioFadeEnabled{false};
 
     /**
+     * @brief Volume level when audio fade is active
+     */
+    std::atomic<double> audioFadeVolume{1.0};
+
+    /**
      * @brief Workaround for the gstreamer flush issue
      */
     std::shared_ptr<IFlushOnPrerollController> flushOnPrerollController{std::make_shared<FlushOnPrerollController>()};
+
+    /**
+     * @brief Flag used to check if the stream is live
+     *        This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
+     */
+    bool isLive{false};
+
+    /**
+     * @brief The audio position set in the GstSegment.
+     */
+    int64_t audioGstSegmentPosition{-1};
 };
 } // namespace firebolt::rialto::server
 
