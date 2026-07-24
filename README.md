@@ -17,3 +17,7 @@ https://wiki.rdkcentral.com/display/ASP/Building+Rialto+using+Yocto
 
 ## Running Rialto:
 https://wiki.rdkcentral.com/display/ASP/Running+YouTube+with+Rialto
+
+## AI Assistant Guidance:
+- Universal AI agent guidance: AGENTS.md
+- GitHub Copilot-specific guidance: .github/copilot-instructions.md
