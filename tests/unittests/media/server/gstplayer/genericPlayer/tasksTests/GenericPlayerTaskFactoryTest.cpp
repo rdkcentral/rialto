@@ -55,6 +55,7 @@
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
+#include "tasks/generic/SetReportDecodeErrors.h"
 #include "tasks/generic/SetSourcePosition.h"
 #include "tasks/generic/SetStreamSyncMode.h"
 #include "tasks/generic/SetSync.h"
@@ -113,11 +114,14 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateAttachSource)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateDeepElementAdded)
 {
+    GstElement element{};
     EXPECT_CALL(*m_gstWrapper, gstObjectParent(_)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapper, gstObjectCast(_)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapper, gstElementGetName(_)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_glibWrapper, gFree(nullptr));
-    auto task = m_sut.createDeepElementAdded(m_context, m_gstPlayer, nullptr, nullptr, nullptr);
+    // The task destructor releases the element reference taken when the task is scheduled.
+    EXPECT_CALL(*m_gstWrapper, gstObjectUnref(&element));
+    auto task = m_sut.createDeepElementAdded(m_context, m_gstPlayer, nullptr, nullptr, &element);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::DeepElementAdded &>(*task));
 }
@@ -320,7 +324,10 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetPlaybackRate)
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateUpdatePlaybackGroup)
 {
-    auto task = m_sut.createUpdatePlaybackGroup(m_context, m_gstPlayer, nullptr, nullptr);
+    GstElement typefind{};
+    // The task destructor releases the typefind reference taken when the task is scheduled.
+    EXPECT_CALL(*m_gstWrapper, gstObjectUnref(&typefind));
+    auto task = m_sut.createUpdatePlaybackGroup(m_context, m_gstPlayer, &typefind, nullptr);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup &>(*task));
 }
@@ -358,6 +365,13 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetImmediateOutput)
     auto task = m_sut.createSetImmediateOutput(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO, true);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetImmediateOutput &>(*task));
+}
+
+TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetReportDecodeErrors)
+{
+    auto task = m_sut.createSetReportDecodeErrors(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::VIDEO, true);
+    EXPECT_NE(task, nullptr);
+    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::SetReportDecodeErrors &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateSetTextTrackIdentifier)

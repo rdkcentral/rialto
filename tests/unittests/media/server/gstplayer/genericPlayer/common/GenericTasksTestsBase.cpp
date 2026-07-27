@@ -47,6 +47,7 @@
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
+#include "tasks/generic/SetReportDecodeErrors.h"
 #include "tasks/generic/SetSourcePosition.h"
 #include "tasks/generic/SetStreamSyncMode.h"
 #include "tasks/generic/SetSubtitleOffset.h"
@@ -2191,6 +2192,8 @@ void GenericTasksTestsBase::shouldNotRegisterCallbackWhenPtrsAreNotEqual()
 
 void GenericTasksTestsBase::constructDeepElementAdded()
 {
+    // The element reference taken in GstGenericPlayer::deepElementAdded is released in the task destructor.
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(testContext->m_element));
     firebolt::rialto::server::tasks::generic::DeepElementAdded task{testContext->m_context,
                                                                     testContext->m_gstPlayer,
                                                                     testContext->m_gstWrapper,
@@ -2273,6 +2276,8 @@ void GenericTasksTestsBase::shouldSetTypefindElement()
 
 void GenericTasksTestsBase::triggerDeepElementAdded()
 {
+    // The element reference taken in GstGenericPlayer::deepElementAdded is released in the task destructor.
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(testContext->m_element));
     firebolt::rialto::server::tasks::generic::DeepElementAdded task{testContext->m_context,
                                                                     testContext->m_gstPlayer,
                                                                     testContext->m_gstWrapper,
@@ -2437,6 +2442,8 @@ void GenericTasksTestsBase::checkAudioSinkPlaybackGroupAdded()
 
 void GenericTasksTestsBase::triggerUpdatePlaybackGroupNoCaps()
 {
+    // The typefind reference taken in GstGenericPlayer::updatePlaybackGroup is released in the task destructor.
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(testContext->m_element));
     firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup task{testContext->m_context,
                                                                        testContext->m_gstPlayer,
                                                                        testContext->m_gstWrapper,
@@ -2459,6 +2466,10 @@ void GenericTasksTestsBase::shouldReturnNullCaps()
 
 void GenericTasksTestsBase::triggerUpdatePlaybackGroup()
 {
+    // The typefind and caps references (owned copy) taken in GstGenericPlayer::updatePlaybackGroup are released in the
+    // task destructor.
+    EXPECT_CALL(*testContext->m_gstWrapper, gstObjectUnref(testContext->m_element));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstCapsUnref(&testContext->m_gstCaps1));
     firebolt::rialto::server::tasks::generic::UpdatePlaybackGroup task{testContext->m_context,
                                                                        testContext->m_gstPlayer,
                                                                        testContext->m_gstWrapper,
@@ -3667,6 +3678,20 @@ void GenericTasksTestsBase::triggerSetImmediateOutput()
     task.execute();
 
     EXPECT_EQ(testContext->m_context.pendingImmediateOutputForVideo, true);
+}
+
+void GenericTasksTestsBase::shouldSetReportDecodeErrors()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, setReportDecodeErrors()).WillOnce(Return(true));
+}
+
+void GenericTasksTestsBase::triggerSetReportDecodeErrors()
+{
+    firebolt::rialto::server::tasks::generic::SetReportDecodeErrors task{testContext->m_context, testContext->m_gstPlayer,
+                                                                         MediaSourceType::VIDEO, true};
+    task.execute();
+
+    EXPECT_EQ(testContext->m_context.pendingReportDecodeErrorsForVideo, true);
 }
 
 void GenericTasksTestsBase::shouldSetLowLatency()

@@ -38,6 +38,8 @@ add_gtests (
         mediaPipelineIpc/GetDurationTest.cpp
         mediaPipelineIpc/SetImmediateOutputTest.cpp
         mediaPipelineIpc/GetImmediateOutputTest.cpp
+        mediaPipelineIpc/SetReportDecodeErrorsTest.cpp
+        mediaPipelineIpc/GetQueuedFramesTest.cpp
         mediaPipelineIpc/GetStatsTest.cpp
         mediaPipelineIpc/RenderFrameTest.cpp
         mediaPipelineIpc/GetVolumeTest.cpp

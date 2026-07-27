@@ -68,8 +68,12 @@ public:
     void mediaPipelineWillFailToGetDuration();
     void mediaPipelineWillSetImmediateOutput();
     void mediaPipelineWillFailToSetImmediateOutput();
+    void mediaPipelineWillSetReportDecodeErrors();
+    void mediaPipelineWillFailToSetReportDecodeErrors();
     void mediaPipelineWillGetImmediateOutput();
     void mediaPipelineWillFailToGetImmediateOutput();
+    void mediaPipelineWillGetQueuedFrames();
+    void mediaPipelineWillFailToGetQueuedFrames();
     void mediaPipelineWillGetStats();
     void mediaPipelineWillFailToGetStats();
     void mediaPipelineWillRenderFrame();
@@ -160,10 +164,14 @@ public:
     void getPositionShouldFail();
     void getDurationShouldSucceed();
     void getDurationShouldFail();
+    void setReportDecodeErrorsShouldSucceed();
+    void setReportDecodeErrorsShouldFail();
     void setImmediateOutputShouldSucceed();
     void setImmediateOutputShouldFail();
     void getImmediateOutputShouldSucceed();
     void getImmediateOutputShouldFail();
+    void getQueuedFramesShouldSucceed();
+    void getQueuedFramesShouldFail();
     void getStatsShouldSucceed();
     void getStatsShouldFail();
     void getSupportedMimeTypesSucceed();

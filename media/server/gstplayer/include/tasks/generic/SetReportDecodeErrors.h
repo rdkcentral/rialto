@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2023 Sky UK
+ * Copyright 2026 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,37 +17,33 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_UPDATE_PLAYBACK_GROUP_H_
-#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_UPDATE_PLAYBACK_GROUP_H_
+#ifndef FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_REPORT_DECODE_ERRORS_H_
+#define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_REPORT_DECODE_ERRORS_H_
 
 #include "GenericPlayerContext.h"
 #include "IGlibWrapper.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstWrapper.h"
 #include "IPlayerTask.h"
-#include <gst/gst.h>
+
 #include <memory>
 
 namespace firebolt::rialto::server::tasks::generic
 {
-class UpdatePlaybackGroup : public IPlayerTask
+class SetReportDecodeErrors : public IPlayerTask
 {
 public:
-    UpdatePlaybackGroup(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                        const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
-                        const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                        GstElement *typefind, GstCaps *caps);
-    ~UpdatePlaybackGroup() override;
+    explicit SetReportDecodeErrors(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                   const MediaSourceType &type, bool reportDecodeErrors);
+    ~SetReportDecodeErrors() override;
     void execute() const override;
 
 private:
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
-    std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
-    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
-    GstElement *m_typefind;
-    GstCaps *m_caps;
+    const MediaSourceType m_type;
+    bool m_reportDecodeErrors;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
-#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_UPDATE_PLAYBACK_GROUP_H_
+#endif // FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_SET_REPORT_DECODE_ERRORS_H_
