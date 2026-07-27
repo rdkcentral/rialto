@@ -299,6 +299,19 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
             propertiesFound.push_back("audio-fade"); // Add "audio-fade" if supported by SoC
         }
     }
+
+    if (propertiesToLookFor.find("syncmode-streaming") != propertiesToLookFor.end())
+    {
+        RIALTO_SERVER_LOG_DEBUG("Syncmode streaming property is supported by the SoC");
+        propertiesFound.push_back("syncmode-streaming"); // Add "syncmode-streaming" if supported by SoC
+    }
+
+    if (propertiesToLookFor.find("limit-buffering-ms") != propertiesToLookFor.end())
+    {
+        RIALTO_SERVER_LOG_DEBUG("Limit buffering ms property is supported by the SoC");
+        propertiesFound.push_back("limit-buffering-ms"); // Add "limit-buffering-ms" if supported by SoC
+    }
+
     // Cleanup
     m_gstWrapper->gstPluginFeatureListFree(factories);
     return propertiesFound;
