@@ -1,4 +1,4 @@
-# SME Notes: RialtoServerManager
+ SME Notes: RialtoServerManager
 
 ## Operations
 
@@ -138,3 +138,22 @@ What we've learned from incidents.
     - Run repeated shutdown stress loops while preloading is enabled.
     - Inject/trigger late IPC disconnect events during shutdown and verify no restart is attempted.
     - Keep UT/CT shutdown race tests in regression suite and require DevQA sign-off for environment-level confirmation.
+- Incident: RDKEMW-18258 false deadlock/restart due to outdated healthcheck acks.
+  - Problem signature:
+    - ServerManager logs repeated `Ping (id: <id>) timeout for server id: <id>` followed by error-state transitions or recovery/restart actions.
+    - A later success ack arrives for an older ping after a newer healthcheck cycle has already started.
+    - This was observed as a false-positive deadlock/recovery path and is relevant to LLAMA investigation when restart churn is seen without a real server hang.
+  - What happened:
+    - The healthcheck service previously tracked failures as a simple counter per server.
+    - When an ack for an older ping arrived late, it could still leave the server on a path toward recovery because the code did not distinguish which ping ids had actually failed.
+  - Root cause area:
+    - `serverManager/common/source/HealthcheckService.cpp` healthcheck failure bookkeeping.
+    - Related fix was tracked in PR #495 (`Do not treat server as deadlocked when outdated acks are received`, Jira: `RDKEMW-18258`, commit `ae413b045d7c84841fd93a5ccb235c8a15c07889`).
+  - Practical SME guidance:
+    - Treat late acks as timing evidence first, not immediate proof of a deadlocked SessionServer.
+    - When triaging LLAMA restart churn, correlate timeout logs with later `Late ack received for server id... Removing from failed pings list` warnings before concluding the server is hung.
+    - Distinguish genuinely unexpected acks from stale-but-valid ones: the fix only tolerates successful acks for previously failed ping ids.
+  - Validation checklist:
+    - Exercise delayed-ack scenarios across consecutive healthcheck intervals and verify no restart is triggered solely by an outdated success ack.
+    - Confirm recovery still occurs after the configured number of distinct failed ping ids is reached.
+    - Keep UT coverage for late-ack handling enabled, especially the regression for `WillSkipRestartingServerWhenAcksAreReceivedLater`.
