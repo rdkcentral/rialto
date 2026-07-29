@@ -1381,6 +1381,18 @@ void MediaPipelineTestMethods::shouldNotifyFirstFrameReceivedVideo()
         .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
 }
 
+void MediaPipelineTestMethods::shouldNotifyFirstFrameReceivedAudio()
+{
+    EXPECT_CALL(*m_mediaPipelineClientMock, notifyFirstFrameReceived(kAudioSourceId))
+        .WillOnce(Invoke(this, &MediaPipelineTestMethods::notifyEvent));
+}
+
+void MediaPipelineTestMethods::sendNotifyFirstFrameReceivedAudio()
+{
+    getServerStub()->notifyFirstFrameReceivedEvent(kSessionId, kAudioSourceId);
+    waitEvent();
+}
+
 void MediaPipelineTestMethods::sendNotifyFirstFrameReceivedVideo()
 {
     getServerStub()->notifyFirstFrameReceivedEvent(kSessionId, kVideoSourceId);
@@ -1475,6 +1487,34 @@ void MediaPipelineTestMethods::shouldGetImmediateOutput(bool immediateOutput)
 void MediaPipelineTestMethods::getImmediateOutput(bool immediateOutput)
 {
     EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(kVideoSourceId, immediateOutput));
+}
+
+void MediaPipelineTestMethods::shouldSetReportDecodeErrors(bool reportDecodeErrors)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                setReportDecodeErrors(_, setReportDecodeErrorsRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->SetReportDecodeErrorsResponse()),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::setReportDecodeErrors(bool reportDecodeErrors)
+{
+    EXPECT_TRUE(m_mediaPipeline->setReportDecodeErrors(kVideoSourceId, reportDecodeErrors));
+}
+
+void MediaPipelineTestMethods::shouldGetQueuedFrames(uint32_t queuedFrames)
+{
+    EXPECT_CALL(*m_mediaPipelineModuleMock,
+                getQueuedFrames(_, getQueuedFramesRequestMatcher(kSessionId, kVideoSourceId), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->getQueuedFramesResponse(queuedFrames)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+}
+
+void MediaPipelineTestMethods::getQueuedFrames(uint32_t queuedFrames)
+{
+    uint32_t returnQueuedFrames;
+    EXPECT_TRUE(m_mediaPipeline->getQueuedFrames(kVideoSourceId, returnQueuedFrames));
+    EXPECT_EQ(returnQueuedFrames, queuedFrames);
 }
 
 void MediaPipelineTestMethods::shouldGetStats(uint64_t renderedFrames, uint64_t droppedFrames)

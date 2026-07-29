@@ -36,6 +36,7 @@
 #include "TypeConverters.h"
 #include "Utils.h"
 #include "WorkerThread.h"
+#include "tasks/generic/FirstFrameReceived.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 
 namespace
@@ -83,7 +84,8 @@ std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
 std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlayer(
     IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
     const VideoRequirements &videoRequirements, bool isLive,
-    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory)
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory,
+    const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory)
 {
     std::unique_ptr<IGstGenericPlayer> gstPlayer;
 
@@ -108,10 +110,21 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
 
+        // Fall back to the default profiler factory if the caller explicitly
+        // passed nullptr. IGstProfilerFactory::getFactory() can itself return
+        // nullptr on allocation failure, so re-check afterwards and fail with
+        // a clear error rather than passing null on and reporting the generic
+        // "No gst profiler factory provided" message from the constructor.
+        auto resolvedGstProfilerFactory = gstProfilerFactory ? gstProfilerFactory : IGstProfilerFactory::getFactory();
+        if (!resolvedGstProfilerFactory)
+        {
+            throw std::runtime_error("Cannot obtain default IGstProfilerFactory");
+        }
+
         gstPlayer = std::make_unique<
             GstGenericPlayer>(client, decryptionService, type, videoRequirements, isLive, gstWrapper, glibWrapper,
                               rdkGstreamerUtilsWrapper, IGstInitialiser::instance(), std::make_unique<FlushWatcher>(),
-                              IGstSrcFactory::getFactory(), IGstProfilerFactory::getFactory(),
+                              IGstSrcFactory::getFactory(), resolvedGstProfilerFactory,
                               common::ITimerFactory::getFactory(),
                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
                                                                          rdkGstreamerUtilsWrapper,
@@ -311,6 +324,9 @@ void GstGenericPlayer::termPipeline()
 
     m_finishSourceSetupTimer.reset();
 
+    clearAudioFirstFrameFallbackProbe();
+    stopNotifyPlaybackInfoTimer();
+
     for (auto &elem : m_context.streamInfo)
     {
         StreamInfo &streamInfo = elem.second;
@@ -396,6 +412,7 @@ void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElemen
     RIALTO_SERVER_LOG_DEBUG("Deep element %s added to the pipeline", GST_ELEMENT_NAME(element));
     if (self->m_workerThread)
     {
+        self->m_gstWrapper->gstObjectRef(element);
         self->m_workerThread->enqueueTask(
             self->m_taskFactory->createDeepElementAdded(self->m_context, *self, pipeline, bin, element));
     }
@@ -1178,6 +1195,41 @@ bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType
     return true;
 }
 
+bool GstGenericPlayer::setReportDecodeErrors(const MediaSourceType &mediaSourceType, bool reportDecodeErrors)
+{
+    if (!m_workerThread)
+        return false;
+
+    m_workerThread->enqueueTask(
+        m_taskFactory->createSetReportDecodeErrors(m_context, *this, mediaSourceType, reportDecodeErrors));
+    return true;
+}
+
+bool GstGenericPlayer::getQueuedFrames(uint32_t &queuedFrames)
+{
+    bool returnValue{false};
+    GstElement *decoder{getDecoder(MediaSourceType::VIDEO)};
+    if (decoder)
+    {
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "queued-frames"))
+        {
+            m_glibWrapper->gObjectGet(decoder, "queued-frames", &queuedFrames, nullptr);
+            returnValue = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("queued-frames not supported in element %s", GST_ELEMENT_NAME(decoder));
+        }
+        m_gstWrapper->gstObjectUnref(decoder);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get queued-frames property, decoder is NULL");
+    }
+
+    return returnValue;
+}
+
 bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutputRef)
 {
     bool returnValue{false};
@@ -1514,6 +1566,8 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
 
 void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourceType &mediaSourceType)
 {
+    const std::string kTypeStr{common::convertMediaSourceType(mediaSourceType)};
+
     auto initialPosition = m_context.initialPositions.find(source);
     if (m_context.initialPositions.end() == initialPosition)
     {
@@ -1528,7 +1582,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
     for (const auto &[position, resetTime, appliedRate, stopPosition] : initialPosition->second)
     {
         GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
-        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", common::convertMediaSourceType(mediaSourceType));
+        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", kTypeStr.c_str());
         GstSegment *segment{m_gstWrapper->gstSegmentNew()};
         m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
         if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, seekFlag,
@@ -1542,10 +1596,9 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
         segment->applied_rate = appliedRate;
         RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
-                              common::convertMediaSourceType(mediaSourceType), GST_TIME_ARGS(segment->start),
-                              GST_TIME_ARGS(segment->stop), segment->rate, segment->applied_rate, resetTime);
-        auto recordId = m_context.gstProfiler->createRecord("First Segment Received",
-                                                            common::convertMediaSourceType(mediaSourceType));
+                              kTypeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
+                              segment->rate, segment->applied_rate, resetTime);
+        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", kTypeStr);
         if (recordId)
             m_context.gstProfiler->logRecord(recordId.value());
 
@@ -1560,7 +1613,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourc
 
         m_gstWrapper->gstSegmentFree(segment);
 
-        if (MediaSourceType::AUDIO == mediaSourceType)
+        if (mediaSourceType == MediaSourceType::AUDIO)
         {
             m_context.audioGstSegmentPosition = position;
         }
@@ -1752,6 +1805,63 @@ void GstGenericPlayer::scheduleFirstVideoFrameReceived()
     }
 }
 
+void GstGenericPlayer::scheduleFirstAudioFrameReceived(AudioFirstFrameAction audioAction)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(
+            m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::AUDIO, audioAction));
+    }
+}
+
+void GstGenericPlayer::setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id)
+{
+    GstPad *oldPad{m_context.audioFirstFrameProbePad};
+    gulong oldId{m_context.audioFirstFrameProbeId};
+    m_context.audioFirstFrameProbePad = pad;
+    m_context.audioFirstFrameProbeId = id;
+
+    if (oldPad && oldId != 0)
+    {
+        m_gstWrapper->gstPadRemoveProbe(oldPad, oldId);
+    }
+
+    if (oldPad)
+    {
+        m_gstWrapper->gstObjectUnref(oldPad);
+    }
+}
+
+void GstGenericPlayer::clearAudioFirstFrameFallbackProbe()
+{
+    GstPad *pad{m_context.audioFirstFrameProbePad};
+    gulong id{m_context.audioFirstFrameProbeId};
+    m_context.audioFirstFrameProbePad = nullptr;
+    m_context.audioFirstFrameProbeId = 0;
+
+    if (pad && id != 0)
+    {
+        m_gstWrapper->gstPadRemoveProbe(pad, id);
+    }
+
+    if (pad)
+    {
+        m_gstWrapper->gstObjectUnref(pad);
+    }
+}
+
+void GstGenericPlayer::clearAudioFirstFrameFallbackProbeState()
+{
+    GstPad *pad{m_context.audioFirstFrameProbePad};
+    m_context.audioFirstFrameProbePad = nullptr;
+    m_context.audioFirstFrameProbeId = 0;
+
+    if (pad)
+    {
+        m_gstWrapper->gstObjectUnref(pad);
+    }
+}
+
 void GstGenericPlayer::scheduleAllSourcesAttached()
 {
     allSourcesAttached();
@@ -1927,6 +2037,51 @@ bool GstGenericPlayer::setImmediateOutput()
         {
             RIALTO_SERVER_LOG_DEBUG("Pending an immediate-output, sink is NULL");
         }
+    }
+    return result;
+}
+
+bool GstGenericPlayer::setReportDecodeErrors()
+{
+    bool result{false};
+    bool reportDecodeErrors{false};
+
+    {
+        std::unique_lock lock{m_context.propertyMutex};
+        if (!m_context.pendingReportDecodeErrorsForVideo.has_value())
+        {
+            return false;
+        }
+        reportDecodeErrors = m_context.pendingReportDecodeErrorsForVideo.value();
+    }
+
+    GstElement *decoder = getDecoder(MediaSourceType::VIDEO);
+    if (decoder)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Set report decode errors to %s", reportDecodeErrors ? "TRUE" : "FALSE");
+
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "report-decode-errors"))
+        {
+            gboolean reportDecodeErrorsGboolean{reportDecodeErrors ? TRUE : FALSE};
+            m_glibWrapper->gObjectSet(decoder, "report-decode-errors", reportDecodeErrorsGboolean, nullptr);
+            result = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set report-decode-errors property on decoder '%s'",
+                                    GST_ELEMENT_NAME(decoder));
+        }
+
+        m_gstWrapper->gstObjectUnref(decoder);
+
+        {
+            std::unique_lock lock{m_context.propertyMutex};
+            m_context.pendingReportDecodeErrorsForVideo.reset();
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Pending report-decode-errors, decoder is NULL");
     }
     return result;
 }
@@ -2324,9 +2479,9 @@ void GstGenericPlayer::startNotifyPlaybackInfoTimer()
 
     notifyPlaybackInfo();
 
-    m_playbackInfoTimer =
-        m_timerFactory
-            ->createTimer(kPlaybackInfoTimerMs, [this]() { notifyPlaybackInfo(); }, firebolt::rialto::common::TimerType::PERIODIC);
+    const auto kNotifyPlaybackInfo = [this]() { notifyPlaybackInfo(); };
+    m_playbackInfoTimer = m_timerFactory->createTimer(kPlaybackInfoTimerMs, kNotifyPlaybackInfo,
+                                                      firebolt::rialto::common::TimerType::PERIODIC);
 }
 
 void GstGenericPlayer::stopNotifyPlaybackInfoTimer()
@@ -2760,7 +2915,12 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
-    m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, caps));
+    if (m_workerThread)
+    {
+        m_gstWrapper->gstObjectRef(typefind);
+        GstCaps *ownedCaps{caps ? m_gstWrapper->gstCapsCopy(caps) : nullptr};
+        m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, ownedCaps));
+    }
 }
 
 void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)

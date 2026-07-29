@@ -188,6 +188,24 @@ TEST_F(SetupElementTest, shouldReportAudioUnderflow)
     triggerAudioUnderflowCallback();
 }
 
+TEST_F(SetupElementTest, shouldReportFirstAudioFrameFromSignal)
+{
+    shouldSetupAudioDecoderElementWithFirstAudioFrameCallback();
+    triggerSetupElement();
+
+    shouldSetFirstAudioFrameCallback();
+    triggerFirstAudioFrameCallback();
+}
+
+TEST_F(SetupElementTest, shouldReportFirstAudioFrameFromFallbackProbe)
+{
+    shouldSetupAudioSinkElementWithFirstAudioFrameProbe();
+    triggerSetupElement();
+
+    shouldSetFirstAudioFrameFallbackProbeCallback();
+    triggerFirstAudioFrameFallbackProbeCallback();
+}
+
 TEST_F(SetupElementTest, shouldReportAutoVideoSinkChildAdded)
 {
     shouldSetupVideoElementAutoVideoSink();
