@@ -18,6 +18,7 @@
  */
 
 #include "YamlCppWrapper.h"
+#include "RialtoServerLogging.h"
 #include <yaml-cpp/yaml.h>
 
 namespace
@@ -156,6 +157,7 @@ firebolt::rialto::AudioDecoderCapability buildAudioDecoderCapability(const YAML:
                 for (YAML::const_iterator codecIt = codecCapability.begin(); codecIt != codecCapability.end(); ++codecIt)
                 {
                     const std::string kCodecName{codecIt->first.as<std::string>()};
+                    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Audio codec key found in YAML: %s", kCodecName.c_str());
                     const auto &kCodecData{codecIt->second};
                     if ("PCM" == kCodecName)
                     {
@@ -248,6 +250,11 @@ firebolt::rialto::AudioDecoderCapability buildAudioDecoderCapability(const YAML:
                             parseNamedProfileMap<std::map<firebolt::rialto::AvsProfile,
                                                           firebolt::rialto::AudioProfileCapability>>(
                                 kCodecData, convertAvsProfileName)};
+                    }
+                    else
+                    {
+                        RIALTO_SERVER_LOG_WARN("[HFP YAML TEST] Audio codec key not recognized (ignored): %s",
+                                               kCodecName.c_str());
                     }
                 }
             }
@@ -458,6 +465,7 @@ firebolt::rialto::VideoDecoderCapability buildVideoDecoderCapability(const YAML:
                      codecCapabilitiesIt != codecCapability.end(); ++codecCapabilitiesIt)
                 {
                     const std::string kCodecName = codecCapabilitiesIt->first.as<std::string>();
+                    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Video codec key found in YAML: %s", kCodecName.c_str());
                     const YAML::Node &codecNode = codecCapabilitiesIt->second;
                     if ("MPEG2_VIDEO" == kCodecName)
                     {
@@ -494,6 +502,11 @@ firebolt::rialto::VideoDecoderCapability buildVideoDecoderCapability(const YAML:
                         c.dynamicRanges = getDynamicRanges(codecNode["dynamicRange"]);
                         result.codecCapabilities.av1 = std::move(c);
                     }
+                    else
+                    {
+                        RIALTO_SERVER_LOG_WARN("[HFP YAML TEST] Video codec key not recognized (ignored): %s",
+                                               kCodecName.c_str());
+                    }
                 }
             }
         }
@@ -513,11 +526,16 @@ std::shared_ptr<IYamlCppWrapper> YamlCppWrapperFactory::createYamlCppWrapper()
 DecoderCapabilitiesStatus YamlCppWrapper::getAudioDecoderCapabilities(AudioDecoderCapabilities &capabilities) const
 try
 {
+    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Loading audio capabilities from: %s",
+                           kAudioCapabilitiesFilePath.c_str());
     YAML::Node audioCapsFile = YAML::LoadFile(kAudioCapabilitiesFilePath);
     if (audioCapsFile.IsNull())
     {
+        RIALTO_SERVER_LOG_WARN("[HFP YAML TEST] Audio YAML file not found or empty: %s",
+                               kAudioCapabilitiesFilePath.c_str());
         return DecoderCapabilitiesStatus::CONFIG_NOT_FOUND;
     }
+    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Audio YAML file loaded successfully");
     if (audioCapsFile["audiodecoder"])
     {
         if (audioCapsFile["audiodecoder"]["interfaceVersion"])
@@ -527,6 +545,8 @@ try
         if (audioCapsFile["audiodecoder"]["schemaVersion"])
         {
             capabilities.schemaVersion = audioCapsFile["audiodecoder"]["schemaVersion"].as<std::string>();
+            RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Audio YAML schemaVersion: %s",
+                                   capabilities.schemaVersion.c_str());
         }
         if (audioCapsFile["audiodecoder"]["Capabilities"])
         {
@@ -536,21 +556,29 @@ try
             }
         }
     }
+    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Audio capabilities parsed successfully: %zu entr(ies)",
+                           capabilities.capabilities.size());
     return DecoderCapabilitiesStatus::OK;
 }
-catch (const std::exception &)
+catch (const std::exception &e)
 {
+    RIALTO_SERVER_LOG_ERROR("[HFP YAML TEST] Exception while parsing audio YAML: %s", e.what());
     return DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED;
 }
 
 DecoderCapabilitiesStatus YamlCppWrapper::getVideoDecoderCapabilities(VideoDecoderCapabilities &capabilities) const
 try
 {
+    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Loading video capabilities from: %s",
+                           kVideoCapabilitiesFilePath.c_str());
     YAML::Node videoCapsFile = YAML::LoadFile(kVideoCapabilitiesFilePath);
     if (videoCapsFile.IsNull())
     {
+        RIALTO_SERVER_LOG_WARN("[HFP YAML TEST] Video YAML file not found or empty: %s",
+                               kVideoCapabilitiesFilePath.c_str());
         return DecoderCapabilitiesStatus::CONFIG_NOT_FOUND;
     }
+    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Video YAML file loaded successfully");
     if (videoCapsFile["videodecoder"])
     {
         if (videoCapsFile["videodecoder"]["interfaceVersion"])
@@ -560,6 +588,8 @@ try
         if (videoCapsFile["videodecoder"]["schemaVersion"])
         {
             capabilities.schemaVersion = videoCapsFile["videodecoder"]["schemaVersion"].as<std::string>();
+            RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Video YAML schemaVersion: %s",
+                                   capabilities.schemaVersion.c_str());
         }
         if (videoCapsFile["videodecoder"]["Capabilities"])
         {
@@ -569,10 +599,13 @@ try
             }
         }
     }
+    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Video capabilities parsed successfully: %zu entr(ies)",
+                           capabilities.capabilities.size());
     return DecoderCapabilitiesStatus::OK;
 }
-catch (const std::exception &)
+catch (const std::exception &e)
 {
+    RIALTO_SERVER_LOG_ERROR("[HFP YAML TEST] Exception while parsing video YAML: %s", e.what());
     return DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED;
 }
 
