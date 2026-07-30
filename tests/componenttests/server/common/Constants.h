@@ -58,6 +58,8 @@ constexpr uint64_t kDroppedFrames{76};
 constexpr uint64_t kStopPosition{234234};
 const firebolt::rialto::AudioDecoderCapabilities kAudioCapabilities{"1.0", "1.1", {}};
 const firebolt::rialto::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
+constexpr int kPrerollNumFrames{3};
+constexpr int kFrameCountInPlayingState{24};
 } // namespace firebolt::rialto::server::ct
 
 #endif // FIREBOLT_RIALTO_SERVER_CT_CONSTANTS_H_

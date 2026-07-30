@@ -716,6 +716,17 @@ TEST_F(CdmServiceTests, shouldFailToReleaseKeySessionWhenMediaKeysFails)
     destroyMediaKeysShouldSucceed();
 }
 
+TEST_F(CdmServiceTests, shouldFailToReleaseKeySessionAfterSwitchToInactive)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
+    triggerSwitchToInactive();
+    releaseKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::FAIL);
+}
+
 TEST_F(CdmServiceTests, shouldGetNoKeySystemsFromGetSupportedKeySystemsInInactiveState)
 {
     getSupportedKeySystemsReturnNon();
@@ -802,6 +813,34 @@ TEST_F(CdmServiceTests, shouldGetServerCertificateSupportedIfSupportedInActiveSt
     mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
     supportsServerCertificateWillReturnTrue();
     supportsServerCertificateReturnTrue();
+}
+
+TEST_F(CdmServiceTests, shouldFailToGetSupportedRobustnessLevelsInInactiveState)
+{
+    getSupportedRobustnessLevelsShouldFail();
+}
+
+TEST_F(CdmServiceTests, shouldFailToGetSupportedRobustnessLevelsIfCreationFailureInActiveState)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysCapabilitiesFactoryWillReturnNullptr();
+    getSupportedRobustnessLevelsShouldFail();
+}
+
+TEST_F(CdmServiceTests, shouldFailToGetSupportedRobustnessLevelsIfApiFailureInActiveState)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    getSupportedRobustnessLevelsWillFail();
+    getSupportedRobustnessLevelsShouldFail();
+}
+
+TEST_F(CdmServiceTests, shouldGetSupportedRobustnessLevelsInActiveState)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysCapabilitiesFactoryWillCreateMediaKeysCapabilities();
+    getSupportedRobustnessLevelsWillSucceed();
+    getSupportedRobustnessLevelsShouldSucceed();
 }
 
 TEST_F(CdmServiceTests, shouldReturnFalseWhenCheckingExtendedInterfaceWhenNoMediaKeys)

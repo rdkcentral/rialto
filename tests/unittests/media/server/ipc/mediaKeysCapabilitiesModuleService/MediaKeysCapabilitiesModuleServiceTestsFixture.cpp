@@ -36,6 +36,7 @@ namespace
 const std::vector<std::string> keySystems{"expectedKeySystem1", "expectedKeySystem2", "expectedKeySystem3"};
 const std::string kVersion{"123"};
 constexpr bool kIsKeySystemSupported{true};
+const std::vector<std::string> kRobustnessLevels{"HW_SECURE_ALL", "SW_SECURE_CRYPTO"};
 } // namespace
 
 MediaKeysCapabilitiesModuleServiceTests::MediaKeysCapabilitiesModuleServiceTests()
@@ -83,6 +84,19 @@ void MediaKeysCapabilitiesModuleServiceTests::cdmServiceWillSupportServerCertifi
 {
     expectRequestSuccess();
     EXPECT_CALL(m_cdmServiceMock, isServerCertificateSupported(keySystems[0])).WillOnce(Return(true));
+}
+
+void MediaKeysCapabilitiesModuleServiceTests::cdmServiceWillGetSupportedRobustnessLevels()
+{
+    expectRequestSuccess();
+    EXPECT_CALL(m_cdmServiceMock, getSupportedRobustnessLevels(keySystems[0], _))
+        .WillOnce(DoAll(SetArgReferee<1>(kRobustnessLevels), Return(true)));
+}
+
+void MediaKeysCapabilitiesModuleServiceTests::cdmServiceWillFailToGetSupportedRobustnessLevels()
+{
+    expectRequestFailure();
+    EXPECT_CALL(m_cdmServiceMock, getSupportedRobustnessLevels(keySystems[0], _)).WillOnce(Return(false));
 }
 
 void MediaKeysCapabilitiesModuleServiceTests::sendClientConnected()
@@ -141,6 +155,29 @@ void MediaKeysCapabilitiesModuleServiceTests::sendIsServerCertificateSupportedRe
 
     m_service->isServerCertificateSupported(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_TRUE(response.is_supported());
+}
+
+void MediaKeysCapabilitiesModuleServiceTests::sendGetSupportedRobustnessLevelsRequestAndReceiveResponse()
+{
+    firebolt::rialto::GetSupportedRobustnessLevelsRequest request;
+    firebolt::rialto::GetSupportedRobustnessLevelsResponse response;
+
+    request.set_key_system(keySystems[0]);
+
+    m_service->getSupportedRobustnessLevels(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ((std::vector<std::string>{response.robustness_levels().begin(), response.robustness_levels().end()}),
+              kRobustnessLevels);
+}
+
+void MediaKeysCapabilitiesModuleServiceTests::sendGetSupportedRobustnessLevelsRequestAndExpectFailure()
+{
+    firebolt::rialto::GetSupportedRobustnessLevelsRequest request;
+    firebolt::rialto::GetSupportedRobustnessLevelsResponse response;
+
+    request.set_key_system(keySystems[0]);
+
+    m_service->getSupportedRobustnessLevels(m_controllerMock.get(), &request, &response, m_closureMock.get());
+    EXPECT_EQ(response.robustness_levels_size(), 0);
 }
 
 void MediaKeysCapabilitiesModuleServiceTests::expectRequestSuccess()

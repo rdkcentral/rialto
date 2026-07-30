@@ -39,6 +39,7 @@ add_library(
         source/tasks/generic/DeepElementAdded.cpp
         source/tasks/generic/EnoughData.cpp
         source/tasks/generic/Eos.cpp
+        source/tasks/generic/FirstFrameReceived.cpp
         source/tasks/generic/FinishSetupSource.cpp
         source/tasks/generic/Flush.cpp
         source/tasks/generic/GenericPlayerTaskFactory.cpp
@@ -49,6 +50,7 @@ add_library(
         source/tasks/generic/Play.cpp
         source/tasks/generic/ProcessAudioGap.cpp
         source/tasks/generic/ReadShmDataAndAttachSamples.cpp
+        source/tasks/generic/RemoveSource.cpp
         source/tasks/generic/RenderFrame.cpp
         source/tasks/generic/ReportPosition.cpp
         source/tasks/generic/SetBufferingLimit.cpp
@@ -57,6 +59,7 @@ add_library(
         source/tasks/generic/SetMute.cpp
         source/tasks/generic/SetPlaybackRate.cpp
         source/tasks/generic/SetPosition.cpp
+        source/tasks/generic/SetReportDecodeErrors.cpp
         source/tasks/generic/SetSourcePosition.cpp
         source/tasks/generic/SetSubtitleOffset.cpp
         source/tasks/generic/SetStreamSyncMode.cpp
@@ -96,6 +99,7 @@ add_library(
         source/GstGenericPlayer.cpp
         source/GstInitialiser.cpp
         source/GstLogForwarding.cpp
+        source/GstProfiler.cpp
         source/GstProtectionMetadata.cpp
         source/GstProtectionMetadataHelper.cpp
         source/GstSrc.cpp

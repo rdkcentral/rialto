@@ -21,6 +21,7 @@
 #include "IGlibWrapper.h"
 #include "IGstWrapper.h"
 #include "RialtoServerLogging.h"
+#include "TypeConverters.h"
 #include <gst/base/gstbasesink.h>
 
 namespace
@@ -76,7 +77,7 @@ void SetPlaybackRate::execute() const
         GstSegment *segment{m_gstWrapper->gstSegmentNew()};
         m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
         segment->rate = m_rate;
-        segment->start = GST_CLOCK_TIME_NONE;
+        segment->start = m_context.audioGstSegmentPosition;
         segment->position = GST_CLOCK_TIME_NONE;
         success = m_gstWrapper->gstPadSendEvent(GST_BASE_SINK_PAD(audioSink), m_gstWrapper->gstEventNewSegment(segment));
         RIALTO_SERVER_LOG_DEBUG("Sent new segment, success = %s", success ? "true" : "false");

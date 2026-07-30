@@ -32,6 +32,7 @@ public:
     virtual ~GlibWrapperMock() = default;
 
     MOCK_METHOD(gpointer, gTypeClassRef, (GType type), (override));
+    MOCK_METHOD(void, gTypeClassUnref, (gpointer g_class), (override));
     MOCK_METHOD(GType, gTypeFromName, (const gchar *name), (override));
     MOCK_METHOD(GFlagsValue *, gFlagsGetValueByNick, (GFlagsClass * flags_class, const gchar *nick), (override));
     MOCK_METHOD(void, gObjectUnref, (gpointer object), (override));
@@ -138,6 +139,9 @@ public:
     MOCK_METHOD(void, gValueUnset, (GValue * value), (const, override));
     MOCK_METHOD(GError *, gErrorNewLiteral, (GQuark domain, gint code, const gchar *message), (const, override));
     MOCK_METHOD(GValue *, gValueInit, (GValue * value, GType type), (const, override));
+    MOCK_METHOD(void, gThreadPoolStopUnusedThreads, (), (const, override));
+    MOCK_METHOD(void, gThreadPoolSetMaxUnusedThreads, (gint maxThreads), (const, override));
+    MOCK_METHOD(void, gThreadPoolSetMaxIdleTime, (guint interval), (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 

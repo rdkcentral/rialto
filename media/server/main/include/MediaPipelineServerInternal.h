@@ -26,6 +26,7 @@
 #include "IMainThread.h"
 #include "IMediaPipelineServerInternal.h"
 #include "ITimer.h"
+#include "NeedDataDelayCalculator.h"
 #include <map>
 #include <memory>
 #include <shared_mutex>
@@ -92,7 +93,7 @@ public:
      */
     virtual ~MediaPipelineServerInternal();
 
-    bool load(MediaType type, const std::string &mimeType, const std::string &url) override;
+    bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override;
 
     bool attachSource(const std::unique_ptr<MediaSource> &source) override;
 
@@ -113,6 +114,10 @@ public:
     bool getPosition(int64_t &position) override;
 
     bool setImmediateOutput(int32_t sourceId, bool immediateOutput) override;
+
+    bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) override;
+
+    bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) override;
 
     bool getImmediateOutput(int32_t sourceId, bool &immediateOutput) override;
 
@@ -171,6 +176,8 @@ public:
 
     bool switchSource(const std::unique_ptr<MediaSource> &source) override;
 
+    bool getDuration(int64_t &duration) override;
+
     AddSegmentStatus addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment) override;
 
     std::weak_ptr<IMediaPipelineClient> getClient() override;
@@ -178,6 +185,8 @@ public:
     void notifyPlaybackState(PlaybackState state) override;
 
     bool notifyNeedMediaData(MediaSourceType mediaSourceType) override;
+
+    bool notifyNeedMediaDataWithDelay(MediaSourceType mediaSourceType) override;
 
     void notifyPosition(std::int64_t position) override;
 
@@ -190,6 +199,8 @@ public:
     void notifyQos(MediaSourceType mediaSourceType, const QosInfo &qosInfo) override;
 
     void notifyBufferUnderflow(MediaSourceType mediaSourceType) override;
+
+    void notifyFirstFrameReceived(MediaSourceType mediaSourceType) override;
 
     void notifyPlaybackError(MediaSourceType mediaSourceType, PlaybackError error) override;
 
@@ -304,9 +315,9 @@ protected:
     std::shared_mutex m_getPropertyMutex;
 
     /**
-     * @brief Flag to check, if setting volume is in progress
+     * @brief Object to calculate the delay for scheduling NeedMediaData when no segments were received in haveData() call
      */
-    std::atomic_bool m_isSetVolumeInProgress{false};
+    NeedDataDelayCalculator m_needDataDelayCalculator;
 
     /**
      * @brief Load internally, only to be called on the main thread.
@@ -314,10 +325,11 @@ protected:
      * @param[in] type     : The media type.
      * @param[in] mimeType : The MIME type.
      * @param[in] url      : The URL.
+     * @param[in] isLive   : Indicates if the media is live.
      *
      * @retval true on success.
      */
-    bool loadInternal(MediaType type, const std::string &mimeType, const std::string &url);
+    bool loadInternal(MediaType type, const std::string &mimeType, const std::string &url, bool isLive);
 
     /**
      * @brief Attach source internally, only to be called on the main thread.
@@ -396,6 +408,30 @@ protected:
      * @retval true on success.
      */
     bool setImmediateOutputInternal(int32_t sourceId, bool immediateOutput);
+
+    /**
+     * @brief Sets the "Report Decode Errors" property for this source.
+     *
+     * This method is asynchronous
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] reportDecodeErrors : The desired Set Report Decode Errors mode on the sink
+     *
+     * @retval true on success.
+     */
+    bool setReportDecodeErrorsInternal(int32_t sourceId, bool reportDecodeErrors);
+
+    /**
+     * @brief Gets the queued frames for this source.
+     *
+     * This method is asynchronous
+     *
+     * @param[in] sourceId : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] queuedFrames : Number of queued frames
+     *
+     * @retval true on success.
+     */
+    bool getQueuedFramesInternal(int32_t sourceId, uint32_t &queuedFrames);
 
     /**
      * @brief Gets the "Immediate Output" property for this source.
@@ -478,6 +514,13 @@ protected:
      * @param[in] mediaSourceType    : The media source type.
      */
     bool notifyNeedMediaDataInternal(MediaSourceType mediaSourceType);
+
+    /**
+     * @brief Notify need media data with delay internally, only to be called on the main thread.
+     *
+     * @param[in] mediaSourceType    : The media source type.
+     */
+    bool notifyNeedMediaDataWithDelayInternal(MediaSourceType mediaSourceType);
 
     /**
      * @brief Schedules resending of NeedMediaData after a short delay. Used when no segments were received in the
@@ -722,7 +765,7 @@ protected:
      *
      * @retval NeedMediaData timeout
      */
-    std::chrono::milliseconds getNeedMediaDataTimeout(MediaSourceType mediaSourceType) const;
+    std::chrono::milliseconds getNeedMediaDataTimeout(MediaSourceType mediaSourceType);
 };
 
 }; // namespace firebolt::rialto::server

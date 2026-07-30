@@ -28,6 +28,7 @@
 #include "IDataReader.h"
 #include "IDecryptionService.h"
 #include "IGstGenericPlayerClient.h"
+#include "IGstProfiler.h"
 #include "IHeartbeatHandler.h"
 #include "IMediaPipeline.h"
 #include "IRdkGstreamerUtilsWrapper.h"
@@ -53,20 +54,25 @@ public:
     static std::shared_ptr<IGstGenericPlayerFactory> getFactory();
 
     /**
-     * @brief Creates a IGstGenericPlayer object.
+     * @brief Creates an IGstGenericPlayer object.
      *
-     * @param[in] client            : The gstreamer player client.
-     * @param[in] decryptionService : The decryption service.
-     * @param[in] type              : The media type the gstreamer player shall support.
-     * @param[in] videoRequirements : The video requirements for the playback.
+     * @param[in] client                       : The gstreamer player client.
+     * @param[in] decryptionService            : The decryption service.
+     * @param[in] type                         : The media type the gstreamer player shall support.
+     * @param[in] videoRequirements            : The video requirements for the playback.
+     * @param[in] isLive                       : Indicates if the media is live.
+     * @param[in] rdkGstreamerUtilsWrapperFactory : The rdk gstreamer utils wrapper factory.
+     * @param[in] gstProfilerFactory           : The gst profiler factory. Defaults to nullptr; when null, the
+     *                                                concrete factory falls back to IGstProfilerFactory::getFactory().
+     *                                                This avoids evaluating the real singleton at mocked call sites.
      *
      * @retval the new player instance or null on error.
      */
-    virtual std::unique_ptr<IGstGenericPlayer>
-    createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                           const VideoRequirements &videoRequirements,
-                           const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
-                               &rdkGstreamerUtilsWrapperFactory) = 0;
+    virtual std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(
+        IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+        const VideoRequirements &videoRequirements, bool isLive,
+        const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory,
+        const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory = nullptr) = 0;
 };
 
 class IGstGenericPlayer
@@ -87,6 +93,14 @@ public:
      *
      */
     virtual void attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &mediaSource) = 0;
+
+    /**
+     * @brief Removes a source from gstreamer.
+     *
+     * @param[in] mediaSourceType : The media source type.
+     *
+     */
+    virtual void removeSource(const MediaSourceType &mediaSourceType) = 0;
 
     /**
      * @brief Handles notification that all sources were attached
@@ -187,6 +201,15 @@ public:
     virtual bool getPosition(std::int64_t &position) = 0;
 
     /**
+     * @brief Get the playback duration in nanoseconds.
+     *
+     * @param[out] duration : The playback duration in nanoseconds.
+     *
+     * @retval True on success
+     */
+    virtual bool getDuration(std::int64_t &duration) = 0;
+
+    /**
      * @brief Sets the "Immediate Output" property for this source.
      *
      * @param[in] mediaSourceType : The media source type
@@ -195,6 +218,25 @@ public:
      * @retval true on success.
      */
     virtual bool setImmediateOutput(const MediaSourceType &mediaSourceType, bool immediateOutput) = 0;
+
+    /**
+     * @brief Sets the "Report Decode Error" property for this source.
+     *
+     * @param[in] mediaSourceType : The media source type
+     * @param[in] reportDecodeErrors : Set report decode error
+     *
+     * @retval true on success.
+     */
+    virtual bool setReportDecodeErrors(const MediaSourceType &mediaSourceType, bool reportDecodeErrors) = 0;
+
+    /**
+     * @brief Gets the queued frames for this source.
+     *
+     * @param[out] queuedFrames : Get queued frames mode on the decoder
+     *
+     * @retval true on success.
+     */
+    virtual bool getQueuedFrames(uint32_t &queuedFrames) = 0;
 
     /**
      * @brief Gets the "Immediate Output" property for this source.

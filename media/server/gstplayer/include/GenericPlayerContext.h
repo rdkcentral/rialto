@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_GENERIC_PLAYER_CONTEXT_H_
 
 #include "FlushOnPrerollController.h"
+#include "IGstProfiler.h"
 #include "IGstSrc.h"
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
@@ -156,6 +157,11 @@ struct GenericPlayerContext
     std::optional<bool> pendingImmediateOutputForVideo{};
 
     /**
+     * @brief Pending report decode errors for MediaSourceType::VIDEO
+     */
+    std::optional<bool> pendingReportDecodeErrorsForVideo{};
+
+    /**
      * @brief Pending low latency
      */
     std::optional<bool> pendingLowLatency{};
@@ -205,6 +211,13 @@ struct GenericPlayerContext
      * @brief The decryption service.
      */
     IDecryptionService *decryptionService{nullptr};
+
+    /**
+     * @brief Flag used to check, if audio source has been recently removed
+     *
+     * Flag can be used only in worker thread
+     */
+    bool audioSourceRemoved{false};
 
     /**
      * @brief Audio elements of gst pipeline.
@@ -261,9 +274,51 @@ struct GenericPlayerContext
     std::atomic_bool audioFadeEnabled{false};
 
     /**
+     * @brief The last known fade volume value used for PlaybackInfo messages.
+     *        The "fade-volume" property must not be queried too frequently as it can cause decoder issues.
+     */
+    std::atomic<double> audioFadeVolume{1.0};
+
+    /**
      * @brief Workaround for the gstreamer flush issue
      */
     std::shared_ptr<IFlushOnPrerollController> flushOnPrerollController{std::make_shared<FlushOnPrerollController>()};
+
+    /**
+     * @brief Flag used to check if the stream is live
+     *        This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
+     */
+    bool isLive{false};
+
+    /**
+     * @brief Profiler for player pipeline
+     */
+    std::unique_ptr<IGstProfiler> gstProfiler;
+
+    /**
+     * @brief True when first audio frame has already been scheduled for the current audio source lifecycle.
+     */
+    bool firstAudioFrameReceived{false};
+
+    /**
+     * @brief Fallback probe id for first audio frame detection on sink pad.
+     */
+    gulong audioFirstFrameProbeId{0};
+
+    /**
+     * @brief Fallback sink pad that owns audio first frame probe.
+     */
+    GstPad *audioFirstFrameProbePad{nullptr};
+
+    /**
+     * @brief The audio position set in the GstSegment.
+     */
+    int64_t audioGstSegmentPosition{-1};
+
+    /**
+     * @brief Current position of the stream in nanoseconds.
+     */
+    std::atomic<int64_t> streamPosition{-1};
 };
 } // namespace firebolt::rialto::server
 

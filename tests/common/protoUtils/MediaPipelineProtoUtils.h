@@ -224,6 +224,10 @@ convertPlaybackError(const firebolt::rialto::PlaybackError &playbackError)
     {
         return firebolt::rialto::PlaybackErrorEvent_PlaybackError_DECRYPTION;
     }
+    case firebolt::rialto::PlaybackError::OUTPUT_PROTECTION:
+    {
+        return firebolt::rialto::PlaybackErrorEvent_PlaybackError_OUTPUT_PROTECTION;
+    }
     }
     return firebolt::rialto::PlaybackErrorEvent_PlaybackError_UNKNOWN;
 }

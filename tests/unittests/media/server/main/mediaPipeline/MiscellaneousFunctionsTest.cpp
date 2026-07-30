@@ -28,6 +28,7 @@ class RialtoServerMediaPipelineMiscellaneousFunctionsTest : public MediaPipeline
 {
 protected:
     const int64_t m_kPosition{4028596027};
+    const int64_t m_kDuration{8057192054};
     const double m_kPlaybackRate{1.5};
     uint64_t m_kRenderedFrames{3141};
     uint64_t m_kDroppedFrames{95};
@@ -45,7 +46,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlaySuccess)
 {
     bool async{false};
     loadGstPlayer();
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
 
     EXPECT_CALL(*m_gstPlayerMock, play(_));
     EXPECT_TRUE(m_mediaPipeline->play(async));
@@ -57,7 +58,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlaySuccess)
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, PlayFailureDueToUninitializedPlayer)
 {
     bool async{false};
-    mainThreadWillEnqueuePriorityTaskAndWait();
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->play(async));
 }
 
@@ -222,6 +223,44 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetPositionSuccess)
 }
 
 /**
+ * Test that GetDuration returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetDurationFailureDueToUninitializedPlayer)
+{
+    int64_t targetDuration{};
+    EXPECT_FALSE(m_mediaPipeline->getDuration(targetDuration));
+}
+
+/**
+ * Test that GetDuration returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetDurationFailure)
+{
+    loadGstPlayer();
+    int64_t targetDuration{};
+    EXPECT_CALL(*m_gstPlayerMock, getDuration(_)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->getDuration(targetDuration));
+}
+
+/**
+ * Test that GetDuration returns success if the gstreamer API succeeds and gets the duration
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetDurationSuccess)
+{
+    loadGstPlayer();
+    int64_t targetDuration{};
+    EXPECT_CALL(*m_gstPlayerMock, getDuration(_))
+        .WillOnce(Invoke(
+            [&](int64_t &pos)
+            {
+                pos = m_kDuration;
+                return true;
+            }));
+    EXPECT_TRUE(m_mediaPipeline->getDuration(targetDuration));
+    EXPECT_EQ(targetDuration, m_kDuration);
+}
+
+/**
  * Test that SetImmediateOutput returns failure if the gstreamer player is not initialized
  */
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetImmediateOutputFailureDueToUninitializedPlayer)
@@ -325,6 +364,112 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetImmediateOutputSu
     EXPECT_CALL(*m_gstPlayerMock, getImmediateOutput(_, _)).WillOnce(DoAll(SetArgReferee<1>(false), Return(true)));
     EXPECT_TRUE(m_mediaPipeline->getImmediateOutput(videoSourceId, immediateOutputState));
     EXPECT_EQ(immediateOutputState, false);
+}
+
+/**
+ * Test that SetReportDecodeErrors returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetReportDecodeErrorsFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_FALSE(m_mediaPipeline->setReportDecodeErrors(m_kDummySourceId, true));
+}
+
+/**
+ * Test that SetReportDecodeErrors returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetReportDecodeErrorsFailure)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setReportDecodeErrors(_, _)).WillOnce(Return(false));
+    EXPECT_FALSE(m_mediaPipeline->setReportDecodeErrors(videoSourceId, true));
+}
+
+/**
+ * Test that SetReportDecodeErrors fails if source is not present.
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetReportDecodeErrorsNoSourcePresent)
+{
+    loadGstPlayer();
+    // No attachment of source
+    mainThreadWillEnqueueTaskAndWait();
+
+    EXPECT_FALSE(m_mediaPipeline->setReportDecodeErrors(m_kDummySourceId, true));
+}
+
+/**
+ * Test that SetReportDecodeErrors returns success if the gstreamer API succeeds
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetReportDecodeErrorsSuccess)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setReportDecodeErrors(_, true)).WillOnce(Return(true));
+    EXPECT_TRUE(m_mediaPipeline->setReportDecodeErrors(videoSourceId, true));
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, setReportDecodeErrors(_, false)).WillOnce(Return(true));
+    EXPECT_TRUE(m_mediaPipeline->setReportDecodeErrors(videoSourceId, false));
+}
+
+/**
+ * Test that GetQueuedFrames returns failure if the gstreamer player is not initialized
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetQueuedFramesFailureDueToUninitializedPlayer)
+{
+    mainThreadWillEnqueueTaskAndWait();
+    uint32_t queuedFrames;
+    EXPECT_FALSE(m_mediaPipeline->getQueuedFrames(m_kDummySourceId, queuedFrames));
+}
+
+/**
+ * Test that GetQueuedFrames returns failure if the gstreamer API fails
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetQueuedFramesFailure)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getQueuedFrames(_)).WillOnce(Return(false));
+    uint32_t queuedFrames;
+    EXPECT_FALSE(m_mediaPipeline->getQueuedFrames(videoSourceId, queuedFrames));
+}
+
+/**
+ * Test that GetQueuedFrames fails if source is not present.
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetQueuedFramesNoSourcePresent)
+{
+    loadGstPlayer();
+    // No attachment of source
+    mainThreadWillEnqueueTaskAndWait();
+
+    uint32_t queuedFrames;
+    EXPECT_FALSE(m_mediaPipeline->getQueuedFrames(m_kDummySourceId, queuedFrames));
+}
+
+/**
+ * Test that GetQueuedFrames returns success if the gstreamer API succeeds
+ */
+TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetQueuedFramesSuccess)
+{
+    loadGstPlayer();
+    int videoSourceId = attachSource(firebolt::rialto::MediaSourceType::VIDEO, "video/h264");
+
+    uint32_t queuedFrames;
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getQueuedFrames(_)).WillOnce(DoAll(SetArgReferee<0>(123), Return(true)));
+    EXPECT_TRUE(m_mediaPipeline->getQueuedFrames(videoSourceId, queuedFrames));
+    EXPECT_EQ(queuedFrames, 123);
+
+    mainThreadWillEnqueueTaskAndWait();
+    EXPECT_CALL(*m_gstPlayerMock, getQueuedFrames(_)).WillOnce(DoAll(SetArgReferee<0>(456), Return(true)));
+    EXPECT_TRUE(m_mediaPipeline->getQueuedFrames(videoSourceId, queuedFrames));
+    EXPECT_EQ(queuedFrames, 456);
 }
 
 /**
@@ -436,6 +581,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetVolumeSuccess)
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeFailureDueToUninitializedPlayer)
 {
     double resultVolume{};
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_FALSE(m_mediaPipeline->getVolume(resultVolume));
 }
 
@@ -445,6 +591,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeFailureDueT
 TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeFailure)
 {
     loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
     double resultVolume{};
     EXPECT_CALL(*m_gstPlayerMock, getVolume(_)).WillOnce(Return(false));
     EXPECT_FALSE(m_mediaPipeline->getVolume(resultVolume));
@@ -459,6 +606,7 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeSuccess)
     double resultVolume{};
 
     loadGstPlayer();
+    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_gstPlayerMock, getVolume(_))
         .WillOnce(Invoke(
             [&](double &vol)
@@ -468,56 +616,6 @@ TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, GetVolumeSuccess)
             }));
     EXPECT_TRUE(m_mediaPipeline->getVolume(resultVolume));
     EXPECT_EQ(resultVolume, kCurrentVolume);
-}
-
-/**
- * Test that GetVolume is enqueued, when volume setting is ongoing
- */
-TEST_F(RialtoServerMediaPipelineMiscellaneousFunctionsTest, SetAndGetVolumeSuccess)
-{
-    constexpr double kVolume{0.7};
-    const uint32_t kVolumeDuration{0};
-    const firebolt::rialto::EaseType kEaseType{firebolt::rialto::EaseType::EASE_LINEAR};
-    double resultVolume{};
-    std::mutex mutex;
-    std::condition_variable cv;
-    bool setVolumeQueued{false};
-    bool getVolumeQueued{false};
-
-    loadGstPlayer();
-    EXPECT_CALL(*m_mainThreadMock, enqueueTaskAndWait(m_kMainThreadClientId, _))
-        .WillOnce(Invoke(
-            [&](uint32_t clientId, firebolt::rialto::server::IMainThread::Task task)
-            {
-                std::unique_lock lock{mutex};
-                setVolumeQueued = true;
-                cv.notify_one();
-                cv.wait(lock, [&]() { return getVolumeQueued; });
-                EXPECT_CALL(*m_gstPlayerMock, setVolume(kVolume, kVolumeDuration, kEaseType));
-                task();
-            }))
-        .WillOnce(Invoke(
-            [&](uint32_t clientId, firebolt::rialto::server::IMainThread::Task task)
-            {
-                std::unique_lock lock{mutex};
-                getVolumeQueued = true;
-                cv.notify_one();
-                EXPECT_CALL(*m_gstPlayerMock, getVolume(_))
-                    .WillOnce(Invoke(
-                        [&](double &vol)
-                        {
-                            vol = kVolume;
-                            return true;
-                        }));
-                task();
-            }));
-    std::thread setVolumeThread([&]() { EXPECT_TRUE(m_mediaPipeline->setVolume(kVolume, kVolumeDuration, kEaseType)); });
-    {
-        std::unique_lock lock{mutex};
-        cv.wait(lock, [&]() { return setVolumeQueued; });
-    }
-    EXPECT_TRUE(m_mediaPipeline->getVolume(resultVolume));
-    setVolumeThread.join();
 }
 
 /**

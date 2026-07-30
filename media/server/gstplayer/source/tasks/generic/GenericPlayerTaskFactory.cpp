@@ -25,6 +25,7 @@
 #include "tasks/generic/EnoughData.h"
 #include "tasks/generic/Eos.h"
 #include "tasks/generic/FinishSetupSource.h"
+#include "tasks/generic/FirstFrameReceived.h"
 #include "tasks/generic/Flush.h"
 #include "tasks/generic/HandleBusMessage.h"
 #include "tasks/generic/NeedData.h"
@@ -33,6 +34,7 @@
 #include "tasks/generic/Play.h"
 #include "tasks/generic/ProcessAudioGap.h"
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
+#include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
 #include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetBufferingLimit.h"
@@ -41,6 +43,7 @@
 #include "tasks/generic/SetMute.h"
 #include "tasks/generic/SetPlaybackRate.h"
 #include "tasks/generic/SetPosition.h"
+#include "tasks/generic/SetReportDecodeErrors.h"
 #include "tasks/generic/SetSourcePosition.h"
 #include "tasks/generic/SetStreamSyncMode.h"
 #include "tasks/generic/SetSubtitleOffset.h"
@@ -144,6 +147,13 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReadShmDataAndAttac
     GenericPlayerContext &context, IGstGenericPlayerPrivate &player, const std::shared_ptr<IDataReader> &dataReader) const
 {
     return std::make_unique<tasks::generic::ReadShmDataAndAttachSamples>(context, m_gstWrapper, player, dataReader);
+}
+
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createRemoveSource(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                             const firebolt::rialto::MediaSourceType &type) const
+{
+    return std::make_unique<tasks::generic::RemoveSource>(context, player, m_client, m_gstWrapper, type);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReportPosition(GenericPlayerContext &context,
@@ -264,10 +274,17 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(GenericPl
     return std::make_unique<tasks::generic::Underflow>(context, player, m_client, underflowEnabled, sourceType);
 }
 
+std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createFirstFrameReceived(GenericPlayerContext &context,
+                                                                                IGstGenericPlayerPrivate &player,
+                                                                                MediaSourceType sourceType,
+                                                                                AudioFirstFrameAction audioAction) const
+{
+    return std::make_unique<tasks::generic::FirstFrameReceived>(context, player, m_client, sourceType, audioAction);
+}
+
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUpdatePlaybackGroup(GenericPlayerContext &context,
                                                                                  IGstGenericPlayerPrivate &player,
-                                                                                 GstElement *typefind,
-                                                                                 const GstCaps *caps) const
+                                                                                 GstElement *typefind, GstCaps *caps) const
 {
     return std::make_unique<tasks::generic::UpdatePlaybackGroup>(context, player, m_gstWrapper, m_glibWrapper, typefind,
                                                                  caps);
@@ -324,6 +341,14 @@ GenericPlayerTaskFactory::createSetImmediateOutput(GenericPlayerContext &context
                                                    bool immediateOutput) const
 {
     return std::make_unique<tasks::generic::SetImmediateOutput>(context, player, type, immediateOutput);
+}
+
+std::unique_ptr<IPlayerTask>
+GenericPlayerTaskFactory::createSetReportDecodeErrors(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+                                                      const firebolt::rialto::MediaSourceType &type,
+                                                      bool reportDecodeErrors) const
+{
+    return std::make_unique<tasks::generic::SetReportDecodeErrors>(context, player, type, reportDecodeErrors);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createSetBufferingLimit(GenericPlayerContext &context,

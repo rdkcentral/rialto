@@ -72,12 +72,19 @@ void Flush::execute() const
     streamInfo.buffers.clear();
     m_context.initialPositions.erase(sourceElem->second.appSrc);
 
+    if (m_type == MediaSourceType::AUDIO)
+    {
+        m_player.clearAudioFirstFrameFallbackProbe();
+        m_context.firstAudioFrameReceived = false;
+    }
+
     m_gstPlayerClient->invalidateActiveRequests(m_type);
 
     if (GST_STATE(m_context.pipeline) >= GST_STATE_PAUSED)
     {
         m_context.flushOnPrerollController->waitIfRequired(m_type);
 
+        RIALTO_SERVER_LOG_MIL("Sending flush event for %s source.", common::convertMediaSourceType(m_type));
         // Flush source
         GstEvent *flushStart = m_gstWrapper->gstEventNewFlushStart();
         if (!m_gstWrapper->gstElementSendEvent(source, flushStart))
@@ -105,6 +112,11 @@ void Flush::execute() const
     // Reset Eos info
     m_context.endOfStreamInfo.erase(m_type);
     m_context.eosNotified = false;
+
+    if (m_resetTime)
+    {
+        m_context.streamPosition.store(-1);
+    }
 
     // Notify client, that flush has been finished
     m_gstPlayerClient->notifySourceFlushed(m_type);

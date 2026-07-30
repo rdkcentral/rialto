@@ -62,6 +62,52 @@ void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
 }
 
 /**
+ * @brief Callback for first video frame event from the emitting video element. Called by the Gstreamer thread.
+ *
+ * @param[in] object     : the object that emitted the signal
+ * @param[in] fifoDepth  : the fifo depth (may be 0)
+ * @param[in] queueDepth : the queue depth (may be NULL)
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
+void firstVideoFrameCallback(GstElement *object, guint fifoDepth, gpointer queueDepth, gpointer self)
+{
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->scheduleFirstVideoFrameReceived();
+}
+
+/**
+ * @brief Callback for first audio frame event from the emitting audio element. Called by the Gstreamer thread.
+ *
+ * @param[in] object     : the object that emitted the signal
+ * @param[in] fifoDepth  : the fifo depth (may be 0)
+ * @param[in] queueDepth : the queue depth (may be NULL)
+ * @param[in] self       : The pointer to IGstGenericPlayerPrivate
+ */
+void firstAudioFrameCallback(GstElement *object, guint fifoDepth, gpointer queueDepth, gpointer self)
+{
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->scheduleFirstAudioFrameReceived(firebolt::rialto::server::AudioFirstFrameAction::CLEAR_PROBE);
+}
+
+/**
+ * @brief Fallback probe callback for first audio frame on sink pad.
+ */
+GstPadProbeReturn firstAudioFrameProbeCallback(GstPad *pad, GstPadProbeInfo *info, gpointer self)
+{
+    if (!(info->type & GST_PAD_PROBE_TYPE_BUFFER) || !GST_PAD_PROBE_INFO_BUFFER(info))
+    {
+        return GST_PAD_PROBE_OK;
+    }
+
+    firebolt::rialto::server::IGstGenericPlayerPrivate *player =
+        static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    player->scheduleFirstAudioFrameReceived(firebolt::rialto::server::AudioFirstFrameAction::CLEAR_PROBE_STATE);
+    return GST_PAD_PROBE_REMOVE;
+}
+
+/**
  * @brief Callback for a autovideosink when a child has been added to the sink.
  *
  * @param[in] obj        : the parent element (autovideosink)
@@ -246,6 +292,10 @@ void SetupElement::execute() const
                 RIALTO_SERVER_LOG_INFO("Setting video decoder handle for subtitle sink: %p", m_element);
                 m_context.isVideoHandleSet = true;
             }
+            if (m_context.pendingReportDecodeErrorsForVideo.has_value())
+            {
+                m_player.setReportDecodeErrors();
+            }
         }
     }
 
@@ -267,6 +317,44 @@ void SetupElement::execute() const
                                        underflowSignalName.value().c_str());
                 m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(),
                                               G_CALLBACK(videoUnderflowCallback), &m_player);
+            }
+        }
+
+        std::optional<std::string> firstFrameSignalName = getFirstFrameSignalName(*m_glibWrapper, m_element);
+        if (firstFrameSignalName)
+        {
+            if (isVideo(*m_gstWrapper, m_element))
+            {
+                RIALTO_SERVER_LOG_INFO("Connecting first video frame callback for signal: %s",
+                                       firstFrameSignalName.value().c_str());
+                m_glibWrapper->gSignalConnect(m_element, firstFrameSignalName.value().c_str(),
+                                              G_CALLBACK(firstVideoFrameCallback), &m_player);
+            }
+            else if (isAudio(*m_gstWrapper, m_element))
+            {
+                RIALTO_SERVER_LOG_INFO("Connecting first audio frame callback for signal: %s",
+                                       firstFrameSignalName.value().c_str());
+                m_glibWrapper->gSignalConnect(m_element, firstFrameSignalName.value().c_str(),
+                                              G_CALLBACK(firstAudioFrameCallback), &m_player);
+            }
+        }
+        else if (isAudioSink(*m_gstWrapper, m_element))
+        {
+            GstPad *sinkPad = m_gstWrapper->gstElementGetStaticPad(m_element, "sink");
+            if (sinkPad)
+            {
+                gulong probeId = m_gstWrapper->gstPadAddProbe(sinkPad, GST_PAD_PROBE_TYPE_BUFFER,
+                                                              firstAudioFrameProbeCallback, &m_player, nullptr);
+
+                if (probeId != 0)
+                {
+                    RIALTO_SERVER_LOG_INFO("Installed first audio frame fallback probe on sink");
+                    m_player.setAudioFirstFrameFallbackProbe(sinkPad, probeId);
+                }
+                else
+                {
+                    m_gstWrapper->gstObjectUnref(sinkPad);
+                }
             }
         }
     }
@@ -309,6 +397,12 @@ void SetupElement::execute() const
         {
             m_player.setBufferingLimit();
         }
+        if (m_context.isLive &&
+            m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_element), "enable-rate-correction"))
+        {
+            RIALTO_SERVER_LOG_INFO("Enabling rate correction for broadcom decoder.");
+            m_glibWrapper->gObjectSet(m_element, "enable-rate-correction", TRUE, nullptr);
+        }
     }
     else if (isAudioSink(*m_gstWrapper, m_element))
     {
@@ -333,7 +427,6 @@ void SetupElement::execute() const
     {
         m_gstWrapper->gstBaseParseSetPtsInterpolation(GST_BASE_PARSE(m_element), FALSE);
     }
-
     m_gstWrapper->gstObjectUnref(m_element);
 }
 } // namespace firebolt::rialto::server::tasks::generic

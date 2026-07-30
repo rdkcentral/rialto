@@ -102,6 +102,7 @@ void WriteBuffer::execute() const
     {
         std::unique_lock<std::mutex> lock(m_context.writeBufferMutex);
         m_context.lastBytesWritten = bytesWritten;
+        ++m_context.writeCompletionCounter;
     }
     m_context.writeBufferCond.notify_one();
 }

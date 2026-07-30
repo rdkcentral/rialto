@@ -83,7 +83,6 @@ TEST_F(FinishSetupSourceTest, shouldScheduleAudioSeekData)
     shouldFinishSetupSource();
     triggerFinishSetupSource();
     checkSetupSourceFinished();
-    shouldScheduleEnoughDataAudio();
     triggerAudioCallbackSeekData();
 }
 
@@ -92,7 +91,6 @@ TEST_F(FinishSetupSourceTest, shouldScheduleVideoSeekData)
     shouldFinishSetupSource();
     triggerFinishSetupSource();
     checkSetupSourceFinished();
-    shouldScheduleEnoughDataVideo();
     triggerVideoCallbackSeekData();
 }
 TEST_F(FinishSetupSourceTest, shouldntFinishSetupSourceWhenSourceNotSet)

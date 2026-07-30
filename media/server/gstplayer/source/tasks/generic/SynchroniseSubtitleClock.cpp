@@ -42,49 +42,44 @@ SynchroniseSubtitleClock::~SynchroniseSubtitleClock()
 void SynchroniseSubtitleClock::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SynchroniseSubtitleClock");
-    if (m_context.videoSink)
+    gint64 position = m_player.getPosition(m_context.pipeline);
+    if (position == -1)
     {
-        gint64 position = 0;
-        if (m_gstWrapper->gstElementQueryPosition(m_context.videoSink, GST_FORMAT_TIME, &position))
-        {
-            RIALTO_SERVER_LOG_DEBUG("Videosink position: %" PRId64 " ns", position);
-        }
+        RIALTO_SERVER_LOG_WARN("Getting the position failed");
+        return;
+    }
 
-        auto sourceElem = m_context.streamInfo.find(MediaSourceType::SUBTITLE);
-        GstElement *source{nullptr};
+    auto sourceElem = m_context.streamInfo.find(MediaSourceType::SUBTITLE);
+    GstElement *source{nullptr};
 
-        if (sourceElem != m_context.streamInfo.end())
-        {
-            source = sourceElem->second.appSrc;
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_WARN("subtitle source not found");
-            return;
-        }
+    if (sourceElem != m_context.streamInfo.end())
+    {
+        source = sourceElem->second.appSrc;
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("subtitle source not found");
+        return;
+    }
 
-        GstStructure *structure = m_gstWrapper->gstStructureNew("current-pts", "pts", G_TYPE_UINT64, position, nullptr);
-        GstEvent *event = m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, structure);
+    GstStructure *structure = m_gstWrapper->gstStructureNew("current-pts", "pts", G_TYPE_UINT64, position, nullptr);
+    GstEvent *event = m_gstWrapper->gstEventNewCustom(GST_EVENT_CUSTOM_DOWNSTREAM_OOB, structure);
 
-        if (event)
+    if (event)
+    {
+        if (m_gstWrapper->gstElementSendEvent(source, event))
         {
-            if (m_gstWrapper->gstElementSendEvent(source, event))
-            {
-                RIALTO_SERVER_LOG_DEBUG("Sent current-pts event to subtitlesource");
-            }
-            else
-            {
-                RIALTO_SERVER_LOG_ERROR("Failed to send current-pts event to source");
-            }
+            RIALTO_SERVER_LOG_DEBUG("Sent current-pts event to subtitlesource");
         }
         else
         {
-            RIALTO_SERVER_LOG_ERROR("Failed to create current-pts event");
+            RIALTO_SERVER_LOG_ERROR("Failed to send current-pts event to source");
         }
     }
     else
     {
-        RIALTO_SERVER_LOG_ERROR("video-sink is NULL");
+        RIALTO_SERVER_LOG_ERROR("Failed to create current-pts event");
+        m_gstWrapper->gstStructureFree(structure);
     }
 }
 

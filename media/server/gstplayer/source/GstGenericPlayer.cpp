@@ -21,11 +21,13 @@
 #include <cinttypes>
 #include <cstring>
 #include <ctime>
+#include <malloc.h>
 #include <stdexcept>
 
 #include "FlushWatcher.h"
 #include "GstDispatcherThread.h"
 #include "GstGenericPlayer.h"
+#include "GstProfiler.h"
 #include "GstProtectionMetadata.h"
 #include "IGstTextTrackSinkFactory.h"
 #include "IMediaPipeline.h"
@@ -34,6 +36,7 @@
 #include "TypeConverters.h"
 #include "Utils.h"
 #include "WorkerThread.h"
+#include "tasks/generic/FirstFrameReceived.h"
 #include "tasks/generic/GenericPlayerTaskFactory.h"
 
 namespace
@@ -80,8 +83,9 @@ std::shared_ptr<IGstGenericPlayerFactory> IGstGenericPlayerFactory::getFactory()
 
 std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlayer(
     IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-    const VideoRequirements &videoRequirements,
-    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory)
+    const VideoRequirements &videoRequirements, bool isLive,
+    const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory,
+    const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory)
 {
     std::unique_ptr<IGstGenericPlayer> gstPlayer;
 
@@ -105,10 +109,23 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
         {
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
+
+        // Fall back to the default profiler factory if the caller explicitly
+        // passed nullptr. IGstProfilerFactory::getFactory() can itself return
+        // nullptr on allocation failure, so re-check afterwards and fail with
+        // a clear error rather than passing null on and reporting the generic
+        // "No gst profiler factory provided" message from the constructor.
+        auto resolvedGstProfilerFactory = gstProfilerFactory ? gstProfilerFactory : IGstProfilerFactory::getFactory();
+        if (!resolvedGstProfilerFactory)
+        {
+            throw std::runtime_error("Cannot obtain default IGstProfilerFactory");
+        }
+
         gstPlayer = std::make_unique<
-            GstGenericPlayer>(client, decryptionService, type, videoRequirements, gstWrapper, glibWrapper,
+            GstGenericPlayer>(client, decryptionService, type, videoRequirements, isLive, gstWrapper, glibWrapper,
                               rdkGstreamerUtilsWrapper, IGstInitialiser::instance(), std::make_unique<FlushWatcher>(),
-                              IGstSrcFactory::getFactory(), common::ITimerFactory::getFactory(),
+                              IGstSrcFactory::getFactory(), resolvedGstProfilerFactory,
+                              common::ITimerFactory::getFactory(),
                               std::make_unique<GenericPlayerTaskFactory>(client, gstWrapper, glibWrapper,
                                                                          rdkGstreamerUtilsWrapper,
                                                                          IGstTextTrackSinkFactory::createFactory()),
@@ -125,28 +142,34 @@ std::unique_ptr<IGstGenericPlayer> GstGenericPlayerFactory::createGstGenericPlay
 
 GstGenericPlayer::GstGenericPlayer(
     IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-    const VideoRequirements &videoRequirements,
+    const VideoRequirements &videoRequirements, bool isLive,
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
     const IGstInitialiser &gstInitialiser, std::unique_ptr<IFlushWatcher> &&flushWatcher,
-    const std::shared_ptr<IGstSrcFactory> &gstSrcFactory, std::shared_ptr<common::ITimerFactory> timerFactory,
+    const std::shared_ptr<IGstSrcFactory> &gstSrcFactory,
+    const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory, std::shared_ptr<common::ITimerFactory> timerFactory,
     std::unique_ptr<IGenericPlayerTaskFactory> taskFactory, std::unique_ptr<IWorkerThreadFactory> workerThreadFactory,
     std::unique_ptr<IGstDispatcherThreadFactory> gstDispatcherThreadFactory,
     std::shared_ptr<IGstProtectionMetadataHelperFactory> gstProtectionMetadataFactory)
     : m_gstPlayerClient(client), m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper},
-      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_timerFactory{timerFactory},
-      m_taskFactory{std::move(taskFactory)}, m_flushWatcher{std::move(flushWatcher)}
+      m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper}, m_gstProfilerFactory{gstProfilerFactory},
+      m_timerFactory{timerFactory}, m_taskFactory{std::move(taskFactory)}, m_flushWatcher{std::move(flushWatcher)}
 {
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is constructed.");
 
     gstInitialiser.waitForInitialisation();
 
+    m_context.isLive = isLive;
     m_context.decryptionService = &decryptionService;
 
     if ((!gstSrcFactory) || (!(m_context.gstSrc = gstSrcFactory->getGstSrc())))
     {
         throw std::runtime_error("Cannot create GstSrc");
+    }
+    if (!m_gstProfilerFactory)
+    {
+        throw std::runtime_error("No gst profiler factory provided");
     }
 
     if (!timerFactory)
@@ -214,9 +237,31 @@ GstGenericPlayer::~GstGenericPlayer()
     RIALTO_SERVER_LOG_DEBUG("GstGenericPlayer is destructed.");
     m_gstDispatcherThread.reset();
 
-    resetWorkerThread();
+    try
+    {
+        resetWorkerThread();
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Exception during resetWorkerThread in destructor: %s", e.what());
+    }
+    catch (...)
+    {
+        RIALTO_SERVER_LOG_ERROR("Unknown exception during resetWorkerThread in destructor");
+    }
 
-    termPipeline();
+    try
+    {
+        termPipeline();
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Exception during termPipeline in destructor: %s", e.what());
+    }
+    catch (...)
+    {
+        RIALTO_SERVER_LOG_ERROR("Unknown exception during termPipeline in destructor");
+    }
 }
 
 void GstGenericPlayer::initMsePipeline()
@@ -225,6 +270,12 @@ void GstGenericPlayer::initMsePipeline()
     m_context.pipeline = m_gstWrapper->gstElementFactoryMake("playbin", "media_pipeline");
     // Set pipeline flags
     setPlaybinFlags(true);
+
+    m_context.gstProfiler = m_gstProfilerFactory->createGstProfiler(m_context.pipeline, m_gstWrapper, m_glibWrapper);
+    if (!m_context.gstProfiler)
+    {
+        throw std::runtime_error("Cannot create GstProfiler");
+    }
 
     // Set callbacks
     m_glibWrapper->gSignalConnect(m_context.pipeline, "source-setup", G_CALLBACK(&GstGenericPlayer::setupSource), this);
@@ -251,6 +302,9 @@ void GstGenericPlayer::initMsePipeline()
         GST_WARNING("Failed to set pipeline to READY state");
     }
     RIALTO_SERVER_LOG_MIL("New RialtoServer's pipeline created");
+    auto recordId = m_context.gstProfiler->createRecord("Pipeline Created");
+    if (recordId)
+        m_context.gstProfiler->logRecord(recordId.value());
 }
 
 void GstGenericPlayer::resetWorkerThread()
@@ -269,6 +323,9 @@ void GstGenericPlayer::termPipeline()
     }
 
     m_finishSourceSetupTimer.reset();
+
+    clearAudioFirstFrameFallbackProbe();
+    stopNotifyPlaybackInfoTimer();
 
     for (auto &elem : m_context.streamInfo)
     {
@@ -301,9 +358,22 @@ void GstGenericPlayer::termPipeline()
         m_gstWrapper->gstObjectUnref(m_context.videoSink);
         m_context.videoSink = nullptr;
     }
+    if (m_context.playbackGroup.m_curAudioPlaysinkBin)
+    {
+        m_gstWrapper->gstObjectUnref(m_context.playbackGroup.m_curAudioPlaysinkBin);
+        m_context.playbackGroup.m_curAudioPlaysinkBin = nullptr;
+    }
+
+    auto recordId = m_context.gstProfiler->createRecord("Pipeline Terminated");
+    if (recordId)
+        m_context.gstProfiler->logRecord(recordId.value());
+    m_context.gstProfiler->dumpToFile();
 
     // Delete the pipeline
     m_gstWrapper->gstObjectUnref(m_context.pipeline);
+
+    m_glibWrapper->gThreadPoolStopUnusedThreads();
+    malloc_trim(0);
 
     RIALTO_SERVER_LOG_MIL("RialtoServer's pipeline terminated");
 }
@@ -313,7 +383,9 @@ unsigned GstGenericPlayer::getGstPlayFlag(const char *nick)
     GFlagsClass *flagsClass =
         static_cast<GFlagsClass *>(m_glibWrapper->gTypeClassRef(m_glibWrapper->gTypeFromName("GstPlayFlags")));
     GFlagsValue *flag = m_glibWrapper->gFlagsGetValueByNick(flagsClass, nick);
-    return flag ? flag->value : 0;
+    unsigned result = flag ? flag->value : 0;
+    m_glibWrapper->gTypeClassUnref(flagsClass);
+    return result;
 }
 
 void GstGenericPlayer::setupSource(GstElement *pipeline, GstElement *source, GstGenericPlayer *self)
@@ -340,6 +412,7 @@ void GstGenericPlayer::deepElementAdded(GstBin *pipeline, GstBin *bin, GstElemen
     RIALTO_SERVER_LOG_DEBUG("Deep element %s added to the pipeline", GST_ELEMENT_NAME(element));
     if (self->m_workerThread)
     {
+        self->m_gstWrapper->gstObjectRef(element);
         self->m_workerThread->enqueueTask(
             self->m_taskFactory->createDeepElementAdded(self->m_context, *self, pipeline, bin, element));
     }
@@ -350,6 +423,14 @@ void GstGenericPlayer::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createAttachSource(m_context, *this, attachedSource));
+    }
+}
+
+void GstGenericPlayer::removeSource(const MediaSourceType &mediaSourceType)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createRemoveSource(m_context, *this, mediaSourceType));
     }
 }
 
@@ -403,6 +484,18 @@ bool GstGenericPlayer::getPosition(std::int64_t &position)
         return false;
     }
 
+    return true;
+}
+
+bool GstGenericPlayer::getDuration(std::int64_t &duration)
+{
+    // We are on main thread here, but m_context.pipeline can be used, because it's modified only in GstGenericPlayer
+    // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
+    if (!m_context.pipeline || !m_gstWrapper->gstElementQueryDuration(m_context.pipeline, GST_FORMAT_TIME, &duration))
+    {
+        RIALTO_SERVER_LOG_WARN("Failed to query duration");
+        return false;
+    }
     return true;
 }
 
@@ -469,7 +562,15 @@ void GstGenericPlayer::notifyPlaybackInfo()
 {
     PlaybackInfo info;
     getPosition(info.currentPosition);
-    getVolume(info.volume);
+    m_context.streamPosition.store(info.currentPosition);
+    if (m_context.audioFadeEnabled)
+    {
+        info.volume = m_context.audioFadeVolume;
+    }
+    else
+    {
+        getVolume(info.volume);
+    }
     m_gstPlayerClient->notifyPlaybackInfo(info);
 }
 
@@ -1094,6 +1195,41 @@ bool GstGenericPlayer::setImmediateOutput(const MediaSourceType &mediaSourceType
     return true;
 }
 
+bool GstGenericPlayer::setReportDecodeErrors(const MediaSourceType &mediaSourceType, bool reportDecodeErrors)
+{
+    if (!m_workerThread)
+        return false;
+
+    m_workerThread->enqueueTask(
+        m_taskFactory->createSetReportDecodeErrors(m_context, *this, mediaSourceType, reportDecodeErrors));
+    return true;
+}
+
+bool GstGenericPlayer::getQueuedFrames(uint32_t &queuedFrames)
+{
+    bool returnValue{false};
+    GstElement *decoder{getDecoder(MediaSourceType::VIDEO)};
+    if (decoder)
+    {
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "queued-frames"))
+        {
+            m_glibWrapper->gObjectGet(decoder, "queued-frames", &queuedFrames, nullptr);
+            returnValue = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("queued-frames not supported in element %s", GST_ELEMENT_NAME(decoder));
+        }
+        m_gstWrapper->gstObjectUnref(decoder);
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get queued-frames property, decoder is NULL");
+    }
+
+    return returnValue;
+}
+
 bool GstGenericPlayer::getImmediateOutput(const MediaSourceType &mediaSourceType, bool &immediateOutputRef)
 {
     bool returnValue{false};
@@ -1247,6 +1383,26 @@ void GstGenericPlayer::notifyNeedMediaData(const MediaSourceType mediaSource)
     }
 }
 
+void GstGenericPlayer::notifyNeedMediaDataWithDelay(const MediaSourceType mediaSource)
+{
+    auto elem = m_context.streamInfo.find(mediaSource);
+    if (elem != m_context.streamInfo.end())
+    {
+        StreamInfo &streamInfo = elem->second;
+        streamInfo.isNeedDataPending = false;
+
+        // Schedule new NeedMediaData if we still need it
+        if (m_gstPlayerClient && streamInfo.isDataNeeded)
+        {
+            streamInfo.isNeedDataPending = m_gstPlayerClient->notifyNeedMediaDataWithDelay(mediaSource);
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Media type %s could not be found", common::convertMediaSourceType(mediaSource));
+    }
+}
+
 void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaType)
 {
     auto elem = m_context.streamInfo.find(mediaType);
@@ -1264,7 +1420,7 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
         }
         else
         {
-            pushSampleIfRequired(streamInfo.appSrc, common::convertMediaSourceType(mediaType));
+            pushSampleIfRequired(streamInfo.appSrc, mediaType);
         }
         if (mediaType == firebolt::rialto::MediaSourceType::AUDIO)
         {
@@ -1408,8 +1564,10 @@ bool GstGenericPlayer::setCodecData(GstCaps *caps, const std::shared_ptr<CodecDa
     return false;
 }
 
-void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::string &typeStr)
+void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const MediaSourceType &mediaSourceType)
 {
+    const std::string kTypeStr{common::convertMediaSourceType(mediaSourceType)};
+
     auto initialPosition = m_context.initialPositions.find(source);
     if (m_context.initialPositions.end() == initialPosition)
     {
@@ -1424,7 +1582,7 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
     for (const auto &[position, resetTime, appliedRate, stopPosition] : initialPosition->second)
     {
         GstSeekFlags seekFlag = resetTime ? GST_SEEK_FLAG_FLUSH : GST_SEEK_FLAG_NONE;
-        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", typeStr.c_str());
+        RIALTO_SERVER_LOG_DEBUG("Pushing new %s sample...", kTypeStr.c_str());
         GstSegment *segment{m_gstWrapper->gstSegmentNew()};
         m_gstWrapper->gstSegmentInit(segment, GST_FORMAT_TIME);
         if (!m_gstWrapper->gstSegmentDoSeek(segment, m_context.playbackRate, GST_FORMAT_TIME, seekFlag,
@@ -1438,8 +1596,11 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         segment->applied_rate = appliedRate;
         RIALTO_SERVER_LOG_MIL("New %s segment: [%" GST_TIME_FORMAT ", %" GST_TIME_FORMAT
                               "], rate: %f, appliedRate %f, reset_time: %d\n",
-                              typeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
+                              kTypeStr.c_str(), GST_TIME_ARGS(segment->start), GST_TIME_ARGS(segment->stop),
                               segment->rate, segment->applied_rate, resetTime);
+        auto recordId = m_context.gstProfiler->createRecord("First Segment Received", kTypeStr);
+        if (recordId)
+            m_context.gstProfiler->logRecord(recordId.value());
 
         GstCaps *currentCaps = m_gstWrapper->gstAppSrcGetCaps(GST_APP_SRC(source));
         // We can't pass buffer in GstSample, because implementation of gst_app_src_push_sample
@@ -1451,6 +1612,11 @@ void GstGenericPlayer::pushSampleIfRequired(GstElement *source, const std::strin
         m_gstWrapper->gstCapsUnref(currentCaps);
 
         m_gstWrapper->gstSegmentFree(segment);
+
+        if (mediaSourceType == MediaSourceType::AUDIO)
+        {
+            m_context.audioGstSegmentPosition = position;
+        }
     }
     m_context.currentPosition[source] = initialPosition->second.back();
     m_context.initialPositions.erase(initialPosition);
@@ -1615,7 +1781,7 @@ void GstGenericPlayer::scheduleAudioUnderflow()
 {
     if (m_workerThread)
     {
-        bool underflowEnabled = m_context.isPlaying;
+        bool underflowEnabled = m_context.isPlaying && !m_context.audioSourceRemoved;
         m_workerThread->enqueueTask(
             m_taskFactory->createUnderflow(m_context, *this, underflowEnabled, MediaSourceType::AUDIO));
     }
@@ -1628,6 +1794,71 @@ void GstGenericPlayer::scheduleVideoUnderflow()
         bool underflowEnabled = m_context.isPlaying;
         m_workerThread->enqueueTask(
             m_taskFactory->createUnderflow(m_context, *this, underflowEnabled, MediaSourceType::VIDEO));
+    }
+}
+
+void GstGenericPlayer::scheduleFirstVideoFrameReceived()
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::VIDEO));
+    }
+}
+
+void GstGenericPlayer::scheduleFirstAudioFrameReceived(AudioFirstFrameAction audioAction)
+{
+    if (m_workerThread)
+    {
+        m_workerThread->enqueueTask(
+            m_taskFactory->createFirstFrameReceived(m_context, *this, MediaSourceType::AUDIO, audioAction));
+    }
+}
+
+void GstGenericPlayer::setAudioFirstFrameFallbackProbe(GstPad *pad, gulong id)
+{
+    GstPad *oldPad{m_context.audioFirstFrameProbePad};
+    gulong oldId{m_context.audioFirstFrameProbeId};
+    m_context.audioFirstFrameProbePad = pad;
+    m_context.audioFirstFrameProbeId = id;
+
+    if (oldPad && oldId != 0)
+    {
+        m_gstWrapper->gstPadRemoveProbe(oldPad, oldId);
+    }
+
+    if (oldPad)
+    {
+        m_gstWrapper->gstObjectUnref(oldPad);
+    }
+}
+
+void GstGenericPlayer::clearAudioFirstFrameFallbackProbe()
+{
+    GstPad *pad{m_context.audioFirstFrameProbePad};
+    gulong id{m_context.audioFirstFrameProbeId};
+    m_context.audioFirstFrameProbePad = nullptr;
+    m_context.audioFirstFrameProbeId = 0;
+
+    if (pad && id != 0)
+    {
+        m_gstWrapper->gstPadRemoveProbe(pad, id);
+    }
+
+    if (pad)
+    {
+        m_gstWrapper->gstObjectUnref(pad);
+    }
+}
+
+void GstGenericPlayer::clearAudioFirstFrameFallbackProbeState()
+{
+    GstPad *pad{m_context.audioFirstFrameProbePad};
+    m_context.audioFirstFrameProbePad = nullptr;
+    m_context.audioFirstFrameProbeId = 0;
+
+    if (pad)
+    {
+        m_gstWrapper->gstObjectUnref(pad);
     }
 }
 
@@ -1654,30 +1885,15 @@ void GstGenericPlayer::cancelUnderflow(firebolt::rialto::MediaSourceType mediaSo
 
 void GstGenericPlayer::play(bool &async)
 {
-    if (0 == m_ongoingStateChangesNumber)
+    async = true;
+    if (m_workerThread)
     {
-        // Operation called on main thread, because PAUSED->PLAYING change is synchronous and needs to be done fast.
-        //
-        // m_context.pipeline can be used, because it's modified only in GstGenericPlayer
-        // constructor and destructor. GstGenericPlayer is created/destructed on main thread, so we won't have a crash here.
-        ++m_ongoingStateChangesNumber;
-        async = (changePipelineState(GST_STATE_PLAYING) == GST_STATE_CHANGE_ASYNC);
-        RIALTO_SERVER_LOG_MIL("State change to PLAYING requested");
-    }
-    else
-    {
-        ++m_ongoingStateChangesNumber;
-        async = true;
-        if (m_workerThread)
-        {
-            m_workerThread->enqueueTask(m_taskFactory->createPlay(*this));
-        }
+        m_workerThread->enqueueTask(m_taskFactory->createPlay(*this));
     }
 }
 
 void GstGenericPlayer::pause()
 {
-    ++m_ongoingStateChangesNumber;
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createPause(m_context, *this));
@@ -1686,7 +1902,6 @@ void GstGenericPlayer::pause()
 
 void GstGenericPlayer::stop()
 {
-    ++m_ongoingStateChangesNumber;
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(m_taskFactory->createStop(m_context, *this));
@@ -1700,7 +1915,6 @@ GstStateChangeReturn GstGenericPlayer::changePipelineState(GstState newState)
         RIALTO_SERVER_LOG_ERROR("Change state failed - pipeline is nullptr");
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
-        --m_ongoingStateChangesNumber;
         return GST_STATE_CHANGE_FAILURE;
     }
     m_context.flushOnPrerollController->setTargetState(newState);
@@ -1711,7 +1925,6 @@ GstStateChangeReturn GstGenericPlayer::changePipelineState(GstState newState)
         if (m_gstPlayerClient)
             m_gstPlayerClient->notifyPlaybackState(PlaybackState::FAILURE);
     }
-    --m_ongoingStateChangesNumber;
     return result;
 }
 
@@ -1828,6 +2041,51 @@ bool GstGenericPlayer::setImmediateOutput()
     return result;
 }
 
+bool GstGenericPlayer::setReportDecodeErrors()
+{
+    bool result{false};
+    bool reportDecodeErrors{false};
+
+    {
+        std::unique_lock lock{m_context.propertyMutex};
+        if (!m_context.pendingReportDecodeErrorsForVideo.has_value())
+        {
+            return false;
+        }
+        reportDecodeErrors = m_context.pendingReportDecodeErrorsForVideo.value();
+    }
+
+    GstElement *decoder = getDecoder(MediaSourceType::VIDEO);
+    if (decoder)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Set report decode errors to %s", reportDecodeErrors ? "TRUE" : "FALSE");
+
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "report-decode-errors"))
+        {
+            gboolean reportDecodeErrorsGboolean{reportDecodeErrors ? TRUE : FALSE};
+            m_glibWrapper->gObjectSet(decoder, "report-decode-errors", reportDecodeErrorsGboolean, nullptr);
+            result = true;
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("Failed to set report-decode-errors property on decoder '%s'",
+                                    GST_ELEMENT_NAME(decoder));
+        }
+
+        m_gstWrapper->gstObjectUnref(decoder);
+
+        {
+            std::unique_lock lock{m_context.propertyMutex};
+            m_context.pendingReportDecodeErrorsForVideo.reset();
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Pending report-decode-errors, decoder is NULL");
+    }
+    return result;
+}
+
 bool GstGenericPlayer::setShowVideoWindow()
 {
     if (!m_context.pendingShowVideoWindow.has_value())
@@ -1934,7 +2192,7 @@ bool GstGenericPlayer::setSyncOff()
 
             if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "sync-off"))
             {
-                gboolean syncOffGboolean{decoder ? TRUE : FALSE};
+                gboolean syncOffGboolean{syncOff ? TRUE : FALSE};
                 m_glibWrapper->gObjectSet(decoder, "sync-off", syncOffGboolean, nullptr);
                 result = true;
             }
@@ -2032,8 +2290,13 @@ bool GstGenericPlayer::setRenderFrame()
                 RIALTO_SERVER_LOG_INFO("Rendering preroll");
 
                 m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 1, nullptr);
-                m_gstWrapper->gstElementSendEvent(sink, m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0, true,
-                                                                                      false));
+                gboolean sendRet =
+                    m_gstWrapper->gstElementSendEvent(sink, m_gstWrapper->gstEventNewStep(GST_FORMAT_BUFFERS, 1, 1.0,
+                                                                                          true, false));
+                if (!sendRet)
+                {
+                    RIALTO_SERVER_LOG_WARN("Failed to send step event for rendering preroll frame");
+                }
                 m_glibWrapper->gObjectSet(sink, kStepOnPrerollPropertyName.c_str(), 0, nullptr);
                 result = true;
             }
@@ -2216,9 +2479,9 @@ void GstGenericPlayer::startNotifyPlaybackInfoTimer()
 
     notifyPlaybackInfo();
 
-    m_playbackInfoTimer =
-        m_timerFactory
-            ->createTimer(kPlaybackInfoTimerMs, [this]() { notifyPlaybackInfo(); }, firebolt::rialto::common::TimerType::PERIODIC);
+    const auto kNotifyPlaybackInfo = [this]() { notifyPlaybackInfo(); };
+    m_playbackInfoTimer = m_timerFactory->createTimer(kPlaybackInfoTimerMs, kNotifyPlaybackInfo,
+                                                      firebolt::rialto::common::TimerType::PERIODIC);
 }
 
 void GstGenericPlayer::stopNotifyPlaybackInfoTimer()
@@ -2324,6 +2587,7 @@ bool GstGenericPlayer::getVolume(double &currentVolume)
             currentVolume = static_cast<double>(fadeVolume) / 100.0;
             RIALTO_SERVER_LOG_INFO("Fade volume is supported: %f", currentVolume);
         }
+        m_context.audioFadeVolume = currentVolume;
     }
     else
     {
@@ -2651,7 +2915,12 @@ void GstGenericPlayer::handleBusMessage(GstMessage *message)
 
 void GstGenericPlayer::updatePlaybackGroup(GstElement *typefind, const GstCaps *caps)
 {
-    m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, caps));
+    if (m_workerThread)
+    {
+        m_gstWrapper->gstObjectRef(typefind);
+        GstCaps *ownedCaps{caps ? m_gstWrapper->gstCapsCopy(caps) : nullptr};
+        m_workerThread->enqueueTask(m_taskFactory->createUpdatePlaybackGroup(m_context, *this, typefind, ownedCaps));
+    }
 }
 
 void GstGenericPlayer::addAutoVideoSinkChild(GObject *object)

@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_I_GENERIC_PLAYER_TASK_FACTORY_H_
 
 #include "GenericPlayerContext.h"
+#include "GstPlayerTypes.h"
 #include "IDataReader.h"
 #include "IFlushWatcher.h"
 #include "IGstGenericPlayerPrivate.h"
@@ -175,6 +176,19 @@ public:
     virtual std::unique_ptr<IPlayerTask>
     createReadShmDataAndAttachSamples(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                                       const std::shared_ptr<IDataReader> &dataReader) const = 0;
+
+    /**
+     * @brief Creates a Remove Source task.
+     *
+     * @param[in] context : The GstPlayer context
+     * @param[in] player  : The GstGenericPlayer instance
+     * @param[in] type    : The media source type to remove
+     *
+     * @retval the new Remove Source task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createRemoveSource(GenericPlayerContext &context,
+                                                            IGstGenericPlayerPrivate &player,
+                                                            const firebolt::rialto::MediaSourceType &type) const = 0;
 
     /**
      * @brief Creates a ReportPosition task.
@@ -377,18 +391,31 @@ public:
                                                          bool underflowEnabled, MediaSourceType sourceType) const = 0;
 
     /**
+     * @brief Creates a FirstFrameReceived task.
+     *
+     * @param[in] context          : The GstGenericPlayer context
+     * @param[in] player           : The GstPlayer instance
+     * @param[in] sourceType       : Source type (audio or video).
+     *
+     * @retval the new FirstFrameReceived task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask>
+    createFirstFrameReceived(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, MediaSourceType sourceType,
+                             AudioFirstFrameAction audioAction = AudioFirstFrameAction::CLEAR_PROBE) const = 0;
+
+    /**
      * @brief Creates an UpdatePlaybackGroup task.
      *
      * @param[in] context       : The GstGenericPlayer context
      * @param[in] player        : The GstGenericPlayer instance
      * @param[in] typefind      : The typefind element.
-     * @param[in] caps          : The GstCaps of added element
+     * @param[in] caps          : The GstCaps of added element.
      *
      * @retval the new UpdatePlaybackGroup task instance.
      */
     virtual std::unique_ptr<IPlayerTask> createUpdatePlaybackGroup(GenericPlayerContext &context,
                                                                    IGstGenericPlayerPrivate &player,
-                                                                   GstElement *typefind, const GstCaps *caps) const = 0;
+                                                                   GstElement *typefind, GstCaps *caps) const = 0;
 
     /**
      * @brief Creates a RenderFrame task.
@@ -481,6 +508,21 @@ public:
                                                                   IGstGenericPlayerPrivate &player,
                                                                   const firebolt::rialto::MediaSourceType &type,
                                                                   bool immediateOutput) const = 0;
+
+    /**
+     * @brief Creates a SetReportDecodeErrors task.
+     *
+     * @param[in] context         : The GstPlayer context
+     * @param[in] player          : The GstPlayer instance
+     * @param[in] type            : The media source type
+     * @param[in] reportDecodeErrors : the value to set for report decode error
+     *
+     * @retval the new SetReportDecodeErrors task instance.
+     */
+    virtual std::unique_ptr<IPlayerTask> createSetReportDecodeErrors(GenericPlayerContext &context,
+                                                                     IGstGenericPlayerPrivate &player,
+                                                                     const firebolt::rialto::MediaSourceType &type,
+                                                                     bool reportDecodeErrors) const = 0;
 
     /**
      * @brief Creates a SetBufferingLimit task.

@@ -114,11 +114,12 @@ enum class MediaType
  */
 enum class MediaSourceStatus
 {
-    OK,                  /**< Source data provided without error. */
-    EOS,                 /**< Source reached the end of stream. */
-    ERROR,               /**< There was an error providing source data. */
-    CODEC_CHANGED,       /**< The codec has changed and the decoder must be reconfigured */
-    NO_AVAILABLE_SAMPLES /**< Could not retrieve media samples. */
+    OK,                   /**< Source data provided without error. */
+    EOS,                  /**< Source reached the end of stream. */
+    ERROR,                /**< There was an error providing source data. */
+    CODEC_CHANGED,        /**< The codec has changed and the decoder must be reconfigured */
+    NO_AVAILABLE_SAMPLES, /**< Could not retrieve media samples. */
+    NO_SPACE_FOR_SAMPLES  /**< Could not copy data to shared buffer space. */
 };
 
 /**
@@ -292,7 +293,8 @@ enum class MediaKeyErrorStatus
     NOT_SUPPORTED,             /**< The request parameters are not supported. */
     INVALID_STATE,             /**< The object is in an invalid state for the operation. */
     INTERFACE_NOT_IMPLEMENTED, /**< The interface is not implemented. */
-    BUFFER_TOO_SMALL           /**< The size of the buffer is too small. */
+    BUFFER_TOO_SMALL,          /**< The size of the buffer is too small. */
+    OUTPUT_RESTRICTED          /**< HDCP output protection failure. */
 };
 
 /**
@@ -452,7 +454,8 @@ struct CodecData
 enum class PlaybackError
 {
     UNKNOWN,
-    DECRYPTION, /* Player failed to decrypt a buffer and the frame has been dropped */
+    DECRYPTION,       /* Player failed to decrypt a buffer and the frame has been dropped */
+    OUTPUT_PROTECTION /* HDCP output protection failure */
 };
 
 /**

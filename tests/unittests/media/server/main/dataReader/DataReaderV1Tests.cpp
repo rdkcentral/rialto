@@ -56,6 +56,7 @@ const std::unique_ptr<IMediaPipeline::MediaSegment> kVideoSegment{
 const std::unique_ptr<IMediaPipeline::MediaSegment> kAudioSegment{
     std::make_unique<IMediaPipeline::MediaSegmentAudio>(kAudioSourceId, kTimeStamp, kDuration, kSampleRate,
                                                         kNumberOfChannels)};
+constexpr bool kIsBufferFull{true};
 } // namespace
 
 class DataReaderV1Tests : public testing::Test
@@ -98,8 +99,9 @@ public:
     {
         ASSERT_TRUE(m_shm);
         std::uint8_t *buffer = m_shm->getBuffer();
-        m_sut = std::make_unique<DataReaderV1>(kVideoMediaSourceType, buffer, 4, kNumFrames);
+        m_sut = std::make_unique<DataReaderV1>(kVideoMediaSourceType, buffer, 4, kNumFrames, kIsBufferFull);
         auto result = m_sut->readData();
+        EXPECT_EQ(kIsBufferFull, m_sut->isBufferFull());
         ASSERT_EQ(1, result.size());
         IMediaPipeline::MediaSegmentVideo *resultSegment =
             dynamic_cast<IMediaPipeline::MediaSegmentVideo *>(result.front().get());
@@ -140,9 +142,11 @@ public:
         std::uint8_t *buffer = m_shm->getBuffer();
         std::uint32_t regionOffset =
             m_shm->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, kSessionId, kAudioMediaSourceType);
-        m_sut = std::make_unique<DataReaderV1>(kAudioMediaSourceType, buffer, regionOffset + 4, kNumFrames);
+        m_sut =
+            std::make_unique<DataReaderV1>(kAudioMediaSourceType, buffer, regionOffset + 4, kNumFrames, kIsBufferFull);
         auto result = m_sut->readData();
         ASSERT_EQ(1, result.size());
+        EXPECT_EQ(kIsBufferFull, m_sut->isBufferFull());
         IMediaPipeline::MediaSegmentAudio *resultSegment =
             dynamic_cast<IMediaPipeline::MediaSegmentAudio *>(result.front().get());
         ASSERT_NE(nullptr, resultSegment);

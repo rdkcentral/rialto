@@ -47,6 +47,8 @@ const char *toString(const firebolt::rialto::MediaKeyErrorStatus &status)
         return "NOT_SUPPORTED";
     case firebolt::rialto::MediaKeyErrorStatus::INVALID_STATE:
         return "INVALID_STATE";
+    case firebolt::rialto::MediaKeyErrorStatus::OUTPUT_RESTRICTED:
+        return "OUTPUT_RESTRICTED";
     }
     return "Unknown";
 }
@@ -171,6 +173,20 @@ bool MediaKeysCapabilities::isServerCertificateSupported(const std::string &keyS
         return false;
     }
     return ocdmSystem->supportsServerCertificate();
+}
+
+bool MediaKeysCapabilities::getSupportedRobustnessLevels(const std::string &keySystem,
+                                                         std::vector<std::string> &robustnessLevels)
+{
+    robustnessLevels.clear();
+    std::shared_ptr<firebolt::rialto::wrappers::IOcdmSystem> ocdmSystem =
+        m_ocdmSystemFactory->createOcdmSystem(keySystem);
+    if (!ocdmSystem)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the ocdm system object");
+        return false;
+    }
+    return ocdmSystem->getSupportedRobustnessLevels(robustnessLevels);
 }
 
 }; // namespace firebolt::rialto::server

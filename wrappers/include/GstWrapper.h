@@ -101,6 +101,11 @@ public:
         return gst_element_factory_make(factoryname, name);
     }
 
+    GType gstElementFactoryGetElementType(GstElementFactory *factory) override
+    {
+        return gst_element_factory_get_element_type(factory);
+    }
+
     GstElement *gstBinGetByName(GstBin *bin, const gchar *name) override { return gst_bin_get_by_name(bin, name); }
 
     gpointer gstObjectRef(gpointer object) override { return gst_object_ref(object); }
@@ -186,6 +191,11 @@ public:
     gboolean gstElementQueryPosition(GstElement *element, GstFormat format, gint64 *cur) override
     {
         return gst_element_query_position(element, format, cur);
+    }
+
+    gboolean gstElementQueryDuration(GstElement *element, GstFormat format, gint64 *duration) override
+    {
+        return gst_element_query_duration(element, format, duration);
     }
 
     GstPad *gstGhostPadNew(const gchar *name, GstPad *target) override { return gst_ghost_pad_new(name, target); }
@@ -508,6 +518,11 @@ public:
         return gst_message_new_warning(src, error, debug);
     }
 
+    GstMessage *gstMessageNewApplication(GstObject *src, GstStructure *structure) const override
+    {
+        return gst_message_new_application(src, structure);
+    }
+
     void gstMessageParseWarning(GstMessage *message, GError **gerror, gchar **debug) const override
     {
         gst_message_parse_warning(message, gerror, debug);
@@ -611,6 +626,14 @@ public:
     gboolean gstBinRemove(GstBin *bin, GstElement *element) override { return gst_bin_remove(bin, element); }
 
     GstObject *gstPadGetParent(GstPad *pad) override { return gst_pad_get_parent(pad); }
+
+    gulong gstPadAddProbe(GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
+                          GDestroyNotify destroyData) override
+    {
+        return gst_pad_add_probe(pad, mask, callback, userData, destroyData);
+    }
+
+    void gstPadRemoveProbe(GstPad *pad, gulong id) override { gst_pad_remove_probe(pad, id); }
 };
 
 }; // namespace firebolt::rialto::wrappers

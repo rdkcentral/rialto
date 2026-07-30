@@ -24,8 +24,8 @@
 
 namespace rialto::servermanager::service
 {
-ConfigReader::ConfigReader(std::shared_ptr<firebolt::rialto::wrappers::IJsonCppWrapper> jsonWrapper,
-                           std::shared_ptr<IFileReader> fileReader)
+ConfigReader::ConfigReader(const std::shared_ptr<firebolt::rialto::wrappers::IJsonCppWrapper> &jsonWrapper,
+                           const std::shared_ptr<IFileReader> &fileReader)
     : m_jsonWrapper(jsonWrapper), m_fileReader(fileReader)
 {
 }
@@ -60,22 +60,22 @@ bool ConfigReader::read()
     return true;
 }
 
-void ConfigReader::parseEnvironmentVariables(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+void ConfigReader::parseEnvironmentVariables(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root)
 {
     m_envVars = getListOfStrings(root, "environmentVariables");
 }
 
-void ConfigReader::parseExtraEnvVariables(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+void ConfigReader::parseExtraEnvVariables(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root)
 {
     m_extraEnvVars = getListOfStrings(root, "extraEnvVariables");
 }
 
-void ConfigReader::parseSessionServerPath(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+void ConfigReader::parseSessionServerPath(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root)
 {
     m_sessionServerPath = getString(root, "sessionServerPath");
 }
 
-void ConfigReader::parseSessionServerStartupTimeout(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+void ConfigReader::parseSessionServerStartupTimeout(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root)
 {
     auto timeout{getUInt(root, "startupTimeoutMs")};
     if (timeout.has_value())
@@ -84,7 +84,7 @@ void ConfigReader::parseSessionServerStartupTimeout(std::shared_ptr<firebolt::ri
     }
 }
 
-void ConfigReader::parseHealthcheckInterval(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+void ConfigReader::parseHealthcheckInterval(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root)
 {
     auto interval{getUInt(root, "healthcheckIntervalInSeconds")};
     if (interval.has_value())
@@ -93,7 +93,7 @@ void ConfigReader::parseHealthcheckInterval(std::shared_ptr<firebolt::rialto::wr
     }
 }
 
-void ConfigReader::parseSocketPermissions(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+void ConfigReader::parseSocketPermissions(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root)
 {
     auto permissions{getUInt(root, "socketPermissions")};
     if (permissions.has_value())
@@ -106,22 +106,22 @@ void ConfigReader::parseSocketPermissions(std::shared_ptr<firebolt::rialto::wrap
     }
 }
 
-void ConfigReader::parseSocketOwner(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+void ConfigReader::parseSocketOwner(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root)
 {
     m_socketOwner = getString(root, "socketOwner");
 }
 
-void ConfigReader::parseSocketGroup(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+void ConfigReader::parseSocketGroup(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root)
 {
     m_socketGroup = getString(root, "socketGroup");
 }
 
-void ConfigReader::parseNumOfPreloadedServers(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+void ConfigReader::parseNumOfPreloadedServers(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root)
 {
     m_numOfPreloadedServers = getUInt(root, "numOfPreloadedServers");
 }
 
-void ConfigReader::parseLogLevel(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+void ConfigReader::parseLogLevel(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root)
 {
     std::optional<unsigned> loggingLevel{getUInt(root, "logLevel")};
 
@@ -157,7 +157,7 @@ void ConfigReader::parseLogLevel(std::shared_ptr<firebolt::rialto::wrappers::IJs
     }
 }
 
-void ConfigReader::parseNumOfPingsBeforeRecovery(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root)
+void ConfigReader::parseNumOfPingsBeforeRecovery(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root)
 {
     m_numOfPingsBeforeRecovery = getUInt(root, "numOfPingsBeforeRecovery");
 }
@@ -217,8 +217,9 @@ std::optional<unsigned int> ConfigReader::getNumOfPingsBeforeRecovery()
     return m_numOfPingsBeforeRecovery;
 }
 
-std::list<std::string> ConfigReader::getListOfStrings(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,
-                                                      const std::string &valueName) const
+std::list<std::string>
+ConfigReader::getListOfStrings(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root,
+                               const std::string &valueName) const
 {
     std::list<std::string> result;
     if (root->isMember(valueName) && root->at(valueName)->isArray())
@@ -236,8 +237,9 @@ std::list<std::string> ConfigReader::getListOfStrings(std::shared_ptr<firebolt::
     return result;
 }
 
-std::optional<std::string> ConfigReader::getString(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,
-                                                   const std::string &valueName) const
+std::optional<std::string>
+ConfigReader::getString(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root,
+                        const std::string &valueName) const
 {
     if (root->isMember(valueName) && root->at(valueName)->isString())
     {
@@ -246,7 +248,7 @@ std::optional<std::string> ConfigReader::getString(std::shared_ptr<firebolt::ria
     return std::nullopt;
 }
 
-std::optional<unsigned int> ConfigReader::getUInt(std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> root,
+std::optional<unsigned int> ConfigReader::getUInt(const std::shared_ptr<firebolt::rialto::wrappers::IJsonValueWrapper> &root,
                                                   const std::string &valueName) const
 {
     if (root->isMember(valueName) && root->at(valueName)->isUInt())

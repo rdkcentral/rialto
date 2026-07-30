@@ -23,7 +23,7 @@
 namespace
 {
 constexpr unsigned kFramesToPush{1};
-constexpr int kFrameCountInPausedState{3};
+constexpr int kPrerollNumFrames{3};
 constexpr int kFrameCountInPlayingState{24};
 } // namespace
 
@@ -175,7 +175,7 @@ TEST_F(MediaPipelineTest, AudioOnlyPlayback)
     play();
 
     // Step 9: Write 1 audio frame
-    pushAudioData(kFramesToPush);
+    pushAudioData(kFramesToPush, kFrameCountInPlayingState);
 
     // Step 10: End of audio stream
     willEos(&m_audioAppSrc);

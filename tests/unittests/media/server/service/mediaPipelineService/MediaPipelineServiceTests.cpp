@@ -322,6 +322,26 @@ TEST_F(MediaPipelineServiceTests, shouldGetPosition)
     getPositionShouldSucceed();
 }
 
+TEST_F(MediaPipelineServiceTests, shouldFailToGetDurationForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getDurationShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetDuration)
+{
+    initSession();
+    mediaPipelineWillFailToGetDuration();
+    getDurationShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetDuration)
+{
+    initSession();
+    mediaPipelineWillGetDuration();
+    getDurationShouldSucceed();
+}
+
 TEST_F(MediaPipelineServiceTests, shouldFailToSetImmediateOutputForNotExistingSession)
 {
     createMediaPipelineShouldSuccess();
@@ -360,6 +380,46 @@ TEST_F(MediaPipelineServiceTests, shouldGetImmediateOutput)
     initSession();
     mediaPipelineWillGetImmediateOutput();
     getImmediateOutputShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetReportDecodeErrorsForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    setReportDecodeErrorsShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetQueuedFramesForNotExistingSession)
+{
+    createMediaPipelineShouldSuccess();
+    getQueuedFramesShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToSetReportDecodeErrors)
+{
+    initSession();
+    mediaPipelineWillFailToSetReportDecodeErrors();
+    setReportDecodeErrorsShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldFailToGetQueuedFrames)
+{
+    initSession();
+    mediaPipelineWillFailToGetQueuedFrames();
+    getQueuedFramesShouldFail();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldSetReportDecodeErrors)
+{
+    initSession();
+    mediaPipelineWillSetReportDecodeErrors();
+    setReportDecodeErrorsShouldSucceed();
+}
+
+TEST_F(MediaPipelineServiceTests, shouldGetQueuedFrames)
+{
+    initSession();
+    mediaPipelineWillGetQueuedFrames();
+    getQueuedFramesShouldSucceed();
 }
 
 TEST_F(MediaPipelineServiceTests, shouldFailToGetStatsForNotExistingSession)

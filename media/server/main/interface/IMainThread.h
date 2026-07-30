@@ -20,7 +20,6 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_MAIN_THREAD_H_
 #define FIREBOLT_RIALTO_SERVER_I_MAIN_THREAD_H_
 
-#include "IMainThread.h"
 #include <functional>
 #include <memory>
 #include <utility>

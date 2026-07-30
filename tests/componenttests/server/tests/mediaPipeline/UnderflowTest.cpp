@@ -65,6 +65,10 @@ public:
                     gstElementFactoryListIsType(m_elementFactory,
                                                 GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
             .WillRepeatedly(Return(FALSE));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstElementFactoryListIsType(m_elementFactory,
+                                                GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+            .WillRepeatedly(Return(FALSE));
         EXPECT_CALL(*m_glibWrapperMock, gSignalListIds(_, _))
             .WillRepeatedly(Invoke(
                 [&](GType itype, guint *n_ids)
@@ -75,7 +79,7 @@ public:
         EXPECT_CALL(*m_glibWrapperMock, gSignalQuery(m_signals[0], _))
             .WillRepeatedly(Invoke([&](guint signal_id, GSignalQuery *query)
                                    { query->signal_name = "buffer-underflow-callback"; }));
-        EXPECT_CALL(*m_glibWrapperMock, gFree(m_signals)).Times(2);
+        EXPECT_CALL(*m_glibWrapperMock, gFree(m_signals)).Times(4);
     }
 
     void willSetupAudioDecoder()

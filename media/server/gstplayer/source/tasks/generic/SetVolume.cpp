@@ -102,6 +102,7 @@ void SetVolume::execute() const
         RIALTO_SERVER_LOG_DEBUG("Fade String: %s", fadeStr);
 
         m_glibWrapper->gObjectSet(audioSink, "audio-fade", fadeStr, nullptr);
+        m_context.audioFadeVolume = m_targetVolume;
         m_context.audioFadeEnabled = true;
     }
     else if (m_rdkGstreamerUtilsWrapper->isSocAudioFadeSupported())
@@ -109,6 +110,7 @@ void SetVolume::execute() const
         RIALTO_SERVER_LOG_DEBUG("SOC audio fading is supported, applying SOC audio fade");
         auto rguEaseType = convertEaseTypeToRguEase(m_easeType);
         m_rdkGstreamerUtilsWrapper->doAudioEasingonSoc(m_targetVolume, m_volumeDuration, rguEaseType);
+        m_context.audioFadeVolume = m_targetVolume;
         m_context.audioFadeEnabled = true;
     }
     else

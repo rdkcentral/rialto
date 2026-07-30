@@ -64,6 +64,9 @@ public:
     MOCK_METHOD(void, getPosition,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetPositionRequest *request,
                  ::firebolt::rialto::GetPositionResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getDuration,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetDurationRequest *request,
+                 ::firebolt::rialto::GetDurationResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, setImmediateOutput,
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::SetImmediateOutputRequest *request,
@@ -72,6 +75,13 @@ public:
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::GetImmediateOutputRequest *request,
                  ::firebolt::rialto::GetImmediateOutputResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, setReportDecodeErrors,
+                (::google::protobuf::RpcController * controller,
+                 const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
+                 ::firebolt::rialto::SetReportDecodeErrorsResponse *response, ::google::protobuf::Closure *done));
+    MOCK_METHOD(void, getQueuedFrames,
+                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetQueuedFramesRequest *request,
+                 ::firebolt::rialto::GetQueuedFramesResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, getStats,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetStatsRequest *request,
                  ::firebolt::rialto::GetStatsResponse *response, ::google::protobuf::Closure *done));
@@ -218,6 +228,13 @@ public:
         return response;
     }
 
+    ::firebolt::rialto::GetDurationResponse getDurationResponse(const int64_t duration)
+    {
+        firebolt::rialto::GetDurationResponse response;
+        response.set_duration(duration);
+        return response;
+    }
+
     ::firebolt::rialto::SetImmediateOutputResponse setImmediateOutputResponse()
     {
         firebolt::rialto::SetImmediateOutputResponse response;
@@ -228,6 +245,19 @@ public:
     {
         firebolt::rialto::GetImmediateOutputResponse response;
         response.set_immediate_output(immediateOutputResponse);
+        return response;
+    }
+
+    ::firebolt::rialto::SetReportDecodeErrorsResponse SetReportDecodeErrorsResponse()
+    {
+        firebolt::rialto::SetReportDecodeErrorsResponse response;
+        return response;
+    }
+
+    ::firebolt::rialto::GetQueuedFramesResponse getQueuedFramesResponse(uint32_t queuedFramesResponse)
+    {
+        firebolt::rialto::GetQueuedFramesResponse response;
+        response.set_queued_frames(queuedFramesResponse);
         return response;
     }
 

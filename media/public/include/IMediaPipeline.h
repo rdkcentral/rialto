@@ -543,7 +543,7 @@ public:
          *
          * @retval the media key session id.
          */
-        const int32_t getMediaKeySessionId() const { return m_mediaKeySessionId; }
+        int32_t getMediaKeySessionId() const { return m_mediaKeySessionId; }
 
         /**
          * @brief Returns the key id. Empty if unencrypted.
@@ -571,14 +571,14 @@ public:
          *
          * @retval the initWithLast15 value.
          */
-        const uint32_t getInitWithLast15() const { return m_initWithLast15; }
+        uint32_t getInitWithLast15() const { return m_initWithLast15; }
 
         /**
          * @brief Returns the segment alignment
          *
          * @retval the segment alignment
          */
-        const SegmentAlignment getSegmentAlignment() const { return m_alignment; }
+        SegmentAlignment getSegmentAlignment() const { return m_alignment; }
 
         /**
          * @brief Gets the codec data
@@ -602,7 +602,7 @@ public:
          *
          * @retval if the encryption pattern has been set
          */
-        const bool getEncryptionPattern(uint32_t &crypt, uint32_t &skip) const
+        bool getEncryptionPattern(uint32_t &crypt, uint32_t &skip) const
         {
             crypt = m_crypt;
             skip = m_skip;
@@ -1072,8 +1072,9 @@ public:
      * @param[in] type     : The media type.
      * @param[in] mimeType : The MIME type.
      * @param[in] url      : The URL.
+     * @param[in] isLive   : Indicates if the media is live.
      */
-    virtual bool load(MediaType type, const std::string &mimeType, const std::string &url) = 0;
+    virtual bool load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive) = 0;
 
     /**
      * @brief Attaches a source stream to the backend.
@@ -1226,6 +1227,30 @@ public:
      * @retval true on success.
      */
     virtual bool setImmediateOutput(int32_t sourceId, bool immediateOutput) = 0;
+
+    /**
+     * @brief Sets the "Report Decode Errors" property for this source.
+     *
+     * This method is asynchronous, it will set the "Report Decode Errors" property
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] reportDecodeErrors : Set Report Decode Errors mode on the sink
+     *
+     * @retval true on success.
+     */
+    virtual bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) = 0;
+
+    /**
+     * @brief Gets the queued frames for this source.
+     *
+     * This method is synchronous, it gets the queued frames property
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] queuedFrames : Get queued frames on the decoder
+     *
+     * @retval true on success.
+     */
+    virtual bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) = 0;
 
     /**
      * @brief Gets the "Immediate Output" property for this source.
@@ -1534,6 +1559,17 @@ public:
      * @retval true on success.
      */
     virtual bool switchSource(const std::unique_ptr<MediaSource> &source) = 0;
+
+    /**
+     * @brief Get the playback duration in nanoseconds.
+     *
+     * This method is synchronous, it returns current playback duration
+     *
+     * @param[out] duration : The playback duration in nanoseconds
+     *
+     * @retval true on success.
+     */
+    virtual bool getDuration(int64_t &duration) = 0;
 };
 
 }; // namespace firebolt::rialto

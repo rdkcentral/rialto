@@ -47,6 +47,10 @@ public:
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
                  const firebolt::rialto::MediaSourceType &type),
                 (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFirstFrameReceived,
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, MediaSourceType sourceType,
+                 AudioFirstFrameAction audioAction),
+                (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createFinishSetupSource,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createHandleBusMessage,
@@ -61,6 +65,10 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createReadShmDataAndAttachSamples,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
                  const std::shared_ptr<IDataReader> &dataReader),
+                (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createRemoveSource,
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
+                 const firebolt::rialto::MediaSourceType &type),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createReportPosition,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
@@ -106,8 +114,7 @@ public:
                  MediaSourceType sourceType),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createUpdatePlaybackGroup,
-                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, GstElement *typefind,
-                 const GstCaps *caps),
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, GstElement *typefind, GstCaps *caps),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createRenderFrame,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player), (const, override));
@@ -132,6 +139,10 @@ public:
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetImmediateOutput,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
                  const firebolt::rialto::MediaSourceType &type, bool immediateOutput),
+                (const, override));
+    MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetReportDecodeErrors,
+                (GenericPlayerContext & context, IGstGenericPlayerPrivate &player,
+                 const firebolt::rialto::MediaSourceType &type, bool reportDecodeErrors),
                 (const, override));
     MOCK_METHOD(std::unique_ptr<IPlayerTask>, createSetBufferingLimit,
                 (GenericPlayerContext & context, IGstGenericPlayerPrivate &player, std::uint32_t limit),

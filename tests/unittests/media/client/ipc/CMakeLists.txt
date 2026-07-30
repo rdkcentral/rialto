@@ -35,8 +35,11 @@ add_gtests (
         mediaPipelineIpc/SetPositionTest.cpp
         mediaPipelineIpc/SetPlaybackRateTest.cpp
         mediaPipelineIpc/GetPositionTest.cpp
+        mediaPipelineIpc/GetDurationTest.cpp
         mediaPipelineIpc/SetImmediateOutputTest.cpp
         mediaPipelineIpc/GetImmediateOutputTest.cpp
+        mediaPipelineIpc/SetReportDecodeErrorsTest.cpp
+        mediaPipelineIpc/GetQueuedFramesTest.cpp
         mediaPipelineIpc/GetStatsTest.cpp
         mediaPipelineIpc/RenderFrameTest.cpp
         mediaPipelineIpc/GetVolumeTest.cpp
@@ -99,6 +102,7 @@ add_gtests (
         mediaKeysCapabilitiesIpc/CreateTest.cpp
         mediaKeysCapabilitiesIpc/KeySystemsTest.cpp
         mediaKeysCapabilitiesIpc/CertificateTest.cpp
+        mediaKeysCapabilitiesIpc/RobustnessTest.cpp
 
         # WebAudioPlayer tests
         webAudioPlayerIpc/base/WebAudioPlayerIpcTestBase.cpp

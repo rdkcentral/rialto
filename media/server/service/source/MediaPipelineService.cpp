@@ -113,7 +113,8 @@ bool MediaPipelineService::destroySession(int sessionId)
     return true;
 }
 
-bool MediaPipelineService::load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url)
+bool MediaPipelineService::load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url,
+                                bool isLive)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to load session with id: %d", sessionId);
 
@@ -124,7 +125,7 @@ bool MediaPipelineService::load(int sessionId, MediaType type, const std::string
         RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
         return false;
     }
-    return mediaPipelineIter->second->load(type, mimeType, url);
+    return mediaPipelineIter->second->load(type, mimeType, url, isLive);
 }
 
 bool MediaPipelineService::attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source)
@@ -253,6 +254,20 @@ bool MediaPipelineService::getPosition(int sessionId, std::int64_t &position)
     return mediaPipelineIter->second->getPosition(position);
 }
 
+bool MediaPipelineService::getDuration(int sessionId, std::int64_t &duration)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to get duration, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exist", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getDuration(duration);
+}
+
 bool MediaPipelineService::setImmediateOutput(int sessionId, int32_t sourceId, bool immediateOutput)
 {
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to setImmediateOutput, session id: %d", sessionId);
@@ -265,6 +280,34 @@ bool MediaPipelineService::setImmediateOutput(int sessionId, int32_t sourceId, b
         return false;
     }
     return mediaPipelineIter->second->setImmediateOutput(sourceId, immediateOutput);
+}
+
+bool MediaPipelineService::setReportDecodeErrors(int sessionId, int32_t sourceId, bool reportDecodeErrors)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to setReportDecodeErrors, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->setReportDecodeErrors(sourceId, reportDecodeErrors);
+}
+
+bool MediaPipelineService::getQueuedFrames(int sessionId, int32_t sourceId, uint32_t &queuedFrames)
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to getQueuedFrames, session id: %d", sessionId);
+
+    std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+    auto mediaPipelineIter = m_mediaPipelines.find(sessionId);
+    if (mediaPipelineIter == m_mediaPipelines.end())
+    {
+        RIALTO_SERVER_LOG_ERROR("Session with id: %d does not exists", sessionId);
+        return false;
+    }
+    return mediaPipelineIter->second->getQueuedFrames(sourceId, queuedFrames);
 }
 
 bool MediaPipelineService::getImmediateOutput(int sessionId, int32_t sourceId, bool &immediateOutput)

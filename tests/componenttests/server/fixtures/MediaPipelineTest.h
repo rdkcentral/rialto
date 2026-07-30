@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_CT_MEDIA_PIPELINE_TEST_H_
 #define FIREBOLT_RIALTO_SERVER_CT_MEDIA_PIPELINE_TEST_H_
 
+#include "Constants.h"
 #include "GstSrc.h"
 #include "GstreamerStub.h"
 #include "IMediaPipeline.h"
@@ -68,10 +69,10 @@ public:
     void indicateAllSourcesAttached(const std::vector<GstAppSrc *> &appsrcs);
     void pause();
     void notifyPaused();
-    void pushAudioData(unsigned dataCountToPush);
-    void pushVideoData(unsigned dataCountToPush);
-    void pushAudioSample();
-    void pushVideoSample();
+    void pushAudioData(unsigned dataCountToPush, int needDataFrameCount = kPrerollNumFrames);
+    void pushVideoData(unsigned dataCountToPush, int needDataFrameCount = kPrerollNumFrames);
+    void pushAudioSample(int needDataFrameCount = kPrerollNumFrames);
+    void pushVideoSample(int needDataFrameCount = kPrerollNumFrames);
     void play();
     void eosAudio(unsigned dataCountToPush);
     void eosVideo(unsigned dataCountToPush);

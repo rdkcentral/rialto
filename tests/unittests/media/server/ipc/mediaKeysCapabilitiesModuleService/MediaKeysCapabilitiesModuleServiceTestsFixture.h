@@ -45,6 +45,8 @@ public:
     void cdmServiceWillGetSupportedKeySystemVersion();
     void cdmServiceWillFailToGetSupportedKeySystemVersion();
     void cdmServiceWillSupportServerCertificate();
+    void cdmServiceWillGetSupportedRobustnessLevels();
+    void cdmServiceWillFailToGetSupportedRobustnessLevels();
 
     void sendClientConnected();
     void sendGetSupportedKeySystemsRequestAndReceiveResponse();
@@ -52,6 +54,8 @@ public:
     void sendGetSupportedKeySystemVersionRequestAndReceiveResponse();
     void sendGetSupportedKeySystemVersionRequestAndExpectFailure();
     void sendIsServerCertificateSupportedRequestAndReceiveResponse();
+    void sendGetSupportedRobustnessLevelsRequestAndReceiveResponse();
+    void sendGetSupportedRobustnessLevelsRequestAndExpectFailure();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;

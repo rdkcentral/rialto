@@ -148,6 +148,15 @@ public:
     virtual GstElement *gstElementFactoryMake(const gchar *factoryname, const gchar *name) = 0;
 
     /**
+     * @brief Get the element type returned by the requested factory.
+     *
+     * @param[in] factory   : Factory
+     *
+     * @retval GType that the factory produces
+     */
+    virtual GType gstElementFactoryGetElementType(GstElementFactory *factory) = 0;
+
+    /**
      * @brief Increment reference count on object.
      *
      * @param[in] object   : Object to increment.
@@ -411,6 +420,17 @@ public:
      * @retval The requested pad, NULL otherwise.
      */
     virtual gboolean gstElementQueryPosition(GstElement *element, GstFormat format, gint64 *cur) = 0;
+
+    /**
+     * @brief Queries an element (usually top-level pipeline or playbin element) for the total stream duration in nanoseconds.
+     *
+     * @param[in] element   : a GstElement to invoke the duration query on.
+     * @param[in] format    : the GstFormat requested
+     * @param[out] duration :  A location in which to store the total duration, or NULL.
+     *
+     * @retval TRUE on success, FALSE otherwise.
+     */
+    virtual gboolean gstElementQueryDuration(GstElement *element, GstFormat format, gint64 *duration) = 0;
 
     /**
      * @brief Create a new ghost pad.
@@ -1202,6 +1222,16 @@ public:
     virtual GstMessage *gstMessageNewWarning(GstObject *src, GError *error, const gchar *debug) const = 0;
 
     /**
+     * @brief Creates a new application-typed message.
+     *
+     * @param[in] src       : the origin of the message.
+     * @param[in] structure : the structure for the message (takes ownership).
+     *
+     * @retval New application message.
+     */
+    virtual GstMessage *gstMessageNewApplication(GstObject *src, GstStructure *structure) const = 0;
+
+    /**
      * @brief Get the GError and error string from the message.
      *
      * @param[in]  message  : a message of type WARNING.
@@ -1465,6 +1495,28 @@ public:
      * @retval The parent GstObject. Unref after usage. NULL if pad has no parent.
      */
     virtual GstObject *gstPadGetParent(GstPad *pad) = 0;
+
+    /**
+     * @brief Adds probe to the pad.
+     *
+     * @param[in] pad : The GstPad to add the probe to.
+     * @param[in] mask : The probe mask.
+     * @param[in] callback : GstPadProbeCallback that will be called with notifications of the pad state.
+     * @param[in] userData : User data passed to the callback.
+     * @param[in] destroyData : GDestroyNotify for user_data.
+     *
+     * @retval An id or 0 if no probe is pending. The id can be used to remove the probe with gst_pad_remove_probe.
+     */
+    virtual gulong gstPadAddProbe(GstPad *pad, GstPadProbeType mask, GstPadProbeCallback callback, gpointer userData,
+                                  GDestroyNotify destroyData) = 0;
+
+    /**
+     * @brief Removes a probe from the pad.
+     *
+     * @param[in] pad : The GstPad to remove the probe from.
+     * @param[in] id : The probe id returned by gstPadAddProbe.
+     */
+    virtual void gstPadRemoveProbe(GstPad *pad, gulong id) = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

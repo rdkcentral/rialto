@@ -26,6 +26,7 @@
 #include "GlibWrapperMock.h"
 #include "GstGenericPlayerClientMock.h"
 #include "GstGenericPlayerPrivateMock.h"
+#include "GstProfilerMock.h"
 #include "GstSrcMock.h"
 #include "GstTextTrackSinkFactoryMock.h"
 #include "GstWrapperMock.h"
@@ -61,6 +62,8 @@ public:
         std::make_shared<StrictMock<firebolt::rialto::server::DataReaderMock>>()};
     std::shared_ptr<firebolt::rialto::server::GstTextTrackSinkFactoryMock> m_gstTextTrackSinkFactoryMock{
         std::make_shared<StrictMock<firebolt::rialto::server::GstTextTrackSinkFactoryMock>>()};
+    std::unique_ptr<::testing::NiceMock<firebolt::rialto::server::GstProfilerMock>> m_gstProfilerMock{
+        std::make_unique<::testing::NiceMock<firebolt::rialto::server::GstProfilerMock>>()};
 
     // Gstreamer members
     GstElement *m_element{};
@@ -96,6 +99,9 @@ public:
     guint m_signals[1]{123};
     GCallback m_audioUnderflowCallback;
     GCallback m_videoUnderflowCallback;
+    GCallback m_firstVideoFrameCallback;
+    GCallback m_firstAudioFrameCallback;
+    GstPadProbeCallback m_firstAudioFrameProbeCallback{};
     GCallback m_childAddedCallback;
     GCallback m_childRemovedCallback;
     gchar m_capsStr{};
@@ -110,6 +116,7 @@ public:
     gchar m_xEac3Str[13]{"audio/x-eac3"};
     gpointer m_videoUserData{};
     gpointer m_audioUserData{};
+    gpointer m_firstAudioFrameProbeUserData{};
     GValue m_value{};
     GParamSpec m_paramSpec{};
     GObject m_gObj{};

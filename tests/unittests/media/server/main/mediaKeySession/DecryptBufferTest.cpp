@@ -19,6 +19,9 @@
 
 #include "MediaKeySessionTestBase.h"
 
+using testing::DoAll;
+using testing::SetArgReferee;
+
 class RialtoServerMediaKeySessionDecryptBufferTest : public MediaKeySessionTestBase
 {
 protected:
@@ -48,8 +51,72 @@ TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OcdmSessionFailure)
     createKeySession(kWidevineKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps)).WillOnce(Return(MediaKeyErrorStatus::FAIL));
+    EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(_)).WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+}
+
+/**
+ * Test that repeated decryption failures keep returning failure.
+ */
+TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, RepeatedOcdmSessionFailure)
+{
+    createKeySession(kWidevineKeySystem);
+
+    EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps))
+        .Times(2)
+        .WillRepeatedly(Return(MediaKeyErrorStatus::FAIL));
+    EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(_)).Times(2).WillRepeatedly(Return(MediaKeyErrorStatus::OK));
+
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+}
+
+/**
+ * Test that successful decryption resets the repeated failure handling.
+ */
+TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OcdmSessionFailureAfterSuccess)
+{
+    createKeySession(kWidevineKeySystem);
+
+    EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps))
+        .WillOnce(Return(MediaKeyErrorStatus::FAIL))
+        .WillOnce(Return(MediaKeyErrorStatus::OK))
+        .WillOnce(Return(MediaKeyErrorStatus::FAIL));
+    EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(_)).Times(2).WillRepeatedly(Return(MediaKeyErrorStatus::OK));
+
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+}
+
+/**
+ * Test that an HDCP output protection DRM error is translated to OUTPUT_RESTRICTED.
+ */
+TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OcdmSessionOutputRestricted)
+{
+    constexpr uint32_t kHdcpOutputProtectionFailure{4427};
+
+    createKeySession(kWidevineKeySystem);
+
+    EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps)).WillOnce(Return(MediaKeyErrorStatus::FAIL));
+    EXPECT_CALL(*m_ocdmSessionMock, getLastDrmError(_))
+        .WillOnce(DoAll(SetArgReferee<0>(kHdcpOutputProtectionFailure), Return(MediaKeyErrorStatus::OK)));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OUTPUT_RESTRICTED, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
+}
+
+/**
+ * Test that OUTPUT_RESTRICTED is propagated when returned directly by decryptBuffer.
+ */
+TEST_F(RialtoServerMediaKeySessionDecryptBufferTest, OcdmSessionDirectOutputRestricted)
+{
+    createKeySession(kWidevineKeySystem);
+
+    EXPECT_CALL(*m_ocdmSessionMock, decryptBuffer(&m_encrypted, &m_caps))
+        .WillOnce(Return(MediaKeyErrorStatus::OUTPUT_RESTRICTED));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OUTPUT_RESTRICTED, m_mediaKeySession->decrypt(&m_encrypted, &m_caps));
 }
 
 /**

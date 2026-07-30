@@ -72,3 +72,19 @@ TEST_F(UpdatePlaybackGroupTest, shouldTriggerUseBuffering)
     triggerUpdatePlaybackGroup();
     checkPlaybackGroupAdded();
 }
+
+TEST_F(UpdatePlaybackGroupTest, shouldLinkTypefindWithParser)
+{
+    shouldSuccessfullyFindTypefindAndParent();
+    shouldLinkTypefindAndParser();
+    triggerUpdatePlaybackGroup();
+    checkPlaybackGroupAdded();
+}
+
+TEST_F(UpdatePlaybackGroupTest, shouldFailToLinkTypefindWithParser)
+{
+    shouldSuccessfullyFindTypefindAndParent();
+    shouldFailToLinkTypefindAndParser();
+    triggerUpdatePlaybackGroup();
+    checkPlaybackGroupAdded();
+}

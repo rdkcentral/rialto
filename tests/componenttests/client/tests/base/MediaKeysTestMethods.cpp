@@ -62,6 +62,7 @@ const std::vector<std::string> kKeySystems(firebolt::rialto::server::kSupportedK
                                            firebolt::rialto::server::kSupportedKeySystems.end());
 const std::string kVersion{"123"};
 const std::vector<uint8_t> kBuffer{0x1, 0x2, 0x3, 0x4};
+const std::vector<std::string> kRobustnessLevels{"SW_SECURE_CRYPTO", "SW_SECURE_DECODE", "HW_SECURE_CRYPTO"};
 } // namespace
 
 namespace firebolt::rialto::client::ct
@@ -698,6 +699,39 @@ void MediaKeysTestMethods::shouldNotSupportServerCertificate()
 void MediaKeysTestMethods::doesNotSupportServerCertificate()
 {
     EXPECT_FALSE(m_mediaKeysCapabilities->isServerCertificateSupported(kKeySystems[0]));
+}
+
+void MediaKeysTestMethods::shouldGetSupportedRobustnessLevels()
+{
+    EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock,
+                getSupportedRobustnessLevels(_, getSupportedRobustnessLevelsRequestMatcher(kKeySystems[0]), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(
+                            m_mediaKeysCapabilitiesModuleMock->getSupportedRobustnessLevelsResponse(kRobustnessLevels)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysCapabilitiesModuleMock),
+                                              &MediaKeysCapabilitiesModuleMock::defaultReturn))));
+}
+
+void MediaKeysTestMethods::getSupportedRobustnessLevels()
+{
+    std::vector<std::string> robustnessLevels;
+    EXPECT_TRUE(m_mediaKeysCapabilities->getSupportedRobustnessLevels(kKeySystems[0], robustnessLevels));
+    EXPECT_EQ(robustnessLevels, kRobustnessLevels);
+}
+
+void MediaKeysTestMethods::shouldNotGetSupportedRobustnessLevels()
+{
+    EXPECT_CALL(*m_mediaKeysCapabilitiesModuleMock,
+                getSupportedRobustnessLevels(_, getSupportedRobustnessLevelsRequestMatcher(kKeySystems[0]), _, _))
+        .WillOnce(DoAll(SetArgPointee<2>(
+                            m_mediaKeysCapabilitiesModuleMock->getSupportedRobustnessLevelsResponse(kRobustnessLevels)),
+                        WithArgs<0, 3>(Invoke(&(*m_mediaKeysCapabilitiesModuleMock),
+                                              &MediaKeysCapabilitiesModuleMock::failureReturn))));
+}
+
+void MediaKeysTestMethods::doesNotGetSupportedRobustnessLevels()
+{
+    std::vector<std::string> robustnessLevels;
+    EXPECT_FALSE(m_mediaKeysCapabilities->getSupportedRobustnessLevels(kKeySystems[0], robustnessLevels));
 }
 
 void MediaKeysTestMethods::shouldGetMetricSystemData()
