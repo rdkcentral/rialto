@@ -18,8 +18,13 @@
  */
 
 #include "YamlCppWrapper.h"
-#include "RialtoServerLogging.h"
+#include <cstdio>
 #include <yaml-cpp/yaml.h>
+
+/* Temporary HFP YAML test logging — remove before production merge */
+#define RIALTO_SERVER_LOG_INFO(fmt, ...)  fprintf(stderr, "[HFP YAML TEST INFO]  " fmt "\n", ##__VA_ARGS__)  // NOLINT
+#define RIALTO_SERVER_LOG_WARN(fmt, ...)  fprintf(stderr, "[HFP YAML TEST WARN]  " fmt "\n", ##__VA_ARGS__)  // NOLINT
+#define RIALTO_SERVER_LOG_ERROR(fmt, ...) fprintf(stderr, "[HFP YAML TEST ERROR] " fmt "\n", ##__VA_ARGS__)  // NOLINT
 
 namespace
 {
