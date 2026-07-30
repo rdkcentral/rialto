@@ -39,11 +39,11 @@ namespace firebolt::rialto
  */
 enum class DynamicRange
 {
-    SDR,
-    HLG,
-    HDR10,
-    HDR10PLUS,
-    DOLBY_VISION
+    SDR,         /**< Standard Dynamic Range */
+    HLG,         /**< Hybrid Log-Gamma */
+    HDR10,       /**< HDR10 high dynamic range */
+    HDR10PLUS,   /**< HDR10+ high dynamic range */
+    DOLBY_VISION /**< Dolby Vision */
 };
 
 /**
@@ -51,8 +51,8 @@ enum class DynamicRange
  */
 enum class Mpeg2ProfileType
 {
-    MPEG2_MAIN,
-    MPEG2_SIMPLE
+    MPEG2_MAIN,  /**< MPEG2 Main profile */
+    MPEG2_SIMPLE /**< MPEG2 Simple profile */
 };
 
 /**
@@ -60,9 +60,9 @@ enum class Mpeg2ProfileType
  */
 enum class Mpeg2Level
 {
-    MPEG2_LEVEL_LOW,
-    MPEG2_LEVEL_MAIN,
-    MPEG2_LEVEL_HIGH
+    MPEG2_LEVEL_LOW,  /**< MPEG2 Low level */
+    MPEG2_LEVEL_MAIN, /**< MPEG2 Main level */
+    MPEG2_LEVEL_HIGH  /**< MPEG2 High level */
 };
 
 /**
@@ -70,9 +70,9 @@ enum class Mpeg2Level
  */
 enum class H264ProfileType
 {
-    H264_BASELINE,
-    H264_MAIN,
-    H264_HIGH
+    H264_BASELINE, /**< H.264 Baseline profile */
+    H264_MAIN,     /**< H.264 Main profile */
+    H264_HIGH      /**< H.264 High profile */
 };
 
 /**
@@ -80,13 +80,13 @@ enum class H264ProfileType
  */
 enum class H264Level
 {
-    H264_LEVEL_3,
-    H264_LEVEL_3_1,
-    H264_LEVEL_4,
-    H264_LEVEL_4_1,
-    H264_LEVEL_5,
-    H264_LEVEL_5_1,
-    H264_LEVEL_5_2
+    H264_LEVEL_3,   /**< H.264 Level 3.0 */
+    H264_LEVEL_3_1, /**< H.264 Level 3.1 */
+    H264_LEVEL_4,   /**< H.264 Level 4.0 */
+    H264_LEVEL_4_1, /**< H.264 Level 4.1 */
+    H264_LEVEL_5,   /**< H.264 Level 5.0 */
+    H264_LEVEL_5_1, /**< H.264 Level 5.1 */
+    H264_LEVEL_5_2  /**< H.264 Level 5.2 */
 };
 
 /**
@@ -94,9 +94,9 @@ enum class H264Level
  */
 enum class H265ProfileType
 {
-    H265_MAIN,
-    H265_MAIN_10,
-    H265_MAIN_10_HDR10
+    H265_MAIN,         /**< H.265 Main profile */
+    H265_MAIN_10,      /**< H.265 Main 10 profile */
+    H265_MAIN_10_HDR10 /**< H.265 Main 10 HDR10 profile */
 };
 
 /**
@@ -104,14 +104,14 @@ enum class H265ProfileType
  */
 enum class H265Level
 {
-    H265_LEVEL_4,
-    H265_LEVEL_4_1,
-    H265_LEVEL_5,
-    H265_LEVEL_5_1,
-    H265_LEVEL_5_2,
-    H265_LEVEL_6,
-    H265_LEVEL_6_1,
-    H265_LEVEL_6_2
+    H265_LEVEL_4,   /**< H.265 Level 4.0 */
+    H265_LEVEL_4_1, /**< H.265 Level 4.1 */
+    H265_LEVEL_5,   /**< H.265 Level 5.0 */
+    H265_LEVEL_5_1, /**< H.265 Level 5.1 */
+    H265_LEVEL_5_2, /**< H.265 Level 5.2 */
+    H265_LEVEL_6,   /**< H.265 Level 6.0 */
+    H265_LEVEL_6_1, /**< H.265 Level 6.1 */
+    H265_LEVEL_6_2  /**< H.265 Level 6.2 */
 };
 
 /**
@@ -119,10 +119,10 @@ enum class H265Level
  */
 enum class Vp9ProfileType
 {
-    VP9_PROFILE_0,
-    VP9_PROFILE_1,
-    VP9_PROFILE_2,
-    VP9_PROFILE_3
+    VP9_PROFILE_0, /**< VP9 Profile 0 */
+    VP9_PROFILE_1, /**< VP9 Profile 1 */
+    VP9_PROFILE_2, /**< VP9 Profile 2 */
+    VP9_PROFILE_3  /**< VP9 Profile 3 */
 };
 
 /**
@@ -130,20 +130,20 @@ enum class Vp9ProfileType
  */
 enum class Vp9Level
 {
-    VP9_LEVEL_1,
-    VP9_LEVEL_1_1,
-    VP9_LEVEL_2,
-    VP9_LEVEL_2_1,
-    VP9_LEVEL_3,
-    VP9_LEVEL_3_1,
-    VP9_LEVEL_4,
-    VP9_LEVEL_4_1,
-    VP9_LEVEL_5,
-    VP9_LEVEL_5_1,
-    VP9_LEVEL_5_2,
-    VP9_LEVEL_6,
-    VP9_LEVEL_6_1,
-    VP9_LEVEL_6_2
+    VP9_LEVEL_1,   /**< VP9 Level 1 */
+    VP9_LEVEL_1_1, /**< VP9 Level 1.1 */
+    VP9_LEVEL_2,   /**< VP9 Level 2 */
+    VP9_LEVEL_2_1, /**< VP9 Level 2.1 */
+    VP9_LEVEL_3,   /**< VP9 Level 3 */
+    VP9_LEVEL_3_1, /**< VP9 Level 3.1 */
+    VP9_LEVEL_4,   /**< VP9 Level 4 */
+    VP9_LEVEL_4_1, /**< VP9 Level 4.1 */
+    VP9_LEVEL_5,   /**< VP9 Level 5 */
+    VP9_LEVEL_5_1, /**< VP9 Level 5.1 */
+    VP9_LEVEL_5_2, /**< VP9 Level 5.2 */
+    VP9_LEVEL_6,   /**< VP9 Level 6 */
+    VP9_LEVEL_6_1, /**< VP9 Level 6.1 */
+    VP9_LEVEL_6_2  /**< VP9 Level 6.2 */
 };
 
 /**
@@ -151,8 +151,8 @@ enum class Vp9Level
  */
 enum class Av1ProfileType
 {
-    AV1_MAIN,
-    AV1_HIGH
+    AV1_MAIN, /**< AV1 Main profile */
+    AV1_HIGH  /**< AV1 High profile */
 };
 
 /**
@@ -160,14 +160,14 @@ enum class Av1ProfileType
  */
 enum class Av1Level
 {
-    AV1_LEVEL_4_0,
-    AV1_LEVEL_4_1,
-    AV1_LEVEL_5_0,
-    AV1_LEVEL_5_1,
-    AV1_LEVEL_5_2,
-    AV1_LEVEL_6_0,
-    AV1_LEVEL_6_1,
-    AV1_LEVEL_6_2
+    AV1_LEVEL_4_0, /**< AV1 Level 4.0 */
+    AV1_LEVEL_4_1, /**< AV1 Level 4.1 */
+    AV1_LEVEL_5_0, /**< AV1 Level 5.0 */
+    AV1_LEVEL_5_1, /**< AV1 Level 5.1 */
+    AV1_LEVEL_5_2, /**< AV1 Level 5.2 */
+    AV1_LEVEL_6_0, /**< AV1 Level 6.0 */
+    AV1_LEVEL_6_1, /**< AV1 Level 6.1 */
+    AV1_LEVEL_6_2  /**< AV1 Level 6.2 */
 };
 
 /**
@@ -250,8 +250,8 @@ inline bool operator==(const Av1Profile &lhs, const Av1Profile &rhs)
  */
 struct Mpeg2CodecCapability
 {
-    std::vector<Mpeg2Profile> profiles;       /**< Supported MPEG2 profiles */
-    std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
+    std::vector<Mpeg2Profile> profiles;      /**< Supported MPEG2 profiles */
+    std::vector<DynamicRange> dynamicRanges; /**< Dynamic ranges supported by this codec */
 };
 
 inline bool operator==(const Mpeg2CodecCapability &lhs, const Mpeg2CodecCapability &rhs)
@@ -264,8 +264,8 @@ inline bool operator==(const Mpeg2CodecCapability &lhs, const Mpeg2CodecCapabili
  */
 struct H264CodecCapability
 {
-    std::vector<H264Profile> profiles;        /**< Supported H.264 profiles */
-    std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
+    std::vector<H264Profile> profiles;       /**< Supported H.264 profiles */
+    std::vector<DynamicRange> dynamicRanges; /**< Dynamic ranges supported by this codec */
 };
 
 inline bool operator==(const H264CodecCapability &lhs, const H264CodecCapability &rhs)
@@ -278,8 +278,8 @@ inline bool operator==(const H264CodecCapability &lhs, const H264CodecCapability
  */
 struct H265CodecCapability
 {
-    std::vector<H265Profile> profiles;        /**< Supported H.265 profiles */
-    std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
+    std::vector<H265Profile> profiles;       /**< Supported H.265 profiles */
+    std::vector<DynamicRange> dynamicRanges; /**< Dynamic ranges supported by this codec */
 };
 
 inline bool operator==(const H265CodecCapability &lhs, const H265CodecCapability &rhs)
@@ -292,8 +292,8 @@ inline bool operator==(const H265CodecCapability &lhs, const H265CodecCapability
  */
 struct Vp9CodecCapability
 {
-    std::vector<Vp9Profile> profiles;         /**< Supported VP9 profiles */
-    std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
+    std::vector<Vp9Profile> profiles;        /**< Supported VP9 profiles */
+    std::vector<DynamicRange> dynamicRanges; /**< Dynamic ranges supported by this codec */
 };
 
 inline bool operator==(const Vp9CodecCapability &lhs, const Vp9CodecCapability &rhs)
@@ -306,8 +306,8 @@ inline bool operator==(const Vp9CodecCapability &lhs, const Vp9CodecCapability &
  */
 struct Av1CodecCapability
 {
-    std::vector<Av1Profile> profiles;         /**< Supported AV1 profiles */
-    std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
+    std::vector<Av1Profile> profiles;        /**< Supported AV1 profiles */
+    std::vector<DynamicRange> dynamicRanges; /**< Dynamic ranges supported by this codec */
 };
 
 inline bool operator==(const Av1CodecCapability &lhs, const Av1CodecCapability &rhs)
@@ -324,16 +324,16 @@ inline bool operator==(const Av1CodecCapability &lhs, const Av1CodecCapability &
 struct VideoCodecCapabilities
 {
     std::optional<Mpeg2CodecCapability> mpeg2; /**< MPEG2 capability (nullopt if absent) */
-    std::optional<H264CodecCapability>  h264;  /**< H.264 capability (nullopt if absent) */
-    std::optional<H265CodecCapability>  h265;  /**< H.265 capability (nullopt if absent) */
-    std::optional<Vp9CodecCapability>   vp9;   /**< VP9 capability (nullopt if absent) */
-    std::optional<Av1CodecCapability>   av1;   /**< AV1 capability (nullopt if absent) */
+    std::optional<H264CodecCapability> h264;   /**< H.264 capability (nullopt if absent) */
+    std::optional<H265CodecCapability> h265;   /**< H.265 capability (nullopt if absent) */
+    std::optional<Vp9CodecCapability> vp9;     /**< VP9 capability (nullopt if absent) */
+    std::optional<Av1CodecCapability> av1;     /**< AV1 capability (nullopt if absent) */
 };
 
 inline bool operator==(const VideoCodecCapabilities &lhs, const VideoCodecCapabilities &rhs)
 {
-    return lhs.mpeg2 == rhs.mpeg2 && lhs.h264 == rhs.h264 && lhs.h265 == rhs.h265 &&
-           lhs.vp9 == rhs.vp9 && lhs.av1 == rhs.av1;
+    return lhs.mpeg2 == rhs.mpeg2 && lhs.h264 == rhs.h264 && lhs.h265 == rhs.h265 && lhs.vp9 == rhs.vp9 &&
+           lhs.av1 == rhs.av1;
 }
 
 /**
