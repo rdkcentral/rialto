@@ -28,13 +28,15 @@ What Changes
   - Remove `dolbyMat` and `wma` from `AudioDecoderCapability` struct
   - Add `dolbyEac3` to `AudioDecoderCapability` struct
   - Change `maxBitDepth` from `std::optional<uint32_t>` to `uint32_t` (required)
+  - Add `operator==` to all capability structs (`AudioProfileCapability`, all codec capability structs, `AudioDecoderCapability`, `AudioDecoderCapabilities`) to enable full deep equality comparison in tests
 - Update `YamlCppWrapper.cpp`:
 
   - Rewrite all audio profile parsers to handle map-key format
   - Add `parseDolbyEac3Profiles()` for new codec
   - Add `parseMpegAudioProfiles()` for `LAYER_1`/`LAYER_2`
   - Add `parseBaseProfile()` for single-profile codecs
-  - Add `parseAudioProfileCapability()` helper to read per-profile fields
+  - Add `parseAudioProfileCapability()` helper to read per-profile fields; validates all four required fields (`maxBitrateInBps`, `maxChannels`, `maxSampleRateInHz`, `maxBitDepth`) are present and throws `std::runtime_error` if any are missing — caught by caller as `SCHEMA_VALIDATION_FAILED`
+  - `parseBaseProfileCapability()` enforces that the profile map key is exactly `"BASE"`; throws `std::runtime_error` on any other key
   - Remove `getDolbyMatProfiles()`, `getWmaProfiles()` parsers
   - Remove `getCommonAudioParams()` (capabilities now inside profiles)
   - Update `buildAudioDecoderCapability()`: add `DOLBY_EAC3`, remove
@@ -49,6 +51,7 @@ What Changes
   - Update `VideoCodecCapabilities` struct: replace five flat profile vectors with
     five `std::optional<*CodecCapability>` fields
   - Remove top-level `dynamicRanges` from `VideoDecoderCapability` struct
+  - Add `operator==` to all video capability structs (`Mpeg2Profile`, `H264Profile`, `H265Profile`, `Vp9Profile`, `Av1Profile`, all codec capability structs, `VideoCodecCapabilities`, `VideoDecoderCapability`, `VideoDecoderCapabilities`) to enable full deep equality comparison in tests
 - Update `proto/mediapipelinecapabilitiesmodule.proto`:
 
   - Update protobuf messages to reflect per-codec dynamic range structure
@@ -64,6 +67,14 @@ What Changes
   - Add `DolbyEac3Capability` message
   - Update `AudioDecoderCapability`: remove `dolby_mat`/`wma`,
     add `dolby_eac3`
+- Update `GstCapabilities.cpp`:
+
+  - Differentiate log level on YAML load result: `CONFIG_NOT_FOUND` logs at `INFO` (expected absence on platforms without HFP config); `SCHEMA_VALIDATION_FAILED` / `INTERNAL_ERROR` log at `WARN` (genuine failure)
+
+- Update `tests/common/matchers/MediaPipelineStructureMatchers.h`:
+
+  - Rewrite `decoderCapabilitiesMatcher` to use `operator==` for full deep comparison of all capability fields, replacing the previous shallow check that only compared version strings and entry count
+
 - Update `MediaPipelineCapabilitiesModuleService.cpp` (Server IPC):
 
   - Update server IPC serialization (`MediaPipelineCapabilitiesModuleService.cpp`)
@@ -98,8 +109,10 @@ Impacted Areas
 | --------------------- | ----------------------------------------| -------------------------------------------------|
 | Public API            | Modified struct                         | `media/public/include/VideoDecoderCapabilities.h`|
 | Public API            | Modified struct + enums                 | `media/public/include/AudioDecoderCapabilities.h`|
-| YAML Parser           | Logic change + Full rewrite of audio section | `wrappers/source/YamlCppWrapper.cpp`        |
+| YAML Parser           | Logic change + Full rewrite of audio section + strict field/key validation | `wrappers/source/YamlCppWrapper.cpp`        |
 | Wrapper Interface     | No change                               | `wrappers/interface/IYamlCppWrapper.h`           |
+| GStreamer Capabilities | Log-level fix for missing-config vs. real errors | `media/server/gstplayer/source/GstCapabilities.cpp` |
+| Test Matchers         | Deep equality comparison via `operator==` | `tests/common/matchers/MediaPipelineStructureMatchers.h` |
 | Protobuf IPC contract | Modified messages + enums               | `proto/mediapipelinecapabilitiesmodule.proto`    |
 | Server IPC            | Serialization rewrite| `media/server/ipc/source/MediaPipelineCapabilitiesModuleService.cpp`|
 | Client IPC            | Deserialization rewrite        | `media/client/ipc/source/MediaPipelineCapabilitiesIpc.cpp`|
@@ -132,6 +145,10 @@ Success Criteria
   DOLBY_AC3, WMA/DOLBY_MAT absence, BASE profile codecs, required
   maxBitDepth
 - New unit tests cover per-codec dynamic range parsing and optional codec presence checks
+- YAML with any missing required field in `AudioProfileCapability` returns `SCHEMA_VALIDATION_FAILED` (not silent zero)
+- YAML with a non-`BASE` key in a single-profile codec returns `SCHEMA_VALIDATION_FAILED`
+- `CONFIG_NOT_FOUND` produces an `INFO` log, not a `WARN`, on startup
+- `decoderCapabilitiesMatcher` validates all profile enums and numeric limits end-to-end, not just entry count
 - All existing unit tests pass with no regressions
 
 Rollback Plan

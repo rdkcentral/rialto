@@ -36,8 +36,6 @@ MATCHER_P(playbackInfoMatcher, expectedPlaybackInfo, "")
 
 MATCHER_P(decoderCapabilitiesMatcher, expectedDecoderCapabilities, "")
 {
-    return ((expectedDecoderCapabilities.interfaceVersion == arg.interfaceVersion) &&
-            (expectedDecoderCapabilities.schemaVersion == arg.schemaVersion) &&
-            (expectedDecoderCapabilities.capabilities.size() == arg.capabilities.size()));
+    return arg == expectedDecoderCapabilities;
 }
 #endif // MEDIA_PIPELINE_STRUCTURE_MATCHERS_H_

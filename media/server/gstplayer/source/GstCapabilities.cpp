@@ -176,14 +176,16 @@ GstCapabilities::GstCapabilities(
     : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
       m_yamlCppWrapper{yamlCppWrapper}, m_gstInitialiser{gstInitialiser}
 {
-    if (DecoderCapabilitiesStatus::OK != m_yamlCppWrapper->getAudioDecoderCapabilities(m_audioDecoderCapabilities))
+    auto logCapabilityStatus = [](DecoderCapabilitiesStatus status, const char *type)
     {
-        RIALTO_SERVER_LOG_WARN("Failed to get audio decoder capabilities from config file");
-    }
-    if (DecoderCapabilitiesStatus::OK != m_yamlCppWrapper->getVideoDecoderCapabilities(m_videoDecoderCapabilities))
-    {
-        RIALTO_SERVER_LOG_WARN("Failed to get video decoder capabilities from config file");
-    }
+        if (status == DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
+            RIALTO_SERVER_LOG_INFO("No %s decoder capabilities config file found", type);
+        else if (status != DecoderCapabilitiesStatus::OK)
+            RIALTO_SERVER_LOG_WARN("Failed to get %s decoder capabilities from config file", type);
+    };
+
+    logCapabilityStatus(m_yamlCppWrapper->getAudioDecoderCapabilities(m_audioDecoderCapabilities), "audio");
+    logCapabilityStatus(m_yamlCppWrapper->getVideoDecoderCapabilities(m_videoDecoderCapabilities), "video");
     m_initialisationThread = std::thread(
         [this]()
         {

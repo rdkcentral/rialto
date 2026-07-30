@@ -28,7 +28,6 @@
  */
 
 #include <cstdint>
-#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -181,6 +180,11 @@ struct Mpeg2Profile
     uint64_t maxBitrateInBps; /**< Maximum bitrate in bits per second */
 };
 
+inline bool operator==(const Mpeg2Profile &lhs, const Mpeg2Profile &rhs)
+{
+    return lhs.type == rhs.type && lhs.maxLevel == rhs.maxLevel && lhs.maxBitrateInBps == rhs.maxBitrateInBps;
+}
+
 /**
  * @brief Profile and level information for H.264/AVC
  */
@@ -191,6 +195,11 @@ struct H264Profile
     uint64_t maxBitrateInBps; /**< Maximum bitrate in bits per second */
 };
 
+inline bool operator==(const H264Profile &lhs, const H264Profile &rhs)
+{
+    return lhs.type == rhs.type && lhs.maxLevel == rhs.maxLevel && lhs.maxBitrateInBps == rhs.maxBitrateInBps;
+}
+
 /**
  * @brief Profile and level information for H.265/HEVC
  */
@@ -200,6 +209,11 @@ struct H265Profile
     H265Level maxLevel;       /**< Maximum supported level */
     uint64_t maxBitrateInBps; /**< Maximum bitrate in bits per second */
 };
+
+inline bool operator==(const H265Profile &lhs, const H265Profile &rhs)
+{
+    return lhs.type == rhs.type && lhs.maxLevel == rhs.maxLevel && lhs.maxBitrateInBps == rhs.maxBitrateInBps;
+}
 
 /**
  * @brief Profile and level information for VP9
@@ -221,6 +235,16 @@ struct Av1Profile
     uint64_t maxBitrateInBps; /**< Maximum bitrate in bits per second */
 };
 
+inline bool operator==(const Vp9Profile &lhs, const Vp9Profile &rhs)
+{
+    return lhs.type == rhs.type && lhs.maxLevel == rhs.maxLevel && lhs.maxBitrateInBps == rhs.maxBitrateInBps;
+}
+
+inline bool operator==(const Av1Profile &lhs, const Av1Profile &rhs)
+{
+    return lhs.type == rhs.type && lhs.maxLevel == rhs.maxLevel && lhs.maxBitrateInBps == rhs.maxBitrateInBps;
+}
+
 /**
  * @brief Per-codec capability for MPEG-2: profiles and per-codec dynamic ranges.
  */
@@ -229,6 +253,11 @@ struct Mpeg2CodecCapability
     std::vector<Mpeg2Profile> profiles;       /**< Supported MPEG2 profiles */
     std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
 };
+
+inline bool operator==(const Mpeg2CodecCapability &lhs, const Mpeg2CodecCapability &rhs)
+{
+    return lhs.profiles == rhs.profiles && lhs.dynamicRanges == rhs.dynamicRanges;
+}
 
 /**
  * @brief Per-codec capability for H.264/AVC: profiles and per-codec dynamic ranges.
@@ -239,6 +268,11 @@ struct H264CodecCapability
     std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
 };
 
+inline bool operator==(const H264CodecCapability &lhs, const H264CodecCapability &rhs)
+{
+    return lhs.profiles == rhs.profiles && lhs.dynamicRanges == rhs.dynamicRanges;
+}
+
 /**
  * @brief Per-codec capability for H.265/HEVC: profiles and per-codec dynamic ranges.
  */
@@ -247,6 +281,11 @@ struct H265CodecCapability
     std::vector<H265Profile> profiles;        /**< Supported H.265 profiles */
     std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
 };
+
+inline bool operator==(const H265CodecCapability &lhs, const H265CodecCapability &rhs)
+{
+    return lhs.profiles == rhs.profiles && lhs.dynamicRanges == rhs.dynamicRanges;
+}
 
 /**
  * @brief Per-codec capability for VP9: profiles and per-codec dynamic ranges.
@@ -257,6 +296,11 @@ struct Vp9CodecCapability
     std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
 };
 
+inline bool operator==(const Vp9CodecCapability &lhs, const Vp9CodecCapability &rhs)
+{
+    return lhs.profiles == rhs.profiles && lhs.dynamicRanges == rhs.dynamicRanges;
+}
+
 /**
  * @brief Per-codec capability for AV1: profiles and per-codec dynamic ranges.
  */
@@ -265,6 +309,11 @@ struct Av1CodecCapability
     std::vector<Av1Profile> profiles;         /**< Supported AV1 profiles */
     std::vector<DynamicRange> dynamicRanges;  /**< Dynamic ranges supported by this codec */
 };
+
+inline bool operator==(const Av1CodecCapability &lhs, const Av1CodecCapability &rhs)
+{
+    return lhs.profiles == rhs.profiles && lhs.dynamicRanges == rhs.dynamicRanges;
+}
 
 /**
  * @brief Codec capabilities for all supported video codecs.
@@ -281,6 +330,12 @@ struct VideoCodecCapabilities
     std::optional<Av1CodecCapability>   av1;   /**< AV1 capability (nullopt if absent) */
 };
 
+inline bool operator==(const VideoCodecCapabilities &lhs, const VideoCodecCapabilities &rhs)
+{
+    return lhs.mpeg2 == rhs.mpeg2 && lhs.h264 == rhs.h264 && lhs.h265 == rhs.h265 &&
+           lhs.vp9 == rhs.vp9 && lhs.av1 == rhs.av1;
+}
+
 /**
  * @brief Decoder capability entry.
  *
@@ -292,6 +347,11 @@ struct VideoDecoderCapability
     VideoCodecCapabilities codecCapabilities; /**< Per-codec capabilities */
 };
 
+inline bool operator==(const VideoDecoderCapability &lhs, const VideoDecoderCapability &rhs)
+{
+    return lhs.codecCapabilities == rhs.codecCapabilities;
+}
+
 /**
  * @brief Video decoder capabilities container
  */
@@ -301,6 +361,12 @@ struct VideoDecoderCapabilities
     std::string schemaVersion;                        /**< Schema version (e.g., "0.1.0") */
     std::vector<VideoDecoderCapability> capabilities; /**< List of decoder capabilities */
 };
+
+inline bool operator==(const VideoDecoderCapabilities &lhs, const VideoDecoderCapabilities &rhs)
+{
+    return lhs.interfaceVersion == rhs.interfaceVersion && lhs.schemaVersion == rhs.schemaVersion &&
+           lhs.capabilities == rhs.capabilities;
+}
 
 } // namespace firebolt::rialto
 

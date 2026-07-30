@@ -150,6 +150,12 @@ struct AudioProfileCapability
     uint32_t maxBitDepth;       /**< Maximum bit depth */
 };
 
+inline bool operator==(const AudioProfileCapability &lhs, const AudioProfileCapability &rhs)
+{
+    return lhs.maxBitrateInBps == rhs.maxBitrateInBps && lhs.maxChannels == rhs.maxChannels &&
+           lhs.maxSampleRateInHz == rhs.maxSampleRateInHz && lhs.maxBitDepth == rhs.maxBitDepth;
+}
+
 /**
  * @brief PCM codec capabilities
  */
@@ -157,6 +163,8 @@ struct PcmCapability
 {
     AudioProfileCapability base; /**< Single-profile capability */
 };
+
+inline bool operator==(const PcmCapability &lhs, const PcmCapability &rhs) { return lhs.base == rhs.base; }
 
 /**
  * @brief AAC codec capabilities
@@ -168,6 +176,8 @@ struct AacCapability
     std::map<AacProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
+inline bool operator==(const AacCapability &lhs, const AacCapability &rhs) { return lhs.profiles == rhs.profiles; }
+
 /**
  * @brief MPEG Audio codec capabilities (LAYER_1, LAYER_2 per HFP schema v1.0.0)
  */
@@ -175,6 +185,8 @@ struct MpegAudioCapability
 {
     std::map<MpegAudioProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
+
+inline bool operator==(const MpegAudioCapability &lhs, const MpegAudioCapability &rhs) { return lhs.profiles == rhs.profiles; }
 
 /**
  * @brief MP3 codec capabilities
@@ -184,6 +196,8 @@ struct Mp3Capability
     AudioProfileCapability base; /**< Single-profile capability */
 };
 
+inline bool operator==(const Mp3Capability &lhs, const Mp3Capability &rhs) { return lhs.base == rhs.base; }
+
 /**
  * @brief ALAC codec capabilities
  */
@@ -192,6 +206,8 @@ struct AlacCapability
     AudioProfileCapability base; /**< Single-profile capability */
 };
 
+inline bool operator==(const AlacCapability &lhs, const AlacCapability &rhs) { return lhs.base == rhs.base; }
+
 /**
  * @brief SBC codec capabilities
  */
@@ -199,6 +215,8 @@ struct SbcCapability
 {
     AudioProfileCapability base; /**< Single-profile capability */
 };
+
+inline bool operator==(const SbcCapability &lhs, const SbcCapability &rhs) { return lhs.base == rhs.base; }
 
 /**
  * @brief Dolby AC3 codec capabilities
@@ -210,6 +228,8 @@ struct DolbyAc3Capability
     std::map<DolbyAc3Profile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
+inline bool operator==(const DolbyAc3Capability &lhs, const DolbyAc3Capability &rhs) { return lhs.profiles == rhs.profiles; }
+
 /**
  * @brief Dolby AC4 codec capabilities
  */
@@ -217,6 +237,8 @@ struct DolbyAc4Capability
 {
     AudioProfileCapability base; /**< Single-profile capability */
 };
+
+inline bool operator==(const DolbyAc4Capability &lhs, const DolbyAc4Capability &rhs) { return lhs.base == rhs.base; }
 
 
 
@@ -228,6 +250,8 @@ struct DolbyTruehdCapability
     AudioProfileCapability base; /**< Single-profile capability */
 };
 
+inline bool operator==(const DolbyTruehdCapability &lhs, const DolbyTruehdCapability &rhs) { return lhs.base == rhs.base; }
+
 /**
  * @brief FLAC codec capabilities
  */
@@ -235,6 +259,8 @@ struct FlacCapability
 {
     AudioProfileCapability base; /**< Single-profile capability */
 };
+
+inline bool operator==(const FlacCapability &lhs, const FlacCapability &rhs) { return lhs.base == rhs.base; }
 
 /**
  * @brief Vorbis codec capabilities
@@ -244,6 +270,8 @@ struct VorbisCapability
     AudioProfileCapability base; /**< Single-profile capability */
 };
 
+inline bool operator==(const VorbisCapability &lhs, const VorbisCapability &rhs) { return lhs.base == rhs.base; }
+
 /**
  * @brief Opus codec capabilities
  */
@@ -251,6 +279,8 @@ struct OpusCapability
 {
     AudioProfileCapability base; /**< Single-profile capability */
 };
+
+inline bool operator==(const OpusCapability &lhs, const OpusCapability &rhs) { return lhs.base == rhs.base; }
 
 
 
@@ -264,6 +294,8 @@ struct RealAudioCapability
     std::map<RealAudioProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
+inline bool operator==(const RealAudioCapability &lhs, const RealAudioCapability &rhs) { return lhs.profiles == rhs.profiles; }
+
 /**
  * @brief USAC codec capabilities
  *
@@ -273,6 +305,8 @@ struct UsacCapability
 {
     std::map<UsacProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
+
+inline bool operator==(const UsacCapability &lhs, const UsacCapability &rhs) { return lhs.profiles == rhs.profiles; }
 
 /**
  * @brief DTS codec capabilities
@@ -284,6 +318,8 @@ struct DtsCapability
     std::map<DtsProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
+inline bool operator==(const DtsCapability &lhs, const DtsCapability &rhs) { return lhs.profiles == rhs.profiles; }
+
 /**
  * @brief AVS audio codec capabilities
  *
@@ -293,6 +329,8 @@ struct AvsCapability
 {
     std::map<AvsProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
+
+inline bool operator==(const AvsCapability &lhs, const AvsCapability &rhs) { return lhs.profiles == rhs.profiles; }
 
 /**
  * @brief Audio decoder capability entry for a specific rank
@@ -304,6 +342,8 @@ struct DolbyEac3Capability
 {
     std::map<DolbyEac3Profile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
+
+inline bool operator==(const DolbyEac3Capability &lhs, const DolbyEac3Capability &rhs) { return lhs.profiles == rhs.profiles; }
 
 struct AudioDecoderCapability
 {
@@ -328,6 +368,16 @@ struct AudioDecoderCapability
     std::optional<AvsCapability> avs;                 /**< AVS capabilities (if supported) */
 };
 
+inline bool operator==(const AudioDecoderCapability &lhs, const AudioDecoderCapability &rhs)
+{
+    return lhs.pcm == rhs.pcm && lhs.aac == rhs.aac && lhs.mpegAudio == rhs.mpegAudio &&
+           lhs.mp3 == rhs.mp3 && lhs.alac == rhs.alac && lhs.sbc == rhs.sbc &&
+           lhs.dolbyAc3 == rhs.dolbyAc3 && lhs.dolbyAc4 == rhs.dolbyAc4 && lhs.dolbyEac3 == rhs.dolbyEac3 &&
+           lhs.dolbyTruehd == rhs.dolbyTruehd && lhs.flac == rhs.flac && lhs.vorbis == rhs.vorbis &&
+           lhs.opus == rhs.opus && lhs.realAudio == rhs.realAudio && lhs.usac == rhs.usac &&
+           lhs.dts == rhs.dts && lhs.avs == rhs.avs;
+}
+
 /**
  * @brief Audio decoder capabilities container
  */
@@ -337,6 +387,12 @@ struct AudioDecoderCapabilities
     std::string schemaVersion;                        /**< Schema version (e.g., "0.1.0") */
     std::vector<AudioDecoderCapability> capabilities; /**< List of decoder capabilities */
 };
+
+inline bool operator==(const AudioDecoderCapabilities &lhs, const AudioDecoderCapabilities &rhs)
+{
+    return lhs.interfaceVersion == rhs.interfaceVersion && lhs.schemaVersion == rhs.schemaVersion &&
+           lhs.capabilities == rhs.capabilities;
+}
 
 } // namespace firebolt::rialto
 

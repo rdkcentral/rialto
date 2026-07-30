@@ -19,12 +19,11 @@
 
 #include "YamlCppWrapper.h"
 #include <cstdio>
+#include <stdexcept>
 #include <yaml-cpp/yaml.h>
 
 /* Temporary HFP YAML test logging — remove before production merge */
-#define RIALTO_SERVER_LOG_INFO(fmt, ...)  fprintf(stderr, "[HFP YAML TEST INFO]  " fmt "\n", ##__VA_ARGS__)  // NOLINT
-#define RIALTO_SERVER_LOG_WARN(fmt, ...)  fprintf(stderr, "[HFP YAML TEST WARN]  " fmt "\n", ##__VA_ARGS__)  // NOLINT
-#define RIALTO_SERVER_LOG_ERROR(fmt, ...) fprintf(stderr, "[HFP YAML TEST ERROR] " fmt "\n", ##__VA_ARGS__)  // NOLINT
+#define RIALTO_SERVER_LOG_DEBUG(fmt, ...)  fprintf(stderr, "[HFP YAML TEST INFO]  " fmt "\n", ##__VA_ARGS__)  // NOLINT
 
 namespace
 {
@@ -34,15 +33,16 @@ const std::string kVideoCapabilitiesFilePath{"/product/hfp/config/hfp-videodecod
 
 firebolt::rialto::AudioProfileCapability parseAudioProfileCapability(const YAML::Node &node)
 {
+    if (!node["maxBitrateInBps"] || !node["maxChannels"] || !node["maxSampleRateInHz"] || !node["maxBitDepth"])
+    {
+        throw std::runtime_error("AudioProfileCapability: missing required field(s) "
+                                 "(maxBitrateInBps, maxChannels, maxSampleRateInHz, maxBitDepth)");
+    }
     firebolt::rialto::AudioProfileCapability cap{};
-    if (node["maxBitrateInBps"])
-        cap.maxBitrateInBps = node["maxBitrateInBps"].as<uint64_t>();
-    if (node["maxChannels"])
-        cap.maxChannels = node["maxChannels"].as<uint32_t>();
-    if (node["maxSampleRateInHz"])
-        cap.maxSampleRateInHz = node["maxSampleRateInHz"].as<uint32_t>();
-    if (node["maxBitDepth"])
-        cap.maxBitDepth = node["maxBitDepth"].as<uint32_t>();
+    cap.maxBitrateInBps   = node["maxBitrateInBps"].as<uint64_t>();
+    cap.maxChannels       = node["maxChannels"].as<uint32_t>();
+    cap.maxSampleRateInHz = node["maxSampleRateInHz"].as<uint32_t>();
+    cap.maxBitDepth       = node["maxBitDepth"].as<uint32_t>();
     return cap;
 }
 
@@ -57,8 +57,12 @@ firebolt::rialto::AudioProfileCapability parseBaseProfileCapability(const YAML::
     {
         for (const auto &entry : codecData["profiles"])
         {
-            for (YAML::const_iterator it = entry.begin(); it != entry.end(); ++it)
+            YAML::const_iterator it = entry.begin();
+            if (it != entry.end())
             {
+                if (it->first.as<std::string>() != "BASE")
+                    throw std::runtime_error("parseBaseProfileCapability: expected key 'BASE', got '" +
+                                             it->first.as<std::string>() + "'");
                 return parseAudioProfileCapability(it->second);
             }
         }
@@ -162,7 +166,7 @@ firebolt::rialto::AudioDecoderCapability buildAudioDecoderCapability(const YAML:
                 for (YAML::const_iterator codecIt = codecCapability.begin(); codecIt != codecCapability.end(); ++codecIt)
                 {
                     const std::string kCodecName{codecIt->first.as<std::string>()};
-                    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Audio codec key found in YAML: %s", kCodecName.c_str());
+                    RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Audio codec key found in YAML: %s", kCodecName.c_str());
                     const auto &kCodecData{codecIt->second};
                     if ("PCM" == kCodecName)
                     {
@@ -258,7 +262,7 @@ firebolt::rialto::AudioDecoderCapability buildAudioDecoderCapability(const YAML:
                     }
                     else
                     {
-                        RIALTO_SERVER_LOG_WARN("[HFP YAML TEST] Audio codec key not recognized (ignored): %s",
+                        RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Audio codec key not recognized (ignored): %s",
                                                kCodecName.c_str());
                     }
                 }
@@ -470,7 +474,7 @@ firebolt::rialto::VideoDecoderCapability buildVideoDecoderCapability(const YAML:
                      codecCapabilitiesIt != codecCapability.end(); ++codecCapabilitiesIt)
                 {
                     const std::string kCodecName = codecCapabilitiesIt->first.as<std::string>();
-                    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Video codec key found in YAML: %s", kCodecName.c_str());
+                    RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Video codec key found in YAML: %s", kCodecName.c_str());
                     const YAML::Node &codecNode = codecCapabilitiesIt->second;
                     if ("MPEG2_VIDEO" == kCodecName)
                     {
@@ -509,8 +513,8 @@ firebolt::rialto::VideoDecoderCapability buildVideoDecoderCapability(const YAML:
                     }
                     else
                     {
-                        RIALTO_SERVER_LOG_WARN("[HFP YAML TEST] Video codec key not recognized (ignored): %s",
-                                               kCodecName.c_str());
+                        RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Video codec key not recognized (ignored): %s",
+                                                kCodecName.c_str());
                     }
                 }
             }
@@ -531,16 +535,16 @@ std::shared_ptr<IYamlCppWrapper> YamlCppWrapperFactory::createYamlCppWrapper()
 DecoderCapabilitiesStatus YamlCppWrapper::getAudioDecoderCapabilities(AudioDecoderCapabilities &capabilities) const
 try
 {
-    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Loading audio capabilities from: %s",
+    RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Loading audio capabilities from: %s",
                            kAudioCapabilitiesFilePath.c_str());
     YAML::Node audioCapsFile = YAML::LoadFile(kAudioCapabilitiesFilePath);
     if (audioCapsFile.IsNull())
     {
-        RIALTO_SERVER_LOG_WARN("[HFP YAML TEST] Audio YAML file not found or empty: %s",
+        RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Audio YAML file not found or empty: %s",
                                kAudioCapabilitiesFilePath.c_str());
         return DecoderCapabilitiesStatus::CONFIG_NOT_FOUND;
     }
-    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Audio YAML file loaded successfully");
+    RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Audio YAML file loaded successfully");
     if (audioCapsFile["audiodecoder"])
     {
         if (audioCapsFile["audiodecoder"]["interfaceVersion"])
@@ -550,7 +554,7 @@ try
         if (audioCapsFile["audiodecoder"]["schemaVersion"])
         {
             capabilities.schemaVersion = audioCapsFile["audiodecoder"]["schemaVersion"].as<std::string>();
-            RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Audio YAML schemaVersion: %s",
+            RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Audio YAML schemaVersion: %s",
                                    capabilities.schemaVersion.c_str());
         }
         if (audioCapsFile["audiodecoder"]["Capabilities"])
@@ -561,29 +565,29 @@ try
             }
         }
     }
-    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Audio capabilities parsed successfully: %zu entr(ies)",
+    RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Audio capabilities parsed successfully: %zu entr(ies)",
                            capabilities.capabilities.size());
     return DecoderCapabilitiesStatus::OK;
 }
 catch (const std::exception &e)
 {
-    RIALTO_SERVER_LOG_ERROR("[HFP YAML TEST] Exception while parsing audio YAML: %s", e.what());
+    RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Exception while parsing audio YAML: %s", e.what());
     return DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED;
 }
 
 DecoderCapabilitiesStatus YamlCppWrapper::getVideoDecoderCapabilities(VideoDecoderCapabilities &capabilities) const
 try
 {
-    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Loading video capabilities from: %s",
+    RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Loading video capabilities from: %s",
                            kVideoCapabilitiesFilePath.c_str());
     YAML::Node videoCapsFile = YAML::LoadFile(kVideoCapabilitiesFilePath);
     if (videoCapsFile.IsNull())
     {
-        RIALTO_SERVER_LOG_WARN("[HFP YAML TEST] Video YAML file not found or empty: %s",
+        RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Video YAML file not found or empty: %s",
                                kVideoCapabilitiesFilePath.c_str());
         return DecoderCapabilitiesStatus::CONFIG_NOT_FOUND;
     }
-    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Video YAML file loaded successfully");
+    RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Video YAML file loaded successfully");
     if (videoCapsFile["videodecoder"])
     {
         if (videoCapsFile["videodecoder"]["interfaceVersion"])
@@ -593,7 +597,7 @@ try
         if (videoCapsFile["videodecoder"]["schemaVersion"])
         {
             capabilities.schemaVersion = videoCapsFile["videodecoder"]["schemaVersion"].as<std::string>();
-            RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Video YAML schemaVersion: %s",
+            RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Video YAML schemaVersion: %s",
                                    capabilities.schemaVersion.c_str());
         }
         if (videoCapsFile["videodecoder"]["Capabilities"])
@@ -604,13 +608,13 @@ try
             }
         }
     }
-    RIALTO_SERVER_LOG_INFO("[HFP YAML TEST] Video capabilities parsed successfully: %zu entr(ies)",
+    RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Video capabilities parsed successfully: %zu entr(ies)",
                            capabilities.capabilities.size());
     return DecoderCapabilitiesStatus::OK;
 }
 catch (const std::exception &e)
 {
-    RIALTO_SERVER_LOG_ERROR("[HFP YAML TEST] Exception while parsing video YAML: %s", e.what());
+    RIALTO_SERVER_LOG_DEBUG("[HFP YAML] Exception while parsing video YAML: %s", e.what());
     return DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED;
 }
 
