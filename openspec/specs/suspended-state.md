@@ -83,7 +83,7 @@ Service forwarding:
 ### 1. Request handling
 When suspendSessionServer(appId) is called:
 1. Request is serialized on manager event thread.
-2. Manager resolves app to active session server instance.
+2. Manager resolves app to active or inactive session server instance.
 3. If no session server exists for appId, operation fails.
 
 ### 2. Suspend trigger

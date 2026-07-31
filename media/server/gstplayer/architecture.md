@@ -70,7 +70,9 @@ Primary use cases:
 **Thread Safety**:
 - All pipeline mutations (source attach, sample push, seek, state change) are serialized on the `WorkerThread` task queue.
 - GStreamer bus message processing runs on a separate `GstDispatcherThread`.
+- GstMessage received in GstDispatcherThread is later handled on a worker thread with HandleBusMessage task
 - `GstCapabilities` initialization runs asynchronously in a background thread and gates queries with a condition variable until complete.
+
 
 **Performance**:
 - Sample injection uses the `GstRialtoSrc` custom GStreamer `appsrc`-based source element to minimize copy paths.
@@ -275,9 +277,11 @@ Each task encapsulates one atomic pipeline operation. Key tasks:
 - `SetupElement` — connects decoder element signals (first-frame, audio underflow probes) once the GStreamer pipeline auto-plugs elements.
 - `CheckAudioUnderflow` — runs on timer; compares pipeline clock position against last decoded audio timestamp to detect stalls.
 - `Flush` — sends `flush-start`/`flush-stop` on the appsrc; coordinate with `FlushOnPrerollController` to avoid the GStreamer preroll race.
+- `SetSourcePosition` — records the target seek position, applied rate, and stop position for a given source type (audio, video, or subtitle). For audio/video sources the data is stored in `GenericPlayerContext::initialPositions` as a `SegmentData` entry, to be consumed when the next buffer is pushed through the appsrc. For subtitle sources, if source setup has already finished, the position is applied immediately via a `gObjectSet` on the subtitle sink; otherwise it is queued in the same `initialPositions` map.
 
 **Web Audio Player (`GstWebAudioPlayer.cpp`)**  
 Separate, simpler pipeline for PCM web audio. 8 tasks cover the full lifecycle (set caps, write, play, pause, stop, shutdown, EOS, ping).
+It also uses different shared memory buffer - In case of web audio we have a push mode instead of pull mode. SHM is a circular buffer, the client app pushes data when it's allowed to do so instead of waiting for NeedData to respond with haveData.
 
 **GstCapabilities (`GstCapabilities.cpp`)**  
 Queries GStreamer element factory registry using `IGstWrapper` to determine supported MIME types and decoder/sink properties. Initialization is async (waits for `GstInitialiser`) to avoid blocking callers before `gst_init` completes. Queries block on a condition variable until ready.
@@ -512,7 +516,7 @@ These are callbacks from GstPlayer outward to the server domain:
 - Each `GstGenericPlayer` instance owns two runtime threads:
   - `WorkerThread` — all pipeline mutations.
   - `GstDispatcherThread` — GStreamer bus message poll loop.
-- `GstCapabilities` owns one background init thread that exits after `gst_init` completes.
+- `GstCapabilities` owns one background init thread that: waits for `GstInitialiser::waitForInitialisation()`, then calls `fillSupportedMimeTypes()` which queries the GStreamer element factory registry (decoders, parser–decoder chains, sinks) and saves the results into the internal `m_supportedMimeTypes` set, then sets `m_isInitialised` and notifies the condition variable before exiting. The thread therefore exits only after all required information has been collected from GStreamer elements, not immediately when `gst_init` completes.
 - There is one `GstInitialiser` singleton per `RialtoServer` process, initialized once.
 - Multiple `GstGenericPlayer` instances (one per active application session) can coexist inside the same `RialtoServer` process, each with independent pipelines and threads.
 
