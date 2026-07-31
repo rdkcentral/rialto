@@ -41,19 +41,19 @@ jobs:
         with:
           message: |
             Pull request title must follow the pattern:
-            <JIRA TICKET #1>: <one line summary of change less than 65 characters>
+            <JIRA TICKET>: <one line summary of change less than 65 characters>
 
             Pull request description must follow the Commit message format for RDK-E:
             https://etwiki.sys.comcast.net/spaces/RDKAR/pages/1407997180/Commit+Message+Format+For+RDKE
 
-            1. Associated JIRA ticket in format : <JIRA TICKET #1>: <one line summary of change less than 65 characters>
+            1. Associated JIRA ticket in format : <JIRA TICKET>: <one line summary of change less than 65 characters>
             2. Detailed reason for change information
             3. Test procedure. Only references links to Jira ticket or sub tickets where test steps and references are captured.
 
-            <JIRA TICKET #1>: <one line summary of change less than 65 characters>
+            <JIRA TICKET>: <one line summary of change less than 65 characters>
             <empty line>
             Reason for change: <explanation of change>
-            Test Procedure: < https://ccp.sys.comcast.net/browse/JIRA TICKET #1/url/to/test_step_section>
+            Test Procedure: < https://ccp.sys.comcast.net/browse/JIRA TICKET/url/to/test_step_section>
 
       # Check PR title
       - name: Match PR title
