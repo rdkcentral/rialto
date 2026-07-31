@@ -71,7 +71,7 @@ jobs:
         if: failure() || success()
         with:
           text: ${{ github.event.pull_request.body }}
-          regex: '(?s)^([A-Z][A-Z0-9]+-\d+): (.{1,64})\R\RReason for change:.*?(?:\RTest Procedure:.*)?$'
+          regex: '^([A-Z][A-Z0-9]+-\d+): (.{1,64})\r?\n\r?\nReason for change:([\s\S]*?)(?:\r?\nTest Procedure:([\s\S]*))?$'
 
       - name: Check Commit message
         if: (failure() || success()) && (steps.pr-body-match.outputs.match == '')
