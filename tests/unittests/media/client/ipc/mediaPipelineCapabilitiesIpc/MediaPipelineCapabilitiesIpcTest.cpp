@@ -83,6 +83,17 @@ public:
             dynamic_cast<firebolt::rialto::GetSupportedAudioCapabilitiesResponse *>(response);
         getSupportedAudioCapabResp->set_interface_version(kInterfaceVersion);
         getSupportedAudioCapabResp->set_schema_version(kSchemaVersion);
+        auto *cap = getSupportedAudioCapabResp->add_capabilities();
+        cap->mutable_pcm()->mutable_base()->set_max_bitrate_in_bps(1536000);
+        cap->mutable_pcm()->mutable_base()->set_max_channels(8);
+        cap->mutable_pcm()->mutable_base()->set_max_sample_rate_in_hz(192000);
+        cap->mutable_pcm()->mutable_base()->set_max_bit_depth(32);
+        auto *aacEntry = cap->mutable_aac()->add_profiles();
+        aacEntry->set_profile(firebolt::rialto::GetSupportedAudioCapabilitiesResponse::AAC_PROFILE_LC);
+        aacEntry->mutable_capability()->set_max_bitrate_in_bps(576000);
+        aacEntry->mutable_capability()->set_max_channels(8);
+        aacEntry->mutable_capability()->set_max_sample_rate_in_hz(96000);
+        aacEntry->mutable_capability()->set_max_bit_depth(24);
     }
 
     void setGetSupportedVideoCapabilitiesResponse(google::protobuf::Message *response)
@@ -91,6 +102,14 @@ public:
             dynamic_cast<firebolt::rialto::GetSupportedVideoCapabilitiesResponse *>(response);
         getSupportedVideoCapabResp->set_interface_version(kInterfaceVersion);
         getSupportedVideoCapabResp->set_schema_version(kSchemaVersion);
+        auto *cap = getSupportedVideoCapabResp->add_capabilities();
+        auto *h264 = cap->mutable_codec_capabilities()->mutable_h264();
+        auto *h264Profile = h264->add_profiles();
+        h264Profile->set_type(firebolt::rialto::GetSupportedVideoCapabilitiesResponse::H264_PROFILE_HIGH);
+        h264Profile->set_max_level(firebolt::rialto::GetSupportedVideoCapabilitiesResponse::H264_LEVEL_5_1);
+        h264Profile->set_max_bitrate_in_bps(50000000);
+        h264->add_dynamic_ranges(firebolt::rialto::GetSupportedVideoCapabilitiesResponse::DYNAMIC_RANGE_SDR);
+        h264->add_dynamic_ranges(firebolt::rialto::GetSupportedVideoCapabilitiesResponse::DYNAMIC_RANGE_HDR10);
     }
 };
 
@@ -296,7 +315,10 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, IsVideoMasterFailure)
 
 TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedAudioCapabilitiesSuccess)
 {
-    const AudioDecoderCapabilities kCapabilities{kInterfaceVersion, kSchemaVersion, {}};
+    AudioDecoderCapability audioCap;
+    audioCap.pcm = PcmCapability{{1536000, 8, 192000, 32}};
+    audioCap.aac = AacCapability{{{AacProfile::LC, AudioProfileCapability{576000, 8, 96000, 24}}}};
+    const AudioDecoderCapabilities kCapabilities{kInterfaceVersion, kSchemaVersion, {audioCap}};
 
     createMediaPipelineCapabilitiesIpc();
     expectIpcApiCallSuccess();
@@ -340,7 +362,13 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedAudioCapabilitiesFailure)
 
 TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedVideoCapabilitiesSuccess)
 {
-    const VideoDecoderCapabilities kCapabilities{kInterfaceVersion, kSchemaVersion, {}};
+    H264Profile h264Prof{H264ProfileType::H264_HIGH, H264Level::H264_LEVEL_5_1, 50000000};
+    H264CodecCapability h264Codec{{{h264Prof}}, {DynamicRange::SDR, DynamicRange::HDR10}};
+    VideoCodecCapabilities codecs;
+    codecs.h264 = std::move(h264Codec);
+    VideoDecoderCapability videoCap;
+    videoCap.codecCapabilities = std::move(codecs);
+    const VideoDecoderCapabilities kCapabilities{kInterfaceVersion, kSchemaVersion, {videoCap}};
 
     createMediaPipelineCapabilitiesIpc();
     expectIpcApiCallSuccess();

@@ -43,8 +43,21 @@ const firebolt::rialto::MediaSourceType kSourceType{firebolt::rialto::MediaSourc
 const firebolt::rialto::ProtoMediaSourceType kMediaSourceType{firebolt::rialto::ProtoMediaSourceType::VIDEO};
 const std::vector<std::string> kPropertyNames{"test-property", "another-property"};
 constexpr bool kIsVideoMaster{true};
-const firebolt::rialto::AudioDecoderCapabilities kAudioCapabilities{"1.0", "2.0", {}};
-const firebolt::rialto::VideoDecoderCapabilities kVideoCapabilities{"3.0", "4.0", {}};
+const firebolt::rialto::AudioDecoderCapabilities kAudioCapabilities = []()
+{
+    firebolt::rialto::AudioDecoderCapability cap;
+    cap.pcm = firebolt::rialto::PcmCapability{{1536000, 8, 192000, 32}};
+    return firebolt::rialto::AudioDecoderCapabilities{"1.0", "2.0", {cap}};
+}();
+const firebolt::rialto::VideoDecoderCapabilities kVideoCapabilities = []()
+{
+    firebolt::rialto::H264CodecCapability h264Codec{
+        {{firebolt::rialto::H264ProfileType::H264_HIGH, firebolt::rialto::H264Level::H264_LEVEL_5_1, 50000000u}},
+        {firebolt::rialto::DynamicRange::SDR}};
+    firebolt::rialto::VideoDecoderCapability videoCap;
+    videoCap.codecCapabilities.h264 = std::move(h264Codec);
+    return firebolt::rialto::VideoDecoderCapabilities{"3.0", "4.0", {videoCap}};
+}();
 } // namespace
 
 MediaPipelineCapabilitiesModuleServiceTests::MediaPipelineCapabilitiesModuleServiceTests()
@@ -219,6 +232,12 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedAudioCapabilit
 
     EXPECT_EQ(response.interface_version(), kAudioCapabilities.interfaceVersion);
     EXPECT_EQ(response.schema_version(), kAudioCapabilities.schemaVersion);
+    ASSERT_EQ(response.capabilities_size(), 1);
+    ASSERT_TRUE(response.capabilities(0).has_pcm());
+    EXPECT_EQ(response.capabilities(0).pcm().base().max_bitrate_in_bps(), 1536000u);
+    EXPECT_EQ(response.capabilities(0).pcm().base().max_channels(), 8u);
+    EXPECT_EQ(response.capabilities(0).pcm().base().max_sample_rate_in_hz(), 192000u);
+    EXPECT_EQ(response.capabilities(0).pcm().base().max_bit_depth(), 32u);
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedAudioCapabilitiesRequestAndExpectFailure()
@@ -236,6 +255,15 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedVideoCapabilit
 
     EXPECT_EQ(response.interface_version(), kVideoCapabilities.interfaceVersion);
     EXPECT_EQ(response.schema_version(), kVideoCapabilities.schemaVersion);
+    ASSERT_EQ(response.capabilities_size(), 1);
+    ASSERT_TRUE(response.capabilities(0).codec_capabilities().has_h264());
+    const auto &h264 = response.capabilities(0).codec_capabilities().h264();
+    ASSERT_EQ(h264.profiles_size(), 1);
+    EXPECT_EQ(h264.profiles(0).type(), firebolt::rialto::GetSupportedVideoCapabilitiesResponse::H264_PROFILE_HIGH);
+    EXPECT_EQ(h264.profiles(0).max_level(), firebolt::rialto::GetSupportedVideoCapabilitiesResponse::H264_LEVEL_5_1);
+    EXPECT_EQ(h264.profiles(0).max_bitrate_in_bps(), 50000000u);
+    ASSERT_EQ(h264.dynamic_ranges_size(), 1);
+    EXPECT_EQ(h264.dynamic_ranges(0), firebolt::rialto::GetSupportedVideoCapabilitiesResponse::DYNAMIC_RANGE_SDR);
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedVideoCapabilitiesRequestAndExpectFailure()
