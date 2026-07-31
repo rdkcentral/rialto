@@ -271,10 +271,6 @@ firebolt::rialto::AudioDecoderCapability buildAudioDecoderCapability(const YAML:
                                                           firebolt::rialto::AudioProfileCapability>>(kCodecData,
                                                                                                      convertAvsProfileName)};
                     }
-                    else
-                    {
-                                                kCodecName.c_str());
-                    }
                 }
             }
         }
@@ -595,10 +591,6 @@ firebolt::rialto::VideoDecoderCapability buildVideoDecoderCapability(const YAML:
                         c.dynamicRanges = getDynamicRanges(codecNode["dynamicRange"]);
                         result.codecCapabilities.av1 = std::move(c);
                     }
-                    else
-                    {
-                                                kCodecName.c_str());
-                    }
                 }
             }
         }
@@ -641,7 +633,6 @@ try
             }
         }
     }
-                            capabilities.capabilities.size());
     return DecoderCapabilitiesStatus::OK;
 }
 catch (const std::exception &e)
@@ -675,7 +666,6 @@ try
             }
         }
     }
-                            capabilities.capabilities.size());
     return DecoderCapabilitiesStatus::OK;
 }
 catch (const std::exception &e)
