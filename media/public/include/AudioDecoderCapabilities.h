@@ -150,6 +150,7 @@ struct AudioProfileCapability
     uint32_t maxBitDepth;       /**< Maximum bit depth */
 };
 
+/** @brief Equality operator for AudioProfileCapability. */
 inline bool operator==(const AudioProfileCapability &lhs, const AudioProfileCapability &rhs)
 {
     return lhs.maxBitrateInBps == rhs.maxBitrateInBps && lhs.maxChannels == rhs.maxChannels &&
@@ -164,6 +165,7 @@ struct PcmCapability
     AudioProfileCapability base; /**< Single-profile capability */
 };
 
+/** @brief Equality operator for PcmCapability. */
 inline bool operator==(const PcmCapability &lhs, const PcmCapability &rhs)
 {
     return lhs.base == rhs.base;
@@ -179,6 +181,7 @@ struct AacCapability
     std::map<AacProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
+/** @brief Equality operator for AacCapability. */
 inline bool operator==(const AacCapability &lhs, const AacCapability &rhs)
 {
     return lhs.profiles == rhs.profiles;
@@ -192,6 +195,7 @@ struct MpegAudioCapability
     std::map<MpegAudioProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
+/** @brief Equality operator for MpegAudioCapability. */
 inline bool operator==(const MpegAudioCapability &lhs, const MpegAudioCapability &rhs)
 {
     return lhs.profiles == rhs.profiles;
@@ -205,6 +209,7 @@ struct Mp3Capability
     AudioProfileCapability base; /**< Single-profile capability */
 };
 
+/** @brief Equality operator for Mp3Capability. */
 inline bool operator==(const Mp3Capability &lhs, const Mp3Capability &rhs)
 {
     return lhs.base == rhs.base;
@@ -218,6 +223,7 @@ struct AlacCapability
     AudioProfileCapability base; /**< Single-profile capability */
 };
 
+/** @brief Equality operator for AlacCapability. */
 inline bool operator==(const AlacCapability &lhs, const AlacCapability &rhs)
 {
     return lhs.base == rhs.base;
@@ -231,6 +237,7 @@ struct SbcCapability
     AudioProfileCapability base; /**< Single-profile capability */
 };
 
+/** @brief Equality operator for SbcCapability. */
 inline bool operator==(const SbcCapability &lhs, const SbcCapability &rhs)
 {
     return lhs.base == rhs.base;
@@ -246,6 +253,7 @@ struct DolbyAc3Capability
     std::map<DolbyAc3Profile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
+/** @brief Equality operator for DolbyAc3Capability. */
 inline bool operator==(const DolbyAc3Capability &lhs, const DolbyAc3Capability &rhs)
 {
     return lhs.profiles == rhs.profiles;
@@ -259,6 +267,7 @@ struct DolbyAc4Capability
     AudioProfileCapability base; /**< Single-profile capability */
 };
 
+/** @brief Equality operator for DolbyAc4Capability. */
 inline bool operator==(const DolbyAc4Capability &lhs, const DolbyAc4Capability &rhs)
 {
     return lhs.base == rhs.base;
@@ -272,6 +281,7 @@ struct DolbyTruehdCapability
     AudioProfileCapability base; /**< Single-profile capability */
 };
 
+/** @brief Equality operator for DolbyTruehdCapability. */
 inline bool operator==(const DolbyTruehdCapability &lhs, const DolbyTruehdCapability &rhs)
 {
     return lhs.base == rhs.base;
@@ -285,6 +295,7 @@ struct FlacCapability
     AudioProfileCapability base; /**< Single-profile capability */
 };
 
+/** @brief Equality operator for FlacCapability. */
 inline bool operator==(const FlacCapability &lhs, const FlacCapability &rhs)
 {
     return lhs.base == rhs.base;
@@ -298,6 +309,7 @@ struct VorbisCapability
     AudioProfileCapability base; /**< Single-profile capability */
 };
 
+/** @brief Equality operator for VorbisCapability. */
 inline bool operator==(const VorbisCapability &lhs, const VorbisCapability &rhs)
 {
     return lhs.base == rhs.base;
@@ -311,6 +323,7 @@ struct OpusCapability
     AudioProfileCapability base; /**< Single-profile capability */
 };
 
+/** @brief Equality operator for OpusCapability. */
 inline bool operator==(const OpusCapability &lhs, const OpusCapability &rhs)
 {
     return lhs.base == rhs.base;
@@ -326,6 +339,7 @@ struct RealAudioCapability
     std::map<RealAudioProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
+/** @brief Equality operator for RealAudioCapability. */
 inline bool operator==(const RealAudioCapability &lhs, const RealAudioCapability &rhs)
 {
     return lhs.profiles == rhs.profiles;
@@ -341,6 +355,7 @@ struct UsacCapability
     std::map<UsacProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
+/** @brief Equality operator for UsacCapability. */
 inline bool operator==(const UsacCapability &lhs, const UsacCapability &rhs)
 {
     return lhs.profiles == rhs.profiles;
@@ -356,6 +371,7 @@ struct DtsCapability
     std::map<DtsProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
+/** @brief Equality operator for DtsCapability. */
 inline bool operator==(const DtsCapability &lhs, const DtsCapability &rhs)
 {
     return lhs.profiles == rhs.profiles;
@@ -371,14 +387,12 @@ struct AvsCapability
     std::map<AvsProfile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
+/** @brief Equality operator for AvsCapability. */
 inline bool operator==(const AvsCapability &lhs, const AvsCapability &rhs)
 {
     return lhs.profiles == rhs.profiles;
 }
 
-/**
- * @brief Audio decoder capability entry for a specific rank
- */
 /**
  * @brief DolbyEac3 codec capabilities (split from DolbyAc3, HFP schema v1.0.0)
  */
@@ -387,11 +401,15 @@ struct DolbyEac3Capability
     std::map<DolbyEac3Profile, AudioProfileCapability> profiles; /**< Per-profile capabilities */
 };
 
+/** @brief Equality operator for DolbyEac3Capability. */
 inline bool operator==(const DolbyEac3Capability &lhs, const DolbyEac3Capability &rhs)
 {
     return lhs.profiles == rhs.profiles;
 }
 
+/**
+ * @brief Audio decoder capability entry for a specific rank
+ */
 struct AudioDecoderCapability
 {
     std::optional<PcmCapability> pcm;             /**< PCM capabilities (if supported) */
@@ -415,6 +433,7 @@ struct AudioDecoderCapability
     std::optional<AvsCapability> avs;             /**< AVS capabilities (if supported) */
 };
 
+/** @brief Equality operator for AudioDecoderCapability. */
 inline bool operator==(const AudioDecoderCapability &lhs, const AudioDecoderCapability &rhs)
 {
     return lhs.pcm == rhs.pcm && lhs.aac == rhs.aac && lhs.mpegAudio == rhs.mpegAudio && lhs.mp3 == rhs.mp3 &&
@@ -434,6 +453,7 @@ struct AudioDecoderCapabilities
     std::vector<AudioDecoderCapability> capabilities; /**< List of decoder capabilities */
 };
 
+/** @brief Equality operator for AudioDecoderCapabilities. */
 inline bool operator==(const AudioDecoderCapabilities &lhs, const AudioDecoderCapabilities &rhs)
 {
     return lhs.interfaceVersion == rhs.interfaceVersion && lhs.schemaVersion == rhs.schemaVersion &&
