@@ -62,7 +62,7 @@ jobs:
         if: failure() || success()
         with:
           text: ${{ github.event.pull_request.title }}
-          regex: ^[A-Z][A-Z0-9]+-\d+: .{1,64}$
+          regex: '^[A-Z][A-Z0-9]+-\d+: .{1,64}$'
 
       # Check PR body
       - name: Match PR Body
@@ -71,7 +71,7 @@ jobs:
         if: failure() || success()
         with:
           text: ${{ github.event.pull_request.body }}
-          regex: (?s)^([A-Z][A-Z0-9]+-\d+): (.{1,64})\R\RReason for change:.*?(?:\RTest Procedure:.*)?$
+          regex: '(?s)^([A-Z][A-Z0-9]+-\d+): (.{1,64})\R\RReason for change:.*?(?:\RTest Procedure:.*)?$'
 
       - name: Check Commit message
         if: (failure() || success()) && (steps.pr-body-match.outputs.match == '')
