@@ -40,7 +40,10 @@ jobs:
         uses: mshick/add-pr-comment@v2
         with:
           message: |
-            Pull request must follow the Commit message format for RDK-E:
+            Pull request title must follow the pattern:
+            <JIRA TICKET #1>: <one line summary of change less than 65 characters>
+
+            Pull request description must follow the Commit message format for RDK-E:
             https://etwiki.sys.comcast.net/spaces/RDKAR/pages/1407997180/Commit+Message+Format+For+RDKE
 
             1. Associated JIRA ticket in format : <JIRA TICKET #1>: <one line summary of change less than 65 characters>
@@ -52,17 +55,26 @@ jobs:
             Reason for change: <explanation of change>
             Test Procedure: < https://ccp.sys.comcast.net/browse/JIRA TICKET #1/url/to/test_step_section>
 
-      # Check PR description for 'Summary:' field.
-      - name: Match Commit message 
+      # Check PR title
+      - name: Match PR title
         uses: actions-ecosystem/action-regex-match@v2
-        id: commit-message-match
+        id: pr-title-match
+        if: failure() || success()
+        with:
+          text: ${{ github.event.pull_request.title }}
+          regex: ^[A-Z][A-Z0-9]+-\d+: .{1,64}$
+
+      # Check PR body
+      - name: Match PR Body
+        uses: actions-ecosystem/action-regex-match@v2
+        id: pr-body-match
         if: failure() || success()
         with:
           text: ${{ github.event.pull_request.body }}
           regex: (?s)^([A-Z][A-Z0-9]+-\d+): (.{1,64})\R\RReason for change:.*?(?:\RTest Procedure:.*)?$
 
       - name: Check Commit message
-        if: (failure() || success()) && (steps.commit-message-match.outputs.match == '')
+        if: (failure() || success()) && (steps.pr-body-match.outputs.match == '')
         run: exit 1
       
       # Print description.
