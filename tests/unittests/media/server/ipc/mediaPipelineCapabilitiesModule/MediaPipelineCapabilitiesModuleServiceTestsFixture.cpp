@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>
+#include <utility>
 #include <vector>
 
 using testing::_;
@@ -51,9 +52,9 @@ const firebolt::rialto::AudioDecoderCapabilities kAudioCapabilities = []()
 }();
 const firebolt::rialto::VideoDecoderCapabilities kVideoCapabilities = []()
 {
-    firebolt::rialto::H264CodecCapability h264Codec{
-        {{firebolt::rialto::H264ProfileType::H264_HIGH, firebolt::rialto::H264Level::H264_LEVEL_5_1, 50000000u}},
-        {firebolt::rialto::DynamicRange::SDR}};
+    firebolt::rialto::H264CodecCapability h264Codec{{{firebolt::rialto::H264ProfileType::H264_HIGH,
+                                                      firebolt::rialto::H264Level::H264_LEVEL_5_1, 50000000u}},
+                                                    {firebolt::rialto::DynamicRange::SDR}};
     firebolt::rialto::VideoDecoderCapability videoCap;
     videoCap.codecCapabilities.h264 = std::move(h264Codec);
     return firebolt::rialto::VideoDecoderCapabilities{"3.0", "4.0", {videoCap}};
