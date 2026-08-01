@@ -44,7 +44,7 @@ std::shared_ptr<WebAudioTasksTestsContext> testContext;
 constexpr double kVolume{0.7};
 constexpr uint64_t kChannelMask{5};
 constexpr uint32_t kBytesPerSample{4};
-constexpr uint32_t kMainLength = firebolt::rialto::server::kMaxWebAudioBytes - 40;
+constexpr uint32_t kMainLength = firebolt::rialto::server::kWebAudioMaxBytes - 40;
 constexpr uint32_t kWrapLength = 40;
 constexpr uint32_t kUnalignedWriteSize = kMainLength + kWrapLength - kBytesPerSample;
 const std::string kAudioMimeType{"audio/x-raw"};
@@ -386,7 +386,7 @@ void WebAudioTasksTestsBase::shouldNotWriteBufferIfPushBufferFails()
 void WebAudioTasksTestsBase::shouldNotWriteBufferIfBytesToWriteLessThanBytesPerSample()
 {
     EXPECT_CALL(*testContext->m_gstWrapper, gstAppSrcGetCurrentLevelBytes(GST_APP_SRC(&testContext->m_src)))
-        .WillOnce(Return(firebolt::rialto::server::kMaxWebAudioBytes - testContext->m_context.bytesPerSample + 1));
+        .WillOnce(Return(firebolt::rialto::server::kWebAudioMaxBytes - testContext->m_context.bytesPerSample + 1));
 }
 
 void WebAudioTasksTestsBase::shouldWriteBufferThatNotAlignedWithBytesPerSample()

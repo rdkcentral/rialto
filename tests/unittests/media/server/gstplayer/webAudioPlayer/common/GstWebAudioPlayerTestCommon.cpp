@@ -119,7 +119,11 @@ void GstWebAudioPlayerTestCommon::expectCreatePipeline()
 void GstWebAudioPlayerTestCommon::expectInitAppSrc()
 {
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryMake(StrEq("appsrc"), StrEq("audsrc"))).WillOnce(Return(&m_appSrc));
+#if GST_CHECK_VERSION(1, 20, 0)
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBuffers(GST_APP_SRC(&m_appSrc), 20));
+#else
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(GST_APP_SRC(&m_appSrc), 10 * 1024));
+#endif
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(G_OBJECT(&m_appSrc), StrEq("format")));
 }
 

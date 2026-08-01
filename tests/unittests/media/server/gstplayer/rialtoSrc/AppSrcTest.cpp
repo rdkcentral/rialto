@@ -114,7 +114,13 @@ protected:
 
         EXPECT_CALL(*m_gstWrapperMock,
                     gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.appSrc), &m_callbacks, this, nullptr));
+#if GST_CHECK_VERSION(1, 20, 0)
+        // GStreamer 1.20+ uses buffer-based limits
+        guint maxBuffers = (max == 8 * 1024 * 1024) ? 40 : ((max == 512 * 1024) ? 32 : 64);
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBuffers(GST_APP_SRC(m_streamInfo.appSrc), maxBuffers));
+#else
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(GST_APP_SRC(m_streamInfo.appSrc), max));
+#endif
         EXPECT_CALL(*m_gstWrapperMock,
                     gstAppSrcSetStreamType(GST_APP_SRC(m_streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE));
     }
