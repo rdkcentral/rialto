@@ -378,8 +378,8 @@ void GstGenericPlayer::initMsePipeline()
 
     if (const auto defaultGeometry = getDefaultVideoGeometryFromEnvironment())
     {
-        m_context.pendingGeometry = *defaultGeometry;
-        RIALTO_SERVER_LOG_MIL("Loaded default video geometry from environment: x=%d y=%d width=%d height=%d",
+        m_context.defaultVideoGeometry = *defaultGeometry;
+        RIALTO_SERVER_LOG_INFO("Loaded fallback video geometry from environment: x=%d y=%d width=%d height=%d",
                               defaultGeometry->x, defaultGeometry->y, defaultGeometry->width,
                               defaultGeometry->height);
     }
@@ -1981,6 +1981,7 @@ int64_t GstGenericPlayer::getPosition(GstElement *element)
 
 void GstGenericPlayer::setVideoGeometry(int x, int y, int width, int height)
 {
+    m_context.videoGeometrySetByApi.store(true);
     if (m_workerThread)
     {
         m_workerThread->enqueueTask(

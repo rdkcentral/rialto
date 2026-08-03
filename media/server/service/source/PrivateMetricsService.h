@@ -38,12 +38,15 @@ public:
     void clientDisconnected(int clientId) override;
     void reportMetrics(int clientId, const firebolt::rialto::server::ClientMetricsData &metrics) override;
     void notifyPlaybackStateChanged(int sessionId, PlaybackState oldState, PlaybackState newState) override;
+    void notifyWebAudioPlayerStateChanged(int handle, WebAudioPlayerState oldState,
+                                          WebAudioPlayerState newState) override;
     void notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState) override;
 
 private:
     std::shared_ptr<firebolt::rialto::server::IMetricsCollectorFactory> m_collectorFactory;
     std::mutex m_mutex;
     std::map<int, std::unique_ptr<firebolt::rialto::server::IMetricsCollector>> m_collectors;
+    ApplicationState m_currentApplicationState{ApplicationState::UNKNOWN};
 };
 } // namespace firebolt::rialto::server::service
 

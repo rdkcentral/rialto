@@ -18,6 +18,8 @@
  */
 
 #include "PlaybackService.h"
+#include "IMetricsCollector.h"
+#include "PrivateMetricsService.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IWebAudioPlayerServerInternal.h"
 #include "RialtoServerLogging.h"
@@ -36,10 +38,12 @@ PlaybackService::PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFac
                                  std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
                                  IDecryptionService &decryptionService)
     : m_shmBufferFactory{std::move(shmBufferFactory)}, m_isActive{false}, m_maxPlaybacks{0}, m_maxWebAudioPlayers{0},
+      m_privateMetricsService{std::make_unique<PrivateMetricsService>(IMetricsCollectorFactory::createFactory())},
       m_mediaPipelineService{std::make_unique<MediaPipelineService>(*this, std::move(mediaPipelineFactory),
                                                                     std::move(mediaPipelineCapabilitiesFactory),
-                                                                    decryptionService)},
-      m_webAudioPlayerService{std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory))}
+                                                                    decryptionService, *m_privateMetricsService)},
+      m_webAudioPlayerService{
+          std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory), *m_privateMetricsService)}
 {
     RIALTO_SERVER_LOG_DEBUG("PlaybackService is constructed");
 }
@@ -149,6 +153,11 @@ IMediaPipelineService &PlaybackService::getMediaPipelineService() const
 IWebAudioPlayerService &PlaybackService::getWebAudioPlayerService() const
 {
     return *m_webAudioPlayerService;
+}
+
+IPrivateMetricsService &PlaybackService::getPrivateMetricsService() const
+{
+    return *m_privateMetricsService;
 }
 
 void PlaybackService::ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) const

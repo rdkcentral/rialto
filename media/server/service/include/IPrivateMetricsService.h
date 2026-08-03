@@ -47,7 +47,9 @@ public:
      * @param clientId  Unique client identifier.
      * @param client    Callback interface for requesting samples from the client.
      */
-    virtual void clientReady(int clientId, const std::shared_ptr<firebolt::rialto::server::IMetricsCollectorClient> &client) = 0;
+    virtual void
+    clientReady(int clientId,
+                const std::shared_ptr<firebolt::rialto::server::IMetricsCollectorClient> &client) = 0;
 
     /**
      * @brief A client has disconnected.
@@ -74,6 +76,14 @@ public:
      * Routes to all active MetricsCollector instances.
      */
     virtual void notifyPlaybackStateChanged(int sessionId, PlaybackState oldState, PlaybackState newState) = 0;
+
+    /**
+     * @brief Notify that a WebAudio player's state has changed.
+     *
+     * Routes to all active MetricsCollector instances.
+     */
+    virtual void notifyWebAudioPlayerStateChanged(int handle, WebAudioPlayerState oldState,
+                                                  WebAudioPlayerState newState) = 0;
 
     /**
      * @brief Notify that the application state has changed (RUNNING/INACTIVE).

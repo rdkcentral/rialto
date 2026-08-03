@@ -43,6 +43,11 @@ using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 
+namespace firebolt::rialto::server
+{
+struct Rectangle;
+}
+
 /**
  * @brief GenericTasksTest Base class
  *
@@ -83,6 +88,10 @@ protected:
     void shouldSetupVideoDecoderElementOnly();
     void shouldSetupVideoDecoderElementWithFirstVideoFrameCallback();
     void shouldSetupVideoElementWithPendingGeometry();
+    void shouldSetupVideoElementWithFallbackGeometry();
+    void shouldSetupVideoElementWithApiGeometryAndFallback();
+    void shouldSetupVideoElementWithoutFallbackAfterApiCall();
+    void checkPendingGeometry(const firebolt::rialto::server::Rectangle &geometry);
     void shouldSetupVideoElementWithPendingImmediateOutput();
     void shouldSetupAudioSinkElementWithPendingLowLatency();
     void shouldSetupAudioSinkElementWithPendingSync();

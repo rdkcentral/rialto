@@ -115,11 +115,11 @@ bool PrivateMetricsIpc::reportClientMetrics(std::uint64_t sampleId, std::uint32_
     metrics->set_process_cpu_time_ms(processCpuTimeMs);
     metrics->set_process_memory_kb(processMemoryKb);
 
-    RIALTO_CLIENT_LOG_MIL("Reporting metrics sample=%" PRIu64 ", reason=%s, app='%s', pid=%u, cpu_ms=%" PRIu64
-                          ", mem_kb=%" PRIu64,
-                          sampleId,
-                          sampleReasonToString(static_cast<firebolt::rialto::MetricsSampleReason>(reason)),
-                          appName.c_str(), processId, processCpuTimeMs, processMemoryKb);
+    RIALTO_CLIENT_LOG_DEBUG("Reporting metrics sample=%" PRIu64 ", reason=%s, app='%s', pid=%u, cpu_ms=%" PRIu64
+                            ", mem_kb=%" PRIu64,
+                            sampleId,
+                            sampleReasonToString(static_cast<firebolt::rialto::MetricsSampleReason>(reason)),
+                            appName.c_str(), processId, processCpuTimeMs, processMemoryKb);
 
     firebolt::rialto::ReportClientMetricsResponse response;
     auto ipcController = m_ipc.createRpcController();
@@ -130,12 +130,12 @@ bool PrivateMetricsIpc::reportClientMetrics(std::uint64_t sampleId, std::uint32_
 
     if (ipcController->Failed())
     {
-        RIALTO_CLIENT_LOG_ERROR("failed to report client metrics due to '%s'", ipcController->ErrorText().c_str());
+        RIALTO_CLIENT_LOG_DEBUG("Failed to report client metrics due to '%s'", ipcController->ErrorText().c_str());
         return false;
     }
 
-    RIALTO_CLIENT_LOG_INFO("Reported metrics sample=%" PRIu64 ", reason=%s", sampleId,
-                           sampleReasonToString(static_cast<firebolt::rialto::MetricsSampleReason>(reason)));
+    RIALTO_CLIENT_LOG_DEBUG("Reported metrics sample=%" PRIu64 ", reason=%s", sampleId,
+                            sampleReasonToString(static_cast<firebolt::rialto::MetricsSampleReason>(reason)));
 
     return true;
 }
@@ -205,8 +205,8 @@ void PrivateMetricsIpc::onMetricsSampleRequested(
         RIALTO_CLIENT_LOG_WARN("No private metrics client registered");
         return;
     }
-    RIALTO_CLIENT_LOG_MIL("Received metrics sample request sample=%" PRIu64 ", reason=%s, pid=%d", event->sample_id(),
-                          sampleReasonToString(event->reason()), getpid());
+    RIALTO_CLIENT_LOG_DEBUG("Received metrics sample request sample=%" PRIu64 ", reason=%s, pid=%d",
+                            event->sample_id(), sampleReasonToString(event->reason()), getpid());
     m_privateMetricsIpcClient->reportClientMetrics(event->sample_id(), event->reason());
 }
 } // namespace firebolt::rialto::client

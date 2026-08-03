@@ -31,6 +31,7 @@ namespace
 {
 constexpr std::chrono::seconds kMetricsInterval{15};
 constexpr std::uint64_t kMinElapsedMs{100};
+constexpr unsigned int kResponseTimeoutTimerCount{2};
 } // namespace
 
 namespace firebolt::rialto::server
@@ -50,13 +51,14 @@ std::shared_ptr<IMetricsCollectorFactory> IMetricsCollectorFactory::createFactor
 }
 
 std::unique_ptr<IMetricsCollector>
-MetricsCollectorFactory::create(int clientId, const std::shared_ptr<IMetricsCollectorClient> &client)
+MetricsCollectorFactory::create(int clientId, const std::shared_ptr<IMetricsCollectorClient> &client,
+                                ApplicationState initialApplicationState)
 {
     std::unique_ptr<IMetricsCollector> collector;
     try
     {
         auto timerFactory = firebolt::rialto::common::ITimerFactory::getFactory();
-        collector = std::make_unique<MetricsCollector>(clientId, client, timerFactory);
+        collector = std::make_unique<MetricsCollector>(clientId, client, timerFactory, initialApplicationState);
     }
     catch (const std::exception &e)
     {
@@ -66,10 +68,22 @@ MetricsCollectorFactory::create(int clientId, const std::shared_ptr<IMetricsColl
 }
 
 MetricsCollector::MetricsCollector(int clientId, const std::shared_ptr<IMetricsCollectorClient> &client,
-                                   const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory)
-    : m_clientId{clientId}, m_client{client}, m_reporter{std::make_unique<LogMetricsReporter>()},
+                                   const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
+                                   ApplicationState initialApplicationState)
+    : m_clientId{clientId}, m_client{client}, m_currentApplicationState{initialApplicationState},
+      m_reporter{std::make_unique<LogMetricsReporter>()},
       m_thresholdChecker{MetricsThresholdConfig{}, m_reporter.get()}
 {
+    if (m_currentApplicationState == ApplicationState::RUNNING)
+    {
+        using std::chrono::duration_cast;
+        using std::chrono::milliseconds;
+        using std::chrono::steady_clock;
+        const auto kNowMs{
+            static_cast<std::uint64_t>(duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count())};
+        m_globalAggregator.begin(applicationStateToString(m_currentApplicationState), kNowMs);
+    }
+
     m_timer = timerFactory->createTimer(kMetricsInterval, [this]() { onTimerFired(); },
                                         firebolt::rialto::common::TimerType::PERIODIC);
 
@@ -87,9 +101,32 @@ MetricsCollector::~MetricsCollector()
 
 void MetricsCollector::onTimerFired()
 {
-    RIALTO_SERVER_LOG_MIL("Metrics: periodic timer fired for client %d, requesting sample=%" PRIu64, m_clientId,
-                          m_nextSampleId);
-    m_client->requestMetricsSample(m_clientId, m_nextSampleId++, MetricsSampleReason::PERIODIC);
+    std::uint64_t sampleId{0};
+    bool becameUnresponsive{false};
+    {
+        std::lock_guard<std::mutex> lock{m_mutex};
+        if (m_pendingPeriodicSampleId && ++m_pendingPeriodicTimerCount < kResponseTimeoutTimerCount)
+        {
+            return;
+        }
+
+        if (m_pendingPeriodicSampleId && m_clientResponsive)
+        {
+            m_clientResponsive = false;
+            becameUnresponsive = true;
+        }
+
+        sampleId = m_nextSampleId++;
+        m_pendingPeriodicSampleId = sampleId;
+        m_pendingPeriodicTimerCount = 0;
+    }
+
+    if (becameUnresponsive)
+    {
+        RIALTO_SERVER_LOG_WARN("Metrics client %d is not responding to sample requests", m_clientId);
+    }
+    RIALTO_SERVER_LOG_DEBUG("Requesting periodic metrics sample=%" PRIu64 " from client %d", sampleId, m_clientId);
+    m_client->requestMetricsSample(m_clientId, sampleId, MetricsSampleReason::PERIODIC);
 }
 
 void MetricsCollector::processMetrics(const ClientMetricsData &metrics)
@@ -97,9 +134,30 @@ void MetricsCollector::processMetrics(const ClientMetricsData &metrics)
     const auto kServerMetrics{getServerMetrics()};
 
     std::optional<PreviousSample> previous;
+    ApplicationState applicationState{ApplicationState::UNKNOWN};
+    bool becameResponsive{false};
     {
         std::lock_guard<std::mutex> lock{m_mutex};
         previous = m_previousSample;
+        applicationState = m_currentApplicationState;
+        if (metrics.reason == MetricsSampleReason::PERIODIC)
+        {
+            if (m_pendingPeriodicSampleId && metrics.sampleId == *m_pendingPeriodicSampleId)
+            {
+                m_pendingPeriodicSampleId.reset();
+                m_pendingPeriodicTimerCount = 0;
+                if (!m_clientResponsive)
+                {
+                    m_clientResponsive = true;
+                    becameResponsive = true;
+                }
+            }
+        }
+    }
+
+    if (becameResponsive)
+    {
+        RIALTO_SERVER_LOG_INFO("Metrics client %d is responding again", m_clientId);
     }
 
     if (!previous.has_value())
@@ -138,7 +196,9 @@ void MetricsCollector::processMetrics(const ClientMetricsData &metrics)
     {
         PeriodicMetricsReport periodicReport;
         periodicReport.sampleId = metrics.sampleId;
+        periodicReport.monotonicTimeMs = kServerMetrics.monotonicTimeMs;
         periodicReport.reason = sampleReasonToString(metrics.reason);
+        periodicReport.applicationState = applicationState;
         periodicReport.appName = metrics.appName;
         periodicReport.clientPid = metrics.processId;
         periodicReport.clientCpuPercent = kClientCpuPercentage;
@@ -171,8 +231,9 @@ void MetricsCollector::processMetrics(const ClientMetricsData &metrics)
             std::lock_guard<std::mutex> lock{m_mutex};
 
             // Feed into per-session aggregators
-            for (auto &[sessionId, sessionState] : m_sessionStates)
+            for (auto &[unusedContext, sessionState] : m_sessionStates)
             {
+                (void)unusedContext;
                 sessionState.aggregator.addSample(sample);
             }
 
@@ -199,8 +260,25 @@ void MetricsCollector::processMetrics(const ClientMetricsData &metrics)
 
 void MetricsCollector::notifyPlaybackStateChanged(int sessionId, PlaybackState oldState, PlaybackState newState)
 {
-    RIALTO_SERVER_LOG_MIL("Metrics: PlaybackState changed session=%d, %s -> %s", sessionId,
-                          playbackStateToString(oldState), playbackStateToString(newState));
+    notifyPlayerStateChanged("media-pipeline=" + std::to_string(sessionId), playbackStateToString(oldState),
+                             playbackStateToString(newState),
+                             newState == PlaybackState::STOPPED || newState == PlaybackState::END_OF_STREAM ||
+                                 newState == PlaybackState::FAILURE);
+}
+
+void MetricsCollector::notifyWebAudioPlayerStateChanged(int handle, WebAudioPlayerState oldState,
+                                                        WebAudioPlayerState newState)
+{
+    notifyPlayerStateChanged("web-audio=" + std::to_string(handle), webAudioPlayerStateToString(oldState),
+                             webAudioPlayerStateToString(newState),
+                             newState == WebAudioPlayerState::END_OF_STREAM ||
+                                 newState == WebAudioPlayerState::FAILURE);
+}
+
+void MetricsCollector::notifyPlayerStateChanged(const std::string &context, const char *oldState, const char *newState,
+                                                bool terminalState)
+{
+    RIALTO_SERVER_LOG_MIL("Metrics: PlaybackState changed %s, %s -> %s", context.c_str(), oldState, newState);
 
     using std::chrono::duration_cast;
     using std::chrono::milliseconds;
@@ -209,14 +287,14 @@ void MetricsCollector::notifyPlaybackStateChanged(int sessionId, PlaybackState o
         static_cast<std::uint64_t>(duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count())};
 
     std::lock_guard<std::mutex> lock{m_mutex};
-    auto sessionIter{m_sessionStates.find(sessionId)};
+    auto sessionIter{m_sessionStates.find(context)};
     if (m_sessionStates.end() == sessionIter)
     {
         // First state notification for this session — create entry
         SessionMetricsState sessionState;
-        sessionState.currentPlaybackState = newState;
-        sessionState.aggregator.begin(playbackStateToString(newState), kNowMs);
-        m_sessionStates.emplace(sessionId, std::move(sessionState));
+        sessionState.currentState = newState;
+        sessionState.aggregator.begin(newState, kNowMs);
+        m_sessionStates.emplace(context, std::move(sessionState));
         return;
     }
 
@@ -227,13 +305,12 @@ void MetricsCollector::notifyPlaybackStateChanged(int sessionId, PlaybackState o
     {
         auto report{sessionState.aggregator.finalize(kNowMs)};
         StateTransitionReport transitionReport;
-        transitionReport.context = "session=" + std::to_string(sessionId);
+        transitionReport.context = context;
         transitionReport.metrics = report;
         m_reporter->reportStateTransition(transitionReport);
     }
 
-    if (newState == PlaybackState::STOPPED || newState == PlaybackState::END_OF_STREAM ||
-        newState == PlaybackState::FAILURE)
+    if (terminalState)
     {
         // Terminal state — remove session tracking
         m_sessionStates.erase(sessionIter);
@@ -241,8 +318,8 @@ void MetricsCollector::notifyPlaybackStateChanged(int sessionId, PlaybackState o
     else
     {
         // Begin accumulating for new state
-        sessionState.currentPlaybackState = newState;
-        sessionState.aggregator.begin(playbackStateToString(newState), kNowMs);
+        sessionState.currentState = newState;
+        sessionState.aggregator.begin(newState, kNowMs);
     }
 
     // Request immediate sample for clean boundary
@@ -475,6 +552,26 @@ const char *MetricsCollector::playbackStateToString(PlaybackState state)
     case PlaybackState::FAILURE:
         return "FAILURE";
     case PlaybackState::UNKNOWN:
+    default:
+        return "UNKNOWN";
+    }
+}
+
+const char *MetricsCollector::webAudioPlayerStateToString(WebAudioPlayerState state)
+{
+    switch (state)
+    {
+    case WebAudioPlayerState::IDLE:
+        return "IDLE";
+    case WebAudioPlayerState::PLAYING:
+        return "PLAYING";
+    case WebAudioPlayerState::PAUSED:
+        return "PAUSED";
+    case WebAudioPlayerState::END_OF_STREAM:
+        return "END_OF_STREAM";
+    case WebAudioPlayerState::FAILURE:
+        return "FAILURE";
+    case WebAudioPlayerState::UNKNOWN:
     default:
         return "UNKNOWN";
     }

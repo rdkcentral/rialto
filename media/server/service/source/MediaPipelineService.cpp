@@ -19,6 +19,7 @@
 
 #include "MediaPipelineService.h"
 #include "IMediaPipelineServerInternal.h"
+#include "MediaPipelineMetricsClient.h"
 #include "RialtoServerLogging.h"
 #include <exception>
 #include <future>
@@ -31,10 +32,10 @@ namespace firebolt::rialto::server::service
 MediaPipelineService::MediaPipelineService(
     IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-    IDecryptionService &decryptionService)
+    IDecryptionService &decryptionService, IPrivateMetricsService &metricsService)
     : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
-      m_decryptionService{decryptionService}
+      m_decryptionService{decryptionService}, m_metricsService{metricsService}
 {
     if (!m_mediaPipelineCapabilities)
     {
@@ -80,7 +81,9 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
         auto shmBuffer = m_playbackService.getShmBuffer();
         m_mediaPipelines.emplace(
             std::make_pair(sessionId,
-                           m_mediaPipelineFactory->createMediaPipelineServerInternal(mediaPipelineClient,
+                           m_mediaPipelineFactory->createMediaPipelineServerInternal(
+                               std::make_shared<MediaPipelineMetricsClient>(sessionId, mediaPipelineClient,
+                                                                            m_metricsService),
                                                                                      VideoRequirements{maxWidth, maxHeight},
                                                                                      sessionId, shmBuffer,
                                                                                      m_decryptionService)));

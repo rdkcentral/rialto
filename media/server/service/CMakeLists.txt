@@ -28,7 +28,9 @@ add_library (
         source/ControlService.cpp
         source/SessionServerManager.cpp
         source/MediaPipelineService.cpp
+        source/MediaPipelineMetricsClient.cpp
         source/WebAudioPlayerService.cpp
+        source/WebAudioPlayerMetricsClient.cpp
         source/PrivateMetricsService.cpp
 )
 set_target_properties (

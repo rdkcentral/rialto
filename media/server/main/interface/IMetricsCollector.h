@@ -62,11 +62,13 @@ public:
      *
      * @param clientId  Unique client identifier.
      * @param client    Callback interface for requesting samples from the client.
+     * @param initialApplicationState  Application state when the client connected.
      *
      * @return The new MetricsCollector instance, or nullptr on failure.
      */
-    virtual std::unique_ptr<IMetricsCollector> create(int clientId,
-                                                      const std::shared_ptr<IMetricsCollectorClient> &client) = 0;
+    virtual std::unique_ptr<IMetricsCollector>
+    create(int clientId, const std::shared_ptr<IMetricsCollectorClient> &client,
+           ApplicationState initialApplicationState) = 0;
 };
 
 /**
@@ -101,6 +103,14 @@ public:
      * Finalizes the old state's aggregator and begins a new one.
      */
     virtual void notifyPlaybackStateChanged(int sessionId, PlaybackState oldState, PlaybackState newState) = 0;
+
+    /**
+     * @brief Notify that a WebAudio player's state has changed.
+     *
+     * Finalizes the old state's aggregator and begins a new one.
+     */
+    virtual void notifyWebAudioPlayerStateChanged(int handle, WebAudioPlayerState oldState,
+                                                  WebAudioPlayerState newState) = 0;
 
     /**
      * @brief Notify that the application state has changed (RUNNING/INACTIVE).

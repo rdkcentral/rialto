@@ -41,7 +41,7 @@ void PrivateMetricsService::clientReady(int clientId,
                                         const std::shared_ptr<firebolt::rialto::server::IMetricsCollectorClient> &client)
 {
     std::lock_guard<std::mutex> lock{m_mutex};
-    auto collector = m_collectorFactory->create(clientId, client);
+    auto collector = m_collectorFactory->create(clientId, client, m_currentApplicationState);
     if (collector)
     {
         m_collectors.emplace(clientId, std::move(collector));
@@ -87,9 +87,20 @@ void PrivateMetricsService::notifyPlaybackStateChanged(int sessionId, PlaybackSt
     }
 }
 
+void PrivateMetricsService::notifyWebAudioPlayerStateChanged(int handle, WebAudioPlayerState oldState,
+                                                             WebAudioPlayerState newState)
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+    for (auto &[clientId, collector] : m_collectors)
+    {
+        collector->notifyWebAudioPlayerStateChanged(handle, oldState, newState);
+    }
+}
+
 void PrivateMetricsService::notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState)
 {
     std::lock_guard<std::mutex> lock{m_mutex};
+    m_currentApplicationState = newState;
     for (auto &[clientId, collector] : m_collectors)
     {
         collector->notifyApplicationStateChanged(oldState, newState);

@@ -21,6 +21,8 @@
 #define FIREBOLT_RIALTO_SERVER_LOG_METRICS_REPORTER_H_
 
 #include "IMetricsReporter.h"
+#include <mutex>
+#include <optional>
 
 namespace firebolt::rialto::server
 {
@@ -36,6 +38,13 @@ public:
     void reportPeriodicSample(const PeriodicMetricsReport &report) override;
     void reportStateTransition(const StateTransitionReport &report) override;
     void reportThresholdExceeded(const ThresholdAlert &alert) override;
+
+private:
+    bool shouldReportPeriodicSample(const PeriodicMetricsReport &report);
+    static bool changedSignificantly(double current, double previous, double absoluteFloor);
+
+    std::mutex m_mutex;
+    std::optional<PeriodicMetricsReport> m_lastReportedSample;
 };
 } // namespace firebolt::rialto::server
 

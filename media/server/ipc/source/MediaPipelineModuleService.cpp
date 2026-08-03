@@ -298,11 +298,6 @@ MediaPipelineModuleService::MediaPipelineModuleService(service::IMediaPipelineSe
 
 MediaPipelineModuleService::~MediaPipelineModuleService() {}
 
-void MediaPipelineModuleService::setMetricsService(const std::shared_ptr<IPrivateMetricsModuleService> &metricsService)
-{
-    m_metricsService = metricsService;
-}
-
 void MediaPipelineModuleService::clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
 {
     RIALTO_SERVER_LOG_INFO("Client Connected!");
@@ -350,8 +345,7 @@ void MediaPipelineModuleService::createSession(::google::protobuf::RpcController
     int sessionId = generateSessionId();
     bool sessionCreated =
         m_mediaPipelineService.createSession(sessionId,
-                                             std::make_shared<MediaPipelineClient>(sessionId, ipcController->getClient(),
-                                                                                   m_metricsService.get()),
+                                             std::make_shared<MediaPipelineClient>(sessionId, ipcController->getClient()),
                                              request->max_width(), request->max_height());
     if (sessionCreated)
     {

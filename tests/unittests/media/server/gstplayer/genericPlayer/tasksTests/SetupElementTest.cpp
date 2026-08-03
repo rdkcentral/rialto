@@ -18,6 +18,7 @@
  */
 
 #include "GenericTasksTestsBase.h"
+#include "GenericPlayerContext.h"
 
 class SetupElementTest : public GenericTasksTestsBase
 {
@@ -33,6 +34,29 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingGeometry)
 {
     shouldSetupVideoElementWithPendingGeometry();
     triggerSetupElement();
+}
+
+TEST_F(SetupElementTest, shouldUseEnvironmentGeometryAsFallback)
+{
+    const firebolt::rialto::server::Rectangle fallbackGeometry{1, 2, 3, 4};
+    shouldSetupVideoElementWithFallbackGeometry();
+    triggerSetupElement();
+    checkPendingGeometry(fallbackGeometry);
+}
+
+TEST_F(SetupElementTest, shouldKeepApiGeometryAuthoritativeOverEnvironmentFallback)
+{
+    const firebolt::rialto::server::Rectangle apiGeometry{5, 6, 7, 8};
+    shouldSetupVideoElementWithApiGeometryAndFallback();
+    triggerSetupElement();
+    checkPendingGeometry(apiGeometry);
+}
+
+TEST_F(SetupElementTest, shouldNotApplyEnvironmentFallbackAfterApiGeometryWasCleared)
+{
+    shouldSetupVideoElementWithoutFallbackAfterApiCall();
+    triggerSetupElement();
+    checkPendingGeometry({});
 }
 
 TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingImmediateOutput)

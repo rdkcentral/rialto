@@ -29,7 +29,6 @@
 #include "IMediaPipelineModuleService.h"
 #include "IPlaybackService.h"
 #include "IPrivateMetricsModuleService.h"
-#include "IPrivateMetricsService.h"
 #include "ISessionManagementServer.h"
 #include "IWebAudioPlayerModuleService.h"
 #include "SetLogLevelsService.h"
@@ -55,7 +54,7 @@ public:
         const std::shared_ptr<IPrivateMetricsModuleServiceFactory> &privateMetricsModuleFactory,
         const std::shared_ptr<IControlModuleServiceFactory> &controlModuleFactory,
         service::IPlaybackService &playbackService, service::ICdmService &cdmService,
-        service::IControlService &controlService, service::IPrivateMetricsService &metricsService);
+        service::IControlService &controlService);
     ~SessionManagementServer() override;
     SessionManagementServer(const SessionManagementServer &) = delete;
     SessionManagementServer(SessionManagementServer &&) = delete;
