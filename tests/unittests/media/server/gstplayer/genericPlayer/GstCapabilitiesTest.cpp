@@ -989,3 +989,59 @@ TEST_F(GstCapabilitiesTest, shouldReturnVideoCapabilities)
 
     EXPECT_THAT(m_sut->getSupportedVideoCapabilities(), decoderCapabilitiesMatcher(kVideoCapabilities));
 }
+
+TEST_F(GstCapabilitiesTest, shouldCreateSutWhenCapabilitiesConfigNotFound)
+{
+    std::mutex mutex;
+    std::condition_variable cv;
+    bool initialised{false};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Invoke(
+            [&](auto type, auto rank)
+            {
+                std::unique_lock lock{mutex};
+                initialised = true;
+                cv.notify_one();
+                return nullptr;
+            }));
+    EXPECT_CALL(*m_yamlCppWrapperMock, getAudioDecoderCapabilities(_))
+        .WillOnce(Return(DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
+    EXPECT_CALL(*m_yamlCppWrapperMock, getVideoDecoderCapabilities(_))
+        .WillOnce(Return(DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
+
+    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
+                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+    std::unique_lock lock{mutex};
+    cv.wait_for(lock, std::chrono::milliseconds{200}, [&]() { return initialised; });
+}
+
+TEST_F(GstCapabilitiesTest, shouldCreateSutWhenCapabilitiesLoadFails)
+{
+    std::mutex mutex;
+    std::condition_variable cv;
+    bool initialised{false};
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Invoke(
+            [&](auto type, auto rank)
+            {
+                std::unique_lock lock{mutex};
+                initialised = true;
+                cv.notify_one();
+                return nullptr;
+            }));
+    EXPECT_CALL(*m_yamlCppWrapperMock, getAudioDecoderCapabilities(_))
+        .WillOnce(Return(DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED));
+    EXPECT_CALL(*m_yamlCppWrapperMock, getVideoDecoderCapabilities(_))
+        .WillOnce(Return(DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED));
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
+
+    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
+                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+    std::unique_lock lock{mutex};
+    cv.wait_for(lock, std::chrono::milliseconds{200}, [&]() { return initialised; });
+}

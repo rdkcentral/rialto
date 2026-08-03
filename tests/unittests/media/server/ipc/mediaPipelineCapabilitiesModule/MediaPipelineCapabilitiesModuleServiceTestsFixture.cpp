@@ -46,18 +46,57 @@ const std::vector<std::string> kPropertyNames{"test-property", "another-property
 constexpr bool kIsVideoMaster{true};
 const firebolt::rialto::AudioDecoderCapabilities kAudioCapabilities = []()
 {
-    firebolt::rialto::AudioDecoderCapability cap;
-    cap.pcm = firebolt::rialto::PcmCapability{{1536000, 8, 192000, 32}};
-    return firebolt::rialto::AudioDecoderCapabilities{"1.0", "2.0", {cap}};
+    using namespace firebolt::rialto;
+    AudioDecoderCapability cap;
+    cap.pcm = PcmCapability{{1536000, 8, 192000, 32}};
+    cap.aac = AacCapability{{{AacProfile::LC, AudioProfileCapability{576000, 8, 96000, 24}}}};
+    cap.mp3 = Mp3Capability{{320000, 2, 48000, 16}};
+    cap.alac = AlacCapability{{1000000, 8, 96000, 32}};
+    cap.sbc = SbcCapability{{320000, 2, 44100, 16}};
+    cap.dolbyAc3 = DolbyAc3Capability{{{DolbyAc3Profile::STANDARD, AudioProfileCapability{640000, 6, 48000, 24}}}};
+    cap.dolbyAc4 = DolbyAc4Capability{{2688000, 16, 48000, 24}};
+    cap.dolbyEac3 = DolbyEac3Capability{{{DolbyEac3Profile::PLUS, AudioProfileCapability{6144000, 8, 48000, 24}}}};
+    cap.dolbyTruehd = DolbyTruehdCapability{{18000000, 8, 192000, 24}};
+    cap.flac = FlacCapability{{1000000, 8, 192000, 32}};
+    cap.vorbis = VorbisCapability{{500000, 8, 48000, 16}};
+    cap.opus = OpusCapability{{510000, 8, 48000, 16}};
+    cap.mpegAudio = MpegAudioCapability{{{MpegAudioProfile::LAYER_2, AudioProfileCapability{384000, 2, 48000, 16}}}};
+    cap.realAudio = RealAudioCapability{{{RealAudioProfile::RA8, AudioProfileCapability{128000, 2, 44100, 16}}}};
+    cap.usac = UsacCapability{{{UsacProfile::BASELINE, AudioProfileCapability{256000, 2, 48000, 24}}}};
+    cap.dts = DtsCapability{{{DtsProfile::CORE, AudioProfileCapability{1536000, 6, 48000, 24}}}};
+    cap.avs = AvsCapability{{{AvsProfile::AVS2, AudioProfileCapability{512000, 8, 48000, 24}}}};
+    return AudioDecoderCapabilities{"1.0", "2.0", {cap}};
 }();
 const firebolt::rialto::VideoDecoderCapabilities kVideoCapabilities = []()
 {
-    firebolt::rialto::H264CodecCapability h264Codec{{{firebolt::rialto::H264ProfileType::H264_HIGH,
-                                                      firebolt::rialto::H264Level::H264_LEVEL_5_1, 50000000u}},
-                                                    {firebolt::rialto::DynamicRange::SDR}};
-    firebolt::rialto::VideoDecoderCapability videoCap;
-    videoCap.codecCapabilities.h264 = std::move(h264Codec);
-    return firebolt::rialto::VideoDecoderCapabilities{"3.0", "4.0", {videoCap}};
+    using namespace firebolt::rialto;
+    VideoDecoderCapability videoCap;
+    videoCap.codecCapabilities.h264 =
+        H264CodecCapability{{{H264ProfileType::H264_HIGH, H264Level::H264_LEVEL_5_1, 50000000u},
+                             {H264ProfileType::H264_BASELINE, H264Level::H264_LEVEL_3, 8000000u},
+                             {H264ProfileType::H264_MAIN, H264Level::H264_LEVEL_3_1, 14000000u}},
+                            {DynamicRange::SDR, DynamicRange::HDR10, DynamicRange::HLG, DynamicRange::HDR10PLUS,
+                             DynamicRange::DOLBY_VISION}};
+    videoCap.codecCapabilities.h265 =
+        H265CodecCapability{{{H265ProfileType::H265_MAIN_10, H265Level::H265_LEVEL_5_1, 50000000u},
+                             {H265ProfileType::H265_MAIN, H265Level::H265_LEVEL_4, 10000000u},
+                             {H265ProfileType::H265_MAIN_10_HDR10, H265Level::H265_LEVEL_6, 80000000u}},
+                            {DynamicRange::HDR10}};
+    videoCap.codecCapabilities.vp9 =
+        Vp9CodecCapability{{{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_4, 30000000u},
+                            {Vp9ProfileType::VP9_PROFILE_1, Vp9Level::VP9_LEVEL_1, 200000u},
+                            {Vp9ProfileType::VP9_PROFILE_2, Vp9Level::VP9_LEVEL_1_1, 400000u},
+                            {Vp9ProfileType::VP9_PROFILE_3, Vp9Level::VP9_LEVEL_2, 1500000u}},
+                           {DynamicRange::SDR}};
+    videoCap.codecCapabilities.av1 = Av1CodecCapability{{{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_5_1, 20000000u},
+                                                         {Av1ProfileType::AV1_HIGH, Av1Level::AV1_LEVEL_4_0, 6000000u}},
+                                                        {DynamicRange::SDR}};
+    videoCap.codecCapabilities.mpeg2 =
+        Mpeg2CodecCapability{{{Mpeg2ProfileType::MPEG2_MAIN, Mpeg2Level::MPEG2_LEVEL_MAIN, 15000000u},
+                              {Mpeg2ProfileType::MPEG2_SIMPLE, Mpeg2Level::MPEG2_LEVEL_LOW, 4000000u},
+                              {Mpeg2ProfileType::MPEG2_MAIN, Mpeg2Level::MPEG2_LEVEL_HIGH, 80000000u}},
+                             {DynamicRange::SDR}};
+    return VideoDecoderCapabilities{"3.0", "4.0", {videoCap}};
 }();
 } // namespace
 
@@ -234,11 +273,26 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedAudioCapabilit
     EXPECT_EQ(response.interface_version(), kAudioCapabilities.interfaceVersion);
     EXPECT_EQ(response.schema_version(), kAudioCapabilities.schemaVersion);
     ASSERT_EQ(response.capabilities_size(), 1);
-    ASSERT_TRUE(response.capabilities(0).has_pcm());
-    EXPECT_EQ(response.capabilities(0).pcm().base().max_bitrate_in_bps(), 1536000u);
-    EXPECT_EQ(response.capabilities(0).pcm().base().max_channels(), 8u);
-    EXPECT_EQ(response.capabilities(0).pcm().base().max_sample_rate_in_hz(), 192000u);
-    EXPECT_EQ(response.capabilities(0).pcm().base().max_bit_depth(), 32u);
+    const auto &cap = response.capabilities(0);
+    ASSERT_TRUE(cap.has_pcm());
+    EXPECT_EQ(cap.pcm().base().max_bitrate_in_bps(), 1536000u);
+    ASSERT_TRUE(cap.has_aac());
+    ASSERT_EQ(cap.aac().profiles_size(), 1);
+    ASSERT_TRUE(cap.has_mp3());
+    ASSERT_TRUE(cap.has_alac());
+    ASSERT_TRUE(cap.has_sbc());
+    ASSERT_TRUE(cap.has_dolby_ac3());
+    ASSERT_TRUE(cap.has_dolby_ac4());
+    ASSERT_TRUE(cap.has_dolby_eac3());
+    ASSERT_TRUE(cap.has_dolby_truehd());
+    ASSERT_TRUE(cap.has_flac());
+    ASSERT_TRUE(cap.has_vorbis());
+    ASSERT_TRUE(cap.has_opus());
+    ASSERT_TRUE(cap.has_mpeg_audio());
+    ASSERT_TRUE(cap.has_real_audio());
+    ASSERT_TRUE(cap.has_usac());
+    ASSERT_TRUE(cap.has_dts());
+    ASSERT_TRUE(cap.has_avs());
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedAudioCapabilitiesRequestAndExpectFailure()
@@ -257,14 +311,23 @@ void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedVideoCapabilit
     EXPECT_EQ(response.interface_version(), kVideoCapabilities.interfaceVersion);
     EXPECT_EQ(response.schema_version(), kVideoCapabilities.schemaVersion);
     ASSERT_EQ(response.capabilities_size(), 1);
-    ASSERT_TRUE(response.capabilities(0).codec_capabilities().has_h264());
-    const auto &h264 = response.capabilities(0).codec_capabilities().h264();
-    ASSERT_EQ(h264.profiles_size(), 1);
-    EXPECT_EQ(h264.profiles(0).type(), firebolt::rialto::GetSupportedVideoCapabilitiesResponse::H264_PROFILE_HIGH);
-    EXPECT_EQ(h264.profiles(0).max_level(), firebolt::rialto::GetSupportedVideoCapabilitiesResponse::H264_LEVEL_5_1);
-    EXPECT_EQ(h264.profiles(0).max_bitrate_in_bps(), 50000000u);
-    ASSERT_EQ(h264.dynamic_ranges_size(), 1);
-    EXPECT_EQ(h264.dynamic_ranges(0), firebolt::rialto::GetSupportedVideoCapabilitiesResponse::DYNAMIC_RANGE_SDR);
+    const auto &codecs = response.capabilities(0).codec_capabilities();
+    ASSERT_TRUE(codecs.has_h264());
+    ASSERT_EQ(codecs.h264().profiles_size(), 3);
+    EXPECT_EQ(codecs.h264().profiles(0).type(),
+              firebolt::rialto::GetSupportedVideoCapabilitiesResponse::H264_PROFILE_HIGH);
+    EXPECT_EQ(codecs.h264().profiles(0).max_level(),
+              firebolt::rialto::GetSupportedVideoCapabilitiesResponse::H264_LEVEL_5_1);
+    EXPECT_EQ(codecs.h264().profiles(0).max_bitrate_in_bps(), 50000000u);
+    ASSERT_EQ(codecs.h264().dynamic_ranges_size(), 5);
+    ASSERT_TRUE(codecs.has_h265());
+    ASSERT_EQ(codecs.h265().profiles_size(), 3);
+    ASSERT_TRUE(codecs.has_vp9());
+    ASSERT_EQ(codecs.vp9().profiles_size(), 4);
+    ASSERT_TRUE(codecs.has_av1());
+    ASSERT_EQ(codecs.av1().profiles_size(), 2);
+    ASSERT_TRUE(codecs.has_mpeg2());
+    ASSERT_EQ(codecs.mpeg2().profiles_size(), 3);
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::sendGetSupportedVideoCapabilitiesRequestAndExpectFailure()
