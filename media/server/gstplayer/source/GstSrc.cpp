@@ -399,15 +399,19 @@ void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement
                               GST_APP_STREAM_TYPE_STREAM, "min-percent", 20, "handle-segment-change", TRUE, nullptr);
     m_gstWrapper->gstAppSrcSetCallbacks(GST_APP_SRC(streamInfo.appSrc), callbacks, userData, nullptr);
 
-    if (firebolt::rialto::MediaSourceType::SUBTITLE != type)
+    const std::unordered_map<firebolt::rialto::MediaSourceType, uint32_t> queueSize =
+        {{firebolt::rialto::MediaSourceType::VIDEO, 8 * 1024 * 1024},
+         {firebolt::rialto::MediaSourceType::AUDIO, 512 * 1024},
+         {firebolt::rialto::MediaSourceType::SUBTITLE, 256 * 1024}};
+
+    auto sizeIt = queueSize.find(type);
+    if (sizeIt != queueSize.end())
     {
-        constexpr GstClockTime kMaxBufferingTime{1 * GST_SECOND};
-        m_gstWrapper->gstAppSrcSetMaxTime(GST_APP_SRC(streamInfo.appSrc), kMaxBufferingTime);
+        m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(streamInfo.appSrc), sizeIt->second);
     }
     else
     {
-        constexpr guint64 kMaxBufferingSize{256 * 1024};
-        m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(streamInfo.appSrc), kMaxBufferingSize);
+        GST_WARNING_OBJECT(source, "Could not find max-bytes value for appsrc");
     }
 
     m_gstWrapper->gstAppSrcSetStreamType(GST_APP_SRC(streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE);
