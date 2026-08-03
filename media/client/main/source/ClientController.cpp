@@ -299,7 +299,7 @@ void ClientController::reportClientMetrics(std::uint64_t sampleId, std::uint32_t
                                                   getMonotonicTimeMs(), getEpochTimeMs(), getProcessCpuTimeMs(),
                                                   getProcessMemoryKb()))
     {
-        RIALTO_CLIENT_LOG_WARN("Failed to report client process metrics");
+        RIALTO_CLIENT_LOG_DEBUG("Failed to report client process metrics");
     }
 }
 

@@ -58,7 +58,6 @@ public:
     virtual void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) = 0;
     virtual void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) = 0;
 
-    virtual void notifyPlaybackStateChanged(int sessionId, PlaybackState oldState, PlaybackState newState) = 0;
     virtual void notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState) = 0;
 };
 } // namespace firebolt::rialto::server::ipc

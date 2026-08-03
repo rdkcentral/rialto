@@ -39,8 +39,7 @@ public:
     createApplicationManagementServer(service::ISessionServerManager &sessionServerManager) const override;
     std::unique_ptr<ISessionManagementServer>
     createSessionManagementServer(service::IPlaybackService &playbackService, service::ICdmService &cdmService,
-                                  service::IControlService &controlService,
-                                  service::IPrivateMetricsService &metricsService) const override;
+                                  service::IControlService &controlService) const override;
 };
 } // namespace firebolt::rialto::server::ipc
 

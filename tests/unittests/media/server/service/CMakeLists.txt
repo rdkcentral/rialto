@@ -38,6 +38,9 @@ add_gtests (
 
         controlService/ControlServiceTestsFixture.cpp
         controlService/ControlServiceTests.cpp
+
+        metrics/MetricsClientsTests.cpp
+        metrics/PrivateMetricsServiceTests.cpp
         )
 
 target_include_directories(

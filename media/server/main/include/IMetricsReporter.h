@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_METRICS_REPORTER_H_
 #define FIREBOLT_RIALTO_SERVER_I_METRICS_REPORTER_H_
 
+#include "ControlCommon.h"
 #include "StateMetricsAggregator.h"
 #include <cstdint>
 #include <memory>
@@ -33,7 +34,9 @@ namespace firebolt::rialto::server
 struct PeriodicMetricsReport
 {
     std::uint64_t sampleId{0};
+    std::uint64_t monotonicTimeMs{0};
     std::string reason;
+    ApplicationState applicationState{ApplicationState::UNKNOWN};
     std::string appName;
     std::uint32_t clientPid{0};
     double clientCpuPercent{0.0};

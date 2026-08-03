@@ -82,3 +82,25 @@ TEST_F(ClientControllerCreateTest, CreateControlIpcFailure)
                  std::runtime_error);
     EXPECT_EQ(controller, nullptr);
 }
+
+TEST_F(ClientControllerCreateTest, CreatePrivateMetricsIpcFailure)
+{
+    std::unique_ptr<ClientController> controller;
+    EXPECT_CALL(*m_controlIpcFactoryMock, createControlIpc(_)).WillOnce(Return(m_controlIpcMock));
+    EXPECT_CALL(*m_privateMetricsIpcFactoryMock, createPrivateMetricsIpc(_)).WillOnce(Return(nullptr));
+
+    EXPECT_THROW(controller =
+                     std::make_unique<ClientController>(m_controlIpcFactoryMock, m_privateMetricsIpcFactoryMock),
+                 std::runtime_error);
+    EXPECT_EQ(controller, nullptr);
+}
+
+TEST_F(ClientControllerCreateTest, ReportsClientMetrics)
+{
+    EXPECT_CALL(*m_controlIpcFactoryMock, createControlIpc(_)).WillOnce(Return(m_controlIpcMock));
+    EXPECT_CALL(*m_privateMetricsIpcFactoryMock, createPrivateMetricsIpc(_)).WillOnce(Return(m_privateMetricsIpcMock));
+    auto controller{std::make_unique<ClientController>(m_controlIpcFactoryMock, m_privateMetricsIpcFactoryMock)};
+
+    EXPECT_CALL(*m_privateMetricsIpcMock, reportClientMetrics(12, 2, _, _, _, _, _, _)).WillOnce(Return(true));
+    static_cast<IPrivateMetricsIpcClient &>(*controller).reportClientMetrics(12, 2);
+}

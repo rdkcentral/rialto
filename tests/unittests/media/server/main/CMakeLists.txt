@@ -102,6 +102,10 @@ add_gtests (
 
         mainThread/MainThreadTest.cpp
 
+        metrics/LogMetricsReporterTests.cpp
+        metrics/MetricsCollectorTests.cpp
+        metrics/MetricsHelpersTests.cpp
+
         textTrackAccessor/TextTrackAccessorTest.cpp
 
         textTrackSession/TextTrackSessionTest.cpp

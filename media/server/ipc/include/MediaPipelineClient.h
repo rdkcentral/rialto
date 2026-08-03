@@ -27,13 +27,10 @@
 
 namespace firebolt::rialto::server::ipc
 {
-class IPrivateMetricsModuleService;
-
 class MediaPipelineClient : public IMediaPipelineClient
 {
 public:
-    MediaPipelineClient(int sessionId, const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient,
-                        IPrivateMetricsModuleService *metricsService = nullptr);
+    MediaPipelineClient(int sessionId, const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient);
     ~MediaPipelineClient() override;
 
     void notifyDuration(int64_t duration) override;
@@ -56,8 +53,6 @@ public:
 private:
     int m_sessionId;
     std::shared_ptr<::firebolt::rialto::ipc::IClient> m_ipcClient;
-    IPrivateMetricsModuleService *m_metricsService;
-    PlaybackState m_currentPlaybackState{PlaybackState::UNKNOWN};
 
     // It is possible for a needData to be sent while a source is been attached,
     // this causes an issue in client side as they recieve a needData from a source

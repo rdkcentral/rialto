@@ -19,12 +19,27 @@
 
 #include "LogMetricsReporter.h"
 #include "RialtoServerLogging.h"
+#include <algorithm>
+#include <cmath>
 #include <cinttypes>
+
+namespace
+{
+constexpr std::uint64_t kActiveReportIntervalMs{10 * 60 * 1000};
+constexpr double kRelativeChangeTolerance{0.10};
+constexpr double kCpuAbsoluteFloor{1.0};
+constexpr double kMemoryAbsoluteFloorKb{1024.0};
+} // namespace
 
 namespace firebolt::rialto::server
 {
 void LogMetricsReporter::reportPeriodicSample(const PeriodicMetricsReport &report)
 {
+    if (!shouldReportPeriodicSample(report))
+    {
+        return;
+    }
+
     RIALTO_SERVER_LOG_MIL("Metrics sample=%" PRIu64 ", reason=%s, app='%s', client_pid=%u, client_cpu=%.2f%%, "
                           "server_cpu=%.2f%%, combined_cpu=%.2f%%, client_cpu_ms=%" PRIu64 ", "
                           "server_cpu_ms=%" PRIu64 ", client_mem_kb=%" PRIu64 ", server_mem_kb=%" PRIu64 ", "
@@ -33,6 +48,56 @@ void LogMetricsReporter::reportPeriodicSample(const PeriodicMetricsReport &repor
                           report.clientCpuPercent, report.serverCpuPercent, report.combinedCpuPercent,
                           report.clientCpuTimeMs, report.serverCpuTimeMs, report.clientMemoryKb,
                           report.serverMemoryKb, report.shmMemoryKb, report.cgroupMemoryUsageKb, report.cgroupMemoryLimitKb);
+}
+
+bool LogMetricsReporter::shouldReportPeriodicSample(const PeriodicMetricsReport &report)
+{
+    std::lock_guard<std::mutex> lock{m_mutex};
+
+    if (report.reason != "PERIODIC")
+    {
+        return false;
+    }
+
+    if (!m_lastReportedSample)
+    {
+        m_lastReportedSample = report;
+        return true;
+    }
+
+    const auto &previous{*m_lastReportedSample};
+    const bool stateChanged{report.applicationState != previous.applicationState};
+    const bool metricsChanged{
+        changedSignificantly(report.clientCpuPercent, previous.clientCpuPercent, kCpuAbsoluteFloor) ||
+        changedSignificantly(report.serverCpuPercent, previous.serverCpuPercent, kCpuAbsoluteFloor) ||
+        changedSignificantly(report.combinedCpuPercent, previous.combinedCpuPercent, kCpuAbsoluteFloor) ||
+        changedSignificantly(static_cast<double>(report.clientMemoryKb),
+                             static_cast<double>(previous.clientMemoryKb), kMemoryAbsoluteFloorKb) ||
+        changedSignificantly(static_cast<double>(report.serverMemoryKb),
+                             static_cast<double>(previous.serverMemoryKb), kMemoryAbsoluteFloorKb) ||
+        changedSignificantly(static_cast<double>(report.cgroupMemoryUsageKb),
+                             static_cast<double>(previous.cgroupMemoryUsageKb), kMemoryAbsoluteFloorKb) ||
+        changedSignificantly(static_cast<double>(report.cgroupMemoryLimitKb),
+                             static_cast<double>(previous.cgroupMemoryLimitKb), kMemoryAbsoluteFloorKb) ||
+        changedSignificantly(static_cast<double>(report.shmMemoryKb), static_cast<double>(previous.shmMemoryKb),
+                             kMemoryAbsoluteFloorKb)};
+    const bool activeIntervalElapsed{report.applicationState == ApplicationState::RUNNING &&
+                                     report.monotonicTimeMs >= previous.monotonicTimeMs &&
+                                     report.monotonicTimeMs - previous.monotonicTimeMs >= kActiveReportIntervalMs};
+
+    if (stateChanged || metricsChanged || activeIntervalElapsed)
+    {
+        m_lastReportedSample = report;
+        return true;
+    }
+
+    return false;
+}
+
+bool LogMetricsReporter::changedSignificantly(double current, double previous, double absoluteFloor)
+{
+    const double threshold{std::max(std::abs(previous) * kRelativeChangeTolerance, absoluteFloor)};
+    return std::abs(current - previous) >= threshold;
 }
 
 void LogMetricsReporter::reportStateTransition(const StateTransitionReport &report)

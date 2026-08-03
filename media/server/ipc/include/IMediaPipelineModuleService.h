@@ -28,8 +28,6 @@
 namespace firebolt::rialto::server::ipc
 {
 class IMediaPipelineModuleService;
-class IPrivateMetricsModuleService;
-
 /**
  * @brief IMediaPipelineModuleService factory class, returns a concrete implementation of IMediaPipelineModuleService
  */
@@ -84,10 +82,6 @@ public:
      */
     virtual void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) = 0;
 
-    /**
-     * @brief Set the metrics service for state transition notifications.
-     */
-    virtual void setMetricsService(const std::shared_ptr<IPrivateMetricsModuleService> &metricsService) = 0;
 };
 
 } // namespace firebolt::rialto::server::ipc

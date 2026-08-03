@@ -20,9 +20,7 @@
 #include "SessionServerManager.h"
 #include "IApplicationManagementServer.h"
 #include "IIpcFactory.h"
-#include "IMetricsCollector.h"
 #include "ISessionManagementServer.h"
-#include "PrivateMetricsService.h"
 #include "RialtoServerLogging.h"
 
 #include <algorithm>
@@ -44,11 +42,8 @@ SessionServerManager::SessionServerManager(const ipc::IIpcFactory &ipcFactory, I
                                            std::unique_ptr<IHeartbeatProcedureFactory> &&heartbeatProcedureFactory)
     : m_playbackService{playbackService}, m_cdmService{cdmService}, m_controlService{controlService},
       m_heartbeatProcedureFactory{std::move(heartbeatProcedureFactory)},
-      m_privateMetricsService{std::make_unique<PrivateMetricsService>(
-          firebolt::rialto::server::IMetricsCollectorFactory::createFactory())},
       m_applicationManagementServer{ipcFactory.createApplicationManagementServer(*this)},
-      m_sessionManagementServer{
-          ipcFactory.createSessionManagementServer(playbackService, cdmService, controlService, *m_privateMetricsService)},
+      m_sessionManagementServer{ipcFactory.createSessionManagementServer(playbackService, cdmService, controlService)},
       m_isServiceRunning{true}, m_currentState{common::SessionServerState::UNINITIALIZED}
 {
     RIALTO_SERVER_LOG_INFO("Starting Rialto Server Service");

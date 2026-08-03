@@ -52,7 +52,6 @@ public:
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
 
-    void notifyPlaybackStateChanged(int sessionId, PlaybackState oldState, PlaybackState newState) override;
     void notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState) override;
 
     // PrivateMetricsModule RPC handlers

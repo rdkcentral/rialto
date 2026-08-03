@@ -200,12 +200,6 @@ void PrivateMetricsModuleService::reportClientMetrics(
     m_metricsService.reportMetrics(clientId, metrics);
 }
 
-void PrivateMetricsModuleService::notifyPlaybackStateChanged(int sessionId, PlaybackState oldState,
-                                                             PlaybackState newState)
-{
-    m_metricsService.notifyPlaybackStateChanged(sessionId, oldState, newState);
-}
-
 void PrivateMetricsModuleService::notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState)
 {
     m_metricsService.notifyApplicationStateChanged(oldState, newState);
@@ -254,8 +248,8 @@ void PrivateMetricsModuleService::requestMetricsSample(int clientId, std::uint64
 
     if (!ipcClient->sendEvent(event))
     {
-        RIALTO_SERVER_LOG_WARN("Failed to request client metrics sample=%" PRIu64 " from client %d", sampleId,
-                               clientId);
+        RIALTO_SERVER_LOG_DEBUG("Failed to request client metrics sample=%" PRIu64 " from client %d", sampleId,
+                                clientId);
     }
 }
 } // namespace firebolt::rialto::server::ipc
