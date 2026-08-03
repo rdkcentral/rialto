@@ -545,56 +545,51 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, GetSupportedVideoCapabilitiesSuccess)
 {
     const std::vector<DynamicRange> kAllDr{DynamicRange::SDR, DynamicRange::HDR10, DynamicRange::HLG,
                                            DynamicRange::HDR10PLUS, DynamicRange::DOLBY_VISION};
-    H264CodecCapability h264Codec{
-        {H264Profile{H264ProfileType::H264_HIGH, H264Level::H264_LEVEL_5_1, 50000000},
-         H264Profile{H264ProfileType::H264_BASELINE, H264Level::H264_LEVEL_3, 8000000},
-         H264Profile{H264ProfileType::H264_MAIN, H264Level::H264_LEVEL_3_1, 14000000},
-         H264Profile{H264ProfileType::H264_HIGH, H264Level::H264_LEVEL_4, 20000000},
-         H264Profile{H264ProfileType::H264_HIGH, H264Level::H264_LEVEL_4_1, 25000000},
-         H264Profile{H264ProfileType::H264_HIGH, H264Level::H264_LEVEL_5, 40000000},
-         H264Profile{H264ProfileType::H264_HIGH, H264Level::H264_LEVEL_5_2, 60000000}},
-        kAllDr};
-    H265CodecCapability h265Codec{
-        {H265Profile{H265ProfileType::H265_MAIN_10, H265Level::H265_LEVEL_5_1, 50000000},
-         H265Profile{H265ProfileType::H265_MAIN, H265Level::H265_LEVEL_4, 10000000},
-         H265Profile{H265ProfileType::H265_MAIN, H265Level::H265_LEVEL_4_1, 12000000},
-         H265Profile{H265ProfileType::H265_MAIN, H265Level::H265_LEVEL_5, 25000000},
-         H265Profile{H265ProfileType::H265_MAIN_10_HDR10, H265Level::H265_LEVEL_5_2, 35000000},
-         H265Profile{H265ProfileType::H265_MAIN, H265Level::H265_LEVEL_6, 60000000},
-         H265Profile{H265ProfileType::H265_MAIN, H265Level::H265_LEVEL_6_1, 80000000},
-         H265Profile{H265ProfileType::H265_MAIN, H265Level::H265_LEVEL_6_2, 100000000}},
-        {DynamicRange::HDR10}};
-    Vp9CodecCapability vp9Codec{
-        {Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_4, 30000000},
-         Vp9Profile{Vp9ProfileType::VP9_PROFILE_1, Vp9Level::VP9_LEVEL_1, 200000},
-         Vp9Profile{Vp9ProfileType::VP9_PROFILE_2, Vp9Level::VP9_LEVEL_1_1, 400000},
-         Vp9Profile{Vp9ProfileType::VP9_PROFILE_3, Vp9Level::VP9_LEVEL_2, 1500000},
-         Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_2_1, 3000000},
-         Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_3, 6000000},
-         Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_3_1, 12000000},
-         Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_4_1, 40000000},
-         Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_5, 60000000},
-         Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_5_1, 80000000},
-         Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_5_2, 100000000},
-         Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_6, 160000000},
-         Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_6_1, 240000000},
-         Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_6_2, 480000000}},
-        {DynamicRange::SDR}};
-    Av1CodecCapability av1Codec{
-        {Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_5_1, 20000000},
-         Av1Profile{Av1ProfileType::AV1_HIGH, Av1Level::AV1_LEVEL_4_0, 6000000},
-         Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_4_1, 8000000},
-         Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_5_0, 12000000},
-         Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_5_2, 25000000},
-         Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_6_0, 40000000},
-         Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_6_1, 60000000},
-         Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_6_2, 100000000}},
-        {DynamicRange::SDR}};
-    Mpeg2CodecCapability mpeg2Codec{
-        {Mpeg2Profile{Mpeg2ProfileType::MPEG2_MAIN, Mpeg2Level::MPEG2_LEVEL_MAIN, 15000000},
-         Mpeg2Profile{Mpeg2ProfileType::MPEG2_SIMPLE, Mpeg2Level::MPEG2_LEVEL_LOW, 4000000},
-         Mpeg2Profile{Mpeg2ProfileType::MPEG2_MAIN, Mpeg2Level::MPEG2_LEVEL_HIGH, 80000000}},
-        {DynamicRange::SDR}};
+    H264CodecCapability h264Codec{{H264Profile{H264ProfileType::H264_HIGH, H264Level::H264_LEVEL_5_1, 50000000},
+                                   H264Profile{H264ProfileType::H264_BASELINE, H264Level::H264_LEVEL_3, 8000000},
+                                   H264Profile{H264ProfileType::H264_MAIN, H264Level::H264_LEVEL_3_1, 14000000},
+                                   H264Profile{H264ProfileType::H264_HIGH, H264Level::H264_LEVEL_4, 20000000},
+                                   H264Profile{H264ProfileType::H264_HIGH, H264Level::H264_LEVEL_4_1, 25000000},
+                                   H264Profile{H264ProfileType::H264_HIGH, H264Level::H264_LEVEL_5, 40000000},
+                                   H264Profile{H264ProfileType::H264_HIGH, H264Level::H264_LEVEL_5_2, 60000000}},
+                                  kAllDr};
+    H265CodecCapability h265Codec{{H265Profile{H265ProfileType::H265_MAIN_10, H265Level::H265_LEVEL_5_1, 50000000},
+                                   H265Profile{H265ProfileType::H265_MAIN, H265Level::H265_LEVEL_4, 10000000},
+                                   H265Profile{H265ProfileType::H265_MAIN, H265Level::H265_LEVEL_4_1, 12000000},
+                                   H265Profile{H265ProfileType::H265_MAIN, H265Level::H265_LEVEL_5, 25000000},
+                                   H265Profile{H265ProfileType::H265_MAIN_10_HDR10, H265Level::H265_LEVEL_5_2, 35000000},
+                                   H265Profile{H265ProfileType::H265_MAIN, H265Level::H265_LEVEL_6, 60000000},
+                                   H265Profile{H265ProfileType::H265_MAIN, H265Level::H265_LEVEL_6_1, 80000000},
+                                   H265Profile{H265ProfileType::H265_MAIN, H265Level::H265_LEVEL_6_2, 100000000}},
+                                  {DynamicRange::HDR10}};
+    Vp9CodecCapability vp9Codec{{Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_4, 30000000},
+                                 Vp9Profile{Vp9ProfileType::VP9_PROFILE_1, Vp9Level::VP9_LEVEL_1, 200000},
+                                 Vp9Profile{Vp9ProfileType::VP9_PROFILE_2, Vp9Level::VP9_LEVEL_1_1, 400000},
+                                 Vp9Profile{Vp9ProfileType::VP9_PROFILE_3, Vp9Level::VP9_LEVEL_2, 1500000},
+                                 Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_2_1, 3000000},
+                                 Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_3, 6000000},
+                                 Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_3_1, 12000000},
+                                 Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_4_1, 40000000},
+                                 Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_5, 60000000},
+                                 Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_5_1, 80000000},
+                                 Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_5_2, 100000000},
+                                 Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_6, 160000000},
+                                 Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_6_1, 240000000},
+                                 Vp9Profile{Vp9ProfileType::VP9_PROFILE_0, Vp9Level::VP9_LEVEL_6_2, 480000000}},
+                                {DynamicRange::SDR}};
+    Av1CodecCapability av1Codec{{Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_5_1, 20000000},
+                                 Av1Profile{Av1ProfileType::AV1_HIGH, Av1Level::AV1_LEVEL_4_0, 6000000},
+                                 Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_4_1, 8000000},
+                                 Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_5_0, 12000000},
+                                 Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_5_2, 25000000},
+                                 Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_6_0, 40000000},
+                                 Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_6_1, 60000000},
+                                 Av1Profile{Av1ProfileType::AV1_MAIN, Av1Level::AV1_LEVEL_6_2, 100000000}},
+                                {DynamicRange::SDR}};
+    Mpeg2CodecCapability mpeg2Codec{{Mpeg2Profile{Mpeg2ProfileType::MPEG2_MAIN, Mpeg2Level::MPEG2_LEVEL_MAIN, 15000000},
+                                     Mpeg2Profile{Mpeg2ProfileType::MPEG2_SIMPLE, Mpeg2Level::MPEG2_LEVEL_LOW, 4000000},
+                                     Mpeg2Profile{Mpeg2ProfileType::MPEG2_MAIN, Mpeg2Level::MPEG2_LEVEL_HIGH, 80000000}},
+                                    {DynamicRange::SDR}};
     VideoCodecCapabilities codecs;
     codecs.h264 = std::move(h264Codec);
     codecs.h265 = std::move(h265Codec);
