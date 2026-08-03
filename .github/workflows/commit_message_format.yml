@@ -40,68 +40,41 @@ jobs:
         uses: mshick/add-pr-comment@v2
         with:
           message: |
-            Pull request must be merged with a description containing the required fields,
+            Pull request title must follow the pattern:
+            < JIRA TICKET >: < one line summary of change less than 65 characters >
 
-            Summary:
-            Type: Feature/Fix/Cleanup
-            Test Plan:
-            Jira:
+            Pull request description must follow the Commit message format for RDK-E:
+            https://etwiki.sys.comcast.net/spaces/RDKAR/pages/1407997180/Commit+Message+Format+For+RDKE
 
-            If there is no jira releated to this change, please put 'Jira: NO-JIRA'.
+            1. Associated JIRA ticket in format : < JIRA TICKET >: < one line summary of change less than 65 characters >
+            2. Detailed reason for change information
+            3. Test procedure. Only references links to Jira ticket or sub tickets where test steps and references are captured.
 
-            Description can be changed by editing the top comment on your pull request and making a new commit.
+            < JIRA TICKET >: < one line summary of change less than 65 characters >
+            < empty line >
+            Reason for change: <explanation of change>
+            Test Procedure: < https://ccp.sys.comcast.net/browse/JIRA TICKET/url/to/test_step_section>
 
-      # Check PR description for 'Summary:' field.
-      - name: Match 'Summary:' 
+      # Check PR title
+      - name: Match PR title
         uses: actions-ecosystem/action-regex-match@v2
-        id: summary-match
+        id: pr-title-match
+        if: failure() || success()
+        with:
+          text: ${{ github.event.pull_request.title }}
+          regex: '^[A-Z][A-Z0-9]+-\d+: .{1,64}$'
+
+      # Check PR body
+      - name: Match PR Body
+        uses: actions-ecosystem/action-regex-match@v2
+        id: pr-body-match
         if: failure() || success()
         with:
           text: ${{ github.event.pull_request.body }}
-          regex: 'Summary:\s*[\s\S]*?'
-          flags: gm
+          regex: '^([A-Z][A-Z0-9]+-\d+): (.{1,64})\r?\n\r?\nReason for change:([\s\S]*?)(?:\r?\nTest Procedure:([\s\S]*))?$'
 
-      - name: Check 'Summary:' 
-        if: (failure() || success()) && (steps.summary-match.outputs.match == '')
-        run: exit 1
-  
-      # Check PR description for 'Type: Feature|Fix|Cleanup' field.
-      - name: Match 'Type:' 
-        uses: actions-ecosystem/action-regex-match@v2
-        id: type-match
-        if: failure() || success()
-        with:
-          text: ${{ github.event.pull_request.body }}
-          regex: 'Type:\s*Feature|Fix|Cleanup'
-
-      - name: Check 'Type:' 
-        if: (failure() || success()) && (steps.type-match.outputs.match == '')
-        run: exit 1
-        
-      # Check PR description for 'Test Plan:' field.
-      - name: Match 'Test Plan:' 
-        uses: actions-ecosystem/action-regex-match@v2
-        id: test-plan-match
-        if: failure() || success()
-        with:
-          text: ${{ github.event.pull_request.body }}
-          regex: 'Test Plan:\s*[\s\S]*?'
-
-      - name: Check 'Test Plan:' 
-        if: (failure() || success()) && (steps.test-plan-match.outputs.match == '')
-        run: exit 1
-
-      # Check PR description for 'Jira:' field.
-      - name: Match 'Jira:' 
-        uses: actions-ecosystem/action-regex-match@v2
-        id: jira-match
-        if: failure() || success()
-        with:
-          text: ${{ github.event.pull_request.body }}
-          regex: 'Jira:\s*[\s\S]*?'
-
-      - name: Check 'Jira:' 
-        if: (failure() || success()) && (steps.jira-match.outputs.match == '')
+      - name: Check Commit message
+        if: (failure() || success()) && (steps.pr-body-match.outputs.match == '')
         run: exit 1
       
       # Print description.
