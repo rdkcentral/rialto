@@ -1431,6 +1431,12 @@ void GstGenericPlayer::attachData(const firebolt::rialto::MediaSourceType mediaT
 
         for (GstBuffer *buffer : streamInfo.buffers)
         {
+            const auto pts = static_cast<uint64_t>(GST_BUFFER_PTS(buffer));
+            const auto dts = static_cast<uint64_t>(GST_BUFFER_DTS(buffer));
+            const auto duration = static_cast<uint64_t>(GST_BUFFER_DURATION(buffer));
+            RIALTO_SERVER_LOG_INFO(
+                "Pushing %s buffer to gst pipeline: pts=%" PRIu64 " dts=%" PRIu64 " duration=%" PRIu64,
+                common::convertMediaSourceType(mediaType), pts, dts, duration);
             m_gstWrapper->gstAppSrcPushBuffer(GST_APP_SRC(streamInfo.appSrc), buffer);
         }
         streamInfo.buffers.clear();
