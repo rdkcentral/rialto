@@ -27,7 +27,6 @@
 
 namespace
 {
-
 /**
  * @brief Callback for audio underflow event from sink. Called by the Gstreamer thread.
  *
@@ -42,14 +41,7 @@ void audioUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
 {
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
-
-    if (fifoDepth > 0 && player && player->isVideoHandleSet())
-    {
-        return;
-    }
-
-    if (player)
-        player->scheduleAudioUnderflow();
+    player->scheduleAudioUnderflow();
 }
 
 /**
@@ -66,14 +58,7 @@ void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
 {
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
-
-    if (fifoDepth > 0 && player && player->isVideoHandleSet())
-    {
-        return;
-    }
-
-    if (player)
-        player->scheduleVideoUnderflow();
+    player->scheduleVideoUnderflow();
 }
 
 /**

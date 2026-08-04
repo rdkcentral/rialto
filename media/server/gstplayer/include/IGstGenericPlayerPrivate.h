@@ -63,13 +63,6 @@ public:
     virtual void scheduleVideoUnderflow() = 0;
 
     /**
-     * @brief Check whether the video decoder handle has been set.
-     *
-     * @retval true if the video decoder handle has been set, false otherwise.
-     */
-    virtual bool isVideoHandleSet() const = 0;
-
-    /**
      * @brief Schedules first video frame received task. Called by the worker thread.
      */
     virtual void scheduleFirstVideoFrameReceived() = 0;

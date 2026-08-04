@@ -26,7 +26,6 @@
 #include <gst/gst.h>
 #include <gtest/gtest.h>
 
-#include <memory>
 #include <string>
 
 using ::testing::_;
@@ -43,9 +42,6 @@ using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
-
-// Forward declaration
-class GenericTasksTestsContext;
 
 /**
  * @brief GenericTasksTest Base class
@@ -487,9 +483,6 @@ private:
     template <typename T> void expectSetProperty(const std::string &propertyName, const T &value);
     void expectPropertyDoesntExist(const std::string &propertyName);
     std::string getFadeString(double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType);
-
-protected:
-    std::shared_ptr<GenericTasksTestsContext> testContext;
 };
 
 #endif // GENERIC_TASKS_TESTS_BASE_H_
