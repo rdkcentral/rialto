@@ -19,6 +19,7 @@
 
 #include "PrivateMetricsService.h"
 #include "RialtoServerLogging.h"
+#include <cstdio>
 #include <cinttypes>
 #include <fstream>
 #include <string>
