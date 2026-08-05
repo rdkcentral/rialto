@@ -209,6 +209,11 @@ void SessionServerAppManager::handleRestartServer(int serverId)
     {
         m_healthcheckService->onServerRemoved(sessionServer->getServerId());
     }
+    if (sessionServer->isSuspendOngoing())
+    {
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Not restarting serverId: %d as server is suspended", serverId);
+        return;
+    }
     // First, get all needed information from current app
     const std::string kAppName{sessionServer->getAppName()};
     const firebolt::rialto::common::SessionServerState kState{sessionServer->getExpectedState()};
@@ -252,6 +257,10 @@ bool SessionServerAppManager::handleSuspendSessionServer(const std::string &appN
         RIALTO_SERVER_MANAGER_LOG_ERROR("Suspend %s failed - session server not found.", appName.c_str());
         return false;
     }
+    if (m_healthcheckService)
+    {
+        m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
+    }
     kSessionServer->setSuspendOngoing();
     if (!m_ipcController->performSetState(kSessionServer->getServerId(),
                                           firebolt::rialto::common::SessionServerState::NOT_RUNNING))
@@ -272,7 +281,6 @@ void SessionServerAppManager::resurrectSuspendedServer(const std::shared_ptr<ISe
     RIALTO_SERVER_MANAGER_LOG_INFO("Resurrecting server for app: %s", kAppName.c_str());
 
     m_ipcController->removeClient(kSessionServer->getServerId());
-    m_healthcheckService->onServerRemoved(kSessionServer->getServerId());
     m_sessionServerApps.erase(kSessionServer);
 
     // Finally, spawn the new app with old settings and set named socket if present

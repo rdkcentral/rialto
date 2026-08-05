@@ -77,6 +77,7 @@ public:
     void sessionServerWillIndicateStateChange(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillBeRestarted(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillRestartWillBeSkipped();
+    void sessionServerWillRestartWillBeSkippedDueToSuspend();
     void sessionServerWillSuspend();
     void sessionServerWillHandleServerStartupTimeout();
 

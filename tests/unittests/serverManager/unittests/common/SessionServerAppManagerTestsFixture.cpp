@@ -424,7 +424,7 @@ void SessionServerAppManagerTests::clientWillBeRemoved()
 
 void SessionServerAppManagerTests::sessionServerWontBeSuspended()
 {
-    EXPECT_CALL(*m_sessionServerAppMock, isSuspendOngoing()).WillOnce(Return(false));
+    EXPECT_CALL(*m_sessionServerAppMock, isSuspendOngoing()).WillRepeatedly(Return(false));
 }
 
 void SessionServerAppManagerTests::sessionServerWillIndicateStateChange(
@@ -502,9 +502,16 @@ void SessionServerAppManagerTests::sessionServerWillRestartWillBeSkipped()
     EXPECT_CALL(*m_sessionServerAppMock, getExpectedState())
         .WillOnce(Return(firebolt::rialto::common::SessionServerState::UNINITIALIZED));
     EXPECT_CALL(m_healthcheckServiceMock, onServerRemoved(kServerId)).RetiresOnSaturation();
+    EXPECT_CALL(*m_sessionServerAppMock, isSuspendOngoing()).WillOnce(Return(false));
     EXPECT_CALL(*m_sessionServerAppMock, getSessionManagementSocketName()).WillOnce(Return(kSessionServerSocketName));
     EXPECT_CALL(*m_sessionServerAppMock, getClientDisplayName()).WillOnce(Return(kClientDisplayName));
     EXPECT_CALL(*m_sessionServerAppMock, releaseNamedSocketRef()).WillOnce(ReturnRef(m_namedSocket));
+}
+
+void SessionServerAppManagerTests::sessionServerWillRestartWillBeSkippedDueToSuspend()
+{
+    EXPECT_CALL(m_healthcheckServiceMock, onServerRemoved(kServerId)).RetiresOnSaturation();
+    EXPECT_CALL(*m_sessionServerAppMock, isSuspendOngoing()).WillOnce(Return(true));
 }
 
 void SessionServerAppManagerTests::sessionServerWillHandleServerStartupTimeout()
