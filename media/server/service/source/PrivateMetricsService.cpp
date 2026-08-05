@@ -42,6 +42,11 @@ void PrivateMetricsService::clientReady(int clientId,
                                         const std::shared_ptr<firebolt::rialto::server::IMetricsCollectorClient> &client)
 {
     std::lock_guard<std::mutex> lock{m_mutex};
+    if (!m_collectorFactory)
+    {
+        RIALTO_SERVER_LOG_ERROR("MetricsCollectorFactory is null; cannot create MetricsCollector for client %d", clientId);
+        return;
+    }
     auto collector = m_collectorFactory->create(clientId, client, m_currentApplicationState);
     if (collector)
     {

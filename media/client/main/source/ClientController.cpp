@@ -23,9 +23,9 @@
 #include <algorithm>
 #include <chrono>
 #include <cinttypes>
+#include <cstdio>
 #include <cstring>
 #include <fstream>
-#include <stdexcept>
 #include <sys/mman.h>
 #include <sys/un.h>
 #include <sys/times.h>

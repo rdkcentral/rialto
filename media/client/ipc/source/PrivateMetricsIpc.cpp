@@ -33,6 +33,8 @@ const char *sampleReasonToString(::firebolt::rialto::MetricsSampleReason reason)
         return "CONNECTED";
     case firebolt::rialto::METRICS_SAMPLE_REASON_PERIODIC:
         return "PERIODIC";
+    case firebolt::rialto::METRICS_SAMPLE_REASON_STATE_TRANSITION:
+        return "STATE_TRANSITION";
     case firebolt::rialto::METRICS_SAMPLE_REASON_UNKNOWN:
     default:
         return "UNKNOWN";
