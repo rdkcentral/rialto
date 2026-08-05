@@ -106,16 +106,48 @@ TEST(MetricsThresholdCheckerTests, reportsOnceAndRearmsAfterTwoLowerSamples)
     MetricsThresholdChecker sut{config, &reporter};
 
     EXPECT_CALL(reporter, reportThresholdExceeded(_))
-        .Times(2)
-        .WillRepeatedly(Invoke([](const ThresholdAlert &alert)
-                               { EXPECT_EQ(alert.metricName, "client_cpu"); }));
+        .WillOnce(Invoke([](const ThresholdAlert &alert)
+                         {
+                             EXPECT_EQ(alert.metricName, "client_cpu");
+                             EXPECT_EQ(alert.severity, ThresholdSeverity::CRITICAL);
+                         }));
     sut.checkSample(96.0, 0.0, 0.0, 0, 0, 0, 0);
     sut.checkSample(96.0, 0.0, 0.0, 0, 0, 0, 0);
 
     sut.checkSample(0.0, 0.0, 0.0, 0, 0, 0, 0);
     sut.checkSample(0.0, 0.0, 0.0, 0, 0, 0, 0);
-    EXPECT_CALL(reporter, reportThresholdExceeded(_)).Times(2);
+    EXPECT_CALL(reporter, reportThresholdExceeded(_))
+        .WillOnce(Invoke([](const ThresholdAlert &alert)
+                         { EXPECT_EQ(alert.severity, ThresholdSeverity::CRITICAL); }));
     sut.checkSample(96.0, 0.0, 0.0, 0, 0, 0, 0);
+}
+
+TEST(MetricsThresholdCheckerTests, warningEscalatesToCriticalWithoutDuplicateWarning)
+{
+    StrictMock<MetricsReporterMock> reporter;
+    MetricsThresholdChecker sut{MetricsThresholdConfig{}, &reporter};
+
+    {
+        testing::InSequence sequence;
+        EXPECT_CALL(reporter, reportThresholdExceeded(_))
+            .WillOnce(Invoke([](const ThresholdAlert &alert)
+                             { EXPECT_EQ(alert.severity, ThresholdSeverity::WARNING); }));
+        EXPECT_CALL(reporter, reportThresholdExceeded(_))
+            .WillOnce(Invoke([](const ThresholdAlert &alert)
+                             { EXPECT_EQ(alert.severity, ThresholdSeverity::CRITICAL); }));
+
+        sut.checkSample(81.0, 0.0, 0.0, 0, 0, 0, 0);
+        sut.checkSample(96.0, 0.0, 0.0, 0, 0, 0, 0);
+    }
+
+    sut.checkSample(90.0, 0.0, 0.0, 0, 0, 0, 0);
+    sut.checkSample(0.0, 0.0, 0.0, 0, 0, 0, 0);
+    sut.checkSample(0.0, 0.0, 0.0, 0, 0, 0, 0);
+
+    EXPECT_CALL(reporter, reportThresholdExceeded(_))
+        .WillOnce(Invoke([](const ThresholdAlert &alert)
+                         { EXPECT_EQ(alert.severity, ThresholdSeverity::WARNING); }));
+    sut.checkSample(81.0, 0.0, 0.0, 0, 0, 0, 0);
 }
 
 TEST(MetricsThresholdCheckerTests, reportsConfiguredMetricsIncludingCgroupPercentage)

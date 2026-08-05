@@ -55,6 +55,8 @@ void MetricsThresholdChecker::checkMetric(const MetricsThreshold &threshold, dou
     if (value >= threshold.criticalLevel)
     {
         state.belowCriticalCount = 0;
+        state.belowWarningCount = 0;
+        state.warningFired = true;
         if (!state.criticalFired)
         {
             state.criticalFired = true;
@@ -65,14 +67,13 @@ void MetricsThresholdChecker::checkMetric(const MetricsThreshold &threshold, dou
             alert.severity = ThresholdSeverity::CRITICAL;
             m_reporter->reportThresholdExceeded(alert);
         }
+        return;
     }
-    else
+
+    ++state.belowCriticalCount;
+    if (state.belowCriticalCount >= kDebounceSamples)
     {
-        ++state.belowCriticalCount;
-        if (state.belowCriticalCount >= kDebounceSamples)
-        {
-            state.criticalFired = false;
-        }
+        state.criticalFired = false;
     }
 
     // Warning check

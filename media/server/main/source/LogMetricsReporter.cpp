@@ -27,7 +27,7 @@ namespace
 {
 constexpr std::uint64_t kActiveReportIntervalMs{10 * 60 * 1000};
 constexpr double kRelativeChangeTolerance{0.10};
-constexpr double kCpuAbsoluteFloor{1.0};
+constexpr double kCpuChangeThresholdPercentagePoints{10.0};
 constexpr double kMemoryAbsoluteFloorKb{1024.0};
 } // namespace
 
@@ -68,9 +68,9 @@ bool LogMetricsReporter::shouldReportPeriodicSample(const PeriodicMetricsReport 
     const auto &previous{*m_lastReportedSample};
     const bool stateChanged{report.applicationState != previous.applicationState};
     const bool metricsChanged{
-        changedSignificantly(report.clientCpuPercent, previous.clientCpuPercent, kCpuAbsoluteFloor) ||
-        changedSignificantly(report.serverCpuPercent, previous.serverCpuPercent, kCpuAbsoluteFloor) ||
-        changedSignificantly(report.combinedCpuPercent, previous.combinedCpuPercent, kCpuAbsoluteFloor) ||
+        std::abs(report.clientCpuPercent - previous.clientCpuPercent) >= kCpuChangeThresholdPercentagePoints ||
+        std::abs(report.serverCpuPercent - previous.serverCpuPercent) >= kCpuChangeThresholdPercentagePoints ||
+        std::abs(report.combinedCpuPercent - previous.combinedCpuPercent) >= kCpuChangeThresholdPercentagePoints ||
         changedSignificantly(static_cast<double>(report.clientMemoryKb),
                              static_cast<double>(previous.clientMemoryKb), kMemoryAbsoluteFloorKb) ||
         changedSignificantly(static_cast<double>(report.serverMemoryKb),

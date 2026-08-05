@@ -72,22 +72,49 @@ protected:
     RIALTO_DEBUG_LEVEL m_previousLevels{RIALTO_DEBUG_LEVEL_DEFAULT};
 };
 
-TEST_F(LogMetricsReporterTests, inactiveSamplesOnlyLogAfterSignificantGaugeChange)
+TEST_F(LogMetricsReporterTests, allCpuGaugesUseTenPercentagePointThreshold)
+{
+    for (const auto cpuGauge : {&PeriodicMetricsReport::clientCpuPercent,
+                                &PeriodicMetricsReport::serverCpuPercent,
+                                &PeriodicMetricsReport::combinedCpuPercent})
+    {
+        g_logCount = 0;
+        LogMetricsReporter sut;
+        auto report{makeReport(ApplicationState::INACTIVE, 0)};
+        const double baseline{report.*cpuGauge};
+        sut.reportPeriodicSample(report);
+        EXPECT_EQ(g_logCount, 1);
+
+        report.*cpuGauge = baseline + 9.99;
+        sut.reportPeriodicSample(report);
+        EXPECT_EQ(g_logCount, 1);
+
+        report.*cpuGauge = baseline + 10.0;
+        sut.reportPeriodicSample(report);
+        EXPECT_EQ(g_logCount, 2);
+
+        report.*cpuGauge = baseline + 0.01;
+        sut.reportPeriodicSample(report);
+        EXPECT_EQ(g_logCount, 2);
+
+        report.*cpuGauge = baseline;
+        sut.reportPeriodicSample(report);
+        EXPECT_EQ(g_logCount, 3);
+    }
+}
+
+TEST_F(LogMetricsReporterTests, inactiveMemoryChangesKeepRelativeThreshold)
 {
     LogMetricsReporter sut;
     auto report{makeReport(ApplicationState::INACTIVE, 0)};
     sut.reportPeriodicSample(report);
     EXPECT_EQ(g_logCount, 1);
 
-    report.monotonicTimeMs = 10 * 60 * 1000;
-    report.clientCpuTimeMs = 1000000;
-    report.serverCpuTimeMs = 2000000;
-    report.clientCpuPercent = 21.9;
-    report.clientMemoryKb = 109000;
+    report.clientMemoryKb = 109999;
     sut.reportPeriodicSample(report);
     EXPECT_EQ(g_logCount, 1);
 
-    report.clientCpuPercent = 22.0;
+    report.clientMemoryKb = 110000;
     sut.reportPeriodicSample(report);
     EXPECT_EQ(g_logCount, 2);
 }
