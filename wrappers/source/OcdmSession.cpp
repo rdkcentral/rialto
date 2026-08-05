@@ -141,7 +141,8 @@ OcdmSession::OcdmSession(struct OpenCDMSystem *systemHandle, IOcdmSessionClient 
 OcdmSession::~OcdmSession() {}
 
 MediaKeyErrorStatus OcdmSession::constructSession(KeySessionType sessionType, InitDataType initDataType,
-                                                  const uint8_t initData[], uint32_t initDataSize)
+                                                  const uint8_t initData[], uint32_t initDataSize,
+                                                  const uint8_t cdmData[], uint32_t cdmDataSize)
 {
     if (m_session)
     {
@@ -149,8 +150,8 @@ MediaKeyErrorStatus OcdmSession::constructSession(KeySessionType sessionType, In
     }
 
     OpenCDMError status = opencdm_construct_session(m_systemHandle, convertLicenseType(sessionType),
-                                                    convertInitDataType(initDataType), initData, initDataSize, nullptr,
-                                                    0, &m_ocdmCallbacks, this, &m_session);
+                                                    convertInitDataType(initDataType), initData, initDataSize, cdmData,
+                                                    cdmDataSize, &m_ocdmCallbacks, this, &m_session);
     return convertOpenCdmError(status);
 }
 

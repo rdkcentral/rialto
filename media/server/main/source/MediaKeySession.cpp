@@ -109,6 +109,7 @@ MediaKeySession::~MediaKeySession()
 }
 
 MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData,
+                                                     const std::vector<uint8_t> &cdmData,
                                                      const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
@@ -129,7 +130,12 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
     {
         initOcdmErrorChecking();
 
-        status = m_ocdmSession->constructSession(m_kSessionType, initDataType, &initData[0], initData.size());
+        const std::vector<uint8_t> &cdmDataToUse = cdmData.empty() ? m_queuedDrmHeader : cdmData;
+        const uint8_t *cdmDataPtr = cdmDataToUse.empty() ? nullptr : cdmDataToUse.data();
+        const uint32_t cdmDataSize = cdmDataToUse.size();
+
+        status = m_ocdmSession->constructSession(m_kSessionType, initDataType, &initData[0], initData.size(), cdmDataPtr,
+                                                 cdmDataSize);
         if (MediaKeyErrorStatus::OK != status)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to construct the key session");
@@ -138,12 +144,7 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
         else
         {
             m_isSessionConstructed = true;
-            if (!m_queuedDrmHeader.empty())
-            {
-                RIALTO_SERVER_LOG_DEBUG("Setting queued drm header after session construction");
-                setDrmHeader(m_queuedDrmHeader);
-                m_queuedDrmHeader.clear();
-            }
+            m_queuedDrmHeader.clear();
         }
 
         if ((checkForOcdmErrors("generateRequest")) && (MediaKeyErrorStatus::OK == status))

@@ -36,10 +36,11 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessNoneNetflix)
     createKeySession(kWidevineKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock,
-                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size(), _, _))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, m_kLdlState));
+    EXPECT_EQ(MediaKeyErrorStatus::OK,
+              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, std::vector<uint8_t>{}, m_kLdlState));
 
     // Close ocdm before destroying
     expectCloseKeySession(kWidevineKeySystem);
@@ -79,14 +80,14 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, FailNetflixWhenChallengeD
     createKeySession(kNetflixKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock,
-                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size(), _, _))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
     mainThreadWillEnqueueTask();
     EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, nullptrMatcher(), _))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK,
-              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData,
+              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, std::vector<uint8_t>{},
                                                  firebolt::rialto::LimitedDurationLicense::DISABLED));
 
     // Close ocdm before destroying
@@ -101,7 +102,7 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, FailNetflixWhenGettingCha
     createKeySession(kNetflixKeySystem);
 
     EXPECT_CALL(*m_ocdmSessionMock,
-                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size(), _, _))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
     mainThreadWillEnqueueTask();
     EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, nullptrMatcher(), _))
@@ -110,7 +111,7 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, FailNetflixWhenGettingCha
         .WillOnce(DoAll(memcpyChallenge(m_kChallenge), Return(MediaKeyErrorStatus::FAIL)));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK,
-              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData,
+              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, std::vector<uint8_t>{},
                                                  firebolt::rialto::LimitedDurationLicense::DISABLED));
 
     // Close ocdm before destroying
@@ -125,12 +126,14 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SessionAlreadyConstructed
     // Generate inital request
     createKeySession(kWidevineKeySystem);
     EXPECT_CALL(*m_ocdmSessionMock,
-                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size(), _, _))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, m_kLdlState));
+    EXPECT_EQ(MediaKeyErrorStatus::OK,
+              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, std::vector<uint8_t>{}, m_kLdlState));
 
     // Generate request again should just return OK
-    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, m_kLdlState));
+    EXPECT_EQ(MediaKeyErrorStatus::OK,
+              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, std::vector<uint8_t>{}, m_kLdlState));
 
     // OcdmSession will be closed on destruction
     expectCloseKeySession(kWidevineKeySystem);
@@ -143,10 +146,10 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, OcdmSessionFailure)
 {
     createKeySession(kWidevineKeySystem);
     EXPECT_CALL(*m_ocdmSessionMock,
-                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size(), _, _))
         .WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
     EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED,
-              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, m_kLdlState));
+              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, std::vector<uint8_t>{}, m_kLdlState));
 }
 
 /**
@@ -156,15 +159,17 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, OnErrorFailure)
 {
     createKeySession(kWidevineKeySystem);
     EXPECT_CALL(*m_ocdmSessionMock,
-                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size()))
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size(), _, _))
         .WillOnce(Invoke(
-            [this](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[], uint32_t initDataSize)
+            [this](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
+                   uint32_t initDataSize, const uint8_t cdmData[], uint32_t cdmDataSize)
             {
                 m_mediaKeySession->onError("Failure");
                 return MediaKeyErrorStatus::OK;
             }));
 
-    EXPECT_EQ(MediaKeyErrorStatus::FAIL, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, m_kLdlState));
+    EXPECT_EQ(MediaKeyErrorStatus::FAIL,
+              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, std::vector<uint8_t>{}, m_kLdlState));
 
     // OcdmSession will be closed on destruction
     expectCloseKeySession(kWidevineKeySystem);
