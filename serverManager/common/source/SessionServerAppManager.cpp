@@ -274,13 +274,12 @@ bool SessionServerAppManager::handleSuspendSessionServer(const std::string &appN
 void SessionServerAppManager::resurrectSuspendedServer(const std::shared_ptr<ISessionServerApp> &kSessionServer)
 {
     const std::string kAppName{kSessionServer->getAppName()};
-    const firebolt::rialto::common::SessionServerState kState{firebolt::rialto::common::SessionServerState::INACTIVE};
+    const firebolt::rialto::common::SessionServerState kState{firebolt::rialto::common::SessionServerState::ACTIVE};
     const firebolt::rialto::common::AppConfig kAppConfig{kSessionServer->getSessionManagementSocketName(),
                                                          kSessionServer->getClientDisplayName()};
     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> namedSocket{std::move(kSessionServer->releaseNamedSocket())};
     RIALTO_SERVER_MANAGER_LOG_INFO("Resurrecting server for app: %s", kAppName.c_str());
 
-    m_ipcController->removeClient(kSessionServer->getServerId());
     m_sessionServerApps.erase(kSessionServer);
 
     // Finally, spawn the new app with old settings and set named socket if present
@@ -378,6 +377,11 @@ bool SessionServerAppManager::changeSessionServerState(const std::string &appNam
     {
         m_healthcheckService->onServerRemoved(sessionServer->getServerId());
     }
+    if (sessionServer->isSuspendOngoing() && firebolt::rialto::common::SessionServerState::ACTIVE == newState)
+    {
+        resurrectSuspendedServer(sessionServer);
+        return true;
+    }
     if (!m_ipcController->performSetState(sessionServer->getServerId(), newState))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Change state of %s to %s failed.", appName.c_str(), toString(newState));
@@ -399,7 +403,8 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
         return;
     }
     std::string appName{sessionServer->getAppName()};
-    if (!appName.empty() && m_stateObserver) // empty app name is when SessionServer is preloaded
+    if (!appName.empty() && m_stateObserver &&
+        !sessionServer->isSuspendOngoing()) // empty app name is when SessionServer is preloaded
     {
         m_stateObserver->stateChanged(appName, newState);
     }
@@ -432,7 +437,11 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
         if (sessionServer->isSuspendOngoing() &&
             sessionServer->getExpectedState() != firebolt::rialto::common::SessionServerState::NOT_RUNNING)
         {
-            resurrectSuspendedServer(sessionServer);
+            if (!appName.empty() && m_stateObserver)
+            {
+                m_stateObserver->stateChanged(appName, firebolt::rialto::common::SessionServerState::INACTIVE);
+                m_ipcController->removeClient(sessionServer->getServerId());
+            }
             return;
         }
         m_ipcController->removeClient(serverId);
