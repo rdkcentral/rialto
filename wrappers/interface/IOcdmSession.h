@@ -45,7 +45,7 @@ public:
      * @param[in]  sessionType  : The session type.
      * @param[in]  initDataType : The init data type.
      * @param[in]  initData     : The init data pointer.
-     * @param[in]  initDataSize : The size of the init data pointed too by initData.
+     * @param[in]  initDataSize : The size of the init data pointed to by initData.
     * @param[in]  cdmData      : Optional CDM data pointer.
     * @param[in]  cdmDataSize  : The size of cdmData.
      *

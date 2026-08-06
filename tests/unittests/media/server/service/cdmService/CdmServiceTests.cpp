@@ -138,6 +138,19 @@ TEST_F(CdmServiceTests, shouldGenerateRequestWithLdlEnabled)
     destroyMediaKeysShouldSucceed();
 }
 
+TEST_F(CdmServiceTests, shouldGenerateRequestWithCdmDataAndMarkExtendedInterface)
+{
+    triggerSwitchToActiveSuccess();
+    mediaKeysFactoryWillCreateMediaKeys();
+    createMediaKeysShouldSucceed();
+    mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    createKeySessionShouldSucceed();
+    mediaKeysWillGenerateRequestWithCdmDataWithStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    generateRequestWithCdmDataShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus::OK);
+    isExtendedInterfaceUsedShouldReturn(true);
+    destroyMediaKeysShouldSucceed();
+}
+
 TEST_F(CdmServiceTests, shouldFailToGenerateRequestWhenNoMediaKeys)
 {
     triggerSwitchToActiveSuccess();

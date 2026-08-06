@@ -113,11 +113,10 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
                                                      const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (LimitedDurationLicense::NOT_SPECIFIED != ldlState)
-    {
-        m_extendedInterfaceInUse = true;
-    }
-    else
+    m_extendedInterfaceInUse = (LimitedDurationLicense::NOT_SPECIFIED != ldlState) || !cdmData.empty() ||
+                               !m_queuedDrmHeader.empty();
+
+    if (LimitedDurationLicense::NOT_SPECIFIED == ldlState)
     {
         // Set the request flag for the onLicenseRequest callback
         m_licenseRequested = true;
@@ -131,10 +130,11 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
         initOcdmErrorChecking();
 
         const std::vector<uint8_t> &cdmDataToUse = cdmData.empty() ? m_queuedDrmHeader : cdmData;
+        const uint8_t *initDataPtr = initData.empty() ? nullptr : initData.data();
         const uint8_t *cdmDataPtr = cdmDataToUse.empty() ? nullptr : cdmDataToUse.data();
         const uint32_t cdmDataSize = cdmDataToUse.size();
 
-        status = m_ocdmSession->constructSession(m_kSessionType, initDataType, &initData[0], initData.size(), cdmDataPtr,
+        status = m_ocdmSession->constructSession(m_kSessionType, initDataType, initDataPtr, initData.size(), cdmDataPtr,
                                                  cdmDataSize);
         if (MediaKeyErrorStatus::OK != status)
         {

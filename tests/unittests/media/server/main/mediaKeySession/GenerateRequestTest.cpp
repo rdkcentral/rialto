@@ -47,6 +47,52 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessNoneNetflix)
 }
 
 /**
+ * Test that GenerateRequest forwards non-empty cdmData to constructSession and engages the extended interface path.
+ */
+TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessWithNonEmptyCdmDataUsesExtendedInterface)
+{
+    createKeySession(kWidevineKeySystem);
+
+    const std::vector<uint8_t> kCdmData{7, 8, 9};
+    const std::vector<uint8_t> kResponseData{4, 5, 6};
+
+    EXPECT_CALL(*m_ocdmSessionMock, constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size(), _, _))
+        .WillOnce(Invoke(
+            [&kCdmData](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
+                        uint32_t initDataSize, const uint8_t cdmData[], uint32_t cdmDataSize)
+            {
+                EXPECT_NE(cdmData, nullptr);
+                EXPECT_EQ(cdmDataSize, kCdmData.size());
+                EXPECT_TRUE(std::equal(cdmData, cdmData + cdmDataSize, kCdmData.begin()));
+
+                return MediaKeyErrorStatus::OK;
+            }));
+
+    // Extended interface path triggers a manual challenge retrieval.
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, nullptrMatcher(), _))
+        .WillOnce(DoAll(SetArgPointee<2>(m_kChallenge.size()), Return(MediaKeyErrorStatus::OK)));
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(m_isLDL, notNullptrMatcher(), _))
+        .WillOnce(DoAll(memcpyChallenge(m_kChallenge), Return(MediaKeyErrorStatus::OK)));
+    mainThreadWillEnqueueTask();
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, m_kChallenge, _));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OK,
+              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, kCdmData, m_kLdlState));
+
+    EXPECT_CALL(*m_ocdmSessionMock, update(_, _)).Times(0);
+    EXPECT_CALL(*m_ocdmSessionMock, storeLicenseData(&kResponseData[0], kResponseData.size()))
+        .WillOnce(Return(MediaKeyErrorStatus::OK));
+
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->updateSession(kResponseData));
+
+    // Extended interface path closes via challenge cancellation and decrypt context cleanup.
+    EXPECT_CALL(*m_ocdmSessionMock, cancelChallengeData()).WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_CALL(*m_ocdmSessionMock, cleanDecryptContext()).WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_CALL(*m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
+}
+
+/**
  * Test that GenerateRequest can generate request successfully for a netflix keysystem.
  */
 TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessNetflix)
