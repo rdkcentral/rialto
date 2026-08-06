@@ -113,11 +113,11 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
                                                      const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    m_extendedInterfaceInUse = (LimitedDurationLicense::NOT_SPECIFIED != ldlState) || !cdmData.empty() ||
-                               !m_queuedDrmHeader.empty();
-
-    if (LimitedDurationLicense::NOT_SPECIFIED == ldlState)
+     if (LimitedDurationLicense::NOT_SPECIFIED != ldlState)
     {
+        m_extendedInterfaceInUse = true;
+    }
+    else    {
         // Set the request flag for the onLicenseRequest callback
         m_licenseRequested = true;
     }
@@ -129,10 +129,9 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
     {
         initOcdmErrorChecking();
 
-        const std::vector<uint8_t> &cdmDataToUse = cdmData.empty() ? m_queuedDrmHeader : cdmData;
         const uint8_t *initDataPtr = initData.empty() ? nullptr : initData.data();
-        const uint8_t *cdmDataPtr = cdmDataToUse.empty() ? nullptr : cdmDataToUse.data();
-        const uint32_t cdmDataSize = cdmDataToUse.size();
+        const uint8_t *cdmDataPtr = cdmData.empty() ? nullptr : cdmData.data();
+        const uint32_t cdmDataSize = cdmData.size();
 
         status = m_ocdmSession->constructSession(m_kSessionType, initDataType, initDataPtr, initData.size(), cdmDataPtr,
                                                  cdmDataSize);
@@ -144,7 +143,12 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
         else
         {
             m_isSessionConstructed = true;
-            m_queuedDrmHeader.clear();
+            if (!m_queuedDrmHeader.empty())
+            {
+                RIALTO_SERVER_LOG_DEBUG("Setting queued drm header after session construction");
+                setDrmHeader(m_queuedDrmHeader);
+                m_queuedDrmHeader.clear();
+            }
         }
 
         if ((checkForOcdmErrors("generateRequest")) && (MediaKeyErrorStatus::OK == status))

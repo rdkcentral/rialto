@@ -165,8 +165,7 @@ MediaKeyErrorStatus CdmService::generateRequest(int mediaKeysHandle, int32_t key
         RIALTO_SERVER_LOG_ERROR("Media keys handle: %d does not exists", mediaKeysHandle);
         return MediaKeyErrorStatus::FAIL;
     }
-    if (((LimitedDurationLicense::NOT_SPECIFIED != ldlState) || !cdmData.empty()) &&
-        m_sessionInfo.find(keySessionId) != m_sessionInfo.end())
+    if (LimitedDurationLicense::NOT_SPECIFIED != ldlState && m_sessionInfo.find(keySessionId) != m_sessionInfo.end())
     {
         m_sessionInfo[keySessionId].isExtendedInterfaceUsed = true;
     }
