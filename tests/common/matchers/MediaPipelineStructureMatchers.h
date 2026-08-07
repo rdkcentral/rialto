@@ -20,6 +20,7 @@
 #ifndef MEDIA_PIPELINE_STRUCTURE_MATCHERS_H_
 #define MEDIA_PIPELINE_STRUCTURE_MATCHERS_H_
 
+#include "DecoderCapabilitiesUtil.h"
 #include "MediaCommon.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
