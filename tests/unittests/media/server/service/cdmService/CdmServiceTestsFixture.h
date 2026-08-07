@@ -73,6 +73,8 @@ public:
     void getSupportedKeySystemVersionWillSucceed();
     void getSupportedKeySystemVersionWillFail();
     void supportsServerCertificateWillReturnTrue();
+    void getSupportedRobustnessLevelsWillSucceed();
+    void getSupportedRobustnessLevelsWillFail();
 
     void triggerSwitchToActiveSuccess();
     void triggerSwitchToInactive();
@@ -116,6 +118,8 @@ public:
     void getSupportedKeySystemVersionShouldFail();
     void supportsServerCertificateReturnTrue();
     void supportsServerCertificateReturnFalse();
+    void getSupportedRobustnessLevelsShouldSucceed();
+    void getSupportedRobustnessLevelsShouldFail();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaKeysServerInternalFactoryMock>> m_mediaKeysFactoryMock;

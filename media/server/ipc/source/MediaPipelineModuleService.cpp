@@ -101,6 +101,10 @@ convertMediaSourceStatus(const firebolt::rialto::HaveDataRequest_MediaSourceStat
     {
         return firebolt::rialto::MediaSourceStatus::NO_AVAILABLE_SAMPLES;
     }
+    case firebolt::rialto::HaveDataRequest_MediaSourceStatus_NO_SPACE_FOR_SAMPLES:
+    {
+        return firebolt::rialto::MediaSourceStatus::NO_SPACE_FOR_SAMPLES;
+    }
     }
     return firebolt::rialto::MediaSourceStatus::ERROR;
 }
@@ -425,10 +429,10 @@ void MediaPipelineModuleService::attachSource(::google::protobuf::RpcController 
     std::shared_ptr<CodecData> codecData{};
     if (request->has_codec_data())
     {
-        auto codecDataProto = request->codec_data();
+        const auto &kCodecDataProto = request->codec_data();
         codecData = std::make_shared<CodecData>();
-        codecData->data = std::vector<std::uint8_t>(codecDataProto.data().begin(), codecDataProto.data().end());
-        codecData->type = convertCodecDataType(codecDataProto.type());
+        codecData->data = std::vector<std::uint8_t>(kCodecDataProto.data().begin(), kCodecDataProto.data().end());
+        codecData->type = convertCodecDataType(kCodecDataProto.type());
     }
     std::unique_ptr<IMediaPipeline::MediaSource> mediaSource;
     firebolt::rialto::SourceConfigType configType = convertConfigType(request->config_type());
@@ -695,6 +699,40 @@ void MediaPipelineModuleService::setImmediateOutput(::google::protobuf::RpcContr
     {
         RIALTO_SERVER_LOG_ERROR("Set Immediate Output failed");
         controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::setReportDecodeErrors(::google::protobuf::RpcController *controller,
+                                                       const ::firebolt::rialto::SetReportDecodeErrorsRequest *request,
+                                                       ::firebolt::rialto::SetReportDecodeErrorsResponse *response,
+                                                       ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    if (!m_mediaPipelineService.setReportDecodeErrors(request->session_id(), request->source_id(),
+                                                      request->report_decode_errors()))
+    {
+        RIALTO_SERVER_LOG_ERROR("Set Report Decode Error failed");
+        controller->SetFailed("Operation failed");
+    }
+    done->Run();
+}
+
+void MediaPipelineModuleService::getQueuedFrames(::google::protobuf::RpcController *controller,
+                                                 const ::firebolt::rialto::GetQueuedFramesRequest *request,
+                                                 ::firebolt::rialto::GetQueuedFramesResponse *response,
+                                                 ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    uint32_t queuedFramesNumber;
+    if (!m_mediaPipelineService.getQueuedFrames(request->session_id(), request->source_id(), queuedFramesNumber))
+    {
+        RIALTO_SERVER_LOG_ERROR("Get queued frames failed");
+        controller->SetFailed("Operation failed");
+    }
+    else
+    {
+        response->set_queued_frames(queuedFramesNumber);
     }
     done->Run();
 }

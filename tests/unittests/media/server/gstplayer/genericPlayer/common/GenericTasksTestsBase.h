@@ -102,14 +102,20 @@ protected:
     void shouldSetupAudioElementAutoAudioSinkWithMultipleChildren();
     void shouldSetupAudioSinkElementOnly();
     void shouldSetupAudioDecoderElementOnly();
+    void shouldSetupAudioDecoderElementWithFirstAudioFrameCallback();
+    void shouldSetupAudioSinkElementWithFirstAudioFrameProbe();
     void shouldSetVideoUnderflowCallback();
     void shouldSetFirstVideoFrameCallback();
+    void shouldSetFirstAudioFrameCallback();
+    void shouldSetFirstAudioFrameFallbackProbeCallback();
     void shouldSetupBaseParse();
     void triggerSetupElement();
     void triggerVideoUnderflowCallback();
     void triggerFirstVideoFrameCallback();
+    void triggerFirstAudioFrameCallback();
     void shouldSetAudioUnderflowCallback();
     void triggerAudioUnderflowCallback();
+    void triggerFirstAudioFrameFallbackProbeCallback();
     void shouldAddFirstAutoVideoSinkChild();
     void shouldAddFirstAutoAudioSinkChild();
     void shouldNotAddAutoVideoSinkChild();
@@ -153,6 +159,7 @@ protected:
 
     // AttachSamples test methods
     void shouldAttachAllAudioSamples();
+    void shouldAttachAllAudioSamplesWithDelay();
     void shouldAttachData(firebolt::rialto::MediaSourceType sourceType);
     void triggerAttachSamplesAudio();
     void shouldAttachAllVideoSamples();
@@ -287,6 +294,10 @@ protected:
     void shouldSetVideoMute();
     void shouldSetSubtitleMute();
 
+    // report-decode-errors decoder property test method
+    void shouldSetReportDecodeErrors();
+    void triggerSetReportDecodeErrors();
+
     // immediate-output sink property test methods
     void shouldSetImmediateOutput();
     void triggerSetImmediateOutput();
@@ -398,6 +409,7 @@ protected:
 
     // ReadShmDataAndAttachSamples test methods
     void shouldReadAudioData();
+    void shouldReadAudioDataFromShmWithAvailableSpace();
     void shouldReadVideoData();
     void shouldReadSubtitleData();
     void shouldReadUnknownData();

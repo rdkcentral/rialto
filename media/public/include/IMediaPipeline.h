@@ -543,7 +543,7 @@ public:
          *
          * @retval the media key session id.
          */
-        const int32_t getMediaKeySessionId() const { return m_mediaKeySessionId; }
+        int32_t getMediaKeySessionId() const { return m_mediaKeySessionId; }
 
         /**
          * @brief Returns the key id. Empty if unencrypted.
@@ -571,14 +571,14 @@ public:
          *
          * @retval the initWithLast15 value.
          */
-        const uint32_t getInitWithLast15() const { return m_initWithLast15; }
+        uint32_t getInitWithLast15() const { return m_initWithLast15; }
 
         /**
          * @brief Returns the segment alignment
          *
          * @retval the segment alignment
          */
-        const SegmentAlignment getSegmentAlignment() const { return m_alignment; }
+        SegmentAlignment getSegmentAlignment() const { return m_alignment; }
 
         /**
          * @brief Gets the codec data
@@ -602,7 +602,7 @@ public:
          *
          * @retval if the encryption pattern has been set
          */
-        const bool getEncryptionPattern(uint32_t &crypt, uint32_t &skip) const
+        bool getEncryptionPattern(uint32_t &crypt, uint32_t &skip) const
         {
             crypt = m_crypt;
             skip = m_skip;
@@ -1227,6 +1227,30 @@ public:
      * @retval true on success.
      */
     virtual bool setImmediateOutput(int32_t sourceId, bool immediateOutput) = 0;
+
+    /**
+     * @brief Sets the "Report Decode Errors" property for this source.
+     *
+     * This method is asynchronous, it will set the "Report Decode Errors" property
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[in] reportDecodeErrors : Set Report Decode Errors mode on the sink
+     *
+     * @retval true on success.
+     */
+    virtual bool setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors) = 0;
+
+    /**
+     * @brief Gets the queued frames for this source.
+     *
+     * This method is synchronous, it gets the queued frames property
+     *
+     * @param[in] sourceId  : The source id. Value should be set to the MediaSource.id returned after attachSource()
+     * @param[out] queuedFrames : Get queued frames on the decoder
+     *
+     * @retval true on success.
+     */
+    virtual bool getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames) = 0;
 
     /**
      * @brief Gets the "Immediate Output" property for this source.

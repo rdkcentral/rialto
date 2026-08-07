@@ -157,6 +157,11 @@ struct GenericPlayerContext
     std::optional<bool> pendingImmediateOutputForVideo{};
 
     /**
+     * @brief Pending report decode errors for MediaSourceType::VIDEO
+     */
+    std::optional<bool> pendingReportDecodeErrorsForVideo{};
+
+    /**
      * @brief Pending low latency
      */
     std::optional<bool> pendingLowLatency{};
@@ -289,6 +294,31 @@ struct GenericPlayerContext
      * @brief Profiler for player pipeline
      */
     std::unique_ptr<IGstProfiler> gstProfiler;
+
+    /**
+     * @brief True when first audio frame has already been scheduled for the current audio source lifecycle.
+     */
+    bool firstAudioFrameReceived{false};
+
+    /**
+     * @brief Fallback probe id for first audio frame detection on sink pad.
+     */
+    gulong audioFirstFrameProbeId{0};
+
+    /**
+     * @brief Fallback sink pad that owns audio first frame probe.
+     */
+    GstPad *audioFirstFrameProbePad{nullptr};
+
+    /**
+     * @brief The audio position set in the GstSegment.
+     */
+    int64_t audioGstSegmentPosition{-1};
+
+    /**
+     * @brief Current position of the stream in nanoseconds.
+     */
+    std::atomic<int64_t> streamPosition{-1};
 };
 } // namespace firebolt::rialto::server
 

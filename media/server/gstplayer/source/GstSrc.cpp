@@ -403,15 +403,33 @@ void GstSrc::setupAndAddAppSrc(IDecryptionService *decryptionService, GstElement
         {{firebolt::rialto::MediaSourceType::VIDEO, 8 * 1024 * 1024},
          {firebolt::rialto::MediaSourceType::AUDIO, 512 * 1024},
          {firebolt::rialto::MediaSourceType::SUBTITLE, 256 * 1024}};
+    GstAppSrc *appSrc = GST_APP_SRC(streamInfo.appSrc);
 
-    auto sizeIt = queueSize.find(type);
-    if (sizeIt != queueSize.end())
+    if (firebolt::rialto::MediaSourceType::SUBTITLE != type &&
+        m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(appSrc), "max-time"))
     {
-        m_gstWrapper->gstAppSrcSetMaxBytes(GST_APP_SRC(streamInfo.appSrc), sizeIt->second);
+        RIALTO_SERVER_LOG_DEBUG("Setting max-time property on appsrc to 1 second");
+        constexpr GstClockTime kMaxBufferingTime{1 * GST_SECOND};
+        m_glibWrapper->gObjectSet(appSrc, "max-time", kMaxBufferingTime, nullptr);
+    }
+    else if (firebolt::rialto::MediaSourceType::SUBTITLE != type &&
+             m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(appSrc), "max-buffers"))
+    {
+        RIALTO_SERVER_LOG_DEBUG("Setting max-buffers property on appsrc to 250");
+        m_glibWrapper->gObjectSet(appSrc, "max-buffers", 250, nullptr);
     }
     else
     {
-        GST_WARNING_OBJECT(source, "Could not find max-bytes value for appsrc");
+        auto sizeIt = queueSize.find(type);
+        if (sizeIt != queueSize.end())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Setting max-bytes property on appsrc to %u", sizeIt->second);
+            m_gstWrapper->gstAppSrcSetMaxBytes(appSrc, sizeIt->second);
+        }
+        else
+        {
+            GST_WARNING_OBJECT(source, "Could not find max-bytes value for appsrc");
+        }
     }
 
     m_gstWrapper->gstAppSrcSetStreamType(GST_APP_SRC(streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE);

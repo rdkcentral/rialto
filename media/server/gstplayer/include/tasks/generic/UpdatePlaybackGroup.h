@@ -36,7 +36,7 @@ public:
     UpdatePlaybackGroup(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
                         const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                         const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
-                        GstElement *typefind, const GstCaps *caps);
+                        GstElement *typefind, GstCaps *caps);
     ~UpdatePlaybackGroup() override;
     void execute() const override;
 
@@ -46,7 +46,7 @@ private:
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     GstElement *m_typefind;
-    const GstCaps *m_caps;
+    GstCaps *m_caps;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 

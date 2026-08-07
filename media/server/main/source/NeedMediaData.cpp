@@ -73,7 +73,7 @@ bool NeedMediaData::send() const
     if (client && m_isValid)
     {
         client->notifyNeedMediaData(m_sourceId, m_frameCount,
-                                    m_activeRequests.insert(m_mediaSourceType, m_maxMediaBytes), m_shmInfo);
+                                    m_activeRequests.insert(m_mediaSourceType, m_maxMediaBytes, m_frameCount), m_shmInfo);
         return true;
     }
     return false;

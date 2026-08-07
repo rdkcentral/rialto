@@ -65,6 +65,10 @@ public:
                     gstElementFactoryListIsType(m_elementFactory,
                                                 GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
             .WillRepeatedly(Return(FALSE));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstElementFactoryListIsType(m_elementFactory,
+                                                GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
+            .WillRepeatedly(Return(FALSE));
         EXPECT_CALL(*m_glibWrapperMock, gSignalListIds(_, _))
             .WillRepeatedly(Invoke(
                 [&](GType itype, guint *n_ids)

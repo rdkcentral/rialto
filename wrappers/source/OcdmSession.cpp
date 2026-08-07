@@ -70,7 +70,7 @@ const char *convertInitDataType(const firebolt::rialto::InitDataType &initDataTy
     }
     }
 }
-const firebolt::rialto::KeyStatus convertKeyStatus(const KeyStatus &ocdmKeyStatus)
+firebolt::rialto::KeyStatus convertKeyStatus(const KeyStatus &ocdmKeyStatus)
 {
     switch (ocdmKeyStatus)
     {

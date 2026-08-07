@@ -29,6 +29,7 @@ class IDataReader
 public:
     virtual ~IDataReader() = default;
     virtual IMediaPipeline::MediaSegmentVector readData() const = 0;
+    virtual bool isBufferFull() const = 0;
 };
 } // namespace firebolt::rialto::server
 

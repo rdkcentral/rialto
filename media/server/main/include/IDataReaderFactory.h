@@ -38,7 +38,8 @@ public:
     virtual ~IDataReaderFactory() = default;
 
     virtual std::shared_ptr<IDataReader> createDataReader(const MediaSourceType &mediaSourceType, std::uint8_t *data,
-                                                          std::uint32_t dataOffset, std::uint32_t numFrames) const = 0;
+                                                          std::uint32_t dataOffset, std::uint32_t numFrames,
+                                                          bool isBufferFull) const = 0;
 };
 } // namespace firebolt::rialto::server
 

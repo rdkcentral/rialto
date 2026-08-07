@@ -35,6 +35,8 @@ add_gtests (
         mediaPipeline/GetDurationTest.cpp
         mediaPipeline/SetImmediateOutputTest.cpp
         mediaPipeline/GetImmediateOutputTest.cpp
+        mediaPipeline/SetReportDecodeErrorsTest.cpp
+        mediaPipeline/GetQueuedFramesTest.cpp
         mediaPipeline/GetStatsTest.cpp
         mediaPipeline/RenderFrameTest.cpp
         mediaPipeline/SetVolumeTest.cpp
@@ -72,6 +74,7 @@ add_gtests (
         mediaKeysCapabilities/CreateTest.cpp
         mediaKeysCapabilities/KeySystemsTest.cpp
         mediaKeysCapabilities/CertificateTest.cpp
+        mediaKeysCapabilities/RobustnessTest.cpp
 
         # ClientController tests
         clientController/CreateTest.cpp

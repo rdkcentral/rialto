@@ -23,6 +23,9 @@
 #include "opencdm/open_cdm_ext.h"
 #include <stdexcept>
 
+extern "C" OpenCDMError opencdm_system_supported_robustness(struct OpenCDMSystem *system, char ***robustness,
+                                                            uint16_t *count);
+
 namespace firebolt::rialto::wrappers
 {
 std::shared_ptr<IOcdmSystem> OcdmSystemFactory::createOcdmSystem(const std::string &keySystem) const
@@ -116,6 +119,32 @@ std::unique_ptr<IOcdmSession> OcdmSystem::createSession(IOcdmSessionClient *clie
 bool OcdmSystem::supportsServerCertificate() const
 {
     return OpenCDMBool::OPENCDM_BOOL_TRUE == opencdm_system_supports_server_certificate(m_systemHandle);
+}
+
+bool OcdmSystem::getSupportedRobustnessLevels(std::vector<std::string> &robustnessLevels)
+{
+    robustnessLevels.clear();
+    char **buffer = nullptr;
+    uint16_t count = 0;
+    OpenCDMError status = opencdm_system_supported_robustness(m_systemHandle, &buffer, &count);
+    if (status == ERROR_NONE && buffer != nullptr && count > 0)
+    {
+        for (uint16_t i = 0; i < count; ++i)
+        {
+            if (buffer[i] != nullptr)
+            {
+                robustnessLevels.push_back(std::string(buffer[i]));
+                free(buffer[i]);
+            }
+        }
+        free(buffer);
+        return true;
+    }
+    if (buffer != nullptr)
+    {
+        free(buffer);
+    }
+    return false;
 }
 
 MediaKeyErrorStatus OcdmSystem::getMetricSystemData(uint32_t &bufferLength, std::vector<uint8_t> &buffer)

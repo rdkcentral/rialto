@@ -168,4 +168,36 @@ void MediaKeysCapabilitiesModuleService::isServerCertificateSupported(
     done->Run();
 }
 
+void MediaKeysCapabilitiesModuleService::getSupportedRobustnessLevels(
+    ::google::protobuf::RpcController *controller, const ::firebolt::rialto::GetSupportedRobustnessLevelsRequest *request,
+    ::firebolt::rialto::GetSupportedRobustnessLevelsResponse *response, ::google::protobuf::Closure *done)
+{
+    RIALTO_SERVER_LOG_DEBUG("entry:");
+    auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
+    if (!ipcController)
+    {
+        RIALTO_SERVER_LOG_ERROR("ipc library provided incompatible controller object");
+        controller->SetFailed("ipc library provided incompatible controller object");
+        done->Run();
+        return;
+    }
+
+    std::vector<std::string> robustnessLevels;
+    bool status = m_cdmService.getSupportedRobustnessLevels(request->key_system(), robustnessLevels);
+    if (status)
+    {
+        for (const auto &level : robustnessLevels)
+        {
+            response->add_robustness_levels(level);
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to get supported robustness levels");
+        controller->SetFailed("Operation failed");
+    }
+
+    done->Run();
+}
+
 } // namespace firebolt::rialto::server::ipc

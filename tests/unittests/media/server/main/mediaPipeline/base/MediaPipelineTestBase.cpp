@@ -86,7 +86,7 @@ void MediaPipelineTestBase::loadGstPlayer()
 {
     mainThreadWillEnqueueTaskAndWait();
     mainThreadWillEnqueueTask();
-    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, _, _, _, _))
+    EXPECT_CALL(*m_gstPlayerFactoryMock, createGstGenericPlayer(_, _, _, _, _, _, _))
         .WillOnce(DoAll(SaveArg<0>(&m_gstPlayerCallback), Return(ByMove(std::move(m_gstPlayer)))));
     EXPECT_CALL(*m_mediaPipelineClientMock, notifyNetworkState(NetworkState::BUFFERING));
 
@@ -143,7 +143,7 @@ void MediaPipelineTestBase::expectNotifyNeedData(MediaSourceType sourceType, int
     EXPECT_CALL(*m_sharedMemoryBufferMock,
                 getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, sourceType))
         .WillOnce(Return(0));
-    EXPECT_CALL(*m_activeRequestsMock, insert(sourceType, _)).WillOnce(Return(0));
+    EXPECT_CALL(*m_activeRequestsMock, insert(sourceType, _, numFrames)).WillOnce(Return(0));
     EXPECT_CALL(*m_mediaPipelineClientMock,
                 notifyNeedMediaData(sourceId, numFrames, 0, _)); // params tested in NeedMediaDataTests
 }

@@ -606,6 +606,73 @@ bool MediaPipelineIpc::setImmediateOutput(int32_t sourceId, bool immediateOutput
     return true;
 }
 
+bool MediaPipelineIpc::setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::SetReportDecodeErrorsRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+    request.set_report_decode_errors(reportDecodeErrors);
+
+    firebolt::rialto::SetReportDecodeErrorsResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->setReportDecodeErrors(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to set report decode error due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+
+    return true;
+}
+
+bool MediaPipelineIpc::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return false;
+    }
+
+    firebolt::rialto::GetQueuedFramesRequest request;
+
+    request.set_session_id(m_sessionId);
+    request.set_source_id(sourceId);
+
+    firebolt::rialto::GetQueuedFramesResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineStub->getQueuedFrames(ipcController.get(), &request, &response, blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed to get queued frames due to '%s'", ipcController->ErrorText().c_str());
+        return false;
+    }
+    else
+    {
+        queuedFrames = response.queued_frames();
+    }
+
+    return true;
+}
+
 bool MediaPipelineIpc::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
 {
     if (!reattachChannelIfRequired())
@@ -1687,6 +1754,9 @@ MediaPipelineIpc::convertHaveDataRequestMediaSourceStatus(MediaSourceStatus stat
         break;
     case MediaSourceStatus::NO_AVAILABLE_SAMPLES:
         protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_NO_AVAILABLE_SAMPLES;
+        break;
+    case MediaSourceStatus::NO_SPACE_FOR_SAMPLES:
+        protoMediaSourceStatus = firebolt::rialto::HaveDataRequest_MediaSourceStatus_NO_SPACE_FOR_SAMPLES;
         break;
     default:
         break;

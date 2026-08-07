@@ -152,21 +152,20 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, FactoryCreatesObject)
     expectSetSignalCallbacks();
     expectSetUri();
     expectCheckPlaySink();
+    expectCreateProfiler();
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_READY))
         .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&m_pipeline)).WillOnce(Return(&m_pipeline));
-
     std::shared_ptr<firebolt::rialto::server::IGstGenericPlayerFactory> factory =
         firebolt::rialto::server::IGstGenericPlayerFactory::getFactory();
     ASSERT_NE(factory, nullptr);
-    auto player{factory->createGstGenericPlayer(&m_gstPlayerClient, m_decryptionServiceMock, m_type, m_videoReq,
-                                                m_kIsLive, m_rdkGstreamerUtilsWrapperFactoryMock)};
+    auto player{factory->createGstGenericPlayer(&m_gstPlayerClient, m_decryptionServiceMock, m_type, m_videoReq, m_kIsLive,
+                                                m_rdkGstreamerUtilsWrapperFactoryMock, m_gstProfilerFactoryMock)};
     EXPECT_NE(player, nullptr);
 
     // Destroy expectations
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(nullptr, nullptr, nullptr, nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(_, GST_STATE_NULL)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(_)).Times(3);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(_)).Times(2);
     EXPECT_CALL(*m_glibWrapperMock, gThreadPoolStopUnusedThreads());
     player.reset();
 

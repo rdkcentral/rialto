@@ -115,4 +115,13 @@ extern "C"
     {
         return ERROR_NONE;
     }
+
+    OpenCDMError opencdm_system_supported_robustness(struct OpenCDMSystem *system, char ***robustness, uint16_t *count)
+    {
+        if (robustness)
+            *robustness = nullptr;
+        if (count)
+            *count = 0;
+        return ERROR_NONE;
+    }
 }

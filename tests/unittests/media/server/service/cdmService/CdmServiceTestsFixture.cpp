@@ -45,6 +45,7 @@ const uint32_t kSubSampleCount{2};
 constexpr uint32_t kInitWithLast15{1};
 constexpr firebolt::rialto::LimitedDurationLicense kLdlState{firebolt::rialto::LimitedDurationLicense::NOT_SPECIFIED};
 constexpr firebolt::rialto::LimitedDurationLicense kLdlStateEnabled{firebolt::rialto::LimitedDurationLicense::ENABLED};
+const std::vector<std::string> kRobustnessLevels{"HW_SECURE_ALL", "SW_SECURE_CRYPTO"};
 } // namespace
 
 CdmServiceTests::CdmServiceTests()
@@ -97,6 +98,17 @@ void CdmServiceTests::getSupportedKeySystemVersionWillFail()
 void CdmServiceTests::supportsServerCertificateWillReturnTrue()
 {
     EXPECT_CALL(m_mediaKeysCapabilitiesMock, isServerCertificateSupported(kKeySystems[0])).WillOnce(Return(true));
+}
+
+void CdmServiceTests::getSupportedRobustnessLevelsWillSucceed()
+{
+    EXPECT_CALL(m_mediaKeysCapabilitiesMock, getSupportedRobustnessLevels(kKeySystems[0], _))
+        .WillOnce(DoAll(SetArgReferee<1>(kRobustnessLevels), Return(true)));
+}
+
+void CdmServiceTests::getSupportedRobustnessLevelsWillFail()
+{
+    EXPECT_CALL(m_mediaKeysCapabilitiesMock, getSupportedRobustnessLevels(kKeySystems[0], _)).WillOnce(Return(false));
 }
 
 void CdmServiceTests::triggerSwitchToActiveSuccess()
@@ -423,6 +435,19 @@ void CdmServiceTests::supportsServerCertificateReturnTrue()
 void CdmServiceTests::supportsServerCertificateReturnFalse()
 {
     EXPECT_FALSE(m_sut.isServerCertificateSupported(kKeySystems[0]));
+}
+
+void CdmServiceTests::getSupportedRobustnessLevelsShouldSucceed()
+{
+    std::vector<std::string> levels;
+    EXPECT_TRUE(m_sut.getSupportedRobustnessLevels(kKeySystems[0], levels));
+    EXPECT_EQ(levels, kRobustnessLevels);
+}
+
+void CdmServiceTests::getSupportedRobustnessLevelsShouldFail()
+{
+    std::vector<std::string> levels;
+    EXPECT_FALSE(m_sut.getSupportedRobustnessLevels(kKeySystems[0], levels));
 }
 
 void CdmServiceTests::incrementSessionIdUsageCounter()
