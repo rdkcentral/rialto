@@ -402,6 +402,94 @@ void GstGenericPlayer::setupElement(GstElement *pipeline, GstElement *element, G
 {
     RIALTO_SERVER_LOG_DEBUG("Element %s added to the pipeline", GST_ELEMENT_NAME(element));
     self->m_gstWrapper->gstObjectRef(element);
+
+    GstElementFactory *factory{self->m_gstWrapper->gstElementGetFactory(element)};
+
+    if (isAudioDecoder(*self->m_gstWrapper, factory))
+    {
+        std::unique_lock lock{self->m_context.propertyMutex};
+        if (self->m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) !=
+            self->m_context.pendingStreamSyncMode.end())
+        {
+            int32_t streamSyncMode = self->m_context.pendingStreamSyncMode[MediaSourceType::AUDIO];
+            self->m_context.pendingStreamSyncMode.erase(MediaSourceType::AUDIO);
+            lock.unlock();
+
+            if (self->m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(element), "stream-sync-mode"))
+            {
+                RIALTO_SERVER_LOG_DEBUG("Setting stream-sync-mode to %d on audio decoder", streamSyncMode);
+                self->m_glibWrapper->gObjectSet(element, "stream-sync-mode", static_cast<gint>(streamSyncMode), nullptr);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to set stream-sync-mode property on audio decoder '%s'",
+                                        GST_ELEMENT_NAME(element));
+            }
+            lock.lock();
+        }
+        if (self->m_context.pendingBufferingLimit.has_value())
+        {
+            guint bufferingLimit = static_cast<guint>(self->m_context.pendingBufferingLimit.value());
+            self->m_context.pendingBufferingLimit.reset();
+            lock.unlock();
+
+            RIALTO_SERVER_LOG_DEBUG("Setting limit-buffering-ms to %u on audio decoder", bufferingLimit);
+            if (self->m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(element), "limit-buffering-ms"))
+            {
+                self->m_glibWrapper->gObjectSet(element, "limit-buffering-ms", bufferingLimit, nullptr);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to set limit-buffering-ms property on audio decoder '%s'",
+                                        GST_ELEMENT_NAME(element));
+            }
+            lock.lock();
+        }
+        if (self->m_context.pendingSyncOff.has_value())
+        {
+            bool syncOff = self->m_context.pendingSyncOff.value();
+            self->m_context.pendingSyncOff.reset();
+            lock.unlock();
+
+            RIALTO_SERVER_LOG_DEBUG("Setting sync-off to %s on audio decoder", syncOff ? "TRUE" : "FALSE");
+            if (self->m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(element), "sync-off"))
+            {
+                self->m_glibWrapper->gObjectSet(element, "sync-off", syncOff ? TRUE : FALSE, nullptr);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to set sync-off property on audio decoder '%s'",
+                                        GST_ELEMENT_NAME(element));
+            }
+            lock.lock();
+        }
+    }
+    else if (isVideoParser(*self->m_gstWrapper, factory))
+    {
+        std::unique_lock lock{self->m_context.propertyMutex};
+        if (self->m_context.pendingStreamSyncMode.find(MediaSourceType::VIDEO) !=
+            self->m_context.pendingStreamSyncMode.end())
+        {
+            gboolean streamSyncModeBoolean{
+                static_cast<gboolean>(self->m_context.pendingStreamSyncMode[MediaSourceType::VIDEO])};
+            self->m_context.pendingStreamSyncMode.erase(MediaSourceType::VIDEO);
+            lock.unlock();
+
+            if (self->m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(element), "syncmode-streaming"))
+            {
+                RIALTO_SERVER_LOG_DEBUG("Setting syncmode-streaming to %d on video parser",
+                                        static_cast<int>(streamSyncModeBoolean));
+                self->m_glibWrapper->gObjectSet(element, "syncmode-streaming", streamSyncModeBoolean, nullptr);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to set syncmode-streaming property on video parser '%s'",
+                                        GST_ELEMENT_NAME(element));
+            }
+            lock.lock();
+        }
+    }
+
     if (self->m_workerThread)
     {
         self->m_workerThread->enqueueTask(self->m_taskFactory->createSetupElement(self->m_context, *self, element));

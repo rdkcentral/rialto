@@ -45,6 +45,15 @@ bool isType(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElemen
     }
     return gstWrapper.gstElementFactoryListIsType(factory, type);
 }
+
+bool isType(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElementFactory *factory, GstElementFactoryListType type)
+{
+    if (!factory)
+    {
+        return false;
+    }
+    return gstWrapper.gstElementFactoryListIsType(factory, type);
+}
 } // namespace
 
 namespace firebolt::rialto::server
@@ -60,9 +69,19 @@ bool isAudioDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, G
     return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
 }
 
+bool isAudioDecoder(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElementFactory *factory)
+{
+    return isType(gstWrapper, factory, GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO);
+}
+
 bool isVideoParser(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
 {
     return isType(gstWrapper, element, GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
+}
+
+bool isVideoParser(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElementFactory *factory)
+{
+    return isType(gstWrapper, factory, GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO);
 }
 
 bool isAudioParser(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element)
