@@ -114,6 +114,12 @@ protected:
 
         EXPECT_CALL(*m_gstWrapperMock,
                     gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.appSrc), &m_callbacks, this, nullptr));
+        EXPECT_CALL(*m_glibWrapperMock,
+                    gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(m_streamInfo.appSrc)), StrEq("max-time")))
+            .WillOnce(Return(nullptr));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(m_streamInfo.appSrc)),
+                                                                 StrEq("max-buffers")))
+            .WillOnce(Return(nullptr));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(GST_APP_SRC(m_streamInfo.appSrc), max));
         EXPECT_CALL(*m_gstWrapperMock,
                     gstAppSrcSetStreamType(GST_APP_SRC(m_streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE));
@@ -220,6 +226,83 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps));
 
     expectSettings(videoMaxBytes);
+    expectBin(m_streamInfo.appSrc);
+    expectSyncElement(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
+    expectLinkPayloader(&m_decryptor);
+    expectLinkQueue(&m_payloader);
+    expectSetupPad(&m_queue);
+
+    m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
+                                this, MediaSourceType::VIDEO);
+}
+
+/**
+ * Test that GstSrc can add and setup a video source with max-time property set on appsrc
+ */
+TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithMaxTimeSet)
+{
+    GParamSpec paramSpec{};
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h265"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps));
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("block")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("format")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("stream-type")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("min-percent")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("handle-segment-change")));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.appSrc), &m_callbacks, this, nullptr));
+    EXPECT_CALL(*m_glibWrapperMock,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(m_streamInfo.appSrc)), StrEq("max-time")))
+        .WillOnce(Return(&paramSpec));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("max-time")));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstAppSrcSetStreamType(GST_APP_SRC(m_streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE));
+
+    expectBin(m_streamInfo.appSrc);
+    expectSyncElement(m_streamInfo.appSrc);
+    expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
+    expectLinkPayloader(&m_decryptor);
+    expectLinkQueue(&m_payloader);
+    expectSetupPad(&m_queue);
+
+    m_gstSrc->setupAndAddAppSrc(m_decryptionServiceMock.get(), GST_ELEMENT(&m_rialtoSrc), m_streamInfo, &m_callbacks,
+                                this, MediaSourceType::VIDEO);
+}
+
+/**
+ * Test that GstSrc can add and setup a video source with max-buffers property set on appsrc
+ */
+TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithMaxBuffersSet)
+{
+    GParamSpec paramSpec{};
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h265"))).WillOnce(Return(false));
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_dummyCaps));
+
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("block")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("format")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("stream-type")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("min-percent")));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("handle-segment-change")));
+
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetCallbacks(GST_APP_SRC(m_streamInfo.appSrc), &m_callbacks, this, nullptr));
+    EXPECT_CALL(*m_glibWrapperMock,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(m_streamInfo.appSrc)), StrEq("max-time")))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_glibWrapperMock,
+                gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(m_streamInfo.appSrc)), StrEq("max-buffers")))
+        .WillOnce(Return(&paramSpec));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(m_streamInfo.appSrc, StrEq("max-buffers")));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstAppSrcSetStreamType(GST_APP_SRC(m_streamInfo.appSrc), GST_APP_STREAM_TYPE_SEEKABLE));
+
     expectBin(m_streamInfo.appSrc);
     expectSyncElement(m_streamInfo.appSrc);
     expectLinkDecryptor(m_streamInfo.appSrc, m_videoDecryptorName);
