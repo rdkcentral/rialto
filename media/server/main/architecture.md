@@ -259,10 +259,10 @@ Implements `IGstGenericPlayerClient` to receive GstPlayer callbacks (`notifyPlay
 Manages PCM web audio playback via `IGstWebAudioPlayer`. Maps a `WEB_AUDIO` partition in `SharedMemoryBuffer`. Uses a periodic timer (100 ms cadence, `kWriteDataTimeMs`) to drain the shared memory ring buffer into the GStreamer pipeline via `writeBuffer`. Preferred frame count is 640 (`kPreferredFrames`).
 
 **`MediaKeysServerInternal` (`MediaKeysServerInternal.cpp`)**
-Implements `IMediaKeys` + `IMediaKeysServerInternal` + `IDecryptionService`. Owns:
+Implements `IMediaKeys` + `IMediaKeysServerInternal` . Owns:
 - A map of `keySessionId → MediaKeySession` for all active CDM sessions.
 - One `IOcdmSystem` instance per key system (e.g., `com.widevine.alpha`).
-Implements `IDecryptionService::decrypt()` by delegating to the matching `MediaKeySession`'s OCDM session, allowing `gstplayer`'s decryptor elements to call back into this layer for per-buffer decryption without directly coupling to OCDM.
+
 
 **`MediaKeySession` (`MediaKeySession.cpp`)**
 Wraps one `IOcdmSession` object. Serializes all OCDM calls through `MainThread`. Handles asynchronous OCDM callbacks (`onKeyMessage`, `onKeyStatusesChanged`, `onError`) by receiving them on OCDM callback threads and enqueuing tasks to process them on `MainThread` before forwarding to `IMediaKeysClient`.
@@ -436,7 +436,7 @@ erDiagram
 | `pause()` | Service → MediaPipeline | Transitions pipeline to PAUSED |
 | `stop()` | Service → MediaPipeline | Stops and destroys the GstPlayer |
 | `haveData(status, numFrames, requestId)` | Service → MediaPipeline | Server-only: reads shm frames for the given request ID and pushes to GstPlayer |
-| `seekPosition(position)` | Service → MediaPipeline | Seeks to an absolute position in nanoseconds |
+| `setPosition(position)` | Service → MediaPipeline | Seeks to an absolute position in nanoseconds |
 | `setPlaybackRate(rate)` | Service → MediaPipeline | Sets playback speed |
 | `getPosition(position&)` | Service → MediaPipeline | Queries current pipeline clock position |
 | `setVideoWindow(x, y, width, height)` | Service → MediaPipeline | Sets video output rectangle |
@@ -472,7 +472,10 @@ erDiagram
 
 | Method | Direction | Description |
 |---|---|---|
-| `createKeySession(sessionType, client, isLDL, keySessionId&)` | Service → MediaKeys | Creates a new OCDM key session |
+| `createKeySession(sessionType, client, isLDL, keySessionId&)` | Service → MediaKeys | Creates a new OCDM key session | 
+Note : createKeySession creates a new Rialto internal key session. The "real" OCDM session on server's side is created later, during generateRequest call.
+
+
 | `generateRequest(keySessionId, initDataType, initData)` | Service → MediaKeys | Initiates license acquisition (triggers `onKeyMessage` callback) |
 | `loadSession(keySessionId)` | Service → MediaKeys | Loads a previously persisted session |
 | `updateSession(keySessionId, responseData)` | Service → MediaKeys | Processes a license response |
