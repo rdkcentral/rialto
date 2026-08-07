@@ -243,7 +243,6 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideo)
 TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithMaxTimeSet)
 {
     GParamSpec paramSpec{};
-
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
     EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(false));
@@ -281,7 +280,6 @@ TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithMaxTimeSet)
 TEST_F(RialtoServerAppSrcGstSrcTest, SetupVideoWithMaxBuffersSet)
 {
     GParamSpec paramSpec{};
-
     EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(GST_APP_SRC(m_streamInfo.appSrc))).WillOnce(Return(&m_dummyCaps));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsGetStructure(&m_dummyCaps, 0)).WillOnce(Return(&m_dummyStructure));
     EXPECT_CALL(*m_gstWrapperMock, gstStructureHasName(&m_dummyStructure, StrEq("video/x-h264"))).WillOnce(Return(false));
