@@ -172,110 +172,110 @@ public:
 
     void setGetSupportedVideoCapabilitiesResponse(google::protobuf::Message *response)
     {
-        using R = firebolt::rialto::GetSupportedVideoCapabilitiesResponse;
-        auto *getSupportedVideoCapabResp = dynamic_cast<R *>(response);
+        using Resp = firebolt::rialto::GetSupportedVideoCapabilitiesResponse;
+        auto *getSupportedVideoCapabResp = dynamic_cast<Resp *>(response);
         getSupportedVideoCapabResp->set_interface_version(kInterfaceVersion);
         getSupportedVideoCapabResp->set_schema_version(kSchemaVersion);
         auto *cap = getSupportedVideoCapabResp->add_capabilities();
 
         // H264: cover all profile types and all levels
         auto *h264 = cap->mutable_codec_capabilities()->mutable_h264();
-        auto addH264 = [&](R::H264ProfileType t, R::H264Level l, uint32_t br)
+        auto addH264 = [&](Resp::H264ProfileType profileType, Resp::H264Level level, uint32_t br)
         {
-            auto *p = h264->add_profiles();
-            p->set_type(t);
-            p->set_max_level(l);
-            p->set_max_bitrate_in_bps(br);
+            auto *profile = h264->add_profiles();
+            profile->set_type(profileType);
+            profile->set_max_level(level);
+            profile->set_max_bitrate_in_bps(br);
         };
-        addH264(R::H264_PROFILE_HIGH, R::H264_LEVEL_5_1, 50000000);
-        addH264(R::H264_PROFILE_BASELINE, R::H264_LEVEL_3, 8000000);
-        addH264(R::H264_PROFILE_MAIN, R::H264_LEVEL_3_1, 14000000);
-        addH264(R::H264_PROFILE_HIGH, R::H264_LEVEL_4, 20000000);
-        addH264(R::H264_PROFILE_HIGH, R::H264_LEVEL_4_1, 25000000);
-        addH264(R::H264_PROFILE_HIGH, R::H264_LEVEL_5, 40000000);
-        addH264(R::H264_PROFILE_HIGH, R::H264_LEVEL_5_2, 60000000);
-        h264->add_dynamic_ranges(R::DYNAMIC_RANGE_SDR);
-        h264->add_dynamic_ranges(R::DYNAMIC_RANGE_HDR10);
-        h264->add_dynamic_ranges(R::DYNAMIC_RANGE_HLG);
-        h264->add_dynamic_ranges(R::DYNAMIC_RANGE_HDR10PLUS);
-        h264->add_dynamic_ranges(R::DYNAMIC_RANGE_DOLBY_VISION);
+        addH264(Resp::H264_PROFILE_HIGH, Resp::H264_LEVEL_5_1, 50000000);
+        addH264(Resp::H264_PROFILE_BASELINE, Resp::H264_LEVEL_3, 8000000);
+        addH264(Resp::H264_PROFILE_MAIN, Resp::H264_LEVEL_3_1, 14000000);
+        addH264(Resp::H264_PROFILE_HIGH, Resp::H264_LEVEL_4, 20000000);
+        addH264(Resp::H264_PROFILE_HIGH, Resp::H264_LEVEL_4_1, 25000000);
+        addH264(Resp::H264_PROFILE_HIGH, Resp::H264_LEVEL_5, 40000000);
+        addH264(Resp::H264_PROFILE_HIGH, Resp::H264_LEVEL_5_2, 60000000);
+        h264->add_dynamic_ranges(Resp::DYNAMIC_RANGE_SDR);
+        h264->add_dynamic_ranges(Resp::DYNAMIC_RANGE_HDR10);
+        h264->add_dynamic_ranges(Resp::DYNAMIC_RANGE_HLG);
+        h264->add_dynamic_ranges(Resp::DYNAMIC_RANGE_HDR10PLUS);
+        h264->add_dynamic_ranges(Resp::DYNAMIC_RANGE_DOLBY_VISION);
 
         // H265: cover all profile types and all levels
         auto *h265 = cap->mutable_codec_capabilities()->mutable_h265();
-        auto addH265 = [&](R::H265ProfileType t, R::H265Level l, uint32_t br)
+        auto addH265 = [&](Resp::H265ProfileType profileType, Resp::H265Level level, uint32_t br)
         {
-            auto *p = h265->add_profiles();
-            p->set_type(t);
-            p->set_max_level(l);
-            p->set_max_bitrate_in_bps(br);
+            auto *profile = h265->add_profiles();
+            profile->set_type(profileType);
+            profile->set_max_level(level);
+            profile->set_max_bitrate_in_bps(br);
         };
-        addH265(R::H265_PROFILE_MAIN_10, R::H265_LEVEL_5_1, 50000000);
-        addH265(R::H265_PROFILE_MAIN, R::H265_LEVEL_4, 10000000);
-        addH265(R::H265_PROFILE_MAIN, R::H265_LEVEL_4_1, 12000000);
-        addH265(R::H265_PROFILE_MAIN, R::H265_LEVEL_5, 25000000);
-        addH265(R::H265_PROFILE_MAIN_10_HDR10, R::H265_LEVEL_5_2, 35000000);
-        addH265(R::H265_PROFILE_MAIN, R::H265_LEVEL_6, 60000000);
-        addH265(R::H265_PROFILE_MAIN, R::H265_LEVEL_6_1, 80000000);
-        addH265(R::H265_PROFILE_MAIN, R::H265_LEVEL_6_2, 100000000);
-        h265->add_dynamic_ranges(R::DYNAMIC_RANGE_HDR10);
+        addH265(Resp::H265_PROFILE_MAIN_10, Resp::H265_LEVEL_5_1, 50000000);
+        addH265(Resp::H265_PROFILE_MAIN, Resp::H265_LEVEL_4, 10000000);
+        addH265(Resp::H265_PROFILE_MAIN, Resp::H265_LEVEL_4_1, 12000000);
+        addH265(Resp::H265_PROFILE_MAIN, Resp::H265_LEVEL_5, 25000000);
+        addH265(Resp::H265_PROFILE_MAIN_10_HDR10, Resp::H265_LEVEL_5_2, 35000000);
+        addH265(Resp::H265_PROFILE_MAIN, Resp::H265_LEVEL_6, 60000000);
+        addH265(Resp::H265_PROFILE_MAIN, Resp::H265_LEVEL_6_1, 80000000);
+        addH265(Resp::H265_PROFILE_MAIN, Resp::H265_LEVEL_6_2, 100000000);
+        h265->add_dynamic_ranges(Resp::DYNAMIC_RANGE_HDR10);
 
         // VP9: cover all profile types and all levels
         auto *vp9 = cap->mutable_codec_capabilities()->mutable_vp9();
-        auto addVp9 = [&](R::Vp9ProfileType t, R::Vp9Level l, uint32_t br)
+        auto addVp9 = [&](Resp::Vp9ProfileType profileType, Resp::Vp9Level level, uint32_t br)
         {
-            auto *p = vp9->add_profiles();
-            p->set_type(t);
-            p->set_max_level(l);
-            p->set_max_bitrate_in_bps(br);
+            auto *profile = vp9->add_profiles();
+            profile->set_type(profileType);
+            profile->set_max_level(level);
+            profile->set_max_bitrate_in_bps(br);
         };
-        addVp9(R::VP9_PROFILE_0, R::VP9_LEVEL_4, 30000000);
-        addVp9(R::VP9_PROFILE_1, R::VP9_LEVEL_1, 200000);
-        addVp9(R::VP9_PROFILE_2, R::VP9_LEVEL_1_1, 400000);
-        addVp9(R::VP9_PROFILE_3, R::VP9_LEVEL_2, 1500000);
-        addVp9(R::VP9_PROFILE_0, R::VP9_LEVEL_2_1, 3000000);
-        addVp9(R::VP9_PROFILE_0, R::VP9_LEVEL_3, 6000000);
-        addVp9(R::VP9_PROFILE_0, R::VP9_LEVEL_3_1, 12000000);
-        addVp9(R::VP9_PROFILE_0, R::VP9_LEVEL_4_1, 40000000);
-        addVp9(R::VP9_PROFILE_0, R::VP9_LEVEL_5, 60000000);
-        addVp9(R::VP9_PROFILE_0, R::VP9_LEVEL_5_1, 80000000);
-        addVp9(R::VP9_PROFILE_0, R::VP9_LEVEL_5_2, 100000000);
-        addVp9(R::VP9_PROFILE_0, R::VP9_LEVEL_6, 160000000);
-        addVp9(R::VP9_PROFILE_0, R::VP9_LEVEL_6_1, 240000000);
-        addVp9(R::VP9_PROFILE_0, R::VP9_LEVEL_6_2, 480000000);
-        vp9->add_dynamic_ranges(R::DYNAMIC_RANGE_SDR);
+        addVp9(Resp::VP9_PROFILE_0, Resp::VP9_LEVEL_4, 30000000);
+        addVp9(Resp::VP9_PROFILE_1, Resp::VP9_LEVEL_1, 200000);
+        addVp9(Resp::VP9_PROFILE_2, Resp::VP9_LEVEL_1_1, 400000);
+        addVp9(Resp::VP9_PROFILE_3, Resp::VP9_LEVEL_2, 1500000);
+        addVp9(Resp::VP9_PROFILE_0, Resp::VP9_LEVEL_2_1, 3000000);
+        addVp9(Resp::VP9_PROFILE_0, Resp::VP9_LEVEL_3, 6000000);
+        addVp9(Resp::VP9_PROFILE_0, Resp::VP9_LEVEL_3_1, 12000000);
+        addVp9(Resp::VP9_PROFILE_0, Resp::VP9_LEVEL_4_1, 40000000);
+        addVp9(Resp::VP9_PROFILE_0, Resp::VP9_LEVEL_5, 60000000);
+        addVp9(Resp::VP9_PROFILE_0, Resp::VP9_LEVEL_5_1, 80000000);
+        addVp9(Resp::VP9_PROFILE_0, Resp::VP9_LEVEL_5_2, 100000000);
+        addVp9(Resp::VP9_PROFILE_0, Resp::VP9_LEVEL_6, 160000000);
+        addVp9(Resp::VP9_PROFILE_0, Resp::VP9_LEVEL_6_1, 240000000);
+        addVp9(Resp::VP9_PROFILE_0, Resp::VP9_LEVEL_6_2, 480000000);
+        vp9->add_dynamic_ranges(Resp::DYNAMIC_RANGE_SDR);
 
         // AV1: cover all profile types and all levels
         auto *av1 = cap->mutable_codec_capabilities()->mutable_av1();
-        auto addAv1 = [&](R::Av1ProfileType t, R::Av1Level l, uint32_t br)
+        auto addAv1 = [&](Resp::Av1ProfileType profileType, Resp::Av1Level level, uint32_t br)
         {
-            auto *p = av1->add_profiles();
-            p->set_type(t);
-            p->set_max_level(l);
-            p->set_max_bitrate_in_bps(br);
+            auto *profile = av1->add_profiles();
+            profile->set_type(profileType);
+            profile->set_max_level(level);
+            profile->set_max_bitrate_in_bps(br);
         };
-        addAv1(R::AV1_PROFILE_MAIN, R::AV1_LEVEL_5_1, 20000000);
-        addAv1(R::AV1_PROFILE_HIGH, R::AV1_LEVEL_4_0, 6000000);
-        addAv1(R::AV1_PROFILE_MAIN, R::AV1_LEVEL_4_1, 8000000);
-        addAv1(R::AV1_PROFILE_MAIN, R::AV1_LEVEL_5_0, 12000000);
-        addAv1(R::AV1_PROFILE_MAIN, R::AV1_LEVEL_5_2, 25000000);
-        addAv1(R::AV1_PROFILE_MAIN, R::AV1_LEVEL_6_0, 40000000);
-        addAv1(R::AV1_PROFILE_MAIN, R::AV1_LEVEL_6_1, 60000000);
-        addAv1(R::AV1_PROFILE_MAIN, R::AV1_LEVEL_6_2, 100000000);
-        av1->add_dynamic_ranges(R::DYNAMIC_RANGE_SDR);
+        addAv1(Resp::AV1_PROFILE_MAIN, Resp::AV1_LEVEL_5_1, 20000000);
+        addAv1(Resp::AV1_PROFILE_HIGH, Resp::AV1_LEVEL_4_0, 6000000);
+        addAv1(Resp::AV1_PROFILE_MAIN, Resp::AV1_LEVEL_4_1, 8000000);
+        addAv1(Resp::AV1_PROFILE_MAIN, Resp::AV1_LEVEL_5_0, 12000000);
+        addAv1(Resp::AV1_PROFILE_MAIN, Resp::AV1_LEVEL_5_2, 25000000);
+        addAv1(Resp::AV1_PROFILE_MAIN, Resp::AV1_LEVEL_6_0, 40000000);
+        addAv1(Resp::AV1_PROFILE_MAIN, Resp::AV1_LEVEL_6_1, 60000000);
+        addAv1(Resp::AV1_PROFILE_MAIN, Resp::AV1_LEVEL_6_2, 100000000);
+        av1->add_dynamic_ranges(Resp::DYNAMIC_RANGE_SDR);
 
         // MPEG2: cover all profile types and all levels
         auto *mpeg2 = cap->mutable_codec_capabilities()->mutable_mpeg2();
-        auto addMpeg2 = [&](R::Mpeg2ProfileType t, R::Mpeg2Level l, uint32_t br)
+        auto addMpeg2 = [&](Resp::Mpeg2ProfileType profileType, Resp::Mpeg2Level level, uint32_t br)
         {
-            auto *p = mpeg2->add_profiles();
-            p->set_type(t);
-            p->set_max_level(l);
-            p->set_max_bitrate_in_bps(br);
+            auto *profile = mpeg2->add_profiles();
+            profile->set_type(profileType);
+            profile->set_max_level(level);
+            profile->set_max_bitrate_in_bps(br);
         };
-        addMpeg2(R::MPEG2_PROFILE_MAIN, R::MPEG2_LEVEL_MAIN, 15000000);
-        addMpeg2(R::MPEG2_PROFILE_SIMPLE, R::MPEG2_LEVEL_LOW, 4000000);
-        addMpeg2(R::MPEG2_PROFILE_MAIN, R::MPEG2_LEVEL_HIGH, 80000000);
-        mpeg2->add_dynamic_ranges(R::DYNAMIC_RANGE_SDR);
+        addMpeg2(Resp::MPEG2_PROFILE_MAIN, Resp::MPEG2_LEVEL_MAIN, 15000000);
+        addMpeg2(Resp::MPEG2_PROFILE_SIMPLE, Resp::MPEG2_LEVEL_LOW, 4000000);
+        addMpeg2(Resp::MPEG2_PROFILE_MAIN, Resp::MPEG2_LEVEL_HIGH, 80000000);
+        mpeg2->add_dynamic_ranges(Resp::DYNAMIC_RANGE_SDR);
     }
 };
 

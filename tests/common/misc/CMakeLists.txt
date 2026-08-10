@@ -2,7 +2,7 @@
 # If not stated otherwise in this file or this component's LICENSE file the
 # following copyright and licenses apply:
 #
-# Copyright 2022 Sky UK
+# Copyright 2026 Sky UK
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -23,25 +23,17 @@ set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
 add_library(
-        RialtoCommonMisc
+        RialtoTestCommonMisc
         STATIC
-        MediaSourceUtil.cpp
-        WebAudioUtil.cpp
+        DecoderCapabilitiesUtil.cpp
     )
 
 target_include_directories(
-        RialtoCommonMisc
+        RialtoTestCommonMisc
 
         PRIVATE
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
 
         INTERFACE
         .
-        $<TARGET_PROPERTY:RialtoTestCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
-    )
-
-target_link_libraries(
-        RialtoCommonMisc
-        PUBLIC
-        RialtoTestCommonMisc
     )

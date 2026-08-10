@@ -208,9 +208,9 @@ void convertAudioDecoderCapabilities(const firebolt::rialto::AudioDecoderCapabil
 // Video converter helpers
 // ============================================================
 
-VideoCapabilitiesResponse::DynamicRange convertDynamicRange(firebolt::rialto::DynamicRange dr)
+VideoCapabilitiesResponse::DynamicRange convertDynamicRange(firebolt::rialto::DynamicRange dynamicRange)
 {
-    switch (dr)
+    switch (dynamicRange)
     {
     case firebolt::rialto::DynamicRange::SDR:
         return VideoCapabilitiesResponse::DYNAMIC_RANGE_SDR;
@@ -226,9 +226,9 @@ VideoCapabilitiesResponse::DynamicRange convertDynamicRange(firebolt::rialto::Dy
     return VideoCapabilitiesResponse::DYNAMIC_RANGE_SDR;
 }
 
-VideoCapabilitiesResponse::Mpeg2ProfileType convertMpeg2ProfileType(firebolt::rialto::Mpeg2ProfileType t)
+VideoCapabilitiesResponse::Mpeg2ProfileType convertMpeg2ProfileType(firebolt::rialto::Mpeg2ProfileType profileType)
 {
-    switch (t)
+    switch (profileType)
     {
     case firebolt::rialto::Mpeg2ProfileType::MPEG2_MAIN:
         return VideoCapabilitiesResponse::MPEG2_PROFILE_MAIN;
@@ -237,9 +237,9 @@ VideoCapabilitiesResponse::Mpeg2ProfileType convertMpeg2ProfileType(firebolt::ri
     }
     return VideoCapabilitiesResponse::MPEG2_PROFILE_MAIN;
 }
-VideoCapabilitiesResponse::Mpeg2Level convertMpeg2Level(firebolt::rialto::Mpeg2Level l)
+VideoCapabilitiesResponse::Mpeg2Level convertMpeg2Level(firebolt::rialto::Mpeg2Level level)
 {
-    switch (l)
+    switch (level)
     {
     case firebolt::rialto::Mpeg2Level::MPEG2_LEVEL_LOW:
         return VideoCapabilitiesResponse::MPEG2_LEVEL_LOW;
@@ -251,9 +251,9 @@ VideoCapabilitiesResponse::Mpeg2Level convertMpeg2Level(firebolt::rialto::Mpeg2L
     return VideoCapabilitiesResponse::MPEG2_LEVEL_MAIN;
 }
 
-VideoCapabilitiesResponse::H264ProfileType convertH264ProfileType(firebolt::rialto::H264ProfileType t)
+VideoCapabilitiesResponse::H264ProfileType convertH264ProfileType(firebolt::rialto::H264ProfileType profileType)
 {
-    switch (t)
+    switch (profileType)
     {
     case firebolt::rialto::H264ProfileType::H264_BASELINE:
         return VideoCapabilitiesResponse::H264_PROFILE_BASELINE;
@@ -264,9 +264,9 @@ VideoCapabilitiesResponse::H264ProfileType convertH264ProfileType(firebolt::rial
     }
     return VideoCapabilitiesResponse::H264_PROFILE_MAIN;
 }
-VideoCapabilitiesResponse::H264Level convertH264Level(firebolt::rialto::H264Level l)
+VideoCapabilitiesResponse::H264Level convertH264Level(firebolt::rialto::H264Level level)
 {
-    switch (l)
+    switch (level)
     {
     case firebolt::rialto::H264Level::H264_LEVEL_3:
         return VideoCapabilitiesResponse::H264_LEVEL_3;
@@ -286,9 +286,9 @@ VideoCapabilitiesResponse::H264Level convertH264Level(firebolt::rialto::H264Leve
     return VideoCapabilitiesResponse::H264_LEVEL_5;
 }
 
-VideoCapabilitiesResponse::H265ProfileType convertH265ProfileType(firebolt::rialto::H265ProfileType t)
+VideoCapabilitiesResponse::H265ProfileType convertH265ProfileType(firebolt::rialto::H265ProfileType profileType)
 {
-    switch (t)
+    switch (profileType)
     {
     case firebolt::rialto::H265ProfileType::H265_MAIN:
         return VideoCapabilitiesResponse::H265_PROFILE_MAIN;
@@ -299,9 +299,9 @@ VideoCapabilitiesResponse::H265ProfileType convertH265ProfileType(firebolt::rial
     }
     return VideoCapabilitiesResponse::H265_PROFILE_MAIN;
 }
-VideoCapabilitiesResponse::H265Level convertH265Level(firebolt::rialto::H265Level l)
+VideoCapabilitiesResponse::H265Level convertH265Level(firebolt::rialto::H265Level level)
 {
-    switch (l)
+    switch (level)
     {
     case firebolt::rialto::H265Level::H265_LEVEL_4:
         return VideoCapabilitiesResponse::H265_LEVEL_4;
@@ -323,9 +323,9 @@ VideoCapabilitiesResponse::H265Level convertH265Level(firebolt::rialto::H265Leve
     return VideoCapabilitiesResponse::H265_LEVEL_5;
 }
 
-VideoCapabilitiesResponse::Vp9ProfileType convertVp9ProfileType(firebolt::rialto::Vp9ProfileType t)
+VideoCapabilitiesResponse::Vp9ProfileType convertVp9ProfileType(firebolt::rialto::Vp9ProfileType profileType)
 {
-    switch (t)
+    switch (profileType)
     {
     case firebolt::rialto::Vp9ProfileType::VP9_PROFILE_0:
         return VideoCapabilitiesResponse::VP9_PROFILE_0;
@@ -338,9 +338,9 @@ VideoCapabilitiesResponse::Vp9ProfileType convertVp9ProfileType(firebolt::rialto
     }
     return VideoCapabilitiesResponse::VP9_PROFILE_0;
 }
-VideoCapabilitiesResponse::Vp9Level convertVp9Level(firebolt::rialto::Vp9Level l)
+VideoCapabilitiesResponse::Vp9Level convertVp9Level(firebolt::rialto::Vp9Level level)
 {
-    switch (l)
+    switch (level)
     {
     case firebolt::rialto::Vp9Level::VP9_LEVEL_1:
         return VideoCapabilitiesResponse::VP9_LEVEL_1;
@@ -374,9 +374,9 @@ VideoCapabilitiesResponse::Vp9Level convertVp9Level(firebolt::rialto::Vp9Level l
     return VideoCapabilitiesResponse::VP9_LEVEL_5;
 }
 
-VideoCapabilitiesResponse::Av1ProfileType convertAv1ProfileType(firebolt::rialto::Av1ProfileType t)
+VideoCapabilitiesResponse::Av1ProfileType convertAv1ProfileType(firebolt::rialto::Av1ProfileType profileType)
 {
-    switch (t)
+    switch (profileType)
     {
     case firebolt::rialto::Av1ProfileType::AV1_MAIN:
         return VideoCapabilitiesResponse::AV1_PROFILE_MAIN;
@@ -385,9 +385,9 @@ VideoCapabilitiesResponse::Av1ProfileType convertAv1ProfileType(firebolt::rialto
     }
     return VideoCapabilitiesResponse::AV1_PROFILE_MAIN;
 }
-VideoCapabilitiesResponse::Av1Level convertAv1Level(firebolt::rialto::Av1Level l)
+VideoCapabilitiesResponse::Av1Level convertAv1Level(firebolt::rialto::Av1Level level)
 {
-    switch (l)
+    switch (level)
     {
     case firebolt::rialto::Av1Level::AV1_LEVEL_4_0:
         return VideoCapabilitiesResponse::AV1_LEVEL_4_0;
