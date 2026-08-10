@@ -31,7 +31,9 @@
 
 using testing::_;
 using testing::AtLeast;
+using testing::DoAll;
 using testing::Return;
+using testing::SetArgReferee;
 using testing::StrEq;
 
 namespace
@@ -68,6 +70,7 @@ RialtoServerComponentTest::~RialtoServerComponentTest()
     wrappers::IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = nullptr;
     wrappers::IFactoryAccessor::instance().textTrackPluginWrapperFactory() = nullptr;
     wrappers::IFactoryAccessor::instance().thunderWrapperFactory() = nullptr;
+    wrappers::IFactoryAccessor::instance().yamlCppWrapperFactory() = nullptr;
 }
 
 void RialtoServerComponentTest::configureSutInActiveState()
@@ -136,6 +139,9 @@ void RialtoServerComponentTest::configureWrappers() const
     EXPECT_CALL(*m_thunderWrapperFactoryMock, getThunderWrapper())
         .Times(AtLeast(0))
         .WillRepeatedly(Return(m_thunderWrapperMock));
+    EXPECT_CALL(*m_yamlCppWrapperFactoryMock, createYamlCppWrapper())
+        .Times(AtLeast(0))
+        .WillRepeatedly(Return(m_yamlCppWrapperMock));
     wrappers::IFactoryAccessor::instance().glibWrapperFactory() = m_glibWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().linuxWrapperFactory() = m_linuxWrapperFactoryMock;
@@ -144,6 +150,7 @@ void RialtoServerComponentTest::configureWrappers() const
     wrappers::IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = m_rdkGstreamerUtilsWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().textTrackPluginWrapperFactory() = m_textTrackPluginWrapperFactoryMock;
     wrappers::IFactoryAccessor::instance().thunderWrapperFactory() = m_thunderWrapperFactoryMock;
+    wrappers::IFactoryAccessor::instance().yamlCppWrapperFactory() = m_yamlCppWrapperFactoryMock;
 }
 
 void RialtoServerComponentTest::startSut()
@@ -174,6 +181,10 @@ void RialtoServerComponentTest::startSut()
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_unsupportedCaps, &m_audioCaps)).WillRepeatedly(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_unsupportedCaps, &m_videoCaps)).WillRepeatedly(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstPluginFeatureListFree(m_listDecoders.get()));
+    EXPECT_CALL(*m_yamlCppWrapperMock, getAudioDecoderCapabilities(_))
+        .WillOnce(DoAll(SetArgReferee<0>(kAudioCapabilities), Return(DecoderCapabilitiesStatus::OK)));
+    EXPECT_CALL(*m_yamlCppWrapperMock, getVideoDecoderCapabilities(_))
+        .WillOnce(DoAll(SetArgReferee<0>(kVideoCapabilities), Return(DecoderCapabilitiesStatus::OK)));
 
     m_sut = IApplicationSessionServerFactory::getFactory()->createApplicationSessionServer();
 }

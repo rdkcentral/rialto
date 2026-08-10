@@ -114,12 +114,13 @@ enum class MediaType
  */
 enum class MediaSourceStatus
 {
-    OK,                   /**< Source data provided without error. */
-    EOS,                  /**< Source reached the end of stream. */
-    ERROR,                /**< There was an error providing source data. */
-    CODEC_CHANGED,        /**< The codec has changed and the decoder must be reconfigured */
-    NO_AVAILABLE_SAMPLES, /**< Could not retrieve media samples. */
-    NO_SPACE_FOR_SAMPLES  /**< Could not copy data to shared buffer space. */
+    OK,
+    /**< Config file read successfully */ /**< Source data provided without error. */
+    EOS,                                  /**< Source reached the end of stream. */
+    ERROR,                                /**< There was an error providing source data. */
+    CODEC_CHANGED,                        /**< The codec has changed and the decoder must be reconfigured */
+    NO_AVAILABLE_SAMPLES,                 /**< Could not retrieve media samples. */
+    NO_SPACE_FOR_SAMPLES                  /**< Could not copy data to shared buffer space. */
 };
 
 /**
@@ -329,7 +330,7 @@ enum class KeyStatus
     EXPIRED,
     OUTPUT_RESTRICTED,
     PENDING,
-    INTERNAL_ERROR,
+    INTERNAL_ERROR /**< An internal error occurred */,
     RELEASED
 };
 
@@ -485,6 +486,17 @@ enum class LimitedDurationLicense
     NOT_SPECIFIED, /**< The license duration is not specified */
     ENABLED,       /**< The license has a limited duration */
     DISABLED       /**< The license does not have a limited duration */
+};
+
+/**
+ * @brief Status of the decoder capabilities config file read operation.
+ */
+enum class DecoderCapabilitiesStatus
+{
+    OK,
+    CONFIG_NOT_FOUND,         /**< Config file not found */
+    SCHEMA_VALIDATION_FAILED, /**< Config file failed schema validation */
+    INTERNAL_ERROR
 };
 } // namespace firebolt::rialto
 

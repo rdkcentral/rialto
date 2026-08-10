@@ -189,6 +189,8 @@ protected:
     void shouldCheckIsMimeTypeNotSupported();
     void shouldGetSupportedProperties();
     void shouldGetSupportedPropertiesFailure();
+    void shouldGetSupportedAudioCapabilities();
+    void shouldGetSupportedVideoCapabilities();
 
     // Api methods
     void createMediaPipeline();
@@ -265,6 +267,8 @@ protected:
     void isMimeTypeSupported();
     void getSupportedProperties();
     void getSupportedPropertiesFailure();
+    void getSupportedAudioCapabilities();
+    void getSupportedVideoCapabilities();
     void isMimeTypeNotSupported();
     void flush();
     void flushFailure();

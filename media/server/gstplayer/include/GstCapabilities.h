@@ -25,6 +25,7 @@
 #include "IGstInitialiser.h"
 #include "IGstWrapper.h"
 #include "IRdkGstreamerUtilsWrapper.h"
+#include "IYamlCppWrapper.h"
 
 #include <condition_variable>
 #include <memory>
@@ -62,6 +63,7 @@ public:
         const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
         const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
         const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+        const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCppWrapper,
         const IGstInitialiser &gstInitialiser);
     ~GstCapabilities();
 
@@ -103,6 +105,20 @@ public:
      * @retval true on success false otherwise
      */
     bool isVideoMaster(bool &isVideoMaster) override;
+
+    /**
+     * @brief Gets the supported audio capabilities.
+     *
+     * @retval The supported audio capabilities.
+     */
+    AudioDecoderCapabilities getSupportedAudioCapabilities() override;
+
+    /**
+     * @brief Gets the supported video capabilities.
+     *
+     * @retval The supported video capabilities.
+     */
+    VideoDecoderCapabilities getSupportedVideoCapabilities() override;
 
 private:
     /**
@@ -150,11 +166,22 @@ private:
     std::unordered_set<std::string> m_supportedMimeTypes;
 
     /**
+     * @brief Set of audio decoder capabilities
+     */
+    AudioDecoderCapabilities m_audioDecoderCapabilities;
+
+    /**
+     * @brief Set of video decoder capabilities
+     */
+    VideoDecoderCapabilities m_videoDecoderCapabilities;
+
+    /**
      * @brief The gstreamer wrapper object.
      */
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
+    std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> m_yamlCppWrapper;
     const IGstInitialiser &m_gstInitialiser;
     std::thread m_initialisationThread;
     std::mutex m_initialisationMutex;
