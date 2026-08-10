@@ -229,6 +229,19 @@ public:
     virtual int64_t getPosition(GstElement *element) = 0;
 
     /**
+     * @brief Gets number of queued frames in the renderer/decoder
+     *
+     * @param[in] queuedFrames : The number of queued frames.
+     *
+     * @retval true if the property was read successfully
+     */
+    virtual bool getQueuedFrames(uint32_t &queuedFrames) = 0;
+
+    /*TEST PURPOSE*/
+    virtual bool getStats(const MediaSourceType &mediaSourceType, uint64_t &renderedFrames,
+                          uint64_t &droppedFrames) = 0;
+
+    /**
      * @brief Starts position reporting and check audio underflow. Called by the worker thread.
      */
     virtual void startPositionReportingAndCheckAudioUnderflowTimer() = 0;

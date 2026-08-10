@@ -100,7 +100,7 @@ public:
     std::unique_ptr<IPlayerTask> createStop(GenericPlayerContext &context,
                                             IGstGenericPlayerPrivate &player) const override;
     std::unique_ptr<IPlayerTask> createUnderflow(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
-                                                 bool underflowEnable, MediaSourceType sourceType) const override;
+                                                 bool underflowEnabled, MediaSourceType sourceType) const override;
     std::unique_ptr<IPlayerTask>
     createFirstFrameReceived(GenericPlayerContext &context, IGstGenericPlayerPrivate &player, MediaSourceType sourceType,
                              AudioFirstFrameAction audioAction = AudioFirstFrameAction::CLEAR_PROBE) const override;
