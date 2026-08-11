@@ -137,8 +137,7 @@ firebolt::rialto::PlaybackErrorEvent_PlaybackError convertPlaybackError(const fi
 
 namespace firebolt::rialto::server::ipc
 {
-MediaPipelineClient::MediaPipelineClient(int sessionId,
-                                         const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
+MediaPipelineClient::MediaPipelineClient(int sessionId, const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient)
     : m_sessionId{sessionId}, m_ipcClient{ipcClient}
 {
 }

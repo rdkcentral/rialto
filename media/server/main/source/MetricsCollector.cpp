@@ -102,7 +102,7 @@ MetricsCollector::~MetricsCollector()
 void MetricsCollector::onTimerFired()
 {
     std::uint64_t sampleId{0};
-    bool becameUnresponsive{false};
+
     {
         std::lock_guard<std::mutex> lock{m_mutex};
         if (m_pendingPeriodicSampleId && ++m_pendingPeriodicTimerCount < kResponseTimeoutTimerCount)
@@ -113,7 +113,7 @@ void MetricsCollector::onTimerFired()
         if (m_pendingPeriodicSampleId && m_clientResponsive)
         {
             m_clientResponsive = false;
-            becameUnresponsive = true;
+            RIALTO_SERVER_LOG_WARN("Metrics client %d is not responding to sample requests", m_clientId);
         }
 
         sampleId = m_nextSampleId++;
@@ -121,10 +121,6 @@ void MetricsCollector::onTimerFired()
         m_pendingPeriodicTimerCount = 0;
     }
 
-    if (becameUnresponsive)
-    {
-        RIALTO_SERVER_LOG_WARN("Metrics client %d is not responding to sample requests", m_clientId);
-    }
     RIALTO_SERVER_LOG_DEBUG("Requesting periodic metrics sample=%" PRIu64 " from client %d", sampleId, m_clientId);
     m_client->requestMetricsSample(m_clientId, sampleId, MetricsSampleReason::PERIODIC);
 }

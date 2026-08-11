@@ -22,6 +22,7 @@
 
 #include "IPrivateMetricsService.h"
 #include <gmock/gmock.h>
+#include <memory>
 
 namespace firebolt::rialto::server::service
 {

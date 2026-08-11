@@ -124,14 +124,15 @@ void PrivateMetricsModuleService::notifyClientReady(::google::protobuf::RpcContr
     // Create a shared_ptr to this as IMetricsCollectorClient, aliasing with shared_from_this()
     // so the IPC layer stays alive as long as the MetricsCollector holds a reference.
     auto self = shared_from_this();
-    std::shared_ptr<firebolt::rialto::server::IMetricsCollectorClient> clientInterface(
-        self, static_cast<firebolt::rialto::server::IMetricsCollectorClient *>(this));
+    std::shared_ptr<firebolt::rialto::server::IMetricsCollectorClient>
+        clientInterface(self, static_cast<firebolt::rialto::server::IMetricsCollectorClient *>(this));
     m_metricsService.clientReady(kClientId, clientInterface);
 }
 
-void PrivateMetricsModuleService::reportClientMetrics(
-    ::google::protobuf::RpcController *controller, const ::firebolt::rialto::ReportClientMetricsRequest *request,
-    ::firebolt::rialto::ReportClientMetricsResponse *response, ::google::protobuf::Closure *done)
+void PrivateMetricsModuleService::reportClientMetrics(::google::protobuf::RpcController *controller,
+                                                      const ::firebolt::rialto::ReportClientMetricsRequest *request,
+                                                      ::firebolt::rialto::ReportClientMetricsResponse *response,
+                                                      ::google::protobuf::Closure *done)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
     auto ipcController = dynamic_cast<firebolt::rialto::ipc::IController *>(controller);
@@ -248,8 +249,7 @@ void PrivateMetricsModuleService::requestMetricsSample(int clientId, std::uint64
 
     if (!ipcClient->sendEvent(event))
     {
-        RIALTO_SERVER_LOG_DEBUG("Failed to request client metrics sample=%" PRIu64 " from client %d", sampleId,
-                                clientId);
+        RIALTO_SERVER_LOG_DEBUG("Failed to request client metrics sample=%" PRIu64 " from client %d", sampleId, clientId);
     }
 }
 } // namespace firebolt::rialto::server::ipc
