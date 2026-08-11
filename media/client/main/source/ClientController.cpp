@@ -27,8 +27,8 @@
 #include <cstring>
 #include <fstream>
 #include <sys/mman.h>
-#include <sys/un.h>
 #include <sys/times.h>
+#include <sys/un.h>
 #include <unistd.h>
 #include <utility>
 
@@ -295,9 +295,9 @@ void ClientController::changeStateAndNotifyClients(ApplicationState state)
 
 void ClientController::reportClientMetrics(std::uint64_t sampleId, std::uint32_t reason)
 {
-    if (!m_privateMetricsIpc->reportClientMetrics(sampleId, reason, getProcessName(), static_cast<std::uint32_t>(getpid()),
-                                                  getMonotonicTimeMs(), getEpochTimeMs(), getProcessCpuTimeMs(),
-                                                  getProcessMemoryKb()))
+    if (!m_privateMetricsIpc->reportClientMetrics(sampleId, reason, getProcessName(),
+                                                  static_cast<std::uint32_t>(getpid()), getMonotonicTimeMs(),
+                                                  getEpochTimeMs(), getProcessCpuTimeMs(), getProcessMemoryKb()))
     {
         RIALTO_CLIENT_LOG_DEBUG("Failed to report client process metrics");
     }
@@ -323,8 +323,7 @@ std::uint64_t ClientController::getEpochTimeMs() const
 
 std::uint64_t ClientController::getProcessCpuTimeMs() const
 {
-    struct tms processTimes
-    {};
+    struct tms processTimes = {0};
     const clock_t kCurrentTicks{times(&processTimes)};
     const long kTicksPerSecond{sysconf(_SC_CLK_TCK)};
     if ((static_cast<clock_t>(-1) == kCurrentTicks) || (kTicksPerSecond <= 0))
