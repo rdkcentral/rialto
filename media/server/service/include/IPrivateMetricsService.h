@@ -47,9 +47,8 @@ public:
      * @param clientId  Unique client identifier.
      * @param client    Callback interface for requesting samples from the client.
      */
-    virtual void
-    clientReady(int clientId,
-                const std::shared_ptr<firebolt::rialto::server::IMetricsCollectorClient> &client) = 0;
+    virtual void clientReady(int clientId,
+                             const std::shared_ptr<firebolt::rialto::server::IMetricsCollectorClient> &client) = 0;
 
     /**
      * @brief A client has disconnected.

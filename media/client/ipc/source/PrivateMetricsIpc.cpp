@@ -119,8 +119,7 @@ bool PrivateMetricsIpc::reportClientMetrics(std::uint64_t sampleId, std::uint32_
 
     RIALTO_CLIENT_LOG_DEBUG("Reporting metrics sample=%" PRIu64 ", reason=%s, app='%s', pid=%u, cpu_ms=%" PRIu64
                             ", mem_kb=%" PRIu64,
-                            sampleId,
-                            sampleReasonToString(static_cast<firebolt::rialto::MetricsSampleReason>(reason)),
+                            sampleId, sampleReasonToString(static_cast<firebolt::rialto::MetricsSampleReason>(reason)),
                             appName.c_str(), processId, processCpuTimeMs, processMemoryKb);
 
     firebolt::rialto::ReportClientMetricsResponse response;
@@ -199,16 +198,15 @@ bool PrivateMetricsIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &
     return true;
 }
 
-void PrivateMetricsIpc::onMetricsSampleRequested(
-    const std::shared_ptr<firebolt::rialto::MetricsSampleRequestEvent> &event)
+void PrivateMetricsIpc::onMetricsSampleRequested(const std::shared_ptr<firebolt::rialto::MetricsSampleRequestEvent> &event)
 {
     if (!m_privateMetricsIpcClient)
     {
         RIALTO_CLIENT_LOG_WARN("No private metrics client registered");
         return;
     }
-    RIALTO_CLIENT_LOG_DEBUG("Received metrics sample request sample=%" PRIu64 ", reason=%s, pid=%d",
-                            event->sample_id(), sampleReasonToString(event->reason()), getpid());
+    RIALTO_CLIENT_LOG_DEBUG("Received metrics sample request sample=%" PRIu64 ", reason=%s, pid=%d", event->sample_id(),
+                            sampleReasonToString(event->reason()), getpid());
     m_privateMetricsIpcClient->reportClientMetrics(event->sample_id(), event->reason());
 }
 } // namespace firebolt::rialto::client

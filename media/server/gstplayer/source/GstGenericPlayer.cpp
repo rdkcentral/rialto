@@ -116,7 +116,8 @@ std::optional<firebolt::rialto::server::Rectangle> getDefaultVideoGeometryFromEn
 
     if (*width <= 0 || *height <= 0)
     {
-        RIALTO_SERVER_LOG_WARN("Ignoring invalid video geometry from environment because width/height must be positive");
+        RIALTO_SERVER_LOG_WARN(
+            "Ignoring invalid video geometry from environment because width/height must be positive");
         return std::nullopt;
     }
 
@@ -130,7 +131,8 @@ bool setRenderRectangleProperty(const std::shared_ptr<firebolt::rialto::wrappers
     GValue renderRectangle = G_VALUE_INIT;
     glibWrapper->gValueInit(&renderRectangle, GST_TYPE_ARRAY);
 
-    auto appendCoordinate = [&](int coordinate) {
+    auto appendCoordinate = [&](int coordinate)
+    {
         GValue value = G_VALUE_INIT;
         glibWrapper->gValueInit(&value, G_TYPE_INT);
         g_value_set_int(&value, coordinate);
@@ -393,8 +395,7 @@ void GstGenericPlayer::initMsePipeline()
     {
         m_context.defaultVideoGeometry = *defaultGeometry;
         RIALTO_SERVER_LOG_INFO("Loaded fallback video geometry from environment: x=%d y=%d width=%d height=%d",
-                              defaultGeometry->x, defaultGeometry->y, defaultGeometry->width,
-                              defaultGeometry->height);
+                               defaultGeometry->x, defaultGeometry->y, defaultGeometry->width, defaultGeometry->height);
     }
 
     applyPlaybinSinkOverride(m_gstWrapper, m_glibWrapper, m_context.pipeline, "RIALTO_PLAYBIN_AUDIO_SINK", "audio-sink");
@@ -2123,8 +2124,7 @@ bool GstGenericPlayer::setVideoSinkRectangle()
         if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(videoSink), "rectangle"))
         {
             std::string rect = std::to_string(pendingGeometry.x) + ',' + std::to_string(pendingGeometry.y) + ',' +
-                               std::to_string(pendingGeometry.width) + ',' +
-                               std::to_string(pendingGeometry.height);
+                               std::to_string(pendingGeometry.width) + ',' + std::to_string(pendingGeometry.height);
             m_glibWrapper->gObjectSet(videoSink, "rectangle", rect.c_str(), nullptr);
             result = true;
         }
@@ -2135,9 +2135,9 @@ bool GstGenericPlayer::setVideoSinkRectangle()
 
         if (result)
         {
-            RIALTO_SERVER_LOG_MIL("Applied video geometry x=%d y=%d width=%d height=%d to sink '%s'",
-                                  pendingGeometry.x, pendingGeometry.y, pendingGeometry.width,
-                                  pendingGeometry.height, GST_ELEMENT_NAME(videoSink));
+            RIALTO_SERVER_LOG_MIL("Applied video geometry x=%d y=%d width=%d height=%d to sink '%s'", pendingGeometry.x,
+                                  pendingGeometry.y, pendingGeometry.width, pendingGeometry.height,
+                                  GST_ELEMENT_NAME(videoSink));
             m_context.pendingGeometry.clear();
             result = true;
         }

@@ -56,9 +56,8 @@ protected:
                     return kEventTag;
                 }));
         expectIpcApiCallSuccess();
-        EXPECT_CALL(*m_channelMock,
-                    CallMethod(methodMatcher("notifyClientReady"), m_controllerMock.get(), _, _,
-                               m_blockingClosureMock.get()));
+        EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("notifyClientReady"), m_controllerMock.get(), _, _,
+                                               m_blockingClosureMock.get()));
         m_sut = std::make_unique<PrivateMetricsIpc>(&m_client, *m_ipcClientMock, m_eventThreadFactory);
     }
 
@@ -82,9 +81,8 @@ TEST_F(PrivateMetricsIpcTests, reportsMetricsAndForwardsSampleEvent)
 {
     createIpc();
     expectIpcApiCallSuccess();
-    EXPECT_CALL(*m_channelMock,
-                CallMethod(methodMatcher("reportClientMetrics"), m_controllerMock.get(), _, _,
-                           m_blockingClosureMock.get()))
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("reportClientMetrics"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
         .WillOnce(WithArgs<2>(Invoke(
             [](const google::protobuf::Message *request)
             {
@@ -118,9 +116,8 @@ TEST_F(PrivateMetricsIpcTests, reportsRpcFailure)
 {
     createIpc();
     expectIpcApiCallFailure();
-    EXPECT_CALL(*m_channelMock,
-                CallMethod(methodMatcher("reportClientMetrics"), m_controllerMock.get(), _, _,
-                           m_blockingClosureMock.get()));
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("reportClientMetrics"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()));
     EXPECT_FALSE(m_sut->reportClientMetrics(1, METRICS_SAMPLE_REASON_CONNECTED, "", 0, 0, 0, 0, 0));
     destroyIpc();
 }

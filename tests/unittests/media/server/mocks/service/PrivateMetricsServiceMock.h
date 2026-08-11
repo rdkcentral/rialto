@@ -33,14 +33,13 @@ public:
                 (int clientId, const std::shared_ptr<firebolt::rialto::server::IMetricsCollectorClient> &client),
                 (override));
     MOCK_METHOD(void, clientDisconnected, (int clientId), (override));
-    MOCK_METHOD(void, reportMetrics,
-                (int clientId, const firebolt::rialto::server::ClientMetricsData &metrics), (override));
-    MOCK_METHOD(void, notifyPlaybackStateChanged,
-                (int sessionId, PlaybackState oldState, PlaybackState newState), (override));
+    MOCK_METHOD(void, reportMetrics, (int clientId, const firebolt::rialto::server::ClientMetricsData &metrics),
+                (override));
+    MOCK_METHOD(void, notifyPlaybackStateChanged, (int sessionId, PlaybackState oldState, PlaybackState newState),
+                (override));
     MOCK_METHOD(void, notifyWebAudioPlayerStateChanged,
                 (int handle, WebAudioPlayerState oldState, WebAudioPlayerState newState), (override));
-    MOCK_METHOD(void, notifyApplicationStateChanged,
-                (ApplicationState oldState, ApplicationState newState), (override));
+    MOCK_METHOD(void, notifyApplicationStateChanged, (ApplicationState oldState, ApplicationState newState), (override));
 };
 } // namespace firebolt::rialto::server::service
 

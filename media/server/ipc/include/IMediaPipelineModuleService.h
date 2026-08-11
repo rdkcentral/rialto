@@ -81,7 +81,6 @@ public:
      * @param[in] ipcClient : The ipc client to disconnect to.
      */
     virtual void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) = 0;
-
 };
 
 } // namespace firebolt::rialto::server::ipc

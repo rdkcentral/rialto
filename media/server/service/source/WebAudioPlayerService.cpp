@@ -80,15 +80,16 @@ bool WebAudioPlayerService::createWebAudioPlayer(int handle,
         auto shmBuffer = m_playbackService.getShmBuffer();
 
         m_webAudioPlayers.emplace(
-            std::make_pair(handle, m_webAudioPlayerFactory
-                                       ->createWebAudioPlayerServerInternal(
-                                           std::make_shared<WebAudioPlayerMetricsClient>(handle, webAudioPlayerClient,
-                                                                                         m_metricsService),
-                                                                            audioMimeType,
-                                                                            priority, config, shmBuffer, handle,
-                                                                            IMainThreadFactory::createFactory(),
-                                                                            IGstWebAudioPlayerFactory::getFactory(),
-                                                                            common::ITimerFactory::getFactory())));
+            std::make_pair(handle,
+                           m_webAudioPlayerFactory
+                               ->createWebAudioPlayerServerInternal(std::make_shared<
+                                                                        WebAudioPlayerMetricsClient>(handle,
+                                                                                                     webAudioPlayerClient,
+                                                                                                     m_metricsService),
+                                                                    audioMimeType, priority, config, shmBuffer, handle,
+                                                                    IMainThreadFactory::createFactory(),
+                                                                    IGstWebAudioPlayerFactory::getFactory(),
+                                                                    common::ITimerFactory::getFactory())));
         if (!m_webAudioPlayers.at(handle))
         {
             RIALTO_SERVER_LOG_ERROR("Could not create WebAudioPlayer for handle: %d", handle);

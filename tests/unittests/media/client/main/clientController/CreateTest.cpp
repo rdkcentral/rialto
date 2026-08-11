@@ -65,8 +65,8 @@ TEST_F(ClientControllerCreateTest, CreateDestroy)
     EXPECT_CALL(*m_controlIpcFactoryMock, createControlIpc(_)).WillOnce(Return(m_controlIpcMock));
     EXPECT_CALL(*m_privateMetricsIpcFactoryMock, createPrivateMetricsIpc(_)).WillOnce(Return(m_privateMetricsIpcMock));
 
-    EXPECT_NO_THROW(controller =
-                        std::make_unique<ClientController>(m_controlIpcFactoryMock, m_privateMetricsIpcFactoryMock));
+    EXPECT_NO_THROW(
+        controller = std::make_unique<ClientController>(m_controlIpcFactoryMock, m_privateMetricsIpcFactoryMock));
 
     // Destroy
     controller.reset();
@@ -89,8 +89,7 @@ TEST_F(ClientControllerCreateTest, CreatePrivateMetricsIpcFailure)
     EXPECT_CALL(*m_controlIpcFactoryMock, createControlIpc(_)).WillOnce(Return(m_controlIpcMock));
     EXPECT_CALL(*m_privateMetricsIpcFactoryMock, createPrivateMetricsIpc(_)).WillOnce(Return(nullptr));
 
-    EXPECT_THROW(controller =
-                     std::make_unique<ClientController>(m_controlIpcFactoryMock, m_privateMetricsIpcFactoryMock),
+    EXPECT_THROW(controller = std::make_unique<ClientController>(m_controlIpcFactoryMock, m_privateMetricsIpcFactoryMock),
                  std::runtime_error);
     EXPECT_EQ(controller, nullptr);
 }

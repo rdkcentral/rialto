@@ -37,13 +37,11 @@ TEST(MetricsClientsTests, mediaPipelineStateIsReportedAndForwarded)
     StrictMock<PrivateMetricsServiceMock> metricsService;
     MediaPipelineMetricsClient sut{kSessionId, client, metricsService};
 
-    EXPECT_CALL(metricsService,
-                notifyPlaybackStateChanged(kSessionId, PlaybackState::UNKNOWN, PlaybackState::PLAYING));
+    EXPECT_CALL(metricsService, notifyPlaybackStateChanged(kSessionId, PlaybackState::UNKNOWN, PlaybackState::PLAYING));
     EXPECT_CALL(*client, notifyPlaybackState(PlaybackState::PLAYING));
     sut.notifyPlaybackState(PlaybackState::PLAYING);
 
-    EXPECT_CALL(metricsService,
-                notifyPlaybackStateChanged(kSessionId, PlaybackState::PLAYING, PlaybackState::PAUSED));
+    EXPECT_CALL(metricsService, notifyPlaybackStateChanged(kSessionId, PlaybackState::PLAYING, PlaybackState::PAUSED));
     EXPECT_CALL(*client, notifyPlaybackState(PlaybackState::PAUSED));
     sut.notifyPlaybackState(PlaybackState::PAUSED);
 }

@@ -20,8 +20,8 @@
 #include "LogMetricsReporter.h"
 #include "RialtoServerLogging.h"
 #include <algorithm>
-#include <cmath>
 #include <cinttypes>
+#include <cmath>
 
 namespace
 {
@@ -46,8 +46,8 @@ void LogMetricsReporter::reportPeriodicSample(const PeriodicMetricsReport &repor
                           "shm_mem_kb=%" PRIu64 ", cgroup_mem_kb=%" PRIu64 "/%" PRIu64,
                           report.sampleId, report.reason.c_str(), report.appName.c_str(), report.clientPid,
                           report.clientCpuPercent, report.serverCpuPercent, report.combinedCpuPercent,
-                          report.clientCpuTimeMs, report.serverCpuTimeMs, report.clientMemoryKb,
-                          report.serverMemoryKb, report.shmMemoryKb, report.cgroupMemoryUsageKb, report.cgroupMemoryLimitKb);
+                          report.clientCpuTimeMs, report.serverCpuTimeMs, report.clientMemoryKb, report.serverMemoryKb,
+                          report.shmMemoryKb, report.cgroupMemoryUsageKb, report.cgroupMemoryLimitKb);
 }
 
 bool LogMetricsReporter::shouldReportPeriodicSample(const PeriodicMetricsReport &report)
@@ -71,10 +71,10 @@ bool LogMetricsReporter::shouldReportPeriodicSample(const PeriodicMetricsReport 
         std::abs(report.clientCpuPercent - previous.clientCpuPercent) >= kCpuChangeThresholdPercentagePoints ||
         std::abs(report.serverCpuPercent - previous.serverCpuPercent) >= kCpuChangeThresholdPercentagePoints ||
         std::abs(report.combinedCpuPercent - previous.combinedCpuPercent) >= kCpuChangeThresholdPercentagePoints ||
-        changedSignificantly(static_cast<double>(report.clientMemoryKb),
-                             static_cast<double>(previous.clientMemoryKb), kMemoryAbsoluteFloorKb) ||
-        changedSignificantly(static_cast<double>(report.serverMemoryKb),
-                             static_cast<double>(previous.serverMemoryKb), kMemoryAbsoluteFloorKb) ||
+        changedSignificantly(static_cast<double>(report.clientMemoryKb), static_cast<double>(previous.clientMemoryKb),
+                             kMemoryAbsoluteFloorKb) ||
+        changedSignificantly(static_cast<double>(report.serverMemoryKb), static_cast<double>(previous.serverMemoryKb),
+                             kMemoryAbsoluteFloorKb) ||
         changedSignificantly(static_cast<double>(report.cgroupMemoryUsageKb),
                              static_cast<double>(previous.cgroupMemoryUsageKb), kMemoryAbsoluteFloorKb) ||
         changedSignificantly(static_cast<double>(report.cgroupMemoryLimitKb),
@@ -110,9 +110,9 @@ void LogMetricsReporter::reportStateTransition(const StateTransitionReport &repo
                           "client_mem_kb={min=%.0f, max=%.0f, mean=%.0f}, "
                           "server_mem_kb={min=%.0f, max=%.0f, mean=%.0f}, "
                           "cgroup_mem_kb={min=%.0f, max=%.0f, mean=%.0f}",
-                          report.context.c_str(), r.stateName.c_str(), r.durationMs, r.clientCpu.count,
-                          r.clientCpu.min, r.clientCpu.max, r.clientCpu.mean, r.clientCpu.stddev, r.serverCpu.min,
-                          r.serverCpu.max, r.serverCpu.mean, r.serverCpu.stddev, r.combinedCpu.min, r.combinedCpu.max,
+                          report.context.c_str(), r.stateName.c_str(), r.durationMs, r.clientCpu.count, r.clientCpu.min,
+                          r.clientCpu.max, r.clientCpu.mean, r.clientCpu.stddev, r.serverCpu.min, r.serverCpu.max,
+                          r.serverCpu.mean, r.serverCpu.stddev, r.combinedCpu.min, r.combinedCpu.max,
                           r.combinedCpu.mean, r.combinedCpu.stddev, r.clientMemoryKb.min, r.clientMemoryKb.max,
                           r.clientMemoryKb.mean, r.serverMemoryKb.min, r.serverMemoryKb.max, r.serverMemoryKb.mean,
                           r.cgroupMemoryUsageKb.min, r.cgroupMemoryUsageKb.max, r.cgroupMemoryUsageKb.mean);

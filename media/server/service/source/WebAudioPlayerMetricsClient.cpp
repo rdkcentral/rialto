@@ -21,8 +21,7 @@
 
 namespace firebolt::rialto::server::service
 {
-WebAudioPlayerMetricsClient::WebAudioPlayerMetricsClient(int handle,
-                                                         const std::shared_ptr<IWebAudioPlayerClient> &client,
+WebAudioPlayerMetricsClient::WebAudioPlayerMetricsClient(int handle, const std::shared_ptr<IWebAudioPlayerClient> &client,
                                                          IPrivateMetricsService &metricsService)
     : m_handle{handle}, m_client{client}, m_metricsService{metricsService}
 {

@@ -61,8 +61,7 @@ TEST(PrivateMetricsModuleServiceTests, handlesClientLifecycleReportsAndSampleReq
     ASSERT_NE(collectorClient, nullptr);
 
     EXPECT_CALL(*client, isConnected()).WillOnce(Return(true));
-    EXPECT_CALL(*client, sendEvent(MetricsSampleRequestMatcher(METRICS_SAMPLE_REASON_PERIODIC)))
-        .WillOnce(Return(true));
+    EXPECT_CALL(*client, sendEvent(MetricsSampleRequestMatcher(METRICS_SAMPLE_REASON_PERIODIC))).WillOnce(Return(true));
     collectorClient->requestMetricsSample(1, 12, firebolt::rialto::server::MetricsSampleReason::PERIODIC);
 
     ReportClientMetricsRequest reportRequest;
@@ -93,8 +92,7 @@ TEST(PrivateMetricsModuleServiceTests, handlesClientLifecycleReportsAndSampleReq
             }));
     sut->reportClientMetrics(&controller, &reportRequest, &reportResponse, &closure);
 
-    EXPECT_CALL(metricsService,
-                notifyApplicationStateChanged(ApplicationState::RUNNING, ApplicationState::INACTIVE));
+    EXPECT_CALL(metricsService, notifyApplicationStateChanged(ApplicationState::RUNNING, ApplicationState::INACTIVE));
     sut->notifyApplicationStateChanged(ApplicationState::RUNNING, ApplicationState::INACTIVE);
 
     EXPECT_CALL(metricsService, clientDisconnected(1));

@@ -40,9 +40,8 @@ public:
     MetricsCollectorFactory() = default;
     ~MetricsCollectorFactory() override = default;
 
-    std::unique_ptr<IMetricsCollector>
-    create(int clientId, const std::shared_ptr<IMetricsCollectorClient> &client,
-           ApplicationState initialApplicationState) override;
+    std::unique_ptr<IMetricsCollector> create(int clientId, const std::shared_ptr<IMetricsCollectorClient> &client,
+                                              ApplicationState initialApplicationState) override;
 };
 
 class MetricsCollector : public IMetricsCollector
@@ -55,8 +54,7 @@ public:
 
     void processMetrics(const ClientMetricsData &metrics) override;
     void notifyPlaybackStateChanged(int sessionId, PlaybackState oldState, PlaybackState newState) override;
-    void notifyWebAudioPlayerStateChanged(int handle, WebAudioPlayerState oldState,
-                                          WebAudioPlayerState newState) override;
+    void notifyWebAudioPlayerStateChanged(int handle, WebAudioPlayerState oldState, WebAudioPlayerState newState) override;
     void notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState) override;
 
 private:

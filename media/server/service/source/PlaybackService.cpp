@@ -18,10 +18,10 @@
  */
 
 #include "PlaybackService.h"
-#include "IMetricsCollector.h"
-#include "PrivateMetricsService.h"
 #include "IMediaPipelineServerInternal.h"
+#include "IMetricsCollector.h"
 #include "IWebAudioPlayerServerInternal.h"
+#include "PrivateMetricsService.h"
 #include "RialtoServerLogging.h"
 #include <exception>
 #include <future>

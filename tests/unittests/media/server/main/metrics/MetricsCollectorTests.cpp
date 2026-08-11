@@ -40,8 +40,7 @@ protected:
         m_timer = timer.get();
         EXPECT_CALL(*m_timerFactory, createTimer(std::chrono::milliseconds{15000}, _, common::TimerType::PERIODIC))
             .WillOnce(Invoke(
-                [this, &timer](const std::chrono::milliseconds &, const std::function<void()> &callback,
-                               common::TimerType)
+                [this, &timer](const std::chrono::milliseconds &, const std::function<void()> &callback, common::TimerType)
                 {
                     m_timerCallback = callback;
                     return std::move(timer);
@@ -59,8 +58,7 @@ protected:
     static constexpr int kClientId{3};
     std::shared_ptr<StrictMock<MetricsCollectorClientMock>> m_client{
         std::make_shared<StrictMock<MetricsCollectorClientMock>>()};
-    std::shared_ptr<StrictMock<TimerFactoryMock>> m_timerFactory{
-        std::make_shared<StrictMock<TimerFactoryMock>>()};
+    std::shared_ptr<StrictMock<TimerFactoryMock>> m_timerFactory{std::make_shared<StrictMock<TimerFactoryMock>>()};
     StrictMock<TimerMock> *m_timer{nullptr};
     std::function<void()> m_timerCallback;
     std::unique_ptr<MetricsCollector> m_sut;

@@ -74,8 +74,7 @@ protected:
 
 TEST_F(LogMetricsReporterTests, allCpuGaugesUseTenPercentagePointThreshold)
 {
-    for (const auto cpuGauge : {&PeriodicMetricsReport::clientCpuPercent,
-                                &PeriodicMetricsReport::serverCpuPercent,
+    for (const auto cpuGauge : {&PeriodicMetricsReport::clientCpuPercent, &PeriodicMetricsReport::serverCpuPercent,
                                 &PeriodicMetricsReport::combinedCpuPercent})
     {
         g_logCount = 0;

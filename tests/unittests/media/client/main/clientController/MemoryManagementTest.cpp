@@ -64,10 +64,9 @@ protected:
         m_fd = memfd_create("memfdfile", 0);
 
         EXPECT_CALL(*m_controlIpcFactoryMock, createControlIpc(_)).WillOnce(Return(m_controlIpcMock));
-        EXPECT_CALL(*m_privateMetricsIpcFactoryMock, createPrivateMetricsIpc(_))
-            .WillOnce(Return(m_privateMetricsIpcMock));
-        EXPECT_NO_THROW(m_sut =
-                            std::make_unique<ClientController>(m_controlIpcFactoryMock, m_privateMetricsIpcFactoryMock));
+        EXPECT_CALL(*m_privateMetricsIpcFactoryMock, createPrivateMetricsIpc(_)).WillOnce(Return(m_privateMetricsIpcMock));
+        EXPECT_NO_THROW(
+            m_sut = std::make_unique<ClientController>(m_controlIpcFactoryMock, m_privateMetricsIpcFactoryMock));
     }
 
     ~ClientControllerMemoryManagementTest()

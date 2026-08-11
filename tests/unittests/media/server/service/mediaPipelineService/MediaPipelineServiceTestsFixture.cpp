@@ -579,10 +579,10 @@ void MediaPipelineServiceTests::createMediaPipelineShouldSuccess()
         .WillOnce(Return(ByMove(std::move(m_mediaPipelineCapabilities))));
     m_sut =
         std::make_unique<firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
-                                                                                 m_mediaPipelineFactoryMock,
-                                                                                 m_mediaPipelineCapabilitiesFactoryMock,
-                                                                                 m_decryptionServiceMock,
-                                                                                 m_metricsServiceMock);
+                                                                                  m_mediaPipelineFactoryMock,
+                                                                                  m_mediaPipelineCapabilitiesFactoryMock,
+                                                                                  m_decryptionServiceMock,
+                                                                                  m_metricsServiceMock);
 }
 
 void MediaPipelineServiceTests::createMediaPipelineShouldFailWhenMediaPipelineCapabilitiesFactoryReturnsNullptr()
@@ -591,10 +591,10 @@ void MediaPipelineServiceTests::createMediaPipelineShouldFailWhenMediaPipelineCa
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::IMediaPipelineCapabilities>())));
     EXPECT_THROW(m_sut =
                      std::make_unique<firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
-                                                                                              m_mediaPipelineFactoryMock,
-                                                                                              m_mediaPipelineCapabilitiesFactoryMock,
-                                                                                              m_decryptionServiceMock,
-                                                                                              m_metricsServiceMock),
+                                                                                               m_mediaPipelineFactoryMock,
+                                                                                               m_mediaPipelineCapabilitiesFactoryMock,
+                                                                                               m_decryptionServiceMock,
+                                                                                               m_metricsServiceMock),
                  std::runtime_error);
 }
 

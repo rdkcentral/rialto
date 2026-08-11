@@ -29,12 +29,11 @@ class MetricsCollectorMock : public IMetricsCollector
 {
 public:
     MOCK_METHOD(void, processMetrics, (const ClientMetricsData &metrics), (override));
-    MOCK_METHOD(void, notifyPlaybackStateChanged,
-                (int sessionId, PlaybackState oldState, PlaybackState newState), (override));
+    MOCK_METHOD(void, notifyPlaybackStateChanged, (int sessionId, PlaybackState oldState, PlaybackState newState),
+                (override));
     MOCK_METHOD(void, notifyWebAudioPlayerStateChanged,
                 (int handle, WebAudioPlayerState oldState, WebAudioPlayerState newState), (override));
-    MOCK_METHOD(void, notifyApplicationStateChanged,
-                (ApplicationState oldState, ApplicationState newState), (override));
+    MOCK_METHOD(void, notifyApplicationStateChanged, (ApplicationState oldState, ApplicationState newState), (override));
 };
 
 class MetricsCollectorFactoryMock : public IMetricsCollectorFactory

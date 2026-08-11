@@ -81,12 +81,13 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
         auto shmBuffer = m_playbackService.getShmBuffer();
         m_mediaPipelines.emplace(
             std::make_pair(sessionId,
-                           m_mediaPipelineFactory->createMediaPipelineServerInternal(
-                               std::make_shared<MediaPipelineMetricsClient>(sessionId, mediaPipelineClient,
-                                                                            m_metricsService),
-                                                                                     VideoRequirements{maxWidth, maxHeight},
-                                                                                     sessionId, shmBuffer,
-                                                                                     m_decryptionService)));
+                           m_mediaPipelineFactory
+                               ->createMediaPipelineServerInternal(std::make_shared<
+                                                                       MediaPipelineMetricsClient>(sessionId,
+                                                                                                   mediaPipelineClient,
+                                                                                                   m_metricsService),
+                                                                   VideoRequirements{maxWidth, maxHeight}, sessionId,
+                                                                   shmBuffer, m_decryptionService)));
         if (!m_mediaPipelines.at(sessionId))
         {
             RIALTO_SERVER_LOG_ERROR("Could not create MediaPipeline for session with id: %d", sessionId);

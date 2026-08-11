@@ -198,8 +198,8 @@ void WebAudioPlayerServiceTests::playbackServiceWillReturnSharedMemoryBuffer()
 void WebAudioPlayerServiceTests::createWebAudioPlayerService()
 {
     m_sut = std::make_unique<firebolt::rialto::server::service::WebAudioPlayerService>(m_playbackServiceMock,
-                                                                                      m_webAudioPlayerFactoryMock,
-                                                                                      m_metricsServiceMock);
+                                                                                       m_webAudioPlayerFactoryMock,
+                                                                                       m_metricsServiceMock);
 }
 
 void WebAudioPlayerServiceTests::createWebAudioPlayerShouldSucceed()

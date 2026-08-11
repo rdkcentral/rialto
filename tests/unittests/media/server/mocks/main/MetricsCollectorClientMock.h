@@ -28,8 +28,8 @@ namespace firebolt::rialto::server
 class MetricsCollectorClientMock : public IMetricsCollectorClient
 {
 public:
-    MOCK_METHOD(void, requestMetricsSample,
-                (int clientId, std::uint64_t sampleId, MetricsSampleReason reason), (override));
+    MOCK_METHOD(void, requestMetricsSample, (int clientId, std::uint64_t sampleId, MetricsSampleReason reason),
+                (override));
 };
 } // namespace firebolt::rialto::server
 

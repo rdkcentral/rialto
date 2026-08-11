@@ -37,8 +37,7 @@ public:
     PrivateMetricsModuleServiceFactory() = default;
     ~PrivateMetricsModuleServiceFactory() override = default;
 
-    std::shared_ptr<IPrivateMetricsModuleService>
-    create(service::IPrivateMetricsService &metricsService) const override;
+    std::shared_ptr<IPrivateMetricsModuleService> create(service::IPrivateMetricsService &metricsService) const override;
 };
 
 class PrivateMetricsModuleService : public IPrivateMetricsModuleService,

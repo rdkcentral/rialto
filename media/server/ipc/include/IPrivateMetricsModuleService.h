@@ -39,8 +39,7 @@ public:
 
     static std::shared_ptr<IPrivateMetricsModuleServiceFactory> createFactory();
 
-    virtual std::shared_ptr<IPrivateMetricsModuleService>
-    create(service::IPrivateMetricsService &metricsService) const = 0;
+    virtual std::shared_ptr<IPrivateMetricsModuleService> create(service::IPrivateMetricsService &metricsService) const = 0;
 };
 
 class IPrivateMetricsModuleService : public ::firebolt::rialto::PrivateMetricsModule,

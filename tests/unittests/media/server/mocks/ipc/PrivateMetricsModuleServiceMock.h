@@ -28,12 +28,10 @@ namespace firebolt::rialto::server::ipc
 class PrivateMetricsModuleServiceMock : public IPrivateMetricsModuleService
 {
 public:
-    MOCK_METHOD(void, clientConnected,
-                (const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient), (override));
-    MOCK_METHOD(void, clientDisconnected,
-                (const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient), (override));
-    MOCK_METHOD(void, notifyApplicationStateChanged,
-                (ApplicationState oldState, ApplicationState newState), (override));
+    MOCK_METHOD(void, clientConnected, (const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient), (override));
+    MOCK_METHOD(void, clientDisconnected, (const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient),
+                (override));
+    MOCK_METHOD(void, notifyApplicationStateChanged, (ApplicationState oldState, ApplicationState newState), (override));
     MOCK_METHOD(void, reportClientMetrics,
                 (::google::protobuf::RpcController * controller,
                  const ::firebolt::rialto::ReportClientMetricsRequest *request,

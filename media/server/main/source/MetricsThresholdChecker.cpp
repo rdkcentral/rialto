@@ -27,8 +27,8 @@ MetricsThresholdChecker::MetricsThresholdChecker(MetricsThresholdConfig config, 
 }
 
 void MetricsThresholdChecker::checkSample(double clientCpu, double serverCpu, double combinedCpu,
-                                           std::uint64_t clientMemKb, std::uint64_t serverMemKb,
-                                           std::uint64_t cgroupUsageKb, std::uint64_t cgroupLimitKb)
+                                          std::uint64_t clientMemKb, std::uint64_t serverMemKb,
+                                          std::uint64_t cgroupUsageKb, std::uint64_t cgroupLimitKb)
 {
     if (!m_reporter)
     {

@@ -27,21 +27,36 @@ MediaPipelineMetricsClient::MediaPipelineMetricsClient(int sessionId, const std:
 {
 }
 
-void MediaPipelineMetricsClient::notifyDuration(int64_t duration) { m_client->notifyDuration(duration); }
-void MediaPipelineMetricsClient::notifyPosition(int64_t position) { m_client->notifyPosition(position); }
+void MediaPipelineMetricsClient::notifyDuration(int64_t duration)
+{
+    m_client->notifyDuration(duration);
+}
+void MediaPipelineMetricsClient::notifyPosition(int64_t position)
+{
+    m_client->notifyPosition(position);
+}
 void MediaPipelineMetricsClient::notifyNativeSize(uint32_t width, uint32_t height, double aspect)
 {
     m_client->notifyNativeSize(width, height, aspect);
 }
-void MediaPipelineMetricsClient::notifyNetworkState(NetworkState state) { m_client->notifyNetworkState(state); }
+void MediaPipelineMetricsClient::notifyNetworkState(NetworkState state)
+{
+    m_client->notifyNetworkState(state);
+}
 void MediaPipelineMetricsClient::notifyPlaybackState(PlaybackState state)
 {
     m_metricsService.notifyPlaybackStateChanged(m_sessionId, m_currentPlaybackState, state);
     m_currentPlaybackState = state;
     m_client->notifyPlaybackState(state);
 }
-void MediaPipelineMetricsClient::notifyVideoData(bool hasData) { m_client->notifyVideoData(hasData); }
-void MediaPipelineMetricsClient::notifyAudioData(bool hasData) { m_client->notifyAudioData(hasData); }
+void MediaPipelineMetricsClient::notifyVideoData(bool hasData)
+{
+    m_client->notifyVideoData(hasData);
+}
+void MediaPipelineMetricsClient::notifyAudioData(bool hasData)
+{
+    m_client->notifyAudioData(hasData);
+}
 void MediaPipelineMetricsClient::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t needDataRequestId,
                                                      const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
 {
@@ -55,7 +70,10 @@ void MediaPipelineMetricsClient::notifyQos(int32_t sourceId, const QosInfo &qosI
 {
     m_client->notifyQos(sourceId, qosInfo);
 }
-void MediaPipelineMetricsClient::notifyBufferUnderflow(int32_t sourceId) { m_client->notifyBufferUnderflow(sourceId); }
+void MediaPipelineMetricsClient::notifyBufferUnderflow(int32_t sourceId)
+{
+    m_client->notifyBufferUnderflow(sourceId);
+}
 void MediaPipelineMetricsClient::notifyFirstFrameReceived(int32_t sourceId)
 {
     m_client->notifyFirstFrameReceived(sourceId);
@@ -64,7 +82,10 @@ void MediaPipelineMetricsClient::notifyPlaybackError(int32_t sourceId, PlaybackE
 {
     m_client->notifyPlaybackError(sourceId, error);
 }
-void MediaPipelineMetricsClient::notifySourceFlushed(int32_t sourceId) { m_client->notifySourceFlushed(sourceId); }
+void MediaPipelineMetricsClient::notifySourceFlushed(int32_t sourceId)
+{
+    m_client->notifySourceFlushed(sourceId);
+}
 void MediaPipelineMetricsClient::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
 {
     m_client->notifyPlaybackInfo(playbackInfo);

@@ -19,8 +19,8 @@
 
 #include "PrivateMetricsService.h"
 #include "RialtoServerLogging.h"
-#include <cstdio>
 #include <cinttypes>
+#include <cstdio>
 #include <fstream>
 #include <string>
 
@@ -44,7 +44,8 @@ void PrivateMetricsService::clientReady(int clientId,
     std::lock_guard<std::mutex> lock{m_mutex};
     if (!m_collectorFactory)
     {
-        RIALTO_SERVER_LOG_ERROR("MetricsCollectorFactory is null; cannot create MetricsCollector for client %d", clientId);
+        RIALTO_SERVER_LOG_ERROR("MetricsCollectorFactory is null; cannot create MetricsCollector for client %d",
+                                clientId);
         return;
     }
     auto collector = m_collectorFactory->create(clientId, client, m_currentApplicationState);
@@ -207,14 +208,10 @@ void PrivateMetricsService::notifyApplicationStateChanged(ApplicationState oldSt
                     std::sscanf(sline.c_str(), "Private_Dirty: %" SCNu64, &privateDirtyKb);
             }
         }
-        RIALTO_SERVER_LOG_MIL("Metrics: INACTIVE memory snapshot — server_mem_kb=%" PRIu64
-                              ", cgroup_mem_kb=%" PRIu64
-                              ", anon_kb=%" PRIu64
-                              ", private_dirty_kb=%" PRIu64
-                              ", private_clean_kb=%" PRIu64
+        RIALTO_SERVER_LOG_MIL("Metrics: INACTIVE memory snapshot — server_mem_kb=%" PRIu64 ", cgroup_mem_kb=%" PRIu64
+                              ", anon_kb=%" PRIu64 ", private_dirty_kb=%" PRIu64 ", private_clean_kb=%" PRIu64
                               ", shared_clean_kb=%" PRIu64,
-                              serverMemoryKb, cgroupMemoryUsageKb,
-                              anonKb, privateDirtyKb, privateCleanKb, sharedCleanKb);
+                              serverMemoryKb, cgroupMemoryUsageKb, anonKb, privateDirtyKb, privateCleanKb, sharedCleanKb);
     }
 }
 } // namespace firebolt::rialto::server::service

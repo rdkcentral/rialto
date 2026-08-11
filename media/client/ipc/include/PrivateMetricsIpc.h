@@ -20,8 +20,8 @@
 #ifndef FIREBOLT_RIALTO_CLIENT_PRIVATE_METRICS_IPC_H_
 #define FIREBOLT_RIALTO_CLIENT_PRIVATE_METRICS_IPC_H_
 
-#include "IPrivateMetricsIpc.h"
 #include "IEventThread.h"
+#include "IPrivateMetricsIpc.h"
 #include "IpcModule.h"
 #include "privatemetricsmodule.pb.h"
 #include <memory>

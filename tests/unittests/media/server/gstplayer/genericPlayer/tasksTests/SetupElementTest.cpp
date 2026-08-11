@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#include "GenericTasksTestsBase.h"
 #include "GenericPlayerContext.h"
+#include "GenericTasksTestsBase.h"
 
 class SetupElementTest : public GenericTasksTestsBase
 {

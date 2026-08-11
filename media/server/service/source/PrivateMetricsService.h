@@ -34,12 +34,12 @@ public:
     explicit PrivateMetricsService(std::shared_ptr<firebolt::rialto::server::IMetricsCollectorFactory> collectorFactory);
     ~PrivateMetricsService() override;
 
-    void clientReady(int clientId, const std::shared_ptr<firebolt::rialto::server::IMetricsCollectorClient> &client) override;
+    void clientReady(int clientId,
+                     const std::shared_ptr<firebolt::rialto::server::IMetricsCollectorClient> &client) override;
     void clientDisconnected(int clientId) override;
     void reportMetrics(int clientId, const firebolt::rialto::server::ClientMetricsData &metrics) override;
     void notifyPlaybackStateChanged(int sessionId, PlaybackState oldState, PlaybackState newState) override;
-    void notifyWebAudioPlayerStateChanged(int handle, WebAudioPlayerState oldState,
-                                          WebAudioPlayerState newState) override;
+    void notifyWebAudioPlayerStateChanged(int handle, WebAudioPlayerState oldState, WebAudioPlayerState newState) override;
     void notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState) override;
 
 private:

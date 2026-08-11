@@ -59,14 +59,12 @@ TEST_F(PrivateMetricsServiceTests, routesMetricsAndStateChangesToCollector)
 
     EXPECT_CALL(*m_collector, processMetrics(testing::Ref(metrics)));
     m_sut.reportMetrics(kClientId, metrics);
-    EXPECT_CALL(*m_collector,
-                notifyPlaybackStateChanged(1, PlaybackState::PLAYING, PlaybackState::PAUSED));
+    EXPECT_CALL(*m_collector, notifyPlaybackStateChanged(1, PlaybackState::PLAYING, PlaybackState::PAUSED));
     m_sut.notifyPlaybackStateChanged(1, PlaybackState::PLAYING, PlaybackState::PAUSED);
     EXPECT_CALL(*m_collector,
                 notifyWebAudioPlayerStateChanged(2, WebAudioPlayerState::PLAYING, WebAudioPlayerState::PAUSED));
     m_sut.notifyWebAudioPlayerStateChanged(2, WebAudioPlayerState::PLAYING, WebAudioPlayerState::PAUSED);
-    EXPECT_CALL(*m_collector,
-                notifyApplicationStateChanged(ApplicationState::UNKNOWN, ApplicationState::RUNNING));
+    EXPECT_CALL(*m_collector, notifyApplicationStateChanged(ApplicationState::UNKNOWN, ApplicationState::RUNNING));
     m_sut.notifyApplicationStateChanged(ApplicationState::UNKNOWN, ApplicationState::RUNNING);
 }
 

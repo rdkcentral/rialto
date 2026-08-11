@@ -50,9 +50,9 @@ std::shared_ptr<IMetricsCollectorFactory> IMetricsCollectorFactory::createFactor
     return factory;
 }
 
-std::unique_ptr<IMetricsCollector>
-MetricsCollectorFactory::create(int clientId, const std::shared_ptr<IMetricsCollectorClient> &client,
-                                ApplicationState initialApplicationState)
+std::unique_ptr<IMetricsCollector> MetricsCollectorFactory::create(int clientId,
+                                                                   const std::shared_ptr<IMetricsCollectorClient> &client,
+                                                                   ApplicationState initialApplicationState)
 {
     std::unique_ptr<IMetricsCollector> collector;
     try
@@ -71,8 +71,7 @@ MetricsCollector::MetricsCollector(int clientId, const std::shared_ptr<IMetricsC
                                    const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
                                    ApplicationState initialApplicationState)
     : m_clientId{clientId}, m_client{client}, m_currentApplicationState{initialApplicationState},
-      m_reporter{std::make_unique<LogMetricsReporter>()},
-      m_thresholdChecker{MetricsThresholdConfig{}, m_reporter.get()}
+      m_reporter{std::make_unique<LogMetricsReporter>()}, m_thresholdChecker{MetricsThresholdConfig{}, m_reporter.get()}
 {
     if (m_currentApplicationState == ApplicationState::RUNNING)
     {
@@ -84,8 +83,9 @@ MetricsCollector::MetricsCollector(int clientId, const std::shared_ptr<IMetricsC
         m_globalAggregator.begin(applicationStateToString(m_currentApplicationState), kNowMs);
     }
 
-    m_timer = timerFactory->createTimer(kMetricsInterval, [this]() { onTimerFired(); },
-                                        firebolt::rialto::common::TimerType::PERIODIC);
+    m_timer =
+        timerFactory
+            ->createTimer(kMetricsInterval, [this]() { onTimerFired(); }, firebolt::rialto::common::TimerType::PERIODIC);
 
     // Request initial baseline sample
     m_client->requestMetricsSample(m_clientId, m_nextSampleId++, MetricsSampleReason::CONNECTED);
@@ -169,23 +169,21 @@ void MetricsCollector::processMetrics(const ClientMetricsData &metrics)
                               kServerMetrics.cgroupMemoryUsageKb, kServerMetrics.cgroupMemoryLimitKb);
 
         std::lock_guard<std::mutex> lock{m_mutex};
-        m_previousSample = PreviousSample{metrics.monotonicTimeMs, metrics.processCpuTimeMs, metrics.processMemoryKb,
-                                          kServerMetrics};
+        m_previousSample =
+            PreviousSample{metrics.monotonicTimeMs, metrics.processCpuTimeMs, metrics.processMemoryKb, kServerMetrics};
         return;
     }
 
     const auto &prev{previous.value()};
-    const double kClientCpuPercentage{
-        calculateCpuPercentage(metrics.processCpuTimeMs, prev.clientCpuTimeMs, metrics.monotonicTimeMs,
-                               prev.clientMonotonicTimeMs)};
-    const double kServerCpuPercentage{calculateCpuPercentage(kServerMetrics.processCpuTimeMs,
-                                                             prev.serverMetrics.processCpuTimeMs,
-                                                             kServerMetrics.monotonicTimeMs,
-                                                             prev.serverMetrics.monotonicTimeMs)};
+    const double kClientCpuPercentage{calculateCpuPercentage(metrics.processCpuTimeMs, prev.clientCpuTimeMs,
+                                                             metrics.monotonicTimeMs, prev.clientMonotonicTimeMs)};
+    const double kServerCpuPercentage{
+        calculateCpuPercentage(kServerMetrics.processCpuTimeMs, prev.serverMetrics.processCpuTimeMs,
+                               kServerMetrics.monotonicTimeMs, prev.serverMetrics.monotonicTimeMs)};
     const double kCombinedCpuPercentage{
         calculateCpuPercentage(metrics.processCpuTimeMs + kServerMetrics.processCpuTimeMs,
-                               prev.clientCpuTimeMs + prev.serverMetrics.processCpuTimeMs, kServerMetrics.monotonicTimeMs,
-                               prev.serverMetrics.monotonicTimeMs)};
+                               prev.clientCpuTimeMs + prev.serverMetrics.processCpuTimeMs,
+                               kServerMetrics.monotonicTimeMs, prev.serverMetrics.monotonicTimeMs)};
 
     // Report via pluggable reporter
     if (m_reporter)
@@ -267,8 +265,7 @@ void MetricsCollector::notifyWebAudioPlayerStateChanged(int handle, WebAudioPlay
 {
     notifyPlayerStateChanged("web-audio=" + std::to_string(handle), webAudioPlayerStateToString(oldState),
                              webAudioPlayerStateToString(newState),
-                             newState == WebAudioPlayerState::END_OF_STREAM ||
-                                 newState == WebAudioPlayerState::FAILURE);
+                             newState == WebAudioPlayerState::END_OF_STREAM || newState == WebAudioPlayerState::FAILURE);
 }
 
 void MetricsCollector::notifyPlayerStateChanged(const std::string &context, const char *oldState, const char *newState,
@@ -486,10 +483,15 @@ MetricsCollector::ProcessMetricsSample MetricsCollector::getServerMetrics() cons
         }
     }
 
-    return ProcessMetricsSample{
-        static_cast<std::uint64_t>(duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count()),
-        static_cast<std::uint64_t>(duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count()),
-        processCpuTimeMs, processMemoryKb, cgroupMemoryUsageKb, cgroupMemoryLimitKb, shmMemoryKb};
+    return ProcessMetricsSample{static_cast<std::uint64_t>(
+                                    duration_cast<milliseconds>(steady_clock::now().time_since_epoch()).count()),
+                                static_cast<std::uint64_t>(
+                                    duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count()),
+                                processCpuTimeMs,
+                                processMemoryKb,
+                                cgroupMemoryUsageKb,
+                                cgroupMemoryLimitKb,
+                                shmMemoryKb};
 }
 
 double MetricsCollector::calculateCpuPercentage(std::uint64_t currentCpuTimeMs, std::uint64_t previousCpuTimeMs,

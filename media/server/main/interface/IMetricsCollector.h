@@ -66,9 +66,9 @@ public:
      *
      * @return The new MetricsCollector instance, or nullptr on failure.
      */
-    virtual std::unique_ptr<IMetricsCollector>
-    create(int clientId, const std::shared_ptr<IMetricsCollectorClient> &client,
-           ApplicationState initialApplicationState) = 0;
+    virtual std::unique_ptr<IMetricsCollector> create(int clientId,
+                                                      const std::shared_ptr<IMetricsCollectorClient> &client,
+                                                      ApplicationState initialApplicationState) = 0;
 };
 
 /**
