@@ -43,17 +43,16 @@ namespace firebolt::rialto::server
 class GstCapabilitiesFactory : public IGstCapabilitiesFactory
 {
 public:
-    /**
-     * @brief Weak pointer to the singleton factory object.
-     */
     static std::weak_ptr<IGstCapabilitiesFactory> m_factory;
 
-    /**
-     * @brief Creates a IGstCapabilities object.
-     *
-     * @retval the new gstreamer capabilities instance or null on error.
-     */
     std::unique_ptr<IGstCapabilities> createGstCapabilities() override;
+    void setPreloadedCapabilities(
+        const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
+        const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps) override;
+
+private:
+    std::optional<firebolt::rialto::AudioDecoderCapabilities> m_preloadedAudio;
+    std::optional<firebolt::rialto::VideoDecoderCapabilities> m_preloadedVideo;
 };
 
 class GstCapabilities : public IGstCapabilities
@@ -64,7 +63,9 @@ public:
         const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
         const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
         const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCppWrapper,
-        const IGstInitialiser &gstInitialiser);
+        const IGstInitialiser &gstInitialiser,
+        const std::optional<firebolt::rialto::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
+        const std::optional<firebolt::rialto::VideoDecoderCapabilities> &preloadedVideo = std::nullopt);
     ~GstCapabilities();
 
     GstCapabilities(const GstCapabilities &) = delete;

@@ -24,6 +24,7 @@ add_library (
         RialtoServerManagerIpc
         STATIC
 
+        source/CapabilitySerialiser.cpp
         source/Client.cpp
         source/Controller.cpp
         source/ControllerFactory.cpp
@@ -47,6 +48,8 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoIpcClient,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommonPublic,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries (
@@ -56,5 +59,7 @@ target_link_libraries (
         RialtoIpcClient
         RialtoIpcCommon
         RialtoServerManagerCommon
+        RialtoServerManagerService
+        RialtoWrappers
         RialtoProtobuf
 )

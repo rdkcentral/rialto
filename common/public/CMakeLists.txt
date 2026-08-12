@@ -37,6 +37,7 @@ target_include_directories(
 
         INTERFACE
         ${CMAKE_BINARY_DIR}/common/public/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
     )
 
 if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )

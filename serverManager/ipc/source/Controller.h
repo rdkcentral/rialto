@@ -54,11 +54,15 @@ public:
                                  const std::string &socketName, const std::string &clientDisplayName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                  const unsigned int socketPermissions, const std::string &socketOwner,
-                                 const std::string &socketGroup, const std::string &appName) override;
+                                 const std::string &socketGroup, const std::string &appName,
+                                 const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
+                                 const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps) override;
     bool performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
                                  int socketFd, const std::string &clientDisplayName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
-                                 const std::string &appName) override;
+                                 const std::string &appName,
+                                 const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
+                                 const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps) override;
     bool performPing(int serverId, int pingId) override;
     bool performSetState(int serverId, const firebolt::rialto::common::SessionServerState &state) override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;

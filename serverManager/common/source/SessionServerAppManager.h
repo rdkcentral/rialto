@@ -27,9 +27,13 @@
 #include "INamedSocket.h"
 #include "ISessionServerApp.h"
 #include "ISessionServerAppManager.h"
+#include "IMediaCapabilities.h"
 #include "IStateObserver.h"
 #include "SessionServerAppFactory.h"
+#include <AudioDecoderCapabilities.h>
+#include <VideoDecoderCapabilities.h>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 
@@ -43,7 +47,8 @@ public:
                             std::unique_ptr<ISessionServerAppFactory> &&sessionServerAppFactory,
                             std::unique_ptr<IHealthcheckServiceFactory> &&healthcheckServiceFactory,
                             const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory,
-                            const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory);
+                            const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory,
+                            std::shared_ptr<service::IMediaCapabilities> mediaCapabilities);
     virtual ~SessionServerAppManager();
     SessionServerAppManager(const SessionServerAppManager &) = delete;
     SessionServerAppManager(SessionServerAppManager &&) = delete;
@@ -100,6 +105,8 @@ private:
     std::unique_ptr<IHealthcheckService> m_healthcheckService;
     const firebolt::rialto::ipc::INamedSocketFactory &m_namedSocketFactory;
     bool m_isShuttingDown;
+    std::optional<firebolt::rialto::AudioDecoderCapabilities> m_audioCapabilities;
+    std::optional<firebolt::rialto::VideoDecoderCapabilities> m_videoCapabilities;
 };
 } // namespace rialto::servermanager::common
 

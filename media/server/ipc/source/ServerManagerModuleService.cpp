@@ -21,10 +21,31 @@
 #include "AckSender.h"
 #include "ISessionServerManager.h"
 #include "RialtoServerLogging.h"
+#include <AudioDecoderCapabilities.h>
 #include <IIpcController.h>
+#include <VideoDecoderCapabilities.h>
+#include <optional>
 
 namespace
 {
+firebolt::rialto::AudioDecoderCapabilities convertAudioCapabilities(const rialto::AudioCapabilities &src)
+{
+    firebolt::rialto::AudioDecoderCapabilities result;
+    result.interfaceVersion = src.interface_version();
+    result.schemaVersion    = src.schema_version();
+    // Capability fields are populated by GstCapabilities path B if needed;
+    // here we carry only the structured data forwarded from the ServerManager.
+    return result;
+}
+
+firebolt::rialto::VideoDecoderCapabilities convertVideoCapabilities(const rialto::VideoCapabilities &src)
+{
+    firebolt::rialto::VideoDecoderCapabilities result;
+    result.interfaceVersion = src.interface_version();
+    result.schemaVersion    = src.schema_version();
+    return result;
+}
+
 firebolt::rialto::common::SessionServerState convertSessionServerState(const rialto::SessionServerState &state)
 {
     switch (state)
@@ -94,6 +115,22 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     common::MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(),
                                                  request->resources().maxwebaudioplayers()};
     const auto kClientDisplayName = request->has_clientdisplayname() ? request->clientdisplayname() : "";
+
+    // Deserialise typed capability fields into C++ structs (optional — absent fields → std::nullopt)
+    std::optional<firebolt::rialto::AudioDecoderCapabilities> audioCaps;
+    std::optional<firebolt::rialto::VideoDecoderCapabilities> videoCaps;
+    if (request->has_audiocapabilities() && request->has_videocapabilities())
+    {
+        RIALTO_SERVER_LOG_DEBUG("ServerManagerModuleService: audio/video capabilities received in SetConfiguration");
+        audioCaps = convertAudioCapabilities(request->audiocapabilities());
+        videoCaps = convertVideoCapabilities(request->videocapabilities());
+        RIALTO_SERVER_LOG_INFO("ServerManagerModuleService: capabilities deserialised and forwarded to configureServices");
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_INFO("ServerManagerModuleService: no capability fields - session server will use GStreamer query fallback");
+    }
+
     bool success{true};
     if (request->has_sessionmanagementsocketfd())
     {
@@ -105,7 +142,8 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
                                             request->socketowner(), request->socketgroup());
     }
     success &= m_sessionServerManager.configureServices(convertSessionServerState(request->initialsessionserverstate()),
-                                                        maxResource, kClientDisplayName, request->appname());
+                                                        maxResource, kClientDisplayName, request->appname(),
+                                                        audioCaps, videoCaps);
     m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().clientloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().sessionserverloglevels()),

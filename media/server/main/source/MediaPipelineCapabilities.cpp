@@ -98,14 +98,4 @@ bool MediaPipelineCapabilities::isVideoMaster(bool &isVideoMaster)
 {
     return m_gstCapabilities->isVideoMaster(isVideoMaster);
 }
-
-AudioDecoderCapabilities MediaPipelineCapabilities::getSupportedAudioCapabilities()
-{
-    return m_gstCapabilities->getSupportedAudioCapabilities();
-}
-
-VideoDecoderCapabilities MediaPipelineCapabilities::getSupportedVideoCapabilities()
-{
-    return m_gstCapabilities->getSupportedVideoCapabilities();
-}
 }; // namespace firebolt::rialto::server

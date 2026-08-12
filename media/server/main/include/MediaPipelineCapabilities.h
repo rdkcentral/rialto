@@ -67,8 +67,6 @@ public:
     std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
                                                     const std::vector<std::string> &propertyNames) override;
     bool isVideoMaster(bool &isVideoMaster) override;
-    AudioDecoderCapabilities getSupportedAudioCapabilities() override;
-    VideoDecoderCapabilities getSupportedVideoCapabilities() override;
 
 private:
     /**

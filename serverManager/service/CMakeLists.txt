@@ -28,6 +28,29 @@ endif()
 find_package( PkgConfig REQUIRED )
 
 add_library (
+        RialtoServerManagerService STATIC
+        source/MediaCapabilities.cpp
+        source/MediaCapabilitiesFactory.cpp
+)
+
+target_include_directories (
+        RialtoServerManagerService
+        PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        PRIVATE
+        $<TARGET_PROPERTY:RialtoServerManagerPublic,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoServerManagerCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommonPublic,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
+)
+target_link_libraries (
+        RialtoServerManagerService
+        PRIVATE
+        RialtoWrappers
+)
+
+add_library (
         RialtoServerManager SHARED
         source/ConfigHelper.cpp
         source/ServerManagerServiceFactory.cpp
@@ -52,6 +75,7 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoServerManagerCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerManagerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommonPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
 )
 target_link_libraries (
@@ -60,6 +84,7 @@ target_link_libraries (
         RialtoLogging
         RialtoServerManagerCommon
         RialtoServerManagerIpc
+        RialtoServerManagerService
         RialtoWrappers
         Threads::Threads
 )

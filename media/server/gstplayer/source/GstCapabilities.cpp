@@ -114,6 +114,14 @@ std::shared_ptr<IGstCapabilitiesFactory> IGstCapabilitiesFactory::getFactory()
     return factory;
 }
 
+void GstCapabilitiesFactory::setPreloadedCapabilities(
+    const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
+    const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps)
+{
+    m_preloadedAudio = audioCaps;
+    m_preloadedVideo = videoCaps;
+}
+
 std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities()
 {
     std::unique_ptr<IGstCapabilities> gstCapabilities;
@@ -157,7 +165,8 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
         }
 
         gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper, rdkGstreamerUtilsWrapper,
-                                                            yamlCppWrapper, IGstInitialiser::instance());
+                                                            yamlCppWrapper, IGstInitialiser::instance(),
+                                                            m_preloadedAudio, m_preloadedVideo);
     }
     catch (const std::exception &e)
     {
@@ -172,20 +181,33 @@ GstCapabilities::GstCapabilities(
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCppWrapper,
-    const IGstInitialiser &gstInitialiser)
+    const IGstInitialiser &gstInitialiser,
+    const std::optional<firebolt::rialto::AudioDecoderCapabilities> &preloadedAudio,
+    const std::optional<firebolt::rialto::VideoDecoderCapabilities> &preloadedVideo)
     : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
       m_yamlCppWrapper{yamlCppWrapper}, m_gstInitialiser{gstInitialiser}
 {
-    auto logCapabilityStatus = [](DecoderCapabilitiesStatus status, const char *type)
+    if (preloadedAudio.has_value() && preloadedVideo.has_value())
     {
-        if (status == DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
-            RIALTO_SERVER_LOG_INFO("No %s decoder capabilities config file found", type);
-        else if (status != DecoderCapabilitiesStatus::OK)
-            RIALTO_SERVER_LOG_WARN("Failed to get %s decoder capabilities from config file", type);
-    };
-
-    logCapabilityStatus(m_yamlCppWrapper->getAudioDecoderCapabilities(m_audioDecoderCapabilities), "audio");
-    logCapabilityStatus(m_yamlCppWrapper->getVideoDecoderCapabilities(m_videoDecoderCapabilities), "video");
+        // Path A: use pre-loaded capabilities forwarded from ServerManager; skip YAML load
+        m_audioDecoderCapabilities = *preloadedAudio;
+        m_videoDecoderCapabilities = *preloadedVideo;
+        RIALTO_SERVER_LOG_INFO("GstCapabilities: using pre-loaded capabilities from ServerManager (path A)");
+    }
+    else
+    {
+        // Path B: no ServerManager data — fall back to GStreamer element query (legacy IMediaPipelineCapabilities path)
+        auto logCapabilityStatus = [](DecoderCapabilitiesStatus status, const char *type)
+        {
+            if (status == DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
+                RIALTO_SERVER_LOG_INFO("No %s decoder capabilities config file found", type);
+            else if (status != DecoderCapabilitiesStatus::OK)
+                RIALTO_SERVER_LOG_WARN("Failed to get %s decoder capabilities from config file", type);
+        };
+        logCapabilityStatus(m_yamlCppWrapper->getAudioDecoderCapabilities(m_audioDecoderCapabilities), "audio");
+        logCapabilityStatus(m_yamlCppWrapper->getVideoDecoderCapabilities(m_videoDecoderCapabilities), "video");
+        RIALTO_SERVER_LOG_INFO("GstCapabilities: using GStreamer element-query fallback (path B)");
+    }
     m_initialisationThread = std::thread(
         [this]()
         {

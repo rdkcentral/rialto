@@ -32,7 +32,7 @@ std::unique_ptr<ISessionServerAppManager> createSessionServerAppManager(
     const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
     std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckInterval,
     unsigned numOfFailedPingsBeforeRecovery, unsigned int socketPermissions, const std::string &socketOwner,
-    const std::string &socketGroup)
+    const std::string &socketGroup, std::shared_ptr<service::IMediaCapabilities> mediaCapabilities)
 {
     return std::make_unique<
         SessionServerAppManager>(ipc, stateObserver,
@@ -42,6 +42,7 @@ std::unique_ptr<ISessionServerAppManager> createSessionServerAppManager(
                                  std::make_unique<HealthcheckServiceFactory>(healthcheckInterval,
                                                                              numOfFailedPingsBeforeRecovery),
                                  firebolt::rialto::common::IEventThreadFactory::createFactory(),
-                                 firebolt::rialto::ipc::INamedSocketFactory::getFactory());
+                                 firebolt::rialto::ipc::INamedSocketFactory::getFactory(),
+                                 std::move(mediaCapabilities));
 }
 } // namespace rialto::servermanager::common

@@ -118,20 +118,8 @@ public:
      * @retval true on success false otherwise
      */
     virtual bool isVideoMaster(bool &isVideoMaster) = 0;
-
-    /**
-     * @brief Gets the supported audio capabilities.
-     *
-     * @retval The supported audio capabilities.
-     */
-    virtual AudioDecoderCapabilities getSupportedAudioCapabilities() = 0;
-
-    /**
-     * @brief Gets the supported video capabilities.
-     *
-     * @retval The supported video capabilities.
-     */
-    virtual VideoDecoderCapabilities getSupportedVideoCapabilities() = 0;
+    // getSupportedAudioCapabilities() and getSupportedVideoCapabilities() have been removed.
+    // Use IMediaCapabilities instead.
 };
 
 }; // namespace firebolt::rialto

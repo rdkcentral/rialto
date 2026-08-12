@@ -24,6 +24,7 @@
 #include <MediaCommon.h>
 #include <VideoDecoderCapabilities.h>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -40,20 +41,14 @@ public:
     IGstCapabilitiesFactory() = default;
     virtual ~IGstCapabilitiesFactory() = default;
 
-    /**
-     * @brief Gets the IGstCapabilitiesFactory instance.
-     *
-     * @retval the factory instance or null on error.
-     */
     static std::shared_ptr<IGstCapabilitiesFactory> getFactory();
 
-    /**
-     * @brief Creates a IGstCapabilities object.
-     *
-     *
-     * @retval the new gstreamer capabilities instance or null on error.
-     */
     virtual std::unique_ptr<IGstCapabilities> createGstCapabilities() = 0;
+
+    // Supply pre-loaded capabilities forwarded from ServerManager; used by next createGstCapabilities() call.
+    virtual void setPreloadedCapabilities(
+        const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
+        const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps) = 0;
 };
 
 class IGstCapabilities

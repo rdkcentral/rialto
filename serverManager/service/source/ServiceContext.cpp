@@ -19,6 +19,7 @@
 
 #include "ServiceContext.h"
 #include "ControllerFactory.h"
+#include "MediaCapabilitiesFactory.h"
 #include "SessionServerAppManagerFactory.h"
 
 namespace rialto::servermanager::service
@@ -33,7 +34,8 @@ ServiceContext::ServiceContext(const std::shared_ptr<IStateObserver> &stateObser
                                                                       environmentVariables, sessionServerPath,
                                                                       sessionServerStartupTimeout, healthcheckInterval,
                                                                       numOfFailedPingsBeforeRecovery, socketPermissions,
-                                                                      socketOwner, socketGroup)},
+                                                                      socketOwner, socketGroup,
+                                                                      createMediaCapabilities())},
       m_ipcController{ipc::create(m_sessionServerAppManager)}
 {
 }
