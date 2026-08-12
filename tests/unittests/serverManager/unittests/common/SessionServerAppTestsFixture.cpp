@@ -74,7 +74,6 @@ void SessionServerAppTests::createPreloadedAppSut()
     EXPECT_EQ(-1, m_sut->getAppManagementSocketName());
     EXPECT_EQ(kMaxPlaybackSessions, m_sut->getMaxPlaybackSessions());
     EXPECT_EQ(kMaxWebAudioPlayers, m_sut->getMaxWebAudioPlayers());
-    EXPECT_FALSE(m_sut->isSuspendOngoing());
 }
 
 void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConfig &appConfig)
@@ -100,7 +99,6 @@ void SessionServerAppTests::createAppSut(const firebolt::rialto::common::AppConf
     EXPECT_EQ(kMaxPlaybackSessions, m_sut->getMaxPlaybackSessions());
     EXPECT_EQ(kMaxWebAudioPlayers, m_sut->getMaxWebAudioPlayers());
     EXPECT_TRUE(m_sut->isNamedSocketInitialized());
-    EXPECT_FALSE(m_sut->isSuspendOngoing());
 }
 
 void SessionServerAppTests::createAppSutWithDisabledTimer(const firebolt::rialto::common::AppConfig &appConfig)
@@ -123,7 +121,6 @@ void SessionServerAppTests::createAppSutWithDisabledTimer(const firebolt::rialto
     EXPECT_EQ(-1, m_sut->getAppManagementSocketName());
     EXPECT_EQ(kMaxPlaybackSessions, m_sut->getMaxPlaybackSessions());
     EXPECT_EQ(kMaxWebAudioPlayers, m_sut->getMaxWebAudioPlayers());
-    EXPECT_FALSE(m_sut->isSuspendOngoing());
 }
 
 void SessionServerAppTests::willFailToInitialiseSockets() const
@@ -230,10 +227,4 @@ void SessionServerAppTests::triggerReleaseNamedSocket() const
     EXPECT_EQ(namedSocket.get(), &m_namedSocketMock);
     EXPECT_FALSE(m_sut->isNamedSocketInitialized());
     EXPECT_EQ(-1, m_sut->getSessionManagementSocketFd());
-}
-
-void SessionServerAppTests::triggerSetSuspendOngoing() const
-{
-    m_sut->setSuspendOngoing();
-    EXPECT_TRUE(m_sut->isSuspendOngoing());
 }

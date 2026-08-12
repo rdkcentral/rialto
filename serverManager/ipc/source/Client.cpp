@@ -55,6 +55,10 @@ firebolt::rialto::common::SessionServerState convert(const rialto::SessionServer
     {
         return firebolt::rialto::common::SessionServerState::ERROR;
     }
+    case rialto::SessionServerState::SUSPENDED:
+    {
+        return firebolt::rialto::common::SessionServerState::SUSPENDED;
+    }
     }
     return firebolt::rialto::common::SessionServerState::ERROR;
 }
@@ -81,6 +85,10 @@ rialto::SessionServerState convert(const firebolt::rialto::common::SessionServer
     case firebolt::rialto::common::SessionServerState::ERROR:
     {
         return rialto::SessionServerState::ERROR;
+    }
+    case firebolt::rialto::common::SessionServerState::SUSPENDED:
+    {
+        return rialto::SessionServerState::SUSPENDED;
     }
     }
     return rialto::SessionServerState::ERROR;

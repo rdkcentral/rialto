@@ -64,7 +64,7 @@ public:
 private:
     bool switchToActive();
     bool switchToInactive();
-    bool switchToNotRunning();
+    bool teardownService(const common::SessionServerState &state);
     void stopService();
 
 private:

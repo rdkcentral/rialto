@@ -55,7 +55,6 @@ public:
                              const firebolt::rialto::common::AppConfig &appConfig) override;
     bool setSessionServerState(const std::string &appName,
                                const firebolt::rialto::common::SessionServerState &newState) override;
-    bool suspendSessionServer(const std::string &appId) override;
     void onSessionServerStateChanged(int serverId, const firebolt::rialto::common::SessionServerState &newState) override;
     void sendPingEvents(int pingId) override;
     void onAck(int serverId, int pingId, bool success) override;
@@ -88,8 +87,8 @@ private:
     bool handleInitiateApplication(const std::string &appName, const firebolt::rialto::common::SessionServerState &state,
                                    const firebolt::rialto::common::AppConfig &appConfig);
     void handleRestartServer(int serverId);
-    bool handleSuspendSessionServer(const std::string &appName);
-    void resurrectSuspendedServer(const std::shared_ptr<ISessionServerApp> &kSessionServer);
+    void resurrectSuspendedServer(const std::shared_ptr<ISessionServerApp> &kSessionServer,
+                                  const firebolt::rialto::common::SessionServerState &state);
     bool configureSessionServerWithSocketName(const std::shared_ptr<ISessionServerApp> &kSessionServer);
     bool configureSessionServerWithSocketFd(const std::shared_ptr<ISessionServerApp> &kSessionServer);
     void handleServerStartupTimeout(int serverId);

@@ -90,8 +90,7 @@ SessionServerApp::SessionServerApp(const std::shared_ptr<firebolt::rialto::wrapp
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_kSessionManagementSocketOwner{socketOwner},
       m_kSessionManagementSocketGroup{socketGroup}, m_childInitialized{false},
-      m_expectedState{firebolt::rialto::common::SessionServerState::UNINITIALIZED},
-      m_namedSocket{std::move(namedSocket)}, m_suspendOngoing{false}
+      m_expectedState{firebolt::rialto::common::SessionServerState::UNINITIALIZED}, m_namedSocket{std::move(namedSocket)}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with serverId: %d", m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -117,7 +116,7 @@ SessionServerApp::SessionServerApp(const std::string &appName,
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_kSessionManagementSocketOwner{socketOwner},
       m_kSessionManagementSocketGroup{socketGroup}, m_childInitialized{false}, m_expectedState{initialState},
-      m_namedSocket{std::move(namedSocket)}, m_suspendOngoing{false}
+      m_namedSocket{std::move(namedSocket)}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating SessionServerApp for app: %s with appId: %d", appName.c_str(), m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -136,12 +135,7 @@ SessionServerApp::SessionServerApp(const std::string &appName,
 SessionServerApp::~SessionServerApp()
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Application %d is destructed", m_kServerId);
-    cancelStartupTimerInternal();
-    waitForChildProcess();
-    if (m_socks[0] >= 0)
-    {
-        m_linuxWrapper->close(m_socks[0]);
-    }
+    doCleanup();
     for (char *var : m_environmentVariables)
     {
         if (var)
@@ -447,13 +441,18 @@ std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&SessionServerApp::release
     return std::move(m_namedSocket);
 }
 
-void SessionServerApp::setSuspendOngoing()
+void SessionServerApp::cleanup()
 {
-    m_suspendOngoing = true;
+    doCleanup();
 }
 
-bool SessionServerApp::isSuspendOngoing() const
+void SessionServerApp::doCleanup()
 {
-    return m_suspendOngoing;
+    cancelStartupTimerInternal();
+    waitForChildProcess();
+    if (m_socks[0] >= 0)
+    {
+        m_linuxWrapper->close(m_socks[0]);
+    }
 }
 } // namespace rialto::servermanager::common

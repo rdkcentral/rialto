@@ -73,7 +73,7 @@ public:
     void pingWillBeSentToRunningApps();
     void pingSendToRunningAppsWillFail();
     void clientWillBeRemoved();
-    void sessionServerWontBeSuspended();
+    void sessionServerWillReturnExpectedState(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillIndicateStateChange(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillBeRestarted(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillRestartWillBeSkipped();
@@ -90,7 +90,6 @@ public:
     bool triggerSetLogLevel();
     void triggerSendPingEvents();
     void triggerRestartServer();
-    bool triggerSuspendServer();
     void triggerOnServerStartupTimeout();
 
 private:

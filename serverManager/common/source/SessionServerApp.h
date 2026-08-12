@@ -80,10 +80,10 @@ public:
     bool isNamedSocketInitialized() const override;
     int getSessionManagementSocketFd() const override;
     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&releaseNamedSocket() override;
-    void setSuspendOngoing() override;
-    bool isSuspendOngoing() const override;
+    void cleanup() override;
 
 private:
+    void doCleanup();
     bool initializeSockets();
     void setupStartupTimer();
     bool spawnSessionServer();
@@ -116,7 +116,6 @@ private:
     bool m_childInitialized;
     firebolt::rialto::common::SessionServerState m_expectedState;
     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> m_namedSocket;
-    bool m_suspendOngoing;
 };
 } // namespace rialto::servermanager::common
 

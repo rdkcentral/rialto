@@ -36,6 +36,7 @@ enum SessionServerState {
     ACTIVE = 2;
     NOT_RUNNING = 3;
     ERROR = 4;
+    SUSPENDED = 5;
 }
 
 /**
