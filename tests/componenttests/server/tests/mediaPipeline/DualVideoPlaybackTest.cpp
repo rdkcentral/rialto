@@ -170,6 +170,12 @@ public:
         EXPECT_CALL(*m_glibWrapperMock, gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("min-percent")));
         EXPECT_CALL(*m_glibWrapperMock,
                     gObjectSetStub(GST_ELEMENT(&m_secondaryVideoAppSrc), StrEq("handle-segment-change")));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(&m_secondaryVideoAppSrc)),
+                                                                 StrEq("max-time")))
+            .WillOnce(Return(nullptr));
+        EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(G_OBJECT_GET_CLASS(GST_APP_SRC(&m_secondaryVideoAppSrc)),
+                                                                 StrEq("max-buffers")))
+            .WillOnce(Return(nullptr));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetMaxBytes(&m_secondaryVideoAppSrc, (8 * 1024 * 1024)));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcSetStreamType(&m_secondaryVideoAppSrc, GST_APP_STREAM_TYPE_SEEKABLE));
         EXPECT_CALL(*m_glibWrapperMock, gStrdupPrintfStub(_)).WillOnce(Return(m_sourceName.data())).RetiresOnSaturation();
