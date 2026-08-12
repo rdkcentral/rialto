@@ -28,10 +28,10 @@ public:
     IMediaCapabilities &operator=(IMediaCapabilities &&) = delete;
 
     virtual firebolt::rialto::DecoderCapabilitiesStatus
-    getAudioDecoderCapabilities(firebolt::rialto::AudioDecoderCapabilities &capabilities) = 0;
+    getAudioDecoderCapabilities(firebolt::rialto::common::AudioDecoderCapabilities &capabilities) = 0;
 
     virtual firebolt::rialto::DecoderCapabilitiesStatus
-    getVideoDecoderCapabilities(firebolt::rialto::VideoDecoderCapabilities &capabilities) = 0;
+    getVideoDecoderCapabilities(firebolt::rialto::common::VideoDecoderCapabilities &capabilities) = 0;
 };
 
 } // namespace rialto::servermanager::service

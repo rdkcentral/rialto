@@ -17,8 +17,13 @@
  * limitations under the License.
  */
 
+<<<<<<< HEAD
 #ifndef FIREBOLT_RIALTO_VIDEO_DECODER_CAPABILITIES_H_
 #define FIREBOLT_RIALTO_VIDEO_DECODER_CAPABILITIES_H_
+=======
+#ifndef FIREBOLT_RIALTO_COMMON_VIDEO_DECODER_CAPABILITIES_H_
+#define FIREBOLT_RIALTO_COMMON_VIDEO_DECODER_CAPABILITIES_H_
+>>>>>>> c39f8bc1 (RDKEMW-15078: Yaml Reader in RailtoServerManager changes)
 
 /**
  * @file VideoDecoderCapabilities.h
@@ -303,4 +308,8 @@ struct VideoDecoderCapabilities
 
 } // namespace firebolt::rialto::common
 
+<<<<<<< HEAD
 #endif // FIREBOLT_RIALTO_VIDEO_DECODER_CAPABILITIES_H_
+=======
+#endif // FIREBOLT_RIALTO_COMMON_VIDEO_DECODER_CAPABILITIES_H_
+>>>>>>> c39f8bc1 (RDKEMW-15078: Yaml Reader in RailtoServerManager changes)

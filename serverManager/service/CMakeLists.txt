@@ -30,7 +30,7 @@ find_package( PkgConfig REQUIRED )
 add_library (
         RialtoServerManagerService STATIC
         source/MediaCapabilities.cpp
-        source/MediaCapabilitiesFactory.cpp
+        source/MediaCapabilitiesFactory.cpp 
 )
 
 target_include_directories (

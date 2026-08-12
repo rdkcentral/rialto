@@ -68,8 +68,8 @@ bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::c
                                          const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                          const unsigned int socketPermissions, const std::string &socketOwner,
                                          const std::string &socketGroup, const std::string &appName,
-                                         const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
-                                         const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps)
+                                         const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                         const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
     auto client = m_clients.find(serverId);
@@ -86,8 +86,8 @@ bool Controller::performSetConfiguration(int serverId, const firebolt::rialto::c
                                          int socketFd, const std::string &clientDisplayName,
                                          const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                          const std::string &appName,
-                                         const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
-                                         const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps)
+                                         const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                         const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
     auto client = m_clients.find(serverId);

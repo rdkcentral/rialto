@@ -17,8 +17,9 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_AUDIO_DECODER_CAPABILITIES_H_
-#define FIREBOLT_RIALTO_AUDIO_DECODER_CAPABILITIES_H_
+
+#ifndef FIREBOLT_RIALTO_COMMON_AUDIO_DECODER_CAPABILITIES_H_
+#define FIREBOLT_RIALTO_COMMON_AUDIO_DECODER_CAPABILITIES_H_
 
 /**
  * @file AudioDecoderCapabilities.h
@@ -336,4 +337,4 @@ struct AudioDecoderCapabilities
 
 } // namespace firebolt::rialto::common
 
-#endif // FIREBOLT_RIALTO_AUDIO_DECODER_CAPABILITIES_H_
+#endif // FIREBOLT_RIALTO_COMMON_AUDIO_DECODER_CAPABILITIES_H_

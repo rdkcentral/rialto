@@ -22,41 +22,19 @@ set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
-add_subdirectory(public)
-
 add_library(
-        RialtoCommon
+        RialtoTestServerManagerCommonMisc
         STATIC
-
-        source/EventThread.cpp
-        source/LinuxUtils.cpp
-        source/Timer.cpp
-        source/Profiler.cpp
+        DecoderCapabilitiesUtil.cpp
+        DecoderCapabilitiesUtil.h
     )
-
-set_property (
-        TARGET
-        RialtoCommon
-        PROPERTY POSITION_INDEPENDENT_CODE ON
-)
 
 target_include_directories(
-        RialtoCommon
+    RialtoTestServerManagerCommonMisc
 
-        PUBLIC
-        interface
-        $<TARGET_PROPERTY:RialtoCommonPublic,INTERFACE_INCLUDE_DIRECTORIES>
+    PRIVATE
+    $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
 
-        PRIVATE
-        include
-    )
-
-target_link_libraries (
-        RialtoCommon
-
-        PUBLIC
-        RialtoCommonPublic
-
-        PRIVATE
-        RialtoLogging
-    )
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)

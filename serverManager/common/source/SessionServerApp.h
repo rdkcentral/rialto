@@ -34,6 +34,7 @@
 #include <sys/types.h>
 #include <vector>
 
+
 namespace rialto::servermanager::common
 {
 class SessionServerApp : public ISessionServerApp

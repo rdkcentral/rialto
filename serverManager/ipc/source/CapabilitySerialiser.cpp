@@ -13,7 +13,7 @@ namespace
 using AudioCap = rialto::AudioCapabilities;
 using VideoCap = rialto::VideoCapabilities;
 
-void fillProfileCap(const firebolt::rialto::AudioProfileCapability &src, AudioCap::AudioProfileCapability *dst)
+void fillProfileCap(const firebolt::rialto::common::AudioProfileCapability &src, AudioCap::AudioProfileCapability *dst)
 {
     dst->set_max_bitrate_in_bps(src.maxBitrateInBps);
     dst->set_max_channels(src.maxChannels);
@@ -21,52 +21,52 @@ void fillProfileCap(const firebolt::rialto::AudioProfileCapability &src, AudioCa
     dst->set_max_bit_depth(src.maxBitDepth);
 }
 
-AudioCap::AacProfile toProto(firebolt::rialto::AacProfile p)
+AudioCap::AacProfile toProto(firebolt::rialto::common::AacProfile p)
 {
     switch (p)
     {
-    case firebolt::rialto::AacProfile::HE_V1:     return AudioCap::AAC_PROFILE_HE_V1;
-    case firebolt::rialto::AacProfile::HE_V2:     return AudioCap::AAC_PROFILE_HE_V2;
-    case firebolt::rialto::AacProfile::ELD:       return AudioCap::AAC_PROFILE_ELD;
-    case firebolt::rialto::AacProfile::X_HE:      return AudioCap::AAC_PROFILE_X_HE;
+    case firebolt::rialto::common::AacProfile::HE_V1:     return AudioCap::AAC_PROFILE_HE_V1;
+    case firebolt::rialto::common::AacProfile::HE_V2:     return AudioCap::AAC_PROFILE_HE_V2;
+    case firebolt::rialto::common::AacProfile::ELD:       return AudioCap::AAC_PROFILE_ELD;
+    case firebolt::rialto::common::AacProfile::X_HE:      return AudioCap::AAC_PROFILE_X_HE;
     default:                                       return AudioCap::AAC_PROFILE_LC;
     }
 }
-AudioCap::DolbyEac3Profile toProto(firebolt::rialto::DolbyEac3Profile p)
+AudioCap::DolbyEac3Profile toProto(firebolt::rialto::common::DolbyEac3Profile p)
 {
-    return (p == firebolt::rialto::DolbyEac3Profile::PLUS_JOC) ? AudioCap::DOLBY_EAC3_PROFILE_PLUS_JOC
+    return (p == firebolt::rialto::common::DolbyEac3Profile::PLUS_JOC) ? AudioCap::DOLBY_EAC3_PROFILE_PLUS_JOC
                                                                 : AudioCap::DOLBY_EAC3_PROFILE_PLUS;
 }
-AudioCap::MpegAudioProfile toProto(firebolt::rialto::MpegAudioProfile p)
+AudioCap::MpegAudioProfile toProto(firebolt::rialto::common::MpegAudioProfile p)
 {
-    return (p == firebolt::rialto::MpegAudioProfile::LAYER_2) ? AudioCap::MPEG_AUDIO_PROFILE_LAYER_2
-                                                              : AudioCap::MPEG_AUDIO_PROFILE_LAYER_1;
+    return (p == firebolt::rialto::common::MpegAudioProfile::LAYER_2) ? AudioCap::MPEG_AUDIO_PROFILE_LAYER_2
+                                                                      : AudioCap::MPEG_AUDIO_PROFILE_LAYER_1;
 }
-AudioCap::RealAudioProfile toProto(firebolt::rialto::RealAudioProfile p)
+AudioCap::RealAudioProfile toProto(firebolt::rialto::common::RealAudioProfile p)
 {
-    return (p == firebolt::rialto::RealAudioProfile::RA10) ? AudioCap::REALAUDIO_PROFILE_RA10
-                                                           : AudioCap::REALAUDIO_PROFILE_RA8;
+    return (p == firebolt::rialto::common::RealAudioProfile::RA10) ? AudioCap::REALAUDIO_PROFILE_RA10
+                                                                  : AudioCap::REALAUDIO_PROFILE_RA8;
 }
-AudioCap::UsacProfile toProto(firebolt::rialto::UsacProfile p)
+AudioCap::UsacProfile toProto(firebolt::rialto::common::UsacProfile p)
 {
-    return (p == firebolt::rialto::UsacProfile::EXTENDED_HE_AAC) ? AudioCap::USAC_PROFILE_EXTENDED_HE_AAC
-                                                                 : AudioCap::USAC_PROFILE_BASELINE;
+    return (p == firebolt::rialto::common::UsacProfile::EXTENDED_HE_AAC) ? AudioCap::USAC_PROFILE_EXTENDED_HE_AAC
+                                                                         : AudioCap::USAC_PROFILE_BASELINE;
 }
-AudioCap::DtsProfile toProto(firebolt::rialto::DtsProfile p)
+AudioCap::DtsProfile toProto(firebolt::rialto::common::DtsProfile p)
 {
     switch (p)
     {
-    case firebolt::rialto::DtsProfile::HD_HRA: return AudioCap::DTS_PROFILE_HD_HRA;
-    case firebolt::rialto::DtsProfile::HD_MA:  return AudioCap::DTS_PROFILE_HD_MA;
+    case firebolt::rialto::common::DtsProfile::HD_HRA: return AudioCap::DTS_PROFILE_HD_HRA;
+    case firebolt::rialto::common::DtsProfile::HD_MA:  return AudioCap::DTS_PROFILE_HD_MA;
     default:                                    return AudioCap::DTS_PROFILE_CORE;
     }
 }
-AudioCap::AvsProfile toProto(firebolt::rialto::AvsProfile p)
+AudioCap::AvsProfile toProto(firebolt::rialto::common::AvsProfile p)
 {
     switch (p)
     {
-    case firebolt::rialto::AvsProfile::AVS2: return AudioCap::AVS_PROFILE_AVS2;
-    case firebolt::rialto::AvsProfile::AVS3: return AudioCap::AVS_PROFILE_AVS3;
+    case firebolt::rialto::common::AvsProfile::AVS2: return AudioCap::AVS_PROFILE_AVS2;
+    case firebolt::rialto::common::AvsProfile::AVS3: return AudioCap::AVS_PROFILE_AVS3;
     default:                                  return AudioCap::AVS_PROFILE_AVS1_PART2;
     }
 }
@@ -82,10 +82,10 @@ void fillNamedProfiles(const Map &m, ProtoEntry *proto, Conv conv)
     }
 }
 
-void fillAudioDecoderCapability(const firebolt::rialto::AudioDecoderCapability &src,
+void fillAudioDecoderCapability(const firebolt::rialto::common::AudioDecoderCapability &src,
                                 AudioCap::AudioDecoderCapability *dst)
 {
-    auto fillBase = [&](const firebolt::rialto::AudioProfileCapability &cap, auto *proto)
+    auto fillBase = [&](const firebolt::rialto::common::AudioProfileCapability &cap, auto *proto)
     { fillProfileCap(cap, proto->mutable_base()); };
 
     if (src.pcm)        fillBase(src.pcm->base,        dst->mutable_pcm());
@@ -115,14 +115,14 @@ void fillAudioDecoderCapability(const firebolt::rialto::AudioDecoderCapability &
     if (src.avs)       fillNamedProfiles(src.avs->profiles,       dst->mutable_avs(),        [](auto p){ return toProto(p); });
 }
 
-VideoCap::DynamicRange toDR(firebolt::rialto::DynamicRange dr)
+VideoCap::DynamicRange toDR(firebolt::rialto::common::DynamicRange dr)
 {
     switch (dr)
     {
-    case firebolt::rialto::DynamicRange::HLG:          return VideoCap::DYNAMIC_RANGE_HLG;
-    case firebolt::rialto::DynamicRange::HDR10:        return VideoCap::DYNAMIC_RANGE_HDR10;
-    case firebolt::rialto::DynamicRange::HDR10PLUS:    return VideoCap::DYNAMIC_RANGE_HDR10PLUS;
-    case firebolt::rialto::DynamicRange::DOLBY_VISION: return VideoCap::DYNAMIC_RANGE_DOLBY_VISION;
+    case firebolt::rialto::common::DynamicRange::HLG:          return VideoCap::DYNAMIC_RANGE_HLG;
+    case firebolt::rialto::common::DynamicRange::HDR10:        return VideoCap::DYNAMIC_RANGE_HDR10;
+    case firebolt::rialto::common::DynamicRange::HDR10PLUS:    return VideoCap::DYNAMIC_RANGE_HDR10PLUS;
+    case firebolt::rialto::common::DynamicRange::DOLBY_VISION: return VideoCap::DYNAMIC_RANGE_DOLBY_VISION;
     default:                                            return VideoCap::DYNAMIC_RANGE_SDR;
     }
 }
@@ -130,7 +130,7 @@ VideoCap::DynamicRange toDR(firebolt::rialto::DynamicRange dr)
 
 namespace rialto::servermanager::ipc
 {
-void serialiseAudioCapabilities(const firebolt::rialto::AudioDecoderCapabilities &src, rialto::AudioCapabilities *dst)
+void serialiseAudioCapabilities(const firebolt::rialto::common::AudioDecoderCapabilities &src, rialto::AudioCapabilities *dst)
 {
     dst->set_interface_version(src.interfaceVersion);
     dst->set_schema_version(src.schemaVersion);
@@ -138,7 +138,7 @@ void serialiseAudioCapabilities(const firebolt::rialto::AudioDecoderCapabilities
         fillAudioDecoderCapability(cap, dst->add_capabilities());
 }
 
-void serialiseVideoCapabilities(const firebolt::rialto::VideoDecoderCapabilities &src, rialto::VideoCapabilities *dst)
+void serialiseVideoCapabilities(const firebolt::rialto::common::VideoDecoderCapabilities &src, rialto::VideoCapabilities *dst)
 {
     dst->set_interface_version(src.interfaceVersion);
     dst->set_schema_version(src.schemaVersion);

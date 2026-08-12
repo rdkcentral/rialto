@@ -140,8 +140,12 @@ bool IpcTests::triggerPerformSetConfiguration()
     const std::string kSocketOwner{};
     const std::string kSocketGroup{};
     const std::string kAppId{"app"};
+    // Define or use pre-configured test capability constants
+    const firebolt::rialto::common::AudioDecoderCapabilities kAudioCapabilities{"1.0", "1.1", {}};
+    const firebolt::rialto::common::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
+
     return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketName, kClientSocketName, kMaxResource,
-                                          kSocketPermissions, kSocketOwner, kSocketGroup, kAppId);
+                                          kSocketPermissions, kSocketOwner, kSocketGroup, kAppId, kAudioCapabilities, kVideoCapabilities);
 }
 
 bool IpcTests::triggerPerformSetConfigurationWithFd()
@@ -152,7 +156,10 @@ bool IpcTests::triggerPerformSetConfigurationWithFd()
     const std::string kClientSocketName{"westeros-rialto"};
     constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{2, 1};
     const std::string kAppId{"app"};
-    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketFd, kClientSocketName, kMaxResource, kAppId);
+    // Define or use pre-configured test capability constants
+    const firebolt::rialto::common::AudioDecoderCapabilities kAudioCapabilities{"1.0", "1.1", {}};
+    const firebolt::rialto::common::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
+    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketFd, kClientSocketName, kMaxResource, kAppId, kAudioCapabilities, kVideoCapabilities);
 }
 
 bool IpcTests::triggerPerformPing()

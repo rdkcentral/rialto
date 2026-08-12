@@ -48,14 +48,24 @@ public:
                                          const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                          const unsigned int socketPermissions, const std::string &socketOwner,
                                          const std::string &socketGroup, const std::string &appName,
+<<<<<<< HEAD
                                          const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
                                          const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps) = 0;
+=======
+                                         const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                         const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) = 0;
+>>>>>>> c39f8bc1 (RDKEMW-15078: Yaml Reader in RailtoServerManager changes)
     virtual bool performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
                                          int socketFd, const std::string &clientDisplayName,
                                          const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                          const std::string &appName,
+<<<<<<< HEAD
                                          const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
                                          const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps) = 0;
+=======
+                                         const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                         const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) = 0;
+>>>>>>> c39f8bc1 (RDKEMW-15078: Yaml Reader in RailtoServerManager changes)
     virtual bool performPing(int serverId, int pingId) = 0;
     virtual bool performSetState(int serverId, const firebolt::rialto::common::SessionServerState &state) = 0;
     virtual bool setLogLevels(const service::LoggingLevels &logLevels) const = 0;

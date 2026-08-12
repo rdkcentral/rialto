@@ -445,4 +445,5 @@ std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&SessionServerApp::release
     }
     return std::move(m_namedSocket);
 }
+
 } // namespace rialto::servermanager::common

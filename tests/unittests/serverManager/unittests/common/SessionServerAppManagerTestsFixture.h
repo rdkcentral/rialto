@@ -30,6 +30,8 @@
 #include "SessionServerAppFactoryMock.h"
 #include "SessionServerAppMock.h"
 #include "StateObserverMock.h"
+#include "MediaCapabilitiesMock.h"
+#include <DecoderCapabilitiesUtil.h>
 #include <condition_variable>
 #include <gtest/gtest.h>
 #include <memory>
@@ -37,6 +39,7 @@
 #include <string>
 
 using testing::StrictMock;
+using rialto::servermanager::service::MediaCapabilitiesMock;
 
 class SessionServerAppManagerTests : public testing::Test
 {
@@ -107,6 +110,8 @@ private:
     testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock> &m_namedSocketMock{
         dynamic_cast<testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock> &>(*m_namedSocket)};
     std::unique_ptr<rialto::servermanager::common::ISessionServerAppManager> m_sut;
+    std::shared_ptr<testing::StrictMock<rialto::servermanager::service::MediaCapabilitiesMock>> m_mediaCapabilities;
+    testing::StrictMock<rialto::servermanager::service::MediaCapabilitiesMock> &m_mediaCapabilitiesMock;
 };
 
 #endif // SESSION_SERVER_APP_MANAGER_TESTS_FIXTURE_H_

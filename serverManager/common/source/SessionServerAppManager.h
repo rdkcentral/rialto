@@ -105,8 +105,13 @@ private:
     std::unique_ptr<IHealthcheckService> m_healthcheckService;
     const firebolt::rialto::ipc::INamedSocketFactory &m_namedSocketFactory;
     bool m_isShuttingDown;
+<<<<<<< HEAD
     std::optional<firebolt::rialto::AudioDecoderCapabilities> m_audioCapabilities;
     std::optional<firebolt::rialto::VideoDecoderCapabilities> m_videoCapabilities;
+=======
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> m_audioCapabilities;
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> m_videoCapabilities;
+>>>>>>> c39f8bc1 (RDKEMW-15078: Yaml Reader in RailtoServerManager changes)
 };
 } // namespace rialto::servermanager::common
 

@@ -55,8 +55,8 @@ public:
     IYamlCppWrapper() = default;
     virtual ~IYamlCppWrapper() = default;
 
-    virtual DecoderCapabilitiesStatus getAudioDecoderCapabilities(AudioDecoderCapabilities &capabilities) const = 0;
-    virtual DecoderCapabilitiesStatus getVideoDecoderCapabilities(VideoDecoderCapabilities &capabilities) const = 0;
+    virtual DecoderCapabilitiesStatus getAudioDecoderCapabilities(::firebolt::rialto::common::AudioDecoderCapabilities &capabilities) const = 0;
+    virtual DecoderCapabilitiesStatus getVideoDecoderCapabilities(::firebolt::rialto::common::VideoDecoderCapabilities &capabilities) const = 0;
 };
 } // namespace firebolt::rialto::wrappers
 

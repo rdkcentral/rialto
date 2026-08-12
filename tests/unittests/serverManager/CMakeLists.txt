@@ -37,10 +37,12 @@ add_gtests (
         unittests/service/ConfigReaderTests.cpp
         unittests/service/ServerManagerServiceTests.cpp
         unittests/service/ServerManagerServiceTestsFixture.cpp
+
         )
 
 add_subdirectory(matchers)
 add_subdirectory(stubs)
+add_subdirectory(unittests/common/misc)
 
 target_include_directories(
         RialtoServerManagerUnitTests
@@ -62,6 +64,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoIpcServer,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoTestCommonMatchers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoTestServerManagerCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
 
         mocks
 
@@ -81,5 +84,6 @@ target_link_libraries(
         RialtoServerManagerCommon
         RialtoServerManagerIpc
         RialtoServerManager
+        RialtoTestServerManagerCommonMisc
         Threads::Threads
         )

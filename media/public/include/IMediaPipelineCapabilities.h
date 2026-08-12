@@ -27,7 +27,7 @@
  */
 
 #include "AudioDecoderCapabilities.h"
-#include "MediaCommon.h"
+#include <MediaCommon.h>
 #include "VideoDecoderCapabilities.h"
 #include <memory>
 #include <string>

@@ -17,7 +17,7 @@ MediaCapabilities::MediaCapabilities(std::shared_ptr<firebolt::rialto::wrappers:
 }
 
 firebolt::rialto::DecoderCapabilitiesStatus
-MediaCapabilities::getAudioDecoderCapabilities(firebolt::rialto::AudioDecoderCapabilities &capabilities)
+MediaCapabilities::getAudioDecoderCapabilities(firebolt::rialto::common::AudioDecoderCapabilities &capabilities)
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("MediaCapabilities: loading audio capabilities from YAML");
     const auto status = m_yamlCppWrapper->getAudioDecoderCapabilities(capabilities);
@@ -31,7 +31,7 @@ MediaCapabilities::getAudioDecoderCapabilities(firebolt::rialto::AudioDecoderCap
 }
 
 firebolt::rialto::DecoderCapabilitiesStatus
-MediaCapabilities::getVideoDecoderCapabilities(firebolt::rialto::VideoDecoderCapabilities &capabilities)
+MediaCapabilities::getVideoDecoderCapabilities(firebolt::rialto::common::VideoDecoderCapabilities &capabilities)
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("MediaCapabilities: loading video capabilities from YAML");
     const auto status = m_yamlCppWrapper->getVideoDecoderCapabilities(capabilities);

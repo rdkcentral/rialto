@@ -206,8 +206,8 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
                                      const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                      const unsigned int socketPermissions, const std::string &socketOwner,
                                      const std::string &socketGroup, const std::string &appName,
-                                     const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
-                                     const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps) const
+                                     const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                     const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {
@@ -256,8 +256,8 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
                                      const std::string &clientDisplayName,
                                      const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                      const std::string &appName,
-                                     const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
-                                     const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps) const
+                                     const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                     const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) const
 {
     if (!m_ipcLoop || !m_serviceStub)
     {

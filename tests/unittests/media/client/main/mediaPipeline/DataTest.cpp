@@ -665,7 +665,6 @@ TEST_F(RialtoClientMediaPipelineDataTest, AddEncryptedNetflixSegmentSuccess)
 //     // Object shall be freed by the holder of the unique ptr on destruction
 //     m_mediaFrameWriterMock = mediaFrameWriterMock.get();
 
-// <<<<<<< HEAD
 //     setNetworkState(NetworkState::BUFFERING);
 
 //     haveDataSuccess(MediaSourceType::AUDIO);

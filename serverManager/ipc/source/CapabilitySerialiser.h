@@ -16,10 +16,17 @@
 namespace rialto::servermanager::ipc
 {
 // Converts C++ AudioDecoderCapabilities into the typed proto AudioCapabilities message.
+<<<<<<< HEAD
 void serialiseAudioCapabilities(const firebolt::rialto::AudioDecoderCapabilities &src, rialto::AudioCapabilities *dst);
 
 // Converts C++ VideoDecoderCapabilities into the typed proto VideoCapabilities message.
 void serialiseVideoCapabilities(const firebolt::rialto::VideoDecoderCapabilities &src, rialto::VideoCapabilities *dst);
+=======
+void serialiseAudioCapabilities(const firebolt::rialto::common::AudioDecoderCapabilities &src, rialto::AudioCapabilities *dst);
+
+// Converts C++ VideoDecoderCapabilities into the typed proto VideoCapabilities message.
+void serialiseVideoCapabilities(const firebolt::rialto::common::VideoDecoderCapabilities &src, rialto::VideoCapabilities *dst);
+>>>>>>> c39f8bc1 (RDKEMW-15078: Yaml Reader in RailtoServerManager changes)
 
 } // namespace rialto::servermanager::ipc
 
