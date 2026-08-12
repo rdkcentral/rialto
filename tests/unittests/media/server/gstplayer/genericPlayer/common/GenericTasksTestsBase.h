@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef GENERIC_TASKS_TESTS_BASE_H_
-#define GENERIC_TASKS_TESTS_BASE_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_TASKS_TESTS_BASE_H_
+#define FIREBOLT_RIALTO_SERVER_GENERIC_TASKS_TESTS_BASE_H_
 
 #include "MediaCommon.h"
 
@@ -494,4 +494,4 @@ private:
     std::string getFadeString(double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType);
 };
 
-#endif // GENERIC_TASKS_TESTS_BASE_H_
+#endif // FIREBOLT_RIALTO_SERVER_GENERIC_TASKS_TESTS_BASE_H_

@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_IPC_PRIVATE_METRICS_MODULE_SERVICE_MOCK_H_
 
 #include "IPrivateMetricsModuleService.h"
+#include <memory>
 #include <gmock/gmock.h>
 
 namespace firebolt::rialto::server::ipc

@@ -62,7 +62,7 @@ std::optional<int> getIntEnv(const char *envName)
     }
 
     char *endPtr{nullptr};
-    const long parsedValue{std::strtol(value, &endPtr, 10)};
+    const int32_t parsedValue{std::strtol(value, &endPtr, 10)};
     if (endPtr == value || *endPtr != '\0' || parsedValue < std::numeric_limits<int>::min() ||
         parsedValue > std::numeric_limits<int>::max())
     {

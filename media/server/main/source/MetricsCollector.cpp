@@ -368,7 +368,7 @@ MetricsCollector::ProcessMetricsSample MetricsCollector::getServerMetrics() cons
     {
     };
     const clock_t kCurrentTicks{times(&processTimes)};
-    const long kTicksPerSecond{sysconf(_SC_CLK_TCK)};
+    const int64_t kTicksPerSecond{sysconf(_SC_CLK_TCK)};
     std::uint64_t processCpuTimeMs{0};
     if ((static_cast<clock_t>(-1) != kCurrentTicks) && (kTicksPerSecond > 0))
     {

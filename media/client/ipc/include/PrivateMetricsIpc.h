@@ -25,6 +25,7 @@
 #include "IpcModule.h"
 #include "privatemetricsmodule.pb.h"
 #include <memory>
+#include <string>
 
 namespace firebolt::rialto::client
 {

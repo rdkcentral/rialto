@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_METRICS_COLLECTOR_MOCK_H_
 
 #include "IMetricsCollector.h"
+#include <memory>
 #include <gmock/gmock.h>
 
 namespace firebolt::rialto::server

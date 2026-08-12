@@ -24,6 +24,7 @@
 #include <chrono>
 #include <cinttypes>
 #include <cstdio>
+#include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <sys/mman.h>
@@ -325,7 +326,7 @@ std::uint64_t ClientController::getProcessCpuTimeMs() const
 {
     struct tms processTimes = {0};
     const clock_t kCurrentTicks{times(&processTimes)};
-    const long kTicksPerSecond{sysconf(_SC_CLK_TCK)};
+    const int64_t kTicksPerSecond{sysconf(_SC_CLK_TCK)};
     if ((static_cast<clock_t>(-1) == kCurrentTicks) || (kTicksPerSecond <= 0))
     {
         RIALTO_CLIENT_LOG_WARN("Failed to sample client process CPU usage");
