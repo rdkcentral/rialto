@@ -241,7 +241,7 @@ GstCaps *MediaSourceVideoCapsBuilder::buildCaps()
         m_gstWrapper->gstCapsSetSimple(caps, "width", G_TYPE_INT, m_attachedVideoSource.getWidth(), nullptr);
     if (m_attachedVideoSource.getHeight() != firebolt::rialto::kUndefinedSize)
         m_gstWrapper->gstCapsSetSimple(caps, "height", G_TYPE_INT, m_attachedVideoSource.getHeight(), nullptr);
-
+    m_gstWrapper->gstCapsSetSimple(caps, "enable-fastplayback", G_TYPE_STRING, "true", nullptr);
     return caps;
 }
 
