@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "== To set state, send POST HttpRequest /SetState/AppName/NewState        ==\n");
         fprintf(stderr, "== Available states: Inactive, Active, NotRunning, Error                 ==\n");
         fprintf(stderr, "== For example:                                                          ==\n");
-        fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/SetState/YouTube/NotRunning          ==\n");
+        fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/SetState/YouTube/NotRunning/Suspended ==\n");
         fprintf(stderr, "==                                                                       ==\n");
         fprintf(stderr, "== Custom socket name can be set in POST data. Available values are:     ==\n");
         fprintf(stderr, "==  - Empty string (socket name will be automatically generated)         ==\n");
