@@ -83,7 +83,7 @@ void NeedMediaDataTests::needMediaDataWillBeSentInPlayingState()
     expectedShmInfo->metadataOffset = kMetadataOffset;
     expectedShmInfo->mediaDataOffset = kMetadataOffset + kMaxMetadataBytes;
     ASSERT_TRUE(m_sut);
-    EXPECT_CALL(activeRequestsMock, insert(kValidMediaSourceType, _)).WillOnce(Return(kRequestId));
+    EXPECT_CALL(activeRequestsMock, insert(kValidMediaSourceType, _, kMaxFrames)).WillOnce(Return(kRequestId));
     EXPECT_CALL(*m_clientMock, notifyNeedMediaData(kSourceId, kMaxFrames, kRequestId, expectedShmInfo));
     EXPECT_TRUE(m_sut->send());
 }

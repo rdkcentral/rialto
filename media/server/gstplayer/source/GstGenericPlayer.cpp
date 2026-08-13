@@ -488,6 +488,7 @@ void GstGenericPlayer::notifyPlaybackInfo()
     PlaybackInfo info;
     getPosition(info.currentPosition);
     getVolume(info.volume);
+    m_context.streamPosition.store(info.currentPosition);
     m_gstPlayerClient->notifyPlaybackInfo(info);
 }
 
@@ -1257,6 +1258,26 @@ void GstGenericPlayer::notifyNeedMediaData(const MediaSourceType mediaSource)
         if (m_gstPlayerClient && streamInfo.isDataNeeded)
         {
             streamInfo.isNeedDataPending = m_gstPlayerClient->notifyNeedMediaData(mediaSource);
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Media type %s could not be found", common::convertMediaSourceType(mediaSource));
+    }
+}
+
+void GstGenericPlayer::notifyNeedMediaDataWithDelay(const MediaSourceType mediaSource)
+{
+    auto elem = m_context.streamInfo.find(mediaSource);
+    if (elem != m_context.streamInfo.end())
+    {
+        StreamInfo &streamInfo = elem->second;
+        streamInfo.isNeedDataPending = false;
+
+        // Schedule new NeedMediaData if we still need it
+        if (m_gstPlayerClient && streamInfo.isDataNeeded)
+        {
+            streamInfo.isNeedDataPending = m_gstPlayerClient->notifyNeedMediaDataWithDelay(mediaSource);
         }
     }
     else

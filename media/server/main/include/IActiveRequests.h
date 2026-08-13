@@ -38,8 +38,10 @@ public:
     IActiveRequests &operator=(const IActiveRequests &) = delete;
     IActiveRequests &operator=(IActiveRequests &&) = delete;
 
-    virtual std::uint32_t insert(const MediaSourceType &mediaSourceType, std::uint32_t maxMediaBytes) = 0;
+    virtual std::uint32_t insert(const MediaSourceType &mediaSourceType, std::uint32_t maxMediaBytes,
+                                 std::uint32_t maxFrames) = 0;
     virtual MediaSourceType getType(std::uint32_t requestId) const = 0;
+    virtual std::uint32_t getMaxFrames(std::uint32_t requestId) const = 0;
     virtual void erase(std::uint32_t requestId) = 0;
     virtual void erase(const MediaSourceType &mediaSourceType) = 0;
     virtual void clear() = 0;

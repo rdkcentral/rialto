@@ -50,10 +50,11 @@ AddSegmentStatus ActiveRequests::ActiveRequestsData::addSegment(const std::uniqu
 
 ActiveRequests::ActiveRequests() : m_currentId{0} {}
 
-std::uint32_t ActiveRequests::insert(const MediaSourceType &mediaSourceType, std::uint32_t maxMediaBytes)
+std::uint32_t ActiveRequests::insert(const MediaSourceType &mediaSourceType, std::uint32_t maxMediaBytes,
+                                     std::uint32_t maxFrames)
 {
     std::unique_lock<std::mutex> lock{m_mutex};
-    m_requestMap.insert(std::make_pair(m_currentId, ActiveRequestsData(mediaSourceType, maxMediaBytes)));
+    m_requestMap.insert(std::make_pair(m_currentId, ActiveRequestsData(mediaSourceType, maxMediaBytes, maxFrames)));
     return m_currentId++;
 }
 
@@ -66,6 +67,18 @@ MediaSourceType ActiveRequests::getType(std::uint32_t requestId) const
         return requestIter->second.getType();
     }
     return MediaSourceType::UNKNOWN;
+}
+
+std::uint32_t ActiveRequests::getMaxFrames(std::uint32_t requestId) const
+{
+    constexpr std::uint32_t kDefaultMaxFrames{24};
+    std::unique_lock<std::mutex> lock{m_mutex};
+    auto requestIter{m_requestMap.find(requestId)};
+    if (requestIter != m_requestMap.end())
+    {
+        return requestIter->second.getMaxFrames();
+    }
+    return kDefaultMaxFrames;
 }
 
 void ActiveRequests::erase(std::uint32_t requestId)
