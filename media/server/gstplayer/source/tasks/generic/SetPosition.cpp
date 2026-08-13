@@ -91,6 +91,8 @@ void SetPosition::execute() const
     m_context.endOfStreamInfo.clear();
     m_context.eosNotified = false;
 
+    m_context.streamPosition.store(m_position);
+
     m_gstPlayerClient->notifyPlaybackState(PlaybackState::SEEK_DONE);
 
     // Trigger NeedMediaData for all attached sources

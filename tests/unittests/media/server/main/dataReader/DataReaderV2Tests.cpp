@@ -65,6 +65,7 @@ constexpr SegmentAlignment kSegmentAlignment{SegmentAlignment::AU};
 constexpr uint32_t kCryptBlocks{131};
 constexpr uint32_t kSkipBlocks{242};
 constexpr uint64_t kDisplayOffset{35};
+constexpr bool kIsBufferFull{true};
 
 class Check
 {
@@ -296,7 +297,8 @@ protected:
 
     std::unique_ptr<IMediaPipeline::MediaSegment> readData(const firebolt::rialto::MediaSourceType &sourceType)
     {
-        m_sut = std::make_unique<DataReaderV2>(sourceType, m_shm, kMetaDataSize, kNumFrames);
+        m_sut = std::make_unique<DataReaderV2>(sourceType, m_shm, kMetaDataSize, kNumFrames, kIsBufferFull);
+        EXPECT_EQ(m_sut->isBufferFull(), kIsBufferFull);
         auto result = m_sut->readData();
         if (result.size() != 1)
             return nullptr;

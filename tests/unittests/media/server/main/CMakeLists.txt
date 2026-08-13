@@ -94,6 +94,8 @@ add_gtests (
         sharedMemoryBuffer/SharedMemoryBufferTestsFixture.cpp
         sharedMemoryBuffer/SharedMemoryBufferTests.cpp
 
+        needDataDelayCalculator/NeedDataDelayCalculatorTest.cpp
+
         needMediaData/NeedMediaDataTestsFixture.cpp
         needMediaData/NeedMediaDataTests.cpp
 
