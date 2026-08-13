@@ -345,6 +345,13 @@ bool SessionServerAppManager::changeSessionServerState(const std::string &appNam
         resurrectSuspendedServer(sessionServer, newState);
         return true;
     }
+    else if (kCurrentState == firebolt::rialto::common::SessionServerState::SUSPENDED &&
+             firebolt::rialto::common::SessionServerState::NOT_RUNNING == newState)
+    {
+        // Send the notification and do the cleanup only
+        handleSessionServerStateChange(sessionServer->getServerId(), newState);
+        return true;
+    }
     else if (m_healthcheckService && (firebolt::rialto::common::SessionServerState::NOT_RUNNING == newState ||
                                       firebolt::rialto::common::SessionServerState::SUSPENDED == newState))
     {

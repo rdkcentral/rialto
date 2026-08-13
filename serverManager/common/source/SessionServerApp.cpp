@@ -415,6 +415,7 @@ void SessionServerApp::waitForChildProcess()
         RIALTO_SERVER_MANAGER_LOG_SYS_WARN(errno, "waitpid failed for %d", m_kServerId);
     }
     killTimer->cancel();
+    m_pid = -1;
     RIALTO_SERVER_MANAGER_LOG_DEBUG("Server with id: %d exited.", m_kServerId);
 }
 
