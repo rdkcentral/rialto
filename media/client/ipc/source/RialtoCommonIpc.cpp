@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -23,6 +24,8 @@ namespace firebolt::rialto::client
 {
 firebolt::rialto::ProtoMediaSourceType convertProtoMediaSourceType(MediaSourceType mediaSourceType)
 {
+    
+    RDKPerf perf(__func__);
     firebolt::rialto::ProtoMediaSourceType protoMediaSourceType = firebolt::rialto::ProtoMediaSourceType::UNKNOWN;
     switch (mediaSourceType)
     {

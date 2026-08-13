@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -30,6 +31,8 @@ std::mutex MediaKeysCapabilitiesFactory::m_creationMutex;
 
 std::shared_ptr<IMediaKeysCapabilitiesFactory> IMediaKeysCapabilitiesFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IMediaKeysCapabilitiesFactory> factory;
 
     try
@@ -46,6 +49,8 @@ std::shared_ptr<IMediaKeysCapabilitiesFactory> IMediaKeysCapabilitiesFactory::cr
 
 std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesFactory::getMediaKeysCapabilities() const
 {
+    
+    RDKPerf perf(__func__);
     std::lock_guard<std::mutex> lock{m_creationMutex};
 
     std::shared_ptr<IMediaKeysCapabilities> mediaKeysCapabilities =
@@ -76,6 +81,8 @@ namespace firebolt::rialto::client
 MediaKeysCapabilities::MediaKeysCapabilities(
     const std::shared_ptr<IMediaKeysCapabilitiesIpcFactory> &MediaKeysCapabilitiesIpcFactory)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     m_mediaKeysCapabilitiesIpc = MediaKeysCapabilitiesIpcFactory->getMediaKeysCapabilitiesIpc();
@@ -87,6 +94,8 @@ MediaKeysCapabilities::MediaKeysCapabilities(
 
 MediaKeysCapabilities::~MediaKeysCapabilities()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     m_mediaKeysCapabilitiesIpc.reset();
@@ -94,6 +103,8 @@ MediaKeysCapabilities::~MediaKeysCapabilities()
 
 std::vector<std::string> MediaKeysCapabilities::getSupportedKeySystems()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysCapabilitiesIpc->getSupportedKeySystems();
@@ -101,6 +112,8 @@ std::vector<std::string> MediaKeysCapabilities::getSupportedKeySystems()
 
 bool MediaKeysCapabilities::supportsKeySystem(const std::string &keySystem)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysCapabilitiesIpc->supportsKeySystem(keySystem);
@@ -108,6 +121,8 @@ bool MediaKeysCapabilities::supportsKeySystem(const std::string &keySystem)
 
 bool MediaKeysCapabilities::getSupportedKeySystemVersion(const std::string &keySystem, std::string &version)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysCapabilitiesIpc->getSupportedKeySystemVersion(keySystem, version);
@@ -115,6 +130,8 @@ bool MediaKeysCapabilities::getSupportedKeySystemVersion(const std::string &keyS
 
 bool MediaKeysCapabilities::isServerCertificateSupported(const std::string &keySystem)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysCapabilitiesIpc->isServerCertificateSupported(keySystem);
@@ -123,6 +140,8 @@ bool MediaKeysCapabilities::isServerCertificateSupported(const std::string &keyS
 bool MediaKeysCapabilities::getSupportedRobustnessLevels(const std::string &keySystem,
                                                          std::vector<std::string> &robustnessLevels)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysCapabilitiesIpc->getSupportedRobustnessLevels(keySystem, robustnessLevels);

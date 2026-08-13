@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -29,6 +30,7 @@ namespace firebolt::rialto::client
 SharedMemoryHandle::SharedMemoryHandle(std::int32_t shmFd, std::uint32_t shmBufferLen)
     : m_shmFd{shmFd}, m_shmBufferLen{shmBufferLen}
 {
+    RDKPerf perf(__func__);
     if ((-1 == m_shmFd) || (0U == m_shmBufferLen))
     {
         throw std::runtime_error("Shared buffer invalid");
@@ -47,6 +49,8 @@ SharedMemoryHandle::SharedMemoryHandle(std::int32_t shmFd, std::uint32_t shmBuff
 
 SharedMemoryHandle::~SharedMemoryHandle()
 {
+    
+    RDKPerf perf(__func__);
     if (-1 == m_shmFd)
     {
         RIALTO_CLIENT_LOG_WARN("Shared memory not initalised");
@@ -71,6 +75,8 @@ SharedMemoryHandle::~SharedMemoryHandle()
 
 std::uint8_t *SharedMemoryHandle::getShm() const
 {
+    
+    RDKPerf perf(__func__);
     return m_shmBuffer;
 }
 } // namespace firebolt::rialto::client

@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -25,12 +26,16 @@ namespace firebolt::rialto::client
 {
 IIpcClientAccessor &IIpcClientAccessor::instance()
 {
+    
+    RDKPerf perf(__func__);
     static IpcClientAccessor factory;
     return factory;
 }
 
 IIpcClient &IpcClientAccessor::getIpcClient() const
 {
+    
+    RDKPerf perf(__func__);
     static IpcClient ipcClient{ipc::IChannelFactory::createFactory(), ipc::IControllerFactory::createFactory(),
                                ipc::IBlockingClosureFactory::createFactory()};
     return ipcClient;
@@ -51,6 +56,8 @@ IpcClient::IpcClient(const std::shared_ptr<ipc::IChannelFactory> &ipcChannelFact
 
 IpcClient::~IpcClient()
 {
+    
+    RDKPerf perf(__func__);
     if (!disconnect())
     {
         RIALTO_CLIENT_LOG_WARN("Could not disconnect client");
@@ -59,6 +66,8 @@ IpcClient::~IpcClient()
 
 bool IpcClient::connect()
 {
+    
+    RDKPerf perf(__func__);
     if (m_ipcChannel)
     {
         RIALTO_CLIENT_LOG_INFO("Client already connected");
@@ -117,6 +126,8 @@ bool IpcClient::connect()
 bool IpcClient::disconnect()
 {
     // Increase reference in case client disconnects from another thread
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<ipc::IChannel> ipcChannel = m_ipcChannel;
     if (!ipcChannel)
     {
@@ -147,6 +158,8 @@ bool IpcClient::disconnect()
 
 void IpcClient::processIpcThread()
 {
+    
+    RDKPerf perf(__func__);
     pthread_setname_np(pthread_self(), "rialto-ipc");
 
     RIALTO_CLIENT_LOG_INFO("started ipc thread");
@@ -176,12 +189,16 @@ void IpcClient::processIpcThread()
 
 std::weak_ptr<::firebolt::rialto::ipc::IChannel> IpcClient::getChannel() const
 {
+    
+    RDKPerf perf(__func__);
     return m_ipcChannel;
 }
 
 std::shared_ptr<ipc::IBlockingClosure> IpcClient::createBlockingClosure()
 {
     // Increase reference in case client disconnects from another thread
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<ipc::IChannel> ipcChannel = m_ipcChannel;
     if (!ipcChannel)
     {
@@ -199,11 +216,15 @@ std::shared_ptr<ipc::IBlockingClosure> IpcClient::createBlockingClosure()
 
 std::shared_ptr<google::protobuf::RpcController> IpcClient::createRpcController()
 {
+    
+    RDKPerf perf(__func__);
     return m_ipcControllerFactory->create();
 }
 
 bool IpcClient::reconnect()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_INFO("Trying to reconnect channel");
     if (disconnect())
     {
@@ -214,6 +235,8 @@ bool IpcClient::reconnect()
 
 void IpcClient::registerConnectionObserver(const std::weak_ptr<IConnectionObserver> &observer)
 {
+    
+    RDKPerf perf(__func__);
     m_connectionObserver = observer;
 }
 

@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -30,6 +31,8 @@ namespace
 {
 const char *toString(const firebolt::rialto::client::MediaPipeline::State &state)
 {
+    
+    RDKPerf perf(__func__);
     switch (state)
     {
     case firebolt::rialto::client::MediaPipeline::State::IDLE:
@@ -50,6 +53,8 @@ const char *toString(const firebolt::rialto::client::MediaPipeline::State &state
 
 const char *toString(const firebolt::rialto::PlaybackState &state)
 {
+    
+    RDKPerf perf(__func__);
     switch (state)
     {
     case firebolt::rialto::PlaybackState::IDLE:
@@ -76,6 +81,8 @@ const char *toString(const firebolt::rialto::PlaybackState &state)
 
 const char *toString(const firebolt::rialto::NetworkState &state)
 {
+    
+    RDKPerf perf(__func__);
     switch (state)
     {
     case firebolt::rialto::NetworkState::IDLE:
@@ -105,6 +112,8 @@ namespace firebolt::rialto
 {
 std::shared_ptr<IMediaPipelineFactory> IMediaPipelineFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IMediaPipelineFactory> factory;
 
     try
@@ -122,6 +131,8 @@ std::shared_ptr<IMediaPipelineFactory> IMediaPipelineFactory::createFactory()
 std::unique_ptr<IMediaPipeline> MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
                                                                           const VideoRequirements &videoRequirements) const
 {
+    
+    RDKPerf perf(__func__);
     return createMediaPipeline(client, videoRequirements, {}, {});
 }
 
@@ -131,6 +142,8 @@ MediaPipelineFactory::createMediaPipeline(std::weak_ptr<IMediaPipelineClient> cl
                                           std::weak_ptr<client::IMediaPipelineIpcFactory> mediaPipelineIpcFactory,
                                           std::weak_ptr<client::IClientController> clientController) const
 {
+    
+    RDKPerf perf(__func__);
     std::unique_ptr<IMediaPipeline> mediaPipeline;
     try
     {
@@ -163,6 +176,7 @@ MediaPipelineProxy::MediaPipelineProxy(const std::shared_ptr<IMediaPipelineAndIC
                                        IClientController &clientController)
     : m_mediaPipeline{mediaPipeline}, m_clientController{clientController}
 {
+    RDKPerf perf(__func__);
     ApplicationState state{ApplicationState::UNKNOWN};
     if (!m_clientController.registerClient(m_mediaPipeline, state))
     {
@@ -173,6 +187,8 @@ MediaPipelineProxy::MediaPipelineProxy(const std::shared_ptr<IMediaPipelineAndIC
 
 MediaPipelineProxy::~MediaPipelineProxy()
 {
+    
+    RDKPerf perf(__func__);
     if (!m_clientController.unregisterClient(m_mediaPipeline))
     {
         RIALTO_CLIENT_LOG_WARN("Failed to unregister client with clientController");
@@ -186,6 +202,7 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
     : m_mediaPipelineClient(client), m_clientController{clientController}, m_currentAppState{ApplicationState::UNKNOWN},
       m_mediaFrameWriterFactory(mediaFrameWriterFactory), m_currentState(State::IDLE), m_attachingSource(false)
 {
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     m_mediaPipelineIpc = mediaPipelineIpcFactory->createMediaPipelineIpc(this, videoRequirements);
@@ -198,6 +215,8 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
 
 MediaPipeline::~MediaPipeline()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     m_mediaPipelineIpc.reset();
@@ -205,6 +224,8 @@ MediaPipeline::~MediaPipeline()
 
 bool MediaPipeline::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->load(type, mimeType, url, isLive);
@@ -212,6 +233,8 @@ bool MediaPipeline::load(MediaType type, const std::string &mimeType, const std:
 
 bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     // We should not process needDatas while attach source is ongoing
@@ -240,6 +263,8 @@ bool MediaPipeline::attachSource(const std::unique_ptr<IMediaPipeline::MediaSour
 
 bool MediaPipeline::removeSource(int32_t id)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     m_attachedSources.remove(id);
     return m_mediaPipelineIpc->removeSource(id);
@@ -247,6 +272,8 @@ bool MediaPipeline::removeSource(int32_t id)
 
 bool MediaPipeline::allSourcesAttached()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->allSourcesAttached();
@@ -254,6 +281,8 @@ bool MediaPipeline::allSourcesAttached()
 
 bool MediaPipeline::play(bool &async)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->play(async);
@@ -261,6 +290,8 @@ bool MediaPipeline::play(bool &async)
 
 bool MediaPipeline::pause()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->pause();
@@ -268,6 +299,8 @@ bool MediaPipeline::pause()
 
 bool MediaPipeline::stop()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     m_currentState = State::IDLE;
@@ -277,6 +310,8 @@ bool MediaPipeline::stop()
 
 bool MediaPipeline::setPlaybackRate(double rate)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->setPlaybackRate(rate);
@@ -284,6 +319,8 @@ bool MediaPipeline::setPlaybackRate(double rate)
 
 bool MediaPipeline::setPosition(int64_t position)
 {
+    
+    RDKPerf perf(__func__);
     switch (m_currentState)
     {
     case State::PLAYING:
@@ -305,37 +342,51 @@ bool MediaPipeline::setPosition(int64_t position)
 
 bool MediaPipeline::getPosition(int64_t &position)
 {
+    
+    RDKPerf perf(__func__);
     return m_mediaPipelineIpc->getPosition(position);
 }
 
 bool MediaPipeline::setImmediateOutput(int32_t sourceId, bool immediateOutput)
 {
+    
+    RDKPerf perf(__func__);
     return m_mediaPipelineIpc->setImmediateOutput(sourceId, immediateOutput);
 }
 
 bool MediaPipeline::setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors)
 {
+    
+    RDKPerf perf(__func__);
     return m_mediaPipelineIpc->setReportDecodeErrors(sourceId, reportDecodeErrors);
 }
 
 bool MediaPipeline::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
 {
+    
+    RDKPerf perf(__func__);
     return m_mediaPipelineIpc->getQueuedFrames(sourceId, queuedFrames);
 }
 
 bool MediaPipeline::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
 {
+    
+    RDKPerf perf(__func__);
     return m_mediaPipelineIpc->getImmediateOutput(sourceId, immediateOutput);
 }
 
 bool MediaPipeline::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
+    
+    RDKPerf perf(__func__);
     return m_mediaPipelineIpc->getStats(sourceId, renderedFrames, droppedFrames);
 }
 
 bool MediaPipeline::handleSetPosition(int64_t position)
 {
     // needData requests no longer valid
+    
+    RDKPerf perf(__func__);
     {
         std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
         m_needDataRequestMap.clear();
@@ -345,6 +396,8 @@ bool MediaPipeline::handleSetPosition(int64_t position)
 
 bool MediaPipeline::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->setVideoWindow(x, y, width, height);
@@ -352,6 +405,8 @@ bool MediaPipeline::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint3
 
 bool MediaPipeline::haveData(MediaSourceStatus status, uint32_t needDataRequestId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     switch (m_currentState)
@@ -382,6 +437,8 @@ bool MediaPipeline::haveData(MediaSourceStatus status, uint32_t needDataRequestI
 
 bool MediaPipeline::handleHaveData(MediaSourceStatus status, uint32_t needDataRequestId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     std::shared_ptr<NeedDataRequest> needDataRequest;
@@ -415,6 +472,8 @@ bool MediaPipeline::handleHaveData(MediaSourceStatus status, uint32_t needDataRe
 
 AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std::unique_ptr<MediaSegment> &mediaSegment)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     if (nullptr == mediaSegment || nullptr == mediaSegment->getData())
@@ -475,84 +534,112 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
 
 bool MediaPipeline::renderFrame()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->renderFrame();
 }
 
 bool MediaPipeline::setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->setVolume(targetVolume, volumeDuration, easeType);
 }
 
 bool MediaPipeline::getVolume(double &currentVolume)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->getVolume(currentVolume);
 }
 
 bool MediaPipeline::setMute(int32_t sourceId, bool mute)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->setMute(sourceId, mute);
 }
 
 bool MediaPipeline::getMute(int32_t sourceId, bool &mute)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->getMute(sourceId, mute);
 }
 
 bool MediaPipeline::setTextTrackIdentifier(const std::string &textTrackIdentifier)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->setTextTrackIdentifier(textTrackIdentifier);
 }
 
 bool MediaPipeline::getTextTrackIdentifier(std::string &textTrackIdentifier)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->getTextTrackIdentifier(textTrackIdentifier);
 }
 
 bool MediaPipeline::setLowLatency(bool lowLatency)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->setLowLatency(lowLatency);
 }
 
 bool MediaPipeline::setSync(bool sync)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->setSync(sync);
 }
 
 bool MediaPipeline::getSync(bool &sync)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->getSync(sync);
 }
 
 bool MediaPipeline::setSyncOff(bool syncOff)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->setSyncOff(syncOff);
 }
 
 bool MediaPipeline::setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->setStreamSyncMode(sourceId, streamSyncMode);
 }
 
 bool MediaPipeline::getStreamSyncMode(int32_t &streamSyncMode)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaPipelineIpc->getStreamSyncMode(streamSyncMode);
 }
 
 bool MediaPipeline::flush(int32_t sourceId, bool resetTime, bool &async)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     {
@@ -583,6 +670,8 @@ bool MediaPipeline::flush(int32_t sourceId, bool resetTime, bool &async)
 bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                                       uint64_t stopPosition)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->setSourcePosition(sourceId, position, resetTime, appliedRate, stopPosition);
@@ -590,6 +679,8 @@ bool MediaPipeline::setSourcePosition(int32_t sourceId, int64_t position, bool r
 
 bool MediaPipeline::setSubtitleOffset(int32_t sourceId, int64_t position)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->setSubtitleOffset(sourceId, position);
@@ -597,6 +688,8 @@ bool MediaPipeline::setSubtitleOffset(int32_t sourceId, int64_t position)
 
 bool MediaPipeline::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->processAudioGap(position, duration, discontinuityGap, audioAac);
@@ -604,6 +697,8 @@ bool MediaPipeline::processAudioGap(int64_t position, uint32_t duration, int64_t
 
 bool MediaPipeline::setBufferingLimit(uint32_t limitBufferingMs)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->setBufferingLimit(limitBufferingMs);
@@ -611,6 +706,8 @@ bool MediaPipeline::setBufferingLimit(uint32_t limitBufferingMs)
 
 bool MediaPipeline::getBufferingLimit(uint32_t &limitBufferingMs)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->getBufferingLimit(limitBufferingMs);
@@ -618,6 +715,8 @@ bool MediaPipeline::getBufferingLimit(uint32_t &limitBufferingMs)
 
 bool MediaPipeline::setUseBuffering(bool useBuffering)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->setUseBuffering(useBuffering);
@@ -625,6 +724,8 @@ bool MediaPipeline::setUseBuffering(bool useBuffering)
 
 bool MediaPipeline::getUseBuffering(bool &useBuffering)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->getUseBuffering(useBuffering);
@@ -632,6 +733,8 @@ bool MediaPipeline::getUseBuffering(bool &useBuffering)
 
 bool MediaPipeline::switchSource(const std::unique_ptr<MediaSource> &source)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->switchSource(source);
@@ -639,6 +742,8 @@ bool MediaPipeline::switchSource(const std::unique_ptr<MediaSource> &source)
 
 bool MediaPipeline::getDuration(int64_t &duration)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineIpc->getDuration(duration);
@@ -648,6 +753,8 @@ void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 {
     // Find the needDataRequest for this needDataRequestId
     // The needData request can be cancelled from another thread
+    
+    RDKPerf perf(__func__);
     {
         std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
 
@@ -666,11 +773,15 @@ void MediaPipeline::discardNeedDataRequest(uint32_t needDataRequestId)
 
 std::weak_ptr<IMediaPipelineClient> MediaPipeline::getClient()
 {
+    
+    RDKPerf perf(__func__);
     return m_mediaPipelineClient;
 }
 
 void MediaPipeline::updateState(NetworkState state)
 {
+    
+    RDKPerf perf(__func__);
     State newState = m_currentState;
 
     switch (state)
@@ -702,6 +813,8 @@ void MediaPipeline::updateState(NetworkState state)
 
 void MediaPipeline::updateState(PlaybackState state)
 {
+    
+    RDKPerf perf(__func__);
     State newState = m_currentState;
 
     switch (state)
@@ -750,6 +863,8 @@ void MediaPipeline::updateState(PlaybackState state)
 
 void MediaPipeline::notifyPlaybackState(PlaybackState state)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     updateState(state);
@@ -763,6 +878,8 @@ void MediaPipeline::notifyPlaybackState(PlaybackState state)
 
 void MediaPipeline::notifyPosition(int64_t position)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
@@ -774,6 +891,8 @@ void MediaPipeline::notifyPosition(int64_t position)
 
 void MediaPipeline::notifyNetworkState(NetworkState state)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     updateState(state);
@@ -788,6 +907,8 @@ void MediaPipeline::notifyNetworkState(NetworkState state)
 void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uint32_t requestId,
                                         const std::shared_ptr<MediaPlayerShmInfo> &shmInfo)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     // If attach source is ongoing wait till it has completed so that all sources are attached
@@ -856,6 +977,8 @@ void MediaPipeline::notifyNeedMediaData(int32_t sourceId, size_t frameCount, uin
 
 void MediaPipeline::notifyApplicationState(ApplicationState state)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
     m_currentAppState = state;
@@ -868,6 +991,8 @@ void MediaPipeline::notifyApplicationState(ApplicationState state)
 
 void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
@@ -879,6 +1004,8 @@ void MediaPipeline::notifyQos(int32_t sourceId, const QosInfo &qosInfo)
 
 void MediaPipeline::notifyBufferUnderflow(int32_t sourceId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
@@ -890,6 +1017,8 @@ void MediaPipeline::notifyBufferUnderflow(int32_t sourceId)
 
 void MediaPipeline::notifyFirstFrameReceived(int32_t sourceId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
@@ -901,6 +1030,8 @@ void MediaPipeline::notifyFirstFrameReceived(int32_t sourceId)
 
 void MediaPipeline::notifyPlaybackError(int32_t sourceId, PlaybackError error)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();
@@ -912,6 +1043,8 @@ void MediaPipeline::notifyPlaybackError(int32_t sourceId, PlaybackError error)
 
 void MediaPipeline::notifySourceFlushed(int32_t sourceId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     {
         std::lock_guard<std::mutex> lock{m_flushMutex};
@@ -929,6 +1062,8 @@ void MediaPipeline::notifySourceFlushed(int32_t sourceId)
 
 void MediaPipeline::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     std::shared_ptr<IMediaPipelineClient> client = m_mediaPipelineClient.lock();

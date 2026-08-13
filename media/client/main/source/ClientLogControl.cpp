@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -27,6 +28,8 @@ const std::vector<RIALTO_COMPONENT> kAllComponentsToLog{RIALTO_COMPONENT_CLIENT,
 
 firebolt::rialto::IClientLogHandler::Level convertLevel(const RIALTO_DEBUG_LEVEL &level)
 {
+    
+    RDKPerf perf(__func__);
     switch (level)
     {
     case RIALTO_DEBUG_LEVEL_FATAL:
@@ -54,6 +57,8 @@ namespace firebolt::rialto
 {
 std::shared_ptr<IClientLogControlFactory> IClientLogControlFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     return client::ClientLogControlFactory::createFactory();
 }
 } // namespace firebolt::rialto
@@ -62,22 +67,30 @@ namespace firebolt::rialto::client
 {
 std::shared_ptr<IClientLogControlFactory> ClientLogControlFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     return std::make_shared<client::ClientLogControlFactory>();
 }
 
 IClientLogControl &ClientLogControlFactory::createClientLogControl()
 {
+    
+    RDKPerf perf(__func__);
     static std::unique_ptr<IClientLogControl> clientLogControl{std::make_unique<ClientLogControl>()};
     return *clientLogControl;
 }
 
 ClientLogControl::ClientLogControl()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 }
 
 ClientLogControl::~ClientLogControl()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     std::unique_lock<std::mutex> lock{m_logHandlerMutex};
     if (m_logHandler)
@@ -86,6 +99,8 @@ ClientLogControl::~ClientLogControl()
 
 bool ClientLogControl::registerLogHandler(const std::shared_ptr<IClientLogHandler> &handler, bool ignoreLogLevels)
 {
+    
+    RDKPerf perf(__func__);
     std::unique_lock<std::mutex> lock{m_logHandlerMutex};
 
     if (m_logHandler)
@@ -122,6 +137,8 @@ bool ClientLogControl::registerLogHandler(const std::shared_ptr<IClientLogHandle
 
 void ClientLogControl::cancelLogHandler()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_INFO("Cancelling log handler");
     for (auto component : kAllComponentsToLog)
     {
@@ -134,6 +151,8 @@ void ClientLogControl::forwardLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL
                                   const char *function, const char *message, std::size_t messageLen)
 {
     // Take a local copy to ensure thread safety
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IClientLogHandler> logHandler{m_logHandler};
     if (logHandler)
     {

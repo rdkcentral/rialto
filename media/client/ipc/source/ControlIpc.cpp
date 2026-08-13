@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -26,6 +27,8 @@ namespace
 firebolt::rialto::ApplicationState
 convertApplicationState(const firebolt::rialto::ApplicationStateChangeEvent_ApplicationState &state)
 {
+    
+    RDKPerf perf(__func__);
     switch (state)
     {
     case firebolt::rialto::ApplicationStateChangeEvent_ApplicationState_RUNNING:
@@ -43,11 +46,15 @@ namespace firebolt::rialto::client
 {
 std::shared_ptr<IControlIpcFactory> IControlIpcFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     return ControlIpcFactory::createFactory();
 }
 
 std::shared_ptr<ControlIpcFactory> ControlIpcFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<ControlIpcFactory> factory;
 
     try
@@ -64,6 +71,8 @@ std::shared_ptr<ControlIpcFactory> ControlIpcFactory::createFactory()
 
 std::shared_ptr<IControlIpc> ControlIpcFactory::createControlIpc(IControlClient *controlClient)
 {
+    
+    RDKPerf perf(__func__);
     auto &ipcClient{IIpcClientAccessor::instance().getIpcClient()};
     auto controlIpc{std::make_shared<ControlIpc>(controlClient, ipcClient,
                                                  firebolt::rialto::common::IEventThreadFactory::createFactory())};
@@ -85,6 +94,8 @@ ControlIpc::ControlIpc(IControlClient *controlClient, IIpcClient &ipcClient,
 ControlIpc::~ControlIpc()
 {
     // detach the Ipc channel
+    
+    RDKPerf perf(__func__);
     detachChannel();
 
     // destroy the thread processing async notifications
@@ -93,6 +104,8 @@ ControlIpc::~ControlIpc()
 
 bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -126,6 +139,8 @@ bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
 
 bool ControlIpc::registerClient()
 {
+    
+    RDKPerf perf(__func__);
     const auto kCurrentSchemaVersion{common::getCurrentSchemaVersion()};
 
     if (!reattachChannelIfRequired())
@@ -189,6 +204,8 @@ bool ControlIpc::registerClient()
 
 bool ControlIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    
+    RDKPerf perf(__func__);
     m_controlStub = std::make_unique<::firebolt::rialto::ControlModule_Stub>(ipcChannel.get());
     if (!m_controlStub)
     {
@@ -199,6 +216,8 @@ bool ControlIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel
 
 bool ControlIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    
+    RDKPerf perf(__func__);
     if (!ipcChannel)
     {
         return false;
@@ -223,17 +242,23 @@ bool ControlIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChan
 
 void ControlIpc::onConnectionBroken()
 {
+    
+    RDKPerf perf(__func__);
     m_eventThread->add([this]() { m_controlClient->notifyApplicationState(ApplicationState::UNKNOWN); });
 }
 
 void ControlIpc::onApplicationStateUpdated(const std::shared_ptr<firebolt::rialto::ApplicationStateChangeEvent> &event)
 {
     // It's possible, that ApplicationStateChangeEvent comes before RegisterClientResponse, so do not check control_handle() here.
+    
+    RDKPerf perf(__func__);
     m_controlClient->notifyApplicationState(convertApplicationState(event->application_state()));
 }
 
 void ControlIpc::onPing(const std::shared_ptr<firebolt::rialto::PingEvent> &event)
 {
+    
+    RDKPerf perf(__func__);
     if (m_controlHandle != event->control_handle())
     {
         RIALTO_CLIENT_LOG_WARN("PingEvent received with wrong handle");

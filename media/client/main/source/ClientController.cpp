@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -32,19 +33,24 @@ namespace
 // The following error would be reported if a client is deleted
 // before unregisterClient() was called. Calling unregisterClient can
 // be automated via a proxy class (like the class MediaPipelineProxy)
-const std::string kClientPointerNotLocked{"A client could not be locked"};
+const std::string kClientPointerNotLocked{
+    "A client could not be locked"};
 }; // namespace
 
 namespace firebolt::rialto::client
 {
 IClientControllerAccessor &IClientControllerAccessor::instance()
 {
+    
+    RDKPerf perf(__func__);
     static ClientControllerAccessor factory;
     return factory;
 }
 
 IClientController &ClientControllerAccessor::getClientController() const
 {
+    
+    RDKPerf perf(__func__);
     static ClientController ClientController{IControlIpcFactory::createFactory()};
     return ClientController;
 }
@@ -52,6 +58,7 @@ IClientController &ClientControllerAccessor::getClientController() const
 ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &ControlIpcFactory)
     : m_currentState{ApplicationState::UNKNOWN}, m_registrationRequired{true}
 {
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     const char kSrcRev[] = SRCREV;
@@ -82,6 +89,8 @@ ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &Co
 
 ClientController::~ClientController()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     termSharedMemory();
@@ -89,12 +98,16 @@ ClientController::~ClientController()
 
 std::shared_ptr<ISharedMemoryHandle> ClientController::getSharedMemoryHandle()
 {
+    
+    RDKPerf perf(__func__);
     std::lock_guard<std::mutex> lock{m_mutex};
     return m_shmHandle;
 }
 
 bool ClientController::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IControlClient> clientLocked = client.lock();
     if (!clientLocked)
     {
@@ -128,6 +141,8 @@ bool ClientController::registerClient(std::weak_ptr<IControlClient> client, Appl
 
 bool ClientController::unregisterClient(std::weak_ptr<IControlClient> client)
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IControlClient> clientLocked = client.lock();
     if (!clientLocked)
     {
@@ -168,6 +183,8 @@ bool ClientController::unregisterClient(std::weak_ptr<IControlClient> client)
 bool ClientController::initSharedMemory()
 try
 {
+    
+    RDKPerf perf(__func__);
     std::lock_guard<std::mutex> lock{m_mutex};
     int32_t shmFd{-1};
     uint32_t shmBufferLen{0U};
@@ -189,12 +206,16 @@ catch (const std::exception &e)
 
 void ClientController::termSharedMemory()
 {
+    
+    RDKPerf perf(__func__);
     std::lock_guard<std::mutex> lock{m_mutex};
     m_shmHandle.reset();
 }
 
 void ClientController::notifyApplicationState(ApplicationState state)
 {
+    
+    RDKPerf perf(__func__);
     {
         std::lock_guard<std::mutex> lock{m_mutex};
         if (ApplicationState::UNKNOWN == state)
@@ -235,6 +256,8 @@ void ClientController::notifyApplicationState(ApplicationState state)
 
 std::string ClientController::stateToString(ApplicationState state)
 {
+    
+    RDKPerf perf(__func__);
     switch (state)
     {
     case ApplicationState::RUNNING:
@@ -255,6 +278,8 @@ std::string ClientController::stateToString(ApplicationState state)
 
 void ClientController::changeStateAndNotifyClients(ApplicationState state)
 {
+    
+    RDKPerf perf(__func__);
     std::vector<std::shared_ptr<IControlClient>> currentClients;
     {
         std::lock_guard<std::mutex> lock{m_mutex};

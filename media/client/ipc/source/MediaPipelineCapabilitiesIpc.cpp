@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -25,6 +26,8 @@ namespace firebolt::rialto::client
 {
 std::shared_ptr<IMediaPipelineCapabilitiesIpcFactory> IMediaPipelineCapabilitiesIpcFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IMediaPipelineCapabilitiesIpcFactory> factory;
 
     try
@@ -41,6 +44,8 @@ std::shared_ptr<IMediaPipelineCapabilitiesIpcFactory> IMediaPipelineCapabilities
 
 std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesIpcFactory::createMediaPipelineCapabilitiesIpc() const
 {
+    
+    RDKPerf perf(__func__);
     std::unique_ptr<IMediaPipelineCapabilities> mediaPipelineCapabilitiesIpc;
 
     try
@@ -58,6 +63,8 @@ std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesIpcFactory:
 
 MediaPipelineCapabilitiesIpc::MediaPipelineCapabilitiesIpc(IIpcClient &ipcClient) : IpcModule(ipcClient)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     if (!attachChannel())
@@ -68,6 +75,8 @@ MediaPipelineCapabilitiesIpc::MediaPipelineCapabilitiesIpc(IIpcClient &ipcClient
 
 MediaPipelineCapabilitiesIpc::~MediaPipelineCapabilitiesIpc()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     detachChannel();
@@ -75,6 +84,8 @@ MediaPipelineCapabilitiesIpc::~MediaPipelineCapabilitiesIpc()
 
 bool MediaPipelineCapabilitiesIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    
+    RDKPerf perf(__func__);
     m_mediaPipelineCapabilitiesStub =
         std::make_unique<::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub>(ipcChannel.get());
     if (!m_mediaPipelineCapabilitiesStub)
@@ -86,6 +97,8 @@ bool MediaPipelineCapabilitiesIpc::createRpcStubs(const std::shared_ptr<ipc::ICh
 
 std::vector<std::string> MediaPipelineCapabilitiesIpc::getSupportedMimeTypes(MediaSourceType sourceType)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -116,6 +129,8 @@ std::vector<std::string> MediaPipelineCapabilitiesIpc::getSupportedMimeTypes(Med
 
 bool MediaPipelineCapabilitiesIpc::isMimeTypeSupported(const std::string &mimeType)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -147,6 +162,8 @@ bool MediaPipelineCapabilitiesIpc::isMimeTypeSupported(const std::string &mimeTy
 std::vector<std::string> MediaPipelineCapabilitiesIpc::getSupportedProperties(MediaSourceType mediaType,
                                                                               const std::vector<std::string> &propertyNames)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -179,6 +196,8 @@ std::vector<std::string> MediaPipelineCapabilitiesIpc::getSupportedProperties(Me
 
 bool MediaPipelineCapabilitiesIpc::isVideoMaster(bool &isVideoMaster)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");

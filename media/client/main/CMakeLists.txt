@@ -17,6 +17,8 @@
 # limitations under the License.
 #
 
+find_package(RdkPerf REQUIRED)
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -86,6 +88,7 @@ target_link_libraries(
 
         Threads::Threads
 
+        ${RDKPERF_LIBRARIES}
         )
 
 include( GNUInstallDirs )

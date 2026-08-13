@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -23,18 +24,24 @@ namespace firebolt::rialto::client
 {
 KeyIdMap &KeyIdMap::instance()
 {
+    
+    RDKPerf perf(__func__);
     static KeyIdMap keyIdMap;
     return keyIdMap;
 }
 
 void KeyIdMap::addSession(std::int32_t keySessionId)
 {
+    
+    RDKPerf perf(__func__);
     std::unique_lock<std::mutex> lock{m_mutex};
     m_keyIdMap.insert(std::make_pair(keySessionId, std::vector<uint8_t>()));
 }
 
 bool KeyIdMap::updateKey(std::int32_t keySessionId, const std::vector<std::uint8_t> &keyId)
 {
+    
+    RDKPerf perf(__func__);
     std::unique_lock<std::mutex> lock{m_mutex};
     auto keyIdIter{m_keyIdMap.find(keySessionId)};
     if (m_keyIdMap.end() == keyIdIter)
@@ -47,6 +54,8 @@ bool KeyIdMap::updateKey(std::int32_t keySessionId, const std::vector<std::uint8
 
 std::vector<std::uint8_t> KeyIdMap::get(std::int32_t keySessionId) const
 {
+    
+    RDKPerf perf(__func__);
     std::unique_lock<std::mutex> lock{m_mutex};
     auto keyIdIter{m_keyIdMap.find(keySessionId)};
     if (m_keyIdMap.end() == keyIdIter)
@@ -58,6 +67,8 @@ std::vector<std::uint8_t> KeyIdMap::get(std::int32_t keySessionId) const
 
 void KeyIdMap::erase(std::int32_t keySessionId)
 {
+    
+    RDKPerf perf(__func__);
     std::unique_lock<std::mutex> lock{m_mutex};
     m_keyIdMap.erase(keySessionId);
 }

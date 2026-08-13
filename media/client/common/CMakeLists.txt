@@ -17,6 +17,8 @@
 # limitations under the License.
 #
 
+find_package(RdkPerf REQUIRED)
+
 set( CMAKE_CXX_STANDARD 17 )
 
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
@@ -33,3 +35,10 @@ target_include_directories(
         INTERFACE
         include
     )
+
+target_link_libraries (
+        RialtoClientCommon
+
+        INTERFACE
+        ${RDKPERF_LIBRARIES}
+)

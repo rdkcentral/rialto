@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -27,6 +28,8 @@ std::mutex MediaKeysCapabilitiesIpcFactory::m_creationMutex;
 
 std::shared_ptr<IMediaKeysCapabilitiesIpcFactory> IMediaKeysCapabilitiesIpcFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IMediaKeysCapabilitiesIpcFactory> factory;
 
     try
@@ -43,6 +46,8 @@ std::shared_ptr<IMediaKeysCapabilitiesIpcFactory> IMediaKeysCapabilitiesIpcFacto
 
 std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesIpcFactory::getMediaKeysCapabilitiesIpc() const
 {
+    
+    RDKPerf perf(__func__);
     std::lock_guard<std::mutex> lock{m_creationMutex};
 
     std::shared_ptr<IMediaKeysCapabilities> mediaKeysCapabilitiesIpc =
@@ -68,6 +73,8 @@ std::shared_ptr<IMediaKeysCapabilities> MediaKeysCapabilitiesIpcFactory::getMedi
 
 MediaKeysCapabilitiesIpc::MediaKeysCapabilitiesIpc(IIpcClient &ipcClient) : IpcModule(ipcClient)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     if (!attachChannel())
@@ -78,6 +85,8 @@ MediaKeysCapabilitiesIpc::MediaKeysCapabilitiesIpc(IIpcClient &ipcClient) : IpcM
 
 MediaKeysCapabilitiesIpc::~MediaKeysCapabilitiesIpc()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     detachChannel();
@@ -85,6 +94,8 @@ MediaKeysCapabilitiesIpc::~MediaKeysCapabilitiesIpc()
 
 bool MediaKeysCapabilitiesIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    
+    RDKPerf perf(__func__);
     m_mediaKeysCapabilitiesStub =
         std::make_unique<::firebolt::rialto::MediaKeysCapabilitiesModule_Stub>(ipcChannel.get());
     if (!m_mediaKeysCapabilitiesStub)
@@ -96,6 +107,8 @@ bool MediaKeysCapabilitiesIpc::createRpcStubs(const std::shared_ptr<ipc::IChanne
 
 std::vector<std::string> MediaKeysCapabilitiesIpc::getSupportedKeySystems()
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -123,6 +136,8 @@ std::vector<std::string> MediaKeysCapabilitiesIpc::getSupportedKeySystems()
 
 bool MediaKeysCapabilitiesIpc::supportsKeySystem(const std::string &keySystem)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -152,6 +167,8 @@ bool MediaKeysCapabilitiesIpc::supportsKeySystem(const std::string &keySystem)
 
 bool MediaKeysCapabilitiesIpc::getSupportedKeySystemVersion(const std::string &keySystem, std::string &version)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -184,6 +201,8 @@ bool MediaKeysCapabilitiesIpc::getSupportedKeySystemVersion(const std::string &k
 
 bool MediaKeysCapabilitiesIpc::isServerCertificateSupported(const std::string &keySystem)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -216,6 +235,8 @@ bool MediaKeysCapabilitiesIpc::isServerCertificateSupported(const std::string &k
 bool MediaKeysCapabilitiesIpc::getSupportedRobustnessLevels(const std::string &keySystem,
                                                             std::vector<std::string> &robustnessLevels)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");

@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -27,6 +28,8 @@ namespace
 {
 bool isNetflixPlayready(const std::string &keySystem)
 {
+    
+    RDKPerf perf(__func__);
     return keySystem.find("netflix") != std::string::npos;
 }
 } // namespace
@@ -35,6 +38,8 @@ namespace firebolt::rialto
 {
 std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IMediaKeysFactory> factory;
 
     try
@@ -51,6 +56,8 @@ std::shared_ptr<IMediaKeysFactory> IMediaKeysFactory::createFactory()
 
 std::unique_ptr<IMediaKeys> MediaKeysFactory::createMediaKeys(const std::string &keySystem) const
 {
+    
+    RDKPerf perf(__func__);
     return createMediaKeys(keySystem, {});
 }
 
@@ -58,6 +65,8 @@ std::unique_ptr<IMediaKeys>
 MediaKeysFactory::createMediaKeys(const std::string &keySystem,
                                   std::weak_ptr<firebolt::rialto::client::IMediaKeysIpcFactory> mediaKeysIpcFactory) const
 {
+    
+    RDKPerf perf(__func__);
     std::unique_ptr<IMediaKeys> mediaKeys;
     try
     {
@@ -81,6 +90,7 @@ namespace firebolt::rialto::client
 MediaKeys::MediaKeys(const std::string &keySystem, const std::shared_ptr<IMediaKeysIpcFactory> &mediaKeysIpcFactory)
     : m_keySystem{keySystem}
 {
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     m_mediaKeysIpc = mediaKeysIpcFactory->createMediaKeysIpc(keySystem);
     if (!m_mediaKeysIpc)
@@ -91,6 +101,8 @@ MediaKeys::MediaKeys(const std::string &keySystem, const std::shared_ptr<IMediaK
 
 MediaKeys::~MediaKeys()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     m_mediaKeysIpc.reset();
@@ -98,6 +110,8 @@ MediaKeys::~MediaKeys()
 
 MediaKeyErrorStatus MediaKeys::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     if (KeyIdMap::instance().updateKey(keySessionId, keyId))
@@ -109,6 +123,8 @@ MediaKeyErrorStatus MediaKeys::selectKeyId(int32_t keySessionId, const std::vect
 
 bool MediaKeys::containsKey(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->containsKey(keySessionId, keyId);
@@ -117,6 +133,8 @@ bool MediaKeys::containsKey(int32_t keySessionId, const std::vector<uint8_t> &ke
 MediaKeyErrorStatus MediaKeys::createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
                                                 int32_t &keySessionId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     auto result{m_mediaKeysIpc->createKeySession(sessionType, client, keySessionId)};
@@ -131,6 +149,8 @@ MediaKeyErrorStatus MediaKeys::generateRequest(int32_t keySessionId, InitDataTyp
                                                const std::vector<uint8_t> &initData,
                                                const LimitedDurationLicense &ldlState)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->generateRequest(keySessionId, initDataType, initData, ldlState);
@@ -138,6 +158,8 @@ MediaKeyErrorStatus MediaKeys::generateRequest(int32_t keySessionId, InitDataTyp
 
 MediaKeyErrorStatus MediaKeys::loadSession(int32_t keySessionId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->loadSession(keySessionId);
@@ -145,6 +167,8 @@ MediaKeyErrorStatus MediaKeys::loadSession(int32_t keySessionId)
 
 MediaKeyErrorStatus MediaKeys::updateSession(int32_t keySessionId, const std::vector<uint8_t> &responseData)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->updateSession(keySessionId, responseData);
@@ -152,6 +176,8 @@ MediaKeyErrorStatus MediaKeys::updateSession(int32_t keySessionId, const std::ve
 
 MediaKeyErrorStatus MediaKeys::setDrmHeader(int32_t keySessionId, const std::vector<uint8_t> &requestData)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->setDrmHeader(keySessionId, requestData);
@@ -159,6 +185,8 @@ MediaKeyErrorStatus MediaKeys::setDrmHeader(int32_t keySessionId, const std::vec
 
 MediaKeyErrorStatus MediaKeys::closeKeySession(int32_t keySessionId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     if (isNetflixPlayready(m_keySystem))
     {
@@ -169,6 +197,8 @@ MediaKeyErrorStatus MediaKeys::closeKeySession(int32_t keySessionId)
 
 MediaKeyErrorStatus MediaKeys::removeKeySession(int32_t keySessionId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->removeKeySession(keySessionId);
@@ -176,6 +206,8 @@ MediaKeyErrorStatus MediaKeys::removeKeySession(int32_t keySessionId)
 
 MediaKeyErrorStatus MediaKeys::deleteDrmStore()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->deleteDrmStore();
@@ -183,6 +215,8 @@ MediaKeyErrorStatus MediaKeys::deleteDrmStore()
 
 MediaKeyErrorStatus MediaKeys::deleteKeyStore()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->deleteKeyStore();
@@ -190,6 +224,8 @@ MediaKeyErrorStatus MediaKeys::deleteKeyStore()
 
 MediaKeyErrorStatus MediaKeys::getDrmStoreHash(std::vector<unsigned char> &drmStoreHash)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->getDrmStoreHash(drmStoreHash);
@@ -197,6 +233,8 @@ MediaKeyErrorStatus MediaKeys::getDrmStoreHash(std::vector<unsigned char> &drmSt
 
 MediaKeyErrorStatus MediaKeys::getKeyStoreHash(std::vector<unsigned char> &keyStoreHash)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->getKeyStoreHash(keyStoreHash);
@@ -204,6 +242,8 @@ MediaKeyErrorStatus MediaKeys::getKeyStoreHash(std::vector<unsigned char> &keySt
 
 MediaKeyErrorStatus MediaKeys::getLdlSessionsLimit(uint32_t &ldlLimit)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->getLdlSessionsLimit(ldlLimit);
@@ -211,6 +251,8 @@ MediaKeyErrorStatus MediaKeys::getLdlSessionsLimit(uint32_t &ldlLimit)
 
 MediaKeyErrorStatus MediaKeys::getLastDrmError(int32_t keySessionId, uint32_t &errorCode)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->getLastDrmError(keySessionId, errorCode);
@@ -218,6 +260,8 @@ MediaKeyErrorStatus MediaKeys::getLastDrmError(int32_t keySessionId, uint32_t &e
 
 MediaKeyErrorStatus MediaKeys::getDrmTime(uint64_t &drmTime)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->getDrmTime(drmTime);
@@ -225,6 +269,8 @@ MediaKeyErrorStatus MediaKeys::getDrmTime(uint64_t &drmTime)
 
 MediaKeyErrorStatus MediaKeys::getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->getCdmKeySessionId(keySessionId, cdmKeySessionId);
@@ -232,12 +278,16 @@ MediaKeyErrorStatus MediaKeys::getCdmKeySessionId(int32_t keySessionId, std::str
 
 MediaKeyErrorStatus MediaKeys::releaseKeySession(int32_t keySessionId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     return m_mediaKeysIpc->releaseKeySession(keySessionId);
 }
 
 MediaKeyErrorStatus MediaKeys::getMetricSystemData(std::vector<uint8_t> &buffer)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaKeysIpc->getMetricSystemData(buffer);

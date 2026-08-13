@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -29,6 +30,8 @@ std::weak_ptr<IMediaPipelineIpcFactory> MediaPipelineIpcFactory::m_factory;
 
 std::shared_ptr<IMediaPipelineIpcFactory> IMediaPipelineIpcFactory::getFactory()
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IMediaPipelineIpcFactory> factory = MediaPipelineIpcFactory::m_factory.lock();
 
     if (!factory)
@@ -51,6 +54,8 @@ std::shared_ptr<IMediaPipelineIpcFactory> IMediaPipelineIpcFactory::getFactory()
 std::unique_ptr<IMediaPipelineIpc> MediaPipelineIpcFactory::createMediaPipelineIpc(
     IMediaPipelineIpcClient *client, const VideoRequirements &videoRequirements, std::weak_ptr<IIpcClient> ipcClientParam)
 {
+    
+    RDKPerf perf(__func__);
     std::unique_ptr<IMediaPipelineIpc> mediaPipelineIpc;
     try
     {
@@ -90,6 +95,8 @@ MediaPipelineIpc::MediaPipelineIpc(IMediaPipelineIpcClient *client, const VideoR
 MediaPipelineIpc::~MediaPipelineIpc()
 {
     // destroy media player session
+    
+    RDKPerf perf(__func__);
     destroySession();
 
     // detach the Ipc channel
@@ -101,6 +108,8 @@ MediaPipelineIpc::~MediaPipelineIpc()
 
 bool MediaPipelineIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    
+    RDKPerf perf(__func__);
     m_mediaPipelineStub = std::make_unique<::firebolt::rialto::MediaPipelineModule_Stub>(ipcChannel.get());
     if (!m_mediaPipelineStub)
     {
@@ -111,6 +120,8 @@ bool MediaPipelineIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcC
 
 bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    
+    RDKPerf perf(__func__);
     if (!ipcChannel)
     {
         return false;
@@ -191,6 +202,8 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
 
 bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const std::string &url, bool isLive)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -225,6 +238,8 @@ bool MediaPipelineIpc::load(MediaType type, const std::string &mimeType, const s
 
 bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source, int32_t &sourceId)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -263,6 +278,8 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
 
 bool MediaPipelineIpc::removeSource(int32_t sourceId)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -294,6 +311,8 @@ bool MediaPipelineIpc::removeSource(int32_t sourceId)
 
 bool MediaPipelineIpc::allSourcesAttached()
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -324,6 +343,8 @@ bool MediaPipelineIpc::allSourcesAttached()
 
 bool MediaPipelineIpc::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -358,6 +379,8 @@ bool MediaPipelineIpc::setVideoWindow(uint32_t x, uint32_t y, uint32_t width, ui
 
 bool MediaPipelineIpc::play(bool &async)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -390,6 +413,8 @@ bool MediaPipelineIpc::play(bool &async)
 
 bool MediaPipelineIpc::pause()
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -420,6 +445,8 @@ bool MediaPipelineIpc::pause()
 
 bool MediaPipelineIpc::stop()
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -450,6 +477,8 @@ bool MediaPipelineIpc::stop()
 
 bool MediaPipelineIpc::haveData(MediaSourceStatus status, uint32_t numFrames, uint32_t requestId)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -483,6 +512,8 @@ bool MediaPipelineIpc::haveData(MediaSourceStatus status, uint32_t numFrames, ui
 
 bool MediaPipelineIpc::setPosition(int64_t position)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -514,6 +545,8 @@ bool MediaPipelineIpc::setPosition(int64_t position)
 
 bool MediaPipelineIpc::getPosition(int64_t &position)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -545,6 +578,8 @@ bool MediaPipelineIpc::getPosition(int64_t &position)
 
 bool MediaPipelineIpc::getDuration(int64_t &duration)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -576,6 +611,8 @@ bool MediaPipelineIpc::getDuration(int64_t &duration)
 
 bool MediaPipelineIpc::setImmediateOutput(int32_t sourceId, bool immediateOutput)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -608,6 +645,8 @@ bool MediaPipelineIpc::setImmediateOutput(int32_t sourceId, bool immediateOutput
 
 bool MediaPipelineIpc::setReportDecodeErrors(int32_t sourceId, bool reportDecodeErrors)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -640,6 +679,8 @@ bool MediaPipelineIpc::setReportDecodeErrors(int32_t sourceId, bool reportDecode
 
 bool MediaPipelineIpc::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -675,6 +716,8 @@ bool MediaPipelineIpc::getQueuedFrames(int32_t sourceId, uint32_t &queuedFrames)
 
 bool MediaPipelineIpc::getImmediateOutput(int32_t sourceId, bool &immediateOutput)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -710,6 +753,8 @@ bool MediaPipelineIpc::getImmediateOutput(int32_t sourceId, bool &immediateOutpu
 
 bool MediaPipelineIpc::getStats(int32_t sourceId, uint64_t &renderedFrames, uint64_t &droppedFrames)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -743,6 +788,8 @@ bool MediaPipelineIpc::getStats(int32_t sourceId, uint64_t &renderedFrames, uint
 
 bool MediaPipelineIpc::setPlaybackRate(double rate)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -774,6 +821,8 @@ bool MediaPipelineIpc::setPlaybackRate(double rate)
 
 bool MediaPipelineIpc::renderFrame()
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -803,6 +852,8 @@ bool MediaPipelineIpc::renderFrame()
 
 bool MediaPipelineIpc::setVolume(double targetVolume, uint32_t volumeDuration, EaseType easeType)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -836,6 +887,8 @@ bool MediaPipelineIpc::setVolume(double targetVolume, uint32_t volumeDuration, E
 
 bool MediaPipelineIpc::getVolume(double &volume)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -867,6 +920,8 @@ bool MediaPipelineIpc::getVolume(double &volume)
 
 bool MediaPipelineIpc::setMute(int32_t sourceId, bool mute)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -899,6 +954,8 @@ bool MediaPipelineIpc::setMute(int32_t sourceId, bool mute)
 
 bool MediaPipelineIpc::getMute(std::int32_t sourceId, bool &mute)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -932,6 +989,8 @@ bool MediaPipelineIpc::getMute(std::int32_t sourceId, bool &mute)
 
 bool MediaPipelineIpc::setTextTrackIdentifier(const std::string &textTrackIdentifier)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -963,6 +1022,8 @@ bool MediaPipelineIpc::setTextTrackIdentifier(const std::string &textTrackIdenti
 
 bool MediaPipelineIpc::getTextTrackIdentifier(std::string &textTrackIdentifier)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -995,6 +1056,8 @@ bool MediaPipelineIpc::getTextTrackIdentifier(std::string &textTrackIdentifier)
 
 bool MediaPipelineIpc::setLowLatency(bool lowLatency)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1025,6 +1088,8 @@ bool MediaPipelineIpc::setLowLatency(bool lowLatency)
 
 bool MediaPipelineIpc::setSync(bool sync)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1056,6 +1121,8 @@ bool MediaPipelineIpc::setSync(bool sync)
 
 bool MediaPipelineIpc::getSync(bool &sync)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1088,6 +1155,8 @@ bool MediaPipelineIpc::getSync(bool &sync)
 
 bool MediaPipelineIpc::setSyncOff(bool syncOff)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1119,6 +1188,8 @@ bool MediaPipelineIpc::setSyncOff(bool syncOff)
 
 bool MediaPipelineIpc::setStreamSyncMode(int32_t sourceId, int32_t streamSyncMode)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1151,6 +1222,8 @@ bool MediaPipelineIpc::setStreamSyncMode(int32_t sourceId, int32_t streamSyncMod
 
 bool MediaPipelineIpc::getStreamSyncMode(int32_t &streamSyncMode)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1183,6 +1256,8 @@ bool MediaPipelineIpc::getStreamSyncMode(int32_t &streamSyncMode)
 
 bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime, bool &async)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1219,6 +1294,8 @@ bool MediaPipelineIpc::flush(int32_t sourceId, bool resetTime, bool &async)
 bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position, bool resetTime, double appliedRate,
                                          uint64_t stopPosition)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1254,6 +1331,8 @@ bool MediaPipelineIpc::setSourcePosition(int32_t sourceId, int64_t position, boo
 
 bool MediaPipelineIpc::setSubtitleOffset(int32_t sourceId, int64_t position)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1286,6 +1365,8 @@ bool MediaPipelineIpc::setSubtitleOffset(int32_t sourceId, int64_t position)
 
 bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, int64_t discontinuityGap, bool audioAac)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1320,6 +1401,8 @@ bool MediaPipelineIpc::processAudioGap(int64_t position, uint32_t duration, int6
 
 bool MediaPipelineIpc::setBufferingLimit(uint32_t limitBufferingMs)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1351,6 +1434,8 @@ bool MediaPipelineIpc::setBufferingLimit(uint32_t limitBufferingMs)
 
 bool MediaPipelineIpc::getBufferingLimit(uint32_t &limitBufferingMs)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1383,6 +1468,8 @@ bool MediaPipelineIpc::getBufferingLimit(uint32_t &limitBufferingMs)
 
 bool MediaPipelineIpc::setUseBuffering(bool useBuffering)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1414,6 +1501,8 @@ bool MediaPipelineIpc::setUseBuffering(bool useBuffering)
 
 bool MediaPipelineIpc::getUseBuffering(bool &useBuffering)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1446,6 +1535,8 @@ bool MediaPipelineIpc::getUseBuffering(bool &useBuffering)
 
 bool MediaPipelineIpc::switchSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1483,6 +1574,8 @@ bool MediaPipelineIpc::switchSource(const std::unique_ptr<IMediaPipeline::MediaS
 void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::rialto::PlaybackStateChangeEvent> &event)
 {
     /* Ignore event if not for this session */
+    
+    RDKPerf perf(__func__);
     if (event->session_id() == m_sessionId)
     {
         PlaybackState playbackState = PlaybackState::UNKNOWN;
@@ -1524,6 +1617,8 @@ void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::ri
 void MediaPipelineIpc::onPositionUpdated(const std::shared_ptr<firebolt::rialto::PositionChangeEvent> &event)
 {
     // Ignore event if not for this session
+    
+    RDKPerf perf(__func__);
     if (event->session_id() == m_sessionId)
     {
         int64_t position = event->position();
@@ -1534,6 +1629,8 @@ void MediaPipelineIpc::onPositionUpdated(const std::shared_ptr<firebolt::rialto:
 void MediaPipelineIpc::onNetworkStateUpdated(const std::shared_ptr<firebolt::rialto::NetworkStateChangeEvent> &event)
 {
     // Ignore event if not for this session
+    
+    RDKPerf perf(__func__);
     if (event->session_id() == m_sessionId)
     {
         NetworkState networkState = NetworkState::UNKNOWN;
@@ -1572,6 +1669,8 @@ void MediaPipelineIpc::onNetworkStateUpdated(const std::shared_ptr<firebolt::ria
 void MediaPipelineIpc::onNeedMediaData(const std::shared_ptr<firebolt::rialto::NeedMediaDataEvent> &event)
 {
     // Ignore event if not for this session
+    
+    RDKPerf perf(__func__);
     if (event->session_id() == m_sessionId)
     {
         std::shared_ptr<MediaPlayerShmInfo> shmInfo;
@@ -1591,6 +1690,8 @@ void MediaPipelineIpc::onNeedMediaData(const std::shared_ptr<firebolt::rialto::N
 void MediaPipelineIpc::onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &event)
 {
     // Ignore event if not for this session
+    
+    RDKPerf perf(__func__);
     if (event->session_id() == m_sessionId)
     {
         QosInfo qosInfo = {event->qos_info().processed(), event->qos_info().dropped()};
@@ -1601,6 +1702,8 @@ void MediaPipelineIpc::onQos(const std::shared_ptr<firebolt::rialto::QosEvent> &
 void MediaPipelineIpc::onBufferUnderflow(const std::shared_ptr<firebolt::rialto::BufferUnderflowEvent> &event)
 {
     // Ignore event if not for this session
+    
+    RDKPerf perf(__func__);
     if (event->session_id() == m_sessionId)
     {
         m_mediaPipelineIpcClient->notifyBufferUnderflow(event->source_id());
@@ -1610,6 +1713,8 @@ void MediaPipelineIpc::onBufferUnderflow(const std::shared_ptr<firebolt::rialto:
 void MediaPipelineIpc::onFirstFrameReceived(const std::shared_ptr<firebolt::rialto::FirstFrameReceivedEvent> &event)
 {
     // Ignore event if not for this session
+    
+    RDKPerf perf(__func__);
     if (event->session_id() == m_sessionId)
     {
         m_mediaPipelineIpcClient->notifyFirstFrameReceived(event->source_id());
@@ -1619,6 +1724,8 @@ void MediaPipelineIpc::onFirstFrameReceived(const std::shared_ptr<firebolt::rial
 void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::PlaybackErrorEvent> &event)
 {
     // Ignore event if not for this session
+    
+    RDKPerf perf(__func__);
     if (event->session_id() == m_sessionId)
     {
         PlaybackError playbackError = PlaybackError::UNKNOWN;
@@ -1642,6 +1749,8 @@ void MediaPipelineIpc::onPlaybackError(const std::shared_ptr<firebolt::rialto::P
 void MediaPipelineIpc::onSourceFlushed(const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event)
 {
     // Ignore event if not for this session
+    
+    RDKPerf perf(__func__);
     if (event->session_id() == m_sessionId)
     {
         m_mediaPipelineIpcClient->notifySourceFlushed(event->source_id());
@@ -1650,6 +1759,8 @@ void MediaPipelineIpc::onSourceFlushed(const std::shared_ptr<firebolt::rialto::S
 
 void MediaPipelineIpc::onPlaybackInfo(const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event)
 {
+    
+    RDKPerf perf(__func__);
     if (event->session_id() == m_sessionId)
     {
         PlaybackInfo playbackInfo;
@@ -1661,6 +1772,8 @@ void MediaPipelineIpc::onPlaybackInfo(const std::shared_ptr<firebolt::rialto::Pl
 
 bool MediaPipelineIpc::createSession(const VideoRequirements &videoRequirements)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1694,6 +1807,8 @@ bool MediaPipelineIpc::createSession(const VideoRequirements &videoRequirements)
 
 void MediaPipelineIpc::destroySession()
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -1720,6 +1835,8 @@ void MediaPipelineIpc::destroySession()
 
 firebolt::rialto::LoadRequest_MediaType MediaPipelineIpc::convertLoadRequestMediaType(MediaType mediaType) const
 {
+    
+    RDKPerf perf(__func__);
     firebolt::rialto::LoadRequest_MediaType protoMediaType = firebolt::rialto::LoadRequest_MediaType_UNKNOWN;
     switch (mediaType)
     {
@@ -1736,6 +1853,8 @@ firebolt::rialto::LoadRequest_MediaType MediaPipelineIpc::convertLoadRequestMedi
 firebolt::rialto::HaveDataRequest_MediaSourceStatus
 MediaPipelineIpc::convertHaveDataRequestMediaSourceStatus(MediaSourceStatus status) const
 {
+    
+    RDKPerf perf(__func__);
     firebolt::rialto::HaveDataRequest_MediaSourceStatus protoMediaSourceStatus =
         firebolt::rialto::HaveDataRequest_MediaSourceStatus_UNKNOWN;
     switch (status)
@@ -1768,6 +1887,8 @@ MediaPipelineIpc::convertHaveDataRequestMediaSourceStatus(MediaSourceStatus stat
 firebolt::rialto::AttachSourceRequest_ConfigType
 MediaPipelineIpc::convertConfigType(const firebolt::rialto::SourceConfigType &configType) const
 {
+    
+    RDKPerf perf(__func__);
     switch (configType)
     {
     case firebolt::rialto::SourceConfigType::UNKNOWN:
@@ -1796,6 +1917,8 @@ MediaPipelineIpc::convertConfigType(const firebolt::rialto::SourceConfigType &co
 
 firebolt::rialto::SetVolumeRequest_EaseType MediaPipelineIpc::convertEaseType(const firebolt::rialto::EaseType &easeType) const
 {
+    
+    RDKPerf perf(__func__);
     switch (easeType)
     {
     case firebolt::rialto::EaseType::EASE_LINEAR:
@@ -1817,6 +1940,8 @@ firebolt::rialto::SetVolumeRequest_EaseType MediaPipelineIpc::convertEaseType(co
 firebolt::rialto::AttachSourceRequest_SegmentAlignment
 MediaPipelineIpc::convertSegmentAlignment(const firebolt::rialto::SegmentAlignment &alignment) const
 {
+    
+    RDKPerf perf(__func__);
     switch (alignment)
     {
     case firebolt::rialto::SegmentAlignment::UNDEFINED:
@@ -1838,6 +1963,8 @@ MediaPipelineIpc::convertSegmentAlignment(const firebolt::rialto::SegmentAlignme
 firebolt::rialto::AttachSourceRequest_StreamFormat
 MediaPipelineIpc::convertStreamFormat(const firebolt::rialto::StreamFormat &streamFormat) const
 {
+    
+    RDKPerf perf(__func__);
     switch (streamFormat)
     {
     case firebolt::rialto::StreamFormat::UNDEFINED:
@@ -1871,6 +1998,8 @@ MediaPipelineIpc::convertStreamFormat(const firebolt::rialto::StreamFormat &stre
 firebolt::rialto::AttachSourceRequest_CodecData_Type
 MediaPipelineIpc::convertCodecDataType(const firebolt::rialto::CodecDataType &codecDataType) const
 {
+    
+    RDKPerf perf(__func__);
     if (firebolt::rialto::CodecDataType::STRING == codecDataType)
     {
         return firebolt::rialto::AttachSourceRequest_CodecData_Type_STRING;
@@ -1881,6 +2010,8 @@ MediaPipelineIpc::convertCodecDataType(const firebolt::rialto::CodecDataType &co
 firebolt::rialto::AttachSourceRequest_AudioConfig_Format
 MediaPipelineIpc::convertFormat(const firebolt::rialto::Format &format) const
 {
+    
+    RDKPerf perf(__func__);
     static const std::unordered_map<firebolt::rialto::Format, firebolt::rialto::AttachSourceRequest_AudioConfig_Format>
         kFormatConversionMap{
             {firebolt::rialto::Format::S8, firebolt::rialto::AttachSourceRequest_AudioConfig_Format_S8},
@@ -1924,6 +2055,8 @@ MediaPipelineIpc::convertFormat(const firebolt::rialto::Format &format) const
 firebolt::rialto::AttachSourceRequest_AudioConfig_Layout
 MediaPipelineIpc::convertLayout(const firebolt::rialto::Layout &layout) const
 {
+    
+    RDKPerf perf(__func__);
     static const std::unordered_map<firebolt::rialto::Layout, firebolt::rialto::AttachSourceRequest_AudioConfig_Layout>
         kLayoutConversionMap{{firebolt::rialto::Layout::INTERLEAVED,
                               firebolt::rialto::AttachSourceRequest_AudioConfig_Layout_INTERLEAVED},
@@ -1940,6 +2073,8 @@ MediaPipelineIpc::convertLayout(const firebolt::rialto::Layout &layout) const
 bool MediaPipelineIpc::buildAttachSourceRequest(firebolt::rialto::AttachSourceRequest &request,
                                                 const std::unique_ptr<IMediaPipeline::MediaSource> &source) const
 {
+    
+    RDKPerf perf(__func__);
     SourceConfigType configType = source->getConfigType();
     request.set_config_type(convertConfigType(configType));
     request.set_mime_type(source->getMimeType());

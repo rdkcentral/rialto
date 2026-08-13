@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -24,16 +25,21 @@ namespace firebolt::rialto::client
 {
 IpcModule::IpcModule(IIpcClient &ipcClient) : m_ipc{ipcClient}
 {
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 }
 
 IpcModule::~IpcModule()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 }
 
 bool IpcModule::unsubscribeFromAllEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    
+    RDKPerf perf(__func__);
     if (!ipcChannel)
     {
         return false;
@@ -55,6 +61,8 @@ bool IpcModule::unsubscribeFromAllEvents(const std::shared_ptr<ipc::IChannel> &i
 bool IpcModule::attachChannel()
 {
     // get the channel
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<ipc::IChannel> ipcChannel{getConnectedChannel()};
 
     // If not connected, try to recover and reconnect first
@@ -98,6 +106,8 @@ bool IpcModule::attachChannel()
 void IpcModule::detachChannel()
 {
     // uninstalls listeners
+    
+    RDKPerf perf(__func__);
     if (!unsubscribeFromAllEvents(m_ipcChannel.lock()))
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to unsubscribe to some ipc module events, this can lead to core dumps in IPC");
@@ -109,6 +119,8 @@ void IpcModule::detachChannel()
 
 bool IpcModule::reattachChannelIfRequired()
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<ipc::IChannel> ipcChannel = m_ipcChannel.lock();
     if ((nullptr == ipcChannel) || (!ipcChannel->isConnected()))
     {
@@ -127,6 +139,8 @@ bool IpcModule::reattachChannelIfRequired()
 std::shared_ptr<ipc::IChannel> IpcModule::getConnectedChannel()
 {
     // Split for Coverity clarity due to independent lifetime
+    
+    RDKPerf perf(__func__);
     std::weak_ptr<ipc::IChannel> weakChannel = m_ipc.getChannel();
     std::shared_ptr<ipc::IChannel> ipcChannel = weakChannel.lock();
     if (ipcChannel && ipcChannel->isConnected())

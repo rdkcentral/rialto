@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -27,6 +28,8 @@ namespace firebolt::rialto::client
 
 std::shared_ptr<IWebAudioPlayerIpcFactory> IWebAudioPlayerIpcFactory::getFactory()
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IWebAudioPlayerIpcFactory> factory;
 
     try
@@ -46,6 +49,8 @@ WebAudioPlayerIpcFactory::createWebAudioPlayerIpc(IWebAudioPlayerIpcClient *clie
                                                   const uint32_t priority, std::weak_ptr<const WebAudioConfig> config,
                                                   std::weak_ptr<IIpcClient> ipcClientParam)
 {
+    
+    RDKPerf perf(__func__);
     std::unique_ptr<IWebAudioPlayerIpc> webAudioPlayerIpc;
     try
     {
@@ -85,6 +90,8 @@ WebAudioPlayerIpc::WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std
 WebAudioPlayerIpc::~WebAudioPlayerIpc()
 {
     // destroy web audio player session
+    
+    RDKPerf perf(__func__);
     destroyWebAudioPlayer();
 
     // detach the Ipc channel
@@ -96,6 +103,8 @@ WebAudioPlayerIpc::~WebAudioPlayerIpc()
 
 bool WebAudioPlayerIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    
+    RDKPerf perf(__func__);
     m_webAudioPlayerStub = std::make_unique<::firebolt::rialto::WebAudioPlayerModule_Stub>(ipcChannel.get());
     if (!m_webAudioPlayerStub)
     {
@@ -106,6 +115,8 @@ bool WebAudioPlayerIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipc
 
 bool WebAudioPlayerIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    
+    RDKPerf perf(__func__);
     if (!ipcChannel)
     {
         return false;
@@ -123,6 +134,8 @@ bool WebAudioPlayerIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &
 
 void WebAudioPlayerIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::rialto::WebAudioPlayerStateEvent> &event)
 {
+    
+    RDKPerf perf(__func__);
     if (event->web_audio_player_handle() == m_webAudioPlayerHandle)
     {
         firebolt::rialto::WebAudioPlayerState playerState = firebolt::rialto::WebAudioPlayerState::UNKNOWN;
@@ -157,6 +170,8 @@ void WebAudioPlayerIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::r
 
 bool WebAudioPlayerIpc::play()
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -186,6 +201,8 @@ bool WebAudioPlayerIpc::play()
 
 bool WebAudioPlayerIpc::pause()
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -215,6 +232,8 @@ bool WebAudioPlayerIpc::pause()
 
 bool WebAudioPlayerIpc::setEos()
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -245,6 +264,8 @@ bool WebAudioPlayerIpc::setEos()
 bool WebAudioPlayerIpc::getBufferAvailable(uint32_t &availableFrames,
                                            const std::shared_ptr<WebAudioShmInfo> &webAudioShmInfo)
 {
+    
+    RDKPerf perf(__func__);
     if (!webAudioShmInfo)
     {
         RIALTO_CLIENT_LOG_ERROR("webAudioShmInfo parameter can't be null!");
@@ -286,6 +307,8 @@ bool WebAudioPlayerIpc::getBufferAvailable(uint32_t &availableFrames,
 
 bool WebAudioPlayerIpc::getBufferDelay(uint32_t &delayFrames)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -317,6 +340,8 @@ bool WebAudioPlayerIpc::getBufferDelay(uint32_t &delayFrames)
 
 bool WebAudioPlayerIpc::writeBuffer(const uint32_t numberOfFrames)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -348,6 +373,8 @@ bool WebAudioPlayerIpc::writeBuffer(const uint32_t numberOfFrames)
 
 bool WebAudioPlayerIpc::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -381,6 +408,8 @@ bool WebAudioPlayerIpc::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maxim
 
 bool WebAudioPlayerIpc::setVolume(double volume)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -411,6 +440,8 @@ bool WebAudioPlayerIpc::setVolume(double volume)
 
 bool WebAudioPlayerIpc::getVolume(double &volume)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -442,6 +473,8 @@ bool WebAudioPlayerIpc::getVolume(double &volume)
 bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, const uint32_t priority,
                                              std::weak_ptr<const WebAudioConfig> webAudioConfig)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -486,6 +519,8 @@ bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, c
 
 void WebAudioPlayerIpc::destroyWebAudioPlayer()
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");

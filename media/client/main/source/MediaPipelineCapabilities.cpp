@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -27,6 +28,8 @@ namespace firebolt::rialto
 {
 std::shared_ptr<IMediaPipelineCapabilitiesFactory> IMediaPipelineCapabilitiesFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> factory;
 
     try
@@ -43,6 +46,8 @@ std::shared_ptr<IMediaPipelineCapabilitiesFactory> IMediaPipelineCapabilitiesFac
 
 std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesFactory::createMediaPipelineCapabilities() const
 {
+    
+    RDKPerf perf(__func__);
     std::unique_ptr<IMediaPipelineCapabilities> mediaPipelineCapabilities;
     try
     {
@@ -64,6 +69,8 @@ namespace firebolt::rialto::client
 MediaPipelineCapabilities::MediaPipelineCapabilities(
     const std::shared_ptr<IMediaPipelineCapabilitiesIpcFactory> &MediaPipelineCapabilitiesIpcFactory)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     m_mediaPipelineCapabilitiesIpc = MediaPipelineCapabilitiesIpcFactory->createMediaPipelineCapabilitiesIpc();
@@ -75,6 +82,8 @@ MediaPipelineCapabilities::MediaPipelineCapabilities(
 
 MediaPipelineCapabilities::~MediaPipelineCapabilities()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     m_mediaPipelineCapabilitiesIpc.reset();
@@ -82,6 +91,8 @@ MediaPipelineCapabilities::~MediaPipelineCapabilities()
 
 std::vector<std::string> MediaPipelineCapabilities::getSupportedMimeTypes(MediaSourceType sourceType)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineCapabilitiesIpc->getSupportedMimeTypes(sourceType);
@@ -89,6 +100,8 @@ std::vector<std::string> MediaPipelineCapabilities::getSupportedMimeTypes(MediaS
 
 bool MediaPipelineCapabilities::isMimeTypeSupported(const std::string &mimeType)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineCapabilitiesIpc->isMimeTypeSupported(mimeType);
@@ -97,6 +110,8 @@ bool MediaPipelineCapabilities::isMimeTypeSupported(const std::string &mimeType)
 std::vector<std::string> MediaPipelineCapabilities::getSupportedProperties(MediaSourceType mediaType,
                                                                            const std::vector<std::string> &propertyNames)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineCapabilitiesIpc->getSupportedProperties(mediaType, propertyNames);
@@ -104,6 +119,8 @@ std::vector<std::string> MediaPipelineCapabilities::getSupportedProperties(Media
 
 bool MediaPipelineCapabilities::isVideoMaster(bool &isVideoMaster)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_mediaPipelineCapabilitiesIpc->isVideoMaster(isVideoMaster);

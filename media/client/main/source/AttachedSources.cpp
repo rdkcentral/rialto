@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -23,18 +24,24 @@ namespace firebolt::rialto::client
 {
 void AttachedSources::add(std::uint32_t id, const MediaSourceType &mediaSourceType)
 {
+    
+    RDKPerf perf(__func__);
     std::unique_lock<std::mutex> lock{m_mutex};
     m_attachedSources.emplace(id, Source{mediaSourceType});
 }
 
 void AttachedSources::remove(std::uint32_t id)
 {
+    
+    RDKPerf perf(__func__);
     std::unique_lock<std::mutex> lock{m_mutex};
     m_attachedSources.erase(id);
 }
 
 MediaSourceType AttachedSources::getType(std::uint32_t id) const
 {
+    
+    RDKPerf perf(__func__);
     std::unique_lock<std::mutex> lock{m_mutex};
     auto iter = m_attachedSources.find(id);
     if (m_attachedSources.end() == iter)
@@ -46,6 +53,8 @@ MediaSourceType AttachedSources::getType(std::uint32_t id) const
 
 bool AttachedSources::isFlushing(std::uint32_t id) const
 {
+    
+    RDKPerf perf(__func__);
     std::unique_lock<std::mutex> lock{m_mutex};
     auto iter = m_attachedSources.find(id);
     if (m_attachedSources.end() == iter)
@@ -57,6 +66,8 @@ bool AttachedSources::isFlushing(std::uint32_t id) const
 
 void AttachedSources::setFlushing(std::uint32_t id, bool flushing)
 {
+    
+    RDKPerf perf(__func__);
     std::unique_lock<std::mutex> lock{m_mutex};
     auto iter = m_attachedSources.find(id);
     if (m_attachedSources.end() == iter)

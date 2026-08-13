@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -26,6 +27,8 @@ namespace firebolt::rialto
 {
 std::shared_ptr<IControlFactory> IControlFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     return client::ControlFactory::createFactory();
 }
 }; // namespace firebolt::rialto
@@ -34,6 +37,8 @@ namespace firebolt::rialto::client
 {
 std::shared_ptr<ControlFactory> ControlFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<ControlFactory> factory;
     try
     {
@@ -50,6 +55,8 @@ std::shared_ptr<ControlFactory> ControlFactory::createFactory()
 std::shared_ptr<IControl> ControlFactory::createControl() const
 try
 {
+    
+    RDKPerf perf(__func__);
     return std::make_shared<Control>(IClientControllerAccessor::instance().getClientController());
 }
 catch (const std::exception &e)
@@ -60,11 +67,15 @@ catch (const std::exception &e)
 
 Control::Control(IClientController &clientController) : m_clientController(clientController)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 }
 
 Control::~Control()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     for (const auto &client : m_clientsToUnregister)
     {
@@ -74,6 +85,8 @@ Control::~Control()
 
 bool Control::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IControlClient> lockedClient = client.lock();
     if (lockedClient && m_clientController.registerClient(lockedClient, appState))
     {

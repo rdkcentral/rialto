@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -32,6 +33,8 @@ namespace firebolt::rialto
 {
 std::shared_ptr<IWebAudioPlayerFactory> IWebAudioPlayerFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IWebAudioPlayerFactory> factory;
 
     try
@@ -50,6 +53,8 @@ std::unique_ptr<IWebAudioPlayer>
 WebAudioPlayerFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                             const uint32_t priority, std::weak_ptr<const WebAudioConfig> config) const
 {
+    
+    RDKPerf perf(__func__);
     return createWebAudioPlayer(client, audioMimeType, priority, config, {}, {});
 }
 
@@ -59,6 +64,8 @@ WebAudioPlayerFactory::createWebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient>
                                             std::weak_ptr<client::IWebAudioPlayerIpcFactory> webAudioPlayerIpcFactory,
                                             std::weak_ptr<client::IClientController> clientController) const
 {
+    
+    RDKPerf perf(__func__);
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     try
     {
@@ -88,6 +95,7 @@ WebAudioPlayerProxy::WebAudioPlayerProxy(const std::shared_ptr<IWebAudioPlayerAn
                                          client::IClientController &clientController)
     : m_webAudioPlayer(ptr), m_clientController{clientController}
 {
+    RDKPerf perf(__func__);
     ApplicationState state{ApplicationState::UNKNOWN};
     if (!m_clientController.registerClient(m_webAudioPlayer, state))
     {
@@ -98,6 +106,8 @@ WebAudioPlayerProxy::WebAudioPlayerProxy(const std::shared_ptr<IWebAudioPlayerAn
 
 WebAudioPlayerProxy::~WebAudioPlayerProxy()
 {
+    
+    RDKPerf perf(__func__);
     if (!m_clientController.unregisterClient(m_webAudioPlayer))
     {
         RIALTO_CLIENT_LOG_WARN("Failed to unregister client with clientController");
@@ -115,6 +125,7 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
     : m_webAudioPlayerClient(client), m_clientController{clientController}, m_bytesPerFrame{0},
       m_currentAppState{ApplicationState::UNKNOWN}
 {
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     if (audioMimeType == "audio/x-raw")
@@ -147,6 +158,8 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
 
 WebAudioPlayer::~WebAudioPlayer()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     m_webAudioPlayerIpc.reset();
@@ -154,6 +167,8 @@ WebAudioPlayer::~WebAudioPlayer()
 
 bool WebAudioPlayer::play()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_webAudioPlayerIpc->play();
@@ -161,6 +176,8 @@ bool WebAudioPlayer::play()
 
 bool WebAudioPlayer::pause()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_webAudioPlayerIpc->pause();
@@ -168,6 +185,8 @@ bool WebAudioPlayer::pause()
 
 bool WebAudioPlayer::setEos()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_webAudioPlayerIpc->setEos();
@@ -175,6 +194,8 @@ bool WebAudioPlayer::setEos()
 
 bool WebAudioPlayer::getBufferAvailable(uint32_t &availableFrames, std::shared_ptr<WebAudioShmInfo> &)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     std::lock_guard<std::mutex> bufLocker(m_bufLock);
     if (!m_webAudioShmInfo)
@@ -186,6 +207,8 @@ bool WebAudioPlayer::getBufferAvailable(uint32_t &availableFrames, std::shared_p
 
 bool WebAudioPlayer::getBufferDelay(uint32_t &delayFrames)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_webAudioPlayerIpc->getBufferDelay(delayFrames);
@@ -193,6 +216,8 @@ bool WebAudioPlayer::getBufferDelay(uint32_t &delayFrames)
 
 bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     std::lock_guard<std::mutex> bufLocker(m_bufLock);
@@ -239,6 +264,8 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
 
 bool WebAudioPlayer::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maximumFrames, bool &supportDeferredPlay)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_webAudioPlayerIpc->getDeviceInfo(preferredFrames, maximumFrames, supportDeferredPlay);
@@ -246,6 +273,8 @@ bool WebAudioPlayer::getDeviceInfo(uint32_t &preferredFrames, uint32_t &maximumF
 
 bool WebAudioPlayer::setVolume(double volume)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_webAudioPlayerIpc->setVolume(volume);
@@ -253,6 +282,8 @@ bool WebAudioPlayer::setVolume(double volume)
 
 bool WebAudioPlayer::getVolume(double &volume)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     return m_webAudioPlayerIpc->getVolume(volume);
@@ -260,11 +291,15 @@ bool WebAudioPlayer::getVolume(double &volume)
 
 std::weak_ptr<IWebAudioPlayerClient> WebAudioPlayer::getClient()
 {
+    
+    RDKPerf perf(__func__);
     return m_webAudioPlayerClient;
 }
 
 void WebAudioPlayer::notifyState(WebAudioPlayerState state)
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IWebAudioPlayerClient> client = m_webAudioPlayerClient.lock();
     if (client)
     {
@@ -274,6 +309,8 @@ void WebAudioPlayer::notifyState(WebAudioPlayerState state)
 
 void WebAudioPlayer::notifyApplicationState(ApplicationState state)
 {
+    
+    RDKPerf perf(__func__);
     m_currentAppState = state;
 }
 

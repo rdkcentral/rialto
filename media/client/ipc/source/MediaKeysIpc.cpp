@@ -1,3 +1,4 @@
+#include "rdk_perf.h"
 /*
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
@@ -25,6 +26,8 @@ namespace
 firebolt::rialto::MediaKeyErrorStatus
 convertMediaKeyErrorStatus(const firebolt::rialto::ProtoMediaKeyErrorStatus &errorStatus)
 {
+    
+    RDKPerf perf(__func__);
     switch (errorStatus)
     {
     case firebolt::rialto::ProtoMediaKeyErrorStatus::OK:
@@ -65,6 +68,8 @@ convertMediaKeyErrorStatus(const firebolt::rialto::ProtoMediaKeyErrorStatus &err
 
 firebolt::rialto::KeyStatus convertKeyStatus(const firebolt::rialto::KeyStatusesChangedEvent_KeyStatus &protoKeyStatus)
 {
+    
+    RDKPerf perf(__func__);
     switch (protoKeyStatus)
     {
     case firebolt::rialto::KeyStatusesChangedEvent_KeyStatus_USABLE:
@@ -97,6 +102,8 @@ firebolt::rialto::KeyStatus convertKeyStatus(const firebolt::rialto::KeyStatuses
 
 const char *toString(const firebolt::rialto::MediaKeyErrorStatus &errorStatus)
 {
+    
+    RDKPerf perf(__func__);
     switch (errorStatus)
     {
     case firebolt::rialto::MediaKeyErrorStatus::OK:
@@ -140,6 +147,8 @@ namespace firebolt::rialto::client
 {
 std::shared_ptr<IMediaKeysIpcFactory> IMediaKeysIpcFactory::createFactory()
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IMediaKeysIpcFactory> factory;
 
     try
@@ -156,6 +165,8 @@ std::shared_ptr<IMediaKeysIpcFactory> IMediaKeysIpcFactory::createFactory()
 
 std::unique_ptr<IMediaKeys> MediaKeysIpcFactory::createMediaKeysIpc(const std::string &keySystem) const
 {
+    
+    RDKPerf perf(__func__);
     std::unique_ptr<IMediaKeys> mediaKeysIpc;
     try
     {
@@ -191,6 +202,8 @@ MediaKeysIpc::MediaKeysIpc(const std::string &keySystem, IIpcClient &ipcClient,
 
 MediaKeysIpc::~MediaKeysIpc()
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
     destroyMediaKeys();
@@ -202,6 +215,8 @@ MediaKeysIpc::~MediaKeysIpc()
 
 bool MediaKeysIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    
+    RDKPerf perf(__func__);
     m_mediaKeysStub = std::make_unique<::firebolt::rialto::MediaKeysModule_Stub>(ipcChannel.get());
     if (!m_mediaKeysStub)
     {
@@ -212,6 +227,8 @@ bool MediaKeysIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChann
 
 bool MediaKeysIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
+    
+    RDKPerf perf(__func__);
     if (!ipcChannel)
     {
         return false;
@@ -243,6 +260,8 @@ bool MediaKeysIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcCh
 
 bool MediaKeysIpc::createMediaKeys(const std::string &keySystem)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -275,6 +294,8 @@ bool MediaKeysIpc::createMediaKeys(const std::string &keySystem)
 
 void MediaKeysIpc::destroyMediaKeys()
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -301,12 +322,16 @@ void MediaKeysIpc::destroyMediaKeys()
 
 MediaKeyErrorStatus MediaKeysIpc::selectKeyId(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
+    
+    RDKPerf perf(__func__);
     RIALTO_CLIENT_LOG_ERROR("Not Implemented");
     return MediaKeyErrorStatus::FAIL;
 }
 
 bool MediaKeysIpc::containsKey(int32_t keySessionId, const std::vector<uint8_t> &keyId)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -344,6 +369,8 @@ bool MediaKeysIpc::containsKey(int32_t keySessionId, const std::vector<uint8_t> 
 MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
                                                    int32_t &keySessionId)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -397,6 +424,8 @@ MediaKeyErrorStatus MediaKeysIpc::generateRequest(int32_t keySessionId, InitData
                                                   const std::vector<uint8_t> &initData,
                                                   const LimitedDurationLicense &ldlState)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -468,6 +497,8 @@ MediaKeyErrorStatus MediaKeysIpc::generateRequest(int32_t keySessionId, InitData
 
 MediaKeyErrorStatus MediaKeysIpc::loadSession(int32_t keySessionId)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -494,6 +525,8 @@ MediaKeyErrorStatus MediaKeysIpc::loadSession(int32_t keySessionId)
 
 MediaKeyErrorStatus MediaKeysIpc::updateSession(int32_t keySessionId, const std::vector<uint8_t> &responseData)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -525,6 +558,8 @@ MediaKeyErrorStatus MediaKeysIpc::updateSession(int32_t keySessionId, const std:
 
 MediaKeyErrorStatus MediaKeysIpc::setDrmHeader(int32_t keySessionId, const std::vector<uint8_t> &requestData)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -555,6 +590,8 @@ MediaKeyErrorStatus MediaKeysIpc::setDrmHeader(int32_t keySessionId, const std::
 
 MediaKeyErrorStatus MediaKeysIpc::closeKeySession(int32_t keySessionId)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -584,6 +621,8 @@ MediaKeyErrorStatus MediaKeysIpc::closeKeySession(int32_t keySessionId)
 
 MediaKeyErrorStatus MediaKeysIpc::removeKeySession(int32_t keySessionId)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -610,6 +649,8 @@ MediaKeyErrorStatus MediaKeysIpc::removeKeySession(int32_t keySessionId)
 
 MediaKeyErrorStatus MediaKeysIpc::deleteDrmStore()
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -635,6 +676,8 @@ MediaKeyErrorStatus MediaKeysIpc::deleteDrmStore()
 
 MediaKeyErrorStatus MediaKeysIpc::deleteKeyStore()
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -660,6 +703,8 @@ MediaKeyErrorStatus MediaKeysIpc::deleteKeyStore()
 
 MediaKeyErrorStatus MediaKeysIpc::getDrmStoreHash(std::vector<unsigned char> &drmStoreHash)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -690,6 +735,8 @@ MediaKeyErrorStatus MediaKeysIpc::getDrmStoreHash(std::vector<unsigned char> &dr
 
 MediaKeyErrorStatus MediaKeysIpc::getKeyStoreHash(std::vector<unsigned char> &keyStoreHash)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -720,6 +767,8 @@ MediaKeyErrorStatus MediaKeysIpc::getKeyStoreHash(std::vector<unsigned char> &ke
 
 MediaKeyErrorStatus MediaKeysIpc::getLdlSessionsLimit(uint32_t &ldlLimit)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -750,6 +799,8 @@ MediaKeyErrorStatus MediaKeysIpc::getLdlSessionsLimit(uint32_t &ldlLimit)
 
 MediaKeyErrorStatus MediaKeysIpc::getLastDrmError(int32_t keySessionId, uint32_t &errorCode)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -781,6 +832,8 @@ MediaKeyErrorStatus MediaKeysIpc::getLastDrmError(int32_t keySessionId, uint32_t
 
 MediaKeyErrorStatus MediaKeysIpc::getDrmTime(uint64_t &drmTime)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -811,6 +864,8 @@ MediaKeyErrorStatus MediaKeysIpc::getDrmTime(uint64_t &drmTime)
 
 MediaKeyErrorStatus MediaKeysIpc::getCdmKeySessionId(int32_t keySessionId, std::string &cdmKeySessionId)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -839,6 +894,8 @@ MediaKeyErrorStatus MediaKeysIpc::getCdmKeySessionId(int32_t keySessionId, std::
 
 MediaKeyErrorStatus MediaKeysIpc::releaseKeySession(int32_t keySessionId)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
@@ -868,6 +925,8 @@ MediaKeyErrorStatus MediaKeysIpc::releaseKeySession(int32_t keySessionId)
 
 void MediaKeysIpc::onLicenseRequest(const std::shared_ptr<firebolt::rialto::LicenseRequestEvent> &event)
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IMediaKeysClient> mediaKeysIpcClient = m_mediaKeysIpcClient.lock();
 
     /* Ignore event if not for this session or no client */
@@ -881,6 +940,8 @@ void MediaKeysIpc::onLicenseRequest(const std::shared_ptr<firebolt::rialto::Lice
 
 void MediaKeysIpc::onLicenseRenewal(const std::shared_ptr<firebolt::rialto::LicenseRenewalEvent> &event)
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IMediaKeysClient> mediaKeysIpcClient = m_mediaKeysIpcClient.lock();
 
     /* Ignore event if not for this session or no client */
@@ -894,6 +955,8 @@ void MediaKeysIpc::onLicenseRenewal(const std::shared_ptr<firebolt::rialto::Lice
 
 void MediaKeysIpc::onKeyStatusesChanged(const std::shared_ptr<firebolt::rialto::KeyStatusesChangedEvent> &event)
 {
+    
+    RDKPerf perf(__func__);
     std::shared_ptr<IMediaKeysClient> mediaKeysIpcClient = m_mediaKeysIpcClient.lock();
 
     /* Ignore event if not for this session or no client */
@@ -915,6 +978,8 @@ MediaKeysIpc::getMediaKeyErrorStatusFromResponse(const std::string methodName,
                                                  const std::shared_ptr<google::protobuf::RpcController> &controller,
                                                  ProtoMediaKeyErrorStatus status)
 {
+    
+    RDKPerf perf(__func__);
     if (controller->Failed())
     {
         RIALTO_CLIENT_LOG_ERROR("%s failed due to '%s'", methodName.c_str(), controller->ErrorText().c_str());
@@ -932,6 +997,8 @@ MediaKeysIpc::getMediaKeyErrorStatusFromResponse(const std::string methodName,
 
 MediaKeyErrorStatus MediaKeysIpc::getMetricSystemData(std::vector<uint8_t> &buffer)
 {
+    
+    RDKPerf perf(__func__);
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");

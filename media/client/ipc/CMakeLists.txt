@@ -20,6 +20,8 @@
 # Find includes in corresponding build directories
 set( CMAKE_INCLUDE_CURRENT_DIR ON )
 
+find_package(RdkPerf REQUIRED)
+
 add_library (
         RialtoClientIpcImpl
         STATIC
@@ -67,4 +69,6 @@ target_link_libraries (
         RialtoPlayerCommon
         RialtoEthanLog
         RialtoProtobuf
+
+        ${RDKPERF_LIBRARIES}
 )
