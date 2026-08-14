@@ -1088,6 +1088,108 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachAdditionalAudioSampleWhenLast
     m_sut->attachData(firebolt::rialto::MediaSourceType::AUDIO);
 }
 
+TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachAdditionalAudioSampleWhenOnlyLastPendingPositionMatchesCurrent)
+{
+    constexpr std::int64_t kFirstPosition{456};
+    constexpr std::int64_t kSecondPosition{124};
+    constexpr double kRate{1.0};
+    constexpr bool kResetTime{true};
+    constexpr double kAppliedRate{1.0};
+    constexpr uint64_t kStopPosition{3453425};
+    GstBuffer buffer{};
+    GstAppSrc audioSrc{};
+    GstAppSrc videoSrc{};
+    GstSegment segment{};
+    GstSample *sample{nullptr};
+    GstCaps caps{};
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].buffers.emplace_back(&buffer);
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].isDataNeeded = true;
+            context.playbackRate = kRate;
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
+            // Only the last position matches the current one; the preceding (distinct) segment propagates,
+            // so no companion should be added.
+            context.initialPositions[GST_ELEMENT(&audioSrc)].emplace_back(
+                SegmentData{kFirstPosition, kResetTime, kAppliedRate, kStopPosition});
+            context.initialPositions[GST_ELEMENT(&audioSrc)].emplace_back(
+                SegmentData{kSecondPosition, kResetTime, kAppliedRate, kStopPosition});
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
+            context.currentPosition[GST_ELEMENT(&audioSrc)] =
+                SegmentData{kSecondPosition, kResetTime, kAppliedRate, kStopPosition};
+        });
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&audioSrc)).WillRepeatedly(Return(&caps));
+    EXPECT_CALL(*m_gstWrapperMock, gstSegmentNew()).WillRepeatedly(Return(&segment));
+    EXPECT_CALL(*m_gstWrapperMock, gstSegmentInit(&segment, GST_FORMAT_TIME)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstSegmentDoSeek(&segment, kRate, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, GST_SEEK_TYPE_SET, kFirstPosition,
+                                 GST_SEEK_TYPE_SET, kStopPosition, nullptr))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstSegmentDoSeek(&segment, kRate, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, GST_SEEK_TYPE_SET,
+                                 kSecondPosition, GST_SEEK_TYPE_SET, kStopPosition, nullptr))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstSampleNew(nullptr, &caps, &segment, nullptr)).WillRepeatedly(Return(sample));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushSample(&audioSrc, sample)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstSampleUnref(sample)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstSegmentFree(&segment)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&caps)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
+    m_sut->attachData(firebolt::rialto::MediaSourceType::AUDIO);
+}
+
+TEST_F(GstGenericPlayerPrivateTest, shouldNotAttachAdditionalAudioSampleWhenResetFlagsDifferForSamePosition)
+{
+    constexpr std::int64_t kPosition{124};
+    constexpr double kRate{1.0};
+    constexpr bool kResetTime{true};
+    constexpr bool kDoNotResetTime{false};
+    constexpr double kAppliedRate{1.0};
+    constexpr uint64_t kStopPosition{3453425};
+    GstBuffer buffer{};
+    GstAppSrc audioSrc{};
+    GstAppSrc videoSrc{};
+    GstSegment segment{};
+    GstSample *sample{nullptr};
+    GstCaps caps{};
+    modifyContext(
+        [&](GenericPlayerContext &context)
+        {
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].buffers.emplace_back(&buffer);
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].isDataNeeded = true;
+            context.playbackRate = kRate;
+            context.streamInfo[firebolt::rialto::MediaSourceType::AUDIO].appSrc = GST_ELEMENT(&audioSrc);
+            // Same position but different reset flags - the segments differ, so the last one propagates and
+            // no companion should be added.
+            context.initialPositions[GST_ELEMENT(&audioSrc)].emplace_back(
+                SegmentData{kPosition, kDoNotResetTime, kAppliedRate, kStopPosition});
+            context.initialPositions[GST_ELEMENT(&audioSrc)].emplace_back(
+                SegmentData{kPosition, kResetTime, kAppliedRate, kStopPosition});
+            context.streamInfo[firebolt::rialto::MediaSourceType::VIDEO].appSrc = GST_ELEMENT(&videoSrc);
+            context.currentPosition[GST_ELEMENT(&audioSrc)] =
+                SegmentData{kPosition, kResetTime, kAppliedRate, kStopPosition};
+        });
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&audioSrc)).WillRepeatedly(Return(&caps));
+    EXPECT_CALL(*m_gstWrapperMock, gstSegmentNew()).WillRepeatedly(Return(&segment));
+    EXPECT_CALL(*m_gstWrapperMock, gstSegmentInit(&segment, GST_FORMAT_TIME)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstSegmentDoSeek(&segment, kRate, GST_FORMAT_TIME, GST_SEEK_FLAG_NONE, GST_SEEK_TYPE_SET, kPosition,
+                                 GST_SEEK_TYPE_SET, kStopPosition, nullptr))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock,
+                gstSegmentDoSeek(&segment, kRate, GST_FORMAT_TIME, GST_SEEK_FLAG_FLUSH, GST_SEEK_TYPE_SET, kPosition,
+                                 GST_SEEK_TYPE_SET, kStopPosition, nullptr))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_gstWrapperMock, gstSampleNew(nullptr, &caps, &segment, nullptr)).WillRepeatedly(Return(sample));
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushSample(&audioSrc, sample)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstSampleUnref(sample)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstSegmentFree(&segment)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&caps)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstAppSrcPushBuffer(_, &buffer));
+    m_sut->attachData(firebolt::rialto::MediaSourceType::AUDIO);
+}
+
 TEST_F(GstGenericPlayerPrivateTest, undefinedStopPositionInSetSourcePosition)
 {
     constexpr std::int64_t kPosition{124};
