@@ -22,17 +22,10 @@ public:
     ~MediaCapabilities() override = default;
 
     firebolt::rialto::DecoderCapabilitiesStatus
-<<<<<<< HEAD
-    getAudioDecoderCapabilities(firebolt::rialto::AudioDecoderCapabilities &capabilities) override;
-
-    firebolt::rialto::DecoderCapabilitiesStatus
-    getVideoDecoderCapabilities(firebolt::rialto::VideoDecoderCapabilities &capabilities) override;
-=======
     getAudioDecoderCapabilities(firebolt::rialto::common::AudioDecoderCapabilities &capabilities) override;
 
     firebolt::rialto::DecoderCapabilitiesStatus
     getVideoDecoderCapabilities(firebolt::rialto::common::VideoDecoderCapabilities &capabilities) override;
->>>>>>> c39f8bc1 (RDKEMW-15078: Yaml Reader in RailtoServerManager changes)
 
 private:
     std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> m_yamlCppWrapper;

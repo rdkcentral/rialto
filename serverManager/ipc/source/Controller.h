@@ -55,24 +55,14 @@ public:
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                  const unsigned int socketPermissions, const std::string &socketOwner,
                                  const std::string &socketGroup, const std::string &appName,
-<<<<<<< HEAD
-                                 const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
-                                 const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps) override;
-=======
                                  const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
                                  const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) override;
->>>>>>> c39f8bc1 (RDKEMW-15078: Yaml Reader in RailtoServerManager changes)
     bool performSetConfiguration(int serverId, const firebolt::rialto::common::SessionServerState &initialState,
                                  int socketFd, const std::string &clientDisplayName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                  const std::string &appName,
-<<<<<<< HEAD
-                                 const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
-                                 const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps) override;
-=======
                                  const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
                                  const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) override;
->>>>>>> c39f8bc1 (RDKEMW-15078: Yaml Reader in RailtoServerManager changes)
     bool performPing(int serverId, int pingId) override;
     bool performSetState(int serverId, const firebolt::rialto::common::SessionServerState &state) override;
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;

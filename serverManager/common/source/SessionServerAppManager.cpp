@@ -41,11 +41,7 @@ SessionServerAppManager::SessionServerAppManager(
 {
     if (mediaCapabilities)
     {
-<<<<<<< HEAD
-        firebolt::rialto::AudioDecoderCapabilities audioCaps;
-=======
         firebolt::rialto::common::AudioDecoderCapabilities audioCaps;
->>>>>>> c39f8bc1 (RDKEMW-15078: Yaml Reader in RailtoServerManager changes)
         if (mediaCapabilities->getAudioDecoderCapabilities(audioCaps) == firebolt::rialto::DecoderCapabilitiesStatus::OK)
         {
             m_audioCapabilities = std::move(audioCaps);
@@ -56,11 +52,7 @@ SessionServerAppManager::SessionServerAppManager(
             RIALTO_SERVER_MANAGER_LOG_INFO("SessionServerAppManager: HFP YAML not found - capabilities will not be forwarded");
         }
 
-<<<<<<< HEAD
-        firebolt::rialto::VideoDecoderCapabilities videoCaps;
-=======
         firebolt::rialto::common::VideoDecoderCapabilities videoCaps;
->>>>>>> c39f8bc1 (RDKEMW-15078: Yaml Reader in RailtoServerManager changes)
         if (mediaCapabilities->getVideoDecoderCapabilities(videoCaps) == firebolt::rialto::DecoderCapabilitiesStatus::OK)
             m_videoCapabilities = std::move(videoCaps);
     }
