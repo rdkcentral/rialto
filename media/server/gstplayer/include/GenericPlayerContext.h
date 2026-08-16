@@ -26,6 +26,7 @@
 #include "IRdkGstreamerUtilsWrapper.h"
 #include "ITimer.h"
 #include "MediaCommon.h"
+#include <chrono>
 #include <gst/gst.h>
 #include <list>
 #include <map>
@@ -319,6 +320,18 @@ struct GenericPlayerContext
      * @brief Current position of the stream in nanoseconds.
      */
     std::atomic<int64_t> streamPosition{-1};
+
+    /**
+     * @brief Last valid playback position in nanoseconds.
+     * Used as fallback when position query fails to ensure continuous reporting.
+     */
+    int64_t lastValidPlaybackPosition{0};
+
+    /**
+     * @brief Timestamp (in milliseconds from steady clock) when lastValidPlaybackPosition was set.
+     * Used to estimate current position when query fails.
+     */
+    std::chrono::steady_clock::time_point lastValidPositionTimestamp{std::chrono::steady_clock::now()};
 };
 } // namespace firebolt::rialto::server
 

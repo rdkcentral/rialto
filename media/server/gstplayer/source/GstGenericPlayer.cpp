@@ -562,6 +562,29 @@ void GstGenericPlayer::notifyPlaybackInfo()
 {
     PlaybackInfo info;
     getPosition(info.currentPosition);
+    
+    // If position query failed, use last valid position as fallback
+    if (info.currentPosition < 0)
+    {
+        // Estimate position based on elapsed time since last valid position
+        auto now = std::chrono::steady_clock::now();
+        auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+            now - m_context.lastValidPositionTimestamp).count();
+        
+        // Play at 1x speed: position advances by elapsed time in nanoseconds
+        info.currentPosition = m_context.lastValidPlaybackPosition + (elapsed_ms * 1000000);
+        
+        RIALTO_SERVER_LOG_DEBUG("Position query failed, using estimated position: %" PRIu64 
+                                 " (cached: %" PRIu64 ", elapsed: %lld ms)",
+                                 info.currentPosition, m_context.lastValidPlaybackPosition, elapsed_ms);
+    }
+    else
+    {
+        // Update cache with valid position
+        m_context.lastValidPlaybackPosition = info.currentPosition;
+        m_context.lastValidPositionTimestamp = std::chrono::steady_clock::now();
+    }
+    
     m_context.streamPosition.store(info.currentPosition);
     if (m_context.audioFadeEnabled)
     {
