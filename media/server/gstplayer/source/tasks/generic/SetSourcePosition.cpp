@@ -20,8 +20,6 @@
 #include "SetSourcePosition.h"
 #include "RialtoServerLogging.h"
 #include "TypeConverters.h"
-#include <chrono>
-#include <cinttypes>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -42,12 +40,7 @@ SetSourcePosition::~SetSourcePosition()
 
 void SetSourcePosition::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing SetSourcePosition for %s source, position: %" PRIi64,
-                            common::convertMediaSourceType(m_type), m_position);
-
-    // Reset position cache on seek to ensure new position is used as base for estimation
-    m_context.lastValidPlaybackPosition = m_position;
-    m_context.lastValidPositionTimestamp = std::chrono::steady_clock::now();
+    RIALTO_SERVER_LOG_DEBUG("Executing SetSourcePosition for %s source", common::convertMediaSourceType(m_type));
 
     if (MediaSourceType::UNKNOWN == m_type)
     {
