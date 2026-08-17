@@ -348,7 +348,7 @@ void SessionServerAppManagerTests::sessionServerWillFailToSetConfigurationWithFd
     EXPECT_CALL(m_controllerMock,
                 performSetConfiguration(kServerId, firebolt::rialto::common::SessionServerState::INACTIVE,
                                         kSessionServerSocketFd, kClientDisplayName,
-                                        MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kAppName, Eq(std::nullopt), Eq(std::nullopt)))
+                                        MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kAppName, kAudioCapabilities, kVideoCapabilities))
         .WillOnce(Return(false));
     EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, firebolt::rialto::common::SessionServerState::UNINITIALIZED));
 }

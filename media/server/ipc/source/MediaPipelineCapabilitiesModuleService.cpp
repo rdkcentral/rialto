@@ -679,6 +679,7 @@ void MediaPipelineCapabilitiesModuleService::getSupportedAudioCapabilities(
         return;
     }
 
+    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: Check ImediaCapabilities: calling getMediaCapabilities");
     auto mediaCapabilities = m_mediaPipelineService.getMediaCapabilities();
     if (!mediaCapabilities)
     {
@@ -688,6 +689,7 @@ void MediaPipelineCapabilitiesModuleService::getSupportedAudioCapabilities(
         return;
     }
 
+    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: calling getSupportedAudioCapabilities");
     const firebolt::rialto::common::AudioDecoderCapabilities kAudioCapabilities =
         mediaCapabilities->getSupportedAudioCapabilities();
 
@@ -711,6 +713,7 @@ void MediaPipelineCapabilitiesModuleService::getSupportedVideoCapabilities(
         return;
     }
 
+    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: Check ImediaCapabilities: calling getMediaCapabilities");
     auto mediaCapabilities = m_mediaPipelineService.getMediaCapabilities();
     if (!mediaCapabilities)
     {
@@ -720,6 +723,7 @@ void MediaPipelineCapabilitiesModuleService::getSupportedVideoCapabilities(
         return;
     }
 
+    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: calling getSupportedVideoCapabilities");
     const firebolt::rialto::common::VideoDecoderCapabilities kVideoCapabilities =
         mediaCapabilities->getSupportedVideoCapabilities();
 

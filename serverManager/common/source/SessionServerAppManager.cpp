@@ -39,9 +39,13 @@ SessionServerAppManager::SessionServerAppManager(
       m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)},
       m_namedSocketFactory{namedSocketFactory}, m_isShuttingDown{false}
 {
+    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager to SessionServerAppManager");
+
     if (mediaCapabilities)
     {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager to SessionServerAppManager successfull");
         firebolt::rialto::common::AudioDecoderCapabilities audioCaps;
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager to SessionServerAppManager calling getAudioDecoderCapabilities");
         if (mediaCapabilities->getAudioDecoderCapabilities(audioCaps) == firebolt::rialto::DecoderCapabilitiesStatus::OK)
         {
             m_audioCapabilities = std::move(audioCaps);
@@ -53,6 +57,8 @@ SessionServerAppManager::SessionServerAppManager(
         }
 
         firebolt::rialto::common::VideoDecoderCapabilities videoCaps;
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager to SessionServerAppManager calling getVideoDecoderCapabilities");
+
         if (mediaCapabilities->getVideoDecoderCapabilities(videoCaps) == firebolt::rialto::DecoderCapabilitiesStatus::OK)
             m_videoCapabilities = std::move(videoCaps);
     }

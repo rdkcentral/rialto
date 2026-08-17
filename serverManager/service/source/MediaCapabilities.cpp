@@ -14,11 +14,13 @@ namespace rialto::servermanager::service
 MediaCapabilities::MediaCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper)
     : m_yamlCppWrapper{std::move(yamlCppWrapper)}
 {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: calling yamlCppWrapper->getAudioDecoderCapabilities and getVideoDecoderCapabilities");
 }
 
 firebolt::rialto::DecoderCapabilitiesStatus
 MediaCapabilities::getAudioDecoderCapabilities(firebolt::rialto::common::AudioDecoderCapabilities &capabilities)
 {
+    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: loading audio capabilities from YAML");
     RIALTO_SERVER_MANAGER_LOG_DEBUG("MediaCapabilities: loading audio capabilities from YAML");
     const auto status = m_yamlCppWrapper->getAudioDecoderCapabilities(capabilities);
     if (status == firebolt::rialto::DecoderCapabilitiesStatus::OK)
@@ -33,6 +35,7 @@ MediaCapabilities::getAudioDecoderCapabilities(firebolt::rialto::common::AudioDe
 firebolt::rialto::DecoderCapabilitiesStatus
 MediaCapabilities::getVideoDecoderCapabilities(firebolt::rialto::common::VideoDecoderCapabilities &capabilities)
 {
+    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: loading video capabilities from YAML");
     RIALTO_SERVER_MANAGER_LOG_DEBUG("MediaCapabilities: loading video capabilities from YAML");
     const auto status = m_yamlCppWrapper->getVideoDecoderCapabilities(capabilities);
     if (status == firebolt::rialto::DecoderCapabilitiesStatus::OK)
