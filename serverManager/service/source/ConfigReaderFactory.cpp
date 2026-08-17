@@ -19,47 +19,20 @@
 
 #include "ConfigReaderFactory.h"
 #include "ConfigReader.h"
-#include "YamlConfigReader.h"
 #include "FileReaderFactory.h"
 #include "IJsonCppWrapperFactory.h"
-
-#include <algorithm>
-#include <cctype>
-
-namespace
-{
-bool isYamlFile(const std::string &filePath)
-{
-    auto dotPos = filePath.find_last_of('.');
-    if (dotPos == std::string::npos)
-    {
-        return false;
-    }
-
-    std::string extension = filePath.substr(dotPos + 1);
-    std::transform(extension.begin(), extension.end(), extension.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-
-    return extension == "yaml" || extension == "yml";
-}
-} // namespace
 
 namespace rialto::servermanager::service
 {
 std::shared_ptr<IConfigReader> ConfigReaderFactory::createConfigReader(const std::string &filePath) const
 {
-    std::unique_ptr<IFileReaderFactory> fileReaderFactory = std::make_unique<FileReaderFactory>();
-    std::shared_ptr<IFileReader> fileReader = fileReaderFactory->createFileReader(filePath);
-
-    if (isYamlFile(filePath))
-    {
-        return std::make_shared<YamlConfigReader>(fileReader);
-    }
-
     std::shared_ptr<firebolt::rialto::wrappers::IJsonCppWrapperFactory> jsonCppWrapperFactory =
         firebolt::rialto::wrappers::IJsonCppWrapperFactory::createFactory();
     std::shared_ptr<firebolt::rialto::wrappers::IJsonCppWrapper> jsonWrapper =
         jsonCppWrapperFactory->createJsonCppWrapper();
+
+    std::unique_ptr<IFileReaderFactory> fileReaderFactory = std::make_unique<FileReaderFactory>();
+    std::shared_ptr<IFileReader> fileReader = fileReaderFactory->createFileReader(filePath);
 
     return std::make_shared<ConfigReader>(jsonWrapper, fileReader);
 }
