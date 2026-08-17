@@ -474,11 +474,18 @@ private:
     std::unique_ptr<firebolt::rialto::common::ITimer> m_finishSourceSetupTimer{nullptr};
 
     /**
-     * @brief Timer checking audio underflow
+     * @brief Timer reporting playback position.
      *
      * Variable can be used only in worker thread
      */
-    std::unique_ptr<firebolt::rialto::common::ITimer> m_positionReportingAndCheckAudioUnderflowTimer{nullptr};
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_positionReportingTimer{nullptr};
+
+    /**
+     * @brief Timer checking audio underflow.
+     *
+     * Variable can be used only in worker thread
+     */
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_audioUnderflowTimer{nullptr};
 
     /**
      * @brief Timer reporting playback information
