@@ -132,8 +132,8 @@ bool SessionServerManager::configureIpc(int32_t socketFd)
 bool SessionServerManager::configureServices(const common::SessionServerState &state,
                                              const common::MaxResourceCapabilitites &maxResource,
                                              const std::string &clientDisplayName, const std::string &appName,
-                                             const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
-                                             const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps)
+                                             const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                             const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
 {
     // Supply pre-loaded capabilities to GstCapabilitiesFactory before first use
     auto gstCapFactory = firebolt::rialto::server::IGstCapabilitiesFactory::getFactory();

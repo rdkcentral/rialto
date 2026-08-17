@@ -33,7 +33,7 @@
 #include <string>
 #include <vector>
 
-namespace firebolt::rialto
+namespace firebolt::rialto::common
 {
 /**
  * @brief Supported audio codecs

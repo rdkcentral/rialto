@@ -35,6 +35,7 @@
 #include <unordered_map>
 
 using namespace firebolt::rialto;
+using namespace firebolt::rialto::common;
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::wrappers;
 
@@ -53,8 +54,8 @@ namespace
 const GstElementFactoryListType kExpectedFactoryListType{
     GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_PARSER |
     GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
-firebolt::rialto::AudioDecoderCapabilities kAudioCapabilities{"1.0", "1.1", {}};
-firebolt::rialto::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
+firebolt::rialto::common::AudioDecoderCapabilities kAudioCapabilities{"1.0", "1.1", {}};
+firebolt::rialto::common::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
 const GType kDummyType{3};
 }; // namespace
 template <typename T> class GListWrapper

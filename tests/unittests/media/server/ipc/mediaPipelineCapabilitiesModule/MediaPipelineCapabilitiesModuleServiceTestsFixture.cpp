@@ -44,9 +44,9 @@ const firebolt::rialto::MediaSourceType kSourceType{firebolt::rialto::MediaSourc
 const firebolt::rialto::ProtoMediaSourceType kMediaSourceType{firebolt::rialto::ProtoMediaSourceType::VIDEO};
 const std::vector<std::string> kPropertyNames{"test-property", "another-property"};
 constexpr bool kIsVideoMaster{true};
-const firebolt::rialto::AudioDecoderCapabilities kAudioCapabilities = []()
+const firebolt::rialto::common::AudioDecoderCapabilities kAudioCapabilities = []()
 {
-    using namespace firebolt::rialto;
+    using namespace firebolt::rialto::common;
     AudioDecoderCapability cap;
     cap.pcm = PcmCapability{{1536000, 8, 192000, 32}};
     cap.aac = AacCapability{{{AacProfile::LC, AudioProfileCapability{576000, 8, 96000, 24}}}};
@@ -67,9 +67,9 @@ const firebolt::rialto::AudioDecoderCapabilities kAudioCapabilities = []()
     cap.avs = AvsCapability{{{AvsProfile::AVS2, AudioProfileCapability{512000, 8, 48000, 24}}}};
     return AudioDecoderCapabilities{"1.0", "2.0", {cap}};
 }();
-const firebolt::rialto::VideoDecoderCapabilities kVideoCapabilities = []()
+const firebolt::rialto::common::VideoDecoderCapabilities kVideoCapabilities = []()
 {
-    using namespace firebolt::rialto;
+    using namespace firebolt::rialto::common;
     VideoDecoderCapability videoCap;
     videoCap.codecCapabilities.h264 =
         H264CodecCapability{{{H264ProfileType::H264_HIGH, H264Level::H264_LEVEL_5_1, 50000000u},
@@ -104,7 +104,8 @@ MediaPipelineCapabilitiesModuleServiceTests::MediaPipelineCapabilitiesModuleServ
     : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()},
       m_closureMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClosureMock>>()},
       m_controllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ControllerMock>>()},
-      m_invalidControllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::RpcControllerMock>>()}
+      m_invalidControllerMock{std::make_shared<StrictMock<firebolt::rialto::ipc::RpcControllerMock>>()},
+      m_mediaCapabilitiesMock{std::make_shared<StrictMock<firebolt::rialto::IMediaCapabilitiesMock>>()}
 {
     m_service = std::make_shared<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleService>(
         m_mediaPipelineServiceMock);
@@ -148,13 +149,15 @@ void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillCheckIfVideoI
 void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillGetSupportedAudioCapabilities()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getSupportedAudioCapabilities()).WillOnce(Return(kAudioCapabilities));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getMediaCapabilities()).WillOnce(Return(m_mediaCapabilitiesMock));
+    EXPECT_CALL(*m_mediaCapabilitiesMock, getSupportedAudioCapabilities()).WillOnce(Return(kAudioCapabilities));
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillGetSupportedVideoCapabilities()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getSupportedVideoCapabilities()).WillOnce(Return(kVideoCapabilities));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getMediaCapabilities()).WillOnce(Return(m_mediaCapabilitiesMock));
+    EXPECT_CALL(*m_mediaCapabilitiesMock, getSupportedVideoCapabilities()).WillOnce(Return(kVideoCapabilities));
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::expectRequestSuccess()

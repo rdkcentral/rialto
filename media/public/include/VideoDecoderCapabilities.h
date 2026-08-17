@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-namespace firebolt::rialto
+namespace firebolt::rialto::common
 {
 /**
  * @brief Dynamic range types

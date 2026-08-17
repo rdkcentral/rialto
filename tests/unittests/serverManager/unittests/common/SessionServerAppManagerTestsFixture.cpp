@@ -56,7 +56,7 @@ const std::string kEmptyAppName{""};
 constexpr int kServerId{3};
 constexpr unsigned kNumOfPreloadedServers{1};
 const int kAppMgmtSocket{0};
-const std::string kSessionServerSocketName{getenv("RIALTO_SOCKET_PATH")};
+const std::string kSessionServerSocketName{getenv("RIALTO_SOCKET_PATH") ? getenv("RIALTO_SOCKET_PATH") : ""};
 constexpr int kMaxSessions{2};
 constexpr int kMaxWebAudioPlayers{3};
 constexpr rialto::servermanager::service::LoggingLevels

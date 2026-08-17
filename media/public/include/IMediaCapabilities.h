@@ -44,9 +44,9 @@ public:
     IMediaCapabilities(IMediaCapabilities &&) = delete;
     IMediaCapabilities &operator=(IMediaCapabilities &&) = delete;
 
-    virtual AudioDecoderCapabilities getSupportedAudioCapabilities() = 0;
+    virtual firebolt::rialto::common::AudioDecoderCapabilities getSupportedAudioCapabilities() = 0;
 
-    virtual VideoDecoderCapabilities getSupportedVideoCapabilities() = 0;
+    virtual firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() = 0;
 };
 
 } // namespace firebolt::rialto

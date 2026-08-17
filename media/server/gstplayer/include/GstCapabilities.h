@@ -47,12 +47,12 @@ public:
 
     std::unique_ptr<IGstCapabilities> createGstCapabilities() override;
     void setPreloadedCapabilities(
-        const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
-        const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps) override;
+        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) override;
 
 private:
-    std::optional<firebolt::rialto::AudioDecoderCapabilities> m_preloadedAudio;
-    std::optional<firebolt::rialto::VideoDecoderCapabilities> m_preloadedVideo;
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> m_preloadedAudio;
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> m_preloadedVideo;
 };
 
 class GstCapabilities : public IGstCapabilities
@@ -64,8 +64,8 @@ public:
         const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
         const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCppWrapper,
         const IGstInitialiser &gstInitialiser,
-        const std::optional<firebolt::rialto::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
-        const std::optional<firebolt::rialto::VideoDecoderCapabilities> &preloadedVideo = std::nullopt);
+        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
+        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt);
     ~GstCapabilities();
 
     GstCapabilities(const GstCapabilities &) = delete;
@@ -112,14 +112,14 @@ public:
      *
      * @retval The supported audio capabilities.
      */
-    AudioDecoderCapabilities getSupportedAudioCapabilities() override;
+    firebolt::rialto::common::AudioDecoderCapabilities getSupportedAudioCapabilities() override;
 
     /**
      * @brief Gets the supported video capabilities.
      *
      * @retval The supported video capabilities.
      */
-    VideoDecoderCapabilities getSupportedVideoCapabilities() override;
+    firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
 
 private:
     /**
@@ -169,12 +169,12 @@ private:
     /**
      * @brief Set of audio decoder capabilities
      */
-    AudioDecoderCapabilities m_audioDecoderCapabilities;
+    firebolt::rialto::common::AudioDecoderCapabilities m_audioDecoderCapabilities;
 
     /**
      * @brief Set of video decoder capabilities
      */
-    VideoDecoderCapabilities m_videoDecoderCapabilities;
+    firebolt::rialto::common::VideoDecoderCapabilities m_videoDecoderCapabilities;
 
     /**
      * @brief The gstreamer wrapper object.

@@ -28,9 +28,9 @@
 
 namespace
 {
-firebolt::rialto::AudioDecoderCapabilities convertAudioCapabilities(const rialto::AudioCapabilities &src)
+firebolt::rialto::common::AudioDecoderCapabilities convertAudioCapabilities(const rialto::AudioCapabilities &src)
 {
-    firebolt::rialto::AudioDecoderCapabilities result;
+    firebolt::rialto::common::AudioDecoderCapabilities result;
     result.interfaceVersion = src.interface_version();
     result.schemaVersion    = src.schema_version();
     // Capability fields are populated by GstCapabilities path B if needed;
@@ -38,9 +38,9 @@ firebolt::rialto::AudioDecoderCapabilities convertAudioCapabilities(const rialto
     return result;
 }
 
-firebolt::rialto::VideoDecoderCapabilities convertVideoCapabilities(const rialto::VideoCapabilities &src)
+firebolt::rialto::common::VideoDecoderCapabilities convertVideoCapabilities(const rialto::VideoCapabilities &src)
 {
-    firebolt::rialto::VideoDecoderCapabilities result;
+    firebolt::rialto::common::VideoDecoderCapabilities result;
     result.interfaceVersion = src.interface_version();
     result.schemaVersion    = src.schema_version();
     return result;
@@ -117,8 +117,8 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     const auto kClientDisplayName = request->has_clientdisplayname() ? request->clientdisplayname() : "";
 
     // Deserialise typed capability fields into C++ structs (optional — absent fields → std::nullopt)
-    std::optional<firebolt::rialto::AudioDecoderCapabilities> audioCaps;
-    std::optional<firebolt::rialto::VideoDecoderCapabilities> videoCaps;
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> audioCaps;
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> videoCaps;
     if (request->has_audiocapabilities() && request->has_videocapabilities())
     {
         RIALTO_SERVER_LOG_DEBUG("ServerManagerModuleService: audio/video capabilities received in SetConfiguration");

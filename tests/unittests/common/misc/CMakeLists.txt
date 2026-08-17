@@ -26,6 +26,7 @@ add_library(
         RialtoCommonMisc
         STATIC
         DecoderCapabilitiesUtil.cpp
+        DecoderCapabilitiesUtil.h
         MediaSourceUtil.cpp
         WebAudioUtil.cpp
     )

@@ -50,8 +50,8 @@ public:
     virtual bool configureServices(const common::SessionServerState &state,
                                    const common::MaxResourceCapabilitites &maxResource,
                                    const std::string &clientDisplayName, const std::string &appName,
-                                   const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
-                                   const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps) = 0;
+                                   const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                   const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) = 0;
     virtual bool setState(const common::SessionServerState &state) = 0;
     virtual void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                               RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,

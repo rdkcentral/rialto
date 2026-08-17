@@ -684,18 +684,9 @@ bool MediaPipelineService::isVideoMaster(bool &isVideoMaster)
     return m_mediaPipelineCapabilities->isVideoMaster(isVideoMaster);
 }
 
-AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabilities()
+std::shared_ptr<firebolt::rialto::IMediaCapabilities> MediaPipelineService::getMediaCapabilities() const
 {
-    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested check supported audio capabilities");
-
-    return m_mediaPipelineCapabilities->getSupportedAudioCapabilities();
-}
-
-VideoDecoderCapabilities MediaPipelineService::getSupportedVideoCapabilities()
-{
-    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested check supported video capabilities");
-
-    return m_mediaPipelineCapabilities->getSupportedVideoCapabilities();
+    return std::dynamic_pointer_cast<firebolt::rialto::IMediaCapabilities>(m_mediaPipelineCapabilities);
 }
 
 std::vector<std::string> MediaPipelineService::getSupportedMimeTypes(MediaSourceType type)

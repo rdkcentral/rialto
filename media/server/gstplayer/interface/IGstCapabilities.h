@@ -47,8 +47,8 @@ public:
 
     // Supply pre-loaded capabilities forwarded from ServerManager; used by next createGstCapabilities() call.
     virtual void setPreloadedCapabilities(
-        const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
-        const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps) = 0;
+        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) = 0;
 };
 
 class IGstCapabilities
@@ -101,14 +101,14 @@ public:
      *
      * @retval The supported audio capabilities.
      */
-    virtual AudioDecoderCapabilities getSupportedAudioCapabilities() = 0;
+    virtual firebolt::rialto::common::AudioDecoderCapabilities getSupportedAudioCapabilities() = 0;
 
     /**
      * @brief Gets the supported video capabilities.
      *
      * @retval The supported video capabilities.
      */
-    virtual VideoDecoderCapabilities getSupportedVideoCapabilities() = 0;
+    virtual firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() = 0;
 };
 
 }; // namespace firebolt::rialto::server

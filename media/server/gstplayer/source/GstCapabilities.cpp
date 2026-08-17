@@ -115,8 +115,8 @@ std::shared_ptr<IGstCapabilitiesFactory> IGstCapabilitiesFactory::getFactory()
 }
 
 void GstCapabilitiesFactory::setPreloadedCapabilities(
-    const std::optional<firebolt::rialto::AudioDecoderCapabilities> &audioCaps,
-    const std::optional<firebolt::rialto::VideoDecoderCapabilities> &videoCaps)
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
 {
     m_preloadedAudio = audioCaps;
     m_preloadedVideo = videoCaps;
@@ -182,8 +182,8 @@ GstCapabilities::GstCapabilities(
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCppWrapper,
     const IGstInitialiser &gstInitialiser,
-    const std::optional<firebolt::rialto::AudioDecoderCapabilities> &preloadedAudio,
-    const std::optional<firebolt::rialto::VideoDecoderCapabilities> &preloadedVideo)
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo)
     : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
       m_yamlCppWrapper{yamlCppWrapper}, m_gstInitialiser{gstInitialiser}
 {
@@ -500,12 +500,12 @@ bool GstCapabilities::isVideoMaster(bool &isVideoMaster)
     return true;
 }
 
-AudioDecoderCapabilities GstCapabilities::getSupportedAudioCapabilities()
+firebolt::rialto::common::AudioDecoderCapabilities GstCapabilities::getSupportedAudioCapabilities()
 {
     return m_audioDecoderCapabilities;
 }
 
-VideoDecoderCapabilities GstCapabilities::getSupportedVideoCapabilities()
+firebolt::rialto::common::VideoDecoderCapabilities GstCapabilities::getSupportedVideoCapabilities()
 {
     return m_videoDecoderCapabilities;
 }

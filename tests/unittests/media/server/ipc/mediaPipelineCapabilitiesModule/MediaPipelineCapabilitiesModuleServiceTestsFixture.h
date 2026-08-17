@@ -22,6 +22,7 @@
 
 #include "ClientMock.h"
 #include "ClosureMock.h"
+#include "IMediaCapabilitiesMock.h"
 #include "IMediaPipelineCapabilitiesModuleService.h"
 #include "IpcControllerMock.h"
 #include "IpcServerMock.h"
@@ -68,6 +69,7 @@ private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClosureMock>> m_closureMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ControllerMock>> m_controllerMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::RpcControllerMock>> m_invalidControllerMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::IMediaCapabilitiesMock>> m_mediaCapabilitiesMock;
     StrictMock<firebolt::rialto::server::service::MediaPipelineServiceMock> m_mediaPipelineServiceMock;
     std::shared_ptr<firebolt::rialto::server::ipc::IMediaPipelineCapabilitiesModuleService> m_service;
 
