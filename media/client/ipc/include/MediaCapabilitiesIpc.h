@@ -22,8 +22,8 @@ public:
     explicit MediaCapabilitiesIpc(IIpcClient &ipcClient);
     ~MediaCapabilitiesIpc() override;
 
-    AudioDecoderCapabilities getSupportedAudioCapabilities() override;
-    VideoDecoderCapabilities getSupportedVideoCapabilities() override;
+    common::AudioDecoderCapabilities getSupportedAudioCapabilities() override;
+    common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
 
 protected:
     bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;

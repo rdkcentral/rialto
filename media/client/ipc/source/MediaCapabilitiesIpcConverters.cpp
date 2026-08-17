@@ -1,33 +1,21 @@
 /*
- * If not stated otherwise in this file or this component's LICENSE file the
- * following copyright and licenses apply:
- *
- * Copyright 2022 Sky UK
+ * Copyright 2026 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
  */
 
-#include "MediaPipelineCapabilitiesIpc.h"
-#include "MediaCapabilitiesIpc.h"
-#include "RialtoClientLogging.h"
-#include "RialtoCommonIpc.h"
 #include "MediaCapabilitiesIpcConverters.h"
 
-/*
+namespace firebolt::rialto::client
+{
 namespace
 {
 using AudioCapabilitiesResponse = firebolt::rialto::GetSupportedAudioCapabilitiesResponse;
 using VideoCapabilitiesResponse = firebolt::rialto::GetSupportedVideoCapabilitiesResponse;
+
+// ---------- Audio converter helpers ----------
 
 firebolt::rialto::common::AudioProfileCapability
 convertAudioProfileCapability(const AudioCapabilitiesResponse::AudioProfileCapability &proto)
@@ -219,18 +207,6 @@ convertAudioDecoderCapability(const AudioCapabilitiesResponse::AudioDecoderCapab
             std::map<firebolt::rialto::common::AvsProfile, firebolt::rialto::common::AudioProfileCapability>>(proto.avs(),
                                                                                               convertAvsProfile)};
 
-    return result;
-}
-
-firebolt::rialto::common::AudioDecoderCapabilities convertAudioDecoderCapabilities(const AudioCapabilitiesResponse &response)
-{
-    firebolt::rialto::common::AudioDecoderCapabilities result;
-    result.interfaceVersion = response.interface_version();
-    result.schemaVersion = response.schema_version();
-    for (const auto &cap : response.capabilities())
-    {
-        result.capabilities.push_back(convertAudioDecoderCapability(cap));
-    }
     return result;
 }
 
@@ -578,7 +554,23 @@ firebolt::rialto::common::VideoDecoderCapability convertVideoDecoderCapability(c
     return result;
 }
 
-firebolt::rialto::common::VideoDecoderCapabilities convertVideoDecoderCapabilities(const VideoCapabilitiesResponse &response)
+} // namespace
+
+firebolt::rialto::common::AudioDecoderCapabilities
+convertAudioDecoderCapabilities(const firebolt::rialto::GetSupportedAudioCapabilitiesResponse &response)
+{
+    firebolt::rialto::common::AudioDecoderCapabilities result;
+    result.interfaceVersion = response.interface_version();
+    result.schemaVersion = response.schema_version();
+    for (const auto &cap : response.capabilities())
+    {
+        result.capabilities.push_back(convertAudioDecoderCapability(cap));
+    }
+    return result;
+}
+
+firebolt::rialto::common::VideoDecoderCapabilities
+convertVideoDecoderCapabilities(const firebolt::rialto::GetSupportedVideoCapabilitiesResponse &response)
 {
     firebolt::rialto::common::VideoDecoderCapabilities result;
     result.interfaceVersion = response.interface_version();
@@ -589,259 +581,5 @@ firebolt::rialto::common::VideoDecoderCapabilities convertVideoDecoderCapabiliti
     }
     return result;
 }
-} // namespace
- */
 
-namespace firebolt::rialto::client
-{
-std::shared_ptr<IMediaPipelineCapabilitiesIpcFactory> IMediaPipelineCapabilitiesIpcFactory::createFactory()
-{
-    std::shared_ptr<IMediaPipelineCapabilitiesIpcFactory> factory;
-
-    try
-    {
-        factory = std::make_shared<MediaPipelineCapabilitiesIpcFactory>();
-    }
-    catch (const std::exception &e)
-    {
-        RIALTO_CLIENT_LOG_ERROR("Failed to create the media pipeline capabilities ipc factory, reason: %s", e.what());
-    }
-
-    return factory;
-}
-
-std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesIpcFactory::createMediaPipelineCapabilitiesIpc() const
-{
-    std::unique_ptr<IMediaPipelineCapabilities> mediaPipelineCapabilitiesIpc;
-
-    try
-    {
-        mediaPipelineCapabilitiesIpc =
-            std::make_unique<client::MediaPipelineCapabilitiesIpc>(IIpcClientAccessor::instance().getIpcClient());
-    }
-    catch (const std::exception &e)
-    {
-        RIALTO_CLIENT_LOG_ERROR("Failed to create the media pipeline capabilities ipc, reason: %s", e.what());
-    }
-
-    return mediaPipelineCapabilitiesIpc;
-}
-
-MediaPipelineCapabilitiesIpc::MediaPipelineCapabilitiesIpc(IIpcClient &ipcClient) : IpcModule(ipcClient)
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    if (!attachChannel())
-    {
-        throw std::runtime_error("Failed attach to the ipc channel");
-    }
-}
-
-MediaPipelineCapabilitiesIpc::~MediaPipelineCapabilitiesIpc()
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    detachChannel();
-}
-
-bool MediaPipelineCapabilitiesIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
-{
-    m_mediaPipelineCapabilitiesStub =
-        std::make_unique<::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub>(ipcChannel.get());
-    if (!m_mediaPipelineCapabilitiesStub)
-    {
-        return false;
-    }
-    return true;
-}
-
-std::vector<std::string> MediaPipelineCapabilitiesIpc::getSupportedMimeTypes(MediaSourceType sourceType)
-{
-    if (!reattachChannelIfRequired())
-    {
-        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
-        return {};
-    }
-
-    firebolt::rialto::GetSupportedMimeTypesRequest request;
-    request.set_media_type(convertProtoMediaSourceType(sourceType));
-
-    firebolt::rialto::GetSupportedMimeTypesResponse response;
-    auto ipcController = m_ipc.createRpcController();
-    auto blockingClosure = m_ipc.createBlockingClosure();
-    m_mediaPipelineCapabilitiesStub->getSupportedMimeTypes(ipcController.get(), &request, &response,
-                                                           blockingClosure.get());
-
-    // wait for the call to complete
-    blockingClosure->wait();
-
-    // check the result
-    if (ipcController->Failed())
-    {
-        RIALTO_CLIENT_LOG_ERROR("failed to get supported mime types due to '%s'", ipcController->ErrorText().c_str());
-        return {};
-    }
-
-    return std::vector<std::string>{response.mime_types().begin(), response.mime_types().end()};
-}
-
-bool MediaPipelineCapabilitiesIpc::isMimeTypeSupported(const std::string &mimeType)
-{
-    if (!reattachChannelIfRequired())
-    {
-        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
-        return false;
-    }
-
-    firebolt::rialto::IsMimeTypeSupportedRequest request;
-    request.set_mime_type(mimeType);
-
-    firebolt::rialto::IsMimeTypeSupportedResponse response;
-    auto ipcController = m_ipc.createRpcController();
-    auto blockingClosure = m_ipc.createBlockingClosure();
-    m_mediaPipelineCapabilitiesStub->isMimeTypeSupported(ipcController.get(), &request, &response, blockingClosure.get());
-
-    // wait for the call to complete
-    blockingClosure->wait();
-
-    // check the result
-    if (ipcController->Failed())
-    {
-        RIALTO_CLIENT_LOG_ERROR("failed to check if mime type '%s' is supported due to '%s'", mimeType.c_str(),
-                                ipcController->ErrorText().c_str());
-        return false;
-    }
-
-    return response.is_supported();
-}
-
-std::vector<std::string> MediaPipelineCapabilitiesIpc::getSupportedProperties(MediaSourceType mediaType,
-                                                                              const std::vector<std::string> &propertyNames)
-{
-    if (!reattachChannelIfRequired())
-    {
-        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
-        return {};
-    }
-
-    firebolt::rialto::GetSupportedPropertiesRequest request;
-    request.set_media_type(convertProtoMediaSourceType(mediaType));
-    for (const std::string &property : propertyNames)
-        request.add_property_names(property);
-
-    firebolt::rialto::GetSupportedPropertiesResponse response;
-    auto ipcController = m_ipc.createRpcController();
-    auto blockingClosure = m_ipc.createBlockingClosure();
-    m_mediaPipelineCapabilitiesStub->getSupportedProperties(ipcController.get(), &request, &response,
-                                                            blockingClosure.get());
-
-    // wait for the call to complete
-    blockingClosure->wait();
-
-    // check the result
-    if (ipcController->Failed())
-    {
-        RIALTO_CLIENT_LOG_ERROR("failed due to '%s'", ipcController->ErrorText().c_str());
-        return std::vector<std::string>{};
-    }
-
-    return std::vector<std::string>{response.supported_properties().begin(), response.supported_properties().end()};
-}
-
-bool MediaPipelineCapabilitiesIpc::isVideoMaster(bool &isVideoMaster)
-{
-    if (!reattachChannelIfRequired())
-    {
-        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
-        return {};
-    }
-
-    firebolt::rialto::IsVideoMasterRequest request;
-    firebolt::rialto::IsVideoMasterResponse response;
-    auto ipcController = m_ipc.createRpcController();
-    auto blockingClosure = m_ipc.createBlockingClosure();
-    m_mediaPipelineCapabilitiesStub->isVideoMaster(ipcController.get(), &request, &response, blockingClosure.get());
-
-    // wait for the call to complete
-    blockingClosure->wait();
-
-    // check the result
-    if (ipcController->Failed())
-    {
-        RIALTO_CLIENT_LOG_ERROR("failed due to '%s'", ipcController->ErrorText().c_str());
-        return false;
-    }
-
-    isVideoMaster = response.is_video_master();
-
-    return true;
-}
-
-firebolt::rialto::common::AudioDecoderCapabilities MediaCapabilitiesIpc::getSupportedAudioCapabilities()
-{
-    RIALTO_CLIENT_LOG_ERROR("USHA: MediaPipelineCapabilitiesIpc: MediaCapabilitiesIpc::getSupportedAudioCapabilities");
-    if (!reattachChannelIfRequired())
-    {
-        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
-        return firebolt::rialto::common::AudioDecoderCapabilities{};
-    }
-
-    firebolt::rialto::GetSupportedAudioCapabilitiesRequest request;
-    firebolt::rialto::GetSupportedAudioCapabilitiesResponse response;
-    auto ipcController = m_ipc.createRpcController();
-    auto blockingClosure = m_ipc.createBlockingClosure();
-    RIALTO_CLIENT_LOG_ERROR("USHA: MediaPipelineCapabilitiesIpc: MediaCapabilitiesIpc::getSupportedAudioCapabilities calling getSupportedAudioCapabilities");
-    m_stub->getSupportedAudioCapabilities(ipcController.get(), &request, &response,
-                                                                   blockingClosure.get());
-
-    //m_mediaPipelineCapabilitiesStub->getSupportedAudioCapabilities(ipcController.get(), &request, &response,
-    //                                                               blockingClosure.get());
-
-    // wait for the call to complete
-    blockingClosure->wait();
-
-    // check the result
-    if (ipcController->Failed())
-    {
-        RIALTO_CLIENT_LOG_ERROR("failed due to '%s'", ipcController->ErrorText().c_str());
-        return firebolt::rialto::common::AudioDecoderCapabilities{};
-    }
-
-    RIALTO_CLIENT_LOG_ERROR("USHA: MediaPipelineCapabilitiesIpc: MediaCapabilitiesIpc::getSupportedAudioCapabilities calling convertAudioDecoderCapabilities");
-    return convertAudioDecoderCapabilities(response);
-}
-
-firebolt::rialto::common::VideoDecoderCapabilities MediaCapabilitiesIpc::getSupportedVideoCapabilities()
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-    RIALTO_CLIENT_LOG_ERROR("USHA: MediaPipelineCapabilitiesIpc: MediaCapabilitiesIpc::getSupportedVideoCapabilities");
-
-    if (!reattachChannelIfRequired())
-    {
-        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
-        return firebolt::rialto::common::VideoDecoderCapabilities{};
-    }
-
-    firebolt::rialto::GetSupportedVideoCapabilitiesRequest request;
-    firebolt::rialto::GetSupportedVideoCapabilitiesResponse response;
-    auto ipcController = m_ipc.createRpcController();
-    auto blockingClosure = m_ipc.createBlockingClosure();
-    RIALTO_CLIENT_LOG_ERROR("USHA: MediaPipelineCapabilitiesIpc: MediaCapabilitiesIpc::getSupportedVideoCapabilities: calling getSupportedVideoCapabilities");
-    m_stub->getSupportedVideoCapabilities(ipcController.get(), &request, &response,
-                                                                   blockingClosure.get());
-    //m_mediaPipelineCapabilitiesStub->getSupportedVideoCapabilities(ipcController.get(), &request, &response,
-    //                                                               blockingClosure.get());
-
-    // wait for the call to complete
-    blockingClosure->wait();
-
-    // check the result
-    if (ipcController->Failed())
-    {
-        RIALTO_CLIENT_LOG_ERROR("failed due to '%s'", ipcController->ErrorText().c_str());
-        return firebolt::rialto::common::VideoDecoderCapabilities{};
-    }
-    RIALTO_CLIENT_LOG_ERROR("USHA: MediaPipelineCapabilitiesIpc: MediaCapabilitiesIpc::getSupportedVideoCapabilities: calling convertVideoDecoderCapabilities");
-    return convertVideoDecoderCapabilities(response);
-}
-}; // namespace firebolt::rialto::client
+} // namespace firebolt::rialto::client

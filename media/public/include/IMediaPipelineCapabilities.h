@@ -119,9 +119,9 @@ public:
      */
     virtual bool isVideoMaster(bool &isVideoMaster) = 0;
     // getSupportedAudioCapabilities() and getSupportedVideoCapabilities() have been removed.
-    // Use IMediaCapabilities instead.
+    // Use IMediaCapabilities instead.                  
 };
 
 }; // namespace firebolt::rialto
 
-#endif // FIREBOLT_RIALTO_I_MEDIA_PIPELINE_CAPABILITIES_H_
+#endif // FIREBOLT_RIALTO_I_MEDIA_PIPELINE_CAPABILITIES_H_                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      
