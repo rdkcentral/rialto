@@ -31,7 +31,8 @@ namespace
 const char *underflowSignals[]{"buffer-underflow-callback", "vidsink-underflow-callback", "underrun-callback"};
 const char *firstFrameSignals[]{"first-video-frame-callback", "first-audio-frame", "first-audio-frame-callback"};
 
-bool isType(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element, GstElementFactoryListType type)
+bool isType(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElement *element,
+            GstElementFactoryListType type)
 {
     if (!element)
     {
