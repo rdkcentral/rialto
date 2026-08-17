@@ -46,7 +46,7 @@ namespace
  *        The position reporting timer should be started whenever the PLAYING state is entered and stopped
  *        whenever the session moves to another playback state.
  */
-constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
+constexpr std::chrono::milliseconds kPositionReportTimerMs{50};
 constexpr std::chrono::seconds kSubtitleClockResyncInterval{10};
 
 bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)

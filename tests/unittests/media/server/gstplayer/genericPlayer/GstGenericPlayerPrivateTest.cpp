@@ -37,7 +37,7 @@ using ::firebolt::rialto::server::testcommon::expectSetProperty;
 
 namespace
 {
-constexpr std::chrono::milliseconds kPositionReportTimerMs{250};
+constexpr std::chrono::milliseconds kPositionReportTimerMs{50};
 constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
 constexpr int32_t kSampleRate{13};
 constexpr int32_t kNumberOfChannels{4};
