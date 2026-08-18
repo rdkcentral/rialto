@@ -19,6 +19,7 @@
 
 set(RialtoLogging_HEADERS
     include/RialtoLogging.h
+    include/RialtoTelemetry.h
     )
 
 set(RialtoLogging_SOURCES
@@ -27,14 +28,15 @@ set(RialtoLogging_SOURCES
     source/LogFileHandle.cpp
     source/LogFileHandle.h
     source/RialtoLogging.cpp
+    source/RialtoTelemetry.cpp
     )
 
 set(RialtoLogging_INCLUDES
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     )
 
-add_library(RialtoLogging STATIC ${RialtoLogging_HEADERS} ${RialtoLogging_SOURCES})
-target_include_directories(RialtoLogging PUBLIC "$<BUILD_INTERFACE:${RialtoLogging_INCLUDES}>")
+add_library(RialtoLogging STATIC ${RialtoLogging_HEADERS} ${RialtoLogging_SOURCES} ${TELEMETRY_LIBRARIES})
+target_include_directories(RialtoLogging PUBLIC "$<BUILD_INTERFACE:${RialtoLogging_INCLUDES}>" ${TELEMETRY_INCLUDE_DIRS})
 set_target_properties(RialtoLogging PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 set_target_properties(RialtoLogging PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
