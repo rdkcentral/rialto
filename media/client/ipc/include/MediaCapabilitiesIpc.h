@@ -10,12 +10,25 @@
 #define FIREBOLT_RIALTO_CLIENT_MEDIA_CAPABILITIES_IPC_H_
 
 #include "IMediaCapabilities.h"
+#include "IMediaCapabilitiesIpcFactory.h"
 #include "IpcModule.h"
 #include "mediapipelinecapabilitiesmodule.pb.h"
 #include <memory>
 
 namespace firebolt::rialto::client
 {
+/**
+ * @brief IMediaCapabilitiesIpcFactory factory class definition.
+ */
+class MediaCapabilitiesIpcFactory : public IMediaCapabilitiesIpcFactory
+{
+public:
+    MediaCapabilitiesIpcFactory() = default;
+    ~MediaCapabilitiesIpcFactory() override = default;
+
+    std::unique_ptr<IMediaCapabilities> createMediaCapabilitiesIpc() const override;
+};
+
 class MediaCapabilitiesIpc : public IMediaCapabilities, public IpcModule
 {
 public:

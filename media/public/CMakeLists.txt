@@ -31,6 +31,7 @@ target_include_directories(
         RialtoPlayerPublic
         INTERFACE
         $<TARGET_PROPERTY:RialtoClientIpcImpl,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommonPublic,INTERFACE_INCLUDE_DIRECTORIES>
         include
     )
 
@@ -41,6 +42,7 @@ set (
         include/IClientLogHandler.h
         include/IControl.h
         include/IControlClient.h
+        include/IMediaCapabilities.h
         include/IMediaKeys.h
         include/IMediaKeysCapabilities.h
         include/IMediaKeysClient.h
@@ -50,8 +52,6 @@ set (
         include/IWebAudioPlayer.h
         include/IWebAudioPlayerClient.h
         include/MediaCommon.h
-        include/AudioDecoderCapabilities.h
-        include/VideoDecoderCapabilities.h
 )
 
 install (

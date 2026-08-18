@@ -7,20 +7,44 @@
  */
 
 #include "MediaCapabilitiesIpc.h"
+#include "IIpcClient.h"
 #include "MediaCapabilitiesIpcConverters.h"
 #include "RialtoClientLogging.h"
 
-namespace firebolt::rialto
-{
-std::shared_ptr<IMediaCapabilitiesFactory> IMediaCapabilitiesFactory::createFactory()
-{
-    // TODO: factory implementation lives in media/client/main/; left as an integration point.
-    return nullptr;
-}
-} // namespace firebolt::rialto
-
 namespace firebolt::rialto::client
 {
+std::shared_ptr<IMediaCapabilitiesIpcFactory> IMediaCapabilitiesIpcFactory::createFactory()
+{
+    std::shared_ptr<IMediaCapabilitiesIpcFactory> factory;
+
+    try
+    {
+        factory = std::make_shared<MediaCapabilitiesIpcFactory>();
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Failed to create the media capabilities ipc factory, reason: %s", e.what());
+    }
+
+    return factory;
+}
+
+std::unique_ptr<IMediaCapabilities> MediaCapabilitiesIpcFactory::createMediaCapabilitiesIpc() const
+{
+    std::unique_ptr<IMediaCapabilities> mediaCapabilitiesIpc;
+
+    try
+    {
+        mediaCapabilitiesIpc = std::make_unique<client::MediaCapabilitiesIpc>(IIpcClientAccessor::instance().getIpcClient());
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_CLIENT_LOG_ERROR("Failed to create the media capabilities ipc, reason: %s", e.what());
+    }
+
+    return mediaCapabilitiesIpc;
+}
+
 MediaCapabilitiesIpc::MediaCapabilitiesIpc(IIpcClient &ipcClient) : IpcModule(ipcClient)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");

@@ -19,110 +19,78 @@
 
 #include <stdexcept>
 
-#include "IMediaPipelineCapabilitiesIpcFactory.h"
-#include "MediaPipelineCapabilities.h"
+#include "IMediaCapabilitiesIpcFactory.h"
+#include "MediaCapabilities.h"
 #include "RialtoClientLogging.h"
 
 namespace firebolt::rialto
 {
-std::shared_ptr<IMediaPipelineCapabilitiesFactory> IMediaPipelineCapabilitiesFactory::createFactory()
+std::shared_ptr<IMediaCapabilitiesFactory> IMediaCapabilitiesFactory::createFactory()
 {
-    std::shared_ptr<IMediaPipelineCapabilitiesFactory> factory;
+    std::shared_ptr<IMediaCapabilitiesFactory> factory;
 
     try
     {
-        factory = std::make_shared<MediaPipelineCapabilitiesFactory>();
+        factory = std::make_shared<MediaCapabilitiesFactory>();
     }
     catch (const std::exception &e)
     {
-        RIALTO_CLIENT_LOG_ERROR("Failed to create the media pipeline capabilities factory, reason: %s", e.what());
+        RIALTO_CLIENT_LOG_ERROR("Failed to create the media capabilities factory, reason: %s", e.what());
     }
 
     return factory;
 }
 
-std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesFactory::createMediaPipelineCapabilities() const
+std::unique_ptr<IMediaCapabilities> MediaCapabilitiesFactory::createMediaCapabilities() const
 {
-    std::unique_ptr<IMediaPipelineCapabilities> mediaPipelineCapabilities;
+    std::unique_ptr<IMediaCapabilities> mediaCapabilities;
     try
     {
-        mediaPipelineCapabilities = std::make_unique<client::MediaPipelineCapabilities>(
-            client::IMediaPipelineCapabilitiesIpcFactory::createFactory());
+        mediaCapabilities =
+            std::make_unique<client::MediaCapabilities>(client::IMediaCapabilitiesIpcFactory::createFactory());
     }
     catch (const std::exception &e)
     {
-        RIALTO_CLIENT_LOG_ERROR("Failed to create the media pipeline capabilities, reason: %s", e.what());
+        RIALTO_CLIENT_LOG_ERROR("Failed to create the media capabilities, reason: %s", e.what());
     }
 
-    return mediaPipelineCapabilities;
+    return mediaCapabilities;
 }
 
 }; // namespace firebolt::rialto
 
 namespace firebolt::rialto::client
 {
-MediaPipelineCapabilities::MediaPipelineCapabilities(
-    const std::shared_ptr<IMediaPipelineCapabilitiesIpcFactory> &MediaPipelineCapabilitiesIpcFactory)
+MediaCapabilities::MediaCapabilities(const std::shared_ptr<IMediaCapabilitiesIpcFactory> &mediaCapabilitiesIpcFactory)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    m_mediaPipelineCapabilitiesIpc = MediaPipelineCapabilitiesIpcFactory->createMediaPipelineCapabilitiesIpc();
-    if (!m_mediaPipelineCapabilitiesIpc)
+    m_mediaCapabilitiesIpc = mediaCapabilitiesIpcFactory->createMediaCapabilitiesIpc();
+    if (!m_mediaCapabilitiesIpc)
     {
-        throw std::runtime_error("Media pipeline capabilities ipc could not be created");
+        throw std::runtime_error("Media capabilities ipc could not be created");
     }
 }
 
-MediaPipelineCapabilities::~MediaPipelineCapabilities()
+MediaCapabilities::~MediaCapabilities()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    m_mediaPipelineCapabilitiesIpc.reset();
+    m_mediaCapabilitiesIpc.reset();
 }
 
-std::vector<std::string> MediaPipelineCapabilities::getSupportedMimeTypes(MediaSourceType sourceType)
+common::AudioDecoderCapabilities MediaCapabilities::getSupportedAudioCapabilities()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaPipelineCapabilitiesIpc->getSupportedMimeTypes(sourceType);
+    return m_mediaCapabilitiesIpc->getSupportedAudioCapabilities();
 }
 
-bool MediaPipelineCapabilities::isMimeTypeSupported(const std::string &mimeType)
+common::VideoDecoderCapabilities MediaCapabilities::getSupportedVideoCapabilities()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    return m_mediaPipelineCapabilitiesIpc->isMimeTypeSupported(mimeType);
+    return m_mediaCapabilitiesIpc->getSupportedVideoCapabilities();
 }
-
-std::vector<std::string> MediaPipelineCapabilities::getSupportedProperties(MediaSourceType mediaType,
-                                                                           const std::vector<std::string> &propertyNames)
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    return m_mediaPipelineCapabilitiesIpc->getSupportedProperties(mediaType, propertyNames);
-}
-
-bool MediaPipelineCapabilities::isVideoMaster(bool &isVideoMaster)
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    return m_mediaPipelineCapabilitiesIpc->isVideoMaster(isVideoMaster);
-}
-
-//Moved to MediaCapabilities
-/*
-AudioDecoderCapabilities MediaPipelineCapabilities::getSupportedAudioCapabilities()
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    return m_mediaPipelineCapabilitiesIpc->getSupportedAudioCapabilities();
-}
-
-VideoDecoderCapabilities MediaPipelineCapabilities::getSupportedVideoCapabilities()
-{
-    RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    return m_mediaPipelineCapabilitiesIpc->getSupportedVideoCapabilities();
-}*/
 
 }; // namespace firebolt::rialto::client

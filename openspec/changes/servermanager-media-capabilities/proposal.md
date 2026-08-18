@@ -1,5 +1,31 @@
 # Proposal: ServerManager Media Capabilities — `IMediaCapabilities`
 
+## Implementation Status
+
+The implementation is partial. ServerManager loading, typed capability fields, forwarding,
+session-server conversion (`GstCapabilities` Path A/B), and the client IPC conversion path are
+all verified present and wired correctly. The following gaps have since been resolved:
+
+- `AudioDecoderCapabilities.h` / `VideoDecoderCapabilities.h` duplication removed: the
+  `media/public/include/` copies were deleted; `media/public/CMakeLists.txt` now exposes
+  `RialtoCommonPublic`'s include directories so all `media/` consumers resolve the single
+  `common/public/include/` copy.
+- Client factory wiring (`media/client/main/`) implemented: `IMediaCapabilitiesFactory::createFactory()`
+  now constructs `client::MediaCapabilities`, which wraps a new `IMediaCapabilitiesIpcFactory`/
+  `MediaCapabilitiesIpcFactory` in `media/client/ipc/`, mirroring the existing
+  `MediaPipelineCapabilities` pattern. The previously stray `media/client/main/source/MediaCapabilities.cpp`
+  now contains this implementation instead of duplicating `MediaPipelineCapabilities.cpp`.
+
+Remaining gaps:
+
+- No `rialtomse*` sink components exist in this repository snapshot, so the consumer-migration
+  step (task 6.5) cannot be verified or actioned here; it applies to a downstream repo.
+- The broader unit-test suite (serverManager, ServerManagerModuleService, GstCapabilities,
+  client IPC) is still largely unchecked in `tasks.md`.
+
+This proposal should not be considered fully implemented until the unchecked tasks in
+`tasks.md` are completed.
+
 ## Criteria Coverage
 
 This proposal addresses the following Rialto Session Server change requirements:
@@ -48,12 +74,12 @@ ServerManager process
         ▼
 Session Server process
   └── ServerManagerModuleService::setConfiguration()  (updated)
-        └── CapabilityDeserialiser (new, firebolt::rialto::server::ipc)
+        └── generated proto accessors and local conversion helpers
               ↓  std::optional passed to configureServices()
   └── GstCapabilities  (updated)
         ├── [path A] pre-loaded from ServerManager → use directly
         └── [path B] no ServerManager data → GStreamer element query (legacy fallback)
-  └── IMediaCapabilitiesModuleService  (new — replaces MediaPipelineCapabilitiesModuleService
+  └── MediaPipelineCapabilitiesModuleService  (existing service; reuses the transport layer)
         │          capability methods, reuses transport layer)
         │  MediaPipelineCapabilitiesModule IPC  [existing Unix socket]
         ▼
@@ -133,8 +159,8 @@ components that currently use `IMediaPipelineCapabilities` are migrated to `IMed
   - Field numbers 12 and 13 are the next available after field 11
     (`subtitleClockResyncInterval`).
   - Using typed proto messages (rather than `optional bytes`) makes the wire format
-    self-describing, eliminates a manual serialise/parse step, and avoids the need for
-    `CapabilitySerialiser`/`CapabilityDeserialiser` shim classes.
+    self-describing and avoids a separate `CapabilityDeserialiser` shim class. The
+    `CapabilitySerialiser` remains as the C++-to-proto conversion boundary in ServerManager.
 
 ### 4 — ServerManager common: store capabilities in `SessionServerAppManager`
 
@@ -160,11 +186,10 @@ components that currently use `IMediaPipelineCapabilities` are migrated to `IMed
 
   - Accept the same two `std::optional` parameters (do **not** add them as class members;
     keep them as per-call parameters consistent with the existing pattern).
-  - If both optionals have values, serialise each into `GetSupportedAudioCapabilitiesResponse`
-    / `GetSupportedVideoCapabilitiesResponse` using **new converter functions** written in the
-    `rialto::servermanager::ipc` namespace (see §5), serialize to bytes, and call
-    `request.set_audiocapabilities(bytes)` / `request.set_videocapabilities(bytes)`.
-  - If either optional is `std::nullopt`, leave both fields absent; emit `DEBUG` log.
+  - If both optionals have values, populate the typed `AudioCapabilities` and
+    `VideoCapabilities` messages using the new converter functions in the
+    `rialto::servermanager::ipc` namespace (see §5).
+  - If either optional is `std::nullopt`, leave both typed fields absent; emit `DEBUG` log.
   - Remove the `m_mediaCapabilities` member that was previously proposed for `Client.h`.
 
 ### 5 — New capability converter functions (`rialto::servermanager` namespace)
@@ -177,9 +202,8 @@ components that currently use `IMediaPipelineCapabilities` are migrated to `IMed
     `VideoCapabilities` messages defined in `servermanagermodule.proto`.
   - These converters are required because the ServerManager uses namespace `rialto`, which
     is separate from `firebolt::rialto::client`; the client-side converters cannot be reused.
-  - If `AudioCapabilities` / `VideoCapabilities` are defined in a shared proto (see §3),
-    the `CapabilityDeserialiser` on the session server side may share the same generated
-    types and the converter logic can be simplified or eliminated.
+  - The session server uses the generated typed messages directly and converts them locally;
+    no separate `CapabilityDeserialiser` shim is required.
 
 ### 6 — Session Server: receive capabilities, implement `IMediaCapabilities` with GStreamer fallback
 
@@ -258,8 +282,8 @@ components that currently use `IMediaPipelineCapabilities` are migrated to `IMed
 - Update `tests/unittests/media/server/gstplayer/GstCapabilitiesTest.cpp`:
   - Path A: pre-loaded capabilities used, YAML and GStreamer query both skipped.
   - Path B: no pre-loaded capabilities, GStreamer element query used as fallback.
-- Add `tests/unittests/media/client/MediaCapabilitiesIpcTest.cpp`: successful audio/video
-  response deserialisation; RPC failure path.
+- Add `tests/unittests/media/client/main/mediaCapabilities/MediaCapabilitiesTest.cpp`:
+  successful audio/video response deserialisation and RPC coverage.
 
 ## Logging
 
@@ -367,9 +391,14 @@ Affected areas:
 
 No changes to:
 
-- Session lifecycle or state machine (`SessionServerApp`, `SessionServerAppManager`).
+- Session lifecycle or state machine (`SessionServerApp`, `SessionServerAppManager` state handling).
 - Healthcheck service (`HealthcheckService`).
 - `IServerManagerService` public API.
-- Rialto Client Library (`media/client/`) — no new files, no modified files.
-- `MediaPipelineCapabilitiesModuleService` — existing session server capability service is
-  unchanged; it now serves capabilities received via `SetConfiguration` instead of from YAML.
+- `MediaPipelineCapabilitiesModuleService` message dispatch/transport — the existing session
+  server capability service is reused as-is for `IMediaCapabilities` RPCs; only the server-side
+  data source changed (YAML/GStreamer fallback vs. pre-loaded ServerManager data).
+
+Note: the Rialto Client Library (`media/client/`) **is** modified by this change (new
+`IMediaCapabilities.h`, `MediaCapabilitiesIpc.h/.cpp`, `MediaCapabilitiesIpcConverters.h/.cpp`,
+and new unit tests) — this contradicts an earlier draft of this section, which incorrectly
+claimed no client changes.

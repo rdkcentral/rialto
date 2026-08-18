@@ -2,8 +2,8 @@
 
 - [X] 0.1 Copy `AudioDecoderCapabilities.h` to `common/public/include/`; update `common/public/CMakeLists.txt` to expose the source include directory via `RialtoCommonPublic` interface.
 - [X] 0.2 Copy `VideoDecoderCapabilities.h` to `common/public/include/`; same CMakeLists update.
-- [ ] 0.3 In File `AudioDecoderCapabilities.h` and `VideoDecoderCapabilities.h`change `namespace firebolt::rialto` to `namespace firebolt::rialto::common`
-- [X] 0.4 Update all includes of both headers in `media/`, `wrappers/`, and `tests/` to resolve through `RialtoCommonPublic`.
+- [X] 0.3 In File `AudioDecoderCapabilities.h` and `VideoDecoderCapabilities.h`change `namespace firebolt::rialto` to `namespace firebolt::rialto::common`
+- [X] 0.4 Update all includes of both headers in `media/`, `wrappers/`, and `tests/` to resolve through `RialtoCommonPublic`. Duplicate copies under `media/public/include/` removed; `media/public/CMakeLists.txt` now exposes `RialtoCommonPublic` include dirs so all `media/` consumers resolve the single `common/public/include/` copy.
 - [X] 0.5 Verify `IYamlCppWrapper.h` resolves both headers from the new location.
 
 ## 1. Proto — typed `AudioCapabilities` / `VideoCapabilities` in `SetConfigurationRequest`
@@ -51,7 +51,7 @@
 - [X] 6.1 Add `media/public/include/IMediaCapabilities.h`: declares `getSupportedAudioCapabilities()` → `AudioDecoderCapabilities` and `getSupportedVideoCapabilities()` → `VideoDecoderCapabilities` in namespace `firebolt::rialto`.
 - [X] 6.2 Remove `getSupportedAudioCapabilities()` and `getSupportedVideoCapabilities()` from `media/public/include/IMediaPipelineCapabilities.h` and all implementation files. No side-by-side support.
 - [X] 6.3 Add `media/client/ipc/include/IMediaCapabilitiesIpc.h` and `media/client/ipc/source/MediaCapabilitiesIpc.cpp` (namespace `firebolt::rialto::client`): IPC caller invoking `MediaPipelineCapabilitiesModule` service; deserialises response into `AudioDecoderCapabilities` / `VideoDecoderCapabilities`.
-- [ ] 6.4 Add factory wiring in `media/client/main/` to expose `IMediaCapabilities` via the existing factory pattern.
+- [X] 6.4 Add factory wiring in `media/client/main/` to expose `IMediaCapabilities` via the existing factory pattern: new `media/client/ipc/interface/IMediaCapabilitiesIpcFactory.h` + `MediaCapabilitiesIpcFactory` (ipc layer), and `media/client/main/include/MediaCapabilities.h` + `source/MediaCapabilities.cpp` implementing `IMediaCapabilitiesFactory::createFactory()` and the `client::MediaCapabilities` wrapper, mirroring the `MediaPipelineCapabilities` pattern. Registered in `media/client/main/CMakeLists.txt`.
 - [ ] 6.5 Update `rialtomse*` sink components and all other consumers of the removed `IMediaPipelineCapabilities` capability methods to call `IMediaCapabilities` instead.
 
 ## 7. Build Wiring
