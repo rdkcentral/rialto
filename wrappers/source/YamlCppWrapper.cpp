@@ -280,9 +280,9 @@ firebolt::rialto::common::AudioDecoderCapability buildAudioDecoderCapability(con
     return result;
 }
 
-std::vector<DynamicRange getDynamicRanges(const YAML::Node &ranges)
+std::vector<DynamicRange> getDynamicRanges(const YAML::Node &ranges)
 {
-    std::vector<DynamicRange result;
+    std::vector<DynamicRange> result;
     if (!ranges || !ranges.IsSequence())
         return result;
     for (const auto &r : ranges)
