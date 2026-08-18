@@ -30,8 +30,6 @@ extern "C"
 #ifdef TELEMETRY_ENABLED
 #include <telemetry_busmessage_sender.h>
 
-#define RIALTO_TELEMETRY_LOG_MIL(fmt, args...) RIALTO_LOG_MIL(RIALTO_COMPONENT_TELEMETRY, fmt, ##args)
-
 void TELEMETRY_INIT(const char* component);
 void TELEMETRY_UNINIT();
 void TELEMETRY_EVENT_STRING(const char* marker, const char* value);

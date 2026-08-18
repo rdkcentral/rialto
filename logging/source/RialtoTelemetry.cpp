@@ -17,8 +17,20 @@
  * limitations under the License.
  */
 
-#include "RialtoTelemetry.h"
+#include "RialtoLogging.h"
 #include "stdio.h"
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+#define RIALTO_TELEMETRY_LOG_MIL(fmt, args...) RIALTO_LOG_MIL(RIALTO_COMPONENT_TELEMETRY, fmt, ##args)
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #ifdef TELEMETRY_ENABLED
 
