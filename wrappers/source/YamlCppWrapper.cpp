@@ -23,17 +23,19 @@
 
 namespace
 {
+using namespace firebolt::rialto::common;
+
 const std::string kAudioCapabilitiesFilePath{"/product/hfp/config/hfp-audiodecoder.yaml"};
 const std::string kVideoCapabilitiesFilePath{"/product/hfp/config/hfp-videodecoder.yaml"};
 
-firebolt::rialto::common::AudioProfileCapability parseAudioProfileCapability(const YAML::Node &node)
+AudioProfileCapability parseAudioProfileCapability(const YAML::Node &node)
 {
     if (!node["maxBitrateInBps"] || !node["maxChannels"] || !node["maxSampleRateInHz"] || !node["maxBitDepth"])
     {
         throw std::runtime_error("AudioProfileCapability: missing required field(s) "
                                  "(maxBitrateInBps, maxChannels, maxSampleRateInHz, maxBitDepth)");
     }
-    firebolt::rialto::common::AudioProfileCapability cap{};
+    AudioProfileCapability cap{};
     cap.maxBitrateInBps = node["maxBitrateInBps"].as<uint64_t>();
     cap.maxChannels = node["maxChannels"].as<uint32_t>();
     cap.maxSampleRateInHz = node["maxSampleRateInHz"].as<uint32_t>();
@@ -46,7 +48,7 @@ firebolt::rialto::common::AudioProfileCapability parseAudioProfileCapability(con
  *
  * YAML structure: { profiles: [{BASE: {maxBitrateInBps:..., ...}}] }
  */
-firebolt::rialto::common::AudioProfileCapability parseBaseProfileCapability(const YAML::Node &codecData)
+AudioProfileCapability parseBaseProfileCapability(const YAML::Node &codecData)
 {
     if (codecData["profiles"] && codecData["profiles"].IsSequence())
     {
@@ -89,83 +91,83 @@ MapType parseNamedProfileMap(const YAML::Node &codecData, ProfileConverter conve
     return result;
 }
 
-std::optional<firebolt::rialto::AacProfile> convertAacProfileName(const std::string &name)
+std::optional<AacProfile> convertAacProfileName(const std::string &name)
 {
     if ("LC" == name)
-        return firebolt::rialto::AacProfile::LC;
+        return AacProfile::LC;
     if ("HE_V1" == name)
-        return firebolt::rialto::AacProfile::HE_V1;
+        return AacProfile::HE_V1;
     if ("HE_V2" == name)
-        return firebolt::rialto::AacProfile::HE_V2;
+        return AacProfile::HE_V2;
     if ("ELD" == name)
-        return firebolt::rialto::AacProfile::ELD;
+        return AacProfile::ELD;
     if ("X_HE" == name)
-        return firebolt::rialto::AacProfile::X_HE;
+        return AacProfile::X_HE;
     return std::nullopt;
 }
 
-std::optional<firebolt::rialto::DolbyAc3Profile> convertDolbyAc3ProfileName(const std::string &name)
+std::optional<DolbyAc3Profile> convertDolbyAc3ProfileName(const std::string &name)
 {
     if ("STANDARD" == name)
-        return firebolt::rialto::DolbyAc3Profile::STANDARD;
+        return DolbyAc3Profile::STANDARD;
     return std::nullopt;
 }
 
-std::optional<firebolt::rialto::DolbyEac3Profile> convertDolbyEac3ProfileName(const std::string &name)
+std::optional<DolbyEac3Profile> convertDolbyEac3ProfileName(const std::string &name)
 {
     if ("PLUS" == name)
-        return firebolt::rialto::DolbyEac3Profile::PLUS;
+        return DolbyEac3Profile::PLUS;
     if ("PLUS_JOC" == name)
-        return firebolt::rialto::DolbyEac3Profile::PLUS_JOC;
+        return DolbyEac3Profile::PLUS_JOC;
     return std::nullopt;
 }
 
-std::optional<firebolt::rialto::MpegAudioProfile> convertMpegAudioProfileName(const std::string &name)
+std::optional<MpegAudioProfile> convertMpegAudioProfileName(const std::string &name)
 {
     if ("LAYER_1" == name)
-        return firebolt::rialto::MpegAudioProfile::LAYER_1;
+        return MpegAudioProfile::LAYER_1;
     if ("LAYER_2" == name)
-        return firebolt::rialto::MpegAudioProfile::LAYER_2;
+        return MpegAudioProfile::LAYER_2;
     return std::nullopt;
 }
 
-std::optional<firebolt::rialto::RealAudioProfile> convertRealAudioProfileName(const std::string &name)
+std::optional<RealAudioProfile> convertRealAudioProfileName(const std::string &name)
 {
     if ("RA8" == name)
-        return firebolt::rialto::RealAudioProfile::RA8;
+        return RealAudioProfile::RA8;
     if ("RA10" == name)
-        return firebolt::rialto::RealAudioProfile::RA10;
+        return RealAudioProfile::RA10;
     return std::nullopt;
 }
 
-std::optional<firebolt::rialto::UsacProfile> convertUsacProfileName(const std::string &name)
+std::optional<UsacProfile> convertUsacProfileName(const std::string &name)
 {
     if ("BASELINE" == name)
-        return firebolt::rialto::UsacProfile::BASELINE;
+        return UsacProfile::BASELINE;
     if ("EXTENDED_HE_AAC" == name)
-        return firebolt::rialto::UsacProfile::EXTENDED_HE_AAC;
+        return UsacProfile::EXTENDED_HE_AAC;
     return std::nullopt;
 }
 
-std::optional<firebolt::rialto::DtsProfile> convertDtsProfileName(const std::string &name)
+std::optional<DtsProfile> convertDtsProfileName(const std::string &name)
 {
     if ("CORE" == name)
-        return firebolt::rialto::DtsProfile::CORE;
+        return DtsProfile::CORE;
     if ("HD_HRA" == name)
-        return firebolt::rialto::DtsProfile::HD_HRA;
+        return DtsProfile::HD_HRA;
     if ("HD_MA" == name)
-        return firebolt::rialto::DtsProfile::HD_MA;
+        return DtsProfile::HD_MA;
     return std::nullopt;
 }
 
-std::optional<firebolt::rialto::AvsProfile> convertAvsProfileName(const std::string &name)
+std::optional<AvsProfile> convertAvsProfileName(const std::string &name)
 {
     if ("AVS1_PART2" == name)
-        return firebolt::rialto::AvsProfile::AVS1_PART2;
+        return AvsProfile::AVS1_PART2;
     if ("AVS2" == name)
-        return firebolt::rialto::AvsProfile::AVS2;
+        return AvsProfile::AVS2;
     if ("AVS3" == name)
-        return firebolt::rialto::AvsProfile::AVS3;
+        return AvsProfile::AVS3;
     return std::nullopt;
 }
 
@@ -184,90 +186,90 @@ firebolt::rialto::common::AudioDecoderCapability buildAudioDecoderCapability(con
                     const auto &kCodecData{codecIt->second};
                     if ("PCM" == kCodecName)
                     {
-                        result.pcm = firebolt::rialto::PcmCapability{parseBaseProfileCapability(kCodecData)};
+                        result.pcm = PcmCapability{parseBaseProfileCapability(kCodecData)};
                     }
                     else if ("AAC" == kCodecName)
                     {
-                        result.aac = firebolt::rialto::AacCapability{
-                            parseNamedProfileMap<std::map<firebolt::rialto::AacProfile,
+                        result.aac = AacCapability{
+                            parseNamedProfileMap<std::map<AacProfile,
                                                           firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
                                                                                                      convertAacProfileName)};
                     }
                     else if ("MPEG_AUDIO" == kCodecName)
                     {
-                        result.mpegAudio = firebolt::rialto::MpegAudioCapability{parseNamedProfileMap<
-                            std::map<firebolt::rialto::MpegAudioProfile,
+                        result.mpegAudio = MpegAudioCapability{parseNamedProfileMap<
+                            std::map<MpegAudioProfile,
                                      firebolt::rialto::common::AudioProfileCapability>>(kCodecData, convertMpegAudioProfileName)};
                     }
                     else if ("MP3" == kCodecName)
                     {
-                        result.mp3 = firebolt::rialto::Mp3Capability{parseBaseProfileCapability(kCodecData)};
+                        result.mp3 = Mp3Capability{parseBaseProfileCapability(kCodecData)};
                     }
                     else if ("ALAC" == kCodecName)
                     {
-                        result.alac = firebolt::rialto::AlacCapability{parseBaseProfileCapability(kCodecData)};
+                        result.alac = AlacCapability{parseBaseProfileCapability(kCodecData)};
                     }
                     else if ("SBC" == kCodecName)
                     {
-                        result.sbc = firebolt::rialto::SbcCapability{parseBaseProfileCapability(kCodecData)};
+                        result.sbc = SbcCapability{parseBaseProfileCapability(kCodecData)};
                     }
                     else if ("DOLBY_AC3" == kCodecName)
                     {
-                        result.dolbyAc3 = firebolt::rialto::DolbyAc3Capability{parseNamedProfileMap<
-                            std::map<firebolt::rialto::DolbyAc3Profile,
+                        result.dolbyAc3 = DolbyAc3Capability{parseNamedProfileMap<
+                            std::map<DolbyAc3Profile,
                                      firebolt::rialto::common::AudioProfileCapability>>(kCodecData, convertDolbyAc3ProfileName)};
                     }
                     else if ("DOLBY_AC4" == kCodecName)
                     {
-                        result.dolbyAc4 = firebolt::rialto::DolbyAc4Capability{parseBaseProfileCapability(kCodecData)};
+                        result.dolbyAc4 = DolbyAc4Capability{parseBaseProfileCapability(kCodecData)};
                     }
                     else if ("DOLBY_EAC3" == kCodecName)
                     {
-                        result.dolbyEac3 = firebolt::rialto::DolbyEac3Capability{parseNamedProfileMap<
-                            std::map<firebolt::rialto::DolbyEac3Profile,
+                        result.dolbyEac3 = DolbyEac3Capability{parseNamedProfileMap<
+                            std::map<DolbyEac3Profile,
                                      firebolt::rialto::common::AudioProfileCapability>>(kCodecData, convertDolbyEac3ProfileName)};
                     }
                     else if ("DOLBY_TRUEHD" == kCodecName)
                     {
                         result.dolbyTruehd =
-                            firebolt::rialto::DolbyTruehdCapability{parseBaseProfileCapability(kCodecData)};
+                            DolbyTruehdCapability{parseBaseProfileCapability(kCodecData)};
                     }
                     else if ("FLAC" == kCodecName)
                     {
-                        result.flac = firebolt::rialto::FlacCapability{parseBaseProfileCapability(kCodecData)};
+                        result.flac = FlacCapability{parseBaseProfileCapability(kCodecData)};
                     }
                     else if ("VORBIS" == kCodecName)
                     {
-                        result.vorbis = firebolt::rialto::VorbisCapability{parseBaseProfileCapability(kCodecData)};
+                        result.vorbis = VorbisCapability{parseBaseProfileCapability(kCodecData)};
                     }
                     else if ("OPUS" == kCodecName)
                     {
-                        result.opus = firebolt::rialto::OpusCapability{parseBaseProfileCapability(kCodecData)};
+                        result.opus = OpusCapability{parseBaseProfileCapability(kCodecData)};
                     }
                     else if ("REALAUDIO" == kCodecName)
                     {
-                        result.realAudio = firebolt::rialto::RealAudioCapability{parseNamedProfileMap<
-                            std::map<firebolt::rialto::RealAudioProfile,
+                        result.realAudio = RealAudioCapability{parseNamedProfileMap<
+                            std::map<RealAudioProfile,
                                      firebolt::rialto::common::AudioProfileCapability>>(kCodecData, convertRealAudioProfileName)};
                     }
                     else if ("USAC" == kCodecName)
                     {
-                        result.usac = firebolt::rialto::UsacCapability{
-                            parseNamedProfileMap<std::map<firebolt::rialto::UsacProfile,
+                        result.usac = UsacCapability{
+                            parseNamedProfileMap<std::map<UsacProfile,
                                                           firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
                                                                                                      convertUsacProfileName)};
                     }
                     else if ("DTS" == kCodecName)
                     {
-                        result.dts = firebolt::rialto::DtsCapability{
-                            parseNamedProfileMap<std::map<firebolt::rialto::DtsProfile,
+                        result.dts = DtsCapability{
+                            parseNamedProfileMap<std::map<DtsProfile,
                                                           firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
                                                                                                      convertDtsProfileName)};
                     }
                     else if ("AVS" == kCodecName)
                     {
-                        result.avs = firebolt::rialto::AvsCapability{
-                            parseNamedProfileMap<std::map<firebolt::rialto::AvsProfile,
+                        result.avs = AvsCapability{
+                            parseNamedProfileMap<std::map<AvsProfile,
                                                           firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
                                                                                                      convertAvsProfileName)};
                     }
@@ -278,24 +280,24 @@ firebolt::rialto::common::AudioDecoderCapability buildAudioDecoderCapability(con
     return result;
 }
 
-std::vector<firebolt::rialto::DynamicRange> getDynamicRanges(const YAML::Node &ranges)
+std::vector<DynamicRange getDynamicRanges(const YAML::Node &ranges)
 {
-    std::vector<firebolt::rialto::DynamicRange> result;
+    std::vector<DynamicRange result;
     if (!ranges || !ranges.IsSequence())
         return result;
     for (const auto &r : ranges)
     {
         const std::string kName = r.as<std::string>();
         if ("SDR" == kName)
-            result.push_back(firebolt::rialto::DynamicRange::SDR);
+            result.push_back(DynamicRange::SDR);
         else if ("HLG" == kName)
-            result.push_back(firebolt::rialto::DynamicRange::HLG);
+            result.push_back(DynamicRange::HLG);
         else if ("HDR10" == kName)
-            result.push_back(firebolt::rialto::DynamicRange::HDR10);
+            result.push_back(DynamicRange::HDR10);
         else if ("HDR10PLUS" == kName)
-            result.push_back(firebolt::rialto::DynamicRange::HDR10PLUS);
+            result.push_back(DynamicRange::HDR10PLUS);
         else if ("DOLBY_VISION" == kName)
-            result.push_back(firebolt::rialto::DynamicRange::DOLBY_VISION);
+            result.push_back(DynamicRange::DOLBY_VISION);
     }
     return result;
 }
@@ -304,9 +306,9 @@ std::vector<firebolt::rialto::DynamicRange> getDynamicRanges(const YAML::Node &r
 // Each profiles node is a YAML sequence of single-key maps:
 //   [{PROFILE_NAME: {maxLevel: ..., maxBitrateInBps: ...}}, ...]
 
-std::vector<firebolt::rialto::Mpeg2Profile> buildMpeg2Profiles(const YAML::Node &profilesNode)
+std::vector<Mpeg2Profile> buildMpeg2Profiles(const YAML::Node &profilesNode)
 {
-    std::vector<firebolt::rialto::Mpeg2Profile> result;
+    std::vector<Mpeg2Profile> result;
     if (!profilesNode.IsSequence())
         return result;
     for (const auto &entry : profilesNode)
@@ -314,11 +316,11 @@ std::vector<firebolt::rialto::Mpeg2Profile> buildMpeg2Profiles(const YAML::Node 
         for (YAML::const_iterator it = entry.begin(); it != entry.end(); ++it)
         {
             const std::string kName = it->first.as<std::string>();
-            firebolt::rialto::Mpeg2Profile p{};
+            Mpeg2Profile p{};
             if ("MPEG2_SIMPLE" == kName)
-                p.type = firebolt::rialto::Mpeg2ProfileType::MPEG2_SIMPLE;
+                p.type = Mpeg2ProfileType::MPEG2_SIMPLE;
             else if ("MPEG2_MAIN" == kName)
-                p.type = firebolt::rialto::Mpeg2ProfileType::MPEG2_MAIN;
+                p.type = Mpeg2ProfileType::MPEG2_MAIN;
             else
                 continue;
             const auto &v = it->second;
@@ -328,11 +330,11 @@ std::vector<firebolt::rialto::Mpeg2Profile> buildMpeg2Profiles(const YAML::Node 
             {
                 const std::string kLevel = v["maxLevel"].as<std::string>();
                 if ("MPEG2_LEVEL_LOW" == kLevel)
-                    p.maxLevel = firebolt::rialto::Mpeg2Level::MPEG2_LEVEL_LOW;
+                    p.maxLevel = Mpeg2Level::MPEG2_LEVEL_LOW;
                 else if ("MPEG2_LEVEL_MAIN" == kLevel)
-                    p.maxLevel = firebolt::rialto::Mpeg2Level::MPEG2_LEVEL_MAIN;
+                    p.maxLevel = Mpeg2Level::MPEG2_LEVEL_MAIN;
                 else if ("MPEG2_LEVEL_HIGH" == kLevel)
-                    p.maxLevel = firebolt::rialto::Mpeg2Level::MPEG2_LEVEL_HIGH;
+                    p.maxLevel = Mpeg2Level::MPEG2_LEVEL_HIGH;
             }
             result.push_back(p);
         }
@@ -340,9 +342,9 @@ std::vector<firebolt::rialto::Mpeg2Profile> buildMpeg2Profiles(const YAML::Node 
     return result;
 }
 
-std::vector<firebolt::rialto::H264Profile> buildH264Profiles(const YAML::Node &profilesNode)
+std::vector<H264Profile> buildH264Profiles(const YAML::Node &profilesNode)
 {
-    std::vector<firebolt::rialto::H264Profile> result;
+    std::vector<H264Profile> result;
     if (!profilesNode.IsSequence())
         return result;
     for (const auto &entry : profilesNode)
@@ -350,13 +352,13 @@ std::vector<firebolt::rialto::H264Profile> buildH264Profiles(const YAML::Node &p
         for (YAML::const_iterator it = entry.begin(); it != entry.end(); ++it)
         {
             const std::string kName = it->first.as<std::string>();
-            firebolt::rialto::H264Profile p{};
+            H264Profile p{};
             if ("H264_BASELINE" == kName)
-                p.type = firebolt::rialto::H264ProfileType::H264_BASELINE;
+                p.type = H264ProfileType::H264_BASELINE;
             else if ("H264_MAIN" == kName)
-                p.type = firebolt::rialto::H264ProfileType::H264_MAIN;
+                p.type = H264ProfileType::H264_MAIN;
             else if ("H264_HIGH" == kName)
-                p.type = firebolt::rialto::H264ProfileType::H264_HIGH;
+                p.type = H264ProfileType::H264_HIGH;
             else
                 continue;
             const auto &v = it->second;
@@ -366,19 +368,19 @@ std::vector<firebolt::rialto::H264Profile> buildH264Profiles(const YAML::Node &p
             {
                 const std::string kLevel = v["maxLevel"].as<std::string>();
                 if ("H264_LEVEL_3" == kLevel)
-                    p.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_3;
+                    p.maxLevel = H264Level::H264_LEVEL_3;
                 else if ("H264_LEVEL_3_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_3_1;
+                    p.maxLevel = H264Level::H264_LEVEL_3_1;
                 else if ("H264_LEVEL_4" == kLevel)
-                    p.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_4;
+                    p.maxLevel = H264Level::H264_LEVEL_4;
                 else if ("H264_LEVEL_4_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_4_1;
+                    p.maxLevel = H264Level::H264_LEVEL_4_1;
                 else if ("H264_LEVEL_5" == kLevel)
-                    p.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_5;
+                    p.maxLevel = H264Level::H264_LEVEL_5;
                 else if ("H264_LEVEL_5_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_5_1;
+                    p.maxLevel = H264Level::H264_LEVEL_5_1;
                 else if ("H264_LEVEL_5_2" == kLevel)
-                    p.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_5_2;
+                    p.maxLevel = H264Level::H264_LEVEL_5_2;
             }
             result.push_back(p);
         }
@@ -386,9 +388,9 @@ std::vector<firebolt::rialto::H264Profile> buildH264Profiles(const YAML::Node &p
     return result;
 }
 
-std::vector<firebolt::rialto::H265Profile> buildH265Profiles(const YAML::Node &profilesNode)
+std::vector<H265Profile> buildH265Profiles(const YAML::Node &profilesNode)
 {
-    std::vector<firebolt::rialto::H265Profile> result;
+    std::vector<H265Profile> result;
     if (!profilesNode.IsSequence())
         return result;
     for (const auto &entry : profilesNode)
@@ -396,13 +398,13 @@ std::vector<firebolt::rialto::H265Profile> buildH265Profiles(const YAML::Node &p
         for (YAML::const_iterator it = entry.begin(); it != entry.end(); ++it)
         {
             const std::string kName = it->first.as<std::string>();
-            firebolt::rialto::H265Profile p{};
+            H265Profile p{};
             if ("H265_MAIN" == kName)
-                p.type = firebolt::rialto::H265ProfileType::H265_MAIN;
+                p.type = H265ProfileType::H265_MAIN;
             else if ("H265_MAIN_10" == kName)
-                p.type = firebolt::rialto::H265ProfileType::H265_MAIN_10;
+                p.type = H265ProfileType::H265_MAIN_10;
             else if ("H265_MAIN_10_HDR10" == kName)
-                p.type = firebolt::rialto::H265ProfileType::H265_MAIN_10_HDR10;
+                p.type = H265ProfileType::H265_MAIN_10_HDR10;
             else
                 continue;
             const auto &v = it->second;
@@ -412,21 +414,21 @@ std::vector<firebolt::rialto::H265Profile> buildH265Profiles(const YAML::Node &p
             {
                 const std::string kLevel = v["maxLevel"].as<std::string>();
                 if ("H265_LEVEL_4" == kLevel)
-                    p.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_4;
+                    p.maxLevel = H265Level::H265_LEVEL_4;
                 else if ("H265_LEVEL_4_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_4_1;
+                    p.maxLevel = H265Level::H265_LEVEL_4_1;
                 else if ("H265_LEVEL_5" == kLevel)
-                    p.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_5;
+                    p.maxLevel = H265Level::H265_LEVEL_5;
                 else if ("H265_LEVEL_5_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_5_1;
+                    p.maxLevel = H265Level::H265_LEVEL_5_1;
                 else if ("H265_LEVEL_5_2" == kLevel)
-                    p.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_5_2;
+                    p.maxLevel = H265Level::H265_LEVEL_5_2;
                 else if ("H265_LEVEL_6" == kLevel)
-                    p.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_6;
+                    p.maxLevel = H265Level::H265_LEVEL_6;
                 else if ("H265_LEVEL_6_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_6_1;
+                    p.maxLevel = H265Level::H265_LEVEL_6_1;
                 else if ("H265_LEVEL_6_2" == kLevel)
-                    p.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_6_2;
+                    p.maxLevel = H265Level::H265_LEVEL_6_2;
             }
             result.push_back(p);
         }
@@ -434,9 +436,9 @@ std::vector<firebolt::rialto::H265Profile> buildH265Profiles(const YAML::Node &p
     return result;
 }
 
-std::vector<firebolt::rialto::Vp9Profile> buildVp9Profiles(const YAML::Node &profilesNode)
+std::vector<Vp9Profile> buildVp9Profiles(const YAML::Node &profilesNode)
 {
-    std::vector<firebolt::rialto::Vp9Profile> result;
+    std::vector<Vp9Profile> result;
     if (!profilesNode.IsSequence())
         return result;
     for (const auto &entry : profilesNode)
@@ -444,15 +446,15 @@ std::vector<firebolt::rialto::Vp9Profile> buildVp9Profiles(const YAML::Node &pro
         for (YAML::const_iterator it = entry.begin(); it != entry.end(); ++it)
         {
             const std::string kName = it->first.as<std::string>();
-            firebolt::rialto::Vp9Profile p{};
+            Vp9Profile p{};
             if ("VP9_PROFILE_0" == kName)
-                p.type = firebolt::rialto::Vp9ProfileType::VP9_PROFILE_0;
+                p.type = Vp9ProfileType::VP9_PROFILE_0;
             else if ("VP9_PROFILE_1" == kName)
-                p.type = firebolt::rialto::Vp9ProfileType::VP9_PROFILE_1;
+                p.type = Vp9ProfileType::VP9_PROFILE_1;
             else if ("VP9_PROFILE_2" == kName)
-                p.type = firebolt::rialto::Vp9ProfileType::VP9_PROFILE_2;
+                p.type = Vp9ProfileType::VP9_PROFILE_2;
             else if ("VP9_PROFILE_3" == kName)
-                p.type = firebolt::rialto::Vp9ProfileType::VP9_PROFILE_3;
+                p.type = Vp9ProfileType::VP9_PROFILE_3;
             else
                 continue;
             const auto &v = it->second;
@@ -462,33 +464,33 @@ std::vector<firebolt::rialto::Vp9Profile> buildVp9Profiles(const YAML::Node &pro
             {
                 const std::string kLevel = v["maxLevel"].as<std::string>();
                 if ("VP9_LEVEL_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_1;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_1;
                 else if ("VP9_LEVEL_1_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_1_1;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_1_1;
                 else if ("VP9_LEVEL_2" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_2;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_2;
                 else if ("VP9_LEVEL_2_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_2_1;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_2_1;
                 else if ("VP9_LEVEL_3" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_3;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_3;
                 else if ("VP9_LEVEL_3_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_3_1;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_3_1;
                 else if ("VP9_LEVEL_4" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_4;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_4;
                 else if ("VP9_LEVEL_4_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_4_1;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_4_1;
                 else if ("VP9_LEVEL_5" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_5;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_5;
                 else if ("VP9_LEVEL_5_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_5_1;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_5_1;
                 else if ("VP9_LEVEL_5_2" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_5_2;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_5_2;
                 else if ("VP9_LEVEL_6" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_6;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_6;
                 else if ("VP9_LEVEL_6_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_6_1;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_6_1;
                 else if ("VP9_LEVEL_6_2" == kLevel)
-                    p.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_6_2;
+                    p.maxLevel = Vp9Level::VP9_LEVEL_6_2;
             }
             result.push_back(p);
         }
@@ -496,9 +498,9 @@ std::vector<firebolt::rialto::Vp9Profile> buildVp9Profiles(const YAML::Node &pro
     return result;
 }
 
-std::vector<firebolt::rialto::Av1Profile> buildAv1Profiles(const YAML::Node &profilesNode)
+std::vector<Av1Profile> buildAv1Profiles(const YAML::Node &profilesNode)
 {
-    std::vector<firebolt::rialto::Av1Profile> result;
+    std::vector<Av1Profile> result;
     if (!profilesNode.IsSequence())
         return result;
     for (const auto &entry : profilesNode)
@@ -506,11 +508,11 @@ std::vector<firebolt::rialto::Av1Profile> buildAv1Profiles(const YAML::Node &pro
         for (YAML::const_iterator it = entry.begin(); it != entry.end(); ++it)
         {
             const std::string kName = it->first.as<std::string>();
-            firebolt::rialto::Av1Profile p{};
+            Av1Profile p{};
             if ("AV1_MAIN" == kName)
-                p.type = firebolt::rialto::Av1ProfileType::AV1_MAIN;
+                p.type = Av1ProfileType::AV1_MAIN;
             else if ("AV1_HIGH" == kName)
-                p.type = firebolt::rialto::Av1ProfileType::AV1_HIGH;
+                p.type = Av1ProfileType::AV1_HIGH;
             else
                 continue;
             const auto &v = it->second;
@@ -520,21 +522,21 @@ std::vector<firebolt::rialto::Av1Profile> buildAv1Profiles(const YAML::Node &pro
             {
                 const std::string kLevel = v["maxLevel"].as<std::string>();
                 if ("AV1_LEVEL_4_0" == kLevel)
-                    p.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_4_0;
+                    p.maxLevel = Av1Level::AV1_LEVEL_4_0;
                 else if ("AV1_LEVEL_4_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_4_1;
+                    p.maxLevel = Av1Level::AV1_LEVEL_4_1;
                 else if ("AV1_LEVEL_5_0" == kLevel)
-                    p.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_5_0;
+                    p.maxLevel = Av1Level::AV1_LEVEL_5_0;
                 else if ("AV1_LEVEL_5_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_5_1;
+                    p.maxLevel = Av1Level::AV1_LEVEL_5_1;
                 else if ("AV1_LEVEL_5_2" == kLevel)
-                    p.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_5_2;
+                    p.maxLevel = Av1Level::AV1_LEVEL_5_2;
                 else if ("AV1_LEVEL_6_0" == kLevel)
-                    p.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_6_0;
+                    p.maxLevel = Av1Level::AV1_LEVEL_6_0;
                 else if ("AV1_LEVEL_6_1" == kLevel)
-                    p.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_6_1;
+                    p.maxLevel = Av1Level::AV1_LEVEL_6_1;
                 else if ("AV1_LEVEL_6_2" == kLevel)
-                    p.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_6_2;
+                    p.maxLevel = Av1Level::AV1_LEVEL_6_2;
             }
             result.push_back(p);
         }
@@ -558,35 +560,35 @@ firebolt::rialto::common::VideoDecoderCapability buildVideoDecoderCapability(con
                     const YAML::Node &codecNode = codecCapabilitiesIt->second;
                     if ("MPEG2_VIDEO" == kCodecName)
                     {
-                        firebolt::rialto::Mpeg2CodecCapability c;
+                        Mpeg2CodecCapability c;
                         c.profiles = buildMpeg2Profiles(codecNode["profiles"]);
                         c.dynamicRanges = getDynamicRanges(codecNode["dynamicRange"]);
                         result.codecCapabilities.mpeg2 = std::move(c);
                     }
                     else if ("H264_AVC" == kCodecName)
                     {
-                        firebolt::rialto::H264CodecCapability c;
+                        H264CodecCapability c;
                         c.profiles = buildH264Profiles(codecNode["profiles"]);
                         c.dynamicRanges = getDynamicRanges(codecNode["dynamicRange"]);
                         result.codecCapabilities.h264 = std::move(c);
                     }
                     else if ("H265_HEVC" == kCodecName)
                     {
-                        firebolt::rialto::H265CodecCapability c;
+                        H265CodecCapability c;
                         c.profiles = buildH265Profiles(codecNode["profiles"]);
                         c.dynamicRanges = getDynamicRanges(codecNode["dynamicRange"]);
                         result.codecCapabilities.h265 = std::move(c);
                     }
                     else if ("VP9" == kCodecName)
                     {
-                        firebolt::rialto::Vp9CodecCapability c;
+                        Vp9CodecCapability c;
                         c.profiles = buildVp9Profiles(codecNode["profiles"]);
                         c.dynamicRanges = getDynamicRanges(codecNode["dynamicRange"]);
                         result.codecCapabilities.vp9 = std::move(c);
                     }
                     else if ("AV1" == kCodecName)
                     {
-                        firebolt::rialto::Av1CodecCapability c;
+                        Av1CodecCapability c;
                         c.profiles = buildAv1Profiles(codecNode["profiles"]);
                         c.dynamicRanges = getDynamicRanges(codecNode["dynamicRange"]);
                         result.codecCapabilities.av1 = std::move(c);
