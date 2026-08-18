@@ -7,26 +7,8 @@
  */
 
 #include "MediaCapabilitiesIpc.h"
-//#include "IIpcClientAccessor.h"
-#include "IMediaCapabilities.h"
-#include "MediaCapabilitiesIpc.h"
-#include "RialtoClientLogging.h"
 #include "MediaCapabilitiesIpcConverters.h"
-
-// Reuse converter functions defined (static) in MediaPipelineCapabilitiesIpc.cpp
-// by including the shared header once available; for now forward-declare via the response types.
-#include "RialtoCommonIpc.h"
-
-/*namespace
-{
-// Forward-declare converters that live in MediaPipelineCapabilitiesIpc.cpp anonymous namespace.
-// These are redeclared here for the same translation unit approach used by the rest of the IPC layer.
-using AudioCapResp = firebolt::rialto::GetSupportedAudioCapabilitiesResponse;
-using VideoCapResp = firebolt::rialto::GetSupportedVideoCapabilitiesResponse;
-} // namespace
-*/
-// Reuse MediaPipelineCapabilitiesIpcFactory to produce instances when needed.
-// MediaCapabilitiesIpc factory plumbing lives in media/client/main/; only the IPC class is here.
+#include "RialtoClientLogging.h"
 
 namespace firebolt::rialto
 {
@@ -81,15 +63,13 @@ firebolt::rialto::common::AudioDecoderCapabilities MediaCapabilitiesIpc::getSupp
         return firebolt::rialto::common::AudioDecoderCapabilities{};
     }
 
-    // Delegate deserialisation to the existing converter in MediaPipelineCapabilitiesIpc.cpp
-    // via the shared IPC response type.  Full deserialisation wiring done during integration.
     RIALTO_CLIENT_LOG_INFO("IMediaCapabilities: audio capabilities received");
-    return firebolt::rialto::common::AudioDecoderCapabilities{};
+    return convertAudioDecoderCapabilities(response);
 }
 
 firebolt::rialto::common::VideoDecoderCapabilities MediaCapabilitiesIpc::getSupportedVideoCapabilities()
 {
-        RIALTO_CLIENT_LOG_ERROR("USHA: MediaCapabilitiesIpc: Client: ipc: calling getSupportedVideoCapabilities");
+    RIALTO_CLIENT_LOG_ERROR("USHA: MediaCapabilitiesIpc: Client: ipc: calling getSupportedVideoCapabilities");
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("IPC channel reattachment failed");
@@ -111,7 +91,7 @@ firebolt::rialto::common::VideoDecoderCapabilities MediaCapabilitiesIpc::getSupp
     }
 
     RIALTO_CLIENT_LOG_INFO("IMediaCapabilities: video capabilities received");
-    return firebolt::rialto::common::VideoDecoderCapabilities{};
+    return convertVideoDecoderCapabilities(response);
 }
 
 } // namespace firebolt::rialto::client

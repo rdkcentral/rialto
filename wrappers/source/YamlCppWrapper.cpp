@@ -26,14 +26,14 @@ namespace
 const std::string kAudioCapabilitiesFilePath{"/product/hfp/config/hfp-audiodecoder.yaml"};
 const std::string kVideoCapabilitiesFilePath{"/product/hfp/config/hfp-videodecoder.yaml"};
 
-firebolt::rialto::AudioProfileCapability parseAudioProfileCapability(const YAML::Node &node)
+firebolt::rialto::common::AudioProfileCapability parseAudioProfileCapability(const YAML::Node &node)
 {
     if (!node["maxBitrateInBps"] || !node["maxChannels"] || !node["maxSampleRateInHz"] || !node["maxBitDepth"])
     {
         throw std::runtime_error("AudioProfileCapability: missing required field(s) "
                                  "(maxBitrateInBps, maxChannels, maxSampleRateInHz, maxBitDepth)");
     }
-    firebolt::rialto::AudioProfileCapability cap{};
+    firebolt::rialto::common::AudioProfileCapability cap{};
     cap.maxBitrateInBps = node["maxBitrateInBps"].as<uint64_t>();
     cap.maxChannels = node["maxChannels"].as<uint32_t>();
     cap.maxSampleRateInHz = node["maxSampleRateInHz"].as<uint32_t>();
@@ -46,7 +46,7 @@ firebolt::rialto::AudioProfileCapability parseAudioProfileCapability(const YAML:
  *
  * YAML structure: { profiles: [{BASE: {maxBitrateInBps:..., ...}}] }
  */
-firebolt::rialto::AudioProfileCapability parseBaseProfileCapability(const YAML::Node &codecData)
+firebolt::rialto::common::AudioProfileCapability parseBaseProfileCapability(const YAML::Node &codecData)
 {
     if (codecData["profiles"] && codecData["profiles"].IsSequence())
     {
@@ -169,9 +169,9 @@ std::optional<firebolt::rialto::AvsProfile> convertAvsProfileName(const std::str
     return std::nullopt;
 }
 
-firebolt::rialto::AudioDecoderCapability buildAudioDecoderCapability(const YAML::Node &capability)
+firebolt::rialto::common::AudioDecoderCapability buildAudioDecoderCapability(const YAML::Node &capability)
 {
-    firebolt::rialto::AudioDecoderCapability result;
+    firebolt::rialto::common::AudioDecoderCapability result;
     for (YAML::const_iterator capabilitiesIt = capability.begin(); capabilitiesIt != capability.end(); ++capabilitiesIt)
     {
         if (capabilitiesIt->second["codecCapabilities"])
@@ -190,14 +190,14 @@ firebolt::rialto::AudioDecoderCapability buildAudioDecoderCapability(const YAML:
                     {
                         result.aac = firebolt::rialto::AacCapability{
                             parseNamedProfileMap<std::map<firebolt::rialto::AacProfile,
-                                                          firebolt::rialto::AudioProfileCapability>>(kCodecData,
+                                                          firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
                                                                                                      convertAacProfileName)};
                     }
                     else if ("MPEG_AUDIO" == kCodecName)
                     {
                         result.mpegAudio = firebolt::rialto::MpegAudioCapability{parseNamedProfileMap<
                             std::map<firebolt::rialto::MpegAudioProfile,
-                                     firebolt::rialto::AudioProfileCapability>>(kCodecData, convertMpegAudioProfileName)};
+                                     firebolt::rialto::common::AudioProfileCapability>>(kCodecData, convertMpegAudioProfileName)};
                     }
                     else if ("MP3" == kCodecName)
                     {
@@ -215,7 +215,7 @@ firebolt::rialto::AudioDecoderCapability buildAudioDecoderCapability(const YAML:
                     {
                         result.dolbyAc3 = firebolt::rialto::DolbyAc3Capability{parseNamedProfileMap<
                             std::map<firebolt::rialto::DolbyAc3Profile,
-                                     firebolt::rialto::AudioProfileCapability>>(kCodecData, convertDolbyAc3ProfileName)};
+                                     firebolt::rialto::common::AudioProfileCapability>>(kCodecData, convertDolbyAc3ProfileName)};
                     }
                     else if ("DOLBY_AC4" == kCodecName)
                     {
@@ -225,7 +225,7 @@ firebolt::rialto::AudioDecoderCapability buildAudioDecoderCapability(const YAML:
                     {
                         result.dolbyEac3 = firebolt::rialto::DolbyEac3Capability{parseNamedProfileMap<
                             std::map<firebolt::rialto::DolbyEac3Profile,
-                                     firebolt::rialto::AudioProfileCapability>>(kCodecData, convertDolbyEac3ProfileName)};
+                                     firebolt::rialto::common::AudioProfileCapability>>(kCodecData, convertDolbyEac3ProfileName)};
                     }
                     else if ("DOLBY_TRUEHD" == kCodecName)
                     {
@@ -248,27 +248,27 @@ firebolt::rialto::AudioDecoderCapability buildAudioDecoderCapability(const YAML:
                     {
                         result.realAudio = firebolt::rialto::RealAudioCapability{parseNamedProfileMap<
                             std::map<firebolt::rialto::RealAudioProfile,
-                                     firebolt::rialto::AudioProfileCapability>>(kCodecData, convertRealAudioProfileName)};
+                                     firebolt::rialto::common::AudioProfileCapability>>(kCodecData, convertRealAudioProfileName)};
                     }
                     else if ("USAC" == kCodecName)
                     {
                         result.usac = firebolt::rialto::UsacCapability{
                             parseNamedProfileMap<std::map<firebolt::rialto::UsacProfile,
-                                                          firebolt::rialto::AudioProfileCapability>>(kCodecData,
+                                                          firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
                                                                                                      convertUsacProfileName)};
                     }
                     else if ("DTS" == kCodecName)
                     {
                         result.dts = firebolt::rialto::DtsCapability{
                             parseNamedProfileMap<std::map<firebolt::rialto::DtsProfile,
-                                                          firebolt::rialto::AudioProfileCapability>>(kCodecData,
+                                                          firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
                                                                                                      convertDtsProfileName)};
                     }
                     else if ("AVS" == kCodecName)
                     {
                         result.avs = firebolt::rialto::AvsCapability{
                             parseNamedProfileMap<std::map<firebolt::rialto::AvsProfile,
-                                                          firebolt::rialto::AudioProfileCapability>>(kCodecData,
+                                                          firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
                                                                                                      convertAvsProfileName)};
                     }
                 }
@@ -542,9 +542,9 @@ std::vector<firebolt::rialto::Av1Profile> buildAv1Profiles(const YAML::Node &pro
     return result;
 }
 
-firebolt::rialto::VideoDecoderCapability buildVideoDecoderCapability(const YAML::Node &capability)
+firebolt::rialto::common::VideoDecoderCapability buildVideoDecoderCapability(const YAML::Node &capability)
 {
-    firebolt::rialto::VideoDecoderCapability result;
+    firebolt::rialto::common::VideoDecoderCapability result;
     for (YAML::const_iterator capabilitiesIt = capability.begin(); capabilitiesIt != capability.end(); ++capabilitiesIt)
     {
         if (capabilitiesIt->second["codecCapabilities"])
@@ -607,7 +607,8 @@ std::shared_ptr<IYamlCppWrapper> YamlCppWrapperFactory::createYamlCppWrapper()
     return std::make_shared<YamlCppWrapper>();
 }
 
-DecoderCapabilitiesStatus YamlCppWrapper::getAudioDecoderCapabilities(AudioDecoderCapabilities &capabilities) const
+DecoderCapabilitiesStatus
+YamlCppWrapper::getAudioDecoderCapabilities(::firebolt::rialto::common::AudioDecoderCapabilities &capabilities) const
 try
 {
     YAML::Node audioCapsFile = YAML::LoadFile(kAudioCapabilitiesFilePath);
@@ -640,7 +641,8 @@ catch (const std::exception &e)
     return DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED;
 }
 
-DecoderCapabilitiesStatus YamlCppWrapper::getVideoDecoderCapabilities(VideoDecoderCapabilities &capabilities) const
+DecoderCapabilitiesStatus
+YamlCppWrapper::getVideoDecoderCapabilities(::firebolt::rialto::common::VideoDecoderCapabilities &capabilities) const
 try
 {
     YAML::Node videoCapsFile = YAML::LoadFile(kVideoCapabilitiesFilePath);

@@ -40,8 +40,10 @@ public:
     YamlCppWrapper() = default;
     ~YamlCppWrapper() override = default;
 
-    DecoderCapabilitiesStatus getAudioDecoderCapabilities(AudioDecoderCapabilities &capabilities) const override;
-    DecoderCapabilitiesStatus getVideoDecoderCapabilities(VideoDecoderCapabilities &capabilities) const override;
+    DecoderCapabilitiesStatus
+    getAudioDecoderCapabilities(::firebolt::rialto::common::AudioDecoderCapabilities &capabilities) const override;
+    DecoderCapabilitiesStatus
+    getVideoDecoderCapabilities(::firebolt::rialto::common::VideoDecoderCapabilities &capabilities) const override;
 };
 
 } // namespace firebolt::rialto::wrappers

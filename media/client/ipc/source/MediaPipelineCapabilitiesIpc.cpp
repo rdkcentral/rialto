@@ -19,9 +19,9 @@
 
 #include "MediaPipelineCapabilitiesIpc.h"
 #include "MediaCapabilitiesIpc.h"
+#include "MediaCapabilitiesIpcConverters.h"
 #include "RialtoClientLogging.h"
 #include "RialtoCommonIpc.h"
-#include "MediaCapabilitiesIpcConverters.h"
 
 /*
 namespace
