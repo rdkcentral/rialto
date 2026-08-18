@@ -62,13 +62,13 @@
 
 ## 8. Unit Tests
 
-- [ ] 8.1 Add `tests/unittests/serverManager/MediaCapabilitiesTest.cpp`: `OK`, `CONFIG_NOT_FOUND`, `SCHEMA_VALIDATION_FAILED`, `INTERNAL_ERROR`; inject mock `IYamlCppWrapper`.
-- [ ] 8.2 Update `tests/unittests/serverManager/SessionServerAppManagerTest.cpp`: optionals populated and forwarded on `OK`; `std::nullopt` forwarded on non-`OK`.
-- [ ] 8.3 Add or update `tests/unittests/serverManager/ClientTest.cpp`: typed proto fields set when optionals have values; fields absent when `std::nullopt`.
-- [ ] 8.4 Update `tests/unittests/media/server/ipc/serverManagerModuleService/ServerManagerModuleServiceTestsFixture.cpp`: `configureServices()` called with correct optionals when typed fields present; `std::nullopt` when absent.
-- [ ] 8.5 Update `tests/unittests/media/server/gstplayer/GstCapabilitiesTest.cpp`: Path A — pre-loaded data used, neither YAML load nor GStreamer query invoked; Path B — no pre-loaded data, GStreamer element query runs.
-- [ ] 8.6 Add `tests/unittests/media/client/MediaCapabilitiesIpcTest.cpp`: successful audio/video deserialisation; RPC failure path.
-- [ ] 8.7 Register all new test files in the relevant `CMakeLists.txt` targets.
+- [X] 8.1 Add `tests/unittests/serverManager/MediaCapabilitiesTest.cpp`: `OK`, `CONFIG_NOT_FOUND`, `SCHEMA_VALIDATION_FAILED`, `INTERNAL_ERROR`; inject mock `IYamlCppWrapper`.
+- [X] 8.2 Update `tests/unittests/serverManager/SessionServerAppManagerTest.cpp`: optionals populated and forwarded on `OK`; `std::nullopt` forwarded on non-`OK`.
+- [X] 8.3 Add or update `tests/unittests/serverManager/ClientTest.cpp`: typed proto fields set when optionals have values; fields absent when `std::nullopt`.
+- [X] 8.4 Update `tests/unittests/media/server/ipc/serverManagerModuleService/ServerManagerModuleServiceTestsFixture.cpp`: `configureServices()` called with correct optionals when typed fields present; `std::nullopt` when absent.
+- [X] 8.5 Update `tests/unittests/media/server/gstplayer/GstCapabilitiesTest.cpp`: Path A — pre-loaded data used, neither YAML load nor GStreamer query invoked; Path B — no pre-loaded data, GStreamer element query runs.
+- [X] 8.6 Add `tests/unittests/media/client/MediaCapabilitiesIpcTest.cpp`: successful audio/video deserialisation; RPC failure path.
+- [X] 8.7 Register all new test files in the relevant `CMakeLists.txt` targets.
 
 ## 9. Validation
 

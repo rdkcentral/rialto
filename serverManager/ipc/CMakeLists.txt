@@ -41,6 +41,7 @@ target_include_directories (
 
         PUBLIC
         include
+        source
 
         PRIVATE
         $<TARGET_PROPERTY:RialtoServerManagerPublic,INTERFACE_INCLUDE_DIRECTORIES>
@@ -55,11 +56,13 @@ target_include_directories (
 target_link_libraries (
         RialtoServerManagerIpc
 
+        PUBLIC
+        RialtoProtobuf
+
         PRIVATE
         RialtoIpcClient
         RialtoIpcCommon
         RialtoServerManagerCommon
         RialtoServerManagerService
         RialtoWrappers
-        RialtoProtobuf
 )

@@ -30,11 +30,13 @@ add_gtests (
         unittests/common/SessionServerAppTestsFixture.cpp
         unittests/common/UtilsTests.cpp
 
+        unittests/ipc/ClientTest.cpp
         unittests/ipc/IpcTests.cpp
         unittests/ipc/IpcTestsFixture.cpp
 
         unittests/service/ConfigHelperTests.cpp
         unittests/service/ConfigReaderTests.cpp
+        unittests/service/MediaCapabilitiesTests.cpp
         unittests/service/ServerManagerServiceTests.cpp
         unittests/service/ServerManagerServiceTestsFixture.cpp
 

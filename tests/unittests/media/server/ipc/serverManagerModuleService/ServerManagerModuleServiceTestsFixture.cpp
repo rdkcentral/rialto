@@ -19,6 +19,10 @@
 
 #include "ServerManagerModuleServiceTestsFixture.h"
 #include "ServerManagerModuleService.h"
+#include "CapabilitySerialiser.h"
+#include <AudioDecoderCapabilities.h>
+#include <VideoDecoderCapabilities.h>
+#include "DecoderCapabilitiesUtil.h"
 #include <string>
 
 using testing::_;
@@ -38,6 +42,8 @@ constexpr int kPingId{29};
 const std::string kSocketOwner{};
 const std::string kSocketGroup{};
 const std::string kAppId{"app"};
+const firebolt::rialto::common::AudioDecoderCapabilities kAudioCapabilities{"1.0", "1.1", {}};
+const firebolt::rialto::common::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
 
 rialto::SessionServerState convertSessionServerState(const firebolt::rialto::common::SessionServerState &state)
 {
@@ -137,6 +143,52 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetState(
     EXPECT_CALL(m_sessionServerManagerMock, setState(state)).WillOnce(Return(false));
 }
 
+void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWithCapabilities(
+    const firebolt::rialto::common::SessionServerState &state,
+    const firebolt::rialto::common::AudioDecoderCapabilities &audioCaps,
+    const firebolt::rialto::common::VideoDecoderCapabilities &videoCaps)
+{
+    EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketName, kSocketPermissions, kSocketOwner, kSocketGroup))
+        .WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
+                                  kAppId, testing::Optional(audioCaps), testing::Optional(videoCaps)))
+        .WillOnce(Return(true));
+}
+
+void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWithFdAndCapabilities(
+    const firebolt::rialto::common::SessionServerState &state,
+    const firebolt::rialto::common::AudioDecoderCapabilities &audioCaps,
+    const firebolt::rialto::common::VideoDecoderCapabilities &videoCaps)
+{
+    EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
+                                  kAppId, testing::Optional(audioCaps), testing::Optional(videoCaps)))
+        .WillOnce(Return(true));
+}
+
+void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWithAudioCapabilitiesAbsent(
+    const firebolt::rialto::common::SessionServerState &state)
+{
+    EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketName, kSocketPermissions, kSocketOwner, kSocketGroup))
+        .WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
+                                  kAppId, testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+        .WillOnce(Return(true));
+}
+
+void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWithFdAndAudioCapabilitiesAbsent(
+    const firebolt::rialto::common::SessionServerState &state)
+{
+    EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
+                                  kAppId, testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+        .WillOnce(Return(true));
+}
+
 void ServerManagerModuleServiceTests::sessionServerManagerWillPing()
 {
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
@@ -190,6 +242,112 @@ void ServerManagerModuleServiceTests::sendSetConfigurationWithFd(const firebolt:
     request.set_initialsessionserverstate(convertSessionServerState(state));
     request.set_clientdisplayname(kClientDisplayName);
     request.set_appname(kAppId);
+
+    m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void ServerManagerModuleServiceTests::sendSetConfigurationWithCapabilities(
+    const firebolt::rialto::common::SessionServerState &state,
+    const firebolt::rialto::common::AudioDecoderCapabilities &audioCaps,
+    const firebolt::rialto::common::VideoDecoderCapabilities &videoCaps)
+{
+    rialto::SetConfigurationRequest request;
+    rialto::SetConfigurationResponse response;
+
+    request.set_sessionmanagementsocketname(kSocketName);
+    request.mutable_resources()->set_maxplaybacks(kMaxSessions);
+    request.mutable_resources()->set_maxwebaudioplayers(kMaxWebAudioPlayers);
+    request.mutable_loglevels()->set_defaultloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_clientloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_sessionserverloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_ipcloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_servermanagerloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_commonloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.set_initialsessionserverstate(convertSessionServerState(state));
+    request.set_clientdisplayname(kClientDisplayName);
+    request.set_socketpermissions(kSocketPermissions);
+    request.set_socketowner(kSocketOwner);
+    request.set_socketgroup(kSocketGroup);
+    request.set_appname(kAppId);
+    // Set audio and video capabilities in proto
+    rialto::servermanager::ipc::serialiseAudioCapabilities(audioCaps, request.mutable_audiocapabilities());
+    rialto::servermanager::ipc::serialiseVideoCapabilities(videoCaps, request.mutable_videocapabilities());
+
+    m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void ServerManagerModuleServiceTests::sendSetConfigurationWithFdAndCapabilities(
+    const firebolt::rialto::common::SessionServerState &state,
+    const firebolt::rialto::common::AudioDecoderCapabilities &audioCaps,
+    const firebolt::rialto::common::VideoDecoderCapabilities &videoCaps)
+{
+    rialto::SetConfigurationRequest request;
+    rialto::SetConfigurationResponse response;
+
+    request.set_sessionmanagementsocketfd(kSocketFd);
+    request.mutable_resources()->set_maxplaybacks(kMaxSessions);
+    request.mutable_resources()->set_maxwebaudioplayers(kMaxWebAudioPlayers);
+    request.mutable_loglevels()->set_defaultloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_clientloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_sessionserverloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_ipcloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_servermanagerloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_commonloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.set_initialsessionserverstate(convertSessionServerState(state));
+    request.set_clientdisplayname(kClientDisplayName);
+    request.set_appname(kAppId);
+    // Set audio and video capabilities in proto
+    rialto::servermanager::ipc::serialiseAudioCapabilities(audioCaps, request.mutable_audiocapabilities());
+    rialto::servermanager::ipc::serialiseVideoCapabilities(videoCaps, request.mutable_videocapabilities());
+
+    m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void ServerManagerModuleServiceTests::sendSetConfigurationWithoutAudioCapabilities(
+    const firebolt::rialto::common::SessionServerState &state)
+{
+    rialto::SetConfigurationRequest request;
+    rialto::SetConfigurationResponse response;
+
+    request.set_sessionmanagementsocketname(kSocketName);
+    request.mutable_resources()->set_maxplaybacks(kMaxSessions);
+    request.mutable_resources()->set_maxwebaudioplayers(kMaxWebAudioPlayers);
+    request.mutable_loglevels()->set_defaultloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_clientloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_sessionserverloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_ipcloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_servermanagerloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_commonloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.set_initialsessionserverstate(convertSessionServerState(state));
+    request.set_clientdisplayname(kClientDisplayName);
+    request.set_socketpermissions(kSocketPermissions);
+    request.set_socketowner(kSocketOwner);
+    request.set_socketgroup(kSocketGroup);
+    request.set_appname(kAppId);
+    // Only set video capabilities, leave audio absent
+
+    m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
+}
+
+void ServerManagerModuleServiceTests::sendSetConfigurationWithFdWithoutAudioCapabilities(
+    const firebolt::rialto::common::SessionServerState &state)
+{
+    rialto::SetConfigurationRequest request;
+    rialto::SetConfigurationResponse response;
+
+    request.set_sessionmanagementsocketfd(kSocketFd);
+    request.mutable_resources()->set_maxplaybacks(kMaxSessions);
+    request.mutable_resources()->set_maxwebaudioplayers(kMaxWebAudioPlayers);
+    request.mutable_loglevels()->set_defaultloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_clientloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_sessionserverloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_ipcloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_servermanagerloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.mutable_loglevels()->set_commonloglevels(static_cast<uint32_t>(RIALTO_DEBUG_LEVEL_DEBUG));
+    request.set_initialsessionserverstate(convertSessionServerState(state));
+    request.set_clientdisplayname(kClientDisplayName);
+    request.set_appname(kAppId);
+    // Only set video capabilities, leave audio absent
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

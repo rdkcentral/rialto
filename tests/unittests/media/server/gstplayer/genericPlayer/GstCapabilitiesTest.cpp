@@ -1046,3 +1046,86 @@ TEST_F(GstCapabilitiesTest, shouldCreateSutWhenCapabilitiesLoadFails)
     std::unique_lock lock{mutex};
     cv.wait_for(lock, std::chrono::milliseconds{200}, [&]() { return initialised; });
 }
+
+TEST_F(GstCapabilitiesTest, shouldUsePreloadedCapabilitiesPathA)
+{
+    // Path A: Pre-loaded capabilities are provided from ServerManager
+    // Verify: Capabilities are used directly without YAML loading
+    // Expected: No calls to IYamlCppWrapper (YAML loading is skipped)
+
+    std::mutex mutex;
+    std::condition_variable cv;
+    bool initialised{false};
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Invoke(
+            [&](auto type, auto rank)
+            {
+                std::unique_lock lock{mutex};
+                initialised = true;
+                cv.notify_one();
+                return nullptr;
+            }));
+
+    // CRITICAL: IYamlCppWrapper should NOT be called when pre-loaded data is provided
+    // If it's called, the test will fail due to Times(0) expectation
+    EXPECT_CALL(*m_yamlCppWrapperMock, getAudioDecoderCapabilities(_)).Times(0);
+    EXPECT_CALL(*m_yamlCppWrapperMock, getVideoDecoderCapabilities(_)).Times(0);
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
+
+    // Create GstCapabilities with pre-loaded capabilities (Path A)
+    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
+                                              m_yamlCppWrapperMock, m_gstInitialiserMock, kAudioCapabilities,
+                                              kVideoCapabilities);
+
+    // Verify the pre-loaded capabilities are returned
+    EXPECT_THAT(m_sut->getSupportedAudioCapabilities(), decoderCapabilitiesMatcher(kAudioCapabilities));
+    EXPECT_THAT(m_sut->getSupportedVideoCapabilities(), decoderCapabilitiesMatcher(kVideoCapabilities));
+
+    std::unique_lock lock{mutex};
+    cv.wait_for(lock, std::chrono::milliseconds{200}, [&]() { return initialised; });
+}
+
+TEST_F(GstCapabilitiesTest, shouldUseFallbackPathBWithoutPreloadedCapabilities)
+{
+    // Path B: No pre-loaded capabilities provided (std::nullopt)
+    // Verify: YAML loading is called to query GStreamer elements
+    // Expected: IYamlCppWrapper methods ARE called
+
+    std::mutex mutex;
+    std::condition_variable cv;
+    bool initialised{false};
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
+        .WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
+        .WillOnce(Invoke(
+            [&](auto type, auto rank)
+            {
+                std::unique_lock lock{mutex};
+                initialised = true;
+                cv.notify_one();
+                return nullptr;
+            }));
+
+    // CRITICAL: IYamlCppWrapper SHOULD be called when pre-loaded data is absent
+    // This triggers the GStreamer element query fallback (Path B)
+    EXPECT_CALL(*m_yamlCppWrapperMock, getAudioDecoderCapabilities(_))
+        .WillOnce(DoAll(SetArgReferee<0>(kAudioCapabilities), Return(DecoderCapabilitiesStatus::OK)));
+    EXPECT_CALL(*m_yamlCppWrapperMock, getVideoDecoderCapabilities(_))
+        .WillOnce(DoAll(SetArgReferee<0>(kVideoCapabilities), Return(DecoderCapabilitiesStatus::OK)));
+    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
+
+    // Create GstCapabilities WITHOUT pre-loaded capabilities (std::nullopt triggers Path B)
+    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
+                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+
+    // Verify the YAML-loaded capabilities are returned
+    EXPECT_THAT(m_sut->getSupportedAudioCapabilities(), decoderCapabilitiesMatcher(kAudioCapabilities));
+    EXPECT_THAT(m_sut->getSupportedVideoCapabilities(), decoderCapabilitiesMatcher(kVideoCapabilities));
+
+    std::unique_lock lock{mutex};
+    cv.wait_for(lock, std::chrono::milliseconds{200}, [&]() { return initialised; });
+}

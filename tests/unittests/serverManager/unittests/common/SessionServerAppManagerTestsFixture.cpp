@@ -561,3 +561,43 @@ void SessionServerAppManagerTests::triggerOnServerStartupTimeout()
 {
     m_sut->onServerStartupTimeout(kServerId);
 }
+
+void SessionServerAppManagerTests::mediaCapabilitiesWillReturnConfigNotFound()
+{
+    EXPECT_CALL(m_mediaCapabilitiesMock, getAudioDecoderCapabilities(_))
+        .WillOnce(Return(firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
+    EXPECT_CALL(m_mediaCapabilitiesMock, getVideoDecoderCapabilities(_))
+        .WillOnce(Return(firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
+    m_sut =
+        std::make_unique<rialto::servermanager::common::SessionServerAppManager>(m_controller, m_stateObserver,
+                                                                                 std::move(m_sessionServerAppFactory),
+                                                                                 std::move(m_healthcheckServiceFactory),
+                                                                                 firebolt::rialto::common::IEventThreadFactory::createFactory(),
+                                                                                 m_namedSocketFactoryMock, m_mediaCapabilities);
+}
+
+void SessionServerAppManagerTests::sessionServerWillLaunchWithoutCapabilities(const firebolt::rialto::common::SessionServerState &state)
+{
+    EXPECT_CALL(m_namedSocketFactoryMock, createNamedSocket()).WillOnce(Return(ByMove(std::move(m_namedSocket))));
+    EXPECT_CALL(m_sessionServerAppFactoryMock,
+                create(kAppName, state, kAppConfig, _, SmartPtrMatcher(&m_namedSocketMock)))
+        .WillOnce(Return(m_sessionServerAppMock));
+    EXPECT_CALL(*m_sessionServerAppMock, launch()).WillOnce(Return(true));
+    EXPECT_CALL(*m_sessionServerAppMock, isConnected()).WillRepeatedly(Return(true));
+    EXPECT_CALL(*m_sessionServerAppMock, getSessionManagementSocketName()).WillRepeatedly(Return(kSessionServerSocketName));
+    EXPECT_CALL(*m_sessionServerAppMock, getClientDisplayName()).WillRepeatedly(Return(kClientDisplayName));
+    EXPECT_CALL(*m_sessionServerAppMock, getInitialState()).WillRepeatedly(Return(state));
+    EXPECT_CALL(*m_sessionServerAppMock, getSessionManagementSocketPermissions()).WillRepeatedly(Return(kSocketPermissions));
+    EXPECT_CALL(*m_sessionServerAppMock, getSessionManagementSocketOwner()).WillRepeatedly(Return(kSocketOwner));
+    EXPECT_CALL(*m_sessionServerAppMock, getSessionManagementSocketGroup()).WillRepeatedly(Return(kSocketGroup));
+    EXPECT_CALL(*m_sessionServerAppMock, getMaxPlaybackSessions()).WillRepeatedly(Return(kMaxSessions));
+    EXPECT_CALL(*m_sessionServerAppMock, getMaxWebAudioPlayers()).WillRepeatedly(Return(kMaxWebAudioPlayers));
+    EXPECT_CALL(*m_sessionServerAppMock, isPreloaded()).WillRepeatedly(Return(false));
+    EXPECT_CALL(m_controllerMock,
+                performSetConfiguration(kServerId, state,
+                                        kSessionServerSocketName, kClientDisplayName,
+                                        MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kSocketPermissions,
+                                        kSocketOwner, kSocketGroup, kAppName, Eq(std::nullopt), Eq(std::nullopt)))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*m_stateObserver, stateChanged(kAppName, firebolt::rialto::common::SessionServerState::UNINITIALIZED));
+}

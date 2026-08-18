@@ -119,3 +119,54 @@ TEST_F(ServerManagerModuleServiceTests, shouldFailToPingDueToInvalidController)
     sessionServerManagerWillHandleRequestFailureWithInvalidController();
     sendPingWithInvalidController();
 }
+
+TEST_F(ServerManagerModuleServiceTests, shouldSetConfigurationWithAudioAndVideoCapabilitiesPopulated)
+{
+    // Test that when both audio and video capabilities are present in the proto request,
+    // they are deserialized and forwarded to configureServices() as populated optionals
+    const firebolt::rialto::common::AudioDecoderCapabilities kAudioCaps{"1.0", "1.1", {}};
+    const firebolt::rialto::common::VideoDecoderCapabilities kVideoCaps{"2.0", "2.1", {}};
+
+    sessionServerManagerWillHandleRequestSuccess();
+    sessionServerManagerWillSetConfigurationWithCapabilities(firebolt::rialto::common::SessionServerState::ACTIVE,
+                                                             kAudioCaps, kVideoCaps);
+    sessionServerManagerWillSetLogLevels();
+    sendSetConfigurationWithCapabilities(firebolt::rialto::common::SessionServerState::ACTIVE, kAudioCaps, kVideoCaps);
+}
+
+TEST_F(ServerManagerModuleServiceTests, shouldSetConfigurationWithFdAndAudioAndVideoCapabilitiesPopulated)
+{
+    // Test that when both audio and video capabilities are present in the proto request (socketFd variant),
+    // they are deserialized and forwarded to configureServices() as populated optionals
+    const firebolt::rialto::common::AudioDecoderCapabilities kAudioCaps{"1.0", "1.1", {}};
+    const firebolt::rialto::common::VideoDecoderCapabilities kVideoCaps{"2.0", "2.1", {}};
+
+    sessionServerManagerWillHandleRequestSuccess();
+    sessionServerManagerWillSetConfigurationWithFdAndCapabilities(firebolt::rialto::common::SessionServerState::ACTIVE,
+                                                                  kAudioCaps, kVideoCaps);
+    sessionServerManagerWillSetLogLevels();
+    sendSetConfigurationWithFdAndCapabilities(firebolt::rialto::common::SessionServerState::ACTIVE, kAudioCaps,
+                                              kVideoCaps);
+}
+
+TEST_F(ServerManagerModuleServiceTests, shouldSetConfigurationWithoutCapabilities)
+{
+    // Test that when neither audio nor video capabilities are present in the proto request,
+    // configureServices() is called with std::nullopt optionals
+    sessionServerManagerWillHandleRequestSuccess();
+    sessionServerManagerWillSetConfigurationWithAudioCapabilitiesAbsent(
+        firebolt::rialto::common::SessionServerState::ACTIVE);
+    sessionServerManagerWillSetLogLevels();
+    sendSetConfigurationWithoutAudioCapabilities(firebolt::rialto::common::SessionServerState::ACTIVE);
+}
+
+TEST_F(ServerManagerModuleServiceTests, shouldSetConfigurationWithFdWithoutCapabilities)
+{
+    // Test that when neither audio nor video capabilities are present in the proto request (socketFd variant),
+    // configureServices() is called with std::nullopt optionals
+    sessionServerManagerWillHandleRequestSuccess();
+    sessionServerManagerWillSetConfigurationWithFdAndAudioCapabilitiesAbsent(
+        firebolt::rialto::common::SessionServerState::ACTIVE);
+    sessionServerManagerWillSetLogLevels();
+    sendSetConfigurationWithFdWithoutAudioCapabilities(firebolt::rialto::common::SessionServerState::ACTIVE);
+}

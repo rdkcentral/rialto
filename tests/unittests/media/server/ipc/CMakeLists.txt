@@ -87,6 +87,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoTestServerManagerCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
 
         stubs
+        ../../../../../serverManager/ipc/source
         )
 
 target_link_libraries(
@@ -94,6 +95,7 @@ target_link_libraries(
 
         # # Link application source
         RialtoServerIpc
+        RialtoServerManagerIpc
         RialtoIpcClient
         RialtoIpcCommon
         RialtoCommonMisc
