@@ -34,6 +34,9 @@
 #include <utility>
 #include <vector>
 
+#include "AudioDecoderCapabilities.h"
+#include "VideoDecoderCapabilities.h"
+
 namespace firebolt::rialto
 {
 /**
@@ -498,6 +501,13 @@ enum class DecoderCapabilitiesStatus
     SCHEMA_VALIDATION_FAILED, /**< Config file failed schema validation */
     INTERNAL_ERROR
 };
+
+// Re-export common types for backward compatibility
+using AudioDecoderCapabilities = common::AudioDecoderCapabilities;
+using VideoDecoderCapabilities = common::VideoDecoderCapabilities;
+using AudioCodec = common::AudioCodec;
+using DynamicRange = common::DynamicRange;
+
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_

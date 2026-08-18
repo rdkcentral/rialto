@@ -583,6 +583,10 @@ void SessionServerAppManagerTests::sessionServerWillLaunchWithoutCapabilities(co
                 create(kAppName, state, kAppConfig, _, SmartPtrMatcher(&m_namedSocketMock)))
         .WillOnce(Return(m_sessionServerAppMock));
     EXPECT_CALL(*m_sessionServerAppMock, launch()).WillOnce(Return(true));
+    EXPECT_CALL(*m_sessionServerAppMock, getAppName()).WillRepeatedly(ReturnRef(kAppName));
+    EXPECT_CALL(*m_sessionServerAppMock, getAppManagementSocketName()).WillOnce(Return(kAppMgmtSocket));
+    EXPECT_CALL(*m_sessionServerAppMock, getServerId()).WillRepeatedly(Return(kServerId));
+    EXPECT_CALL(m_controllerMock, createClient(kServerId, kAppMgmtSocket)).WillOnce(Return(true));
     EXPECT_CALL(*m_sessionServerAppMock, isConnected()).WillRepeatedly(Return(true));
     EXPECT_CALL(*m_sessionServerAppMock, getSessionManagementSocketName()).WillRepeatedly(Return(kSessionServerSocketName));
     EXPECT_CALL(*m_sessionServerAppMock, getClientDisplayName()).WillRepeatedly(Return(kClientDisplayName));
@@ -593,6 +597,8 @@ void SessionServerAppManagerTests::sessionServerWillLaunchWithoutCapabilities(co
     EXPECT_CALL(*m_sessionServerAppMock, getMaxPlaybackSessions()).WillRepeatedly(Return(kMaxSessions));
     EXPECT_CALL(*m_sessionServerAppMock, getMaxWebAudioPlayers()).WillRepeatedly(Return(kMaxWebAudioPlayers));
     EXPECT_CALL(*m_sessionServerAppMock, isPreloaded()).WillRepeatedly(Return(false));
+    EXPECT_CALL(*m_sessionServerAppMock, cancelStartupTimer());
+    EXPECT_CALL(*m_sessionServerAppMock, isNamedSocketInitialized()).WillOnce(Return(false));
     EXPECT_CALL(m_controllerMock,
                 performSetConfiguration(kServerId, state,
                                         kSessionServerSocketName, kClientDisplayName,

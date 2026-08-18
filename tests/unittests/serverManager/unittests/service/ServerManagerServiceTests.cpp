@@ -25,7 +25,7 @@ namespace
 {
 const std::string kAppName{"YouTube"};
 const firebolt::rialto::common::SessionServerState kAppState{firebolt::rialto::common::SessionServerState::INACTIVE};
-const std::string kAppSocket{getenv("RIALTO_SOCKET_PATH")};
+const std::string kAppSocket{getenv("RIALTO_SOCKET_PATH") ? getenv("RIALTO_SOCKET_PATH") : ""};
 const firebolt::rialto::common::AppConfig kAppConfig{kAppSocket};
 } // namespace
 

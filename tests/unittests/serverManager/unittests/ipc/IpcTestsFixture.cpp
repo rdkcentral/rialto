@@ -131,7 +131,7 @@ bool IpcTests::triggerPerformSetConfiguration()
 {
     EXPECT_TRUE(m_sut);
     const auto kInitialState{firebolt::rialto::common::SessionServerState::INACTIVE};
-    const std::string kSocketName{getenv("RIALTO_SOCKET_PATH")};
+    const std::string kSocketName{getenv("RIALTO_SOCKET_PATH") ? getenv("RIALTO_SOCKET_PATH") : ""};
     const std::string kClientSocketName{"westeros-rialto"};
     constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{2, 1};
     constexpr unsigned int kSocketPermissions{0777};
