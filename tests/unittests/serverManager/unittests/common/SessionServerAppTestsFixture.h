@@ -70,7 +70,7 @@ private:
     testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock> &m_namedSocketMock{*m_namedSocket};
 
 protected:
-    std::unique_ptr<rialto::servermanager::common::SessionServerApp> m_sut;
+    std::shared_ptr<rialto::servermanager::common::SessionServerApp> m_sut;
 };
 
 #endif // SESSION_SERVER_APP_TESTS_FIXTURE_H_

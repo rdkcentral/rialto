@@ -138,6 +138,15 @@ Client::Client(std::unique_ptr<common::ISessionServerAppManager> &sessionServerA
 Client::~Client()
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Client for serverId: %d is destructed", m_serverId);
+    m_isShuttingDown = true;
+    if (m_ipcLoop && m_ipcLoop->channel())
+    {
+        for (const auto &tag : m_eventTags)
+        {
+            m_ipcLoop->channel()->unsubscribe(tag);
+        }
+        m_eventTags.clear();
+    }
     m_serviceStub.reset();
     m_ipcLoop.reset();
 }
@@ -151,9 +160,18 @@ bool Client::connect()
         return false;
     }
     m_serviceStub = std::make_unique<::rialto::ServerManagerModule_Stub>(m_ipcLoop->channel());
-    m_ipcLoop->channel()->subscribe<rialto::StateChangedEvent>(
-        std::bind(&Client::onStateChangedEvent, this, std::placeholders::_1));
-    m_ipcLoop->channel()->subscribe<rialto::AckEvent>(std::bind(&Client::onAckEvent, this, std::placeholders::_1));
+    int eventTag{m_ipcLoop->channel()->subscribe<rialto::StateChangedEvent>(
+        std::bind(&Client::onStateChangedEvent, this, std::placeholders::_1))};
+    if (eventTag >= 0)
+    {
+        m_eventTags.push_back(eventTag);
+    }
+    eventTag =
+        m_ipcLoop->channel()->subscribe<rialto::AckEvent>(std::bind(&Client::onAckEvent, this, std::placeholders::_1));
+    if (eventTag >= 0)
+    {
+        m_eventTags.push_back(eventTag);
+    }
     return true;
 }
 
@@ -308,6 +326,12 @@ bool Client::setLogLevels(const service::LoggingLevels &logLevels) const
 
 void Client::onDisconnected() const
 {
+    if (!m_sessionServerAppManager || m_isShuttingDown)
+    {
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Connection to serverId: %d broken, but server manager is shutting down",
+                                        m_serverId);
+        return;
+    }
     RIALTO_SERVER_MANAGER_LOG_WARN("Connection to serverId: %d broken, server probably crashed. Starting recovery",
                                    m_serverId);
     m_sessionServerAppManager->restartServer(m_serverId);
@@ -316,7 +340,7 @@ void Client::onDisconnected() const
 void Client::onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent> &event) const
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("StateChangedEvent received for serverId: %d", m_serverId);
-    if (!m_sessionServerAppManager || !event)
+    if (!m_sessionServerAppManager || !event || m_isShuttingDown)
     {
         RIALTO_SERVER_MANAGER_LOG_WARN("Problem during StateChangedEvent processing");
         return;
@@ -327,7 +351,7 @@ void Client::onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent
 void Client::onAckEvent(const std::shared_ptr<rialto::AckEvent> &event) const
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("AckEvent received for serverId: %d", m_serverId);
-    if (!m_sessionServerAppManager || !event)
+    if (!m_sessionServerAppManager || !event || m_isShuttingDown)
     {
         RIALTO_SERVER_MANAGER_LOG_WARN("Problem during AckEvent processing");
         return;
