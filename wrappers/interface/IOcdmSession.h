@@ -46,14 +46,14 @@ public:
      * @param[in]  initDataType : The init data type.
      * @param[in]  initData     : The init data pointer.
      * @param[in]  initDataSize : The size of the init data pointed to by initData.
-    * @param[in]  cdmData      : Optional CDM data pointer.
-    * @param[in]  cdmDataSize  : The size of cdmData.
+     * @param[in]  cdmData      : Optional CDM data pointer.
+     * @param[in]  cdmDataSize  : The size of cdmData.
      *
      * @retval the return status.
      */
     virtual MediaKeyErrorStatus constructSession(KeySessionType sessionType, InitDataType initDataType,
-                                        const uint8_t initData[], uint32_t initDataSize,
-                                        const uint8_t cdmData[], uint32_t cdmDataSize) = 0;
+                                                 const uint8_t initData[], uint32_t initDataSize,
+                                                 const uint8_t cdmData[], uint32_t cdmDataSize) = 0;
 
     /**
      * @brief Gets challenge data for session.

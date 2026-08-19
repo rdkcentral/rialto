@@ -128,8 +128,7 @@ MediaKeyErrorStatus MediaKeys::createKeySession(KeySessionType sessionType, std:
 }
 
 MediaKeyErrorStatus MediaKeys::generateRequest(int32_t keySessionId, InitDataType initDataType,
-                                               const std::vector<uint8_t> &initData,
-                                               const std::vector<uint8_t> &cdmData,
+                                               const std::vector<uint8_t> &initData, const std::vector<uint8_t> &cdmData,
                                                const LimitedDurationLicense &ldlState)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");

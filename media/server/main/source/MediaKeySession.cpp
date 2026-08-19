@@ -113,11 +113,12 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
                                                      const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-     if (LimitedDurationLicense::NOT_SPECIFIED != ldlState)
+    if (LimitedDurationLicense::NOT_SPECIFIED != ldlState)
     {
         m_extendedInterfaceInUse = true;
     }
-    else    {
+    else
+    {
         // Set the request flag for the onLicenseRequest callback
         m_licenseRequested = true;
     }

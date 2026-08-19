@@ -152,8 +152,7 @@ MediaKeyErrorStatus CdmService::createKeySession(int mediaKeysHandle, KeySession
 }
 
 MediaKeyErrorStatus CdmService::generateRequest(int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,
-                                                const std::vector<uint8_t> &initData,
-                                                const std::vector<uint8_t> &cdmData,
+                                                const std::vector<uint8_t> &initData, const std::vector<uint8_t> &cdmData,
                                                 const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("CdmService requested to generate request: %d", mediaKeysHandle);

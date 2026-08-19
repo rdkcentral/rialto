@@ -79,11 +79,10 @@ public:
     MediaKeyErrorStatus createKeySession(KeySessionType sessionType, std::weak_ptr<IMediaKeysClient> client,
                                          int32_t &keySessionId) override;
 
-    MediaKeyErrorStatus generateRequest(int32_t keySessionId, InitDataType initDataType,
-                                        const std::vector<uint8_t> &initData,
-                                        const std::vector<uint8_t> &cdmData = std::vector<uint8_t>{},
-                                        const LimitedDurationLicense &ldlState =
-                                            LimitedDurationLicense::NOT_SPECIFIED) override;
+    MediaKeyErrorStatus
+    generateRequest(int32_t keySessionId, InitDataType initDataType, const std::vector<uint8_t> &initData,
+                    const std::vector<uint8_t> &cdmData = std::vector<uint8_t>{},
+                    const LimitedDurationLicense &ldlState = LimitedDurationLicense::NOT_SPECIFIED) override;
 
     MediaKeyErrorStatus loadSession(int32_t keySessionId) override;
 
@@ -173,8 +172,7 @@ private:
      * @retval an error status.
      */
     MediaKeyErrorStatus generateRequestInternal(int32_t keySessionId, InitDataType initDataType,
-                                                const std::vector<uint8_t> &initData,
-                                                const std::vector<uint8_t> &cdmData,
+                                                const std::vector<uint8_t> &initData, const std::vector<uint8_t> &cdmData,
                                                 const LimitedDurationLicense &ldlState);
 
     /**

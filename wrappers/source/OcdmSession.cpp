@@ -19,13 +19,13 @@
 
 #include "OcdmSession.h"
 #include "OcdmCommon.h"
+#include "RialtoClientLogging.h"
 #include "opencdm/open_cdm_adapter.h"
 #include "opencdm/open_cdm_ext.h"
 #include <dlfcn.h>
 #include <mutex>
 #include <sstream>
 #include <vector>
-#include "RialtoClientLogging.h"
 namespace
 {
 LicenseType convertLicenseType(const firebolt::rialto::KeySessionType &sessionType)

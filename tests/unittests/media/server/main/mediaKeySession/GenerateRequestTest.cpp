@@ -56,7 +56,8 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessWithNonEmptyCdmDat
     const std::vector<uint8_t> kCdmData{7, 8, 9};
     const std::vector<uint8_t> kResponseData{4, 5, 6};
 
-    EXPECT_CALL(*m_ocdmSessionMock, constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size(), _, _))
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size(), _, _))
         .WillOnce(Invoke(
             [&kCdmData](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
                         uint32_t initDataSize, const uint8_t cdmData[], uint32_t cdmDataSize)
@@ -77,8 +78,8 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessWithNonEmptyCdmDat
     mainThreadWillEnqueueTask();
     EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, m_kChallenge, _));
 
-    EXPECT_EQ(MediaKeyErrorStatus::OK,
-              m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, kCdmData, m_kLdlState));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, kCdmData,
+                                                                          LimitedDurationLicense::DISABLED));
 
     EXPECT_CALL(*m_ocdmSessionMock, update(_, _)).Times(0);
     EXPECT_CALL(*m_ocdmSessionMock, storeLicenseData(&kResponseData[0], kResponseData.size()))

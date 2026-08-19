@@ -129,7 +129,7 @@ public:
      * @param[in]  keySessionId : The key session id for the session.
      * @param[in]  initDataType : The init data type.
      * @param[in]  initData     : The init data.
-    * @param[in]  cdmData      : Optional CDM data.
+     * @param[in]  cdmData      : Optional CDM data.
      * @param[in]  ldlState     : The Limited Duration License state. Most of key systems do not need this parameter,
      *                            so the default value is NOT_SPECIFIED.
      *
