@@ -103,9 +103,9 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessWithQueuedDrmHeade
 }
 
 /**
- * Test that GenerateRequest forwards non-empty cdmData to constructSession and engages the extended interface path.
+ * Test that non-empty cdmData (without LDL) engages the extended interface path.
  */
-TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessWithNonEmptyCdmDataUsesExtendedInterface)
+TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessWithNonEmptyCdmDataUsesExtendedInterfaceWithoutLdl)
 {
     createKeySession(kWidevineKeySystem);
 
@@ -135,15 +135,55 @@ TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessWithNonEmptyCdmDat
     EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(m_kKeySessionId, m_kChallenge, _));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, kCdmData,
-                                                                          LimitedDurationLicense::DISABLED));
+                                                                          LimitedDurationLicense::NOT_SPECIFIED));
 
     EXPECT_CALL(*m_ocdmSessionMock, update(_, _)).Times(0);
-    EXPECT_CALL(*m_ocdmSessionMock, storeLicenseData(&kResponseData[0], kResponseData.size()))
+    EXPECT_CALL(*m_ocdmSessionMock, storeLicenseData(kResponseData.data(), kResponseData.size()))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->updateSession(kResponseData));
 
     // Extended interface path closes via challenge cancellation and decrypt context cleanup.
+    EXPECT_CALL(*m_ocdmSessionMock, cancelChallengeData()).WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_CALL(*m_ocdmSessionMock, cleanDecryptContext()).WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_CALL(*m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
+}
+
+/**
+ * Test that persistent license restore flow (non-empty cdmData with no LDL) does not fetch challenge data.
+ */
+TEST_F(RialtoServerMediaKeySessionGenerateRequestTest, SuccessPersistentRestoreWithCdmDataDoesNotGenerateChallenge)
+{
+    m_keySessionType = KeySessionType::PERSISTENT_LICENCE;
+    createKeySession(kWidevineKeySystem);
+
+    const std::vector<uint8_t> kCdmData{7, 8, 9};
+    const std::vector<uint8_t> kResponseData{4, 5, 6};
+
+    EXPECT_CALL(*m_ocdmSessionMock,
+                constructSession(m_keySessionType, m_kInitDataType, &m_kInitData[0], m_kInitData.size(), _, _))
+        .WillOnce(Invoke(
+            [&kCdmData](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
+                        uint32_t initDataSize, const uint8_t cdmData[], uint32_t cdmDataSize)
+            {
+                EXPECT_NE(cdmData, nullptr);
+                EXPECT_EQ(cdmDataSize, kCdmData.size());
+                EXPECT_TRUE(std::equal(cdmData, cdmData + cdmDataSize, kCdmData.begin()));
+
+                return MediaKeyErrorStatus::OK;
+            }));
+
+    EXPECT_CALL(*m_ocdmSessionMock, getChallengeData(_, _, _)).Times(0);
+    EXPECT_CALL(*m_mediaKeysClientMock, onLicenseRequest(_, _, _)).Times(0);
+
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->generateRequest(m_kInitDataType, m_kInitData, kCdmData,
+                                                                          LimitedDurationLicense::NOT_SPECIFIED));
+
+    EXPECT_CALL(*m_ocdmSessionMock, update(_, _)).Times(0);
+    EXPECT_CALL(*m_ocdmSessionMock, storeLicenseData(kResponseData.data(), kResponseData.size()))
+        .WillOnce(Return(MediaKeyErrorStatus::OK));
+    EXPECT_EQ(MediaKeyErrorStatus::OK, m_mediaKeySession->updateSession(kResponseData));
+
     EXPECT_CALL(*m_ocdmSessionMock, cancelChallengeData()).WillOnce(Return(MediaKeyErrorStatus::OK));
     EXPECT_CALL(*m_ocdmSessionMock, cleanDecryptContext()).WillOnce(Return(MediaKeyErrorStatus::OK));
     EXPECT_CALL(*m_ocdmSessionMock, destructSession()).WillOnce(Return(MediaKeyErrorStatus::OK));
