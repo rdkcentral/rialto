@@ -88,10 +88,9 @@ public:
      *
      * @retval an error status.
      */
-    virtual MediaKeyErrorStatus
-    generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData,
-                    const std::vector<uint8_t> &cdmData = std::vector<uint8_t>{},
-                    const LimitedDurationLicense &ldlState = LimitedDurationLicense::NOT_SPECIFIED) = 0;
+    virtual MediaKeyErrorStatus generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData,
+                                                const std::vector<uint8_t> &cdmData,
+                                                const LimitedDurationLicense &ldlState) = 0;
     /**
      * @brief Loads the existing key session.
      *

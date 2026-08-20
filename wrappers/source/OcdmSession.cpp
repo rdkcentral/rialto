@@ -150,21 +150,6 @@ MediaKeyErrorStatus OcdmSession::constructSession(KeySessionType sessionType, In
     {
         return MediaKeyErrorStatus::OK;
     }
-    if (cdmData && cdmDataSize > 0)
-    {
-        std::ostringstream oss;
-        for (uint32_t i = 0; i < cdmDataSize; ++i)
-        {
-            oss << std::hex << static_cast<int>(cdmData[i]);
-            if (i + 1 < cdmDataSize)
-                oss << " ";
-        }
-        RIALTO_CLIENT_LOG_ERROR("VRN cdmData is valid: size=%u, bytes=%s", cdmDataSize, oss.str().c_str());
-    }
-    else
-    {
-        RIALTO_CLIENT_LOG_ERROR("VRN cdmData is NULL or empty");
-    }
 
     OpenCDMError status = opencdm_construct_session(m_systemHandle, convertLicenseType(sessionType),
                                                     convertInitDataType(initDataType), initData, initDataSize, cdmData,

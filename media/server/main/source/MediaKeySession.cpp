@@ -130,12 +130,8 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
     {
         initOcdmErrorChecking();
 
-        const uint8_t *initDataPtr = initData.empty() ? nullptr : initData.data();
-        const uint8_t *cdmDataPtr = cdmData.empty() ? nullptr : cdmData.data();
-        const uint32_t cdmDataSize = cdmData.size();
-
-        status = m_ocdmSession->constructSession(m_kSessionType, initDataType, initDataPtr, initData.size(), cdmDataPtr,
-                                                 cdmDataSize);
+        status = m_ocdmSession->constructSession(m_kSessionType, initDataType, initData.data(), initData.size(),
+                                                 cdmData.data(), cdmData.size());
         if (MediaKeyErrorStatus::OK != status)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to construct the key session");

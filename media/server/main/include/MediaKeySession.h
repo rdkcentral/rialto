@@ -71,10 +71,9 @@ public:
      */
     virtual ~MediaKeySession();
 
-    MediaKeyErrorStatus
-    generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData,
-                    const std::vector<uint8_t> &cdmData = std::vector<uint8_t>{},
-                    const LimitedDurationLicense &ldlState = LimitedDurationLicense::NOT_SPECIFIED) override;
+    MediaKeyErrorStatus generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData,
+                                        const std::vector<uint8_t> &cdmData,
+                                        const LimitedDurationLicense &ldlState) override;
 
     MediaKeyErrorStatus loadSession() override;
 
