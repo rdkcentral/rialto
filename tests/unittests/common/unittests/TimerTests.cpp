@@ -20,6 +20,7 @@
 #include <condition_variable>
 #include <gtest/gtest.h>
 #include <mutex>
+#include <thread>
 
 #include "ITimer.h"
 
@@ -86,5 +87,32 @@ TEST(TimerTests, ShouldTimeoutPeriodicTimer)
         EXPECT_TRUE(timer->isActive());
         cv.wait_for(lock, kEnoughTimeForTestToComplete);
         EXPECT_GE(callCounter, 3);
+    }
+}
+
+TEST(TimerTests, ShouldCancelPeriodicTimerInCallback)
+{
+    std::mutex mtx;
+    { // This scope is required to suppress a false warning from cppcheck (about the mutex above)
+        std::condition_variable cv;
+        std::unique_lock<std::mutex> lock{mtx};
+        unsigned callCounter{0};
+        std::unique_ptr<ITimer> timer{ITimerFactory::getFactory()->createTimer(
+            std::chrono::milliseconds{30},
+            [&]()
+            {
+                std::unique_lock<std::mutex> lock{mtx};
+                ++callCounter;
+                if (callCounter >= 3)
+                {
+                    timer->cancel();
+                    cv.notify_one();
+                }
+            },
+            TimerType::PERIODIC)};
+        EXPECT_TRUE(timer->isActive());
+        cv.wait_for(lock, kEnoughTimeForTestToComplete);
+        std::this_thread::sleep_for(std::chrono::milliseconds{30});
+        EXPECT_EQ(callCounter, 3);
     }
 }

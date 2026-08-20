@@ -281,6 +281,12 @@ struct GenericPlayerContext
      * @brief Current position of the stream in nanoseconds.
      */
     std::atomic<int64_t> streamPosition{-1};
+
+    /**
+     * @brief Flag used to check if the stream is live
+     *        This is a workaround for Broadcom decoder issue with audio cuts during playback rate change.
+     */
+    bool isLive{false};
 };
 } // namespace firebolt::rialto::server
 

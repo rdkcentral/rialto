@@ -60,7 +60,7 @@ public:
 
     std::unique_ptr<IGstGenericPlayer>
     createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                           const VideoRequirements &videoRequirements,
+                           const VideoRequirements &videoRequirements, bool isLive,
                            const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
                                &rdkGstreamerUtilsWrapperFactory) override;
 };
@@ -89,7 +89,7 @@ public:
      * @param[in] gstDispatcherThreadFactory   : The gst dispatcher thread factory
      */
     GstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-                     const VideoRequirements &videoRequirements,
+                     const VideoRequirements &videoRequirements, bool isLive,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
                      const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,

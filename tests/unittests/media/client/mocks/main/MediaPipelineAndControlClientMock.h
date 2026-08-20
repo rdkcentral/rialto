@@ -31,7 +31,8 @@ namespace firebolt::rialto::client
 class MediaPipelineAndControlClientMock : public IMediaPipelineAndIControlClient
 {
 public:
-    MOCK_METHOD(bool, load, (MediaType type, const std::string &mimeType, const std::string &url), (override));
+    MOCK_METHOD(bool, load, (MediaType type, const std::string &mimeType, const std::string &url, bool isLive),
+                (override));
 
     MOCK_METHOD(bool, attachSource, (const std::unique_ptr<MediaSource> &source), (override));
 

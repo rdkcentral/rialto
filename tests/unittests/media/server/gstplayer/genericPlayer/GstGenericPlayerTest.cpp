@@ -41,6 +41,7 @@ class GstGenericPlayerTest : public GstGenericPlayerTestCommon
 protected:
     std::unique_ptr<IGstGenericPlayer> m_sut;
     VideoRequirements m_videoReq = {kMinPrimaryVideoWidth, kMinPrimaryVideoHeight};
+    bool m_isLive{false};
     GstElement *m_pipeline;
     GstIterator m_it{};
     char m_dummy{0};
@@ -52,7 +53,7 @@ protected:
     {
         gstPlayerWillBeCreated();
         m_sut = std::make_unique<GstGenericPlayer>(&m_gstPlayerClient, m_decryptionServiceMock, MediaType::MSE,
-                                                   m_videoReq, m_gstWrapperMock, m_glibWrapperMock,
+                                                   m_videoReq, m_isLive, m_gstWrapperMock, m_glibWrapperMock,
                                                    m_rdkGstreamerUtilsWrapperMock, m_gstInitialiserMock,
                                                    std::move(m_flushWatcher), m_gstSrcFactoryMock, m_timerFactoryMock,
                                                    std::move(m_taskFactory), std::move(workerThreadFactory),

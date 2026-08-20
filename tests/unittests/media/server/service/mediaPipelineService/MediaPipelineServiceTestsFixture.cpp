@@ -69,6 +69,7 @@ const std::string kTextTrackIdentifier{"TextTrackIdentifier"};
 constexpr uint32_t kBufferingLimit{4324};
 constexpr bool kUseBuffering{true};
 constexpr uint64_t kStopPosition{23412};
+constexpr bool kIsLive{false};
 } // namespace
 
 namespace firebolt::rialto
@@ -98,12 +99,12 @@ MediaPipelineServiceTests::MediaPipelineServiceTests()
 
 void MediaPipelineServiceTests::mediaPipelineWillLoad()
 {
-    EXPECT_CALL(m_mediaPipelineMock, load(kType, kMimeType, kUrl)).WillOnce(Return(true));
+    EXPECT_CALL(m_mediaPipelineMock, load(kType, kMimeType, kUrl, kIsLive)).WillOnce(Return(true));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillFailToLoad()
 {
-    EXPECT_CALL(m_mediaPipelineMock, load(kType, kMimeType, kUrl)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineMock, load(kType, kMimeType, kUrl, kIsLive)).WillOnce(Return(false));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillAttachSource()
@@ -580,12 +581,12 @@ void MediaPipelineServiceTests::destroySessionShouldFail()
 
 void MediaPipelineServiceTests::loadShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->load(kSessionId, kType, kMimeType, kUrl));
+    EXPECT_TRUE(m_sut->load(kSessionId, kType, kMimeType, kUrl, kIsLive));
 }
 
 void MediaPipelineServiceTests::loadShouldFail()
 {
-    EXPECT_FALSE(m_sut->load(kSessionId, kType, kMimeType, kUrl));
+    EXPECT_FALSE(m_sut->load(kSessionId, kType, kMimeType, kUrl, kIsLive));
 }
 
 void MediaPipelineServiceTests::attachSourceShouldSucceed()

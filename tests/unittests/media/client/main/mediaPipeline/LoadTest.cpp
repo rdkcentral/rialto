@@ -25,6 +25,7 @@ protected:
     MediaType m_type = MediaType::MSE;
     const std::string m_kMimeType = "mime";
     const std::string m_kUrl = "mse://1";
+    const bool m_kIsLive = false;
 
     virtual void SetUp()
     {
@@ -46,9 +47,9 @@ protected:
  */
 TEST_F(RialtoClientMediaPipelineLoadTest, Success)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, load(m_type, m_kMimeType, m_kUrl)).WillOnce(Return(true));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, load(m_type, m_kMimeType, m_kUrl, m_kIsLive)).WillOnce(Return(true));
 
-    EXPECT_EQ(m_mediaPipeline->load(m_type, m_kMimeType, m_kUrl), true);
+    EXPECT_EQ(m_mediaPipeline->load(m_type, m_kMimeType, m_kUrl, m_kIsLive), true);
 }
 
 /**
@@ -56,7 +57,7 @@ TEST_F(RialtoClientMediaPipelineLoadTest, Success)
  */
 TEST_F(RialtoClientMediaPipelineLoadTest, Failure)
 {
-    EXPECT_CALL(*m_mediaPipelineIpcMock, load(m_type, m_kMimeType, m_kUrl)).WillOnce(Return(false));
+    EXPECT_CALL(*m_mediaPipelineIpcMock, load(m_type, m_kMimeType, m_kUrl, m_kIsLive)).WillOnce(Return(false));
 
-    EXPECT_EQ(m_mediaPipeline->load(m_type, m_kMimeType, m_kUrl), false);
+    EXPECT_EQ(m_mediaPipeline->load(m_type, m_kMimeType, m_kUrl, m_kIsLive), false);
 }
