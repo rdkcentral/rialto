@@ -20,6 +20,7 @@
 #include <condition_variable>
 #include <gtest/gtest.h>
 #include <mutex>
+#include <thread>
 
 #include "ITimer.h"
 
