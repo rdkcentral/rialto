@@ -46,10 +46,14 @@ SessionServerAppManager::SessionServerAppManager(
         RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager to SessionServerAppManager successfull");
         firebolt::rialto::common::AudioDecoderCapabilities audioCaps;
         RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager to SessionServerAppManager calling getAudioDecoderCapabilities");
-        if (mediaCapabilities->getAudioDecoderCapabilities(audioCaps) == firebolt::rialto::DecoderCapabilitiesStatus::OK)
+        const auto audioStatus = mediaCapabilities->getAudioDecoderCapabilities(audioCaps);
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager : status: %d", static_cast<int>(audioStatus));
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager : status: %d comparing with OK", static_cast<int>(audioStatus == firebolt::rialto::DecoderCapabilitiesStatus::OK));
+        if (audioStatus == firebolt::rialto::DecoderCapabilitiesStatus::OK)
         {
             m_audioCapabilities = std::move(audioCaps);
             RIALTO_SERVER_MANAGER_LOG_INFO("SessionServerAppManager: capabilities loaded successfully");
+            RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: capabilities loaded successfully");
         }
         else
         {

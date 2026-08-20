@@ -22,7 +22,9 @@ MediaCapabilities::getAudioDecoderCapabilities(firebolt::rialto::common::AudioDe
 {
     RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: loading audio capabilities from YAML");
     RIALTO_SERVER_MANAGER_LOG_DEBUG("MediaCapabilities: loading audio capabilities from YAML");
+
     const auto status = m_yamlCppWrapper->getAudioDecoderCapabilities(capabilities);
+    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: audio capabilities load status: %d", static_cast<int>(status));
     if (status == firebolt::rialto::DecoderCapabilitiesStatus::OK)
         RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: audio capabilities loaded successfully");
     else if (status == firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
@@ -37,7 +39,9 @@ MediaCapabilities::getVideoDecoderCapabilities(firebolt::rialto::common::VideoDe
 {
     RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: loading video capabilities from YAML");
     RIALTO_SERVER_MANAGER_LOG_DEBUG("MediaCapabilities: loading video capabilities from YAML");
+
     const auto status = m_yamlCppWrapper->getVideoDecoderCapabilities(capabilities);
+    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: video capabilities load status: %d", static_cast<int>(status));
     if (status == firebolt::rialto::DecoderCapabilitiesStatus::OK)
         RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: video capabilities loaded successfully");
     else if (status == firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)

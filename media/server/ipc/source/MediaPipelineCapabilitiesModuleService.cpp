@@ -197,6 +197,7 @@ void convertAudioDecoderCapability(const firebolt::rialto::common::AudioDecoderC
 
 void convertAudioDecoderCapabilities(const firebolt::rialto::common::AudioDecoderCapabilities &src, AudioCapabilitiesResponse *dst)
 {
+    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: Calling ImediaCapabilities: calling convertAudioDecoderCapability");    
     dst->set_interface_version(src.interfaceVersion);
     dst->set_schema_version(src.schemaVersion);
     for (const auto &cap : src.capabilities)
@@ -496,6 +497,7 @@ void convertVideoDecoderCapability(const firebolt::rialto::common::VideoDecoderC
 
 void convertVideoDecoderCapabilities(const firebolt::rialto::common::VideoDecoderCapabilities &src, VideoCapabilitiesResponse *dst)
 {
+    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: Calling ImediaCapabilities: calling convertVideoDecoderCapability");    
     dst->set_interface_version(src.interfaceVersion);
     dst->set_schema_version(src.schemaVersion);
     for (const auto &cap : src.capabilities)
