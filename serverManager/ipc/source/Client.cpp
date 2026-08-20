@@ -209,6 +209,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
                                      const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
                                      const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) const
 {
+    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: Client: performSetConfiguration: entry");
     if (!m_ipcLoop || !m_serviceStub)
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("failed to set configuration - client is not active for serverId: %d",
@@ -229,6 +230,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     request.set_initialsessionserverstate(convert(initialState));
     if (audioCaps.has_value() && videoCaps.has_value())
     {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: Client: performSetConfiguration: serialise audio/video capabilities into SetConfigurationRequest");
         serialiseAudioCapabilities(*audioCaps, request.mutable_audiocapabilities());
         serialiseVideoCapabilities(*videoCaps, request.mutable_videocapabilities());
         RIALTO_SERVER_MANAGER_LOG_DEBUG("Client: audio/video capabilities serialised into SetConfigurationRequest");
@@ -236,9 +238,11 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     else
     {
         RIALTO_SERVER_MANAGER_LOG_DEBUG("Client: no capability data - SetConfigurationRequest sent without capabilities");
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: Client: no capability data - SetConfigurationRequest sent without capabilities");
     }
     auto ipcController = m_ipcLoop->createRpcController();
     auto blockingClosure = m_ipcLoop->createBlockingClosure();
+    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: Client: performSetConfiguration: calling m_serviceStub->setConfiguration");
     m_serviceStub->setConfiguration(ipcController.get(), &request, &response, blockingClosure.get());
     // wait for the call to complete
     blockingClosure->wait();
@@ -259,6 +263,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
                                      const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
                                      const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) const
 {
+    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: Client: performSetConfiguration: entry");
     if (!m_ipcLoop || !m_serviceStub)
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("failed to set configuration - client is not active for serverId: %d",
@@ -276,6 +281,7 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     request.set_initialsessionserverstate(convert(initialState));
     if (audioCaps.has_value() && videoCaps.has_value())
     {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: Client: performSetConfiguration: serialise audio/video capabilities into SetConfigurationRequest");
         serialiseAudioCapabilities(*audioCaps, request.mutable_audiocapabilities());
         serialiseVideoCapabilities(*videoCaps, request.mutable_videocapabilities());
         RIALTO_SERVER_MANAGER_LOG_DEBUG("Client: audio/video capabilities serialised into SetConfigurationRequest");
@@ -283,9 +289,11 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     else
     {
         RIALTO_SERVER_MANAGER_LOG_DEBUG("Client: no capability data - SetConfigurationRequest sent without capabilities");
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: Client: no capability data - SetConfigurationRequest sent without capabilities");
     }
     auto ipcController = m_ipcLoop->createRpcController();
     auto blockingClosure = m_ipcLoop->createBlockingClosure();
+    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: Client: performSetConfiguration: calling m_serviceStub->setConfiguration");
     m_serviceStub->setConfiguration(ipcController.get(), &request, &response, blockingClosure.get());
     // wait for the call to complete
     blockingClosure->wait();

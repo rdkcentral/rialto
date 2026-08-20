@@ -136,9 +136,13 @@ bool SessionServerManager::configureServices(const common::SessionServerState &s
                                              const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
 {
     // Supply pre-loaded capabilities to GstCapabilitiesFactory before first use
+    RIALTO_SERVER_LOG_ERROR("USHA: SessionServerManager: configureServices - Setting preloaded capabilities");
     auto gstCapFactory = firebolt::rialto::server::IGstCapabilitiesFactory::getFactory();
     if (gstCapFactory)
+    {
+    RIALTO_SERVER_LOG_ERROR("USHA: SessionServerManager: configureServices - calling gstCapFactory->setPreloadedCapabilities");
         gstCapFactory->setPreloadedCapabilities(audioCaps, videoCaps);
+    }
     m_sessionManagementServer->start();
     m_playbackService.setMaxPlaybacks(maxResource.maxPlaybacks);
     m_playbackService.setMaxWebAudioPlayers(maxResource.maxWebAudioPlayers);

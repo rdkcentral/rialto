@@ -141,6 +141,8 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
         m_sessionServerManager.configureIpc(request->sessionmanagementsocketname(), request->socketpermissions(),
                                             request->socketowner(), request->socketgroup());
     }
+
+    RIALTO_SERVER_LOG_INFO("USHA: ServerManagerModuleService: setConfiguration: calling configureServices");
     success &= m_sessionServerManager.configureServices(convertSessionServerState(request->initialsessionserverstate()),
                                                         maxResource, kClientDisplayName, request->appname(),
                                                         audioCaps, videoCaps);

@@ -118,12 +118,14 @@ void GstCapabilitiesFactory::setPreloadedCapabilities(
     const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
     const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
 {
+    RIALTO_SERVER_LOG_ERROR(" USHA: GstCapabilities: Setting preloaded capabilities - STORES the capabilities in GstCapabilitiesFactory for next createGstCapabilities() call");
     m_preloadedAudio = audioCaps;
     m_preloadedVideo = videoCaps;
 }
 
 std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities()
 {
+    RIALTO_SERVER_LOG_ERROR("USHA: GstCapabilities: CreateGstCapabilities: entry- pass them to GstCapabilities constructor");
     std::unique_ptr<IGstCapabilities> gstCapabilities;
     try
     {
@@ -159,6 +161,7 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
             firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory();
         std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper;
 
+        RIALTO_SERVER_LOG_ERROR("USHA: GstCapabilities: CreateGstCapabilities: createyamlCppWrapper: entry");
         if ((!yamlCppWrapperFactory) || (!(yamlCppWrapper = yamlCppWrapperFactory->createYamlCppWrapper())))
         {
             throw std::runtime_error("Cannot create YamlCppWrapper");
@@ -187,6 +190,7 @@ GstCapabilities::GstCapabilities(
     : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
       m_yamlCppWrapper{yamlCppWrapper}, m_gstInitialiser{gstInitialiser}
 {
+    RIALTO_SERVER_LOG_ERROR("USHA: GstCapabilities: constructor body where GstCapabilities object is created with gstWrapper, glibWrapper, rdkGstreamerUtilsWrapper, yamlCppWrapper, gstInitialiser");
     if (preloadedAudio.has_value() && preloadedVideo.has_value())
     {
         // Path A: use pre-loaded capabilities forwarded from ServerManager; skip YAML load

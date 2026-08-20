@@ -523,6 +523,8 @@ bool SessionServerAppManager::configureSessionServerWithSocketName(const std::sh
 
     const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
                                                                           kSessionServer->getMaxWebAudioPlayers()};
+    
+    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Calling performSetConfiguratio");
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketName,
                                                   kClientDisplayName, kMaxResource, kSocketPermissions, kSocketOwner,
                                                   kSocketGroup, kAppName, m_audioCapabilities, m_videoCapabilities))
@@ -545,6 +547,8 @@ bool SessionServerAppManager::configureSessionServerWithSocketFd(const std::shar
 
     const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
                                                                           kSessionServer->getMaxWebAudioPlayers()};
+
+    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Calling performSetConfiguratio");
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketFd,
                                                   kClientDisplayName, kMaxResource, kAppName,
                                                   m_audioCapabilities, m_videoCapabilities))

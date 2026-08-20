@@ -15,7 +15,7 @@ namespace rialto::servermanager::service
 MediaCapabilities::MediaCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper)
     : m_yamlCppWrapper{std::move(yamlCppWrapper)}
 {
-        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: calling yamlCppWrapper->getAudioDecoderCapabilities and getVideoDecoderCapabilities");
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: constructor body where MediaCapabilities object is created with yamlCppWrapper");
 }
 
 firebolt::rialto::DecoderCapabilitiesStatus
