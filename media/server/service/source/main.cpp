@@ -47,10 +47,10 @@ int main(int argc, char *argv[])
         RIALTO_SERVER_LOG_WARN("Failed to get git commit ID!");
     }
 
+    /*debug*/RIALTO_SERVER_LOG_MIL("bvanav-dbg: Rialto server telemetry intialized");
     TELEMETRY_INIT("rialto-server");
-    /*debug*/RIALTO_SERVER_LOG_MIL("Rialto server telemetry intialized");
-
-    /*debug*/TELEMETRY_EVENT_STRING("RialtoServerMain", "Rialto Server telemetry initialized");
+    
+    TELEMETRY_EVENT_STRING("RialtoServerMain", "Rialto Server telemetry initialized");
 
     firebolt::rialto::server::IGstInitialiser::instance().initialise(&argc, &argv);
 

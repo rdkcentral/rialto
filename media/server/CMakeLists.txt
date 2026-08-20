@@ -68,6 +68,9 @@ target_link_libraries(
         RialtoServerMain
         RialtoServerService
         protobuf::libprotobuf
+
+        PUBLIC
+        RialtoLogging
 )
 
 if( NATIVE_BUILD )

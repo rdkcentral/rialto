@@ -27,7 +27,10 @@ extern "C"
 {
 #endif
 
+#define RIALTO_TELEMETRY_LOG_MIL(fmt, args...) RIALTO_LOG_MIL(RIALTO_COMPONENT_TELEMETRY, fmt, ##args)
+
 #ifdef TELEMETRY_ENABLED
+
 #include <telemetry_busmessage_sender.h>
 
 void TELEMETRY_INIT(const char* component);
@@ -36,11 +39,11 @@ void TELEMETRY_EVENT_STRING(const char* marker, const char* value);
 void TELEMETRY_EVENT_FLOAT(const char* marker, float value);
 void TELEMETRY_EVENT_INT(const char* marker, int value);
 
-#else /* stub implementation if telemetry not enabled */
+#else
 
-inline void TELEMETRY_INIT(const char* component) {}
+inline void TELEMETRY_INIT(const char* component) { }
 inline void TELEMETRY_UNINIT() {}
-inline void TELEMETRY_EVENT_STRING(const char* marker, const char* value) {}
+inline void TELEMETRY_EVENT_STRING(const char* marker, const char* value) { }
 inline void TELEMETRY_EVENT_FLOAT(const char* marker, float value) {}
 inline void TELEMETRY_EVENT_INT(const char* marker, int value) {}
 

@@ -35,8 +35,9 @@ set(RialtoLogging_INCLUDES
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
     )
 
-add_library(RialtoLogging STATIC ${RialtoLogging_HEADERS} ${RialtoLogging_SOURCES} ${TELEMETRY_LIBRARIES})
+add_library(RialtoLogging STATIC ${RialtoLogging_HEADERS} ${RialtoLogging_SOURCES})
 target_include_directories(RialtoLogging PUBLIC "$<BUILD_INTERFACE:${RialtoLogging_INCLUDES}>" ${TELEMETRY_INCLUDE_DIRS})
+target_link_libraries(RialtoLogging PUBLIC ${TELEMETRY_LIBRARIES})
 set_target_properties(RialtoLogging PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON CXX_EXTENSIONS OFF)
 set_target_properties(RialtoLogging PROPERTIES POSITION_INDEPENDENT_CODE ON)
 

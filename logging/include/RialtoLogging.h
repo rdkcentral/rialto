@@ -20,12 +20,13 @@
 #ifndef FIREBOLT_RIALTO_LOGGING_RIALTO_LOGGING_H_
 #define FIREBOLT_RIALTO_LOGGING_RIALTO_LOGGING_H_
 
+#include "RialtoTelemetry.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-#include "RialtoTelemetry.h"
 #include <stdarg.h>
 #include <stdint.h>
 

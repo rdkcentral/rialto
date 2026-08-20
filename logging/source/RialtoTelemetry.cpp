@@ -18,26 +18,12 @@
  */
 
 #include "RialtoLogging.h"
-#include "stdio.h"
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-#define RIALTO_TELEMETRY_LOG_MIL(fmt, args...) RIALTO_LOG_MIL(RIALTO_COMPONENT_TELEMETRY, fmt, ##args)
-
-#ifdef __cplusplus
-}
-#endif
-
 
 #ifdef TELEMETRY_ENABLED
 
 void TELEMETRY_INIT(const char* component)
 {
-    /*debug*/fprintf(stderr, "bvanav-dbg: Telemetry initialized for %s \n", component);
-    RIALTO_TELEMETRY_LOG_MIL("Telemetry initialized for %s", component);
+    RIALTO_TELEMETRY_LOG_MIL("bvanav-dbg : Telemetry initialized for %s", component);
     t2_init(const_cast<char*>(component));
 }
 
@@ -49,7 +35,7 @@ void TELEMETRY_UNINIT()
 
 void TELEMETRY_EVENT_STRING(const char* marker, const char* value)
 {
-    /*debug*/fprintf(stderr, "bvanav-dbg: Telemetry String - Marker: %s, Value: %s \n", marker, value);
+    RIALTO_TELEMETRY_LOG_MIL("bvanav-dbg : Telemetry String - Marker: %s, Value: %s \n", marker, value);
     t2_event_s(const_cast<char*>(marker), const_cast<char*>(value));
 }
 

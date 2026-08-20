@@ -154,6 +154,15 @@ endif()
 # Import protobuf package
 find_package( Protobuf REQUIRED )
 
+# Add support for Telemetry 2.0
+if(ENABLE_TELEMETRY2_0)
+    message(STATUS "Telemetry 2.0 support enabled")
+    find_package(telemetry REQUIRED)
+    add_compile_definitions( TELEMETRY_ENABLED )
+else()
+    message(STATUS "Telemetry support disabled (stub mode)")
+endif()
+
 # Options to disable building some of the components
 option(ENABLE_SERVER "Enable building RialtoServer" ON)
 option(ENABLE_SERVER_MANAGER "Enable building RialtoServerManagerSim" ON)
@@ -263,13 +272,4 @@ if( CMAKE_BUILD_FLAG STREQUAL "ComponentTests" )
     add_subdirectory( tests/common EXCLUDE_FROM_ALL )
     add_subdirectory( tests/componenttests EXCLUDE_FROM_ALL )
 
-endif()
-
-# Add support for Telemetry 2.0
-if(ENABLE_TELEMETRY2_0)
-    message(STATUS "Telemetry 2.0 support enabled")
-    find_package(telemetry REQUIRED)
-    add_compile_definitions( TELEMETRY_ENABLED )
-else()
-    message(STATUS "Telemetry support disabled (stub mode)")
 endif()
