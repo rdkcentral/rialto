@@ -73,7 +73,13 @@ public:
 
 private:
     /**
-     * @brief The gstreamer capabilities.
+     * @brief Ensure GstCapabilities is created (lazy initialization).
+     *        Called before first use to allow preloaded capabilities to be set.
+     */
+    void ensureGstCapabilitiesCreated();
+
+    /**
+     * @brief The gstreamer capabilities (lazy initialized).
      */
     std::unique_ptr<IGstCapabilities> m_gstCapabilities;
 
