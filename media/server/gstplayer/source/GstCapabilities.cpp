@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -92,6 +93,8 @@ const char *toString(const GstElementFactoryListType &listType)
 namespace firebolt::rialto::server
 {
 std::weak_ptr<IGstCapabilitiesFactory> GstCapabilitiesFactory::m_factory;
+thread_local std::optional<firebolt::rialto::common::AudioDecoderCapabilities> GstCapabilitiesFactory::s_threadLocalPreloadedAudio;
+thread_local std::optional<firebolt::rialto::common::VideoDecoderCapabilities> GstCapabilitiesFactory::s_threadLocalPreloadedVideo;
 
 std::shared_ptr<IGstCapabilitiesFactory> IGstCapabilitiesFactory::getFactory()
 {
@@ -118,9 +121,9 @@ void GstCapabilitiesFactory::setPreloadedCapabilities(
     const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
     const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
 {
-    RIALTO_SERVER_LOG_ERROR(" USHA: GstCapabilities: Setting preloaded capabilities - STORES the capabilities in GstCapabilitiesFactory for next createGstCapabilities() call");
-    m_preloadedAudio = audioCaps;
-    m_preloadedVideo = videoCaps;
+    RIALTO_SERVER_LOG_ERROR(" USHA: GstCapabilities: Setting preloaded capabilities (thread-local storage)");
+    s_threadLocalPreloadedAudio = audioCaps;
+    s_threadLocalPreloadedVideo = videoCaps;
 }
 
 std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities()
@@ -167,9 +170,13 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
             throw std::runtime_error("Cannot create YamlCppWrapper");
         }
 
+        RIALTO_SERVER_LOG_ERROR("USHA: GstCapabilities: Passing thread-local preloaded capabilities to GstCapabilities constructor");
         gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper, rdkGstreamerUtilsWrapper,
                                                             yamlCppWrapper, IGstInitialiser::instance(),
-                                                            m_preloadedAudio, m_preloadedVideo);
+                                                            s_threadLocalPreloadedAudio, s_threadLocalPreloadedVideo);
+        // Clear thread-local storage after use to prevent accidental reuse
+        s_threadLocalPreloadedAudio = std::nullopt;
+        s_threadLocalPreloadedVideo = std::nullopt;
     }
     catch (const std::exception &e)
     {

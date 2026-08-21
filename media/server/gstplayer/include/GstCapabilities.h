@@ -51,8 +51,10 @@ public:
         const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) override;
 
 private:
-    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> m_preloadedAudio;
-    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> m_preloadedVideo;
+    // Thread-local storage to prevent race conditions between sessions
+    // Each thread/session has its own copy of preloaded capabilities
+    static thread_local std::optional<firebolt::rialto::common::AudioDecoderCapabilities> s_threadLocalPreloadedAudio;
+    static thread_local std::optional<firebolt::rialto::common::VideoDecoderCapabilities> s_threadLocalPreloadedVideo;
 };
 
 class GstCapabilities : public IGstCapabilities
