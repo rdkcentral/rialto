@@ -45,16 +45,19 @@ class GstCapabilitiesFactory : public IGstCapabilitiesFactory
 public:
     static std::weak_ptr<IGstCapabilitiesFactory> m_factory;
 
-    std::unique_ptr<IGstCapabilities> createGstCapabilities() override;
+    std::unique_ptr<IGstCapabilities> createGstCapabilities(
+        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
+        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt) override;
+    
     void setPreloadedCapabilities(
         const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
         const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) override;
 
 private:
-    // Thread-local storage to prevent race conditions between sessions
-    // Each thread/session has its own copy of preloaded capabilities
-    static thread_local std::optional<firebolt::rialto::common::AudioDecoderCapabilities> s_threadLocalPreloadedAudio;
-    static thread_local std::optional<firebolt::rialto::common::VideoDecoderCapabilities> s_threadLocalPreloadedVideo;
+    // Mutex-protected storage for preloaded capabilities (supports cross-thread communication)
+    std::mutex m_preloadedMutex;
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> m_preloadedAudio;
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> m_preloadedVideo;
 };
 
 class GstCapabilities : public IGstCapabilities

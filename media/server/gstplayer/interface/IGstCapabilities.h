@@ -43,9 +43,21 @@ public:
 
     static std::shared_ptr<IGstCapabilitiesFactory> getFactory();
 
-    virtual std::unique_ptr<IGstCapabilities> createGstCapabilities() = 0;
+    /**
+     * @brief Create GstCapabilities object.
+     * @param preloadedAudio Optional pre-loaded audio capabilities from ServerManager
+     * @param preloadedVideo Optional pre-loaded video capabilities from ServerManager
+     * @return Unique pointer to IGstCapabilities
+     */
+    virtual std::unique_ptr<IGstCapabilities> createGstCapabilities(
+        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
+        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt) = 0;
 
-    // Supply pre-loaded capabilities forwarded from ServerManager; used by next createGstCapabilities() call.
+    /**
+     * @brief Set preloaded capabilities (stored for next createGstCapabilities call)
+     * @param audioCaps Optional audio decoder capabilities
+     * @param videoCaps Optional video decoder capabilities
+     */
     virtual void setPreloadedCapabilities(
         const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
         const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) = 0;

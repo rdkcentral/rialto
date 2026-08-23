@@ -93,8 +93,6 @@ const char *toString(const GstElementFactoryListType &listType)
 namespace firebolt::rialto::server
 {
 std::weak_ptr<IGstCapabilitiesFactory> GstCapabilitiesFactory::m_factory;
-thread_local std::optional<firebolt::rialto::common::AudioDecoderCapabilities> GstCapabilitiesFactory::s_threadLocalPreloadedAudio;
-thread_local std::optional<firebolt::rialto::common::VideoDecoderCapabilities> GstCapabilitiesFactory::s_threadLocalPreloadedVideo;
 
 std::shared_ptr<IGstCapabilitiesFactory> IGstCapabilitiesFactory::getFactory()
 {
@@ -117,18 +115,26 @@ std::shared_ptr<IGstCapabilitiesFactory> IGstCapabilitiesFactory::getFactory()
     return factory;
 }
 
-void GstCapabilitiesFactory::setPreloadedCapabilities(
-    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
-{
-    RIALTO_SERVER_LOG_ERROR(" USHA: GstCapabilities: Setting preloaded capabilities (thread-local storage)");
-    s_threadLocalPreloadedAudio = audioCaps;
-    s_threadLocalPreloadedVideo = videoCaps;
-}
-
-std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities()
+std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo)
 {
     RIALTO_SERVER_LOG_ERROR("USHA: GstCapabilities: CreateGstCapabilities: entry- pass them to GstCapabilities constructor");
+    
+    // Use provided parameters if available, otherwise read from mutex-protected storage
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> audio = preloadedAudio;
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> video = preloadedVideo;
+    
+    if (!audio.has_value() || !video.has_value())
+    {
+        std::lock_guard<std::mutex> lock(m_preloadedMutex);
+        if (!audio.has_value()) audio = m_preloadedAudio;
+        if (!video.has_value()) video = m_preloadedVideo;
+        // Clear after reading to prevent stale data
+        m_preloadedAudio = std::nullopt;
+        m_preloadedVideo = std::nullopt;
+    }
+    
     std::unique_ptr<IGstCapabilities> gstCapabilities;
     try
     {
@@ -170,13 +176,10 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
             throw std::runtime_error("Cannot create YamlCppWrapper");
         }
 
-        RIALTO_SERVER_LOG_ERROR("USHA: GstCapabilities: Passing thread-local preloaded capabilities to GstCapabilities constructor");
+        RIALTO_SERVER_LOG_ERROR("USHA: GstCapabilities: Passing preloaded capabilities to GstCapabilities constructor");
         gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper, rdkGstreamerUtilsWrapper,
                                                             yamlCppWrapper, IGstInitialiser::instance(),
-                                                            s_threadLocalPreloadedAudio, s_threadLocalPreloadedVideo);
-        // Clear thread-local storage after use to prevent accidental reuse
-        s_threadLocalPreloadedAudio = std::nullopt;
-        s_threadLocalPreloadedVideo = std::nullopt;
+                                                            audio, video);
     }
     catch (const std::exception &e)
     {
@@ -184,6 +187,16 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
     }
 
     return gstCapabilities;
+}
+
+void GstCapabilitiesFactory::setPreloadedCapabilities(
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
+{
+    std::lock_guard<std::mutex> lock(m_preloadedMutex);
+    m_preloadedAudio = audioCaps;
+    m_preloadedVideo = videoCaps;
+    RIALTO_SERVER_LOG_ERROR("USHA: GstCapabilities: setPreloadedCapabilities - stored with mutex protection");
 }
 
 GstCapabilities::GstCapabilities(
