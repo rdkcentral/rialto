@@ -32,7 +32,7 @@ firebolt::rialto::common::AudioDecoderCapabilities convertAudioCapabilities(cons
 {
     firebolt::rialto::common::AudioDecoderCapabilities result;
     result.interfaceVersion = src.interface_version();
-    result.schemaVersion    = src.schema_version();
+    result.schemaVersion = src.schema_version();
     // Capability fields are populated by GstCapabilities path B if needed;
     // here we carry only the structured data forwarded from the ServerManager.
     return result;
@@ -42,7 +42,7 @@ firebolt::rialto::common::VideoDecoderCapabilities convertVideoCapabilities(cons
 {
     firebolt::rialto::common::VideoDecoderCapabilities result;
     result.interfaceVersion = src.interface_version();
-    result.schemaVersion    = src.schema_version();
+    result.schemaVersion = src.schema_version();
     return result;
 }
 
@@ -124,11 +124,13 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
         RIALTO_SERVER_LOG_DEBUG("ServerManagerModuleService: audio/video capabilities received in SetConfiguration");
         audioCaps = convertAudioCapabilities(request->audiocapabilities());
         videoCaps = convertVideoCapabilities(request->videocapabilities());
-        RIALTO_SERVER_LOG_INFO("ServerManagerModuleService: capabilities deserialised and forwarded to configureServices");
+        RIALTO_SERVER_LOG_INFO(
+            "ServerManagerModuleService: capabilities deserialised and forwarded to configureServices");
     }
     else
     {
-        RIALTO_SERVER_LOG_INFO("ServerManagerModuleService: no capability fields - session server will use GStreamer query fallback");
+        RIALTO_SERVER_LOG_INFO(
+            "ServerManagerModuleService: no capability fields - session server will use GStreamer query fallback");
     }
 
     bool success{true};
@@ -144,8 +146,8 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
 
     RIALTO_SERVER_LOG_INFO("USHA: ServerManagerModuleService: setConfiguration: calling configureServices");
     success &= m_sessionServerManager.configureServices(convertSessionServerState(request->initialsessionserverstate()),
-                                                        maxResource, kClientDisplayName, request->appname(),
-                                                        audioCaps, videoCaps);
+                                                        maxResource, kClientDisplayName, request->appname(), audioCaps,
+                                                        videoCaps);
     m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().clientloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().sessionserverloglevels()),

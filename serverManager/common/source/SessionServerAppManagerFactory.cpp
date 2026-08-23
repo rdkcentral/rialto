@@ -42,7 +42,6 @@ std::unique_ptr<ISessionServerAppManager> createSessionServerAppManager(
                                  std::make_unique<HealthcheckServiceFactory>(healthcheckInterval,
                                                                              numOfFailedPingsBeforeRecovery),
                                  firebolt::rialto::common::IEventThreadFactory::createFactory(),
-                                 firebolt::rialto::ipc::INamedSocketFactory::getFactory(),
-                                 std::move(mediaCapabilities));
+                                 firebolt::rialto::ipc::INamedSocketFactory::getFactory(), std::move(mediaCapabilities));
 }
 } // namespace rialto::servermanager::common

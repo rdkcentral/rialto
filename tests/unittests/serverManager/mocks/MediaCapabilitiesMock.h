@@ -25,23 +25,16 @@
 
 namespace rialto::servermanager::service
 {
-class MediaCapabilitiesMock
-    : public IMediaCapabilities
+class MediaCapabilitiesMock : public IMediaCapabilities
 {
 public:
     ~MediaCapabilitiesMock() override = default;
 
-    MOCK_METHOD(
-        firebolt::rialto::DecoderCapabilitiesStatus,
-        getAudioDecoderCapabilities,
-        (firebolt::rialto::common::AudioDecoderCapabilities&),
-        (override));
+    MOCK_METHOD(firebolt::rialto::DecoderCapabilitiesStatus, getAudioDecoderCapabilities,
+                (firebolt::rialto::common::AudioDecoderCapabilities &), (override));
 
-    MOCK_METHOD(
-        firebolt::rialto::DecoderCapabilitiesStatus,
-        getVideoDecoderCapabilities,
-        (firebolt::rialto::common::VideoDecoderCapabilities&),
-        (override));
+    MOCK_METHOD(firebolt::rialto::DecoderCapabilitiesStatus, getVideoDecoderCapabilities,
+                (firebolt::rialto::common::VideoDecoderCapabilities &), (override));
 };
 
 } // namespace rialto::servermanager::service

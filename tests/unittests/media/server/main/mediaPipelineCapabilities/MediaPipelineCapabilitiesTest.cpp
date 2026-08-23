@@ -72,14 +72,14 @@ public:
 
     void createMediaPipelineCapabilities()
     {
-        EXPECT_CALL(*m_gstCapabilitiesFactoryMock, createGstCapabilities())
+        EXPECT_CALL(*m_gstCapabilitiesFactoryMock, createGstCapabilities(::testing::_, ::testing::_))
             .WillOnce(Return(ByMove(std::move(m_gstCapabilities))));
         EXPECT_NO_THROW(m_sut = std::make_unique<MediaPipelineCapabilities>(m_gstCapabilitiesFactoryMock));
     }
 
     void failToCreateMediaPipelineCapabilities()
     {
-        EXPECT_CALL(*m_gstCapabilitiesFactoryMock, createGstCapabilities())
+        EXPECT_CALL(*m_gstCapabilitiesFactoryMock, createGstCapabilities(::testing::_, ::testing::_))
             .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::server::IGstCapabilities>())));
 
         EXPECT_THROW(m_sut = std::make_unique<MediaPipelineCapabilities>(m_gstCapabilitiesFactoryMock),

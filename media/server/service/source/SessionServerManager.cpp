@@ -129,18 +129,19 @@ bool SessionServerManager::configureIpc(int32_t socketFd)
     return true;
 }
 
-bool SessionServerManager::configureServices(const common::SessionServerState &state,
-                                             const common::MaxResourceCapabilitites &maxResource,
-                                             const std::string &clientDisplayName, const std::string &appName,
-                                             const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-                                             const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
+bool SessionServerManager::configureServices(
+    const common::SessionServerState &state, const common::MaxResourceCapabilitites &maxResource,
+    const std::string &clientDisplayName, const std::string &appName,
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
 {
     // Supply pre-loaded capabilities to GstCapabilitiesFactory before first use
     RIALTO_SERVER_LOG_ERROR("USHA: SessionServerManager: configureServices - Setting preloaded capabilities");
     auto gstCapFactory = firebolt::rialto::server::IGstCapabilitiesFactory::getFactory();
     if (gstCapFactory)
     {
-    RIALTO_SERVER_LOG_ERROR("USHA: SessionServerManager: configureServices - calling gstCapFactory->setPreloadedCapabilities");
+        RIALTO_SERVER_LOG_ERROR(
+            "USHA: SessionServerManager: configureServices - calling gstCapFactory->setPreloadedCapabilities");
         gstCapFactory->setPreloadedCapabilities(audioCaps, videoCaps);
     }
     m_sessionManagementServer->start();

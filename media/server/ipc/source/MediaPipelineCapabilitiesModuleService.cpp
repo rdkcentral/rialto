@@ -195,9 +195,11 @@ void convertAudioDecoderCapability(const firebolt::rialto::common::AudioDecoderC
         serializeNamedProfileMap(src.avs->profiles, dst->mutable_avs(), convertAvsProfile);
 }
 
-void convertAudioDecoderCapabilities(const firebolt::rialto::common::AudioDecoderCapabilities &src, AudioCapabilitiesResponse *dst)
+void convertAudioDecoderCapabilities(const firebolt::rialto::common::AudioDecoderCapabilities &src,
+                                     AudioCapabilitiesResponse *dst)
 {
-    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: Calling ImediaCapabilities: calling convertAudioDecoderCapability");    
+    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: Calling ImediaCapabilities: "
+                            "calling convertAudioDecoderCapability");
     dst->set_interface_version(src.interfaceVersion);
     dst->set_schema_version(src.schemaVersion);
     for (const auto &cap : src.capabilities)
@@ -495,9 +497,11 @@ void convertVideoDecoderCapability(const firebolt::rialto::common::VideoDecoderC
     convertVideoCodecCapabilities(src.codecCapabilities, dst->mutable_codec_capabilities());
 }
 
-void convertVideoDecoderCapabilities(const firebolt::rialto::common::VideoDecoderCapabilities &src, VideoCapabilitiesResponse *dst)
+void convertVideoDecoderCapabilities(const firebolt::rialto::common::VideoDecoderCapabilities &src,
+                                     VideoCapabilitiesResponse *dst)
 {
-    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: Calling ImediaCapabilities: calling convertVideoDecoderCapability");    
+    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: Calling ImediaCapabilities: "
+                            "calling convertVideoDecoderCapability");
     dst->set_interface_version(src.interfaceVersion);
     dst->set_schema_version(src.schemaVersion);
     for (const auto &cap : src.capabilities)
@@ -681,7 +685,8 @@ void MediaPipelineCapabilitiesModuleService::getSupportedAudioCapabilities(
         return;
     }
 
-    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: Check ImediaCapabilities: calling getMediaCapabilities");
+    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: Check ImediaCapabilities: "
+                            "calling getMediaCapabilities");
     auto mediaCapabilities = m_mediaPipelineService.getMediaCapabilities();
     if (!mediaCapabilities)
     {
@@ -691,7 +696,8 @@ void MediaPipelineCapabilitiesModuleService::getSupportedAudioCapabilities(
         return;
     }
 
-    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: calling getSupportedAudioCapabilities");
+    RIALTO_SERVER_LOG_ERROR(
+        "USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: calling getSupportedAudioCapabilities");
     const firebolt::rialto::common::AudioDecoderCapabilities kAudioCapabilities =
         mediaCapabilities->getSupportedAudioCapabilities();
 
@@ -715,7 +721,8 @@ void MediaPipelineCapabilitiesModuleService::getSupportedVideoCapabilities(
         return;
     }
 
-    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: Check ImediaCapabilities: calling getMediaCapabilities");
+    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: Check ImediaCapabilities: "
+                            "calling getMediaCapabilities");
     auto mediaCapabilities = m_mediaPipelineService.getMediaCapabilities();
     if (!mediaCapabilities)
     {
@@ -725,7 +732,8 @@ void MediaPipelineCapabilitiesModuleService::getSupportedVideoCapabilities(
         return;
     }
 
-    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: calling getSupportedVideoCapabilities");
+    RIALTO_SERVER_LOG_ERROR(
+        "USHA: MediaPipelineCapabilitiesModuleService: Server: ipc: calling getSupportedVideoCapabilities");
     const firebolt::rialto::common::VideoDecoderCapabilities kVideoCapabilities =
         mediaCapabilities->getSupportedVideoCapabilities();
 

@@ -18,9 +18,9 @@
 #include "IpcModuleBase.h"
 #include <gtest/gtest.h>
 
+using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::WithArgs;
-using ::testing::Invoke;
 
 namespace
 {
@@ -113,8 +113,8 @@ TEST_F(MediaCapabilitiesIpcTest, GetSupportedAudioCapabilitiesSuccess)
     createMediaCapabilitiesIpc();
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedAudioCapabilities"), m_controllerMock.get(), _,
-                                           _, m_blockingClosureMock.get()))
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedAudioCapabilities"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &MediaCapabilitiesIpcTest::setGetSupportedAudioCapabilitiesResponse)));
 
     firebolt::rialto::common::AudioDecoderCapabilities result = m_sut->getSupportedAudioCapabilities();
@@ -139,8 +139,8 @@ TEST_F(MediaCapabilitiesIpcTest, GetSupportedAudioCapabilitiesDisconnectedReconn
     createMediaCapabilitiesIpc();
     expectIpcApiCallReconnected();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedAudioCapabilities"), m_controllerMock.get(), _,
-                                           _, m_blockingClosureMock.get()))
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedAudioCapabilities"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &MediaCapabilitiesIpcTest::setGetSupportedAudioCapabilitiesResponse)));
 
     firebolt::rialto::common::AudioDecoderCapabilities result = m_sut->getSupportedAudioCapabilities();
@@ -166,8 +166,8 @@ TEST_F(MediaCapabilitiesIpcTest, GetSupportedVideoCapabilitiesSuccess)
     createMediaCapabilitiesIpc();
     expectIpcApiCallSuccess();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedVideoCapabilities"), m_controllerMock.get(), _,
-                                           _, m_blockingClosureMock.get()))
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedVideoCapabilities"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &MediaCapabilitiesIpcTest::setGetSupportedVideoCapabilitiesResponse)));
 
     firebolt::rialto::common::VideoDecoderCapabilities result = m_sut->getSupportedVideoCapabilities();
@@ -192,8 +192,8 @@ TEST_F(MediaCapabilitiesIpcTest, GetSupportedVideoCapabilitiesDisconnectedReconn
     createMediaCapabilitiesIpc();
     expectIpcApiCallReconnected();
 
-    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedVideoCapabilities"), m_controllerMock.get(), _,
-                                           _, m_blockingClosureMock.get()))
+    EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedVideoCapabilities"), m_controllerMock.get(), _, _,
+                                           m_blockingClosureMock.get()))
         .WillOnce(WithArgs<3>(Invoke(this, &MediaCapabilitiesIpcTest::setGetSupportedVideoCapabilitiesResponse)));
 
     firebolt::rialto::common::VideoDecoderCapabilities result = m_sut->getSupportedVideoCapabilities();

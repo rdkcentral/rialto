@@ -66,8 +66,9 @@ namespace firebolt::rialto::client
 MediaCapabilities::MediaCapabilities(const std::shared_ptr<IMediaCapabilitiesIpcFactory> &mediaCapabilitiesIpcFactory)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    RIALTO_CLIENT_LOG_ERROR(" USHA: MediaCapabilities: Get holding entry for mediaCapabilitiesIpcFactory"); 
-    RIALTO_CLIENT_LOG_ERROR(" USHA: MediaCapabilities: Get holding entry for mediaCapabilitiesIpcFactory -> calling mediaCapabilitiesIpcFactory->createMediaCapabilitiesIpc()"); 
+    RIALTO_CLIENT_LOG_ERROR(" USHA: MediaCapabilities: Get holding entry for mediaCapabilitiesIpcFactory");
+    RIALTO_CLIENT_LOG_ERROR(" USHA: MediaCapabilities: Get holding entry for mediaCapabilitiesIpcFactory -> calling "
+                            "mediaCapabilitiesIpcFactory->createMediaCapabilitiesIpc()");
     m_mediaCapabilitiesIpc = mediaCapabilitiesIpcFactory->createMediaCapabilitiesIpc();
     if (!m_mediaCapabilitiesIpc)
     {
@@ -85,7 +86,8 @@ MediaCapabilities::~MediaCapabilities()
 common::AudioDecoderCapabilities MediaCapabilities::getSupportedAudioCapabilities()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    RIALTO_CLIENT_LOG_ERROR(" USHA: MediaCapabilities: getSupportedAudioCapabilities: entry -> calling m_mediaCapabilitiesIpc->getSupportedAudioCapabilities()"); 
+    RIALTO_CLIENT_LOG_ERROR(" USHA: MediaCapabilities: getSupportedAudioCapabilities: entry -> calling "
+                            "m_mediaCapabilitiesIpc->getSupportedAudioCapabilities()");
 
     return m_mediaCapabilitiesIpc->getSupportedAudioCapabilities();
 }
@@ -93,7 +95,8 @@ common::AudioDecoderCapabilities MediaCapabilities::getSupportedAudioCapabilitie
 common::VideoDecoderCapabilities MediaCapabilities::getSupportedVideoCapabilities()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    RIALTO_CLIENT_LOG_ERROR(" USHA: MediaCapabilities: getSupportedVideoCapabilities: entry -> calling m_mediaCapabilitiesIpc->getSupportedVideoCapabilities()"); 
+    RIALTO_CLIENT_LOG_ERROR(" USHA: MediaCapabilities: getSupportedVideoCapabilities: entry -> calling "
+                            "m_mediaCapabilitiesIpc->getSupportedVideoCapabilities()");
     return m_mediaCapabilitiesIpc->getSupportedVideoCapabilities();
 }
 

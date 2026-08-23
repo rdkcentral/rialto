@@ -10,8 +10,8 @@
 #define FIREBOLT_RIALTO_CLIENT_MEDIA_CAPABILITIES_IPC_CONVERTERS_H_
 
 #include "AudioDecoderCapabilities.h"
-#include "VideoDecoderCapabilities.h"
 #include "RialtoCommonIpc.h"
+#include "VideoDecoderCapabilities.h"
 #include "mediapipelinecapabilitiesmodule.pb.h"
 
 namespace firebolt::rialto::client

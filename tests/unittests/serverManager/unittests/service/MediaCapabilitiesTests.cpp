@@ -35,8 +35,7 @@ using namespace rialto::servermanager::service;
 class MediaCapabilitiesTests : public testing::Test
 {
 public:
-    MediaCapabilitiesTests()
-        : m_yamlCppWrapperMock(std::make_shared<StrictMock<YamlCppWrapperMock>>())
+    MediaCapabilitiesTests() : m_yamlCppWrapperMock(std::make_shared<StrictMock<YamlCppWrapperMock>>())
     {
         m_sut = std::make_unique<MediaCapabilities>(m_yamlCppWrapperMock);
     }

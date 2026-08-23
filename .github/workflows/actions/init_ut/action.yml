@@ -25,6 +25,13 @@ runs:
 
   # Steps represent a sequence of tasks that will be executed as part of the job
   steps:
+    # Ensure Unix line endings for all text files (fix CRLF issues on Windows-checked-out repos)
+    - name: Convert line endings to LF
+      shell: bash
+      run: |
+        find . -type f \( -name "*.sh" -o -name "*.py" -o -name "*.yml" -o -name "*.yaml" \) -print0 | xargs -0 sed -i 's/\r$//' || true
+        git config core.safecrlf false
+
     # Setup github for python 3.8
     - name: setup python
       uses: actions/setup-python@v5

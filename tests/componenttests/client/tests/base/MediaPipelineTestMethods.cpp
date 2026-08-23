@@ -2266,6 +2266,9 @@ void MediaPipelineTestMethods::getSupportedPropertiesFailure()
     EXPECT_TRUE(m_mediaPipelineCapabilities->getSupportedProperties(sourceType, kSupportedProperties).empty());
 }
 
+// DISABLED: getSupportedAudioCapabilities() has been removed from IMediaPipelineCapabilities interface
+// Use IMediaCapabilities instead.
+/*
 void MediaPipelineTestMethods::shouldGetSupportedAudioCapabilities()
 {
     EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock, getSupportedAudioCapabilities(_, _, _, _))
@@ -2274,7 +2277,11 @@ void MediaPipelineTestMethods::shouldGetSupportedAudioCapabilities()
                         WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
                                               &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
 }
+*/
 
+// DISABLED: getSupportedVideoCapabilities() has been removed from IMediaPipelineCapabilities interface
+// Use IMediaCapabilities instead.
+/*
 void MediaPipelineTestMethods::shouldGetSupportedVideoCapabilities()
 {
     EXPECT_CALL(*m_mediaPipelineCapabilitiesModuleMock, getSupportedVideoCapabilities(_, _, _, _))
@@ -2283,16 +2290,25 @@ void MediaPipelineTestMethods::shouldGetSupportedVideoCapabilities()
                         WithArgs<0, 3>(Invoke(&(*m_mediaPipelineCapabilitiesModuleMock),
                                               &MediaPipelineCapabilitiesModuleMock::defaultReturn))));
 }
+*/
 
+// DISABLED: getSupportedAudioCapabilities() has been removed from IMediaPipelineCapabilities interface
+// Use IMediaCapabilities instead.
+/*
 void MediaPipelineTestMethods::getSupportedAudioCapabilities()
 {
     EXPECT_THAT(m_mediaPipelineCapabilities->getSupportedAudioCapabilities(),
                 decoderCapabilitiesMatcher(kAudioCapabilities));
 }
+*/
 
+// DISABLED: getSupportedVideoCapabilities() has been removed from IMediaPipelineCapabilities interface
+// Use IMediaCapabilities instead.
+/*
 void MediaPipelineTestMethods::getSupportedVideoCapabilities()
 {
     EXPECT_THAT(m_mediaPipelineCapabilities->getSupportedVideoCapabilities(),
                 decoderCapabilitiesMatcher(kVideoCapabilities));
 }
+*/
 } // namespace firebolt::rialto::client::ct

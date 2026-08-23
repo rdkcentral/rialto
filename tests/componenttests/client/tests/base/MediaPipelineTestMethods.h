@@ -189,8 +189,10 @@ protected:
     void shouldCheckIsMimeTypeNotSupported();
     void shouldGetSupportedProperties();
     void shouldGetSupportedPropertiesFailure();
-    void shouldGetSupportedAudioCapabilities();
-    void shouldGetSupportedVideoCapabilities();
+    // DISABLED: shouldGetSupportedAudioCapabilities() and shouldGetSupportedVideoCapabilities()
+    // have been removed from IMediaPipelineCapabilities interface. Use IMediaCapabilities instead.
+    // void shouldGetSupportedAudioCapabilities();
+    // void shouldGetSupportedVideoCapabilities();
 
     // Api methods
     void createMediaPipeline();
@@ -267,8 +269,10 @@ protected:
     void isMimeTypeSupported();
     void getSupportedProperties();
     void getSupportedPropertiesFailure();
-    void getSupportedAudioCapabilities();
-    void getSupportedVideoCapabilities();
+    // DISABLED: getSupportedAudioCapabilities() and getSupportedVideoCapabilities()
+    // have been removed from IMediaPipelineCapabilities interface. Use IMediaCapabilities instead.
+    // void getSupportedAudioCapabilities();
+    // void getSupportedVideoCapabilities();
     void isMimeTypeNotSupported();
     void flush();
     void flushFailure();

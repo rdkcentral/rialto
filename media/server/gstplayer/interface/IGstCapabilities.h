@@ -58,9 +58,9 @@ public:
      * @param audioCaps Optional audio decoder capabilities
      * @param videoCaps Optional video decoder capabilities
      */
-    virtual void setPreloadedCapabilities(
-        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) = 0;
+    virtual void
+    setPreloadedCapabilities(const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                             const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) = 0;
 };
 
 class IGstCapabilities

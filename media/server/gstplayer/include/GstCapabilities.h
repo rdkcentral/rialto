@@ -48,10 +48,10 @@ public:
     std::unique_ptr<IGstCapabilities> createGstCapabilities(
         const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
         const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt) override;
-    
-    void setPreloadedCapabilities(
-        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) override;
+
+    void
+    setPreloadedCapabilities(const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                             const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) override;
 
 private:
     // Mutex-protected storage for preloaded capabilities (supports cross-thread communication)

@@ -18,8 +18,8 @@
  */
 
 #include "MediaPipelineCapabilitiesIpc.h"
-#include "MediaCapabilitiesIpcConverters.h"
 #include "IpcModuleBase.h"
+#include "MediaCapabilitiesIpcConverters.h"
 #include "MediaPipelineStructureMatchers.h"
 #include <gtest/gtest.h>
 
@@ -484,23 +484,29 @@ TEST_F(MediaPipelineCapabilitiesIpcTest, IsVideoMasterFailure)
 {
     firebolt::rialto::common::AudioDecoderCapability audioCap;
     audioCap.pcm = firebolt::rialto::common::PcmCapability{{1536000, 8, 192000, 32}};
-    audioCap.aac = firebolt::rialto::common::AacCapability{{{firebolt::rialto::common::AacProfile::LC, firebolt::rialto::common::AudioProfileCapability{576000, 8, 96000, 24}}}};
-    audioCap.mp3 = firebolt::rialto::common::Mp3Capability{{320000, 2, 48000, 16}};
-    audioCap.alac = firebolt::rialto::common::AlacCapability{{1000000, 8, 96000, 32}};
-    audioCap.sbc = firebolt::rialto::common::SbcCapability{{320000, 2, 44100, 16}};
-    audioCap.dolbyAc3 = firebolt::rialto::common::DolbyAc3Capability{{{firebolt::rialto::common::DolbyAc3Profile::STANDARD, firebolt::rialto::common::AudioProfileCapability{640000, 6, 48000, 24}}}};
-    audioCap.dolbyAc4 = firebolt::rialto::common::DolbyAc4Capability{{2688000, 16, 48000, 24}};
-    audioCap.dolbyEac3 = firebolt::rialto::common::DolbyEac3Capability{{{firebolt::rialto::common::DolbyEac3Profile::PLUS, firebolt::rialto::common::AudioProfileCapability{6144000, 8, 48000, 24}}}};
-    audioCap.dolbyTruehd = firebolt::rialto::common::DolbyTruehdCapability{{18000000, 8, 192000, 24}};
-    audioCap.flac = firebolt::rialto::common::FlacCapability{{1000000, 8, 192000, 32}};
-    audioCap.vorbis = firebolt::rialto::common::VorbisCapability{{500000, 8, 48000, 16}};
-    audioCap.opus = firebolt::rialto::common::OpusCapability{{510000, 8, 48000, 16}};
-    audioCap.mpegAudio = firebolt::rialto::common::MpegAudioCapability{{{firebolt::rialto::common::MpegAudioProfile::LAYER_2, firebolt::rialto::common::AudioProfileCapability{384000, 2, 48000, 16}}}};
-    audioCap.realAudio = firebolt::rialto::common::RealAudioCapability{{{firebolt::rialto::common::RealAudioProfile::RA8, firebolt::rialto::common::AudioProfileCapability{128000, 2, 44100, 16}}}};
-    audioCap.usac = firebolt::rialto::common::UsacCapability{{{firebolt::rialto::common::UsacProfile::BASELINE, firebolt::rialto::common::AudioProfileCapability{256000, 2, 48000, 24}}}};
-    audioCap.dts = firebolt::rialto::common::DtsCapability{{{firebolt::rialto::common::DtsProfile::CORE, firebolt::rialto::common::AudioProfileCapability{1536000, 6, 48000, 24}}}};
-    audioCap.avs = firebolt::rialto::common::AvsCapability{{{firebolt::rialto::common::AvsProfile::AVS2, firebolt::rialto::common::AudioProfileCapability{512000, 8, 48000, 24}}}};
-    const firebolt::rialto::common::AudioDecoderCapabilities kCapabilities{kInterfaceVersion, kSchemaVersion, {audioCap}};
+    audioCap.aac = firebolt::rialto::common::AacCapability{{{firebolt::rialto::common::AacProfile::LC,
+firebolt::rialto::common::AudioProfileCapability{576000, 8, 96000, 24}}}}; audioCap.mp3 = firebolt::rialto::common::Mp3Capability{{320000,
+2, 48000, 16}}; audioCap.alac = firebolt::rialto::common::AlacCapability{{1000000, 8, 96000, 32}}; audioCap.sbc =
+firebolt::rialto::common::SbcCapability{{320000, 2, 44100, 16}}; audioCap.dolbyAc3 =
+firebolt::rialto::common::DolbyAc3Capability{{{firebolt::rialto::common::DolbyAc3Profile::STANDARD,
+firebolt::rialto::common::AudioProfileCapability{640000, 6, 48000, 24}}}}; audioCap.dolbyAc4 =
+firebolt::rialto::common::DolbyAc4Capability{{2688000, 16, 48000, 24}}; audioCap.dolbyEac3 =
+firebolt::rialto::common::DolbyEac3Capability{{{firebolt::rialto::common::DolbyEac3Profile::PLUS,
+firebolt::rialto::common::AudioProfileCapability{6144000, 8, 48000, 24}}}}; audioCap.dolbyTruehd =
+firebolt::rialto::common::DolbyTruehdCapability{{18000000, 8, 192000, 24}}; audioCap.flac =
+firebolt::rialto::common::FlacCapability{{1000000, 8, 192000, 32}}; audioCap.vorbis = firebolt::rialto::common::VorbisCapability{{500000,
+8, 48000, 16}}; audioCap.opus = firebolt::rialto::common::OpusCapability{{510000, 8, 48000, 16}}; audioCap.mpegAudio =
+firebolt::rialto::common::MpegAudioCapability{{{firebolt::rialto::common::MpegAudioProfile::LAYER_2,
+firebolt::rialto::common::AudioProfileCapability{384000, 2, 48000, 16}}}}; audioCap.realAudio =
+firebolt::rialto::common::RealAudioCapability{{{firebolt::rialto::common::RealAudioProfile::RA8,
+firebolt::rialto::common::AudioProfileCapability{128000, 2, 44100, 16}}}}; audioCap.usac =
+firebolt::rialto::common::UsacCapability{{{firebolt::rialto::common::UsacProfile::BASELINE,
+firebolt::rialto::common::AudioProfileCapability{256000, 2, 48000, 24}}}}; audioCap.dts =
+firebolt::rialto::common::DtsCapability{{{firebolt::rialto::common::DtsProfile::CORE,
+firebolt::rialto::common::AudioProfileCapability{1536000, 6, 48000, 24}}}}; audioCap.avs =
+firebolt::rialto::common::AvsCapability{{{firebolt::rialto::common::AvsProfile::AVS2,
+firebolt::rialto::common::AudioProfileCapability{512000, 8, 48000, 24}}}}; const firebolt::rialto::common::AudioDecoderCapabilities
+kCapabilities{kInterfaceVersion, kSchemaVersion, {audioCap}};
 
     createMediaPipelineCapabilitiesIpc();
     expectIpcApiCallSuccess();

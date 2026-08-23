@@ -119,22 +119,25 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
     const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
     const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo)
 {
-    RIALTO_SERVER_LOG_ERROR("USHA: GstCapabilities: CreateGstCapabilities: entry- pass them to GstCapabilities constructor");
-    
+    RIALTO_SERVER_LOG_ERROR(
+        "USHA: GstCapabilities: CreateGstCapabilities: entry- pass them to GstCapabilities constructor");
+
     // Use provided parameters if available, otherwise read from mutex-protected storage
     std::optional<firebolt::rialto::common::AudioDecoderCapabilities> audio = preloadedAudio;
     std::optional<firebolt::rialto::common::VideoDecoderCapabilities> video = preloadedVideo;
-    
+
     if (!audio.has_value() || !video.has_value())
     {
         std::lock_guard<std::mutex> lock(m_preloadedMutex);
-        if (!audio.has_value()) audio = m_preloadedAudio;
-        if (!video.has_value()) video = m_preloadedVideo;
+        if (!audio.has_value())
+            audio = m_preloadedAudio;
+        if (!video.has_value())
+            video = m_preloadedVideo;
         // Clear after reading to prevent stale data
         m_preloadedAudio = std::nullopt;
         m_preloadedVideo = std::nullopt;
     }
-    
+
     std::unique_ptr<IGstCapabilities> gstCapabilities;
     try
     {
@@ -178,8 +181,7 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
 
         RIALTO_SERVER_LOG_ERROR("USHA: GstCapabilities: Passing preloaded capabilities to GstCapabilities constructor");
         gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper, rdkGstreamerUtilsWrapper,
-                                                            yamlCppWrapper, IGstInitialiser::instance(),
-                                                            audio, video);
+                                                            yamlCppWrapper, IGstInitialiser::instance(), audio, video);
     }
     catch (const std::exception &e)
     {
@@ -210,7 +212,8 @@ GstCapabilities::GstCapabilities(
     : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
       m_yamlCppWrapper{yamlCppWrapper}, m_gstInitialiser{gstInitialiser}
 {
-    RIALTO_SERVER_LOG_ERROR("USHA: GstCapabilities: constructor body where GstCapabilities object is created with gstWrapper, glibWrapper, rdkGstreamerUtilsWrapper, yamlCppWrapper, gstInitialiser");
+    RIALTO_SERVER_LOG_ERROR("USHA: GstCapabilities: constructor body where GstCapabilities object is created with "
+                            "gstWrapper, glibWrapper, rdkGstreamerUtilsWrapper, yamlCppWrapper, gstInitialiser");
     if (preloadedAudio.has_value() && preloadedVideo.has_value())
     {
         // Path A: use pre-loaded capabilities forwarded from ServerManager; skip YAML load

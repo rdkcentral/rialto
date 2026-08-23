@@ -20,8 +20,8 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_I_SESSION_SERVER_MANAGER_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_SESSION_SERVER_MANAGER_H_
 
-#include "IAckSender.h"
 #include "AudioDecoderCapabilities.h"
+#include "IAckSender.h"
 #include "RialtoLogging.h"
 #include "SessionServerCommon.h"
 #include "VideoDecoderCapabilities.h"

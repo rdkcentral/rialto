@@ -7,8 +7,8 @@
  */
 
 #include "MediaCapabilitiesFactory.h"
-#include "MediaCapabilities.h"
 #include "IYamlCppWrapper.h"
+#include "MediaCapabilities.h"
 
 namespace rialto::servermanager::service
 {

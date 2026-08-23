@@ -115,10 +115,10 @@ bool operator==(const AvsCapability &lhs, const AvsCapability &rhs)
 bool operator==(const AudioDecoderCapability &lhs, const AudioDecoderCapability &rhs)
 {
     return lhs.pcm == rhs.pcm && lhs.aac == rhs.aac && lhs.mpegAudio == rhs.mpegAudio && lhs.mp3 == rhs.mp3 &&
-           lhs.alac == rhs.alac && lhs.sbc == rhs.sbc && lhs.dolbyAc3 == rhs.dolbyAc3 &&
-           lhs.dolbyAc4 == rhs.dolbyAc4 && lhs.dolbyEac3 == rhs.dolbyEac3 && lhs.dolbyTruehd == rhs.dolbyTruehd &&
-           lhs.flac == rhs.flac && lhs.vorbis == rhs.vorbis && lhs.opus == rhs.opus &&
-           lhs.realAudio == rhs.realAudio && lhs.usac == rhs.usac && lhs.dts == rhs.dts && lhs.avs == rhs.avs;
+           lhs.alac == rhs.alac && lhs.sbc == rhs.sbc && lhs.dolbyAc3 == rhs.dolbyAc3 && lhs.dolbyAc4 == rhs.dolbyAc4 &&
+           lhs.dolbyEac3 == rhs.dolbyEac3 && lhs.dolbyTruehd == rhs.dolbyTruehd && lhs.flac == rhs.flac &&
+           lhs.vorbis == rhs.vorbis && lhs.opus == rhs.opus && lhs.realAudio == rhs.realAudio && lhs.usac == rhs.usac &&
+           lhs.dts == rhs.dts && lhs.avs == rhs.avs;
 }
 
 bool operator==(const AudioDecoderCapabilities &lhs, const AudioDecoderCapabilities &rhs)

@@ -101,20 +101,20 @@ public:
      */
     bool isVideoMaster(bool &isVideoMaster) override;
 
-    //Moved to MediaCapabilitiesIpc
+    // Moved to MediaCapabilitiesIpc
     /**
      * @brief Gets the supported audio capabilities.
      *
      * @retval The supported audio capabilities.
      */
-    //AudioDecoderCapabilities getSupportedAudioCapabilities() override;
+    // AudioDecoderCapabilities getSupportedAudioCapabilities() override;
 
     /**
      * @brief Gets the supported video capabilities.
      *
      * @retval The supported video capabilities.
      */
-    //VideoDecoderCapabilities getSupportedVideoCapabilities() override;
+    // VideoDecoderCapabilities getSupportedVideoCapabilities() override;
 
 private:
     /**

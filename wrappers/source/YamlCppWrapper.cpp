@@ -190,16 +190,15 @@ firebolt::rialto::common::AudioDecoderCapability buildAudioDecoderCapability(con
                     }
                     else if ("AAC" == kCodecName)
                     {
-                        result.aac = AacCapability{
-                            parseNamedProfileMap<std::map<AacProfile,
-                                                          firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
-                                                                                                     convertAacProfileName)};
+                        result.aac = AacCapability{parseNamedProfileMap<
+                            std::map<AacProfile, firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
+                                                                                                    convertAacProfileName)};
                     }
                     else if ("MPEG_AUDIO" == kCodecName)
                     {
-                        result.mpegAudio = MpegAudioCapability{parseNamedProfileMap<
-                            std::map<MpegAudioProfile,
-                                     firebolt::rialto::common::AudioProfileCapability>>(kCodecData, convertMpegAudioProfileName)};
+                        result.mpegAudio = MpegAudioCapability{parseNamedProfileMap<std::map<
+                            MpegAudioProfile, firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
+                                                                                                 convertMpegAudioProfileName)};
                     }
                     else if ("MP3" == kCodecName)
                     {
@@ -215,9 +214,9 @@ firebolt::rialto::common::AudioDecoderCapability buildAudioDecoderCapability(con
                     }
                     else if ("DOLBY_AC3" == kCodecName)
                     {
-                        result.dolbyAc3 = DolbyAc3Capability{parseNamedProfileMap<
-                            std::map<DolbyAc3Profile,
-                                     firebolt::rialto::common::AudioProfileCapability>>(kCodecData, convertDolbyAc3ProfileName)};
+                        result.dolbyAc3 = DolbyAc3Capability{parseNamedProfileMap<std::map<
+                            DolbyAc3Profile, firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
+                                                                                                convertDolbyAc3ProfileName)};
                     }
                     else if ("DOLBY_AC4" == kCodecName)
                     {
@@ -225,14 +224,13 @@ firebolt::rialto::common::AudioDecoderCapability buildAudioDecoderCapability(con
                     }
                     else if ("DOLBY_EAC3" == kCodecName)
                     {
-                        result.dolbyEac3 = DolbyEac3Capability{parseNamedProfileMap<
-                            std::map<DolbyEac3Profile,
-                                     firebolt::rialto::common::AudioProfileCapability>>(kCodecData, convertDolbyEac3ProfileName)};
+                        result.dolbyEac3 = DolbyEac3Capability{parseNamedProfileMap<std::map<
+                            DolbyEac3Profile, firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
+                                                                                                 convertDolbyEac3ProfileName)};
                     }
                     else if ("DOLBY_TRUEHD" == kCodecName)
                     {
-                        result.dolbyTruehd =
-                            DolbyTruehdCapability{parseBaseProfileCapability(kCodecData)};
+                        result.dolbyTruehd = DolbyTruehdCapability{parseBaseProfileCapability(kCodecData)};
                     }
                     else if ("FLAC" == kCodecName)
                     {
@@ -248,30 +246,27 @@ firebolt::rialto::common::AudioDecoderCapability buildAudioDecoderCapability(con
                     }
                     else if ("REALAUDIO" == kCodecName)
                     {
-                        result.realAudio = RealAudioCapability{parseNamedProfileMap<
-                            std::map<RealAudioProfile,
-                                     firebolt::rialto::common::AudioProfileCapability>>(kCodecData, convertRealAudioProfileName)};
+                        result.realAudio = RealAudioCapability{parseNamedProfileMap<std::map<
+                            RealAudioProfile, firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
+                                                                                                 convertRealAudioProfileName)};
                     }
                     else if ("USAC" == kCodecName)
                     {
-                        result.usac = UsacCapability{
-                            parseNamedProfileMap<std::map<UsacProfile,
-                                                          firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
+                        result.usac = UsacCapability{parseNamedProfileMap<
+                            std::map<UsacProfile, firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
                                                                                                      convertUsacProfileName)};
                     }
                     else if ("DTS" == kCodecName)
                     {
-                        result.dts = DtsCapability{
-                            parseNamedProfileMap<std::map<DtsProfile,
-                                                          firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
-                                                                                                     convertDtsProfileName)};
+                        result.dts = DtsCapability{parseNamedProfileMap<
+                            std::map<DtsProfile, firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
+                                                                                                    convertDtsProfileName)};
                     }
                     else if ("AVS" == kCodecName)
                     {
-                        result.avs = AvsCapability{
-                            parseNamedProfileMap<std::map<AvsProfile,
-                                                          firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
-                                                                                                     convertAvsProfileName)};
+                        result.avs = AvsCapability{parseNamedProfileMap<
+                            std::map<AvsProfile, firebolt::rialto::common::AudioProfileCapability>>(kCodecData,
+                                                                                                    convertAvsProfileName)};
                     }
                 }
             }

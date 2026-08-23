@@ -163,7 +163,8 @@ convertAudioDecoderCapability(const AudioCapabilitiesResponse::AudioDecoderCapab
     if (proto.has_sbc())
         result.sbc = firebolt::rialto::common::SbcCapability{convertAudioProfileCapability(proto.sbc().base())};
     if (proto.has_dolby_ac4())
-        result.dolbyAc4 = firebolt::rialto::common::DolbyAc4Capability{convertAudioProfileCapability(proto.dolby_ac4().base())};
+        result.dolbyAc4 =
+            firebolt::rialto::common::DolbyAc4Capability{convertAudioProfileCapability(proto.dolby_ac4().base())};
     if (proto.has_dolby_truehd())
         result.dolbyTruehd =
             firebolt::rialto::common::DolbyTruehdCapability{convertAudioProfileCapability(proto.dolby_truehd().base())};
@@ -175,37 +176,45 @@ convertAudioDecoderCapability(const AudioCapabilitiesResponse::AudioDecoderCapab
         result.opus = firebolt::rialto::common::OpusCapability{convertAudioProfileCapability(proto.opus().base())};
 
     if (proto.has_aac())
-        result.aac = firebolt::rialto::common::AacCapability{deserializeNamedProfileMap<
-            std::map<firebolt::rialto::common::AacProfile, firebolt::rialto::common::AudioProfileCapability>>(proto.aac(),
-                                                                                              convertAacProfile)};
+        result.aac = firebolt::rialto::common::AacCapability{
+            deserializeNamedProfileMap<std::map<firebolt::rialto::common::AacProfile,
+                                                firebolt::rialto::common::AudioProfileCapability>>(proto.aac(),
+                                                                                                   convertAacProfile)};
     if (proto.has_mpeg_audio())
-        result.mpegAudio = firebolt::rialto::common::MpegAudioCapability{deserializeNamedProfileMap<
-            std::map<firebolt::rialto::common::MpegAudioProfile, firebolt::rialto::common::AudioProfileCapability>>(proto.mpeg_audio(),
-                                                                                                    convertMpegAudioProfile)};
+        result.mpegAudio = firebolt::rialto::common::MpegAudioCapability{
+            deserializeNamedProfileMap<std::map<firebolt::rialto::common::MpegAudioProfile,
+                                                firebolt::rialto::common::AudioProfileCapability>>(proto.mpeg_audio(),
+                                                                                                   convertMpegAudioProfile)};
     if (proto.has_dolby_ac3())
-        result.dolbyAc3 = firebolt::rialto::common::DolbyAc3Capability{deserializeNamedProfileMap<
-            std::map<firebolt::rialto::common::DolbyAc3Profile, firebolt::rialto::common::AudioProfileCapability>>(proto.dolby_ac3(),
+        result.dolbyAc3 = firebolt::rialto::common::DolbyAc3Capability{
+            deserializeNamedProfileMap<std::map<firebolt::rialto::common::DolbyAc3Profile,
+                                                firebolt::rialto::common::AudioProfileCapability>>(proto.dolby_ac3(),
                                                                                                    convertDolbyAc3Profile)};
     if (proto.has_dolby_eac3())
-        result.dolbyEac3 = firebolt::rialto::common::DolbyEac3Capability{deserializeNamedProfileMap<
-            std::map<firebolt::rialto::common::DolbyEac3Profile, firebolt::rialto::common::AudioProfileCapability>>(proto.dolby_eac3(),
-                                                                                                    convertDolbyEac3Profile)};
+        result.dolbyEac3 = firebolt::rialto::common::DolbyEac3Capability{
+            deserializeNamedProfileMap<std::map<firebolt::rialto::common::DolbyEac3Profile,
+                                                firebolt::rialto::common::AudioProfileCapability>>(proto.dolby_eac3(),
+                                                                                                   convertDolbyEac3Profile)};
     if (proto.has_real_audio())
-        result.realAudio = firebolt::rialto::common::RealAudioCapability{deserializeNamedProfileMap<
-            std::map<firebolt::rialto::common::RealAudioProfile, firebolt::rialto::common::AudioProfileCapability>>(proto.real_audio(),
-                                                                                                    convertRealAudioProfile)};
+        result.realAudio = firebolt::rialto::common::RealAudioCapability{
+            deserializeNamedProfileMap<std::map<firebolt::rialto::common::RealAudioProfile,
+                                                firebolt::rialto::common::AudioProfileCapability>>(proto.real_audio(),
+                                                                                                   convertRealAudioProfile)};
     if (proto.has_usac())
-        result.usac = firebolt::rialto::common::UsacCapability{deserializeNamedProfileMap<
-            std::map<firebolt::rialto::common::UsacProfile, firebolt::rialto::common::AudioProfileCapability>>(proto.usac(),
-                                                                                               convertUsacProfile)};
+        result.usac = firebolt::rialto::common::UsacCapability{
+            deserializeNamedProfileMap<std::map<firebolt::rialto::common::UsacProfile,
+                                                firebolt::rialto::common::AudioProfileCapability>>(proto.usac(),
+                                                                                                   convertUsacProfile)};
     if (proto.has_dts())
-        result.dts = firebolt::rialto::common::DtsCapability{deserializeNamedProfileMap<
-            std::map<firebolt::rialto::common::DtsProfile, firebolt::rialto::common::AudioProfileCapability>>(proto.dts(),
-                                                                                              convertDtsProfile)};
+        result.dts = firebolt::rialto::common::DtsCapability{
+            deserializeNamedProfileMap<std::map<firebolt::rialto::common::DtsProfile,
+                                                firebolt::rialto::common::AudioProfileCapability>>(proto.dts(),
+                                                                                                   convertDtsProfile)};
     if (proto.has_avs())
-        result.avs = firebolt::rialto::common::AvsCapability{deserializeNamedProfileMap<
-            std::map<firebolt::rialto::common::AvsProfile, firebolt::rialto::common::AudioProfileCapability>>(proto.avs(),
-                                                                                              convertAvsProfile)};
+        result.avs = firebolt::rialto::common::AvsCapability{
+            deserializeNamedProfileMap<std::map<firebolt::rialto::common::AvsProfile,
+                                                firebolt::rialto::common::AudioProfileCapability>>(proto.avs(),
+                                                                                                   convertAvsProfile)};
 
     return result;
 }
@@ -546,7 +555,8 @@ convertVideoCodecCapabilities(const VideoCapabilitiesResponse::VideoCodecCapabil
     return result;
 }
 
-firebolt::rialto::common::VideoDecoderCapability convertVideoDecoderCapability(const VideoCapabilitiesResponse::VideoDecoderCapability &proto)
+firebolt::rialto::common::VideoDecoderCapability
+convertVideoDecoderCapability(const VideoCapabilitiesResponse::VideoDecoderCapability &proto)
 {
     firebolt::rialto::common::VideoDecoderCapability result;
     if (proto.has_codec_capabilities())

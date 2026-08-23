@@ -39,16 +39,23 @@ SessionServerAppManager::SessionServerAppManager(
       m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)},
       m_namedSocketFactory{namedSocketFactory}, m_isShuttingDown{false}
 {
-    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager to SessionServerAppManager");
+    RIALTO_SERVER_MANAGER_LOG_ERROR(
+        "USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager to SessionServerAppManager");
 
     if (mediaCapabilities)
     {
-        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager to SessionServerAppManager successfull");
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from "
+                                        "ServerManager to SessionServerAppManager successfull");
         firebolt::rialto::common::AudioDecoderCapabilities audioCaps;
-        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager to SessionServerAppManager calling getAudioDecoderCapabilities");
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from "
+                                        "ServerManager to SessionServerAppManager calling getAudioDecoderCapabilities");
         const auto audioStatus = mediaCapabilities->getAudioDecoderCapabilities(audioCaps);
-        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager : status: %d", static_cast<int>(audioStatus));
-        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager : status: %d comparing with OK", static_cast<int>(audioStatus == firebolt::rialto::DecoderCapabilitiesStatus::OK));
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from "
+                                        "ServerManager : status: %d",
+                                        static_cast<int>(audioStatus));
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from "
+                                        "ServerManager : status: %d comparing with OK",
+                                        static_cast<int>(audioStatus == firebolt::rialto::DecoderCapabilitiesStatus::OK));
         if (audioStatus == firebolt::rialto::DecoderCapabilitiesStatus::OK)
         {
             m_audioCapabilities = std::move(audioCaps);
@@ -57,11 +64,13 @@ SessionServerAppManager::SessionServerAppManager(
         }
         else
         {
-            RIALTO_SERVER_MANAGER_LOG_INFO("SessionServerAppManager: HFP YAML not found - capabilities will not be forwarded");
+            RIALTO_SERVER_MANAGER_LOG_INFO(
+                "SessionServerAppManager: HFP YAML not found - capabilities will not be forwarded");
         }
 
         firebolt::rialto::common::VideoDecoderCapabilities videoCaps;
-        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from ServerManager to SessionServerAppManager calling getVideoDecoderCapabilities");
+        RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Media Capabilities forwarding from "
+                                        "ServerManager to SessionServerAppManager calling getVideoDecoderCapabilities");
 
         if (mediaCapabilities->getVideoDecoderCapabilities(videoCaps) == firebolt::rialto::DecoderCapabilitiesStatus::OK)
             m_videoCapabilities = std::move(videoCaps);
@@ -523,7 +532,7 @@ bool SessionServerAppManager::configureSessionServerWithSocketName(const std::sh
 
     const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
                                                                           kSessionServer->getMaxWebAudioPlayers()};
-    
+
     RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Calling performSetConfiguratio");
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketName,
                                                   kClientDisplayName, kMaxResource, kSocketPermissions, kSocketOwner,
@@ -550,8 +559,8 @@ bool SessionServerAppManager::configureSessionServerWithSocketFd(const std::shar
 
     RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: SessionServerAppManager: Calling performSetConfiguratio");
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketFd,
-                                                  kClientDisplayName, kMaxResource, kAppName,
-                                                  m_audioCapabilities, m_videoCapabilities))
+                                                  kClientDisplayName, kMaxResource, kAppName, m_audioCapabilities,
+                                                  m_videoCapabilities))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         kSessionServer->getServerId());

@@ -109,8 +109,8 @@ public:
      *
      * @retval The supported audio capabilities.
      */
-    //Moved to MediaCapabilities.h
-    // AudioDecoderCapabilities getSupportedAudioCapabilities() override;
+    // Moved to MediaCapabilities.h
+    //  AudioDecoderCapabilities getSupportedAudioCapabilities() override;
 
     /**
      * @brief Gets the supported video capabilities.

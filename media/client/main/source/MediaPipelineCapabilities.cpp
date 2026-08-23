@@ -109,7 +109,7 @@ bool MediaPipelineCapabilities::isVideoMaster(bool &isVideoMaster)
     return m_mediaPipelineCapabilitiesIpc->isVideoMaster(isVideoMaster);
 }
 
-//Moved to MediaCapabilities
+// Moved to MediaCapabilities
 /*
 AudioDecoderCapabilities MediaPipelineCapabilities::getSupportedAudioCapabilities()
 {

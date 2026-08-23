@@ -24,10 +24,10 @@
 #include "IEventThread.h"
 #include "IHealthcheckService.h"
 #include "IHealthcheckServiceFactory.h"
+#include "IMediaCapabilities.h"
 #include "INamedSocket.h"
 #include "ISessionServerApp.h"
 #include "ISessionServerAppManager.h"
-#include "IMediaCapabilities.h"
 #include "IStateObserver.h"
 #include "SessionServerAppFactory.h"
 #include <AudioDecoderCapabilities.h>

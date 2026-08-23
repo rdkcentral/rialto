@@ -35,10 +35,10 @@ public:
 class YamlCppWrapperMock : public IYamlCppWrapper
 {
 public:
-    MOCK_METHOD(DecoderCapabilitiesStatus, getAudioDecoderCapabilities, (firebolt::rialto::common::AudioDecoderCapabilities & capabilities),
-                (const, override));
-    MOCK_METHOD(DecoderCapabilitiesStatus, getVideoDecoderCapabilities, (firebolt::rialto::common::VideoDecoderCapabilities & capabilities),
-                (const, override));
+    MOCK_METHOD(DecoderCapabilitiesStatus, getAudioDecoderCapabilities,
+                (firebolt::rialto::common::AudioDecoderCapabilities & capabilities), (const, override));
+    MOCK_METHOD(DecoderCapabilitiesStatus, getVideoDecoderCapabilities,
+                (firebolt::rialto::common::VideoDecoderCapabilities & capabilities), (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 

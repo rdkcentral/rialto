@@ -35,7 +35,8 @@ std::unique_ptr<IMediaCapabilities> MediaCapabilitiesIpcFactory::createMediaCapa
 
     try
     {
-        mediaCapabilitiesIpc = std::make_unique<client::MediaCapabilitiesIpc>(IIpcClientAccessor::instance().getIpcClient());
+        mediaCapabilitiesIpc =
+            std::make_unique<client::MediaCapabilitiesIpc>(IIpcClientAccessor::instance().getIpcClient());
     }
     catch (const std::exception &e)
     {

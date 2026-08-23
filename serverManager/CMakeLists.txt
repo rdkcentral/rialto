@@ -22,7 +22,7 @@ set( CMAKE_CXX_STANDARD 17 )
 set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
-find_package( mongoose REQUIRED )
+find_package( mongoose )
 
 if( RIALTO_ENABLE_CONFIG_FILE )
     if (NOT RIALTO_CONFIG_FILE_DIR)
@@ -51,6 +51,7 @@ add_subdirectory(ipc)
 add_subdirectory(service)
 add_subdirectory(public)
 
+if( mongoose_FOUND )
 add_executable (
         RialtoServerManagerSim
 
@@ -116,3 +117,6 @@ install (
         TARGETS RialtoServerManagerSim
         DESTINATION bin
 )
+else()
+        message( STATUS "Mongoose library not found - RialtoServerManagerSim target will be skipped" )
+endif()

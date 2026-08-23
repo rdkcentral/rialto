@@ -19,8 +19,8 @@
 
 #include <gtest/gtest.h>
 
-#include "MediaCapabilitiesIpc.h"
 #include "IpcModuleBase.h"
+#include "MediaCapabilitiesIpc.h"
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;

@@ -1,3 +1,4 @@
+
 # Proposal: ServerManager Media Capabilities — `IMediaCapabilities`
 
 ## Implementation Status
@@ -30,12 +31,12 @@ This proposal should not be considered fully implemented until the unchecked tas
 
 This proposal addresses the following Rialto Session Server change requirements:
 
-| Criterion                                                    | Coverage                                                                                                                                                                                         |
-| ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Integrate with RialtoServerManager via`IMediaCapabilities` | `IMediaCapabilities` added to `serverManager/public/`; YAML-backed implementation in `serverManager/service/`                                                                              |
-| Define and implement new MediaCapabilities protobuf service  | Extend`SetConfigurationRequest` in `servermanagermodule.proto` with **required** audio/video capability fields; session server deserialises and passes them to `configureServices()` |
+| Criterion                                                    | Coverage                                                                                                                                                                                                                            |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Integrate with RialtoServerManager via`IMediaCapabilities` | `IMediaCapabilities` added to `serverManager/public/`; YAML-backed implementation in `serverManager/service/`                                                                                                                 |
+| Define and implement new MediaCapabilities protobuf service  | Extend`SetConfigurationRequest` in `servermanagermodule.proto` with **required** audio/video capability fields; session server deserialises and passes them to `configureServices()`                                    |
 | Forward capability responses to Rialto Client Library        | `IMediaCapabilities` replaces `IMediaPipelineCapabilities` capability methods on the client side; session server serves via `IMediaCapabilities` with GStreamer-query fallback when no YAML data is supplied by ServerManager |
-| Maintain existing IPC architecture (no COM-RPC)              | All new IPC uses`firebolt::rialto::ipc` Unix socket + protobuf; no COM-RPC introduced                                                                                                          |
+| Maintain existing IPC architecture (no COM-RPC)              | All new IPC uses`firebolt::rialto::ipc` Unix socket + protobuf; no COM-RPC introduced                                                                                                                                             |
 
 ## Why
 
@@ -143,15 +144,18 @@ components that currently use `IMediaPipelineCapabilities` are migrated to `IMed
   `media/server/ipc/proto/servermanagermodule.proto` are **symbolic links** to the same
   file; they do not need separate modification.
   - Define two new message types within or imported by `servermanagermodule.proto`:
+
     ```proto
     message AudioCapabilities { ... }   // mirrors GetSupportedAudioCapabilitiesResponse
     message VideoCapabilities { ... }   // mirrors GetSupportedVideoCapabilitiesResponse
     ```
+
     These may either be defined inline in `servermanagermodule.proto` (within the `rialto`
     package) or in a new `mediacapabilities.proto` that both `servermanagermodule.proto`
     and `mediapipelinecapabilitiesmodule.proto` import. Either way, the fields use typed
     messages, not raw bytes.
   - Add the two typed fields to `SetConfigurationRequest`:
+
     ```proto
     optional AudioCapabilities audioCapabilities = 12;
     optional VideoCapabilities videoCapabilities = 13;
@@ -220,8 +224,8 @@ components that currently use `IMediaPipelineCapabilities` are migrated to `IMed
     fallback (see `GstCapabilities` below).
 - Extend `configureServices()` in `media/server/service/include/ISessionServerManager.h` and
   `media/server/service/source/SessionServerManager.cpp` with two `std::optional` parameters.
-
 - Update `GstCapabilities` to implement the two-path model:
+
   - **Path A — YAML / ServerManager data present**: use the pre-loaded
     `AudioDecoderCapabilities` / `VideoDecoderCapabilities` received from the ServerManager.
     Skip the `IYamlCppWrapper` YAML load.
@@ -238,23 +242,21 @@ components that currently use `IMediaPipelineCapabilities` are migrated to `IMed
 ### 7 — Client Library: replace `IMediaPipelineCapabilities` capability methods with `IMediaCapabilities`
 
 - Add `IMediaCapabilities.h` to `media/public/include/`:
+
   - Declares `getSupportedAudioCapabilities()` → `AudioDecoderCapabilities` and
     `getSupportedVideoCapabilities()` → `VideoDecoderCapabilities`.
   - This is the single capabilities interface for Rialto clients going forward.
-
 - Remove `getSupportedAudioCapabilities()` and `getSupportedVideoCapabilities()` from
   `media/public/include/IMediaPipelineCapabilities.h` and their implementations.
   Side-by-side support is not carried forward.
-
 - Add `MediaCapabilitiesIpc.h/.cpp` to `media/client/ipc/` (namespace
   `firebolt::rialto::client`):
+
   - Client-side IPC caller that maps `IMediaCapabilities` calls onto the
     `MediaPipelineCapabilitiesModule` service (reusing the existing IPC transport).
   - Deserialises the proto response into `AudioDecoderCapabilities` / `VideoDecoderCapabilities`.
-
 - Update `media/client/main/` to expose `IMediaCapabilities` to application code via the
   existing factory pattern.
-
 - Update `rialtomse*` sink components (and any other Rialto consumers of
   `IMediaPipelineCapabilities::getSupportedAudioCapabilities` /
   `getSupportedVideoCapabilities`) to call `IMediaCapabilities` instead.

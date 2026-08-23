@@ -18,11 +18,11 @@
  */
 
 #include "ServerManagerModuleServiceTestsFixture.h"
-#include "ServerManagerModuleService.h"
 #include "CapabilitySerialiser.h"
+#include "DecoderCapabilitiesUtil.h"
+#include "ServerManagerModuleService.h"
 #include <AudioDecoderCapabilities.h>
 #include <VideoDecoderCapabilities.h>
-#include "DecoderCapabilitiesUtil.h"
 #include <string>
 
 using testing::_;

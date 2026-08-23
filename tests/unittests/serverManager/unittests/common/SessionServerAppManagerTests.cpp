@@ -17,30 +17,30 @@
  * limitations under the License.
  */
 
-#include "SessionServerAppManagerTestsFixture.h"
 #include "ControllerMock.h"
 #include "EventThreadFactoryMock.h"
 #include "EventThreadMock.h"
 #include "HealthcheckServiceFactoryMock.h"
 #include "HealthcheckServiceMock.h"
+#include "MatchersServerManager.h"
+#include "MediaCapabilitiesMock.h"
 #include "NamedSocketMock.h"
 #include "SessionServerAppFactoryMock.h"
+#include "SessionServerAppManager.h"
+#include "SessionServerAppManagerTestsFixture.h"
 #include "SessionServerAppMock.h"
 #include "StateObserverMock.h"
-#include "MediaCapabilitiesMock.h"
-#include "MatchersServerManager.h"
-#include "SessionServerAppManager.h"
 #include <gtest/gtest.h>
 #include <memory>
 
-using testing::StrictMock;
+using rialto::servermanager::service::MediaCapabilitiesMock;
+using testing::_;
 using testing::ByMove;
+using testing::Eq;
 using testing::Invoke;
 using testing::Return;
 using testing::ReturnRef;
-using testing::Eq;
-using testing::_;
-using rialto::servermanager::service::MediaCapabilitiesMock;
+using testing::StrictMock;
 
 TEST_F(SessionServerAppManagerTests, GetConnectionInfoShouldReturnEmptyStringForNotRunningSessionServer)
 {
@@ -454,7 +454,8 @@ SessionServerAppManagerMediaCapabilitiesErrorTests::SessionServerAppManagerMedia
                                                                                  std::move(m_sessionServerAppFactory),
                                                                                  std::move(m_healthcheckServiceFactory),
                                                                                  eventThreadFactoryMock,
-                                                                                 m_namedSocketFactoryMock,m_mediaCapabilities);
+                                                                                 m_namedSocketFactoryMock,
+                                                                                 m_mediaCapabilities);
 }
 
 void SessionServerAppManagerMediaCapabilitiesErrorTests::sessionServerWillLaunchWithoutCapabilities(
@@ -488,7 +489,8 @@ void SessionServerAppManagerMediaCapabilitiesErrorTests::sessionServerWillLaunch
     EXPECT_CALL(*m_sessionServerAppMock, kill()).Times(testing::AtLeast(0));
 }
 
-TEST_F(SessionServerAppManagerMediaCapabilitiesErrorTests, MediaCapabilitiesOptionalsShoulBeNulloptWhenCapabilitiesAreNotFound)
+TEST_F(SessionServerAppManagerMediaCapabilitiesErrorTests,
+       MediaCapabilitiesOptionalsShoulBeNulloptWhenCapabilitiesAreNotFound)
 {
     sessionServerWillLaunchWithoutCapabilities(firebolt::rialto::common::SessionServerState::INACTIVE);
     ASSERT_TRUE(m_sut->initiateApplication(kAppName, firebolt::rialto::common::SessionServerState::INACTIVE, kAppConfig));

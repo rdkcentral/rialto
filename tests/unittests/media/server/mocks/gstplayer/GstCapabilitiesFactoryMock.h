@@ -29,7 +29,10 @@ namespace firebolt::rialto::server
 class GstCapabilitiesFactoryMock : public IGstCapabilitiesFactory
 {
 public:
-    MOCK_METHOD(std::unique_ptr<IGstCapabilities>, createGstCapabilities, (), (override));
+    MOCK_METHOD(std::unique_ptr<IGstCapabilities>, createGstCapabilities,
+                (const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
+                 const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo),
+                (override));
     MOCK_METHOD(void, setPreloadedCapabilities,
                 (const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
                  const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps),

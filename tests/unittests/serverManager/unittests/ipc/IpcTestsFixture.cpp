@@ -145,7 +145,8 @@ bool IpcTests::triggerPerformSetConfiguration()
     const firebolt::rialto::common::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
 
     return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketName, kClientSocketName, kMaxResource,
-                                          kSocketPermissions, kSocketOwner, kSocketGroup, kAppId, kAudioCapabilities, kVideoCapabilities);
+                                          kSocketPermissions, kSocketOwner, kSocketGroup, kAppId, kAudioCapabilities,
+                                          kVideoCapabilities);
 }
 
 bool IpcTests::triggerPerformSetConfigurationWithFd()
@@ -159,7 +160,8 @@ bool IpcTests::triggerPerformSetConfigurationWithFd()
     // Define or use pre-configured test capability constants
     const firebolt::rialto::common::AudioDecoderCapabilities kAudioCapabilities{"1.0", "1.1", {}};
     const firebolt::rialto::common::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
-    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketFd, kClientSocketName, kMaxResource, kAppId, kAudioCapabilities, kVideoCapabilities);
+    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketFd, kClientSocketName, kMaxResource, kAppId,
+                                          kAudioCapabilities, kVideoCapabilities);
 }
 
 bool IpcTests::triggerPerformPing()

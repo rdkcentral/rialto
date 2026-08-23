@@ -26,11 +26,11 @@
 #include "HealthcheckServiceFactoryMock.h"
 #include "HealthcheckServiceMock.h"
 #include "ISessionServerAppManager.h"
+#include "MediaCapabilitiesMock.h"
 #include "NamedSocketMock.h"
 #include "SessionServerAppFactoryMock.h"
 #include "SessionServerAppMock.h"
 #include "StateObserverMock.h"
-#include "MediaCapabilitiesMock.h"
 #include <DecoderCapabilitiesUtil.h>
 #include <condition_variable>
 #include <gtest/gtest.h>
@@ -38,8 +38,8 @@
 #include <mutex>
 #include <string>
 
-using testing::StrictMock;
 using rialto::servermanager::service::MediaCapabilitiesMock;
+using testing::StrictMock;
 
 class SessionServerAppManagerTests : public testing::Test
 {

@@ -9,17 +9,19 @@
 #ifndef RIALTO_SERVERMANAGER_IPC_CAPABILITY_SERIALISER_H_
 #define RIALTO_SERVERMANAGER_IPC_CAPABILITY_SERIALISER_H_
 
+#include "servermanagermodule.pb.h"
 #include <AudioDecoderCapabilities.h>
 #include <VideoDecoderCapabilities.h>
-#include "servermanagermodule.pb.h"
 
 namespace rialto::servermanager::ipc
 {
 // Converts C++ AudioDecoderCapabilities into the typed proto AudioCapabilities message.
-void serialiseAudioCapabilities(const firebolt::rialto::common::AudioDecoderCapabilities &src, rialto::AudioCapabilities *dst);
+void serialiseAudioCapabilities(const firebolt::rialto::common::AudioDecoderCapabilities &src,
+                                rialto::AudioCapabilities *dst);
 
 // Converts C++ VideoDecoderCapabilities into the typed proto VideoCapabilities message.
-void serialiseVideoCapabilities(const firebolt::rialto::common::VideoDecoderCapabilities &src, rialto::VideoCapabilities *dst);
+void serialiseVideoCapabilities(const firebolt::rialto::common::VideoDecoderCapabilities &src,
+                                rialto::VideoCapabilities *dst);
 
 } // namespace rialto::servermanager::ipc
 

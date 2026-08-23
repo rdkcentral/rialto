@@ -145,13 +145,12 @@ TEST_F(MediaPipelineCapabilitiesTest, checkSupportedMimeTypesAndProperties)
     MediaPipelineTestMethods::shouldGetSupportedPropertiesFailure();
     MediaPipelineTestMethods::getSupportedPropertiesFailure();
 
-    // Step 9: Get supported audio capabilities
-    MediaPipelineTestMethods::shouldGetSupportedAudioCapabilities();
-    MediaPipelineTestMethods::getSupportedAudioCapabilities();
-
-    // Step 10: Get supported video capabilities
-    MediaPipelineTestMethods::shouldGetSupportedVideoCapabilities();
-    MediaPipelineTestMethods::getSupportedVideoCapabilities();
+    // Step 9 & 10: DISABLED - getSupportedAudioCapabilities() and getSupportedVideoCapabilities()
+    // have been removed from IMediaPipelineCapabilities interface. Use IMediaCapabilities instead.
+    // MediaPipelineTestMethods::shouldGetSupportedAudioCapabilities();
+    // MediaPipelineTestMethods::getSupportedAudioCapabilities();
+    // MediaPipelineTestMethods::shouldGetSupportedVideoCapabilities();
+    // MediaPipelineTestMethods::getSupportedVideoCapabilities();
 
     // Step 11: Destroy MediaPipelineCapabilities
     MediaPipelineTestMethods::destroyMediaPipelineCapabilitiesObject();
