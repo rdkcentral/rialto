@@ -65,7 +65,7 @@ MediaPipelineCapabilities::MediaPipelineCapabilities(const std::shared_ptr<IGstC
     : m_kGstCapabilitiesFactory{gstCapabilitiesFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    RIALTO_SERVER_LOG_DEBUG("USHA: MediaPipelineCapabilities: GstCapabilities will be created lazily on first use");
+    ensureGstCapabilitiesCreated();
 }
 
 void MediaPipelineCapabilities::ensureGstCapabilitiesCreated()
