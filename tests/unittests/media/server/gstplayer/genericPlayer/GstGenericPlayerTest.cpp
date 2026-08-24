@@ -272,6 +272,7 @@ TEST_F(GstGenericPlayerTest, shouldSetupElement)
     GstElement element{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(&element)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&element));
     EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, &element)).WillOnce(Return(ByMove(std::move(task))));
 
@@ -840,12 +841,13 @@ TEST_F(GstGenericPlayerTest, shouldApplyPendingVideoStreamSyncModeImmediatelyWhe
                { m_context.pendingStreamSyncMode[MediaSourceType::VIDEO] = kStreamSyncModeValue; });
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).WillOnce(Return(m_factory));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstElementFactoryListIsType(m_factory,
-                                            (GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO)))
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                           GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_PARSER |
+                                                                           GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO)))
         .WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("syncmode-streaming")))
-        .WillOnce(Return(&m_prop));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("syncmode-streaming"))).WillOnce(Return(&m_prop));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetBoolStub(m_element, StrEq("syncmode-streaming"), TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element)).WillOnce(Return(m_element));
 
@@ -855,7 +857,6 @@ TEST_F(GstGenericPlayerTest, shouldApplyPendingVideoStreamSyncModeImmediatelyWhe
 
     triggerSetupElement(m_element);
 }
-
 TEST_F(GstGenericPlayerTest, shouldGetStreamSyncMode)
 {
     const int32_t kStreamSyncModeValue{1};
