@@ -19,6 +19,7 @@
 
 #include "ServerManagerModuleService.h"
 #include "AckSender.h"
+#include "CapabilityDeserialiser.h"
 #include "ISessionServerManager.h"
 #include "RialtoServerLogging.h"
 #include <AudioDecoderCapabilities.h>
@@ -28,24 +29,6 @@
 
 namespace
 {
-firebolt::rialto::common::AudioDecoderCapabilities convertAudioCapabilities(const rialto::AudioCapabilities &src)
-{
-    firebolt::rialto::common::AudioDecoderCapabilities result;
-    result.interfaceVersion = src.interface_version();
-    result.schemaVersion = src.schema_version();
-    // Capability fields are populated by GstCapabilities path B if needed;
-    // here we carry only the structured data forwarded from the ServerManager.
-    return result;
-}
-
-firebolt::rialto::common::VideoDecoderCapabilities convertVideoCapabilities(const rialto::VideoCapabilities &src)
-{
-    firebolt::rialto::common::VideoDecoderCapabilities result;
-    result.interfaceVersion = src.interface_version();
-    result.schemaVersion = src.schema_version();
-    return result;
-}
-
 firebolt::rialto::common::SessionServerState convertSessionServerState(const rialto::SessionServerState &state)
 {
     switch (state)
@@ -122,8 +105,8 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     if (request->has_audiocapabilities() && request->has_videocapabilities())
     {
         RIALTO_SERVER_LOG_DEBUG("ServerManagerModuleService: audio/video capabilities received in SetConfiguration");
-        audioCaps = convertAudioCapabilities(request->audiocapabilities());
-        videoCaps = convertVideoCapabilities(request->videocapabilities());
+        audioCaps = deserialiseAudioCapabilities(request->audiocapabilities());
+        videoCaps = deserialiseVideoCapabilities(request->videocapabilities());
         RIALTO_SERVER_LOG_INFO(
             "ServerManagerModuleService: capabilities deserialised and forwarded to configureServices");
     }
