@@ -395,7 +395,7 @@ firebolt::rialto::common::VideoDecoderCapability toVideoDecoderCapability(const 
 
 namespace firebolt::rialto::server::ipc
 {
-firebolt::rialto::common::AudioDecoderCapabilities deserialiseAudioCapabilities(const rialto::AudioCapabilities &src)
+firebolt::rialto::common::AudioDecoderCapabilities deserialiseAudioCapabilities(const ::rialto::AudioCapabilities &src)
 {
     firebolt::rialto::common::AudioDecoderCapabilities result;
     result.interfaceVersion = src.interface_version();
@@ -405,7 +405,7 @@ firebolt::rialto::common::AudioDecoderCapabilities deserialiseAudioCapabilities(
     return result;
 }
 
-firebolt::rialto::common::VideoDecoderCapabilities deserialiseVideoCapabilities(const rialto::VideoCapabilities &src)
+firebolt::rialto::common::VideoDecoderCapabilities deserialiseVideoCapabilities(const ::rialto::VideoCapabilities &src)
 {
     firebolt::rialto::common::VideoDecoderCapabilities result;
     result.interfaceVersion = src.interface_version();

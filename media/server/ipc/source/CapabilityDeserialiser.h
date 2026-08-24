@@ -18,8 +18,12 @@
 // ServerManager in SetConfigurationRequest back into the full C++ structs on the RialtoServer side.
 namespace firebolt::rialto::server::ipc
 {
-firebolt::rialto::common::AudioDecoderCapabilities deserialiseAudioCapabilities(const rialto::AudioCapabilities &src);
-firebolt::rialto::common::VideoDecoderCapabilities deserialiseVideoCapabilities(const rialto::VideoCapabilities &src);
+// Note: leading :: is required - inside firebolt::rialto::*, unqualified "rialto::" resolves to
+// the enclosing firebolt::rialto namespace, not the global rialto:: proto namespace below.
+firebolt::rialto::common::AudioDecoderCapabilities
+deserialiseAudioCapabilities(const ::rialto::AudioCapabilities &src);
+firebolt::rialto::common::VideoDecoderCapabilities
+deserialiseVideoCapabilities(const ::rialto::VideoCapabilities &src);
 } // namespace firebolt::rialto::server::ipc
 
 #endif // FIREBOLT_RIALTO_SERVER_IPC_CAPABILITY_DESERIALISER_H_
