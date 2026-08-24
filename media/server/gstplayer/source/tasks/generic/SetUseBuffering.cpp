@@ -38,10 +38,7 @@ void SetUseBuffering::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetUseBuffering");
 
-    {
-        std::unique_lock lock{m_context.propertyMutex};
-        m_context.pendingUseBuffering = m_useBuffering;
-    }
+    m_context.pendingUseBuffering = m_useBuffering;
     if (m_context.pipeline)
     {
         m_player.setUseBuffering();

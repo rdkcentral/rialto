@@ -38,10 +38,7 @@ void SetBufferingLimit::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetBufferingLimit");
 
-    {
-        std::unique_lock lock{m_context.propertyMutex};
-        m_context.pendingBufferingLimit = m_limit;
-    }
+    m_context.pendingBufferingLimit = m_limit;
     if (m_context.pipeline)
     {
         m_player.setBufferingLimit();

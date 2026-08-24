@@ -38,10 +38,7 @@ void SetStreamSyncMode::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetStreamSyncMode");
 
-    {
-        std::unique_lock lock{m_context.propertyMutex};
-        m_context.pendingStreamSyncMode.emplace(m_type, m_streamSyncMode);
-    }
+    m_context.pendingStreamSyncMode.emplace(m_type, m_streamSyncMode);
     if (m_context.pipeline)
     {
         m_player.setStreamSyncMode(m_type);

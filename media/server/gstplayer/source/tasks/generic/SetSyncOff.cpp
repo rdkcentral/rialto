@@ -37,10 +37,7 @@ void SetSyncOff::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing SetSyncOff");
 
-    {
-        std::unique_lock lock{m_context.propertyMutex};
-        m_context.pendingSyncOff = m_syncOff;
-    }
+    m_context.pendingSyncOff = m_syncOff;
     if (m_context.pipeline)
     {
         m_player.setSyncOff();
