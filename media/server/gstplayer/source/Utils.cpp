@@ -46,7 +46,8 @@ bool isType(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElemen
     return gstWrapper.gstElementFactoryListIsType(factory, type);
 }
 
-bool isType(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElementFactory *factory, GstElementFactoryListType type)
+bool isType(const firebolt::rialto::wrappers::IGstWrapper &gstWrapper, GstElementFactory *factory,
+            GstElementFactoryListType type)
 {
     if (!factory)
     {

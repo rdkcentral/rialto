@@ -2274,35 +2274,42 @@ bool GstGenericPlayer::setSync()
 bool GstGenericPlayer::setSyncOff()
 {
     bool result{false};
-    if (m_context.pendingSyncOff.has_value())
+    bool syncOff{false};
     {
-        GstElement *decoder = getDecoder(MediaSourceType::AUDIO);
-        if (decoder)
+        std::unique_lock lock{m_context.propertyMutex};
+        if (!m_context.pendingSyncOff.has_value())
         {
-            bool syncOff{m_context.pendingSyncOff.value()};
-            RIALTO_SERVER_LOG_DEBUG("Set sync-off to %s", syncOff ? "TRUE" : "FALSE");
+            return false;
+        }
+        syncOff = m_context.pendingSyncOff.value();
+    }
 
-            if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "sync-off"))
-            {
-                gboolean syncOffGboolean{syncOff ? TRUE : FALSE};
-                m_glibWrapper->gObjectSet(decoder, "sync-off", syncOffGboolean, nullptr);
-                result = true;
-            }
-            else
-            {
-                RIALTO_SERVER_LOG_ERROR("Failed to set sync-off property on decoder '%s'", GST_ELEMENT_NAME(decoder));
-            }
-            m_context.pendingSyncOff.reset();
-            m_gstWrapper->gstObjectUnref(decoder);
+    GstElement *decoder = getDecoder(MediaSourceType::AUDIO);
+    if (decoder)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Set sync-off to %s", syncOff ? "TRUE" : "FALSE");
+
+        if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), "sync-off"))
+        {
+            gboolean syncOffGboolean{syncOff ? TRUE : FALSE};
+            m_glibWrapper->gObjectSet(decoder, "sync-off", syncOffGboolean, nullptr);
+            result = true;
         }
         else
         {
-            RIALTO_SERVER_LOG_DEBUG("Pending sync-off, decoder is NULL");
+            RIALTO_SERVER_LOG_ERROR("Failed to set sync-off property on decoder '%s'", GST_ELEMENT_NAME(decoder));
         }
+        m_gstWrapper->gstObjectUnref(decoder);
+
+        std::unique_lock lock{m_context.propertyMutex};
+        m_context.pendingSyncOff.reset();
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_DEBUG("Pending sync-off, decoder is NULL");
     }
     return result;
 }
-
 bool GstGenericPlayer::setStreamSyncMode(const MediaSourceType &type)
 {
     bool result{false};
