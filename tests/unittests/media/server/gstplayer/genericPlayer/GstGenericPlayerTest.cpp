@@ -272,10 +272,61 @@ TEST_F(GstGenericPlayerTest, shouldSetupElement)
     GstElement element{};
     std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(&element)).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(&element));
     EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, &element)).WillOnce(Return(ByMove(std::move(task))));
 
     triggerSetupElement(&element);
+}
+
+TEST_F(GstGenericPlayerTest, shouldApplyPendingSyncOffImmediatelyWhenAudioDecoderAdded)
+{
+    constexpr bool kSyncOffValue{true};
+    getContext([&](GenericPlayerContext &m_context) { m_context.pendingSyncOff = kSyncOffValue; });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).WillOnce(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                           GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("sync-off"))).WillOnce(Return(&m_prop));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetBoolStub(m_element, StrEq("sync-off"), TRUE));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element)).WillOnce(Return(m_element));
+
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, m_element)).WillOnce(Return(ByMove(std::move(task))));
+
+    triggerSetupElement(m_element);
+
+    getContext([&](GenericPlayerContext &m_context) { EXPECT_FALSE(m_context.pendingSyncOff.has_value()); });
+}
+
+TEST_F(GstGenericPlayerTest, shouldApplyPendingAudioStreamSyncModeImmediatelyWhenAudioDecoderAdded)
+{
+    constexpr gint kStreamSyncModeValue{1};
+    getContext([&](GenericPlayerContext &m_context)
+               { m_context.pendingStreamSyncMode[MediaSourceType::AUDIO] = kStreamSyncModeValue; });
+
+    EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).WillOnce(Return(m_factory));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                           GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
+        .WillOnce(Return(TRUE));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("stream-sync-mode"))).WillOnce(Return(&m_prop));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectSetIntStub(m_element, StrEq("stream-sync-mode"), kStreamSyncModeValue));
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element)).WillOnce(Return(m_element));
+
+    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    EXPECT_CALL(m_taskFactoryMock, createSetupElement(_, _, m_element)).WillOnce(Return(ByMove(std::move(task))));
+
+    triggerSetupElement(m_element);
+
+    getContext(
+        [&](GenericPlayerContext &m_context)
+        {
+            EXPECT_TRUE(m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) ==
+                        m_context.pendingStreamSyncMode.end());
+        });
 }
 
 TEST_F(GstGenericPlayerTest, shouldAddDeepElement)
@@ -840,12 +891,13 @@ TEST_F(GstGenericPlayerTest, shouldApplyPendingVideoStreamSyncModeImmediatelyWhe
                { m_context.pendingStreamSyncMode[MediaSourceType::VIDEO] = kStreamSyncModeValue; });
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementGetFactory(m_element)).WillOnce(Return(m_factory));
-    EXPECT_CALL(*m_gstWrapperMock,
-                gstElementFactoryListIsType(m_factory,
-                                            (GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO)))
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_DECODER |
+                                                                           GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)))
+        .WillOnce(Return(FALSE));
+    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListIsType(m_factory, (GST_ELEMENT_FACTORY_TYPE_PARSER |
+                                                                           GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO)))
         .WillOnce(Return(TRUE));
-    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("syncmode-streaming")))
-        .WillOnce(Return(&m_prop));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("syncmode-streaming"))).WillOnce(Return(&m_prop));
     EXPECT_CALL(*m_glibWrapperMock, gObjectSetBoolStub(m_element, StrEq("syncmode-streaming"), TRUE));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectRef(m_element)).WillOnce(Return(m_element));
 
@@ -855,7 +907,6 @@ TEST_F(GstGenericPlayerTest, shouldApplyPendingVideoStreamSyncModeImmediatelyWhe
 
     triggerSetupElement(m_element);
 }
-
 TEST_F(GstGenericPlayerTest, shouldGetStreamSyncMode)
 {
     const int32_t kStreamSyncModeValue{1};

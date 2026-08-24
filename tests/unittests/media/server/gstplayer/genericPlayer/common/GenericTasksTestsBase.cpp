@@ -837,17 +837,6 @@ void GenericTasksTestsBase::shouldSetupVideoParserElementWithPendingStreamSyncMo
     expectSetupVideoParserElement();
 }
 
-void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingBufferingLimit()
-{
-    testContext->m_context.pendingBufferingLimit = 123;
-    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
-        .WillOnce(Return(kElementTypeName.c_str()));
-
-    // This is the extra EXPECT caused by setting pendingBufferingLimit...
-    EXPECT_CALL(testContext->m_gstPlayer, setBufferingLimit());
-    expectSetupAudioDecoderElement();
-}
-
 void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithIsLiveParameter()
 {
     testContext->m_context.isLive = true;

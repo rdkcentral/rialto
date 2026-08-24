@@ -385,17 +385,21 @@ void SetupElement::execute() const
     }
     else if (isAudioDecoder(*m_gstWrapper, m_element))
     {
-        if (m_context.pendingSyncOff.has_value())
+        bool hasPendingSyncOff{false};
+        bool hasPendingAudioStreamSyncMode{false};
+        {
+            std::unique_lock lock{m_context.propertyMutex};
+            hasPendingSyncOff = m_context.pendingSyncOff.has_value();
+            hasPendingAudioStreamSyncMode = m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) !=
+                                            m_context.pendingStreamSyncMode.end();
+        }
+        if (hasPendingSyncOff)
         {
             m_player.setSyncOff();
         }
-        if (m_context.pendingStreamSyncMode.find(MediaSourceType::AUDIO) != m_context.pendingStreamSyncMode.end())
+        if (hasPendingAudioStreamSyncMode)
         {
             m_player.setStreamSyncMode(MediaSourceType::AUDIO);
-        }
-        if (m_context.pendingBufferingLimit.has_value())
-        {
-            m_player.setBufferingLimit();
         }
         if (m_context.isLive &&
             m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_element), "enable-rate-correction"))
@@ -417,7 +421,13 @@ void SetupElement::execute() const
     }
     else if (isVideoParser(*m_gstWrapper, m_element))
     {
-        if (m_context.pendingStreamSyncMode.find(MediaSourceType::VIDEO) != m_context.pendingStreamSyncMode.end())
+        bool hasPendingVideoStreamSyncMode{false};
+        {
+            std::unique_lock lock{m_context.propertyMutex};
+            hasPendingVideoStreamSyncMode = m_context.pendingStreamSyncMode.find(MediaSourceType::VIDEO) !=
+                                            m_context.pendingStreamSyncMode.end();
+        }
+        if (hasPendingVideoStreamSyncMode)
         {
             m_player.setStreamSyncMode(MediaSourceType::VIDEO);
         }
