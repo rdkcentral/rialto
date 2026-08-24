@@ -397,6 +397,7 @@ void SetupElement::execute() const
         {
             m_player.setBufferingLimit();
         }
+
         if (m_context.isLive &&
             m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(m_element), "enable-rate-correction"))
         {
