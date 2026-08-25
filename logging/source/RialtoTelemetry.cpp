@@ -23,30 +23,70 @@
 
 void TELEMETRY_INIT(const char* component)
 {
-    RIALTO_TELEMETRY_LOG_MIL("bvanav-dbg : Telemetry initialized for %s", component);
+    RIALTO_TELEMETRY_LOG_MIL("T2Init for component: %s", component);
     t2_init(const_cast<char*>(component));
 }
 
 void TELEMETRY_UNINIT()
 {
-    RIALTO_TELEMETRY_LOG_MIL("Telemetry uninitialized");
+    RIALTO_TELEMETRY_LOG_MIL("T2Uninit");
     t2_uninit();
 }
 
 void TELEMETRY_EVENT_STRING(const char* marker, const char* value)
 {
-    RIALTO_TELEMETRY_LOG_MIL("bvanav-dbg : Telemetry String - Marker: %s, Value: %s \n", marker, value);
+    RIALTO_TELEMETRY_LOG_DEBUG("T2String Event marker: %s, value: %s", marker, value);
     t2_event_s(const_cast<char*>(marker), const_cast<char*>(value));
 }
 
 void TELEMETRY_EVENT_FLOAT(const char* marker, float value)
 {
+    RIALTO_TELEMETRY_LOG_DEBUG("T2Float Event marker: %s, value: %f", marker, value);
     t2_event_f(const_cast<char*>(marker), static_cast<double>(value));
 }
 
 void TELEMETRY_EVENT_INT(const char* marker, int value)
 {
+    RIALTO_TELEMETRY_LOG_DEBUG("T2Int Event marker: %s, value: %d", marker, value);
     t2_event_d(const_cast<char*>(marker), static_cast<int>(value));
+}
+
+void TELEMETRY_EVENT_COUNT(const char* marker)
+{
+    RIALTO_TELEMETRY_LOG_DEBUG("T2Count Event marker: %s", marker);
+    TELEMETRY_EVENT_INT(marker, 1);
+}
+
+#else
+
+void TELEMETRY_INIT(const char* component)
+{
+    RIALTO_TELEMETRY_LOG_MIL("Stub-Impl: T2Init for component: %s", component);
+}
+
+void TELEMETRY_UNINIT()
+{
+    RIALTO_TELEMETRY_LOG_MIL("Stub-Impl: T2Uninit");
+}
+
+void TELEMETRY_EVENT_STRING(const char* marker, const char* value)
+{
+    RIALTO_TELEMETRY_LOG_DEBUG("Stub-Impl: T2String Event marker: %s, value: %s", marker, value);
+}
+
+void TELEMETRY_EVENT_FLOAT(const char* marker, float value)
+{
+    RIALTO_TELEMETRY_LOG_DEBUG("Stub-Impl: T2Float Event marker: %s, value: %f", marker, value);
+}
+
+void TELEMETRY_EVENT_INT(const char* marker, int value)
+{
+    RIALTO_TELEMETRY_LOG_DEBUG("Stub-Impl: T2Int Event marker: %s, value: %d", marker, value);
+}
+
+void TELEMETRY_EVENT_COUNT(const char* marker)
+{
+    RIALTO_TELEMETRY_LOG_DEBUG("Stub-Impl: T2Count Event marker: %s", marker);
 }
 
 #endif /* TELEMETRY_ENABLED */

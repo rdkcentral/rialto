@@ -106,6 +106,9 @@ std::string componentToString(RIALTO_COMPONENT component)
     case RIALTO_COMPONENT_COMMON:
         return "COM";
         break;
+    case RIALTO_COMPONENT_TELEMETRY:
+        return "TEL";
+        break;
     case RIALTO_COMPONENT_EXTERNAL:
         return "EXT";
         break;
