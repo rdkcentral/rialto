@@ -569,6 +569,8 @@ void GstGenericPlayer::notifyPlaybackInfo()
         info.currentPosition = m_context.streamPosition.load();
         if (info.currentPosition < 0)
         {
+            RIALTO_SERVER_LOG_DEBUG("PlaybackInfo position unavailable: queried=%lld cached=%lld",
+                                   static_cast<long long>(queriedPosition), static_cast<long long>(info.currentPosition));
             return;
         }
     }
@@ -1350,17 +1352,20 @@ GstBuffer *GstGenericPlayer::createBuffer(const IMediaPipeline::MediaSegment &me
                                         skip,
                                         encryptionPatternSet,
                                         m_context.decryptionService};
+                                            const int64_t queriedPosition{info.currentPosition};
 
         if (!m_protectionMetadataWrapper->addProtectionMetadata(gstBuffer, data))
         {
             RIALTO_SERVER_LOG_ERROR("Failed to add protection metadata");
             if (keyId)
             {
-                m_gstWrapper->gstBufferUnref(keyId);
-            }
             if (initVector)
             {
                 m_gstWrapper->gstBufferUnref(initVector);
+
+                                            RIALTO_SERVER_LOG_DEBUG("PlaybackInfo position: queried=%lld reported=%lld cached-before=%lld",
+                                                                    static_cast<long long>(queriedPosition), static_cast<long long>(info.currentPosition),
+                                                                    static_cast<long long>(m_context.streamPosition.load()));
             }
             if (subsamples)
             {
