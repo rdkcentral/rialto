@@ -1652,9 +1652,19 @@ void MediaPipelineIpc::onPlaybackInfo(const std::shared_ptr<firebolt::rialto::Pl
 {
     if (event->session_id() == m_sessionId)
     {
+        const auto timestampT4 = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                     std::chrono::steady_clock::now().time_since_epoch())
+                                     .count();
+        RIALTO_CLIENT_LOG_DEBUG("PositionTiming T4 id=%llu timestamp_ns=%llu position=%lld t4_minus_t3_ns=%lld",
+                                static_cast<unsigned long long>(event->timing_id()),
+                                static_cast<unsigned long long>(timestampT4),
+                                static_cast<long long>(event->current_position()),
+                                static_cast<long long>(timestampT4 - event->server_timestamp_ns()));
         PlaybackInfo playbackInfo;
         playbackInfo.currentPosition = event->current_position();
         playbackInfo.volume = event->volume();
+        playbackInfo.timingId = event->timing_id();
+        playbackInfo.serverTimestampNs = event->server_timestamp_ns();
         m_mediaPipelineIpcClient->notifyPlaybackInfo(playbackInfo);
     }
 }

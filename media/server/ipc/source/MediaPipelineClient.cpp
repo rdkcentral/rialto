@@ -281,13 +281,21 @@ void MediaPipelineClient::notifySourceFlushed(int32_t sourceId)
 
 void MediaPipelineClient::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
 {
-    RIALTO_SERVER_LOG_DEBUG("Sending PlaybackInfoEvent: session=%d position=%lld volume=%f", m_sessionId,
-                            static_cast<long long>(playbackInfo.currentPosition), playbackInfo.volume);
+    const auto timestampT3 = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                 std::chrono::steady_clock::now().time_since_epoch())
+                                 .count();
+    RIALTO_SERVER_LOG_DEBUG("PositionTiming T3 id=%llu timestamp_ns=%llu position=%lld t3_minus_t2_ns=%lld",
+                            static_cast<unsigned long long>(playbackInfo.timingId),
+                            static_cast<unsigned long long>(timestampT3),
+                            static_cast<long long>(playbackInfo.currentPosition),
+                            static_cast<long long>(timestampT3 - playbackInfo.serverTimestampNs));
 
     auto event = std::make_shared<firebolt::rialto::PlaybackInfoEvent>();
     event->set_session_id(m_sessionId);
     event->set_current_position(playbackInfo.currentPosition);
     event->set_volume(playbackInfo.volume);
+    event->set_timing_id(playbackInfo.timingId);
+    event->set_server_timestamp_ns(playbackInfo.serverTimestampNs);
 
     m_ipcClient->sendEvent(event);
 }

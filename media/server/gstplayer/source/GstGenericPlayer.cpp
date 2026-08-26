@@ -23,6 +23,7 @@
 #include <ctime>
 #include <malloc.h>
 #include <stdexcept>
+#include <atomic>
 
 #include "FlushWatcher.h"
 #include "GstDispatcherThread.h"
@@ -49,6 +50,14 @@ namespace
 constexpr std::chrono::milliseconds kPositionReportTimerMs{50};
 constexpr std::chrono::milliseconds kAudioUnderflowTimerMs{250};
 constexpr std::chrono::seconds kSubtitleClockResyncInterval{10};
+std::atomic<uint64_t> g_positionTimingId{0};
+
+uint64_t monotonicTimestampNs()
+{
+    return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
+                                     std::chrono::steady_clock::now().time_since_epoch())
+                                     .count());
+}
 
 bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)
 {
@@ -562,7 +571,23 @@ void GstGenericPlayer::setSourceFlushed(const MediaSourceType &mediaSourceType)
 void GstGenericPlayer::notifyPlaybackInfo()
 {
     PlaybackInfo info;
+    info.timingId = ++g_positionTimingId;
+    const uint64_t timestampT0{monotonicTimestampNs()};
+    RIALTO_SERVER_LOG_DEBUG("PositionTiming T0 id=%llu state=%s rate=%f",
+                            static_cast<unsigned long long>(info.timingId),
+                            m_context.isPlaying ? "PLAYING" : "NOT_PLAYING", m_context.playbackRate);
+    const uint64_t timestampT1{monotonicTimestampNs()};
+    RIALTO_SERVER_LOG_DEBUG("PositionTiming T1 id=%llu cached=%lld state=%s rate=%f",
+                            static_cast<unsigned long long>(info.timingId),
+                            static_cast<long long>(m_context.streamPosition.load()),
+                            m_context.isPlaying ? "PLAYING" : "NOT_PLAYING", m_context.playbackRate);
     getPosition(info.currentPosition);
+    const uint64_t timestampT2{monotonicTimestampNs()};
+    info.serverTimestampNs = timestampT2;
+    RIALTO_SERVER_LOG_DEBUG("PositionTiming T2 id=%llu position=%lld query_ns=%llu t1_minus_t0_ns=%llu",
+                            static_cast<unsigned long long>(info.timingId), static_cast<long long>(info.currentPosition),
+                            static_cast<unsigned long long>(timestampT2 - timestampT1),
+                            static_cast<unsigned long long>(timestampT1 - timestampT0));
     const int64_t queriedPosition{info.currentPosition};
 
     if (info.currentPosition < 0)

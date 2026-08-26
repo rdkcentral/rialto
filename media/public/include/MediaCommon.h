@@ -475,6 +475,8 @@ struct PlaybackInfo
 {
     int64_t currentPosition{-1}; /**< The current playback position */
     double volume{1.0};          /**< The current volume */
+    uint64_t timingId{0};        /**< Temporary position timing correlation id */
+    uint64_t serverTimestampNs{0}; /**< Temporary server monotonic timestamp */
 };
 
 /**
