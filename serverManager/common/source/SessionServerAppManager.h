@@ -69,7 +69,8 @@ private:
     bool configurePreloadedSessionServer(const std::shared_ptr<ISessionServerApp> &sessionServer,
                                          const std::string &appName,
                                          const firebolt::rialto::common::SessionServerState &state,
-                                         const firebolt::rialto::common::AppConfig &appConfig);
+                                         const firebolt::rialto::common::AppConfig &appConfig,
+                                         std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket);
     bool changeSessionServerState(const std::string &appName,
                                   const firebolt::rialto::common::SessionServerState &newState);
     void handleSessionServerStateChange(int serverId, firebolt::rialto::common::SessionServerState newState);

@@ -70,6 +70,7 @@ MATCHER_P4(SetLogLevelsEventMatcher, defaultLogLevels, clientLogLevels, ipcLogLe
 
 SessionManagementServerTests::SessionManagementServerTests()
     : m_clientMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()},
+      m_linuxWrapperMock{std::make_shared<StrictMock<firebolt::rialto::wrappers::LinuxWrapperMock>>()},
       m_serverMock{std::make_shared<StrictMock<firebolt::rialto::ipc::ServerMock>>()},
       m_mediaPipelineModuleMock{
           std::make_shared<StrictMock<firebolt::rialto::server::ipc::MediaPipelineModuleServiceMock>>()},
@@ -118,7 +119,7 @@ SessionManagementServerTests::SessionManagementServerTests()
     EXPECT_CALL(*controlModuleFactoryMock, create(_, _)).WillOnce(Return(m_controlModuleMock));
 
     m_sut =
-        std::make_unique<firebolt::rialto::server::ipc::SessionManagementServer>(serverFactoryMock,
+        std::make_unique<firebolt::rialto::server::ipc::SessionManagementServer>(m_linuxWrapperMock, serverFactoryMock,
                                                                                  mediaPipelineModuleFactoryMock,
                                                                                  mediaPipelineCapabilitiesModuleFactoryMock,
                                                                                  mediaKeysModuleFactoryMock,
@@ -152,11 +153,13 @@ void SessionManagementServerTests::serverWillFailToInitialize()
 
 void SessionManagementServerTests::serverWillInitializeWithFd()
 {
+    EXPECT_CALL(*m_linuxWrapperMock, fcntl(kSocketFd, F_DUPFD_CLOEXEC, 3)).WillOnce(Return(kSocketFd));
     EXPECT_CALL(*m_serverMock, addSocket(kSocketFd, _, _)).WillOnce(Return(true));
 }
 
 void SessionManagementServerTests::serverWillFailToInitializeWithFd()
 {
+    EXPECT_CALL(*m_linuxWrapperMock, fcntl(kSocketFd, F_DUPFD_CLOEXEC, 3)).WillOnce(Return(kSocketFd));
     EXPECT_CALL(*m_serverMock, addSocket(kSocketFd, _, _)).WillOnce(Return(false));
 }
 

@@ -41,7 +41,8 @@ public:
     virtual bool launch() = 0;
     virtual bool isPreloaded() const = 0;
     virtual bool configure(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
-                           const firebolt::rialto::common::AppConfig &appConfig) = 0;
+                           const firebolt::rialto::common::AppConfig &appConfig,
+                           std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket) = 0;
     virtual bool isConnected() const = 0;
     virtual std::string getSessionManagementSocketName() const = 0;
     virtual unsigned int getSessionManagementSocketPermissions() const = 0;

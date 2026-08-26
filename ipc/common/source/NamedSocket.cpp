@@ -73,7 +73,7 @@ NamedSocket::NamedSocket()
     RIALTO_IPC_LOG_MIL("Creating new socket without binding");
 
     // Create the socket
-    m_sockFd = ::socket(AF_UNIX, SOCK_SEQPACKET | SOCK_NONBLOCK, 0);
+    m_sockFd = ::socket(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC | SOCK_NONBLOCK, 0);
     if (m_sockFd == -1)
     {
         RIALTO_IPC_LOG_SYS_ERROR(errno, "socket error");

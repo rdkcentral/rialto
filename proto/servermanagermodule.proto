@@ -20,6 +20,7 @@
 syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
+import "rialtoipc.proto";
 
 package rialto;
 
@@ -97,7 +98,7 @@ message SetConfigurationRequest {
     optional string socketOwner = 7;
     optional string socketGroup = 8;
     optional string appName = 9;
-    optional int32 sessionManagementSocketFd = 10;
+    optional int32 sessionManagementSocketFd = 10 [(firebolt.rialto.ipc.field_is_fd) = true, default = -1];
     optional uint32 subtitleClockResyncInterval = 11;
 }
 message SetConfigurationResponse {

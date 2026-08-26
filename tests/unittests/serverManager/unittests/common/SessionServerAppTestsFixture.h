@@ -51,7 +51,7 @@ public:
     void timerWillBeInactive() const;
     void timerWillBeActive() const;
 
-    bool triggerConfigure(const firebolt::rialto::common::AppConfig &appConfig) const;
+    bool triggerConfigure(const firebolt::rialto::common::AppConfig &appConfig);
     void triggerGetSessionManagementSocketFd() const;
     void triggerReleaseNamedSocket() const;
 

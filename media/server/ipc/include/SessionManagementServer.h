@@ -44,6 +44,7 @@ class SessionManagementServer : public ISessionManagementServer
 {
 public:
     SessionManagementServer(
+        const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
         const std::shared_ptr<firebolt::rialto::ipc::IServerFactory> &serverFactory,
         const std::shared_ptr<IMediaPipelineModuleServiceFactory> &mediaPipelineModuleFactory,
         const std::shared_ptr<IMediaPipelineCapabilitiesModuleServiceFactory> &mediaPipelineCapabilitiesModuleFactory,
@@ -73,6 +74,7 @@ private:
     size_t getBufferSizeForPasswordStructureCalls() const;
 
 private:
+    std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> m_linuxWrapper;
     std::atomic<bool> m_isRunning;
     std::thread m_ipcServerThread;
     std::shared_ptr<::firebolt::rialto::ipc::IServer> m_ipcServer;
@@ -83,6 +85,7 @@ private:
     std::shared_ptr<IWebAudioPlayerModuleService> m_webAudioPlayerModule;
     std::shared_ptr<IControlModuleService> m_controlModule;
     SetLogLevelsService m_setLogLevelsService;
+    int m_socketFd{-1};
 };
 } // namespace firebolt::rialto::server::ipc
 
