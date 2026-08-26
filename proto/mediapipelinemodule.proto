@@ -1041,6 +1041,8 @@ message PlaybackInfoEvent {
     optional int32 session_id = 1 [default = -1];
     optional int64 current_position = 2 [default = -1];
     optional double volume = 3 [default = 1.0];
+    optional uint64 timing_id = 4 [default = 0];
+    optional uint64 server_timestamp_ns = 5 [default = 0];
 }
 
 /**
