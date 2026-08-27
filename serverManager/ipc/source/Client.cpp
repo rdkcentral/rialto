@@ -285,7 +285,6 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     {
         RIALTO_SERVER_MANAGER_LOG_DEBUG(
             "Client: no capability data - SetConfigurationRequest sent without capabilities");
-
     }
     auto ipcController = m_ipcLoop->createRpcController();
     auto blockingClosure = m_ipcLoop->createBlockingClosure();

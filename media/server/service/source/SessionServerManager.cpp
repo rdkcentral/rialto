@@ -139,8 +139,7 @@ bool SessionServerManager::configureServices(
     auto gstCapFactory = firebolt::rialto::server::IGstCapabilitiesFactory::getFactory();
     if (gstCapFactory)
     {
-        RIALTO_SERVER_LOG_DEBUG(
-            "SessionServerManager: configureServices - setPreloadedCapabilities");
+        RIALTO_SERVER_LOG_DEBUG("SessionServerManager: configureServices - setPreloadedCapabilities");
         gstCapFactory->setPreloadedCapabilities(audioCaps, videoCaps);
     }
     m_sessionManagementServer->start();

@@ -29,7 +29,8 @@ MediaCapabilities::getAudioDecoderCapabilities(firebolt::rialto::common::AudioDe
     const auto status = m_yamlCppWrapper->getAudioDecoderCapabilities(capabilities);
     auto endTime = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
-    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: audio YAML read completed in %lld ms", (long long)duration.count());
+    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: audio YAML read completed in %lld ms",
+                                    (long long)duration.count());
     RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: audio capabilities load status: %d",
                                     static_cast<int>(status));
     if (status == firebolt::rialto::DecoderCapabilitiesStatus::OK)
@@ -51,7 +52,8 @@ MediaCapabilities::getVideoDecoderCapabilities(firebolt::rialto::common::VideoDe
     const auto status = m_yamlCppWrapper->getVideoDecoderCapabilities(capabilities);
     auto endTime = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
-    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: video YAML read completed in %lld ms", (long long)duration.count());
+    RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: video YAML read completed in %lld ms",
+                                    (long long)duration.count());
     RIALTO_SERVER_MANAGER_LOG_ERROR("USHA: MediaCapabilities: video capabilities load status: %d",
                                     static_cast<int>(status));
     if (status == firebolt::rialto::DecoderCapabilitiesStatus::OK)

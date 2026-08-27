@@ -119,8 +119,7 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
     const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
     const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo)
 {
-    RIALTO_SERVER_LOG_DEBUG(
-        "GstCapabilities: CreateGstCapabilities: entry");
+    RIALTO_SERVER_LOG_DEBUG("GstCapabilities: CreateGstCapabilities: entry");
 
     // Use provided parameters if available, otherwise read from mutex-protected storage
     std::optional<firebolt::rialto::common::AudioDecoderCapabilities> audio = preloadedAudio;
@@ -197,7 +196,8 @@ void GstCapabilitiesFactory::setPreloadedCapabilities(
     std::lock_guard<std::mutex> lock(m_preloadedMutex);
     m_preloadedAudio = audioCaps;
     m_preloadedVideo = videoCaps;
-    RIALTO_SERVER_LOG_DEBUG("GstCapabilities: setPreloadedCapabilities - Audio and Video Caps stored to GstCapabilties with mutex protection");
+    RIALTO_SERVER_LOG_DEBUG("GstCapabilities: setPreloadedCapabilities - Audio and Video Caps stored to GstCapabilties "
+                            "with mutex protection");
 }
 
 GstCapabilities::GstCapabilities(
