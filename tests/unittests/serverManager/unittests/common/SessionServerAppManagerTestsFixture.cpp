@@ -562,20 +562,6 @@ void SessionServerAppManagerTests::triggerOnServerStartupTimeout()
     m_sut->onServerStartupTimeout(kServerId);
 }
 
-void SessionServerAppManagerTests::mediaCapabilitiesWillReturnConfigNotFound()
-{
-    EXPECT_CALL(m_mediaCapabilitiesMock, getAudioDecoderCapabilities(_))
-        .WillOnce(Return(firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
-    EXPECT_CALL(m_mediaCapabilitiesMock, getVideoDecoderCapabilities(_))
-        .WillOnce(Return(firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
-    m_sut = std::make_unique<
-        rialto::servermanager::common::SessionServerAppManager>(m_controller, m_stateObserver,
-                                                                std::move(m_sessionServerAppFactory),
-                                                                std::move(m_healthcheckServiceFactory),
-                                                                firebolt::rialto::common::IEventThreadFactory::createFactory(),
-                                                                m_namedSocketFactoryMock, m_mediaCapabilities);
-}
-
 void SessionServerAppManagerTests::sessionServerWillLaunchWithoutCapabilities(
     const firebolt::rialto::common::SessionServerState &state)
 {

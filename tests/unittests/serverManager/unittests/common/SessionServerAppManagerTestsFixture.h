@@ -57,7 +57,6 @@ public:
     void preloadedSessionServerWillFailToConfigure(const firebolt::rialto::common::SessionServerState &state);
     void preloadedSessionServerWillBeConfigured(const firebolt::rialto::common::SessionServerState &state);
     void preloadedSessionServerWillCloseWithError();
-    void mediaCapabilitiesWillReturnConfigNotFound();
     void sessionServerWillLaunchWithoutCapabilities(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillChangeState(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillReturnAppSocketName(const std::string &socketName);
