@@ -2475,7 +2475,7 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
             if (m_workerThread)
             {
                 m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context, *this));
-                if (++m_audioUnderflowTimerTicks >= kAudioUnderflowTimerTickCount)
+                if (m_audioUnderflowTimerTicks.fetch_add(1) + 1 >= kAudioUnderflowTimerTickCount)
                 {
                     m_audioUnderflowTimerTicks.store(0);
                     m_workerThread->enqueueTask(m_taskFactory->createCheckAudioUnderflow(m_context, *this));

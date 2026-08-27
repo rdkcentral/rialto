@@ -38,6 +38,7 @@ using ::firebolt::rialto::server::testcommon::expectSetProperty;
 namespace
 {
 constexpr std::chrono::milliseconds kPositionReportTimerMs{50};
+constexpr int kAudioUnderflowTimerTickCount{5};
 constexpr std::chrono::milliseconds kPlaybackInfoTimerMs{32};
 constexpr int32_t kSampleRate{13};
 constexpr int32_t kNumberOfChannels{4};
@@ -1882,7 +1883,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionAndUnderflowAtEx
     std::unique_ptr<common::ITimer> positionTimerMock = std::make_unique<StrictMock<TimerMock>>();
     std::unique_ptr<IPlayerTask> immediateTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
     std::vector<std::unique_ptr<IPlayerTask>> reportTasks;
-    for (int i = 0; i < 5; ++i)
+    for (int i = 0; i < kAudioUnderflowTimerTickCount; ++i)
     {
         reportTasks.emplace_back(std::make_unique<StrictMock<PlayerTaskMock>>());
     }
@@ -1908,7 +1909,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionAndUnderflowAtEx
         .WillOnce(Invoke(
             [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback, common::TimerType timerType)
             {
-                for (int i = 0; i < 5; ++i)
+                for (int i = 0; i < kAudioUnderflowTimerTickCount; ++i)
                 {
                     callback();
                 }
