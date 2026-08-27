@@ -1882,11 +1882,8 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionAndUnderflowAtEx
 {
     std::unique_ptr<common::ITimer> positionTimerMock = std::make_unique<StrictMock<TimerMock>>();
     std::unique_ptr<IPlayerTask> immediateTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    std::vector<std::unique_ptr<IPlayerTask>> reportTasks;
-    for (int i = 0; i < kAudioUnderflowTimerTickCount; ++i)
-    {
-        reportTasks.emplace_back(std::make_unique<StrictMock<PlayerTaskMock>>());
-    }
+    std::array<std::unique_ptr<IPlayerTask>, kAudioUnderflowTimerTickCount> reportTasks;
+    std::generate(reportTasks.begin(), reportTasks.end(), [] { return std::make_unique<StrictMock<PlayerTaskMock>>(); });
     std::unique_ptr<IPlayerTask> underflowTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*immediateTask), execute());
     for (const auto &task : reportTasks)
@@ -1895,16 +1892,14 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionAndUnderflowAtEx
     }
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*underflowTask), execute());
     EXPECT_CALL(m_taskFactoryMock, createReportPosition(_, _))
-        .WillOnce(Return(ByMove(std::move(immediateTask))))
-        .WillRepeatedly(Invoke(
-            [&reportTasks](GenericPlayerContext &, IGstGenericPlayerPrivate &)
-            {
-                auto task{std::move(reportTasks.front())};
-                reportTasks.erase(reportTasks.begin());
-                return task;
-            }));
+        .WillOnce(Return(ByMove(std::unique_ptr<IPlayerTask>{immediateTask.release()})))
+        .WillOnce(Return(ByMove(std::unique_ptr<IPlayerTask>{reportTasks[0].release()})))
+        .WillOnce(Return(ByMove(std::unique_ptr<IPlayerTask>{reportTasks[1].release()})))
+        .WillOnce(Return(ByMove(std::unique_ptr<IPlayerTask>{reportTasks[2].release()})))
+        .WillOnce(Return(ByMove(std::unique_ptr<IPlayerTask>{reportTasks[3].release()})))
+        .WillOnce(Return(ByMove(std::unique_ptr<IPlayerTask>{reportTasks[4].release()})));
     EXPECT_CALL(m_taskFactoryMock, createCheckAudioUnderflow(_, _))
-        .WillOnce(Return(ByMove(std::move(underflowTask))));
+        .WillOnce(Return(ByMove(std::unique_ptr<IPlayerTask>{underflowTask.release()})));
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPositionReportTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Invoke(
             [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback, common::TimerType timerType)

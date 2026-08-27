@@ -33,11 +33,11 @@
 #include "IGstWrapper.h"
 #include "ITimer.h"
 #include "IWorkerThread.h"
-#include <cstdint>
 #include "tasks/IGenericPlayerTaskFactory.h"
 #include "tasks/IPlayerTask.h"
 #include <IMediaPipeline.h>
 #include <atomic>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <utility>

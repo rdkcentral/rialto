@@ -570,9 +570,8 @@ void GstGenericPlayer::notifyPlaybackInfo()
         info.currentPosition = m_context.streamPosition.load();
         if (info.currentPosition < 0)
         {
-                    RIALTO_SERVER_LOG_DEBUG("PlaybackInfo position unavailable: queried=%lld cached=%lld",
-                                            static_cast<long long>(queriedPosition),
-                                            static_cast<long long>(info.currentPosition));
+            RIALTO_SERVER_LOG_DEBUG("PlaybackInfo position unavailable: queried=%" PRId64 " cached=%" PRId64,
+                                    queriedPosition, info.currentPosition);
             return;
         }
     }
@@ -2483,7 +2482,6 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
             }
         },
         firebolt::rialto::common::TimerType::PERIODIC);
-
 }
 
 void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
