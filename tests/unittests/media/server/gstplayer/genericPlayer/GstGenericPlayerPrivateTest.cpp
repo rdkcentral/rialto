@@ -1877,21 +1877,41 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotStartPlaybackInfoTimerWhenItIsActiv
     m_sut->startNotifyPlaybackInfoTimer();
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionWhenPositionReportingTimerIsFired)
+TEST_F(GstGenericPlayerPrivateTest, shouldScheduleReportPositionAndUnderflowAtExpectedCadence)
 {
     std::unique_ptr<common::ITimer> positionTimerMock = std::make_unique<StrictMock<TimerMock>>();
     std::unique_ptr<IPlayerTask> immediateTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
-    std::unique_ptr<IPlayerTask> task{std::make_unique<StrictMock<PlayerTaskMock>>()};
+    std::vector<std::unique_ptr<IPlayerTask>> reportTasks;
+    for (int i = 0; i < 5; ++i)
+    {
+        reportTasks.emplace_back(std::make_unique<StrictMock<PlayerTaskMock>>());
+    }
+    std::unique_ptr<IPlayerTask> underflowTask{std::make_unique<StrictMock<PlayerTaskMock>>()};
     EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*immediateTask), execute());
-    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    for (const auto &task : reportTasks)
+    {
+        EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*task), execute());
+    }
+    EXPECT_CALL(dynamic_cast<StrictMock<PlayerTaskMock> &>(*underflowTask), execute());
     EXPECT_CALL(m_taskFactoryMock, createReportPosition(_, _))
         .WillOnce(Return(ByMove(std::move(immediateTask))))
-        .WillOnce(Return(ByMove(std::move(task))));
+        .WillRepeatedly(Invoke(
+            [&reportTasks](GenericPlayerContext &, IGstGenericPlayerPrivate &)
+            {
+                auto task{std::move(reportTasks.front())};
+                reportTasks.erase(reportTasks.begin());
+                return task;
+            }));
+    EXPECT_CALL(m_taskFactoryMock, createCheckAudioUnderflow(_, _))
+        .WillOnce(Return(ByMove(std::move(underflowTask))));
     EXPECT_CALL(*m_timerFactoryMock, createTimer(kPositionReportTimerMs, _, common::TimerType::PERIODIC))
         .WillOnce(Invoke(
             [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback, common::TimerType timerType)
             {
-                callback();
+                for (int i = 0; i < 5; ++i)
+                {
+                    callback();
+                }
                 return std::move(positionTimerMock);
             }));
     m_sut->startPositionReportingAndCheckAudioUnderflowTimer();
