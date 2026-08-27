@@ -2467,7 +2467,7 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
         m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context, *this));
     }
 
-    m_audioUnderflowTimerTicks = 0;
+    m_audioUnderflowTimerTicks.store(0);
     m_positionReportingTimer = m_timerFactory->createTimer(
         kPositionReportTimerMs,
         [this]()
@@ -2477,7 +2477,7 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
                 m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context, *this));
                 if (++m_audioUnderflowTimerTicks >= kAudioUnderflowTimerTickCount)
                 {
-                    m_audioUnderflowTimerTicks = 0;
+                    m_audioUnderflowTimerTicks.store(0);
                     m_workerThread->enqueueTask(m_taskFactory->createCheckAudioUnderflow(m_context, *this));
                 }
             }

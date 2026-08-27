@@ -484,7 +484,7 @@ private:
     /**
      * @brief Number of position timer ticks since the last audio underflow check.
      */
-    std::uint8_t m_audioUnderflowTimerTicks{0};
+    std::atomic<std::uint8_t> m_audioUnderflowTimerTicks{0};
 
     /**
      * @brief Timer reporting playback information
