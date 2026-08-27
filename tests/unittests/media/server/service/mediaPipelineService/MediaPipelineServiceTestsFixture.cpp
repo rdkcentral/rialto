@@ -18,8 +18,11 @@
  */
 
 #include "MediaPipelineServiceTestsFixture.h"
+#include "AudioDecoderCapabilities.h"
 #include "HeartbeatHandlerMock.h"
 #include "MediaCommon.h"
+#include "MediaPipelineStructureMatchers.h"
+#include "VideoDecoderCapabilities.h"
 
 #include <string>
 #include <utility>
@@ -69,6 +72,8 @@ const std::string kTextTrackIdentifier{"TextTrackIdentifier"};
 constexpr uint32_t kBufferingLimit{4324};
 constexpr bool kUseBuffering{true};
 constexpr uint64_t kStopPosition{23412};
+const firebolt::rialto::common::AudioDecoderCapabilities kAudioDecoderCapabilities{"1.0", "2.0", {}};
+const firebolt::rialto::common::VideoDecoderCapabilities kVideoDecoderCapabilities{"3.0", "4.0", {}};
 constexpr bool kIsLive{false};
 constexpr uint32_t kQueuedFrames{123};
 } // namespace
@@ -532,6 +537,16 @@ void MediaPipelineServiceTests::mediaPipelineWillCheckIfVideoIsMaster()
 void MediaPipelineServiceTests::mediaPipelineWillFailToCheckIfVideoIsMaster()
 {
     EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isVideoMaster(_)).WillOnce(Return(false));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetAudioDecoderCapabilities()
+{
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, getSupportedAudioCapabilities()).WillOnce(Return(kAudioDecoderCapabilities));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetVideoDecoderCapabilities()
+{
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, getSupportedVideoCapabilities()).WillOnce(Return(kVideoDecoderCapabilities));
 }
 
 void MediaPipelineServiceTests::mediaPipelineWillPing()
@@ -1091,6 +1106,20 @@ void MediaPipelineServiceTests::isVideoMasterShouldFail()
 {
     bool isMaster{false};
     EXPECT_FALSE(m_sut->isVideoMaster(isMaster));
+}
+
+void MediaPipelineServiceTests::getAudioDecoderCapabilitiesShouldSucceed()
+{
+    auto caps = m_sut->getMediaCapabilities();
+    ASSERT_NE(caps, nullptr);
+    EXPECT_THAT(caps->getSupportedAudioCapabilities(), decoderCapabilitiesMatcher(kAudioDecoderCapabilities));
+}
+
+void MediaPipelineServiceTests::getVideoDecoderCapabilitiesShouldSucceed()
+{
+    auto caps = m_sut->getMediaCapabilities();
+    ASSERT_NE(caps, nullptr);
+    EXPECT_THAT(caps->getSupportedVideoCapabilities(), decoderCapabilitiesMatcher(kVideoDecoderCapabilities));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()

@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_MEDIA_PIPELINE_SERVICE_H_
 
 #include "IDecryptionService.h"
+#include "IMediaCapabilities.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IMediaPipelineService.h"
@@ -100,6 +101,7 @@ public:
     bool getUseBuffering(int sessionId, bool &useBuffering) override;
     bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     bool isVideoMaster(bool &isVideoMaster) override;
+    std::shared_ptr<firebolt::rialto::IMediaCapabilities> getMediaCapabilities() const override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
     std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,

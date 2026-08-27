@@ -28,10 +28,13 @@
 #include "IPlaybackService.h"
 #include "ISessionManagementServer.h"
 #include "ISessionServerManager.h"
+#include <AudioDecoderCapabilities.h>
+#include <VideoDecoderCapabilities.h>
 #include <atomic>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 
 namespace firebolt::rialto::server::service
@@ -54,7 +57,9 @@ public:
                       const std::string &socketGroup) override;
     bool configureIpc(int32_t socketFd) override;
     bool configureServices(const common::SessionServerState &state, const common::MaxResourceCapabilitites &maxResource,
-                           const std::string &clientDisplayName, const std::string &appName) override;
+                           const std::string &clientDisplayName, const std::string &appName,
+                           const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                           const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) override;
     bool setState(const common::SessionServerState &state) override;
     void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                       RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,

@@ -32,4 +32,5 @@ target_include_directories(
 
         INTERFACE
         .
+	${CMAKE_SOURCE_DIR}/tests/unittests/common/misc
     )

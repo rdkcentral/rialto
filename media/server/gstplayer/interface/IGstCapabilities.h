@@ -20,8 +20,11 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_CAPABILITIES_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_CAPABILITIES_H_
 
+#include <AudioDecoderCapabilities.h>
 #include <MediaCommon.h>
+#include <VideoDecoderCapabilities.h>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -38,20 +41,26 @@ public:
     IGstCapabilitiesFactory() = default;
     virtual ~IGstCapabilitiesFactory() = default;
 
-    /**
-     * @brief Gets the IGstCapabilitiesFactory instance.
-     *
-     * @retval the factory instance or null on error.
-     */
     static std::shared_ptr<IGstCapabilitiesFactory> getFactory();
 
     /**
-     * @brief Creates a IGstCapabilities object.
-     *
-     *
-     * @retval the new gstreamer capabilities instance or null on error.
+     * @brief Create GstCapabilities object.
+     * @param preloadedAudio Optional pre-loaded audio capabilities from ServerManager
+     * @param preloadedVideo Optional pre-loaded video capabilities from ServerManager
+     * @return Unique pointer to IGstCapabilities
      */
-    virtual std::unique_ptr<IGstCapabilities> createGstCapabilities() = 0;
+    virtual std::unique_ptr<IGstCapabilities> createGstCapabilities(
+        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
+        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt) = 0;
+
+    /**
+     * @brief Set preloaded capabilities (stored for next createGstCapabilities call)
+     * @param audioCaps Optional audio decoder capabilities
+     * @param videoCaps Optional video decoder capabilities
+     */
+    virtual void
+    setPreloadedCapabilities(const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                             const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) = 0;
 };
 
 class IGstCapabilities
@@ -98,6 +107,20 @@ public:
      * @retval true on success false otherwise
      */
     virtual bool isVideoMaster(bool &isVideoMaster) = 0;
+
+    /**
+     * @brief Gets the supported audio capabilities.
+     *
+     * @retval The supported audio capabilities.
+     */
+    virtual firebolt::rialto::common::AudioDecoderCapabilities getSupportedAudioCapabilities() = 0;
+
+    /**
+     * @brief Gets the supported video capabilities.
+     *
+     * @retval The supported video capabilities.
+     */
+    virtual firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() = 0;
 };
 
 }; // namespace firebolt::rialto::server

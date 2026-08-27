@@ -19,6 +19,7 @@
 
 #include "SessionServerManager.h"
 #include "IApplicationManagementServer.h"
+#include "IGstCapabilities.h"
 #include "IIpcFactory.h"
 #include "ISessionManagementServer.h"
 #include "RialtoServerLogging.h"
@@ -128,10 +129,20 @@ bool SessionServerManager::configureIpc(int32_t socketFd)
     return true;
 }
 
-bool SessionServerManager::configureServices(const common::SessionServerState &state,
-                                             const common::MaxResourceCapabilitites &maxResource,
-                                             const std::string &clientDisplayName, const std::string &appName)
+bool SessionServerManager::configureServices(
+    const common::SessionServerState &state, const common::MaxResourceCapabilitites &maxResource,
+    const std::string &clientDisplayName, const std::string &appName,
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
 {
+    // Supply pre-loaded capabilities to GstCapabilitiesFactory before first use
+    auto gstCapFactory = firebolt::rialto::server::IGstCapabilitiesFactory::getFactory();
+    if (gstCapFactory)
+    {
+        RIALTO_SERVER_LOG_DEBUG(
+            "SessionServerManager: configureServices - setPreloadedCapabilities");
+        gstCapFactory->setPreloadedCapabilities(audioCaps, videoCaps);
+    }
     m_sessionManagementServer->start();
     m_playbackService.setMaxPlaybacks(maxResource.maxPlaybacks);
     m_playbackService.setMaxWebAudioPlayers(maxResource.maxWebAudioPlayers);

@@ -20,10 +20,13 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_I_SESSION_SERVER_MANAGER_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_SESSION_SERVER_MANAGER_H_
 
+#include "AudioDecoderCapabilities.h"
 #include "IAckSender.h"
 #include "RialtoLogging.h"
 #include "SessionServerCommon.h"
+#include "VideoDecoderCapabilities.h"
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace firebolt::rialto::server::service
@@ -46,7 +49,9 @@ public:
     virtual bool configureIpc(int32_t socketFd) = 0;
     virtual bool configureServices(const common::SessionServerState &state,
                                    const common::MaxResourceCapabilitites &maxResource,
-                                   const std::string &clientDisplayName, const std::string &appName) = 0;
+                                   const std::string &clientDisplayName, const std::string &appName,
+                                   const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                   const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) = 0;
     virtual bool setState(const common::SessionServerState &state) = 0;
     virtual void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                               RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,

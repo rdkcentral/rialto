@@ -51,6 +51,7 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
     find_package( ocdm REQUIRED )
     find_package( WPEFrameworkCore REQUIRED )
     find_package( WPEFrameworkCOM REQUIRED )
+    find_package (yaml-cpp REQUIRED)
 
     set(WRAPPER_INCLUDES
         ${OCdm_INCLUDE_DIRS}
@@ -76,7 +77,8 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
         source/RdkGstreamerUtilsWrapper.cpp
         source/TextTrackPluginWrapper.cpp
         source/TextTrackWrapper.cpp
-        source/ThunderWrapper.cpp)
+        source/ThunderWrapper.cpp
+        source/YamlCppWrapper.cpp)
 endif()
 
 add_library(
@@ -92,6 +94,7 @@ add_library(
         source/RdkGstreamerUtilsWrapperAccessor.cpp
         source/TextTrackPluginWrapperFactoryAccessor.cpp
         source/ThunderWrapperFactoryAccessor.cpp
+        source/YamlCppWrapperAccessor.cpp
         ${WRAPPER_SOURCES}
         ${JSONCPP_WRAPPER_SOURCE_FILES}
     )
@@ -104,11 +107,13 @@ set_property (
 
 target_include_directories(
         RialtoWrappers
+        
 
         PUBLIC
         interface
 
         PRIVATE
+        ${CMAKE_SOURCE_DIR}/common/public/include
         include
         ${GStreamerApp_INCLUDE_DIRS}
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
@@ -119,14 +124,18 @@ target_link_libraries (
         RialtoWrappers
 
         PRIVATE
+        RialtoCommon
         ${WRAPPER_LIBS}
         ${GStreamerApp_LIBRARIES}
+        yaml-cpp
     )
 
 if( RIALTO_ENABLE_CONFIG_FILE )
     target_link_libraries(
         RialtoWrappers
+
         PRIVATE
+        RialtoCommon
         JsonCpp::JsonCpp
         )
 endif()

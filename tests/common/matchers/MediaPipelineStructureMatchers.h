@@ -20,6 +20,7 @@
 #ifndef MEDIA_PIPELINE_STRUCTURE_MATCHERS_H_
 #define MEDIA_PIPELINE_STRUCTURE_MATCHERS_H_
 
+#include "DecoderCapabilitiesUtil.h"
 #include "MediaCommon.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -32,5 +33,10 @@ MATCHER_P(qosInfoMatcher, expectedQosInfo, "")
 MATCHER_P(playbackInfoMatcher, expectedPlaybackInfo, "")
 {
     return ((expectedPlaybackInfo.currentPosition == arg.currentPosition) && (expectedPlaybackInfo.volume == arg.volume));
+}
+
+MATCHER_P(decoderCapabilitiesMatcher, expectedDecoderCapabilities, "")
+{
+    return arg == expectedDecoderCapabilities;
 }
 #endif // MEDIA_PIPELINE_STRUCTURE_MATCHERS_H_

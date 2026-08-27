@@ -20,13 +20,20 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_I_MEDIA_PIPELINE_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_I_MEDIA_PIPELINE_SERVICE_H_
 
+#include "AudioDecoderCapabilities.h"
 #include "IHeartbeatProcedure.h"
 #include "IMediaPipeline.h"
 #include "MediaCommon.h"
+#include "VideoDecoderCapabilities.h"
 #include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
+
+namespace firebolt::rialto
+{
+class IMediaCapabilities;
+}
 
 namespace firebolt::rialto::server::service
 {
@@ -93,6 +100,7 @@ public:
     virtual void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) = 0;
     virtual bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
     virtual bool isVideoMaster(bool &isVideoMaster) = 0;
+    virtual std::shared_ptr<firebolt::rialto::IMediaCapabilities> getMediaCapabilities() const = 0;
     virtual bool getDuration(int sessionId, std::int64_t &duration) = 0;
 };
 } // namespace firebolt::rialto::server::service

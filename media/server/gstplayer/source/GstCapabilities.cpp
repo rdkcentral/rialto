@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -114,8 +115,30 @@ std::shared_ptr<IGstCapabilitiesFactory> IGstCapabilitiesFactory::getFactory()
     return factory;
 }
 
-std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities()
+std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo)
 {
+    RIALTO_SERVER_LOG_DEBUG(
+        "GstCapabilities: CreateGstCapabilities: entry");
+
+    // Use provided parameters if available, otherwise read from mutex-protected storage
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> audio = preloadedAudio;
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> video = preloadedVideo;
+
+    if (!audio.has_value() || !video.has_value())
+    {
+        RIALTO_SERVER_LOG_DEBUG("GstCapabilities: CreateGstCapabilities: checking valid data for audio and video");
+        std::lock_guard<std::mutex> lock(m_preloadedMutex);
+        if (!audio.has_value())
+            audio = m_preloadedAudio;
+        if (!video.has_value())
+            video = m_preloadedVideo;
+        // Clear after reading to prevent stale data
+        m_preloadedAudio = std::nullopt;
+        m_preloadedVideo = std::nullopt;
+    }
+
     std::unique_ptr<IGstCapabilities> gstCapabilities;
     try
     {
@@ -147,8 +170,17 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
 
+        std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapperFactory> yamlCppWrapperFactory =
+            firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory();
+        std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper;
+
+        if ((!yamlCppWrapperFactory) || (!(yamlCppWrapper = yamlCppWrapperFactory->createYamlCppWrapper())))
+        {
+            throw std::runtime_error("Cannot create YamlCppWrapper");
+        }
+
         gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper, rdkGstreamerUtilsWrapper,
-                                                            IGstInitialiser::instance());
+                                                            yamlCppWrapper, IGstInitialiser::instance(), audio, video);
     }
     catch (const std::exception &e)
     {
@@ -158,14 +190,48 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
     return gstCapabilities;
 }
 
+void GstCapabilitiesFactory::setPreloadedCapabilities(
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
+{
+    std::lock_guard<std::mutex> lock(m_preloadedMutex);
+    m_preloadedAudio = audioCaps;
+    m_preloadedVideo = videoCaps;
+    RIALTO_SERVER_LOG_DEBUG("GstCapabilities: setPreloadedCapabilities - Audio and Video Caps stored to GstCapabilties with mutex protection");
+}
+
 GstCapabilities::GstCapabilities(
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
-    const IGstInitialiser &gstInitialiser)
+    const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCppWrapper,
+    const IGstInitialiser &gstInitialiser,
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo)
     : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
-      m_gstInitialiser{gstInitialiser}
+      m_yamlCppWrapper{yamlCppWrapper}, m_gstInitialiser{gstInitialiser}
 {
+    if (preloadedAudio.has_value() && preloadedVideo.has_value())
+    {
+        // Path A: use pre-loaded capabilities forwarded from ServerManager; skip YAML load
+        m_audioDecoderCapabilities = *preloadedAudio;
+        m_videoDecoderCapabilities = *preloadedVideo;
+        RIALTO_SERVER_LOG_INFO("GstCapabilities: using pre-loaded capabilities from ServerManager (path A)");
+    }
+    else
+    {
+        // Path B: no ServerManager data — fall back to GStreamer element query (legacy IMediaPipelineCapabilities path)
+        auto logCapabilityStatus = [](DecoderCapabilitiesStatus status, const char *type)
+        {
+            if (status == DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
+                RIALTO_SERVER_LOG_INFO("No %s decoder capabilities config file found", type);
+            else if (status != DecoderCapabilitiesStatus::OK)
+                RIALTO_SERVER_LOG_WARN("Failed to get %s decoder capabilities from config file", type);
+        };
+        logCapabilityStatus(m_yamlCppWrapper->getAudioDecoderCapabilities(m_audioDecoderCapabilities), "audio");
+        logCapabilityStatus(m_yamlCppWrapper->getVideoDecoderCapabilities(m_videoDecoderCapabilities), "video");
+        RIALTO_SERVER_LOG_INFO("GstCapabilities: using GStreamer element-query fallback (path B)");
+    }
     m_initialisationThread = std::thread(
         [this]()
         {
@@ -458,6 +524,14 @@ bool GstCapabilities::isVideoMaster(bool &isVideoMaster)
     return true;
 }
 
-} // namespace firebolt::rialto::server
+firebolt::rialto::common::AudioDecoderCapabilities GstCapabilities::getSupportedAudioCapabilities()
+{
+    return m_audioDecoderCapabilities;
+}
 
-// namespace firebolt::rialto::server
+firebolt::rialto::common::VideoDecoderCapabilities GstCapabilities::getSupportedVideoCapabilities()
+{
+    return m_videoDecoderCapabilities;
+}
+
+} // namespace firebolt::rialto::server

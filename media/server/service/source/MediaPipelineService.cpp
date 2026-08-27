@@ -684,6 +684,12 @@ bool MediaPipelineService::isVideoMaster(bool &isVideoMaster)
     return m_mediaPipelineCapabilities->isVideoMaster(isVideoMaster);
 }
 
+std::shared_ptr<firebolt::rialto::IMediaCapabilities> MediaPipelineService::getMediaCapabilities() const
+{
+    RIALTO_SERVER_LOG_ERROR("USHA: MediaPipelineService requested to get media capabilities");
+    return std::dynamic_pointer_cast<firebolt::rialto::IMediaCapabilities>(m_mediaPipelineCapabilities);
+}
+
 std::vector<std::string> MediaPipelineService::getSupportedMimeTypes(MediaSourceType type)
 {
     return m_mediaPipelineCapabilities->getSupportedMimeTypes(type);

@@ -19,9 +19,13 @@
 
 #include "ServerManagerModuleService.h"
 #include "AckSender.h"
+#include "CapabilityDeserialiser.h"
 #include "ISessionServerManager.h"
 #include "RialtoServerLogging.h"
+#include <AudioDecoderCapabilities.h>
 #include <IIpcController.h>
+#include <VideoDecoderCapabilities.h>
+#include <optional>
 
 namespace
 {
@@ -94,6 +98,24 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     common::MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(),
                                                  request->resources().maxwebaudioplayers()};
     const auto kClientDisplayName = request->has_clientdisplayname() ? request->clientdisplayname() : "";
+
+    // Deserialise typed capability fields into C++ structs (optional — absent fields → std::nullopt)
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> audioCaps;
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> videoCaps;
+    if (request->has_audiocapabilities() && request->has_videocapabilities())
+    {
+        RIALTO_SERVER_LOG_DEBUG("ServerManagerModuleService: audio/video capabilities received in SetConfiguration");
+        audioCaps = deserialiseAudioCapabilities(request->audiocapabilities());
+        videoCaps = deserialiseVideoCapabilities(request->videocapabilities());
+        RIALTO_SERVER_LOG_INFO(
+            "ServerManagerModuleService: capabilities deserialised and forwarded to configureServices");
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_INFO(
+            "ServerManagerModuleService: no capability fields - session server will use GStreamer query fallback");
+    }
+
     bool success{true};
     if (request->has_sessionmanagementsocketfd())
     {
@@ -104,8 +126,10 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
         m_sessionServerManager.configureIpc(request->sessionmanagementsocketname(), request->socketpermissions(),
                                             request->socketowner(), request->socketgroup());
     }
+
     success &= m_sessionServerManager.configureServices(convertSessionServerState(request->initialsessionserverstate()),
-                                                        maxResource, kClientDisplayName, request->appname());
+                                                        maxResource, kClientDisplayName, request->appname(), audioCaps,
+                                                        videoCaps);
     m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().clientloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().sessionserverloglevels()),

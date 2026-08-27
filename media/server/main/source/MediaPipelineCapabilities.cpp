@@ -65,11 +65,19 @@ MediaPipelineCapabilities::MediaPipelineCapabilities(const std::shared_ptr<IGstC
     : m_kGstCapabilitiesFactory{gstCapabilitiesFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    ensureGstCapabilitiesCreated();
+}
 
-    m_gstCapabilities = m_kGstCapabilitiesFactory->createGstCapabilities();
+void MediaPipelineCapabilities::ensureGstCapabilitiesCreated()
+{
     if (!m_gstCapabilities)
     {
-        throw std::runtime_error("Gstreamer capabilities could not be created");
+        m_gstCapabilities = m_kGstCapabilitiesFactory->createGstCapabilities();
+        if (!m_gstCapabilities)
+        {
+            RIALTO_SERVER_LOG_ERROR("Gstreamer capabilities could not be created");
+            throw std::runtime_error("Gstreamer capabilities could not be created");
+        }
     }
 }
 
@@ -80,23 +88,38 @@ MediaPipelineCapabilities::~MediaPipelineCapabilities()
 
 std::vector<std::string> MediaPipelineCapabilities::getSupportedMimeTypes(MediaSourceType sourceType)
 {
+    ensureGstCapabilitiesCreated();
     return m_gstCapabilities->getSupportedMimeTypes(sourceType);
 }
 
 bool MediaPipelineCapabilities::isMimeTypeSupported(const std::string &mimeType)
 {
+    ensureGstCapabilitiesCreated();
     return m_gstCapabilities->isMimeTypeSupported(mimeType);
 }
 
 std::vector<std::string> MediaPipelineCapabilities::getSupportedProperties(MediaSourceType mediaType,
                                                                            const std::vector<std::string> &propertyNames)
 {
+    ensureGstCapabilitiesCreated();
     return m_gstCapabilities->getSupportedProperties(mediaType, propertyNames);
 }
 
 bool MediaPipelineCapabilities::isVideoMaster(bool &isVideoMaster)
 {
+    ensureGstCapabilitiesCreated();
     return m_gstCapabilities->isVideoMaster(isVideoMaster);
 }
 
+firebolt::rialto::common::AudioDecoderCapabilities MediaPipelineCapabilities::getSupportedAudioCapabilities()
+{
+    ensureGstCapabilitiesCreated();
+    return m_gstCapabilities->getSupportedAudioCapabilities();
+}
+
+firebolt::rialto::common::VideoDecoderCapabilities MediaPipelineCapabilities::getSupportedVideoCapabilities()
+{
+    ensureGstCapabilitiesCreated();
+    return m_gstCapabilities->getSupportedVideoCapabilities();
+}
 }; // namespace firebolt::rialto::server

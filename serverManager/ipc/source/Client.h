@@ -24,7 +24,10 @@
 #include "ISessionServerAppManager.h"
 #include "IpcLoop.h"
 #include "LoggingLevels.h"
+#include <AudioDecoderCapabilities.h>
+#include <VideoDecoderCapabilities.h>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -53,11 +56,15 @@ public:
                                  const std::string &socketName, const std::string &clientDisplayName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
                                  const unsigned int socketPermissions, const std::string &socketOwner,
-                                 const std::string &socketGroup, const std::string &appName) const;
+                                 const std::string &socketGroup, const std::string &appName,
+                                 const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                 const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) const;
     bool performSetConfiguration(const firebolt::rialto::common::SessionServerState &initialState, int socketFd,
                                  const std::string &clientDisplayName,
                                  const firebolt::rialto::common::MaxResourceCapabilitites &maxResource,
-                                 const std::string &appName) const;
+                                 const std::string &appName,
+                                 const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                 const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) const;
     bool performPing(int pingId) const;
     bool setLogLevels(const service::LoggingLevels &logLevels) const;
     void onDisconnected() const;
