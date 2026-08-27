@@ -23,7 +23,57 @@
 
 namespace
 {
-using namespace firebolt::rialto::common;
+using firebolt::rialto::common::AacCapability;
+using firebolt::rialto::common::AacProfile;
+using firebolt::rialto::common::AlacCapability;
+using firebolt::rialto::common::Av1CodecCapability;
+using firebolt::rialto::common::Av1Level;
+using firebolt::rialto::common::Av1Profile;
+using firebolt::rialto::common::Av1ProfileType;
+using firebolt::rialto::common::AudioDecoderCapability;
+using firebolt::rialto::common::AudioDecoderCapabilities;
+using firebolt::rialto::common::AudioProfileCapability;
+using firebolt::rialto::common::AvsCapability;
+using firebolt::rialto::common::AvsProfile;
+using firebolt::rialto::common::DolbyAc3Capability;
+using firebolt::rialto::common::DolbyAc3Profile;
+using firebolt::rialto::common::DolbyAc4Capability;
+using firebolt::rialto::common::DolbyEac3Capability;
+using firebolt::rialto::common::DolbyEac3Profile;
+using firebolt::rialto::common::DolbyTruehdCapability;
+using firebolt::rialto::common::DtsCapability;
+using firebolt::rialto::common::DtsProfile;
+using firebolt::rialto::common::DynamicRange;
+using firebolt::rialto::common::FlacCapability;
+using firebolt::rialto::common::H264CodecCapability;
+using firebolt::rialto::common::H264Level;
+using firebolt::rialto::common::H264Profile;
+using firebolt::rialto::common::H264ProfileType;
+using firebolt::rialto::common::H265CodecCapability;
+using firebolt::rialto::common::H265Level;
+using firebolt::rialto::common::H265Profile;
+using firebolt::rialto::common::H265ProfileType;
+using firebolt::rialto::common::Mp3Capability;
+using firebolt::rialto::common::Mpeg2CodecCapability;
+using firebolt::rialto::common::Mpeg2Level;
+using firebolt::rialto::common::Mpeg2Profile;
+using firebolt::rialto::common::Mpeg2ProfileType;
+using firebolt::rialto::common::MpegAudioCapability;
+using firebolt::rialto::common::MpegAudioProfile;
+using firebolt::rialto::common::OpusCapability;
+using firebolt::rialto::common::PcmCapability;
+using firebolt::rialto::common::RealAudioCapability;
+using firebolt::rialto::common::RealAudioProfile;
+using firebolt::rialto::common::SbcCapability;
+using firebolt::rialto::common::UsacCapability;
+using firebolt::rialto::common::UsacProfile;
+using firebolt::rialto::common::VideoDecoderCapability;
+using firebolt::rialto::common::VideoDecoderCapabilities;
+using firebolt::rialto::common::Vp9CodecCapability;
+using firebolt::rialto::common::Vp9Level;
+using firebolt::rialto::common::Vp9Profile;
+using firebolt::rialto::common::Vp9ProfileType;
+using firebolt::rialto::common::VorbisCapability;
 
 const std::string kAudioCapabilitiesFilePath{"/product/hfp/config/hfp-audiodecoder.yaml"};
 const std::string kVideoCapabilitiesFilePath{"/product/hfp/config/hfp-videodecoder.yaml"};

@@ -33,10 +33,22 @@ jobs:
         shell: sh +e {0}
         run: |
           branch="${{ github.base_ref }}"
-          git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-gstreamer.git" ${{ github.event.pull_request.head.ref }} > /dev/null
-          if [ $? -eq 0 ]; then
-            branch="${{ github.event.pull_request.head.ref }}"
-          fi
+          head_ref="${{ github.event.pull_request.head.ref }}"
+
+          # Hardcoded mapping for cases where branch names differ between repos
+          case "$head_ref" in
+            "MediaCapabilitiesRailtoServerManager_update")
+              branch="MediaPipelineCapabilitiesNewConfig"
+              echo "Using hardcoded mapping: $head_ref -> $branch"
+              ;;
+            *)
+              git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-gstreamer.git" "$head_ref" > /dev/null
+              if [ $? -eq 0 ]; then
+                branch="$head_ref"
+              fi
+              ;;
+          esac
+
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
       - name: Checkout rialto-gstreamer repo
