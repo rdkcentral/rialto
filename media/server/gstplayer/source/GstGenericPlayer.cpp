@@ -47,7 +47,7 @@ namespace
  *        whenever the session moves to another playback state.
  */
 constexpr std::chrono::milliseconds kPositionReportTimerMs{50};
-constexpr std::chrono::milliseconds kAudioUnderflowTimerMs{250};
+constexpr std::uint8_t kAudioUnderflowTimerTickCount{5};
 constexpr std::chrono::seconds kSubtitleClockResyncInterval{10};
 
 bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)
@@ -570,15 +570,12 @@ void GstGenericPlayer::notifyPlaybackInfo()
         info.currentPosition = m_context.streamPosition.load();
         if (info.currentPosition < 0)
         {
-            RIALTO_SERVER_LOG_DEBUG("PlaybackInfo position unavailable: queried=%lld cached=%lld",
-                                   static_cast<long long>(queriedPosition), static_cast<long long>(info.currentPosition));
+                    RIALTO_SERVER_LOG_DEBUG("PlaybackInfo position unavailable: queried=%lld cached=%lld",
+                                            static_cast<long long>(queriedPosition),
+                                            static_cast<long long>(info.currentPosition));
             return;
         }
     }
-
-    RIALTO_SERVER_LOG_DEBUG("PlaybackInfo position: queried=%lld reported=%lld cached-before=%lld",
-                            static_cast<long long>(queriedPosition), static_cast<long long>(info.currentPosition),
-                            static_cast<long long>(m_context.streamPosition.load()));
 
     m_context.streamPosition.store(info.currentPosition);
     if (m_context.audioFadeEnabled)
@@ -2470,6 +2467,7 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
         m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context, *this));
     }
 
+    m_audioUnderflowTimerTicks = 0;
     m_positionReportingTimer = m_timerFactory->createTimer(
         kPositionReportTimerMs,
         [this]()
@@ -2477,20 +2475,15 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
             if (m_workerThread)
             {
                 m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context, *this));
+                if (++m_audioUnderflowTimerTicks >= kAudioUnderflowTimerTickCount)
+                {
+                    m_audioUnderflowTimerTicks = 0;
+                    m_workerThread->enqueueTask(m_taskFactory->createCheckAudioUnderflow(m_context, *this));
+                }
             }
         },
         firebolt::rialto::common::TimerType::PERIODIC);
 
-    m_audioUnderflowTimer = m_timerFactory->createTimer(
-        kAudioUnderflowTimerMs,
-        [this]()
-        {
-            if (m_workerThread)
-            {
-                m_workerThread->enqueueTask(m_taskFactory->createCheckAudioUnderflow(m_context, *this));
-            }
-        },
-        firebolt::rialto::common::TimerType::PERIODIC);
 }
 
 void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
@@ -2499,11 +2492,6 @@ void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
     {
         m_positionReportingTimer->cancel();
         m_positionReportingTimer.reset();
-    }
-    if (m_audioUnderflowTimer && m_audioUnderflowTimer->isActive())
-    {
-        m_audioUnderflowTimer->cancel();
-        m_audioUnderflowTimer.reset();
     }
 }
 

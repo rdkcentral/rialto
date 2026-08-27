@@ -151,9 +151,6 @@ void MediaPipelineClient::notifyDuration(int64_t duration)
 
 void MediaPipelineClient::notifyPosition(int64_t position)
 {
-    RIALTO_SERVER_LOG_DEBUG("Sending PositionChangeEvent: session=%d position=%lld", m_sessionId,
-                            static_cast<long long>(position));
-
     auto event = std::make_shared<firebolt::rialto::PositionChangeEvent>();
     event->set_session_id(m_sessionId);
     event->set_position(position);
@@ -281,9 +278,6 @@ void MediaPipelineClient::notifySourceFlushed(int32_t sourceId)
 
 void MediaPipelineClient::notifyPlaybackInfo(const PlaybackInfo &playbackInfo)
 {
-    RIALTO_SERVER_LOG_DEBUG("Sending PlaybackInfoEvent: session=%d position=%lld volume=%f", m_sessionId,
-                            static_cast<long long>(playbackInfo.currentPosition), playbackInfo.volume);
-
     auto event = std::make_shared<firebolt::rialto::PlaybackInfoEvent>();
     event->set_session_id(m_sessionId);
     event->set_current_position(playbackInfo.currentPosition);

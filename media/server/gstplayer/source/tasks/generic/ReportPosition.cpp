@@ -36,8 +36,6 @@ ReportPosition::ReportPosition(GenericPlayerContext &context, IGstGenericPlayerC
 void ReportPosition::execute() const
 {
     gint64 position = m_player.getPosition(m_context.pipeline);
-    RIALTO_SERVER_LOG_DEBUG("ReportPosition result: position=%lld client=%s", static_cast<long long>(position),
-                            m_gstPlayerClient ? "present" : "null");
     if (position == -1)
     {
         RIALTO_SERVER_LOG_WARN("Getting the position failed");
