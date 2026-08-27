@@ -375,20 +375,30 @@ firebolt::rialto::common::VideoDecoderCapability toVideoDecoderCapability(const 
         return dst;
     const auto &cc = src.codec_capabilities();
     if (cc.has_mpeg2())
+    {
         dst.codecCapabilities.mpeg2 = toVideoCodecCapability<firebolt::rialto::common::Mpeg2CodecCapability>(
             cc.mpeg2(), [](auto t) { return fromProto(t); }, [](auto l) { return fromProto(l); });
+    }
     if (cc.has_h264())
+    {
         dst.codecCapabilities.h264 = toVideoCodecCapability<firebolt::rialto::common::H264CodecCapability>(
             cc.h264(), [](auto t) { return fromProto(t); }, [](auto l) { return fromProto(l); });
+    }
     if (cc.has_h265())
+    {
         dst.codecCapabilities.h265 = toVideoCodecCapability<firebolt::rialto::common::H265CodecCapability>(
             cc.h265(), [](auto t) { return fromProto(t); }, [](auto l) { return fromProto(l); });
+    }
     if (cc.has_vp9())
+    {
         dst.codecCapabilities.vp9 = toVideoCodecCapability<firebolt::rialto::common::Vp9CodecCapability>(
             cc.vp9(), [](auto t) { return fromProto(t); }, [](auto l) { return fromProto(l); });
+    }
     if (cc.has_av1())
+    {
         dst.codecCapabilities.av1 = toVideoCodecCapability<firebolt::rialto::common::Av1CodecCapability>(
             cc.av1(), [](auto t) { return fromProto(t); }, [](auto l) { return fromProto(l); });
+    }
     return dst;
 }
 } // namespace

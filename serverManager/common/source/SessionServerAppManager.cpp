@@ -39,7 +39,6 @@ SessionServerAppManager::SessionServerAppManager(
       m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)},
       m_namedSocketFactory{namedSocketFactory}, m_isShuttingDown{false}
 {
-
     if (mediaCapabilities)
     {
         firebolt::rialto::common::AudioDecoderCapabilities audioCaps;

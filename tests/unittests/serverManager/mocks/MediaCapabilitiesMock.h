@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_MEDIA_CAPABILITIES_MOCK_H_
-#define RIALTO_MEDIA_CAPABILITIES_MOCK_H_
+#ifndef RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_MOCK_H_
+#define RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_MOCK_H_
 
 #include "IMediaCapabilities.h"
 #include <gmock/gmock.h>
@@ -39,4 +39,4 @@ public:
 
 } // namespace rialto::servermanager::service
 
-#endif // RIALTO_MEDIA_CAPABILITIES_MOCK_H_
+#endif // RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_MOCK_H_
