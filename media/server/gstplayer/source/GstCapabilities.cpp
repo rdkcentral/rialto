@@ -128,6 +128,7 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
 
     if (!audio.has_value() || !video.has_value())
     {
+        RIALTO_SERVER_LOG_ERROR("USHA: GstCapabilities: CreateGstCapabilities: checking !audio.has_value() || !video.has_value()");
         std::lock_guard<std::mutex> lock(m_preloadedMutex);
         if (!audio.has_value())
             audio = m_preloadedAudio;

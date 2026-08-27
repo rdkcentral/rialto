@@ -43,6 +43,7 @@ std::shared_ptr<IMediaPipelineCapabilitiesFactory> IMediaPipelineCapabilitiesFac
 
 std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesFactory::createMediaPipelineCapabilities() const
 {
+    RIALTO_SERVER_LOG_DEBUG("USHA: MediaPipelineCapabilities: Entry: createMediaPipelineCapabilities: creating media pipeline capabilities object");
     std::unique_ptr<IMediaPipelineCapabilities> mediaPipelineCapabilities;
     try
     {
@@ -65,6 +66,7 @@ MediaPipelineCapabilities::MediaPipelineCapabilities(const std::shared_ptr<IGstC
     : m_kGstCapabilitiesFactory{gstCapabilitiesFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
+    RIALTO_SERVER_LOG_DEBUG("USHA: MediaPipelineCapabilities: Constructor-> calling ensureGstCapabilitiesCreated()");
     ensureGstCapabilitiesCreated();
 }
 
@@ -72,7 +74,7 @@ void MediaPipelineCapabilities::ensureGstCapabilitiesCreated()
 {
     if (!m_gstCapabilities)
     {
-        RIALTO_SERVER_LOG_DEBUG("USHA: MediaPipelineCapabilities: Creating GstCapabilities (lazy initialization)");
+        RIALTO_SERVER_LOG_DEBUG("USHA: MediaPipelineCapabilities: Creating GstCapabilities (lazy initialization)-> calling m_gstCapabilities = m_kGstCapabilitiesFactory->createGstCapabilities");
         m_gstCapabilities = m_kGstCapabilitiesFactory->createGstCapabilities();
         if (!m_gstCapabilities)
         {
@@ -89,12 +91,14 @@ MediaPipelineCapabilities::~MediaPipelineCapabilities()
 
 std::vector<std::string> MediaPipelineCapabilities::getSupportedMimeTypes(MediaSourceType sourceType)
 {
+    RIALTO_SERVER_LOG_DEBUG("USHA: MediaPipelineCapabilities: getSupportedMimeTypes calling ensureGstCapabilitiesCreated");
     ensureGstCapabilitiesCreated();
     return m_gstCapabilities->getSupportedMimeTypes(sourceType);
 }
 
 bool MediaPipelineCapabilities::isMimeTypeSupported(const std::string &mimeType)
 {
+    RIALTO_SERVER_LOG_DEBUG("USHA: MediaPipelineCapabilities: isMimeTypeSupported calling ensureGstCapabilitiesCreated");
     ensureGstCapabilitiesCreated();
     return m_gstCapabilities->isMimeTypeSupported(mimeType);
 }
@@ -114,12 +118,14 @@ bool MediaPipelineCapabilities::isVideoMaster(bool &isVideoMaster)
 
 firebolt::rialto::common::AudioDecoderCapabilities MediaPipelineCapabilities::getSupportedAudioCapabilities()
 {
+    RIALTO_SERVER_LOG_DEBUG("USHA: MediaPipelineCapabilities: getSupportedAudioCapabilities calling ensureGstCapabilitiesCreated");
     ensureGstCapabilitiesCreated();
     return m_gstCapabilities->getSupportedAudioCapabilities();
 }
 
 firebolt::rialto::common::VideoDecoderCapabilities MediaPipelineCapabilities::getSupportedVideoCapabilities()
 {
+    RIALTO_SERVER_LOG_DEBUG("USHA: MediaPipelineCapabilities: getSupportedAudioCapabilities calling ensureGstCapabilitiesCreated");
     ensureGstCapabilitiesCreated();
     return m_gstCapabilities->getSupportedVideoCapabilities();
 }
