@@ -319,6 +319,7 @@ struct GenericPlayerContext
      * @brief Current position of the stream in nanoseconds.
      */
     std::atomic<int64_t> streamPosition{-1};
+
 };
 } // namespace firebolt::rialto::server
 

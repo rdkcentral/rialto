@@ -33,6 +33,7 @@
 #include "IGstWrapper.h"
 #include "ITimer.h"
 #include "IWorkerThread.h"
+#include <cstdint>
 #include "tasks/IGenericPlayerTaskFactory.h"
 #include "tasks/IPlayerTask.h"
 #include <IMediaPipeline.h>
@@ -474,11 +475,16 @@ private:
     std::unique_ptr<firebolt::rialto::common::ITimer> m_finishSourceSetupTimer{nullptr};
 
     /**
-     * @brief Timer checking audio underflow
+     * @brief Timer reporting playback position.
      *
      * Variable can be used only in worker thread
      */
-    std::unique_ptr<firebolt::rialto::common::ITimer> m_positionReportingAndCheckAudioUnderflowTimer{nullptr};
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_positionReportingTimer{nullptr};
+
+    /**
+     * @brief Number of position timer ticks since the last audio underflow check.
+     */
+    std::atomic<std::uint8_t> m_audioUnderflowTimerTicks{0};
 
     /**
      * @brief Timer reporting playback information
