@@ -88,7 +88,7 @@ private:
     bool handleInitiateApplication(const std::string &appName, const firebolt::rialto::common::SessionServerState &state,
                                    const firebolt::rialto::common::AppConfig &appConfig);
     void handleRestartServer(int serverId);
-    void resurrectSuspendedServer(const std::shared_ptr<ISessionServerApp> &kSessionServer,
+    bool resurrectSuspendedServer(const std::shared_ptr<ISessionServerApp> &kSessionServer,
                                   const firebolt::rialto::common::SessionServerState &state);
     bool configureSessionServerWithSocketName(const std::shared_ptr<ISessionServerApp> &kSessionServer);
     bool configureSessionServerWithSocketFd(const std::shared_ptr<ISessionServerApp> &kSessionServer);

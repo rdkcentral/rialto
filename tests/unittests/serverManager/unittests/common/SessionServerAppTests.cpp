@@ -152,3 +152,15 @@ TEST_F(SessionServerAppTests, ShouldReleaseNamedSocket)
     triggerReleaseNamedSocket();
     m_sut.reset();
 }
+
+TEST_F(SessionServerAppTests, ShouldCleanup)
+{
+    createAppSut(firebolt::rialto::common::AppConfig{kEmptyClientIpcSocketName, kClientDisplayName});
+    willLaunchApp();
+    willStartTimer();
+    EXPECT_TRUE(m_sut->launch());
+    willCancelStartupTimer();
+    triggerCleanup();
+    timerWillBeInactive();
+    m_sut.reset();
+}

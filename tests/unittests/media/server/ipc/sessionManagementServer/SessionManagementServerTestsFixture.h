@@ -50,6 +50,7 @@ public:
     void serverWillFailToInitialize();
     void serverWillInitializeWithFd();
     void serverWillFailToInitializeWithFd();
+    void serverWillFailToInitializeWithFdDueToWrongFd();
     void serverWillStart();
     void clientWillConnect();
     void clientWillDisconnect();

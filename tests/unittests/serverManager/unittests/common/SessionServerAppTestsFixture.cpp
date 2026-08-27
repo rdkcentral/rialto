@@ -228,3 +228,8 @@ void SessionServerAppTests::triggerReleaseNamedSocket() const
     EXPECT_FALSE(m_sut->isNamedSocketInitialized());
     EXPECT_EQ(-1, m_sut->getSessionManagementSocketFd());
 }
+
+void SessionServerAppTests::triggerCleanup() const
+{
+    m_sut->cleanup();
+}

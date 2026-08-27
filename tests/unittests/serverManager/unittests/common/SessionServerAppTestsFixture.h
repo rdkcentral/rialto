@@ -54,6 +54,7 @@ public:
     bool triggerConfigure(const firebolt::rialto::common::AppConfig &appConfig);
     void triggerGetSessionManagementSocketFd() const;
     void triggerReleaseNamedSocket() const;
+    void triggerCleanup() const;
 
 private:
     std::shared_ptr<testing::StrictMock<firebolt::rialto::wrappers::LinuxWrapperMock>> m_linuxWrapper{

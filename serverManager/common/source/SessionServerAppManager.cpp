@@ -247,7 +247,7 @@ void SessionServerAppManager::handleRestartServer(int serverId)
     }
 }
 
-void SessionServerAppManager::resurrectSuspendedServer(const std::shared_ptr<ISessionServerApp> &kSessionServer,
+bool SessionServerAppManager::resurrectSuspendedServer(const std::shared_ptr<ISessionServerApp> &kSessionServer,
                                                        const firebolt::rialto::common::SessionServerState &state)
 {
     const std::string kAppName{kSessionServer->getAppName()};
@@ -262,7 +262,7 @@ void SessionServerAppManager::resurrectSuspendedServer(const std::shared_ptr<ISe
     {
         configurePreloadedSessionServer(app, kAppName, state, kAppConfig, std::move(namedSocket));
         m_sessionServerApps.emplace(std::move(app));
-        return;
+        return true;
     }
     app = m_sessionServerAppFactory->create(kAppName, state, kAppConfig, *this, std::move(namedSocket));
     if (app->launch())
@@ -270,13 +270,14 @@ void SessionServerAppManager::resurrectSuspendedServer(const std::shared_ptr<ISe
         auto result = m_sessionServerApps.emplace(std::move(app));
         if (result.second)
         {
-            connectSessionServer(*result.first);
+            return connectSessionServer(*result.first);
         }
     }
     else
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Failed to resurrect suspended server for %s", kAppName.c_str());
     }
+    return false;
 }
 
 bool SessionServerAppManager::connectSessionServer(const std::shared_ptr<ISessionServerApp> &kSessionServer)
@@ -360,8 +361,7 @@ bool SessionServerAppManager::changeSessionServerState(const std::string &appNam
         (firebolt::rialto::common::SessionServerState::ACTIVE == newState ||
          firebolt::rialto::common::SessionServerState::INACTIVE == newState))
     {
-        resurrectSuspendedServer(sessionServer, newState);
-        return true;
+        return resurrectSuspendedServer(sessionServer, newState);
     }
     else if (kCurrentState == firebolt::rialto::common::SessionServerState::SUSPENDED &&
              firebolt::rialto::common::SessionServerState::NOT_RUNNING == newState)

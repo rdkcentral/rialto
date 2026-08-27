@@ -72,6 +72,7 @@ public:
     void healthcheckServiceWillHandleAck(bool success);
     void pingWillBeSentToRunningApps();
     void pingSendToRunningAppsWillFail();
+    void pingSendToSuspendedAppsWillBeSkipped();
     void clientWillBeRemoved();
     void sessionServerWillReturnExpectedState(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillIndicateStateChange(const firebolt::rialto::common::SessionServerState &state);
@@ -80,6 +81,11 @@ public:
     void sessionServerWillRestartWillBeSkippedDueToSuspend();
     void sessionServerWillSuspend();
     void sessionServerWillHandleServerStartupTimeout();
+    void sessionServerWillCleanupAfterReachingSuspendedState();
+    void sessionServerWillSetExpectedState(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerWillResurrectSuspendedServer();
+    void sessionServerWillFailToResurrectSuspendedServer();
+    void sessionServerWillResurrectSuspendedServerFromPreloadedList();
 
     void triggerPreloadSessionServers();
     bool triggerInitiateApplication(const firebolt::rialto::common::SessionServerState &state);

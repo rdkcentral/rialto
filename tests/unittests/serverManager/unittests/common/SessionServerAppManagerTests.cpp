@@ -299,6 +299,15 @@ TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldFailToSendPing
     sessionServerWillKillRunningApplication();
 }
 
+TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldSkipSendingPingEventsForSuspendedServer)
+{
+    sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
+    ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
+    pingSendToSuspendedAppsWillBeSkipped();
+    triggerSendPingEvents();
+    sessionServerWillKillRunningApplication();
+}
+
 TEST_F(SessionServerAppManagerTests, SessionServerShouldRestart)
 {
     sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
@@ -347,6 +356,87 @@ TEST_F(SessionServerAppManagerTests, SessionServerShouldSuspend)
     sessionServerWillReturnExpectedState(firebolt::rialto::common::SessionServerState::INACTIVE);
     sessionServerWillSuspend();
     EXPECT_TRUE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::SUSPENDED));
+    sessionServerWillCleanupAfterReachingSuspendedState();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::SUSPENDED);
+    sessionServerWillKillRunningApplication();
+}
+
+TEST_F(SessionServerAppManagerTests, SessionServerShouldSendTheNotificationWhenSuspendedToNotRunningIsTriggered)
+{
+    sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
+    ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
+    sessionServerWillChangeStateToUninitialized();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::UNINITIALIZED);
+    sessionServerWillChangeStateToInactive();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::INACTIVE);
+    sessionServerWillReturnExpectedState(firebolt::rialto::common::SessionServerState::INACTIVE);
+    sessionServerWillSuspend();
+    EXPECT_TRUE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::SUSPENDED));
+    sessionServerWillCleanupAfterReachingSuspendedState();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::SUSPENDED);
+    sessionServerWillReturnExpectedState(firebolt::rialto::common::SessionServerState::SUSPENDED);
+    sessionServerWillIndicateStateChange(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    sessionServerWillSetExpectedState(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    clientWillBeRemoved();
+    EXPECT_TRUE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::NOT_RUNNING));
+}
+
+TEST_F(SessionServerAppManagerTests, SessionServerShouldRessurectFromSuspended)
+{
+    sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
+    ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
+    sessionServerWillChangeStateToUninitialized();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::UNINITIALIZED);
+    sessionServerWillChangeStateToInactive();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::INACTIVE);
+    sessionServerWillReturnExpectedState(firebolt::rialto::common::SessionServerState::INACTIVE);
+    sessionServerWillSuspend();
+    EXPECT_TRUE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::SUSPENDED));
+    sessionServerWillCleanupAfterReachingSuspendedState();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::SUSPENDED);
+    sessionServerWillReturnExpectedState(firebolt::rialto::common::SessionServerState::SUSPENDED);
+    sessionServerWillSetExpectedState(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sessionServerWillResurrectSuspendedServer();
+    EXPECT_TRUE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::ACTIVE));
+}
+
+TEST_F(SessionServerAppManagerTests, SessionServerShouldFailToRessurectFromSuspendedWhenLaunchFails)
+{
+    sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
+    ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
+    sessionServerWillChangeStateToUninitialized();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::UNINITIALIZED);
+    sessionServerWillChangeStateToInactive();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::INACTIVE);
+    sessionServerWillReturnExpectedState(firebolt::rialto::common::SessionServerState::INACTIVE);
+    sessionServerWillSuspend();
+    EXPECT_TRUE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::SUSPENDED));
+    sessionServerWillCleanupAfterReachingSuspendedState();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::SUSPENDED);
+    sessionServerWillReturnExpectedState(firebolt::rialto::common::SessionServerState::SUSPENDED);
+    sessionServerWillSetExpectedState(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sessionServerWillFailToResurrectSuspendedServer();
+    EXPECT_FALSE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::ACTIVE));
+}
+
+TEST_F(SessionServerAppManagerTests, SessionServerShouldRessurectFromSuspendedWithPreloading)
+{
+    preloadedSessionServerWillLaunch();
+    triggerPreloadSessionServers();
+    preloadedSessionServerWillChangeStateToUninitialized();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::UNINITIALIZED);
+    preloadedSessionServerWillBeConfigured(firebolt::rialto::common::SessionServerState::INACTIVE);
+    preloadedSessionServerWillSetConfigurationWithFd();
+    triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE);
+    sessionServerWillSuspend();
+    sessionServerWillReturnExpectedState(firebolt::rialto::common::SessionServerState::INACTIVE);
+    EXPECT_TRUE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::SUSPENDED));
+    sessionServerWillCleanupAfterReachingSuspendedState();
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::SUSPENDED);
+    sessionServerWillReturnExpectedState(firebolt::rialto::common::SessionServerState::SUSPENDED);
+    sessionServerWillSetExpectedState(firebolt::rialto::common::SessionServerState::ACTIVE);
+    sessionServerWillResurrectSuspendedServerFromPreloadedList();
+    EXPECT_TRUE(triggerSetSessionServerState(firebolt::rialto::common::SessionServerState::ACTIVE));
 }
 
 TEST_F(SessionServerAppManagerTests, SessionServerShouldReportStartupTimeout)

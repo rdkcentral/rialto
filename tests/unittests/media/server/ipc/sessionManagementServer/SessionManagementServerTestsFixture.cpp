@@ -163,6 +163,11 @@ void SessionManagementServerTests::serverWillFailToInitializeWithFd()
     EXPECT_CALL(*m_serverMock, addSocket(kSocketFd, _, _)).WillOnce(Return(false));
 }
 
+void SessionManagementServerTests::serverWillFailToInitializeWithFdDueToWrongFd()
+{
+    EXPECT_CALL(*m_linuxWrapperMock, fcntl(kSocketFd, F_DUPFD_CLOEXEC, 3)).WillOnce(Return(-1));
+}
+
 void SessionManagementServerTests::serverWillStart()
 {
     EXPECT_CALL(*m_serverMock, process()).WillOnce(Return(false));
