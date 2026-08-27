@@ -28,6 +28,15 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      # Checked out as a sibling of rialto-gstreamer so tests/third-party/CMakeLists.txt's
+      # local-fallback lookup (../rialto/...) finds the headers under test, regardless of
+      # branch name - works unchanged for the current branch and any future branch (e.g.
+      # after this PR merges to master/develop).
+      - name: Checkout rialto repo (for header dependencies)
+        uses: actions/checkout@v4
+        with:
+          path: rialto
+
       - name: Check if rialto-gstreamer branch with the same name exists
         id: check-branch
         shell: sh +e {0}
