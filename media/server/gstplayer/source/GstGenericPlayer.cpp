@@ -19,6 +19,7 @@
 
 #include <chrono>
 #include <cinttypes>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <malloc.h>
@@ -49,6 +50,32 @@ namespace
 constexpr std::chrono::milliseconds kPositionReportTimerMs{50};
 constexpr std::uint8_t kAudioUnderflowTimerTickCount{5};
 constexpr std::chrono::seconds kSubtitleClockResyncInterval{10};
+
+std::uint8_t getPositionReportTickCount()
+{
+    const char *interval{std::getenv("RIALTO_POSITION_REPORT_INTERVAL_MS")};
+    if (!interval)
+    {
+        return 1;
+    }
+
+    const long intervalMs{std::strtol(interval, nullptr, 10)};
+    switch (intervalMs)
+    {
+    case 50:
+        return 1;
+    case 100:
+        return 2;
+    case 150:
+        return 3;
+    case 200:
+        return 4;
+    case 250:
+        return 5;
+    default:
+        return 1;
+    }
+}
 
 bool operator==(const firebolt::rialto::server::SegmentData &lhs, const firebolt::rialto::server::SegmentData &rhs)
 {
@@ -2467,13 +2494,25 @@ void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
     }
 
     m_audioUnderflowTimerTicks.store(0);
+    std::uint8_t positionReportTicks{0};
+    const std::uint8_t positionReportTickCount{getPositionReportTickCount()};
+    const char *configuredInterval{std::getenv("RIALTO_POSITION_REPORT_INTERVAL_MS")};
+    const auto effectiveIntervalMs{kPositionReportTimerMs.count() * positionReportTickCount};
+    RIALTO_SERVER_LOG_INFO("Position reporting interval: env=%s effective_ms=%lld base_ms=%lld ticks=%u",
+                           configuredInterval ? configuredInterval : "default",
+                           static_cast<long long>(effectiveIntervalMs),
+                           static_cast<long long>(kPositionReportTimerMs.count()), positionReportTickCount);
     m_positionReportingTimer = m_timerFactory->createTimer(
         kPositionReportTimerMs,
-        [this]()
+        [this, positionReportTicks, positionReportTickCount]() mutable
         {
             if (m_workerThread)
             {
-                m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context, *this));
+                if (++positionReportTicks >= positionReportTickCount)
+                {
+                    positionReportTicks = 0;
+                    m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context, *this));
+                }
                 if (m_audioUnderflowTimerTicks.fetch_add(1) + 1 >= kAudioUnderflowTimerTickCount)
                 {
                     m_audioUnderflowTimerTicks.store(0);
