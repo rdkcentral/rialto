@@ -26,6 +26,7 @@
 #include "SessionServerAppManagerTestsFixture.h"
 
 using testing::_;
+using testing::AtLeast;
 using testing::ByMove;
 using testing::Invoke;
 using testing::Return;
@@ -312,6 +313,10 @@ void SessionServerAppManagerTests::preloadedSessionServerWillSetConfigurationWit
     EXPECT_CALL(*m_secondSessionServerAppMock, launch()).WillOnce(Return(true));
     EXPECT_CALL(*m_secondSessionServerAppMock, getAppManagementSocketName()).WillOnce(Return(kAppMgmtSocket));
     EXPECT_CALL(*m_secondSessionServerAppMock, getServerId()).WillRepeatedly(Return(kSecondServerId));
+    EXPECT_CALL(*m_secondSessionServerAppMock, getAppName())
+        .Times(AtLeast(0))
+        .WillRepeatedly(ReturnRef(kEmptyAppName))
+        .RetiresOnSaturation();
     EXPECT_CALL(*m_secondSessionServerAppMock, kill());
     EXPECT_CALL(m_controllerMock, createClient(kSecondServerId, kAppMgmtSocket)).WillOnce(Return(true));
 }
