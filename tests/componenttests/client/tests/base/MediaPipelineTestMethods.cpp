@@ -91,8 +91,8 @@ constexpr int64_t kDiscontinuityGap{1};
 constexpr bool kIsAudioAac{false};
 const std::vector<std::string> kSupportedProperties{"immediate-output", "testProp2"};
 constexpr uint64_t kStopPosition{452345};
-const firebolt::rialto::AudioDecoderCapabilities kAudioCapabilities{"1.0", "1.1", {}};
-const firebolt::rialto::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
+const firebolt::rialto::common::AudioDecoderCapabilities kAudioCapabilities{"1.0", "1.1", {}};
+const firebolt::rialto::common::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
 constexpr bool kIsLive{false};
 } // namespace
 

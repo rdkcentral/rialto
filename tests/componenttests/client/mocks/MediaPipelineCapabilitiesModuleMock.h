@@ -108,7 +108,7 @@ public:
     }
 
     ::firebolt::rialto::GetSupportedAudioCapabilitiesResponse
-    getSupportedAudioCapabilitiesResponse(const firebolt::rialto::AudioDecoderCapabilities &audioCapabilities)
+    getSupportedAudioCapabilitiesResponse(const firebolt::rialto::common::AudioDecoderCapabilities &audioCapabilities)
     {
         firebolt::rialto::GetSupportedAudioCapabilitiesResponse response;
         response.set_interface_version(audioCapabilities.interfaceVersion);
@@ -117,7 +117,7 @@ public:
     }
 
     ::firebolt::rialto::GetSupportedVideoCapabilitiesResponse
-    getSupportedVideoCapabilitiesResponse(const firebolt::rialto::VideoDecoderCapabilities &videoCapabilities)
+    getSupportedVideoCapabilitiesResponse(const firebolt::rialto::common::VideoDecoderCapabilities &videoCapabilities)
     {
         firebolt::rialto::GetSupportedVideoCapabilitiesResponse response;
         response.set_interface_version(videoCapabilities.interfaceVersion);

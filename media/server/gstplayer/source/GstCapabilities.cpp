@@ -228,7 +228,10 @@ GstCapabilities::GstCapabilities(
             else if (status != DecoderCapabilitiesStatus::OK)
                 RIALTO_SERVER_LOG_WARN("Failed to get %s decoder capabilities from config file", type);
         };
-        RIALTO_SERVER_LOG_INFO("GstCapabilities: ServerManager provided no capabilities will use GStreamer mime-type queries via getSupportedMimeTypes() (path B)");
+        logCapabilityStatus(m_yamlCppWrapper->getAudioDecoderCapabilities(m_audioDecoderCapabilities), "audio");
+        logCapabilityStatus(m_yamlCppWrapper->getVideoDecoderCapabilities(m_videoDecoderCapabilities), "video");
+        RIALTO_SERVER_LOG_INFO("GstCapabilities: ServerManager provided no capabilities will use GStreamer mime-type "
+                               "queries via getSupportedMimeTypes() (path B)");
     }
     m_initialisationThread = std::thread(
         [this]()
