@@ -33,6 +33,7 @@ add_gtests (
         unittests/ipc/ClientTest.cpp
         unittests/ipc/IpcTests.cpp
         unittests/ipc/IpcTestsFixture.cpp
+		unittests/ipc/CapabilitySerialiserTests.cpp
 
         unittests/service/ConfigHelperTests.cpp
         unittests/service/ConfigReaderTests.cpp
