@@ -33,6 +33,7 @@ MediaCapabilities::getAudioDecoderCapabilities(firebolt::rialto::common::AudioDe
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("MediaCapabilities: loading audio capabilities from YAML");
 
+    capabilities = {};
     const auto status = m_yamlCppWrapper->getAudioDecoderCapabilities(capabilities);
     if (status == firebolt::rialto::DecoderCapabilitiesStatus::OK)
         RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: audio capabilities loaded successfully");
@@ -48,6 +49,7 @@ MediaCapabilities::getVideoDecoderCapabilities(firebolt::rialto::common::VideoDe
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("MediaCapabilities: loading video capabilities from YAML");
 
+    capabilities = {};
     const auto status = m_yamlCppWrapper->getVideoDecoderCapabilities(capabilities);
     if (status == firebolt::rialto::DecoderCapabilitiesStatus::OK)
         RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: video capabilities loaded successfully");

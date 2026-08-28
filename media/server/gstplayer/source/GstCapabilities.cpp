@@ -169,13 +169,16 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
 
-        std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapperFactory> yamlCppWrapperFactory =
-            firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory();
         std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper;
 
-        if ((!yamlCppWrapperFactory) || (!(yamlCppWrapper = yamlCppWrapperFactory->createYamlCppWrapper())))
+        if (!audio.has_value() || !video.has_value())
         {
-            throw std::runtime_error("Cannot create YamlCppWrapper");
+            auto yamlCppWrapperFactory = firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory();
+
+            if ((!yamlCppWrapperFactory) || (!(yamlCppWrapper = yamlCppWrapperFactory->createYamlCppWrapper())))
+            {
+                throw std::runtime_error("Cannot create YamlCppWrapper");
+            }
         }
 
         gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper, rdkGstreamerUtilsWrapper,

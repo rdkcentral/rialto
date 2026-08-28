@@ -43,7 +43,6 @@ std::shared_ptr<IMediaCapabilitiesFactory> IMediaCapabilitiesFactory::createFact
 
 std::unique_ptr<IMediaCapabilities> MediaCapabilitiesFactory::createMediaCapabilities() const
 {
-    RIALTO_CLIENT_LOG_ERROR(" USHA: MediaCapabilitiesFactory: createMediaCapabilities: entry");
     std::unique_ptr<IMediaCapabilities> mediaCapabilities;
     try
     {
@@ -52,7 +51,6 @@ std::unique_ptr<IMediaCapabilities> MediaCapabilitiesFactory::createMediaCapabil
     }
     catch (const std::exception &e)
     {
-        RIALTO_CLIENT_LOG_ERROR("USHA: Failed to create the media capabilities, reason: %s", e.what());
         RIALTO_CLIENT_LOG_ERROR("Failed to create the media capabilities, reason: %s", e.what());
     }
 
@@ -66,9 +64,6 @@ namespace firebolt::rialto::client
 MediaCapabilities::MediaCapabilities(const std::shared_ptr<IMediaCapabilitiesIpcFactory> &mediaCapabilitiesIpcFactory)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    RIALTO_CLIENT_LOG_ERROR(" USHA: MediaCapabilities: Get holding entry for mediaCapabilitiesIpcFactory");
-    RIALTO_CLIENT_LOG_ERROR(" USHA: MediaCapabilities: Get holding entry for mediaCapabilitiesIpcFactory -> calling "
-                            "mediaCapabilitiesIpcFactory->createMediaCapabilitiesIpc()");
     m_mediaCapabilitiesIpc = mediaCapabilitiesIpcFactory->createMediaCapabilitiesIpc();
     if (!m_mediaCapabilitiesIpc)
     {
@@ -86,8 +81,6 @@ MediaCapabilities::~MediaCapabilities()
 common::AudioDecoderCapabilities MediaCapabilities::getSupportedAudioCapabilities()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    RIALTO_CLIENT_LOG_ERROR(" USHA: MediaCapabilities: getSupportedAudioCapabilities: entry -> calling "
-                            "m_mediaCapabilitiesIpc->getSupportedAudioCapabilities()");
 
     return m_mediaCapabilitiesIpc->getSupportedAudioCapabilities();
 }
@@ -95,8 +88,7 @@ common::AudioDecoderCapabilities MediaCapabilities::getSupportedAudioCapabilitie
 common::VideoDecoderCapabilities MediaCapabilities::getSupportedVideoCapabilities()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    RIALTO_CLIENT_LOG_ERROR(" USHA: MediaCapabilities: getSupportedVideoCapabilities: entry -> calling "
-                            "m_mediaCapabilitiesIpc->getSupportedVideoCapabilities()");
+
     return m_mediaCapabilitiesIpc->getSupportedVideoCapabilities();
 }
 

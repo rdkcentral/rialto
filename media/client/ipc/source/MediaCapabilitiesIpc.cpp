@@ -78,7 +78,6 @@ bool MediaCapabilitiesIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &
 
 firebolt::rialto::common::AudioDecoderCapabilities MediaCapabilitiesIpc::getSupportedAudioCapabilities()
 {
-    RIALTO_CLIENT_LOG_ERROR("USHA: MediaCapabilitiesIpc: Client: ipc: calling getSupportedAudioCapabilities");
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("IPC channel reattachment failed");
@@ -105,7 +104,7 @@ firebolt::rialto::common::AudioDecoderCapabilities MediaCapabilitiesIpc::getSupp
 
 firebolt::rialto::common::VideoDecoderCapabilities MediaCapabilitiesIpc::getSupportedVideoCapabilities()
 {
-    RIALTO_CLIENT_LOG_ERROR("USHA: MediaCapabilitiesIpc: Client: ipc: calling getSupportedVideoCapabilities");
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
     if (!reattachChannelIfRequired())
     {
         RIALTO_CLIENT_LOG_ERROR("IPC channel reattachment failed");

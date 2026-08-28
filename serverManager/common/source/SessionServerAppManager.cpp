@@ -52,10 +52,15 @@ SessionServerAppManager::SessionServerAppManager(
             m_audioCapabilities = std::move(audioCaps);
             RIALTO_SERVER_MANAGER_LOG_INFO("SessionServerAppManager: capabilities loaded successfully");
         }
-        else
+        else if (audioStatus == firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
         {
             RIALTO_SERVER_MANAGER_LOG_INFO(
                 "SessionServerAppManager: HFP YAML not found - capabilities will not be forwarded");
+        }
+        else
+        {
+            RIALTO_SERVER_MANAGER_LOG_ERROR("SessionServerAppManager: Failed to get audio capabilities, status: %d",
+                                            static_cast<int>(audioStatus));
         }
 
         firebolt::rialto::common::VideoDecoderCapabilities videoCaps;
