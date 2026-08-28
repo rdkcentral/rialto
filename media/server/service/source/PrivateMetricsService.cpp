@@ -23,6 +23,7 @@
 #include <cstdio>
 #include <fstream>
 #include <string>
+#include <utility>
 
 namespace firebolt::rialto::server::service
 {

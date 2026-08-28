@@ -22,6 +22,7 @@
 
 #include "IPrivateMetricsIpc.h"
 #include <gmock/gmock.h>
+#include <string>
 
 namespace firebolt::rialto::client
 {

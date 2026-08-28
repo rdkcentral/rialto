@@ -23,8 +23,8 @@
 #include <algorithm>
 #include <chrono>
 #include <cinttypes>
-#include <cstdio>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <fstream>
 #include <sys/mman.h>
