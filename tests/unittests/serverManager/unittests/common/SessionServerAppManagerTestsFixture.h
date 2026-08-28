@@ -115,6 +115,7 @@ private:
         std::make_unique<testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock>>()};
     testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock> &m_namedSocketMock{
         dynamic_cast<testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock> &>(*m_namedSocket)};
+    bool preloadedServerConfigured{false};
     std::unique_ptr<rialto::servermanager::common::ISessionServerAppManager> m_sut;
 };
 

@@ -315,8 +315,8 @@ void SessionServerAppManagerTests::preloadedSessionServerWillSetConfigurationWit
     EXPECT_CALL(*m_secondSessionServerAppMock, getServerId()).WillRepeatedly(Return(kSecondServerId));
     EXPECT_CALL(*m_secondSessionServerAppMock, getAppName())
         .Times(AtLeast(0))
-        .WillRepeatedly(ReturnRef(kEmptyAppName))
-        .RetiresOnSaturation();
+        .WillRepeatedly(
+            Invoke([&]() -> const std::string & { return preloadedServerConfigured ? kAppName : kEmptyAppName; }));
     EXPECT_CALL(*m_secondSessionServerAppMock, kill());
     EXPECT_CALL(m_controllerMock, createClient(kSecondServerId, kAppMgmtSocket)).WillOnce(Return(true));
 }
@@ -574,9 +574,12 @@ void SessionServerAppManagerTests::sessionServerWillResurrectSuspendedServerFrom
     EXPECT_CALL(*m_secondSessionServerAppMock, isConnected()).WillOnce(Return(true));
     EXPECT_CALL(*m_secondSessionServerAppMock,
                 configure(kAppName, firebolt::rialto::common::SessionServerState::ACTIVE, kAppConfig, _))
-        .WillOnce(Return(true));
-    EXPECT_CALL(*m_secondSessionServerAppMock, getAppName()).WillRepeatedly(ReturnRef(kAppName));
-
+        .WillOnce(Invoke(
+            [this](const auto &, const auto &, const auto &, auto &&)
+            {
+                preloadedServerConfigured = true;
+                return true;
+            }));
     EXPECT_CALL(*m_secondSessionServerAppMock, isNamedSocketInitialized()).WillOnce(Return(false));
     EXPECT_CALL(*m_secondSessionServerAppMock, getInitialState())
         .WillOnce(Return(firebolt::rialto::common::SessionServerState::ACTIVE));
