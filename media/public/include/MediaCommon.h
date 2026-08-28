@@ -114,8 +114,7 @@ enum class MediaType
  */
 enum class MediaSourceStatus
 {
-    OK,
-    /**< Config file read successfully */ /**< Source data provided without error. */
+    OK,                                   /**< Source data provided without error. */
     EOS,                                  /**< Source reached the end of stream. */
     ERROR,                                /**< There was an error providing source data. */
     CODEC_CHANGED,                        /**< The codec has changed and the decoder must be reconfigured */

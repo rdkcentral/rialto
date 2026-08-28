@@ -99,7 +99,6 @@ target_link_libraries(
         RialtoIpcClient
         RialtoIpcCommon
         RialtoCommonMisc
-        RialtoTestServerManagerCommonMisc
         RialtoProtobuf
         )
 

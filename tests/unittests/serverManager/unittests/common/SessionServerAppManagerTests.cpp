@@ -490,7 +490,7 @@ void SessionServerAppManagerMediaCapabilitiesErrorTests::sessionServerWillLaunch
 }
 
 TEST_F(SessionServerAppManagerMediaCapabilitiesErrorTests,
-       MediaCapabilitiesOptionalsShoulBeNulloptWhenCapabilitiesAreNotFound)
+       MediaCapabilitiesOptionalsShouldBeNulloptWhenCapabilitiesAreNotFound)
 {
     sessionServerWillLaunchWithoutCapabilities(firebolt::rialto::common::SessionServerState::INACTIVE);
     ASSERT_TRUE(m_sut->initiateApplication(kAppName, firebolt::rialto::common::SessionServerState::INACTIVE, kAppConfig));
