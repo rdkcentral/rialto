@@ -30,6 +30,9 @@ add_gtests (
         applicationManagementServer/ApplicationManagementServerTestsFixture.cpp
         applicationManagementServer/ApplicationManagementServerTests.cpp
 
+        capabilityDeserialiser/CapabilityDeserialiserTests.cpp
+
+
         # ServerManagerModuleService unittests
         serverManagerModuleService/ServerManagerModuleServiceTestsFixture.cpp
         serverManagerModuleService/ServerManagerModuleServiceTests.cpp

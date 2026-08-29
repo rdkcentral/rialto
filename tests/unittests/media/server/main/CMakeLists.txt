@@ -26,7 +26,6 @@ add_gtests (
         activeRequests/ActiveRequestsTests.cpp
 
         control/ControlServerInternalTests.cpp
-	capabilityDeserialiser/CapabilityDeserialiserTests.cpp
 
         dataReader/DataReaderFactoryTests.cpp
         dataReader/DataReaderV1Tests.cpp
