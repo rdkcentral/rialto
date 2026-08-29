@@ -161,11 +161,17 @@ TEST_F(CapabilityDeserialiserAudioTest, DolbyAc3EntryWithoutCapabilityIsSkipped)
 // ---------------------------------------------------------------------------
 
 // --- AAC: HE_V1/HE_V2/ELD/X_HE explicit; LC has no explicit case -> default -
+namespace
+{
+// Anonymous namespace gives this file's own AacProfileParam internal linkage, so it
+// doesn't collide with the identically-named struct in CapabilitySerialiserTests.cpp
+// (fixes cppcheck's ctuOneDefinitionRuleViolation across the two test files).
 struct AacProfileParam
 {
     AudioCap::AacProfile input;
     AacProfile expected;
 };
+} // namespace
 
 class AacFromProtoTest : public ::testing::TestWithParam<AacProfileParam>
 {
@@ -194,11 +200,15 @@ INSTANTIATE_TEST_SUITE_P(AllValues, AacFromProtoTest,
                                            AacProfileParam{AudioCap::AAC_PROFILE_LC, AacProfile::LC}));
 
 // --- DTS: HD_HRA/HD_MA explicit; CORE has no explicit case -> default -------
+namespace
+{
+// See note above AacProfileParam: anonymous namespace avoids the ODR collision.
 struct DtsProfileParam
 {
     AudioCap::DtsProfile input;
     DtsProfile expected;
 };
+} // namespace
 
 class DtsFromProtoTest : public ::testing::TestWithParam<DtsProfileParam>
 {
@@ -225,11 +235,15 @@ INSTANTIATE_TEST_SUITE_P(AllValues, DtsFromProtoTest,
                                            DtsProfileParam{AudioCap::DTS_PROFILE_CORE, DtsProfile::CORE}));
 
 // --- AVS: AVS2/AVS3 explicit; AVS1_PART2 has no explicit case -> default ----
+namespace
+{
+// See note above AacProfileParam: anonymous namespace avoids the ODR collision.
 struct AvsProfileParam
 {
     AudioCap::AvsProfile input;
     AvsProfile expected;
 };
+} // namespace
 
 class AvsFromProtoTest : public ::testing::TestWithParam<AvsProfileParam>
 {
