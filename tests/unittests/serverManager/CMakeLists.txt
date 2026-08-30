@@ -19,6 +19,9 @@
 
 find_package( jsoncpp REQUIRED )
 
+find_package( PkgConfig REQUIRED )
+pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0 gstreamer-pbutils-1.0 gstreamer-audio-1.0)
+
 add_gtests (
         RialtoServerManagerUnitTests
 
@@ -40,6 +43,7 @@ add_gtests (
         unittests/service/MediaCapabilitiesTests.cpp
         unittests/service/ServerManagerServiceTests.cpp
         unittests/service/ServerManagerServiceTestsFixture.cpp
+		unittests/service/MediaCapabilitiesFactoryTests.cpp
 
         )
 
@@ -59,6 +63,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoServerManagerStub,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:ExternalLibraryMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoUnittestCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:RialtoServerManagerService,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappersMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
@@ -68,6 +73,8 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoTestCommonMatchers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoTestServerManagerCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
+		${CMAKE_SOURCE_DIR}/wrappers/include
+		${GStreamerApp_INCLUDE_DIRS}
 
         mocks
 
@@ -89,5 +96,7 @@ target_link_libraries(
         RialtoServerManager
         RialtoServerManagerService
         RialtoTestServerManagerCommonMisc
+		RialtoWrappers
+		${GStreamerApp_LIBRARIES}
         Threads::Threads
         )
