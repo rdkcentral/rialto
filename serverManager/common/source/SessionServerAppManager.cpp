@@ -333,6 +333,12 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
                                                              firebolt::rialto::common::SessionServerState newState)
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("SessionServer with id: %d changed state to %s", serverId, toString(newState));
+    if (m_isShuttingDown)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Not handling state change of serverId: %d as server manager is shutting down",
+                                       serverId);
+        return;
+    }
     auto sessionServer{getServerById(serverId)};
     if (!sessionServer)
     {
