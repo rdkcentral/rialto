@@ -30,6 +30,12 @@ Controller::Controller(std::unique_ptr<common::ISessionServerAppManager> &sessio
 {
 }
 
+Controller::~Controller()
+{
+    std::unique_lock<std::mutex> lock{m_clientMutex};
+    m_clients.clear();
+}
+
 bool Controller::createClient(int serverId, int appMgmtSocket)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};

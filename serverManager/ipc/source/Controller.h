@@ -41,7 +41,7 @@ class Controller : public IController
 {
 public:
     explicit Controller(std::unique_ptr<common::ISessionServerAppManager> &sessionServerAppManager);
-    virtual ~Controller() = default;
+    ~Controller() override;
 
     Controller(const Controller &) = delete;
     Controller(Controller &&) = delete;
