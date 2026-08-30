@@ -65,8 +65,24 @@ SessionServerAppManager::SessionServerAppManager(
 
         firebolt::rialto::common::VideoDecoderCapabilities videoCaps;
 
-        if (mediaCapabilities->getVideoDecoderCapabilities(videoCaps) == firebolt::rialto::DecoderCapabilitiesStatus::OK)
+        const auto videoStatus = mediaCapabilities->getVideoDecoderCapabilities(videoCaps);
+        if (videoStatus == firebolt::rialto::DecoderCapabilitiesStatus::OK)
+        {
             m_videoCapabilities = std::move(videoCaps);
+        }
+        else
+        {
+            if (videoStatus == firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
+            {
+                RIALTO_SERVER_MANAGER_LOG_INFO("SessionServerAppManager: HFP YAML config not found for video - "
+                                               "capabilities will not be forwarded");
+            }
+            else
+            {
+                RIALTO_SERVER_MANAGER_LOG_ERROR("SessionServerAppManager: Failed to get video capabilities, status: %d",
+                                                static_cast<int>(videoStatus));
+            }
+        }
     }
 }
 

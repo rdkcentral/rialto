@@ -47,19 +47,19 @@ protected:
     {
         // Inject the mock factory so IYamlCppWrapperFactory::getFactory() returns it inside
         // createMediaCapabilities(). Adjust this call to match your actual test-injection API.
-        FactoryAccessor::instance().yamlCppWrapperFactory() = m_yamlCppWrapperFactoryMock;
+        IFactoryAccessor::instance().yamlCppWrapperFactory() = m_yamlCppWrapperFactoryMock;
     }
 
     ~MediaCapabilitiesFactoryTest() override
     {
         // Reset the injection point so later tests in the same binary aren't affected.
-        FactoryAccessor::instance().yamlCppWrapperFactory() = nullptr;
+        IFactoryAccessor::instance().yamlCppWrapperFactory() = nullptr;
     }
 };
 
 TEST_F(MediaCapabilitiesFactoryTest, ReturnsNullptrWhenFactoryUnavailable)
 {
-    FactoryAccessor::instance().yamlCppWrapperFactory() = nullptr;
+    IFactoryAccessor::instance().yamlCppWrapperFactory() = nullptr;
 
     auto result = createMediaCapabilities();
 
@@ -78,7 +78,7 @@ TEST_F(MediaCapabilitiesFactoryTest, ReturnsNullptrWhenYamlCppWrapperCreationFai
 TEST_F(MediaCapabilitiesFactoryTest, CreatesMediaCapabilitiesWhenDependenciesAvailable)
 {
     auto yamlCppWrapper = std::make_unique<StrictMock<YamlCppWrapperMock>>();
-    EXPECT_CALL(*m_yamlCppWrapperFactoryMock, createYamlCppWrapper()).WillOnce(Return(ByMove(std::move(yamlCppWrapper))));
+    EXPECT_CALL(*m_yamlCppWrapperFactoryMock, createYamlCppWrapper()).WillOnce(Return(std::shared_ptr<IYamlCppWrapper>{}));
 
     auto result = createMediaCapabilities();
 
