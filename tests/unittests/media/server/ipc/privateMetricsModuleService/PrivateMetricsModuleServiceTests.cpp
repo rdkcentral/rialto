@@ -22,6 +22,7 @@
 #include "IpcControllerMock.h"
 #include "PrivateMetricsModuleService.h"
 #include "PrivateMetricsServiceMock.h"
+#include "RpcControllerMock.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto;
@@ -34,10 +35,11 @@ using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
 
-MATCHER_P(MetricsSampleRequestMatcher, expectedReason, "")
+MATCHER_P2(MetricsSampleRequestMatcher, expectedSampleId, expectedReason, "")
 {
     auto event{std::dynamic_pointer_cast<MetricsSampleRequestEvent>(arg)};
-    return event && event->sample_id() == 12 && event->reason() == expectedReason;
+    return event && event->sample_id() == static_cast<std::uint64_t>(expectedSampleId) &&
+           event->reason() == expectedReason;
 }
 
 TEST(PrivateMetricsModuleServiceTests, handlesClientLifecycleReportsAndSampleRequests)
@@ -61,7 +63,7 @@ TEST(PrivateMetricsModuleServiceTests, handlesClientLifecycleReportsAndSampleReq
     ASSERT_NE(collectorClient, nullptr);
 
     EXPECT_CALL(*client, isConnected()).WillOnce(Return(true));
-    EXPECT_CALL(*client, sendEvent(MetricsSampleRequestMatcher(METRICS_SAMPLE_REASON_PERIODIC))).WillOnce(Return(true));
+    EXPECT_CALL(*client, sendEvent(MetricsSampleRequestMatcher(12, METRICS_SAMPLE_REASON_PERIODIC))).WillOnce(Return(true));
     collectorClient->requestMetricsSample(1, 12, firebolt::rialto::server::MetricsSampleReason::PERIODIC);
 
     ReportClientMetricsRequest reportRequest;
@@ -97,6 +99,111 @@ TEST(PrivateMetricsModuleServiceTests, handlesClientLifecycleReportsAndSampleReq
 
     EXPECT_CALL(metricsService, clientDisconnected(1));
     sut->clientDisconnected(client);
+}
+
+TEST(PrivateMetricsModuleServiceTests, rejectsIncompatibleControllers)
+{
+    StrictMock<PrivateMetricsServiceMock> metricsService;
+    StrictMock<firebolt::rialto::ipc::RpcControllerMock> controller;
+    StrictMock<firebolt::rialto::ipc::ClosureMock> closure;
+    auto sut{std::make_shared<PrivateMetricsModuleService>(metricsService)};
+
+    EXPECT_CALL(controller, SetFailed("ipc library provided incompatible controller object")).Times(2);
+    EXPECT_CALL(closure, Run()).Times(2);
+
+    NotifyClientReadyRequest readyRequest;
+    NotifyClientReadyResponse readyResponse;
+    sut->notifyClientReady(&controller, &readyRequest, &readyResponse, &closure);
+
+    ReportClientMetricsRequest reportRequest;
+    ReportClientMetricsResponse reportResponse;
+    sut->reportClientMetrics(&controller, &reportRequest, &reportResponse, &closure);
+}
+
+TEST(PrivateMetricsModuleServiceTests, rejectsMissingMetricsAndIgnoresUnknownClient)
+{
+    StrictMock<PrivateMetricsServiceMock> metricsService;
+    auto client{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()};
+    StrictMock<firebolt::rialto::ipc::ControllerMock> controller;
+    StrictMock<firebolt::rialto::ipc::ClosureMock> closure;
+    auto sut{std::make_shared<PrivateMetricsModuleService>(metricsService)};
+    ReportClientMetricsResponse response;
+
+    ReportClientMetricsRequest missingMetricsRequest;
+    EXPECT_CALL(controller, SetFailed("Missing metrics"));
+    EXPECT_CALL(closure, Run());
+    sut->reportClientMetrics(&controller, &missingMetricsRequest, &response, &closure);
+
+    ReportClientMetricsRequest unknownClientRequest;
+    unknownClientRequest.mutable_metrics();
+    EXPECT_CALL(controller, getClient()).WillOnce(Return(client));
+    EXPECT_CALL(closure, Run());
+    sut->reportClientMetrics(&controller, &unknownClientRequest, &response, &closure);
+}
+
+TEST(PrivateMetricsModuleServiceTests, mapsAllReportedSampleReasons)
+{
+    StrictMock<PrivateMetricsServiceMock> metricsService;
+    auto client{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()};
+    StrictMock<firebolt::rialto::ipc::ControllerMock> controller;
+    StrictMock<firebolt::rialto::ipc::ClosureMock> closure;
+    auto sut{std::make_shared<PrivateMetricsModuleService>(metricsService)};
+
+    EXPECT_CALL(controller, getClient()).WillOnce(Return(client));
+    EXPECT_CALL(closure, Run());
+    EXPECT_CALL(metricsService, clientReady(1, _));
+    NotifyClientReadyRequest readyRequest;
+    NotifyClientReadyResponse readyResponse;
+    sut->notifyClientReady(&controller, &readyRequest, &readyResponse, &closure);
+
+    auto reportReason = [&](firebolt::rialto::MetricsSampleReason protoReason,
+                            firebolt::rialto::server::MetricsSampleReason expectedReason)
+    {
+        ReportClientMetricsRequest request;
+        request.mutable_metrics()->set_reason(protoReason);
+        ReportClientMetricsResponse response;
+        EXPECT_CALL(controller, getClient()).WillOnce(Return(client));
+        EXPECT_CALL(closure, Run());
+        EXPECT_CALL(metricsService, reportMetrics(1, _))
+            .WillOnce(Invoke([expectedReason](int, const ClientMetricsData &metrics)
+                             { EXPECT_EQ(metrics.reason, expectedReason); }));
+        sut->reportClientMetrics(&controller, &request, &response, &closure);
+    };
+
+    reportReason(METRICS_SAMPLE_REASON_CONNECTED, firebolt::rialto::server::MetricsSampleReason::CONNECTED);
+    reportReason(METRICS_SAMPLE_REASON_STATE_TRANSITION, firebolt::rialto::server::MetricsSampleReason::STATE_TRANSITION);
+    reportReason(METRICS_SAMPLE_REASON_UNKNOWN, firebolt::rialto::server::MetricsSampleReason::UNKNOWN);
+}
+
+TEST(PrivateMetricsModuleServiceTests, handlesUnavailableClientsAndSendsAllSampleRequestReasons)
+{
+    StrictMock<PrivateMetricsServiceMock> metricsService;
+    auto client{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()};
+    StrictMock<firebolt::rialto::ipc::ControllerMock> controller;
+    StrictMock<firebolt::rialto::ipc::ClosureMock> closure;
+    auto sut{std::make_shared<PrivateMetricsModuleService>(metricsService)};
+
+    EXPECT_CALL(controller, getClient()).WillOnce(Return(client));
+    EXPECT_CALL(closure, Run());
+    EXPECT_CALL(metricsService, clientReady(1, _));
+    NotifyClientReadyRequest readyRequest;
+    NotifyClientReadyResponse readyResponse;
+    sut->notifyClientReady(&controller, &readyRequest, &readyResponse, &closure);
+
+    sut->requestMetricsSample(99, 20, firebolt::rialto::server::MetricsSampleReason::CONNECTED);
+
+    EXPECT_CALL(*client, isConnected()).WillOnce(Return(false));
+    sut->requestMetricsSample(1, 21, firebolt::rialto::server::MetricsSampleReason::CONNECTED);
+
+    EXPECT_CALL(*client, isConnected()).Times(3).WillRepeatedly(Return(true));
+    EXPECT_CALL(*client, sendEvent(MetricsSampleRequestMatcher(22, METRICS_SAMPLE_REASON_CONNECTED))).WillOnce(Return(true));
+    EXPECT_CALL(*client, sendEvent(MetricsSampleRequestMatcher(23, METRICS_SAMPLE_REASON_STATE_TRANSITION)))
+        .WillOnce(Return(true));
+    EXPECT_CALL(*client, sendEvent(MetricsSampleRequestMatcher(24, METRICS_SAMPLE_REASON_UNKNOWN))).WillOnce(Return(false));
+
+    sut->requestMetricsSample(1, 22, firebolt::rialto::server::MetricsSampleReason::CONNECTED);
+    sut->requestMetricsSample(1, 23, firebolt::rialto::server::MetricsSampleReason::STATE_TRANSITION);
+    sut->requestMetricsSample(1, 24, firebolt::rialto::server::MetricsSampleReason::UNKNOWN);
 }
 
 TEST(PrivateMetricsModuleServiceTests, factoryCreatesService)
