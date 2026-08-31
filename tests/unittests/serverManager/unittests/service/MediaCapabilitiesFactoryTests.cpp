@@ -32,7 +32,6 @@
 using namespace rialto::servermanager::service;
 using namespace firebolt::rialto::wrappers;
 using ::testing::_;
-using ::testing::ByMove;
 using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::StrictMock;
@@ -45,8 +44,9 @@ protected:
 
     MediaCapabilitiesFactoryTest()
     {
-        // Inject the mock factory so IYamlCppWrapperFactory::getFactory() returns it inside
-        // createMediaCapabilities(). Adjust this call to match your actual test-injection API.
+        // The static singleton accessor lives on the INTERFACE (IFactoryAccessor::instance()),
+        // matching YamlCppWrapperAccessor.cpp's own call:
+        // IFactoryAccessor::instance().yamlCppWrapperFactory().
         IFactoryAccessor::instance().yamlCppWrapperFactory() = m_yamlCppWrapperFactoryMock;
     }
 
@@ -68,7 +68,9 @@ TEST_F(MediaCapabilitiesFactoryTest, ReturnsNullptrWhenFactoryUnavailable)
 
 TEST_F(MediaCapabilitiesFactoryTest, ReturnsNullptrWhenYamlCppWrapperCreationFails)
 {
-    EXPECT_CALL(*m_yamlCppWrapperFactoryMock, createYamlCppWrapper()).WillOnce(Return(ByMove(nullptr)));
+    // createYamlCppWrapper() returns std::shared_ptr<IYamlCppWrapper> - copyable, so Return(...)
+    // is used directly; ByMove(...) is only needed for move-only return types (e.g. unique_ptr).
+    EXPECT_CALL(*m_yamlCppWrapperFactoryMock, createYamlCppWrapper()).WillOnce(Return(nullptr));
 
     auto result = createMediaCapabilities();
 
@@ -77,8 +79,11 @@ TEST_F(MediaCapabilitiesFactoryTest, ReturnsNullptrWhenYamlCppWrapperCreationFai
 
 TEST_F(MediaCapabilitiesFactoryTest, CreatesMediaCapabilitiesWhenDependenciesAvailable)
 {
-    auto yamlCppWrapper = std::make_unique<StrictMock<YamlCppWrapperMock>>();
-    EXPECT_CALL(*m_yamlCppWrapperFactoryMock, createYamlCppWrapper()).WillOnce(Return(std::shared_ptr<IYamlCppWrapper>{}));
+    // Must be shared_ptr (matching createYamlCppWrapper()'s real return type) AND the SAME
+    // object must be returned from the mock - returning a fresh/empty shared_ptr here would
+    // silently make this test degenerate into the "creation fails" case above.
+    auto yamlCppWrapper = std::make_shared<StrictMock<YamlCppWrapperMock>>();
+    EXPECT_CALL(*m_yamlCppWrapperFactoryMock, createYamlCppWrapper()).WillOnce(Return(yamlCppWrapper));
 
     auto result = createMediaCapabilities();
 
