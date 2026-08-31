@@ -181,7 +181,15 @@ bool MediaPipelineIpc::subscribeToEvents(const std::shared_ptr<ipc::IChannel> &i
 
     eventTag = ipcChannel->subscribe<firebolt::rialto::PlaybackInfoEvent>(
         [this](const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event)
-        { m_eventThread->add(&MediaPipelineIpc::onPlaybackInfo, this, event); });
+        {
+            const auto postTime = std::chrono::steady_clock::now();
+            m_eventThread->add(
+                [this, event, postTime]()
+                {
+                    logPlaybackInfoDispatchDelay(postTime);
+                    onPlaybackInfo(event);
+                });
+        });
     if (eventTag < 0)
         return false;
     m_eventTags.push_back(eventTag);
@@ -1657,6 +1665,40 @@ void MediaPipelineIpc::onPlaybackInfo(const std::shared_ptr<firebolt::rialto::Pl
         playbackInfo.volume = event->volume();
         m_mediaPipelineIpcClient->notifyPlaybackInfo(playbackInfo);
     }
+}
+
+namespace
+{
+// RDKEMW-23214: server sends PlaybackInfo every kPlaybackInfoTimerMs{32}
+constexpr auto kExpectedPlaybackInfoInterval = std::chrono::milliseconds(32);
+constexpr auto kPlaybackInfoInstrumentationThreshold = kExpectedPlaybackInfoInterval * 2;
+} // namespace
+
+void MediaPipelineIpc::logPlaybackInfoDispatchDelay(const std::chrono::steady_clock::time_point &postTime)
+{
+    const auto now = std::chrono::steady_clock::now();
+
+    // Time spent waiting behind other queued events (onNeedMediaData, onQos, ...) on the shared EventThread
+    const auto dispatchDelay = std::chrono::duration_cast<std::chrono::milliseconds>(now - postTime);
+    if (dispatchDelay > kPlaybackInfoInstrumentationThreshold)
+    {
+        RIALTO_CLIENT_LOG_WARN("PlaybackInfo delayed %lldms in EventThread queue (expected <=%lldms) - EventThread contention",
+                               static_cast<long long>(dispatchDelay.count()),
+                               static_cast<long long>(kExpectedPlaybackInfoInterval.count()));
+    }
+
+    // Overall cadence actually observed by the client, regardless of where the delay occurred
+    if (m_lastPlaybackInfoDispatchTime.time_since_epoch().count() != 0)
+    {
+        const auto sinceLast = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_lastPlaybackInfoDispatchTime);
+        if (sinceLast > kPlaybackInfoInstrumentationThreshold)
+        {
+            RIALTO_CLIENT_LOG_WARN("PlaybackInfo cadence missed: %lldms since last dispatch (expected ~%lldms)",
+                                   static_cast<long long>(sinceLast.count()),
+                                   static_cast<long long>(kExpectedPlaybackInfoInterval.count()));
+        }
+    }
+    m_lastPlaybackInfoDispatchTime = now;
 }
 
 bool MediaPipelineIpc::createSession(const VideoRequirements &videoRequirements)

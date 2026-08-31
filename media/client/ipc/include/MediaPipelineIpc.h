@@ -24,6 +24,7 @@
 #include "IMediaPipelineIpc.h"
 #include "IpcModule.h"
 #include <IMediaPipeline.h>
+#include <chrono>
 #include <memory>
 #include <string>
 
@@ -173,6 +174,9 @@ private:
      */
     std::unique_ptr<common::IEventThread> m_eventThread;
 
+    // RDKEMW-23214: last time a PlaybackInfoEvent finished waiting in the EventThread queue
+    std::chrono::steady_clock::time_point m_lastPlaybackInfoDispatchTime{};
+
     bool createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
 
     bool subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel) override;
@@ -241,6 +245,15 @@ private:
     void onSourceFlushed(const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event);
 
     void onPlaybackInfo(const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event);
+
+    /**
+     * @brief RDKEMW-23214: logs how long a PlaybackInfoEvent waited in the EventThread queue
+     *        and the gap since the previous dispatch, to isolate EventThread contention from
+     *        server-side reporting gaps.
+     *
+     * @param[in] postTime : The time the event was handed to the EventThread.
+     */
+    void logPlaybackInfoDispatchDelay(const std::chrono::steady_clock::time_point &postTime);
 
     /**
      * @brief Create a new player session.
