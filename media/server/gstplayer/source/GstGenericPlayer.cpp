@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <algorithm>
 #include <chrono>
 #include <cinttypes>
 #include <cstring>
@@ -1635,8 +1636,11 @@ void GstGenericPlayer::pushAdditionalSegmentIfRequired(GstElement *source)
     {
         return;
     }
-    if (!initialPosition->second.empty() && initialPosition->second.back().resetTime &&
-        currentPosition->second == initialPosition->second.back())
+    const auto &positions = initialPosition->second;
+    const bool allMatchCurrentPosition = !positions.empty() &&
+                                         std::all_of(positions.begin(), positions.end(), [&](const SegmentData &segment)
+                                                     { return segment == currentPosition->second; });
+    if (allMatchCurrentPosition && positions.back().resetTime)
     {
         RIALTO_SERVER_LOG_INFO("Adding additional segment with reset_time = false");
         SegmentData additionalSegment = initialPosition->second.back();
