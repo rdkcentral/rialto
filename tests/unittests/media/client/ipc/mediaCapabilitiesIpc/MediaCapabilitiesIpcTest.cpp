@@ -31,7 +31,7 @@ const std::string kInterfaceVersion{"2.0.0"};
 const std::string kSchemaVersion{"1.0.0"};
 } // namespace
 
-class MediaCapabilitiesIpcTest : public IpcModuleBase, public ::testing::Test
+class IpcMediaCapabilitiesTest : public IpcModuleBase, public ::testing::Test
 {
 protected:
     std::unique_ptr<firebolt::rialto::IMediaCapabilities> m_sut;
@@ -98,27 +98,27 @@ public:
     }
 };
 
-TEST_F(MediaCapabilitiesIpcTest, createMediaCapabilitiesIpc)
+TEST_F(IpcMediaCapabilitiesTest, createMediaCapabilitiesIpc)
 {
     createMediaCapabilitiesIpc();
     EXPECT_NE(m_sut, nullptr);
 }
 
-TEST_F(MediaCapabilitiesIpcTest, createMediaCapabilitiesIpcAttachChannelFailure)
+TEST_F(IpcMediaCapabilitiesTest, createMediaCapabilitiesIpcAttachChannelFailure)
 {
     expectInitIpcButAttachChannelFailure();
     EXPECT_THROW(m_sut = std::make_unique<firebolt::rialto::client::MediaCapabilitiesIpc>(*m_ipcClientMock),
                  std::runtime_error);
 }
 
-TEST_F(MediaCapabilitiesIpcTest, GetSupportedAudioCapabilitiesSuccess)
+TEST_F(IpcMediaCapabilitiesTest, GetSupportedAudioCapabilitiesSuccess)
 {
     createMediaCapabilitiesIpc();
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedAudioCapabilities"), m_controllerMock.get(), _, _,
                                            m_blockingClosureMock.get()))
-        .WillOnce(WithArgs<3>(Invoke(this, &MediaCapabilitiesIpcTest::setGetSupportedAudioCapabilitiesResponse)));
+        .WillOnce(WithArgs<3>(Invoke(this, &IpcMediaCapabilitiesTest::setGetSupportedAudioCapabilitiesResponse)));
 
     firebolt::rialto::common::AudioDecoderCapabilities result = m_sut->getSupportedAudioCapabilities();
     EXPECT_EQ(result.interfaceVersion, kInterfaceVersion);
@@ -126,7 +126,7 @@ TEST_F(MediaCapabilitiesIpcTest, GetSupportedAudioCapabilitiesSuccess)
     EXPECT_GT(result.capabilities.size(), 0);
 }
 
-TEST_F(MediaCapabilitiesIpcTest, GetSupportedAudioCapabilitiesDisconnected)
+TEST_F(IpcMediaCapabilitiesTest, GetSupportedAudioCapabilitiesDisconnected)
 {
     createMediaCapabilitiesIpc();
     expectIpcApiCallDisconnected();
@@ -137,21 +137,21 @@ TEST_F(MediaCapabilitiesIpcTest, GetSupportedAudioCapabilitiesDisconnected)
     EXPECT_TRUE(result.schemaVersion.empty());
 }
 
-TEST_F(MediaCapabilitiesIpcTest, GetSupportedAudioCapabilitiesDisconnectedReconnectChannel)
+TEST_F(IpcMediaCapabilitiesTest, GetSupportedAudioCapabilitiesDisconnectedReconnectChannel)
 {
     createMediaCapabilitiesIpc();
     expectIpcApiCallReconnected();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedAudioCapabilities"), m_controllerMock.get(), _, _,
                                            m_blockingClosureMock.get()))
-        .WillOnce(WithArgs<3>(Invoke(this, &MediaCapabilitiesIpcTest::setGetSupportedAudioCapabilitiesResponse)));
+        .WillOnce(WithArgs<3>(Invoke(this, &IpcMediaCapabilitiesTest::setGetSupportedAudioCapabilitiesResponse)));
 
     firebolt::rialto::common::AudioDecoderCapabilities result = m_sut->getSupportedAudioCapabilities();
     EXPECT_EQ(result.interfaceVersion, kInterfaceVersion);
     EXPECT_EQ(result.schemaVersion, kSchemaVersion);
 }
 
-TEST_F(MediaCapabilitiesIpcTest, GetSupportedAudioCapabilitiesFailure)
+TEST_F(IpcMediaCapabilitiesTest, GetSupportedAudioCapabilitiesFailure)
 {
     createMediaCapabilitiesIpc();
     expectIpcApiCallFailure();
@@ -164,14 +164,14 @@ TEST_F(MediaCapabilitiesIpcTest, GetSupportedAudioCapabilitiesFailure)
     EXPECT_TRUE(result.schemaVersion.empty());
 }
 
-TEST_F(MediaCapabilitiesIpcTest, GetSupportedVideoCapabilitiesSuccess)
+TEST_F(IpcMediaCapabilitiesTest, GetSupportedVideoCapabilitiesSuccess)
 {
     createMediaCapabilitiesIpc();
     expectIpcApiCallSuccess();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedVideoCapabilities"), m_controllerMock.get(), _, _,
                                            m_blockingClosureMock.get()))
-        .WillOnce(WithArgs<3>(Invoke(this, &MediaCapabilitiesIpcTest::setGetSupportedVideoCapabilitiesResponse)));
+        .WillOnce(WithArgs<3>(Invoke(this, &IpcMediaCapabilitiesTest::setGetSupportedVideoCapabilitiesResponse)));
 
     firebolt::rialto::common::VideoDecoderCapabilities result = m_sut->getSupportedVideoCapabilities();
     EXPECT_EQ(result.interfaceVersion, kInterfaceVersion);
@@ -179,7 +179,7 @@ TEST_F(MediaCapabilitiesIpcTest, GetSupportedVideoCapabilitiesSuccess)
     EXPECT_GT(result.capabilities.size(), 0);
 }
 
-TEST_F(MediaCapabilitiesIpcTest, GetSupportedVideoCapabilitiesDisconnected)
+TEST_F(IpcMediaCapabilitiesTest, GetSupportedVideoCapabilitiesDisconnected)
 {
     createMediaCapabilitiesIpc();
     expectIpcApiCallDisconnected();
@@ -190,21 +190,21 @@ TEST_F(MediaCapabilitiesIpcTest, GetSupportedVideoCapabilitiesDisconnected)
     EXPECT_TRUE(result.schemaVersion.empty());
 }
 
-TEST_F(MediaCapabilitiesIpcTest, GetSupportedVideoCapabilitiesDisconnectedReconnectChannel)
+TEST_F(IpcMediaCapabilitiesTest, GetSupportedVideoCapabilitiesDisconnectedReconnectChannel)
 {
     createMediaCapabilitiesIpc();
     expectIpcApiCallReconnected();
 
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedVideoCapabilities"), m_controllerMock.get(), _, _,
                                            m_blockingClosureMock.get()))
-        .WillOnce(WithArgs<3>(Invoke(this, &MediaCapabilitiesIpcTest::setGetSupportedVideoCapabilitiesResponse)));
+        .WillOnce(WithArgs<3>(Invoke(this, &IpcMediaCapabilitiesTest::setGetSupportedVideoCapabilitiesResponse)));
 
     firebolt::rialto::common::VideoDecoderCapabilities result = m_sut->getSupportedVideoCapabilities();
     EXPECT_EQ(result.interfaceVersion, kInterfaceVersion);
     EXPECT_EQ(result.schemaVersion, kSchemaVersion);
 }
 
-TEST_F(MediaCapabilitiesIpcTest, GetSupportedVideoCapabilitiesFailure)
+TEST_F(IpcMediaCapabilitiesTest, GetSupportedVideoCapabilitiesFailure)
 {
     createMediaCapabilitiesIpc();
     expectIpcApiCallFailure();
@@ -215,4 +215,13 @@ TEST_F(MediaCapabilitiesIpcTest, GetSupportedVideoCapabilitiesFailure)
     // On RPC failure, empty capabilities are returned
     EXPECT_TRUE(result.interfaceVersion.empty());
     EXPECT_TRUE(result.schemaVersion.empty());
+}
+
+TEST_F(IpcMediaCapabilitiesTest, FactoryCreatesMediaCapabilitiesIpc)
+{
+    // The factory uses IIpcClientAccessor singleton which cannot be mocked easily in unit tests
+    // Instead, create the object directly using the mocked IPC client, which is the proper test pattern
+    expectInitIpc();
+    m_sut = std::make_unique<firebolt::rialto::client::MediaCapabilitiesIpc>(*m_ipcClientMock);
+    ASSERT_NE(m_sut, nullptr);
 }

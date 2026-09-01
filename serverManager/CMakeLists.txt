@@ -79,11 +79,7 @@ target_include_directories (
 )
 
 if( RIALTO_ENABLE_CONFIG_FILE )
-        if(RIALTO_CONFIG_FILE_NAME MATCHES "\\.ya?ml$")
-                set(RIALTO_CONFIG_TEMPLATE_FILE config/rialto-config.in.yaml)
-        else()
-                set(RIALTO_CONFIG_TEMPLATE_FILE config/rialto-config.in.json)
-        endif()
+        set(RIALTO_CONFIG_TEMPLATE_FILE config/rialto-config.in.json)
 
         configure_file(
                 ${RIALTO_CONFIG_TEMPLATE_FILE}

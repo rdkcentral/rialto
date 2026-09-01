@@ -680,16 +680,8 @@ void MediaPipelineCapabilitiesModuleService::getSupportedAudioCapabilities(
         done->Run();
         return;
     }
-    auto mediaCapabilities = m_mediaPipelineService.getMediaCapabilities();
-    if (!mediaCapabilities)
-    {
-        RIALTO_SERVER_LOG_ERROR("Media capabilities not available");
-        controller->SetFailed("Media capabilities not available");
-        done->Run();
-        return;
-    }
     const firebolt::rialto::common::AudioDecoderCapabilities kAudioCapabilities =
-        mediaCapabilities->getSupportedAudioCapabilities();
+        m_mediaPipelineService.getSupportedAudioCapabilities();
 
     convertAudioDecoderCapabilities(kAudioCapabilities, response);
 
@@ -710,16 +702,8 @@ void MediaPipelineCapabilitiesModuleService::getSupportedVideoCapabilities(
         done->Run();
         return;
     }
-    auto mediaCapabilities = m_mediaPipelineService.getMediaCapabilities();
-    if (!mediaCapabilities)
-    {
-        RIALTO_SERVER_LOG_ERROR("Media capabilities not available");
-        controller->SetFailed("Media capabilities not available");
-        done->Run();
-        return;
-    }
     const firebolt::rialto::common::VideoDecoderCapabilities kVideoCapabilities =
-        mediaCapabilities->getSupportedVideoCapabilities();
+        m_mediaPipelineService.getSupportedVideoCapabilities();
 
     convertVideoDecoderCapabilities(kVideoCapabilities, response);
 

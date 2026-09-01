@@ -42,7 +42,7 @@ AudioProfileCapability makeAudioProfile(uint32_t seed)
 class CapabilitySerialiserAudioTest : public ::testing::Test
 {
 protected:
-    rialto::AudioCapabilities m_dst;
+    ::firebolt::rialto::AudioCapabilities m_dst;
 };
 
 TEST_F(CapabilitySerialiserAudioTest, SetsVersionFieldsWithEmptyCapabilities)
@@ -138,7 +138,7 @@ TEST_F(CapabilitySerialiserAudioTest, FillsDolbyAc3Profiles)
 
     ASSERT_EQ(m_dst.capabilities(0).dolby_ac3().profiles_size(), 1);
     EXPECT_EQ(m_dst.capabilities(0).dolby_ac3().profiles(0).profile(),
-              rialto::AudioCapabilities::DOLBY_AC3_PROFILE_STANDARD);
+              ::firebolt::rialto::AudioCapabilities::DOLBY_AC3_PROFILE_STANDARD);
 }
 
 // ---------------------------------------------------------------------------
@@ -150,7 +150,7 @@ TEST_F(CapabilitySerialiserAudioTest, FillsDolbyAc3Profiles)
 struct AacProfileParam
 {
     AacProfile input;
-    rialto::AudioCapabilities::AacProfile expected;
+    ::firebolt::rialto::AudioCapabilities::AacProfile expected;
 };
 
 class AacProfileTest : public ::testing::TestWithParam<AacProfileParam>
@@ -166,7 +166,7 @@ TEST_P(AacProfileTest, MapsToExpectedProtoValue)
     cap.aac = aac;
     src.capabilities.push_back(cap);
 
-    rialto::AudioCapabilities dst;
+    ::firebolt::rialto::AudioCapabilities dst;
     serialiseAudioCapabilities(src, &dst);
 
     ASSERT_EQ(dst.capabilities(0).aac().profiles_size(), 1);
@@ -175,18 +175,18 @@ TEST_P(AacProfileTest, MapsToExpectedProtoValue)
 
 INSTANTIATE_TEST_SUITE_P(
     AllValues, AacProfileTest,
-    ::testing::Values(AacProfileParam{AacProfile::HE_V1, rialto::AudioCapabilities::AAC_PROFILE_HE_V1},
-                      AacProfileParam{AacProfile::HE_V2, rialto::AudioCapabilities::AAC_PROFILE_HE_V2},
-                      AacProfileParam{AacProfile::ELD, rialto::AudioCapabilities::AAC_PROFILE_ELD},
-                      AacProfileParam{AacProfile::X_HE, rialto::AudioCapabilities::AAC_PROFILE_X_HE},
+    ::testing::Values(AacProfileParam{AacProfile::HE_V1, ::firebolt::rialto::AudioCapabilities::AAC_PROFILE_HE_V1},
+                      AacProfileParam{AacProfile::HE_V2, ::firebolt::rialto::AudioCapabilities::AAC_PROFILE_HE_V2},
+                      AacProfileParam{AacProfile::ELD, ::firebolt::rialto::AudioCapabilities::AAC_PROFILE_ELD},
+                      AacProfileParam{AacProfile::X_HE, ::firebolt::rialto::AudioCapabilities::AAC_PROFILE_X_HE},
                       // LC has no explicit `case` in the switch -> exercises `default:`.
-                      AacProfileParam{AacProfile::LC, rialto::AudioCapabilities::AAC_PROFILE_LC}));
+                      AacProfileParam{AacProfile::LC, ::firebolt::rialto::AudioCapabilities::AAC_PROFILE_LC}));
 
 // --- DTS: HD_HRA/HD_MA explicit; CORE has no explicit case -> default -------
 struct DtsProfileParam
 {
     DtsProfile input;
-    rialto::AudioCapabilities::DtsProfile expected;
+    ::firebolt::rialto::AudioCapabilities::DtsProfile expected;
 };
 
 class DtsProfileTest : public ::testing::TestWithParam<DtsProfileParam>
@@ -202,7 +202,7 @@ TEST_P(DtsProfileTest, MapsToExpectedProtoValue)
     cap.dts = dts;
     src.capabilities.push_back(cap);
 
-    rialto::AudioCapabilities dst;
+    ::firebolt::rialto::AudioCapabilities dst;
     serialiseAudioCapabilities(src, &dst);
 
     ASSERT_EQ(dst.capabilities(0).dts().profiles_size(), 1);
@@ -211,16 +211,16 @@ TEST_P(DtsProfileTest, MapsToExpectedProtoValue)
 
 INSTANTIATE_TEST_SUITE_P(
     AllValues, DtsProfileTest,
-    ::testing::Values(DtsProfileParam{DtsProfile::HD_HRA, rialto::AudioCapabilities::DTS_PROFILE_HD_HRA},
-                      DtsProfileParam{DtsProfile::HD_MA, rialto::AudioCapabilities::DTS_PROFILE_HD_MA},
+    ::testing::Values(DtsProfileParam{DtsProfile::HD_HRA, ::firebolt::rialto::AudioCapabilities::DTS_PROFILE_HD_HRA},
+                      DtsProfileParam{DtsProfile::HD_MA, ::firebolt::rialto::AudioCapabilities::DTS_PROFILE_HD_MA},
                       // CORE has no explicit case -> exercises `default:`.
-                      DtsProfileParam{DtsProfile::CORE, rialto::AudioCapabilities::DTS_PROFILE_CORE}));
+                      DtsProfileParam{DtsProfile::CORE, ::firebolt::rialto::AudioCapabilities::DTS_PROFILE_CORE}));
 
 // --- AVS: AVS2/AVS3 explicit; AVS1_PART2 has no explicit case -> default ----
 struct AvsProfileParam
 {
     AvsProfile input;
-    rialto::AudioCapabilities::AvsProfile expected;
+    ::firebolt::rialto::AudioCapabilities::AvsProfile expected;
 };
 
 class AvsProfileTest : public ::testing::TestWithParam<AvsProfileParam>
@@ -236,7 +236,7 @@ TEST_P(AvsProfileTest, MapsToExpectedProtoValue)
     cap.avs = avs;
     src.capabilities.push_back(cap);
 
-    rialto::AudioCapabilities dst;
+    ::firebolt::rialto::AudioCapabilities dst;
     serialiseAudioCapabilities(src, &dst);
 
     ASSERT_EQ(dst.capabilities(0).avs().profiles_size(), 1);
@@ -245,10 +245,11 @@ TEST_P(AvsProfileTest, MapsToExpectedProtoValue)
 
 INSTANTIATE_TEST_SUITE_P(
     AllValues, AvsProfileTest,
-    ::testing::Values(AvsProfileParam{AvsProfile::AVS2, rialto::AudioCapabilities::AVS_PROFILE_AVS2},
-                      AvsProfileParam{AvsProfile::AVS3, rialto::AudioCapabilities::AVS_PROFILE_AVS3},
+    ::testing::Values(AvsProfileParam{AvsProfile::AVS2, ::firebolt::rialto::AudioCapabilities::AVS_PROFILE_AVS2},
+                      AvsProfileParam{AvsProfile::AVS3, ::firebolt::rialto::AudioCapabilities::AVS_PROFILE_AVS3},
                       // AVS1_PART2 has no explicit case -> exercises `default:`.
-                      AvsProfileParam{AvsProfile::AVS1_PART2, rialto::AudioCapabilities::AVS_PROFILE_AVS1_PART2}));
+                      AvsProfileParam{AvsProfile::AVS1_PART2,
+                                      ::firebolt::rialto::AudioCapabilities::AVS_PROFILE_AVS1_PART2}));
 
 // --- Ternary-based mappers: DolbyEac3, MpegAudio, RealAudio, Usac ------------
 // Each needs both branches of its ternary exercised.
@@ -265,7 +266,7 @@ TEST_F(CapabilitySerialiserAudioTest, DolbyEac3ProfilePlusJoc)
     serialiseAudioCapabilities(src, &m_dst);
 
     EXPECT_EQ(m_dst.capabilities(0).dolby_eac3().profiles(0).profile(),
-              rialto::AudioCapabilities::DOLBY_EAC3_PROFILE_PLUS_JOC);
+              ::firebolt::rialto::AudioCapabilities::DOLBY_EAC3_PROFILE_PLUS_JOC);
 }
 
 TEST_F(CapabilitySerialiserAudioTest, DolbyEac3ProfilePlus)
@@ -280,7 +281,7 @@ TEST_F(CapabilitySerialiserAudioTest, DolbyEac3ProfilePlus)
     serialiseAudioCapabilities(src, &m_dst);
 
     EXPECT_EQ(m_dst.capabilities(0).dolby_eac3().profiles(0).profile(),
-              rialto::AudioCapabilities::DOLBY_EAC3_PROFILE_PLUS);
+              ::firebolt::rialto::AudioCapabilities::DOLBY_EAC3_PROFILE_PLUS);
 }
 
 TEST_F(CapabilitySerialiserAudioTest, MpegAudioProfileLayer2)
@@ -295,7 +296,7 @@ TEST_F(CapabilitySerialiserAudioTest, MpegAudioProfileLayer2)
     serialiseAudioCapabilities(src, &m_dst);
 
     EXPECT_EQ(m_dst.capabilities(0).mpeg_audio().profiles(0).profile(),
-              rialto::AudioCapabilities::MPEG_AUDIO_PROFILE_LAYER_2);
+              ::firebolt::rialto::AudioCapabilities::MPEG_AUDIO_PROFILE_LAYER_2);
 }
 
 TEST_F(CapabilitySerialiserAudioTest, MpegAudioProfileLayer1)
@@ -310,7 +311,7 @@ TEST_F(CapabilitySerialiserAudioTest, MpegAudioProfileLayer1)
     serialiseAudioCapabilities(src, &m_dst);
 
     EXPECT_EQ(m_dst.capabilities(0).mpeg_audio().profiles(0).profile(),
-              rialto::AudioCapabilities::MPEG_AUDIO_PROFILE_LAYER_1);
+              ::firebolt::rialto::AudioCapabilities::MPEG_AUDIO_PROFILE_LAYER_1);
 }
 
 TEST_F(CapabilitySerialiserAudioTest, RealAudioProfileRa10)
@@ -325,7 +326,7 @@ TEST_F(CapabilitySerialiserAudioTest, RealAudioProfileRa10)
     serialiseAudioCapabilities(src, &m_dst);
 
     EXPECT_EQ(m_dst.capabilities(0).real_audio().profiles(0).profile(),
-              rialto::AudioCapabilities::REALAUDIO_PROFILE_RA10);
+              ::firebolt::rialto::AudioCapabilities::REALAUDIO_PROFILE_RA10);
 }
 
 TEST_F(CapabilitySerialiserAudioTest, RealAudioProfileRa8)
@@ -339,7 +340,8 @@ TEST_F(CapabilitySerialiserAudioTest, RealAudioProfileRa8)
 
     serialiseAudioCapabilities(src, &m_dst);
 
-    EXPECT_EQ(m_dst.capabilities(0).real_audio().profiles(0).profile(), rialto::AudioCapabilities::REALAUDIO_PROFILE_RA8);
+    EXPECT_EQ(m_dst.capabilities(0).real_audio().profiles(0).profile(),
+              ::firebolt::rialto::AudioCapabilities::REALAUDIO_PROFILE_RA8);
 }
 
 TEST_F(CapabilitySerialiserAudioTest, UsacProfileExtendedHeAac)
@@ -354,7 +356,7 @@ TEST_F(CapabilitySerialiserAudioTest, UsacProfileExtendedHeAac)
     serialiseAudioCapabilities(src, &m_dst);
 
     EXPECT_EQ(m_dst.capabilities(0).usac().profiles(0).profile(),
-              rialto::AudioCapabilities::USAC_PROFILE_EXTENDED_HE_AAC);
+              ::firebolt::rialto::AudioCapabilities::USAC_PROFILE_EXTENDED_HE_AAC);
 }
 
 TEST_F(CapabilitySerialiserAudioTest, UsacProfileBaseline)
@@ -368,7 +370,8 @@ TEST_F(CapabilitySerialiserAudioTest, UsacProfileBaseline)
 
     serialiseAudioCapabilities(src, &m_dst);
 
-    EXPECT_EQ(m_dst.capabilities(0).usac().profiles(0).profile(), rialto::AudioCapabilities::USAC_PROFILE_BASELINE);
+    EXPECT_EQ(m_dst.capabilities(0).usac().profiles(0).profile(),
+              ::firebolt::rialto::AudioCapabilities::USAC_PROFILE_BASELINE);
 }
 
 // ---------------------------------------------------------------------------
@@ -377,7 +380,7 @@ TEST_F(CapabilitySerialiserAudioTest, UsacProfileBaseline)
 class CapabilitySerialiserVideoTest : public ::testing::Test
 {
 protected:
-    rialto::VideoCapabilities m_dst;
+    ::firebolt::rialto::VideoCapabilities m_dst;
 };
 
 TEST_F(CapabilitySerialiserVideoTest, SetsVersionFieldsWithEmptyCapabilities)
@@ -434,12 +437,12 @@ TEST_F(CapabilitySerialiserVideoTest, FillsMpeg2ProfilesAndDynamicRanges)
     EXPECT_EQ(out.profiles(0).max_bitrate_in_bps(), 5000000u);
 
     ASSERT_EQ(out.dynamic_ranges_size(), 5);
-    EXPECT_EQ(out.dynamic_ranges(0), rialto::VideoCapabilities::DYNAMIC_RANGE_HLG);
-    EXPECT_EQ(out.dynamic_ranges(1), rialto::VideoCapabilities::DYNAMIC_RANGE_HDR10);
-    EXPECT_EQ(out.dynamic_ranges(2), rialto::VideoCapabilities::DYNAMIC_RANGE_HDR10PLUS);
-    EXPECT_EQ(out.dynamic_ranges(3), rialto::VideoCapabilities::DYNAMIC_RANGE_DOLBY_VISION);
+    EXPECT_EQ(out.dynamic_ranges(0), ::firebolt::rialto::VideoCapabilities::DYNAMIC_RANGE_HLG);
+    EXPECT_EQ(out.dynamic_ranges(1), ::firebolt::rialto::VideoCapabilities::DYNAMIC_RANGE_HDR10);
+    EXPECT_EQ(out.dynamic_ranges(2), ::firebolt::rialto::VideoCapabilities::DYNAMIC_RANGE_HDR10PLUS);
+    EXPECT_EQ(out.dynamic_ranges(3), ::firebolt::rialto::VideoCapabilities::DYNAMIC_RANGE_DOLBY_VISION);
     // SDR has no explicit case in toDR() -> exercises `default:`.
-    EXPECT_EQ(out.dynamic_ranges(4), rialto::VideoCapabilities::DYNAMIC_RANGE_SDR);
+    EXPECT_EQ(out.dynamic_ranges(4), ::firebolt::rialto::VideoCapabilities::DYNAMIC_RANGE_SDR);
 }
 
 // --- H264 -----------------------------------------------------------------

@@ -22,7 +22,7 @@ add_gtests (
 
         # MediaCapabilities tests
         ${CMAKE_CURRENT_SOURCE_DIR}/../ipc/ipcModuleBase/IpcModuleBase.cpp
-        mediaCapabilities/MediaCapabilitiesTest.cpp
+        mediaCapabilities/MediaCapabilitiesTests.cpp
 
         # MediaPipeline tests
         mediaPipeline/base/MediaPipelineTestBase.cpp

@@ -45,22 +45,9 @@ public:
 
     /**
      * @brief Create GstCapabilities object.
-     * @param preloadedAudio Optional pre-loaded audio capabilities from ServerManager
-     * @param preloadedVideo Optional pre-loaded video capabilities from ServerManager
      * @return Unique pointer to IGstCapabilities
      */
-    virtual std::unique_ptr<IGstCapabilities> createGstCapabilities(
-        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
-        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt) = 0;
-
-    /**
-     * @brief Set preloaded capabilities (stored for next createGstCapabilities call)
-     * @param audioCaps Optional audio decoder capabilities
-     * @param videoCaps Optional video decoder capabilities
-     */
-    virtual void
-    setPreloadedCapabilities(const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-                             const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) = 0;
+    virtual std::unique_ptr<IGstCapabilities> createGstCapabilities() = 0;
 };
 
 class IGstCapabilities
@@ -109,16 +96,24 @@ public:
     virtual bool isVideoMaster(bool &isVideoMaster) = 0;
 
     /**
-     * @brief Gets the supported audio capabilities.
+     * @brief Gets the supported audio capabilities from GStreamer.
      *
-     * @retval The supported audio capabilities.
+     * Returns empty capabilities (no decoder capability data from GStreamer).
+     * Full capabilities should be obtained via MediaCapabilities which orchestrates
+     * between YAML (Path A) and GStreamer (Path B) sources.
+     *
+     * @retval The supported audio capabilities (empty if not available).
      */
     virtual firebolt::rialto::common::AudioDecoderCapabilities getSupportedAudioCapabilities() = 0;
 
     /**
-     * @brief Gets the supported video capabilities.
+     * @brief Gets the supported video capabilities from GStreamer.
      *
-     * @retval The supported video capabilities.
+     * Returns empty capabilities (no decoder capability data from GStreamer).
+     * Full capabilities should be obtained via MediaCapabilities which orchestrates
+     * between YAML (Path A) and GStreamer (Path B) sources.
+     *
+     * @retval The supported video capabilities (empty if not available).
      */
     virtual firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() = 0;
 };

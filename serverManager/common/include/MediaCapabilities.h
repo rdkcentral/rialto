@@ -17,16 +17,17 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_H_
-#define RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_H_
+#ifndef RIALTO_SERVERMANAGER_COMMON_MEDIA_CAPABILITIES_H_
+#define RIALTO_SERVERMANAGER_COMMON_MEDIA_CAPABILITIES_H_
 
 #include "IMediaCapabilities.h"
 #include "IYamlCppWrapper.h"
 #include <memory>
 
-namespace rialto::servermanager::service
+namespace rialto::servermanager::common
 {
-class MediaCapabilities : public IMediaCapabilities
+
+class MediaCapabilities : public rialto::servermanager::service::IMediaCapabilities
 {
 public:
     explicit MediaCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper);
@@ -42,6 +43,6 @@ private:
     std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> m_yamlCppWrapper;
 };
 
-} // namespace rialto::servermanager::service
+} // namespace rialto::servermanager::common
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_H_
+#endif // RIALTO_SERVERMANAGER_COMMON_MEDIA_CAPABILITIES_H_

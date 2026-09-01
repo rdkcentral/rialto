@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2026 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,29 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_COMMON_DECODER_CAPABILITIES_COMMON_H_
+#define FIREBOLT_RIALTO_COMMON_DECODER_CAPABILITIES_COMMON_H_
 
-#include "IGstCapabilities.h"
-#include <gmock/gmock.h>
-#include <memory>
+/**
+ * @file DecoderCapabilitiesCommon.h
+ *
+ * Common types and enums for decoder capabilities
+ *
+ */
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto::common
 {
-class GstCapabilitiesFactoryMock : public IGstCapabilitiesFactory
+/**
+ * @brief Status of the decoder capabilities config file read operation.
+ */
+enum class DecoderCapabilitiesStatus
 {
-public:
-    MOCK_METHOD(std::unique_ptr<IGstCapabilities>, createGstCapabilities, (), (override));
+    OK,
+    CONFIG_NOT_FOUND,         /**< Config file not found */
+    SCHEMA_VALIDATION_FAILED, /**< Config file failed schema validation */
+    INTERNAL_ERROR
 };
 
-} // namespace firebolt::rialto::server
+} // namespace firebolt::rialto::common
 
-#endif // FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_COMMON_DECODER_CAPABILITIES_COMMON_H_

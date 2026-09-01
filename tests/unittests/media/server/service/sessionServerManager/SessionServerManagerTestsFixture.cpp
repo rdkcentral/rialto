@@ -176,8 +176,7 @@ void SessionServerManagerTests::willFailToSetConfigurationWhenSessionManagementS
     EXPECT_TRUE(m_sut);
     EXPECT_TRUE(
         m_sut->configureIpc(kSessionManagementSocket, kSessionManagementSocketPermissions, kSocketOwner, kSocketGroup));
-    EXPECT_FALSE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId,
-                                          std::nullopt, std::nullopt));
+    EXPECT_FALSE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId));
 }
 
 void SessionServerManagerTests::willSetConfiguration()
@@ -198,8 +197,7 @@ void SessionServerManagerTests::willSetConfiguration()
     EXPECT_TRUE(m_sut);
     EXPECT_TRUE(
         m_sut->configureIpc(kSessionManagementSocket, kSessionManagementSocketPermissions, kSocketOwner, kSocketGroup));
-    EXPECT_TRUE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId,
-                                         std::nullopt, std::nullopt));
+    EXPECT_TRUE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId));
 }
 
 void SessionServerManagerTests::willFailToSetConfigurationWithFdWhenSessionManagementServerFailsToInit()
@@ -224,8 +222,7 @@ void SessionServerManagerTests::willSetConfigurationWithFd()
         .WillOnce(Return(true));
     EXPECT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->configureIpc(kFd));
-    EXPECT_TRUE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId,
-                                         std::nullopt, std::nullopt));
+    EXPECT_TRUE(m_sut->configureServices(SessionServerState::INACTIVE, kMaxResource, kClientDisplayName, kAppId));
 }
 
 void SessionServerManagerTests::willFailToSetUnsupportedState()

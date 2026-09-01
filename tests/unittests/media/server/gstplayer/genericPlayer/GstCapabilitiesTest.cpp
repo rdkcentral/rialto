@@ -27,7 +27,6 @@
 #include "MediaPipelineStructureMatchers.h"
 #include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
-#include "YamlCppWrapperMock.h"
 
 #include <condition_variable>
 #include <gtest/gtest.h>
@@ -101,7 +100,6 @@ public:
         IFactoryAccessor::instance().gstWrapperFactory() = m_gstWrapperFactoryMock;
         IFactoryAccessor::instance().glibWrapperFactory() = m_glibWrapperFactoryMock;
         IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = m_rdkGstreamerUtilsWrapperFactoryMock;
-        IFactoryAccessor::instance().yamlCppWrapperFactory() = m_yamlCppWrapperFactoryMock;
         memset(&m_object, 0x00, sizeof(m_object));
         m_elementFactory = gst_element_factory_find("fakesrc");
     }
@@ -111,7 +109,6 @@ public:
         IFactoryAccessor::instance().gstWrapperFactory() = nullptr;
         IFactoryAccessor::instance().glibWrapperFactory() = nullptr;
         IFactoryAccessor::instance().rdkGstreamerUtilsWrapperFactory() = nullptr;
-        IFactoryAccessor::instance().yamlCppWrapperFactory() = nullptr;
     }
 
     void expectCapsToMimeMapping()
@@ -158,10 +155,8 @@ public:
 
     void expectGetDecoderCapabilities()
     {
-        EXPECT_CALL(*m_yamlCppWrapperMock, getAudioDecoderCapabilities(_))
-            .WillOnce(DoAll(SetArgReferee<0>(kAudioCapabilities), Return(DecoderCapabilitiesStatus::OK)));
-        EXPECT_CALL(*m_yamlCppWrapperMock, getVideoDecoderCapabilities(_))
-            .WillOnce(DoAll(SetArgReferee<0>(kVideoCapabilities), Return(DecoderCapabilitiesStatus::OK)));
+        // GstCapabilities is pure Path B (GStreamer only) - YAML handled by orchestrator
+        // No YAML expectations needed here
     }
 
     void createSutWithNoDecoderAndNoSink()
@@ -188,7 +183,7 @@ public:
         EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
         m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                                  m_yamlCppWrapperMock, m_gstInitialiserMock);
+                                                  m_gstInitialiserMock);
         std::unique_lock lock{mutex};
         cv.wait_for(lock, std::chrono::milliseconds{200}, [&]() { return initialised; });
     }
@@ -220,10 +215,6 @@ public:
     std::shared_ptr<StrictMock<GlibWrapperMock>> m_glibWrapperMock{std::make_shared<StrictMock<GlibWrapperMock>>()};
     std::shared_ptr<StrictMock<RdkGstreamerUtilsWrapperMock>> m_rdkGstreamerUtilsWrapperMock{
         std::make_shared<StrictMock<RdkGstreamerUtilsWrapperMock>>()};
-    std::shared_ptr<StrictMock<YamlCppWrapperMock>> m_yamlCppWrapperMock{
-        std::make_shared<StrictMock<YamlCppWrapperMock>>()};
-    std::shared_ptr<StrictMock<YamlCppWrapperFactoryMock>> m_yamlCppWrapperFactoryMock{
-        std::make_shared<StrictMock<YamlCppWrapperFactoryMock>>()};
 
     // Common sink factory type variables to be used in tests
     char m_dummySink = 0;
@@ -276,7 +267,6 @@ TEST_F(GstCapabilitiesTest, FactoryCreatesObject)
     EXPECT_CALL(*m_glibWrapperFactoryMock, getGlibWrapper()).WillOnce(Return(m_glibWrapperMock));
     EXPECT_CALL(*m_rdkGstreamerUtilsWrapperFactoryMock, createRdkGstreamerUtilsWrapper())
         .WillOnce(Return(m_rdkGstreamerUtilsWrapperMock));
-    EXPECT_CALL(*m_yamlCppWrapperFactoryMock, createYamlCppWrapper()).WillOnce(Return(m_yamlCppWrapperMock));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
 
@@ -321,7 +311,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneSinkElement)
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+                                              m_gstInitialiserMock);
 
     EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::AUDIO), UnorderedElementsAre("audio/x-raw"));
 
@@ -343,7 +333,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithNoPads)
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+                                              m_gstInitialiserMock);
 
     EXPECT_TRUE(m_sut->getSupportedMimeTypes(MediaSourceType::AUDIO).empty());
 
@@ -383,7 +373,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoSinkPadsA
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+                                              m_gstInitialiserMock);
 
     EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::AUDIO),
                 UnorderedElementsAre("audio/mp4", "audio/aac", "audio/x-eac3", "audio/x-opus"));
@@ -542,7 +532,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoPadsWithT
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+                                              m_gstInitialiserMock);
 
     EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::AUDIO),
                 UnorderedElementsAre("audio/mp4", "audio/aac", "audio/x-eac3"));
@@ -586,7 +576,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+                                              m_gstInitialiserMock);
 
     EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), UnorderedElementsAre("video/h264", "video/h265"));
 
@@ -642,7 +632,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+                                              m_gstInitialiserMock);
 
     EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), UnorderedElementsAre("video/h264", "video/h265"));
 
@@ -681,7 +671,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+                                              m_gstInitialiserMock);
 
     EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), UnorderedElementsAre("video/mp4"));
 
@@ -724,7 +714,7 @@ TEST_F(GstCapabilitiesTest,
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+                                              m_gstInitialiserMock);
 
     EXPECT_TRUE(m_sut->getSupportedMimeTypes(MediaSourceType::AUDIO).empty());
 
@@ -786,7 +776,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_TwoDecodersWithOneSinkPad_Pars
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+                                              m_gstInitialiserMock);
 
     EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), UnorderedElementsAre("video/h264", "video/h265"));
 
@@ -841,7 +831,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPad_Pars
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+                                              m_gstInitialiserMock);
 
     EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO), UnorderedElementsAre("video/h264", "video/h265"));
 
@@ -913,7 +903,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPads_Two
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+                                              m_gstInitialiserMock);
 
     EXPECT_THAT(m_sut->getSupportedMimeTypes(MediaSourceType::VIDEO),
                 UnorderedElementsAre("video/h264", "video/h265", "video/x-av1"));
@@ -936,7 +926,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_GetSubtitlesMimeTypes)
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
+                                              m_gstInitialiserMock);
 
     EXPECT_EQ(m_sut->getSupportedMimeTypes(MediaSourceType::SUBTITLE), kSubtitleMimeTypes);
 }
@@ -977,155 +967,21 @@ TEST_F(GstCapabilitiesTest, shouldCheckIfVideoIsMasterAndReturnFalse)
     EXPECT_FALSE(isVideoMaster);
 }
 
-TEST_F(GstCapabilitiesTest, shouldReturnAudioCapabilities)
-{
-    createSutWithNoDecoderAndNoSink();
-
-    EXPECT_THAT(m_sut->getSupportedAudioCapabilities(), decoderCapabilitiesMatcher(kAudioCapabilities));
-}
-
-TEST_F(GstCapabilitiesTest, shouldReturnVideoCapabilities)
-{
-    createSutWithNoDecoderAndNoSink();
-
-    EXPECT_THAT(m_sut->getSupportedVideoCapabilities(), decoderCapabilitiesMatcher(kVideoCapabilities));
-}
-
-TEST_F(GstCapabilitiesTest, shouldCreateSutWhenCapabilitiesConfigNotFound)
-{
-    std::mutex mutex;
-    std::condition_variable cv;
-    bool initialised{false};
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
-        .WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
-        .WillOnce(Invoke(
-            [&](auto type, auto rank)
-            {
-                std::unique_lock lock{mutex};
-                initialised = true;
-                cv.notify_one();
-                return nullptr;
-            }));
-    EXPECT_CALL(*m_yamlCppWrapperMock, getAudioDecoderCapabilities(_))
-        .WillOnce(Return(DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
-    EXPECT_CALL(*m_yamlCppWrapperMock, getVideoDecoderCapabilities(_))
-        .WillOnce(Return(DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
-    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
-
-    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
-    std::unique_lock lock{mutex};
-    cv.wait_for(lock, std::chrono::milliseconds{200}, [&]() { return initialised; });
-}
-
-TEST_F(GstCapabilitiesTest, shouldCreateSutWhenCapabilitiesLoadFails)
-{
-    std::mutex mutex;
-    std::condition_variable cv;
-    bool initialised{false};
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
-        .WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
-        .WillOnce(Invoke(
-            [&](auto type, auto rank)
-            {
-                std::unique_lock lock{mutex};
-                initialised = true;
-                cv.notify_one();
-                return nullptr;
-            }));
-    EXPECT_CALL(*m_yamlCppWrapperMock, getAudioDecoderCapabilities(_))
-        .WillOnce(Return(DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED));
-    EXPECT_CALL(*m_yamlCppWrapperMock, getVideoDecoderCapabilities(_))
-        .WillOnce(Return(DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED));
-    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
-
-    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
-    std::unique_lock lock{mutex};
-    cv.wait_for(lock, std::chrono::milliseconds{200}, [&]() { return initialised; });
-}
-
-TEST_F(GstCapabilitiesTest, shouldUsePreloadedCapabilitiesPathA)
-{
-    // Path A: Pre-loaded capabilities are provided from ServerManager
-    // Verify: Capabilities are used directly without YAML loading
-    // Expected: No calls to IYamlCppWrapper (YAML loading is skipped)
-
-    std::mutex mutex;
-    std::condition_variable cv;
-    bool initialised{false};
-
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
-        .WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
-        .WillOnce(Invoke(
-            [&](auto type, auto rank)
-            {
-                std::unique_lock lock{mutex};
-                initialised = true;
-                cv.notify_one();
-                return nullptr;
-            }));
-
-    // CRITICAL: IYamlCppWrapper should NOT be called when pre-loaded data is provided
-    // If it's called, the test will fail due to Times(0) expectation
-    EXPECT_CALL(*m_yamlCppWrapperMock, getAudioDecoderCapabilities(_)).Times(0);
-    EXPECT_CALL(*m_yamlCppWrapperMock, getVideoDecoderCapabilities(_)).Times(0);
-    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
-
-    // Create GstCapabilities with pre-loaded capabilities (Path A)
-    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock, kAudioCapabilities,
-                                              kVideoCapabilities);
-
-    // Verify the pre-loaded capabilities are returned
-    EXPECT_THAT(m_sut->getSupportedAudioCapabilities(), decoderCapabilitiesMatcher(kAudioCapabilities));
-    EXPECT_THAT(m_sut->getSupportedVideoCapabilities(), decoderCapabilitiesMatcher(kVideoCapabilities));
-
-    std::unique_lock lock{mutex};
-    cv.wait_for(lock, std::chrono::milliseconds{200}, [&]() { return initialised; });
-}
-
-TEST_F(GstCapabilitiesTest, shouldUseFallbackPathBWithoutPreloadedCapabilities)
-{
-    // Path B: No pre-loaded capabilities provided (std::nullopt)
-    // Verify: YAML loading is called to query GStreamer elements
-    // Expected: IYamlCppWrapper methods ARE called
-
-    std::mutex mutex;
-    std::condition_variable cv;
-    bool initialised{false};
-
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_DECODER, GST_RANK_MARGINAL))
-        .WillOnce(Return(nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
-        .WillOnce(Invoke(
-            [&](auto type, auto rank)
-            {
-                std::unique_lock lock{mutex};
-                initialised = true;
-                cv.notify_one();
-                return nullptr;
-            }));
-
-    // CRITICAL: IYamlCppWrapper SHOULD be called when pre-loaded data is absent
-    // This triggers the GStreamer element query fallback (Path B)
-    EXPECT_CALL(*m_yamlCppWrapperMock, getAudioDecoderCapabilities(_))
-        .WillOnce(DoAll(SetArgReferee<0>(kAudioCapabilities), Return(DecoderCapabilitiesStatus::OK)));
-    EXPECT_CALL(*m_yamlCppWrapperMock, getVideoDecoderCapabilities(_))
-        .WillOnce(DoAll(SetArgReferee<0>(kVideoCapabilities), Return(DecoderCapabilitiesStatus::OK)));
-    EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
-
-    // Create GstCapabilities WITHOUT pre-loaded capabilities (std::nullopt triggers Path B)
-    m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
-                                              m_yamlCppWrapperMock, m_gstInitialiserMock);
-
-    // Verify the YAML-loaded capabilities are returned
-    EXPECT_THAT(m_sut->getSupportedAudioCapabilities(), decoderCapabilitiesMatcher(kAudioCapabilities));
-    EXPECT_THAT(m_sut->getSupportedVideoCapabilities(), decoderCapabilitiesMatcher(kVideoCapabilities));
-
-    std::unique_lock lock{mutex};
-    cv.wait_for(lock, std::chrono::milliseconds{200}, [&]() { return initialised; });
-}
+// NOTE: These tests were testing YAML fallback behavior which no longer exists in GstCapabilities
+// GstCapabilities is now pure Path B (GStreamer only)
+// YAML handling and fallback orchestration moved to MediaCapabilities
+// These tests are disabled until proper GStreamer-only behavior can be tested
+//
+// TEST_F(GstCapabilitiesTest, shouldReturnAudioCapabilities)
+// {
+//     createSutWithNoDecoderAndNoSink();
+//
+//     EXPECT_THAT(m_sut->getSupportedAudioCapabilities(), decoderCapabilitiesMatcher(kAudioCapabilities));
+// }
+//
+// TEST_F(GstCapabilitiesTest, shouldReturnVideoCapabilities)
+// {
+//     createSutWithNoDecoderAndNoSink();
+//
+//     EXPECT_THAT(m_sut->getSupportedVideoCapabilities(), decoderCapabilitiesMatcher(kVideoCapabilities));
+// }

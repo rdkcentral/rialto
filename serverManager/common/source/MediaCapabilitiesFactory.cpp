@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2026 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,23 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_FACTORY_MOCK_H_
+#include "MediaCapabilitiesFactory.h"
+#include "IYamlCppWrapper.h"
+#include "MediaCapabilities.h"
 
-#include "IGstCapabilities.h"
-#include <gmock/gmock.h>
-#include <memory>
+using rialto::servermanager::common::MediaCapabilities;
 
-namespace firebolt::rialto::server
+namespace rialto::servermanager::service
 {
-class GstCapabilitiesFactoryMock : public IGstCapabilitiesFactory
+std::unique_ptr<IMediaCapabilities> createMediaCapabilities()
 {
-public:
-    MOCK_METHOD(std::unique_ptr<IGstCapabilities>, createGstCapabilities, (), (override));
-};
+    auto factory = firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory();
+    if (!factory)
+        return nullptr;
+    auto wrapper = factory->createYamlCppWrapper();
+    if (!wrapper)
+        return nullptr;
+    return std::make_unique<MediaCapabilities>(std::move(wrapper));
+}
 
-} // namespace firebolt::rialto::server
-
-#endif // FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_FACTORY_MOCK_H_
+} // namespace rialto::servermanager::service

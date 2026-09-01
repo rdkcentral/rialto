@@ -115,28 +115,9 @@ std::shared_ptr<IGstCapabilitiesFactory> IGstCapabilitiesFactory::getFactory()
     return factory;
 }
 
-std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
-    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
-    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo)
+std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities()
 {
     RIALTO_SERVER_LOG_DEBUG("GstCapabilities: CreateGstCapabilities: entry");
-
-    // Use provided parameters if available, otherwise read from mutex-protected storage
-    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> audio = preloadedAudio;
-    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> video = preloadedVideo;
-
-    if (!audio.has_value() || !video.has_value())
-    {
-        RIALTO_SERVER_LOG_DEBUG("GstCapabilities: CreateGstCapabilities: checking valid data for audio and video");
-        std::lock_guard<std::mutex> lock(m_preloadedMutex);
-        if (!audio.has_value())
-            audio = m_preloadedAudio;
-        if (!video.has_value())
-            video = m_preloadedVideo;
-        // Clear after reading to prevent stale data
-        m_preloadedAudio = std::nullopt;
-        m_preloadedVideo = std::nullopt;
-    }
 
     std::unique_ptr<IGstCapabilities> gstCapabilities;
     try
@@ -169,20 +150,8 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
 
-        std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper;
-
-        if (!audio.has_value() || !video.has_value())
-        {
-            auto yamlCppWrapperFactory = firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory();
-
-            if ((!yamlCppWrapperFactory) || (!(yamlCppWrapper = yamlCppWrapperFactory->createYamlCppWrapper())))
-            {
-                throw std::runtime_error("Cannot create YamlCppWrapper");
-            }
-        }
-
         gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper, rdkGstreamerUtilsWrapper,
-                                                            yamlCppWrapper, IGstInitialiser::instance(), audio, video);
+                                                            IGstInitialiser::instance());
     }
     catch (const std::exception &e)
     {
@@ -192,50 +161,16 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
     return gstCapabilities;
 }
 
-void GstCapabilitiesFactory::setPreloadedCapabilities(
-    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
-{
-    std::lock_guard<std::mutex> lock(m_preloadedMutex);
-    m_preloadedAudio = audioCaps;
-    m_preloadedVideo = videoCaps;
-    RIALTO_SERVER_LOG_DEBUG("GstCapabilities: setPreloadedCapabilities - Audio and Video Caps stored to GstCapabilties "
-                            "with mutex protection");
-}
-
 GstCapabilities::GstCapabilities(
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
-    const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCppWrapper,
-    const IGstInitialiser &gstInitialiser,
-    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
-    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo)
+    const IGstInitialiser &gstInitialiser)
     : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
-      m_yamlCppWrapper{yamlCppWrapper}, m_gstInitialiser{gstInitialiser}
+      m_gstInitialiser{gstInitialiser}
 {
-    if (preloadedAudio.has_value() && preloadedVideo.has_value())
-    {
-        // Path A: use pre-loaded capabilities forwarded from ServerManager; skip YAML load
-        m_audioDecoderCapabilities = *preloadedAudio;
-        m_videoDecoderCapabilities = *preloadedVideo;
-        RIALTO_SERVER_LOG_INFO("GstCapabilities: using pre-loaded capabilities from ServerManager (path A)");
-    }
-    else
-    {
-        // Path B: no ServerManager data — fall back to GStreamer element query (legacy IMediaPipelineCapabilities path)
-        auto logCapabilityStatus = [](DecoderCapabilitiesStatus status, const char *type)
-        {
-            if (status == DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
-                RIALTO_SERVER_LOG_INFO("No %s decoder capabilities config file found", type);
-            else if (status != DecoderCapabilitiesStatus::OK)
-                RIALTO_SERVER_LOG_WARN("Failed to get %s decoder capabilities from config file", type);
-        };
-        logCapabilityStatus(m_yamlCppWrapper->getAudioDecoderCapabilities(m_audioDecoderCapabilities), "audio");
-        logCapabilityStatus(m_yamlCppWrapper->getVideoDecoderCapabilities(m_videoDecoderCapabilities), "video");
-        RIALTO_SERVER_LOG_INFO("GstCapabilities: ServerManager provided no capabilities will use GStreamer mime-type "
-                               "queries via getSupportedMimeTypes() (path B)");
-    }
+    RIALTO_SERVER_LOG_DEBUG("GstCapabilities: constructor - GstCapabilities performs GStreamer element queries only");
+    // Initialize capabilities with empty defaults - will be populated by element queries
     m_initialisationThread = std::thread(
         [this]()
         {
@@ -296,6 +231,12 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
                                                                  const std::vector<std::string> &propertyNames)
 {
     waitForInitialisation();
+
+    if (!m_gstWrapper || !m_glibWrapper)
+    {
+        RIALTO_SERVER_LOG_WARN("Wrappers are null, cannot get supported properties");
+        return {};
+    }
 
     // Get gstreamer element factories. The following flag settings will fetch both SINK and DECODER types
     // of gstreamer classes...
@@ -360,7 +301,7 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
 
     // Some sinks do not specifically support the "audio-fade" property, but the mechanism is supported through the use
     // of the rdk_gstreamer_utils library. Check for audio fade support if the property is required and we haven't found it in the sinks.
-    if (propertiesToLookFor.find("audio-fade") != propertiesToLookFor.end())
+    if (propertiesToLookFor.find("audio-fade") != propertiesToLookFor.end() && m_rdkGstreamerUtilsWrapper)
     {
         bool socAudioFadeSupported = m_rdkGstreamerUtilsWrapper->isSocAudioFadeSupported();
         if (socAudioFadeSupported)
@@ -370,12 +311,25 @@ std::vector<std::string> GstCapabilities::getSupportedProperties(MediaSourceType
         }
     }
     // Cleanup
-    m_gstWrapper->gstPluginFeatureListFree(factories);
+    if (m_gstWrapper && factories)
+    {
+        m_gstWrapper->gstPluginFeatureListFree(factories);
+    }
     return propertiesFound;
 }
 
 void GstCapabilities::fillSupportedMimeTypes()
 {
+    // Note: m_audioDecoderCapabilities and m_videoDecoderCapabilities remain empty
+    // because GStreamer provides no full decoder capability information.
+    // YAML capabilities are the primary source via MediaCapabilities orchestration.
+
+    if (!m_gstWrapper)
+    {
+        RIALTO_SERVER_LOG_WARN("GstWrapper is null, cannot fill supported mime types");
+        return;
+    }
+
     std::vector<GstCaps *> supportedCaps;
     appendSupportedCapsFromFactoryType(GST_ELEMENT_FACTORY_TYPE_DECODER, supportedCaps);
 
@@ -395,13 +349,16 @@ void GstCapabilities::fillSupportedMimeTypes()
 
     for (GstCaps *caps : supportedCaps)
     {
-        m_gstWrapper->gstCapsUnref(caps);
+        if (m_gstWrapper)
+        {
+            m_gstWrapper->gstCapsUnref(caps);
+        }
     }
 }
 
 void GstCapabilities::appendLinkableCapsFromParserDecoderChains(std::vector<GstCaps *> &supportedCaps)
 {
-    if (supportedCaps.empty())
+    if (supportedCaps.empty() || !m_gstWrapper)
     {
         return;
     }
@@ -436,6 +393,12 @@ void GstCapabilities::appendLinkableCapsFromParserDecoderChains(std::vector<GstC
 void GstCapabilities::appendSupportedCapsFromFactoryType(const GstElementFactoryListType &type,
                                                          std::vector<GstCaps *> &supportedCaps)
 {
+    if (!m_gstWrapper)
+    {
+        RIALTO_SERVER_LOG_WARN("GstWrapper is null, cannot append supported caps");
+        return;
+    }
+
     GList *factories = m_gstWrapper->gstElementFactoryListGetElements(type, GST_RANK_MARGINAL);
     if (!factories)
     {
@@ -456,10 +419,15 @@ void GstCapabilities::appendSupportedCapsFromFactoryType(const GstElementFactory
 
 bool GstCapabilities::canCreateParserDecoderChain(GstCaps *decoderCaps, const GList *kParserPadTemplates)
 {
+    if (!m_gstWrapper)
+    {
+        return false;
+    }
+
     for (const GList *padTemplateIter = kParserPadTemplates; padTemplateIter; padTemplateIter = padTemplateIter->next)
     {
         GstStaticPadTemplate *padTemplate = static_cast<GstStaticPadTemplate *>(padTemplateIter->data);
-        if (padTemplate->direction == GST_PAD_SRC)
+        if (padTemplate && padTemplate->direction == GST_PAD_SRC)
         {
             GstCaps *padTemplateCaps = m_gstWrapper->gstStaticCapsGet(&padTemplate->static_caps);
 
@@ -478,10 +446,15 @@ bool GstCapabilities::canCreateParserDecoderChain(GstCaps *decoderCaps, const GL
 
 void GstCapabilities::addAllUniqueSinkPadsCapsToVector(std::vector<GstCaps *> &capsVector, const GList *padTemplates)
 {
+    if (!m_gstWrapper)
+    {
+        return;
+    }
+
     for (const GList *padTemplateIter = padTemplates; padTemplateIter; padTemplateIter = padTemplateIter->next)
     {
         GstStaticPadTemplate *padTemplate = static_cast<GstStaticPadTemplate *>(padTemplateIter->data);
-        if (padTemplate->direction == GST_PAD_SINK)
+        if (padTemplate && padTemplate->direction == GST_PAD_SINK)
         {
             GstCaps *padTemplateCaps = m_gstWrapper->gstStaticCapsGet(&padTemplate->static_caps);
             if (!isCapsInVector(capsVector, padTemplateCaps))
@@ -498,6 +471,11 @@ void GstCapabilities::addAllUniqueSinkPadsCapsToVector(std::vector<GstCaps *> &c
 
 bool GstCapabilities::isCapsInVector(const std::vector<GstCaps *> &capsVector, GstCaps *caps) const
 {
+    if (!m_gstWrapper)
+    {
+        return false;
+    }
+
     return std::find_if(capsVector.begin(), capsVector.end(), [&](const GstCaps *comparedCaps)
                         { return m_gstWrapper->gstCapsIsStrictlyEqual(caps, comparedCaps); }) != capsVector.end();
 }
@@ -511,6 +489,12 @@ void GstCapabilities::waitForInitialisation()
 bool GstCapabilities::isVideoMaster(bool &isVideoMaster)
 {
     waitForInitialisation();
+
+    if (!m_gstWrapper)
+    {
+        RIALTO_SERVER_LOG_ERROR("GstWrapper is null");
+        return false;
+    }
 
     GstRegistry *reg = m_gstWrapper->gstRegistryGet();
     if (!reg)
@@ -530,11 +514,13 @@ bool GstCapabilities::isVideoMaster(bool &isVideoMaster)
 
 firebolt::rialto::common::AudioDecoderCapabilities GstCapabilities::getSupportedAudioCapabilities()
 {
+    waitForInitialisation();
     return m_audioDecoderCapabilities;
 }
 
 firebolt::rialto::common::VideoDecoderCapabilities GstCapabilities::getSupportedVideoCapabilities()
 {
+    waitForInitialisation();
     return m_videoDecoderCapabilities;
 }
 

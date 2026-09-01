@@ -35,7 +35,9 @@ public:
     MediaCapabilitiesFactory() = default;
     ~MediaCapabilitiesFactory() override = default;
 
-    std::unique_ptr<IMediaCapabilities> createMediaCapabilities() const override;
+    std::unique_ptr<IMediaCapabilities> createMediaCapabilities(
+        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
+        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt) const override;
 };
 
 }; // namespace firebolt::rialto

@@ -30,12 +30,16 @@
 namespace firebolt::rialto::server::service
 {
 PlaybackService::PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+                                 std::shared_ptr<IMediaCapabilitiesFactory> &&mediaCapabilitiesFactory,
                                  std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
                                  std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
                                  std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
                                  IDecryptionService &decryptionService)
     : m_shmBufferFactory{std::move(shmBufferFactory)}, m_isActive{false}, m_maxPlaybacks{0}, m_maxWebAudioPlayers{0},
+      m_mediaCapabilitiesFactory{mediaCapabilitiesFactory},
+      m_mediaPipelineCapabilitiesFactory{mediaPipelineCapabilitiesFactory},
       m_mediaPipelineService{std::make_unique<MediaPipelineService>(*this, std::move(mediaPipelineFactory),
+                                                                    std::move(mediaCapabilitiesFactory),
                                                                     std::move(mediaPipelineCapabilitiesFactory),
                                                                     decryptionService)},
       m_webAudioPlayerService{std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory))}
@@ -101,6 +105,32 @@ void PlaybackService::setResourceManagerAppName(const std::string &appName) cons
     if (!appName.empty())
     {
         setenv("ESSRMGR_APPID", appName.c_str(), 1);
+    }
+}
+
+void PlaybackService::setPreloadedCapabilities(
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
+{
+    RIALTO_SERVER_LOG_DEBUG("PlaybackService: setPreloadedCapabilities - storing preloaded YAML capabilities");
+    m_preloadedAudioCapabilities = audioCaps;
+    m_preloadedVideoCapabilities = videoCaps;
+
+    if (audioCaps.has_value())
+    {
+        RIALTO_SERVER_LOG_DEBUG("PlaybackService: Audio capabilities preloaded");
+    }
+    if (videoCaps.has_value())
+    {
+        RIALTO_SERVER_LOG_DEBUG("PlaybackService: Video capabilities preloaded");
+    }
+
+    // Update MediaPipelineService with the preloaded capabilities
+    // This ensures that all media pipeline capability queries use the YAML-provided data
+    if (m_mediaPipelineService)
+    {
+        RIALTO_SERVER_LOG_DEBUG("PlaybackService: updating MediaPipelineService with preloaded capabilities");
+        m_mediaPipelineService->updateMediaCapabilities(audioCaps, videoCaps);
     }
 }
 

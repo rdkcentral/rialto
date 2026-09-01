@@ -33,8 +33,8 @@
 
 using namespace firebolt::rialto::common;
 using namespace firebolt::rialto::server::ipc;
-using AudioCap = rialto::AudioCapabilities;
-using VideoCap = rialto::VideoCapabilities;
+using AudioCap = firebolt::rialto::AudioCapabilities;
+using VideoCap = firebolt::rialto::VideoCapabilities;
 
 // ---------------------------------------------------------------------------
 // deserialiseAudioCapabilities - top level fields / empty input

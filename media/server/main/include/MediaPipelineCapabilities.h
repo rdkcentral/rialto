@@ -21,7 +21,6 @@
 #define FIREBOLT_RIALTO_SERVER_MEDIA_PIPELINE_CAPABILITIES_H_
 
 #include "IGstCapabilities.h"
-#include "IMediaCapabilities.h"
 #include "IMediaPipelineCapabilities.h"
 #include <memory>
 #include <string>
@@ -29,6 +28,9 @@
 
 namespace firebolt::rialto
 {
+// Forward declarations
+class MediaCapabilities;
+
 /**
  * @brief IMediaPipelineCapabilities factory class definition.
  */
@@ -48,7 +50,7 @@ namespace firebolt::rialto::server
 /**
  * @brief The definition of the MediaPipeline.
  */
-class MediaPipelineCapabilities : public IMediaPipelineCapabilities, public firebolt::rialto::IMediaCapabilities
+class MediaPipelineCapabilities : public IMediaPipelineCapabilities
 {
 public:
     /**
@@ -68,18 +70,10 @@ public:
     std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
                                                     const std::vector<std::string> &propertyNames) override;
     bool isVideoMaster(bool &isVideoMaster) override;
-    firebolt::rialto::common::AudioDecoderCapabilities getSupportedAudioCapabilities() override;
-    firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
 
 private:
     /**
-     * @brief Ensure GstCapabilities is created (lazy initialization).
-     *        Called before first use to allow preloaded capabilities to be set.
-     */
-    void ensureGstCapabilitiesCreated();
-
-    /**
-     * @brief The gstreamer capabilities (lazy initialized).
+     * @brief The gstreamer capabilities (created in constructor, not lazy).
      */
     std::unique_ptr<IGstCapabilities> m_gstCapabilities;
 

@@ -19,7 +19,7 @@
 
 #include "ServerManagerModuleServiceTestsFixture.h"
 #include "CapabilitySerialiser.h"
-#include "DecoderCapabilitiesUtil.h"
+#include "DecoderCapabilitiesUtils.h"
 #include "ServerManagerModuleService.h"
 #include <AudioDecoderCapabilities.h>
 #include <VideoDecoderCapabilities.h>
@@ -89,7 +89,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId, testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+                                  kAppId))
         .WillOnce(Return(true));
 }
 
@@ -99,7 +99,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId, testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+                                  kAppId))
         .WillOnce(Return(true));
 }
 
@@ -123,7 +123,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId, testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+                                  kAppId))
         .WillOnce(Return(false));
 }
 
@@ -133,7 +133,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId, testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+                                  kAppId))
         .WillOnce(Return(false));
 }
 
@@ -148,11 +148,13 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
     const firebolt::rialto::common::AudioDecoderCapabilities &audioCaps,
     const firebolt::rialto::common::VideoDecoderCapabilities &videoCaps)
 {
+    EXPECT_CALL(m_sessionServerManagerMock, setPreloadedCapabilities(std::optional(audioCaps), std::optional(videoCaps)))
+        .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketName, kSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId, testing::Optional(audioCaps), testing::Optional(videoCaps)))
+                                  kAppId))
         .WillOnce(Return(true));
 }
 
@@ -161,10 +163,12 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
     const firebolt::rialto::common::AudioDecoderCapabilities &audioCaps,
     const firebolt::rialto::common::VideoDecoderCapabilities &videoCaps)
 {
+    EXPECT_CALL(m_sessionServerManagerMock, setPreloadedCapabilities(std::optional(audioCaps), std::optional(videoCaps)))
+        .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId, testing::Optional(audioCaps), testing::Optional(videoCaps)))
+                                  kAppId))
         .WillOnce(Return(true));
 }
 
@@ -175,7 +179,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId, testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+                                  kAppId))
         .WillOnce(Return(true));
 }
 
@@ -185,7 +189,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
-                                  kAppId, testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+                                  kAppId))
         .WillOnce(Return(true));
 }
 

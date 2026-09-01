@@ -31,7 +31,7 @@
 #include "SessionServerAppFactoryMock.h"
 #include "SessionServerAppMock.h"
 #include "StateObserverMock.h"
-#include <DecoderCapabilitiesUtil.h>
+#include <DecoderCapabilitiesUtils.h>
 #include <condition_variable>
 #include <gtest/gtest.h>
 #include <memory>

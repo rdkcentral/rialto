@@ -23,7 +23,7 @@ set( CMAKE_CXX_STANDARD_REQUIRED ON )
 include( CheckCXXCompilerFlag )
 
 # RialtoTestServerManagerCommonMisc is now an interface target that re-exports RialtoCommonMisc
-# to avoid duplicate symbol definitions of DecoderCapabilitiesUtil in multiple test binaries.
+# to avoid duplicate symbol definitions of DecoderCapabilitiesUtils in multiple test binaries.
 # The canonical implementation lives in tests/unittests/common/misc/
 add_library(
         RialtoTestServerManagerCommonMisc

@@ -37,11 +37,13 @@ public:
                  const std::string &socketGroup),
                 (override));
     MOCK_METHOD(bool, configureIpc, (int32_t socketFd), (override));
+    MOCK_METHOD(bool, setPreloadedCapabilities,
+                (const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &,
+                 const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &),
+                (override));
     MOCK_METHOD(bool, configureServices,
                 (const common::SessionServerState &state, const common::MaxResourceCapabilitites &maxResource,
-                 const std::string &clientDisplayName, const std::string &appName,
-                 const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-                 const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps),
+                 const std::string &clientDisplayName, const std::string &appName),
                 (override));
     MOCK_METHOD(bool, setState, (const common::SessionServerState &state), (override));
     MOCK_METHOD(void, setLogLevels,

@@ -25,8 +25,8 @@ include( CheckCXXCompilerFlag )
 add_library(
         RialtoCommonMisc
         STATIC
-	DecoderCapabilitiesUtil.cpp
-        DecoderCapabilitiesUtil.h
+        DecoderCapabilitiesUtils.cpp
+        DecoderCapabilitiesUtils.h
         MediaSourceUtil.cpp
         WebAudioUtil.cpp
     )

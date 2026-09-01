@@ -45,11 +45,16 @@ public:
     static std::shared_ptr<IMediaCapabilitiesFactory> createFactory();
 
     /**
-     * @brief Creates the IMediaCapabilities object.
+     * @brief Creates the IMediaCapabilities object with optional preloaded capabilities.
+     *
+     * @param[in] preloadedAudio : Optional preloaded audio capabilities from YAML/ServerManager
+     * @param[in] preloadedVideo : Optional preloaded video capabilities from YAML/ServerManager
      *
      * @retval the IMediaCapabilities instance or null on error.
      */
-    virtual std::unique_ptr<IMediaCapabilities> createMediaCapabilities() const = 0;
+    virtual std::unique_ptr<IMediaCapabilities> createMediaCapabilities(
+        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
+        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt) const = 0;
 };
 
 /**

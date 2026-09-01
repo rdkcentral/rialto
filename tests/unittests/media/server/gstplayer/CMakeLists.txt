@@ -82,6 +82,8 @@ add_gtests(RialtoServerGstPlayerUnitTests
     #GstInitialiser unittests
     gstInitialiser/GstInitialiserTest.cpp
 
+    GstCapabilitiesTests.cpp
+
     #GstWebAudioPlayer unittests
     webAudioPlayer/common/WebAudioTasksTestsBase.cpp
     webAudioPlayer/taskTests/WebAudioPlayerTaskFactoryTest.cpp

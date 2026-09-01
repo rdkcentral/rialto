@@ -20,17 +20,22 @@
 #ifndef PLAYBACK_SERVICE_TESTS_FIXTURE_H_
 #define PLAYBACK_SERVICE_TESTS_FIXTURE_H_
 
+#include "AudioDecoderCapabilities.h"
 #include "DecryptionServiceMock.h"
 #include "HeartbeatProcedureMock.h"
+#include "IMediaCapabilitiesMock.h"
+#include "MediaCapabilitiesFactoryMock.h"
 #include "MediaPipelineCapabilitiesFactoryMock.h"
 #include "MediaPipelineCapabilitiesMock.h"
 #include "MediaPipelineServerInternalFactoryMock.h"
 #include "PlaybackService.h"
 #include "SharedMemoryBufferFactoryMock.h"
 #include "SharedMemoryBufferMock.h"
+#include "VideoDecoderCapabilities.h"
 #include "WebAudioPlayerServerInternalFactoryMock.h"
 #include <gtest/gtest.h>
 #include <memory>
+#include <optional>
 
 using testing::StrictMock;
 
@@ -48,6 +53,9 @@ public:
     void triggerSetMaxPlaybacks();
     void triggerSetMaxWebAudioPlayers();
     void triggerSetClientDisplayName();
+    void
+    triggerSetPreloadedCapabilities(const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                                    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps);
     void triggerPing();
 
     void createPlaybackServiceShouldSuccess();
@@ -61,6 +69,7 @@ public:
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>> m_mediaPipelineFactoryMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::MediaCapabilitiesFactoryMock>> m_mediaCapabilitiesFactoryMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesFactoryMock>>
         m_mediaPipelineCapabilitiesFactoryMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalFactoryMock>> m_webAudioPlayerFactoryMock;

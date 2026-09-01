@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2026 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,21 +17,23 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_FACTORY_MOCK_H_
-#define FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_FACTORY_MOCK_H_
+#ifndef FIREBOLT_RIALTO_MEDIA_CAPABILITIES_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_MEDIA_CAPABILITIES_FACTORY_MOCK_H_
 
-#include "IGstCapabilities.h"
+#include "IMediaCapabilities.h"
 #include <gmock/gmock.h>
 #include <memory>
 
-namespace firebolt::rialto::server
+namespace firebolt::rialto
 {
-class GstCapabilitiesFactoryMock : public IGstCapabilitiesFactory
+class MediaCapabilitiesFactoryMock : public IMediaCapabilitiesFactory
 {
 public:
-    MOCK_METHOD(std::unique_ptr<IGstCapabilities>, createGstCapabilities, (), (override));
+    MOCK_METHOD(std::unique_ptr<IMediaCapabilities>, createMediaCapabilities,
+                (const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
+                 const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo),
+                (const, override));
 };
+} // namespace firebolt::rialto
 
-} // namespace firebolt::rialto::server
-
-#endif // FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_FACTORY_MOCK_H_
+#endif // FIREBOLT_RIALTO_MEDIA_CAPABILITIES_FACTORY_MOCK_H_

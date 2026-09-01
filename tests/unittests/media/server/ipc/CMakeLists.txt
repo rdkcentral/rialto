@@ -87,10 +87,8 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoTestCommonProtoUtils,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:ExternalLibraryMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
-        $<TARGET_PROPERTY:RialtoTestServerManagerCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
 
         stubs
-        ../../../../../serverManager/ipc/source
         )
 
 target_link_libraries(
@@ -102,7 +100,6 @@ target_link_libraries(
         RialtoIpcClient
         RialtoIpcCommon
         RialtoCommonMisc
-        RialtoTestServerManagerCommonMisc
         RialtoProtobuf
         )
 

@@ -28,11 +28,11 @@ namespace rialto::servermanager::ipc
 {
 // Converts C++ AudioDecoderCapabilities into the typed proto AudioCapabilities message.
 void serialiseAudioCapabilities(const firebolt::rialto::common::AudioDecoderCapabilities &src,
-                                rialto::AudioCapabilities *dst);
+                                ::firebolt::rialto::AudioCapabilities *dst);
 
 // Converts C++ VideoDecoderCapabilities into the typed proto VideoCapabilities message.
 void serialiseVideoCapabilities(const firebolt::rialto::common::VideoDecoderCapabilities &src,
-                                rialto::VideoCapabilities *dst);
+                                ::firebolt::rialto::VideoCapabilities *dst);
 
 } // namespace rialto::servermanager::ipc
 

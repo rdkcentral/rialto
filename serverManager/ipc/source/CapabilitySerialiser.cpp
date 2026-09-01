@@ -21,8 +21,8 @@
 
 namespace
 {
-using AudioCap = rialto::AudioCapabilities;
-using VideoCap = rialto::VideoCapabilities;
+using AudioCap = firebolt::rialto::AudioCapabilities;
+using VideoCap = firebolt::rialto::VideoCapabilities;
 
 void fillProfileCap(const firebolt::rialto::common::AudioProfileCapability &src, AudioCap::AudioProfileCapability *dst)
 {
@@ -174,7 +174,7 @@ VideoCap::DynamicRange toDR(firebolt::rialto::common::DynamicRange dr)
 namespace rialto::servermanager::ipc
 {
 void serialiseAudioCapabilities(const firebolt::rialto::common::AudioDecoderCapabilities &src,
-                                rialto::AudioCapabilities *dst)
+                                ::firebolt::rialto::AudioCapabilities *dst)
 {
     dst->set_interface_version(src.interfaceVersion);
     dst->set_schema_version(src.schemaVersion);
@@ -183,7 +183,7 @@ void serialiseAudioCapabilities(const firebolt::rialto::common::AudioDecoderCapa
 }
 
 void serialiseVideoCapabilities(const firebolt::rialto::common::VideoDecoderCapabilities &src,
-                                rialto::VideoCapabilities *dst)
+                                ::firebolt::rialto::VideoCapabilities *dst)
 {
     dst->set_interface_version(src.interfaceVersion);
     dst->set_schema_version(src.schemaVersion);

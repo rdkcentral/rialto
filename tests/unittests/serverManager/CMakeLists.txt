@@ -63,7 +63,6 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoServerManagerStub,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:ExternalLibraryMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoUnittestCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
-		$<TARGET_PROPERTY:RialtoServerManagerService,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappersMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
@@ -94,7 +93,6 @@ target_link_libraries(
         RialtoServerManagerCommon
         RialtoServerManagerIpc
         RialtoServerManager
-        RialtoServerManagerService
         RialtoTestServerManagerCommonMisc
 		RialtoWrappers
 		${GStreamerApp_LIBRARIES}

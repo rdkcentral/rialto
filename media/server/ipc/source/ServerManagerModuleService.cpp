@@ -127,9 +127,14 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
                                             request->socketowner(), request->socketgroup());
     }
 
+    // Pass preloaded capabilities to PlaybackService via setPreloadedCapabilities()
+    if (audioCaps.has_value() || videoCaps.has_value())
+    {
+        m_sessionServerManager.setPreloadedCapabilities(audioCaps, videoCaps);
+    }
+
     success &= m_sessionServerManager.configureServices(convertSessionServerState(request->initialsessionserverstate()),
-                                                        maxResource, kClientDisplayName, request->appname(), audioCaps,
-                                                        videoCaps);
+                                                        maxResource, kClientDisplayName, request->appname());
     m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().clientloglevels()),
                                         static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().sessionserverloglevels()),

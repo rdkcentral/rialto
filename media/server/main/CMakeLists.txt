@@ -55,6 +55,7 @@ add_library(
         source/TextTrackAccessor.cpp
         source/TextTrackSession.cpp
         source/NeedDataDelayCalculator.cpp
+        source/YamlCapabilities.cpp
         )
 
 target_include_directories(

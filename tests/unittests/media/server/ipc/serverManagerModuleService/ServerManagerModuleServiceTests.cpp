@@ -123,7 +123,7 @@ TEST_F(ServerManagerModuleServiceTests, shouldFailToPingDueToInvalidController)
 TEST_F(ServerManagerModuleServiceTests, shouldSetConfigurationWithAudioAndVideoCapabilitiesPopulated)
 {
     // Test that when both audio and video capabilities are present in the proto request,
-    // they are deserialized and forwarded to configureServices() as populated optionals
+    // they are passed to setPreloadedCapabilities() and configureServices() is called with nullopt
     const firebolt::rialto::common::AudioDecoderCapabilities kAudioCaps{"1.0", "1.1", {}};
     const firebolt::rialto::common::VideoDecoderCapabilities kVideoCaps{"2.0", "2.1", {}};
 
@@ -137,7 +137,7 @@ TEST_F(ServerManagerModuleServiceTests, shouldSetConfigurationWithAudioAndVideoC
 TEST_F(ServerManagerModuleServiceTests, shouldSetConfigurationWithFdAndAudioAndVideoCapabilitiesPopulated)
 {
     // Test that when both audio and video capabilities are present in the proto request (socketFd variant),
-    // they are deserialized and forwarded to configureServices() as populated optionals
+    // they are passed to setPreloadedCapabilities() and configureServices() is called with nullopt
     const firebolt::rialto::common::AudioDecoderCapabilities kAudioCaps{"1.0", "1.1", {}};
     const firebolt::rialto::common::VideoDecoderCapabilities kVideoCaps{"2.0", "2.1", {}};
 

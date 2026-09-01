@@ -41,7 +41,9 @@ std::shared_ptr<IMediaCapabilitiesFactory> IMediaCapabilitiesFactory::createFact
     return factory;
 }
 
-std::unique_ptr<IMediaCapabilities> MediaCapabilitiesFactory::createMediaCapabilities() const
+std::unique_ptr<IMediaCapabilities> MediaCapabilitiesFactory::createMediaCapabilities(
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo) const
 {
     std::unique_ptr<IMediaCapabilities> mediaCapabilities;
     try

@@ -27,6 +27,7 @@
  *
  */
 
+#include "DecoderCapabilitiesCommon.h"
 #include <cstdint>
 #include <map>
 #include <optional>

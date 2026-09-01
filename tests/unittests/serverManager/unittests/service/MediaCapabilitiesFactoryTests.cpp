@@ -17,13 +17,6 @@
  * limitations under the License.
  */
 
-// ASSUMPTION (verify against your actual headers): IYamlCppWrapperFactory::getFactory() is a
-// static method, and this codebase provides a test-only injection seam - shown here as a
-// "FactoryAccessor" singleton, matching the pattern used elsewhere in Rialto for similar
-// static wrapper factories (e.g. IGstWrapperFactory::getFactory(), IGlibWrapperFactory::getFactory()).
-// If the real injection mechanism differs (different singleton name, a setFactory()/resetFactory()
-// pair, etc.), only the fixture's constructor/destructor below need to change - the three TEST_F
-// bodies are independent of how the mock gets wired in.
 #include "FactoryAccessor.h"
 #include "MediaCapabilitiesFactory.h"
 #include "YamlCppWrapperMock.h"
@@ -36,13 +29,13 @@ using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::StrictMock;
 
-class MediaCapabilitiesFactoryTest : public ::testing::Test
+class ServerMediaCapabilitiesFactoryTest : public ::testing::Test
 {
 protected:
     std::shared_ptr<StrictMock<YamlCppWrapperFactoryMock>> m_yamlCppWrapperFactoryMock{
         std::make_shared<StrictMock<YamlCppWrapperFactoryMock>>()};
 
-    MediaCapabilitiesFactoryTest()
+    ServerMediaCapabilitiesFactoryTest()
     {
         // The static singleton accessor lives on the INTERFACE (IFactoryAccessor::instance()),
         // matching YamlCppWrapperAccessor.cpp's own call:
@@ -50,14 +43,14 @@ protected:
         IFactoryAccessor::instance().yamlCppWrapperFactory() = m_yamlCppWrapperFactoryMock;
     }
 
-    ~MediaCapabilitiesFactoryTest() override
+    ~ServerMediaCapabilitiesFactoryTest() override
     {
         // Reset the injection point so later tests in the same binary aren't affected.
         IFactoryAccessor::instance().yamlCppWrapperFactory() = nullptr;
     }
 };
 
-TEST_F(MediaCapabilitiesFactoryTest, ReturnsNullptrWhenFactoryUnavailable)
+TEST_F(ServerMediaCapabilitiesFactoryTest, ReturnsNullptrWhenFactoryUnavailable)
 {
     IFactoryAccessor::instance().yamlCppWrapperFactory() = nullptr;
 
@@ -66,7 +59,7 @@ TEST_F(MediaCapabilitiesFactoryTest, ReturnsNullptrWhenFactoryUnavailable)
     EXPECT_EQ(result, nullptr);
 }
 
-TEST_F(MediaCapabilitiesFactoryTest, ReturnsNullptrWhenYamlCppWrapperCreationFails)
+TEST_F(ServerMediaCapabilitiesFactoryTest, ReturnsNullptrWhenYamlCppWrapperCreationFails)
 {
     // createYamlCppWrapper() returns std::shared_ptr<IYamlCppWrapper> - copyable, so Return(...)
     // is used directly; ByMove(...) is only needed for move-only return types (e.g. unique_ptr).
@@ -77,7 +70,7 @@ TEST_F(MediaCapabilitiesFactoryTest, ReturnsNullptrWhenYamlCppWrapperCreationFai
     EXPECT_EQ(result, nullptr);
 }
 
-TEST_F(MediaCapabilitiesFactoryTest, CreatesMediaCapabilitiesWhenDependenciesAvailable)
+TEST_F(ServerMediaCapabilitiesFactoryTest, CreatesMediaCapabilitiesWhenDependenciesAvailable)
 {
     // Must be shared_ptr (matching createYamlCppWrapper()'s real return type) AND the SAME
     // object must be returned from the mock - returning a fresh/empty shared_ptr here would

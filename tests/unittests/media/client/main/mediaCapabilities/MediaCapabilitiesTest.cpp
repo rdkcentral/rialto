@@ -29,7 +29,7 @@ using ::testing::_;
 using ::testing::Invoke;
 using ::testing::WithArgs;
 
-class MediaCapabilitiesTest : public IpcModuleBase, public ::testing::Test
+class MediaCapabilitiesIpcTest : public IpcModuleBase, public ::testing::Test
 {
 protected:
     std::unique_ptr<firebolt::rialto::IMediaCapabilities> m_sut;
@@ -62,12 +62,12 @@ public:
     }
 };
 
-TEST_F(MediaCapabilitiesTest, AudioDecoderCapabilities)
+TEST_F(MediaCapabilitiesIpcTest, AudioDecoderCapabilities)
 {
     createMediaCapabilitiesIpc();
     expectIpcApiCallSuccess();
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedAudioCapabilities"), _, _, _, _))
-        .WillOnce(WithArgs<3>(Invoke(this, &MediaCapabilitiesTest::setAudioResponse)));
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaCapabilitiesIpcTest::setAudioResponse)));
 
     const auto result = m_sut->getSupportedAudioCapabilities();
     ASSERT_EQ(result.capabilities.size(), 1U);
@@ -75,12 +75,12 @@ TEST_F(MediaCapabilitiesTest, AudioDecoderCapabilities)
     EXPECT_EQ(result.capabilities.front().pcm->base.maxChannels, 2U);
 }
 
-TEST_F(MediaCapabilitiesTest, VideoDecoderCapabilities)
+TEST_F(MediaCapabilitiesIpcTest, VideoDecoderCapabilities)
 {
     createMediaCapabilitiesIpc();
     expectIpcApiCallSuccess();
     EXPECT_CALL(*m_channelMock, CallMethod(methodMatcher("getSupportedVideoCapabilities"), _, _, _, _))
-        .WillOnce(WithArgs<3>(Invoke(this, &MediaCapabilitiesTest::setVideoResponse)));
+        .WillOnce(WithArgs<3>(Invoke(this, &MediaCapabilitiesIpcTest::setVideoResponse)));
 
     const auto result = m_sut->getSupportedVideoCapabilities();
     ASSERT_EQ(result.capabilities.size(), 1U);

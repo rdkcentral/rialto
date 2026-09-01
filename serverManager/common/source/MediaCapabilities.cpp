@@ -21,10 +21,10 @@
 #include "RialtoServerManagerLogging.h"
 #include <chrono>
 
-namespace rialto::servermanager::service
+namespace rialto::servermanager::common
 {
 MediaCapabilities::MediaCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper)
-    : m_yamlCppWrapper{std::move(yamlCppWrapper)}
+    : m_yamlCppWrapper{yamlCppWrapper}
 {
 }
 
@@ -36,11 +36,18 @@ MediaCapabilities::getAudioDecoderCapabilities(firebolt::rialto::common::AudioDe
     capabilities = {};
     const auto status = m_yamlCppWrapper->getAudioDecoderCapabilities(capabilities);
     if (status == firebolt::rialto::DecoderCapabilitiesStatus::OK)
-        RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: audio capabilities loaded successfully");
+    {
+        RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: audio capabilities loaded successfully from YAML");
+    }
     else if (status == firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
-        RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: HFP YAML config not found - returning empty capabilities");
+    {
+        RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: YAML config not found");
+    }
     else
-        RIALTO_SERVER_MANAGER_LOG_WARN("MediaCapabilities: YAML schema validation or internal error for audio");
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("MediaCapabilities: YAML audio capabilities failed with status %d",
+                                       static_cast<int>(status));
+    }
     return status;
 }
 
@@ -52,12 +59,19 @@ MediaCapabilities::getVideoDecoderCapabilities(firebolt::rialto::common::VideoDe
     capabilities = {};
     const auto status = m_yamlCppWrapper->getVideoDecoderCapabilities(capabilities);
     if (status == firebolt::rialto::DecoderCapabilitiesStatus::OK)
-        RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: video capabilities loaded successfully");
+    {
+        RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: video capabilities loaded successfully from YAML");
+    }
     else if (status == firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
-        RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: HFP YAML config not found - returning empty capabilities");
+    {
+        RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: YAML config not found");
+    }
     else
-        RIALTO_SERVER_MANAGER_LOG_WARN("MediaCapabilities: YAML schema validation or internal error for video");
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("MediaCapabilities: YAML video capabilities failed with status %d",
+                                       static_cast<int>(status));
+    }
     return status;
 }
 
-} // namespace rialto::servermanager::service
+} // namespace rialto::servermanager::common

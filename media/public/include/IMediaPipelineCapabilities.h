@@ -26,8 +26,6 @@
  * The definition of the IMediaPipelineCapabilities interface.
  */
 
-#include "AudioDecoderCapabilities.h"
-#include "VideoDecoderCapabilities.h"
 #include <MediaCommon.h>
 #include <memory>
 #include <string>

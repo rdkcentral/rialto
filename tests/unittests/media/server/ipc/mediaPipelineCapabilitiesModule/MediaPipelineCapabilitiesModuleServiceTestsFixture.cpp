@@ -149,15 +149,13 @@ void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillCheckIfVideoI
 void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillGetSupportedAudioCapabilities()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getMediaCapabilities()).WillOnce(Return(m_mediaCapabilitiesMock));
-    EXPECT_CALL(*m_mediaCapabilitiesMock, getSupportedAudioCapabilities()).WillOnce(Return(kAudioCapabilities));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getSupportedAudioCapabilities()).WillOnce(Return(kAudioCapabilities));
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::mediaPipelineWillGetSupportedVideoCapabilities()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_mediaPipelineServiceMock, getMediaCapabilities()).WillOnce(Return(m_mediaCapabilitiesMock));
-    EXPECT_CALL(*m_mediaCapabilitiesMock, getSupportedVideoCapabilities()).WillOnce(Return(kVideoCapabilities));
+    EXPECT_CALL(m_mediaPipelineServiceMock, getSupportedVideoCapabilities()).WillOnce(Return(kVideoCapabilities));
 }
 
 void MediaPipelineCapabilitiesModuleServiceTests::expectRequestSuccess()

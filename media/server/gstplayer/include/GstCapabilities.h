@@ -25,7 +25,6 @@
 #include "IGstInitialiser.h"
 #include "IGstWrapper.h"
 #include "IRdkGstreamerUtilsWrapper.h"
-#include "IYamlCppWrapper.h"
 
 #include <condition_variable>
 #include <memory>
@@ -34,6 +33,9 @@
 #include <thread>
 #include <unordered_set>
 #include <vector>
+
+#include "AudioDecoderCapabilities.h"
+#include "VideoDecoderCapabilities.h"
 
 namespace firebolt::rialto::server
 {
@@ -48,19 +50,7 @@ public:
      */
     static std::weak_ptr<IGstCapabilitiesFactory> m_factory;
 
-    std::unique_ptr<IGstCapabilities> createGstCapabilities(
-        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
-        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt) override;
-
-    void
-    setPreloadedCapabilities(const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
-                             const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) override;
-
-private:
-    // Mutex-protected storage for preloaded capabilities (supports cross-thread communication)
-    std::mutex m_preloadedMutex;
-    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> m_preloadedAudio;
-    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> m_preloadedVideo;
+    std::unique_ptr<IGstCapabilities> createGstCapabilities() override;
 };
 
 class GstCapabilities : public IGstCapabilities
@@ -70,10 +60,7 @@ public:
         const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
         const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
         const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
-        const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCppWrapper,
-        const IGstInitialiser &gstInitialiser,
-        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
-        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt);
+        const IGstInitialiser &gstInitialiser);
     ~GstCapabilities();
 
     GstCapabilities(const GstCapabilities &) = delete;
@@ -116,16 +103,20 @@ public:
     bool isVideoMaster(bool &isVideoMaster) override;
 
     /**
-     * @brief Gets the supported audio capabilities.
+     * @brief Gets the supported audio capabilities from GStreamer.
      *
-     * @retval The supported audio capabilities.
+     * Returns empty capabilities (no decoder capability data from GStreamer).
+     *
+     * @retval The supported audio capabilities (empty).
      */
     firebolt::rialto::common::AudioDecoderCapabilities getSupportedAudioCapabilities() override;
 
     /**
-     * @brief Gets the supported video capabilities.
+     * @brief Gets the supported video capabilities from GStreamer.
      *
-     * @retval The supported video capabilities.
+     * Returns empty capabilities (no decoder capability data from GStreamer).
+     *
+     * @retval The supported video capabilities (empty).
      */
     firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
 
@@ -175,12 +166,12 @@ private:
     std::unordered_set<std::string> m_supportedMimeTypes;
 
     /**
-     * @brief Set of audio decoder capabilities
+     * @brief Audio decoder capabilities (empty, no data from GStreamer)
      */
     firebolt::rialto::common::AudioDecoderCapabilities m_audioDecoderCapabilities;
 
     /**
-     * @brief Set of video decoder capabilities
+     * @brief Video decoder capabilities (empty, no data from GStreamer)
      */
     firebolt::rialto::common::VideoDecoderCapabilities m_videoDecoderCapabilities;
 
@@ -190,7 +181,6 @@ private:
     std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> m_gstWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
     std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> m_rdkGstreamerUtilsWrapper;
-    std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> m_yamlCppWrapper;
     const IGstInitialiser &m_gstInitialiser;
     std::thread m_initialisationThread;
     std::mutex m_initialisationMutex;

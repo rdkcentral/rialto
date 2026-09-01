@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_COMMON_DECODER_CAPABILITIES_UTIL_H_
-#define FIREBOLT_RIALTO_COMMON_DECODER_CAPABILITIES_UTIL_H_
+#ifndef FIREBOLT_RIALTO_COMMON_DECODER_CAPABILITIES_UTILS_H_
+#define FIREBOLT_RIALTO_COMMON_DECODER_CAPABILITIES_UTILS_H_
 
-#include <AudioDecoderCapabilities.h>
-#include <VideoDecoderCapabilities.h>
+#include "AudioDecoderCapabilities.h"
+#include "VideoDecoderCapabilities.h"
 
 namespace firebolt::rialto::common
 {
@@ -63,4 +63,4 @@ bool operator==(const VideoDecoderCapability &lhs, const VideoDecoderCapability 
 bool operator==(const VideoDecoderCapabilities &lhs, const VideoDecoderCapabilities &rhs);
 } // namespace firebolt::rialto::common
 
-#endif // FIREBOLT_RIALTO_COMMON_DECODER_CAPABILITIES_UTIL_H_
+#endif // FIREBOLT_RIALTO_COMMON_DECODER_CAPABILITIES_UTILS_H_

@@ -41,6 +41,7 @@ const std::string kClientDisplayName{"westeros-rialto"};
 PlaybackServiceTests::PlaybackServiceTests()
     : m_mediaPipelineFactoryMock{std::make_shared<
           StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>>()},
+      m_mediaCapabilitiesFactoryMock{std::make_shared<StrictMock<firebolt::rialto::MediaCapabilitiesFactoryMock>>()},
       m_mediaPipelineCapabilitiesFactoryMock{
           std::make_shared<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesFactoryMock>>()},
       m_webAudioPlayerFactoryMock{
@@ -71,9 +72,14 @@ void PlaybackServiceTests::sharedMemoryBufferWillReturnFdAndSize()
 
 void PlaybackServiceTests::createPlaybackServiceShouldSuccess()
 {
+    // Use wildcard matchers to accept any createMediaCapabilities call
+    // This allows tests to call setPreloadedCapabilities() with any parameters
+    EXPECT_CALL(*m_mediaCapabilitiesFactoryMock, createMediaCapabilities(testing::_, testing::_))
+        .WillRepeatedly(Return(ByMove(std::make_unique<StrictMock<firebolt::rialto::IMediaCapabilitiesMock>>())));
     EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
         .WillOnce(Return(ByMove(std::move(m_mediaPipelineCapabilities))));
     m_sut = std::make_unique<firebolt::rialto::server::service::PlaybackService>(m_mediaPipelineFactoryMock,
+                                                                                 m_mediaCapabilitiesFactoryMock,
                                                                                  m_mediaPipelineCapabilitiesFactoryMock,
                                                                                  m_webAudioPlayerFactoryMock,
                                                                                  std::move(m_shmBufferFactory),
@@ -103,6 +109,13 @@ void PlaybackServiceTests::triggerSetMaxWebAudioPlayers()
 void PlaybackServiceTests::triggerSetClientDisplayName()
 {
     m_sut->setClientDisplayName(kClientDisplayName);
+}
+
+void PlaybackServiceTests::triggerSetPreloadedCapabilities(
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
+{
+    m_sut->setPreloadedCapabilities(audioCaps, videoCaps);
 }
 
 void PlaybackServiceTests::triggerPing()

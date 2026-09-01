@@ -17,21 +17,16 @@
  * limitations under the License.
  */
 
-#include "MediaCapabilitiesFactory.h"
-#include "IYamlCppWrapper.h"
-#include "MediaCapabilities.h"
+#ifndef RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
+#define RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
+
+#include "IMediaCapabilities.h"
+#include <memory>
 
 namespace rialto::servermanager::service
 {
-std::unique_ptr<IMediaCapabilities> createMediaCapabilities()
-{
-    auto factory = firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory();
-    if (!factory)
-        return nullptr;
-    auto wrapper = factory->createYamlCppWrapper();
-    if (!wrapper)
-        return nullptr;
-    return std::make_unique<MediaCapabilities>(std::move(wrapper));
-}
+std::unique_ptr<IMediaCapabilities> createMediaCapabilities();
 
 } // namespace rialto::servermanager::service
+
+#endif // RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_

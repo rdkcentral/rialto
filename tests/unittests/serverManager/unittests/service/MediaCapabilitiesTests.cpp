@@ -31,6 +31,7 @@ using testing::Return;
 using testing::SetArgReferee;
 using testing::StrictMock;
 using namespace rialto::servermanager::service;
+using namespace rialto::servermanager::common;
 
 class MediaCapabilitiesTests : public testing::Test
 {
