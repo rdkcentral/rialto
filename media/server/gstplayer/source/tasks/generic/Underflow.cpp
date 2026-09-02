@@ -55,22 +55,6 @@ void Underflow::execute() const
 
         streamInfo.underflowOccured = true;
 
-        uint64_t rendered_frames{0};
-        uint64_t dropped_frames{0};
-
-        if(m_player.getStats(m_sourceType, rendered_frames, dropped_frames))
-        {
-            RIALTO_SERVER_LOG_WARN("Underflow for %s source - rendered frames: %llu, dropped frames: %llu",
-                                    common::convertMediaSourceType(m_sourceType),
-                                    static_cast<unsigned long long>(rendered_frames),
-                                    static_cast<unsigned long long>(dropped_frames));
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_WARN("Underflow for %s source - rendered/dropped frames unavailable",
-                                    common::convertMediaSourceType(m_sourceType));
-        }
-
         if (m_gstPlayerClient)
         {
             m_gstPlayerClient->notifyBufferUnderflow(m_sourceType);
