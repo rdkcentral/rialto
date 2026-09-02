@@ -65,7 +65,7 @@ private:
                      firebolt::rialto::IMediaKeysCapabilitiesFactory::createFactory()};
     firebolt::rialto::server::service::PlaybackService
         m_playbackService{firebolt::rialto::server::IMediaPipelineServerInternalFactory::createFactory(),
-                          firebolt::rialto::IMediaCapabilitiesFactory::createFactory(),
+                          firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory::createFactory()->createMediaCapabilitiesFactory(),
                           firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory(),
                           firebolt::rialto::server::IWebAudioPlayerServerInternalFactory::createFactory(),
                           firebolt::rialto::server::ISharedMemoryBufferFactory::createFactory(),

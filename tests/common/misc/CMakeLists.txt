@@ -27,9 +27,6 @@ add_library(
         STATIC
         DecoderCapabilitiesUtils.cpp
         DecoderCapabilitiesUtils.h
-        DecoderCapabilitiesUtil.cpp
-        MediaSourceUtil.cpp
-        WebAudioUtil.cpp
     )
 
 target_include_directories(

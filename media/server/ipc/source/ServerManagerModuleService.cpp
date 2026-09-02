@@ -102,11 +102,18 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     // Deserialise typed capability fields into C++ structs (optional — absent fields → std::nullopt)
     std::optional<firebolt::rialto::common::AudioDecoderCapabilities> audioCaps;
     std::optional<firebolt::rialto::common::VideoDecoderCapabilities> videoCaps;
-    if (request->has_audiocapabilities() && request->has_videocapabilities())
+    if (request->has_audiocapabilities())
     {
-        RIALTO_SERVER_LOG_DEBUG("ServerManagerModuleService: audio/video capabilities received in SetConfiguration");
+        RIALTO_SERVER_LOG_DEBUG("ServerManagerModuleService: audio capabilities received in SetConfiguration");
         audioCaps = deserialiseAudioCapabilities(request->audiocapabilities());
+    }
+    if (request->has_videocapabilities())
+    {
+        RIALTO_SERVER_LOG_DEBUG("ServerManagerModuleService: video capabilities received in SetConfiguration");
         videoCaps = deserialiseVideoCapabilities(request->videocapabilities());
+    }
+    if (audioCaps.has_value() || videoCaps.has_value())
+    {
         RIALTO_SERVER_LOG_INFO(
             "ServerManagerModuleService: capabilities deserialised and forwarded to configureServices");
     }

@@ -227,13 +227,17 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     request.set_appname(appName);
     *(request.mutable_loglevels()) = getCurrentLogLevels();
     request.set_initialsessionserverstate(convert(initialState));
-    if (audioCaps.has_value() && videoCaps.has_value())
+    if (audioCaps.has_value())
     {
         serialiseAudioCapabilities(*audioCaps, request.mutable_audiocapabilities());
-        serialiseVideoCapabilities(*videoCaps, request.mutable_videocapabilities());
-        RIALTO_SERVER_MANAGER_LOG_DEBUG("Client: audio/video capabilities serialised into SetConfigurationRequest");
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Client: audio capabilities serialised into SetConfigurationRequest");
     }
-    else
+    if (videoCaps.has_value())
+    {
+        serialiseVideoCapabilities(*videoCaps, request.mutable_videocapabilities());
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Client: video capabilities serialised into SetConfigurationRequest");
+    }
+    if (!audioCaps.has_value() && !videoCaps.has_value())
     {
         RIALTO_SERVER_MANAGER_LOG_DEBUG(
             "Client: no capability data - SetConfigurationRequest sent without capabilities");
@@ -275,13 +279,17 @@ bool Client::performSetConfiguration(const firebolt::rialto::common::SessionServ
     request.set_appname(appName);
     *(request.mutable_loglevels()) = getCurrentLogLevels();
     request.set_initialsessionserverstate(convert(initialState));
-    if (audioCaps.has_value() && videoCaps.has_value())
+    if (audioCaps.has_value())
     {
         serialiseAudioCapabilities(*audioCaps, request.mutable_audiocapabilities());
-        serialiseVideoCapabilities(*videoCaps, request.mutable_videocapabilities());
-        RIALTO_SERVER_MANAGER_LOG_DEBUG("Client: audio/video capabilities serialised into SetConfigurationRequest");
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Client: audio capabilities serialised into SetConfigurationRequest");
     }
-    else
+    if (videoCaps.has_value())
+    {
+        serialiseVideoCapabilities(*videoCaps, request.mutable_videocapabilities());
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Client: video capabilities serialised into SetConfigurationRequest");
+    }
+    if (!audioCaps.has_value() && !videoCaps.has_value())
     {
         RIALTO_SERVER_MANAGER_LOG_DEBUG(
             "Client: no capability data - SetConfigurationRequest sent without capabilities");
