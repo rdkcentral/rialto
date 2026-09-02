@@ -45,7 +45,7 @@ HandleBusMessage::~HandleBusMessage()
 
 void HandleBusMessage::execute() const
 {
-    RIALTO_SERVER_LOG_DEBUG("Executing HandleBusMessage");
+    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Executing HandleBusMessage");
     switch (GST_MESSAGE_TYPE(m_message))
     {
     case GST_MESSAGE_STATE_CHANGED:
@@ -134,6 +134,7 @@ void HandleBusMessage::execute() const
     }
     case GST_MESSAGE_EOS:
     {
+            RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: Bus message EOS received");
         // If flush was requested before HandleBusMessage task creation (but it was not executed yet)
         // or if flush was created after HandleBusMessage task creation (but before its execution)
         // we can't report EOS, because flush clears EOS.
@@ -149,8 +150,13 @@ void HandleBusMessage::execute() const
             {
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::END_OF_STREAM);
                 m_context.eosNotified = true;
-            }
-        }
+            }else {
+                RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: Didn't notify EOS to player");
+	    }
+        }else {
+                RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE: Didn't reach EOS yet");
+
+	}
         break;
     }
     case GST_MESSAGE_QOS:
@@ -300,6 +306,9 @@ void HandleBusMessage::execute() const
         break;
     }
     default:
+    {
+	    RIALTO_SERVER_LOG_ERROR("DEBUG PURPOSE : Not handled the GST message");
+    }
         break;
     }
 
