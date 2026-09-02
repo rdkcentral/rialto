@@ -1243,13 +1243,3 @@
    ...
    fun:*testing*
 }
-{
-   ignore_protobuf_extension_register_exception_leak
-   Memcheck:Leak
-   match-leak-kinds: possible
-   fun:malloc
-   fun:__cxa_allocate_exception
-   ...
-   fun:*ExtensionSet*RegisterExtension*
-   ...
-}
