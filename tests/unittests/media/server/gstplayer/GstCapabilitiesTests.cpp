@@ -61,8 +61,7 @@ protected:
     std::shared_ptr<NiceMock<RdkGstreamerUtilsWrapperMock>> m_rdkGstreamerUtilsWrapperMock;
     MockGstInitialiser m_gstInitialiserMock;
 
-    std::shared_ptr<IGstCapabilities>
-    createGstCapabilities()
+    std::shared_ptr<IGstCapabilities> createGstCapabilities()
     {
         return std::make_shared<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
                                                  m_gstInitialiserMock);
@@ -179,24 +178,6 @@ TEST_F(GstCapabilitiesTests, MultipleCalls_AudioAndVideoShouldBeIndependent)
     // Both calls should succeed independently and return empty
     EXPECT_TRUE(audioCapabilities.capabilities.empty());
     EXPECT_TRUE(videoCapabilities.capabilities.empty());
-}
-
-// ============================================================================
-// Thread Safety Tests (Basic)
-// ============================================================================
-{
-    std::vector<std::shared_ptr<IGstCapabilities>> instances;
-
-    for (int i = 0; i < 5; ++i)
-    {
-        instances.push_back(createGstCapabilities());
-    }
-
-    // All instances should be valid
-    for (const auto &instance : instances)
-    {
-        EXPECT_NE(instance, nullptr);
-    }
 }
 
 // ============================================================================

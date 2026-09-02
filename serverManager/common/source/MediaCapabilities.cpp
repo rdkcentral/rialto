@@ -28,18 +28,18 @@ MediaCapabilities::MediaCapabilities(std::shared_ptr<firebolt::rialto::wrappers:
 {
 }
 
-firebolt::rialto::DecoderCapabilitiesStatus
+firebolt::rialto::common::DecoderCapabilitiesStatus
 MediaCapabilities::getAudioDecoderCapabilities(firebolt::rialto::common::AudioDecoderCapabilities &capabilities)
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("MediaCapabilities: loading audio capabilities from YAML");
 
     capabilities = {};
     const auto status = m_yamlCppWrapper->getAudioDecoderCapabilities(capabilities);
-    if (status == firebolt::rialto::DecoderCapabilitiesStatus::OK)
+    if (status == firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
     {
         RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: audio capabilities loaded successfully from YAML");
     }
-    else if (status == firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
+    else if (status == firebolt::rialto::common::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
     {
         RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: YAML config not found");
     }
@@ -51,18 +51,18 @@ MediaCapabilities::getAudioDecoderCapabilities(firebolt::rialto::common::AudioDe
     return status;
 }
 
-firebolt::rialto::DecoderCapabilitiesStatus
+firebolt::rialto::common::DecoderCapabilitiesStatus
 MediaCapabilities::getVideoDecoderCapabilities(firebolt::rialto::common::VideoDecoderCapabilities &capabilities)
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("MediaCapabilities: loading video capabilities from YAML");
 
     capabilities = {};
     const auto status = m_yamlCppWrapper->getVideoDecoderCapabilities(capabilities);
-    if (status == firebolt::rialto::DecoderCapabilitiesStatus::OK)
+    if (status == firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
     {
         RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: video capabilities loaded successfully from YAML");
     }
-    else if (status == firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
+    else if (status == firebolt::rialto::common::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
     {
         RIALTO_SERVER_MANAGER_LOG_INFO("MediaCapabilities: YAML config not found");
     }

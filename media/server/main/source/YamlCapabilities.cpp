@@ -28,26 +28,26 @@ YamlCapabilities::YamlCapabilities(const std::shared_ptr<firebolt::rialto::wrapp
     RIALTO_SERVER_LOG_DEBUG("YamlCapabilities: constructor - reads decoder capabilities from YAML files only");
 }
 
-firebolt::rialto::DecoderCapabilitiesStatus
+firebolt::rialto::common::DecoderCapabilitiesStatus
 YamlCapabilities::getAudioDecoderCapabilities(firebolt::rialto::common::AudioDecoderCapabilities &audioDecoderCapabilities)
 {
     if (!m_yamlCppWrapper)
     {
         RIALTO_SERVER_LOG_WARN("YamlCapabilities: YAML wrapper not available");
-        return firebolt::rialto::DecoderCapabilitiesStatus::INTERNAL_ERROR;
+        return firebolt::rialto::common::DecoderCapabilitiesStatus::INTERNAL_ERROR;
     }
 
     RIALTO_SERVER_LOG_DEBUG("YamlCapabilities: Reading audio decoder capabilities from YAML");
     return m_yamlCppWrapper->getAudioDecoderCapabilities(audioDecoderCapabilities);
 }
 
-firebolt::rialto::DecoderCapabilitiesStatus
+firebolt::rialto::common::DecoderCapabilitiesStatus
 YamlCapabilities::getVideoDecoderCapabilities(firebolt::rialto::common::VideoDecoderCapabilities &videoDecoderCapabilities)
 {
     if (!m_yamlCppWrapper)
     {
         RIALTO_SERVER_LOG_WARN("YamlCapabilities: YAML wrapper not available");
-        return firebolt::rialto::DecoderCapabilitiesStatus::INTERNAL_ERROR;
+        return firebolt::rialto::common::DecoderCapabilitiesStatus::INTERNAL_ERROR;
     }
 
     RIALTO_SERVER_LOG_DEBUG("YamlCapabilities: Reading video decoder capabilities from YAML");

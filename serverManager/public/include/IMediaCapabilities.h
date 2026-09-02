@@ -21,7 +21,7 @@
 #define RIALTO_SERVERMANAGER_SERVICE_I_MEDIA_CAPABILITIES_H_
 
 #include <AudioDecoderCapabilities.h>
-#include <MediaCommon.h>
+#include <DecoderCapabilitiesCommon.h>
 #include <VideoDecoderCapabilities.h>
 #include <memory>
 
@@ -38,10 +38,10 @@ public:
     IMediaCapabilities(IMediaCapabilities &&) = delete;
     IMediaCapabilities &operator=(IMediaCapabilities &&) = delete;
 
-    virtual firebolt::rialto::DecoderCapabilitiesStatus
+    virtual firebolt::rialto::common::DecoderCapabilitiesStatus
     getAudioDecoderCapabilities(firebolt::rialto::common::AudioDecoderCapabilities &capabilities) = 0;
 
-    virtual firebolt::rialto::DecoderCapabilitiesStatus
+    virtual firebolt::rialto::common::DecoderCapabilitiesStatus
     getVideoDecoderCapabilities(firebolt::rialto::common::VideoDecoderCapabilities &capabilities) = 0;
 };
 

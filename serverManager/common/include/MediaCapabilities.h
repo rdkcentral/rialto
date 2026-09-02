@@ -33,10 +33,10 @@ public:
     explicit MediaCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper);
     ~MediaCapabilities() override = default;
 
-    firebolt::rialto::DecoderCapabilitiesStatus
+    firebolt::rialto::common::DecoderCapabilitiesStatus
     getAudioDecoderCapabilities(firebolt::rialto::common::AudioDecoderCapabilities &capabilities) override;
 
-    firebolt::rialto::DecoderCapabilitiesStatus
+    firebolt::rialto::common::DecoderCapabilitiesStatus
     getVideoDecoderCapabilities(firebolt::rialto::common::VideoDecoderCapabilities &capabilities) override;
 
 private:

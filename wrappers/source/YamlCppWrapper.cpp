@@ -654,14 +654,14 @@ std::shared_ptr<IYamlCppWrapper> YamlCppWrapperFactory::createYamlCppWrapper()
     return std::make_shared<YamlCppWrapper>();
 }
 
-DecoderCapabilitiesStatus
+::firebolt::rialto::common::DecoderCapabilitiesStatus
 YamlCppWrapper::getAudioDecoderCapabilities(::firebolt::rialto::common::AudioDecoderCapabilities &capabilities) const
 try
 {
     YAML::Node audioCapsFile = YAML::LoadFile(kAudioCapabilitiesFilePath);
     if (audioCapsFile.IsNull())
     {
-        return DecoderCapabilitiesStatus::CONFIG_NOT_FOUND;
+        return ::firebolt::rialto::common::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND;
     }
     if (audioCapsFile["audiodecoder"])
     {
@@ -681,21 +681,21 @@ try
             }
         }
     }
-    return DecoderCapabilitiesStatus::OK;
+    return ::firebolt::rialto::common::DecoderCapabilitiesStatus::OK;
 }
 catch (const std::exception &e)
 {
-    return DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED;
+    return ::firebolt::rialto::common::DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED;
 }
 
-DecoderCapabilitiesStatus
+::firebolt::rialto::common::DecoderCapabilitiesStatus
 YamlCppWrapper::getVideoDecoderCapabilities(::firebolt::rialto::common::VideoDecoderCapabilities &capabilities) const
 try
 {
     YAML::Node videoCapsFile = YAML::LoadFile(kVideoCapabilitiesFilePath);
     if (videoCapsFile.IsNull())
     {
-        return DecoderCapabilitiesStatus::CONFIG_NOT_FOUND;
+        return ::firebolt::rialto::common::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND;
     }
     if (videoCapsFile["videodecoder"])
     {
@@ -715,11 +715,11 @@ try
             }
         }
     }
-    return DecoderCapabilitiesStatus::OK;
+    return ::firebolt::rialto::common::DecoderCapabilitiesStatus::OK;
 }
 catch (const std::exception &e)
 {
-    return DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED;
+    return ::firebolt::rialto::common::DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED;
 }
 
 } // namespace firebolt::rialto::wrappers

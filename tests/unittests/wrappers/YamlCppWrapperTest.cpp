@@ -19,6 +19,7 @@
 
 #include "YamlCppWrapper.h"
 #include <AudioDecoderCapabilities.h>
+#include <DecoderCapabilitiesCommon.h>
 #include <MediaCommon.h>
 #include <VideoDecoderCapabilities.h>
 
@@ -27,7 +28,7 @@
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto::wrappers;
-using firebolt::rialto::DecoderCapabilitiesStatus;
+using firebolt::rialto::common::DecoderCapabilitiesStatus;
 
 namespace
 {

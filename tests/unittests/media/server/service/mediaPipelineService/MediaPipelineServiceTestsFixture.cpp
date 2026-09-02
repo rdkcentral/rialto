@@ -73,16 +73,12 @@ const std::string kTextTrackIdentifier{"TextTrackIdentifier"};
 constexpr uint32_t kBufferingLimit{4324};
 constexpr bool kUseBuffering{true};
 constexpr uint64_t kStopPosition{23412};
-const firebolt::rialto::common::AudioDecoderCapabilities kAudioDecoderCapabilities{
-    .interfaceVersion = "1.0",
-    .schemaVersion = "2.0",
-    .capabilities = {}
-};
-const firebolt::rialto::common::VideoDecoderCapabilities kVideoDecoderCapabilities{
-    .interfaceVersion = "3.0",
-    .schemaVersion = "4.0",
-    .capabilities = {}
-};
+const firebolt::rialto::common::AudioDecoderCapabilities kAudioDecoderCapabilities{.interfaceVersion = "1.0",
+                                                                                   .schemaVersion = "2.0",
+                                                                                   .capabilities = {}};
+const firebolt::rialto::common::VideoDecoderCapabilities kVideoDecoderCapabilities{.interfaceVersion = "3.0",
+                                                                                   .schemaVersion = "4.0",
+                                                                                   .capabilities = {}};
 constexpr bool kIsLive{false};
 constexpr uint32_t kQueuedFrames{123};
 } // namespace

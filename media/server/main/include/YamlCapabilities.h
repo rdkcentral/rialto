@@ -59,7 +59,7 @@ public:
      * @param[out] audioDecoderCapabilities The audio capabilities to populate
      * @return DecoderCapabilitiesStatus indicating success/failure
      */
-    firebolt::rialto::DecoderCapabilitiesStatus
+    firebolt::rialto::common::DecoderCapabilitiesStatus
     getAudioDecoderCapabilities(firebolt::rialto::common::AudioDecoderCapabilities &audioDecoderCapabilities);
 
     /**
@@ -68,7 +68,7 @@ public:
      * @param[out] videoDecoderCapabilities The video capabilities to populate
      * @return DecoderCapabilitiesStatus indicating success/failure
      */
-    firebolt::rialto::DecoderCapabilitiesStatus
+    firebolt::rialto::common::DecoderCapabilitiesStatus
     getVideoDecoderCapabilities(firebolt::rialto::common::VideoDecoderCapabilities &videoDecoderCapabilities);
 
 private:

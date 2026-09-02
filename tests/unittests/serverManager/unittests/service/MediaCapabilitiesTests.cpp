@@ -21,8 +21,8 @@
 #include "YamlCppWrapperMock.h"
 #include "gtest/gtest.h"
 
-using firebolt::rialto::DecoderCapabilitiesStatus;
 using firebolt::rialto::common::AudioDecoderCapabilities;
+using firebolt::rialto::common::DecoderCapabilitiesStatus;
 using firebolt::rialto::common::VideoDecoderCapabilities;
 using firebolt::rialto::wrappers::YamlCppWrapperMock;
 using testing::_;

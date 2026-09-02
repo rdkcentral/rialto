@@ -72,6 +72,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoTestCommonMatchers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoTestServerManagerCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
 		${CMAKE_SOURCE_DIR}/wrappers/include
 		${GStreamerApp_INCLUDE_DIRS}
 
@@ -95,6 +96,7 @@ target_link_libraries(
         RialtoServerManager
         RialtoTestServerManagerCommonMisc
 		RialtoWrappers
+		RialtoPlayerPublic
 		${GStreamerApp_LIBRARIES}
         Threads::Threads
         )

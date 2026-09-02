@@ -118,11 +118,11 @@ SessionServerAppManagerTests::SessionServerAppManagerTests()
     EXPECT_CALL(m_mediaCapabilitiesMock, getAudioDecoderCapabilities(_))
         .WillOnce(DoAll(Invoke([](firebolt::rialto::common::AudioDecoderCapabilities &capabilities)
                                { capabilities = kAudioCapabilities.value(); }),
-                        Return(firebolt::rialto::DecoderCapabilitiesStatus::OK)));
+                        Return(firebolt::rialto::common::DecoderCapabilitiesStatus::OK)));
     EXPECT_CALL(m_mediaCapabilitiesMock, getVideoDecoderCapabilities(_))
         .WillOnce(DoAll(Invoke([](firebolt::rialto::common::VideoDecoderCapabilities &capabilities)
                                { capabilities = kVideoCapabilities.value(); }),
-                        Return(firebolt::rialto::DecoderCapabilitiesStatus::OK)));
+                        Return(firebolt::rialto::common::DecoderCapabilitiesStatus::OK)));
     m_sut =
         std::make_unique<rialto::servermanager::common::SessionServerAppManager>(m_controller, m_stateObserver,
                                                                                  std::move(m_sessionServerAppFactory),

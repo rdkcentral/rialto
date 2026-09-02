@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_WRAPPERS_YAML_CPP_WRAPPER_MOCK_H_
 #define FIREBOLT_RIALTO_WRAPPERS_YAML_CPP_WRAPPER_MOCK_H_
 
+#include "DecoderCapabilitiesCommon.h"
 #include "IYamlCppWrapper.h"
 #include <gmock/gmock.h>
 #include <memory>
@@ -35,10 +36,10 @@ public:
 class YamlCppWrapperMock : public IYamlCppWrapper
 {
 public:
-    MOCK_METHOD(DecoderCapabilitiesStatus, getAudioDecoderCapabilities,
-                (firebolt::rialto::common::AudioDecoderCapabilities & capabilities), (const, override));
-    MOCK_METHOD(DecoderCapabilitiesStatus, getVideoDecoderCapabilities,
-                (firebolt::rialto::common::VideoDecoderCapabilities & capabilities), (const, override));
+    MOCK_METHOD(::firebolt::rialto::common::DecoderCapabilitiesStatus, getAudioDecoderCapabilities,
+                (::firebolt::rialto::common::AudioDecoderCapabilities & capabilities), (const, override));
+    MOCK_METHOD(::firebolt::rialto::common::DecoderCapabilitiesStatus, getVideoDecoderCapabilities,
+                (::firebolt::rialto::common::VideoDecoderCapabilities & capabilities), (const, override));
 };
 } // namespace firebolt::rialto::wrappers
 

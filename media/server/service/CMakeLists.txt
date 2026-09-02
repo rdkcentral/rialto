@@ -63,4 +63,5 @@ target_link_libraries (
         RialtoLogging
         RialtoServerMain
         RialtoServerIpc
+        RialtoClient
 )

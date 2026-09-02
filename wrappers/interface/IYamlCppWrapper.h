@@ -21,7 +21,7 @@
 #define FIREBOLT_RIALTO_WRAPPERS_I_YAML_CPP_WRAPPER_H_
 
 #include <AudioDecoderCapabilities.h>
-#include <MediaCommon.h>
+#include <DecoderCapabilitiesCommon.h>
 #include <VideoDecoderCapabilities.h>
 #include <memory>
 
@@ -55,9 +55,9 @@ public:
     IYamlCppWrapper() = default;
     virtual ~IYamlCppWrapper() = default;
 
-    virtual DecoderCapabilitiesStatus
+    virtual ::firebolt::rialto::common::DecoderCapabilitiesStatus
     getAudioDecoderCapabilities(::firebolt::rialto::common::AudioDecoderCapabilities &capabilities) const = 0;
-    virtual DecoderCapabilitiesStatus
+    virtual ::firebolt::rialto::common::DecoderCapabilitiesStatus
     getVideoDecoderCapabilities(::firebolt::rialto::common::VideoDecoderCapabilities &capabilities) const = 0;
 };
 } // namespace firebolt::rialto::wrappers

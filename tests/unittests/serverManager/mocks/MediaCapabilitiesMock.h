@@ -30,10 +30,10 @@ class MediaCapabilitiesMock : public IMediaCapabilities
 public:
     ~MediaCapabilitiesMock() override = default;
 
-    MOCK_METHOD(firebolt::rialto::DecoderCapabilitiesStatus, getAudioDecoderCapabilities,
+    MOCK_METHOD(firebolt::rialto::common::DecoderCapabilitiesStatus, getAudioDecoderCapabilities,
                 (firebolt::rialto::common::AudioDecoderCapabilities &), (override));
 
-    MOCK_METHOD(firebolt::rialto::DecoderCapabilitiesStatus, getVideoDecoderCapabilities,
+    MOCK_METHOD(firebolt::rialto::common::DecoderCapabilitiesStatus, getVideoDecoderCapabilities,
                 (firebolt::rialto::common::VideoDecoderCapabilities &), (override));
 };
 

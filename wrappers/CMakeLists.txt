@@ -125,6 +125,7 @@ target_link_libraries (
 
         PRIVATE
         RialtoCommon
+        RialtoPlayerPublic
         ${WRAPPER_LIBS}
         ${GStreamerApp_LIBRARIES}
         yaml-cpp

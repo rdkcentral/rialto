@@ -446,9 +446,9 @@ SessionServerAppManagerMediaCapabilitiesErrorTests::SessionServerAppManagerMedia
     EXPECT_CALL(m_healthcheckServiceFactoryMock, createHealthcheckService(_))
         .WillOnce(Return(ByMove(std::move(m_healthcheckService))));
     EXPECT_CALL(m_mediaCapabilitiesMock, getAudioDecoderCapabilities(_))
-        .WillOnce(Return(firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
+        .WillOnce(Return(firebolt::rialto::common::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
     EXPECT_CALL(m_mediaCapabilitiesMock, getVideoDecoderCapabilities(_))
-        .WillOnce(Return(firebolt::rialto::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
+        .WillOnce(Return(firebolt::rialto::common::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND));
     m_sut =
         std::make_unique<rialto::servermanager::common::SessionServerAppManager>(m_controller, m_stateObserver,
                                                                                  std::move(m_sessionServerAppFactory),
