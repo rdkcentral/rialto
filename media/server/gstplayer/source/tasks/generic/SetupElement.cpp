@@ -58,6 +58,11 @@ void videoUnderflowCallback(GstElement *object, guint fifoDepth, gpointer queueD
 {
     firebolt::rialto::server::IGstGenericPlayerPrivate *player =
         static_cast<firebolt::rialto::server::IGstGenericPlayerPrivate *>(self);
+    RIALTO_SERVER_LOG_INFO(
+    "UNDERFLOW TRIGGERED by '%s' fifoDepth=%u queueDepth=%p",
+    GST_ELEMENT_NAME(object),
+    fifoDepth,
+    queueDepth);
     player->scheduleVideoUnderflow();
 }
 
@@ -301,23 +306,84 @@ void SetupElement::execute() const
 
     if (isDecoder(*m_gstWrapper, m_element) || isSink(*m_gstWrapper, m_element))
     {
-        std::optional<std::string> underflowSignalName = getUnderflowSignalName(*m_glibWrapper, m_element);
-        if (underflowSignalName)
+        const bool isVid = isVideo(*m_gstWrapper, m_element);
+        const bool isAud = isAudio(*m_gstWrapper, m_element);
+
+        bool &alreadyConnected = isVid ? m_context.videoUnderflowConnected
+                                    : m_context.audioUnderflowConnected;
+
+        if (!alreadyConnected)
         {
-            if (isAudio(*m_gstWrapper, m_element))
+            std::optional<std::string> signalName;
+
+            if (isDecoder(*m_gstWrapper, m_element))
             {
-                RIALTO_SERVER_LOG_INFO("Connecting audio underflow callback for signal: %s",
-                                       underflowSignalName.value().c_str());
-                m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(),
-                                              G_CALLBACK(audioUnderflowCallback), &m_player);
+                signalName = getUnderflowSignalName(*m_glibWrapper, m_element);
+
+                RIALTO_SERVER_LOG_INFO(
+                    "UNDERFLOW: Decoder '%s' signal = %s",
+                    GST_ELEMENT_NAME(m_element),
+                    signalName ? signalName->c_str() : "NONE");
             }
-            else if (isVideo(*m_gstWrapper, m_element))
+            else if (isSink(*m_gstWrapper, m_element))
             {
-                RIALTO_SERVER_LOG_INFO("Connecting video underflow callback for signal: %s",
-                                       underflowSignalName.value().c_str());
-                m_glibWrapper->gSignalConnect(m_element, underflowSignalName.value().c_str(),
-                                              G_CALLBACK(videoUnderflowCallback), &m_player);
+                if (!alreadyConnected)
+                {
+                    signalName = getUnderflowSignalName(*m_glibWrapper, m_element);
+
+                    RIALTO_SERVER_LOG_INFO(
+                        "UNDERFLOW: Sink '%s' signal = %s",
+                        GST_ELEMENT_NAME(m_element),
+                        signalName ? signalName->c_str() : "NONE");
+                }
+                else
+                {
+                    RIALTO_SERVER_LOG_INFO(
+                        "UNDERFLOW: Decoder already connected, skipping sink '%s'",
+                        GST_ELEMENT_NAME(m_element));
+                }
             }
+
+            if (signalName)
+            {
+                if (isVid)
+                {
+                    RIALTO_SERVER_LOG_ERROR(
+                        "UNDERFLOW: Connecting VIDEO callback on '%s' for signal '%s'",
+                        GST_ELEMENT_NAME(m_element),
+                        signalName->c_str());
+
+                    m_glibWrapper->gSignalConnect(
+                        m_element,
+                        signalName->c_str(),
+                        G_CALLBACK(videoUnderflowCallback),
+                        &m_player);
+
+                    alreadyConnected = true;
+                }
+                else if (isAud)
+                {
+                    RIALTO_SERVER_LOG_ERROR(
+                        "UNDERFLOW: Connecting AUDIO callback on '%s' for signal '%s'",
+                        GST_ELEMENT_NAME(m_element),
+                        signalName->c_str());
+
+                    m_glibWrapper->gSignalConnect(
+                        m_element,
+                        signalName->c_str(),
+                        G_CALLBACK(audioUnderflowCallback),
+                        &m_player);
+
+                    alreadyConnected = true;
+                }
+            }
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_INFO(
+                "UNDERFLOW: Already connected for %s, skipping '%s'",
+                isVid ? "video" : "audio",
+                GST_ELEMENT_NAME(m_element));
         }
 
         std::optional<std::string> firstFrameSignalName = getFirstFrameSignalName(*m_glibWrapper, m_element);
