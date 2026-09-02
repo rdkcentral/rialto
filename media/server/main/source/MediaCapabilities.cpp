@@ -21,12 +21,16 @@
 #include "IGstCapabilities.h"
 #include "RialtoServerLogging.h"
 #include "YamlCapabilities.h"
+#include <stdexcept>
 
 namespace firebolt::rialto::server
 {
-MediaCapabilities::MediaCapabilities(const std::shared_ptr<YamlCapabilities> &yamlCapabilities,
-                                     const std::shared_ptr<IGstCapabilities> &gstCapabilities)
-    : m_yamlCapabilities{yamlCapabilities}, m_gstCapabilities{gstCapabilities}
+MediaCapabilities::MediaCapabilities(
+    const std::shared_ptr<YamlCapabilities> &yamlCapabilities, const std::shared_ptr<IGstCapabilities> &gstCapabilities,
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo)
+    : m_yamlCapabilities{yamlCapabilities}, m_gstCapabilities{gstCapabilities}, m_preloadedAudio{preloadedAudio},
+      m_preloadedVideo{preloadedVideo}
 {
     RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: constructor - orchestrates between YAML and GStreamer sources");
     if (!m_yamlCapabilities)
@@ -41,6 +45,12 @@ MediaCapabilities::MediaCapabilities(const std::shared_ptr<YamlCapabilities> &ya
 
 firebolt::rialto::common::AudioDecoderCapabilities MediaCapabilities::getSupportedAudioCapabilities()
 {
+    if (m_preloadedAudio.has_value())
+    {
+        RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: Audio capabilities from ServerManager preload (Path 0) - success");
+        return *m_preloadedAudio;
+    }
+
     RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: getSupportedAudioCapabilities - trying YAML first (Path A)");
 
     // Path A: Try to get audio capabilities from YAML
@@ -63,6 +73,12 @@ firebolt::rialto::common::AudioDecoderCapabilities MediaCapabilities::getSupport
 
 firebolt::rialto::common::VideoDecoderCapabilities MediaCapabilities::getSupportedVideoCapabilities()
 {
+    if (m_preloadedVideo.has_value())
+    {
+        RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: Video capabilities from ServerManager preload (Path 0) - success");
+        return *m_preloadedVideo;
+    }
+
     RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: getSupportedVideoCapabilities - trying YAML first (Path A)");
 
     // Path A: Try to get video capabilities from YAML

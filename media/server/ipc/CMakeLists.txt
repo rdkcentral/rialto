@@ -32,11 +32,11 @@ add_library (
 
         source/AckSender.cpp
         source/ApplicationManagementServer.cpp
-        source/CapabilityDeserialiser.cpp
         source/IpcFactory.cpp
         source/MediaPipelineClient.cpp
         source/MediaPipelineModuleService.cpp
         source/MediaPipelineCapabilitiesModuleService.cpp
+        source/MediaCapabilitiesModuleService.cpp
         source/MediaKeysClient.cpp
         source/MediaKeysModuleService.cpp
         source/MediaKeysCapabilitiesModuleService.cpp

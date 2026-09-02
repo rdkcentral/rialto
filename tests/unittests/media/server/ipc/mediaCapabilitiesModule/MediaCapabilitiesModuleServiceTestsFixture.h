@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2026 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
  * limitations under the License.
  */
 
-#ifndef MEDIA_PIPELINE_CAPABILITIES_MODULE_SERVICE_TESTS_FIXTURE_H_
-#define MEDIA_PIPELINE_CAPABILITIES_MODULE_SERVICE_TESTS_FIXTURE_H_
+#ifndef MEDIA_CAPABILITIES_MODULE_SERVICE_TESTS_FIXTURE_H_
+#define MEDIA_CAPABILITIES_MODULE_SERVICE_TESTS_FIXTURE_H_
 
 #include "ClientMock.h"
 #include "ClosureMock.h"
-#include "IMediaPipelineCapabilitiesModuleService.h"
+#include "IMediaCapabilitiesModuleService.h"
 #include "IpcControllerMock.h"
 #include "IpcServerMock.h"
 #include "MediaPipelineServiceMock.h"
@@ -32,30 +32,22 @@
 
 using testing::StrictMock;
 
-class MediaPipelineCapabilitiesModuleServiceTests : public testing::Test
+class MediaCapabilitiesModuleServiceTests : public testing::Test
 {
 public:
-    MediaPipelineCapabilitiesModuleServiceTests();
-    ~MediaPipelineCapabilitiesModuleServiceTests() override;
+    MediaCapabilitiesModuleServiceTests();
+    ~MediaCapabilitiesModuleServiceTests() override;
 
     void clientWillConnect();
-    void mediaPipelineServiceWillGetSupportedMimeTypes();
-    void mediaPipelineWillCheckIfMimeTypeIsSupported();
-    void mediaPipelineWillGetSupportedProperties();
-    void mediaPipelineWillCheckIfVideoIsMaster();
+    void mediaPipelineWillGetSupportedAudioCapabilities();
+    void mediaPipelineWillGetSupportedVideoCapabilities();
 
     void sendClientConnected();
-    void sendClientDisconnected();
-    void sendGetSupportedMimeTypesRequestAndReceiveResponse();
-    void sendGetSupportedMimeTypesRequestAndExpectFailure();
-    void sendIsMimeTypeSupportedRequestAndReceiveResponse();
-    void sendIsMimeTypeSupportedRequestAndExpectFailure();
-    void sendGetSupportedPropertiesRequestWithSuccess();
-    void sendGetSupportedPropertiesRequestAndExpectFailure();
-    void sendIsVideoMasterRequestWithSuccess();
-    void sendIsVideoMasterRequestAndExpectFailure();
+    void sendGetSupportedAudioCapabilitiesRequestAndReceiveResponse();
+    void sendGetSupportedAudioCapabilitiesRequestAndExpectFailure();
+    void sendGetSupportedVideoCapabilitiesRequestAndReceiveResponse();
+    void sendGetSupportedVideoCapabilitiesRequestAndExpectFailure();
     void expectInvalidControlFailure();
-    void expectCorrectMediaTypeConversion();
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ClientMock>> m_clientMock;
@@ -63,9 +55,9 @@ private:
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ControllerMock>> m_controllerMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::RpcControllerMock>> m_invalidControllerMock;
     StrictMock<firebolt::rialto::server::service::MediaPipelineServiceMock> m_mediaPipelineServiceMock;
-    std::shared_ptr<firebolt::rialto::server::ipc::IMediaPipelineCapabilitiesModuleService> m_service;
+    std::shared_ptr<firebolt::rialto::server::ipc::IMediaCapabilitiesModuleService> m_service;
 
     void expectRequestSuccess();
 };
 
-#endif // MEDIA_PIPELINE_CAPABILITIES_MODULE_SERVICE_TESTS_FIXTURE_H_
+#endif // MEDIA_CAPABILITIES_MODULE_SERVICE_TESTS_FIXTURE_H_

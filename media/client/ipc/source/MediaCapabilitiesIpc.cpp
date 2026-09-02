@@ -18,8 +18,8 @@
  */
 
 #include "MediaCapabilitiesIpc.h"
+#include "CapabilityConverters.h"
 #include "IIpcClient.h"
-#include "MediaCapabilitiesIpcConverters.h"
 #include "RialtoClientLogging.h"
 
 namespace firebolt::rialto::client
@@ -72,7 +72,7 @@ MediaCapabilitiesIpc::~MediaCapabilitiesIpc()
 
 bool MediaCapabilitiesIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
 {
-    m_stub = std::make_unique<::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub>(ipcChannel.get());
+    m_stub = std::make_unique<::firebolt::rialto::MediaCapabilitiesModule_Stub>(ipcChannel.get());
     return m_stub != nullptr;
 }
 
@@ -85,7 +85,7 @@ firebolt::rialto::common::AudioDecoderCapabilities MediaCapabilitiesIpc::getSupp
     }
 
     firebolt::rialto::GetSupportedAudioCapabilitiesRequest request;
-    firebolt::rialto::GetSupportedAudioCapabilitiesResponse response;
+    firebolt::rialto::AudioCapabilities response;
     auto ipcController = m_ipc.createRpcController();
     auto blockingClosure = m_ipc.createBlockingClosure();
     m_stub->getSupportedAudioCapabilities(ipcController.get(), &request, &response, blockingClosure.get());
@@ -99,7 +99,7 @@ firebolt::rialto::common::AudioDecoderCapabilities MediaCapabilitiesIpc::getSupp
     }
 
     RIALTO_CLIENT_LOG_INFO("IMediaCapabilities: audio capabilities received");
-    return convertAudioDecoderCapabilities(response);
+    return firebolt::rialto::ipc::common::deserialiseAudioCapabilities(response);
 }
 
 firebolt::rialto::common::VideoDecoderCapabilities MediaCapabilitiesIpc::getSupportedVideoCapabilities()
@@ -112,7 +112,7 @@ firebolt::rialto::common::VideoDecoderCapabilities MediaCapabilitiesIpc::getSupp
     }
 
     firebolt::rialto::GetSupportedVideoCapabilitiesRequest request;
-    firebolt::rialto::GetSupportedVideoCapabilitiesResponse response;
+    firebolt::rialto::VideoCapabilities response;
     auto ipcController = m_ipc.createRpcController();
     auto blockingClosure = m_ipc.createBlockingClosure();
     m_stub->getSupportedVideoCapabilities(ipcController.get(), &request, &response, blockingClosure.get());
@@ -126,7 +126,7 @@ firebolt::rialto::common::VideoDecoderCapabilities MediaCapabilitiesIpc::getSupp
     }
 
     RIALTO_CLIENT_LOG_INFO("IMediaCapabilities: video capabilities received");
-    return convertVideoDecoderCapabilities(response);
+    return firebolt::rialto::ipc::common::deserialiseVideoCapabilities(response);
 }
 
 } // namespace firebolt::rialto::client

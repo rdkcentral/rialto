@@ -43,7 +43,7 @@ protected:
 public:
     void setAudioResponse(google::protobuf::Message *message)
     {
-        auto *response = dynamic_cast<GetSupportedAudioCapabilitiesResponse *>(message);
+        auto *response = dynamic_cast<AudioCapabilities *>(message);
         ASSERT_NE(response, nullptr);
         response->set_interface_version("1.0");
         response->set_schema_version("2.0");
@@ -52,13 +52,13 @@ public:
 
     void setVideoResponse(google::protobuf::Message *message)
     {
-        auto *response = dynamic_cast<GetSupportedVideoCapabilitiesResponse *>(message);
+        auto *response = dynamic_cast<VideoCapabilities *>(message);
         ASSERT_NE(response, nullptr);
         response->set_interface_version("1.0");
         response->set_schema_version("2.0");
         auto *profile = response->add_capabilities()->mutable_codec_capabilities()->mutable_h264()->add_profiles();
-        profile->set_type(GetSupportedVideoCapabilitiesResponse::H264_PROFILE_HIGH);
-        profile->set_max_level(GetSupportedVideoCapabilitiesResponse::H264_LEVEL_4_1);
+        profile->set_type(VideoCapabilities::H264_PROFILE_HIGH);
+        profile->set_max_level(VideoCapabilities::H264_LEVEL_4_1);
     }
 };
 

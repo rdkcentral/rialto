@@ -20,11 +20,12 @@
 #include "MediaCapabilities.h"
 #include "RialtoServerManagerLogging.h"
 #include <chrono>
+#include <utility>
 
 namespace rialto::servermanager::common
 {
 MediaCapabilities::MediaCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper)
-    : m_yamlCppWrapper{yamlCppWrapper}
+    : m_yamlCppWrapper{std::move(yamlCppWrapper)}
 {
 }
 

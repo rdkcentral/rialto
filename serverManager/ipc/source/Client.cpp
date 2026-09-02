@@ -18,7 +18,7 @@
  */
 
 #include "Client.h"
-#include "CapabilitySerialiser.h"
+#include "CapabilityConverters.h"
 #include "IIpcChannel.h"
 #include "ISessionServerAppManager.h"
 #include "IpcLoop.h"
@@ -29,6 +29,9 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+using firebolt::rialto::ipc::common::serialiseAudioCapabilities;
+using firebolt::rialto::ipc::common::serialiseVideoCapabilities;
 
 namespace
 {

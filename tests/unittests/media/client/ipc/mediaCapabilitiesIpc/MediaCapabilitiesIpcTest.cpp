@@ -45,8 +45,8 @@ protected:
 public:
     void setGetSupportedAudioCapabilitiesResponse(google::protobuf::Message *response)
     {
-        firebolt::rialto::GetSupportedAudioCapabilitiesResponse *getSupportedAudioCapabResp =
-            dynamic_cast<firebolt::rialto::GetSupportedAudioCapabilitiesResponse *>(response);
+        firebolt::rialto::AudioCapabilities *getSupportedAudioCapabResp =
+            dynamic_cast<firebolt::rialto::AudioCapabilities *>(response);
         getSupportedAudioCapabResp->set_interface_version(kInterfaceVersion);
         getSupportedAudioCapabResp->set_schema_version(kSchemaVersion);
 
@@ -58,7 +58,7 @@ public:
         cap->mutable_pcm()->mutable_base()->set_max_bit_depth(32);
 
         auto *aacEntry = cap->mutable_aac()->add_profiles();
-        aacEntry->set_profile(firebolt::rialto::GetSupportedAudioCapabilitiesResponse::AAC_PROFILE_LC);
+        aacEntry->set_profile(firebolt::rialto::AudioCapabilities::AAC_PROFILE_LC);
         aacEntry->mutable_capability()->set_max_bitrate_in_bps(576000);
         aacEntry->mutable_capability()->set_max_channels(8);
         aacEntry->mutable_capability()->set_max_sample_rate_in_hz(96000);
@@ -72,7 +72,7 @@ public:
 
     void setGetSupportedVideoCapabilitiesResponse(google::protobuf::Message *response)
     {
-        using R = firebolt::rialto::GetSupportedVideoCapabilitiesResponse;
+        using R = firebolt::rialto::VideoCapabilities;
         auto *getSupportedVideoCapabResp = dynamic_cast<R *>(response);
         getSupportedVideoCapabResp->set_interface_version(kInterfaceVersion);
         getSupportedVideoCapabResp->set_schema_version(kSchemaVersion);

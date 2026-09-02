@@ -23,7 +23,7 @@
 #include "IMediaCapabilities.h"
 #include "IMediaCapabilitiesIpcFactory.h"
 #include "IpcModule.h"
-#include "mediapipelinecapabilitiesmodule.pb.h"
+#include "mediacapabilitiesmodule.pb.h"
 #include <memory>
 
 namespace firebolt::rialto::client
@@ -54,7 +54,7 @@ protected:
     bool subscribeToEvents(const std::shared_ptr<ipc::IChannel> &ipcChannel) override { return true; }
 
 private:
-    std::unique_ptr<::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub> m_stub;
+    std::unique_ptr<::firebolt::rialto::MediaCapabilitiesModule_Stub> m_stub;
 };
 
 } // namespace firebolt::rialto::client

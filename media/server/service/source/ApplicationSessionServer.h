@@ -32,6 +32,7 @@
 #include "ISharedMemoryBuffer.h"
 #include "IWebAudioPlayerServerInternal.h"
 #include "IpcFactory.h"
+#include "MediaCapabilitiesServerFactory.h"
 #include "PlaybackService.h"
 #include "SessionServerManager.h"
 #include <memory>

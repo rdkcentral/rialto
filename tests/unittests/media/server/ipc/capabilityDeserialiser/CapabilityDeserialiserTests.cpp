@@ -28,11 +28,11 @@
 // with an "inferred" comment below - verify against the generated .pb.h if the build fails on
 // just these lines.
 
-#include "CapabilityDeserialiser.h"
+#include "CapabilityConverters.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto::common;
-using namespace firebolt::rialto::server::ipc;
+using namespace firebolt::rialto::ipc::common;
 using AudioCap = firebolt::rialto::AudioCapabilities;
 using VideoCap = firebolt::rialto::VideoCapabilities;
 

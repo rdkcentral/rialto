@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-#include "CapabilitySerialiser.h"
+#include "CapabilityConverters.h"
 #include <gtest/gtest.h>
 
 using namespace firebolt::rialto::common;
-using namespace rialto::servermanager::ipc;
+using namespace firebolt::rialto::ipc::common;
 
 namespace
 {

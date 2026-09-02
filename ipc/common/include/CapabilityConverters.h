@@ -17,23 +17,29 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_IPC_CAPABILITY_SERIALISER_H_
-#define RIALTO_SERVERMANAGER_IPC_CAPABILITY_SERIALISER_H_
+#ifndef FIREBOLT_RIALTO_IPC_COMMON_CAPABILITY_CONVERTERS_H_
+#define FIREBOLT_RIALTO_IPC_COMMON_CAPABILITY_CONVERTERS_H_
 
-#include "servermanagermodule.pb.h"
+#include "mediaCapabilitiesCommon.pb.h"
 #include <AudioDecoderCapabilities.h>
 #include <VideoDecoderCapabilities.h>
 
-namespace rialto::servermanager::ipc
+// Single shared implementation of the AudioDecoderCapabilities/VideoDecoderCapabilities <-> typed proto
+// AudioCapabilities/VideoCapabilities (mediaCapabilitiesCommon.proto) conversions. Used by ServerManager
+// (serialise, for SetConfigurationRequest), RialtoServer (deserialise SetConfigurationRequest, and
+// serialise for MediaCapabilitiesModule IPC responses) and RialtoClient (deserialise MediaCapabilitiesModule
+// IPC responses) so the conversion logic only needs to be written once.
+namespace firebolt::rialto::ipc::common
 {
-// Converts C++ AudioDecoderCapabilities into the typed proto AudioCapabilities message.
 void serialiseAudioCapabilities(const firebolt::rialto::common::AudioDecoderCapabilities &src,
                                 ::firebolt::rialto::AudioCapabilities *dst);
-
-// Converts C++ VideoDecoderCapabilities into the typed proto VideoCapabilities message.
 void serialiseVideoCapabilities(const firebolt::rialto::common::VideoDecoderCapabilities &src,
                                 ::firebolt::rialto::VideoCapabilities *dst);
 
-} // namespace rialto::servermanager::ipc
+firebolt::rialto::common::AudioDecoderCapabilities
+deserialiseAudioCapabilities(const ::firebolt::rialto::AudioCapabilities &src);
+firebolt::rialto::common::VideoDecoderCapabilities
+deserialiseVideoCapabilities(const ::firebolt::rialto::VideoCapabilities &src);
+} // namespace firebolt::rialto::ipc::common
 
-#endif // RIALTO_SERVERMANAGER_IPC_CAPABILITY_SERIALISER_H_
+#endif // FIREBOLT_RIALTO_IPC_COMMON_CAPABILITY_CONVERTERS_H_

@@ -20,8 +20,6 @@
 #ifndef MEDIA_PIPELINE_CAPABILITIES_MODULE_MOCK_H_
 #define MEDIA_PIPELINE_CAPABILITIES_MODULE_MOCK_H_
 
-#include "AudioDecoderCapabilities.h"
-#include "VideoDecoderCapabilities.h"
 #include "mediapipelinecapabilitiesmodule.pb.h"
 #include <gmock/gmock.h>
 #include <string>
@@ -51,18 +49,6 @@ public:
     MOCK_METHOD(void, isVideoMaster,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::IsVideoMasterRequest *request,
                  ::firebolt::rialto::IsVideoMasterResponse *response, ::google::protobuf::Closure *done),
-                (override));
-
-    MOCK_METHOD(void, getSupportedAudioCapabilities,
-                (::google::protobuf::RpcController * controller,
-                 const ::firebolt::rialto::GetSupportedAudioCapabilitiesRequest *request,
-                 ::firebolt::rialto::GetSupportedAudioCapabilitiesResponse *response, ::google::protobuf::Closure *done),
-                (override));
-
-    MOCK_METHOD(void, getSupportedVideoCapabilities,
-                (::google::protobuf::RpcController * controller,
-                 const ::firebolt::rialto::GetSupportedVideoCapabilitiesRequest *request,
-                 ::firebolt::rialto::GetSupportedVideoCapabilitiesResponse *response, ::google::protobuf::Closure *done),
                 (override));
 
     void defaultReturn(::google::protobuf::RpcController *controller, ::google::protobuf::Closure *done)
@@ -104,24 +90,6 @@ public:
             response.add_supported_properties(property);
         }
 
-        return response;
-    }
-
-    ::firebolt::rialto::GetSupportedAudioCapabilitiesResponse
-    getSupportedAudioCapabilitiesResponse(const firebolt::rialto::common::AudioDecoderCapabilities &audioCapabilities)
-    {
-        firebolt::rialto::GetSupportedAudioCapabilitiesResponse response;
-        response.set_interface_version(audioCapabilities.interfaceVersion);
-        response.set_schema_version(audioCapabilities.schemaVersion);
-        return response;
-    }
-
-    ::firebolt::rialto::GetSupportedVideoCapabilitiesResponse
-    getSupportedVideoCapabilitiesResponse(const firebolt::rialto::common::VideoDecoderCapabilities &videoCapabilities)
-    {
-        firebolt::rialto::GetSupportedVideoCapabilitiesResponse response;
-        response.set_interface_version(videoCapabilities.interfaceVersion);
-        response.set_schema_version(videoCapabilities.schemaVersion);
         return response;
     }
 

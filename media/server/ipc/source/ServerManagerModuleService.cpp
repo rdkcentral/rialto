@@ -19,13 +19,16 @@
 
 #include "ServerManagerModuleService.h"
 #include "AckSender.h"
-#include "CapabilityDeserialiser.h"
+#include "CapabilityConverters.h"
 #include "ISessionServerManager.h"
 #include "RialtoServerLogging.h"
 #include <AudioDecoderCapabilities.h>
 #include <IIpcController.h>
 #include <VideoDecoderCapabilities.h>
 #include <optional>
+
+using firebolt::rialto::ipc::common::deserialiseAudioCapabilities;
+using firebolt::rialto::ipc::common::deserialiseVideoCapabilities;
 
 namespace
 {

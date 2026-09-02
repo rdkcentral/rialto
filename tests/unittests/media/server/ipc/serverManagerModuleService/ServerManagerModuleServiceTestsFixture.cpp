@@ -18,7 +18,7 @@
  */
 
 #include "ServerManagerModuleServiceTestsFixture.h"
-#include "CapabilitySerialiser.h"
+#include "CapabilityConverters.h"
 #include "DecoderCapabilitiesUtils.h"
 #include "ServerManagerModuleService.h"
 #include <AudioDecoderCapabilities.h>
@@ -274,8 +274,8 @@ void ServerManagerModuleServiceTests::sendSetConfigurationWithCapabilities(
     request.set_socketgroup(kSocketGroup);
     request.set_appname(kAppId);
     // Set audio and video capabilities in proto
-    rialto::servermanager::ipc::serialiseAudioCapabilities(audioCaps, request.mutable_audiocapabilities());
-    rialto::servermanager::ipc::serialiseVideoCapabilities(videoCaps, request.mutable_videocapabilities());
+    firebolt::rialto::ipc::common::serialiseAudioCapabilities(audioCaps, request.mutable_audiocapabilities());
+    firebolt::rialto::ipc::common::serialiseVideoCapabilities(videoCaps, request.mutable_videocapabilities());
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
@@ -301,8 +301,8 @@ void ServerManagerModuleServiceTests::sendSetConfigurationWithFdAndCapabilities(
     request.set_clientdisplayname(kClientDisplayName);
     request.set_appname(kAppId);
     // Set audio and video capabilities in proto
-    rialto::servermanager::ipc::serialiseAudioCapabilities(audioCaps, request.mutable_audiocapabilities());
-    rialto::servermanager::ipc::serialiseVideoCapabilities(videoCaps, request.mutable_videocapabilities());
+    firebolt::rialto::ipc::common::serialiseAudioCapabilities(audioCaps, request.mutable_audiocapabilities());
+    firebolt::rialto::ipc::common::serialiseVideoCapabilities(videoCaps, request.mutable_videocapabilities());
 
     m_sut->setConfiguration(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }

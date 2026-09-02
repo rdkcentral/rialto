@@ -24,6 +24,7 @@
 #include "IMediaCapabilities.h"
 #include "YamlCapabilities.h"
 #include <memory>
+#include <optional>
 
 namespace firebolt::rialto::server
 {
@@ -32,17 +33,20 @@ namespace firebolt::rialto::server
  *
  * This class is dedicated to implementing the IMediaCapabilities interface
  * for use within the session server. It handles decoder capabilities queries
- * by orchestrating between two sources:
+ * by orchestrating between three sources:
  *
+ * 0. Preloaded capabilities: Already-parsed data forwarded by ServerManager over IPC
  * 1. YamlCapabilities: Reads capabilities from YAML configuration files
  *    (provided by ServerManager during boot)
  * 2. GstCapabilities: Queries GStreamer plugins at runtime
  *
- * Decision Strategy (Path A/B):
- * - Path A: Try to get capabilities from YAML first
+ * Decision Strategy (Path 0/A/B):
+ * - Path 0: If ServerManager already forwarded parsed capabilities, use them directly
+ * - Path A: Otherwise try to get capabilities from YAML
  * - Path B: If YAML fails or is unavailable, fall back to GStreamer queries
  *
  * This ensures:
+ * - No redundant YAML re-parsing in each session server process when ServerManager already did it
  * - Optimal performance when ServerManager provides YAML (no runtime queries)
  * - Robustness when YAML is missing (GStreamer fallback)
  */
@@ -54,9 +58,13 @@ public:
      *
      * @param[in] yamlCapabilities The YAML capabilities reader (Path A)
      * @param[in] gstCapabilities The GStreamer capabilities handler (Path B fallback)
+     * @param[in] preloadedAudio Optional audio capabilities already forwarded by ServerManager (Path 0)
+     * @param[in] preloadedVideo Optional video capabilities already forwarded by ServerManager (Path 0)
      */
-    explicit MediaCapabilities(const std::shared_ptr<YamlCapabilities> &yamlCapabilities,
-                               const std::shared_ptr<IGstCapabilities> &gstCapabilities);
+    explicit MediaCapabilities(
+        const std::shared_ptr<YamlCapabilities> &yamlCapabilities, const std::shared_ptr<IGstCapabilities> &gstCapabilities,
+        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
+        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt);
 
     /**
      * @brief Virtual destructor.
@@ -91,6 +99,16 @@ private:
      * @brief The GStreamer capabilities handler (Path B - fallback)
      */
     std::shared_ptr<IGstCapabilities> m_gstCapabilities;
+
+    /**
+     * @brief Audio capabilities already forwarded by ServerManager (Path 0 - highest priority)
+     */
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> m_preloadedAudio;
+
+    /**
+     * @brief Video capabilities already forwarded by ServerManager (Path 0 - highest priority)
+     */
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> m_preloadedVideo;
 };
 
 } // namespace firebolt::rialto::server

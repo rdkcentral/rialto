@@ -65,6 +65,10 @@ add_gtests (
         mediaPipelineCapabilitiesModule/MediaPipelineCapabilitiesModuleServiceTestsFixture.cpp
         mediaPipelineCapabilitiesModule/MediaPipelineCapabilitiesModuleServiceTests.cpp
 
+        # MediaCapabilitiesModuleService unittests
+        mediaCapabilitiesModule/MediaCapabilitiesModuleServiceTestsFixture.cpp
+        mediaCapabilitiesModule/MediaCapabilitiesModuleServiceTests.cpp
+
         # WebAudioPlayerModuleService unittests
         webAudioPlayerModuleService/WebAudioPlayerModuleServiceTestsFixture.cpp
         webAudioPlayerModuleService/WebAudioPlayerModuleServiceTests.cpp

@@ -29,7 +29,6 @@ add_library (
         source/MediaPipelineIpc.cpp
         source/MediaCapabilitiesIpc.cpp
         source/MediaPipelineCapabilitiesIpc.cpp
-        source/MediaCapabilitiesIpcConverters.cpp
         source/ControlIpc.cpp
         source/MediaKeysIpc.cpp
         source/MediaKeysCapabilitiesIpc.cpp

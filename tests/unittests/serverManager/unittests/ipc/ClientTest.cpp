@@ -18,7 +18,6 @@
  */
 
 #include "Client.h"
-#include "CapabilitySerialiser.h"
 #include "IpcLoop.h"
 #include "SessionServerAppManagerMock.h"
 #include "servermanagermodule.pb.h"

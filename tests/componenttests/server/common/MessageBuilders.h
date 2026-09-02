@@ -24,6 +24,8 @@
 #include <vector>
 
 #include "controlmodule.pb.h"
+#include "mediaCapabilitiesCommon.pb.h"
+#include "mediacapabilitiesmodule.pb.h"
 #include "mediakeyscapabilitiesmodule.pb.h"
 #include "mediakeysmodule.pb.h"
 #include "mediapipelinecapabilitiesmodule.pb.h"
