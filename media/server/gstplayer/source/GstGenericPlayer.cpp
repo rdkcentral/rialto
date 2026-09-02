@@ -1635,7 +1635,7 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
     GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[source->getType()].appSrc)};
     GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
 
-    if ((!oldCaps) || (!m_gstWrapper->gstCapsIsEqual(caps, oldCaps)))
+    if ((!oldCaps) || m_context.audioSourceRemoved || (!m_gstWrapper->gstCapsIsEqual(caps, oldCaps)))
     {
         RIALTO_SERVER_LOG_DEBUG("Caps not equal. Perform audio track codec channel switch.");
 
