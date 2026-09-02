@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+//Exclusive for MediaCapabilities
 syntax = "proto2";
 
 import "mediaCapabilitiesCommon.proto";
