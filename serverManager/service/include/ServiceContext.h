@@ -21,6 +21,7 @@
 #define RIALTO_SERVERMANAGER_SERVICE_SERVICE_CONTEXT_H_
 
 #include "IController.h"
+#include "IMediaCapabilities.h"
 #include "IServiceContext.h"
 #include "ISessionServerAppManager.h"
 #include "IStateObserver.h"
@@ -37,7 +38,8 @@ public:
                    const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                    std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckInterval,
                    unsigned numOfFailedPingsBeforeRecovery, unsigned int socketPermissions,
-                   const std::string &socketOwner, const std::string &socketGroup);
+                   const std::string &socketOwner, const std::string &socketGroup,
+                   const std::shared_ptr<IMediaCapabilities> &mediaCapabilities = nullptr);
     virtual ~ServiceContext() = default;
 
     common::ISessionServerAppManager &getSessionServerAppManager() override;

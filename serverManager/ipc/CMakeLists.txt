@@ -40,6 +40,7 @@ target_include_directories (
 
         PUBLIC
         include
+        source
 
         PRIVATE
         $<TARGET_PROPERTY:RialtoServerManagerPublic,INTERFACE_INCLUDE_DIRECTORIES>
@@ -47,11 +48,15 @@ target_include_directories (
         $<TARGET_PROPERTY:RialtoIpcClient,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommonPublic,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoWrappers,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 target_link_libraries (
         RialtoServerManagerIpc
 
+        PUBLIC
+        RialtoProtobuf
         PRIVATE
         RialtoIpcClient
         RialtoIpcCommon

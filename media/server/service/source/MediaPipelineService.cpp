@@ -711,4 +711,20 @@ void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &hear
     }
 }
 
+common::AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabilities()
+{
+    RIALTO_SERVER_LOG_DEBUG("GetSupportedAudioCapabilities requested");
+    // Return default/empty capabilities
+    // TODO: Integrate with actual capabilities provider
+    return common::AudioDecoderCapabilities();
+}
+
+common::VideoDecoderCapabilities MediaPipelineService::getSupportedVideoCapabilities()
+{
+    RIALTO_SERVER_LOG_DEBUG("GetSupportedVideoCapabilities requested");
+    // Return default/empty capabilities
+    // TODO: Integrate with actual capabilities provider
+    return common::VideoDecoderCapabilities();
+}
+
 } // namespace firebolt::rialto::server::service

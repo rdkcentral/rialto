@@ -28,10 +28,13 @@
 #include "IPlaybackService.h"
 #include "ISessionManagementServer.h"
 #include "ISessionServerManager.h"
+#include <AudioDecoderCapabilities.h>
+#include <VideoDecoderCapabilities.h>
 #include <atomic>
 #include <condition_variable>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <string>
 
 namespace firebolt::rialto::server::service
@@ -60,6 +63,8 @@ public:
                       RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,
                       RIALTO_DEBUG_LEVEL serverManagerLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels) override;
     bool ping(std::int32_t id, const std::shared_ptr<IAckSender> &ackSender) override;
+    void setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
+                                  const std::optional<common::VideoDecoderCapabilities> &videoCaps) override;
 
 private:
     bool switchToActive();
@@ -78,6 +83,8 @@ private:
     std::condition_variable m_serviceCv;
     bool m_isServiceRunning;
     std::atomic<common::SessionServerState> m_currentState;
+    std::optional<common::AudioDecoderCapabilities> m_preloadedAudioCapabilities;
+    std::optional<common::VideoDecoderCapabilities> m_preloadedVideoCapabilities;
 };
 } // namespace firebolt::rialto::server::service
 

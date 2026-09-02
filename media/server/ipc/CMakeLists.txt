@@ -36,6 +36,7 @@ add_library (
         source/MediaPipelineClient.cpp
         source/MediaPipelineModuleService.cpp
         source/MediaPipelineCapabilitiesModuleService.cpp
+		source/MediaCapabilitiesModuleService.cpp
         source/MediaKeysClient.cpp
         source/MediaKeysModuleService.cpp
         source/MediaKeysCapabilitiesModuleService.cpp

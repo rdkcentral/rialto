@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -116,6 +117,8 @@ std::shared_ptr<IGstCapabilitiesFactory> IGstCapabilitiesFactory::getFactory()
 
 std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities()
 {
+    RIALTO_SERVER_LOG_DEBUG("GstCapabilities: CreateGstCapabilities: entry");
+
     std::unique_ptr<IGstCapabilities> gstCapabilities;
     try
     {
@@ -166,6 +169,8 @@ GstCapabilities::GstCapabilities(
     : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
       m_gstInitialiser{gstInitialiser}
 {
+    RIALTO_SERVER_LOG_DEBUG("GstCapabilities: constructor - GstCapabilities performs GStreamer element queries only");
+    // Initialize capabilities with empty defaults - will be populated by element queries
     m_initialisationThread = std::thread(
         [this]()
         {
@@ -458,6 +463,16 @@ bool GstCapabilities::isVideoMaster(bool &isVideoMaster)
     return true;
 }
 
-} // namespace firebolt::rialto::server
+firebolt::rialto::common::AudioDecoderCapabilities GstCapabilities::getSupportedAudioCapabilities()
+{
+    waitForInitialisation();
+    return m_audioDecoderCapabilities;
+}
 
-// namespace firebolt::rialto::server
+firebolt::rialto::common::VideoDecoderCapabilities GstCapabilities::getSupportedVideoCapabilities()
+{
+    waitForInitialisation();
+    return m_videoDecoderCapabilities;
+}
+
+} // namespace firebolt::rialto::server

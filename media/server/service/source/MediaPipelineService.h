@@ -107,6 +107,8 @@ public:
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) override;
 
     void clearMediaPipelines();
+    common::AudioDecoderCapabilities getSupportedAudioCapabilities() override;
+    common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
 
 private:
     IPlaybackService &m_playbackService;

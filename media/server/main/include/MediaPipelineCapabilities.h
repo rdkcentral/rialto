@@ -28,6 +28,9 @@
 
 namespace firebolt::rialto
 {
+// Forward declarations
+class MediaCapabilities;
+
 /**
  * @brief IMediaPipelineCapabilities factory class definition.
  */
