@@ -104,26 +104,8 @@ void Flush::execute() const
                                 common::convertMediaSourceType(m_type));
     }
 
-    // Reset Eos info for this source.
-    // For Subtitle sources: immediately re-set EOS after flush, because AAMP does not
-    // re-send EOS for Subtitle after a period transition flush+reattach cycle.
-    // Without this, the GStreamer pipeline's bus EOS aggregation will wait forever
-    // for the Subtitle pad to reach EOS, blocking GST_MESSAGE_EOS from being posted,
-    // which prevents AAMP from processing the next period transition (video freeze).
-    bool wasEosSet = false;
-    {
-        const auto eosInfoIt = m_context.endOfStreamInfo.find(m_type);
-        wasEosSet = (eosInfoIt != m_context.endOfStreamInfo.end() &&
-                     eosInfoIt->second == EosState::SET);
-    }
+    // Reset Eos info
     m_context.endOfStreamInfo.erase(m_type);
-    if (wasEosSet && m_type == MediaSourceType::SUBTITLE)
-    {
-        RIALTO_SERVER_LOG_MIL("Re-setting EOS for Subtitle source after flush");
-        m_gstWrapper->gstAppSrcEndOfStream(GST_APP_SRC(source));
-        m_context.endOfStreamInfo[m_type] = EosState::SET;
-    }
-
     m_context.eosNotified = false;
 
     if (m_resetTime)
