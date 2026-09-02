@@ -30,7 +30,7 @@ namespace firebolt::rialto::server
  *
  * This factory creates server-side MediaCapabilities instances that orchestrate
  * between YamlCapabilities (preloaded configuration) and GstCapabilities (runtime queries).
- * 
+ *
  * This is different from the client-side IMediaCapabilitiesFactory which creates
  * IPC-backed clients. The session server should ALWAYS use this server-side factory
  * to avoid recursive IPC calls and deadlocks.

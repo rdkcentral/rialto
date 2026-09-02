@@ -34,8 +34,7 @@ std::shared_ptr<IMediaCapabilitiesModuleServiceFactory> IMediaCapabilitiesModule
     }
     catch (const std::exception &e)
     {
-        RIALTO_SERVER_LOG_ERROR("Failed to create the media capabilities module service factory, reason: %s",
-                                e.what());
+        RIALTO_SERVER_LOG_ERROR("Failed to create the media capabilities module service factory, reason: %s", e.what());
     }
 
     return factory;

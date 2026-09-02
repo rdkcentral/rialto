@@ -75,7 +75,8 @@ void PlaybackServiceTests::createPlaybackServiceShouldSuccess()
     // Use wildcard matchers to accept any createMediaCapabilities call
     // This allows tests to call setPreloadedCapabilities() with any parameters
     EXPECT_CALL(*m_mediaCapabilitiesFactoryMock, createMediaCapabilities(testing::_, testing::_))
-        .WillRepeatedly(Return(ByMove(std::make_unique<StrictMock<firebolt::rialto::IMediaCapabilitiesMock>>())));
+        .WillRepeatedly(Invoke([](const auto &, const auto &)
+                               { return std::make_unique<StrictMock<firebolt::rialto::IMediaCapabilitiesMock>>(); }));
     EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
         .WillOnce(Return(ByMove(std::move(m_mediaPipelineCapabilities))));
     m_sut = std::make_unique<firebolt::rialto::server::service::PlaybackService>(m_mediaPipelineFactoryMock,

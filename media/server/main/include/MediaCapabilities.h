@@ -62,7 +62,8 @@ public:
      * @param[in] preloadedVideo Optional video capabilities already forwarded by ServerManager (Path 0)
      */
     explicit MediaCapabilities(
-        const std::shared_ptr<YamlCapabilities> &yamlCapabilities, const std::shared_ptr<IGstCapabilities> &gstCapabilities,
+        const std::shared_ptr<YamlCapabilities> &yamlCapabilities,
+        const std::shared_ptr<IGstCapabilities> &gstCapabilities,
         const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
         const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt);
 

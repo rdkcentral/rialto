@@ -94,17 +94,19 @@ struct SocketPermissions
  */
 struct ServerManagerConfig
 {
-    std::list<std::string> sessionServerEnvVars{"XDG_RUNTIME_DIR=/tmp","GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin","WESTEROS_SINK_USE_ESSRMGR=1"};
-        /* List of environment variables, that need to be passed to RialtoSessionServer */
-    unsigned numOfPreloadedServers{0}; /* Number of preloaded servers */
+    std::list<std::string> sessionServerEnvVars{"XDG_RUNTIME_DIR=/tmp",
+                                                "GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin",
+                                                "WESTEROS_SINK_USE_ESSRMGR=1"};
+    /* List of environment variables, that need to be passed to RialtoSessionServer */
+    unsigned numOfPreloadedServers{0};                      /* Number of preloaded servers */
     std::string sessionServerPath{"/usr/bin/RialtoServer"}; /* Location of Rialto Session Server binary */
     std::chrono::milliseconds sessionServerStartupTimeout{0};
-        /* Custom session server startup timeout. If 0 - timeout disabled. */
+    /* Custom session server startup timeout. If 0 - timeout disabled. */
     std::chrono::seconds healthcheckInterval{5};
-        /* Defines how often healthcheck messages will be sent */
+    /* Defines how often healthcheck messages will be sent */
     SocketPermissions sessionManagementSocketPermissions{}; /* Defines permissions of session management socket */
     unsigned numOfFailedPingsBeforeRecovery{3};
-        /* Defines how many pings have to fail before recovery action will be taken */
+    /* Defines how many pings have to fail before recovery action will be taken */
 };
 
 } // namespace firebolt::rialto::common
