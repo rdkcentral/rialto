@@ -20,12 +20,13 @@
 #ifndef RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
 #define RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
 
-#include "IYamlCapabilities.h"
+// Include ServerManager's IYamlCapabilities interface
+#include "../../public/include/IYamlCapabilities.h"
 #include <memory>
 
 namespace rialto::servermanager::service
 {
-std::unique_ptr<IYamlCapabilities> createMediaCapabilities();
+std::unique_ptr<rialto::servermanager::service::IYamlCapabilities> createMediaCapabilities();
 
 } // namespace rialto::servermanager::service
 

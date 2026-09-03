@@ -18,6 +18,7 @@
  */
 
 #include "ApplicationSessionServer.h"
+#include <utility>
 
 namespace firebolt::rialto::server
 {

@@ -21,10 +21,10 @@
 #define RIALTO_SERVERMANAGER_SERVICE_SERVICE_CONTEXT_H_
 
 #include "IController.h"
-#include "IMediaCapabilities.h"
 #include "IServiceContext.h"
 #include "ISessionServerAppManager.h"
 #include "IStateObserver.h"
+#include "IYamlCapabilities.h"
 #include <list>
 #include <memory>
 #include <string>

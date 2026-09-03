@@ -28,9 +28,6 @@ result.
 - Migrate `rialtomse*` sinks and all other consumers to `IMediaCapabilities`.
 
 **Non-Goals:**
-- Introduce a new IPC socket or protobuf service.
-- Keep `getSupportedAudioCapabilities()` / `getSupportedVideoCapabilities()` on
-  `IMediaPipelineCapabilities` (they are removed).
 - Use COM-RPC, D-Bus, or any mechanism other than the existing Unix socket + protobuf.
 
 ## Decisions
@@ -88,20 +85,21 @@ Alternatives considered:
 - Keep both interfaces side-by-side: rejected — increases maintenance surface and creates
   ambiguity about which interface clients should call. A clean cut is simpler.
 
-### `IMediaCapabilities` client interface reuses the existing IPC transport
+### `IMediaCapabilities` client interface uses new dedicated MediaCapabilitiesModule IPC service
 
-The new client-side `IMediaCapabilities` calls through the existing
-`MediaPipelineCapabilitiesModule` IPC service. No new RPC service is introduced. The session
-server's `GstCapabilities` produces the response (via Path A or Path B); the IPC transport
-and the client-side deserialisation are unchanged from today.
+The new client-side `IMediaCapabilities` calls through a dedicated `MediaCapabilitiesModule`
+protobuf IPC service (in `proto/mediacapabilitiesmodule.proto`). This provides a clean,
+dedicated transport for capability queries, improving separation of concerns and allowing
+independent scaling/caching of capability requests separate from media pipeline operations.
 
 ## Risks / Trade-offs
 
 - Struct move (`AudioDecoderCapabilities`, `VideoDecoderCapabilities` from `media/` to
   `common/`) — all existing include paths must be updated; a missed include is a compile
   error caught immediately.
-- Proto change adds two new optional fields — backward-compatible addition; existing
-  deployments without the new fields continue to work (session server falls back to Path B).
+- Proto change adds a new `MediaCapabilitiesModule` service and two optional fields to
+  `SetConfigurationRequest` — backward-compatible addition; existing deployments without the
+  new fields continue to work (session server falls back to Path B).
 - Removing `IMediaPipelineCapabilities` capability methods breaks any out-of-tree consumers;
   mitigation is the migration of all known consumers (`rialtomse*` sinks) in this change.
 - Path B (GStreamer fallback) now runs on every session server that receives no capabilities

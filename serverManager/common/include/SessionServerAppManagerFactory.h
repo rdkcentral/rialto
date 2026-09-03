@@ -21,9 +21,9 @@
 #define RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_MANAGER_FACTORY_H_
 
 #include "IController.h"
-#include "IMediaCapabilities.h"
 #include "ISessionServerAppManager.h"
 #include "IStateObserver.h"
+#include "IYamlCapabilities.h"
 #include <chrono>
 #include <list>
 #include <memory>
