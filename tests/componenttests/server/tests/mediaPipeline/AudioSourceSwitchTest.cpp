@@ -79,6 +79,34 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
     }
 
+    void willSwitchAudioSourceAfterAudioSourceRemoved()
+    {
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsNewEmptySimple(StrEq("audio/mpeg"))).WillOnce(Return(&m_audioCaps));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstCapsSetSimpleStringStub(&m_audioCaps, StrEq("alignment"), G_TYPE_STRING, StrEq("nal")));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstCapsSetSimpleStringStub(&m_audioCaps, StrEq("stream-format"), G_TYPE_STRING, StrEq("raw")));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("mpegversion"), G_TYPE_INT, 4));
+        EXPECT_CALL(*m_gstWrapperMock,
+                    gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("channels"), G_TYPE_INT, kNumOfChannels));
+        EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstStateUnlock(_)).Times(1);
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillOnce(Return(GST_STATE_PAUSED));
+        EXPECT_CALL(*m_gstWrapperMock, gstElementGetStateReturn(_)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("rate"), G_TYPE_INT, kSampleRate));
+        EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_audioAppSrc)).WillOnce(Return(&m_oldCaps));
+        // gstCapsIsEqual is not checked - the removed audio source forces the codec channel switch
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_oldCaps)).WillOnce(Return(&m_oldCapsStr));
+        EXPECT_CALL(*m_glibWrapperMock, gFree(&m_oldCapsStr));
+        EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+        EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock,
+                    performAudioTrackCodecChannelSwitch(_, _, _, _, _, _, _, _, _, _, kSvpEnabled,
+                                                        GST_ELEMENT(&m_audioAppSrc), _))
+            .WillOnce(Return(true));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_oldCaps));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_audioCaps)).WillOnce(Invoke(this, &MediaPipelineTest::workerFinished));
+    }
+
     void switchAudioSource()
     {
         auto attachAudioSourceReq{createAttachAudioSourceRequest(m_sessionId)};
@@ -197,6 +225,126 @@ TEST_F(AudioSourceSwitchTest, SwitchAudioSource)
     stop();
 
     // Step 8: Destroy media session
+    gstPlayerWillBeDestructed();
+    destroySession();
+}
+
+/*
+ * Component Test: Switch audio source procedure test after the audio source has been removed
+ * Test Objective:
+ *  Test that the audio switch procedure is performed even if the new caps are the same as the old ones,
+ *  when the previous audio source has been removed.
+ *
+ * Sequence Diagrams:
+ *  Rialto Dynamic Audio Stream Switching
+ *   - https://wiki.rdkcentral.com/pages/viewpage.action?spaceKey=ASP&title=Rialto+Dynamic+Audio+Stream+Switching
+ *
+ * Test Setup:
+ *  Language: C++
+ *  Testing Framework: Google Test
+ *  Components: MediaPipeline
+ *
+ * Test Initialize:
+ *  Set Rialto Server to Active
+ *  Connect Rialto Client Stub
+ *  Map Shared Memory
+ *
+ * Test Steps:
+ *  Step 1: Create a new media session
+ *   Send CreateSessionRequest to Rialto Server
+ *   Expect that successful CreateSessionResponse is received
+ *   Save returned session id
+ *
+ *  Step 2: Load content
+ *   Send LoadRequest to Rialto Server
+ *   Expect that successful LoadResponse is received
+ *   Expect that GstPlayer instance is created.
+ *   Expect that client is notified that the NetworkState has changed to BUFFERING.
+ *
+ *  Step 3: Attach all sources
+ *   Attach the audio source.
+ *   Expect that audio source is attached.
+ *   Attach the video source.
+ *   Expect that video source is attached.
+ *   Expect that rialto source is setup
+ *   Expect that all sources are attached.
+ *   Expect that the Playback state has changed to IDLE.
+ *
+ *  Step 4: Pause
+ *   Pause the playback.
+ *   Expect that the pause is propagated to the gstreamer pipeline.
+ *
+ *  Step 5: Remove audio source
+ *   Remove the audio source.
+ *   Expect that audio source is removed.
+ *
+ *  Step 6: Switch Audio Source
+ *   Switch the audio source.
+ *   Expect that the audio track codec channel switch is performed, even though the caps have not changed.
+ *
+ *  Step 7: Remove video source
+ *   Remove the video source.
+ *   Expect that video source is removed.
+ *
+ *  Step 8: Stop
+ *   Stop the playback.
+ *   Expect that stop propagated to the gstreamer pipeline.
+ *   Expect that server notifies the client that the Playback state has changed to STOPPED.
+ *
+ *  Step 9: Destroy media session
+ *   Send DestroySessionRequest.
+ *   Expect that the session is destroyed on the server.
+ *
+ * Test Teardown:
+ *  Memory region created for the shared buffer is unmapped.
+ *  Server is terminated.
+ *
+ * Expected Results:
+ *  Audio source switch procedure is executed, even if the caps are the same, when the previous audio source
+ *  has been removed.
+ *
+ * Code:
+ */
+TEST_F(AudioSourceSwitchTest, SwitchAudioSourceAfterAudioSourceRemoved)
+{
+    // Step 1: Create a new media session
+    createSession();
+
+    // Step 2: Load content
+    gstPlayerWillBeCreated();
+    load();
+
+    // Step 3: Attach all sources
+    audioSourceWillBeAttached();
+    attachAudioSource();
+    videoSourceWillBeAttached();
+    attachVideoSource();
+    sourceWillBeSetup();
+    setupSource();
+    willSetupAndAddSource(&m_audioAppSrc);
+    willSetupAndAddSource(&m_videoAppSrc);
+    willFinishSetupAndAddSource();
+    indicateAllSourcesAttached({&m_audioAppSrc, &m_videoAppSrc});
+
+    // Step 4: Pause
+    willPause();
+    pause();
+
+    // Step 5: Remove audio source
+    removeSource(m_audioSourceId);
+
+    // Step 6: Switch Audio Source
+    willSwitchAudioSourceAfterAudioSourceRemoved();
+    switchAudioSource();
+
+    // Step 7: Remove video source
+    removeSource(m_videoSourceId);
+
+    // Step 8: Stop
+    willStop();
+    stop();
+
+    // Step 9: Destroy media session
     gstPlayerWillBeDestructed();
     destroySession();
 }
