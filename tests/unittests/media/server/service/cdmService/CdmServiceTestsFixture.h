@@ -46,6 +46,7 @@ public:
     void mediaKeysWillCreateKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillGenerateRequestWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillGenerateRequestLdlEnabledWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void mediaKeysWillGenerateRequestWithCdmDataWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillLoadSessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillUpdateSessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void mediaKeysWillCloseKeySessionWithStatus(firebolt::rialto::MediaKeyErrorStatus status);
@@ -88,6 +89,7 @@ public:
     void createKeySessionShouldFailWithReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void generateRequestShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void generateRequestWithLdlEnabledShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
+    void generateRequestWithCdmDataShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void loadSessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void updateSessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);
     void closeKeySessionShouldReturnStatus(firebolt::rialto::MediaKeyErrorStatus status);

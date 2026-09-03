@@ -302,6 +302,7 @@ void MediaKeysModuleService::generateRequest(::google::protobuf::RpcController *
         m_cdmService.generateRequest(request->media_keys_handle(), request->key_session_id(),
                                      covertInitDataType(request->init_data_type()),
                                      std::vector<std::uint8_t>{request->init_data().begin(), request->init_data().end()},
+                                     std::vector<std::uint8_t>{request->cdm_data().begin(), request->cdm_data().end()},
                                      covertLimitedDurationLicense(request->ldl_state()));
     response->set_error_status(convertMediaKeyErrorStatus(status));
     done->Run();

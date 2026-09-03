@@ -46,7 +46,8 @@ public:
 
 void MediaKeysTest::willGenerateRequestFail()
 {
-    EXPECT_CALL(m_ocdmSessionMock, constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, m_kInitData.size()))
+    EXPECT_CALL(m_ocdmSessionMock,
+                constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, m_kInitData.size(), _, _))
         .WillOnce(Return(MediaKeyErrorStatus::FAIL));
 }
 

@@ -55,9 +55,10 @@ public:
     bool destroyMediaKeys(int mediaKeysHandle) override;
     MediaKeyErrorStatus createKeySession(int mediaKeysHandle, KeySessionType sessionType,
                                          const std::shared_ptr<IMediaKeysClient> &client, int32_t &keySessionId) override;
-    MediaKeyErrorStatus generateRequest(int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,
-                                        const std::vector<uint8_t> &initData,
-                                        const LimitedDurationLicense &ldlState) override;
+    MediaKeyErrorStatus
+    generateRequest(int mediaKeysHandle, int32_t keySessionId, InitDataType initDataType,
+                    const std::vector<uint8_t> &initData, const std::vector<uint8_t> &cdmData = std::vector<uint8_t>{},
+                    const LimitedDurationLicense &ldlState = LimitedDurationLicense::NOT_SPECIFIED) override;
     MediaKeyErrorStatus loadSession(int mediaKeysHandle, int32_t keySessionId) override;
     MediaKeyErrorStatus updateSession(int mediaKeysHandle, int32_t keySessionId,
                                       const std::vector<uint8_t> &responseData) override;

@@ -129,6 +129,7 @@ public:
      * @param[in]  keySessionId : The key session id for the session.
      * @param[in]  initDataType : The init data type.
      * @param[in]  initData     : The init data.
+     * @param[in]  cdmData      : Optional CDM data.
      * @param[in]  ldlState     : The Limited Duration License state. Most of key systems do not need this parameter,
      *                            so the default value is NOT_SPECIFIED.
      *
@@ -136,6 +137,7 @@ public:
      */
     virtual MediaKeyErrorStatus
     generateRequest(int32_t keySessionId, InitDataType initDataType, const std::vector<uint8_t> &initData,
+                    const std::vector<uint8_t> &cdmData = std::vector<uint8_t>{},
                     const LimitedDurationLicense &ldlState = LimitedDurationLicense::NOT_SPECIFIED) = 0;
 
     /**

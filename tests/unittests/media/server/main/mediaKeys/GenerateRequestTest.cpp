@@ -24,6 +24,7 @@ class RialtoServerMediaKeysGenerateRequestTest : public MediaKeysTestBase
 protected:
     InitDataType m_initDataType = InitDataType::CENC;
     std::vector<uint8_t> m_initData{1, 2, 3};
+    std::vector<uint8_t> m_cdmData;
     LimitedDurationLicense m_ldlState{LimitedDurationLicense::NOT_SPECIFIED};
 
     RialtoServerMediaKeysGenerateRequestTest()
@@ -40,11 +41,11 @@ protected:
 TEST_F(RialtoServerMediaKeysGenerateRequestTest, Success)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionMock, generateRequest(m_initDataType, m_initData, m_ldlState))
+    EXPECT_CALL(*m_mediaKeySessionMock, generateRequest(m_initDataType, m_initData, m_cdmData, m_ldlState))
         .WillOnce(Return(MediaKeyErrorStatus::OK));
 
     EXPECT_EQ(MediaKeyErrorStatus::OK,
-              m_mediaKeys->generateRequest(m_kKeySessionId, m_initDataType, m_initData, m_ldlState));
+              m_mediaKeys->generateRequest(m_kKeySessionId, m_initDataType, m_initData, m_cdmData, m_ldlState));
 }
 
 /**
@@ -54,7 +55,7 @@ TEST_F(RialtoServerMediaKeysGenerateRequestTest, SessionDoesNotExistFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
     EXPECT_EQ(MediaKeyErrorStatus::BAD_SESSION_ID,
-              m_mediaKeys->generateRequest(m_kKeySessionId + 1, m_initDataType, m_initData, m_ldlState));
+              m_mediaKeys->generateRequest(m_kKeySessionId + 1, m_initDataType, m_initData, m_cdmData, m_ldlState));
 }
 
 /**
@@ -63,9 +64,9 @@ TEST_F(RialtoServerMediaKeysGenerateRequestTest, SessionDoesNotExistFailure)
 TEST_F(RialtoServerMediaKeysGenerateRequestTest, SessionFailure)
 {
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_mediaKeySessionMock, generateRequest(m_initDataType, m_initData, m_ldlState))
+    EXPECT_CALL(*m_mediaKeySessionMock, generateRequest(m_initDataType, m_initData, m_cdmData, m_ldlState))
         .WillOnce(Return(MediaKeyErrorStatus::NOT_SUPPORTED));
 
     EXPECT_EQ(MediaKeyErrorStatus::NOT_SUPPORTED,
-              m_mediaKeys->generateRequest(m_kKeySessionId, m_initDataType, m_initData, m_ldlState));
+              m_mediaKeys->generateRequest(m_kKeySessionId, m_initDataType, m_initData, m_cdmData, m_ldlState));
 }

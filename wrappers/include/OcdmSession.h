@@ -47,8 +47,8 @@ public:
      */
     virtual ~OcdmSession();
 
-    MediaKeyErrorStatus constructSession(KeySessionType sessionType, InitDataType initDataType,
-                                         const uint8_t initData[], uint32_t initDataSize) override;
+    MediaKeyErrorStatus constructSession(KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
+                                         uint32_t initDataSize, const uint8_t cdmData[], uint32_t cdmDataSize) override;
 
     MediaKeyErrorStatus getChallengeData(bool isLDL, uint8_t *challenge, uint32_t *challengeSize) override;
 
