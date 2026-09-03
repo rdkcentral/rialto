@@ -71,7 +71,8 @@ MetricsCollector::MetricsCollector(int clientId, const std::shared_ptr<IMetricsC
                                    const std::shared_ptr<firebolt::rialto::common::ITimerFactory> &timerFactory,
                                    ApplicationState initialApplicationState)
     : m_clientId{clientId}, m_client{client}, m_currentApplicationState{initialApplicationState},
-      m_reporter{std::make_unique<LogMetricsReporter>()}, m_thresholdConfig{}, m_thresholdChecker{m_thresholdConfig, m_reporter.get()}
+      m_reporter{std::make_unique<LogMetricsReporter>()}, m_thresholdConfig{},
+      m_thresholdChecker{m_thresholdConfig, m_reporter.get()}
 {
 
     if (m_currentApplicationState == ApplicationState::RUNNING)

@@ -60,7 +60,7 @@ struct MetricsThresholdConfig
 class MetricsThresholdChecker
 {
 public:
-    explicit MetricsThresholdChecker(MetricsThresholdConfig& config, IMetricsReporter *reporter);
+    explicit MetricsThresholdChecker(MetricsThresholdConfig &config, IMetricsReporter *reporter);
     ~MetricsThresholdChecker() = default;
 
     void checkSample(double clientCpu, double serverCpu, double combinedCpu, std::uint64_t clientMemKb,
