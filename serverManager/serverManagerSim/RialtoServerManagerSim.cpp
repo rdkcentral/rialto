@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "== Test application is a Http Server running on localhost:9008           ==\n");
         fprintf(stderr, "==                                                                       ==\n");
         fprintf(stderr, "== To set state, send POST HttpRequest /SetState/AppName/NewState        ==\n");
-        fprintf(stderr, "== Available states: Inactive, Active, NotRunning, Error                 ==\n");
+        fprintf(stderr, "== Available states: Inactive, Active, NotRunning, Error, Suspended      ==\n");
         fprintf(stderr, "== For example:                                                          ==\n");
         fprintf(stderr, "== curl -X POST -d \"\" <BOX_IP>:9008/SetState/YouTube/NotRunning          ==\n");
         fprintf(stderr, "==                                                                       ==\n");

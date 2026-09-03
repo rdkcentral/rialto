@@ -70,7 +70,8 @@ private:
     int m_serverId;
     std::unique_ptr<common::ISessionServerAppManager> &m_sessionServerAppManager;
     int m_socket;
-    bool m_isShuttingDown{false};
+    bool m_isServerShuttingDown{false};
+    bool m_isServerManagerShuttingDown{false};
     std::shared_ptr<::firebolt::rialto::ipc::IChannel> m_channel;
     std::shared_ptr<IpcLoop> m_ipcLoop;
     std::unique_ptr<::rialto::ServerManagerModule_Stub> m_serviceStub;

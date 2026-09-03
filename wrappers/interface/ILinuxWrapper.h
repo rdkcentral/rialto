@@ -222,6 +222,17 @@ public:
      * @retval on success returns 0
      */
     virtual int chown(const char *pathname, uid_t owner, gid_t group) const = 0;
+
+    /**
+     * @brief manipulate file descriptor
+     *
+     * @param[in] fd   : The file descriptor
+     * @param[in] op   : The operation to perform on the file descriptor
+     * @param[in] args : Additional arguments depending on the operation
+     *
+     * @retval on success returns the new socket fd
+     */
+    virtual int fcntl(int fd, int op, int args) const = 0;
 };
 } // namespace firebolt::rialto::wrappers
 
