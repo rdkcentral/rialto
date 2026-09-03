@@ -141,8 +141,8 @@ bool IpcTests::triggerPerformSetConfiguration()
     const std::string kSocketGroup{};
     const std::string kAppId{"app"};
     return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketName, kClientSocketName, kMaxResource,
-                                          kSocketPermissions, kSocketOwner, kSocketGroup, kAppId,
-                                          std::nullopt, std::nullopt);
+                                          kSocketPermissions, kSocketOwner, kSocketGroup, kAppId, std::nullopt,
+                                          std::nullopt);
 }
 
 bool IpcTests::triggerPerformSetConfigurationWithFd()
