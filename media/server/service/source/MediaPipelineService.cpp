@@ -31,8 +31,7 @@ namespace firebolt::rialto::server::service
 MediaPipelineService::MediaPipelineService(
     IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-    IDecryptionService &decryptionService,
-    const std::shared_ptr<firebolt::rialto::IMediaCapabilities> &mediaCapabilities)
+    IDecryptionService &decryptionService, const std::shared_ptr<firebolt::rialto::IMediaCapabilities> &mediaCapabilities)
     : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
       m_mediaCapabilities{mediaCapabilities}, m_decryptionService{decryptionService}
@@ -714,21 +713,21 @@ void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &hear
 common::AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabilities()
 {
     RIALTO_SERVER_LOG_DEBUG("GetSupportedAudioCapabilities requested");
-    
+
     // Path 0: Use preloaded audio capabilities if available (highest priority, from ServerManager)
     if (m_preloadedAudioCapabilities.has_value())
     {
         RIALTO_SERVER_LOG_DEBUG("Audio capabilities from preloaded ServerManager data (Path 0)");
         return *m_preloadedAudioCapabilities;
     }
-    
+
     // Delegate to orchestrator for Path A (YAML) and Path B (GStreamer) logic
     if (m_mediaCapabilities)
     {
         RIALTO_SERVER_LOG_DEBUG("Audio capabilities from orchestrator (tries YAML Path A, then GStreamer Path B)");
         return m_mediaCapabilities->getSupportedAudioCapabilities();
     }
-    
+
     // Fallback: Return empty capabilities
     RIALTO_SERVER_LOG_WARN("Audio capabilities not available - no orchestrator configured");
     return common::AudioDecoderCapabilities();
@@ -737,28 +736,28 @@ common::AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabili
 common::VideoDecoderCapabilities MediaPipelineService::getSupportedVideoCapabilities()
 {
     RIALTO_SERVER_LOG_DEBUG("GetSupportedVideoCapabilities requested");
-    
+
     // Path 0: Use preloaded video capabilities if available (highest priority, from ServerManager)
     if (m_preloadedVideoCapabilities.has_value())
     {
         RIALTO_SERVER_LOG_DEBUG("Video capabilities from preloaded ServerManager data (Path 0)");
         return *m_preloadedVideoCapabilities;
     }
-    
+
     // Delegate to orchestrator for Path A (YAML) and Path B (GStreamer) logic
     if (m_mediaCapabilities)
     {
         RIALTO_SERVER_LOG_DEBUG("Video capabilities from orchestrator (tries YAML Path A, then GStreamer Path B)");
         return m_mediaCapabilities->getSupportedVideoCapabilities();
     }
-    
+
     // Fallback: Return empty capabilities
     RIALTO_SERVER_LOG_WARN("Video capabilities not available - no orchestrator configured");
     return common::VideoDecoderCapabilities();
 }
 
 void MediaPipelineService::setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
-                                                     const std::optional<common::VideoDecoderCapabilities> &videoCaps)
+                                                    const std::optional<common::VideoDecoderCapabilities> &videoCaps)
 {
     RIALTO_SERVER_LOG_DEBUG("setPreloadedCapabilities called with audio: %s, video: %s",
                             audioCaps.has_value() ? "yes" : "no", videoCaps.has_value() ? "yes" : "no");

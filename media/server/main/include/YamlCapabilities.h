@@ -22,9 +22,9 @@
 
 #include <memory>
 
+#include "../../../wrappers/interface/IYamlCppWrapper.h"
 #include "AudioDecoderCapabilities.h"
 #include "DecoderCapabilitiesCommon.h"
-#include "../../../wrappers/interface/IYamlCppWrapper.h"
 #include "VideoDecoderCapabilities.h"
 
 namespace firebolt::rialto::server

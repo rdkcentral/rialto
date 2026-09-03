@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2026 Sky UK
+ * Copyright 2022 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,18 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
-#define RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
+#ifndef FIREBOLT_RIALTO_MEDIA_SOURCE_UTIL_H_
+#define FIREBOLT_RIALTO_MEDIA_SOURCE_UTIL_H_
 
-#include "IYamlCapabilities.h"
-#include <memory>
+#include <IMediaPipeline.h>
+#include <MediaCommon.h>
 
-namespace rialto::servermanager::service
+#include <string>
+
+namespace firebolt::rialto
 {
-std::unique_ptr<IYamlCapabilities> createMediaCapabilities();
+bool operator==(const AudioConfig &lhs, const AudioConfig &rhs);
+bool operator==(const IMediaPipeline::MediaSource &lhs, const IMediaPipeline::MediaSource &rhs);
+} // namespace firebolt::rialto
 
-} // namespace rialto::servermanager::service
-
-#endif // RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
+#endif // FIREBOLT_RIALTO_MEDIA_SOURCE_UTIL_H_

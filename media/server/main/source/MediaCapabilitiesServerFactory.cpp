@@ -45,8 +45,7 @@ std::unique_ptr<firebolt::rialto::IMediaCapabilities> MediaCapabilitiesServerFac
         // Create MediaCapabilities orchestrator with 2-path strategy:
         // - Path 0 (Highest priority): Preloaded capabilities from ServerManager
         // - Path B (Fallback): GStreamer element queries
-        mediaCapabilities =
-            std::make_unique<MediaCapabilities>(gstCapabilities, preloadedAudio, preloadedVideo);
+        mediaCapabilities = std::make_unique<MediaCapabilities>(gstCapabilities, preloadedAudio, preloadedVideo);
 
         RIALTO_SERVER_LOG_DEBUG("Created server-side MediaCapabilities with YAML + GStreamer orchestration");
     }

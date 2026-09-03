@@ -138,10 +138,11 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     }
 
     // Pass preloaded capabilities to PlaybackService via setPreloadedCapabilities()
-    if (audioCaps.has_value() || videoCaps.has_value())
-    {
-        m_sessionServerManager.setPreloadedCapabilities(audioCaps, videoCaps);
-    }
+    // IMPORTANT: Always call setPreloadedCapabilities, even if both are nullopt.
+    // This is critical for reconfiguration scenarios where a later SetConfigurationRequest
+    // with both fields absent should clear previously preloaded capabilities.
+    // Without this, stale capabilities from earlier requests would persist.
+    m_sessionServerManager.setPreloadedCapabilities(audioCaps, videoCaps);
 
     success &= m_sessionServerManager.configureServices(convertSessionServerState(request->initialsessionserverstate()),
                                                         maxResource, kClientDisplayName, request->appname());

@@ -45,22 +45,19 @@ public:
     common::ISessionServerAppManager &getSessionServerAppManager() override;
 
 private:
-    // CRITICAL INITIALIZATION ORDER DOCUMENTATION:
-    // Members MUST be declared in the SAME ORDER as they appear in the initializer list.
-    // The C++ standard requires this: members are initialized in declaration order.
+    // INITIALIZATION ORDER:
+    // m_ipcController is declared BEFORE m_sessionServerAppManager to ensure it exists before
+    // m_sessionServerAppManager is constructed. However, we initialize it in the constructor body
+    // (not in initializer list) AFTER m_sessionServerAppManager is fully constructed.
     //
-    // Declaration order (must match initializer list):
-    // 1. m_sessionServerAppManager - initialized first
-    //    Uses reference to m_ipcController (which exists as uninitialized unique_ptr)
-    // 2. m_ipcController - initialized second
-    //    Uses m_sessionServerAppManager (which is now fully constructed)
-    //
-    // This pattern handles the circular dependency correctly:
-    // - m_ipcController object exists (empty) before step 1
-    // - m_sessionServerAppManager constructor stores reference to it
-    // - m_ipcController is then populated in step 2 using the ready m_sessionServerAppManager
-    std::unique_ptr<common::ISessionServerAppManager> m_sessionServerAppManager;
+    // Why this order?
+    // 1. Members are initialized in declaration order (C++ standard)
+    // 2. m_ipcController must be declared first so it exists when m_sessionServerAppManager is constructed
+    // 3. m_sessionServerAppManager constructor receives m_ipcController by reference
+    // 4. After m_sessionServerAppManager is constructed, we populate m_ipcController in body
+    // 5. m_sessionServerAppManager stores a reference that gets populated later
     std::unique_ptr<ipc::IController> m_ipcController;
+    std::unique_ptr<common::ISessionServerAppManager> m_sessionServerAppManager;
 };
 } // namespace rialto::servermanager::service
 

@@ -149,7 +149,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
     const firebolt::rialto::common::VideoDecoderCapabilities &videoCaps)
 {
     EXPECT_CALL(m_sessionServerManagerMock, setPreloadedCapabilities(std::optional(audioCaps), std::optional(videoCaps)))
-        .WillOnce(Return(true));
+        .WillOnce(Return());
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketName, kSocketPermissions, kSocketOwner, kSocketGroup))
         .WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
@@ -164,7 +164,7 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
     const firebolt::rialto::common::VideoDecoderCapabilities &videoCaps)
 {
     EXPECT_CALL(m_sessionServerManagerMock, setPreloadedCapabilities(std::optional(audioCaps), std::optional(videoCaps)))
-        .WillOnce(Return(true));
+        .WillOnce(Return());
     EXPECT_CALL(m_sessionServerManagerMock, configureIpc(kSocketFd)).WillOnce(Return(true));
     EXPECT_CALL(m_sessionServerManagerMock,
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,

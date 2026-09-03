@@ -21,12 +21,12 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_SESSION_SERVER_MANAGER_MOCK_H_
 
 #include "ISessionServerManager.h"
-#include <gmock/gmock.h>
-#include <memory>
-#include <string>
-#include <optional>
 #include <AudioDecoderCapabilities.h>
 #include <VideoDecoderCapabilities.h>
+#include <gmock/gmock.h>
+#include <memory>
+#include <optional>
+#include <string>
 
 namespace firebolt::rialto::server::service
 {

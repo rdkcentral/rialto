@@ -17,16 +17,27 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
-#define RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
+#ifndef YAML_CAPABILITIES_MOCK_H_
+#define YAML_CAPABILITIES_MOCK_H_
 
-#include "IYamlCapabilities.h"
-#include <memory>
+#include "../../../serverManager/public/include/IMediaCapabilities.h"
+#include <gmock/gmock.h>
 
 namespace rialto::servermanager::service
 {
-std::unique_ptr<IYamlCapabilities> createMediaCapabilities();
+class YamlCapabilitiesMock : public IYamlCapabilities
+{
+public:
+    MOCK_METHOD(firebolt::rialto::common::DecoderCapabilitiesStatus,
+                getAudioDecoderCapabilities,
+                (firebolt::rialto::common::AudioDecoderCapabilities & capabilities),
+                (override));
+    MOCK_METHOD(firebolt::rialto::common::DecoderCapabilitiesStatus,
+                getVideoDecoderCapabilities,
+                (firebolt::rialto::common::VideoDecoderCapabilities & capabilities),
+                (override));
+};
 
 } // namespace rialto::servermanager::service
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
+#endif // YAML_CAPABILITIES_MOCK_H_

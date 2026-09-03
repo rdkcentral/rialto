@@ -22,7 +22,6 @@
 
 #include "IGstCapabilities.h"
 #include "IMediaCapabilities.h"
-#include "../../serverManager/public/include/IMediaCapabilities.h"
 #include <memory>
 #include <optional>
 

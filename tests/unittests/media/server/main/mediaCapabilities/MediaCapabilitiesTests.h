@@ -17,11 +17,11 @@
  * limitations under the License.
  */
 
-#ifndef FIREBOLT_RIALTO_SERVER_MEDIA_CAPABILITIES_TESTS_FIXTURE_H_
-#define FIREBOLT_RIALTO_SERVER_MEDIA_CAPABILITIES_TESTS_FIXTURE_H_
+#ifndef MEDIA_CAPABILITIES_TESTS_H_
+#define MEDIA_CAPABILITIES_TESTS_H_
 
+#include "GstCapabilitiesMock.h"
 #include "IGstCapabilities.h"
-#include "IGstCapabilitiesMock.h"
 #include "MediaCapabilities.h"
 #include <AudioDecoderCapabilities.h>
 #include <VideoDecoderCapabilities.h>
@@ -42,14 +42,14 @@ public:
     void gstCapabilitiesWillReturnEmptyVideo();
 
 protected:
-    std::shared_ptr<StrictMock<firebolt::rialto::server::IGstCapabilitiesMock>> m_gstCapabilitiesMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>> m_gstCapabilitiesMock;
     std::shared_ptr<firebolt::rialto::server::MediaCapabilities> m_mediaCapabilities;
-    
+
     firebolt::rialto::common::AudioDecoderCapabilities m_gstAudioCapabilities;
     firebolt::rialto::common::VideoDecoderCapabilities m_gstVideoCapabilities;
-    
+
     const firebolt::rialto::common::AudioDecoderCapabilities m_preloadedAudio{"aac", "opus", {}};
     const firebolt::rialto::common::VideoDecoderCapabilities m_preloadedVideo{"h264", "h265", {}};
 };
 
-#endif // FIREBOLT_RIALTO_SERVER_MEDIA_CAPABILITIES_TESTS_FIXTURE_H_
+#endif // MEDIA_CAPABILITIES_TESTS_H_

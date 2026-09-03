@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_COMMON_MEDIA_CAPABILITIES_FACTORY_H_
-#define RIALTO_SERVERMANAGER_COMMON_MEDIA_CAPABILITIES_FACTORY_H_
+#ifndef RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
+#define RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
 
 // Include ServerManager's IYamlCapabilities interface (defined in IMediaCapabilities.h for backward compatibility)
 #include "../../public/include/IMediaCapabilities.h"
@@ -30,4 +30,4 @@ std::unique_ptr<rialto::servermanager::service::IYamlCapabilities> createMediaCa
 
 } // namespace rialto::servermanager::service
 
-#endif // RIALTO_SERVERMANAGER_COMMON_MEDIA_CAPABILITIES_FACTORY_H_
+#endif // RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_

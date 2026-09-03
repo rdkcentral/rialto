@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_I_YAML_CAPABILITIES_H_
-#define RIALTO_SERVERMANAGER_SERVICE_I_YAML_CAPABILITIES_H_
+#ifndef RIALTO_SERVERMANAGER_SERVICE_I_MEDIA_CAPABILITIES_H_
+#define RIALTO_SERVERMANAGER_SERVICE_I_MEDIA_CAPABILITIES_H_
 
 #include <AudioDecoderCapabilities.h>
 #include <DecoderCapabilitiesCommon.h>
@@ -47,4 +47,4 @@ public:
 
 } // namespace rialto::servermanager::service
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_I_YAML_CAPABILITIES_H_
+#endif // RIALTO_SERVERMANAGER_SERVICE_I_MEDIA_CAPABILITIES_H_
