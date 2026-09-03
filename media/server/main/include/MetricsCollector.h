@@ -116,6 +116,7 @@ private:
     std::unique_ptr<IMetricsReporter> m_reporter;
 
     // Threshold checker
+    MetricsThresholdConfig m_thresholdConfig;
     MetricsThresholdChecker m_thresholdChecker;
 };
 } // namespace firebolt::rialto::server

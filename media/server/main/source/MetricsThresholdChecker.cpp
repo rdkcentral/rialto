@@ -21,8 +21,8 @@
 
 namespace firebolt::rialto::server
 {
-MetricsThresholdChecker::MetricsThresholdChecker(MetricsThresholdConfig config, IMetricsReporter *reporter)
-    : m_config{std::move(config)}, m_reporter{reporter}
+MetricsThresholdChecker::MetricsThresholdChecker(MetricsThresholdConfig& config, IMetricsReporter *reporter)
+    : m_config{config}, m_reporter{reporter}
 {
 }
 
