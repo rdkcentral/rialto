@@ -74,7 +74,6 @@ MetricsCollector::MetricsCollector(int clientId, const std::shared_ptr<IMetricsC
       m_reporter{std::make_unique<LogMetricsReporter>()}, m_thresholdConfig{},
       m_thresholdChecker{m_thresholdConfig, m_reporter.get()}
 {
-
     if (m_currentApplicationState == ApplicationState::RUNNING)
     {
         using std::chrono::duration_cast;
