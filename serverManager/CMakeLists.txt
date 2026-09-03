@@ -32,6 +32,18 @@ if( RIALTO_ENABLE_CONFIG_FILE )
     if (NOT RIALTO_CONFIG_OVERRIDES_FILE_DIR)
         set(RIALTO_CONFIG_OVERRIDES_FILE_DIR /opt/persistent/sky)
     endif()
+
+        if (NOT RIALTO_CONFIG_FILE_NAME)
+                set(RIALTO_CONFIG_FILE_NAME rialto-config.json)
+        endif()
+
+        if (NOT RIALTO_CONFIG_OVERRIDES_FILE_NAME)
+                set(RIALTO_CONFIG_OVERRIDES_FILE_NAME rialto-config-overrides.json)
+        endif()
+
+        if (NOT RIALTO_CONFIG_SOC_FILE_NAME)
+                set(RIALTO_CONFIG_SOC_FILE_NAME rialto-soc.json)
+        endif()
 endif()
 
 add_subdirectory(common)
@@ -67,13 +79,15 @@ target_include_directories (
 )
 
 if( RIALTO_ENABLE_CONFIG_FILE )
-    configure_file(
-        config/rialto-config.in.json
-        rialto-config.json
-        @ONLY )
+        set(RIALTO_CONFIG_TEMPLATE_FILE config/rialto-config.in.json)
+
+        configure_file(
+                ${RIALTO_CONFIG_TEMPLATE_FILE}
+                ${RIALTO_CONFIG_FILE_NAME}
+                @ONLY )
 
     install(
-        FILES       ${CMAKE_CURRENT_BINARY_DIR}/rialto-config.json
+                FILES       ${CMAKE_CURRENT_BINARY_DIR}/${RIALTO_CONFIG_FILE_NAME}
         DESTINATION ${RIALTO_CONFIG_FILE_DIR} )
 endif()
 

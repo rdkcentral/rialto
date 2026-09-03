@@ -1214,3 +1214,32 @@
    fun:pthread_create*
    ...
 }
+{
+   ignore_gtest_printing_optional_fields
+   Memcheck:Cond
+   ...
+   fun:__printf_buffer
+   fun:__vsnprintf_internal
+   fun:snprintf
+   fun:*PrintByteSegmentInObjectTo*
+   ...
+   fun:*PrintValue*
+   fun:*UniversalPrinter*
+   ...
+   fun:*testing*
+}
+{
+   ignore_gtest_printing_optional_fields_uninit_value
+   Memcheck:Value8
+   ...
+   fun:_itoa_word
+   fun:__printf_buffer
+   fun:__vsnprintf_internal
+   fun:snprintf
+   fun:*PrintByteSegmentInObjectTo*
+   ...
+   fun:*PrintValue*
+   fun:*UniversalPrinter*
+   ...
+   fun:*testing*
+}

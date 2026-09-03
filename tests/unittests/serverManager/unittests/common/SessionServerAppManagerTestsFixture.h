@@ -26,16 +26,19 @@
 #include "HealthcheckServiceFactoryMock.h"
 #include "HealthcheckServiceMock.h"
 #include "ISessionServerAppManager.h"
+#include "MediaCapabilitiesMock.h"
 #include "NamedSocketMock.h"
 #include "SessionServerAppFactoryMock.h"
 #include "SessionServerAppMock.h"
 #include "StateObserverMock.h"
+#include <DecoderCapabilitiesUtils.h>
 #include <condition_variable>
 #include <gtest/gtest.h>
 #include <memory>
 #include <mutex>
 #include <string>
 
+using rialto::servermanager::service::MediaCapabilitiesMock;
 using testing::StrictMock;
 
 class SessionServerAppManagerTests : public testing::Test
@@ -54,6 +57,7 @@ public:
     void preloadedSessionServerWillFailToConfigure(const firebolt::rialto::common::SessionServerState &state);
     void preloadedSessionServerWillBeConfigured(const firebolt::rialto::common::SessionServerState &state);
     void preloadedSessionServerWillCloseWithError();
+    void sessionServerWillLaunchWithoutCapabilities(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillChangeState(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillReturnAppSocketName(const std::string &socketName);
     void sessionServerWillChangeStateToUninitialized();
@@ -107,6 +111,8 @@ private:
     testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock> &m_namedSocketMock{
         dynamic_cast<testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock> &>(*m_namedSocket)};
     std::unique_ptr<rialto::servermanager::common::ISessionServerAppManager> m_sut;
+    std::shared_ptr<testing::StrictMock<rialto::servermanager::service::MediaCapabilitiesMock>> m_mediaCapabilities;
+    testing::StrictMock<rialto::servermanager::service::MediaCapabilitiesMock> &m_mediaCapabilitiesMock;
 };
 
 #endif // SESSION_SERVER_APP_MANAGER_TESTS_FIXTURE_H_

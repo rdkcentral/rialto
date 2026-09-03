@@ -19,6 +19,9 @@
 
 find_package( jsoncpp REQUIRED )
 
+find_package( PkgConfig REQUIRED )
+pkg_check_modules( GStreamerApp REQUIRED IMPORTED_TARGET gstreamer-app-1.0 gstreamer-pbutils-1.0 gstreamer-audio-1.0)
+
 add_gtests (
         RialtoServerManagerUnitTests
 
@@ -30,17 +33,23 @@ add_gtests (
         unittests/common/SessionServerAppTestsFixture.cpp
         unittests/common/UtilsTests.cpp
 
+        unittests/ipc/ClientTest.cpp
         unittests/ipc/IpcTests.cpp
         unittests/ipc/IpcTestsFixture.cpp
+		unittests/ipc/CapabilitySerialiserTests.cpp
 
         unittests/service/ConfigHelperTests.cpp
         unittests/service/ConfigReaderTests.cpp
+        unittests/service/MediaCapabilitiesTests.cpp
         unittests/service/ServerManagerServiceTests.cpp
         unittests/service/ServerManagerServiceTestsFixture.cpp
+		unittests/service/MediaCapabilitiesFactoryTests.cpp
+
         )
 
 add_subdirectory(matchers)
 add_subdirectory(stubs)
+add_subdirectory(unittests/common/misc)
 
 target_include_directories(
         RialtoServerManagerUnitTests
@@ -60,8 +69,13 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcClient,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcServer,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoIpcCommon,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoTestCommonMatchers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoIpcMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoTestServerManagerCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
+		${CMAKE_SOURCE_DIR}/wrappers/include
+		${GStreamerApp_INCLUDE_DIRS}
 
         mocks
 
@@ -81,5 +95,9 @@ target_link_libraries(
         RialtoServerManagerCommon
         RialtoServerManagerIpc
         RialtoServerManager
+        RialtoTestServerManagerCommonMisc
+		RialtoWrappers
+		RialtoPlayerPublic
+		${GStreamerApp_LIBRARIES}
         Threads::Threads
         )

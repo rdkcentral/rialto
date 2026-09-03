@@ -28,15 +28,36 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      # Checked out as a sibling of rialto-gstreamer so tests/third-party/CMakeLists.txt's
+      # local-fallback lookup (../rialto/...) finds the headers under test, regardless of
+      # branch name - works unchanged for the current branch and any future branch (e.g.
+      # after this PR merges to master/develop).
+      - name: Checkout rialto repo (for header dependencies)
+        uses: actions/checkout@v4
+        with:
+          path: rialto
+
       - name: Check if rialto-gstreamer branch with the same name exists
         id: check-branch
         shell: sh +e {0}
         run: |
           branch="${{ github.base_ref }}"
-          git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-gstreamer.git" ${{ github.event.pull_request.head.ref }} > /dev/null
-          if [ $? -eq 0 ]; then
-            branch="${{ github.event.pull_request.head.ref }}"
-          fi
+          head_ref="${{ github.event.pull_request.head.ref }}"
+
+          # Hardcoded mapping for cases where branch names differ between repos
+          case "$head_ref" in
+            "MediaCapabilitiesRailtoServerManager_update")
+              branch="MediaPipelineCapabilitiesNewConfig"
+              echo "Using hardcoded mapping: $head_ref -> $branch"
+              ;;
+            *)
+              git ls-remote --exit-code --heads "https://github.com/rdkcentral/rialto-gstreamer.git" "$head_ref" > /dev/null
+              if [ $? -eq 0 ]; then
+                branch="$head_ref"
+              fi
+              ;;
+          esac
+
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
 
       - name: Checkout rialto-gstreamer repo

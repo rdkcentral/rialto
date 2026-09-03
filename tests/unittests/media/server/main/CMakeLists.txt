@@ -48,6 +48,8 @@ add_gtests (
 
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
 
+        YamlCapabilitiesTests.cpp
+
         mediaKeys/base/MediaKeysTestBase.cpp
         mediaKeys/CreateTest.cpp
         mediaKeys/CreateKeySessionTest.cpp
@@ -129,6 +131,7 @@ target_include_directories(
         $<TARGET_PROPERTY:ExternalLibraryMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoUnittestCommonMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoWrappersMocks,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoTestCommonMatchers,INTERFACE_INCLUDE_DIRECTORIES>
 
         # Test Bases
         mediaKeys/base

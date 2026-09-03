@@ -20,8 +20,11 @@
 #ifndef FIREBOLT_RIALTO_SERVER_I_GST_CAPABILITIES_H_
 #define FIREBOLT_RIALTO_SERVER_I_GST_CAPABILITIES_H_
 
+#include <AudioDecoderCapabilities.h>
 #include <MediaCommon.h>
+#include <VideoDecoderCapabilities.h>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -38,18 +41,11 @@ public:
     IGstCapabilitiesFactory() = default;
     virtual ~IGstCapabilitiesFactory() = default;
 
-    /**
-     * @brief Gets the IGstCapabilitiesFactory instance.
-     *
-     * @retval the factory instance or null on error.
-     */
     static std::shared_ptr<IGstCapabilitiesFactory> getFactory();
 
     /**
-     * @brief Creates a IGstCapabilities object.
-     *
-     *
-     * @retval the new gstreamer capabilities instance or null on error.
+     * @brief Create GstCapabilities object.
+     * @return Unique pointer to IGstCapabilities
      */
     virtual std::unique_ptr<IGstCapabilities> createGstCapabilities() = 0;
 };
@@ -98,6 +94,28 @@ public:
      * @retval true on success false otherwise
      */
     virtual bool isVideoMaster(bool &isVideoMaster) = 0;
+
+    /**
+     * @brief Gets the supported audio capabilities from GStreamer.
+     *
+     * Returns empty capabilities (no decoder capability data from GStreamer).
+     * Full capabilities should be obtained via MediaCapabilities which orchestrates
+     * between YAML (Path A) and GStreamer (Path B) sources.
+     *
+     * @retval The supported audio capabilities (empty if not available).
+     */
+    virtual firebolt::rialto::common::AudioDecoderCapabilities getSupportedAudioCapabilities() = 0;
+
+    /**
+     * @brief Gets the supported video capabilities from GStreamer.
+     *
+     * Returns empty capabilities (no decoder capability data from GStreamer).
+     * Full capabilities should be obtained via MediaCapabilities which orchestrates
+     * between YAML (Path A) and GStreamer (Path B) sources.
+     *
+     * @retval The supported video capabilities (empty if not available).
+     */
+    virtual firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() = 0;
 };
 
 }; // namespace firebolt::rialto::server

@@ -28,6 +28,7 @@ add_library(
         source/FileDescriptor.cpp
         source/SimpleBufferPool.cpp
         source/NamedSocket.cpp
+        source/CapabilityConverters.cpp
 
         )
 
@@ -37,6 +38,7 @@ target_include_directories(
         PUBLIC
         include
         $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommonPublic,INTERFACE_INCLUDE_DIRECTORIES>
 
         PRIVATE
         source

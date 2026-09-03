@@ -22,6 +22,7 @@
 
 #include "IDecryptionService.h"
 #include "IHeartbeatProcedure.h"
+#include "IMediaCapabilities.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IPlaybackService.h"
@@ -46,6 +47,7 @@ class PlaybackService : public IPlaybackService
 {
 public:
     PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+                    std::shared_ptr<IMediaCapabilitiesFactory> &&mediaCapabilitiesFactory,
                     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
                     std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
                     std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
@@ -62,6 +64,9 @@ public:
     void setMaxWebAudioPlayers(int maxWebAudio) override;
     void setClientDisplayName(const std::string &clientDisplayName) const override;
     void setResourceManagerAppName(const std::string &clientDisplayName) const override;
+    void
+    setPreloadedCapabilities(const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+                             const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps) override;
 
     bool isActive() const override;
     bool getSharedMemory(int32_t &fd, uint32_t &size) const override;
@@ -78,6 +83,10 @@ private:
     std::atomic<int> m_maxPlaybacks;
     std::atomic<int> m_maxWebAudioPlayers;
     std::shared_ptr<ISharedMemoryBuffer> m_shmBuffer;
+    std::shared_ptr<IMediaCapabilitiesFactory> m_mediaCapabilitiesFactory;
+    std::shared_ptr<IMediaPipelineCapabilitiesFactory> m_mediaPipelineCapabilitiesFactory;
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> m_preloadedAudioCapabilities;
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> m_preloadedVideoCapabilities;
     std::unique_ptr<MediaPipelineService> m_mediaPipelineService;
     std::unique_ptr<WebAudioPlayerService> m_webAudioPlayerService;
 };

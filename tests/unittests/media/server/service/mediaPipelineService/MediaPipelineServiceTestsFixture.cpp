@@ -18,8 +18,12 @@
  */
 
 #include "MediaPipelineServiceTestsFixture.h"
+#include "AudioDecoderCapabilities.h"
 #include "HeartbeatHandlerMock.h"
+#include "IMediaCapabilitiesMock.h"
 #include "MediaCommon.h"
+#include "MediaPipelineStructureMatchers.h"
+#include "VideoDecoderCapabilities.h"
 
 #include <string>
 #include <utility>
@@ -69,6 +73,12 @@ const std::string kTextTrackIdentifier{"TextTrackIdentifier"};
 constexpr uint32_t kBufferingLimit{4324};
 constexpr bool kUseBuffering{true};
 constexpr uint64_t kStopPosition{23412};
+const firebolt::rialto::common::AudioDecoderCapabilities kAudioDecoderCapabilities{.interfaceVersion = "1.0",
+                                                                                   .schemaVersion = "2.0",
+                                                                                   .capabilities = {}};
+const firebolt::rialto::common::VideoDecoderCapabilities kVideoDecoderCapabilities{.interfaceVersion = "3.0",
+                                                                                   .schemaVersion = "4.0",
+                                                                                   .capabilities = {}};
 constexpr bool kIsLive{false};
 constexpr uint32_t kQueuedFrames{123};
 } // namespace
@@ -84,6 +94,7 @@ bool operator==(const VideoRequirements &lhs, const VideoRequirements &rhs)
 MediaPipelineServiceTests::MediaPipelineServiceTests()
     : m_mediaPipelineFactoryMock{std::make_shared<
           StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>>()},
+      m_mediaCapabilitiesFactoryMock{std::make_shared<StrictMock<firebolt::rialto::MediaCapabilitiesFactoryMock>>()},
       m_mediaPipelineCapabilitiesFactoryMock{
           std::make_shared<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesFactoryMock>>()},
       m_mediaPipelineCapabilities{std::make_unique<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock>>()},
@@ -534,6 +545,16 @@ void MediaPipelineServiceTests::mediaPipelineWillFailToCheckIfVideoIsMaster()
     EXPECT_CALL(m_mediaPipelineCapabilitiesMock, isVideoMaster(_)).WillOnce(Return(false));
 }
 
+void MediaPipelineServiceTests::mediaPipelineWillGetAudioDecoderCapabilities()
+{
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, getSupportedAudioCapabilities()).WillOnce(Return(kAudioDecoderCapabilities));
+}
+
+void MediaPipelineServiceTests::mediaPipelineWillGetVideoDecoderCapabilities()
+{
+    EXPECT_CALL(m_mediaPipelineCapabilitiesMock, getSupportedVideoCapabilities()).WillOnce(Return(kVideoDecoderCapabilities));
+}
+
 void MediaPipelineServiceTests::mediaPipelineWillPing()
 {
     EXPECT_CALL(*m_heartbeatProcedureMock, createHandler())
@@ -575,24 +596,35 @@ void MediaPipelineServiceTests::playbackServiceWillReturnSharedMemoryBuffer()
 
 void MediaPipelineServiceTests::createMediaPipelineShouldSuccess()
 {
+    auto mediaCapabilities = std::make_unique<StrictMock<firebolt::rialto::IMediaCapabilitiesMock>>();
+    EXPECT_CALL(*m_mediaCapabilitiesFactoryMock,
+                createMediaCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+        .WillOnce(Return(ByMove(std::move(mediaCapabilities))));
     EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
         .WillOnce(Return(ByMove(std::move(m_mediaPipelineCapabilities))));
     m_sut =
         std::make_unique<firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
                                                                                   m_mediaPipelineFactoryMock,
+                                                                                  m_mediaCapabilitiesFactoryMock,
                                                                                   m_mediaPipelineCapabilitiesFactoryMock,
                                                                                   m_decryptionServiceMock);
 }
 
 void MediaPipelineServiceTests::createMediaPipelineShouldFailWhenMediaPipelineCapabilitiesFactoryReturnsNullptr()
 {
+    auto mediaCapabilities = std::make_unique<StrictMock<firebolt::rialto::IMediaCapabilitiesMock>>();
+    EXPECT_CALL(*m_mediaCapabilitiesFactoryMock,
+                createMediaCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+        .WillOnce(Return(ByMove(std::move(mediaCapabilities))));
+
     EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::IMediaPipelineCapabilities>())));
-    EXPECT_THROW(m_sut =
-                     std::make_unique<firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
-                                                                                               m_mediaPipelineFactoryMock,
-                                                                                               m_mediaPipelineCapabilitiesFactoryMock,
-                                                                                               m_decryptionServiceMock),
+    EXPECT_THROW(m_sut = std::make_unique<
+                     firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
+                                                                              m_mediaPipelineFactoryMock,
+                                                                              m_mediaCapabilitiesFactoryMock,
+                                                                              m_mediaPipelineCapabilitiesFactoryMock,
+                                                                              m_decryptionServiceMock),
                  std::runtime_error);
 }
 
@@ -1091,6 +1123,18 @@ void MediaPipelineServiceTests::isVideoMasterShouldFail()
 {
     bool isMaster{false};
     EXPECT_FALSE(m_sut->isVideoMaster(isMaster));
+}
+
+void MediaPipelineServiceTests::getAudioDecoderCapabilitiesShouldSucceed()
+{
+    auto caps = m_sut->getSupportedAudioCapabilities();
+    EXPECT_THAT(caps, decoderCapabilitiesMatcher(kAudioDecoderCapabilities));
+}
+
+void MediaPipelineServiceTests::getVideoDecoderCapabilitiesShouldSucceed()
+{
+    auto caps = m_sut->getSupportedVideoCapabilities();
+    EXPECT_THAT(caps, decoderCapabilitiesMatcher(kVideoDecoderCapabilities));
 }
 
 void MediaPipelineServiceTests::clearMediaPipelines()

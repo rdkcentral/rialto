@@ -22,6 +22,7 @@
 #include "MediaPipelineCapabilities.h"
 #include "MediaPipelineCapabilitiesIpcFactoryMock.h"
 #include "MediaPipelineCapabilitiesIpcMock.h"
+#include "MediaPipelineStructureMatchers.h"
 
 using namespace firebolt::rialto;
 using namespace firebolt::rialto::client;

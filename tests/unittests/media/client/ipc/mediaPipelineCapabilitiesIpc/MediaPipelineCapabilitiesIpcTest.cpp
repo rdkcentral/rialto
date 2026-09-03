@@ -19,6 +19,7 @@
 
 #include "MediaPipelineCapabilitiesIpc.h"
 #include "IpcModuleBase.h"
+#include "MediaPipelineStructureMatchers.h"
 #include <gtest/gtest.h>
 
 using ::testing::Return;
@@ -27,7 +28,7 @@ using ::testing::WithArgs;
 namespace
 {
 const char *kPropertyName = "immediate-output";
-}
+} // namespace
 class MediaPipelineCapabilitiesIpcTest : public IpcModuleBase, public ::testing::Test
 {
 protected:

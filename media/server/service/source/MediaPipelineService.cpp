@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineService.h"
+#include "IMediaCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "RialtoServerLogging.h"
 #include <exception>
@@ -30,12 +31,19 @@ namespace firebolt::rialto::server::service
 {
 MediaPipelineService::MediaPipelineService(
     IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+    std::shared_ptr<IMediaCapabilitiesFactory> &&mediaCapabilitiesFactory,
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
     IDecryptionService &decryptionService)
     : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
+      m_mediaCapabilitiesFactory{mediaCapabilitiesFactory},
+      m_mediaCapabilities{mediaCapabilitiesFactory->createMediaCapabilities()},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
       m_decryptionService{decryptionService}
 {
+    if (!m_mediaCapabilities)
+    {
+        throw std::runtime_error("Could not create Media Capabilities");
+    }
     if (!m_mediaPipelineCapabilities)
     {
         throw std::runtime_error("Could not create Media Pipeline Capabilities");
@@ -53,6 +61,30 @@ void MediaPipelineService::clearMediaPipelines()
 {
     std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
     m_mediaPipelines.clear();
+}
+
+void MediaPipelineService::updateMediaCapabilities(
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo)
+{
+    RIALTO_SERVER_LOG_DEBUG("MediaPipelineService: updating MediaCapabilities with preloaded YAML capabilities");
+    if (m_mediaCapabilitiesFactory)
+    {
+        auto newMediaCapabilities = m_mediaCapabilitiesFactory->createMediaCapabilities(preloadedAudio, preloadedVideo);
+        if (newMediaCapabilities)
+        {
+            m_mediaCapabilities = std::shared_ptr<firebolt::rialto::IMediaCapabilities>(std::move(newMediaCapabilities));
+            RIALTO_SERVER_LOG_DEBUG("MediaPipelineService: MediaCapabilities updated successfully with preloaded caps");
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_ERROR("MediaPipelineService: Failed to create updated MediaCapabilities");
+        }
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_ERROR("MediaPipelineService: mediaCapabilitiesFactory is null");
+    }
 }
 
 bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
@@ -682,6 +714,18 @@ bool MediaPipelineService::isVideoMaster(bool &isVideoMaster)
     RIALTO_SERVER_LOG_INFO("MediaPipelineService requested check if video is master");
 
     return m_mediaPipelineCapabilities->isVideoMaster(isVideoMaster);
+}
+
+firebolt::rialto::common::AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabilities()
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to get supported audio capabilities");
+    return m_mediaCapabilities->getSupportedAudioCapabilities();
+}
+
+firebolt::rialto::common::VideoDecoderCapabilities MediaPipelineService::getSupportedVideoCapabilities()
+{
+    RIALTO_SERVER_LOG_INFO("MediaPipelineService requested to get supported video capabilities");
+    return m_mediaCapabilities->getSupportedVideoCapabilities();
 }
 
 std::vector<std::string> MediaPipelineService::getSupportedMimeTypes(MediaSourceType type)

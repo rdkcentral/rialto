@@ -28,6 +28,9 @@
 
 namespace firebolt::rialto
 {
+// Forward declarations
+class MediaCapabilities;
+
 /**
  * @brief IMediaPipelineCapabilities factory class definition.
  */
@@ -70,7 +73,7 @@ public:
 
 private:
     /**
-     * @brief The gstreamer capabilities.
+     * @brief The gstreamer capabilities (created in constructor, not lazy).
      */
     std::unique_ptr<IGstCapabilities> m_gstCapabilities;
 

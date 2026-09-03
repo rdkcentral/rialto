@@ -18,6 +18,7 @@
  */
 
 #include "SessionServerAppTestsFixture.h"
+#include "RialtoLogging.h"
 #include <list>
 #include <string>
 #include <utility>
@@ -158,6 +159,15 @@ void SessionServerAppTests::willLaunchApp() const
     EXPECT_CALL(m_linuxWrapperMock, close(kSocketPair[0])).Times(2).WillRepeatedly(Return(-1));
     EXPECT_CALL(m_linuxWrapperMock, getpid()).WillOnce(Return(kPid));
     EXPECT_CALL(m_linuxWrapperMock, dup(kSocketPair[0])).WillOnce(Return(kDuplicatedSocket));
+    if (!firebolt::rialto::logging::isConsoleLoggingEnabled())
+    {
+        constexpr int kDevNullFd{4};
+        EXPECT_CALL(m_linuxWrapperMock, open(StrEq("/dev/null"), _, _)).WillOnce(Return(kDevNullFd));
+        EXPECT_CALL(m_linuxWrapperMock, dup2(kDevNullFd, STDIN_FILENO)).WillOnce(Return(0));
+        EXPECT_CALL(m_linuxWrapperMock, dup2(kDevNullFd, STDOUT_FILENO)).WillOnce(Return(1));
+        EXPECT_CALL(m_linuxWrapperMock, dup2(kDevNullFd, STDERR_FILENO)).WillOnce(Return(2));
+        EXPECT_CALL(m_linuxWrapperMock, close(kDevNullFd)).WillOnce(Return(0));
+    }
     EXPECT_CALL(m_linuxWrapperMock, execve(StrEq(kSessionServerPath), _, _)).WillOnce(Return(-1));
     EXPECT_CALL(m_linuxWrapperMock, exit(EXIT_FAILURE)); // Not possible to stop on execve with mock :-)
 }

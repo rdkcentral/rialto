@@ -486,6 +486,7 @@ enum class LimitedDurationLicense
     ENABLED,       /**< The license has a limited duration */
     DISABLED       /**< The license does not have a limited duration */
 };
+
 } // namespace firebolt::rialto
 
 #endif // FIREBOLT_RIALTO_MEDIA_COMMON_H_

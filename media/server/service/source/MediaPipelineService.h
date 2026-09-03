@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_MEDIA_PIPELINE_SERVICE_H_
 
 #include "IDecryptionService.h"
+#include "IMediaCapabilities.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IMediaPipelineService.h"
@@ -44,6 +45,7 @@ class MediaPipelineService : public IMediaPipelineService
 public:
     MediaPipelineService(IPlaybackService &playbackService,
                          std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+                         std::shared_ptr<IMediaCapabilitiesFactory> &&mediaCapabilitiesFactory,
                          std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
                          IDecryptionService &decryptionService);
     ~MediaPipelineService() override;
@@ -100,6 +102,8 @@ public:
     bool getUseBuffering(int sessionId, bool &useBuffering) override;
     bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     bool isVideoMaster(bool &isVideoMaster) override;
+    firebolt::rialto::common::AudioDecoderCapabilities getSupportedAudioCapabilities() override;
+    firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
     std::vector<std::string> getSupportedMimeTypes(MediaSourceType type) override;
     bool isMimeTypeSupported(const std::string &mimeType) override;
     std::vector<std::string> getSupportedProperties(MediaSourceType mediaType,
@@ -108,9 +112,20 @@ public:
 
     void clearMediaPipelines();
 
+    /**
+     * @brief Updates MediaCapabilities with preloaded capabilities from ServerManager
+     *
+     * @param[in] preloadedAudio : Optional preloaded audio capabilities from YAML
+     * @param[in] preloadedVideo : Optional preloaded video capabilities from YAML
+     */
+    void updateMediaCapabilities(const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
+                                 const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo);
+
 private:
     IPlaybackService &m_playbackService;
     std::shared_ptr<IMediaPipelineServerInternalFactory> m_mediaPipelineFactory;
+    std::shared_ptr<IMediaCapabilitiesFactory> m_mediaCapabilitiesFactory;
+    std::shared_ptr<IMediaCapabilities> m_mediaCapabilities;
     std::shared_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
     IDecryptionService &m_decryptionService;
     std::map<int, std::unique_ptr<IMediaPipelineServerInternal>> m_mediaPipelines;

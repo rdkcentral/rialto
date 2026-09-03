@@ -22,6 +22,8 @@
 
 #include "DecryptionServiceMock.h"
 #include "HeartbeatProcedureMock.h"
+#include "IMediaCapabilitiesMock.h"
+#include "MediaCapabilitiesFactoryMock.h"
 #include "MediaPipelineCapabilitiesFactoryMock.h"
 #include "MediaPipelineCapabilitiesMock.h"
 #include "MediaPipelineServerInternalFactoryMock.h"
@@ -120,6 +122,8 @@ public:
     void mediaPipelineWillFailToSwitchSource();
     void mediaPipelineWillCheckIfVideoIsMaster();
     void mediaPipelineWillFailToCheckIfVideoIsMaster();
+    void mediaPipelineWillGetAudioDecoderCapabilities();
+    void mediaPipelineWillGetVideoDecoderCapabilities();
 
     void mediaPipelineWillPing();
 
@@ -221,6 +225,8 @@ public:
     void switchSourceShouldFail();
     void isVideoMasterShouldSucceed();
     void isVideoMasterShouldFail();
+    void getAudioDecoderCapabilitiesShouldSucceed();
+    void getVideoDecoderCapabilitiesShouldSucceed();
 
     void clearMediaPipelines();
     void initSession();
@@ -228,6 +234,7 @@ public:
 
 private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalFactoryMock>> m_mediaPipelineFactoryMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::MediaCapabilitiesFactoryMock>> m_mediaCapabilitiesFactoryMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesFactoryMock>>
         m_mediaPipelineCapabilitiesFactoryMock;
     std::unique_ptr<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock>> m_mediaPipelineCapabilities;

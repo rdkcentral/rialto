@@ -20,6 +20,7 @@
 syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
+import "mediaCapabilitiesCommon.proto";
 
 package rialto;
 
@@ -98,6 +99,8 @@ message SetConfigurationRequest {
     optional string appName = 9;
     optional int32 sessionManagementSocketFd = 10;
     optional uint32 subtitleClockResyncInterval = 11;
+    optional firebolt.rialto.AudioCapabilities audioCapabilities = 12;
+    optional firebolt.rialto.VideoCapabilities videoCapabilities = 13;
 }
 message SetConfigurationResponse {
 }

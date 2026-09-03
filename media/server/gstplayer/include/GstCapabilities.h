@@ -34,6 +34,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "AudioDecoderCapabilities.h"
+#include "VideoDecoderCapabilities.h"
+
 namespace firebolt::rialto::server
 {
 /**
@@ -47,11 +50,6 @@ public:
      */
     static std::weak_ptr<IGstCapabilitiesFactory> m_factory;
 
-    /**
-     * @brief Creates a IGstCapabilities object.
-     *
-     * @retval the new gstreamer capabilities instance or null on error.
-     */
     std::unique_ptr<IGstCapabilities> createGstCapabilities() override;
 };
 
@@ -104,6 +102,24 @@ public:
      */
     bool isVideoMaster(bool &isVideoMaster) override;
 
+    /**
+     * @brief Gets the supported audio capabilities from GStreamer.
+     *
+     * Returns empty capabilities (no decoder capability data from GStreamer).
+     *
+     * @retval The supported audio capabilities (empty).
+     */
+    firebolt::rialto::common::AudioDecoderCapabilities getSupportedAudioCapabilities() override;
+
+    /**
+     * @brief Gets the supported video capabilities from GStreamer.
+     *
+     * Returns empty capabilities (no decoder capability data from GStreamer).
+     *
+     * @retval The supported video capabilities (empty).
+     */
+    firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
+
 private:
     /**
      * @brief Sets list of supported mime types
@@ -148,6 +164,16 @@ private:
      * @brief Set of mime types which are supported by gstreamer
      */
     std::unordered_set<std::string> m_supportedMimeTypes;
+
+    /**
+     * @brief Audio decoder capabilities (empty, no data from GStreamer)
+     */
+    firebolt::rialto::common::AudioDecoderCapabilities m_audioDecoderCapabilities;
+
+    /**
+     * @brief Video decoder capabilities (empty, no data from GStreamer)
+     */
+    firebolt::rialto::common::VideoDecoderCapabilities m_videoDecoderCapabilities;
 
     /**
      * @brief The gstreamer wrapper object.

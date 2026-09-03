@@ -19,7 +19,7 @@
 
 #include "SessionServerManager.h"
 #include "IApplicationManagementServer.h"
-#include "IIpcFactory.h"
+#include "IHeartbeatProcedure.h"
 #include "ISessionManagementServer.h"
 #include "RialtoServerLogging.h"
 
@@ -125,6 +125,15 @@ bool SessionServerManager::configureIpc(int32_t socketFd)
         RIALTO_SERVER_LOG_ERROR("configureIpc failed - SessionManagementServer failed to initialize");
         return false;
     }
+    return true;
+}
+
+bool SessionServerManager::setPreloadedCapabilities(
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCaps,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCaps)
+{
+    RIALTO_SERVER_LOG_DEBUG("SessionServerManager::setPreloadedCapabilities called");
+    m_playbackService.setPreloadedCapabilities(audioCaps, videoCaps);
     return true;
 }
 

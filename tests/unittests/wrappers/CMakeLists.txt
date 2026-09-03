@@ -18,3 +18,27 @@
 #
 
 add_subdirectory(mocks)
+
+find_package( yaml-cpp REQUIRED )
+
+add_gtests(
+    RialtoWrappersUnitTests
+
+    YamlCppWrapperTest.cpp
+    ${CMAKE_SOURCE_DIR}/wrappers/source/YamlCppWrapper.cpp
+)
+
+target_include_directories(
+    RialtoWrappersUnitTests
+
+    PRIVATE
+    $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
+    ${CMAKE_SOURCE_DIR}/wrappers/include
+    ${CMAKE_SOURCE_DIR}/wrappers/interface
+)
+
+target_link_libraries(
+    RialtoWrappersUnitTests
+
+    yaml-cpp
+)

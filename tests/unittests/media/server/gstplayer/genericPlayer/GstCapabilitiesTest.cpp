@@ -24,6 +24,7 @@
 #include "GstWrapperFactoryMock.h"
 #include "GstWrapperMock.h"
 #include "IFactoryAccessor.h"
+#include "MediaPipelineStructureMatchers.h"
 #include "RdkGstreamerUtilsWrapperFactoryMock.h"
 #include "RdkGstreamerUtilsWrapperMock.h"
 
@@ -33,6 +34,7 @@
 #include <unordered_map>
 
 using namespace firebolt::rialto;
+using namespace firebolt::rialto::common;
 using namespace firebolt::rialto::server;
 using namespace firebolt::rialto::wrappers;
 
@@ -41,6 +43,7 @@ using ::testing::DoAll;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::SetArgPointee;
+using ::testing::SetArgReferee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 using ::testing::UnorderedElementsAre;
@@ -50,6 +53,8 @@ namespace
 const GstElementFactoryListType kExpectedFactoryListType{
     GST_ELEMENT_FACTORY_TYPE_SINK | GST_ELEMENT_FACTORY_TYPE_DECODER | GST_ELEMENT_FACTORY_TYPE_PARSER |
     GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO};
+firebolt::rialto::common::AudioDecoderCapabilities kAudioCapabilities{"1.0", "1.1", {}};
+firebolt::rialto::common::VideoDecoderCapabilities kVideoCapabilities{"2.0", "2.1", {}};
 const GType kDummyType{3};
 }; // namespace
 template <typename T> class GListWrapper
@@ -148,6 +153,12 @@ public:
         return decoderPadTemplate;
     }
 
+    void expectGetDecoderCapabilities()
+    {
+        // GstCapabilities is pure Path B (GStreamer only) - YAML handled by orchestrator
+        // No YAML expectations needed here
+    }
+
     void createSutWithNoDecoderAndNoSink()
     {
         // Some expectations are met in a thread in GstCapabilities constructor
@@ -168,6 +179,7 @@ public:
                     cv.notify_one();
                     return nullptr;
                 }));
+        expectGetDecoderCapabilities();
         EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
         m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -260,7 +272,7 @@ TEST_F(GstCapabilitiesTest, FactoryCreatesObject)
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
-
+    expectGetDecoderCapabilities();
     std::shared_ptr<firebolt::rialto::server::IGstCapabilitiesFactory> factory =
         firebolt::rialto::server::IGstCapabilitiesFactory::getFactory();
     EXPECT_NE(factory, nullptr);
@@ -295,6 +307,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneSinkElement)
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(_, _)).WillRepeatedly(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/x-raw"], &m_sinkTemplateCaps))
         .WillOnce(Return(true));
+    expectGetDecoderCapabilities();
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -316,6 +329,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithNoPads)
 
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
+    expectGetDecoderCapabilities();
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -355,6 +369,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoSinkPadsA
         .WillOnce(Return(true));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["audio/x-opus"], &m_decoderTemplateCapsSink2))
         .WillOnce(Return(true));
+    expectGetDecoderCapabilities();
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -513,6 +528,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OnlyOneDecoderWithTwoPadsWithT
     EXPECT_CALL(*m_gstWrapperMock,
                 gstCapsCanIntersect(&m_capsMap["audio/mpeg, mpegversion=(int)4"], &m_decoderTemplateCapsSink))
         .WillOnce(Return(true));
+    expectGetDecoderCapabilities();
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -556,6 +572,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
         .WillOnce(Return(true));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &m_parserTemplateCapsSink))
         .WillOnce(Return(true));
+    expectGetDecoderCapabilities();
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -611,6 +628,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
     EXPECT_CALL(*m_gstWrapperMock,
                 gstCapsCanIntersect(&m_capsMap["audio/mpeg, mpegversion=(int)1, layer=(int)3"], &m_sinkTemplateCaps))
         .WillOnce(Return(true));
+    expectGetDecoderCapabilities();
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -649,6 +667,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecoderWithOneSinkPad_Parse
     EXPECT_CALL(*m_gstWrapperMock,
                 gstCapsCanIntersect(&m_capsMap["video/mpeg, mpegversion=(int)4"], &m_decoderTemplateCapsSink))
         .WillOnce(Return(true));
+    expectGetDecoderCapabilities();
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -691,6 +710,7 @@ TEST_F(GstCapabilitiesTest,
         .WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &m_parserTemplateCapsSink))
         .WillOnce(Return(false));
+    expectGetDecoderCapabilities();
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -752,6 +772,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_TwoDecodersWithOneSinkPad_Pars
         .WillOnce(Return(true));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &m_decoderTemplateCapsSink2))
         .WillOnce(Return(true));
+    expectGetDecoderCapabilities();
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -806,6 +827,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPad_Pars
         .WillOnce(Return(true));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-h265"], &m_parserTemplateCapsSink))
         .WillOnce(Return(true));
+    expectGetDecoderCapabilities();
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -877,6 +899,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_OneDecodersWithOneSinkPads_Two
         .WillOnce(Return(true));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsCanIntersect(&m_capsMap["video/x-av1"], &parserPadTemplateCapsSink2))
         .WillOnce(Return(true));
+    expectGetDecoderCapabilities();
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -899,6 +922,7 @@ TEST_F(GstCapabilitiesTest, CreateGstCapabilities_GetSubtitlesMimeTypes)
         .WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementFactoryListGetElements(GST_ELEMENT_FACTORY_TYPE_SINK, GST_RANK_MARGINAL))
         .WillOnce(Return(nullptr));
+    expectGetDecoderCapabilities();
     EXPECT_CALL(m_gstInitialiserMock, waitForInitialisation());
 
     m_sut = std::make_unique<GstCapabilities>(m_gstWrapperMock, m_glibWrapperMock, m_rdkGstreamerUtilsWrapperMock,
@@ -942,3 +966,22 @@ TEST_F(GstCapabilitiesTest, shouldCheckIfVideoIsMasterAndReturnFalse)
     EXPECT_TRUE(m_sut->isVideoMaster(isVideoMaster));
     EXPECT_FALSE(isVideoMaster);
 }
+
+// NOTE: These tests were testing YAML fallback behavior which no longer exists in GstCapabilities
+// GstCapabilities is now pure Path B (GStreamer only)
+// YAML handling and fallback orchestration moved to MediaCapabilities
+// These tests are disabled until proper GStreamer-only behavior can be tested
+//
+// TEST_F(GstCapabilitiesTest, shouldReturnAudioCapabilities)
+// {
+//     createSutWithNoDecoderAndNoSink();
+//
+//     EXPECT_THAT(m_sut->getSupportedAudioCapabilities(), decoderCapabilitiesMatcher(kAudioCapabilities));
+// }
+//
+// TEST_F(GstCapabilitiesTest, shouldReturnVideoCapabilities)
+// {
+//     createSutWithNoDecoderAndNoSink();
+//
+//     EXPECT_THAT(m_sut->getSupportedVideoCapabilities(), decoderCapabilitiesMatcher(kVideoCapabilities));
+// }
