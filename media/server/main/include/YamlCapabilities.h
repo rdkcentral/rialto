@@ -24,7 +24,7 @@
 
 #include "AudioDecoderCapabilities.h"
 #include "DecoderCapabilitiesCommon.h"
-#include "IYamlCppWrapper.h"
+#include "../../../wrappers/interface/IYamlCppWrapper.h"
 #include "VideoDecoderCapabilities.h"
 
 namespace firebolt::rialto::server

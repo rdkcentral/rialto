@@ -23,13 +23,30 @@
 
 namespace rialto::servermanager::service
 {
+// ServiceContext initialization order:
+// ====================================
+// Members are constructed in DECLARATION order (see ServiceContext.h):
+// 1. m_sessionServerAppManager (first in declaration)
+// 2. m_ipcController (second in declaration)
+//
+// MUST match initializer list order:
+// 1. m_sessionServerAppManager = createSessionServerAppManager(m_ipcController, ...)
+//    → m_ipcController is passed by reference (object exists as empty unique_ptr, not yet populated)
+//    → Factory stores this reference and constructs SessionServerAppManager
+// 2. m_ipcController = ipc::create(m_sessionServerAppManager)
+//    → m_sessionServerAppManager is now fully constructed
+//    → ipc::create can use it to initialize m_ipcController's unique_ptr
+//
+// This pattern avoids initialization order warnings while handling the circular dependency
+// between IPC controller and session server app manager.
+
 ServiceContext::ServiceContext(const std::shared_ptr<IStateObserver> &stateObserver,
                                const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                                std::chrono::milliseconds sessionServerStartupTimeout,
                                std::chrono::seconds healthcheckInterval, unsigned numOfFailedPingsBeforeRecovery,
                                unsigned int socketPermissions, const std::string &socketOwner,
                                const std::string &socketGroup,
-                               const std::shared_ptr<IMediaCapabilities> &mediaCapabilities)
+                               const std::shared_ptr<IYamlCapabilities> &mediaCapabilities)
     : m_sessionServerAppManager{common::createSessionServerAppManager(m_ipcController, stateObserver,
                                                                       environmentVariables, sessionServerPath,
                                                                       sessionServerStartupTimeout, healthcheckInterval,

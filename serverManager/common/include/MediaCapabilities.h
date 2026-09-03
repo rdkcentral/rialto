@@ -21,13 +21,13 @@
 #define RIALTO_SERVERMANAGER_COMMON_MEDIA_CAPABILITIES_H_
 
 #include "IMediaCapabilities.h"
-#include "IYamlCppWrapper.h"
+#include "../../../wrappers/interface/IYamlCppWrapper.h"
 #include <memory>
 
 namespace rialto::servermanager::common
 {
 
-class MediaCapabilities : public rialto::servermanager::service::IMediaCapabilities
+class MediaCapabilities : public rialto::servermanager::service::IYamlCapabilities
 {
 public:
     explicit MediaCapabilities(std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper);

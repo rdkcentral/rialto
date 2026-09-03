@@ -34,6 +34,10 @@
 #include "IpcFactory.h"
 #include "PlaybackService.h"
 #include "SessionServerManager.h"
+// Orchestrator interfaces and implementations
+#include "IMediaCapabilities.h"
+#include "MediaCapabilities.h"
+#include "IGstCapabilities.h"
 #include <memory>
 
 namespace firebolt::rialto::server
@@ -57,6 +61,14 @@ public:
     void startService() override;
 
 private:
+    // Create GstCapabilities for fallback
+    std::shared_ptr<IGstCapabilities> m_gstCapabilities{
+        IGstCapabilitiesFactory::getFactory()->createGstCapabilities()};
+    
+    // Create orchestrator (Path 0: preloaded from ServerManager, Path B: GStreamer fallback)
+    std::shared_ptr<firebolt::rialto::IMediaCapabilities> m_mediaCapabilities{
+        std::make_shared<MediaCapabilities>(m_gstCapabilities)};
+    
     firebolt::rialto::server::ipc::IpcFactory m_ipcFactory;
     firebolt::rialto::server::service::ControlService m_controlService{
         firebolt::rialto::server::IControlServerInternalFactory::createFactory()};
@@ -67,7 +79,8 @@ private:
         m_playbackService{firebolt::rialto::server::IMediaPipelineServerInternalFactory::createFactory(),
                           firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory(),
                           firebolt::rialto::server::IWebAudioPlayerServerInternalFactory::createFactory(),
-                          firebolt::rialto::server::ISharedMemoryBufferFactory::createFactory(), m_cdmService};
+                          firebolt::rialto::server::ISharedMemoryBufferFactory::createFactory(), m_cdmService,
+                          m_mediaCapabilities};
     firebolt::rialto::server::service::SessionServerManager
         m_serviceManager{m_ipcFactory, m_playbackService, m_cdmService, m_controlService,
                          firebolt::rialto::server::IHeartbeatProcedureFactory::createFactory()};

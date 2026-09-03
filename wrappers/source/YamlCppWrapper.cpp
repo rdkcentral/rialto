@@ -683,7 +683,11 @@ try
     }
     return ::firebolt::rialto::common::DecoderCapabilitiesStatus::OK;
 }
-catch (const std::exception &e)
+catch (const YAML::BadFile &)
+{
+    return ::firebolt::rialto::common::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND;
+}
+catch (const std::exception &)
 {
     return ::firebolt::rialto::common::DecoderCapabilitiesStatus::SCHEMA_VALIDATION_FAILED;
 }

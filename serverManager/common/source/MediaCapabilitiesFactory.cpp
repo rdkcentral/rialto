@@ -25,7 +25,7 @@ using rialto::servermanager::common::MediaCapabilities;
 
 namespace rialto::servermanager::service
 {
-std::unique_ptr<IMediaCapabilities> createMediaCapabilities()
+std::unique_ptr<IYamlCapabilities> createMediaCapabilities()
 {
     auto factory = firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory();
     if (!factory)

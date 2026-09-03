@@ -32,12 +32,12 @@ SessionServerAppManager::SessionServerAppManager(
     std::unique_ptr<IHealthcheckServiceFactory> &&healthcheckServiceFactory,
     const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory,
     const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory,
-    std::shared_ptr<service::IMediaCapabilities> mediaCapabilities)
+    std::shared_ptr<service::IYamlCapabilities> mediaCapabilities)
     : m_ipcController{ipcController},
       m_eventThread{eventThreadFactory->createEventThread("rialtoservermanager-appmanager")},
       m_sessionServerAppFactory{std::move(sessionServerAppFactory)}, m_stateObserver{stateObserver},
       m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)},
-      m_namedSocketFactory{namedSocketFactory}, m_isShuttingDown{false}
+      m_namedSocketFactory{namedSocketFactory}, m_isShuttingDown{false}, m_mediaCapabilities{mediaCapabilities}
 {
     if (mediaCapabilities)
     {

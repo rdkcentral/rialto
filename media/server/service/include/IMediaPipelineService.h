@@ -27,6 +27,7 @@
 #include <VideoDecoderCapabilities.h>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -98,6 +99,8 @@ public:
     virtual bool getDuration(int sessionId, std::int64_t &duration) = 0;
     virtual common::AudioDecoderCapabilities getSupportedAudioCapabilities() = 0;
     virtual common::VideoDecoderCapabilities getSupportedVideoCapabilities() = 0;
+    virtual void setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
+                                          const std::optional<common::VideoDecoderCapabilities> &videoCaps) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

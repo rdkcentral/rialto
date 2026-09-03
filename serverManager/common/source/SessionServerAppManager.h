@@ -48,7 +48,7 @@ public:
                             std::unique_ptr<IHealthcheckServiceFactory> &&healthcheckServiceFactory,
                             const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory,
                             const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory,
-                            std::shared_ptr<service::IMediaCapabilities> mediaCapabilities);
+                            std::shared_ptr<service::IYamlCapabilities> mediaCapabilities);
     virtual ~SessionServerAppManager();
     SessionServerAppManager(const SessionServerAppManager &) = delete;
     SessionServerAppManager(SessionServerAppManager &&) = delete;
@@ -107,6 +107,7 @@ private:
     bool m_isShuttingDown;
     std::optional<firebolt::rialto::common::AudioDecoderCapabilities> m_audioCapabilities;
     std::optional<firebolt::rialto::common::VideoDecoderCapabilities> m_videoCapabilities;
+    std::shared_ptr<service::IYamlCapabilities> m_mediaCapabilities;
 };
 } // namespace rialto::servermanager::common
 

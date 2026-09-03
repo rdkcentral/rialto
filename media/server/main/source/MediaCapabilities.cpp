@@ -20,23 +20,17 @@
 #include "MediaCapabilities.h"
 #include "IGstCapabilities.h"
 #include "RialtoServerLogging.h"
-#include "YamlCapabilities.h"
 #include <stdexcept>
 
 namespace firebolt::rialto::server
 {
 MediaCapabilities::MediaCapabilities(
-    const std::shared_ptr<YamlCapabilities> &yamlCapabilities, const std::shared_ptr<IGstCapabilities> &gstCapabilities,
+    const std::shared_ptr<IGstCapabilities> &gstCapabilities,
     const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
     const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo)
-    : m_yamlCapabilities{yamlCapabilities}, m_gstCapabilities{gstCapabilities}, m_preloadedAudio{preloadedAudio},
-      m_preloadedVideo{preloadedVideo}
+    : m_gstCapabilities{gstCapabilities}, m_preloadedAudio{preloadedAudio}, m_preloadedVideo{preloadedVideo}
 {
-    RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: constructor - orchestrates between YAML and GStreamer sources");
-    if (!m_yamlCapabilities)
-    {
-        throw std::runtime_error("YamlCapabilities is required");
-    }
+    RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: constructor - uses ServerManager preload + GStreamer fallback");
     if (!m_gstCapabilities)
     {
         throw std::runtime_error("GstCapabilities is required");
@@ -45,57 +39,31 @@ MediaCapabilities::MediaCapabilities(
 
 firebolt::rialto::common::AudioDecoderCapabilities MediaCapabilities::getSupportedAudioCapabilities()
 {
+    // Path 0: Use ServerManager's preloaded YAML (highest priority)
     if (m_preloadedAudio.has_value())
     {
-        RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: Audio capabilities from ServerManager preload (Path 0) - success");
+        RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: Audio from ServerManager preload (Path 0) - success");
         return *m_preloadedAudio;
     }
 
-    RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: getSupportedAudioCapabilities - trying YAML first (Path A)");
+    RIALTO_SERVER_LOG_INFO("MediaCapabilities: ServerManager preload unavailable, falling back to GStreamer (Path B)");
 
-    // Path A: Try to get audio capabilities from YAML
-    firebolt::rialto::common::AudioDecoderCapabilities audioCapabilities;
-    auto status = m_yamlCapabilities->getAudioDecoderCapabilities(audioCapabilities);
-
-    if (status == firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
-    {
-        RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: Audio capabilities from YAML (Path A) - success");
-        return audioCapabilities;
-    }
-
-    RIALTO_SERVER_LOG_INFO("MediaCapabilities: YAML audio capabilities unavailable (status: %d), "
-                           "falling back to GStreamer (Path B)",
-                           static_cast<int>(status));
-
-    // Path B: Fall back to GStreamer queries (returns empty if not available)
+    // Path B: GStreamer fallback (only if preload missing)
     return m_gstCapabilities->getSupportedAudioCapabilities();
 }
 
 firebolt::rialto::common::VideoDecoderCapabilities MediaCapabilities::getSupportedVideoCapabilities()
 {
+    // Path 0: Use ServerManager's preloaded YAML (highest priority)
     if (m_preloadedVideo.has_value())
     {
-        RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: Video capabilities from ServerManager preload (Path 0) - success");
+        RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: Video from ServerManager preload (Path 0) - success");
         return *m_preloadedVideo;
     }
 
-    RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: getSupportedVideoCapabilities - trying YAML first (Path A)");
+    RIALTO_SERVER_LOG_INFO("MediaCapabilities: ServerManager preload unavailable, falling back to GStreamer (Path B)");
 
-    // Path A: Try to get video capabilities from YAML
-    firebolt::rialto::common::VideoDecoderCapabilities videoCapabilities;
-    auto status = m_yamlCapabilities->getVideoDecoderCapabilities(videoCapabilities);
-
-    if (status == firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
-    {
-        RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: Video capabilities from YAML (Path A) - success");
-        return videoCapabilities;
-    }
-
-    RIALTO_SERVER_LOG_INFO("MediaCapabilities: YAML video capabilities unavailable (status: %d), "
-                           "falling back to GStreamer (Path B)",
-                           static_cast<int>(status));
-
-    // Path B: Fall back to GStreamer queries (returns empty if not available)
+    // Path B: GStreamer fallback (only if preload missing)
     return m_gstCapabilities->getSupportedVideoCapabilities();
 }
 

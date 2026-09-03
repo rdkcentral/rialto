@@ -43,11 +43,7 @@ std::unique_ptr<firebolt::rialto::IMediaCapabilities> MediaCapabilitiesServerFac
         {
             throw std::runtime_error("Failed to get the yaml cpp wrapper factory");
         }
-        std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper =
-            yamlCppWrapperFactory->createYamlCppWrapper();
-        auto yamlCapabilities = std::make_shared<YamlCapabilities>(yamlCppWrapper);
-
-        // Create GstCapabilities for runtime GStreamer queries
+        // Create GstCapabilities for runtime GStreamer queries (fallback path only)
         std::shared_ptr<IGstCapabilitiesFactory> gstCapabilitiesFactory = IGstCapabilitiesFactory::getFactory();
         if (!gstCapabilitiesFactory)
         {
@@ -55,9 +51,11 @@ std::unique_ptr<firebolt::rialto::IMediaCapabilities> MediaCapabilitiesServerFac
         }
         std::shared_ptr<IGstCapabilities> gstCapabilities = gstCapabilitiesFactory->createGstCapabilities();
 
-        // Create MediaCapabilities orchestrator that uses both, preferring any ServerManager-preloaded data
+        // Create MediaCapabilities orchestrator with 2-path strategy:
+        // - Path 0 (Highest priority): Preloaded capabilities from ServerManager
+        // - Path B (Fallback): GStreamer element queries
         mediaCapabilities =
-            std::make_unique<MediaCapabilities>(yamlCapabilities, gstCapabilities, preloadedAudio, preloadedVideo);
+            std::make_unique<MediaCapabilities>(gstCapabilities, preloadedAudio, preloadedVideo);
 
         RIALTO_SERVER_LOG_DEBUG("Created server-side MediaCapabilities with YAML + GStreamer orchestration");
     }

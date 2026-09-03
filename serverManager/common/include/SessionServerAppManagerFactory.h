@@ -36,7 +36,7 @@ std::unique_ptr<ISessionServerAppManager> createSessionServerAppManager(
     const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
     std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckInterval,
     unsigned numOfFailedPingsBeforeRecovery, unsigned int socketPermissions, const std::string &socketOwner,
-    const std::string &socketGroup, std::shared_ptr<service::IMediaCapabilities> mediaCapabilities);
+    const std::string &socketGroup, std::shared_ptr<service::IYamlCapabilities> mediaCapabilities);
 } // namespace rialto::servermanager::common
 
 #endif // RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_MANAGER_FACTORY_H_

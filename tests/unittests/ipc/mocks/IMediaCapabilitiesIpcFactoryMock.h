@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2024 Sky UK
+ * Copyright 2022 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,26 +17,23 @@
  * limitations under the License.
  */
 
-#ifndef MEDIA_PIPELINE_STRUCTURE_MATCHERS_H_
-#define MEDIA_PIPELINE_STRUCTURE_MATCHERS_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_I_MEDIA_CAPABILITIES_IPC_FACTORY_MOCK_H_
+#define FIREBOLT_RIALTO_CLIENT_I_MEDIA_CAPABILITIES_IPC_FACTORY_MOCK_H_
 
-#include "DecoderCapabilitiesUtils.h"
-#include "MediaCommon.h"
+#include "IMediaCapabilitiesIpcFactory.h"
 #include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include <memory>
 
-MATCHER_P(qosInfoMatcher, expectedQosInfo, "")
+namespace firebolt::rialto::client
 {
-    return ((expectedQosInfo.processed == arg.processed) && (expectedQosInfo.dropped == arg.dropped));
-}
+class IMediaCapabilitiesIpcFactoryMock : public IMediaCapabilitiesIpcFactory
+{
+public:
+    IMediaCapabilitiesIpcFactoryMock() = default;
+    virtual ~IMediaCapabilitiesIpcFactoryMock() = default;
 
-MATCHER_P(playbackInfoMatcher, expectedPlaybackInfo, "")
-{
-    return ((expectedPlaybackInfo.currentPosition == arg.currentPosition) && (expectedPlaybackInfo.volume == arg.volume));
-}
+    MOCK_METHOD(std::unique_ptr<IMediaCapabilities>, createMediaCapabilitiesIpc, (), (const, override));
+};
+} // namespace firebolt::rialto::client
 
-MATCHER_P(decoderCapabilitiesMatcher, expectedDecoderCapabilities, "")
-{
-    return arg == expectedDecoderCapabilities;
-}
-#endif // MEDIA_PIPELINE_STRUCTURE_MATCHERS_H_
+#endif // FIREBOLT_RIALTO_CLIENT_I_MEDIA_CAPABILITIES_IPC_FACTORY_MOCK_H_

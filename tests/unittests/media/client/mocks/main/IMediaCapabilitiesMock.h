@@ -17,17 +17,24 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_COMMON_MEDIA_CAPABILITIES_FACTORY_H_
-#define RIALTO_SERVERMANAGER_COMMON_MEDIA_CAPABILITIES_FACTORY_H_
+#ifndef FIREBOLT_RIALTO_CLIENT_I_MEDIA_CAPABILITIES_MOCK_H_
+#define FIREBOLT_RIALTO_CLIENT_I_MEDIA_CAPABILITIES_MOCK_H_
 
-// Include ServerManager's IYamlCapabilities interface (defined in IMediaCapabilities.h for backward compatibility)
-#include "../../public/include/IMediaCapabilities.h"
+#include "IMediaCapabilities.h"
+#include <gmock/gmock.h>
 #include <memory>
 
-namespace rialto::servermanager::service
+namespace firebolt::rialto::client
 {
-std::unique_ptr<rialto::servermanager::service::IYamlCapabilities> createMediaCapabilities();
+class IMediaCapabilitiesMock : public firebolt::rialto::IMediaCapabilities
+{
+public:
+    IMediaCapabilitiesMock() = default;
+    virtual ~IMediaCapabilitiesMock() = default;
 
-} // namespace rialto::servermanager::service
+    MOCK_METHOD(firebolt::rialto::common::AudioDecoderCapabilities, getSupportedAudioCapabilities, (), (override));
+    MOCK_METHOD(firebolt::rialto::common::VideoDecoderCapabilities, getSupportedVideoCapabilities, (), (override));
+};
+} // namespace firebolt::rialto::client
 
-#endif // RIALTO_SERVERMANAGER_COMMON_MEDIA_CAPABILITIES_FACTORY_H_
+#endif // FIREBOLT_RIALTO_CLIENT_I_MEDIA_CAPABILITIES_MOCK_H_

@@ -22,7 +22,7 @@
 
 #include "IGstCapabilities.h"
 #include "IMediaCapabilities.h"
-#include "YamlCapabilities.h"
+#include "../../serverManager/public/include/IMediaCapabilities.h"
 #include <memory>
 #include <optional>
 
@@ -33,22 +33,22 @@ namespace firebolt::rialto::server
  *
  * This class is dedicated to implementing the IMediaCapabilities interface
  * for use within the session server. It handles decoder capabilities queries
- * by orchestrating between three sources:
+ * by orchestrating between ServerManager preload and GStreamer fallback:
  *
- * 0. Preloaded capabilities: Already-parsed data forwarded by ServerManager over IPC
- * 1. YamlCapabilities: Reads capabilities from YAML configuration files
- *    (provided by ServerManager during boot)
- * 2. GstCapabilities: Queries GStreamer plugins at runtime
+ * 0. Preloaded capabilities: YAML already read by ServerManager at startup,
+ *    forwarded via IPC setPreloadedCapabilities()
+ * 1. GStreamer fallback: If ServerManager preload unavailable, query GStreamer
  *
- * Decision Strategy (Path 0/A/B):
- * - Path 0: If ServerManager already forwarded parsed capabilities, use them directly
- * - Path A: Otherwise try to get capabilities from YAML
- * - Path B: If YAML fails or is unavailable, fall back to GStreamer queries
+ * Decision Strategy (Path 0 → Path B):
+ * - Path 0: Use ServerManager's preloaded YAML data (highest priority)
+ *   ServerManager reads YAML once at startup and provides it here
+ * - Path B: Fall back to GStreamer queries only if ServerManager data missing
+ *   (No local YAML re-reading - we're in a different process!)
  *
  * This ensures:
- * - No redundant YAML re-parsing in each session server process when ServerManager already did it
- * - Optimal performance when ServerManager provides YAML (no runtime queries)
- * - Robustness when YAML is missing (GStreamer fallback)
+ * - Zero YAML re-parsing: ServerManager reads once, all sessions use cached preload
+ * - Optimal performance: Preloaded data already available
+ * - Robustness: GStreamer fallback if preload missing
  */
 class MediaCapabilities : public firebolt::rialto::IMediaCapabilities
 {
@@ -56,13 +56,11 @@ public:
     /**
      * @brief Constructor
      *
-     * @param[in] yamlCapabilities The YAML capabilities reader (Path A)
-     * @param[in] gstCapabilities The GStreamer capabilities handler (Path B fallback)
-     * @param[in] preloadedAudio Optional audio capabilities already forwarded by ServerManager (Path 0)
-     * @param[in] preloadedVideo Optional video capabilities already forwarded by ServerManager (Path 0)
+     * @param[in] gstCapabilities GStreamer capabilities handler (Path B fallback only)
+     * @param[in] preloadedAudio Optional audio capabilities preloaded by ServerManager (Path 0)
+     * @param[in] preloadedVideo Optional video capabilities preloaded by ServerManager (Path 0)
      */
     explicit MediaCapabilities(
-        const std::shared_ptr<YamlCapabilities> &yamlCapabilities,
         const std::shared_ptr<IGstCapabilities> &gstCapabilities,
         const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
         const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt);
@@ -75,7 +73,8 @@ public:
     /**
      * @brief Gets the supported audio decoder capabilities.
      *
-     * Attempts Path A (YAML) first; falls back to Path B (GStreamer) if YAML is unavailable.
+     * Attempts: Path A (ServerManager's YAML) → Path B (GStreamer)
+     * If Path 0 preloaded data available, it's already used before calling orchestrator.
      *
      * @retval The supported audio decoder capabilities.
      */
@@ -84,7 +83,8 @@ public:
     /**
      * @brief Gets the supported video decoder capabilities.
      *
-     * Attempts Path A (YAML) first; falls back to Path B (GStreamer) if YAML is unavailable.
+     * Attempts: Path A (ServerManager's YAML) → Path B (GStreamer)
+     * If Path 0 preloaded data available, it's already used before calling orchestrator.
      *
      * @retval The supported video decoder capabilities.
      */
@@ -92,12 +92,7 @@ public:
 
 private:
     /**
-     * @brief The YAML capabilities handler (Path A - primary source)
-     */
-    std::shared_ptr<YamlCapabilities> m_yamlCapabilities;
-
-    /**
-     * @brief The GStreamer capabilities handler (Path B - fallback)
+     * @brief The GStreamer capabilities handler (Path B - fallback only if preload missing)
      */
     std::shared_ptr<IGstCapabilities> m_gstCapabilities;
 

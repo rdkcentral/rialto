@@ -39,12 +39,26 @@ public:
                    std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckInterval,
                    unsigned numOfFailedPingsBeforeRecovery, unsigned int socketPermissions,
                    const std::string &socketOwner, const std::string &socketGroup,
-                   const std::shared_ptr<IMediaCapabilities> &mediaCapabilities = nullptr);
+                   const std::shared_ptr<IYamlCapabilities> &mediaCapabilities = nullptr);
     virtual ~ServiceContext() = default;
 
     common::ISessionServerAppManager &getSessionServerAppManager() override;
 
 private:
+    // CRITICAL INITIALIZATION ORDER DOCUMENTATION:
+    // Members MUST be declared in the SAME ORDER as they appear in the initializer list.
+    // The C++ standard requires this: members are initialized in declaration order.
+    //
+    // Declaration order (must match initializer list):
+    // 1. m_sessionServerAppManager - initialized first
+    //    Uses reference to m_ipcController (which exists as uninitialized unique_ptr)
+    // 2. m_ipcController - initialized second
+    //    Uses m_sessionServerAppManager (which is now fully constructed)
+    //
+    // This pattern handles the circular dependency correctly:
+    // - m_ipcController object exists (empty) before step 1
+    // - m_sessionServerAppManager constructor stores reference to it
+    // - m_ipcController is then populated in step 2 using the ready m_sessionServerAppManager
     std::unique_ptr<common::ISessionServerAppManager> m_sessionServerAppManager;
     std::unique_ptr<ipc::IController> m_ipcController;
 };

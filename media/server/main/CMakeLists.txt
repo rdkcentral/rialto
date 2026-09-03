@@ -65,10 +65,10 @@ target_include_directories(
 
         PUBLIC
         interface
+        include
         ${GStreamerApp_INCLUDE_DIRS}
 
         PRIVATE
-        include
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerGstPlayer,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerCommon,INTERFACE_INCLUDE_DIRECTORIES>

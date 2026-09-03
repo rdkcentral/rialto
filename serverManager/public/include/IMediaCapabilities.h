@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_I_MEDIA_CAPABILITIES_H_
-#define RIALTO_SERVERMANAGER_SERVICE_I_MEDIA_CAPABILITIES_H_
+#ifndef RIALTO_SERVERMANAGER_SERVICE_I_YAML_CAPABILITIES_H_
+#define RIALTO_SERVERMANAGER_SERVICE_I_YAML_CAPABILITIES_H_
 
 #include <AudioDecoderCapabilities.h>
 #include <DecoderCapabilitiesCommon.h>
@@ -27,16 +27,16 @@
 
 namespace rialto::servermanager::service
 {
-class IMediaCapabilities
+class IYamlCapabilities
 {
 public:
-    IMediaCapabilities() = default;
-    virtual ~IMediaCapabilities() = default;
+    IYamlCapabilities() = default;
+    virtual ~IYamlCapabilities() = default;
 
-    IMediaCapabilities(const IMediaCapabilities &) = delete;
-    IMediaCapabilities &operator=(const IMediaCapabilities &) = delete;
-    IMediaCapabilities(IMediaCapabilities &&) = delete;
-    IMediaCapabilities &operator=(IMediaCapabilities &&) = delete;
+    IYamlCapabilities(const IYamlCapabilities &) = delete;
+    IYamlCapabilities &operator=(const IYamlCapabilities &) = delete;
+    IYamlCapabilities(IYamlCapabilities &&) = delete;
+    IYamlCapabilities &operator=(IYamlCapabilities &&) = delete;
 
     virtual firebolt::rialto::common::DecoderCapabilitiesStatus
     getAudioDecoderCapabilities(firebolt::rialto::common::AudioDecoderCapabilities &capabilities) = 0;
@@ -47,4 +47,4 @@ public:
 
 } // namespace rialto::servermanager::service
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_I_MEDIA_CAPABILITIES_H_
+#endif // RIALTO_SERVERMANAGER_SERVICE_I_YAML_CAPABILITIES_H_

@@ -196,6 +196,16 @@ void SessionServerManager::setPreloadedCapabilities(const std::optional<common::
     RIALTO_SERVER_LOG_DEBUG("setPreloadedCapabilities called");
     m_preloadedAudioCapabilities = audioCaps;
     m_preloadedVideoCapabilities = videoCaps;
+    
+    // Forward preloaded capabilities to PlaybackService/MediaPipelineService
+    // This allows MediaPipelineService to use preloaded YAML capabilities (Path A)
+    // before falling back to GStreamer queries (Path B)
+    auto &mediaPipelineService = m_playbackService.getMediaPipelineService();
+    if (audioCaps.has_value() || videoCaps.has_value())
+    {
+        RIALTO_SERVER_LOG_DEBUG("Forwarding preloaded capabilities to MediaPipelineService");
+        mediaPipelineService.setPreloadedCapabilities(audioCaps, videoCaps);
+    }
 }
 
 bool SessionServerManager::switchToActive()
