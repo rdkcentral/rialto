@@ -48,25 +48,33 @@ TEST_F(MediaCapabilitiesTests, shouldReturnPreloadedVideoCapabilities)
 // Test: Fall back to GStreamer for audio when preload missing (Path B)
 TEST_F(MediaCapabilitiesTests, shouldFallbackToGStreamerForAudioWhenPreloadMissing)
 {
-    // Given NO preloaded audio (nullopt)
-    // When getting audio capabilities
-    // Then GStreamer is queried
-    auto result = m_mediaCapabilities->getSupportedAudioCapabilities();
+    // Given NO preloaded audio (nullopt), only GStreamer available
+    std::shared_ptr<firebolt::rialto::server::MediaCapabilities> mediaCapabilitiesNoPreload =
+        std::make_shared<firebolt::rialto::server::MediaCapabilities>(m_gstCapabilitiesMock,
+                                                                      std::nullopt, // No preload
+                                                                      std::nullopt);
 
-    // Then result is returned
-    EXPECT_TRUE(true); // Method executed successfully
+    // When getting audio capabilities without preload
+    auto result = mediaCapabilitiesNoPreload->getSupportedAudioCapabilities();
+
+    // Then GStreamer fallback is used (returns GStreamer's populated data)
+    EXPECT_EQ(result.capabilities.size(), m_gstAudioCapabilities.capabilities.size());
 }
 
 // Test: Fall back to GStreamer for video when preload missing (Path B)
 TEST_F(MediaCapabilitiesTests, shouldFallbackToGStreamerForVideoWhenPreloadMissing)
 {
-    // Given NO preloaded video (nullopt)
-    // When getting video capabilities
-    // Then GStreamer is queried
-    auto result = m_mediaCapabilities->getSupportedVideoCapabilities();
+    // Given NO preloaded video (nullopt), only GStreamer available
+    std::shared_ptr<firebolt::rialto::server::MediaCapabilities> mediaCapabilitiesNoPreload =
+        std::make_shared<firebolt::rialto::server::MediaCapabilities>(m_gstCapabilitiesMock,
+                                                                      std::nullopt, // No preload
+                                                                      std::nullopt);
 
-    // Then result is returned
-    EXPECT_TRUE(true); // Method executed successfully
+    // When getting video capabilities without preload
+    auto result = mediaCapabilitiesNoPreload->getSupportedVideoCapabilities();
+
+    // Then GStreamer fallback is used (returns GStreamer's populated data)
+    EXPECT_EQ(result.capabilities.size(), m_gstVideoCapabilities.capabilities.size());
 }
 
 // Test: Preloaded audio takes priority over GStreamer

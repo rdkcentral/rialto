@@ -17,9 +17,8 @@
  * limitations under the License.
  */
 
-// NOTE: IMediaCapabilities.h / IMediaCapabilitiesIpcFactory.h were not directly available, so
-// mock class names/paths below (IMediaCapabilitiesMock, IMediaCapabilitiesIpcFactoryMock) follow
-// this codebase's <Interface>Mock convention. Adjust include paths/names if they differ.
+// Unit tests for client::MediaCapabilities IPC wrapper
+// Tests the capability query forwarding via IPC to the server and response handling
 #include "IMediaCapabilitiesIpcFactoryMock.h"
 #include "IMediaCapabilitiesMock.h"
 #include "MediaCapabilities.h"

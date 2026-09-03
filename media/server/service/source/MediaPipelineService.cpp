@@ -714,11 +714,16 @@ common::AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabili
 {
     RIALTO_SERVER_LOG_DEBUG("GetSupportedAudioCapabilities requested");
 
-    // Path 0: Use preloaded audio capabilities if available (highest priority, from ServerManager)
-    if (m_preloadedAudioCapabilities.has_value())
+    // Thread-safe read of preloaded capabilities
     {
-        RIALTO_SERVER_LOG_DEBUG("Audio capabilities from preloaded ServerManager data (Path 0)");
-        return *m_preloadedAudioCapabilities;
+        std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+
+        // Path 0: Use preloaded audio capabilities if available (highest priority, from ServerManager)
+        if (m_preloadedAudioCapabilities.has_value())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Audio capabilities from preloaded ServerManager data (Path 0)");
+            return *m_preloadedAudioCapabilities;
+        }
     }
 
     // Delegate to orchestrator for Path A (YAML) and Path B (GStreamer) logic
@@ -737,11 +742,16 @@ common::VideoDecoderCapabilities MediaPipelineService::getSupportedVideoCapabili
 {
     RIALTO_SERVER_LOG_DEBUG("GetSupportedVideoCapabilities requested");
 
-    // Path 0: Use preloaded video capabilities if available (highest priority, from ServerManager)
-    if (m_preloadedVideoCapabilities.has_value())
+    // Thread-safe read of preloaded capabilities
     {
-        RIALTO_SERVER_LOG_DEBUG("Video capabilities from preloaded ServerManager data (Path 0)");
-        return *m_preloadedVideoCapabilities;
+        std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+
+        // Path 0: Use preloaded video capabilities if available (highest priority, from ServerManager)
+        if (m_preloadedVideoCapabilities.has_value())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Video capabilities from preloaded ServerManager data (Path 0)");
+            return *m_preloadedVideoCapabilities;
+        }
     }
 
     // Delegate to orchestrator for Path A (YAML) and Path B (GStreamer) logic
@@ -761,8 +771,13 @@ void MediaPipelineService::setPreloadedCapabilities(const std::optional<common::
 {
     RIALTO_SERVER_LOG_DEBUG("setPreloadedCapabilities called with audio: %s, video: %s",
                             audioCaps.has_value() ? "yes" : "no", videoCaps.has_value() ? "yes" : "no");
-    m_preloadedAudioCapabilities = audioCaps;
-    m_preloadedVideoCapabilities = videoCaps;
+
+    // Thread-safe write of preloaded capabilities
+    {
+        std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+        m_preloadedAudioCapabilities = audioCaps;
+        m_preloadedVideoCapabilities = videoCaps;
+    }
 }
 
 } // namespace firebolt::rialto::server::service

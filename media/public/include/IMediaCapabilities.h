@@ -23,6 +23,7 @@
 #include "AudioDecoderCapabilities.h"
 #include "VideoDecoderCapabilities.h"
 #include <memory>
+#include <optional>
 
 namespace firebolt::rialto
 {

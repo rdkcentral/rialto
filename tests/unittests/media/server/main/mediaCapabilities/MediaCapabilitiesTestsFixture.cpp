@@ -47,8 +47,12 @@ MediaCapabilitiesTests::~MediaCapabilitiesTests() {}
 
 void MediaCapabilitiesTests::gstCapabilitiesWillNotBeQueried()
 {
-    // Strict mock: if GStreamer is queried unexpectedly, test fails
-    // (This verifies that Path 0 preload is used instead of Path B fallback)
+    // StrictMock will fail test if GStreamer methods are called unexpectedly
+    // This method sets no explicit expectations, relying on StrictMock behavior:
+    // - If getSupportedAudioCapabilities() or getSupportedVideoCapabilities() are called,
+    //   the mock will detect an "unexpected call" and fail the test
+    // - This verifies that Path 0 preload is used instead of Path B fallback
+    // Note: Other methods (fillSupportedMimeTypes, etc.) still execute normally
 }
 
 void MediaCapabilitiesTests::gstCapabilitiesWillReturnEmptyAudio()

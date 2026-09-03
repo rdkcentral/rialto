@@ -31,6 +31,24 @@ std::unique_ptr<IApplicationSessionServer> ApplicationSessionServerFactory::crea
     return std::make_unique<ApplicationSessionServer>();
 }
 
+ApplicationSessionServer::ApplicationSessionServer()
+{
+    // Safely initialize GstCapabilities with null-safety check
+    auto gstFactory = IGstCapabilitiesFactory::getFactory();
+    if (gstFactory)
+    {
+        m_gstCapabilities = gstFactory->createGstCapabilities();
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_WARN("Failed to get GstCapabilitiesFactory, GStreamer fallback path will be unavailable");
+    }
+
+    // Create orchestrator with potentially null GStreamer capabilities
+    // (MediaCapabilities constructor handles null gracefully)
+    m_mediaCapabilities = std::make_shared<MediaCapabilities>(m_gstCapabilities);
+}
+
 bool ApplicationSessionServer::init(int argc, char *argv[])
 {
     return m_serviceManager.initialize(argc, argv);

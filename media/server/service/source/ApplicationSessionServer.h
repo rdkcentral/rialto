@@ -54,19 +54,18 @@ public:
 class ApplicationSessionServer : public IApplicationSessionServer
 {
 public:
-    ApplicationSessionServer() = default;
+    ApplicationSessionServer();
     ~ApplicationSessionServer() override = default;
 
     bool init(int argc, char *argv[]) override;
     void startService() override;
 
 private:
-    // Create GstCapabilities for fallback
-    std::shared_ptr<IGstCapabilities> m_gstCapabilities{IGstCapabilitiesFactory::getFactory()->createGstCapabilities()};
+    // Create GstCapabilities for fallback (safely handles null factory)
+    std::shared_ptr<IGstCapabilities> m_gstCapabilities;
 
     // Create orchestrator (Path 0: preloaded from ServerManager, Path B: GStreamer fallback)
-    std::shared_ptr<firebolt::rialto::IMediaCapabilities> m_mediaCapabilities{
-        std::make_shared<MediaCapabilities>(m_gstCapabilities)};
+    std::shared_ptr<firebolt::rialto::IMediaCapabilities> m_mediaCapabilities;
 
     firebolt::rialto::server::ipc::IpcFactory m_ipcFactory;
     firebolt::rialto::server::service::ControlService m_controlService{

@@ -20,7 +20,7 @@
 #ifndef RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
 #define RIALTO_SERVERMANAGER_SERVICE_MEDIA_CAPABILITIES_FACTORY_H_
 
-#include "IYamlCapabilities.h"
+#include "IMediaCapabilities.h"
 #include <memory>
 
 namespace rialto::servermanager::service

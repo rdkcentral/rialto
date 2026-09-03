@@ -178,6 +178,7 @@ GstCapabilities::GstCapabilities(
 
             m_gstInitialiser.waitForInitialisation();
             fillSupportedMimeTypes();
+            fillSupportedCapabilities();
             m_isInitialised = true;
             m_initialisationCv.notify_all();
         });
@@ -331,6 +332,46 @@ void GstCapabilities::fillSupportedMimeTypes()
     for (GstCaps *caps : supportedCaps)
     {
         m_gstWrapper->gstCapsUnref(caps);
+    }
+}
+
+void GstCapabilities::fillSupportedCapabilities()
+{
+    // Populate audio decoder capabilities from supported MIME types
+    // Separate audio and video MIME types and create capability objects
+    std::vector<firebolt::rialto::common::AudioDecoderCapability> audioCapabilities;
+    std::vector<firebolt::rialto::common::VideoDecoderCapability> videoCapabilities;
+
+    for (const auto &mimeType : m_supportedMimeTypes)
+    {
+        if (mimeType.find("audio/") == 0)
+        {
+            // Create audio capability from MIME type
+            firebolt::rialto::common::AudioDecoderCapability audioCap;
+            audioCapabilities.push_back(std::move(audioCap));
+        }
+        else if (mimeType.find("video/") == 0)
+        {
+            // Create video capability from MIME type
+            firebolt::rialto::common::VideoDecoderCapability videoCap;
+            videoCapabilities.push_back(std::move(videoCap));
+        }
+    }
+
+    // Initialize audio decoder capabilities if we found audio MIME types
+    if (!audioCapabilities.empty())
+    {
+        m_audioDecoderCapabilities.capabilities = std::move(audioCapabilities);
+        RIALTO_SERVER_LOG_INFO("Populated %zu audio decoder capabilities from GStreamer",
+                               m_audioDecoderCapabilities.capabilities.size());
+    }
+
+    // Initialize video decoder capabilities if we found video MIME types
+    if (!videoCapabilities.empty())
+    {
+        m_videoDecoderCapabilities.capabilities = std::move(videoCapabilities);
+        RIALTO_SERVER_LOG_INFO("Populated %zu video decoder capabilities from GStreamer",
+                               m_videoDecoderCapabilities.capabilities.size());
     }
 }
 

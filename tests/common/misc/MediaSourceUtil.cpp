@@ -24,8 +24,7 @@ namespace firebolt::rialto
 bool operator==(const AudioConfig &lac, const AudioConfig &rac)
 {
     return lac.numberOfChannels == rac.numberOfChannels && lac.sampleRate == rac.sampleRate &&
-           std::equal(std::begin(lac.codecSpecificConfig), std::end(lac.codecSpecificConfig),
-                      std::begin(rac.codecSpecificConfig));
+           lac.codecSpecificConfig == rac.codecSpecificConfig;
 }
 
 bool operator==(const IMediaPipeline::MediaSource &lms, const IMediaPipeline::MediaSource &rms)

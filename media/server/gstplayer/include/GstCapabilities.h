@@ -132,6 +132,12 @@ private:
     void fillSupportedMimeTypes();
 
     /**
+     * @brief Populates audio and video decoder capabilities from discovered MIME types
+     *        Called after fillSupportedMimeTypes() to initialize capability objects
+     */
+    void fillSupportedCapabilities();
+
+    /**
      * @brief Appends all unique caps from parser->decoders chains' sink pads to \a supportedCaps
      */
     void appendLinkableCapsFromParserDecoderChains(std::vector<GstCaps *> &supportedCaps);
