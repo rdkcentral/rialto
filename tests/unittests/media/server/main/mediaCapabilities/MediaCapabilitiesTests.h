@@ -38,6 +38,7 @@ public:
     ~MediaCapabilitiesTests() override;
 
     void gstCapabilitiesWillNotBeQueried();
+    void gstCapabilitiesWillBeQueried();
     void gstCapabilitiesWillReturnEmptyAudio();
     void gstCapabilitiesWillReturnEmptyVideo();
 

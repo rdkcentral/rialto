@@ -25,9 +25,9 @@ MediaCapabilitiesTests::MediaCapabilitiesTests()
     : m_gstCapabilitiesMock(std::make_shared<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>()),
       m_gstAudioCapabilities{"gst_aac", "gst_opus", {}}, m_gstVideoCapabilities{"gst_h264", "gst_h265", {}}
 {
-    // Default: GStreamer returns its standard capabilities when queried
-    EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedAudioCapabilities()).WillRepeatedly(Return(m_gstAudioCapabilities));
-    EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedVideoCapabilities()).WillRepeatedly(Return(m_gstVideoCapabilities));
+    // Note: Do NOT set default WillRepeatedly() expectations in constructor.
+    // Individual tests must explicitly set expectations for GStreamer method calls.
+    // This ensures gstCapabilitiesWillNotBeQueried() can effectively verify Path 0 is used.
 
     // Create orchestrator with preloaded data
     // Note: Initialize with non-empty capabilities vector to simulate preloaded YAML data from ServerManager
@@ -47,12 +47,19 @@ MediaCapabilitiesTests::~MediaCapabilitiesTests() {}
 
 void MediaCapabilitiesTests::gstCapabilitiesWillNotBeQueried()
 {
-    // StrictMock will fail test if GStreamer methods are called unexpectedly
-    // This method sets no explicit expectations, relying on StrictMock behavior:
-    // - If getSupportedAudioCapabilities() or getSupportedVideoCapabilities() are called,
-    //   the mock will detect an "unexpected call" and fail the test
-    // - This verifies that Path 0 preload is used instead of Path B fallback
-    // Note: Other methods (fillSupportedMimeTypes, etc.) still execute normally
+    // Strictly forbid any calls to getSupportedAudioCapabilities() and getSupportedVideoCapabilities().
+    // StrictMock will fail test if these methods are called unexpectedly.
+    // This verifies that Path 0 preload is used instead of Path B fallback.
+    EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedAudioCapabilities()).Times(0);
+    EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedVideoCapabilities()).Times(0);
+}
+
+void MediaCapabilitiesTests::gstCapabilitiesWillBeQueried()
+{
+    // Allow queries to GStreamer capabilities with default return values.
+    // Tests that need fallback behavior should call this method.
+    EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedAudioCapabilities()).WillRepeatedly(Return(m_gstAudioCapabilities));
+    EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedVideoCapabilities()).WillRepeatedly(Return(m_gstVideoCapabilities));
 }
 
 void MediaCapabilitiesTests::gstCapabilitiesWillReturnEmptyAudio()

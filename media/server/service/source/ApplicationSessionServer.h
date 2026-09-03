@@ -61,18 +61,27 @@ public:
     void startService() override;
 
 private:
+    // CRITICAL: Initialize orchestrator BEFORE services that depend on it
+    // C++ member initialization follows declaration order, not initializer list order
+
+    firebolt::rialto::server::ipc::IpcFactory m_ipcFactory;
+
     // Create GstCapabilities for fallback (safely handles null factory)
     std::shared_ptr<IGstCapabilities> m_gstCapabilities;
 
     // Create orchestrator (Path 0: preloaded from ServerManager, Path B: GStreamer fallback)
-    std::shared_ptr<firebolt::rialto::IMediaCapabilities> m_mediaCapabilities;
+    // CRITICAL: Must be initialized in constructor initializer list BEFORE m_playbackService
+    // uses it (in-class initializer runs in declaration order, not initializer list order)
+    // Explicit nullptr initializer ensures clear initialization semantics
+    std::shared_ptr<firebolt::rialto::IMediaCapabilities> m_mediaCapabilities = nullptr;
 
-    firebolt::rialto::server::ipc::IpcFactory m_ipcFactory;
     firebolt::rialto::server::service::ControlService m_controlService{
         firebolt::rialto::server::IControlServerInternalFactory::createFactory()};
     firebolt::rialto::server::service::CdmService
         m_cdmService{firebolt::rialto::server::IMediaKeysServerInternalFactory::createFactory(),
                      firebolt::rialto::IMediaKeysCapabilitiesFactory::createFactory()};
+    // PlaybackService must receive non-nullptr m_mediaCapabilities
+    // Order: m_gstCapabilities → m_mediaCapabilities → m_playbackService (via in-class initializer)
     firebolt::rialto::server::service::PlaybackService
         m_playbackService{firebolt::rialto::server::IMediaPipelineServerInternalFactory::createFactory(),
                           firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory(),

@@ -20,8 +20,8 @@
 #ifndef RIALTO_SERVERMANAGER_COMMON_MEDIA_CAPABILITIES_H_
 #define RIALTO_SERVERMANAGER_COMMON_MEDIA_CAPABILITIES_H_
 
-#include "../../../wrappers/interface/IYamlCppWrapper.h"
 #include "IMediaCapabilities.h"
+#include "IYamlCppWrapper.h"
 #include <memory>
 
 namespace rialto::servermanager::common

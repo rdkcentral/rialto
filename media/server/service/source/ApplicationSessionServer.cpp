@@ -32,21 +32,22 @@ std::unique_ptr<IApplicationSessionServer> ApplicationSessionServerFactory::crea
 }
 
 ApplicationSessionServer::ApplicationSessionServer()
+    : m_gstCapabilities(
+          [this]()
+          {
+              auto gstFactory = IGstCapabilitiesFactory::getFactory();
+              if (!gstFactory)
+              {
+                  RIALTO_SERVER_LOG_WARN(
+                      "Failed to get GstCapabilitiesFactory, GStreamer fallback path will be unavailable");
+                  return std::shared_ptr<IGstCapabilities>{};
+              }
+              auto uniquePtr = gstFactory->createGstCapabilities();
+              return std::shared_ptr<IGstCapabilities>(std::move(uniquePtr));
+          }()),
+      m_mediaCapabilities(std::make_shared<MediaCapabilities>(m_gstCapabilities))
 {
-    // Safely initialize GstCapabilities with null-safety check
-    auto gstFactory = IGstCapabilitiesFactory::getFactory();
-    if (gstFactory)
-    {
-        m_gstCapabilities = gstFactory->createGstCapabilities();
-    }
-    else
-    {
-        RIALTO_SERVER_LOG_WARN("Failed to get GstCapabilitiesFactory, GStreamer fallback path will be unavailable");
-    }
-
-    // Create orchestrator with potentially null GStreamer capabilities
-    // (MediaCapabilities constructor handles null gracefully)
-    m_mediaCapabilities = std::make_shared<MediaCapabilities>(m_gstCapabilities);
+    // m_gstCapabilities and m_mediaCapabilities now fully initialized BEFORE m_playbackService constructor runs
 }
 
 bool ApplicationSessionServer::init(int argc, char *argv[])

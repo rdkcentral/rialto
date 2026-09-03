@@ -20,7 +20,7 @@
 #ifndef RIALTO_SERVERMANAGER_SERVICE_YAML_CAPABILITIES_MOCK_H_
 #define RIALTO_SERVERMANAGER_SERVICE_YAML_CAPABILITIES_MOCK_H_
 
-#include "../../../serverManager/public/include/IMediaCapabilities.h"
+#include "IMediaCapabilities.h"
 #include <gmock/gmock.h>
 
 namespace rialto::servermanager::service
