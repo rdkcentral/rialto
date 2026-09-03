@@ -20,11 +20,9 @@
 #include <stdexcept>
 
 #include "IGstCapabilities.h"
-#include "IYamlCppWrapper.h"
 #include "MediaCapabilities.h"
 #include "MediaCapabilitiesServerFactory.h"
 #include "RialtoServerLogging.h"
-#include "YamlCapabilities.h"
 
 namespace firebolt::rialto::server
 {
@@ -36,13 +34,6 @@ std::unique_ptr<firebolt::rialto::IMediaCapabilities> MediaCapabilitiesServerFac
 
     try
     {
-        // Create YamlCapabilities for reading preloaded YAML configuration
-        std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapperFactory> yamlCppWrapperFactory =
-            firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory();
-        if (!yamlCppWrapperFactory)
-        {
-            throw std::runtime_error("Failed to get the yaml cpp wrapper factory");
-        }
         // Create GstCapabilities for runtime GStreamer queries (fallback path only)
         std::shared_ptr<IGstCapabilitiesFactory> gstCapabilitiesFactory = IGstCapabilitiesFactory::getFactory();
         if (!gstCapabilitiesFactory)

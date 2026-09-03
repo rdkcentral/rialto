@@ -48,6 +48,9 @@ add_gtests (
 
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
 
+        mediaCapabilities/MediaCapabilitiesTestsFixture.cpp
+        mediaCapabilities/MediaCapabilitiesTests.cpp
+
         mediaKeys/base/MediaKeysTestBase.cpp
         mediaKeys/CreateTest.cpp
         mediaKeys/CreateKeySessionTest.cpp
