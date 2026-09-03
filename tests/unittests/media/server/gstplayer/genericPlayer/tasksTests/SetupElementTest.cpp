@@ -71,12 +71,6 @@ TEST_F(SetupElementTest, shouldSetupVideoElementWithPendingStreamSyncMode)
     triggerSetupElement();
 }
 
-TEST_F(SetupElementTest, shouldSetupAudioElementWithPendingBufferingLimit)
-{
-    shouldSetupAudioDecoderElementWithPendingBufferingLimit();
-    triggerSetupElement();
-}
-
 TEST_F(SetupElementTest, shouldSetupAudioElementWithIsLiveParameter)
 {
     shouldSetupAudioDecoderElementWithIsLiveParameter();

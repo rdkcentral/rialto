@@ -96,8 +96,9 @@ public:
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER |
                                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-            .WillOnce(Return(TRUE))
-            .RetiresOnSaturation();
+            .Times(2)
+            .WillRepeatedly(Return(TRUE));
+
         EXPECT_CALL(*m_glibWrapperMock, gObjectType(m_audioDecoder)).WillRepeatedly(Return(G_TYPE_PARAM));
         EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(_, _, _, _))
             .WillOnce(Invoke(
@@ -130,8 +131,8 @@ public:
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory, GST_ELEMENT_FACTORY_TYPE_DECODER |
                                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
-            .WillOnce(Return(FALSE))
-            .RetiresOnSaturation();
+            .Times(2)
+            .WillRepeatedly(Return(FALSE));
 
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory,
@@ -142,8 +143,8 @@ public:
         EXPECT_CALL(*m_gstWrapperMock,
                     gstElementFactoryListIsType(m_elementFactory,
                                                 GST_ELEMENT_FACTORY_TYPE_PARSER | GST_ELEMENT_FACTORY_TYPE_MEDIA_VIDEO))
-            .WillOnce(Return(FALSE))
-            .RetiresOnSaturation();
+            .Times(2)
+            .WillRepeatedly(Return(FALSE));
 
         EXPECT_CALL(*m_glibWrapperMock, gObjectType(m_videoDecoder)).WillRepeatedly(Return(G_TYPE_PARAM));
         EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(_, StrEq("buffer-underflow-callback"), _, _))
