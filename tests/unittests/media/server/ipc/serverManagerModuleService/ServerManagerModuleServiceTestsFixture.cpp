@@ -91,6 +91,9 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfiguration(
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
                                   kAppId))
         .WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                setPreloadedCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+        .Times(1);
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWithFd(
@@ -101,6 +104,9 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
                                   kAppId))
         .WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                setPreloadedCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+        .Times(1);
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillSetState(
@@ -125,6 +131,9 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
                                   kAppId))
         .WillOnce(Return(false));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                setPreloadedCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+        .Times(1);
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigurationWithFd(
@@ -135,6 +144,9 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetConfigura
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
                                   kAppId))
         .WillOnce(Return(false));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                setPreloadedCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+        .Times(1);
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillFailToSetState(
@@ -181,6 +193,9 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
                                   kAppId))
         .WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                setPreloadedCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+        .Times(1);
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWithFdAndAudioCapabilitiesAbsent(
@@ -191,6 +206,9 @@ void ServerManagerModuleServiceTests::sessionServerManagerWillSetConfigurationWi
                 configureServices(state, MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kClientDisplayName,
                                   kAppId))
         .WillOnce(Return(true));
+    EXPECT_CALL(m_sessionServerManagerMock,
+                setPreloadedCapabilities(testing::Eq(std::nullopt), testing::Eq(std::nullopt)))
+        .Times(1);
 }
 
 void ServerManagerModuleServiceTests::sessionServerManagerWillPing()

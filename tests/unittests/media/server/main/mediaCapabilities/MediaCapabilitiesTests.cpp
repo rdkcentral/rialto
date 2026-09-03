@@ -148,13 +148,21 @@ TEST_F(MediaCapabilitiesTests, shouldReturnEmptyCapabilitiesWhenBothPathsFail)
     // Then method returns successfully without error - capabilities may be empty
     // Just verify the call completed (no crash, no exception)
     EXPECT_EQ(0u, audioResult.capabilities.size()); // Empty when both paths fail
+
+    // When getting video capabilities (both paths fail)
+    auto videoResult = mediaCapabilitiesNullopt->getSupportedVideoCapabilities();
+
+    // Then video is also empty
+    EXPECT_EQ(0u, videoResult.capabilities.size()); // Empty when both paths fail
 }
 
 // Test: Only audio preload, video falls back to GStreamer
 TEST_F(MediaCapabilitiesTests, shouldMixPreloadAndGStreamerPaths)
 {
     // Given preloaded audio but NO preloaded video
-    const firebolt::rialto::common::AudioDecoderCapabilities kPreloadedAudio{"aac", "opus", {}};
+    firebolt::rialto::common::AudioDecoderCapabilities kPreloadedAudio{"1.0", "1.0", {}};
+    kPreloadedAudio.capabilities.push_back(firebolt::rialto::common::AudioDecoderCapability{});
+
     std::shared_ptr<firebolt::rialto::server::MediaCapabilities> mediaCapabilitiesMixed =
         std::make_shared<firebolt::rialto::server::MediaCapabilities>(m_gstCapabilitiesMock,
                                                                       std::make_optional(kPreloadedAudio),
@@ -177,7 +185,9 @@ TEST_F(MediaCapabilitiesTests, shouldMixPreloadAndGStreamerPaths)
 TEST_F(MediaCapabilitiesTests, shouldNotQueryGStreamerWhenPreloadAvailable)
 {
     // Given preloaded audio capabilities present
-    const firebolt::rialto::common::AudioDecoderCapabilities kPreloadedAudio{"aac", "opus", {}};
+    firebolt::rialto::common::AudioDecoderCapabilities kPreloadedAudio{"1.0", "1.0", {}};
+    kPreloadedAudio.capabilities.push_back(firebolt::rialto::common::AudioDecoderCapability{});
+
     std::shared_ptr<firebolt::rialto::server::MediaCapabilities> mediaCapabilitiesWithPreload =
         std::make_shared<firebolt::rialto::server::MediaCapabilities>(m_gstCapabilitiesMock,
                                                                       std::make_optional(kPreloadedAudio), std::nullopt);

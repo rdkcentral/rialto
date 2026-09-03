@@ -30,10 +30,17 @@ MediaCapabilitiesTests::MediaCapabilitiesTests()
     EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedVideoCapabilities()).WillRepeatedly(Return(m_gstVideoCapabilities));
 
     // Create orchestrator with preloaded data
+    // Note: Initialize with non-empty capabilities vector to simulate preloaded YAML data from ServerManager
+    firebolt::rialto::common::AudioDecoderCapabilities preloadedAudio{"1.0", "1.0", {}};
+    preloadedAudio.capabilities.push_back(firebolt::rialto::common::AudioDecoderCapability{});
+
+    firebolt::rialto::common::VideoDecoderCapabilities preloadedVideo{"1.0", "1.0", {}};
+    preloadedVideo.capabilities.push_back(firebolt::rialto::common::VideoDecoderCapability{});
+
     m_mediaCapabilities =
         std::make_shared<firebolt::rialto::server::MediaCapabilities>(m_gstCapabilitiesMock,
-                                                                      std::make_optional(m_preloadedAudio),
-                                                                      std::make_optional(m_preloadedVideo));
+                                                                      std::make_optional(preloadedAudio),
+                                                                      std::make_optional(preloadedVideo));
 }
 
 MediaCapabilitiesTests::~MediaCapabilitiesTests() {}
