@@ -44,32 +44,28 @@ void MediaCapabilitiesTestMethods::destroyMediaCapabilitiesObject()
 void MediaCapabilitiesTestMethods::getSupportedAudioCapabilities()
 {
     EXPECT_NE(m_mediaCapabilities, nullptr);
-    auto audioCapabilities = m_mediaCapabilities->getSupportedAudioCapabilities();
-    // Verify we got a valid response (even if empty, it shouldn't crash)
-    EXPECT_TRUE(true);
+    // Smoke test: verify the IPC call does not crash
+    m_mediaCapabilities->getSupportedAudioCapabilities();
 }
 
 void MediaCapabilitiesTestMethods::getSupportedVideoCapabilities()
 {
     EXPECT_NE(m_mediaCapabilities, nullptr);
-    auto videoCapabilities = m_mediaCapabilities->getSupportedVideoCapabilities();
-    // Verify we got a valid response (even if empty, it shouldn't crash)
-    EXPECT_TRUE(true);
+    // Smoke test: verify the IPC call does not crash
+    m_mediaCapabilities->getSupportedVideoCapabilities();
 }
 
 void MediaCapabilitiesTestMethods::getSupportedAudioCapabilitiesFailure()
 {
     EXPECT_NE(m_mediaCapabilities, nullptr);
-    auto audioCapabilities = m_mediaCapabilities->getSupportedAudioCapabilities();
-    // Should return some capabilities structure even if empty or failed
-    EXPECT_TRUE(true);
+    // Smoke test: verify the IPC call does not crash
+    m_mediaCapabilities->getSupportedAudioCapabilities();
 }
 
 void MediaCapabilitiesTestMethods::getSupportedVideoCapabilitiesFailure()
 {
     EXPECT_NE(m_mediaCapabilities, nullptr);
-    auto videoCapabilities = m_mediaCapabilities->getSupportedVideoCapabilities();
-    // Should return some capabilities structure even if empty or failed
-    EXPECT_TRUE(true);
+    // Smoke test: verify the IPC call does not crash
+    m_mediaCapabilities->getSupportedVideoCapabilities();
 }
 } // namespace firebolt::rialto::client::ct

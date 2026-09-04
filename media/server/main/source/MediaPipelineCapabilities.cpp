@@ -65,9 +65,9 @@ MediaPipelineCapabilities::MediaPipelineCapabilities(const std::shared_ptr<IGstC
     : m_kGstCapabilitiesFactory{gstCapabilitiesFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    // Create GstCapabilities immediately in constructor
-    // SessionServerManager::configureServices() will call setPreloadedCapabilities() BEFORE MediaPipelineCapabilities
-    // is created, so the factory can use that preloaded data
+    // Create GstCapabilities immediately in constructor.
+    // Note: preloaded capabilities are managed by MediaPipelineService (setPreloadedCapabilities) and are independent
+    // of MediaPipelineCapabilities construction.
     m_gstCapabilities = m_kGstCapabilitiesFactory->createGstCapabilities();
     if (!m_gstCapabilities)
     {
