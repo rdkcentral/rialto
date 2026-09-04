@@ -125,7 +125,8 @@ TEST(MetricsThresholdCheckerTests, reportsOnceAndRearmsAfterTwoLowerSamples)
 TEST(MetricsThresholdCheckerTests, warningEscalatesToCriticalWithoutDuplicateWarning)
 {
     StrictMock<MetricsReporterMock> reporter;
-    MetricsThresholdChecker sut{MetricsThresholdConfig{}, &reporter};
+    MetricsThresholdConfig config;
+    MetricsThresholdChecker sut{config, &reporter};
 
     {
         testing::InSequence sequence;
@@ -150,7 +151,8 @@ TEST(MetricsThresholdCheckerTests, warningEscalatesToCriticalWithoutDuplicateWar
 TEST(MetricsThresholdCheckerTests, reportsConfiguredMetricsIncludingCgroupPercentage)
 {
     StrictMock<MetricsReporterMock> reporter;
-    MetricsThresholdChecker sut{MetricsThresholdConfig{}, &reporter};
+    MetricsThresholdConfig config;
+    MetricsThresholdChecker sut{config, &reporter};
 
     EXPECT_CALL(reporter, reportThresholdExceeded(_)).Times(6);
     sut.checkSample(81.0, 81.0, 151.0, 512000, 512000, 81, 100);
@@ -158,6 +160,8 @@ TEST(MetricsThresholdCheckerTests, reportsConfiguredMetricsIncludingCgroupPercen
 
 TEST(MetricsThresholdCheckerTests, acceptsNullReporter)
 {
-    MetricsThresholdChecker sut{MetricsThresholdConfig{}, nullptr};
+    MetricsThresholdConfig config;
+    MetricsThresholdChecker sut{config, nullptr};
+
     sut.checkSample(100.0, 100.0, 200.0, 1000000, 1000000, 100, 100);
 }
