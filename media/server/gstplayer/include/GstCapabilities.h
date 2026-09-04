@@ -110,18 +110,20 @@ public:
     /**
      * @brief Gets the supported audio capabilities from GStreamer.
      *
-     * Returns empty capabilities (no decoder capability data from GStreamer).
+     * Returns decoder capabilities populated during GStreamer initialization (element-query discovery).
+     * If no capabilities are discovered, returns empty capabilities.
      *
-     * @retval The supported audio capabilities (empty).
+     * @retval The supported audio capabilities.
      */
     firebolt::rialto::common::AudioDecoderCapabilities getSupportedAudioCapabilities() override;
 
     /**
      * @brief Gets the supported video capabilities from GStreamer.
      *
-     * Returns empty capabilities (no decoder capability data from GStreamer).
+     * Returns decoder capabilities populated during GStreamer initialization (element-query discovery).
+     * If no capabilities are discovered, returns empty capabilities.
      *
-     * @retval The supported video capabilities (empty).
+     * @retval The supported video capabilities.
      */
     firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
 

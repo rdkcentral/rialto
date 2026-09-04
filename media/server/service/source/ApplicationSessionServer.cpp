@@ -46,9 +46,12 @@ ApplicationSessionServer::ApplicationSessionServer()
               auto uniquePtr = gstFactory->createGstCapabilities();
               return std::shared_ptr<IGstCapabilities>(std::move(uniquePtr));
           }()),
-      m_mediaCapabilities(std::make_shared<MediaCapabilities>(m_gstCapabilities))
+      m_mediaCapabilities(m_gstCapabilities ? std::make_shared<MediaCapabilities>(m_gstCapabilities)
+                                            : std::shared_ptr<firebolt::rialto::IMediaCapabilities>{})
 {
     // m_gstCapabilities and m_mediaCapabilities now fully initialized BEFORE m_playbackService constructor runs
+    // If m_gstCapabilities is null (GStreamer unavailable), m_mediaCapabilities is also null,
+    // allowing graceful degradation on platforms without GStreamer support.
 }
 
 bool ApplicationSessionServer::init(int argc, char *argv[])
