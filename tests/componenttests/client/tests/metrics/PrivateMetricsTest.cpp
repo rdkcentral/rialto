@@ -36,7 +36,9 @@ TEST_F(PrivateMetricsTest, reportsMetricsWhenSampleIsRequested)
     EXPECT_CALL(*m_privateMetricsModuleMock, notifyClientReady(_, _, _, _))
         .WillOnce(WithArgs<0, 3>(Invoke(&(*m_privateMetricsModuleMock), &PrivateMetricsModuleMock::defaultReturn)));
 
-    ControlTestMethods::createControl();
+    // ClientController is process-wide. Complete the lifecycle so the asynchronous
+    // disconnect is handled before the next test fixture starts.
+    ClientComponentTest::startApplicationRunning();
 
     EXPECT_CALL(*m_privateMetricsModuleMock, reportClientMetrics(_, _, _, _))
         .WillOnce(Invoke(
@@ -61,5 +63,7 @@ TEST_F(PrivateMetricsTest, reportsMetricsWhenSampleIsRequested)
 
     sendMetricsSampleRequestEvent(kSampleId, kReason);
     waitEvent();
+
+    ClientComponentTest::stopApplication();
 }
 } // namespace firebolt::rialto::client::ct
