@@ -111,14 +111,33 @@ void PrivateMetricsModuleService::notifyClientReady(::google::protobuf::RpcContr
     }
 
     auto ipcClient{ipcController->getClient()};
-    const int kClientId{m_nextClientId.fetch_add(1)};
+    int clientId{0};
+    bool isNewClient{false};
     {
         std::lock_guard<std::mutex> lock{m_mutex};
-        m_clientIds[ipcClient] = kClientId;
-        m_ipcClients[kClientId] = ipcClient;
+        auto clientIdIter{m_clientIds.find(ipcClient)};
+        if (clientIdIter != m_clientIds.end())
+        {
+            clientId = clientIdIter->second;
+        }
+        else
+        {
+            clientId = m_nextClientId.fetch_add(1);
+            m_clientIds.emplace(ipcClient, clientId);
+            m_ipcClients.emplace(clientId, ipcClient);
+            isNewClient = true;
+        }
     }
 
-    RIALTO_SERVER_LOG_MIL("Client ready for private metrics samples, assigned clientId=%d", kClientId);
+    if (!isNewClient)
+    {
+        // A retried ready notification is redundant: keep the existing collector and client ID.
+        RIALTO_SERVER_LOG_INFO("Client already ready for private metrics samples with clientId=%d", clientId);
+        done->Run();
+        return;
+    }
+
+    RIALTO_SERVER_LOG_MIL("Client ready for private metrics samples, assigned clientId=%d", clientId);
     done->Run();
 
     // Create a shared_ptr to this as IMetricsCollectorClient, aliasing with shared_from_this()
@@ -126,7 +145,7 @@ void PrivateMetricsModuleService::notifyClientReady(::google::protobuf::RpcContr
     auto self = shared_from_this();
     std::shared_ptr<firebolt::rialto::server::IMetricsCollectorClient>
         clientInterface(self, static_cast<firebolt::rialto::server::IMetricsCollectorClient *>(this));
-    m_metricsService.clientReady(kClientId, clientInterface);
+    m_metricsService.clientReady(clientId, clientInterface);
 }
 
 void PrivateMetricsModuleService::reportClientMetrics(::google::protobuf::RpcController *controller,
@@ -201,9 +220,9 @@ void PrivateMetricsModuleService::reportClientMetrics(::google::protobuf::RpcCon
     m_metricsService.reportMetrics(clientId, metrics);
 }
 
-void PrivateMetricsModuleService::notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState)
+void PrivateMetricsModuleService::notifyApplicationStateChanged(ApplicationState newState)
 {
-    m_metricsService.notifyApplicationStateChanged(oldState, newState);
+    m_metricsService.notifyApplicationStateChanged(newState);
 }
 
 void PrivateMetricsModuleService::requestMetricsSample(int clientId, std::uint64_t sampleId,

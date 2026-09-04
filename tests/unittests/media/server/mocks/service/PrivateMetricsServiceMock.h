@@ -39,7 +39,7 @@ public:
                 (override));
     MOCK_METHOD(void, notifyWebAudioPlayerStateChanged,
                 (int handle, WebAudioPlayerState oldState, WebAudioPlayerState newState), (override));
-    MOCK_METHOD(void, notifyApplicationStateChanged, (ApplicationState oldState, ApplicationState newState), (override));
+    MOCK_METHOD(void, notifyApplicationStateChanged, (ApplicationState newState), (override));
 };
 } // namespace firebolt::rialto::server::service
 

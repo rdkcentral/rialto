@@ -40,7 +40,7 @@ public:
     void reportMetrics(int clientId, const firebolt::rialto::server::ClientMetricsData &metrics) override;
     void notifyPlaybackStateChanged(int sessionId, PlaybackState oldState, PlaybackState newState) override;
     void notifyWebAudioPlayerStateChanged(int handle, WebAudioPlayerState oldState, WebAudioPlayerState newState) override;
-    void notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState) override;
+    void notifyApplicationStateChanged(ApplicationState newState) override;
 
 private:
     std::shared_ptr<firebolt::rialto::server::IMetricsCollectorFactory> m_collectorFactory;

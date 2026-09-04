@@ -150,7 +150,7 @@ void PlaybackServiceTests::getMaxWebAudioPlayersShouldSucceed()
 
 void PlaybackServiceTests::getPrivateMetricsServiceShouldSucceed()
 {
-    EXPECT_NE(&m_sut->getPrivateMetricsService(), nullptr);
+    EXPECT_NO_THROW(m_sut->getPrivateMetricsService());
 }
 
 void PlaybackServiceTests::clientDisplayNameShouldBeSet()

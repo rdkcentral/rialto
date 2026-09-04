@@ -65,7 +65,7 @@ TEST_F(PrivateMetricsServiceTests, routesMetricsAndStateChangesToCollector)
                 notifyWebAudioPlayerStateChanged(2, WebAudioPlayerState::PLAYING, WebAudioPlayerState::PAUSED));
     m_sut.notifyWebAudioPlayerStateChanged(2, WebAudioPlayerState::PLAYING, WebAudioPlayerState::PAUSED);
     EXPECT_CALL(*m_collector, notifyApplicationStateChanged(ApplicationState::UNKNOWN, ApplicationState::RUNNING));
-    m_sut.notifyApplicationStateChanged(ApplicationState::UNKNOWN, ApplicationState::RUNNING);
+    m_sut.notifyApplicationStateChanged(ApplicationState::RUNNING);
 }
 
 TEST_F(PrivateMetricsServiceTests, disconnectRemovesCollector)
@@ -80,14 +80,26 @@ TEST_F(PrivateMetricsServiceTests, disconnectRemovesCollector)
 
 TEST_F(PrivateMetricsServiceTests, collectorInheritsCurrentApplicationStateWhenClientConnects)
 {
-    m_sut.notifyApplicationStateChanged(ApplicationState::UNKNOWN, ApplicationState::INACTIVE);
-    m_sut.notifyApplicationStateChanged(ApplicationState::INACTIVE, ApplicationState::RUNNING);
+    m_sut.notifyApplicationStateChanged(ApplicationState::INACTIVE);
+    m_sut.notifyApplicationStateChanged(ApplicationState::RUNNING);
 
     auto collector{std::make_unique<StrictMock<MetricsCollectorMock>>()};
     m_collector = collector.get();
     EXPECT_CALL(*m_factory, create(kClientId, m_client, ApplicationState::RUNNING))
         .WillOnce(Return(ByMove(std::move(collector))));
     m_sut.clientReady(kClientId, m_client);
+}
+
+TEST_F(PrivateMetricsServiceTests, derivesPreviousApplicationState)
+{
+    addCollector();
+
+    testing::InSequence sequence;
+    EXPECT_CALL(*m_collector, notifyApplicationStateChanged(ApplicationState::UNKNOWN, ApplicationState::INACTIVE));
+    EXPECT_CALL(*m_collector, notifyApplicationStateChanged(ApplicationState::INACTIVE, ApplicationState::RUNNING));
+
+    m_sut.notifyApplicationStateChanged(ApplicationState::INACTIVE);
+    m_sut.notifyApplicationStateChanged(ApplicationState::RUNNING);
 }
 
 TEST_F(PrivateMetricsServiceTests, ignoresFactoryFailureAndUnknownDisconnect)

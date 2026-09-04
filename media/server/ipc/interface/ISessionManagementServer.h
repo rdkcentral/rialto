@@ -45,7 +45,7 @@ public:
     virtual void stop() = 0;
     virtual void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                               RIALTO_DEBUG_LEVEL ipcLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels) = 0;
-    virtual void notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState) = 0;
+    virtual void notifyApplicationStateChanged(ApplicationState newState) = 0;
 };
 } // namespace firebolt::rialto::server::ipc
 

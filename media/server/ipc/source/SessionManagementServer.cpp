@@ -164,11 +164,11 @@ void SessionManagementServer::setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, 
     m_setLogLevelsService.setLogLevels(defaultLogLevels, clientLogLevels, ipcLogLevels, commonLogLevels);
 }
 
-void SessionManagementServer::notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState)
+void SessionManagementServer::notifyApplicationStateChanged(ApplicationState newState)
 {
     if (m_privateMetricsModule)
     {
-        m_privateMetricsModule->notifyApplicationStateChanged(oldState, newState);
+        m_privateMetricsModule->notifyApplicationStateChanged(newState);
     }
 }
 

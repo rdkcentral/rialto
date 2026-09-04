@@ -192,7 +192,8 @@ bool SessionServerManager::ping(std::int32_t id, const std::shared_ptr<IAckSende
 
 bool SessionServerManager::switchToActive()
 {
-    if (m_currentState.load() == common::SessionServerState::ACTIVE)
+    const auto currentState{m_currentState.load()};
+    if (currentState == common::SessionServerState::ACTIVE)
     {
         RIALTO_SERVER_LOG_DEBUG("Session server already in Active state.");
         return true;
@@ -210,9 +211,8 @@ bool SessionServerManager::switchToActive()
     }
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::ACTIVE))
     {
-        ApplicationState oldState = ApplicationState::INACTIVE; // switching from inactive/uninitialized to active
         m_controlService.setApplicationState(ApplicationState::RUNNING);
-        m_sessionManagementServer->notifyApplicationStateChanged(oldState, ApplicationState::RUNNING);
+        m_sessionManagementServer->notifyApplicationStateChanged(ApplicationState::RUNNING);
         m_currentState.store(common::SessionServerState::ACTIVE);
         RIALTO_SERVER_LOG_MIL("RialtoServer state is ACTIVE now");
         return true;
@@ -224,7 +224,8 @@ bool SessionServerManager::switchToActive()
 
 bool SessionServerManager::switchToInactive()
 {
-    if (m_currentState.load() == common::SessionServerState::INACTIVE)
+    const auto currentState{m_currentState.load()};
+    if (currentState == common::SessionServerState::INACTIVE)
     {
         RIALTO_SERVER_LOG_DEBUG("Session server already in Inactive state.");
         return true;
@@ -233,7 +234,7 @@ bool SessionServerManager::switchToInactive()
     m_cdmService.switchToInactive();
     // Record INACTIVE memory snapshot immediately after resource teardown,
     // before the manager ACK — ensures we capture it even if the socket breaks.
-    m_sessionManagementServer->notifyApplicationStateChanged(ApplicationState::RUNNING, ApplicationState::INACTIVE);
+    m_sessionManagementServer->notifyApplicationStateChanged(ApplicationState::INACTIVE);
     if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::INACTIVE))
     {
         m_controlService.setApplicationState(ApplicationState::INACTIVE);
@@ -241,7 +242,7 @@ bool SessionServerManager::switchToInactive()
         RIALTO_SERVER_LOG_MIL("RialtoServer state is INACTIVE now");
         return true;
     }
-    if (m_currentState.load() == common::SessionServerState::ACTIVE)
+    if (currentState == common::SessionServerState::ACTIVE)
     {
         if (!m_playbackService.switchToActive())
         {

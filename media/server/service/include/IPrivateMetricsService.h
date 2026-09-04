@@ -85,11 +85,12 @@ public:
                                                   WebAudioPlayerState newState) = 0;
 
     /**
-     * @brief Notify that the application state has changed (RUNNING/INACTIVE).
+     * @brief Notify that the application has entered a new state.
      *
-     * Routes to all active MetricsCollector instances.
+     * Derives the previous state from service-owned history and routes the
+     * transition to all active MetricsCollector instances.
      */
-    virtual void notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState) = 0;
+    virtual void notifyApplicationStateChanged(ApplicationState newState) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

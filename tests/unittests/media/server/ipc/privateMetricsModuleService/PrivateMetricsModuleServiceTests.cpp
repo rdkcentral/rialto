@@ -94,8 +94,8 @@ TEST(PrivateMetricsModuleServiceTests, handlesClientLifecycleReportsAndSampleReq
             }));
     sut->reportClientMetrics(&controller, &reportRequest, &reportResponse, &closure);
 
-    EXPECT_CALL(metricsService, notifyApplicationStateChanged(ApplicationState::RUNNING, ApplicationState::INACTIVE));
-    sut->notifyApplicationStateChanged(ApplicationState::RUNNING, ApplicationState::INACTIVE);
+    EXPECT_CALL(metricsService, notifyApplicationStateChanged(ApplicationState::INACTIVE));
+    sut->notifyApplicationStateChanged(ApplicationState::INACTIVE);
 
     EXPECT_CALL(metricsService, clientDisconnected(1));
     sut->clientDisconnected(client);
@@ -118,6 +118,26 @@ TEST(PrivateMetricsModuleServiceTests, rejectsIncompatibleControllers)
     ReportClientMetricsRequest reportRequest;
     ReportClientMetricsResponse reportResponse;
     sut->reportClientMetrics(&controller, &reportRequest, &reportResponse, &closure);
+}
+
+TEST(PrivateMetricsModuleServiceTests, duplicateReadyNotificationReusesClientId)
+{
+    StrictMock<PrivateMetricsServiceMock> metricsService;
+    auto client{std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>()};
+    StrictMock<firebolt::rialto::ipc::ControllerMock> controller;
+    StrictMock<firebolt::rialto::ipc::ClosureMock> closure;
+    auto sut{std::make_shared<PrivateMetricsModuleService>(metricsService)};
+
+    EXPECT_CALL(controller, getClient()).Times(2).WillRepeatedly(Return(client));
+    EXPECT_CALL(closure, Run()).Times(2);
+    EXPECT_CALL(metricsService, clientReady(1, _));
+    NotifyClientReadyRequest readyRequest;
+    NotifyClientReadyResponse readyResponse;
+    sut->notifyClientReady(&controller, &readyRequest, &readyResponse, &closure);
+    sut->notifyClientReady(&controller, &readyRequest, &readyResponse, &closure);
+
+    EXPECT_CALL(metricsService, clientDisconnected(1));
+    sut->clientDisconnected(client);
 }
 
 TEST(PrivateMetricsModuleServiceTests, rejectsMissingMetricsAndIgnoresUnknownClient)

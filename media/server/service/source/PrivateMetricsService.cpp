@@ -105,19 +105,24 @@ void PrivateMetricsService::notifyWebAudioPlayerStateChanged(int handle, WebAudi
     }
 }
 
-void PrivateMetricsService::notifyApplicationStateChanged(ApplicationState oldState, ApplicationState newState)
+void PrivateMetricsService::notifyApplicationStateChanged(ApplicationState newState)
 {
-    std::lock_guard<std::mutex> lock{m_mutex};
-    m_currentApplicationState = newState;
-    for (auto &[clientId, collector] : m_collectors)
     {
-        collector->notifyApplicationStateChanged(oldState, newState);
+        std::lock_guard<std::mutex> lock{m_mutex};
+        // Keep transition history here so upstream services only report the new application state.
+        const auto oldState{m_currentApplicationState};
+        m_currentApplicationState = newState;
+        for (auto &[clientId, collector] : m_collectors)
+        {
+            collector->notifyApplicationStateChanged(oldState, newState);
+        }
     }
 
     // When transitioning to INACTIVE, record a server-side memory snapshot.
     // At this point, pipelines and shared memory have already been freed but
     // no client may be connected to supply a full sample — so we read the
-    // server's own memory directly.
+    // server's own memory directly. The collector mutex is released first so
+    // filesystem access cannot block metrics processing.
     if (newState == ApplicationState::INACTIVE)
     {
         std::uint64_t serverMemoryKb{0};

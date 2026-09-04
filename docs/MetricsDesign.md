@@ -159,7 +159,7 @@ The server follows Rialto's standard three-layer architecture (ipc → service �
 - `clientDisconnected(clientId)` → destroys `MetricsCollector`
 - `reportMetrics(clientId, metrics)` → finds collector, calls `processMetrics()`
 - `notifyPlaybackStateChanged(sessionId, oldState, newState)` → routes to all collectors
-- `notifyApplicationStateChanged(oldState, newState)` → routes to all collectors
+- `notifyApplicationStateChanged(newState)` → derives the previous state and routes the transition to all collectors
 
 #### Main Layer (`server/main`)
 
