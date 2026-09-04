@@ -81,6 +81,7 @@ void HandleBusMessage::execute() const
             }
             case GST_STATE_PAUSED:
             {
+                RIALTO_SERVER_LOG_DEBUG("PAUSED state: starting notify playback info timer");
                 m_player.startNotifyPlaybackInfoTimer();
                 m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
                 if (pending != GST_STATE_PAUSED)
