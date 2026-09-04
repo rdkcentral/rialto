@@ -47,6 +47,11 @@ SessionServerAppManager::~SessionServerAppManager()
     m_eventThread.reset();
 }
 
+void SessionServerAppManager::setShuttingDown()
+{
+    m_isShuttingDown = true;
+}
+
 void SessionServerAppManager::preloadSessionServers(unsigned numOfPreloadedServers)
 {
     m_eventThread->add(
@@ -328,6 +333,12 @@ void SessionServerAppManager::handleSessionServerStateChange(int serverId,
                                                              firebolt::rialto::common::SessionServerState newState)
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("SessionServer with id: %d changed state to %s", serverId, toString(newState));
+    if (m_isShuttingDown)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Not handling state change of serverId: %d as server manager is shutting down",
+                                       serverId);
+        return;
+    }
     auto sessionServer{getServerById(serverId)};
     if (!sessionServer)
     {
@@ -392,7 +403,7 @@ void SessionServerAppManager::handleAck(int serverId, int pingId, bool success)
 
 void SessionServerAppManager::shutdownAllSessionServers()
 {
-    m_isShuttingDown = true;
+    setShuttingDown();
     m_healthcheckService.reset();
     for (const auto &kSessionServer : m_sessionServerApps)
     {

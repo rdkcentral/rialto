@@ -138,6 +138,16 @@ TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldRemoveApplicat
     ASSERT_TRUE(triggerGetAppConnectionInfo().empty());
 }
 
+TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldSkipStateChangeHandlingWhenShuttingDown)
+{
+    sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
+    ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
+    triggerSetShuttingDown();
+    // Strict mocks will fail the test, if the client is removed or the state change is forwarded to the observer
+    triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::NOT_RUNNING);
+    sessionServerWillKillRunningApplication();
+}
+
 TEST_F(SessionServerAppManagerTests, SessionServerAppManagerShouldForwardErrorIndicationOfRunningApp)
 {
     sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
@@ -315,6 +325,15 @@ TEST_F(SessionServerAppManagerTests, SessionServerShouldSkipRestart)
     sessionServerWillChangeStateToUninitialized();
     triggerOnSessionServerStateChanged(firebolt::rialto::common::SessionServerState::UNINITIALIZED);
     sessionServerWillRestartWillBeSkipped();
+    triggerRestartServer();
+    sessionServerWillKillRunningApplication();
+}
+
+TEST_F(SessionServerAppManagerTests, SessionServerShouldSkipRestartWhenShuttingDown)
+{
+    sessionServerWillLaunch(firebolt::rialto::common::SessionServerState::INACTIVE);
+    ASSERT_TRUE(triggerInitiateApplication(firebolt::rialto::common::SessionServerState::INACTIVE));
+    triggerSetShuttingDown();
     triggerRestartServer();
     sessionServerWillKillRunningApplication();
 }
