@@ -31,13 +31,59 @@ SessionServerAppManager::SessionServerAppManager(
     std::unique_ptr<ISessionServerAppFactory> &&sessionServerAppFactory,
     std::unique_ptr<IHealthcheckServiceFactory> &&healthcheckServiceFactory,
     const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory,
-    const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory)
+    const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory,
+    std::shared_ptr<service::IYamlCapabilities> mediaCapabilities)
     : m_ipcController{ipcController},
       m_eventThread{eventThreadFactory->createEventThread("rialtoservermanager-appmanager")},
       m_sessionServerAppFactory{std::move(sessionServerAppFactory)}, m_stateObserver{stateObserver},
       m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)},
-      m_namedSocketFactory{namedSocketFactory}, m_isShuttingDown{false}
+      m_namedSocketFactory{namedSocketFactory}, m_isShuttingDown{false}, m_mediaCapabilities{mediaCapabilities}
 {
+    if (mediaCapabilities)
+    {
+        firebolt::rialto::common::AudioDecoderCapabilities audioCaps;
+        const auto audioStatus = mediaCapabilities->getAudioDecoderCapabilities(audioCaps);
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("SessionServerAppManager: Media Capabilities forwarding from "
+                                        "ServerManager : status: %d",
+                                        static_cast<int>(audioStatus));
+
+        if (audioStatus == firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
+        {
+            m_audioCapabilities = std::move(audioCaps);
+            RIALTO_SERVER_MANAGER_LOG_INFO("SessionServerAppManager: capabilities loaded successfully");
+        }
+        else if (audioStatus == firebolt::rialto::common::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
+        {
+            RIALTO_SERVER_MANAGER_LOG_INFO(
+                "SessionServerAppManager: HFP YAML not found - capabilities will not be forwarded");
+        }
+        else
+        {
+            RIALTO_SERVER_MANAGER_LOG_ERROR("SessionServerAppManager: Failed to get audio capabilities, status: %d",
+                                            static_cast<int>(audioStatus));
+        }
+
+        firebolt::rialto::common::VideoDecoderCapabilities videoCaps;
+
+        const auto videoStatus = mediaCapabilities->getVideoDecoderCapabilities(videoCaps);
+        if (videoStatus == firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
+        {
+            m_videoCapabilities = std::move(videoCaps);
+        }
+        else
+        {
+            if (videoStatus == firebolt::rialto::common::DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
+            {
+                RIALTO_SERVER_MANAGER_LOG_INFO("SessionServerAppManager: HFP YAML config not found for video - "
+                                               "capabilities will not be forwarded");
+            }
+            else
+            {
+                RIALTO_SERVER_MANAGER_LOG_ERROR("SessionServerAppManager: Failed to get video capabilities, status: %d",
+                                                static_cast<int>(videoStatus));
+            }
+        }
+    }
 }
 
 SessionServerAppManager::~SessionServerAppManager()
@@ -497,7 +543,7 @@ bool SessionServerAppManager::configureSessionServerWithSocketName(const std::sh
                                                                           kSessionServer->getMaxWebAudioPlayers()};
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketName,
                                                   kClientDisplayName, kMaxResource, kSocketPermissions, kSocketOwner,
-                                                  kSocketGroup, kAppName))
+                                                  kSocketGroup, kAppName, m_audioCapabilities, m_videoCapabilities))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         kSessionServer->getServerId());
@@ -518,7 +564,8 @@ bool SessionServerAppManager::configureSessionServerWithSocketFd(const std::shar
     const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
                                                                           kSessionServer->getMaxWebAudioPlayers()};
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketFd,
-                                                  kClientDisplayName, kMaxResource, kAppName))
+                                                  kClientDisplayName, kMaxResource, kAppName, m_audioCapabilities,
+                                                  m_videoCapabilities))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         kSessionServer->getServerId());

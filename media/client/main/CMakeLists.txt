@@ -30,6 +30,7 @@ set(LIB_RIALTO_CLIENT_SOURCES
         source/ClientLogControl.cpp
         source/Control.cpp
         source/KeyIdMap.cpp
+	source/MediaCapabilities.cpp
         source/MediaKeys.cpp
         source/MediaKeysCapabilities.cpp
         source/MediaPipeline.cpp

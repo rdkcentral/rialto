@@ -25,6 +25,7 @@ include( CheckCXXCompilerFlag )
 add_library(
         RialtoCommonMisc
         STATIC
+		DecoderCapabilitiesUtils.cpp
         MediaSourceUtil.cpp
         WebAudioUtil.cpp
     )
@@ -34,6 +35,7 @@ target_include_directories(
 
         PRIVATE
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
+		$<TARGET_PROPERTY:RialtoCommonPublic,INTERFACE_INCLUDE_DIRECTORIES>
 
         INTERFACE
         .

@@ -19,6 +19,7 @@
 
 #include "ServerManagerServiceFactory.h"
 #include "ConfigHelper.h"
+#include "MediaCapabilitiesFactory.h"
 #include "RialtoServerManagerLogging.h"
 #include "ServerManagerService.h"
 #include "ServiceContext.h"
@@ -61,6 +62,25 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
 #endif
     ConfigHelper configHelper{std::move(configReaderFactory), config};
 
+    // Create MediaCapabilities as shared_ptr
+    std::shared_ptr<IYamlCapabilities> mediaCapabilities;
+    try
+    {
+        auto mediaCapsUnique = rialto::servermanager::service::createMediaCapabilities();
+        if (mediaCapsUnique)
+        {
+            mediaCapabilities = std::move(mediaCapsUnique);
+        }
+        else
+        {
+            RIALTO_SERVER_MANAGER_LOG_WARN("Failed to create MediaCapabilities, continuing with nullptr");
+        }
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_MANAGER_LOG_ERROR("Exception creating MediaCapabilities: %s", e.what());
+    }
+
     std::unique_ptr<IServerManagerService> service = std::make_unique<
         ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, configHelper.getSessionServerEnvVars(),
                                                                configHelper.getSessionServerPath(),
@@ -70,7 +90,8 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
                                                                convertSocketPermissions(
                                                                    configHelper.getSocketPermissions()),
                                                                configHelper.getSocketPermissions().owner,
-                                                               configHelper.getSocketPermissions().group),
+                                                               configHelper.getSocketPermissions().group,
+                                                               mediaCapabilities),
                               configHelper.getNumOfPreloadedServers());
 #ifdef RIALTO_ENABLE_CONFIG_FILE
     service->setLogLevels(configHelper.getLoggingLevels());

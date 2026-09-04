@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <thread>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -116,6 +117,8 @@ std::shared_ptr<IGstCapabilitiesFactory> IGstCapabilitiesFactory::getFactory()
 
 std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities()
 {
+    RIALTO_SERVER_LOG_DEBUG("GstCapabilities: CreateGstCapabilities: entry");
+
     std::unique_ptr<IGstCapabilities> gstCapabilities;
     try
     {
@@ -166,6 +169,8 @@ GstCapabilities::GstCapabilities(
     : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
       m_gstInitialiser{gstInitialiser}
 {
+    RIALTO_SERVER_LOG_DEBUG("GstCapabilities: constructor - GstCapabilities performs GStreamer element queries only");
+    // Initialize capabilities with empty defaults - will be populated by element queries
     m_initialisationThread = std::thread(
         [this]()
         {
@@ -173,6 +178,7 @@ GstCapabilities::GstCapabilities(
 
             m_gstInitialiser.waitForInitialisation();
             fillSupportedMimeTypes();
+            fillSupportedCapabilities();
             m_isInitialised = true;
             m_initialisationCv.notify_all();
         });
@@ -329,6 +335,155 @@ void GstCapabilities::fillSupportedMimeTypes()
     }
 }
 
+void GstCapabilities::fillSupportedCapabilities()
+{
+    // Populate audio decoder capabilities from supported MIME types
+    // Separate audio and video MIME types and create capability objects with codec-specific data
+    std::vector<firebolt::rialto::common::AudioDecoderCapability> audioCapabilities;
+    std::vector<firebolt::rialto::common::VideoDecoderCapability> videoCapabilities;
+
+    for (const auto &mimeType : m_supportedMimeTypes)
+    {
+        if (mimeType.find("audio/") == 0)
+        {
+            // Create audio capability with codec-specific fields based on MIME type
+            // Each capability MUST have at least one codec field populated to avoid empty serialization
+            firebolt::rialto::common::AudioDecoderCapability audioCap;
+
+            if (mimeType.find("audio/x-opus") != std::string::npos || mimeType == "audio/opus")
+            {
+                // Opus codec with default profile capability
+                audioCap.opus = firebolt::rialto::common::OpusCapability{
+                    firebolt::rialto::common::AudioProfileCapability{0, 2, 48000, 16}};
+            }
+            else if (mimeType.find("audio/x-flac") != std::string::npos || mimeType == "audio/flac")
+            {
+                // FLAC codec with default profile capability
+                audioCap.flac = firebolt::rialto::common::FlacCapability{
+                    firebolt::rialto::common::AudioProfileCapability{0, 8, 192000, 24}};
+            }
+            else if (mimeType.find("audio/aac") != std::string::npos)
+            {
+                // AAC codec with default profile capability
+                audioCap.aac = firebolt::rialto::common::AacCapability{};
+                audioCap.aac->profiles[firebolt::rialto::common::AacProfile::LC] =
+                    firebolt::rialto::common::AudioProfileCapability{0, 2, 48000, 16};
+            }
+            else if (mimeType.find("audio/mp3") != std::string::npos)
+            {
+                // MP3 codec with default profile capability
+                audioCap.mp3 = firebolt::rialto::common::Mp3Capability{
+                    firebolt::rialto::common::AudioProfileCapability{0, 2, 48000, 16}};
+            }
+            else if (mimeType.find("audio/x-eac3") != std::string::npos || mimeType == "audio/eac3")
+            {
+                // Dolby EAC3 codec with default profile capability
+                audioCap.dolbyEac3 = firebolt::rialto::common::DolbyEac3Capability{};
+                audioCap.dolbyEac3->profiles[firebolt::rialto::common::DolbyEac3Profile::PLUS] =
+                    firebolt::rialto::common::AudioProfileCapability{0, 6, 48000, 16};
+            }
+            else if (mimeType.find("audio/x-ac3") != std::string::npos || mimeType == "audio/ac3")
+            {
+                // Dolby AC3 codec with default profile capability
+                audioCap.dolbyAc3 = firebolt::rialto::common::DolbyAc3Capability{};
+                audioCap.dolbyAc3->profiles[firebolt::rialto::common::DolbyAc3Profile::STANDARD] =
+                    firebolt::rialto::common::AudioProfileCapability{0, 6, 48000, 16};
+            }
+            else if (mimeType.find("audio/x-vorbis") != std::string::npos || mimeType == "audio/vorbis")
+            {
+                // Vorbis codec with default profile capability
+                audioCap.vorbis = firebolt::rialto::common::VorbisCapability{
+                    firebolt::rialto::common::AudioProfileCapability{0, 8, 192000, 16}};
+            }
+            else
+            {
+                // Unknown audio codec - create with PCM as default fallback
+                audioCap.pcm = firebolt::rialto::common::PcmCapability{
+                    firebolt::rialto::common::AudioProfileCapability{0, 2, 48000, 16}};
+                RIALTO_SERVER_LOG_DEBUG("Unknown audio MIME type '%s', using PCM as fallback", mimeType.c_str());
+            }
+
+            audioCapabilities.push_back(std::move(audioCap));
+        }
+        else if (mimeType.find("video/") == 0)
+        {
+            // Create video capability with codec-specific data based on MIME type
+            // Initialize with empty codec capabilities - will be populated based on MIME type
+            firebolt::rialto::common::VideoDecoderCapability videoCap;
+
+            if (mimeType.find("video/h264") != std::string::npos)
+            {
+                // H.264 codec with default profile
+                firebolt::rialto::common::H264Profile profile;
+                profile.type = firebolt::rialto::common::H264ProfileType::H264_MAIN;
+                profile.maxLevel = firebolt::rialto::common::H264Level::H264_LEVEL_5_2;
+                profile.maxBitrateInBps = 0; // No bitrate limit
+                videoCap.codecCapabilities.h264 = firebolt::rialto::common::H264CodecCapability{};
+                videoCap.codecCapabilities.h264->profiles.push_back(profile);
+            }
+            else if (mimeType.find("video/h265") != std::string::npos || mimeType.find("video/hevc") != std::string::npos)
+            {
+                // H.265/HEVC codec with default profile
+                firebolt::rialto::common::H265Profile profile;
+                profile.type = firebolt::rialto::common::H265ProfileType::H265_MAIN;
+                profile.maxLevel = firebolt::rialto::common::H265Level::H265_LEVEL_5_2;
+                profile.maxBitrateInBps = 0; // No bitrate limit
+                videoCap.codecCapabilities.h265 = firebolt::rialto::common::H265CodecCapability{};
+                videoCap.codecCapabilities.h265->profiles.push_back(profile);
+            }
+            else if (mimeType.find("video/x-vp9") != std::string::npos || mimeType == "video/vp9")
+            {
+                // VP9 codec with default profile
+                firebolt::rialto::common::Vp9Profile profile;
+                profile.type = firebolt::rialto::common::Vp9ProfileType::VP9_PROFILE_0;
+                profile.maxLevel = firebolt::rialto::common::Vp9Level::VP9_LEVEL_5_2;
+                profile.maxBitrateInBps = 0; // No bitrate limit
+                videoCap.codecCapabilities.vp9 = firebolt::rialto::common::Vp9CodecCapability{};
+                videoCap.codecCapabilities.vp9->profiles.push_back(profile);
+            }
+            else if (mimeType.find("video/x-av1") != std::string::npos || mimeType == "video/av1")
+            {
+                // AV1 codec with default profile
+                firebolt::rialto::common::Av1Profile profile;
+                profile.type = firebolt::rialto::common::Av1ProfileType::AV1_MAIN;
+                profile.maxLevel = firebolt::rialto::common::Av1Level::AV1_LEVEL_6_2;
+                profile.maxBitrateInBps = 0; // No bitrate limit
+                videoCap.codecCapabilities.av1 = firebolt::rialto::common::Av1CodecCapability{};
+                videoCap.codecCapabilities.av1->profiles.push_back(profile);
+            }
+            else
+            {
+                // Unknown video codec - create with H.264 as default fallback
+                firebolt::rialto::common::H264Profile profile;
+                profile.type = firebolt::rialto::common::H264ProfileType::H264_MAIN;
+                profile.maxLevel = firebolt::rialto::common::H264Level::H264_LEVEL_5_2;
+                profile.maxBitrateInBps = 0;
+                videoCap.codecCapabilities.h264 = firebolt::rialto::common::H264CodecCapability{};
+                videoCap.codecCapabilities.h264->profiles.push_back(profile);
+                RIALTO_SERVER_LOG_DEBUG("Unknown video MIME type '%s', using H.264 as fallback", mimeType.c_str());
+            }
+
+            videoCapabilities.push_back(std::move(videoCap));
+        }
+    }
+
+    // Initialize audio decoder capabilities if we found audio MIME types
+    if (!audioCapabilities.empty())
+    {
+        m_audioDecoderCapabilities.capabilities = std::move(audioCapabilities);
+        RIALTO_SERVER_LOG_INFO("Populated %zu audio decoder capabilities from GStreamer",
+                               m_audioDecoderCapabilities.capabilities.size());
+    }
+
+    // Initialize video decoder capabilities if we found video MIME types
+    if (!videoCapabilities.empty())
+    {
+        m_videoDecoderCapabilities.capabilities = std::move(videoCapabilities);
+        RIALTO_SERVER_LOG_INFO("Populated %zu video decoder capabilities from GStreamer",
+                               m_videoDecoderCapabilities.capabilities.size());
+    }
+}
+
 void GstCapabilities::appendLinkableCapsFromParserDecoderChains(std::vector<GstCaps *> &supportedCaps)
 {
     if (supportedCaps.empty())
@@ -458,6 +613,16 @@ bool GstCapabilities::isVideoMaster(bool &isVideoMaster)
     return true;
 }
 
-} // namespace firebolt::rialto::server
+firebolt::rialto::common::AudioDecoderCapabilities GstCapabilities::getSupportedAudioCapabilities()
+{
+    waitForInitialisation();
+    return m_audioDecoderCapabilities;
+}
 
-// namespace firebolt::rialto::server
+firebolt::rialto::common::VideoDecoderCapabilities GstCapabilities::getSupportedVideoCapabilities()
+{
+    waitForInitialisation();
+    return m_videoDecoderCapabilities;
+}
+
+} // namespace firebolt::rialto::server

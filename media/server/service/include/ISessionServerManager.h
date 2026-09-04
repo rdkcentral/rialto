@@ -23,7 +23,10 @@
 #include "IAckSender.h"
 #include "RialtoLogging.h"
 #include "SessionServerCommon.h"
+#include <AudioDecoderCapabilities.h>
+#include <VideoDecoderCapabilities.h>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace firebolt::rialto::server::service
@@ -52,6 +55,8 @@ public:
                               RIALTO_DEBUG_LEVEL sessionServerLogLevels, RIALTO_DEBUG_LEVEL ipcLogLevels,
                               RIALTO_DEBUG_LEVEL serverManagerLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels) = 0;
     virtual bool ping(std::int32_t id, const std::shared_ptr<IAckSender> &ackSender) = 0;
+    virtual void setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
+                                          const std::optional<common::VideoDecoderCapabilities> &videoCaps) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

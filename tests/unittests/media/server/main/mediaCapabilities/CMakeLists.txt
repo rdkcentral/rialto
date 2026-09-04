@@ -1,0 +1,56 @@
+#
+# If not stated otherwise in this file or this component's LICENSE file the
+# following copyright and licenses apply:
+#
+# Copyright 2022 Sky UK
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+set( CMAKE_CXX_STANDARD 17 )
+
+add_test_executable(
+        RialtoServerMediaCapabilitiesTests
+
+        mediaCapabilities/MediaCapabilitiesTests.cpp
+        mediaCapabilities/MediaCapabilitiesTestsFixture.cpp
+)
+
+target_include_directories(
+        RialtoServerMediaCapabilitiesTests
+
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/mediaCapabilities
+        $<TARGET_PROPERTY:RialtoServerMain,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoServerGstPlayer,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoPlayerCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
+)
+
+target_link_libraries(
+        RialtoServerMediaCapabilitiesTests
+
+        PRIVATE
+        RialtoServerMain
+        RialtoServerGstPlayer
+        RialtoCommon
+        RialtoServerCommon
+        RialtoLogging
+        gmock
+)
+
+add_dependencies(
+        RialtoServerMediaCapabilitiesTests
+        RialtoServerMain
+)

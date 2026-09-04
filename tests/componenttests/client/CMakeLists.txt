@@ -31,11 +31,15 @@ add_gtests (
         tests/base/ClientLogControlTestMethods.cpp
         tests/base/MediaPipelineTestMethods.cpp
         tests/base/MediaKeysTestMethods.cpp
+        tests/base/MediaCapabilitiesTestMethods.cpp
         tests/base/WebAudioPlayerTestMethods.cpp
 
         # Control Component tests
         tests/control/ApplicationStateChangeTest.cpp
         tests/control/LogHandlingTest.cpp
+
+        # Media Capabilities Component tests
+        tests/MediaCapabilitiesTest.cpp
 
         # MSE Component tests
         tests/mse/AudioSwitchingTest.cpp

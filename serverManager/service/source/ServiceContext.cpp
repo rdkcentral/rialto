@@ -23,19 +23,40 @@
 
 namespace rialto::servermanager::service
 {
+// ServiceContext initialization order:
+// ====================================
+// DECLARATION order (see ServiceContext.h):
+// 1. m_ipcController - declared first (must exist before SessionServerAppManager constructor)
+// 2. m_sessionServerAppManager - declared second
+//
+// INITIALIZATION:
+// 1. In initializer list: m_sessionServerAppManager = createSessionServerAppManager(m_ipcController, ...)
+//    → m_ipcController already exists as empty unique_ptr (not yet populated)
+//    → SessionServerAppManager constructor receives and stores reference to it
+// 2. In constructor body: m_ipcController = ipc::create(m_sessionServerAppManager)
+//    → m_sessionServerAppManager is now fully constructed
+//    → ipc::create populates the m_ipcController reference with actual controller
+//    → SessionServerAppManager can now use the populated m_ipcController
+//
+// This properly handles the circular dependency between IPC controller and session server app manager
+// without undefined behavior.
+
 ServiceContext::ServiceContext(const std::shared_ptr<IStateObserver> &stateObserver,
                                const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                                std::chrono::milliseconds sessionServerStartupTimeout,
                                std::chrono::seconds healthcheckInterval, unsigned numOfFailedPingsBeforeRecovery,
                                unsigned int socketPermissions, const std::string &socketOwner,
-                               const std::string &socketGroup)
-    : m_sessionServerAppManager{common::createSessionServerAppManager(m_ipcController, stateObserver,
+                               const std::string &socketGroup,
+                               const std::shared_ptr<IYamlCapabilities> &mediaCapabilities)
+    : m_ipcController{nullptr}, // Initialize as empty (will be populated in body)
+      m_sessionServerAppManager{common::createSessionServerAppManager(m_ipcController, stateObserver,
                                                                       environmentVariables, sessionServerPath,
                                                                       sessionServerStartupTimeout, healthcheckInterval,
                                                                       numOfFailedPingsBeforeRecovery, socketPermissions,
-                                                                      socketOwner, socketGroup)},
-      m_ipcController{ipc::create(m_sessionServerAppManager)}
+                                                                      socketOwner, socketGroup, mediaCapabilities)}
 {
+    // Now that m_sessionServerAppManager is fully constructed, populate m_ipcController
+    m_ipcController = ipc::create(m_sessionServerAppManager);
 }
 
 common::ISessionServerAppManager &ServiceContext::getSessionServerAppManager()

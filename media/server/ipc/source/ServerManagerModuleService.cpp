@@ -19,9 +19,16 @@
 
 #include "ServerManagerModuleService.h"
 #include "AckSender.h"
+#include "CapabilityConverters.h"
 #include "ISessionServerManager.h"
 #include "RialtoServerLogging.h"
+#include <AudioDecoderCapabilities.h>
 #include <IIpcController.h>
+#include <VideoDecoderCapabilities.h>
+#include <optional>
+
+using firebolt::rialto::ipc::common::deserialiseAudioCapabilities;
+using firebolt::rialto::ipc::common::deserialiseVideoCapabilities;
 
 namespace
 {
@@ -94,6 +101,31 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
     common::MaxResourceCapabilitites maxResource{request->resources().maxplaybacks(),
                                                  request->resources().maxwebaudioplayers()};
     const auto kClientDisplayName = request->has_clientdisplayname() ? request->clientdisplayname() : "";
+
+    // Deserialise typed capability fields into C++ structs (optional — absent fields → std::nullopt)
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> audioCaps;
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> videoCaps;
+    if (request->has_audiocapabilities())
+    {
+        RIALTO_SERVER_LOG_DEBUG("ServerManagerModuleService: audio capabilities received in SetConfiguration");
+        audioCaps = deserialiseAudioCapabilities(request->audiocapabilities());
+    }
+    if (request->has_videocapabilities())
+    {
+        RIALTO_SERVER_LOG_DEBUG("ServerManagerModuleService: video capabilities received in SetConfiguration");
+        videoCaps = deserialiseVideoCapabilities(request->videocapabilities());
+    }
+    if (audioCaps.has_value() || videoCaps.has_value())
+    {
+        RIALTO_SERVER_LOG_INFO(
+            "ServerManagerModuleService: capabilities deserialised and forwarded to configureServices");
+    }
+    else
+    {
+        RIALTO_SERVER_LOG_INFO(
+            "ServerManagerModuleService: no capability fields - session server will use GStreamer query fallback");
+    }
+
     bool success{true};
     if (request->has_sessionmanagementsocketfd())
     {
@@ -104,6 +136,14 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
         m_sessionServerManager.configureIpc(request->sessionmanagementsocketname(), request->socketpermissions(),
                                             request->socketowner(), request->socketgroup());
     }
+
+    // Pass preloaded capabilities to PlaybackService via setPreloadedCapabilities()
+    // IMPORTANT: Always call setPreloadedCapabilities, even if both are nullopt.
+    // This is critical for reconfiguration scenarios where a later SetConfigurationRequest
+    // with both fields absent should clear previously preloaded capabilities.
+    // Without this, stale capabilities from earlier requests would persist.
+    m_sessionServerManager.setPreloadedCapabilities(audioCaps, videoCaps);
+
     success &= m_sessionServerManager.configureServices(convertSessionServerState(request->initialsessionserverstate()),
                                                         maxResource, kClientDisplayName, request->appname());
     m_sessionServerManager.setLogLevels(static_cast<RIALTO_DEBUG_LEVEL>(request->loglevels().defaultloglevels()),

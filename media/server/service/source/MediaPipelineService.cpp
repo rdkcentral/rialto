@@ -31,10 +31,10 @@ namespace firebolt::rialto::server::service
 MediaPipelineService::MediaPipelineService(
     IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-    IDecryptionService &decryptionService)
+    IDecryptionService &decryptionService, const std::shared_ptr<firebolt::rialto::IMediaCapabilities> &mediaCapabilities)
     : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
-      m_decryptionService{decryptionService}
+      m_mediaCapabilities{mediaCapabilities}, m_decryptionService{decryptionService}
 {
     if (!m_mediaPipelineCapabilities)
     {
@@ -58,7 +58,6 @@ void MediaPipelineService::clearMediaPipelines()
 bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
                                          std::uint32_t maxWidth, std::uint32_t maxHeight)
 {
-    RIALTO_SERVER_LOG_DEBUG("MediaPipelineService requested to create new session with id: %d", sessionId);
     if (!m_playbackService.isActive())
     {
         RIALTO_SERVER_LOG_ERROR("Skip to create session with id: %d - Session Server in Inactive state", sessionId);
@@ -708,6 +707,76 @@ void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &hear
     {
         auto &mediaPipeline = mediaPipelinePair.second;
         mediaPipeline->ping(heartbeatProcedure->createHandler());
+    }
+}
+
+common::AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabilities()
+{
+    RIALTO_SERVER_LOG_DEBUG("GetSupportedAudioCapabilities requested");
+
+    // Thread-safe read of preloaded capabilities
+    {
+        std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+
+        // Path 0: Use preloaded audio capabilities if available (highest priority, from ServerManager)
+        if (m_preloadedAudioCapabilities.has_value())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Audio capabilities from preloaded ServerManager data (Path 0)");
+            return *m_preloadedAudioCapabilities;
+        }
+    }
+
+    // Delegate to orchestrator for Path A (YAML) and Path B (GStreamer) logic
+    if (m_mediaCapabilities)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Audio capabilities from orchestrator (tries YAML Path A, then GStreamer Path B)");
+        return m_mediaCapabilities->getSupportedAudioCapabilities();
+    }
+
+    // Fallback: Return empty capabilities
+    RIALTO_SERVER_LOG_WARN("Audio capabilities not available - no orchestrator configured");
+    return common::AudioDecoderCapabilities();
+}
+
+common::VideoDecoderCapabilities MediaPipelineService::getSupportedVideoCapabilities()
+{
+    RIALTO_SERVER_LOG_DEBUG("GetSupportedVideoCapabilities requested");
+
+    // Thread-safe read of preloaded capabilities
+    {
+        std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+
+        // Path 0: Use preloaded video capabilities if available (highest priority, from ServerManager)
+        if (m_preloadedVideoCapabilities.has_value())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Video capabilities from preloaded ServerManager data (Path 0)");
+            return *m_preloadedVideoCapabilities;
+        }
+    }
+
+    // Delegate to orchestrator for Path A (YAML) and Path B (GStreamer) logic
+    if (m_mediaCapabilities)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Video capabilities from orchestrator (tries YAML Path A, then GStreamer Path B)");
+        return m_mediaCapabilities->getSupportedVideoCapabilities();
+    }
+
+    // Fallback: Return empty capabilities
+    RIALTO_SERVER_LOG_WARN("Video capabilities not available - no orchestrator configured");
+    return common::VideoDecoderCapabilities();
+}
+
+void MediaPipelineService::setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
+                                                    const std::optional<common::VideoDecoderCapabilities> &videoCaps)
+{
+    RIALTO_SERVER_LOG_DEBUG("setPreloadedCapabilities called with audio: %s, video: %s",
+                            audioCaps.has_value() ? "yes" : "no", videoCaps.has_value() ? "yes" : "no");
+
+    // Thread-safe write of preloaded capabilities
+    {
+        std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
+        m_preloadedAudioCapabilities = audioCaps;
+        m_preloadedVideoCapabilities = videoCaps;
     }
 }
 

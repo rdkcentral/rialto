@@ -112,8 +112,9 @@ namespace firebolt::rialto::client::ct
 ClientComponentTest::ClientComponentTest()
     : MediaPipelineTestMethods(getAudioPartitions(), getVideoPartitions()),
       WebAudioPlayerTestMethods(getWebAudioPartitions()),
-      m_serverStub{std::make_shared<ServerStub>(m_controlModuleMock, m_mediaPipelineModuleMock, m_mediaKeysModuleMock,
-                                                m_mediaKeysCapabilitiesModuleMock,
+      m_serverStub{std::make_shared<ServerStub>(m_controlModuleMock, m_mediaPipelineModuleMock,
+                                                std::shared_ptr<::firebolt::rialto::MediaCapabilitiesModule>(),
+                                                m_mediaKeysModuleMock, m_mediaKeysCapabilitiesModuleMock,
                                                 m_mediaPipelineCapabilitiesModuleMock, m_webAudioPlayerModuleMock)}
 {
     // Calculate shm size

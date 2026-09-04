@@ -59,4 +59,27 @@
         <id>toomanyconfigs</id>
         <fileName>stubs/wpeframework-core/third-party/Source/core/JSON.cpp</fileName>
     </suppress>
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>media/server/main/source/MediaCapabilitiesServerFactory.cpp</fileName>
+        <symbolName>createMediaCapabilitiesFactory</symbolName>
+    </suppress>
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>tests/componenttests/server/common/MessageBuilders.cpp</fileName>
+        <symbolName>createGetSupportedAudioCapabilitiesRequest</symbolName>
+    </suppress>
+    <suppress>
+        <id>unusedFunction</id>
+        <fileName>tests/componenttests/server/common/MessageBuilders.cpp</fileName>
+        <symbolName>createGetSupportedVideoCapabilitiesRequest</symbolName>
+    </suppress>
+    <suppress>
+        <id>unknownMacro</id>
+        <fileName>stubs/wpeframework-core/third-party/Source/core/Proxy.h</fileName>
+    </suppress>
+    <suppress>
+        <id>syntaxError</id>
+        <fileName>stubs/wpeframework-core/third-party/Source/core/FileSystem.h</fileName>
+    </suppress>
 </suppressions>

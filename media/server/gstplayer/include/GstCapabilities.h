@@ -34,6 +34,9 @@
 #include <unordered_set>
 #include <vector>
 
+#include "AudioDecoderCapabilities.h"
+#include "VideoDecoderCapabilities.h"
+
 namespace firebolt::rialto::server
 {
 /**
@@ -104,11 +107,37 @@ public:
      */
     bool isVideoMaster(bool &isVideoMaster) override;
 
+    /**
+     * @brief Gets the supported audio capabilities from GStreamer.
+     *
+     * Returns decoder capabilities populated during GStreamer initialization (element-query discovery).
+     * If no capabilities are discovered, returns empty capabilities.
+     *
+     * @retval The supported audio capabilities.
+     */
+    firebolt::rialto::common::AudioDecoderCapabilities getSupportedAudioCapabilities() override;
+
+    /**
+     * @brief Gets the supported video capabilities from GStreamer.
+     *
+     * Returns decoder capabilities populated during GStreamer initialization (element-query discovery).
+     * If no capabilities are discovered, returns empty capabilities.
+     *
+     * @retval The supported video capabilities.
+     */
+    firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
+
 private:
     /**
      * @brief Sets list of supported mime types
      */
     void fillSupportedMimeTypes();
+
+    /**
+     * @brief Populates audio and video decoder capabilities from discovered MIME types
+     *        Called after fillSupportedMimeTypes() to initialize capability objects
+     */
+    void fillSupportedCapabilities();
 
     /**
      * @brief Appends all unique caps from parser->decoders chains' sink pads to \a supportedCaps
@@ -148,6 +177,16 @@ private:
      * @brief Set of mime types which are supported by gstreamer
      */
     std::unordered_set<std::string> m_supportedMimeTypes;
+
+    /**
+     * @brief Audio decoder capabilities (empty, no data from GStreamer)
+     */
+    firebolt::rialto::common::AudioDecoderCapabilities m_audioDecoderCapabilities;
+
+    /**
+     * @brief Video decoder capabilities (empty, no data from GStreamer)
+     */
+    firebolt::rialto::common::VideoDecoderCapabilities m_videoDecoderCapabilities;
 
     /**
      * @brief The gstreamer wrapper object.

@@ -30,6 +30,7 @@
 #include "SessionServerAppFactoryMock.h"
 #include "SessionServerAppMock.h"
 #include "StateObserverMock.h"
+#include "YamlCapabilitiesMock.h"
 #include <condition_variable>
 #include <gtest/gtest.h>
 #include <memory>
