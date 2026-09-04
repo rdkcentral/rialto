@@ -25,6 +25,7 @@
 #include "VideoDecoderCapabilities.h"
 #include <gmock/gmock.h>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 

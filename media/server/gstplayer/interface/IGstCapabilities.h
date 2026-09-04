@@ -105,22 +105,26 @@ public:
     /**
      * @brief Gets the supported audio capabilities from GStreamer.
      *
-     * Returns empty capabilities (no decoder capability data from GStreamer).
+     * Queries GStreamer for discovered MIME types and returns populated audio decoder capabilities
+     * discovered during GStreamer initialization. If GStreamer fails to discover any capabilities,
+     * returns empty capabilities.
      * Full capabilities should be obtained via MediaCapabilities which orchestrates
      * between YAML (Path A) and GStreamer (Path B) sources.
      *
-     * @retval The supported audio capabilities (empty if not available).
+     * @retval The supported audio capabilities (populated from GStreamer discovery, empty if unavailable).
      */
     virtual firebolt::rialto::common::AudioDecoderCapabilities getSupportedAudioCapabilities() = 0;
 
     /**
      * @brief Gets the supported video capabilities from GStreamer.
      *
-     * Returns empty capabilities (no decoder capability data from GStreamer).
+     * Queries GStreamer for discovered MIME types and returns populated video decoder capabilities
+     * discovered during GStreamer initialization. If GStreamer fails to discover any capabilities,
+     * returns empty capabilities.
      * Full capabilities should be obtained via MediaCapabilities which orchestrates
      * between YAML (Path A) and GStreamer (Path B) sources.
      *
-     * @retval The supported video capabilities (empty if not available).
+     * @retval The supported video capabilities (populated from GStreamer discovery, empty if unavailable).
      */
     virtual firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() = 0;
 };
