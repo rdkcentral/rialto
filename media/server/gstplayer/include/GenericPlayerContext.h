@@ -187,6 +187,17 @@ struct GenericPlayerContext
     std::optional<bool> pendingUseBuffering{};
 
     /**
+     * @brief Register connected video underflow callback
+     */
+    bool videoUnderflowConnected = false;
+
+    /**
+     * @brief Register connected audio underflow callback
+     */
+    bool audioUnderflowConnected = false;
+
+
+    /**
      * @brief Pending stream sync mode
      */
     std::map<MediaSourceType, int32_t> pendingStreamSyncMode{};
