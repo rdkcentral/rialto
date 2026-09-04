@@ -133,6 +133,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoPlayerPublicClientMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoTestCommonMatchers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoTestCommonProtoUtils,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
 
         # Test Bases
         ipcModuleBase
@@ -149,4 +150,5 @@ target_link_libraries(
         RialtoClientIpcImpl
         RialtoIpcClient
         RialtoProtobuf
+        RialtoCommonMisc
         )

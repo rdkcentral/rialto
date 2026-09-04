@@ -109,6 +109,7 @@ target_include_directories(
         $<TARGET_PROPERTY:RialtoPlayerPublicClientMocks,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoTestCommonMatchers,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoTestCommonProtoUtils,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoTestCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:RialtoServerMain,INCLUDE_DIRECTORIES>
 
         mocks
@@ -127,4 +128,5 @@ target_link_libraries(
         RialtoClientCommon
         RialtoPlayerCommon
         RialtoProtobuf
+        RialtoTestCommonMisc
         )
