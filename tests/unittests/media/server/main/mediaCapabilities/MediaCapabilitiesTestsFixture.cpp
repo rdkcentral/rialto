@@ -22,13 +22,11 @@
 using testing::Return;
 
 MediaCapabilitiesTests::MediaCapabilitiesTests()
-    : m_gstCapabilitiesMock(std::make_shared<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>())
+    : m_gstCapabilitiesMock(std::make_shared<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>()),
+      m_gstAudioCapabilities{"gst_aac", "gst_opus", {}}, m_gstVideoCapabilities{"gst_h264", "gst_h265", {}}
 {
-    // Set up GStreamer mock capabilities with actual data
-    m_gstAudioCapabilities = firebolt::rialto::common::AudioDecoderCapabilities{"gst_aac", "gst_opus", {}};
+    // Populate GStreamer mock capabilities with capability entries
     m_gstAudioCapabilities.capabilities.push_back(firebolt::rialto::common::AudioDecoderCapability{});
-
-    m_gstVideoCapabilities = firebolt::rialto::common::VideoDecoderCapabilities{"gst_h264", "gst_h265", {}};
     m_gstVideoCapabilities.capabilities.push_back(firebolt::rialto::common::VideoDecoderCapability{});
 
     // Note: Do NOT set default WillRepeatedly() expectations in constructor.
