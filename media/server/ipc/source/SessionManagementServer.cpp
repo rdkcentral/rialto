@@ -141,18 +141,32 @@ void SessionManagementServer::start()
     m_ipcServerThread = std::thread(
         [this]()
         {
-            constexpr int kPollInterval{100};
-            while (m_ipcServer->process() && m_isRunning.load())
+            while (m_isRunning.load())
             {
-                m_ipcServer->wait(kPollInterval);
+                if (!m_ipcServer->process())
+                {
+                    break;
+                }
+
+                if (m_isRunning.load())
+                {
+                    m_ipcServer->wait(-1);
+                }
             }
+
+            m_isRunning.store(false);
             RIALTO_SERVER_LOG_MIL("Session Management Server event loop finished.");
         });
 }
 
 void SessionManagementServer::stop()
 {
-    m_isRunning.store(false);
+    if (!m_isRunning.exchange(false) || !m_ipcServer)
+    {
+        return;
+    }
+
+    m_ipcServer->wake();
 }
 
 void SessionManagementServer::setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
