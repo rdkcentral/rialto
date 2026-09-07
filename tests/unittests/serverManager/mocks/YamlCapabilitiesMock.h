@@ -25,7 +25,7 @@
 
 namespace rialto::servermanager::service
 {
-class YamlCapabilitiesMock : public IYamlCapabilities
+class YamlCapabilitiesMock : public common::IYamlCapabilities
 {
 public:
     MOCK_METHOD(firebolt::rialto::common::DecoderCapabilitiesStatus, getAudioDecoderCapabilities,

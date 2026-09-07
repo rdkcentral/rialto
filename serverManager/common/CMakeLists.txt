@@ -23,8 +23,6 @@ add_library (
         RialtoServerManagerCommon STATIC
         source/HealthcheckService.cpp
         source/HealthcheckServiceFactory.cpp
-        source/MediaCapabilities.cpp
-        source/MediaCapabilitiesFactory.cpp
         source/SessionServerAppFactory.cpp
         source/SessionServerApp.cpp
         source/SessionServerAppManager.cpp

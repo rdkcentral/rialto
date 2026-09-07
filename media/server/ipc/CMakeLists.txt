@@ -78,6 +78,7 @@ target_link_libraries (
         RialtoServerIpc
 
         PRIVATE
+        RialtoCommon
         RialtoIpcServer
         RialtoIpcCommon
         RialtoPlayerCommon

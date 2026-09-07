@@ -51,7 +51,7 @@ public:
                     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
                     std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
                     std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory, IDecryptionService &decryptionService,
-                    const std::shared_ptr<firebolt::rialto::IMediaCapabilities> &mediaCapabilities = nullptr);
+                    const std::shared_ptr<firebolt::rialto::IMediaCapabilitiesFactory> &mediaCapabilitiesFactory);
     ~PlaybackService() override;
     PlaybackService(const PlaybackService &) = delete;
     PlaybackService(PlaybackService &&) = delete;

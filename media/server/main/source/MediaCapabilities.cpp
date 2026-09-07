@@ -20,17 +20,15 @@
 #include "MediaCapabilities.h"
 #include "IGstCapabilities.h"
 #include "RialtoServerLogging.h"
+#include <mutex>
 #include <stdexcept>
 
 namespace firebolt::rialto::server
 {
-MediaCapabilities::MediaCapabilities(
-    const std::shared_ptr<IGstCapabilities> &gstCapabilities,
-    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
-    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo)
-    : m_gstCapabilities{gstCapabilities}, m_preloadedAudio{preloadedAudio}, m_preloadedVideo{preloadedVideo}
+MediaCapabilities::MediaCapabilities(std::unique_ptr<IGstCapabilities> gstCapabilities)
+    : m_gstCapabilities{std::move(gstCapabilities)}
 {
-    RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: constructor - uses ServerManager preload + GStreamer fallback");
+    RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: constructor - uses GStreamer for fallback queries");
     if (!m_gstCapabilities)
     {
         throw std::runtime_error("GstCapabilities is required");
@@ -39,32 +37,47 @@ MediaCapabilities::MediaCapabilities(
 
 firebolt::rialto::common::AudioDecoderCapabilities MediaCapabilities::getSupportedAudioCapabilities()
 {
-    // Path 0: Use ServerManager's preloaded YAML (highest priority)
-    if (m_preloadedAudio.has_value())
+    // Path 0: Check preloaded capabilities first (highest priority)
     {
-        RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: Audio from ServerManager preload (Path 0) - success");
-        return *m_preloadedAudio;
+        std::lock_guard<std::mutex> lock{m_preloadedCapabilitiesMutex};
+        if (m_preloadedAudioCapabilities.has_value())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Returning preloaded audio capabilities (Path 0)");
+            return *m_preloadedAudioCapabilities;
+        }
     }
 
-    RIALTO_SERVER_LOG_INFO("MediaCapabilities: ServerManager preload unavailable, falling back to GStreamer (Path B)");
-
-    // Path B: GStreamer fallback (only if preload missing)
+    // Path B: Fall back to GStreamer queries
+    RIALTO_SERVER_LOG_DEBUG("Returning GStreamer audio capabilities (Path B fallback)");
     return m_gstCapabilities->getSupportedAudioCapabilities();
 }
 
 firebolt::rialto::common::VideoDecoderCapabilities MediaCapabilities::getSupportedVideoCapabilities()
 {
-    // Path 0: Use ServerManager's preloaded YAML (highest priority)
-    if (m_preloadedVideo.has_value())
+    // Path 0: Check preloaded capabilities first (highest priority)
     {
-        RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: Video from ServerManager preload (Path 0) - success");
-        return *m_preloadedVideo;
+        std::lock_guard<std::mutex> lock{m_preloadedCapabilitiesMutex};
+        if (m_preloadedVideoCapabilities.has_value())
+        {
+            RIALTO_SERVER_LOG_DEBUG("Returning preloaded video capabilities (Path 0)");
+            return *m_preloadedVideoCapabilities;
+        }
     }
 
-    RIALTO_SERVER_LOG_INFO("MediaCapabilities: ServerManager preload unavailable, falling back to GStreamer (Path B)");
-
-    // Path B: GStreamer fallback (only if preload missing)
+    // Path B: Fall back to GStreamer queries
+    RIALTO_SERVER_LOG_DEBUG("Returning GStreamer video capabilities (Path B fallback)");
     return m_gstCapabilities->getSupportedVideoCapabilities();
+}
+
+void MediaCapabilities::setPreloadedCapabilities(
+    const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCapabilities,
+    const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCapabilities)
+{
+    std::lock_guard<std::mutex> lock{m_preloadedCapabilitiesMutex};
+    m_preloadedAudioCapabilities = audioCapabilities;
+    m_preloadedVideoCapabilities = videoCapabilities;
+    RIALTO_SERVER_LOG_DEBUG("Preloaded capabilities set (audio: %s, video: %s)",
+                            audioCapabilities.has_value() ? "yes" : "no", videoCapabilities.has_value() ? "yes" : "no");
 }
 
 } // namespace firebolt::rialto::server

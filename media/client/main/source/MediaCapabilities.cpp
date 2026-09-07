@@ -41,15 +41,13 @@ std::shared_ptr<IMediaCapabilitiesFactory> IMediaCapabilitiesFactory::createFact
     return factory;
 }
 
-std::unique_ptr<IMediaCapabilities> MediaCapabilitiesFactory::createMediaCapabilities(
-    [[maybe_unused]] const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
-    [[maybe_unused]] const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo) const
+std::unique_ptr<IMediaCapabilities> MediaCapabilitiesFactory::createMediaCapabilities() const
 {
     std::unique_ptr<IMediaCapabilities> mediaCapabilities;
     try
     {
-        // Note: client-side ignores preloaded capabilities (intended for IPC fallback);
-        // session server uses server-side factory which respects preloaded data
+        // Client-side: Create IPC-backed capabilities stub
+        // Preloaded capabilities are handled server-side only
         mediaCapabilities =
             std::make_unique<client::MediaCapabilities>(client::IMediaCapabilitiesIpcFactory::createFactory());
     }

@@ -47,9 +47,8 @@ ServiceContext::ServiceContext(const std::shared_ptr<IStateObserver> &stateObser
                                std::chrono::seconds healthcheckInterval, unsigned numOfFailedPingsBeforeRecovery,
                                unsigned int socketPermissions, const std::string &socketOwner,
                                const std::string &socketGroup,
-                               const std::shared_ptr<IYamlCapabilities> &mediaCapabilities)
-    : m_ipcController{nullptr}, // Initialize as empty (will be populated in body)
-      m_sessionServerAppManager{common::createSessionServerAppManager(m_ipcController, stateObserver,
+                               const std::shared_ptr<common::IYamlCapabilities> &mediaCapabilities)
+    : m_sessionServerAppManager{common::createSessionServerAppManager(m_ipcController, stateObserver,
                                                                       environmentVariables, sessionServerPath,
                                                                       sessionServerStartupTimeout, healthcheckInterval,
                                                                       numOfFailedPingsBeforeRecovery, socketPermissions,

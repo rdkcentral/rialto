@@ -32,6 +32,7 @@ add_library(
         source/LinuxUtils.cpp
         source/Timer.cpp
         source/Profiler.cpp
+        source/CapabilityConverters.cpp
     )
 
 set_property (
@@ -45,18 +46,16 @@ target_include_directories(
 
         PUBLIC
         interface
+        include
         $<TARGET_PROPERTY:RialtoCommonPublic,INTERFACE_INCLUDE_DIRECTORIES>
 
         PRIVATE
-        include
     )
 
 target_link_libraries (
         RialtoCommon
 
-        PUBLIC
-        RialtoCommonPublic
-
         PRIVATE
         RialtoLogging
+        RialtoProtobuf
     )

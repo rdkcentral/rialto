@@ -83,8 +83,6 @@ private:
     std::condition_variable m_serviceCv;
     bool m_isServiceRunning;
     std::atomic<common::SessionServerState> m_currentState;
-    std::optional<common::AudioDecoderCapabilities> m_preloadedAudioCapabilities;
-    std::optional<common::VideoDecoderCapabilities> m_preloadedVideoCapabilities;
 };
 } // namespace firebolt::rialto::server::service
 

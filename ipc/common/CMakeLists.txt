@@ -28,7 +28,6 @@ add_library(
         source/FileDescriptor.cpp
         source/SimpleBufferPool.cpp
         source/NamedSocket.cpp
-        source/CapabilityConverters.cpp
 
         )
 

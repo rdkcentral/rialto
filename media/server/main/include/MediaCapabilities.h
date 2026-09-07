@@ -23,6 +23,7 @@
 #include "IGstCapabilities.h"
 #include "IMediaCapabilities.h"
 #include <memory>
+#include <mutex>
 #include <optional>
 
 namespace firebolt::rialto::server
@@ -55,14 +56,10 @@ public:
     /**
      * @brief Constructor
      *
-     * @param[in] gstCapabilities GStreamer capabilities handler (Path B fallback only)
-     * @param[in] preloadedAudio Optional audio capabilities preloaded by ServerManager (Path 0)
-     * @param[in] preloadedVideo Optional video capabilities preloaded by ServerManager (Path 0)
+     * @param[in] gstCapabilities GStreamer capabilities handler (fallback for queries)
+     *                           Ownership is transferred to MediaCapabilities
      */
-    explicit MediaCapabilities(
-        const std::shared_ptr<IGstCapabilities> &gstCapabilities,
-        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio = std::nullopt,
-        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo = std::nullopt);
+    explicit MediaCapabilities(std::unique_ptr<IGstCapabilities> gstCapabilities);
 
     /**
      * @brief Virtual destructor.
@@ -82,28 +79,43 @@ public:
     /**
      * @brief Gets the supported video decoder capabilities.
      *
-     * Attempts: Path A (ServerManager's YAML) → Path B (GStreamer)
-     * If Path 0 preloaded data available, it's already used before calling orchestrator.
+     * Attempts: Path 0 (Preloaded) → Path B (GStreamer)
+     * Returns preloaded video if available, otherwise falls back to GStreamer.
      *
      * @retval The supported video decoder capabilities.
      */
     firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
 
+    /**
+     * @brief Sets preloaded capabilities from ServerManager
+     *
+     * Called when ServerManager provides preloaded YAML capabilities.
+     * These are stored here for Path 0 (priority) queries.
+     *
+     * @param[in] audioCapabilities Optional preloaded audio capabilities
+     * @param[in] videoCapabilities Optional preloaded video capabilities
+     */
+    void
+    setPreloadedCapabilities(const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCapabilities,
+                             const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCapabilities);
+
 private:
     /**
-     * @brief The GStreamer capabilities handler (Path B - fallback only if preload missing)
+     * @brief The GStreamer capabilities handler (fallback for queries)
+     *        Owned exclusively by MediaCapabilities
      */
-    std::shared_ptr<IGstCapabilities> m_gstCapabilities;
+    std::unique_ptr<IGstCapabilities> m_gstCapabilities;
 
     /**
-     * @brief Audio capabilities already forwarded by ServerManager (Path 0 - highest priority)
+     * @brief Preloaded capabilities from ServerManager (Path 0 - highest priority)
      */
-    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> m_preloadedAudio;
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> m_preloadedAudioCapabilities;
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> m_preloadedVideoCapabilities;
 
     /**
-     * @brief Video capabilities already forwarded by ServerManager (Path 0 - highest priority)
+     * @brief Protects access to preloaded capabilities
      */
-    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> m_preloadedVideo;
+    std::mutex m_preloadedCapabilitiesMutex;
 };
 
 } // namespace firebolt::rialto::server

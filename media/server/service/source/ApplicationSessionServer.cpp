@@ -18,6 +18,8 @@
  */
 
 #include "ApplicationSessionServer.h"
+#include "IMediaCapabilitiesServerInternal.h"
+#include "RialtoServerLogging.h"
 #include <utility>
 
 namespace firebolt::rialto::server
@@ -33,25 +35,23 @@ std::unique_ptr<IApplicationSessionServer> ApplicationSessionServerFactory::crea
 }
 
 ApplicationSessionServer::ApplicationSessionServer()
-    : m_gstCapabilities(
+    : m_mediaCapabilitiesFactory(
           [this]()
           {
-              auto gstFactory = IGstCapabilitiesFactory::getFactory();
-              if (!gstFactory)
+              // Create factory via server-internal factory (IGstCapabilities hidden inside factory implementation)
+              // This avoids exposing gstplayer library to service layer
+              auto factory = firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory::createFactory();
+              if (!factory)
               {
-                  RIALTO_SERVER_LOG_WARN(
-                      "Failed to get GstCapabilitiesFactory, GStreamer fallback path will be unavailable");
-                  return std::shared_ptr<IGstCapabilities>{};
+                  RIALTO_SERVER_LOG_WARN("Failed to create IMediaCapabilitiesServerInternalFactory");
+                  return std::shared_ptr<firebolt::rialto::IMediaCapabilitiesFactory>{};
               }
-              auto uniquePtr = gstFactory->createGstCapabilities();
-              return std::shared_ptr<IGstCapabilities>(std::move(uniquePtr));
-          }()),
-      m_mediaCapabilities(m_gstCapabilities ? std::make_shared<MediaCapabilities>(m_gstCapabilities)
-                                            : std::shared_ptr<firebolt::rialto::IMediaCapabilities>{})
+              // No preloaded yet - it will arrive via SetConfigurationRequest
+              return factory->createMediaCapabilitiesFactory(std::nullopt, std::nullopt);
+          }())
 {
-    // m_gstCapabilities and m_mediaCapabilities now fully initialized BEFORE m_playbackService constructor runs
-    // If m_gstCapabilities is null (GStreamer unavailable), m_mediaCapabilities is also null,
-    // allowing graceful degradation on platforms without GStreamer support.
+    // m_mediaCapabilitiesFactory now fully initialized BEFORE m_playbackService constructor runs
+    // IGstCapabilities creation is hidden inside the factory implementation
 }
 
 bool ApplicationSessionServer::init(int argc, char *argv[])

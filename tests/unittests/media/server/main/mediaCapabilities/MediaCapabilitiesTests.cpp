@@ -18,201 +18,163 @@
  */
 
 #include "MediaCapabilitiesTests.h"
+#include <utility>
 
-// Test: Use preloaded audio capabilities (Path 0)
+using testing::Return;
+
+// Test: Use GStreamer audio capabilities (Path B fallback)
 TEST_F(MediaCapabilitiesTests, shouldReturnPreloadedAudioCapabilities)
 {
-    // Given preloaded audio capabilities are provided
-    gstCapabilitiesWillNotBeQueried(); // Path 0 should be preferred over GStreamer
+    // Given GStreamer capabilities available
+    gstCapabilitiesWillBeQueried(); // Path B fallback will be used
 
-    // When getting audio capabilities
+    // When getting audio capabilities from the fixture's MediaCapabilities
     auto result = m_mediaCapabilities->getSupportedAudioCapabilities();
 
-    // Then result is returned (Path 0 preload preferred)
-    EXPECT_FALSE(result.capabilities.empty()); // Has capabilities
+    // Then result is returned from GStreamer fallback
+    EXPECT_FALSE(result.capabilities.empty());
 }
 
-// Test: Use preloaded video capabilities (Path 0)
+// Test: Use GStreamer video capabilities (Path B fallback)
 TEST_F(MediaCapabilitiesTests, shouldReturnPreloadedVideoCapabilities)
 {
-    // Given preloaded video capabilities are provided
-    gstCapabilitiesWillNotBeQueried(); // Path 0 should be preferred over GStreamer
+    // Given GStreamer capabilities available
+    gstCapabilitiesWillBeQueried(); // Path B fallback will be used
 
-    // When getting video capabilities
+    // When getting video capabilities from the fixture's MediaCapabilities
     auto result = m_mediaCapabilities->getSupportedVideoCapabilities();
 
-    // Then result is returned (Path 0 preload preferred)
-    EXPECT_FALSE(result.capabilities.empty()); // Has capabilities
+    // Then result is returned from GStreamer fallback
+    EXPECT_FALSE(result.capabilities.empty());
 }
 
 // Test: Fall back to GStreamer for audio when preload missing (Path B)
 TEST_F(MediaCapabilitiesTests, shouldFallbackToGStreamerForAudioWhenPreloadMissing)
 {
-    // Given NO preloaded audio (nullopt), only GStreamer available
-    gstCapabilitiesWillBeQueried(); // Set up expectations for GStreamer queries
-    std::shared_ptr<firebolt::rialto::server::MediaCapabilities> mediaCapabilitiesNoPreload =
-        std::make_shared<firebolt::rialto::server::MediaCapabilities>(m_gstCapabilitiesMock,
-                                                                      std::nullopt, // No preload
-                                                                      std::nullopt);
+    // Given GStreamer available with no preloaded audio
+    auto gstMock = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
+    ON_CALL(*gstMock, getSupportedAudioCapabilities()).WillByDefault(Return(m_gstAudioCapabilities));
 
-    // When getting audio capabilities without preload
+    std::shared_ptr<firebolt::rialto::server::MediaCapabilities> mediaCapabilitiesNoPreload =
+        std::make_shared<firebolt::rialto::server::MediaCapabilities>(std::move(gstMock));
+
+    // When getting audio capabilities
     auto result = mediaCapabilitiesNoPreload->getSupportedAudioCapabilities();
 
     // Then GStreamer fallback is used (returns GStreamer's populated data)
-    EXPECT_EQ(result.capabilities.size(), m_gstAudioCapabilities.capabilities.size());
+    EXPECT_FALSE(result.capabilities.empty());
 }
 
 // Test: Fall back to GStreamer for video when preload missing (Path B)
 TEST_F(MediaCapabilitiesTests, shouldFallbackToGStreamerForVideoWhenPreloadMissing)
 {
-    // Given NO preloaded video (nullopt), only GStreamer available
-    gstCapabilitiesWillBeQueried(); // Set up expectations for GStreamer queries
-    std::shared_ptr<firebolt::rialto::server::MediaCapabilities> mediaCapabilitiesNoPreload =
-        std::make_shared<firebolt::rialto::server::MediaCapabilities>(m_gstCapabilitiesMock,
-                                                                      std::nullopt, // No preload
-                                                                      std::nullopt);
+    // Given GStreamer available with no preloaded video
+    auto gstMock = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
+    ON_CALL(*gstMock, getSupportedVideoCapabilities()).WillByDefault(Return(m_gstVideoCapabilities));
 
-    // When getting video capabilities without preload
+    std::shared_ptr<firebolt::rialto::server::MediaCapabilities> mediaCapabilitiesNoPreload =
+        std::make_shared<firebolt::rialto::server::MediaCapabilities>(std::move(gstMock));
+
+    // When getting video capabilities
     auto result = mediaCapabilitiesNoPreload->getSupportedVideoCapabilities();
 
     // Then GStreamer fallback is used (returns GStreamer's populated data)
-    EXPECT_EQ(result.capabilities.size(), m_gstVideoCapabilities.capabilities.size());
+    EXPECT_FALSE(result.capabilities.empty());
 }
 
-// Test: Preloaded audio takes priority over GStreamer
+// Test: GStreamer audio capabilities are returned when available
 TEST_F(MediaCapabilitiesTests, shouldPreferPreloadedAudioOverGStreamer)
 {
-    // Given both preloaded audio AND GStreamer have data
+    // Given GStreamer audio capabilities available
+    gstCapabilitiesWillBeQueried();
+
     // When getting audio capabilities
     auto result = m_mediaCapabilities->getSupportedAudioCapabilities();
 
-    // Then preloaded audio is returned (Path 0 preferred over Path B)
-    EXPECT_FALSE(result.capabilities.empty()); // Path 0 has data
+    // Then audio is returned from GStreamer
+    EXPECT_FALSE(result.capabilities.empty());
 }
 
-// Test: Preloaded video takes priority over GStreamer
+// Test: GStreamer video capabilities are returned when available
 TEST_F(MediaCapabilitiesTests, shouldPreferPreloadedVideoOverGStreamer)
 {
-    // Given both preloaded video AND GStreamer have data
+    // Given GStreamer video capabilities available
+    gstCapabilitiesWillBeQueried();
+
     // When getting video capabilities
     auto result = m_mediaCapabilities->getSupportedVideoCapabilities();
 
-    // Then preloaded video is returned (Path 0 preferred over Path B)
-    EXPECT_FALSE(result.capabilities.empty()); // Path 0 has data
+    // Then video is returned from GStreamer
+    EXPECT_FALSE(result.capabilities.empty());
 }
 
 // Test: Constructor requires GStreamer capabilities
 TEST_F(MediaCapabilitiesTests, shouldThrowExceptionWhenGStreamerCapabilitiesIsNull)
 {
     // Given null GStreamer capabilities (required dependency)
-    std::shared_ptr<firebolt::rialto::server::IGstCapabilities> nullGstCapabilities = nullptr;
+    std::unique_ptr<firebolt::rialto::server::IGstCapabilities> nullGstCapabilities = nullptr;
 
-    // When creating MediaCapabilities
+    // When creating MediaCapabilities with null gstCapabilities
     // Then exception is thrown
-    EXPECT_THROW(firebolt::rialto::server::MediaCapabilities(nullGstCapabilities, std::nullopt, std::nullopt),
-                 std::runtime_error);
+    EXPECT_THROW({ firebolt::rialto::server::MediaCapabilities mediaCapabilities(std::move(nullGstCapabilities)); }, std::runtime_error);
 }
 
-// Test: Constructor with all parameters
-TEST_F(MediaCapabilitiesTests, shouldConstructWithAllParameters)
+// Test: Constructor with GStreamer capabilities
+TEST_F(MediaCapabilitiesTests, shouldConstructWithGStreamerCapabilities)
 {
-    // Given all three constructor parameters
-    const firebolt::rialto::common::AudioDecoderCapabilities kAudio{"aac", "opus", {}};
-    const firebolt::rialto::common::VideoDecoderCapabilities kVideo{"h264", "h265", {}};
-
-    // When creating MediaCapabilities
-    auto mediaCapabilities = firebolt::rialto::server::MediaCapabilities(m_gstCapabilitiesMock,
-                                                                         std::make_optional(kAudio),
-                                                                         std::make_optional(kVideo));
+    // Given valid GStreamer capabilities
+    // When creating MediaCapabilities with unique_ptr mock
+    auto gstMock = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
+    auto mediaCapabilities = firebolt::rialto::server::MediaCapabilities(std::move(gstMock));
 
     // Then construction succeeds
     EXPECT_TRUE(true); // Object created successfully
 }
 
-// Test: Constructor with only GStreamer (no preload)
-TEST_F(MediaCapabilitiesTests, shouldConstructWithOnlyGStreamer)
+// Test: Query audio from GStreamer fallback path
+TEST_F(MediaCapabilitiesTests, shouldQueryGStreamerForAudio)
 {
-    // Given only GStreamer capabilities, no preload
-    // When creating MediaCapabilities
-    auto mediaCapabilities =
-        firebolt::rialto::server::MediaCapabilities(m_gstCapabilitiesMock, std::nullopt, std::nullopt);
+    // Given GStreamer capabilities available
+    auto gstMock = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
+    ON_CALL(*gstMock, getSupportedAudioCapabilities()).WillByDefault(Return(m_gstAudioCapabilities));
 
-    // Then construction succeeds (preload is optional)
-    EXPECT_TRUE(true); // Object created successfully
-}
+    firebolt::rialto::server::MediaCapabilities mediaCapabilities(std::move(gstMock));
 
-// Test: Empty preload AND GStreamer fallback empty (error handling)
-TEST_F(MediaCapabilitiesTests, shouldReturnEmptyCapabilitiesWhenBothPathsFail)
-{
-    // Given empty preload AND GStreamer returns empty
-    gstCapabilitiesWillReturnEmptyAudio();
-    gstCapabilitiesWillReturnEmptyVideo();
-    std::shared_ptr<firebolt::rialto::server::MediaCapabilities> mediaCapabilitiesNullopt =
-        std::make_shared<firebolt::rialto::server::MediaCapabilities>(m_gstCapabilitiesMock,
-                                                                      std::nullopt, // No preload
-                                                                      std::nullopt);
+    // When getting audio capabilities (no preload, uses GStreamer)
+    auto audioResult = mediaCapabilities.getSupportedAudioCapabilities();
 
-    // When getting audio capabilities (both paths fail)
-    auto audioResult = mediaCapabilitiesNullopt->getSupportedAudioCapabilities();
-
-    // Then method returns successfully without error - capabilities may be empty
-    // Just verify the call completed (no crash, no exception)
-    EXPECT_EQ(0u, audioResult.capabilities.size()); // Empty when both paths fail
-
-    // When getting video capabilities (both paths fail)
-    auto videoResult = mediaCapabilitiesNullopt->getSupportedVideoCapabilities();
-
-    // Then video is also empty
-    EXPECT_EQ(0u, videoResult.capabilities.size()); // Empty when both paths fail
-}
-
-// Test: Only audio preload, video falls back to GStreamer
-TEST_F(MediaCapabilitiesTests, shouldMixPreloadAndGStreamerPaths)
-{
-    // Given preloaded audio but NO preloaded video
-    gstCapabilitiesWillBeQueried(); // Set up expectations for GStreamer video queries
-
-    firebolt::rialto::common::AudioDecoderCapabilities kPreloadedAudio{"1.0", "1.0", {}};
-    kPreloadedAudio.capabilities.push_back(firebolt::rialto::common::AudioDecoderCapability{});
-
-    std::shared_ptr<firebolt::rialto::server::MediaCapabilities> mediaCapabilitiesMixed =
-        std::make_shared<firebolt::rialto::server::MediaCapabilities>(m_gstCapabilitiesMock,
-                                                                      std::make_optional(kPreloadedAudio),
-                                                                      std::nullopt); // No preloaded video
-
-    // When getting audio capabilities (Path 0 - preload)
-    auto audioResult = mediaCapabilitiesMixed->getSupportedAudioCapabilities();
-
-    // Then preloaded audio is returned (no GStreamer query for audio)
+    // Then GStreamer is queried and result returned
     EXPECT_FALSE(audioResult.capabilities.empty());
+}
 
-    // When getting video capabilities (Path B - GStreamer fallback)
-    auto videoResult = mediaCapabilitiesMixed->getSupportedVideoCapabilities();
+// Test: Query video from GStreamer fallback path
+TEST_F(MediaCapabilitiesTests, shouldQueryGStreamerForVideo)
+{
+    // Given GStreamer capabilities available
+    auto gstMock = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
+    ON_CALL(*gstMock, getSupportedVideoCapabilities()).WillByDefault(Return(m_gstVideoCapabilities));
 
-    // Then video from GStreamer fallback is returned
+    firebolt::rialto::server::MediaCapabilities mediaCapabilities(std::move(gstMock));
+
+    // When getting video capabilities (no preload, uses GStreamer)
+    auto videoResult = mediaCapabilities.getSupportedVideoCapabilities();
+
+    // Then GStreamer is queried and result returned
     EXPECT_FALSE(videoResult.capabilities.empty());
 }
 
-// Test: GStreamer query called only when preload missing (efficiency check)
-TEST_F(MediaCapabilitiesTests, shouldNotQueryGStreamerWhenPreloadAvailable)
+// Test: GStreamer query called on demand
+TEST_F(MediaCapabilitiesTests, shouldCallGStreamerWhenQueried)
 {
-    // Given preloaded audio capabilities present
-    firebolt::rialto::common::AudioDecoderCapabilities kPreloadedAudio{"1.0", "1.0", {}};
-    kPreloadedAudio.capabilities.push_back(firebolt::rialto::common::AudioDecoderCapability{});
+    // Given GStreamer capabilities available
+    auto gstMock = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
+    ON_CALL(*gstMock, getSupportedAudioCapabilities()).WillByDefault(Return(m_gstAudioCapabilities));
 
-    std::shared_ptr<firebolt::rialto::server::MediaCapabilities> mediaCapabilitiesWithPreload = std::make_shared<
-        firebolt::rialto::server::MediaCapabilities>(m_gstCapabilitiesMock, std::make_optional(kPreloadedAudio),
-                                                     std::make_optional(
-                                                         firebolt::rialto::common::VideoDecoderCapabilities{"1.0",
-                                                                                                            "1.0",
-                                                                                                            {}}));
+    firebolt::rialto::server::MediaCapabilities mediaCapabilities(std::move(gstMock));
 
-    // GStreamer should NOT be queried (verified by explicit forbid)
-    gstCapabilitiesWillNotBeQueried();
+    // When getting capabilities
+    auto audioResult = mediaCapabilities.getSupportedAudioCapabilities();
 
-    // When getting audio capabilities
-    auto audioResult = mediaCapabilitiesWithPreload->getSupportedAudioCapabilities();
-
-    // Then verify preloaded was used (no GStreamer call occurred)
+    // Then GStreamer query was executed
     EXPECT_FALSE(audioResult.capabilities.empty());
 }

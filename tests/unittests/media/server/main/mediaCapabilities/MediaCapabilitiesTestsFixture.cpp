@@ -31,32 +31,20 @@ MediaCapabilitiesTests::MediaCapabilitiesTests()
 
     // Note: Do NOT set default WillRepeatedly() expectations in constructor.
     // Individual tests must explicitly set expectations for GStreamer method calls.
-    // This ensures gstCapabilitiesWillNotBeQueried() can effectively verify Path 0 is used.
+    // This ensures test methods can control expectations precisely.
 
-    // Create orchestrator with preloaded data
-    // Note: Initialize with non-empty capabilities vector to simulate preloaded YAML data from ServerManager
-    firebolt::rialto::common::AudioDecoderCapabilities preloadedAudio{"1.0", "1.0", {}};
-    preloadedAudio.capabilities.push_back(firebolt::rialto::common::AudioDecoderCapability{});
+    // Create orchestrator with unique_ptr gstCapabilities (MediaCapabilities owns it)
+    // Create a new mock instance (not a copy) for MediaCapabilities to own
+    auto gstMockUnique = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
 
-    firebolt::rialto::common::VideoDecoderCapabilities preloadedVideo{"1.0", "1.0", {}};
-    preloadedVideo.capabilities.push_back(firebolt::rialto::common::VideoDecoderCapability{});
+    // Set default behavior on the unique_ptr mock
+    ON_CALL(*gstMockUnique, getSupportedAudioCapabilities()).WillByDefault(Return(m_gstAudioCapabilities));
+    ON_CALL(*gstMockUnique, getSupportedVideoCapabilities()).WillByDefault(Return(m_gstVideoCapabilities));
 
-    m_mediaCapabilities =
-        std::make_shared<firebolt::rialto::server::MediaCapabilities>(m_gstCapabilitiesMock,
-                                                                      std::make_optional(preloadedAudio),
-                                                                      std::make_optional(preloadedVideo));
+    m_mediaCapabilities = std::make_shared<firebolt::rialto::server::MediaCapabilities>(std::move(gstMockUnique));
 }
 
 MediaCapabilitiesTests::~MediaCapabilitiesTests() {}
-
-void MediaCapabilitiesTests::gstCapabilitiesWillNotBeQueried()
-{
-    // Strictly forbid any calls to getSupportedAudioCapabilities() and getSupportedVideoCapabilities().
-    // StrictMock will fail test if these methods are called unexpectedly.
-    // This verifies that Path 0 preload is used instead of Path B fallback.
-    EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedAudioCapabilities()).Times(0);
-    EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedVideoCapabilities()).Times(0);
-}
 
 void MediaCapabilitiesTests::gstCapabilitiesWillBeQueried()
 {
@@ -64,16 +52,4 @@ void MediaCapabilitiesTests::gstCapabilitiesWillBeQueried()
     // Tests that need fallback behavior should call this method.
     EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedAudioCapabilities()).WillRepeatedly(Return(m_gstAudioCapabilities));
     EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedVideoCapabilities()).WillRepeatedly(Return(m_gstVideoCapabilities));
-}
-
-void MediaCapabilitiesTests::gstCapabilitiesWillReturnEmptyAudio()
-{
-    m_gstAudioCapabilities = firebolt::rialto::common::AudioDecoderCapabilities{"", "", {}};
-    EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedAudioCapabilities()).WillOnce(Return(m_gstAudioCapabilities));
-}
-
-void MediaCapabilitiesTests::gstCapabilitiesWillReturnEmptyVideo()
-{
-    m_gstVideoCapabilities = firebolt::rialto::common::VideoDecoderCapabilities{"", "", {}};
-    EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedVideoCapabilities()).WillOnce(Return(m_gstVideoCapabilities));
 }

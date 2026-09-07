@@ -137,11 +137,8 @@ void ServerManagerModuleService::setConfiguration(::google::protobuf::RpcControl
                                             request->socketowner(), request->socketgroup());
     }
 
-    // Pass preloaded capabilities to PlaybackService via setPreloadedCapabilities()
-    // IMPORTANT: Always call setPreloadedCapabilities, even if both are nullopt.
-    // This is critical for reconfiguration scenarios where a later SetConfigurationRequest
-    // with both fields absent should clear previously preloaded capabilities.
-    // Without this, stale capabilities from earlier requests would persist.
+    // Pass preloaded capabilities to MediaPipelineService via setPreloadedCapabilities()
+    // This allows Path 0 (preloaded YAML) to be used before falling back to GStreamer Path B
     m_sessionServerManager.setPreloadedCapabilities(audioCaps, videoCaps);
 
     success &= m_sessionServerManager.configureServices(convertSessionServerState(request->initialsessionserverstate()),

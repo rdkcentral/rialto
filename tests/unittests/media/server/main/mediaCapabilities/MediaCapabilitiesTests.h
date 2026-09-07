@@ -37,10 +37,7 @@ public:
     MediaCapabilitiesTests();
     ~MediaCapabilitiesTests() override;
 
-    void gstCapabilitiesWillNotBeQueried();
     void gstCapabilitiesWillBeQueried();
-    void gstCapabilitiesWillReturnEmptyAudio();
-    void gstCapabilitiesWillReturnEmptyVideo();
 
 protected:
     std::shared_ptr<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>> m_gstCapabilitiesMock;

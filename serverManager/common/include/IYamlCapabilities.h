@@ -17,15 +17,15 @@
  * limitations under the License.
  */
 
-#ifndef RIALTO_SERVERMANAGER_SERVICE_I_YAML_CAPABILITIES_H_
-#define RIALTO_SERVERMANAGER_SERVICE_I_YAML_CAPABILITIES_H_
+#ifndef RIALTO_SERVERMANAGER_COMMON_I_YAML_CAPABILITIES_H_
+#define RIALTO_SERVERMANAGER_COMMON_I_YAML_CAPABILITIES_H_
 
 #include <AudioDecoderCapabilities.h>
 #include <DecoderCapabilitiesCommon.h>
 #include <VideoDecoderCapabilities.h>
 #include <memory>
 
-namespace rialto::servermanager::service
+namespace rialto::servermanager::common
 {
 class IYamlCapabilities
 {
@@ -45,6 +45,6 @@ public:
     getVideoDecoderCapabilities(firebolt::rialto::common::VideoDecoderCapabilities &capabilities) = 0;
 };
 
-} // namespace rialto::servermanager::service
+} // namespace rialto::servermanager::common
 
-#endif // RIALTO_SERVERMANAGER_SERVICE_I_YAML_CAPABILITIES_H_
+#endif // RIALTO_SERVERMANAGER_COMMON_I_YAML_CAPABILITIES_H_

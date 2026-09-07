@@ -19,6 +19,7 @@
 
 #include "MediaPipelineService.h"
 #include "IMediaPipelineServerInternal.h"
+#include "MediaCapabilities.h"
 #include "RialtoServerLogging.h"
 #include <exception>
 #include <future>
@@ -31,10 +32,12 @@ namespace firebolt::rialto::server::service
 MediaPipelineService::MediaPipelineService(
     IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-    IDecryptionService &decryptionService, const std::shared_ptr<firebolt::rialto::IMediaCapabilities> &mediaCapabilities)
+    IDecryptionService &decryptionService,
+    const std::shared_ptr<firebolt::rialto::IMediaCapabilitiesFactory> &mediaCapabilitiesFactory)
     : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
-      m_mediaCapabilities{mediaCapabilities}, m_decryptionService{decryptionService}
+      m_mediaCapabilities{mediaCapabilitiesFactory ? mediaCapabilitiesFactory->createMediaCapabilities() : nullptr},
+      m_decryptionService{decryptionService}
 {
     if (!m_mediaPipelineCapabilities)
     {
@@ -714,22 +717,9 @@ common::AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabili
 {
     RIALTO_SERVER_LOG_DEBUG("GetSupportedAudioCapabilities requested");
 
-    // Thread-safe read of preloaded capabilities
-    {
-        std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
-
-        // Path 0: Use preloaded audio capabilities if available (highest priority, from ServerManager)
-        if (m_preloadedAudioCapabilities.has_value())
-        {
-            RIALTO_SERVER_LOG_DEBUG("Audio capabilities from preloaded ServerManager data (Path 0)");
-            return *m_preloadedAudioCapabilities;
-        }
-    }
-
-    // Delegate to orchestrator for Path A (YAML) and Path B (GStreamer) logic
+    // Delegate entirely to MediaCapabilities (handles preloaded Path 0 + GStreamer Path B)
     if (m_mediaCapabilities)
     {
-        RIALTO_SERVER_LOG_DEBUG("Audio capabilities from orchestrator (tries YAML Path A, then GStreamer Path B)");
         return m_mediaCapabilities->getSupportedAudioCapabilities();
     }
 
@@ -742,22 +732,9 @@ common::VideoDecoderCapabilities MediaPipelineService::getSupportedVideoCapabili
 {
     RIALTO_SERVER_LOG_DEBUG("GetSupportedVideoCapabilities requested");
 
-    // Thread-safe read of preloaded capabilities
-    {
-        std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
-
-        // Path 0: Use preloaded video capabilities if available (highest priority, from ServerManager)
-        if (m_preloadedVideoCapabilities.has_value())
-        {
-            RIALTO_SERVER_LOG_DEBUG("Video capabilities from preloaded ServerManager data (Path 0)");
-            return *m_preloadedVideoCapabilities;
-        }
-    }
-
-    // Delegate to orchestrator for Path A (YAML) and Path B (GStreamer) logic
+    // Delegate entirely to MediaCapabilities (handles preloaded Path 0 + GStreamer Path B)
     if (m_mediaCapabilities)
     {
-        RIALTO_SERVER_LOG_DEBUG("Video capabilities from orchestrator (tries YAML Path A, then GStreamer Path B)");
         return m_mediaCapabilities->getSupportedVideoCapabilities();
     }
 
@@ -772,11 +749,21 @@ void MediaPipelineService::setPreloadedCapabilities(const std::optional<common::
     RIALTO_SERVER_LOG_DEBUG("setPreloadedCapabilities called with audio: %s, video: %s",
                             audioCaps.has_value() ? "yes" : "no", videoCaps.has_value() ? "yes" : "no");
 
-    // Thread-safe write of preloaded capabilities
+    // Delegate to MediaCapabilities to store preloaded state
+    if (m_mediaCapabilities)
     {
-        std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
-        m_preloadedAudioCapabilities = audioCaps;
-        m_preloadedVideoCapabilities = videoCaps;
+        // Cast to MediaCapabilities to call setPreloadedCapabilities
+        // MediaCapabilities is the only concrete implementation of IMediaCapabilities in this context
+        auto mediaCapabilitiesImpl =
+            dynamic_cast<firebolt::rialto::server::MediaCapabilities *>(m_mediaCapabilities.get());
+        if (mediaCapabilitiesImpl)
+        {
+            mediaCapabilitiesImpl->setPreloadedCapabilities(audioCaps, videoCaps);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_WARN("Failed to cast IMediaCapabilities to MediaCapabilities");
+        }
     }
 }
 

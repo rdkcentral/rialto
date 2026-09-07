@@ -34,10 +34,6 @@
 #include "IpcFactory.h"
 #include "PlaybackService.h"
 #include "SessionServerManager.h"
-// Orchestrator interfaces and implementations
-#include "IGstCapabilities.h"
-#include "IMediaCapabilities.h"
-#include "MediaCapabilities.h"
 #include <memory>
 
 namespace firebolt::rialto::server
@@ -66,29 +62,25 @@ private:
 
     firebolt::rialto::server::ipc::IpcFactory m_ipcFactory;
 
-    // Create GstCapabilities for fallback (safely handles null factory)
-    std::shared_ptr<IGstCapabilities> m_gstCapabilities;
-
-    // Create orchestrator (Path 0: preloaded from ServerManager, Path B: GStreamer fallback)
-    // CRITICAL: Must be initialized in constructor initializer list BEFORE m_playbackService
-    // uses it (in-class initializer runs in declaration order, not initializer list order)
-    // Explicit nullptr initializer ensures clear initialization semantics
-    std::shared_ptr<firebolt::rialto::IMediaCapabilities> m_mediaCapabilities = nullptr;
+    // Create MediaCapabilitiesFactory for PlaybackService via factory
+    // IGstCapabilities creation is hidden inside IMediaCapabilitiesServerInternalFactory
+    // (no exposure of gstplayer to service layer)
+    std::shared_ptr<firebolt::rialto::IMediaCapabilitiesFactory> m_mediaCapabilitiesFactory;
 
     firebolt::rialto::server::service::ControlService m_controlService{
         firebolt::rialto::server::IControlServerInternalFactory::createFactory()};
     firebolt::rialto::server::service::CdmService
         m_cdmService{firebolt::rialto::server::IMediaKeysServerInternalFactory::createFactory(),
                      firebolt::rialto::IMediaKeysCapabilitiesFactory::createFactory()};
-    // PlaybackService must receive non-nullptr m_mediaCapabilities
-    // Order: m_gstCapabilities → m_mediaCapabilities → m_playbackService (via in-class initializer)
+    // PlaybackService receives factory to create IMediaCapabilities
+    // Order: m_gstCapabilities → m_mediaCapabilitiesFactory → m_playbackService (via in-class initializer)
     firebolt::rialto::server::service::PlaybackService
         m_playbackService{firebolt::rialto::server::IMediaPipelineServerInternalFactory::createFactory(),
                           firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory(),
                           firebolt::rialto::server::IWebAudioPlayerServerInternalFactory::createFactory(),
                           firebolt::rialto::server::ISharedMemoryBufferFactory::createFactory(),
                           m_cdmService,
-                          m_mediaCapabilities};
+                          m_mediaCapabilitiesFactory};
     firebolt::rialto::server::service::SessionServerManager
         m_serviceManager{m_ipcFactory, m_playbackService, m_cdmService, m_controlService,
                          firebolt::rialto::server::IHeartbeatProcedureFactory::createFactory()};
