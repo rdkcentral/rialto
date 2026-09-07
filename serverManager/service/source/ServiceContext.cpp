@@ -43,6 +43,7 @@ ServiceContext::~ServiceContext()
     if (m_sessionServerAppManager)
     {
         m_sessionServerAppManager->setShuttingDown();
+        m_sessionServerAppManager.reset();
     }
 }
 
