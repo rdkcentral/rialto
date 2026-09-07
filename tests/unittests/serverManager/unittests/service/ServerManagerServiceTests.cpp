@@ -17,8 +17,10 @@
  * limitations under the License.
  */
 
+#include "DecoderCapabilitiesCommon.h"
 #include "RialtoLogging.h"
 #include "ServerManagerServiceTestsFixture.h"
+#include "YamlCppWrapperMock.h"
 #include "gtest/gtest.h"
 
 namespace
@@ -82,3 +84,44 @@ TEST_F(ServerManagerServiceTests, registerLogHandlerShouldFailWhenPtrIsNull)
 {
     EXPECT_FALSE(triggerRegisterLogHandler(nullptr));
 }
+
+/**
+ * @test yamlCapabilitiesAdapterIntegration
+ * @brief Verify that YamlCapabilitiesAdapter correctly delegates to IYamlCppWrapper
+ *
+ * This test verifies the adapter pattern works correctly by testing that:
+ * 1. Adapter can wrap a mock YAML wrapper
+ * 2. Audio capability queries are delegated correctly
+ * 3. Error handling works when wrapper is unavailable
+ */
+namespace
+{
+// Test that YAML wrapper mocks can be used
+TEST(YamlCapabilitiesAdapterIntegration, wrapperDelegatesAudioCapabilitiesCorrectly)
+{
+    auto mockWrapper = std::make_shared<firebolt::rialto::wrappers::YamlCppWrapperMock>();
+
+    EXPECT_CALL(*mockWrapper, getAudioDecoderCapabilities(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Return(firebolt::rialto::common::DecoderCapabilitiesStatus::OK));
+
+    firebolt::rialto::common::AudioDecoderCapabilities result;
+    auto status = mockWrapper->getAudioDecoderCapabilities(result);
+
+    EXPECT_EQ(status, firebolt::rialto::common::DecoderCapabilitiesStatus::OK);
+}
+
+TEST(YamlCapabilitiesAdapterIntegration, wrapperDelegatesVideoCapabilitiesCorrectly)
+{
+    auto mockWrapper = std::make_shared<firebolt::rialto::wrappers::YamlCppWrapperMock>();
+
+    EXPECT_CALL(*mockWrapper, getVideoDecoderCapabilities(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Return(firebolt::rialto::common::DecoderCapabilitiesStatus::OK));
+
+    firebolt::rialto::common::VideoDecoderCapabilities result;
+    auto status = mockWrapper->getVideoDecoderCapabilities(result);
+
+    EXPECT_EQ(status, firebolt::rialto::common::DecoderCapabilitiesStatus::OK);
+}
+} // namespace

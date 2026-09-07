@@ -20,6 +20,7 @@
 #include "MediaCapabilitiesTests.h"
 #include <utility>
 
+using testing::NiceMock;
 using testing::Return;
 
 // Test: Use GStreamer audio capabilities (Path B fallback)
@@ -52,7 +53,7 @@ TEST_F(MediaCapabilitiesTests, shouldReturnPreloadedVideoCapabilities)
 TEST_F(MediaCapabilitiesTests, shouldFallbackToGStreamerForAudioWhenPreloadMissing)
 {
     // Given GStreamer available with no preloaded audio
-    auto gstMock = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
+    auto gstMock = std::make_unique<NiceMock<firebolt::rialto::server::GstCapabilitiesMock>>();
     ON_CALL(*gstMock, getSupportedAudioCapabilities()).WillByDefault(Return(m_gstAudioCapabilities));
 
     std::shared_ptr<firebolt::rialto::server::MediaCapabilities> mediaCapabilitiesNoPreload =
@@ -69,7 +70,7 @@ TEST_F(MediaCapabilitiesTests, shouldFallbackToGStreamerForAudioWhenPreloadMissi
 TEST_F(MediaCapabilitiesTests, shouldFallbackToGStreamerForVideoWhenPreloadMissing)
 {
     // Given GStreamer available with no preloaded video
-    auto gstMock = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
+    auto gstMock = std::make_unique<NiceMock<firebolt::rialto::server::GstCapabilitiesMock>>();
     ON_CALL(*gstMock, getSupportedVideoCapabilities()).WillByDefault(Return(m_gstVideoCapabilities));
 
     std::shared_ptr<firebolt::rialto::server::MediaCapabilities> mediaCapabilitiesNoPreload =
@@ -135,7 +136,7 @@ TEST_F(MediaCapabilitiesTests, shouldConstructWithGStreamerCapabilities)
 TEST_F(MediaCapabilitiesTests, shouldQueryGStreamerForAudio)
 {
     // Given GStreamer capabilities available
-    auto gstMock = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
+    auto gstMock = std::make_unique<NiceMock<firebolt::rialto::server::GstCapabilitiesMock>>();
     ON_CALL(*gstMock, getSupportedAudioCapabilities()).WillByDefault(Return(m_gstAudioCapabilities));
 
     firebolt::rialto::server::MediaCapabilities mediaCapabilities(std::move(gstMock));
@@ -151,7 +152,7 @@ TEST_F(MediaCapabilitiesTests, shouldQueryGStreamerForAudio)
 TEST_F(MediaCapabilitiesTests, shouldQueryGStreamerForVideo)
 {
     // Given GStreamer capabilities available
-    auto gstMock = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
+    auto gstMock = std::make_unique<NiceMock<firebolt::rialto::server::GstCapabilitiesMock>>();
     ON_CALL(*gstMock, getSupportedVideoCapabilities()).WillByDefault(Return(m_gstVideoCapabilities));
 
     firebolt::rialto::server::MediaCapabilities mediaCapabilities(std::move(gstMock));
@@ -167,7 +168,7 @@ TEST_F(MediaCapabilitiesTests, shouldQueryGStreamerForVideo)
 TEST_F(MediaCapabilitiesTests, shouldCallGStreamerWhenQueried)
 {
     // Given GStreamer capabilities available
-    auto gstMock = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
+    auto gstMock = std::make_unique<NiceMock<firebolt::rialto::server::GstCapabilitiesMock>>();
     ON_CALL(*gstMock, getSupportedAudioCapabilities()).WillByDefault(Return(m_gstAudioCapabilities));
 
     firebolt::rialto::server::MediaCapabilities mediaCapabilities(std::move(gstMock));

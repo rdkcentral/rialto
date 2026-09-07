@@ -40,7 +40,8 @@ public:
     void gstCapabilitiesWillBeQueried();
 
 protected:
-    std::shared_ptr<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>> m_gstCapabilitiesMock;
+    firebolt::rialto::server::GstCapabilitiesMock *m_gstCapabilitiesMock =
+        nullptr; // Raw ptr to mock owned by m_mediaCapabilities
     std::shared_ptr<firebolt::rialto::server::MediaCapabilities> m_mediaCapabilities;
 
     firebolt::rialto::common::AudioDecoderCapabilities m_gstAudioCapabilities;

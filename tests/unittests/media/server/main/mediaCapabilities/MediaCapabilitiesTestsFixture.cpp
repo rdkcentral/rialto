@@ -22,22 +22,21 @@
 using testing::Return;
 
 MediaCapabilitiesTests::MediaCapabilitiesTests()
-    : m_gstCapabilitiesMock(std::make_shared<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>()),
-      m_gstAudioCapabilities{"gst_aac", "gst_opus", {}}, m_gstVideoCapabilities{"gst_h264", "gst_h265", {}}
+    : m_gstAudioCapabilities{"gst_aac", "gst_opus", {}}, m_gstVideoCapabilities{"gst_h264", "gst_h265", {}}
 {
     // Populate GStreamer mock capabilities with capability entries
     m_gstAudioCapabilities.capabilities.push_back(firebolt::rialto::common::AudioDecoderCapability{});
     m_gstVideoCapabilities.capabilities.push_back(firebolt::rialto::common::VideoDecoderCapability{});
 
-    // Note: Do NOT set default WillRepeatedly() expectations in constructor.
-    // Individual tests must explicitly set expectations for GStreamer method calls.
-    // This ensures test methods can control expectations precisely.
-
-    // Create orchestrator with unique_ptr gstCapabilities (MediaCapabilities owns it)
-    // Create a new mock instance (not a copy) for MediaCapabilities to own
+    // Create mock and inject into MediaCapabilities for ownership
+    // The mock is created as unique_ptr so MediaCapabilities owns it exclusively
     auto gstMockUnique = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
 
-    // Set default behavior on the unique_ptr mock
+    // Store raw pointer reference for setting expectations in tests
+    // This allows tests to set expectations on the SAME instance that's injected
+    m_gstCapabilitiesMock = gstMockUnique.get();
+
+    // Set default behavior on the mock that will be owned by MediaCapabilities
     ON_CALL(*gstMockUnique, getSupportedAudioCapabilities()).WillByDefault(Return(m_gstAudioCapabilities));
     ON_CALL(*gstMockUnique, getSupportedVideoCapabilities()).WillByDefault(Return(m_gstVideoCapabilities));
 
@@ -50,6 +49,7 @@ void MediaCapabilitiesTests::gstCapabilitiesWillBeQueried()
 {
     // Allow queries to GStreamer capabilities with default return values.
     // Tests that need fallback behavior should call this method.
+    // m_gstCapabilitiesMock points to the same instance injected into MediaCapabilities
     EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedAudioCapabilities()).WillRepeatedly(Return(m_gstAudioCapabilities));
     EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedVideoCapabilities()).WillRepeatedly(Return(m_gstVideoCapabilities));
 }

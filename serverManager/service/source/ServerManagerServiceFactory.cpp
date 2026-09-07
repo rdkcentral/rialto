@@ -28,6 +28,10 @@
 #include "ConfigReaderFactory.h"
 #endif
 
+// YAML capability reading headers
+#include "IYamlCapabilities.h"
+#include "IYamlCppWrapper.h"
+
 namespace
 {
 unsigned int convertSocketPermissions(firebolt::rialto::common::SocketPermissions permissions) // copy param intentionally
@@ -42,6 +46,47 @@ unsigned int convertSocketPermissions(firebolt::rialto::common::SocketPermission
     permissions.groupPermissions <<= 3;
     return (permissions.ownerPermissions | permissions.groupPermissions | permissions.otherPermissions);
 }
+
+/**
+ * @brief Adapter class that wraps IYamlCppWrapper as IYamlCapabilities
+ *
+ * This adapter allows the YAML wrapper from wrappers/ layer to be used
+ * as IYamlCapabilities in ServerManager layer. Both interfaces have
+ * identical method signatures for reading audio/video capabilities.
+ */
+class YamlCapabilitiesAdapter : public rialto::servermanager::common::IYamlCapabilities
+{
+private:
+    std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> m_yamlWrapper;
+
+public:
+    explicit YamlCapabilitiesAdapter(std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlWrapper)
+        : m_yamlWrapper(yamlWrapper)
+    {
+    }
+
+    ~YamlCapabilitiesAdapter() override = default;
+
+    firebolt::rialto::common::DecoderCapabilitiesStatus
+    getAudioDecoderCapabilities(firebolt::rialto::common::AudioDecoderCapabilities &capabilities) override
+    {
+        if (!m_yamlWrapper)
+        {
+            return firebolt::rialto::common::DecoderCapabilitiesStatus::INTERNAL_ERROR;
+        }
+        return m_yamlWrapper->getAudioDecoderCapabilities(capabilities);
+    }
+
+    firebolt::rialto::common::DecoderCapabilitiesStatus
+    getVideoDecoderCapabilities(firebolt::rialto::common::VideoDecoderCapabilities &capabilities) override
+    {
+        if (!m_yamlWrapper)
+        {
+            return firebolt::rialto::common::DecoderCapabilitiesStatus::INTERNAL_ERROR;
+        }
+        return m_yamlWrapper->getVideoDecoderCapabilities(capabilities);
+    }
+};
 } // namespace
 
 namespace rialto::servermanager::service
@@ -61,10 +106,41 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
 #endif
     ConfigHelper configHelper{std::move(configReaderFactory), config};
 
-    // Create MediaCapabilities (used in ServiceContext constructor)
-    // Note: ServiceContext accepts mediaCapabilities parameter with default nullptr
-    // The capabilities are now managed at the media/server layer via MediaCapabilities
-    std::shared_ptr<common::IYamlCapabilities> mediaCapabilities = nullptr;
+    // Create MediaCapabilities from YAML configuration via IYamlCppWrapper
+    std::shared_ptr<rialto::servermanager::common::IYamlCapabilities> mediaCapabilities = nullptr;
+
+    try
+    {
+        // Step 1: Instantiate IYamlCppWrapper via the factory
+        auto yamlCppWrapperFactory = firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory();
+        if (!yamlCppWrapperFactory)
+        {
+            RIALTO_SERVER_MANAGER_LOG_WARN(
+                "Failed to get IYamlCppWrapperFactory - YAML capabilities will not be preloaded");
+        }
+        else
+        {
+            // Step 2: Create wrapper instance for reading YAML files
+            auto yamlCppWrapper = yamlCppWrapperFactory->createYamlCppWrapper();
+            if (!yamlCppWrapper)
+            {
+                RIALTO_SERVER_MANAGER_LOG_WARN(
+                    "Failed to create IYamlCppWrapper - YAML capabilities will not be preloaded");
+            }
+            else
+            {
+                // Step 3: Wrap IYamlCppWrapper as IYamlCapabilities for ServerManager layer
+                // This adapter allows the wrappers/ layer component to be used in servermanager/ layer
+                mediaCapabilities = std::make_shared<YamlCapabilitiesAdapter>(yamlCppWrapper);
+                RIALTO_SERVER_MANAGER_LOG_DEBUG("Successfully wired up IYamlCppWrapper for YAML capability reading");
+            }
+        }
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN(
+            "Exception while creating YAML capabilities: %s - YAML capabilities will not be preloaded", e.what());
+    }
 
     std::unique_ptr<IServerManagerService> service = std::make_unique<
         ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, configHelper.getSessionServerEnvVars(),
