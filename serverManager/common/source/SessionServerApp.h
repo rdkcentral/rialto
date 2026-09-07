@@ -44,8 +44,7 @@ public:
                      ISessionServerAppManager &sessionServerAppManager,
                      const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
                      std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
-                     const std::string &socketOwner, const std::string &socketGroup,
-                     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket);
+                     const std::string &socketOwner, const std::string &socketGroup);
     SessionServerApp(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
                      const firebolt::rialto::common::AppConfig &appConfig,
                      const std::shared_ptr<firebolt::rialto::wrappers::ILinuxWrapper> &linuxWrapper,
@@ -60,7 +59,8 @@ public:
     bool launch() override;
     bool isPreloaded() const override;
     bool configure(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
-                   const firebolt::rialto::common::AppConfig &appConfig) override;
+                   const firebolt::rialto::common::AppConfig &appConfig,
+                   std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket) override;
     bool isConnected() const override;
     std::string getSessionManagementSocketName() const override;
     unsigned int getSessionManagementSocketPermissions() const override;
@@ -80,8 +80,10 @@ public:
     bool isNamedSocketInitialized() const override;
     int getSessionManagementSocketFd() const override;
     std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&releaseNamedSocket() override;
+    void cleanup() override;
 
 private:
+    void doCleanup();
     bool initializeSockets();
     void setupStartupTimer();
     bool spawnSessionServer();

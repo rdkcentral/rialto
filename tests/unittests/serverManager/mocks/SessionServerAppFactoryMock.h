@@ -38,9 +38,7 @@ public:
                  const firebolt::rialto::common::AppConfig &appConfig, SessionServerAppManager &sessionServerAppManager,
                  std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket),
                 (const, override));
-    MOCK_METHOD(std::shared_ptr<ISessionServerApp>, create,
-                (SessionServerAppManager & sessionServerAppManager,
-                 std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket),
+    MOCK_METHOD(std::shared_ptr<ISessionServerApp>, create, (SessionServerAppManager & sessionServerAppManager),
                 (const, override));
 };
 } // namespace rialto::servermanager::common
