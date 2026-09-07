@@ -26,27 +26,29 @@ using testing::Return;
 // Test: Use GStreamer audio capabilities (Path B fallback)
 TEST_F(MediaCapabilitiesTests, shouldReturnPreloadedAudioCapabilities)
 {
-    // Given GStreamer capabilities available
-    gstCapabilitiesWillBeQueried(); // Path B fallback will be used
+    // Given preloaded audio capabilities available (Path 0 priority)
+    m_mediaCapabilities->setPreloadedCapabilities(m_gstAudioCapabilities, std::nullopt);
 
     // When getting audio capabilities from the fixture's MediaCapabilities
     auto result = m_mediaCapabilities->getSupportedAudioCapabilities();
 
-    // Then result is returned from GStreamer fallback
+    // Then preloaded result is returned without querying GStreamer
     EXPECT_FALSE(result.capabilities.empty());
+    EXPECT_EQ(result.interfaceVersion, m_gstAudioCapabilities.interfaceVersion);
 }
 
-// Test: Use GStreamer video capabilities (Path B fallback)
+// Test: Use preloaded video capabilities (Path 0 priority)
 TEST_F(MediaCapabilitiesTests, shouldReturnPreloadedVideoCapabilities)
 {
-    // Given GStreamer capabilities available
-    gstCapabilitiesWillBeQueried(); // Path B fallback will be used
+    // Given preloaded video capabilities available (Path 0 priority)
+    m_mediaCapabilities->setPreloadedCapabilities(std::nullopt, m_gstVideoCapabilities);
 
     // When getting video capabilities from the fixture's MediaCapabilities
     auto result = m_mediaCapabilities->getSupportedVideoCapabilities();
 
-    // Then result is returned from GStreamer fallback
+    // Then preloaded result is returned without querying GStreamer
     EXPECT_FALSE(result.capabilities.empty());
+    EXPECT_EQ(result.interfaceVersion, m_gstVideoCapabilities.interfaceVersion);
 }
 
 // Test: Fall back to GStreamer for audio when preload missing (Path B)
@@ -83,30 +85,38 @@ TEST_F(MediaCapabilitiesTests, shouldFallbackToGStreamerForVideoWhenPreloadMissi
     EXPECT_FALSE(result.capabilities.empty());
 }
 
-// Test: GStreamer audio capabilities are returned when available
+// Test: Preloaded audio capabilities are preferred over GStreamer (Path 0 priority)
 TEST_F(MediaCapabilitiesTests, shouldPreferPreloadedAudioOverGStreamer)
 {
-    // Given GStreamer audio capabilities available
+    // Given both preloaded and GStreamer audio capabilities available
+    firebolt::rialto::common::AudioDecoderCapabilities preloadedAudio{"preload_v1", "1.0", {}};
+    preloadedAudio.capabilities.push_back(firebolt::rialto::common::AudioDecoderCapability{});
+    m_mediaCapabilities->setPreloadedCapabilities(preloadedAudio, std::nullopt);
     gstCapabilitiesWillBeQueried();
 
     // When getting audio capabilities
     auto result = m_mediaCapabilities->getSupportedAudioCapabilities();
 
-    // Then audio is returned from GStreamer
+    // Then preloaded audio is returned (Path 0 priority, not GStreamer fallback)
     EXPECT_FALSE(result.capabilities.empty());
+    EXPECT_EQ(result.interfaceVersion, "preload_v1");
 }
 
-// Test: GStreamer video capabilities are returned when available
+// Test: Preloaded video capabilities are preferred over GStreamer (Path 0 priority)
 TEST_F(MediaCapabilitiesTests, shouldPreferPreloadedVideoOverGStreamer)
 {
-    // Given GStreamer video capabilities available
+    // Given both preloaded and GStreamer video capabilities available
+    firebolt::rialto::common::VideoDecoderCapabilities preloadedVideo{"preload_v1", "1.0", {}};
+    preloadedVideo.capabilities.push_back(firebolt::rialto::common::VideoDecoderCapability{});
+    m_mediaCapabilities->setPreloadedCapabilities(std::nullopt, preloadedVideo);
     gstCapabilitiesWillBeQueried();
 
     // When getting video capabilities
     auto result = m_mediaCapabilities->getSupportedVideoCapabilities();
 
-    // Then video is returned from GStreamer
+    // Then preloaded video is returned (Path 0 priority, not GStreamer fallback)
     EXPECT_FALSE(result.capabilities.empty());
+    EXPECT_EQ(result.interfaceVersion, "preload_v1");
 }
 
 // Test: Constructor requires GStreamer capabilities

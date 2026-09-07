@@ -47,9 +47,9 @@ MediaCapabilitiesTests::~MediaCapabilitiesTests() {}
 
 void MediaCapabilitiesTests::gstCapabilitiesWillBeQueried()
 {
-    // Allow queries to GStreamer capabilities with default return values.
-    // Tests that need fallback behavior should call this method.
+    // Set default behavior for GStreamer capability queries.
+    // Using ON_CALL allows queries to happen optionally without strict expectations.
     // m_gstCapabilitiesMock points to the same instance injected into MediaCapabilities
-    EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedAudioCapabilities()).WillRepeatedly(Return(m_gstAudioCapabilities));
-    EXPECT_CALL(*m_gstCapabilitiesMock, getSupportedVideoCapabilities()).WillRepeatedly(Return(m_gstVideoCapabilities));
+    ON_CALL(*m_gstCapabilitiesMock, getSupportedAudioCapabilities()).WillByDefault(Return(m_gstAudioCapabilities));
+    ON_CALL(*m_gstCapabilitiesMock, getSupportedVideoCapabilities()).WillByDefault(Return(m_gstVideoCapabilities));
 }

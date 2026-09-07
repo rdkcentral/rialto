@@ -82,7 +82,12 @@ public:
 
             // Create MediaCapabilities orchestrator for GStreamer queries (fallback path)
             // Pass ownership of gstCapabilities to MediaCapabilities (unique_ptr)
-            mediaCapabilities = std::make_unique<MediaCapabilities>(std::move(gstCapabilitiesUnique));
+            auto mediaCapabilitiesPtr = std::make_unique<MediaCapabilities>(std::move(gstCapabilitiesUnique));
+
+            // Apply preloaded capabilities (Path 0 priority)
+            mediaCapabilitiesPtr->setPreloadedCapabilities(m_preloadedAudio, m_preloadedVideo);
+
+            mediaCapabilities = std::move(mediaCapabilitiesPtr);
 
             RIALTO_SERVER_LOG_DEBUG("Created server-side MediaCapabilities with GStreamer orchestration");
         }

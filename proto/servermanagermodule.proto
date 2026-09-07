@@ -20,6 +20,7 @@
 syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
+import "rialtoipc.proto";
 import "mediaCapabilitiesCommon.proto";
 
 package rialto;

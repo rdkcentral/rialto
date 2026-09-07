@@ -601,7 +601,8 @@ void SessionServerAppManagerTests::sessionServerWillResurrectSuspendedServerFrom
                 performSetConfiguration(kSecondServerId, firebolt::rialto::common::SessionServerState::ACTIVE,
                                         kSessionServerSocketName, kClientDisplayName,
                                         MaxResourceMatcher(kMaxSessions, kMaxWebAudioPlayers), kSocketPermissions,
-                                        kSocketOwner, kSocketGroup, kAppName))
+                                        kSocketOwner, kSocketGroup, kAppName, testing::Eq(std::nullopt),
+                                        testing::Eq(std::nullopt)))
         .WillOnce(Return(true));
     auto newPreloadedServer{std::make_shared<StrictMock<rialto::servermanager::common::SessionServerAppMock>>()};
     EXPECT_CALL(*newPreloadedServer, launch()).WillOnce(Return(false));

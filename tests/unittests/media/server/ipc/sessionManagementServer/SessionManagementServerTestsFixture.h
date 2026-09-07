@@ -26,6 +26,7 @@
 #include "ControlServiceMock.h"
 #include "ISessionManagementServer.h"
 #include "IpcServerMock.h"
+#include "LinuxWrapperMock.h"
 #include "MediaCapabilitiesModuleServiceMock.h"
 #include "MediaKeysCapabilitiesModuleServiceMock.h"
 #include "MediaKeysModuleServiceMock.h"

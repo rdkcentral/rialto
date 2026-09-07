@@ -86,18 +86,18 @@ TEST_F(ServerManagerServiceTests, registerLogHandlerShouldFailWhenPtrIsNull)
 }
 
 /**
- * @test yamlCapabilitiesAdapterIntegration
- * @brief Verify that YamlCapabilitiesAdapter correctly delegates to IYamlCppWrapper
+ * @test yamlCppWrapperMockDelegation
+ * @brief Verify that IYamlCppWrapper mocks can be used and calls can be expected.
  *
- * This test verifies the adapter pattern works correctly by testing that:
- * 1. Adapter can wrap a mock YAML wrapper
- * 2. Audio capability queries are delegated correctly
- * 3. Error handling works when wrapper is unavailable
+ * This test verifies the mock wrapper can be instantiated and expectations can be set:
+ * 1. Mock wrapper can be created via shared_ptr
+ * 2. Audio capability queries can be mocked
+ * 3. Video capability queries can be mocked
  */
 namespace
 {
 // Test that YAML wrapper mocks can be used
-TEST(YamlCapabilitiesAdapterIntegration, wrapperDelegatesAudioCapabilitiesCorrectly)
+TEST(YamlCppWrapperMockDelegation, wrapperDelegatesAudioCapabilitiesCorrectly)
 {
     auto mockWrapper = std::make_shared<firebolt::rialto::wrappers::YamlCppWrapperMock>();
 
@@ -111,7 +111,7 @@ TEST(YamlCapabilitiesAdapterIntegration, wrapperDelegatesAudioCapabilitiesCorrec
     EXPECT_EQ(status, firebolt::rialto::common::DecoderCapabilitiesStatus::OK);
 }
 
-TEST(YamlCapabilitiesAdapterIntegration, wrapperDelegatesVideoCapabilitiesCorrectly)
+TEST(YamlCppWrapperMockDelegation, wrapperDelegatesVideoCapabilitiesCorrectly)
 {
     auto mockWrapper = std::make_shared<firebolt::rialto::wrappers::YamlCppWrapperMock>();
 
