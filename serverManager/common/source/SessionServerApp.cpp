@@ -369,21 +369,28 @@ bool SessionServerApp::spawnSessionServer()
                     m_childInitialized = true;
                     m_processStartupCv.notify_one();
                 }
-                if (!firebolt::rialto::logging::isConsoleLoggingEnabled())
                 {
+                    // Force stdout/stderr to a file, independent of any redirection already applied upstream
+                    const std::string kStdioLogPath{"/tmp/RialtoServer." + std::to_string(m_kServerId) + ".stdout.log"};
                     int devNull = m_linuxWrapper->open("/dev/null", O_RDWR, 0);
-                    if (devNull < 0)
+                    int logFd = m_linuxWrapper->open(kStdioLogPath.c_str(), O_CREAT | O_WRONLY | O_APPEND, 0644);
+                    if (devNull < 0 || logFd < 0)
                     {
                         m_linuxWrapper->exit(EXIT_FAILURE);
                         return false; // wrapper function is not [[noreturn]]
                     }
                     m_linuxWrapper->dup2(devNull, STDIN_FILENO);
-                    m_linuxWrapper->dup2(devNull, STDOUT_FILENO);
-                    m_linuxWrapper->dup2(devNull, STDERR_FILENO);
+                    m_linuxWrapper->dup2(logFd, STDOUT_FILENO);
+                    m_linuxWrapper->dup2(logFd, STDERR_FILENO);
                     if (devNull > STDERR_FILENO)
                     {
                         m_linuxWrapper->close(devNull);
                         devNull = -1;
+                    }
+                    if (logFd > STDERR_FILENO)
+                    {
+                        m_linuxWrapper->close(logFd);
+                        logFd = -1;
                     }
                 }
                 const std::string kAppMgmtSocketStr{std::to_string(newSocket)};
