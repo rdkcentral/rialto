@@ -35,6 +35,8 @@ const char *toString(const firebolt::rialto::common::SessionServerState &state)
         return "NotRunning";
     case firebolt::rialto::common::SessionServerState::ERROR:
         return "Error";
+    case firebolt::rialto::common::SessionServerState::SUSPENDED:
+        return "Suspended";
     }
     return "Unknown";
 }

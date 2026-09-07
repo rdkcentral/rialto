@@ -56,7 +56,7 @@ SessionServerManager::~SessionServerManager()
     // The following reset() will ensure that the thread ApplicationManagementServer::m_ipcServerThread
     // isn't currently calling any methods within this class (while it is being destructed)
     // Particularly, the mentioned thread is responsible for calling the method
-    // SessionServerManager::switchToNotRunning() which then triggers a call to this destuctor
+    // SessionServerManager::teardownService() which then triggers a call to this destuctor
     // after it calls stopService()
     m_applicationManagementServer.reset();
 
@@ -153,8 +153,9 @@ bool SessionServerManager::setState(const common::SessionServerState &state)
         return switchToInactive();
     }
     case common::SessionServerState::NOT_RUNNING:
+    case common::SessionServerState::SUSPENDED:
     {
-        return switchToNotRunning();
+        return teardownService(state);
     }
     default:
     {
@@ -250,12 +251,13 @@ bool SessionServerManager::switchToInactive()
     return false;
 }
 
-bool SessionServerManager::switchToNotRunning()
+bool SessionServerManager::teardownService(const common::SessionServerState &state)
 {
-    RIALTO_SERVER_LOG_MIL("RialtoServer state switch to NOT_RUNNING requested");
-    if (m_currentState.load() == common::SessionServerState::NOT_RUNNING)
+    RIALTO_SERVER_LOG_MIL("RialtoServer tear down requested");
+    if (m_currentState.load() == common::SessionServerState::NOT_RUNNING ||
+        m_currentState.load() == common::SessionServerState::SUSPENDED)
     {
-        RIALTO_SERVER_LOG_DEBUG("Session server already in NotRunning state.");
+        RIALTO_SERVER_LOG_DEBUG("Session server already in NotRunning or Suspended state.");
         return true;
     }
     // Free resources before sending notification to ServerManager
@@ -264,9 +266,9 @@ bool SessionServerManager::switchToNotRunning()
     m_controlService.setApplicationState(ApplicationState::UNKNOWN);
 
     bool result{true};
-    if (m_applicationManagementServer->sendStateChangedEvent(common::SessionServerState::NOT_RUNNING))
+    if (m_applicationManagementServer->sendStateChangedEvent(state))
     {
-        m_currentState.store(common::SessionServerState::NOT_RUNNING);
+        m_currentState.store(state);
     }
     else
     {
