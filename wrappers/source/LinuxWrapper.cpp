@@ -18,6 +18,7 @@
  */
 
 #include "LinuxWrapper.h"
+#include <fcntl.h>
 #include <sys/stat.h>
 
 namespace firebolt::rialto::wrappers
@@ -107,5 +108,10 @@ int LinuxWrapper::chmod(const char *pathname, mode_t mode) const
 int LinuxWrapper::chown(const char *pathname, uid_t owner, gid_t group) const
 {
     return ::chown(pathname, owner, group);
+}
+
+int LinuxWrapper::fcntl(int fd, int op, int args) const
+{
+    return ::fcntl(fd, op, args);
 }
 } // namespace firebolt::rialto::wrappers

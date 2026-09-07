@@ -55,6 +55,7 @@ public:
     int getgrnam_r(const char *name, group *grp, char *buf, size_t buflen, group **result) const override;
     int chmod(const char *pathname, mode_t mode) const override;
     int chown(const char *pathname, uid_t owner, gid_t group) const override;
+    int fcntl(int fd, int op, int args) const override;
 };
 } // namespace firebolt::rialto::wrappers
 

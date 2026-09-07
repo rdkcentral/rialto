@@ -55,6 +55,10 @@ firebolt::rialto::common::SessionServerState convert(const rialto::SessionServer
     {
         return firebolt::rialto::common::SessionServerState::ERROR;
     }
+    case rialto::SessionServerState::SUSPENDED:
+    {
+        return firebolt::rialto::common::SessionServerState::SUSPENDED;
+    }
     }
     return firebolt::rialto::common::SessionServerState::ERROR;
 }
@@ -81,6 +85,10 @@ rialto::SessionServerState convert(const firebolt::rialto::common::SessionServer
     case firebolt::rialto::common::SessionServerState::ERROR:
     {
         return rialto::SessionServerState::ERROR;
+    }
+    case firebolt::rialto::common::SessionServerState::SUSPENDED:
+    {
+        return rialto::SessionServerState::SUSPENDED;
     }
     }
     return rialto::SessionServerState::ERROR;
@@ -138,7 +146,7 @@ Client::Client(std::unique_ptr<common::ISessionServerAppManager> &sessionServerA
 Client::~Client()
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Client for serverId: %d is destructed", m_serverId);
-    m_isShuttingDown = true;
+    m_isServerManagerShuttingDown = true;
     if (m_ipcLoop && m_ipcLoop->channel())
     {
         for (const auto &tag : m_eventTags)
@@ -181,6 +189,11 @@ bool Client::performSetState(const firebolt::rialto::common::SessionServerState 
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("failed to set status - client is not active for serverId: %d", m_serverId);
         return false;
+    }
+    if (firebolt::rialto::common::SessionServerState::SUSPENDED == state ||
+        firebolt::rialto::common::SessionServerState::NOT_RUNNING == state)
+    {
+        m_isServerShuttingDown = true;
     }
     rialto::SetStateRequest request;
     rialto::SetStateResponse response;
@@ -326,10 +339,9 @@ bool Client::setLogLevels(const service::LoggingLevels &logLevels) const
 
 void Client::onDisconnected() const
 {
-    if (!m_sessionServerAppManager || m_isShuttingDown)
+    if (!m_sessionServerAppManager || m_isServerManagerShuttingDown || m_isServerShuttingDown)
     {
-        RIALTO_SERVER_MANAGER_LOG_DEBUG("Connection to serverId: %d broken, but server manager is shutting down",
-                                        m_serverId);
+        RIALTO_SERVER_MANAGER_LOG_DEBUG("Connection to serverId: %d broken, but server is shutting down", m_serverId);
         return;
     }
     RIALTO_SERVER_MANAGER_LOG_WARN("Connection to serverId: %d broken, server probably crashed. Starting recovery",
@@ -340,7 +352,7 @@ void Client::onDisconnected() const
 void Client::onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent> &event) const
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("StateChangedEvent received for serverId: %d", m_serverId);
-    if (!m_sessionServerAppManager || !event || m_isShuttingDown)
+    if (!m_sessionServerAppManager || !event || m_isServerManagerShuttingDown)
     {
         RIALTO_SERVER_MANAGER_LOG_WARN("Problem during StateChangedEvent processing");
         return;
@@ -351,7 +363,7 @@ void Client::onStateChangedEvent(const std::shared_ptr<rialto::StateChangedEvent
 void Client::onAckEvent(const std::shared_ptr<rialto::AckEvent> &event) const
 {
     RIALTO_SERVER_MANAGER_LOG_DEBUG("AckEvent received for serverId: %d", m_serverId);
-    if (!m_sessionServerAppManager || !event || m_isShuttingDown)
+    if (!m_sessionServerAppManager || !event || m_isServerManagerShuttingDown)
     {
         RIALTO_SERVER_MANAGER_LOG_WARN("Problem during AckEvent processing");
         return;

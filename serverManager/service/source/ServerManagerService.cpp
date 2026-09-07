@@ -20,6 +20,7 @@
 #include "ServerManagerService.h"
 #include "ISessionServerAppManager.h"
 #include "RialtoServerManagerLogging.h"
+#include "Utils.h"
 
 namespace
 {

@@ -30,10 +30,11 @@ namespace firebolt::rialto::common
 /**
  * @brief Represents all possible states of session server.
  *
- * Session Servers can be in one of four states, Not Running (session server not loaded or running),
- * Active (session server loaded, running and able to stream AV, Inactive (session server loaded but unable
- * to stream AV) and Uninitialized (session server loaded, waiting for initialization data). Error is used,
- * when something went wrong (for example connection failed)
+ * Session Servers can be in one of six states, Not Running (session server not loaded or running),
+ * Active (session server loaded, running and able to stream AV), Inactive (session server loaded but unable
+ * to stream AV), Suspended (RialtoServer process not running, IPC connection with the client app alive)
+ * and Uninitialized (session server loaded, waiting for initialization data). Error is used, when
+ * something went wrong (for example connection failed)
  *
  */
 enum class SessionServerState
@@ -42,7 +43,8 @@ enum class SessionServerState
     INACTIVE,
     ACTIVE,
     NOT_RUNNING,
-    ERROR
+    ERROR,
+    SUSPENDED
 };
 
 /**

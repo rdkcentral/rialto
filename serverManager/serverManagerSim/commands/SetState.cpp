@@ -38,6 +38,10 @@ firebolt::rialto::common::SessionServerState convert(const std::string &state)
     {
         return firebolt::rialto::common::SessionServerState::NOT_RUNNING;
     }
+    else if ("Suspended" == state)
+    {
+        return firebolt::rialto::common::SessionServerState::SUSPENDED;
+    }
     return firebolt::rialto::common::SessionServerState::ERROR;
 }
 } // namespace

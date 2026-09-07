@@ -40,9 +40,7 @@ public:
     create(const std::string &appName, const firebolt::rialto::common::SessionServerState &initialState,
            const firebolt::rialto::common::AppConfig &appConfig, SessionServerAppManager &sessionServerAppManager,
            std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket) const = 0;
-    virtual std::shared_ptr<ISessionServerApp>
-    create(SessionServerAppManager &sessionServerAppManager,
-           std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket) const = 0;
+    virtual std::shared_ptr<ISessionServerApp> create(SessionServerAppManager &sessionServerAppManager) const = 0;
 };
 } // namespace rialto::servermanager::common
 

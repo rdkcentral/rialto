@@ -82,15 +82,14 @@ SessionServerApp::SessionServerApp(const std::shared_ptr<firebolt::rialto::wrapp
                                    const std::list<std::string> &environmentVariables,
                                    const std::string &sessionServerPath,
                                    std::chrono::milliseconds sessionServerStartupTimeout, unsigned int socketPermissions,
-                                   const std::string &socketOwner, const std::string &socketGroup,
-                                   std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket)
+                                   const std::string &socketOwner, const std::string &socketGroup)
     : m_kServerId{generateServerId()}, m_initialState{firebolt::rialto::common::SessionServerState::UNINITIALIZED},
       m_socks{-1, -1}, m_linuxWrapper{linuxWrapper}, m_timerFactory{timerFactory},
       m_sessionServerAppManager{sessionServerAppManager}, m_pid{-1}, m_isPreloaded{true},
       m_kSessionServerPath{sessionServerPath}, m_kSessionServerStartupTimeout{sessionServerStartupTimeout},
       m_kSessionManagementSocketPermissions{socketPermissions}, m_kSessionManagementSocketOwner{socketOwner},
       m_kSessionManagementSocketGroup{socketGroup}, m_childInitialized{false},
-      m_expectedState{firebolt::rialto::common::SessionServerState::UNINITIALIZED}, m_namedSocket{std::move(namedSocket)}
+      m_expectedState{firebolt::rialto::common::SessionServerState::UNINITIALIZED}
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Creating preloaded SessionServerApp with serverId: %d", m_kServerId);
     std::transform(environmentVariables.begin(), environmentVariables.end(), std::back_inserter(m_environmentVariables),
@@ -135,12 +134,7 @@ SessionServerApp::SessionServerApp(const std::string &appName,
 SessionServerApp::~SessionServerApp()
 {
     RIALTO_SERVER_MANAGER_LOG_INFO("Application %d is destructed", m_kServerId);
-    cancelStartupTimerInternal();
-    waitForChildProcess();
-    if (m_socks[0] >= 0)
-    {
-        m_linuxWrapper->close(m_socks[0]);
-    }
+    doCleanup();
     for (char *var : m_environmentVariables)
     {
         if (var)
@@ -184,13 +178,15 @@ bool SessionServerApp::isPreloaded() const
 
 bool SessionServerApp::configure(const std::string &appName,
                                  const firebolt::rialto::common::SessionServerState &initialState,
-                                 const firebolt::rialto::common::AppConfig &appConfig)
+                                 const firebolt::rialto::common::AppConfig &appConfig,
+                                 std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket)
 {
     if (!m_isPreloaded)
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("SessionServerApp is already configured!");
         return false;
     }
+    m_namedSocket = std::move(namedSocket);
     m_appName = appName;
     m_initialState = initialState;
     m_sessionManagementSocketName = getSessionManagementSocketPath(appConfig);
@@ -420,6 +416,7 @@ void SessionServerApp::waitForChildProcess()
         RIALTO_SERVER_MANAGER_LOG_SYS_WARN(errno, "waitpid failed for %d", m_kServerId);
     }
     killTimer->cancel();
+    m_pid = -1;
     RIALTO_SERVER_MANAGER_LOG_DEBUG("Server with id: %d exited.", m_kServerId);
 }
 
@@ -444,5 +441,20 @@ std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&SessionServerApp::release
         m_namedSocket->blockNewConnections();
     }
     return std::move(m_namedSocket);
+}
+
+void SessionServerApp::cleanup()
+{
+    doCleanup();
+}
+
+void SessionServerApp::doCleanup()
+{
+    cancelStartupTimerInternal();
+    waitForChildProcess();
+    if (m_socks[0] >= 0)
+    {
+        m_linuxWrapper->close(m_socks[0]);
+    }
 }
 } // namespace rialto::servermanager::common

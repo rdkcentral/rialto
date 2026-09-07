@@ -51,14 +51,12 @@ std::shared_ptr<ISessionServerApp> SessionServerAppFactory::create(
                                               m_kSocketGroup, std::move(namedSocket));
 }
 
-std::shared_ptr<ISessionServerApp>
-SessionServerAppFactory::create(SessionServerAppManager &sessionServerAppManager,
-                                std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket) const
+std::shared_ptr<ISessionServerApp> SessionServerAppFactory::create(SessionServerAppManager &sessionServerAppManager) const
 {
     return std::make_shared<SessionServerApp>(m_linuxWrapperFactory->createLinuxWrapper(),
                                               firebolt::rialto::common::ITimerFactory::getFactory(),
                                               sessionServerAppManager, m_kEnvironmentVariables, m_kSessionServerPath,
                                               m_kSessionServerStartupTimeout, m_kSocketPermissions, m_kSocketOwner,
-                                              m_kSocketGroup, std::move(namedSocket));
+                                              m_kSocketGroup);
 }
 } // namespace rialto::servermanager::common
