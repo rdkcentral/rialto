@@ -31,17 +31,17 @@ std::shared_ptr<ITextTrackPluginWrapper> TextTrackPluginWrapperFactory::getTextT
 TextTrackPluginWrapper::~TextTrackPluginWrapper()
 {
 #ifdef RIALTO_ENABLE_TEXT_TRACK
-    m_textTrackPlugin.Close(WPEFramework::RPC::CommunicationTimeOut);
+    m_textTrackPlugin.Close(Thunder::RPC::CommunicationTimeOut);
 #endif // RIALTO_ENABLE_TEXT_TRACK
 }
 
 std::uint32_t TextTrackPluginWrapper::open()
 {
 #ifdef RIALTO_ENABLE_TEXT_TRACK
-    return m_textTrackPlugin.Open(WPEFramework::RPC::CommunicationTimeOut, m_textTrackPlugin.Connector(),
+    return m_textTrackPlugin.Open(Thunder::RPC::CommunicationTimeOut, m_textTrackPlugin.Connector(),
                                   "org.rdk.TextTrack");
 #else
-    return WPEFramework::Core::ERROR_UNAVAILABLE;
+    return Thunder::Core::ERROR_UNAVAILABLE;
 #endif // RIALTO_ENABLE_TEXT_TRACK
 }
 
@@ -57,7 +57,7 @@ bool TextTrackPluginWrapper::isOperational() const
 std::shared_ptr<ITextTrackWrapper> TextTrackPluginWrapper::interface()
 {
 #ifdef RIALTO_ENABLE_TEXT_TRACK
-    WPEFramework::Exchange::ITextTrack *textTrackControlInterface = m_textTrackPlugin.Interface();
+    Thunder::Exchange::ITextTrack *textTrackControlInterface = m_textTrackPlugin.Interface();
     if (textTrackControlInterface)
     {
         return std::make_shared<TextTrackWrapper>(textTrackControlInterface);

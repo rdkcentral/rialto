@@ -55,24 +55,24 @@ ExternalProject_Add(
 )
 
 add_library(
-    WPEFrameworkCOM
+    ThunderCOM
     INTERFACE
 )
 
-add_library(WPEFrameworkCOM::WPEFrameworkCOM ALIAS WPEFrameworkCOM)
-add_dependencies( WPEFrameworkCOM thunder-repo-com )
+add_library(ThunderCOM::ThunderCOM ALIAS ThunderCOM)
+add_dependencies( ThunderCOM thunder-repo-com )
 
 include(CMakePackageConfigHelpers)
-set(WPEFRAMEWORK_COM_INCLUDE_INSTALL_DIR "${PROJECT_SOURCE_DIR}/stubs/wpeframework-com/third-party/Source/" )
-set(PROJECT_CONFIG_FILE "${PROJECT_BINARY_DIR}/stubs/wpeframework-com/wpeframeworkcom-config.cmake")
+set(Thunder_COM_INCLUDE_INSTALL_DIR "${PROJECT_SOURCE_DIR}/stubs/thunder-com/third-party/Source/" )
+set(PROJECT_CONFIG_FILE "${PROJECT_BINARY_DIR}/stubs/thunder-com/thundercom-config.cmake")
 
-configure_package_config_file(wpeframeworkcom-config.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/wpeframeworkcom-config.cmake
+configure_package_config_file(thundercom-config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/thundercom-config.cmake
   INSTALL_DESTINATION ${CMAKE_MODULE_PATH}
-  PATH_VARS WPEFRAMEWORK_COM_INCLUDE_INSTALL_DIR)
+  PATH_VARS Thunder_COM_INCLUDE_INSTALL_DIR)
 
 target_include_directories(
-    WPEFrameworkCOM
+    ThunderCOM
 
     INTERFACE
     third-party/Source

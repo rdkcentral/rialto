@@ -214,47 +214,47 @@ file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/patches/core/Version.h
         DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/third-party/Source/core)
 
 add_library(
-    WPEFrameworkCore
+    ThunderCore
 
     SHARED
     core.cpp
 )
 
-add_library(WPEFrameworkCore::WPEFrameworkCore ALIAS WPEFrameworkCore)
-add_dependencies( WPEFrameworkCore thunder-repo-core )
-add_dependencies( WPEFrameworkCore thunder-repo-plugins )
-add_dependencies( WPEFrameworkCore thunder-repo-messaging )
-add_dependencies( WPEFrameworkCore thunder-repo-cryptalgo )
-add_dependencies( WPEFrameworkCore thunder-repo-websocket )
+add_library(ThunderCore::ThunderCore ALIAS ThunderCore)
+add_dependencies( ThunderCore thunder-repo-core )
+add_dependencies( ThunderCore thunder-repo-plugins )
+add_dependencies( ThunderCore thunder-repo-messaging )
+add_dependencies( ThunderCore thunder-repo-cryptalgo )
+add_dependencies( ThunderCore thunder-repo-websocket )
 
 include(CMakePackageConfigHelpers)
-set(WPEFRAMEWORK_CORE_INCLUDE_INSTALL_DIR "${PROJECT_SOURCE_DIR}/stubs/wpeframework-core/third-party/Source/" )
-set(PROJECT_CONFIG_FILE "${PROJECT_BINARY_DIR}/stubs/wpeframework-core/wpeframeworkcore-config.cmake")
+set(Thunder_CORE_INCLUDE_INSTALL_DIR "${PROJECT_SOURCE_DIR}/stubs/thunder-core/third-party/Source/" )
+set(PROJECT_CONFIG_FILE "${PROJECT_BINARY_DIR}/stubs/thunder-core/thunder-config.cmake")
 
-configure_package_config_file(wpeframeworkcore-config.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/wpeframeworkcore-config.cmake
+configure_package_config_file(thunder-config.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/thunder-config.cmake
   INSTALL_DESTINATION ${CMAKE_MODULE_PATH}
-  PATH_VARS WPEFRAMEWORK_CORE_INCLUDE_INSTALL_DIR)
+  PATH_VARS Thunder_CORE_INCLUDE_INSTALL_DIR)
 
 target_include_directories(
-    WPEFrameworkCore
+    ThunderCore
 
     PUBLIC
     third-party/Source
 )
 
 set_target_properties(
-    WPEFrameworkCore
+    ThunderCore
         PROPERTIES SOVERSION  ${PROJECT_VERSION_MAJOR}
                    VERSION    ${CMAKE_PROJECT_VERSION}
         )
 
 install(FILES "${PROJECT_CONFIG_FILE}"
   DESTINATION ${CMAKE_MODULE_PATH}
-  COMPONENT wpeframework-core
+  COMPONENT thunder-core
 )
 
 install (
-        TARGETS WPEFrameworkCore LIBRARY
+        TARGETS ThunderCore LIBRARY
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )

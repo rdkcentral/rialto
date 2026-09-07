@@ -17,11 +17,11 @@
 # limitations under the License.
 #
 
-set(WPEFRAMEWORK_COM_VERSION 1.0.0)
+set(Thunder_COM_VERSION 1.0.0)
 
 @PACKAGE_INIT@
 
-set_and_check(WPEFRAMEWORK_COM_INCLUDE_DIRS "@WPEFRAMEWORK_COM_INCLUDE_INSTALL_DIR@")
+set_and_check(Thunder_COM_INCLUDE_DIRS "@Thunder_COM_INCLUDE_INSTALL_DIR@")
 
 
-check_required_components(WPEFrameworkCOM)
+check_required_components(ThunderCOM)

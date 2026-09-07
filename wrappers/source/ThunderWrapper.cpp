@@ -29,11 +29,11 @@ std::shared_ptr<IThunderWrapper> ThunderWrapperFactory::getThunderWrapper()
 
 const char *ThunderWrapper::errorToString(std::uint32_t errorCode) const
 {
-    return WPEFramework::Core::ErrorToString(errorCode);
+    return Thunder::Core::ErrorToString(errorCode);
 }
 
 bool ThunderWrapper::isSuccessful(std::uint32_t errorCode) const
 {
-    return errorCode == WPEFramework::Core::ERROR_NONE;
+    return errorCode == Thunder::Core::ERROR_NONE;
 }
 } // namespace firebolt::rialto::wrappers

@@ -46,7 +46,7 @@ public:
 
 #ifdef RIALTO_ENABLE_TEXT_TRACK
 private:
-    WPEFramework::RPC::SmartInterfaceType<WPEFramework::Exchange::ITextTrack> m_textTrackPlugin;
+    Thunder::RPC::SmartInterfaceType<Thunder::Exchange::ITextTrack> m_textTrackPlugin;
 #endif // RIALTO_ENABLE_TEXT_TRACK
 };
 } // namespace firebolt::rialto::wrappers

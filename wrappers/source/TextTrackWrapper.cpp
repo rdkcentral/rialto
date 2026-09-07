@@ -22,27 +22,27 @@
 #ifdef RIALTO_ENABLE_TEXT_TRACK
 namespace
 {
-WPEFramework::Exchange::ITextTrack::DataType
+Thunder::Exchange::ITextTrack::DataType
 convertDataType(const firebolt::rialto::wrappers::ITextTrackWrapper::DataType &dataType)
 {
     switch (dataType)
     {
     case firebolt::rialto::wrappers::ITextTrackWrapper::DataType::PES:
-        return WPEFramework::Exchange::ITextTrack::DataType::PES;
+        return Thunder::Exchange::ITextTrack::DataType::PES;
     case firebolt::rialto::wrappers::ITextTrackWrapper::DataType::TTML:
-        return WPEFramework::Exchange::ITextTrack::DataType::TTML;
+        return Thunder::Exchange::ITextTrack::DataType::TTML;
     case firebolt::rialto::wrappers::ITextTrackWrapper::DataType::CC:
-        return WPEFramework::Exchange::ITextTrack::DataType::CC;
+        return Thunder::Exchange::ITextTrack::DataType::CC;
     case firebolt::rialto::wrappers::ITextTrackWrapper::DataType::WEBVTT:
-        return WPEFramework::Exchange::ITextTrack::DataType::WEBVTT;
+        return Thunder::Exchange::ITextTrack::DataType::WEBVTT;
     }
-    return WPEFramework::Exchange::ITextTrack::DataType::PES;
+    return Thunder::Exchange::ITextTrack::DataType::PES;
 }
 } // namespace
 
 namespace firebolt::rialto::wrappers
 {
-TextTrackWrapper::TextTrackWrapper(WPEFramework::Exchange::ITextTrack *textTrackControlInterface)
+TextTrackWrapper::TextTrackWrapper(Thunder::Exchange::ITextTrack *textTrackControlInterface)
     : m_textTrackControlInterface{textTrackControlInterface}
 {
 }

@@ -31,7 +31,7 @@ namespace firebolt::rialto::wrappers
 class TextTrackWrapper : public ITextTrackWrapper
 {
 public:
-    explicit TextTrackWrapper(WPEFramework::Exchange::ITextTrack *textTrackControlInterface);
+    explicit TextTrackWrapper(Thunder::Exchange::ITextTrack *textTrackControlInterface);
     ~TextTrackWrapper() override;
 
     std::uint32_t openSession(const std::string &displayName, std::uint32_t &sessionId) const override;
@@ -50,7 +50,7 @@ public:
     std::uint32_t associateVideoDecoder(std::uint32_t sessionId, const std::string &videoDecoder) const override;
 
 private:
-    WPEFramework::Exchange::ITextTrack *m_textTrackControlInterface;
+    Thunder::Exchange::ITextTrack *m_textTrackControlInterface;
 };
 } // namespace firebolt::rialto::wrappers
 

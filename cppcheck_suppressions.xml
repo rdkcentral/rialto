@@ -32,7 +32,7 @@
     </suppress>
     <suppress>
         <id>unusedFunction</id>
-        <fileName>stubs/wpeframework-core/core.cpp</fileName>
+        <fileName>stubs/thunder-core/core.cpp</fileName>
     </suppress>
     <suppress>
         <id>knownConditionTrueFalse</id>
@@ -57,6 +57,6 @@
     </suppress>
     <suppress>
         <id>toomanyconfigs</id>
-        <fileName>stubs/wpeframework-core/third-party/Source/core/JSON.cpp</fileName>
+        <fileName>stubs/thunder-core/third-party/Source/core/JSON.cpp</fileName>
     </suppress>
 </suppressions>
