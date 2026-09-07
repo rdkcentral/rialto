@@ -110,9 +110,9 @@ target_include_directories(
 
         PUBLIC
         interface
+        ${CMAKE_SOURCE_DIR}/common/public/include
 
         PRIVATE
-        ${CMAKE_SOURCE_DIR}/common/public/include
         include
         ${GStreamerApp_INCLUDE_DIRS}
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>

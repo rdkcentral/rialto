@@ -61,7 +61,7 @@ private:
 
 public:
     explicit YamlCapabilitiesAdapter(std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlWrapper)
-        : m_yamlWrapper(yamlWrapper)
+        : m_yamlWrapper(std::move(yamlWrapper))
     {
     }
 

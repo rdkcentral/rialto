@@ -37,7 +37,7 @@ SessionServerAppManager::SessionServerAppManager(
       m_eventThread{eventThreadFactory->createEventThread("rialtoservermanager-appmanager")},
       m_sessionServerAppFactory{std::move(sessionServerAppFactory)}, m_stateObserver{stateObserver},
       m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)},
-      m_namedSocketFactory{namedSocketFactory}, m_isShuttingDown{false}
+      m_namedSocketFactory{namedSocketFactory}, m_mediaCapabilities{mediaCapabilities}, m_isShuttingDown{false}
 {
 }
 
@@ -563,9 +563,29 @@ bool SessionServerAppManager::configureSessionServerWithSocketName(const std::sh
 
     const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
                                                                           kSessionServer->getMaxWebAudioPlayers()};
+
+    // Retrieve YAML-preloaded capabilities if available
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> audioCapabilities;
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> videoCapabilities;
+    if (m_mediaCapabilities)
+    {
+        firebolt::rialto::common::AudioDecoderCapabilities audioCaps;
+        firebolt::rialto::common::VideoDecoderCapabilities videoCaps;
+        if (m_mediaCapabilities->getAudioDecoderCapabilities(audioCaps) ==
+            firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
+        {
+            audioCapabilities = audioCaps;
+        }
+        if (m_mediaCapabilities->getVideoDecoderCapabilities(videoCaps) ==
+            firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
+        {
+            videoCapabilities = videoCaps;
+        }
+    }
+
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketName,
                                                   kClientDisplayName, kMaxResource, kSocketPermissions, kSocketOwner,
-                                                  kSocketGroup, kAppName, std::nullopt, std::nullopt))
+                                                  kSocketGroup, kAppName, audioCapabilities, videoCapabilities))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         kSessionServer->getServerId());
@@ -585,8 +605,29 @@ bool SessionServerAppManager::configureSessionServerWithSocketFd(const std::shar
 
     const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
                                                                           kSessionServer->getMaxWebAudioPlayers()};
+
+    // Retrieve YAML-preloaded capabilities if available
+    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> audioCapabilities;
+    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> videoCapabilities;
+    if (m_mediaCapabilities)
+    {
+        firebolt::rialto::common::AudioDecoderCapabilities audioCaps;
+        firebolt::rialto::common::VideoDecoderCapabilities videoCaps;
+        if (m_mediaCapabilities->getAudioDecoderCapabilities(audioCaps) ==
+            firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
+        {
+            audioCapabilities = audioCaps;
+        }
+        if (m_mediaCapabilities->getVideoDecoderCapabilities(videoCaps) ==
+            firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
+        {
+            videoCapabilities = videoCaps;
+        }
+    }
+
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketFd,
-                                                  kClientDisplayName, kMaxResource, kAppName, std::nullopt, std::nullopt))
+                                                  kClientDisplayName, kMaxResource, kAppName, audioCapabilities,
+                                                  videoCapabilities))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         kSessionServer->getServerId());

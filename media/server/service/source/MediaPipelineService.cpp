@@ -18,6 +18,7 @@
  */
 
 #include "MediaPipelineService.h"
+#include "IGstCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "MediaCapabilities.h"
 #include "RialtoServerLogging.h"
@@ -37,6 +38,7 @@ MediaPipelineService::MediaPipelineService(
     : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
       m_mediaCapabilities{mediaCapabilitiesFactory ? mediaCapabilitiesFactory->createMediaCapabilities() : nullptr},
+      m_gstCapabilities{firebolt::rialto::server::IGstCapabilitiesFactory::getFactory()->createGstCapabilities()},
       m_decryptionService{decryptionService}
 {
     if (!m_mediaPipelineCapabilities)
@@ -723,8 +725,15 @@ common::AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabili
         return m_mediaCapabilities->getSupportedAudioCapabilities();
     }
 
-    // Fallback: Return empty capabilities
-    RIALTO_SERVER_LOG_WARN("Audio capabilities not available - no orchestrator configured");
+    // Fallback: Query GStreamer directly instead of returning empty capabilities
+    if (m_gstCapabilities)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Audio capabilities not available from preloaded source - querying GStreamer");
+        return m_gstCapabilities->getSupportedAudioCapabilities();
+    }
+
+    // Last resort: Return empty capabilities only if no fallback is available
+    RIALTO_SERVER_LOG_WARN("Audio capabilities not available - no orchestrator or GStreamer fallback configured");
     return common::AudioDecoderCapabilities();
 }
 
@@ -738,8 +747,15 @@ common::VideoDecoderCapabilities MediaPipelineService::getSupportedVideoCapabili
         return m_mediaCapabilities->getSupportedVideoCapabilities();
     }
 
-    // Fallback: Return empty capabilities
-    RIALTO_SERVER_LOG_WARN("Video capabilities not available - no orchestrator configured");
+    // Fallback: Query GStreamer directly instead of returning empty capabilities
+    if (m_gstCapabilities)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Video capabilities not available from preloaded source - querying GStreamer");
+        return m_gstCapabilities->getSupportedVideoCapabilities();
+    }
+
+    // Last resort: Return empty capabilities only if no fallback is available
+    RIALTO_SERVER_LOG_WARN("Video capabilities not available - no orchestrator or GStreamer fallback configured");
     return common::VideoDecoderCapabilities();
 }
 
