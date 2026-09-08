@@ -121,7 +121,7 @@ private:
     IPlaybackService &m_playbackService;
     std::shared_ptr<IMediaPipelineServerInternalFactory> m_mediaPipelineFactory;
     std::unique_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
-    std::shared_ptr<firebolt::rialto::IMediaCapabilities> m_mediaCapabilities;
+    std::unique_ptr<firebolt::rialto::IMediaCapabilities> m_mediaCapabilities;
     std::unique_ptr<firebolt::rialto::server::IGstCapabilities> m_gstCapabilities;
     IDecryptionService &m_decryptionService;
     std::map<int, std::unique_ptr<IMediaPipelineServerInternal>> m_mediaPipelines;

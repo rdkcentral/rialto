@@ -37,7 +37,8 @@ SessionServerAppManager::SessionServerAppManager(
       m_eventThread{eventThreadFactory->createEventThread("rialtoservermanager-appmanager")},
       m_sessionServerAppFactory{std::move(sessionServerAppFactory)}, m_stateObserver{stateObserver},
       m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)},
-      m_namedSocketFactory{namedSocketFactory}, m_mediaCapabilities{mediaCapabilities}, m_isShuttingDown{false}
+      m_namedSocketFactory{namedSocketFactory}, m_mediaCapabilities{std::move(mediaCapabilities)},
+      m_isShuttingDown{false}
 {
 }
 

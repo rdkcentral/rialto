@@ -20,9 +20,15 @@
 #include "MediaCapabilitiesTestMethods.h"
 #include <utility>
 
+using ::testing::_;
+using ::testing::Invoke;
+
 namespace firebolt::rialto::client::ct
 {
-MediaCapabilitiesTestMethods::MediaCapabilitiesTestMethods() {}
+MediaCapabilitiesTestMethods::MediaCapabilitiesTestMethods()
+    : m_mediaCapabilitiesModuleMock{std::make_shared<::testing::StrictMock<MediaCapabilitiesModuleMock>>()}
+{
+}
 
 MediaCapabilitiesTestMethods::~MediaCapabilitiesTestMethods() = default;
 
@@ -44,28 +50,79 @@ void MediaCapabilitiesTestMethods::destroyMediaCapabilitiesObject()
 void MediaCapabilitiesTestMethods::getSupportedAudioCapabilities()
 {
     EXPECT_NE(m_mediaCapabilities, nullptr);
-    // Smoke test: verify the IPC call does not crash
-    m_mediaCapabilities->getSupportedAudioCapabilities();
+    // Set up mock to return audio capabilities with at least one capability
+    EXPECT_CALL(*m_mediaCapabilitiesModuleMock, getSupportedAudioCapabilities(_, _, _, _))
+        .WillOnce(Invoke(
+            [](::google::protobuf::RpcController *, const ::firebolt::rialto::GetSupportedAudioCapabilitiesRequest *,
+               ::firebolt::rialto::AudioCapabilities *response, ::google::protobuf::Closure *done)
+            {
+                // Populate response with at least one audio capability
+                auto audioCapability = response->add_capabilities();
+                // Set a basic PCM capability to make it non-empty
+                auto pcmCapability = audioCapability->mutable_pcm();
+                auto profileCapability = pcmCapability->mutable_base();
+                profileCapability->set_max_channels(2);
+                done->Run();
+            }));
+    // When the IPC service is available, getSupportedAudioCapabilities() should return non-empty capabilities
+    auto audioCapabilities = m_mediaCapabilities->getSupportedAudioCapabilities();
+    EXPECT_FALSE(audioCapabilities.capabilities.empty());
 }
 
 void MediaCapabilitiesTestMethods::getSupportedVideoCapabilities()
 {
     EXPECT_NE(m_mediaCapabilities, nullptr);
-    // Smoke test: verify the IPC call does not crash
-    m_mediaCapabilities->getSupportedVideoCapabilities();
+    // Set up mock to return video capabilities with at least one capability
+    EXPECT_CALL(*m_mediaCapabilitiesModuleMock, getSupportedVideoCapabilities(_, _, _, _))
+        .WillOnce(Invoke(
+            [](::google::protobuf::RpcController *, const ::firebolt::rialto::GetSupportedVideoCapabilitiesRequest *,
+               ::firebolt::rialto::VideoCapabilities *response, ::google::protobuf::Closure *done)
+            {
+                // Populate response with at least one video capability
+                auto videoCapability = response->add_capabilities();
+                // Set a basic H264 codec capability to make it non-empty
+                auto codecCapabilities = videoCapability->mutable_codec_capabilities();
+                auto h264Capability = codecCapabilities->mutable_h264();
+                auto h264Profile = h264Capability->add_profiles();
+                h264Profile->set_type(::firebolt::rialto::VideoCapabilities::H264_PROFILE_HIGH);
+                done->Run();
+            }));
+    // When the IPC service is available, getSupportedVideoCapabilities() should return non-empty capabilities
+    auto videoCapabilities = m_mediaCapabilities->getSupportedVideoCapabilities();
+    EXPECT_FALSE(videoCapabilities.capabilities.empty());
 }
 
 void MediaCapabilitiesTestMethods::getSupportedAudioCapabilitiesFailure()
 {
     EXPECT_NE(m_mediaCapabilities, nullptr);
-    // Smoke test: verify the IPC call does not crash
-    m_mediaCapabilities->getSupportedAudioCapabilities();
+    // Set up mock to return empty audio capabilities (failure case)
+    EXPECT_CALL(*m_mediaCapabilitiesModuleMock, getSupportedAudioCapabilities(_, _, _, _))
+        .WillOnce(Invoke(
+            [](::google::protobuf::RpcController *, const ::firebolt::rialto::GetSupportedAudioCapabilitiesRequest *,
+               ::firebolt::rialto::AudioCapabilities *, ::google::protobuf::Closure *done)
+            {
+                // Don't populate response - return empty capabilities
+                done->Run();
+            }));
+    // When the IPC service is not available, getSupportedAudioCapabilities() should return empty capabilities
+    auto audioCapabilities = m_mediaCapabilities->getSupportedAudioCapabilities();
+    EXPECT_TRUE(audioCapabilities.capabilities.empty());
 }
 
 void MediaCapabilitiesTestMethods::getSupportedVideoCapabilitiesFailure()
 {
     EXPECT_NE(m_mediaCapabilities, nullptr);
-    // Smoke test: verify the IPC call does not crash
-    m_mediaCapabilities->getSupportedVideoCapabilities();
+    // Set up mock to return empty video capabilities (failure case)
+    EXPECT_CALL(*m_mediaCapabilitiesModuleMock, getSupportedVideoCapabilities(_, _, _, _))
+        .WillOnce(Invoke(
+            [](::google::protobuf::RpcController *, const ::firebolt::rialto::GetSupportedVideoCapabilitiesRequest *,
+               ::firebolt::rialto::VideoCapabilities *, ::google::protobuf::Closure *done)
+            {
+                // Don't populate response - return empty capabilities
+                done->Run();
+            }));
+    // When the IPC service is not available, getSupportedVideoCapabilities() should return empty capabilities
+    auto videoCapabilities = m_mediaCapabilities->getSupportedVideoCapabilities();
+    EXPECT_TRUE(videoCapabilities.capabilities.empty());
 }
 } // namespace firebolt::rialto::client::ct

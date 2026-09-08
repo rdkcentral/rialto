@@ -38,7 +38,11 @@ MediaPipelineService::MediaPipelineService(
     : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
       m_mediaCapabilities{mediaCapabilitiesFactory ? mediaCapabilitiesFactory->createMediaCapabilities() : nullptr},
-      m_gstCapabilities{firebolt::rialto::server::IGstCapabilitiesFactory::getFactory()->createGstCapabilities()},
+      m_gstCapabilities{[]
+                        {
+                            auto factory = firebolt::rialto::server::IGstCapabilitiesFactory::getFactory();
+                            return factory ? factory->createGstCapabilities() : nullptr;
+                        }()},
       m_decryptionService{decryptionService}
 {
     if (!m_mediaPipelineCapabilities)

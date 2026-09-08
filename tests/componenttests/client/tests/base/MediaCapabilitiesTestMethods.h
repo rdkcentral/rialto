@@ -22,6 +22,7 @@
 
 #include "AudioDecoderCapabilities.h"
 #include "IMediaCapabilities.h"
+#include "MediaCapabilitiesModuleMock.h"
 #include "VideoDecoderCapabilities.h"
 #include <gtest/gtest.h>
 #include <memory>
@@ -40,6 +41,7 @@ protected:
     // Objects
     std::shared_ptr<IMediaCapabilitiesFactory> m_mediaCapabilitiesFactory;
     std::unique_ptr<IMediaCapabilities> m_mediaCapabilities;
+    std::shared_ptr<::testing::StrictMock<MediaCapabilitiesModuleMock>> m_mediaCapabilitiesModuleMock;
 
     // Api methods
     void createMediaCapabilitiesObject();
