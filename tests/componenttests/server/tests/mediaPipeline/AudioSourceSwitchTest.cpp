@@ -96,8 +96,8 @@ public:
         EXPECT_CALL(*m_gstWrapperMock, gstCapsSetSimpleIntStub(&m_audioCaps, StrEq("rate"), G_TYPE_INT, kSampleRate));
         EXPECT_CALL(*m_gstWrapperMock, gstAppSrcGetCaps(&m_audioAppSrc)).WillOnce(Return(&m_oldCaps));
         // gstCapsIsEqual is not checked - the removed audio source forces the codec channel switch
-        EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_oldCaps)).WillOnce(Return(&m_oldCapsStr));
-        EXPECT_CALL(*m_glibWrapperMock, gFree(&m_oldCapsStr));
+        EXPECT_CALL(*m_gstWrapperMock, gstCapsToString(&m_oldCaps)).WillOnce(Return(m_oldAacCapsStr));
+        EXPECT_CALL(*m_glibWrapperMock, gFree(m_oldAacCapsStr));
         EXPECT_CALL(*m_glibWrapperMock, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
         EXPECT_CALL(*m_rdkGstreamerUtilsWrapperMock,
                     performAudioTrackCodecChannelSwitch(_, _, _, _, _, _, _, _, _, _, kSvpEnabled,
@@ -118,6 +118,7 @@ public:
 private:
     GstCaps m_oldCaps{};
     gchar m_oldCapsStr{};
+    gchar m_oldAacCapsStr[11]{"audio/mpeg"};
 };
 /*
  * Component Test: Switch audio source procedure test
