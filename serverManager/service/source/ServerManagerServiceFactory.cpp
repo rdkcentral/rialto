@@ -63,24 +63,6 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
 #endif
     ConfigHelper configHelper{std::move(configReaderFactory), config};
 
-    // Create YAML wrapper for preloaded audio/video decoder capabilities, if available
-    std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCapabilities = nullptr;
-    auto yamlCppWrapperFactory = firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory();
-    if (!yamlCppWrapperFactory)
-    {
-        RIALTO_SERVER_MANAGER_LOG_WARN(
-            "Failed to get IYamlCppWrapperFactory - YAML capabilities will not be preloaded");
-    }
-    else
-    {
-        yamlCapabilities = yamlCppWrapperFactory->createYamlCppWrapper();
-        if (!yamlCapabilities)
-        {
-            RIALTO_SERVER_MANAGER_LOG_WARN(
-                "Failed to create IYamlCppWrapper - YAML capabilities will not be preloaded");
-        }
-    }
-
     std::unique_ptr<IServerManagerService> service = std::make_unique<
         ServerManagerService>(std::make_unique<ServiceContext>(stateObserver, configHelper.getSessionServerEnvVars(),
                                                                configHelper.getSessionServerPath(),
@@ -90,8 +72,7 @@ std::unique_ptr<IServerManagerService> create(const std::shared_ptr<IStateObserv
                                                                convertSocketPermissions(
                                                                    configHelper.getSocketPermissions()),
                                                                configHelper.getSocketPermissions().owner,
-                                                               configHelper.getSocketPermissions().group,
-                                                               yamlCapabilities),
+                                                               configHelper.getSocketPermissions().group),
                               configHelper.getNumOfPreloadedServers());
 #ifdef RIALTO_ENABLE_CONFIG_FILE
     service->setLogLevels(configHelper.getLoggingLevels());
