@@ -31,6 +31,7 @@ add_library(
         source/EventThread.cpp
         source/LinuxUtils.cpp
         source/Timer.cpp
+        source/memset.S
     )
 
 set_property (
