@@ -62,10 +62,6 @@ TEST_F(RialtoClientMediaPipelineIpcGetDurationTest, ChannelDisconnected)
 
     int64_t duration;
     EXPECT_FALSE(m_mediaPipelineIpc->getDuration(duration));
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

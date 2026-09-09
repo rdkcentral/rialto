@@ -48,6 +48,15 @@ void MediaKeysIpcTestBase::createMediaKeysIpc()
 
 void MediaKeysIpcTestBase::destroyMediaKeysIpc()
 {
+    if (m_channelDetached)
+    {
+        // A failed api call has already detached the channel, so the media keys are not destroyed
+        // on the server
+        m_mediaKeysIpc.reset();
+        EXPECT_EQ(m_mediaKeysIpc, nullptr);
+        return;
+    }
+
     expectIpcApiCallSuccess();
     expectUnsubscribeEvents();
 

@@ -67,10 +67,6 @@ TEST_F(RialtoClientMediaPipelineIpcGetStatsTest, ChannelDisconnected)
     uint64_t renderedFrames;
     uint64_t droppedFrames;
     EXPECT_FALSE(m_mediaPipelineIpc->getStats(m_kSourceId, renderedFrames, droppedFrames));
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**
