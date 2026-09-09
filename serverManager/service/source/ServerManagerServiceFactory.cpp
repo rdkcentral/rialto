@@ -28,8 +28,6 @@
 #include "ConfigReaderFactory.h"
 #endif
 
-#include "IYamlCppWrapper.h"
-
 namespace
 {
 unsigned int convertSocketPermissions(firebolt::rialto::common::SocketPermissions permissions) // copy param intentionally
