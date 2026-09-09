@@ -32,6 +32,7 @@ add_library(
         source/LinuxUtils.cpp
         source/Timer.cpp
         source/Profiler.cpp
+        source/memset.S
     )
 
 set_property (
