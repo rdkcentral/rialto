@@ -29,20 +29,19 @@
 
 namespace firebolt::rialto::server::service
 {
-PlaybackService::PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
-                                 std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-                                 std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
-                                 std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
-                                 IDecryptionService &decryptionService,
-                                 const std::shared_ptr<firebolt::rialto::IMediaCapabilitiesFactory> &mediaCapabilitiesFactory)
-    : m_shmBufferFactory{std::move(shmBufferFactory)}, m_isActive{false}, m_maxPlaybacks{0}, m_maxWebAudioPlayers{0}
-{
-    // MediaPipelineService will create MediaCapabilities from factory (consistency pattern)
-    m_mediaPipelineService = std::make_unique<MediaPipelineService>(*this, std::move(mediaPipelineFactory),
+PlaybackService::PlaybackService(
+    std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+    std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
+    std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
+    std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory, IDecryptionService &decryptionService,
+    std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory)
+    : m_shmBufferFactory{std::move(shmBufferFactory)}, m_isActive{false}, m_maxPlaybacks{0}, m_maxWebAudioPlayers{0},
+      m_mediaPipelineService{std::make_unique<MediaPipelineService>(*this, std::move(mediaPipelineFactory),
                                                                     std::move(mediaPipelineCapabilitiesFactory),
-                                                                    decryptionService, mediaCapabilitiesFactory);
-    m_webAudioPlayerService = std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory));
-
+                                                                    decryptionService,
+                                                                    std::move(mediaCapabilitiesFactory))},
+      m_webAudioPlayerService{std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory))}
+{
     RIALTO_SERVER_LOG_DEBUG("PlaybackService is constructed");
 }
 

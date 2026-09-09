@@ -24,7 +24,7 @@
 #include "IServiceContext.h"
 #include "ISessionServerAppManager.h"
 #include "IStateObserver.h"
-#include "IYamlCapabilities.h"
+#include "IYamlCppWrapper.h"
 #include <list>
 #include <memory>
 #include <string>
@@ -39,7 +39,7 @@ public:
                    std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckInterval,
                    unsigned numOfFailedPingsBeforeRecovery, unsigned int socketPermissions,
                    const std::string &socketOwner, const std::string &socketGroup,
-                   const std::shared_ptr<common::IYamlCapabilities> &mediaCapabilities = nullptr);
+                   const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCapabilities = nullptr);
     virtual ~ServiceContext() = default;
 
     common::ISessionServerAppManager &getSessionServerAppManager() override;

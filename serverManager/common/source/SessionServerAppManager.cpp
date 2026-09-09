@@ -32,14 +32,29 @@ SessionServerAppManager::SessionServerAppManager(
     std::unique_ptr<IHealthcheckServiceFactory> &&healthcheckServiceFactory,
     const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory,
     const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory,
-    std::shared_ptr<common::IYamlCapabilities> mediaCapabilities)
+    std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCapabilities)
     : m_ipcController{ipcController},
       m_eventThread{eventThreadFactory->createEventThread("rialtoservermanager-appmanager")},
       m_sessionServerAppFactory{std::move(sessionServerAppFactory)}, m_stateObserver{stateObserver},
       m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)},
-      m_namedSocketFactory{namedSocketFactory}, m_mediaCapabilities{std::move(mediaCapabilities)},
-      m_isShuttingDown{false}
+      m_namedSocketFactory{namedSocketFactory}, m_yamlCapabilities{std::move(yamlCapabilities)}, m_isShuttingDown{false}
 {
+    // Cache audio/video capabilities once - avoids re-reading the YAML file on every server configuration
+    if (m_yamlCapabilities)
+    {
+        firebolt::rialto::common::AudioDecoderCapabilities audioCaps;
+        if (m_yamlCapabilities->getAudioDecoderCapabilities(audioCaps) ==
+            firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
+        {
+            m_cachedAudioCapabilities = audioCaps;
+        }
+        firebolt::rialto::common::VideoDecoderCapabilities videoCaps;
+        if (m_yamlCapabilities->getVideoDecoderCapabilities(videoCaps) ==
+            firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
+        {
+            m_cachedVideoCapabilities = videoCaps;
+        }
+    }
 }
 
 SessionServerAppManager::~SessionServerAppManager()
@@ -565,24 +580,9 @@ bool SessionServerAppManager::configureSessionServerWithSocketName(const std::sh
     const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
                                                                           kSessionServer->getMaxWebAudioPlayers()};
 
-    // Retrieve YAML-preloaded capabilities if available
-    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> audioCapabilities;
-    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> videoCapabilities;
-    if (m_mediaCapabilities)
-    {
-        firebolt::rialto::common::AudioDecoderCapabilities audioCaps;
-        firebolt::rialto::common::VideoDecoderCapabilities videoCaps;
-        if (m_mediaCapabilities->getAudioDecoderCapabilities(audioCaps) ==
-            firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
-        {
-            audioCapabilities = audioCaps;
-        }
-        if (m_mediaCapabilities->getVideoDecoderCapabilities(videoCaps) ==
-            firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
-        {
-            videoCapabilities = videoCaps;
-        }
-    }
+    // Retrieve cached YAML-preloaded capabilities if available
+    const auto &audioCapabilities = m_cachedAudioCapabilities;
+    const auto &videoCapabilities = m_cachedVideoCapabilities;
 
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketName,
                                                   kClientDisplayName, kMaxResource, kSocketPermissions, kSocketOwner,
@@ -607,24 +607,9 @@ bool SessionServerAppManager::configureSessionServerWithSocketFd(const std::shar
     const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
                                                                           kSessionServer->getMaxWebAudioPlayers()};
 
-    // Retrieve YAML-preloaded capabilities if available
-    std::optional<firebolt::rialto::common::AudioDecoderCapabilities> audioCapabilities;
-    std::optional<firebolt::rialto::common::VideoDecoderCapabilities> videoCapabilities;
-    if (m_mediaCapabilities)
-    {
-        firebolt::rialto::common::AudioDecoderCapabilities audioCaps;
-        firebolt::rialto::common::VideoDecoderCapabilities videoCaps;
-        if (m_mediaCapabilities->getAudioDecoderCapabilities(audioCaps) ==
-            firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
-        {
-            audioCapabilities = audioCaps;
-        }
-        if (m_mediaCapabilities->getVideoDecoderCapabilities(videoCaps) ==
-            firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
-        {
-            videoCapabilities = videoCaps;
-        }
-    }
+    // Retrieve cached YAML-preloaded capabilities if available
+    const auto &audioCapabilities = m_cachedAudioCapabilities;
+    const auto &videoCapabilities = m_cachedVideoCapabilities;
 
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketFd,
                                                   kClientDisplayName, kMaxResource, kAppName, audioCapabilities,

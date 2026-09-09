@@ -34,26 +34,6 @@ std::unique_ptr<IApplicationSessionServer> ApplicationSessionServerFactory::crea
     return std::make_unique<ApplicationSessionServer>();
 }
 
-ApplicationSessionServer::ApplicationSessionServer()
-    : m_mediaCapabilitiesFactory(
-          [this]()
-          {
-              // Create factory via server-internal factory (IGstCapabilities hidden inside factory implementation)
-              // This avoids exposing gstplayer library to service layer
-              auto factory = firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory::createFactory();
-              if (!factory)
-              {
-                  RIALTO_SERVER_LOG_WARN("Failed to create IMediaCapabilitiesServerInternalFactory");
-                  return std::shared_ptr<firebolt::rialto::IMediaCapabilitiesFactory>{};
-              }
-              // No preloaded yet - it will arrive via SetConfigurationRequest
-              return factory->createMediaCapabilitiesFactory(std::nullopt, std::nullopt);
-          }())
-{
-    // m_mediaCapabilitiesFactory now fully initialized BEFORE m_playbackService constructor runs
-    // IGstCapabilities creation is hidden inside the factory implementation
-}
-
 bool ApplicationSessionServer::init(int argc, char *argv[])
 {
     return m_serviceManager.initialize(argc, argv);

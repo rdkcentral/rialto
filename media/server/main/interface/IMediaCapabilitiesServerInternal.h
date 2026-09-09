@@ -27,6 +27,34 @@
 namespace firebolt::rialto::server
 {
 /**
+ * @brief The definition of the IMediaCapabilitiesServerInternal interface.
+ *
+ * Extends IMediaCapabilities with the ability to accept preloaded (YAML) capabilities
+ * supplied by ServerManager at startup. This interface should be implemented by Rialto Server only.
+ *
+ * Following the pattern: IMediaPipeline vs IMediaPipelineServerInternal
+ */
+class IMediaCapabilitiesServerInternal : public firebolt::rialto::IMediaCapabilities
+{
+public:
+    IMediaCapabilitiesServerInternal() = default;
+    virtual ~IMediaCapabilitiesServerInternal() = default;
+
+    /**
+     * @brief Sets preloaded capabilities from ServerManager
+     *
+     * Called when ServerManager provides preloaded YAML capabilities.
+     * These take priority over GStreamer discovery when present.
+     *
+     * @param[in] audioCapabilities Optional preloaded audio capabilities
+     * @param[in] videoCapabilities Optional preloaded video capabilities
+     */
+    virtual void setPreloadedCapabilities(
+        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCapabilities,
+        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCapabilities) = 0;
+};
+
+/**
  * @brief Server-internal factory for MediaCapabilities
  *
  * This interface provides server-specific factory methods for creating MediaCapabilities.
@@ -52,19 +80,14 @@ public:
     static std::shared_ptr<IMediaCapabilitiesServerInternalFactory> createFactory();
 
     /**
-     * @brief Creates a public IMediaCapabilitiesFactory with server-side context.
+     * @brief Creates an IMediaCapabilitiesServerInternal instance.
      *
-     * This method is SERVER-INTERNAL ONLY. It creates a factory that knows about
-     * preloaded capabilities provided by ServerManager.
+     * This method is SERVER-INTERNAL ONLY. It creates the orchestrator that handles
+     * preloaded capabilities and GStreamer fallback.
      *
-     * @param[in] preloadedAudio   Optional audio capabilities preloaded by ServerManager
-     * @param[in] preloadedVideo   Optional video capabilities preloaded by ServerManager
-     *
-     * @retval the factory instance (implements IMediaCapabilitiesFactory) or null on error.
+     * @retval the orchestrator instance or null on error.
      */
-    virtual std::shared_ptr<firebolt::rialto::IMediaCapabilitiesFactory> createMediaCapabilitiesFactory(
-        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &preloadedAudio,
-        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &preloadedVideo) const = 0;
+    virtual std::shared_ptr<IMediaCapabilitiesServerInternal> createMediaCapabilitiesServerInternal() const = 0;
 };
 
 } // namespace firebolt::rialto::server

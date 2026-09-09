@@ -19,8 +19,8 @@
 
 #include "MediaPipelineService.h"
 #include "IGstCapabilities.h"
+#include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaPipelineServerInternal.h"
-#include "MediaCapabilities.h"
 #include "RialtoServerLogging.h"
 #include <exception>
 #include <future>
@@ -34,15 +34,11 @@ MediaPipelineService::MediaPipelineService(
     IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
     IDecryptionService &decryptionService,
-    const std::shared_ptr<firebolt::rialto::IMediaCapabilitiesFactory> &mediaCapabilitiesFactory)
+    std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory)
     : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
-      m_mediaCapabilities{mediaCapabilitiesFactory ? mediaCapabilitiesFactory->createMediaCapabilities() : nullptr},
-      m_gstCapabilities{[]
-                        {
-                            auto factory = firebolt::rialto::server::IGstCapabilitiesFactory::getFactory();
-                            return factory ? factory->createGstCapabilities() : nullptr;
-                        }()},
+      m_mediaCapabilities{mediaCapabilitiesFactory ? mediaCapabilitiesFactory->createMediaCapabilitiesServerInternal()
+                                                   : nullptr},
       m_decryptionService{decryptionService}
 {
     if (!m_mediaPipelineCapabilities)
@@ -723,21 +719,11 @@ common::AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabili
 {
     RIALTO_SERVER_LOG_DEBUG("GetSupportedAudioCapabilities requested");
 
-    // Delegate entirely to MediaCapabilities (handles preloaded Path 0 + GStreamer Path B)
     if (m_mediaCapabilities)
     {
         return m_mediaCapabilities->getSupportedAudioCapabilities();
     }
 
-    // Fallback: Query GStreamer directly instead of returning empty capabilities
-    if (m_gstCapabilities)
-    {
-        RIALTO_SERVER_LOG_DEBUG("Audio capabilities not available from preloaded source - querying GStreamer");
-        return m_gstCapabilities->getSupportedAudioCapabilities();
-    }
-
-    // Last resort: Return empty capabilities only if no fallback is available
-    RIALTO_SERVER_LOG_WARN("Audio capabilities not available - no orchestrator or GStreamer fallback configured");
     return common::AudioDecoderCapabilities();
 }
 
@@ -745,21 +731,11 @@ common::VideoDecoderCapabilities MediaPipelineService::getSupportedVideoCapabili
 {
     RIALTO_SERVER_LOG_DEBUG("GetSupportedVideoCapabilities requested");
 
-    // Delegate entirely to MediaCapabilities (handles preloaded Path 0 + GStreamer Path B)
     if (m_mediaCapabilities)
     {
         return m_mediaCapabilities->getSupportedVideoCapabilities();
     }
 
-    // Fallback: Query GStreamer directly instead of returning empty capabilities
-    if (m_gstCapabilities)
-    {
-        RIALTO_SERVER_LOG_DEBUG("Video capabilities not available from preloaded source - querying GStreamer");
-        return m_gstCapabilities->getSupportedVideoCapabilities();
-    }
-
-    // Last resort: Return empty capabilities only if no fallback is available
-    RIALTO_SERVER_LOG_WARN("Video capabilities not available - no orchestrator or GStreamer fallback configured");
     return common::VideoDecoderCapabilities();
 }
 
@@ -769,21 +745,10 @@ void MediaPipelineService::setPreloadedCapabilities(const std::optional<common::
     RIALTO_SERVER_LOG_DEBUG("setPreloadedCapabilities called with audio: %s, video: %s",
                             audioCaps.has_value() ? "yes" : "no", videoCaps.has_value() ? "yes" : "no");
 
-    // Delegate to MediaCapabilities to store preloaded state
+    // Delegate to MediaCapabilitiesServerInternal to store preloaded state
     if (m_mediaCapabilities)
     {
-        // Cast to MediaCapabilities to call setPreloadedCapabilities
-        // MediaCapabilities is the only concrete implementation of IMediaCapabilities in this context
-        auto mediaCapabilitiesImpl =
-            dynamic_cast<firebolt::rialto::server::MediaCapabilities *>(m_mediaCapabilities.get());
-        if (mediaCapabilitiesImpl)
-        {
-            mediaCapabilitiesImpl->setPreloadedCapabilities(audioCaps, videoCaps);
-        }
-        else
-        {
-            RIALTO_SERVER_LOG_WARN("Failed to cast IMediaCapabilities to MediaCapabilities");
-        }
+        m_mediaCapabilities->setPreloadedCapabilities(audioCaps, videoCaps);
     }
 }
 

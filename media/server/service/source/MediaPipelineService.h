@@ -26,9 +26,8 @@
 #include "IMediaPipelineService.h"
 #include "IPlaybackService.h"
 #include "ISharedMemoryBuffer.h"
-// Factory interfaces for creating orchestrator objects
-#include "IGstCapabilities.h"
-#include "IMediaCapabilities.h"
+// Factory interface for creating the orchestrator object (GStreamer creation hidden inside it)
+#include "IMediaCapabilitiesServerInternal.h"
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -46,11 +45,12 @@ namespace firebolt::rialto::server::service
 class MediaPipelineService : public IMediaPipelineService
 {
 public:
-    MediaPipelineService(
-        IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
-        std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-        IDecryptionService &decryptionService,
-        const std::shared_ptr<firebolt::rialto::IMediaCapabilitiesFactory> &mediaCapabilitiesFactory = nullptr);
+    MediaPipelineService(IPlaybackService &playbackService,
+                         std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+                         std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
+                         IDecryptionService &decryptionService,
+                         std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory>
+                             &&mediaCapabilitiesFactory = nullptr);
     ~MediaPipelineService() override;
     MediaPipelineService(const MediaPipelineService &) = delete;
     MediaPipelineService(MediaPipelineService &&) = delete;
@@ -121,8 +121,7 @@ private:
     IPlaybackService &m_playbackService;
     std::shared_ptr<IMediaPipelineServerInternalFactory> m_mediaPipelineFactory;
     std::unique_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
-    std::unique_ptr<firebolt::rialto::IMediaCapabilities> m_mediaCapabilities;
-    std::unique_ptr<firebolt::rialto::server::IGstCapabilities> m_gstCapabilities;
+    std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternal> m_mediaCapabilities;
     IDecryptionService &m_decryptionService;
     std::map<int, std::unique_ptr<IMediaPipelineServerInternal>> m_mediaPipelines;
     std::mutex m_mediaPipelineMutex;

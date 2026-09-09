@@ -40,7 +40,8 @@ MediaCapabilitiesTests::MediaCapabilitiesTests()
     ON_CALL(*gstMockUnique, getSupportedAudioCapabilities()).WillByDefault(Return(m_gstAudioCapabilities));
     ON_CALL(*gstMockUnique, getSupportedVideoCapabilities()).WillByDefault(Return(m_gstVideoCapabilities));
 
-    m_mediaCapabilities = std::make_shared<firebolt::rialto::server::MediaCapabilities>(std::move(gstMockUnique));
+    m_mediaCapabilities =
+        std::make_shared<firebolt::rialto::server::MediaCapabilitiesServerInternal>(std::move(gstMockUnique));
 }
 
 MediaCapabilitiesTests::~MediaCapabilitiesTests() {}

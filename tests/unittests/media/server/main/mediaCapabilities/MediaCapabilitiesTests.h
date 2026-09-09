@@ -22,7 +22,7 @@
 
 #include "GstCapabilitiesMock.h"
 #include "IGstCapabilities.h"
-#include "MediaCapabilities.h"
+#include "MediaCapabilitiesServerInternal.h"
 #include <AudioDecoderCapabilities.h>
 #include <VideoDecoderCapabilities.h>
 #include <gtest/gtest.h>
@@ -42,7 +42,7 @@ public:
 protected:
     firebolt::rialto::server::GstCapabilitiesMock *m_gstCapabilitiesMock =
         nullptr; // Raw ptr to mock owned by m_mediaCapabilities
-    std::shared_ptr<firebolt::rialto::server::MediaCapabilities> m_mediaCapabilities;
+    std::shared_ptr<firebolt::rialto::server::MediaCapabilitiesServerInternal> m_mediaCapabilities;
 
     firebolt::rialto::common::AudioDecoderCapabilities m_gstAudioCapabilities;
     firebolt::rialto::common::VideoDecoderCapabilities m_gstVideoCapabilities;

@@ -17,25 +17,77 @@
  * limitations under the License.
  */
 
-#include "MediaCapabilities.h"
+#include <stdexcept>
+
 #include "IGstCapabilities.h"
+#include "MediaCapabilitiesServerInternal.h"
 #include "RialtoServerLogging.h"
 #include <mutex>
-#include <stdexcept>
 
 namespace firebolt::rialto::server
 {
-MediaCapabilities::MediaCapabilities(std::unique_ptr<IGstCapabilities> gstCapabilities)
+std::shared_ptr<IMediaCapabilitiesServerInternal>
+MediaCapabilitiesServerInternalFactory::createMediaCapabilitiesServerInternal() const
+{
+    std::shared_ptr<IMediaCapabilitiesServerInternal> mediaCapabilities;
+
+    try
+    {
+        // Create GstCapabilities for runtime GStreamer queries (fallback path)
+        std::shared_ptr<IGstCapabilitiesFactory> gstCapabilitiesFactory = IGstCapabilitiesFactory::getFactory();
+        if (!gstCapabilitiesFactory)
+        {
+            throw std::runtime_error("Failed to get the gstreamer capabilities factory");
+        }
+
+        auto gstCapabilitiesUnique = gstCapabilitiesFactory->createGstCapabilities();
+        if (!gstCapabilitiesUnique)
+        {
+            throw std::runtime_error("Failed to create GstCapabilities");
+        }
+
+        // Create MediaCapabilitiesServerInternal orchestrator for GStreamer queries (fallback path)
+        // Pass ownership of gstCapabilities to MediaCapabilitiesServerInternal (unique_ptr)
+        // Preloaded capabilities are applied later by the caller via setPreloadedCapabilities()
+        mediaCapabilities = std::make_shared<MediaCapabilitiesServerInternal>(std::move(gstCapabilitiesUnique));
+
+        RIALTO_SERVER_LOG_DEBUG("Created server-side MediaCapabilitiesServerInternal with GStreamer orchestration");
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create server-side media capabilities, reason: %s", e.what());
+    }
+
+    return mediaCapabilities;
+}
+
+std::shared_ptr<IMediaCapabilitiesServerInternalFactory> IMediaCapabilitiesServerInternalFactory::createFactory()
+{
+    std::shared_ptr<IMediaCapabilitiesServerInternalFactory> factory;
+
+    try
+    {
+        factory = std::make_shared<MediaCapabilitiesServerInternalFactory>();
+    }
+    catch (const std::exception &e)
+    {
+        RIALTO_SERVER_LOG_ERROR("Failed to create the server-internal media capabilities factory, reason: %s", e.what());
+    }
+
+    return factory;
+}
+
+MediaCapabilitiesServerInternal::MediaCapabilitiesServerInternal(std::unique_ptr<IGstCapabilities> gstCapabilities)
     : m_gstCapabilities{std::move(gstCapabilities)}
 {
-    RIALTO_SERVER_LOG_DEBUG("MediaCapabilities: constructor - uses GStreamer for fallback queries");
+    RIALTO_SERVER_LOG_DEBUG("MediaCapabilitiesServerInternal: constructor - uses GStreamer for fallback queries");
     if (!m_gstCapabilities)
     {
         throw std::runtime_error("GstCapabilities is required");
     }
 }
 
-firebolt::rialto::common::AudioDecoderCapabilities MediaCapabilities::getSupportedAudioCapabilities()
+firebolt::rialto::common::AudioDecoderCapabilities MediaCapabilitiesServerInternal::getSupportedAudioCapabilities()
 {
     // Path 0: Check preloaded capabilities first (highest priority)
     {
@@ -52,7 +104,7 @@ firebolt::rialto::common::AudioDecoderCapabilities MediaCapabilities::getSupport
     return m_gstCapabilities->getSupportedAudioCapabilities();
 }
 
-firebolt::rialto::common::VideoDecoderCapabilities MediaCapabilities::getSupportedVideoCapabilities()
+firebolt::rialto::common::VideoDecoderCapabilities MediaCapabilitiesServerInternal::getSupportedVideoCapabilities()
 {
     // Path 0: Check preloaded capabilities first (highest priority)
     {
@@ -69,7 +121,7 @@ firebolt::rialto::common::VideoDecoderCapabilities MediaCapabilities::getSupport
     return m_gstCapabilities->getSupportedVideoCapabilities();
 }
 
-void MediaCapabilities::setPreloadedCapabilities(
+void MediaCapabilitiesServerInternal::setPreloadedCapabilities(
     const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCapabilities,
     const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCapabilities)
 {

@@ -23,7 +23,7 @@
 #include "IController.h"
 #include "ISessionServerAppManager.h"
 #include "IStateObserver.h"
-#include "IYamlCapabilities.h"
+#include "IYamlCppWrapper.h"
 #include <chrono>
 #include <list>
 #include <memory>
@@ -36,7 +36,7 @@ std::unique_ptr<ISessionServerAppManager> createSessionServerAppManager(
     const std::list<std::string> &environmentVariables, const std::string &sessionServerPath,
     std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckInterval,
     unsigned numOfFailedPingsBeforeRecovery, unsigned int socketPermissions, const std::string &socketOwner,
-    const std::string &socketGroup, std::shared_ptr<common::IYamlCapabilities> mediaCapabilities);
+    const std::string &socketGroup, std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCapabilities);
 } // namespace rialto::servermanager::common
 
 #endif // RIALTO_SERVERMANAGER_COMMON_SESSION_SERVER_APP_MANAGER_FACTORY_H_

@@ -29,8 +29,8 @@
 #include "IWebAudioPlayerServerInternal.h"
 #include "MediaPipelineService.h"
 #include "WebAudioPlayerService.h"
-// Include orchestrator's IMediaCapabilities (firebolt::rialto namespace)
-#include "IMediaCapabilities.h"
+// Include orchestrator's IMediaCapabilitiesServerInternal (firebolt::rialto::server namespace)
+#include "IMediaCapabilitiesServerInternal.h"
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -47,11 +47,12 @@ namespace firebolt::rialto::server::service
 class PlaybackService : public IPlaybackService
 {
 public:
-    PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
-                    std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-                    std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
-                    std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory, IDecryptionService &decryptionService,
-                    const std::shared_ptr<firebolt::rialto::IMediaCapabilitiesFactory> &mediaCapabilitiesFactory);
+    PlaybackService(
+        std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+        std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
+        std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
+        std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory, IDecryptionService &decryptionService,
+        std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory);
     ~PlaybackService() override;
     PlaybackService(const PlaybackService &) = delete;
     PlaybackService(PlaybackService &&) = delete;

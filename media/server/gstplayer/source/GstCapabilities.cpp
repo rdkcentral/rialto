@@ -397,10 +397,7 @@ void GstCapabilities::fillSupportedCapabilities()
             }
             else
             {
-                // Unknown audio codec - create with PCM as default fallback
-                audioCap.pcm = firebolt::rialto::common::PcmCapability{
-                    firebolt::rialto::common::AudioProfileCapability{0, 2, 48000, 16}};
-                RIALTO_SERVER_LOG_DEBUG("Unknown audio MIME type '%s', using PCM as fallback", mimeType.c_str());
+                RIALTO_SERVER_LOG_WARN("Unknown audio MIME type '%s'", mimeType.c_str());
             }
 
             audioCapabilities.push_back(std::move(audioCap));
@@ -453,14 +450,7 @@ void GstCapabilities::fillSupportedCapabilities()
             }
             else
             {
-                // Unknown video codec - create with H.264 as default fallback
-                firebolt::rialto::common::H264Profile profile;
-                profile.type = firebolt::rialto::common::H264ProfileType::H264_MAIN;
-                profile.maxLevel = firebolt::rialto::common::H264Level::H264_LEVEL_5_2;
-                profile.maxBitrateInBps = 0;
-                videoCap.codecCapabilities.h264 = firebolt::rialto::common::H264CodecCapability{};
-                videoCap.codecCapabilities.h264->profiles.push_back(profile);
-                RIALTO_SERVER_LOG_DEBUG("Unknown video MIME type '%s', using H.264 as fallback", mimeType.c_str());
+                RIALTO_SERVER_LOG_WARN("Unknown video MIME type '%s', using H.264 as fallback", mimeType.c_str());
             }
 
             videoCapabilities.push_back(std::move(videoCap));

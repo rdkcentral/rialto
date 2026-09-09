@@ -46,10 +46,10 @@ target_include_directories(
 
         PUBLIC
         interface
-        include
         $<TARGET_PROPERTY:RialtoCommonPublic,INTERFACE_INCLUDE_DIRECTORIES>
 
         PRIVATE
+        include
     )
 
 target_link_libraries (
