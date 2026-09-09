@@ -660,3 +660,8 @@ void SessionServerAppManagerTests::triggerOnServerStartupTimeout()
 {
     m_sut->onServerStartupTimeout(kServerId);
 }
+
+void SessionServerAppManagerTests::triggerSetShuttingDown()
+{
+    m_sut->setShuttingDown();
+}

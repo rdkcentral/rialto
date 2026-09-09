@@ -30,9 +30,25 @@ Controller::Controller(std::unique_ptr<common::ISessionServerAppManager> &sessio
 {
 }
 
+Controller::~Controller()
+{
+    std::map<int, std::unique_ptr<Client>> clients;
+    {
+        std::unique_lock<std::mutex> lock{m_clientMutex};
+        m_isShuttingDown = true;
+        clients.swap(m_clients);
+    }
+    clients.clear();
+}
+
 bool Controller::createClient(int serverId, int appMgmtSocket)
 {
     std::unique_lock<std::mutex> lock{m_clientMutex};
+    if (m_isShuttingDown)
+    {
+        RIALTO_SERVER_MANAGER_LOG_WARN("Not creating client for serverId: %d, controller is shutting down", serverId);
+        return false;
+    }
     if (m_clients.find(serverId) == m_clients.end())
     {
         auto newClient = std::make_unique<Client>(m_sessionServerAppManager, serverId, appMgmtSocket);
