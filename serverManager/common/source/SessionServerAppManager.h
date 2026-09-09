@@ -107,7 +107,6 @@ private:
     std::shared_ptr<service::IStateObserver> m_stateObserver;
     std::unique_ptr<IHealthcheckService> m_healthcheckService;
     const firebolt::rialto::ipc::INamedSocketFactory &m_namedSocketFactory;
-    std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> m_yamlCapabilities;
     std::optional<firebolt::rialto::common::AudioDecoderCapabilities> m_cachedAudioCapabilities;
     std::optional<firebolt::rialto::common::VideoDecoderCapabilities> m_cachedVideoCapabilities;
     bool m_isShuttingDown;

@@ -29,15 +29,14 @@ ServiceContext::ServiceContext(const std::shared_ptr<IStateObserver> &stateObser
                                std::chrono::seconds healthcheckInterval, unsigned numOfFailedPingsBeforeRecovery,
                                unsigned int socketPermissions, const std::string &socketOwner,
                                const std::string &socketGroup,
-                               const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCapabilities)
+                               const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCppWrapper)
     : m_sessionServerAppManager{common::createSessionServerAppManager(m_ipcController, stateObserver,
                                                                       environmentVariables, sessionServerPath,
                                                                       sessionServerStartupTimeout, healthcheckInterval,
                                                                       numOfFailedPingsBeforeRecovery, socketPermissions,
-                                                                      socketOwner, socketGroup, yamlCapabilities)}
+                                                                      socketOwner, socketGroup, yamlCppWrapper)},
+      m_ipcController{ipc::create(m_sessionServerAppManager)}
 {
-    // Now that m_sessionServerAppManager is fully constructed, populate m_ipcController
-    m_ipcController = ipc::create(m_sessionServerAppManager);
 }
 
 common::ISessionServerAppManager &ServiceContext::getSessionServerAppManager()

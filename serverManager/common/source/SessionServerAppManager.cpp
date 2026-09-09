@@ -37,19 +37,19 @@ SessionServerAppManager::SessionServerAppManager(
       m_eventThread{eventThreadFactory->createEventThread("rialtoservermanager-appmanager")},
       m_sessionServerAppFactory{std::move(sessionServerAppFactory)}, m_stateObserver{stateObserver},
       m_healthcheckService{healthcheckServiceFactory->createHealthcheckService(*this)},
-      m_namedSocketFactory{namedSocketFactory}, m_yamlCapabilities{std::move(yamlCapabilities)}, m_isShuttingDown{false}
+      m_namedSocketFactory{namedSocketFactory}, m_isShuttingDown{false}
 {
     // Cache audio/video capabilities once - avoids re-reading the YAML file on every server configuration
-    if (m_yamlCapabilities)
+    if (yamlCapabilities)
     {
         firebolt::rialto::common::AudioDecoderCapabilities audioCaps;
-        if (m_yamlCapabilities->getAudioDecoderCapabilities(audioCaps) ==
+        if (yamlCapabilities->getAudioDecoderCapabilities(audioCaps) ==
             firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
         {
             m_cachedAudioCapabilities = audioCaps;
         }
         firebolt::rialto::common::VideoDecoderCapabilities videoCaps;
-        if (m_yamlCapabilities->getVideoDecoderCapabilities(videoCaps) ==
+        if (yamlCapabilities->getVideoDecoderCapabilities(videoCaps) ==
             firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
         {
             m_cachedVideoCapabilities = videoCaps;
@@ -580,13 +580,10 @@ bool SessionServerAppManager::configureSessionServerWithSocketName(const std::sh
     const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
                                                                           kSessionServer->getMaxWebAudioPlayers()};
 
-    // Retrieve cached YAML-preloaded capabilities if available
-    const auto &audioCapabilities = m_cachedAudioCapabilities;
-    const auto &videoCapabilities = m_cachedVideoCapabilities;
-
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketName,
                                                   kClientDisplayName, kMaxResource, kSocketPermissions, kSocketOwner,
-                                                  kSocketGroup, kAppName, audioCapabilities, videoCapabilities))
+                                                  kSocketGroup, kAppName, m_cachedAudioCapabilities,
+                                                  m_cachedVideoCapabilities))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         kSessionServer->getServerId());
@@ -607,13 +604,9 @@ bool SessionServerAppManager::configureSessionServerWithSocketFd(const std::shar
     const firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{kSessionServer->getMaxPlaybackSessions(),
                                                                           kSessionServer->getMaxWebAudioPlayers()};
 
-    // Retrieve cached YAML-preloaded capabilities if available
-    const auto &audioCapabilities = m_cachedAudioCapabilities;
-    const auto &videoCapabilities = m_cachedVideoCapabilities;
-
     if (!m_ipcController->performSetConfiguration(kSessionServer->getServerId(), kInitialState, kSocketFd,
-                                                  kClientDisplayName, kMaxResource, kAppName, audioCapabilities,
-                                                  videoCapabilities))
+                                                  kClientDisplayName, kMaxResource, kAppName, m_cachedAudioCapabilities,
+                                                  m_cachedVideoCapabilities))
     {
         RIALTO_SERVER_MANAGER_LOG_ERROR("Configuration of server with id %d failed - ipc error.",
                                         kSessionServer->getServerId());

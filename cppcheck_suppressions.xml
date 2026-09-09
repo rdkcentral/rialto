@@ -60,16 +60,6 @@
         <fileName>stubs/wpeframework-core/third-party/Source/core/JSON.cpp</fileName>
     </suppress>
     <suppress>
-        <id>unusedFunction</id>
-        <fileName>tests/componenttests/server/common/MessageBuilders.cpp</fileName>
-        <symbolName>createGetSupportedAudioCapabilitiesRequest</symbolName>
-    </suppress>
-    <suppress>
-        <id>unusedFunction</id>
-        <fileName>tests/componenttests/server/common/MessageBuilders.cpp</fileName>
-        <symbolName>createGetSupportedVideoCapabilitiesRequest</symbolName>
-    </suppress>
-    <suppress>
         <id>unknownMacro</id>
         <fileName>stubs/wpeframework-core/third-party/Source/core/Proxy.h</fileName>
     </suppress>

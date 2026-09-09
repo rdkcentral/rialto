@@ -110,7 +110,6 @@ target_include_directories(
 
         PUBLIC
         interface
-        ${CMAKE_SOURCE_DIR}/common/public/include
 
         PRIVATE
         include

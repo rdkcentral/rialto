@@ -34,9 +34,4 @@ MATCHER_P(playbackInfoMatcher, expectedPlaybackInfo, "")
 {
     return ((expectedPlaybackInfo.currentPosition == arg.currentPosition) && (expectedPlaybackInfo.volume == arg.volume));
 }
-
-MATCHER_P(decoderCapabilitiesMatcher, expectedDecoderCapabilities, "")
-{
-    return arg == expectedDecoderCapabilities;
-}
 #endif // MEDIA_PIPELINE_STRUCTURE_MATCHERS_H_

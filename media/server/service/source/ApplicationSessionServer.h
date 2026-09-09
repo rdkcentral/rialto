@@ -58,9 +58,6 @@ public:
     void startService() override;
 
 private:
-    // CRITICAL: Initialize orchestrator BEFORE services that depend on it
-    // C++ member initialization follows declaration order, not initializer list order
-
     firebolt::rialto::server::ipc::IpcFactory m_ipcFactory;
 
     firebolt::rialto::server::service::ControlService m_controlService{
@@ -68,8 +65,6 @@ private:
     firebolt::rialto::server::service::CdmService
         m_cdmService{firebolt::rialto::server::IMediaKeysServerInternalFactory::createFactory(),
                      firebolt::rialto::IMediaKeysCapabilitiesFactory::createFactory()};
-    // PlaybackService creates MediaCapabilitiesServerInternal from the factory itself
-    // (IGstCapabilities creation is hidden inside IMediaCapabilitiesServerInternalFactory)
     firebolt::rialto::server::service::PlaybackService
         m_playbackService{firebolt::rialto::server::IMediaPipelineServerInternalFactory::createFactory(),
                           firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory(),

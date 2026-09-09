@@ -26,7 +26,6 @@
 #include "IMediaPipelineService.h"
 #include "IPlaybackService.h"
 #include "ISharedMemoryBuffer.h"
-// Factory interface for creating the orchestrator object (GStreamer creation hidden inside it)
 #include "IMediaCapabilitiesServerInternal.h"
 #include <atomic>
 #include <condition_variable>

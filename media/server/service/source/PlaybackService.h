@@ -29,7 +29,6 @@
 #include "IWebAudioPlayerServerInternal.h"
 #include "MediaPipelineService.h"
 #include "WebAudioPlayerService.h"
-// Include orchestrator's IMediaCapabilitiesServerInternal (firebolt::rialto::server namespace)
 #include "IMediaCapabilitiesServerInternal.h"
 #include <atomic>
 #include <condition_variable>

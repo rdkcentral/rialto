@@ -39,7 +39,7 @@ public:
                    std::chrono::milliseconds sessionServerStartupTimeout, std::chrono::seconds healthcheckInterval,
                    unsigned numOfFailedPingsBeforeRecovery, unsigned int socketPermissions,
                    const std::string &socketOwner, const std::string &socketGroup,
-                   const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCapabilities = nullptr);
+                   const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCppWrapper = nullptr);
     virtual ~ServiceContext() = default;
 
     common::ISessionServerAppManager &getSessionServerAppManager() override;
