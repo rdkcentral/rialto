@@ -21,6 +21,7 @@
 #include "ApplicationManagementServer.h"
 #include "IControlModuleService.h"
 #include "IIpcServer.h"
+#include "ILinuxWrapper.h"
 #include "IMediaCapabilitiesModuleService.h"
 #include "IMediaKeysCapabilitiesModuleService.h"
 #include "IMediaKeysModuleService.h"

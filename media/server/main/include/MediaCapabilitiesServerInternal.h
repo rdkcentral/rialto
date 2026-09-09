@@ -27,6 +27,7 @@
 
 namespace firebolt::rialto::server
 {
+class IGstCapabilities;
 /**
  * @brief Server-internal factory implementation.
  *
