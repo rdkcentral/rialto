@@ -66,6 +66,10 @@ namespace firebolt::rialto::client
 MediaCapabilities::MediaCapabilities(const std::shared_ptr<IMediaCapabilitiesIpcFactory> &mediaCapabilitiesIpcFactory)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
+    if (!mediaCapabilitiesIpcFactory)
+    {
+        throw std::runtime_error("Media capabilities IPC factory could not be created");
+    }
     m_mediaCapabilitiesIpc = mediaCapabilitiesIpcFactory->createMediaCapabilitiesIpc();
     if (!m_mediaCapabilitiesIpc)
     {
