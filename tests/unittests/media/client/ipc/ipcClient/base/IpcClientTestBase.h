@@ -37,6 +37,7 @@ using namespace firebolt::rialto::ipc;
 using namespace firebolt::rialto::client;
 
 using ::testing::_;
+using ::testing::AtMost;
 using ::testing::Invoke;
 using ::testing::Return;
 using ::testing::Sequence;
@@ -71,7 +72,10 @@ protected:
     void createRpcController();
     void disconnectIpcClient();
     void expectCreateChannel();
+    void expectDisconnectChannel();
     void expectIpcLoop();
+    void expectIpcLoopTwice();
+    bool waitForDisconnect(int timeoutMSecs);
 };
 
 #endif // IPC_CLIENT_TEST_BASE_H_
