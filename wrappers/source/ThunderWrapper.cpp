@@ -19,6 +19,7 @@
 
 #include "ThunderWrapper.h"
 #include <core/Portability.h>
++#include <core/Errors.h>
 
 namespace firebolt::rialto::wrappers
 {
