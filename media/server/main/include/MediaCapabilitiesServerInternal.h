@@ -71,9 +71,9 @@ public:
 
     firebolt::rialto::common::VideoDecoderCapabilities getSupportedVideoCapabilities() override;
 
-    void
-    setPreloadedCapabilities(const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCapabilities,
-                             const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCapabilities) override;
+    void setPreloadedCapabilities(
+        const std::optional<firebolt::rialto::common::AudioDecoderCapabilities> &audioCapabilities,
+        const std::optional<firebolt::rialto::common::VideoDecoderCapabilities> &videoCapabilities) override;
 
 private:
     /**

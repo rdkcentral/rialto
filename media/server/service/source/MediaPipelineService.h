@@ -21,12 +21,12 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_MEDIA_PIPELINE_SERVICE_H_
 
 #include "IDecryptionService.h"
+#include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IMediaPipelineService.h"
 #include "IPlaybackService.h"
 #include "ISharedMemoryBuffer.h"
-#include "IMediaCapabilitiesServerInternal.h"
 #include <atomic>
 #include <condition_variable>
 #include <functional>

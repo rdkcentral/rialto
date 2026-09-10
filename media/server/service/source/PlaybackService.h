@@ -22,6 +22,7 @@
 
 #include "IDecryptionService.h"
 #include "IHeartbeatProcedure.h"
+#include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IPlaybackService.h"
@@ -29,7 +30,6 @@
 #include "IWebAudioPlayerServerInternal.h"
 #include "MediaPipelineService.h"
 #include "WebAudioPlayerService.h"
-#include "IMediaCapabilitiesServerInternal.h"
 #include <atomic>
 #include <condition_variable>
 #include <functional>
