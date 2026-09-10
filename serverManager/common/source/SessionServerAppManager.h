@@ -32,6 +32,7 @@
 #include "SessionServerAppFactory.h"
 #include <AudioDecoderCapabilities.h>
 #include <VideoDecoderCapabilities.h>
+#include <atomic>
 #include <memory>
 #include <optional>
 #include <set>
