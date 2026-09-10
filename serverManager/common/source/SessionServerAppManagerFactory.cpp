@@ -35,8 +35,11 @@ std::unique_ptr<ISessionServerAppManager> createSessionServerAppManager(
     unsigned numOfFailedPingsBeforeRecovery, unsigned int socketPermissions, const std::string &socketOwner,
     const std::string &socketGroup)
 {
-    std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper =
-        firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory()->createYamlCppWrapper();
+    std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper;
+    if (auto yamlFactory = firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory())
+    {
+        yamlCppWrapper = yamlFactory->createYamlCppWrapper();
+    }
     return std::make_unique<
         SessionServerAppManager>(ipc, stateObserver,
                                  std::make_unique<SessionServerAppFactory>(environmentVariables, sessionServerPath,
