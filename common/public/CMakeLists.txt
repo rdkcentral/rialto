@@ -27,6 +27,7 @@ configure_file(
         include/SessionServerCommon.h
         @ONLY )
 
+
 add_library(
         RialtoCommonPublic
         INTERFACE
@@ -44,9 +45,9 @@ if( NOT CMAKE_BUILD_TYPE STREQUAL "UnitTests" )
         include( GNUInstallDirs )
         set (LIB_RIALTO_COMMON_PUBLIC_HEADERS
                 ${CMAKE_BINARY_DIR}/common/public/include/SessionServerCommon.h
-                ${CMAKE_CURRENT_SOURCE_DIR}/include/DecoderCapabilitiesCommon.h
-                ${CMAKE_CURRENT_SOURCE_DIR}/include/AudioDecoderCapabilities.h
-                ${CMAKE_CURRENT_SOURCE_DIR}/include/VideoDecoderCapabilities.h
+                ${CMAKE_BINARY_DIR}/common/public/include/DecoderCapabilitiesCommon.h
+                ${CMAKE_BINARY_DIR}/common/public/include/AudioDecoderCapabilities.h
+                ${CMAKE_BINARY_DIR}/common/public/include/VideoDecoderCapabilities.h
         )
         install (
                 FILES ${LIB_RIALTO_COMMON_PUBLIC_HEADERS}
