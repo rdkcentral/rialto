@@ -32,7 +32,7 @@ SessionServerAppManager::SessionServerAppManager(
     std::unique_ptr<IHealthcheckServiceFactory> &&healthcheckServiceFactory,
     const std::shared_ptr<firebolt::rialto::common::IEventThreadFactory> &eventThreadFactory,
     const firebolt::rialto::ipc::INamedSocketFactory &namedSocketFactory,
-    std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> YamlCppWrapper)
+    std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper)
     : m_ipcController{ipcController},
       m_eventThread{eventThreadFactory->createEventThread("rialtoservermanager-appmanager")},
       m_sessionServerAppFactory{std::move(sessionServerAppFactory)}, m_stateObserver{stateObserver},
@@ -40,16 +40,16 @@ SessionServerAppManager::SessionServerAppManager(
       m_namedSocketFactory{namedSocketFactory}, m_isShuttingDown{false}
 {
     // Cache audio/video capabilities once - avoids re-reading the YAML file on every server configuration
-    if (YamlCppWrapper)
+    if (yamlCppWrapper)
     {
         firebolt::rialto::common::AudioDecoderCapabilities audioCaps;
-        if (YamlCppWrapper->getAudioDecoderCapabilities(audioCaps) ==
+        if (yamlCppWrapper->getAudioDecoderCapabilities(audioCaps) ==
             firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
         {
             m_cachedAudioCapabilities = audioCaps;
         }
         firebolt::rialto::common::VideoDecoderCapabilities videoCaps;
-        if (YamlCppWrapper->getVideoDecoderCapabilities(videoCaps) ==
+        if (yamlCppWrapper->getVideoDecoderCapabilities(videoCaps) ==
             firebolt::rialto::common::DecoderCapabilitiesStatus::OK)
         {
             m_cachedVideoCapabilities = videoCaps;
