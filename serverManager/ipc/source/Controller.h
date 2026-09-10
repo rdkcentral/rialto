@@ -41,7 +41,7 @@ class Controller : public IController
 {
 public:
     explicit Controller(std::unique_ptr<common::ISessionServerAppManager> &sessionServerAppManager);
-    virtual ~Controller() = default;
+    ~Controller() override;
 
     Controller(const Controller &) = delete;
     Controller(Controller &&) = delete;
@@ -67,6 +67,7 @@ public:
 
 private:
     mutable std::mutex m_clientMutex;
+    bool m_isShuttingDown{false};
     std::unique_ptr<common::ISessionServerAppManager> &m_sessionServerAppManager;
     std::map<int, std::unique_ptr<Client>> m_clients;
 };

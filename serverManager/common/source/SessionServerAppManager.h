@@ -67,6 +67,7 @@ public:
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
     void restartServer(int serverId) override;
     void onServerStartupTimeout(int serverId) override;
+    void setShuttingDown() override;
 
 private:
     bool connectSessionServer(const std::shared_ptr<ISessionServerApp> &sessionServer);
