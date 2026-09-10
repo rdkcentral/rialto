@@ -38,6 +38,7 @@ void Stop::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing Stop");
     m_context.firstAudioFrameReceived = false;
+    m_context.seekRecoveryInProgress = false;
     m_player.clearAudioFirstFrameFallbackProbe();
     m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
     m_player.stopNotifyPlaybackInfoTimer();

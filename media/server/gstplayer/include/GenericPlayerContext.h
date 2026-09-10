@@ -301,6 +301,12 @@ struct GenericPlayerContext
     bool firstAudioFrameReceived{false};
 
     /**
+     * @brief True while the pipeline is recovering from a seek and the video output should stay hidden until
+     *        audio is ready again.
+     */
+    bool seekRecoveryInProgress{false};
+
+    /**
      * @brief Fallback probe id for first audio frame detection on sink pad.
      */
     gulong audioFirstFrameProbeId{0};

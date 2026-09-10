@@ -64,6 +64,14 @@ void FirstFrameReceived::execute() const
             return;
         }
 
+        if (m_context.seekRecoveryInProgress)
+        {
+            RIALTO_SERVER_LOG_DEBUG("Audio first frame received during seek recovery, restoring video output");
+            m_context.seekRecoveryInProgress = false;
+            m_context.pendingShowVideoWindow = true;
+            m_player.setShowVideoWindow();
+        }
+
         m_context.firstAudioFrameReceived = true;
     }
 

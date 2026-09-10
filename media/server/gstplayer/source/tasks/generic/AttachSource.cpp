@@ -125,6 +125,7 @@ void AttachSource::addSource() const
 void AttachSource::reattachAudioSource() const
 {
     m_context.firstAudioFrameReceived = false;
+    m_context.seekRecoveryInProgress = false;
 
     if (!m_player.reattachSource(m_attachedSource))
     {

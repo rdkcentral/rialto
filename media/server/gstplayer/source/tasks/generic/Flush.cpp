@@ -116,6 +116,12 @@ void Flush::execute() const
     if (m_resetTime)
     {
         m_context.streamPosition.store(-1);
+        m_context.seekRecoveryInProgress = true;
+        m_context.pendingShowVideoWindow = false;
+        if (m_context.pipeline)
+        {
+            m_player.setShowVideoWindow();
+        }
     }
 
     // Notify client, that flush has been finished

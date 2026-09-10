@@ -67,3 +67,20 @@ TEST_F(FirstFrameReceivedTest, shouldNotifyFirstAudioFrameReceived)
 
     task.execute();
 }
+
+TEST_F(FirstFrameReceivedTest, shouldRestoreVideoOutputAfterSeekRecoveryAudioFrame)
+{
+    m_context.seekRecoveryInProgress = true;
+    firebolt::rialto::server::tasks::generic::FirstFrameReceived task{m_context, m_gstPlayer, &m_gstPlayerClient,
+                                                                      kAudioSourceType};
+
+    EXPECT_CALL(m_gstPlayer, clearAudioFirstFrameFallbackProbe());
+    EXPECT_CALL(m_gstPlayer, setShowVideoWindow()).WillOnce(testing::Return(true));
+    EXPECT_CALL(m_gstPlayerClient, notifyFirstFrameReceived(kAudioSourceType));
+
+    task.execute();
+
+    EXPECT_FALSE(m_context.seekRecoveryInProgress);
+    EXPECT_TRUE(m_context.pendingShowVideoWindow.has_value());
+    EXPECT_TRUE(m_context.pendingShowVideoWindow.value());
+}
