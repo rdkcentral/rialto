@@ -28,6 +28,7 @@
 #include "MediaPipelineServerInternalMock.h"
 #include "MediaPipelineService.h"
 #include "PlaybackServiceMock.h"
+#include "PrivateMetricsServiceMock.h"
 #include "SharedMemoryBufferMock.h"
 #include <gtest/gtest.h>
 #include <memory>
@@ -230,6 +231,7 @@ private:
     StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock> &m_mediaPipelineMock;
     StrictMock<firebolt::rialto::server::DecryptionServiceMock> m_decryptionServiceMock;
     StrictMock<firebolt::rialto::server::service::PlaybackServiceMock> m_playbackServiceMock;
+    StrictMock<firebolt::rialto::server::service::PrivateMetricsServiceMock> m_metricsServiceMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>> m_heartbeatProcedureMock;
     std::unique_ptr<firebolt::rialto::server::service::MediaPipelineService> m_sut;
 };

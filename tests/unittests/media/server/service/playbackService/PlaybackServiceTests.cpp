@@ -52,6 +52,12 @@ TEST_F(PlaybackServiceTests, shouldSetMaxWebAudioPlayers)
     getMaxWebAudioPlayersShouldSucceed();
 }
 
+TEST_F(PlaybackServiceTests, shouldExposePrivateMetricsService)
+{
+    createPlaybackServiceShouldSuccess();
+    getPrivateMetricsServiceShouldSucceed();
+}
+
 TEST_F(PlaybackServiceTests, shouldSetClientDisplayName)
 {
     createPlaybackServiceShouldSuccess();

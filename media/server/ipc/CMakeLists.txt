@@ -35,6 +35,7 @@ add_library (
         source/MediaKeysCapabilitiesModuleService.cpp
         source/ControlClientServerInternal.cpp
         source/ControlModuleService.cpp
+        source/PrivateMetricsModuleService.cpp
         source/ServerManagerModuleService.cpp
         source/SessionManagementServer.cpp
         source/SetLogLevelsService.cpp
