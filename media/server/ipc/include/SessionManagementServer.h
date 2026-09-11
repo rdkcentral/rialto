@@ -28,6 +28,7 @@
 #include "IMediaPipelineCapabilitiesModuleService.h"
 #include "IMediaPipelineModuleService.h"
 #include "IPlaybackService.h"
+#include "IPrivateMetricsModuleService.h"
 #include "ISessionManagementServer.h"
 #include "IWebAudioPlayerModuleService.h"
 #include "SetLogLevelsService.h"
@@ -50,6 +51,7 @@ public:
         const std::shared_ptr<IMediaKeysModuleServiceFactory> &mediaKeysModuleFactory,
         const std::shared_ptr<IMediaKeysCapabilitiesModuleServiceFactory> &mediaKeysCapabilitiesModuleFactory,
         const std::shared_ptr<IWebAudioPlayerModuleServiceFactory> &webAudioPlayerModuleFactory,
+        const std::shared_ptr<IPrivateMetricsModuleServiceFactory> &privateMetricsModuleFactory,
         const std::shared_ptr<IControlModuleServiceFactory> &controlModuleFactory,
         service::IPlaybackService &playbackService, service::ICdmService &cdmService,
         service::IControlService &controlService);
@@ -66,6 +68,7 @@ public:
     void stop() override;
     void setLogLevels(RIALTO_DEBUG_LEVEL defaultLogLevels, RIALTO_DEBUG_LEVEL clientLogLevels,
                       RIALTO_DEBUG_LEVEL ipcLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels) override;
+    void notifyApplicationStateChanged(ApplicationState newState) override;
 
 private:
     void onClientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &client);
@@ -81,6 +84,7 @@ private:
     std::shared_ptr<IMediaKeysModuleService> m_mediaKeysModule;
     std::shared_ptr<IMediaKeysCapabilitiesModuleService> m_mediaKeysCapabilitiesModule;
     std::shared_ptr<IWebAudioPlayerModuleService> m_webAudioPlayerModule;
+    std::shared_ptr<IPrivateMetricsModuleService> m_privateMetricsModule;
     std::shared_ptr<IControlModuleService> m_controlModule;
     SetLogLevelsService m_setLogLevelsService;
 };
