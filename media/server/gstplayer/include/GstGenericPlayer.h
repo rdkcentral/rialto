@@ -28,6 +28,7 @@
 #include "IGstGenericPlayer.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IGstInitialiser.h"
+#include "IGstProfiler.h"
 #include "IGstProtectionMetadataHelperFactory.h"
 #include "IGstSrc.h"
 #include "IGstWrapper.h"
@@ -58,11 +59,11 @@ public:
      */
     static std::weak_ptr<IGstGenericPlayerFactory> m_factory;
 
-    std::unique_ptr<IGstGenericPlayer> createGstGenericPlayer(
-        IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
-        const VideoRequirements &videoRequirements, bool isLive,
-        const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory> &rdkGstreamerUtilsWrapperFactory,
-        const std::shared_ptr<IGstProfilerFactory> &gstProfilerFactory) override;
+    std::unique_ptr<IGstGenericPlayer>
+    createGstGenericPlayer(IGstGenericPlayerClient *client, IDecryptionService &decryptionService, MediaType type,
+                           const VideoRequirements &videoRequirements, bool isLive,
+                           const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapperFactory>
+                               &rdkGstreamerUtilsWrapperFactory) override;
 };
 
 /**
