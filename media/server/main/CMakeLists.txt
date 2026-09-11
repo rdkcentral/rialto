@@ -55,6 +55,7 @@ add_library(
         source/TextTrackAccessor.cpp
         source/TextTrackSession.cpp
         source/NeedDataDelayCalculator.cpp
+        source/MediaCapabilitiesServerInternal.cpp
         )
 
 target_include_directories(

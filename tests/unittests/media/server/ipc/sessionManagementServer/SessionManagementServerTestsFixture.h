@@ -27,6 +27,7 @@
 #include "ISessionManagementServer.h"
 #include "IpcServerMock.h"
 #include "LinuxWrapperMock.h"
+#include "MediaCapabilitiesModuleServiceMock.h"
 #include "MediaKeysCapabilitiesModuleServiceMock.h"
 #include "MediaKeysModuleServiceMock.h"
 #include "MediaPipelineCapabilitiesModuleServiceMock.h"
@@ -78,6 +79,7 @@ private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaPipelineModuleServiceMock>> m_mediaPipelineModuleMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleServiceMock>>
         m_mediaPipelineCapabilitiesModuleMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaCapabilitiesModuleServiceMock>> m_mediaCapabilitiesModuleMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaKeysModuleServiceMock>> m_mediaKeysModuleMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaKeysCapabilitiesModuleServiceMock>>
         m_mediaKeysCapabilitiesModuleMock;

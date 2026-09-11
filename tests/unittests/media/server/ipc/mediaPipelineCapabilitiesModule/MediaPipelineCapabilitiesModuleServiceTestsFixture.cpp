@@ -18,13 +18,13 @@
  */
 
 #include "MediaPipelineCapabilitiesModuleServiceTestsFixture.h"
-#include "MediaCommon.h"
 #include "MediaPipelineCapabilitiesModuleService.h"
 #include "RialtoCommonModule.h"
 
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>
+#include <utility>
 #include <vector>
 
 using testing::_;

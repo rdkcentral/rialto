@@ -44,6 +44,7 @@ SessionManagementServer::SessionManagementServer(
     const std::shared_ptr<firebolt::rialto::ipc::IServerFactory> &ipcFactory,
     const std::shared_ptr<IMediaPipelineModuleServiceFactory> &mediaPipelineModuleFactory,
     const std::shared_ptr<IMediaPipelineCapabilitiesModuleServiceFactory> &mediaPipelineCapabilitiesModuleFactory,
+    const std::shared_ptr<IMediaCapabilitiesModuleServiceFactory> &mediaCapabilitiesModuleFactory,
     const std::shared_ptr<IMediaKeysModuleServiceFactory> &mediaKeysModuleFactory,
     const std::shared_ptr<IMediaKeysCapabilitiesModuleServiceFactory> &mediaKeysCapabilitiesModuleFactory,
     const std::shared_ptr<IWebAudioPlayerModuleServiceFactory> &webAudioPlayerModuleFactory,
@@ -53,6 +54,7 @@ SessionManagementServer::SessionManagementServer(
       m_mediaPipelineModule{mediaPipelineModuleFactory->create(playbackService.getMediaPipelineService())},
       m_mediaPipelineCapabilitiesModule{
           mediaPipelineCapabilitiesModuleFactory->create(playbackService.getMediaPipelineService())},
+      m_mediaCapabilitiesModule{mediaCapabilitiesModuleFactory->create(playbackService.getMediaPipelineService())},
       m_mediaKeysModule{mediaKeysModuleFactory->create(cdmService)},
       m_mediaKeysCapabilitiesModule{mediaKeysCapabilitiesModuleFactory->create(cdmService)},
       m_webAudioPlayerModule{webAudioPlayerModuleFactory->create(playbackService.getWebAudioPlayerService())},
@@ -181,6 +183,7 @@ void SessionManagementServer::onClientConnected(const std::shared_ptr<::firebolt
     m_controlModule->clientConnected(client);
     m_mediaPipelineModule->clientConnected(client);
     m_mediaPipelineCapabilitiesModule->clientConnected(client);
+    m_mediaCapabilitiesModule->clientConnected(client);
     m_mediaKeysModule->clientConnected(client);
     m_mediaKeysCapabilitiesModule->clientConnected(client);
     m_webAudioPlayerModule->clientConnected(client);
@@ -193,6 +196,7 @@ void SessionManagementServer::onClientDisconnected(const std::shared_ptr<::fireb
     m_setLogLevelsService.clientDisconnected(client);
     m_mediaKeysCapabilitiesModule->clientDisconnected(client);
     m_mediaKeysModule->clientDisconnected(client);
+    m_mediaCapabilitiesModule->clientDisconnected(client);
     m_mediaPipelineCapabilitiesModule->clientDisconnected(client);
     m_mediaPipelineModule->clientDisconnected(client);
     m_webAudioPlayerModule->clientDisconnected(client);

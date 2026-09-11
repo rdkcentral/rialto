@@ -2,7 +2,7 @@
  * If not stated otherwise in this file or this component's LICENSE file the
  * following copyright and licenses apply:
  *
- * Copyright 2022 Sky UK
+ * Copyright 2026 Sky UK
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,19 +17,17 @@
  * limitations under the License.
  */
 
-#include "MediaSourceUtil.h"
+#include "MediaCapabilitiesModuleStub.h"
+#include <memory>
 
-namespace firebolt::rialto
+namespace firebolt::rialto::client::ct
 {
-bool operator==(const AudioConfig &lac, const AudioConfig &rac)
+MediaCapabilitiesModuleStub::MediaCapabilitiesModuleStub(
+    const std::shared_ptr<::firebolt::rialto::MediaCapabilitiesModule> &mediaCapabilitiesModuleMock)
+    : m_mediaCapabilitiesModuleMock{mediaCapabilitiesModuleMock}
 {
-    return lac.numberOfChannels == rac.numberOfChannels && lac.sampleRate == rac.sampleRate &&
-           std::equal(std::begin(lac.codecSpecificConfig), std::end(lac.codecSpecificConfig),
-                      std::begin(rac.codecSpecificConfig));
 }
 
-bool operator==(const IMediaPipeline::MediaSource &lms, const IMediaPipeline::MediaSource &rms)
-{
-    return lms.getId() == rms.getId() && lms.getType() == rms.getType() && lms.getMimeType() == rms.getMimeType();
-}
-} // namespace firebolt::rialto
+MediaCapabilitiesModuleStub::~MediaCapabilitiesModuleStub() {}
+
+} // namespace firebolt::rialto::client::ct

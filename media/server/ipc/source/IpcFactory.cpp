@@ -22,6 +22,7 @@
 #include "IControlModuleService.h"
 #include "IIpcServer.h"
 #include "ILinuxWrapper.h"
+#include "IMediaCapabilitiesModuleService.h"
 #include "IMediaKeysCapabilitiesModuleService.h"
 #include "IMediaKeysModuleService.h"
 #include "IMediaPipelineCapabilitiesModuleService.h"
@@ -50,6 +51,7 @@ IpcFactory::createSessionManagementServer(service::IPlaybackService &playbackSer
                                  firebolt::rialto::ipc::IServerFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IMediaPipelineModuleServiceFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IMediaPipelineCapabilitiesModuleServiceFactory::createFactory(),
+                                 firebolt::rialto::server::ipc::IMediaCapabilitiesModuleServiceFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IMediaKeysModuleServiceFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IMediaKeysCapabilitiesModuleServiceFactory::createFactory(),
                                  firebolt::rialto::server::ipc::IWebAudioPlayerModuleServiceFactory::createFactory(),

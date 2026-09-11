@@ -22,6 +22,7 @@
 
 #include "IDecryptionService.h"
 #include "IHeartbeatProcedure.h"
+#include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IPlaybackService.h"
@@ -45,11 +46,12 @@ namespace firebolt::rialto::server::service
 class PlaybackService : public IPlaybackService
 {
 public:
-    PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
-                    std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-                    std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
-                    std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory,
-                    IDecryptionService &decryptionService);
+    PlaybackService(
+        std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
+        std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
+        std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
+        std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory, IDecryptionService &decryptionService,
+        std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory);
     ~PlaybackService() override;
     PlaybackService(const PlaybackService &) = delete;
     PlaybackService(PlaybackService &&) = delete;

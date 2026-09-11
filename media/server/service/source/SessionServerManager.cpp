@@ -191,6 +191,17 @@ bool SessionServerManager::ping(std::int32_t id, const std::shared_ptr<IAckSende
     return m_controlService.ping(heartbeatProcedure);
 }
 
+void SessionServerManager::setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
+                                                    const std::optional<common::VideoDecoderCapabilities> &videoCaps)
+{
+    RIALTO_SERVER_LOG_DEBUG("setPreloadedCapabilities called with audio: %s, video: %s",
+                            audioCaps.has_value() ? "yes" : "no", videoCaps.has_value() ? "yes" : "no");
+
+    // Forward preloaded capabilities to MediaPipelineService
+    // (Capabilities are stored in MediaCapabilities, not in this service layer)
+    m_playbackService.getMediaPipelineService().setPreloadedCapabilities(audioCaps, videoCaps);
+}
+
 bool SessionServerManager::switchToActive()
 {
     if (m_currentState.load() == common::SessionServerState::ACTIVE)
