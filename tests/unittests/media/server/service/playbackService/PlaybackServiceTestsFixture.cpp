@@ -148,6 +148,11 @@ void PlaybackServiceTests::getMaxWebAudioPlayersShouldSucceed()
     EXPECT_EQ(m_sut->getMaxWebAudioPlayers(), kMaxWebAudioPlayers);
 }
 
+void PlaybackServiceTests::getPrivateMetricsServiceShouldSucceed()
+{
+    EXPECT_NO_THROW(m_sut->getPrivateMetricsService());
+}
+
 void PlaybackServiceTests::clientDisplayNameShouldBeSet()
 {
     EXPECT_EQ(std::string(getenv("WAYLAND_DISPLAY")), kClientDisplayName);
