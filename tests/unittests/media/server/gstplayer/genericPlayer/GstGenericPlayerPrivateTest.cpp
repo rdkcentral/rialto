@@ -434,6 +434,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldNotSetVideoRectangleWhenVideoSinkDoesN
 {
     expectGetAVSink(kVideoSinkStr, m_realElement);
     EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("rectangle"))).WillOnce(Return(nullptr));
+    EXPECT_CALL(*m_glibWrapperMock, gObjectClassFindProperty(_, StrEq("render-rectangle"))).WillOnce(Return(nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(m_realElement));
     EXPECT_FALSE(m_sut->setVideoSinkRectangle());
 }

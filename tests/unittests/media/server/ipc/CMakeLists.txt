@@ -65,6 +65,9 @@ add_gtests (
         # WebAudioPlayerModuleService unittests
         webAudioPlayerModuleService/WebAudioPlayerModuleServiceTestsFixture.cpp
         webAudioPlayerModuleService/WebAudioPlayerModuleServiceTests.cpp
+
+        # PrivateMetricsModuleService unittests
+        privateMetricsModuleService/PrivateMetricsModuleServiceTests.cpp
         )
 
 target_include_directories(

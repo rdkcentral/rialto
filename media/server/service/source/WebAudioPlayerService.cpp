@@ -24,6 +24,7 @@
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerServerInternal.h"
 #include "RialtoServerLogging.h"
+#include "WebAudioPlayerMetricsClient.h"
 #include <exception>
 #include <future>
 #include <string>
@@ -33,8 +34,10 @@
 namespace firebolt::rialto::server::service
 {
 WebAudioPlayerService::WebAudioPlayerService(IPlaybackService &playbackService,
-                                             std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory)
-    : m_playbackService{playbackService}, m_webAudioPlayerFactory{std::move(webAudioPlayerFactory)}
+                                             std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
+                                             IPrivateMetricsService &metricsService)
+    : m_playbackService{playbackService}, m_webAudioPlayerFactory{std::move(webAudioPlayerFactory)},
+      m_metricsService{metricsService}
 {
     RIALTO_SERVER_LOG_DEBUG("WebAudioPlayerService is constructed");
 }
@@ -77,12 +80,16 @@ bool WebAudioPlayerService::createWebAudioPlayer(int handle,
         auto shmBuffer = m_playbackService.getShmBuffer();
 
         m_webAudioPlayers.emplace(
-            std::make_pair(handle, m_webAudioPlayerFactory
-                                       ->createWebAudioPlayerServerInternal(webAudioPlayerClient, audioMimeType,
-                                                                            priority, config, shmBuffer, handle,
-                                                                            IMainThreadFactory::createFactory(),
-                                                                            IGstWebAudioPlayerFactory::getFactory(),
-                                                                            common::ITimerFactory::getFactory())));
+            std::make_pair(handle,
+                           m_webAudioPlayerFactory
+                               ->createWebAudioPlayerServerInternal(std::make_shared<
+                                                                        WebAudioPlayerMetricsClient>(handle,
+                                                                                                     webAudioPlayerClient,
+                                                                                                     m_metricsService),
+                                                                    audioMimeType, priority, config, shmBuffer, handle,
+                                                                    IMainThreadFactory::createFactory(),
+                                                                    IGstWebAudioPlayerFactory::getFactory(),
+                                                                    common::ITimerFactory::getFactory())));
         if (!m_webAudioPlayers.at(handle))
         {
             RIALTO_SERVER_LOG_ERROR("Could not create WebAudioPlayer for handle: %d", handle);
