@@ -57,6 +57,7 @@ public:
     void getShmBufferShouldFail();
     void getMaxPlaybacksShouldSucceed();
     void getMaxWebAudioPlayersShouldSucceed();
+    void getPrivateMetricsServiceShouldSucceed();
     void clientDisplayNameShouldBeSet();
 
 private:
