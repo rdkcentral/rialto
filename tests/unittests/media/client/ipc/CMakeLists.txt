@@ -117,6 +117,9 @@ add_gtests (
         webAudioPlayerIpc/WriteBufferTest.cpp
         webAudioPlayerIpc/GetDeviceInfoTest.cpp
         webAudioPlayerIpc/GetBufferAvailable.cpp
+
+        # PrivateMetricsIpc tests
+        privateMetricsIpc/PrivateMetricsIpcTests.cpp
         )
 
 target_include_directories(

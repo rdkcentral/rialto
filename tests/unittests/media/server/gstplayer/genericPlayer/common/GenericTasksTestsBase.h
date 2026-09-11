@@ -17,8 +17,8 @@
  * limitations under the License.
  */
 
-#ifndef GENERIC_TASKS_TESTS_BASE_H_
-#define GENERIC_TASKS_TESTS_BASE_H_
+#ifndef FIREBOLT_RIALTO_SERVER_GENERIC_TASKS_TESTS_BASE_H_
+#define FIREBOLT_RIALTO_SERVER_GENERIC_TASKS_TESTS_BASE_H_
 
 #include "MediaCommon.h"
 
@@ -42,6 +42,11 @@ using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
+
+namespace firebolt::rialto::server
+{
+struct Rectangle;
+}
 
 /**
  * @brief GenericTasksTest Base class
@@ -83,6 +88,10 @@ protected:
     void shouldSetupVideoDecoderElementOnly();
     void shouldSetupVideoDecoderElementWithFirstVideoFrameCallback();
     void shouldSetupVideoElementWithPendingGeometry();
+    void shouldSetupVideoElementWithFallbackGeometry();
+    void shouldSetupVideoElementWithApiGeometryAndFallback();
+    void shouldSetupVideoElementWithoutFallbackAfterApiCall();
+    void checkPendingGeometry(const firebolt::rialto::server::Rectangle &geometry);
     void shouldSetupVideoElementWithPendingImmediateOutput();
     void shouldSetupAudioSinkElementWithPendingLowLatency();
     void shouldSetupAudioSinkElementWithPendingSync();
@@ -485,4 +494,4 @@ private:
     std::string getFadeString(double targetVolume, uint32_t volumeDuration, firebolt::rialto::EaseType easeType);
 };
 
-#endif // GENERIC_TASKS_TESTS_BASE_H_
+#endif // FIREBOLT_RIALTO_SERVER_GENERIC_TASKS_TESTS_BASE_H_

@@ -1973,8 +1973,9 @@ void MediaPipelineTestMethods::shouldHaveDataInternal(const int32_t sessionId, c
             {
                 // Increment needData request Id
                 m_needDataRequestId++;
-                m_mediaPipelineModuleMock->defaultReturn(controller, done);
+                // Reset the write cursor before the reply wakes the client test thread.
                 resetWriteLocation(partition);
+                m_mediaPipelineModuleMock->defaultReturn(controller, done);
             })));
 }
 
