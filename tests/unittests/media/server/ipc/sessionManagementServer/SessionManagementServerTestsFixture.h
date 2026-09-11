@@ -26,6 +26,7 @@
 #include "ControlServiceMock.h"
 #include "ISessionManagementServer.h"
 #include "IpcServerMock.h"
+#include "LinuxWrapperMock.h"
 #include "MediaKeysCapabilitiesModuleServiceMock.h"
 #include "MediaKeysModuleServiceMock.h"
 #include "MediaPipelineCapabilitiesModuleServiceMock.h"
@@ -51,6 +52,7 @@ public:
     void serverWillFailToInitialize();
     void serverWillInitializeWithFd();
     void serverWillFailToInitializeWithFd();
+    void serverWillFailToInitializeWithFdDueToWrongFd();
     void serverWillStart();
     void clientWillConnect();
     void clientWillDisconnect();
@@ -74,6 +76,7 @@ private:
     StrictMock<firebolt::rialto::server::service::PrivateMetricsServiceMock> m_privateMetricsServiceMock;
     StrictMock<firebolt::rialto::server::service::CdmServiceMock> m_cdmServiceMock;
     StrictMock<firebolt::rialto::server::service::ControlServiceMock> m_controlServiceMock;
+    std::shared_ptr<StrictMock<firebolt::rialto::wrappers::LinuxWrapperMock>> m_linuxWrapperMock;
     std::shared_ptr<StrictMock<firebolt::rialto::ipc::ServerMock>> m_serverMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaPipelineModuleServiceMock>> m_mediaPipelineModuleMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::ipc::MediaPipelineCapabilitiesModuleServiceMock>>

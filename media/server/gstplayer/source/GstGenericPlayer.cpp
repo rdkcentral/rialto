@@ -17,6 +17,7 @@
  * limitations under the License.
  */
 
+#include <algorithm>
 #include <chrono>
 #include <cinttypes>
 #include <cstdio>
@@ -1768,8 +1769,11 @@ void GstGenericPlayer::pushAdditionalSegmentIfRequired(GstElement *source)
     {
         return;
     }
-    if (initialPosition->second.size() == 1 && initialPosition->second.back().resetTime &&
-        currentPosition->second == initialPosition->second.back())
+    const auto &positions = initialPosition->second;
+    const bool allMatchCurrentPosition = !positions.empty() &&
+                                         std::all_of(positions.begin(), positions.end(), [&](const SegmentData &segment)
+                                                     { return segment == currentPosition->second; });
+    if (allMatchCurrentPosition && positions.back().resetTime)
     {
         RIALTO_SERVER_LOG_INFO("Adding additional segment with reset_time = false");
         SegmentData additionalSegment = initialPosition->second.back();
@@ -1819,7 +1823,7 @@ bool GstGenericPlayer::reattachSource(const std::unique_ptr<IMediaPipeline::Medi
     GstAppSrc *appSrc{GST_APP_SRC(m_context.streamInfo[source->getType()].appSrc)};
     GstCaps *oldCaps = m_gstWrapper->gstAppSrcGetCaps(appSrc);
 
-    if ((!oldCaps) || (!m_gstWrapper->gstCapsIsEqual(caps, oldCaps)))
+    if ((!oldCaps) || m_context.audioSourceRemoved || (!m_gstWrapper->gstCapsIsEqual(caps, oldCaps)))
     {
         RIALTO_SERVER_LOG_DEBUG("Caps not equal. Perform audio track codec channel switch.");
 

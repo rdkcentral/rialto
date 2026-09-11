@@ -47,6 +47,7 @@ public:
     MOCK_METHOD(bool, setLogLevels, (const service::LoggingLevels &), (const, override));
     MOCK_METHOD(void, restartServer, (int serverId), (override));
     MOCK_METHOD(void, onServerStartupTimeout, (int serverId), (override));
+    MOCK_METHOD(void, setShuttingDown, (), (override));
 };
 } // namespace rialto::servermanager::common
 

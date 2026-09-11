@@ -72,11 +72,20 @@ public:
     void healthcheckServiceWillHandleAck(bool success);
     void pingWillBeSentToRunningApps();
     void pingSendToRunningAppsWillFail();
+    void pingSendToSuspendedAppsWillBeSkipped();
     void clientWillBeRemoved();
+    void sessionServerWillReturnExpectedState(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillIndicateStateChange(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillBeRestarted(const firebolt::rialto::common::SessionServerState &state);
     void sessionServerWillRestartWillBeSkipped();
+    void sessionServerWillRestartWillBeSkippedDueToSuspend();
+    void sessionServerWillSuspend();
     void sessionServerWillHandleServerStartupTimeout();
+    void sessionServerWillCleanupAfterReachingSuspendedState();
+    void sessionServerWillSetExpectedState(const firebolt::rialto::common::SessionServerState &state);
+    void sessionServerWillResurrectSuspendedServer();
+    void sessionServerWillFailToResurrectSuspendedServer();
+    void sessionServerWillResurrectSuspendedServerFromPreloadedList();
 
     void triggerPreloadSessionServers();
     bool triggerInitiateApplication(const firebolt::rialto::common::SessionServerState &state);
@@ -88,6 +97,7 @@ public:
     void triggerSendPingEvents();
     void triggerRestartServer();
     void triggerOnServerStartupTimeout();
+    void triggerSetShuttingDown();
 
 private:
     std::unique_ptr<rialto::servermanager::ipc::IController> m_controller;
@@ -106,6 +116,7 @@ private:
         std::make_unique<testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock>>()};
     testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock> &m_namedSocketMock{
         dynamic_cast<testing::StrictMock<firebolt::rialto::ipc::NamedSocketMock> &>(*m_namedSocket)};
+    bool preloadedServerConfigured{false};
     std::unique_ptr<rialto::servermanager::common::ISessionServerAppManager> m_sut;
 };
 
