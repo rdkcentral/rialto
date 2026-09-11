@@ -544,7 +544,8 @@ void MediaPipelineServiceTests::createMediaPipelineShouldSuccess()
         std::make_unique<firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
                                                                                   m_mediaPipelineFactoryMock,
                                                                                   m_mediaPipelineCapabilitiesFactoryMock,
-                                                                                  m_decryptionServiceMock);
+                                                                                  m_decryptionServiceMock,
+                                                                                  m_metricsServiceMock);
 }
 
 void MediaPipelineServiceTests::createMediaPipelineShouldFailWhenMediaPipelineCapabilitiesFactoryReturnsNullptr()
@@ -555,7 +556,8 @@ void MediaPipelineServiceTests::createMediaPipelineShouldFailWhenMediaPipelineCa
                      std::make_unique<firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
                                                                                                m_mediaPipelineFactoryMock,
                                                                                                m_mediaPipelineCapabilitiesFactoryMock,
-                                                                                               m_decryptionServiceMock),
+                                                                                               m_decryptionServiceMock,
+                                                                                               m_metricsServiceMock),
                  std::runtime_error);
 }
 
