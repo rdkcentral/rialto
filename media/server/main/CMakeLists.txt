@@ -49,6 +49,10 @@ add_library(
         source/TextTrackAccessor.cpp
         source/TextTrackSession.cpp
         source/NeedDataDelayCalculator.cpp
+        source/MetricsCollector.cpp
+        source/LogMetricsReporter.cpp
+        source/CompositeMetricsReporter.cpp
+        source/MetricsThresholdChecker.cpp
         )
 
 target_include_directories(

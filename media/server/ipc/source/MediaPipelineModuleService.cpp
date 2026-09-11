@@ -19,6 +19,7 @@
 
 #include "MediaPipelineModuleService.h"
 #include "IMediaPipelineService.h"
+#include "IPrivateMetricsModuleService.h"
 #include "MediaPipelineClient.h"
 #include "RialtoCommonModule.h"
 #include "RialtoServerLogging.h"
