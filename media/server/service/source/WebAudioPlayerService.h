@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_WEB_AUDIO_PLAYER_SERVICE_H_
 
 #include "IPlaybackService.h"
+#include "IPrivateMetricsService.h"
 #include "IWebAudioPlayerServerInternal.h"
 #include "IWebAudioPlayerService.h"
 #include <atomic>
@@ -40,7 +41,8 @@ class WebAudioPlayerService : public IWebAudioPlayerService
 {
 public:
     WebAudioPlayerService(IPlaybackService &playbackService,
-                          std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory);
+                          std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
+                          IPrivateMetricsService &metricsService);
     ~WebAudioPlayerService() override;
     WebAudioPlayerService(const WebAudioPlayerService &) = delete;
     WebAudioPlayerService(WebAudioPlayerService &&) = delete;
@@ -68,6 +70,7 @@ public:
 private:
     IPlaybackService &m_playbackService;
     std::shared_ptr<IWebAudioPlayerServerInternalFactory> m_webAudioPlayerFactory;
+    IPrivateMetricsService &m_metricsService;
     std::map<int, std::unique_ptr<IWebAudioPlayerServerInternal>> m_webAudioPlayers;
     std::mutex m_webAudioPlayerMutex;
 };
