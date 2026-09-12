@@ -31,7 +31,8 @@ class MediaKeySessionMock : public IMediaKeySession
 {
 public:
     MOCK_METHOD(MediaKeyErrorStatus, generateRequest,
-                (InitDataType initDataType, const std::vector<uint8_t> &initData, const LimitedDurationLicense &ldlState),
+                (InitDataType initDataType, const std::vector<uint8_t> &initData, const std::vector<uint8_t> &cdmData,
+                 const LimitedDurationLicense &ldlState),
                 (override));
     MOCK_METHOD(MediaKeyErrorStatus, loadSession, (), (override));
     MOCK_METHOD(MediaKeyErrorStatus, updateSession, (const std::vector<uint8_t> &responseData), (override));

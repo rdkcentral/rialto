@@ -81,12 +81,14 @@ TEST_F(RialtoClientMediaKeysKeySessionTest, GenerateRequest)
 {
     InitDataType initDataType = InitDataType::KEY_IDS;
     std::vector<uint8_t> initData{7, 8, 9};
+    std::vector<uint8_t> cdmData;
     LimitedDurationLicense ldlState{LimitedDurationLicense::NOT_SPECIFIED};
 
-    EXPECT_CALL(*m_mediaKeysIpcMock, generateRequest(m_kKeySessionId, initDataType, initData, ldlState))
+    EXPECT_CALL(*m_mediaKeysIpcMock, generateRequest(m_kKeySessionId, initDataType, initData, cdmData, ldlState))
         .WillOnce(Return(m_mediaKeyErrorStatus));
 
-    EXPECT_EQ(m_mediaKeys->generateRequest(m_kKeySessionId, initDataType, initData, ldlState), m_mediaKeyErrorStatus);
+    EXPECT_EQ(m_mediaKeys->generateRequest(m_kKeySessionId, initDataType, initData, cdmData, ldlState),
+              m_mediaKeyErrorStatus);
 }
 
 /**

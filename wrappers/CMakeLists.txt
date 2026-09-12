@@ -112,6 +112,8 @@ target_include_directories(
         include
         ${GStreamerApp_INCLUDE_DIRS}
         $<TARGET_PROPERTY:RialtoPlayerPublic,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoClientCommon,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:RialtoLogging,INTERFACE_INCLUDE_DIRECTORIES>
         ${WRAPPER_INCLUDES}
     )
 
@@ -121,6 +123,7 @@ target_link_libraries (
         PRIVATE
         ${WRAPPER_LIBS}
         ${GStreamerApp_LIBRARIES}
+        RialtoLogging
     )
 
 if( RIALTO_ENABLE_CONFIG_FILE )

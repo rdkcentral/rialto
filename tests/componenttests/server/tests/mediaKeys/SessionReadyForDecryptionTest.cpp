@@ -62,10 +62,11 @@ public:
 
 void SessionReadyForDecryptionTest::willGenerateRequestWidevine()
 {
-    EXPECT_CALL(m_ocdmSessionMock, constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, m_kInitData.size()))
+    EXPECT_CALL(m_ocdmSessionMock,
+                constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, m_kInitData.size(), _, _))
         .WillOnce(testing::Invoke(
-            [&](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
-                uint32_t initDataSize) -> MediaKeyErrorStatus
+            [&](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[], uint32_t initDataSize,
+                const uint8_t cdmData[], uint32_t cdmDataSize) -> MediaKeyErrorStatus
             {
                 for (uint32_t i = 0; i < initDataSize; ++i)
                 {
@@ -110,10 +111,11 @@ void SessionReadyForDecryptionTest::processChallengeWidevine()
 
 void SessionReadyForDecryptionTest::willGenerateRequestNetflix()
 {
-    EXPECT_CALL(m_ocdmSessionMock, constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, m_kInitData.size()))
+    EXPECT_CALL(m_ocdmSessionMock,
+                constructSession(KeySessionType::TEMPORARY, InitDataType::CENC, _, m_kInitData.size(), _, _))
         .WillOnce(testing::Invoke(
-            [&](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[],
-                uint32_t initDataSize) -> MediaKeyErrorStatus
+            [&](KeySessionType sessionType, InitDataType initDataType, const uint8_t initData[], uint32_t initDataSize,
+                const uint8_t cdmData[], uint32_t cdmDataSize) -> MediaKeyErrorStatus
             {
                 for (uint32_t i = 0; i < initDataSize; ++i)
                 {

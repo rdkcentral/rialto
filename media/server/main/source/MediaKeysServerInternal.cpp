@@ -245,12 +245,13 @@ MediaKeyErrorStatus MediaKeysServerInternal::createKeySessionInternal(KeySession
 
 MediaKeyErrorStatus MediaKeysServerInternal::generateRequest(int32_t keySessionId, InitDataType initDataType,
                                                              const std::vector<uint8_t> &initData,
+                                                             const std::vector<uint8_t> &cdmData,
                                                              const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
 
     MediaKeyErrorStatus status;
-    auto task = [&]() { status = generateRequestInternal(keySessionId, initDataType, initData, ldlState); };
+    auto task = [&]() { status = generateRequestInternal(keySessionId, initDataType, initData, cdmData, ldlState); };
 
     m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
     return status;
@@ -258,6 +259,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::generateRequest(int32_t keySessionI
 
 MediaKeyErrorStatus MediaKeysServerInternal::generateRequestInternal(int32_t keySessionId, InitDataType initDataType,
                                                                      const std::vector<uint8_t> &initData,
+                                                                     const std::vector<uint8_t> &cdmData,
                                                                      const LimitedDurationLicense &ldlState)
 {
     auto sessionIter = m_mediaKeySessions.find(keySessionId);
@@ -267,7 +269,7 @@ MediaKeyErrorStatus MediaKeysServerInternal::generateRequestInternal(int32_t key
         return MediaKeyErrorStatus::BAD_SESSION_ID;
     }
 
-    MediaKeyErrorStatus status = sessionIter->second->generateRequest(initDataType, initData, ldlState);
+    MediaKeyErrorStatus status = sessionIter->second->generateRequest(initDataType, initData, cdmData, ldlState);
     if (MediaKeyErrorStatus::OK != status)
     {
         RIALTO_SERVER_LOG_ERROR("Failed to generate request for the key session %d", keySessionId);
