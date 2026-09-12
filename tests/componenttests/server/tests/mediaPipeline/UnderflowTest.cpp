@@ -98,6 +98,7 @@ public:
                                                                       GST_ELEMENT_FACTORY_TYPE_MEDIA_AUDIO))
             .WillOnce(Return(TRUE))
             .RetiresOnSaturation();
+
         EXPECT_CALL(*m_glibWrapperMock, gObjectType(m_audioDecoder)).WillRepeatedly(Return(G_TYPE_PARAM));
         EXPECT_CALL(*m_glibWrapperMock, gSignalConnect(_, _, _, _))
             .WillOnce(Invoke(
