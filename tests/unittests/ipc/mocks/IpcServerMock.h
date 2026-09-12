@@ -46,6 +46,7 @@ public:
                 (int socketFd, std::function<void(const std::shared_ptr<IClient> &)> clientDisconnectedCb), (override));
     MOCK_METHOD(int, fd, (), (override, const));
     MOCK_METHOD(bool, wait, (int timeoutMSecs), (override));
+    MOCK_METHOD(void, wake, (), (override, const));
     MOCK_METHOD(bool, process, (), (override));
 };
 } // namespace firebolt::rialto::ipc
