@@ -77,3 +77,27 @@ TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldFailToCheckIfVideoIsMa
     expectInvalidControlFailure();
     sendIsVideoMasterRequestAndExpectFailure();
 }
+
+TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldGetSupportedAudioCapabilities)
+{
+    mediaPipelineWillGetSupportedAudioCapabilities();
+    sendGetSupportedAudioCapabilitiesRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldFailToGetSupportedAudioCapabilities)
+{
+    expectInvalidControlFailure();
+    sendGetSupportedAudioCapabilitiesRequestAndExpectFailure();
+}
+
+TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldGetSupportedVideoCapabilities)
+{
+    mediaPipelineWillGetSupportedVideoCapabilities();
+    sendGetSupportedVideoCapabilitiesRequestAndReceiveResponse();
+}
+
+TEST_F(MediaPipelineCapabilitiesModuleServiceTests, shouldFailToGetSupportedVideoCapabilities)
+{
+    expectInvalidControlFailure();
+    sendGetSupportedVideoCapabilitiesRequestAndExpectFailure();
+}

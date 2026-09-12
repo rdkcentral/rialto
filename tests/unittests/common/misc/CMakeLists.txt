@@ -37,4 +37,11 @@ target_include_directories(
 
         INTERFACE
         .
+        $<TARGET_PROPERTY:RialtoTestCommonMisc,INTERFACE_INCLUDE_DIRECTORIES>
+    )
+
+target_link_libraries(
+        RialtoCommonMisc
+        PUBLIC
+        RialtoTestCommonMisc
     )

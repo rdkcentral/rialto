@@ -17,6 +17,7 @@
 # limitations under the License.
 #
 
+add_subdirectory(misc)
 add_subdirectory(publicClientMocks)
 add_subdirectory(externalLibraryMocks)
 add_subdirectory(matchers)
