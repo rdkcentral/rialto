@@ -62,10 +62,6 @@ TEST_F(RialtoClientMediaPipelineIpcPlayPauseTest, PlayChannelDisconnected)
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaPipelineIpc->play(async), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**
@@ -118,10 +114,6 @@ TEST_F(RialtoClientMediaPipelineIpcPlayPauseTest, PauseChannelDisconnected)
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaPipelineIpc->pause(), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

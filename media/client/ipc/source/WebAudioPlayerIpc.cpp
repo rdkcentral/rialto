@@ -486,9 +486,9 @@ bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, c
 
 void WebAudioPlayerIpc::destroyWebAudioPlayer()
 {
-    if (!reattachChannelIfRequired())
+    if (!isChannelConnected())
     {
-        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        RIALTO_CLIENT_LOG_WARN("Ipc channel disconnected, web audio player will not be destroyed on the server");
         return;
     }
 

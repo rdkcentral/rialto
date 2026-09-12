@@ -72,10 +72,6 @@ TEST_F(RialtoClientMediaPipelineIpcSetSourcePositionTest, ChannelDisconnected)
     EXPECT_EQ(m_mediaPipelineIpc->setSourcePosition(m_kSourceId, m_kPosition, m_kResetTime, m_kAppliedRate,
                                                     m_kStopPosition),
               false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

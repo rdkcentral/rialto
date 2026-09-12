@@ -192,7 +192,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerIpcTest, DestructorChannelDisconnected)
     createWebAudioPlayerIpc();
 
     /* destroy media player */
-    expectIpcApiCallDisconnected();
+    expectIpcApiCallSkippedDisconnected();
     expectUnsubscribeEvents();
 
     m_webAudioPlayerIpc.reset();
