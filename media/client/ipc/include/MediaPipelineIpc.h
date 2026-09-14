@@ -169,6 +169,11 @@ private:
     std::atomic<int> m_sessionId{-1};
 
     /**
+     * @brief Last successfully attached runtime source id for feasibility logging.
+     */
+    std::atomic<int32_t> m_lastSourceId{-1};
+
+    /**
      * @brief Thread for handling media player events from the server.
      */
     std::unique_ptr<common::IEventThread> m_eventThread;
@@ -241,6 +246,15 @@ private:
     void onSourceFlushed(const std::shared_ptr<firebolt::rialto::SourceFlushedEvent> &event);
 
     void onPlaybackInfo(const std::shared_ptr<firebolt::rialto::PlaybackInfoEvent> &event);
+
+    /**
+     * @brief Runs a feasibility check while playing and logs the rendered/dropped frame stats.
+     *
+     * @param[in] sourceId : The source to query stats for.
+     *
+     * @retval true on success, false otherwise.
+     */
+    bool checkFeasibility(int32_t sourceId = 0);
 
     /**
      * @brief Create a new player session.

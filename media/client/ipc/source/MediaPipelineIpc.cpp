@@ -257,6 +257,7 @@ bool MediaPipelineIpc::attachSource(const std::unique_ptr<IMediaPipeline::MediaS
     }
 
     sourceId = response.source_id();
+    m_lastSourceId = sourceId;
 
     return true;
 }
@@ -287,6 +288,11 @@ bool MediaPipelineIpc::removeSource(int32_t sourceId)
     {
         RIALTO_CLIENT_LOG_ERROR("failed to remove source due to '%s'", ipcController->ErrorText().c_str());
         return false;
+    }
+
+    if (sourceId == m_lastSourceId)
+    {
+        m_lastSourceId = -1;
     }
 
     return true;
@@ -1493,6 +1499,9 @@ void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::ri
             break;
         case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_PLAYING:
             playbackState = PlaybackState::PLAYING;
+            RIALTO_CLIENT_LOG_MIL("Playback reached PLAYING for sessionId=%d; running feasibility check",
+                                  m_sessionId.load());
+            checkFeasibility();
             break;
         case firebolt::rialto::PlaybackStateChangeEvent_PlaybackState_PAUSED:
             playbackState = PlaybackState::PAUSED;
@@ -1519,6 +1528,49 @@ void MediaPipelineIpc::onPlaybackStateUpdated(const std::shared_ptr<firebolt::ri
 
         m_mediaPipelineIpcClient->notifyPlaybackState(playbackState);
     }
+}
+
+bool MediaPipelineIpc::checkFeasibility(int32_t sourceId)
+{
+    const int32_t effectiveSourceId = (sourceId >= 0) ? sourceId : m_lastSourceId.load();
+    const int currentSessionId = m_sessionId.load();
+
+    if (effectiveSourceId < 0)
+    {
+        RIALTO_CLIENT_LOG_WARN("Feasibility check skipped for sessionId=%d because no valid sourceId is available",
+                               currentSessionId);
+        return false;
+    }
+
+    int64_t position = 0;
+    const bool hasPosition = getPosition(position);
+    if (!hasPosition)
+    {
+        RIALTO_CLIENT_LOG_WARN(
+            "Feasibility check: failed to read position for sessionId=%d sourceId=%d while in PLAYING",
+            currentSessionId, effectiveSourceId);
+    }
+    else
+    {
+        RIALTO_CLIENT_LOG_MIL("Feasibility check: sessionId=%d sourceId=%d position=%lld ns while in PLAYING",
+                              currentSessionId, effectiveSourceId, position);
+    }
+
+    uint64_t renderedFrames = 0;
+    uint64_t droppedFrames = 0;
+
+    if (!getStats(effectiveSourceId, renderedFrames, droppedFrames))
+    {
+        RIALTO_CLIENT_LOG_WARN(
+            "Feasibility check failed for sessionId=%d sourceId=%d while querying playback stats; position=%lld ns",
+            currentSessionId, effectiveSourceId, position);
+        return false;
+    }
+
+    RIALTO_CLIENT_LOG_MIL(
+        "Feasibility check metrics: sessionId=%d sourceId=%d position=%lld ns renderedFrames=%llu droppedFrames=%llu",
+        currentSessionId, effectiveSourceId, position, renderedFrames, droppedFrames);
+    return true;
 }
 
 void MediaPipelineIpc::onPositionUpdated(const std::shared_ptr<firebolt::rialto::PositionChangeEvent> &event)
@@ -1688,6 +1740,7 @@ bool MediaPipelineIpc::createSession(const VideoRequirements &videoRequirements)
     }
 
     m_sessionId = response.session_id();
+    m_lastSourceId = -1;
 
     return true;
 }
@@ -1716,6 +1769,9 @@ void MediaPipelineIpc::destroySession()
     {
         RIALTO_CLIENT_LOG_ERROR("failed to destroy session due to '%s'", ipcController->ErrorText().c_str());
     }
+
+    m_sessionId = -1;
+    m_lastSourceId = -1;
 }
 
 firebolt::rialto::LoadRequest_MediaType MediaPipelineIpc::convertLoadRequestMediaType(MediaType mediaType) const
