@@ -24,6 +24,7 @@
 
 #include <atomic>
 #include <condition_variable>
+#include <gst/gst.h>
 #include <memory>
 #include <mutex>
 #include <thread>
@@ -61,11 +62,8 @@ public:
 
 private:
     std::atomic<bool> m_active;
-    std::chrono::milliseconds m_timeout;
     std::function<void()> m_callback;
-    mutable std::mutex m_mutex;
-    std::thread m_thread;
-    std::condition_variable m_cv;
+    guint m_timerId;
 };
 } // namespace firebolt::rialto::common
 
