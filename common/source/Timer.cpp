@@ -52,32 +52,37 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 }
 
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
-    : m_active{true}, m_timeout{timeout}, m_callback{callback}
+    : m_active{true}, m_callback{callback}
 {
-    m_thread = std::thread(
-        [this, timerType]()
-        {
-            do
+    if (timerType == TimerType::PERIODIC)
+    {
+        m_timerId = g_timeout_add(
+            static_cast<guint>(timeout.count()),
+            [](gpointer data) -> gboolean
             {
-                bool shouldExecuteCallback = false;
+                Timer *timer = static_cast<Timer *>(data);
+                if (timer->m_active && timer->m_callback)
                 {
-                    std::unique_lock<std::mutex> lock{m_mutex};
-                    if (!m_cv.wait_for(lock, m_timeout, [this]() { return !m_active; }))
-                    {
-                        if (m_active && m_callback)
-                        {
-                            shouldExecuteCallback = true;
-                        }
-                    }
+                    timer->m_callback();
                 }
-
-                if (shouldExecuteCallback)
+                return timer->m_active ? TRUE : FALSE;
+            },
+            this);
+    }
+    else
+    {
+        m_timerId = g_timeout_add_once(
+            static_cast<guint>(timeout.count()),
+            [](gpointer data)
+            {
+                Timer *timer = static_cast<Timer *>(data);
+                if (timer->m_active && timer->m_callback)
                 {
-                    m_callback();
+                    timer->m_callback();
                 }
-            } while (timerType == TimerType::PERIODIC && m_active);
-            m_active = false;
-        });
+            },
+            this);
+    }
 }
 
 Timer::~Timer()
@@ -88,21 +93,7 @@ Timer::~Timer()
 void Timer::cancel()
 {
     m_active = false;
-    m_cv.notify_one();
-
-    if (std::this_thread::get_id() == m_thread.get_id())
-    {
-        if (m_thread.joinable())
-        {
-            m_thread.detach();
-        }
-        return;
-    }
-
-    if (m_thread.joinable())
-    {
-        m_thread.join();
-    }
+    g_source_remove(m_timerId);
 }
 
 bool Timer::isActive() const
