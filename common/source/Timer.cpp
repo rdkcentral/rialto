@@ -52,13 +52,15 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 }
 
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
-    : m_active{true}, m_timeout{timeout}, m_callback{callback}
+    : m_active{true}, m_callback{callback}
 {
-    m_thread = std::thread(
-        [this, timerType]()
-        {
-            do
+    if (timerType == TimerType::PERIODIC)
+    {
+        m_timerId = g_timeout_add(
+            static_cast<guint>(timeout.count()),
+            [](gpointer data) -> gboolean
             {
+<<<<<<< HEAD
                 std::unique_lock<std::mutex> lock{m_mutex};
                 if (!m_cv.wait_for(lock, m_timeout, [this]() { return !m_active; }))
                 {
@@ -71,6 +73,31 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
             } while (timerType == TimerType::PERIODIC && m_active);
             m_active = false;
         });
+=======
+                Timer *timer = static_cast<Timer *>(data);
+                if (timer->m_active && timer->m_callback)
+                {
+                    timer->m_callback();
+                }
+                return timer->m_active ? TRUE : FALSE;
+            },
+            this);
+    }
+    else
+    {
+        m_timerId = g_timeout_add_once(
+            static_cast<guint>(timeout.count()),
+            [](gpointer data)
+            {
+                Timer *timer = static_cast<Timer *>(data);
+                if (timer->m_active && timer->m_callback)
+                {
+                    timer->m_callback();
+                }
+            },
+            this);
+    }
+>>>>>>> 6d42cafe (timer impl change)
 }
 
 Timer::~Timer()
@@ -81,12 +108,16 @@ Timer::~Timer()
 void Timer::cancel()
 {
     m_active = false;
+<<<<<<< HEAD
 
     if (std::this_thread::get_id() != m_thread.get_id() && m_thread.joinable())
     {
         m_cv.notify_one();
         m_thread.join();
     }
+=======
+    g_source_remove(m_timerId);
+>>>>>>> 6d42cafe (timer impl change)
 }
 
 bool Timer::isActive() const
