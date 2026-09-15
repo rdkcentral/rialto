@@ -19,6 +19,40 @@
 
 #include "Timer.h"
 #include "RialtoCommonLogging.h"
+#include <thread>
+
+namespace
+{
+class CommonTimerLoop
+{
+public:
+    static CommonTimerLoop &instance()
+    {
+        static CommonTimerLoop instance;
+        return instance;
+    }
+
+private:
+    CommonTimerLoop()
+    {
+        m_loop = g_main_loop_new(nullptr, FALSE);
+        m_thread = std::thread([this]() { g_main_loop_run(m_loop); });
+    }
+
+    ~CommonTimerLoop()
+    {
+        g_main_loop_quit(m_loop);
+        if (m_thread.joinable())
+        {
+            m_thread.join();
+        }
+        g_main_loop_unref(m_loop);
+    }
+
+    GMainLoop *m_loop;
+    std::thread m_thread;
+};
+} // namespace
 
 namespace firebolt::rialto::common
 {
@@ -54,6 +88,7 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
     : m_active{true}, m_callback{callback}
 {
+    CommonTimerLoop::instance();
     if (timerType == TimerType::PERIODIC)
     {
         m_timerId = g_timeout_add(
@@ -79,6 +114,7 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
                 if (timer->m_active && timer->m_callback)
                 {
                     timer->m_callback();
+                    timer->m_timerId = 0;
                 }
             },
             this);
@@ -93,7 +129,11 @@ Timer::~Timer()
 void Timer::cancel()
 {
     m_active = false;
-    g_source_remove(m_timerId);
+    if (m_timerId != 0)
+    {
+        g_source_remove(m_timerId);
+        m_timerId = 0;
+    }
 }
 
 bool Timer::isActive() const
