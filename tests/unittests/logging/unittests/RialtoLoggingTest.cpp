@@ -257,3 +257,83 @@ TEST_F(RialtoLoggingTest, GetLogLevelDebug)
 
     ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_DEFAULT), logLevel);
 }
+
+namespace
+{
+uint32_t g_argEvaluationCount = 0U;
+
+int incrementAndReturn()
+{
+    return ++g_argEvaluationCount;
+}
+} // namespace
+
+/**
+ * Test that a disabled RIALTO_LOG_* call does not evaluate its arguments (perf theme 4, §6.1).
+ */
+TEST_F(RialtoLoggingTest, DisabledLogDoesNotEvaluateArguments)
+{
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, false);
+    setLogLevels(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_FATAL);
+    g_argEvaluationCount = 0U;
+
+    RIALTO_LOG_DEBUG(RIALTO_COMPONENT_DEFAULT, "value %d", incrementAndReturn());
+    EXPECT_EQ(g_argEvaluationCount, 0U);
+    EXPECT_EQ(g_handlerCalledCount, 0U);
+
+    RIALTO_LOG_FATAL(RIALTO_COMPONENT_DEFAULT, "value %d", incrementAndReturn());
+    EXPECT_EQ(g_argEvaluationCount, 1U);
+    EXPECT_EQ(g_handlerCalledCount, 1U);
+
+    setLogLevels(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_DEFAULT);
+}
+
+/**
+ * Test that a disabled RIALTO_LOG_SYS_* call does not evaluate its arguments (perf theme 4, §6.1).
+ */
+TEST_F(RialtoLoggingTest, DisabledSysLogDoesNotEvaluateArguments)
+{
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, false);
+    setLogLevels(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_FATAL);
+    g_argEvaluationCount = 0U;
+
+    RIALTO_LOG_SYS_ERROR(RIALTO_COMPONENT_DEFAULT, 1, "value %d", incrementAndReturn());
+    EXPECT_EQ(g_argEvaluationCount, 0U);
+    EXPECT_EQ(g_handlerCalledCount, 0U);
+
+    RIALTO_LOG_SYS_FATAL(RIALTO_COMPONENT_DEFAULT, 1, "value %d", incrementAndReturn());
+    EXPECT_EQ(g_argEvaluationCount, 1U);
+    EXPECT_EQ(g_handlerCalledCount, 1U);
+
+    setLogLevels(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_DEFAULT);
+}
+
+/**
+ * Test that the inlined rialtoIsLevelEnabled() helper agrees with setLogLevels()/getLogLevels(),
+ * and rejects an out-of-range component.
+ */
+TEST_F(RialtoLoggingTest, IsLevelEnabledReflectsCurrentLevel)
+{
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::EmptyLogHandler, false);
+    setLogLevels(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_WARNING);
+
+    EXPECT_TRUE(rialtoIsLevelEnabled(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_WARNING));
+    EXPECT_FALSE(rialtoIsLevelEnabled(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_DEBUG));
+    EXPECT_FALSE(rialtoIsLevelEnabled(RIALTO_COMPONENT_LAST, RIALTO_DEBUG_LEVEL_WARNING));
+
+    setLogLevels(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_DEFAULT);
+}
+
+/**
+ * Test that rialtoIsLevelEnabled() honours a log handler registered with ignoreLogLevels=true.
+ */
+TEST_F(RialtoLoggingTest, IsLevelEnabledHonoursIgnoreLogLevels)
+{
+    setLogLevels(RIALTO_COMPONENT_DEFAULT, static_cast<RIALTO_DEBUG_LEVEL>(0));
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::EmptyLogHandler, true);
+
+    EXPECT_TRUE(rialtoIsLevelEnabled(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_DEBUG));
+
+    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::EmptyLogHandler, false);
+    setLogLevels(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_DEFAULT);
+}

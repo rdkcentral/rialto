@@ -60,14 +60,41 @@
 namespace
 {
 /**
- * Log levels for each component. By default will print all fatals, errors, warnings & milestones.
- */
-std::atomic<RIALTO_DEBUG_LEVEL> g_rialtoLogLevels[RIALTO_COMPONENT_LAST] = {};
-
-/**
  * Default Log levels defined by RIALTO_DEBUG environment variable
  */
 const firebolt::rialto::logging::EnvVariableParser g_envVariableParser;
+} // namespace
+
+namespace firebolt::rialto::logging::detail
+{
+/**
+ * Log levels for each component. By default will print all fatals, errors, warnings & milestones.
+ * Defined here (rather than the anonymous namespace) so RialtoLogging.h can declare them extern and
+ * inline rialtoIsLevelEnabled() directly at every log call site.
+ */
+std::atomic<RIALTO_DEBUG_LEVEL> g_rialtoLogLevels[RIALTO_COMPONENT_LAST] = {};
+std::atomic_bool g_ignoreLogLevels[RIALTO_COMPONENT_LAST] = {};
+
+namespace
+{
+// Initialise the levels from RIALTO_DEBUG at startup (rather than lazily on first log call), since the
+// inlined header check has no access to g_envVariableParser and must be able to trust the array immediately.
+struct LogLevelInitializer
+{
+    LogLevelInitializer()
+    {
+        for (int component = RIALTO_COMPONENT_DEFAULT; component < RIALTO_COMPONENT_LAST; ++component)
+        {
+            g_rialtoLogLevels[component].store(g_envVariableParser.getLevel(static_cast<RIALTO_COMPONENT>(component)),
+                                               std::memory_order_relaxed);
+        }
+    }
+} g_logLevelInitializer;
+} // namespace
+} // namespace firebolt::rialto::logging::detail
+
+namespace
+{
 
 /**
  * Log handler for each component. By default will use journaldLogHandler.
@@ -78,7 +105,6 @@ void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, co
                         const char *function, const char *message, size_t messageLen);
 
 firebolt::rialto::logging::LogHandler g_logHandler[RIALTO_COMPONENT_LAST] = {};
-std::atomic_bool g_ignoreLogLevels[RIALTO_COMPONENT_LAST] = {};
 std::mutex g_logHandlerMutex;
 
 std::string componentToString(RIALTO_COMPONENT component);
@@ -260,11 +286,8 @@ void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char 
     if (component >= RIALTO_COMPONENT_LAST)
         return;
 
-    /* If log levels have not been set, set to Default */
-    if (!g_rialtoLogLevels[component])
-        g_rialtoLogLevels[component] = g_envVariableParser.getLevel(component);
-
-    if (!(level & g_rialtoLogLevels[component]) && !g_ignoreLogLevels[component])
+    if (!(level & firebolt::rialto::logging::detail::g_rialtoLogLevels[component].load(std::memory_order_relaxed)) &&
+        !firebolt::rialto::logging::detail::g_ignoreLogLevels[component].load(std::memory_order_relaxed))
         return;
     char mbuf[512];
     int len;
@@ -315,17 +338,6 @@ void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char 
 
 } // namespace
 
-int rialtoIsLevelEnabled(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level)
-{
-    if (component >= RIALTO_COMPONENT_LAST)
-        return 0;
-
-    if (!g_rialtoLogLevels[component])
-        g_rialtoLogLevels[component] = g_envVariableParser.getLevel(component);
-
-    return (level & g_rialtoLogLevels[component]) || g_ignoreLogLevels[component];
-}
-
 void rialtoLogVPrintf(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, const char *func,
                       int line, const char *fmt, va_list ap)
 {
@@ -374,9 +386,10 @@ namespace firebolt::rialto::logging
 RialtoLoggingStatus setLogLevels(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL logLevels)
 {
     RialtoLoggingStatus status = RIALTO_LOGGING_STATUS_ERROR;
-    if (component < RIALTO_COMPONENT_LAST && !g_ignoreLogLevels[component])
+    if (component < RIALTO_COMPONENT_LAST &&
+        !firebolt::rialto::logging::detail::g_ignoreLogLevels[component].load(std::memory_order_relaxed))
     {
-        g_rialtoLogLevels[component] = logLevels;
+        firebolt::rialto::logging::detail::g_rialtoLogLevels[component].store(logLevels, std::memory_order_relaxed);
         status = RIALTO_LOGGING_STATUS_OK;
     }
 
@@ -387,12 +400,10 @@ RIALTO_DEBUG_LEVEL getLogLevels(RIALTO_COMPONENT component)
 {
     if (component < RIALTO_COMPONENT_LAST)
     {
-        if (g_ignoreLogLevels[component])
+        if (firebolt::rialto::logging::detail::g_ignoreLogLevels[component].load(std::memory_order_relaxed))
             return RIALTO_DEBUG_LEVEL_EXTERNAL;
 
-        if (!g_rialtoLogLevels[component])
-            g_rialtoLogLevels[component] = g_envVariableParser.getLevel(component);
-        return g_rialtoLogLevels[component];
+        return firebolt::rialto::logging::detail::g_rialtoLogLevels[component].load(std::memory_order_relaxed);
     }
     return RIALTO_DEBUG_LEVEL_DEFAULT;
 }
@@ -408,7 +419,8 @@ RialtoLoggingStatus setLogHandler(RIALTO_COMPONENT component, LogHandler handler
 
         // Ignoring log levels is only an option if we're registering
         // a non-null log handler
-        g_ignoreLogLevels[component] = (g_logHandler[component]) ? ignoreLogLevels : false;
+        firebolt::rialto::logging::detail::g_ignoreLogLevels[component].store(
+            (g_logHandler[component]) ? ignoreLogLevels : false, std::memory_order_relaxed);
 
         status = RIALTO_LOGGING_STATUS_OK;
     }

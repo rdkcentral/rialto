@@ -72,7 +72,10 @@ extern "C"
     extern void rialtoLogSysPrintf(enum RIALTO_COMPONENT component, int err, enum RIALTO_DEBUG_LEVEL level,
                                    const char *file, const char *func, int line, const char *fmt, ...)
         __attribute__((format(printf, 7, 8)));
+
+#ifndef __cplusplus
     extern int rialtoIsLevelEnabled(enum RIALTO_COMPONENT component, enum RIALTO_DEBUG_LEVEL level);
+#endif
 
     /**
      * Macros to be used for logging
@@ -175,6 +178,25 @@ extern "C"
     } while (false)
 
 #ifdef __cplusplus
+}
+
+#include <atomic>
+
+// Log level state exposed only so rialtoIsLevelEnabled() below can be inlined at every call site,
+// avoiding a real function call (and the disabled-log argument evaluation it would otherwise gate).
+namespace firebolt::rialto::logging::detail
+{
+extern std::atomic<RIALTO_DEBUG_LEVEL> g_rialtoLogLevels[RIALTO_COMPONENT_LAST];
+extern std::atomic_bool g_ignoreLogLevels[RIALTO_COMPONENT_LAST];
+} // namespace firebolt::rialto::logging::detail
+
+static inline int rialtoIsLevelEnabled(enum RIALTO_COMPONENT component, enum RIALTO_DEBUG_LEVEL level)
+{
+    if (component >= RIALTO_COMPONENT_LAST)
+        return 0;
+
+    return (level & firebolt::rialto::logging::detail::g_rialtoLogLevels[component].load(std::memory_order_relaxed)) ||
+           firebolt::rialto::logging::detail::g_ignoreLogLevels[component].load(std::memory_order_relaxed);
 }
 #endif
 
