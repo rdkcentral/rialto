@@ -869,7 +869,12 @@ void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingStreamSyncM
         .WillOnce(Return(kElementTypeName.c_str()));
 
     // This is the extra EXPECT caused by setting pendingStreamSyncMode...
-    EXPECT_CALL(testContext->m_gstPlayer, setStreamSyncMode(MediaSourceType::AUDIO));
+    EXPECT_CALL(testContext->m_gstPlayer, setStreamSyncMode(MediaSourceType::AUDIO))
+        .WillOnce([this](const MediaSourceType &) {
+            std::unique_lock lock{testContext->m_context.propertyMutex};
+            testContext->m_context.pendingStreamSyncMode.erase(MediaSourceType::AUDIO);
+            return true;
+        });
     expectSetupAudioDecoderElement();
 }
 
@@ -880,7 +885,12 @@ void GenericTasksTestsBase::shouldSetupVideoParserElementWithPendingStreamSyncMo
         .WillOnce(Return(kElementTypeName.c_str()));
 
     // This is the extra EXPECT caused by setting pendingStreamSyncMode...
-    EXPECT_CALL(testContext->m_gstPlayer, setStreamSyncMode(MediaSourceType::VIDEO));
+    EXPECT_CALL(testContext->m_gstPlayer, setStreamSyncMode(MediaSourceType::VIDEO))
+        .WillOnce([this](const MediaSourceType &) {
+            std::unique_lock lock{testContext->m_context.propertyMutex};
+            testContext->m_context.pendingStreamSyncMode.erase(MediaSourceType::VIDEO);
+            return true;
+        });
     expectSetupVideoParserElement();
 }
 
@@ -891,7 +901,11 @@ void GenericTasksTestsBase::shouldSetupAudioDecoderElementWithPendingBufferingLi
         .WillOnce(Return(kElementTypeName.c_str()));
 
     // This is the extra EXPECT caused by setting pendingBufferingLimit...
-    EXPECT_CALL(testContext->m_gstPlayer, setBufferingLimit());
+    EXPECT_CALL(testContext->m_gstPlayer, setBufferingLimit()).WillOnce([this] {
+        std::unique_lock lock{testContext->m_context.propertyMutex};
+        testContext->m_context.pendingBufferingLimit.reset();
+        return true;
+    });
     expectSetupAudioDecoderElement();
 }
 

@@ -69,7 +69,12 @@ void UpdatePlaybackGroup::execute() const
                     RIALTO_SERVER_LOG_DEBUG("onTypeFound(): m_context.playbackGroup.curAudioTypefind %s", typefindName);
                     m_glibWrapper->gFree(typefindName);
                     m_context.playbackGroup.m_curAudioTypefind = m_typefind;
-                    if (m_context.pendingUseBuffering.has_value())
+                    bool useBufferingPending{false};
+                    {
+                        std::unique_lock lock{m_context.propertyMutex};
+                        useBufferingPending = m_context.pendingUseBuffering.has_value();
+                    }
+                    if (useBufferingPending)
                     {
                         m_player.setUseBuffering();
                     }
