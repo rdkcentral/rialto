@@ -105,7 +105,7 @@ NamedSocket::NamedSocket(const std::string &socketPath)
 
     // bind to the given path
     struct sockaddr_un addr = {0};
-    memset(&addr, 0x00, sizeof(addr));
+    // memset(&addr, 0x00, sizeof(addr));
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
 
@@ -193,7 +193,7 @@ bool NamedSocket::bind(const std::string &socketPath)
 
     // bind to the given path
     struct sockaddr_un addr = {0};
-    memset(&addr, 0x00, sizeof(addr));
+    // memset(&addr, 0x00, sizeof(addr));
     addr.sun_family = AF_UNIX;
     strncpy(addr.sun_path, socketPath.c_str(), sizeof(addr.sun_path) - 1);
 
