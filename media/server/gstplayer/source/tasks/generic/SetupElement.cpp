@@ -370,6 +370,11 @@ void SetupElement::execute() const
         {
             m_player.setVideoSinkRectangle();
         }
+        else if (!m_context.videoGeometrySetByApi.load() && !m_context.defaultVideoGeometry.empty())
+        {
+            m_context.pendingGeometry = m_context.defaultVideoGeometry;
+            m_player.setVideoSinkRectangle();
+        }
         if (m_context.pendingImmediateOutputForVideo.has_value())
         {
             m_player.setImmediateOutput();

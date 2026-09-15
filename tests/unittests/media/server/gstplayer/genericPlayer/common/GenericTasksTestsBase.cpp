@@ -760,6 +760,53 @@ void GenericTasksTestsBase::shouldSetupVideoElementWithPendingGeometry()
     expectSetupVideoSinkElement();
 }
 
+void GenericTasksTestsBase::shouldSetupVideoElementWithFallbackGeometry()
+{
+    testContext->m_context.defaultVideoGeometry = kRectangle;
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
+    EXPECT_CALL(testContext->m_gstPlayer, setVideoSinkRectangle());
+    expectSetupVideoSinkElement();
+}
+
+void GenericTasksTestsBase::shouldSetupVideoElementWithApiGeometryAndFallback()
+{
+    constexpr Rectangle kApiGeometry{5, 6, 7, 8};
+    testContext->m_context.defaultVideoGeometry = kRectangle;
+    testContext->m_context.pendingGeometry = kApiGeometry;
+    testContext->m_context.videoGeometrySetByApi.store(true);
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
+    EXPECT_CALL(testContext->m_gstPlayer, setVideoSinkRectangle());
+    expectSetupVideoSinkElement();
+}
+
+void GenericTasksTestsBase::shouldSetupVideoElementWithoutFallbackAfterApiCall()
+{
+    testContext->m_context.defaultVideoGeometry = kRectangle;
+    testContext->m_context.videoGeometrySetByApi.store(true);
+    EXPECT_CALL(*testContext->m_glibWrapper, gTypeName(G_OBJECT_TYPE(testContext->m_element)))
+        .WillOnce(Return(kElementTypeName.c_str()));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("amlhalasink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("brcmaudiosink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_glibWrapper, gStrHasPrefix(_, StrEq("rialtotexttracksink"))).WillOnce(Return(FALSE));
+    EXPECT_CALL(*testContext->m_gstWrapper, gstIsBaseParse(_)).WillOnce(Return(FALSE));
+    expectSetupVideoSinkElement();
+}
+
+void GenericTasksTestsBase::checkPendingGeometry(const Rectangle &geometry)
+{
+    EXPECT_EQ(testContext->m_context.pendingGeometry, geometry);
+}
+
 void GenericTasksTestsBase::shouldSetupVideoElementWithPendingImmediateOutput()
 {
     testContext->m_context.pendingImmediateOutputForVideo = true;

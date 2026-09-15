@@ -47,6 +47,12 @@ TEST_F(SessionManagementServerTests, shouldFailToInitializeServerWithFd)
     sendServerInitializeWithFdAndExpectFailure();
 }
 
+TEST_F(SessionManagementServerTests, shouldFailToInitializeServerWithFdDueToWrongFd)
+{
+    serverWillFailToInitializeWithFdDueToWrongFd();
+    sendServerInitializeWithFdAndExpectFailure();
+}
+
 TEST_F(SessionManagementServerTests, shouldStartServer)
 {
     serverWillStart();

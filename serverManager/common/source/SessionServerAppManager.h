@@ -29,6 +29,7 @@
 #include "ISessionServerAppManager.h"
 #include "IStateObserver.h"
 #include "SessionServerAppFactory.h"
+#include <atomic>
 #include <memory>
 #include <set>
 #include <string>
@@ -62,6 +63,7 @@ public:
     bool setLogLevels(const service::LoggingLevels &logLevels) const override;
     void restartServer(int serverId) override;
     void onServerStartupTimeout(int serverId) override;
+    void setShuttingDown() override;
 
 private:
     bool connectSessionServer(const std::shared_ptr<ISessionServerApp> &sessionServer);
@@ -69,7 +71,8 @@ private:
     bool configurePreloadedSessionServer(const std::shared_ptr<ISessionServerApp> &sessionServer,
                                          const std::string &appName,
                                          const firebolt::rialto::common::SessionServerState &state,
-                                         const firebolt::rialto::common::AppConfig &appConfig);
+                                         const firebolt::rialto::common::AppConfig &appConfig,
+                                         std::unique_ptr<firebolt::rialto::ipc::INamedSocket> &&namedSocket);
     bool changeSessionServerState(const std::string &appName,
                                   const firebolt::rialto::common::SessionServerState &newState);
     void handleSessionServerStateChange(int serverId, firebolt::rialto::common::SessionServerState newState);
@@ -87,6 +90,8 @@ private:
     bool handleInitiateApplication(const std::string &appName, const firebolt::rialto::common::SessionServerState &state,
                                    const firebolt::rialto::common::AppConfig &appConfig);
     void handleRestartServer(int serverId);
+    bool resurrectSuspendedServer(const std::shared_ptr<ISessionServerApp> &kSessionServer,
+                                  const firebolt::rialto::common::SessionServerState &state);
     bool configureSessionServerWithSocketName(const std::shared_ptr<ISessionServerApp> &kSessionServer);
     bool configureSessionServerWithSocketFd(const std::shared_ptr<ISessionServerApp> &kSessionServer);
     void handleServerStartupTimeout(int serverId);
@@ -99,7 +104,7 @@ private:
     std::shared_ptr<service::IStateObserver> m_stateObserver;
     std::unique_ptr<IHealthcheckService> m_healthcheckService;
     const firebolt::rialto::ipc::INamedSocketFactory &m_namedSocketFactory;
-    bool m_isShuttingDown;
+    std::atomic_bool m_isShuttingDown;
 };
 } // namespace rialto::servermanager::common
 

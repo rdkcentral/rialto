@@ -1041,6 +1041,7 @@ std::vector<int> ChannelImpl::getMessageFds(const google::protobuf::Message &mes
     std::vector<int> fds;
 
     auto descriptor = message.GetDescriptor();
+    auto reflection = message.GetReflection();
     const int n = descriptor->field_count();
     for (int i = 0; i < n; i++)
     {
@@ -1053,9 +1054,13 @@ std::vector<int> ChannelImpl::getMessageFds(const google::protobuf::Message &mes
                 RIALTO_IPC_LOG_ERROR("field '%s' is marked as containing an fd but not an int32 type",
                                      fieldDescriptor->full_name().c_str());
             }
+            else if (!reflection->HasField(message, fieldDescriptor))
+            {
+                RIALTO_IPC_LOG_DEBUG("field '%s' is marked as containing an fd but is not present",
+                                     fieldDescriptor->full_name().c_str());
+            }
             else
             {
-                auto reflection = message.GetReflection();
                 int fileDescriptor = reflection->GetInt32(message, fieldDescriptor);
                 fds.emplace_back(fileDescriptor);
             }

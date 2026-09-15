@@ -200,6 +200,7 @@ void RialtoServerComponentTest::initialiseGstreamer()
                    [this]()
                    {
                        EXPECT_CALL(*m_gstWrapperMock, gstInit(nullptr, nullptr));
+                       EXPECT_CALL(*m_gstWrapperMock, gstDeinit()).Times(AtLeast(0));
                        EXPECT_CALL(*m_gstWrapperMock, gstRegistryGet()).WillOnce(Return(nullptr));
                        EXPECT_CALL(*m_gstWrapperMock, gstRegistryFindPlugin(nullptr, _)).WillOnce(Return(nullptr));
                        EXPECT_CALL(*m_glibWrapperMock, gThreadPoolSetMaxUnusedThreads(2));

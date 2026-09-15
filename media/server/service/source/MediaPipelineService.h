@@ -25,6 +25,7 @@
 #include "IMediaPipelineServerInternal.h"
 #include "IMediaPipelineService.h"
 #include "IPlaybackService.h"
+#include "IPrivateMetricsService.h"
 #include "ISharedMemoryBuffer.h"
 #include <atomic>
 #include <condition_variable>
@@ -45,7 +46,7 @@ public:
     MediaPipelineService(IPlaybackService &playbackService,
                          std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
                          std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-                         IDecryptionService &decryptionService);
+                         IDecryptionService &decryptionService, IPrivateMetricsService &metricsService);
     ~MediaPipelineService() override;
     MediaPipelineService(const MediaPipelineService &) = delete;
     MediaPipelineService(MediaPipelineService &&) = delete;
@@ -113,6 +114,7 @@ private:
     std::shared_ptr<IMediaPipelineServerInternalFactory> m_mediaPipelineFactory;
     std::shared_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
     IDecryptionService &m_decryptionService;
+    IPrivateMetricsService &m_metricsService;
     std::map<int, std::unique_ptr<IMediaPipelineServerInternal>> m_mediaPipelines;
     std::mutex m_mediaPipelineMutex;
 };

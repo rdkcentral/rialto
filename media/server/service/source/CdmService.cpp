@@ -416,7 +416,12 @@ MediaKeyErrorStatus CdmService::releaseKeySession(int mediaKeysHandle, int32_t k
         mediaKeysHandleIter->second.shouldBeReleased = true;
         return MediaKeyErrorStatus::OK;
     }
-    const auto result = m_mediaKeys[mediaKeysHandleIter->second.mediaKeysHandle]->releaseKeySession(keySessionId);
+    auto result{MediaKeyErrorStatus::OK};
+    auto mediaKeysIter{m_mediaKeys.find(mediaKeysHandleIter->second.mediaKeysHandle)};
+    if (mediaKeysIter != m_mediaKeys.end())
+    {
+        result = mediaKeysIter->second->releaseKeySession(keySessionId);
+    }
     m_sessionInfo.erase(keySessionId);
     return result;
 }

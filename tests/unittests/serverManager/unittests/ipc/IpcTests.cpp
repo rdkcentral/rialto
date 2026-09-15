@@ -153,3 +153,12 @@ TEST_F(IpcTests, ShouldFailToSetConfigurationWithFd)
     ASSERT_TRUE(triggerCreateClient());
     ASSERT_FALSE(triggerPerformSetConfigurationWithFd());
 }
+
+TEST_F(IpcTests, ShouldSkipRestartOfServerInNotRunningState)
+{
+    configureServerToSendOkResponses();
+    ASSERT_TRUE(triggerCreateClient());
+    ASSERT_TRUE(triggerPerformSetState(firebolt::rialto::common::SessionServerState::INACTIVE));
+    ASSERT_TRUE(triggerPerformSetState(firebolt::rialto::common::SessionServerState::NOT_RUNNING));
+    simulateClientDisconnection();
+}

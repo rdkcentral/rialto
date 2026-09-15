@@ -34,6 +34,7 @@ TEST(UtilsTest, ShouldReturnProperString)
     EXPECT_EQ(std::string("Active"), std::string(toString(SessionServerState::ACTIVE)));
     EXPECT_EQ(std::string("NotRunning"), std::string(toString(SessionServerState::NOT_RUNNING)));
     EXPECT_EQ(std::string("Error"), std::string(toString(SessionServerState::ERROR)));
+    EXPECT_EQ(std::string("Suspended"), std::string(toString(SessionServerState::SUSPENDED)));
 }
 
 TEST(UtilsTest, ShouldReturnConvertedLogLevel)

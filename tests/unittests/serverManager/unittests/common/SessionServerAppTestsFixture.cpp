@@ -62,7 +62,7 @@ void SessionServerAppTests::createPreloadedAppSut()
                                                                               kEnvironmentVariables, kSessionServerPath,
                                                                               kSessionServerStartupTimeout,
                                                                               kSocketPermissions, kSocketOwner,
-                                                                              kSocketGroup, std::move(m_namedSocket));
+                                                                              kSocketGroup);
     ASSERT_TRUE(m_sut);
     EXPECT_TRUE(m_sut->isPreloaded());
     EXPECT_EQ(kSocketPermissions, m_sut->getSessionManagementSocketPermissions());
@@ -203,9 +203,9 @@ void SessionServerAppTests::timerWillBeActive() const
     EXPECT_CALL(m_timerMock, isActive()).WillRepeatedly(Return(true));
 }
 
-bool SessionServerAppTests::triggerConfigure(const firebolt::rialto::common::AppConfig &appConfig) const
+bool SessionServerAppTests::triggerConfigure(const firebolt::rialto::common::AppConfig &appConfig)
 {
-    const bool kRet = m_sut->configure(kAppName, kInitialState, appConfig);
+    const bool kRet = m_sut->configure(kAppName, kInitialState, appConfig, std::move(m_namedSocket));
     EXPECT_EQ(kInitialState, m_sut->getInitialState());
     return kRet;
 }
@@ -227,4 +227,9 @@ void SessionServerAppTests::triggerReleaseNamedSocket() const
     EXPECT_EQ(namedSocket.get(), &m_namedSocketMock);
     EXPECT_FALSE(m_sut->isNamedSocketInitialized());
     EXPECT_EQ(-1, m_sut->getSessionManagementSocketFd());
+}
+
+void SessionServerAppTests::triggerCleanup() const
+{
+    m_sut->cleanup();
 }

@@ -77,19 +77,3 @@ target_include_directories(
     INTERFACE
     third-party/Source
 )
-
-set_target_properties(
-    WPEFrameworkCOM
-        PROPERTIES SOVERSION  ${PROJECT_VERSION_MAJOR}
-                   VERSION    ${CMAKE_PROJECT_VERSION}
-        )
-
-install(FILES "${PROJECT_CONFIG_FILE}"
-  DESTINATION ${CMAKE_MODULE_PATH}
-  COMPONENT wpeframeworkcom
-)
-
-install (
-        TARGETS WPEFrameworkCOM LIBRARY
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)

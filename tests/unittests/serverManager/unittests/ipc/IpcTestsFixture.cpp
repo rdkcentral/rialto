@@ -19,8 +19,10 @@
 
 #include "IpcTestsFixture.h"
 #include "Controller.h"
+#include <fcntl.h>
 #include <gtest/gtest.h>
 #include <string>
+#include <unistd.h>
 
 using testing::Invoke;
 
@@ -148,11 +150,14 @@ bool IpcTests::triggerPerformSetConfigurationWithFd()
 {
     EXPECT_TRUE(m_sut);
     const auto kInitialState{firebolt::rialto::common::SessionServerState::INACTIVE};
-    constexpr int kSocketFd{123};
+    int socketFd = open("/dev/null", O_RDONLY);
     const std::string kClientSocketName{"westeros-rialto"};
     constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{2, 1};
     const std::string kAppId{"app"};
-    return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketFd, kClientSocketName, kMaxResource, kAppId);
+    bool result =
+        m_sut->performSetConfiguration(kServerId, kInitialState, socketFd, kClientSocketName, kMaxResource, kAppId);
+    close(socketFd);
+    return result;
 }
 
 bool IpcTests::triggerPerformPing()
