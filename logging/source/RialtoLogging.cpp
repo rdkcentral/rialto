@@ -78,7 +78,7 @@ void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, co
                         const char *function, const char *message, size_t messageLen);
 
 firebolt::rialto::logging::LogHandler g_logHandler[RIALTO_COMPONENT_LAST] = {};
-bool g_ignoreLogLevels[RIALTO_COMPONENT_LAST] = {};
+std::atomic_bool g_ignoreLogLevels[RIALTO_COMPONENT_LAST] = {};
 std::mutex g_logHandlerMutex;
 
 std::string componentToString(RIALTO_COMPONENT component);
@@ -314,6 +314,17 @@ void rialtoLog(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char 
 }
 
 } // namespace
+
+int rialtoIsLevelEnabled(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level)
+{
+    if (component >= RIALTO_COMPONENT_LAST)
+        return 0;
+
+    if (!g_rialtoLogLevels[component])
+        g_rialtoLogLevels[component] = g_envVariableParser.getLevel(component);
+
+    return (level & g_rialtoLogLevels[component]) || g_ignoreLogLevels[component];
+}
 
 void rialtoLogVPrintf(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, const char *file, const char *func,
                       int line, const char *fmt, va_list ap)
