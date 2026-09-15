@@ -21,6 +21,12 @@
 #define FIREBOLT_RIALTO_LOGGING_RIALTO_LOGGING_H_
 
 #ifdef __cplusplus
+#include <atomic>
+#else
+#include <stdatomic.h>
+#endif
+
+#ifdef __cplusplus
 extern "C"
 {
 #endif
@@ -73,6 +79,29 @@ extern "C"
                                    const char *file, const char *func, int line, const char *fmt, ...)
         __attribute__((format(printf, 7, 8)));
 
+#ifdef __cplusplus
+    extern std::atomic<enum RIALTO_DEBUG_LEVEL> g_rialtoLogLevels[];
+    extern std::atomic<bool> g_ignoreLogLevels[];
+#else
+    extern _Atomic enum RIALTO_DEBUG_LEVEL g_rialtoLogLevels[];
+    extern _Atomic _Bool g_ignoreLogLevels[];
+#endif
+
+    static inline int rialtoIsLevelEnabled(enum RIALTO_COMPONENT component, enum RIALTO_DEBUG_LEVEL level)
+    {
+        if (component >= RIALTO_COMPONENT_LAST)
+            return 0;
+
+#ifdef __cplusplus
+        const unsigned int kLevels = g_rialtoLogLevels[component].load(std::memory_order_relaxed);
+        const bool kIgnoreLevels = g_ignoreLogLevels[component].load(std::memory_order_relaxed);
+#else
+        const unsigned int kLevels = atomic_load_explicit(&g_rialtoLogLevels[component], memory_order_relaxed);
+        const _Bool kIgnoreLevels = atomic_load_explicit(&g_ignoreLogLevels[component], memory_order_relaxed);
+#endif
+        return (0u == kLevels) || (0u != (level & kLevels)) || kIgnoreLevels;
+    }
+
     /**
      * Macros to be used for logging
      */
@@ -81,13 +110,20 @@ extern "C"
 #define RIALTO_LOG_FATAL(component, fmt, args...)                                                                      \
     do                                                                                                                 \
     {                                                                                                                  \
-        rialtoLogPrintf(component, RIALTO_DEBUG_LEVEL_FATAL, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);           \
+        if (rialtoIsLevelEnabled(component, RIALTO_DEBUG_LEVEL_FATAL))                                                 \
+        {                                                                                                              \
+            rialtoLogPrintf(component, RIALTO_DEBUG_LEVEL_FATAL, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);       \
+        }                                                                                                              \
     } while (false)
 
 #define RIALTO_LOG_SYS_FATAL(component, err, fmt, args...)                                                             \
     do                                                                                                                 \
     {                                                                                                                  \
-        rialtoLogSysPrintf(component, err, RIALTO_DEBUG_LEVEL_FATAL, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);   \
+        if (rialtoIsLevelEnabled(component, RIALTO_DEBUG_LEVEL_FATAL))                                                 \
+        {                                                                                                              \
+            rialtoLogSysPrintf(component, err, RIALTO_DEBUG_LEVEL_FATAL, __FILE__, __FUNCTION__, __LINE__, fmt,        \
+                               ##args);                                                                                \
+        }                                                                                                              \
     } while (false)
 #else
 #define RIALTO_LOG_FATAL(component, fmt, args...)
@@ -98,13 +134,20 @@ extern "C"
 #define RIALTO_LOG_ERROR(component, fmt, args...)                                                                      \
     do                                                                                                                 \
     {                                                                                                                  \
-        rialtoLogPrintf(component, RIALTO_DEBUG_LEVEL_ERROR, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);           \
+        if (rialtoIsLevelEnabled(component, RIALTO_DEBUG_LEVEL_ERROR))                                                 \
+        {                                                                                                              \
+            rialtoLogPrintf(component, RIALTO_DEBUG_LEVEL_ERROR, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);       \
+        }                                                                                                              \
     } while (false)
 
 #define RIALTO_LOG_SYS_ERROR(component, err, fmt, args...)                                                             \
     do                                                                                                                 \
     {                                                                                                                  \
-        rialtoLogSysPrintf(component, err, RIALTO_DEBUG_LEVEL_ERROR, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);   \
+        if (rialtoIsLevelEnabled(component, RIALTO_DEBUG_LEVEL_ERROR))                                                 \
+        {                                                                                                              \
+            rialtoLogSysPrintf(component, err, RIALTO_DEBUG_LEVEL_ERROR, __FILE__, __FUNCTION__, __LINE__, fmt,        \
+                               ##args);                                                                                \
+        }                                                                                                              \
     } while (false)
 #else
 #define RIALTO_LOG_ERROR(component, fmt, args...)
@@ -115,12 +158,19 @@ extern "C"
 #define RIALTO_LOG_WARN(component, fmt, args...)                                                                       \
     do                                                                                                                 \
     {                                                                                                                  \
-        rialtoLogPrintf(component, RIALTO_DEBUG_LEVEL_WARNING, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);         \
+        if (rialtoIsLevelEnabled(component, RIALTO_DEBUG_LEVEL_WARNING))                                               \
+        {                                                                                                              \
+            rialtoLogPrintf(component, RIALTO_DEBUG_LEVEL_WARNING, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);     \
+        }                                                                                                              \
     } while (false)
 #define RIALTO_LOG_SYS_WARN(component, err, fmt, args...)                                                              \
     do                                                                                                                 \
     {                                                                                                                  \
-        rialtoLogSysPrintf(component, err, RIALTO_DEBUG_LEVEL_WARNING, __FILE__, __FUNCTION__, __LINE__, fmt, ##args); \
+        if (rialtoIsLevelEnabled(component, RIALTO_DEBUG_LEVEL_WARNING))                                               \
+        {                                                                                                              \
+            rialtoLogSysPrintf(component, err, RIALTO_DEBUG_LEVEL_WARNING, __FILE__, __FUNCTION__, __LINE__, fmt,      \
+                               ##args);                                                                                \
+        }                                                                                                              \
     } while (false)
 #else
 #define RIALTO_LOG_WARN(component, fmt, args...)
@@ -131,7 +181,10 @@ extern "C"
 #define RIALTO_LOG_MIL(component, fmt, args...)                                                                        \
     do                                                                                                                 \
     {                                                                                                                  \
-        rialtoLogPrintf(component, RIALTO_DEBUG_LEVEL_MILESTONE, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);       \
+        if (rialtoIsLevelEnabled(component, RIALTO_DEBUG_LEVEL_MILESTONE))                                             \
+        {                                                                                                              \
+            rialtoLogPrintf(component, RIALTO_DEBUG_LEVEL_MILESTONE, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);   \
+        }                                                                                                              \
     } while (false)
 #else
 #define RIALTO_LOG_MIL(component, fmt, args...)
@@ -141,7 +194,10 @@ extern "C"
 #define RIALTO_LOG_INFO(component, fmt, args...)                                                                       \
     do                                                                                                                 \
     {                                                                                                                  \
-        rialtoLogPrintf(component, RIALTO_DEBUG_LEVEL_INFO, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);            \
+        if (rialtoIsLevelEnabled(component, RIALTO_DEBUG_LEVEL_INFO))                                                  \
+        {                                                                                                              \
+            rialtoLogPrintf(component, RIALTO_DEBUG_LEVEL_INFO, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);        \
+        }                                                                                                              \
     } while (false)
 #else
 #define RIALTO_LOG_INFO(component, fmt, args...)
@@ -151,7 +207,10 @@ extern "C"
 #define RIALTO_LOG_DEBUG(component, fmt, args...)                                                                      \
     do                                                                                                                 \
     {                                                                                                                  \
-        rialtoLogPrintf(component, RIALTO_DEBUG_LEVEL_DEBUG, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);           \
+        if (rialtoIsLevelEnabled(component, RIALTO_DEBUG_LEVEL_DEBUG))                                                 \
+        {                                                                                                              \
+            rialtoLogPrintf(component, RIALTO_DEBUG_LEVEL_DEBUG, __FILE__, __FUNCTION__, __LINE__, fmt, ##args);       \
+        }                                                                                                              \
     } while (false)
 #else
 #define RIALTO_LOG_DEBUG(component, fmt, args...)

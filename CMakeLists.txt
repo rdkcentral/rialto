@@ -18,7 +18,7 @@
 #
 
 cmake_minimum_required( VERSION 3.10 )
-project( Rialto LANGUAGES C CXX VERSION 1.0.0 )
+project( Rialto LANGUAGES C CXX ASM VERSION 1.0.0 )
 
 # Preprocesser Variable
 add_compile_definitions(PROJECT_VER_MAJOR="${PROJECT_VERSION_MAJOR}")
@@ -32,8 +32,18 @@ if ( COVERAGE_ENABLED )
     add_link_options(--coverage)
 endif()
 
-add_compile_options(-Wall -Werror)
-
+add_compile_options(
+    -Wall
+    -Werror
+    -fno-builtin-memset
+    -fsanitize=address
+)
+add_link_options(-fsanitize=address)
+link_libraries(
+    -Wl,--no-as-needed
+    asan
+    -Wl,--as-needed
+)
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 13.0)
     add_compile_options(-Wno-error=overloaded-virtual)
 endif()
