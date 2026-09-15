@@ -23,10 +23,7 @@
 #include "ITimer.h"
 
 #include <atomic>
-#include <condition_variable>
-#include <gst/gst.h>
-#include <memory>
-#include <mutex>
+#include <glib.h>
 #include <thread>
 
 namespace firebolt::rialto::common
@@ -63,7 +60,7 @@ public:
 private:
     std::atomic<bool> m_active;
     std::function<void()> m_callback;
-    guint m_timerId;
+    std::atomic<guint> m_timerId;
 };
 } // namespace firebolt::rialto::common
 

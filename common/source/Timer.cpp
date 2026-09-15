@@ -19,6 +19,40 @@
 
 #include "Timer.h"
 #include "RialtoCommonLogging.h"
+#include <thread>
+
+namespace
+{
+class CommonTimerLoop
+{
+public:
+    static CommonTimerLoop &instance()
+    {
+        static CommonTimerLoop instance;
+        return instance;
+    }
+
+private:
+    CommonTimerLoop()
+    {
+        m_loop = g_main_loop_new(nullptr, FALSE);
+        m_thread = std::thread([this]() { g_main_loop_run(m_loop); });
+    }
+
+    ~CommonTimerLoop()
+    {
+        g_main_loop_quit(m_loop);
+        if (m_thread.joinable())
+        {
+            m_thread.join();
+        }
+        g_main_loop_unref(m_loop);
+    }
+
+    GMainLoop *m_loop;
+    std::thread m_thread;
+};
+} // namespace
 
 namespace firebolt::rialto::common
 {
@@ -54,26 +88,13 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
     : m_active{true}, m_callback{callback}
 {
+    CommonTimerLoop::instance();
     if (timerType == TimerType::PERIODIC)
     {
         m_timerId = g_timeout_add(
             static_cast<guint>(timeout.count()),
             [](gpointer data) -> gboolean
             {
-<<<<<<< HEAD
-                std::unique_lock<std::mutex> lock{m_mutex};
-                if (!m_cv.wait_for(lock, m_timeout, [this]() { return !m_active; }))
-                {
-                    if (m_active && m_callback)
-                    {
-                        lock.unlock();
-                        m_callback();
-                    }
-                }
-            } while (timerType == TimerType::PERIODIC && m_active);
-            m_active = false;
-        });
-=======
                 Timer *timer = static_cast<Timer *>(data);
                 if (timer->m_active && timer->m_callback)
                 {
@@ -93,11 +114,11 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
                 if (timer->m_active && timer->m_callback)
                 {
                     timer->m_callback();
+                    timer->m_timerId = 0;
                 }
             },
             this);
     }
->>>>>>> 6d42cafe (timer impl change)
 }
 
 Timer::~Timer()
@@ -108,16 +129,13 @@ Timer::~Timer()
 void Timer::cancel()
 {
     m_active = false;
-<<<<<<< HEAD
 
     if (std::this_thread::get_id() != m_thread.get_id() && m_thread.joinable())
     {
         m_cv.notify_one();
         m_thread.join();
     }
-=======
     g_source_remove(m_timerId);
->>>>>>> 6d42cafe (timer impl change)
 }
 
 bool Timer::isActive() const
