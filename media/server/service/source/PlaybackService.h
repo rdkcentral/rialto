@@ -26,6 +26,7 @@
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IPlaybackService.h"
+#include "IPrivateMetricsService.h"
 #include "ISharedMemoryBuffer.h"
 #include "IWebAudioPlayerServerInternal.h"
 #include "MediaPipelineService.h"
@@ -72,6 +73,7 @@ public:
     std::shared_ptr<ISharedMemoryBuffer> getShmBuffer() const override;
     IMediaPipelineService &getMediaPipelineService() const override;
     IWebAudioPlayerService &getWebAudioPlayerService() const override;
+    IPrivateMetricsService &getPrivateMetricsService() const override;
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) const override;
 
 private:
@@ -80,6 +82,7 @@ private:
     std::atomic<int> m_maxPlaybacks;
     std::atomic<int> m_maxWebAudioPlayers;
     std::shared_ptr<ISharedMemoryBuffer> m_shmBuffer;
+    std::unique_ptr<IPrivateMetricsService> m_privateMetricsService;
     std::unique_ptr<MediaPipelineService> m_mediaPipelineService;
     std::unique_ptr<WebAudioPlayerService> m_webAudioPlayerService;
 };

@@ -90,4 +90,3 @@ if( ENABLE_PROTO_OPTIMIZATION )
                 DESTINATION ${CMAKE_INSTALL_LIBDIR}
                 )
 endif()
-

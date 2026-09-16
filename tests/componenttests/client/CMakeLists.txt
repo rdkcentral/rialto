@@ -34,6 +34,9 @@ add_gtests (
         tests/base/MediaCapabilitiesTestMethods.cpp
         tests/base/WebAudioPlayerTestMethods.cpp
 
+        # Private Metrics Component tests
+        tests/metrics/PrivateMetricsTest.cpp
+
         # Control Component tests
         tests/control/ApplicationStateChangeTest.cpp
         tests/control/LogHandlingTest.cpp

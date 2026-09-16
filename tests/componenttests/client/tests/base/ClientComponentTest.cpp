@@ -117,6 +117,11 @@ ClientComponentTest::ClientComponentTest()
                                                 m_mediaKeysCapabilitiesModuleMock,
                                                 m_mediaPipelineCapabilitiesModuleMock, m_webAudioPlayerModuleMock)}
 {
+    ON_CALL(*m_privateMetricsModuleMock, notifyClientReady(_, _, _, _))
+        .WillByDefault(WithArgs<0, 3>(Invoke(&(*m_privateMetricsModuleMock), &PrivateMetricsModuleMock::defaultReturn)));
+    ON_CALL(*m_privateMetricsModuleMock, reportClientMetrics(_, _, _, _))
+        .WillByDefault(WithArgs<0, 3>(Invoke(&(*m_privateMetricsModuleMock), &PrivateMetricsModuleMock::defaultReturn)));
+
     // Calculate shm size
     m_shmSize = kNumOfAVPartitions * (2 * kMetadataPartitionSize + kAudioPartitionSize + kVideoPartitionSize) +
                 kWebAudioPartitionSize * (kMetadataPartitionSize + kWebAudioPartitionSize);
@@ -154,6 +159,12 @@ std::shared_ptr<ServerStub> &ClientComponentTest::getServerStub()
 void ClientComponentTest::disconnectServer()
 {
     m_serverStub.reset();
+}
+
+void ClientComponentTest::sendMetricsSampleRequestEvent(std::uint64_t sampleId,
+                                                        ::firebolt::rialto::MetricsSampleReason reason)
+{
+    m_serverStub->notifyMetricsSampleRequestEvent(sampleId, reason);
 }
 
 void ClientComponentTest::initRealShm()
