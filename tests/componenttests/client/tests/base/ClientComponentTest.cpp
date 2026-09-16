@@ -112,10 +112,12 @@ namespace firebolt::rialto::client::ct
 ClientComponentTest::ClientComponentTest()
     : MediaPipelineTestMethods(getAudioPartitions(), getVideoPartitions()),
       WebAudioPlayerTestMethods(getWebAudioPartitions()),
+      m_privateMetricsModuleMock{std::make_shared<NiceMock<PrivateMetricsModuleMock>>()},
       m_serverStub{std::make_shared<ServerStub>(m_controlModuleMock, m_mediaPipelineModuleMock,
                                                 m_mediaCapabilitiesModuleMock, m_mediaKeysModuleMock,
                                                 m_mediaKeysCapabilitiesModuleMock,
-                                                m_mediaPipelineCapabilitiesModuleMock, m_webAudioPlayerModuleMock)}
+                                                m_mediaPipelineCapabilitiesModuleMock, m_webAudioPlayerModuleMock,
+                                                m_privateMetricsModuleMock)}
 {
     ON_CALL(*m_privateMetricsModuleMock, notifyClientReady(_, _, _, _))
         .WillByDefault(WithArgs<0, 3>(Invoke(&(*m_privateMetricsModuleMock), &PrivateMetricsModuleMock::defaultReturn)));

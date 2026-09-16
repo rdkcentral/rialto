@@ -34,13 +34,13 @@ namespace firebolt::rialto::server::service
 MediaPipelineService::MediaPipelineService(
     IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-    IDecryptionService &decryptionService,
+    IDecryptionService &decryptionService, IPrivateMetricsService &metricsService,
     std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory)
     : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
       m_mediaCapabilities{mediaCapabilitiesFactory ? mediaCapabilitiesFactory->createMediaCapabilitiesServerInternal()
                                                    : nullptr},
-      m_decryptionService{decryptionService}
+      m_decryptionService{decryptionService}, m_metricsService{metricsService}
 {
     if (!m_mediaPipelineCapabilities)
     {
@@ -64,6 +64,7 @@ void MediaPipelineService::clearMediaPipelines()
 bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
                                          std::uint32_t maxWidth, std::uint32_t maxHeight)
 {
+    RIALTO_SERVER_LOG_DEBUG("MediaPipelineService requested to create new session with id: %d", sessionId);
     if (!m_playbackService.isActive())
     {
         RIALTO_SERVER_LOG_ERROR("Skip to create session with id: %d - Session Server in Inactive state", sessionId);

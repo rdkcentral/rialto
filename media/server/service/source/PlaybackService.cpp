@@ -42,9 +42,9 @@ PlaybackService::PlaybackService(
       m_privateMetricsService{std::make_unique<PrivateMetricsService>(IMetricsCollectorFactory::createFactory())},
       m_mediaPipelineService{std::make_unique<MediaPipelineService>(*this, std::move(mediaPipelineFactory),
                                                                     std::move(mediaPipelineCapabilitiesFactory),
-                                                                    decryptionService,
+                                                                    decryptionService,  *m_privateMetricsService,
                                                                     std::move(mediaCapabilitiesFactory))},
-      m_webAudioPlayerService{std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory))}
+      m_webAudioPlayerService{std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory), *m_privateMetricsService)}
 {
     RIALTO_SERVER_LOG_DEBUG("PlaybackService is constructed");
 }
