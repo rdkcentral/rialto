@@ -29,6 +29,7 @@
 #include <memory>
 #include <optional>
 
+using testing::NiceMock;
 using testing::StrictMock;
 
 class MediaCapabilitiesTests : public testing::Test

@@ -92,6 +92,59 @@ private:
      * @brief Protects access to preloaded capabilities
      */
     std::mutex m_preloadedCapabilitiesMutex;
+
+    /**
+     * @brief Appends missing audio codecs from GStreamer capabilities to YAML capabilities.
+     *
+     * Iterates through each rank in GStreamer's audio capabilities and appends any missing
+     * codecs to the corresponding rank in the YAML capabilities. If GStreamer has more ranks
+     * than YAML, the additional ranks are appended as well.
+     *
+     * @param[in,out] yamlCaps  : The YAML audio capabilities to be enhanced (modified in-place)
+     * @param[in]     gstCaps   : The GStreamer audio capabilities as reference
+     */
+    void appendMissingAudioCodecsToYaml(firebolt::rialto::common::AudioDecoderCapabilities &yamlCaps,
+                                        const firebolt::rialto::common::AudioDecoderCapabilities &gstCaps);
+
+    /**
+     * @brief Appends missing audio codecs to a specific rank in the YAML capabilities.
+     *
+     * Compares each audio codec field in the GStreamer rank with the corresponding YAML rank
+     * and appends any missing codecs (those present in GStreamer but not in YAML).
+     * Handles multi-profile codecs by merging profiles: keeps all YAML profiles and adds
+     * any new profiles from GStreamer.
+     *
+     * @param[in,out] yamlRank  : The YAML audio decoder capability rank to be enhanced (modified)
+     * @param[in]     gstRank   : The GStreamer audio decoder capability rank as reference
+     */
+    void appendMissingCodecsToAudioRank(firebolt::rialto::common::AudioDecoderCapability &yamlRank,
+                                        const firebolt::rialto::common::AudioDecoderCapability &gstRank);
+
+    /**
+     * @brief Appends missing video codecs from GStreamer capabilities to YAML capabilities.
+     *
+     * Iterates through each rank in GStreamer's video capabilities and appends any missing
+     * codecs to the corresponding rank in the YAML capabilities. If GStreamer has more ranks
+     * than YAML, the additional ranks are appended as well.
+     *
+     * @param[in,out] yamlCaps  : The YAML video capabilities to be enhanced (modified in-place)
+     * @param[in]     gstCaps   : The GStreamer video capabilities as reference
+     */
+    void appendMissingVideoCodecsToYaml(firebolt::rialto::common::VideoDecoderCapabilities &yamlCaps,
+                                        const firebolt::rialto::common::VideoDecoderCapabilities &gstCaps);
+
+    /**
+     * @brief Appends missing video codecs to a specific rank in the YAML capabilities.
+     *
+     * Compares each video codec field (mpeg2, h264, h265, vp8, vp9, av1) in the GStreamer rank
+     * with the corresponding YAML rank and appends any missing codecs.
+     * Handles profile merging by combining YAML and GStreamer profiles into a single vector.
+     *
+     * @param[in,out] yamlRank  : The YAML video decoder capability rank to be enhanced (modified)
+     * @param[in]     gstRank   : The GStreamer video decoder capability rank as reference
+     */
+    void appendMissingCodecsToVideoRank(firebolt::rialto::common::VideoDecoderCapability &yamlRank,
+                                        const firebolt::rialto::common::VideoDecoderCapability &gstRank);
 };
 
 } // namespace firebolt::rialto::server

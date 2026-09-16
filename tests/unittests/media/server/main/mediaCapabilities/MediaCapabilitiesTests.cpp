@@ -32,7 +32,8 @@ TEST_F(MediaCapabilitiesTests, shouldReturnPreloadedAudioCapabilities)
     // When getting audio capabilities from the fixture's MediaCapabilities
     auto result = m_mediaCapabilities->getSupportedAudioCapabilities();
 
-    // Then preloaded result is returned without querying GStreamer
+    // Then preloaded result is returned with GStreamer codecs appended (enhanced)
+    // Note: New append logic queries GStreamer to add missing codecs to YAML
     EXPECT_FALSE(result.capabilities.empty());
     EXPECT_EQ(result.interfaceVersion, m_gstAudioCapabilities.interfaceVersion);
 }
@@ -46,7 +47,8 @@ TEST_F(MediaCapabilitiesTests, shouldReturnPreloadedVideoCapabilities)
     // When getting video capabilities from the fixture's MediaCapabilities
     auto result = m_mediaCapabilities->getSupportedVideoCapabilities();
 
-    // Then preloaded result is returned without querying GStreamer
+    // Then preloaded result is returned with GStreamer codecs appended (enhanced)
+    // Note: New append logic queries GStreamer to add missing codecs to YAML
     EXPECT_FALSE(result.capabilities.empty());
     EXPECT_EQ(result.interfaceVersion, m_gstVideoCapabilities.interfaceVersion);
 }
@@ -97,7 +99,8 @@ TEST_F(MediaCapabilitiesTests, shouldPreferPreloadedAudioOverGStreamer)
     // When getting audio capabilities
     auto result = m_mediaCapabilities->getSupportedAudioCapabilities();
 
-    // Then preloaded audio is returned (Path 0 priority, not GStreamer fallback)
+    // Then preloaded audio is returned and enhanced with GStreamer codecs (Path 0 priority with append)
+    // Note: Append logic queries GStreamer and adds missing codecs to preloaded YAML
     EXPECT_FALSE(result.capabilities.empty());
     EXPECT_EQ(result.interfaceVersion, "preload_v1");
 }
@@ -114,7 +117,8 @@ TEST_F(MediaCapabilitiesTests, shouldPreferPreloadedVideoOverGStreamer)
     // When getting video capabilities
     auto result = m_mediaCapabilities->getSupportedVideoCapabilities();
 
-    // Then preloaded video is returned (Path 0 priority, not GStreamer fallback)
+    // Then preloaded video is returned and enhanced with GStreamer codecs (Path 0 priority with append)
+    // Note: Append logic queries GStreamer and adds missing codecs to preloaded YAML
     EXPECT_FALSE(result.capabilities.empty());
     EXPECT_EQ(result.interfaceVersion, "preload_v1");
 }

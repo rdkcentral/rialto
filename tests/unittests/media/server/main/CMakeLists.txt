@@ -50,6 +50,7 @@ add_gtests (
 
         mediaCapabilities/MediaCapabilitiesTestsFixture.cpp
         mediaCapabilities/MediaCapabilitiesTests.cpp
+        mediaCapabilities/MediaCapabilitiesAppendCodecsTests.cpp
 
         mediaKeys/base/MediaKeysTestBase.cpp
         mediaKeys/CreateTest.cpp
