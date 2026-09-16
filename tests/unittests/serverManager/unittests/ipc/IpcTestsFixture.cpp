@@ -143,7 +143,8 @@ bool IpcTests::triggerPerformSetConfiguration()
     const std::string kSocketGroup{};
     const std::string kAppId{"app"};
     return m_sut->performSetConfiguration(kServerId, kInitialState, kSocketName, kClientSocketName, kMaxResource,
-                                          kSocketPermissions, kSocketOwner, kSocketGroup, kAppId);
+                                          kSocketPermissions, kSocketOwner, kSocketGroup, kAppId, std::nullopt,
+                                          std::nullopt);
 }
 
 bool IpcTests::triggerPerformSetConfigurationWithFd()
@@ -154,9 +155,12 @@ bool IpcTests::triggerPerformSetConfigurationWithFd()
     const std::string kClientSocketName{"westeros-rialto"};
     constexpr firebolt::rialto::common::MaxResourceCapabilitites kMaxResource{2, 1};
     const std::string kAppId{"app"};
-    bool result =
-        m_sut->performSetConfiguration(kServerId, kInitialState, socketFd, kClientSocketName, kMaxResource, kAppId);
-    close(socketFd);
+    bool result = m_sut->performSetConfiguration(kServerId, kInitialState, socketFd, kClientSocketName, kMaxResource,
+                                                 kAppId, std::nullopt, std::nullopt);
+    if (socketFd >= 0)
+    {
+        close(socketFd);
+    }
     return result;
 }
 

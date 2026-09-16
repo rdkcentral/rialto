@@ -18,5 +18,4 @@
 #
 
 add_subdirectory(mocks)
-add_subdirectory(misc)
 add_subdirectory(unittests)

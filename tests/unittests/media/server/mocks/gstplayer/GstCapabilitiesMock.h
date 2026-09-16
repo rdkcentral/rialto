@@ -20,7 +20,9 @@
 #ifndef FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_MOCK_H_
 #define FIREBOLT_RIALTO_SERVER_GST_CAPABILITIES_MOCK_H_
 
+#include "AudioDecoderCapabilities.h"
 #include "IGstCapabilities.h"
+#include "VideoDecoderCapabilities.h"
 #include <gmock/gmock.h>
 #include <string>
 #include <vector>
@@ -35,6 +37,8 @@ public:
     MOCK_METHOD(std::vector<std::string>, getSupportedProperties,
                 (MediaSourceType mediaType, const std::vector<std::string> &propertyNames), (override));
     MOCK_METHOD(bool, isVideoMaster, (bool &isVideoMaster), (override));
+    MOCK_METHOD(firebolt::rialto::common::AudioDecoderCapabilities, getSupportedAudioCapabilities, (), (override));
+    MOCK_METHOD(firebolt::rialto::common::VideoDecoderCapabilities, getSupportedVideoCapabilities, (), (override));
 };
 
 } // namespace firebolt::rialto::server

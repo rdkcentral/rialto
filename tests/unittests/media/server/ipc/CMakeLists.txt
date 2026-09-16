@@ -30,6 +30,9 @@ add_gtests (
         applicationManagementServer/ApplicationManagementServerTestsFixture.cpp
         applicationManagementServer/ApplicationManagementServerTests.cpp
 
+        capabilityDeserialiser/CapabilityDeserialiserTests.cpp
+
+
         # ServerManagerModuleService unittests
         serverManagerModuleService/ServerManagerModuleServiceTestsFixture.cpp
         serverManagerModuleService/ServerManagerModuleServiceTests.cpp
@@ -61,6 +64,10 @@ add_gtests (
         # MediaPipelineCapabilitiesModuleService unittests
         mediaPipelineCapabilitiesModule/MediaPipelineCapabilitiesModuleServiceTestsFixture.cpp
         mediaPipelineCapabilitiesModule/MediaPipelineCapabilitiesModuleServiceTests.cpp
+
+        # MediaCapabilitiesModuleService unittests
+        mediaCapabilitiesModule/MediaCapabilitiesModuleServiceTestsFixture.cpp
+        mediaCapabilitiesModule/MediaCapabilitiesModuleServiceTests.cpp
 
         # WebAudioPlayerModuleService unittests
         webAudioPlayerModuleService/WebAudioPlayerModuleServiceTestsFixture.cpp
@@ -96,6 +103,7 @@ target_link_libraries(
 
         # # Link application source
         RialtoServerIpc
+        RialtoServerManagerIpc
         RialtoIpcClient
         RialtoIpcCommon
         RialtoCommonMisc

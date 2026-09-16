@@ -67,6 +67,8 @@ add_gtests (
         mediaPipeline/UnderflowTest.cpp
         mediaPipeline/VolumeTest.cpp
         mediaPipeline/WriteSegmentsTest.cpp
+        mediaCapabilities/MediaCapabilitiesOrchestrationTest.cpp
+        mediaCapabilities/MediaCapabilitiesAppendCodecsIntegrationTest.cpp
         mediaPipelineCapabilities/MediaPipelineCapabilitiesTest.cpp
         recovery/RecoveryTest.cpp
         sessionServer/SessionServerHealthCheckTest.cpp
