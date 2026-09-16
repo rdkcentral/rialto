@@ -403,12 +403,14 @@ void MediaCapabilitiesServerInternal::appendMissingCodecsToVideoRank(
         // Merge profiles: keep all YAML profiles and add missing GStreamer profiles
         for (const auto &gstProfile : gstRank.codecCapabilities.mpeg2->profiles)
         {
-            auto profileExists = std::any_of(
-                yamlRank.codecCapabilities.mpeg2->profiles.begin(),
-                yamlRank.codecCapabilities.mpeg2->profiles.end(),
-                [&gstProfile](const auto &yamlProfile)
-                { return yamlProfile.type == gstProfile.type && yamlProfile.maxLevel == gstProfile.maxLevel &&
-                         yamlProfile.maxBitrateInBps == gstProfile.maxBitrateInBps; });
+            auto profileExists = std::any_of(yamlRank.codecCapabilities.mpeg2->profiles.begin(),
+                                             yamlRank.codecCapabilities.mpeg2->profiles.end(),
+                                             [&gstProfile](const auto &yamlProfile)
+                                             {
+                                                 return yamlProfile.type == gstProfile.type &&
+                                                        yamlProfile.maxLevel == gstProfile.maxLevel &&
+                                                        yamlProfile.maxBitrateInBps == gstProfile.maxBitrateInBps;
+                                             });
             if (!profileExists)
             {
                 yamlRank.codecCapabilities.mpeg2->profiles.push_back(gstProfile);
@@ -428,12 +430,14 @@ void MediaCapabilitiesServerInternal::appendMissingCodecsToVideoRank(
         // Merge profiles: keep all YAML profiles and add missing GStreamer profiles
         for (const auto &gstProfile : gstRank.codecCapabilities.h264->profiles)
         {
-            auto profileExists = std::any_of(
-                yamlRank.codecCapabilities.h264->profiles.begin(),
-                yamlRank.codecCapabilities.h264->profiles.end(),
-                [&gstProfile](const auto &yamlProfile)
-                { return yamlProfile.type == gstProfile.type && yamlProfile.maxLevel == gstProfile.maxLevel &&
-                         yamlProfile.maxBitrateInBps == gstProfile.maxBitrateInBps; });
+            auto profileExists = std::any_of(yamlRank.codecCapabilities.h264->profiles.begin(),
+                                             yamlRank.codecCapabilities.h264->profiles.end(),
+                                             [&gstProfile](const auto &yamlProfile)
+                                             {
+                                                 return yamlProfile.type == gstProfile.type &&
+                                                        yamlProfile.maxLevel == gstProfile.maxLevel &&
+                                                        yamlProfile.maxBitrateInBps == gstProfile.maxBitrateInBps;
+                                             });
             if (!profileExists)
             {
                 yamlRank.codecCapabilities.h264->profiles.push_back(gstProfile);
@@ -453,12 +457,14 @@ void MediaCapabilitiesServerInternal::appendMissingCodecsToVideoRank(
         // Merge profiles: keep all YAML profiles and add missing GStreamer profiles
         for (const auto &gstProfile : gstRank.codecCapabilities.h265->profiles)
         {
-            auto profileExists = std::any_of(
-                yamlRank.codecCapabilities.h265->profiles.begin(),
-                yamlRank.codecCapabilities.h265->profiles.end(),
-                [&gstProfile](const auto &yamlProfile)
-                { return yamlProfile.type == gstProfile.type && yamlProfile.maxLevel == gstProfile.maxLevel &&
-                         yamlProfile.maxBitrateInBps == gstProfile.maxBitrateInBps; });
+            auto profileExists = std::any_of(yamlRank.codecCapabilities.h265->profiles.begin(),
+                                             yamlRank.codecCapabilities.h265->profiles.end(),
+                                             [&gstProfile](const auto &yamlProfile)
+                                             {
+                                                 return yamlProfile.type == gstProfile.type &&
+                                                        yamlProfile.maxLevel == gstProfile.maxLevel &&
+                                                        yamlProfile.maxBitrateInBps == gstProfile.maxBitrateInBps;
+                                             });
             if (!profileExists)
             {
                 yamlRank.codecCapabilities.h265->profiles.push_back(gstProfile);
@@ -478,12 +484,14 @@ void MediaCapabilitiesServerInternal::appendMissingCodecsToVideoRank(
         // Merge profiles: keep all YAML profiles and add missing GStreamer profiles
         for (const auto &gstProfile : gstRank.codecCapabilities.vp9->profiles)
         {
-            auto profileExists = std::any_of(
-                yamlRank.codecCapabilities.vp9->profiles.begin(),
-                yamlRank.codecCapabilities.vp9->profiles.end(),
-                [&gstProfile](const auto &yamlProfile)
-                { return yamlProfile.type == gstProfile.type && yamlProfile.maxLevel == gstProfile.maxLevel &&
-                         yamlProfile.maxBitrateInBps == gstProfile.maxBitrateInBps; });
+            auto profileExists = std::any_of(yamlRank.codecCapabilities.vp9->profiles.begin(),
+                                             yamlRank.codecCapabilities.vp9->profiles.end(),
+                                             [&gstProfile](const auto &yamlProfile)
+                                             {
+                                                 return yamlProfile.type == gstProfile.type &&
+                                                        yamlProfile.maxLevel == gstProfile.maxLevel &&
+                                                        yamlProfile.maxBitrateInBps == gstProfile.maxBitrateInBps;
+                                             });
             if (!profileExists)
             {
                 yamlRank.codecCapabilities.vp9->profiles.push_back(gstProfile);
@@ -503,12 +511,14 @@ void MediaCapabilitiesServerInternal::appendMissingCodecsToVideoRank(
         // Merge profiles: keep all YAML profiles and add missing GStreamer profiles
         for (const auto &gstProfile : gstRank.codecCapabilities.av1->profiles)
         {
-            auto profileExists = std::any_of(
-                yamlRank.codecCapabilities.av1->profiles.begin(),
-                yamlRank.codecCapabilities.av1->profiles.end(),
-                [&gstProfile](const auto &yamlProfile)
-                { return yamlProfile.type == gstProfile.type && yamlProfile.maxLevel == gstProfile.maxLevel &&
-                         yamlProfile.maxBitrateInBps == gstProfile.maxBitrateInBps; });
+            auto profileExists = std::any_of(yamlRank.codecCapabilities.av1->profiles.begin(),
+                                             yamlRank.codecCapabilities.av1->profiles.end(),
+                                             [&gstProfile](const auto &yamlProfile)
+                                             {
+                                                 return yamlProfile.type == gstProfile.type &&
+                                                        yamlProfile.maxLevel == gstProfile.maxLevel &&
+                                                        yamlProfile.maxBitrateInBps == gstProfile.maxBitrateInBps;
+                                             });
             if (!profileExists)
             {
                 yamlRank.codecCapabilities.av1->profiles.push_back(gstProfile);
