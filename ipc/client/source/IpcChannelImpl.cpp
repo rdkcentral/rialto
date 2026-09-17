@@ -36,6 +36,10 @@
 #include "IpcLogging.h"
 #include "rialtoipc.pb.h"
 
+#include <google/protobuf/io/coded_stream.h>
+using google::protobuf::io::CodedOutputStream;
+using google::protobuf::io::ArrayOutputStream;
+
 #if !defined(SCM_MAX_FD)
 #define SCM_MAX_FD 255
 #endif
@@ -1093,17 +1097,35 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
     const uint64_t kSerialId = m_serialCounter++;
 
     // create the transport request
-    transport::MessageToServer message;
-    transport::MethodCall *call = message.mutable_call();
-    call->set_serial_id(kSerialId);
-    call->set_service_name(method->service()->full_name());
-    call->set_method_name(method->name());
+    // transport::MessageToServer message;
+    // transport::MethodCall *call = message.mutable_call();
+    // call->set_serial_id(kSerialId);
+    // call->set_service_name(method->service()->full_name());
+    // call->set_method_name(method->name());
 
     // copy in the actual message data
-    std::string reqString = request->SerializeAsString();
-    call->set_request_message(std::move(reqString));
+    // std::string reqString = request->SerializeAsString();
+    // call->set_request_message(std::move(reqString));
+    
+    const size_t kInnerMsgLen = request->ByteSizeLong();
+    const std::string& kServiceName = method->service()->full_name();
+    const std::string& kMethodName = method->name();
 
-    const size_t kRequiredDataLen = message.ByteSizeLong();
+   const size_t kEnvelopeSize =
+                           CodedOutputStream::VarintSize32((1 << 3) | 0) + // serial_id tag
+                           CodedOutputStream::VarintSize64(kSerialId) +
+                           CodedOutputStream::VarintSize32((2 << 3) | 2) + // service_name tag
+                           CodedOutputStream::VarintSize32(kServiceName.size()) +
+                           kServiceName.size() +
+                           CodedOutputStream::VarintSize32((3 << 3) | 2) + // method_name tag
+                           CodedOutputStream::VarintSize32(kMethodName.size()) +
+                           kMethodName.size() +
+                           CodedOutputStream::VarintSize32((4 << 3) | 2) + // request_message tag
+                           CodedOutputStream::VarintSize32(kInnerMsgLen);
+
+    // const size_t kRequiredDataLen = message.ByteSizeLong();
+    const size_t kRequiredDataLen =  kEnvelopeSize + kInnerMsgLen;
+    
     if (kRequiredDataLen > kMaxMessageSize)
     {
         RIALTO_IPC_LOG_ERROR("method call to big to send (%zu, max %zu", kRequiredDataLen, kMaxMessageSize);
@@ -1117,7 +1139,7 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
 
     // build the socket message to send
     auto msgBuf =
-        m_sendBufPool.allocateShared<uint8_t>(sizeof(msghdr) + sizeof(iovec) + kRequiredCtrlLen + kRequiredDataLen);
+        m_sendBufPool.allocateShared<uint8_t>(sizeof(msghdr) + (sizeof(iovec)*2) + kRequiredCtrlLen + kRequiredDataLen);
 
     auto *header = reinterpret_cast<msghdr *>(msgBuf.get());
     bzero(header, sizeof(msghdr));
@@ -1128,14 +1150,48 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
 
     auto *iov = reinterpret_cast<iovec *>(msgBuf.get() + sizeof(msghdr) + kRequiredCtrlLen);
     header->msg_iov = iov;
-    header->msg_iovlen = 1;
+    header->msg_iovlen = 2;
 
-    auto *data = reinterpret_cast<uint8_t *>(msgBuf.get() + sizeof(msghdr) + kRequiredCtrlLen + sizeof(iovec));
-    iov->iov_base = data;
-    iov->iov_len = kRequiredDataLen;
+   auto *envelopeBuffer = reinterpret_cast<uint8_t *>(msgBuf.get() + sizeof(msghdr) + kRequiredCtrlLen + (sizeof(iovec)*2));
+   iov[0].iov_base = envelopeBuffer;
+   iov[0].iov_len = kEnvelopeSize;
+   
+   ArrayOutputStream rawStream(envelopeBuffer, static_cast<int>(kEnvelopeSize));
+   CodedOutputStream envelope(&rawStream);
+   envelope.WriteVarint32((1 << 3) | 0);   // serial_id tag
+   envelope.WriteVarint64(kSerialId);
+   
+   envelope.WriteVarint32((2 << 3) | 2);   // service_name tag
+   envelope.WriteVarint32(kServiceName.size());
+   envelope.WriteRaw(kServiceName.data(), kServiceName.size());
+   
+   envelope.WriteVarint32((3 << 3) | 2);   // method_name tag
+   envelope.WriteVarint32(kMethodName.size());
+   envelope.WriteRaw(kMethodName.data(), kMethodName.size());
+   
+   envelope.WriteVarint32((4 << 3) | 2);   // request_message tag (bytes)
+   envelope.WriteVarint32(kInnerMsgLen);   // request_message length prefix
+   
+   if(envelope.HadError() || static_cast<size_t>(envelope.ByteCount()) != kEnvelopeSize)
+   {
+        RIALTO_IPC_LOG_ERROR("failed to serialize method call envelope");
+        completeWithError(&methodCall, "Serialization failed");
+        return;
+   }
+
+   auto *msgBuffer = reinterpret_cast<uint8_t *>(envelopeBuffer + kEnvelopeSize);
+   iov[1].iov_base = msgBuffer;
+   iov[1].iov_len = kInnerMsgLen;
+   
+   if(!request->SerializeToArray(msgBuffer, kInnerMsgLen))
+   {
+        RIALTO_IPC_LOG_ERROR("failed to serialize request message");
+        completeWithError(&methodCall, "Serialization failed");
+        return;
+   }
 
     // copy in the data
-    message.SerializeWithCachedSizesToArray(data);
+    // message.SerializeWithCachedSizesToArray(data);
 
     // next check if the request is sending any fd's
     if (!kFds.empty())
@@ -1175,9 +1231,11 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
         }
         else
         {
-            RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", kSerialId, call->service_name().c_str(),
-                                 call->method_name().c_str(), request->ShortDebugString().c_str());
+            // RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", kSerialId, call->service_name().c_str(),
+                                //  call->method_name().c_str(), request->ShortDebugString().c_str());
 
+            RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", kSerialId, kServiceName.c_str(),
+                    kMethodName.c_str(), request->ShortDebugString().c_str());
             if (kNoReplyExpected)
             {
                 // no reply from server is expected, however if the caller supplied
