@@ -44,6 +44,13 @@
 #include <sys/un.h>
 #include <unistd.h>
 
+#include <google/protobuf/io/coded_stream.h>
+#include <google/protobuf/wire_format_lite.h>
+#include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+
+using google::protobuf::io::ArrayInputStream;
+using google::protobuf::io::CodedInputStream;
+
 #define WAKE_EVENT_ID uint64_t(0)
 #define FIRST_LISTENING_SOCKET_ID uint64_t(1)
 #define FIRST_CLIENT_ID uint64_t(10000)
@@ -886,6 +893,103 @@ static bool addRequestFileDescriptors(google::protobuf::Message *request, const 
     return true;
 }
 
+bool ServerImpl::parseMethodCall(const uint8_t *data, size_t dataLen, DecodedMethodCall &call)
+{
+    ArrayInputStream rawStream(data, static_cast<int>(dataLen));
+    CodedInputStream input(&rawStream);
+
+    while (!input.ConsumedEntireMessage())
+    {
+        uint32_t tag = input.ReadTag();
+
+        if (tag == 0)
+            break;
+
+        const uint32_t field = tag >> 3;
+        const uint32_t wireType = tag & 0x7;
+
+        switch (field)
+        {
+        case 1: // serial_id
+        {
+            if (wireType != 0)
+                return false;
+
+            if (!input.ReadVarint64(&call.serialId))
+                return false;
+
+            break;
+        }
+
+        case 2: // service_name
+        {
+            if (wireType != 2)
+                return false;
+
+            uint32_t len;
+            if (!input.ReadVarint32(&len))
+                return false;
+
+            call.serviceName.resize(len);
+
+            if (!input.ReadRaw(call.serviceName.data(), len))
+                return false;
+
+            break;
+        }
+
+        case 3: // method_name
+        {
+            if (wireType != 2)
+                return false;
+
+            uint32_t len;
+            if (!input.ReadVarint32(&len))
+                return false;
+
+            call.methodName.resize(len);
+
+            if (!input.ReadRaw(call.methodName.data(), len))
+                return false;
+
+            break;
+        }
+
+        case 4: // request_message
+        {
+            if (wireType != 2)
+                return false;
+
+            if (!input.ReadVarint32(&call.requestLen))
+                return false;
+
+            int remaining =
+                input.CurrentPosition();
+
+            if (remaining + static_cast<int>(call.requestLen) >
+                static_cast<int>(dataLen))
+            {
+                return false;
+            }
+
+            call.requestData =
+                data + input.CurrentPosition();
+
+            input.Skip(call.requestLen);
+
+            break;
+        }
+
+        default:
+            if (!google::protobuf::internal::WireFormatLite::SkipField(&input, tag))
+                return false;
+            break;
+        }
+    }
+
+    return true;
+}
+
 // -----------------------------------------------------------------------------
 /*!
     \internal
@@ -900,21 +1004,32 @@ void ServerImpl::processClientMessage(const std::shared_ptr<ClientImpl> &client,
                          fds.size(), client->id());
 
     // parse the message
-    transport::MessageToServer message;
-    if (!message.ParseFromArray(data, static_cast<int>(dataLen)))
+    // transport::MessageToServer message;
+    // if (!message.ParseFromArray(data, static_cast<int>(dataLen)))
+    // {
+    //     RIALTO_IPC_LOG_ERROR("invalid request");
+    //     return;
+    // }
+
+    // if (message.has_call())
+    // {
+    //     processMethodCall(client, message.call(), fds);
+    // }
+    // else
+    // {
+    //     RIALTO_IPC_LOG_WARN("received unknown message type from client");
+    // }
+
+    DecodedMethodCall call;
+
+    if (!parseMethodCall(data, dataLen, call))
     {
-        RIALTO_IPC_LOG_ERROR("invalid request");
+        RIALTO_IPC_LOG_ERROR("failed to parse method call");
         return;
     }
 
-    if (message.has_call())
-    {
-        processMethodCall(client, message.call(), fds);
-    }
-    else
-    {
-        RIALTO_IPC_LOG_WARN("received unknown message type from client");
-    }
+    processMethodCall(client, call.serialId, call.serviceName, call.methodName, call.requestData, call.requestLen,
+                      fds);
 }
 
 // -----------------------------------------------------------------------------
@@ -970,6 +1085,78 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
                              kMethodName.c_str(), requestMessage->ShortDebugString().c_str());
 
         auto *controller = new ServerControllerImpl(client, call.serial_id());
+
+        if (kNoReply)
+        {
+            // we should not send a reply for this call, so call the code to handle the
+            // request, but no need to pass a controller, response or closure object
+            static google::protobuf::internal::FunctionClosure0 nullClosure(&google::protobuf::DoNothing, false);
+            service->CallMethod(kMethod, controller, requestMessage, nullptr, &nullClosure);
+
+            delete controller;
+        }
+        else
+        {
+            // create a response
+            google::protobuf::Message *responseMessage = service->GetResponsePrototype(kMethod).New();
+
+            // this is finally where we call the service implementation to process the request
+            service->CallMethod(kMethod, controller, requestMessage, responseMessage,
+                                google::protobuf::NewCallback(this, &ServerImpl::handleResponse, controller,
+                                                              responseMessage));
+        }
+    }
+
+    delete requestMessage;
+}
+
+void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, uint64_t serialId,
+                                   std::string_view serviceName, std::string_view methodName,
+                                   const uint8_t *requestData, size_t requestLen, const std::vector<FileDescriptor> &fds)
+{
+    // try and find the service with the given name
+    const std::string kServiceName{serviceName};
+    auto it = client->m_services.find(kServiceName);
+    if (it == client->m_services.end())
+    {
+        RIALTO_IPC_LOG_ERROR("unknown service request '%s'", kServiceName.c_str());
+
+        sendErrorReply(client, serialId, "Unknown service '%s'", kServiceName.c_str());
+        return;
+    }
+
+    std::shared_ptr<google::protobuf::Service> service = it->second;
+
+    // try and find the method
+    const std::string kMethodName{methodName};
+    const google::protobuf::MethodDescriptor *kMethod = service->GetDescriptor()->FindMethodByName(kMethodName);
+    if (!kMethod)
+    {
+        RIALTO_IPC_LOG_ERROR("no method with name '%s'", kMethodName.c_str());
+
+        sendErrorReply(client, serialId, "Unknown method '%s'", kMethodName.c_str());
+        return;
+    }
+
+    // check if the method is expecting a reply
+    const bool kNoReply = kMethod->options().HasExtension(no_reply) && kMethod->options().GetExtension(no_reply);
+
+    // parse the request data
+    google::protobuf::Message *requestMessage = service->GetRequestPrototype(kMethod).New();
+    if (!requestMessage->ParseFromArray(requestData, static_cast<int>(requestLen)))
+    {
+        RIALTO_IPC_LOG_ERROR("failed to parse method from array");
+    }
+    else if (!addRequestFileDescriptors(requestMessage, fds))
+    {
+        RIALTO_IPC_LOG_ERROR("mismatch of file descriptors to the request");
+    }
+    else
+    {
+        RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", serialId, kServiceName.c_str(),
+                             kMethodName.c_str(), requestMessage->ShortDebugString().c_str());
+
+        auto *controller = new ServerControllerImpl(client, serialId);
 
         if (kNoReply)
         {

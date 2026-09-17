@@ -48,6 +48,15 @@ namespace firebolt::rialto::ipc
 {
 class ClientImpl;
 
+struct DecodedMethodCall
+{
+    uint64_t serialId;
+    std::string serviceName;
+    std::string methodName;
+    const uint8_t *requestData;
+    uint32_t requestLen;
+};
+
 class ServerFactory : public IServerFactory
 {
 public:
@@ -94,8 +103,12 @@ private:
     void processClientSocket(uint64_t clientId, unsigned events);
     void processClientMessage(const std::shared_ptr<ClientImpl> &client, const uint8_t *data, size_t dataLen,
                               const std::vector<FileDescriptor> &fds = {});
-
+    
+    bool parseMethodCall(const uint8_t *data, size_t dataLen, DecodedMethodCall &call);
     void processMethodCall(const std::shared_ptr<ClientImpl> &client, const transport::MethodCall &call,
+                           const std::vector<FileDescriptor> &fds);                
+    void processMethodCall(const std::shared_ptr<ClientImpl> &client, uint64_t serialId, std::string_view serviceName,
+                           std::string_view methodName, const uint8_t *requestData, size_t requestLen,
                            const std::vector<FileDescriptor> &fds);
 
     std::shared_ptr<ClientImpl> addClientSocket(int socketFd, const std::string &listeningSocketPath,
