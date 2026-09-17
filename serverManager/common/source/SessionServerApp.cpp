@@ -37,7 +37,7 @@
 
 namespace
 {
-constexpr int kMaxPlaybackSessions{2};
+constexpr int kMaxPlaybackSessions{1};
 constexpr int kMaxWebAudioPlayers{1};
 const std::string kSessionManagementSocketDefaultDir{"/tmp/"};
 const std::string kSessionManagementSocketDefaultName{"rialto-"};
