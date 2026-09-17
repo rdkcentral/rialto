@@ -68,15 +68,30 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
 
     {
         std::lock_guard<std::mutex> lock{m_mediaPipelineMutex};
-        if (m_mediaPipelines.size() == static_cast<size_t>(m_playbackService.getMaxPlaybacks()))
-        {
-            RIALTO_SERVER_LOG_ERROR("Unable to create a session with id: %d. Max session number reached.", sessionId);
-            return false;
-        }
         if (m_mediaPipelines.find(sessionId) != m_mediaPipelines.end())
         {
             RIALTO_SERVER_LOG_ERROR("Session with id: %d already exists", sessionId);
             return false;
+        }
+        const int maxPlaybacks{m_playbackService.getMaxPlaybacks()};
+        if (m_mediaPipelines.size() == static_cast<size_t>(maxPlaybacks))
+        {
+            // erase the old session so its shm partition is
+            // freed before the new one is mapped, instead of rejecting the new session.
+            if (maxPlaybacks == 1)
+            {
+                const int kOldSessionId{m_mediaPipelines.begin()->first};
+                RIALTO_SERVER_LOG_WARN("Max playback sessions is 1. Replacing session with id: %d by session with "
+                                       "id: %d",
+                                       kOldSessionId, sessionId);
+                m_mediaPipelines.erase(m_mediaPipelines.begin());
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_ERROR("Unable to create a session with id: %d. Max session number reached.",
+                                        sessionId);
+                return false;
+            }
         }
         auto shmBuffer = m_playbackService.getShmBuffer();
         m_mediaPipelines.emplace(
