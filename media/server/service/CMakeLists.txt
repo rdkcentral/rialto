@@ -29,6 +29,7 @@ add_library (
         source/SessionServerManager.cpp
         source/MediaPipelineService.cpp
         source/WebAudioPlayerService.cpp
+        source/ConsoleLogForwarding.cpp
 )
 set_target_properties (
         RialtoServerService
