@@ -140,11 +140,12 @@ void WebAudioTasksTestsBase::triggerShutdown()
 void WebAudioTasksTestsBase::shouldChangePlayerStateNull()
 {
     EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_NULL));
+    EXPECT_CALL(*testContext->m_glibWrapper, gThreadPoolStopUnusedThreads());
 }
 
 void WebAudioTasksTestsBase::triggerStop()
 {
-    firebolt::rialto::server::tasks::webaudio::Stop task{testContext->m_gstPlayer};
+    firebolt::rialto::server::tasks::webaudio::Stop task{testContext->m_gstPlayer, testContext->m_glibWrapper};
     task.execute();
 }
 

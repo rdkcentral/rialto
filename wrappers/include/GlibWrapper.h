@@ -137,6 +137,7 @@ public:
     }
 
     GValue *gValueInit(GValue *value, GType type) const override { return g_value_init(value, type); }
+    void gThreadPoolStopUnusedThreads() const override { g_thread_pool_stop_unused_threads(); }
 };
 
 }; // namespace firebolt::rialto::wrappers

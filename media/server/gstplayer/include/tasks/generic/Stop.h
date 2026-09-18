@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_SERVER_TASKS_GENERIC_STOP_H_
 
 #include "GenericPlayerContext.h"
+#include "IGlibWrapper.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "IPlayerTask.h"
 
@@ -29,13 +30,16 @@ namespace firebolt::rialto::server::tasks::generic
 class Stop : public IPlayerTask
 {
 public:
-    Stop(GenericPlayerContext &context, IGstGenericPlayerPrivate &player);
+    //Stop(GenericPlayerContext &context, IGstGenericPlayerPrivate &player);
+    Stop(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+         const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper);
     ~Stop() override;
     void execute() const override;
 
 private:
     GenericPlayerContext &m_context;
     IGstGenericPlayerPrivate &m_player;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
 };
 } // namespace firebolt::rialto::server::tasks::generic
 
