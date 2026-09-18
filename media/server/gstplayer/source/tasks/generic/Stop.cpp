@@ -21,6 +21,7 @@
 #include "GenericPlayerContext.h"
 #include "IGstGenericPlayerPrivate.h"
 #include "RialtoServerLogging.h"
+#include <malloc.h>
 
 namespace firebolt::rialto::server::tasks::generic
 {
@@ -44,5 +45,6 @@ void Stop::execute() const
         streamInfo.second.isDataNeeded = false;
     }
     RIALTO_SERVER_LOG_MIL("State change to NULL requested");
+    malloc_trim(0);
 }
 } // namespace firebolt::rialto::server::tasks::generic
