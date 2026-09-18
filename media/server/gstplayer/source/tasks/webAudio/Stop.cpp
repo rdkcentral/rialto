@@ -24,7 +24,9 @@
 
 namespace firebolt::rialto::server::tasks::webaudio
 {
-Stop::Stop(IGstWebAudioPlayerPrivate &player) : m_player{player}
+//Stop::Stop(IGstWebAudioPlayerPrivate &player) : m_player{player}
+Stop::Stop(IGstWebAudioPlayerPrivate &player, const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
+    : m_player{player}, m_glibWrapper{glibWrapper}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Stop");
 }
@@ -39,5 +41,6 @@ void Stop::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing Stop");
     m_player.changePipelineState(GST_STATE_NULL);
     RIALTO_SERVER_LOG_MIL("State change to NULL requested for webaudio pipeline");
+    m_glibWrapper->gThreadPoolStopUnusedThreads(); // Reclaim idle GLib thread pool threads immediately
 }
 } // namespace firebolt::rialto::server::tasks::webaudio

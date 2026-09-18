@@ -24,7 +24,10 @@
 
 namespace firebolt::rialto::server::tasks::generic
 {
-Stop::Stop(GenericPlayerContext &context, IGstGenericPlayerPrivate &player) : m_context{context}, m_player{player}
+//Stop::Stop(GenericPlayerContext &context, IGstGenericPlayerPrivate &player) : m_context{context}, m_player{player}
+Stop::Stop(GenericPlayerContext &context, IGstGenericPlayerPrivate &player,
+           const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper)
+    : m_context{context}, m_player{player}, m_glibWrapper{glibWrapper}
 {
     RIALTO_SERVER_LOG_DEBUG("Constructing Stop");
 }
@@ -44,5 +47,6 @@ void Stop::execute() const
         streamInfo.second.isDataNeeded = false;
     }
     RIALTO_SERVER_LOG_MIL("State change to NULL requested");
+    m_glibWrapper->gThreadPoolStopUnusedThreads(); // Reclaim idle GLib thread pool threads immediately
 }
 } // namespace firebolt::rialto::server::tasks::generic

@@ -2367,11 +2367,12 @@ void GenericTasksTestsBase::shouldStopGstPlayer()
     audioStreamIt->second.isDataNeeded = true;
     EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
     EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_NULL)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+    EXPECT_CALL(*testContext->m_glibWrapper, gThreadPoolStopUnusedThreads());
 }
 
 void GenericTasksTestsBase::triggerStop()
 {
-    firebolt::rialto::server::tasks::generic::Stop task{testContext->m_context, testContext->m_gstPlayer};
+    firebolt::rialto::server::tasks::generic::Stop task{testContext->m_context, testContext->m_gstPlayer, testContext->m_glibWrapper};
     task.execute();
 }
 
