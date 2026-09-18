@@ -261,7 +261,7 @@ std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createShutdown(IGstGeneri
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createStop(GenericPlayerContext &context,
                                                                   IGstGenericPlayerPrivate &player) const
 {
-    return std::make_unique<tasks::generic::Stop>(context, player);
+    return std::make_unique<tasks::generic::Stop>(context, player, m_glibWrapper);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createUnderflow(GenericPlayerContext &context,

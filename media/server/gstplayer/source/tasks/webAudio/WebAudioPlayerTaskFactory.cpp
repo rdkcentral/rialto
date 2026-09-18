@@ -44,7 +44,7 @@ std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createShutdown(IGstWebAu
 
 std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createStop(IGstWebAudioPlayerPrivate &player) const
 {
-    return std::make_unique<tasks::webaudio::Stop>(player);
+    return std::make_unique<tasks::webaudio::Stop>(player, m_glibWrapper);
 }
 
 std::unique_ptr<IPlayerTask> WebAudioPlayerTaskFactory::createPlay(IGstWebAudioPlayerPrivate &player) const

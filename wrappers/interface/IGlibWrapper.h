@@ -323,6 +323,11 @@ public:
      * @retval The GValue structure that has been passed in.
      */
     virtual GValue *gValueInit(GValue *value, GType type) const = 0;
+
+    /**
+     * @brief Stops and destroys any threads in the GLib thread pool common pool that are currently idle.
+     */
+    virtual void gThreadPoolStopUnusedThreads() const = 0;
 };
 
 }; // namespace firebolt::rialto::wrappers

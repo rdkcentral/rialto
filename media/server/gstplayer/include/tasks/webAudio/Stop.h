@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_STOP_H_
 #define FIREBOLT_RIALTO_SERVER_TASKS_WEBAUDIO_STOP_H_
 
+#include "IGlibWrapper.h"
 #include "IGstWebAudioPlayerPrivate.h"
 #include "IPlayerTask.h"
 
@@ -28,12 +29,14 @@ namespace firebolt::rialto::server::tasks::webaudio
 class Stop : public IPlayerTask
 {
 public:
-    explicit Stop(IGstWebAudioPlayerPrivate &player);
+    //explicit Stop(IGstWebAudioPlayerPrivate &player);
+    Stop(IGstWebAudioPlayerPrivate &player, const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper);
     ~Stop() override;
     void execute() const override;
 
 private:
     IGstWebAudioPlayerPrivate &m_player;
+    std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> m_glibWrapper;
 };
 } // namespace firebolt::rialto::server::tasks::webaudio
 
