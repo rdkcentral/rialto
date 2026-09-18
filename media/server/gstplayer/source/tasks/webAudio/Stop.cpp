@@ -21,6 +21,7 @@
 #include "IGstWebAudioPlayerPrivate.h"
 #include "RialtoServerLogging.h"
 #include "WebAudioPlayerContext.h"
+#include <malloc.h>
 
 namespace firebolt::rialto::server::tasks::webaudio
 {
@@ -41,6 +42,7 @@ void Stop::execute() const
     RIALTO_SERVER_LOG_DEBUG("Executing Stop");
     m_player.changePipelineState(GST_STATE_NULL);
     RIALTO_SERVER_LOG_MIL("State change to NULL requested for webaudio pipeline");
+    malloc_trim(0);
     m_glibWrapper->gThreadPoolStopUnusedThreads(); // Reclaim idle GLib thread pool threads immediately
 }
 } // namespace firebolt::rialto::server::tasks::webaudio
