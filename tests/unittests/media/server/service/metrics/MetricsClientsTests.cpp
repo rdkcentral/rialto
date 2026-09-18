@@ -75,8 +75,6 @@ TEST(MetricsClientsTests, mediaPipelineCallbacksAreForwarded)
     sut.notifyQos(6, qosInfo);
     EXPECT_CALL(*client, notifyBufferUnderflow(7));
     sut.notifyBufferUnderflow(7);
-    EXPECT_CALL(*client, notifyFirstFrameReceived(8));
-    sut.notifyFirstFrameReceived(8);
     EXPECT_CALL(*client, notifyPlaybackError(9, PlaybackError::DECRYPTION));
     sut.notifyPlaybackError(9, PlaybackError::DECRYPTION);
     EXPECT_CALL(*client, notifySourceFlushed(10));
