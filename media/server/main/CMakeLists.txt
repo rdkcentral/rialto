@@ -56,6 +56,10 @@ add_library(
         source/TextTrackSession.cpp
         source/NeedDataDelayCalculator.cpp
         source/MediaCapabilitiesServerInternal.cpp
+        source/MetricsCollector.cpp
+        source/LogMetricsReporter.cpp
+        source/CompositeMetricsReporter.cpp
+        source/MetricsThresholdChecker.cpp
         )
 
 target_include_directories(
