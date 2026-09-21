@@ -22,6 +22,7 @@
 #include "IpcClientImpl.h"
 #include "IpcLogging.h"
 #include "IpcServerControllerImpl.h"
+#include "Cache.h"
 
 #include "rialtoipc.pb.h"
 
@@ -844,37 +845,33 @@ static bool addRequestFileDescriptors(google::protobuf::Message *request, const 
     auto fdIterator = requestFds.begin();
 
     const google::protobuf::Descriptor *kDescriptor = request->GetDescriptor();
+    const auto &kFdFields = Cache::getFdFields(kDescriptor);
     const google::protobuf::Reflection *kReflection = nullptr;
 
-    const int n = kDescriptor->field_count();
-    for (int i = 0; i < n; i++)
+    for (const auto *fieldDescriptor : kFdFields)
     {
-        auto fieldDescriptor = kDescriptor->field(i);
-        if (fieldDescriptor->options().HasExtension(field_is_fd) && fieldDescriptor->options().GetExtension(field_is_fd))
+        if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
         {
-            if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
+            RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but not an int32 type");
+            return false;
+        }
+
+        if (!kReflection)
+        {
+            kReflection = request->GetReflection();
+        }
+
+        if (kReflection->HasField(*request, fieldDescriptor))
+        {
+            if (fdIterator == requestFds.end())
             {
-                RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but not an int32 type");
+                RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but one was supplied");
                 return false;
             }
-
-            if (!kReflection)
-            {
-                kReflection = request->GetReflection();
-            }
-
-            if (kReflection->HasField(*request, fieldDescriptor))
-            {
-                if (fdIterator == requestFds.end())
-                {
-                    RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but one was supplied");
-                    return false;
-                }
-
-                kReflection->SetInt32(request, fieldDescriptor, fdIterator->fd());
-                ++fdIterator;
-            }
+            kReflection->SetInt32(request, fieldDescriptor, fdIterator->fd());
+            ++fdIterator;
         }
+
     }
 
     if (fdIterator != requestFds.end())
@@ -1109,33 +1106,29 @@ static std::vector<int> getResponseFileDescriptors(google::protobuf::Message *re
 
     // process any file descriptors from the response message
     const google::protobuf::Descriptor *kDescriptor = response->GetDescriptor();
+    const auto &kFdFields = Cache::getFdFields(kDescriptor);
     const google::protobuf::Reflection *kReflection = nullptr;
 
-    const int n = kDescriptor->field_count();
-    for (int i = 0; i < n; i++)
+    for (const auto *fieldDescriptor : kFdFields)
     {
-        auto fieldDescriptor = kDescriptor->field(i);
-        if (fieldDescriptor->options().HasExtension(field_is_fd) && fieldDescriptor->options().GetExtension(field_is_fd))
+        if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
         {
-            if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
-            {
-                RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but not an int32 type");
-                return {};
-            }
+            RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but not an int32 type");
+            return {};
+        }
 
-            if (!kReflection)
-            {
-                kReflection = response->GetReflection();
-            }
+        if (!kReflection)
+        {
+            kReflection = response->GetReflection();
+        }
 
-            if (kReflection->HasField(*response, fieldDescriptor))
-            {
-                fds.push_back(kReflection->GetInt32(*response, fieldDescriptor));
-                kReflection->SetInt32(response, fieldDescriptor, -1);
-            }
+        if (kReflection->HasField(*response, fieldDescriptor))
+        {
+            fds.push_back(kReflection->GetInt32(*response, fieldDescriptor));
+            kReflection->SetInt32(response, fieldDescriptor, -1);
         }
     }
-
+    
     return fds;
 }
 

@@ -33,6 +33,7 @@
 #include <unistd.h>
 
 #include "IpcChannelImpl.h"
+#include "Cache.h"
 #include "IpcLogging.h"
 #include "rialtoipc.pb.h"
 
@@ -939,37 +940,32 @@ bool ChannelImpl::addReplyFileDescriptors(google::protobuf::Message *reply,
     auto fdIterator = fds->begin();
 
     const google::protobuf::Descriptor *kDescriptor = reply->GetDescriptor();
+    const auto &kFdFields = Cache::getFdFields(kDescriptor);
     const google::protobuf::Reflection *kReflection = nullptr;
 
-    const int n = kDescriptor->field_count();
-    for (int i = 0; i < n; i++)
+    for (const auto *fieldDescriptor : kFdFields)
     {
-        auto fieldDescriptor = kDescriptor->field(i);
-        if (fieldDescriptor->options().HasExtension(::firebolt::rialto::ipc::field_is_fd) &&
-            fieldDescriptor->options().GetExtension(::firebolt::rialto::ipc::field_is_fd))
+        if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
         {
-            if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
+            RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but not an int32 type");
+            return false;
+        }
+
+        if (!kReflection)
+        {
+            kReflection = reply->GetReflection();
+        }
+
+        if (kReflection->HasField(*reply, fieldDescriptor))
+        {
+            if (fdIterator == fds->end())
             {
-                RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but not an int32 type");
+                RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but none or too few were supplied");
                 return false;
             }
 
-            if (!kReflection)
-            {
-                kReflection = reply->GetReflection();
-            }
-
-            if (kReflection->HasField(*reply, fieldDescriptor))
-            {
-                if (fdIterator == fds->end())
-                {
-                    RIALTO_IPC_LOG_ERROR("field is marked as containing an fd but none or too few were supplied");
-                    return false;
-                }
-
-                kReflection->SetInt32(reply, fieldDescriptor, fdIterator->fd());
-                ++fdIterator;
-            }
+            kReflection->SetInt32(reply, fieldDescriptor, fdIterator->fd());
+            ++fdIterator;
         }
     }
 
@@ -1044,27 +1040,22 @@ std::vector<int> ChannelImpl::getMessageFds(const google::protobuf::Message &mes
     std::vector<int> fds;
 
     auto descriptor = message.GetDescriptor();
-    const int n = descriptor->field_count();
-    for (int i = 0; i < n; i++)
-    {
-        auto fieldDescriptor = descriptor->field(i);
-        if (fieldDescriptor->options().HasExtension(::firebolt::rialto::ipc::field_is_fd) &&
-            fieldDescriptor->options().GetExtension(::firebolt::rialto::ipc::field_is_fd))
-        {
-            if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
-            {
-                RIALTO_IPC_LOG_ERROR("field '%s' is marked as containing an fd but not an int32 type",
-                                     fieldDescriptor->full_name().c_str());
-            }
-            else
-            {
-                auto reflection = message.GetReflection();
-                int fileDescriptor = reflection->GetInt32(message, fieldDescriptor);
-                fds.emplace_back(fileDescriptor);
-            }
-        }
-    }
+    const auto &kFdFields = Cache::getFdFields(descriptor);
 
+    for (const auto *fieldDescriptor : kFdFields)
+    {
+        if (fieldDescriptor->type() != google::protobuf::FieldDescriptor::TYPE_INT32)
+        {
+            RIALTO_IPC_LOG_ERROR("field '%s' is marked as containing an fd but not an int32 type",
+                                 fieldDescriptor->full_name().c_str());
+        }
+        else
+        {
+            auto reflection = message.GetReflection();
+            int fileDescriptor = reflection->GetInt32(message, fieldDescriptor);
+            fds.emplace_back(fileDescriptor);
+        }  
+    }
     return fds;
 }
 
