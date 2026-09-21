@@ -114,7 +114,7 @@ ClientComponentTest::ClientComponentTest()
       WebAudioPlayerTestMethods(getWebAudioPartitions()),
       m_privateMetricsModuleMock{std::make_shared<NiceMock<PrivateMetricsModuleMock>>()},
       m_serverStub{std::make_shared<ServerStub>(m_controlModuleMock, m_mediaPipelineModuleMock,
-	  											m_mediaCapabilitiesModuleMock, m_mediaKeysModuleMock,
+                                                m_mediaCapabilitiesModuleMock, m_mediaKeysModuleMock,
                                                 m_mediaKeysCapabilitiesModuleMock, m_mediaPipelineCapabilitiesModuleMock,
                                                 m_webAudioPlayerModuleMock, m_privateMetricsModuleMock)}
 {
