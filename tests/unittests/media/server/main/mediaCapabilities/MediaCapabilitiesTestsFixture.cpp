@@ -30,8 +30,7 @@ MediaCapabilitiesTests::MediaCapabilitiesTests()
 
     // Create mock and inject into MediaCapabilities for ownership
     // The mock is created as unique_ptr so MediaCapabilities owns it exclusively
-    // Use NiceMock (not StrictMock) to allow optional calls during append logic
-    auto gstMockUnique = std::make_unique<NiceMock<firebolt::rialto::server::GstCapabilitiesMock>>();
+    auto gstMockUnique = std::make_unique<StrictMock<firebolt::rialto::server::GstCapabilitiesMock>>();
 
     // Store raw pointer reference for setting expectations in tests
     // This allows tests to set expectations on the SAME instance that's injected

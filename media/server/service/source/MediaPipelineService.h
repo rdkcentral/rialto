@@ -48,7 +48,7 @@ public:
     MediaPipelineService(IPlaybackService &playbackService,
                          std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
                          std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-                         IDecryptionService &decryptionService, IPrivateMetricsService &metricsService,
+                         IDecryptionService &decryptionService,
                          std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory>
                              &&mediaCapabilitiesFactory = nullptr);
     ~MediaPipelineService() override;
