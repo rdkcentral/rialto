@@ -23,7 +23,8 @@
 #include "IApplicationSessionServer.h"
 #include "IGstInitialiser.h"
 #include "RialtoServerLogging.h"
-
+#include <stdio.h>
+#include <syscall.h>
 // NOLINT(build/filename_format)
 
 int main(int argc, char *argv[])
@@ -46,17 +47,20 @@ int main(int argc, char *argv[])
     {
         RIALTO_SERVER_LOG_WARN("Failed to get git commit ID!");
     }
-
+    printf("(fz-dbg)tid:%d from main.cpp calling Initialise\n", syscall(SYS_gettid));
     firebolt::rialto::server::IGstInitialiser::instance().initialise(&argc, &argv);
-
+    printf("(fz-dbg)tid:%d from main.cpp createApplicationSessionServer called\n", syscall(SYS_gettid));
     auto appSessionServer =
         firebolt::rialto::server::IApplicationSessionServerFactory::getFactory()->createApplicationSessionServer();
-
+    printf("(fz-dbg)tid:%d from main.cpp before init called\n", syscall(SYS_gettid));
     if (!appSessionServer->init(argc, argv))
     {
+        printf("(fz-dbg)tid:%d from main.cpp init failed\n", syscall(SYS_gettid));
         return EXIT_FAILURE;
     }
+    printf("(fz-dbg)tid:%d from main.cpp before startService called\n", syscall(SYS_gettid));
     appSessionServer->startService();
+    printf("(fz-dbg)tid:%d from main.cpp after startService called\n", syscall(SYS_gettid));
 
 #ifdef FREE_MEM_BEFORE_EXIT
     RIALTO_SERVER_LOG_INFO("Calling ShutdownProtobufLibrary");

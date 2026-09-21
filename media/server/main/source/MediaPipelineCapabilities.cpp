@@ -22,7 +22,8 @@
 #include "MediaPipelineCapabilities.h"
 #include "RialtoServerLogging.h"
 #include <MediaCommon.h>
-
+#include <stdio.h>
+#include <syscall.h>
 namespace firebolt::rialto
 {
 std::shared_ptr<IMediaPipelineCapabilitiesFactory> IMediaPipelineCapabilitiesFactory::createFactory()
@@ -44,6 +45,7 @@ std::shared_ptr<IMediaPipelineCapabilitiesFactory> IMediaPipelineCapabilitiesFac
 std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesFactory::createMediaPipelineCapabilities() const
 {
     std::unique_ptr<IMediaPipelineCapabilities> mediaPipelineCapabilities;
+    printf("(fz-dbg)tid:%d inside MediaPipelineCapabilities.cpp createMediaPipelineCapabilities\n", syscall(SYS_gettid));
     try
     {
         mediaPipelineCapabilities =
@@ -53,7 +55,7 @@ std::unique_ptr<IMediaPipelineCapabilities> MediaPipelineCapabilitiesFactory::cr
     {
         RIALTO_SERVER_LOG_ERROR("Failed to create the media pipeline capabilities, reason: %s", e.what());
     }
-
+    printf("(fz-dbg)tid:%d before return of MediaPipelineCapabilities.cpp createMediaPipelineCapabilities\n", syscall(SYS_gettid));
     return mediaPipelineCapabilities;
 }
 
@@ -65,12 +67,13 @@ MediaPipelineCapabilities::MediaPipelineCapabilities(const std::shared_ptr<IGstC
     : m_kGstCapabilitiesFactory{gstCapabilitiesFactory}
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-
+    printf("(fz-dbg)tid:%d inside MediaPipelineCapabilities.cpp constructor\n", syscall(SYS_gettid));
     m_gstCapabilities = m_kGstCapabilitiesFactory->createGstCapabilities();
     if (!m_gstCapabilities)
     {
         throw std::runtime_error("Gstreamer capabilities could not be created");
     }
+    printf("(fz-dbg)tid:%d exiting MediaPipelineCapabilities.cpp constructor\n", syscall(SYS_gettid));
 }
 
 MediaPipelineCapabilities::~MediaPipelineCapabilities()

@@ -26,6 +26,9 @@
 #include "GstCapabilities.h"
 #include "GstMimeMapping.h"
 #include "RialtoServerLogging.h"
+#include <stdio.h>
+#include <syscall.h>
+
 
 namespace
 {
@@ -116,18 +119,21 @@ std::shared_ptr<IGstCapabilitiesFactory> IGstCapabilitiesFactory::getFactory()
 
 std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities()
 {
+    printf("(fz-dbg)tid:%d inside GstCapabilitiesFactory.cpp createGstCapabilities\n", syscall(SYS_gettid));
     std::unique_ptr<IGstCapabilities> gstCapabilities;
     try
     {
+        printf("(fz-dbg)tid:%d inside GstCapabilitiesFactory.cpp calling getFactory for GstWrapper\n", syscall(SYS_gettid));
         std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> gstWrapperFactory =
             firebolt::rialto::wrappers::IGstWrapperFactory::getFactory();
         std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> gstWrapper;
-
+        printf("(fz-dbg)tid:%d inside GstCapabilitiesFactory.cpp  about to call getGstWrapper\n", syscall(SYS_gettid));
         if ((!gstWrapperFactory) || (!(gstWrapper = gstWrapperFactory->getGstWrapper())))
         {
+            printf("(fz-dbg)tid:%d inside GstCapabilitiesFactory.cpp failed to get GstWrapper\n", syscall(SYS_gettid));
             throw std::runtime_error("Cannot create GstWrapper");
         }
-
+        printf("(fz-dbg)tid:%d inside GstCapabilitiesFactory.cpp successfully got GstWrapper\n", syscall(SYS_gettid));
         std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapperFactory> glibWrapperFactory =
             firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory();
         std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> glibWrapper;
