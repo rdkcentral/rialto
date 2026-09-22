@@ -21,6 +21,9 @@
 #include "GstLogForwarding.h"
 #include "IGlibWrapper.h"
 #include "RialtoServerLogging.h"
+#include <stdio.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 
 namespace firebolt::rialto::server
 {
@@ -48,6 +51,7 @@ IGstInitialiser &IGstInitialiser::instance()
 
 void GstInitialiser::initialise(int *argc, char ***argv)
 {
+    printf("(fz-dbg)tid:%ld inside GstInitialiser.cpp initialise method about to create a thread \n", syscall(SYS_gettid));
     if (m_thread.joinable())
     {
         RIALTO_SERVER_LOG_WARN("Gstreamer is already initialised, no need to do it twice...");
@@ -57,17 +61,20 @@ void GstInitialiser::initialise(int *argc, char ***argv)
     m_thread = std::thread(
         [=]()
         {
+            printf("(fz-dbg)tid:%ld inside GstInitialiser.cpp thread getFactory called\n", syscall(SYS_gettid));
             std::shared_ptr<firebolt::rialto::wrappers::IGstWrapperFactory> factory =
                 firebolt::rialto::wrappers::IGstWrapperFactory::getFactory();
+            printf("(fz-dbg)tid:%ld inside GstInitialiser.cpp getGstWrapper called\n", syscall(SYS_gettid));
             m_gstWrapper = factory->getGstWrapper();
-
+            printf("(fz-dbg)tid:%ld inside GstInitialiser.cpp after getGstWrapper\n", syscall(SYS_gettid));
             if (!m_gstWrapper)
             {
                 RIALTO_SERVER_LOG_ERROR("Failed to create the gst wrapper");
                 return;
             }
-
+            printf("(fz-dbg)tid:%ld inside GstInitialiser.cpp before gstInit\n", syscall(SYS_gettid));
             m_gstWrapper->gstInit(argc, argv);
+            printf("(fz-dbg)tid:%ld inside GstInitialiser.cpp after gstInit\n", syscall(SYS_gettid));
 
             auto glibWrapper = firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory()->getGlibWrapper();
             if (!glibWrapper)

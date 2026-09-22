@@ -18,11 +18,9 @@
  */
 
 #include <stdexcept>
-
 #include "IMediaPipelineCapabilitiesIpcFactory.h"
 #include "MediaPipelineCapabilities.h"
 #include "RialtoClientLogging.h"
-
 namespace firebolt::rialto
 {
 std::shared_ptr<IMediaPipelineCapabilitiesFactory> IMediaPipelineCapabilitiesFactory::createFactory()
@@ -65,7 +63,6 @@ MediaPipelineCapabilities::MediaPipelineCapabilities(
     const std::shared_ptr<IMediaPipelineCapabilitiesIpcFactory> &MediaPipelineCapabilitiesIpcFactory)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-
     m_mediaPipelineCapabilitiesIpc = MediaPipelineCapabilitiesIpcFactory->createMediaPipelineCapabilitiesIpc();
     if (!m_mediaPipelineCapabilitiesIpc)
     {
