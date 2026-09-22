@@ -30,7 +30,7 @@
 #include "IMediaKeysServerInternal.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
-#include "ISharedMemoryBuffer.h"
+#include "IPerInstanceSharedMemory.h"
 #include "IWebAudioPlayerServerInternal.h"
 #include "IpcFactory.h"
 #include "PlaybackService.h"
@@ -69,8 +69,7 @@ private:
         m_playbackService{firebolt::rialto::server::IMediaPipelineServerInternalFactory::createFactory(),
                           firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory(),
                           firebolt::rialto::server::IWebAudioPlayerServerInternalFactory::createFactory(),
-                          firebolt::rialto::server::ISharedMemoryBufferFactory::createFactory(),
-                          m_cdmService,
+                          firebolt::rialto::server::IPerInstanceSharedMemoryFactory::createFactory(), m_cdmService,
                           firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory::createFactory()};
     firebolt::rialto::server::service::SessionServerManager
         m_serviceManager{m_ipcFactory, m_playbackService, m_cdmService, m_controlService,

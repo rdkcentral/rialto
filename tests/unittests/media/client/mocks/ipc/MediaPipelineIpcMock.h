@@ -30,6 +30,8 @@ namespace firebolt::rialto::client
 class MediaPipelineIpcMock : public IMediaPipelineIpc
 {
 public:
+    MOCK_METHOD(std::int32_t, takeSharedMemoryFd, (), (override));
+    MOCK_METHOD(std::uint32_t, getSharedMemorySize, (), (const, override));
     MediaPipelineIpcMock() = default;
     virtual ~MediaPipelineIpcMock() = default;
 

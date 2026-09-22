@@ -21,6 +21,7 @@
 #include "RialtoCommonIpc.h"
 #include "mediapipelinemodule.pb.h"
 #include <IMediaPipeline.h>
+#include <unistd.h>
 #include <unordered_map>
 
 namespace firebolt::rialto::client
@@ -89,6 +90,11 @@ MediaPipelineIpc::MediaPipelineIpc(IMediaPipelineIpcClient *client, const VideoR
 
 MediaPipelineIpc::~MediaPipelineIpc()
 {
+    if (m_shmFd >= 0)
+    {
+        close(m_shmFd);
+    }
+
     // destroy media player session
     destroySession();
 
@@ -97,6 +103,18 @@ MediaPipelineIpc::~MediaPipelineIpc()
 
     // destroy the thread processing async notifications
     m_eventThread.reset();
+}
+
+std::int32_t MediaPipelineIpc::takeSharedMemoryFd()
+{
+    std::int32_t fd = m_shmFd;
+    m_shmFd = -1;
+    return fd;
+}
+
+std::uint32_t MediaPipelineIpc::getSharedMemorySize() const
+{
+    return m_shmSize;
 }
 
 bool MediaPipelineIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
@@ -1688,6 +1706,19 @@ bool MediaPipelineIpc::createSession(const VideoRequirements &videoRequirements)
     }
 
     m_sessionId = response.session_id();
+    if (!response.has_shm_fd() || response.shm_fd() < 0 || !response.has_shm_size() || response.shm_size() == 0)
+    {
+        if (response.has_shm_fd() && response.shm_fd() >= 0)
+        {
+            close(response.shm_fd());
+        }
+        RIALTO_CLIENT_LOG_ERROR("Create session response contains invalid shared memory");
+        destroySession();
+        return false;
+    }
+
+    m_shmFd = response.shm_fd();
+    m_shmSize = response.shm_size();
 
     return true;
 }

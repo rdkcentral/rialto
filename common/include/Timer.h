@@ -22,8 +22,10 @@
 
 #include "ITimer.h"
 
-#include <cstdint>
+#include <atomic>
+#include <condition_variable>
 #include <memory>
+#include <mutex>
 #include <thread>
 
 namespace firebolt::rialto::common
@@ -58,7 +60,22 @@ public:
     bool isActive() const override;
 
 private:
-    std::uint64_t m_id{0};
+    struct State
+    {
+        State(const std::chrono::milliseconds &timeout, const std::function<void()> &callback)
+            : active{true}, timeout{timeout}, callback{callback}
+        {
+        }
+
+        std::atomic<bool> active;
+        std::chrono::milliseconds timeout;
+        std::function<void()> callback;
+        std::mutex mutex;
+        std::condition_variable cv;
+    };
+
+    std::shared_ptr<State> m_state;
+    std::thread m_thread;
 };
 } // namespace firebolt::rialto::common
 

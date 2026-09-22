@@ -97,30 +97,6 @@ ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &Co
 ClientController::~ClientController()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    termSharedMemory();
-}
-
-int ClientController::subscribeSharedMemoryHandle(SharedMemoryHandleObserver observer)
-{
-    std::lock_guard<std::recursive_mutex> deliveryLock{m_shmNotifyMutex};
-    std::shared_ptr<ISharedMemoryHandle> currentHandle;
-    int token;
-    {
-        std::lock_guard<std::mutex> lock{m_mutex};
-        token = m_nextShmObserverToken++;
-        m_shmObservers.emplace(token, observer);
-        currentHandle = m_shmHandle;
-    }
-    observer(currentHandle);
-    return token;
-}
-
-void ClientController::unsubscribeSharedMemoryHandle(int token)
-{
-    std::lock_guard<std::recursive_mutex> deliveryLock{m_shmNotifyMutex};
-    std::lock_guard<std::mutex> lock{m_mutex};
-    m_shmObservers.erase(token);
 }
 
 bool ClientController::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
@@ -195,40 +171,6 @@ bool ClientController::unregisterClient(std::weak_ptr<IControlClient> client)
     return true;
 }
 
-bool ClientController::initSharedMemory()
-try
-{
-    {
-        std::lock_guard<std::mutex> lock{m_mutex};
-        int32_t shmFd{-1};
-        uint32_t shmBufferLen{0U};
-        if (!m_controlIpc->getSharedMemory(shmFd, shmBufferLen))
-        {
-            RIALTO_CLIENT_LOG_ERROR("Failed to get the shared memory");
-            return false;
-        }
-        m_shmHandle = std::make_shared<SharedMemoryHandle>(shmFd, shmBufferLen);
-    }
-    notifySharedMemoryHandleObservers();
-
-    RIALTO_CLIENT_LOG_INFO("Shared buffer was successfully initialised");
-    return true;
-}
-catch (const std::exception &e)
-{
-    RIALTO_CLIENT_LOG_ERROR("Failed to initialise shared memory: %s", e.what());
-    return false;
-}
-
-void ClientController::termSharedMemory()
-{
-    {
-        std::lock_guard<std::mutex> lock{m_mutex};
-        m_shmHandle.reset();
-    }
-    notifySharedMemoryHandleObservers();
-}
-
 void ClientController::notifyApplicationState(ApplicationState state)
 {
     {
@@ -245,28 +187,7 @@ void ClientController::notifyApplicationState(ApplicationState state)
         }
     }
 
-    switch (state)
-    {
-    case ApplicationState::RUNNING:
-    {
-        if (!initSharedMemory())
-        {
-            RIALTO_CLIENT_LOG_ERROR("Could not initalise the shared memory");
-            return;
-        }
-        // Inform clients after memory initialisation
-        changeStateAndNotifyClients(state);
-        break;
-    }
-    case ApplicationState::INACTIVE:
-    case ApplicationState::UNKNOWN:
-    {
-        // Inform clients before memory termination
-        changeStateAndNotifyClients(state);
-        termSharedMemory();
-        break;
-    }
-    }
+    changeStateAndNotifyClients(state);
 }
 
 std::string ClientController::stateToString(ApplicationState state)
@@ -313,26 +234,6 @@ void ClientController::changeStateAndNotifyClients(ApplicationState state)
     for (const auto &client : currentClients)
     {
         client->notifyApplicationState(state);
-    }
-}
-
-void ClientController::notifySharedMemoryHandleObservers()
-{
-    std::lock_guard<std::recursive_mutex> deliveryLock{m_shmNotifyMutex};
-    std::shared_ptr<ISharedMemoryHandle> currentHandle;
-    std::vector<SharedMemoryHandleObserver> currentObservers;
-    {
-        std::lock_guard<std::mutex> lock{m_mutex};
-        currentHandle = m_shmHandle;
-        currentObservers.reserve(m_shmObservers.size());
-        for (const auto &entry : m_shmObservers)
-        {
-            currentObservers.push_back(entry.second);
-        }
-    }
-    for (const auto &observer : currentObservers)
-    {
-        observer(currentHandle);
     }
 }
 

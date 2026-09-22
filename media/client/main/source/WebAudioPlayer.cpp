@@ -111,7 +111,8 @@ namespace firebolt::rialto::client
 WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                                const uint32_t priority, std::weak_ptr<const WebAudioConfig> webAudioConfig,
                                const std::shared_ptr<IWebAudioPlayerIpcFactory> &webAudioPlayerIpcFactory,
-                               IClientController &clientController)
+                               IClientController &clientController,
+                               const std::shared_ptr<ISharedMemoryHandle> &sharedMemoryHandle)
     : m_webAudioPlayerClient(client), m_clientController{clientController}, m_bytesPerFrame{0},
       m_currentAppState{ApplicationState::UNKNOWN}
 {
@@ -143,20 +144,21 @@ WebAudioPlayer::WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, cons
     {
         throw std::runtime_error("Web audio player ipc could not be created");
     }
-
-    m_shmHandleObserverId = m_clientController.subscribeSharedMemoryHandle(
-        [this](const std::shared_ptr<ISharedMemoryHandle> &handle)
-        {
-            std::lock_guard<std::mutex> lock{m_shmHandleMutex};
-            m_shmHandle = handle;
-        });
+    if (sharedMemoryHandle)
+    {
+        m_shmHandle = sharedMemoryHandle;
+    }
+    else
+    {
+        m_shmHandle = ISharedMemoryHandle::create(m_webAudioPlayerIpc->takeSharedMemoryFd(),
+                                                  m_webAudioPlayerIpc->getSharedMemorySize());
+    }
 }
 
 WebAudioPlayer::~WebAudioPlayer()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
 
-    m_clientController.unsubscribeSharedMemoryHandle(m_shmHandleObserverId);
     m_webAudioPlayerIpc.reset();
 }
 
@@ -224,11 +226,7 @@ bool WebAudioPlayer::writeBuffer(const uint32_t numberOfFrames, void *data)
         return false;
     }
 
-    std::shared_ptr<ISharedMemoryHandle> shmHandle;
-    {
-        std::lock_guard<std::mutex> shmLock{m_shmHandleMutex};
-        shmHandle = m_shmHandle;
-    }
+    std::shared_ptr<ISharedMemoryHandle> shmHandle = m_shmHandle;
     if (nullptr == shmHandle || nullptr == shmHandle->getShm())
     {
         RIALTO_CLIENT_LOG_ERROR("Shared buffer no longer valid");
@@ -286,7 +284,13 @@ void WebAudioPlayer::notifyState(WebAudioPlayerState state)
 
 void WebAudioPlayer::notifyApplicationState(ApplicationState state)
 {
+    std::lock_guard<std::mutex> bufLocker(m_bufLock);
+    const bool wasRunning{ApplicationState::RUNNING == m_currentAppState};
     m_currentAppState = state;
+    if (wasRunning && ApplicationState::RUNNING != state)
+    {
+        m_shmHandle.reset();
+    }
 }
 
 }; // namespace firebolt::rialto::client

@@ -20,24 +20,20 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SHARED_MEMORY_BUFFER_MOCK_H_
 #define FIREBOLT_RIALTO_SERVER_SHARED_MEMORY_BUFFER_MOCK_H_
 
-#include "ISharedMemoryBuffer.h"
+#include "IPerInstanceSharedMemory.h"
 #include <gmock/gmock.h>
 
 namespace firebolt::rialto::server
 {
-class SharedMemoryBufferMock : public ISharedMemoryBuffer
+class SharedMemoryBufferMock : public IMediaPipelineSharedMemory, public IWebAudioSharedMemory
 {
 public:
-    MOCK_METHOD(bool, mapPartition, (MediaPlaybackType playbackType, int id), (override));
-    MOCK_METHOD(bool, unmapPartition, (MediaPlaybackType playbackType, int id), (override));
-    MOCK_METHOD(bool, clearData, (MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType),
-                (const, override));
-    MOCK_METHOD(std::uint32_t, getDataOffset,
-                (MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType), (const, override));
-    MOCK_METHOD(std::uint32_t, getMaxDataLen,
-                (MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType), (const, override));
-    MOCK_METHOD(std::uint8_t *, getDataPtr,
-                (MediaPlaybackType playbackType, int id, const MediaSourceType &mediaSourceType), (const, override));
+    MOCK_METHOD(bool, clearData, (MediaSourceType mediaSourceType), (const, override));
+    MOCK_METHOD(std::uint32_t, getDataOffset, (MediaSourceType mediaSourceType), (const, override));
+    MOCK_METHOD(std::uint32_t, getMaxDataLen, (MediaSourceType mediaSourceType), (const, override));
+    MOCK_METHOD(std::uint8_t *, getDataPtr, (MediaSourceType mediaSourceType), (const, override));
+    MOCK_METHOD(std::uint32_t, getDataOffset, (), (const, override));
+    MOCK_METHOD(std::uint32_t, getMaxDataLen, (), (const, override));
     MOCK_METHOD(int, getFd, (), (const, override));
     MOCK_METHOD(std::uint32_t, getSize, (), (const, override));
     MOCK_METHOD(std::uint8_t *, getBuffer, (), (const, override));

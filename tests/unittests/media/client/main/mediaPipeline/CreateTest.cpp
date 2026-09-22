@@ -19,6 +19,21 @@
 
 #include "MediaPipelineProxy.h"
 #include "MediaPipelineTestBase.h"
+#include <sys/syscall.h>
+#include <unistd.h>
+
+namespace
+{
+void expectSharedMemory(MediaPipelineIpcMock &ipc)
+{
+    constexpr std::uint32_t kShmSize{8U * 1024U * 1024U + 256U * 1024U};
+    int shmFd = syscall(SYS_memfd_create, "rialto_client_test", 0);
+    ASSERT_GE(shmFd, 0);
+    ASSERT_EQ(ftruncate(shmFd, kShmSize), 0);
+    EXPECT_CALL(ipc, takeSharedMemoryFd()).WillOnce(Return(shmFd));
+    EXPECT_CALL(ipc, getSharedMemorySize()).WillOnce(Return(kShmSize));
+}
+} // namespace
 
 MATCHER(NotNull, "")
 {
@@ -54,6 +69,7 @@ TEST_F(RialtoClientCreateMediaPipelineTest, Create)
     std::unique_ptr<IMediaPipeline> mediaPipeline;
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
         std::make_unique<StrictMock<MediaPipelineIpcMock>>();
+    expectSharedMemory(*mediaPipelineIpcMock);
 
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, VideoRequirementsMatcher(m_videoReq), _))
         .WillOnce(Return(ByMove(std::move(mediaPipelineIpcMock))));
@@ -73,6 +89,7 @@ TEST_F(RialtoClientCreateMediaPipelineTest, CreateMediaPipelineProxy)
     std::shared_ptr<MediaPipeline> mediaPipeline;
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
         std::make_unique<StrictMock<MediaPipelineIpcMock>>();
+    expectSharedMemory(*mediaPipelineIpcMock);
 
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, VideoRequirementsMatcher(m_videoReq), _))
         .WillOnce(Return(ByMove(std::move(mediaPipelineIpcMock))));
@@ -102,6 +119,7 @@ TEST_F(RialtoClientCreateMediaPipelineTest, FactoryCreatesObject)
 
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
         std::make_unique<StrictMock<MediaPipelineIpcMock>>();
+    expectSharedMemory(*mediaPipelineIpcMock);
     EXPECT_CALL(*m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(true));
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, VideoRequirementsMatcher(m_videoReq), _))
         .WillOnce(Return(ByMove(std::move(mediaPipelineIpcMock))));
@@ -148,6 +166,7 @@ TEST_F(RialtoClientCreateMediaPipelineTest, FactoryFailsToCreateObjectDueToRegis
 
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
         std::make_unique<StrictMock<MediaPipelineIpcMock>>();
+    expectSharedMemory(*mediaPipelineIpcMock);
     EXPECT_CALL(*m_clientControllerMock, registerClient(NotNull(), _)).WillOnce(Return(false));
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, VideoRequirementsMatcher(m_videoReq), _))
         .WillOnce(Return(ByMove(std::move(mediaPipelineIpcMock))));
@@ -167,6 +186,7 @@ TEST_F(RialtoClientCreateMediaPipelineTest, RegisterClientProxyFailure)
     std::shared_ptr<MediaPipeline> mediaPipeline;
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock =
         std::make_unique<StrictMock<MediaPipelineIpcMock>>();
+    expectSharedMemory(*mediaPipelineIpcMock);
 
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, VideoRequirementsMatcher(m_videoReq), _))
         .WillOnce(Return(ByMove(std::move(mediaPipelineIpcMock))));

@@ -35,10 +35,6 @@ public:
     MOCK_METHOD(void, clientConnected, (const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient), (override));
     MOCK_METHOD(void, clientDisconnected, (const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient),
                 (override));
-    MOCK_METHOD(void, getSharedMemory,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetSharedMemoryRequest *request,
-                 ::firebolt::rialto::GetSharedMemoryResponse *response, ::google::protobuf::Closure *done),
-                (override));
 };
 } // namespace firebolt::rialto::server::ipc
 

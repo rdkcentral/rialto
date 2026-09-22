@@ -22,7 +22,7 @@
 
 #include "IActiveRequests.h"
 #include "IMediaPipelineClient.h"
-#include "ISharedMemoryBuffer.h"
+#include "IPerInstanceSharedMemory.h"
 #include "MediaCommon.h"
 #include <cstdint>
 #include <memory>
@@ -33,7 +33,7 @@ class NeedMediaData
 {
 public:
     NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActiveRequests &activeRequests,
-                  const ISharedMemoryBuffer &shmBuffer, int sessionId, MediaSourceType mediaSourceType,
+                  const IMediaPipelineSharedMemory &shmBuffer, int sessionId, MediaSourceType mediaSourceType,
                   std::int32_t sourceId, PlaybackState currentPlaybackState);
     ~NeedMediaData() = default;
 

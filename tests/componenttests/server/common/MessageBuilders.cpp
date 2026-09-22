@@ -625,11 +625,6 @@ createIsServerCertificateSupportedRequest(const std::string &keySystem)
     return request;
 }
 
-::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest()
-{
-    return ::firebolt::rialto::GetSharedMemoryRequest();
-}
-
 ::firebolt::rialto::RegisterClientRequest createRegisterClientRequest()
 {
     ::firebolt::rialto::RegisterClientRequest request;

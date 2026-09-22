@@ -91,39 +91,6 @@ ControlIpc::~ControlIpc()
     m_eventThread.reset();
 }
 
-bool ControlIpc::getSharedMemory(int32_t &fd, uint32_t &size)
-{
-    if (!reattachChannelIfRequired())
-    {
-        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
-        return false;
-    }
-
-    std::shared_ptr<::firebolt::rialto::ControlModule_Stub> controlStub = m_controlStub;
-
-    firebolt::rialto::GetSharedMemoryRequest request;
-
-    firebolt::rialto::GetSharedMemoryResponse response;
-    auto ipcController = m_ipc.createRpcController();
-    auto blockingClosure = m_ipc.createBlockingClosure();
-    controlStub->getSharedMemory(ipcController.get(), &request, &response, blockingClosure.get());
-
-    // wait for the call to complete
-    blockingClosure->wait();
-
-    // check the result
-    if (ipcController->Failed())
-    {
-        RIALTO_CLIENT_LOG_ERROR("failed to get the shared memory due to '%s'", ipcController->ErrorText().c_str());
-        return false;
-    }
-
-    fd = response.fd();
-    size = response.size();
-
-    return true;
-}
-
 bool ControlIpc::registerClient()
 {
     const auto kCurrentSchemaVersion{common::getCurrentSchemaVersion()};

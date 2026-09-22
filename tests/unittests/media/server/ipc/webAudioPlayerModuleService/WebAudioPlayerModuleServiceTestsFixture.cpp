@@ -37,6 +37,8 @@ using testing::SetArgReferee;
 namespace
 {
 constexpr int kWebAudioPlayerHandle{0};
+constexpr std::int32_t kShmFd{123};
+constexpr std::uint32_t kShmSize{1024};
 const std::string kAudioMimeType{"audio/x-raw"};
 constexpr uint32_t kPriority{4};
 constexpr firebolt::rialto::WebAudioPcmConfig kPcmConfig{1, 2, 3, false, true, false};
@@ -90,8 +92,9 @@ void WebAudioPlayerModuleServiceTests::webAudioPlayerServiceWillCreateWebAudioPl
 {
     expectRequestSuccess();
     EXPECT_CALL(*m_controllerMock, getClient()).Times(2).WillRepeatedly(Return(m_clientMock));
-    EXPECT_CALL(m_webAudioPlayerServiceMock, createWebAudioPlayer(_, _, kAudioMimeType, kPriority, _))
-        .WillOnce(DoAll(SaveArg<1>(&m_webAudioPlayerClient), Return(true)));
+    EXPECT_CALL(m_webAudioPlayerServiceMock, createWebAudioPlayer(_, _, kAudioMimeType, kPriority, _, _, _))
+        .WillOnce(DoAll(SaveArg<1>(&m_webAudioPlayerClient), SetArgReferee<5>(kShmFd), SetArgReferee<6>(kShmSize),
+                        Return(true)));
 }
 
 void WebAudioPlayerModuleServiceTests::webAudioPlayerServiceWillCreateWebAudioPlayerWithPcmConfig()
@@ -99,15 +102,16 @@ void WebAudioPlayerModuleServiceTests::webAudioPlayerServiceWillCreateWebAudioPl
     expectRequestSuccess();
     EXPECT_CALL(*m_controllerMock, getClient()).Times(2).WillRepeatedly(Return(m_clientMock));
     EXPECT_CALL(m_webAudioPlayerServiceMock,
-                createWebAudioPlayer(_, _, kAudioMimeType, kPriority, PcmConfigMatcher(kPcmConfig)))
-        .WillOnce(DoAll(SaveArg<1>(&m_webAudioPlayerClient), Return(true)));
+                createWebAudioPlayer(_, _, kAudioMimeType, kPriority, PcmConfigMatcher(kPcmConfig), _, _))
+        .WillOnce(DoAll(SaveArg<1>(&m_webAudioPlayerClient), SetArgReferee<5>(kShmFd), SetArgReferee<6>(kShmSize),
+                        Return(true)));
 }
 
 void WebAudioPlayerModuleServiceTests::webAudioPlayerServiceWillFailToCreateWebAudioPlayer()
 {
     expectRequestFailure();
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_webAudioPlayerServiceMock, createWebAudioPlayer(_, _, kAudioMimeType, kPriority, _))
+    EXPECT_CALL(m_webAudioPlayerServiceMock, createWebAudioPlayer(_, _, kAudioMimeType, kPriority, _, _, _))
         .WillOnce(Return(false));
 }
 
@@ -266,6 +270,8 @@ int WebAudioPlayerModuleServiceTests::sendCreateWebAudioPlayerRequestAndReceiveR
 
     m_service->createWebAudioPlayer(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_GE(response.web_audio_player_handle(), 0);
+    EXPECT_EQ(response.shm_fd(), kShmFd);
+    EXPECT_EQ(response.shm_size(), kShmSize);
 
     return response.web_audio_player_handle();
 }
@@ -292,6 +298,8 @@ int WebAudioPlayerModuleServiceTests::sendCreateWebAudioPlayerRequestWithPcmConf
 
     m_service->createWebAudioPlayer(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_GE(response.web_audio_player_handle(), 0);
+    EXPECT_EQ(response.shm_fd(), kShmFd);
+    EXPECT_EQ(response.shm_size(), kShmSize);
 
     return response.web_audio_player_handle();
 }

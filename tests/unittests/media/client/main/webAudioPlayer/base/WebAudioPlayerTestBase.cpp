@@ -27,12 +27,7 @@ void WebAudioPlayerTestBase::SetUp() // NOLINT(build/function_format)
     m_webAudioPlayerClientMock = std::make_shared<StrictMock<WebAudioPlayerClientMock>>();
     m_webAudioPlayerIpcFactoryMock = std::make_shared<StrictMock<WebAudioPlayerIpcFactoryMock>>();
     m_clientControllerMock = std::make_shared<StrictMock<ClientControllerMock>>();
-
-    // Any test that constructs a WebAudioPlayer directly (not via createWebAudioPlayer()) still needs
-    // these to be satisfied, since subscribe/unsubscribe now happen unconditionally in ctor/dtor.
-    ON_CALL(*m_clientControllerMock, subscribeSharedMemoryHandle(_)).WillByDefault(Return(0));
-    EXPECT_CALL(*m_clientControllerMock, subscribeSharedMemoryHandle(_)).Times(AnyNumber());
-    EXPECT_CALL(*m_clientControllerMock, unsubscribeSharedMemoryHandle(_)).Times(AnyNumber());
+    m_sharedMemoryHandleMock = std::make_shared<StrictMock<SharedMemoryHandleMock>>();
 
     // Init pcm config
     m_config->pcm.rate = 1;
@@ -62,13 +57,10 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
     EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, _, _, _, _))
         .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
 
-    EXPECT_CALL(*m_clientControllerMock, subscribeSharedMemoryHandle(_))
-        .WillOnce(DoAll(SaveArg<0>(&m_shmObserver), Return(1)));
-
-    EXPECT_NO_THROW(m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
-                                                                        m_priority, m_config,
-                                                                        m_webAudioPlayerIpcFactoryMock,
-                                                                        *m_clientControllerMock));
+    EXPECT_NO_THROW(
+        m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType, m_priority,
+                                                            m_config, m_webAudioPlayerIpcFactoryMock,
+                                                            *m_clientControllerMock, m_sharedMemoryHandleMock));
     m_webAudioPlayer->notifyApplicationState(ApplicationState::RUNNING);
 
     // Save a raw pointer here same as above
@@ -80,9 +72,4 @@ void WebAudioPlayerTestBase::destroyWebAudioPlayer()
 {
     m_webAudioPlayer.reset();
     m_webAudioPlayerCallback = nullptr;
-}
-
-void WebAudioPlayerTestBase::updateSharedMemoryHandle(const std::shared_ptr<ISharedMemoryHandle> &handle)
-{
-    m_shmObserver(handle);
 }

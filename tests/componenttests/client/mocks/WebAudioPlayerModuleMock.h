@@ -24,6 +24,7 @@
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
+#include <unistd.h>
 #include <vector>
 
 class WebAudioPlayerModuleMock : public ::firebolt::rialto::WebAudioPlayerModule
@@ -82,10 +83,13 @@ public:
         done->Run();
     }
 
-    ::firebolt::rialto::CreateWebAudioPlayerResponse createWebAudioPlayerResponse(const int value)
+    ::firebolt::rialto::CreateWebAudioPlayerResponse createWebAudioPlayerResponse(const int value, const int32_t shmFd,
+                                                                                  const uint32_t shmSize)
     {
         firebolt::rialto::CreateWebAudioPlayerResponse response;
         response.set_web_audio_player_handle(value);
+        response.set_shm_fd(dup(shmFd));
+        response.set_shm_size(shmSize);
         return response;
     }
 

@@ -25,9 +25,9 @@
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
 #include "IMediaPipelineService.h"
+#include "IPerInstanceSharedMemory.h"
 #include "IPlaybackService.h"
 #include "IPrivateMetricsService.h"
-#include "ISharedMemoryBuffer.h"
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -48,6 +48,7 @@ public:
     MediaPipelineService(IPlaybackService &playbackService,
                          std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
                          std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
+                         const std::shared_ptr<IPerInstanceSharedMemoryFactory> &sharedMemoryFactory,
                          IDecryptionService &decryptionService, IPrivateMetricsService &metricsService,
                          std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory>
                              &&mediaCapabilitiesFactory = nullptr);
@@ -58,7 +59,8 @@ public:
     MediaPipelineService &operator=(MediaPipelineService &&) = delete;
 
     bool createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
-                       std::uint32_t maxWidth, std::uint32_t maxHeight) override;
+                       std::uint32_t maxWidth, std::uint32_t maxHeight, std::int32_t &shmFd,
+                       std::uint32_t &shmSize) override;
     bool destroySession(int sessionId) override;
     bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url, bool isLive) override;
     bool attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
@@ -120,6 +122,7 @@ public:
 private:
     IPlaybackService &m_playbackService;
     std::shared_ptr<IMediaPipelineServerInternalFactory> m_mediaPipelineFactory;
+    std::shared_ptr<IPerInstanceSharedMemoryFactory> m_sharedMemoryFactory;
     std::unique_ptr<IMediaPipelineCapabilities> m_mediaPipelineCapabilities;
     std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternal> m_mediaCapabilities;
     IDecryptionService &m_decryptionService;

@@ -19,23 +19,17 @@
 
 #include "PlaybackServiceTestsFixture.h"
 
-TEST_F(PlaybackServiceTests, shouldFailToGetSharedMemoryInInactiveState)
+TEST_F(PlaybackServiceTests, shouldNotAllocateSharedMemoryInInactiveState)
 {
     createPlaybackServiceShouldSuccess();
-    getSharedMemoryShouldFail();
-    getShmBufferShouldFail();
 }
 
-TEST_F(PlaybackServiceTests, shouldGetSharedMemory)
+TEST_F(PlaybackServiceTests, shouldNotAllocateSharedMemoryWhenSwitchedToActive)
 {
     createPlaybackServiceShouldSuccess();
     triggerSetMaxPlaybacks();
     triggerSetMaxWebAudioPlayers();
-    sharedMemoryBufferWillBeInitialized();
     triggerSwitchToActive();
-    sharedMemoryBufferWillReturnFdAndSize();
-    getSharedMemoryShouldSucceed();
-    getShmBufferShouldSucceed();
 }
 
 TEST_F(PlaybackServiceTests, shouldSetMaxPlaybacks)

@@ -31,8 +31,6 @@ using testing::Throw;
 
 namespace
 {
-constexpr std::int32_t kShmFd{234};
-constexpr std::uint32_t kShmSize{2048};
 constexpr std::int32_t kMaxPlaybacks{2};
 constexpr std::int32_t kMaxWebAudioPlayers{2};
 const std::string kClientDisplayName{"westeros-rialto"};
@@ -48,25 +46,11 @@ PlaybackServiceTests::PlaybackServiceTests()
       m_mediaPipelineCapabilities{std::make_unique<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock>>()},
       m_mediaPipelineCapabilitiesMock{dynamic_cast<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock> &>(
           *m_mediaPipelineCapabilities)},
-      m_shmBufferFactory{std::make_unique<StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock>>()},
+      m_shmBufferFactory{std::make_shared<StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock>>()},
       m_shmBufferFactoryMock{
           dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock> &>(*m_shmBufferFactory)},
-      m_shmBuffer{std::make_shared<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock>>()},
-      m_shmBufferMock{dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &>(*m_shmBuffer)},
       m_heartbeatProcedureMock{std::make_shared<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>>()}
 {
-}
-
-void PlaybackServiceTests::sharedMemoryBufferWillBeInitialized()
-{
-    EXPECT_CALL(m_shmBufferFactoryMock, createSharedMemoryBuffer(kMaxPlaybacks, kMaxWebAudioPlayers))
-        .WillOnce(Return(ByMove(std::move(m_shmBuffer))));
-}
-
-void PlaybackServiceTests::sharedMemoryBufferWillReturnFdAndSize()
-{
-    EXPECT_CALL(m_shmBufferMock, getFd()).WillOnce(Return(kShmFd));
-    EXPECT_CALL(m_shmBufferMock, getSize()).WillOnce(Return(kShmSize));
 }
 
 void PlaybackServiceTests::createPlaybackServiceShouldSuccess()
@@ -108,34 +92,6 @@ void PlaybackServiceTests::triggerSetClientDisplayName()
 void PlaybackServiceTests::triggerPing()
 {
     m_sut->ping(m_heartbeatProcedureMock);
-}
-
-void PlaybackServiceTests::getSharedMemoryShouldSucceed()
-{
-    int32_t returnedFd = 0;
-    uint32_t returnedSize = 0;
-    EXPECT_TRUE(m_sut->getSharedMemory(returnedFd, returnedSize));
-    EXPECT_EQ(returnedFd, kShmFd);
-    EXPECT_EQ(returnedSize, kShmSize);
-}
-
-void PlaybackServiceTests::getSharedMemoryShouldFail()
-{
-    int32_t returnedFd = 0;
-    uint32_t returnedSize = 0;
-    EXPECT_FALSE(m_sut->getSharedMemory(returnedFd, returnedSize));
-    EXPECT_EQ(returnedFd, 0);
-    EXPECT_EQ(returnedSize, 0);
-}
-
-void PlaybackServiceTests::getShmBufferShouldSucceed()
-{
-    EXPECT_NE(m_sut->getShmBuffer(), nullptr);
-}
-
-void PlaybackServiceTests::getShmBufferShouldFail()
-{
-    EXPECT_EQ(m_sut->getShmBuffer(), nullptr);
 }
 
 void PlaybackServiceTests::getMaxPlaybacksShouldSucceed()

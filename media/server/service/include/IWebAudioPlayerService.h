@@ -41,9 +41,15 @@ public:
     IWebAudioPlayerService &operator=(const IWebAudioPlayerService &) = delete;
     IWebAudioPlayerService &operator=(IWebAudioPlayerService &&) = delete;
 
+    /**
+     * @brief Create a player and return borrowed shared-memory descriptor metadata.
+     *
+     * The service retains ownership of @p shmFd for the lifetime of the player; IPC duplicates it for the client.
+     */
     virtual bool createWebAudioPlayer(int handle, const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient,
                                       const std::string &audioMimeType, const uint32_t priority,
-                                      std::weak_ptr<const WebAudioConfig> config) = 0;
+                                      std::weak_ptr<const WebAudioConfig> config, std::int32_t &shmFd,
+                                      std::uint32_t &shmSize) = 0;
     virtual bool destroyWebAudioPlayer(int handle) = 0;
     virtual bool play(int handle) = 0;
     virtual bool pause(int handle) = 0;

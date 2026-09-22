@@ -17,11 +17,18 @@
  * limitations under the License.
  */
 
+#include "WebAudioPlayerModuleService.h"
 #include "WebAudioPlayerModuleServiceTestsFixture.h"
+#include <chrono>
+#include <future>
 #include <linux/memfd.h>
 #include <sys/mman.h>
 #include <sys/syscall.h>
+#include <thread>
 #include <unistd.h>
+
+using testing::_;
+using testing::Return;
 
 TEST_F(WebAudioPlayerModuleServiceTests, shouldConnectClient)
 {
@@ -45,6 +52,46 @@ TEST_F(WebAudioPlayerModuleServiceTests, shouldFailToCreateWebAudioPlayer)
 {
     webAudioPlayerServiceWillFailToCreateWebAudioPlayer();
     sendCreateWebAudioPlayerRequestAndExpectFailure();
+}
+
+TEST(WebAudioPlayerModuleServiceConcurrencyTests, shouldCompleteCreateResponseBeforeDisconnectCleanup)
+{
+    StrictMock<firebolt::rialto::server::service::WebAudioPlayerServiceMock> webAudioPlayerService;
+    auto service = std::make_shared<firebolt::rialto::server::ipc::WebAudioPlayerModuleService>(webAudioPlayerService);
+    auto client = std::make_shared<StrictMock<firebolt::rialto::ipc::ClientMock>>();
+    StrictMock<firebolt::rialto::ipc::ControllerMock> controller;
+    StrictMock<firebolt::rialto::ipc::ClosureMock> closure;
+    firebolt::rialto::CreateWebAudioPlayerRequest request;
+    firebolt::rialto::CreateWebAudioPlayerResponse response;
+    std::promise<void> createStarted;
+    std::promise<void> allowCreate;
+    auto allowCreateFuture = allowCreate.get_future().share();
+
+    EXPECT_CALL(*client, exportService(_));
+    service->clientConnected(client);
+    EXPECT_CALL(controller, getClient()).Times(2).WillRepeatedly(Return(client));
+    EXPECT_CALL(webAudioPlayerService, createWebAudioPlayer(_, _, _, _, _, _, _))
+        .WillOnce(testing::Invoke(
+            [&](int, const std::shared_ptr<firebolt::rialto::IWebAudioPlayerClient> &, const std::string &, std::uint32_t,
+                std::weak_ptr<const firebolt::rialto::WebAudioConfig>, std::int32_t &shmFd, std::uint32_t &shmSize)
+            {
+                createStarted.set_value();
+                allowCreateFuture.wait();
+                shmFd = 3;
+                shmSize = 1024;
+                return true;
+            }));
+    EXPECT_CALL(closure, Run());
+    EXPECT_CALL(webAudioPlayerService, destroyWebAudioPlayer(_)).WillOnce(Return(true));
+
+    std::thread createThread{[&]() { service->createWebAudioPlayer(&controller, &request, &response, &closure); }};
+    createStarted.get_future().wait();
+    auto disconnectFuture = std::async(std::launch::async, [&]() { service->clientDisconnected(client); });
+
+    EXPECT_EQ(disconnectFuture.wait_for(std::chrono::milliseconds{50}), std::future_status::timeout);
+    allowCreate.set_value();
+    createThread.join();
+    disconnectFuture.get();
 }
 
 TEST_F(WebAudioPlayerModuleServiceTests, shouldDestroyWebAudioPlayerWhenDisconnectClient)

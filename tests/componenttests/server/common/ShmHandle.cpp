@@ -51,6 +51,11 @@ void ShmHandle::init(std::int32_t fd, std::uint32_t length)
     }
 }
 
+std::int32_t ShmHandle::getFd() const
+{
+    return m_shmFd;
+}
+
 std::uint8_t *ShmHandle::getShm() const
 {
     return m_shmBuffer;

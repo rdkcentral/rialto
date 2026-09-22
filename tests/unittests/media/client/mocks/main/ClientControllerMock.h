@@ -32,8 +32,6 @@ public:
     ClientControllerMock() = default;
     virtual ~ClientControllerMock() = default;
 
-    MOCK_METHOD(int, subscribeSharedMemoryHandle, (SharedMemoryHandleObserver observer), (override));
-    MOCK_METHOD(void, unsubscribeSharedMemoryHandle, (int token), (override));
     MOCK_METHOD(bool, registerClient, (std::weak_ptr<IControlClient> client, ApplicationState &appState), (override));
     MOCK_METHOD(bool, unregisterClient, (std::weak_ptr<IControlClient> client), (override));
 };

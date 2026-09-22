@@ -22,6 +22,7 @@
 
 #include "ClientControllerMock.h"
 #include "IWebAudioPlayerIpcClient.h"
+#include "SharedMemoryHandleMock.h"
 #include "WebAudioPlayer.h"
 #include "WebAudioPlayerClientMock.h"
 #include "WebAudioPlayerIpcFactoryMock.h"
@@ -58,6 +59,7 @@ protected:
     std::shared_ptr<StrictMock<WebAudioPlayerIpcFactoryMock>> m_webAudioPlayerIpcFactoryMock;
     StrictMock<WebAudioPlayerIpcMock> *m_webAudioPlayerIpcMock = nullptr;
     std::shared_ptr<StrictMock<ClientControllerMock>> m_clientControllerMock;
+    std::shared_ptr<StrictMock<SharedMemoryHandleMock>> m_sharedMemoryHandleMock;
 
     std::unique_ptr<WebAudioPlayer> m_webAudioPlayer;
     std::unique_ptr<StrictMock<WebAudioPlayerIpcMock>> webAudioPlayerIpcMock;

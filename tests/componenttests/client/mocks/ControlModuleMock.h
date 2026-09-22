@@ -27,9 +27,6 @@
 class ControlModuleMock : public ::firebolt::rialto::ControlModule
 {
 public:
-    MOCK_METHOD(void, getSharedMemory,
-                (::google::protobuf::RpcController * controller, const ::firebolt::rialto::GetSharedMemoryRequest *request,
-                 ::firebolt::rialto::GetSharedMemoryResponse *response, ::google::protobuf::Closure *done));
     MOCK_METHOD(void, registerClient,
                 (::google::protobuf::RpcController * controller, const ::firebolt::rialto::RegisterClientRequest *request,
                  ::firebolt::rialto::RegisterClientResponse *response, ::google::protobuf::Closure *done));
@@ -56,14 +53,6 @@ public:
         response.mutable_server_schema_version()->set_major(schemaVersion.major());
         response.mutable_server_schema_version()->set_minor(schemaVersion.minor());
         response.mutable_server_schema_version()->set_patch(schemaVersion.patch());
-        return response;
-    }
-
-    ::firebolt::rialto::GetSharedMemoryResponse getSharedMemoryResponse(const int32_t fd, const uint32_t size)
-    {
-        firebolt::rialto::GetSharedMemoryResponse response;
-        response.set_fd(fd);
-        response.set_size(size);
         return response;
     }
 

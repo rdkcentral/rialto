@@ -122,9 +122,7 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyDelayedNeedMediaData)
     setPlaybackStatePlaying();
 
     mainThreadWillEnqueueTaskAndWait();
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
-        .WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, clearData(mediaSourceType)).WillOnce(Return(true));
     const std::chrono::milliseconds m_kDefaultNeedMediaDataResendTimeout{15};
     EXPECT_CALL(*m_timerMock, isActive()).WillOnce(Return(true));
     EXPECT_CALL(*m_timerMock, cancel());
@@ -143,9 +141,7 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyNeedMediaDataFailureDueToSou
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_sharedMemoryBufferMock);
     ASSERT_TRUE(m_activeRequestsMock);
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
-        .WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, clearData(mediaSourceType)).WillOnce(Return(true));
 
     m_gstPlayerCallback->notifyNeedMediaData(mediaSourceType);
 }
@@ -159,9 +155,7 @@ TEST_F(RialtoServerMediaPipelineCallbackTest, notifyDelayedNeedMediaDataFailureD
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_sharedMemoryBufferMock);
     ASSERT_TRUE(m_activeRequestsMock);
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, mediaSourceType))
-        .WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, clearData(mediaSourceType)).WillOnce(Return(true));
 
     m_gstPlayerCallback->notifyNeedMediaDataWithDelay(mediaSourceType);
 }

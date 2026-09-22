@@ -21,7 +21,6 @@
 #define FIREBOLT_RIALTO_CLIENT_CLIENT_CONTROLLER_H_
 
 #include <list>
-#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -47,8 +46,6 @@ public:
                               const std::shared_ptr<IPrivateMetricsIpcFactory> &privateMetricsIpcFactory);
     ~ClientController() override;
 
-    int subscribeSharedMemoryHandle(SharedMemoryHandleObserver observer) override;
-    void unsubscribeSharedMemoryHandle(int token) override;
     bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
     bool unregisterClient(std::weak_ptr<IControlClient> client) override;
 
@@ -61,12 +58,10 @@ private:
      *
      * @retval true on success, false otherwise.
      */
-    bool initSharedMemory();
 
     /**
      * @brief Terminates the shared memory.
      */
-    void termSharedMemory();
 
     /**
      * @brief Coverts a ApplicationState to string.
@@ -84,11 +79,6 @@ private:
      *
      */
     void changeStateAndNotifyClients(ApplicationState state);
-
-    /**
-     * @brief Forwards the current shared memory handle to subscribed observers.
-     */
-    void notifySharedMemoryHandleObservers();
 
     /**
      * @brief Gets the monotonic timestamp in milliseconds.
@@ -134,7 +124,6 @@ private:
     /**
      * @brief The shared memory buffer handle.
      */
-    std::shared_ptr<ISharedMemoryHandle> m_shmHandle;
 
     /**
      * @brief The rialto control ipc factory.
@@ -150,24 +139,6 @@ private:
      * @brief List of clients to notify.
      */
     std::list<std::weak_ptr<IControlClient>> m_clients;
-
-    /**
-     * @brief Registered shared memory handle observers, keyed by subscription token.
-     */
-    std::map<int, SharedMemoryHandleObserver> m_shmObservers;
-
-    /**
-     * @brief Next token to hand out from subscribeSharedMemoryHandle().
-     */
-    int m_nextShmObserverToken{0};
-
-    /**
-     * @brief Serialises subscribe/unsubscribe/notify delivery so unsubscribe cannot return
-     *        while an in-flight notification is still invoking the observer being removed.
-     *        Recursive so an observer may subscribe/unsubscribe itself from within its own
-     *        callback without deadlocking; other threads still block until delivery completes.
-     */
-    std::recursive_mutex m_shmNotifyMutex;
 };
 } // namespace firebolt::rialto::client
 

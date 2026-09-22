@@ -44,7 +44,7 @@ add_library(
         source/DataReaderV1.cpp
         source/DataReaderV2.cpp
         source/NeedMediaData.cpp
-        source/SharedMemoryBuffer.cpp
+        source/PerInstanceSharedMemory.cpp
         source/MediaKeysServerInternal.cpp
         source/MediaKeysCapabilities.cpp
         source/MediaKeySession.cpp

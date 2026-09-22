@@ -48,8 +48,6 @@ public:
     void controlServiceWillRegisterClient();
     void controlServiceWillFailToRegisterClient();
     void willFailDueToInvalidController();
-    void playbackServiceWillGetSharedMemory();
-    void playbackServiceWillFailToGetSharedMemory();
     void playbackServiceWillAck();
     void playbackServiceWillFailToAck();
 
@@ -58,8 +56,6 @@ public:
     void sendRegisterClientRequestAndReceiveResponse(
         const std::optional<firebolt::rialto::common::SchemaVersion> &kSchemaVersion = std::nullopt);
     void sendRegisterClientRequestWithInvalidControllerAndReceiveFailure();
-    void sendGetSharedMemoryRequestAndReceiveResponse();
-    void sendGetSharedMemoryRequestAndExpectFailure();
     void sendAckRequestAndReceiveResponse();
     void sendAckRequestAndExpectFailure();
 

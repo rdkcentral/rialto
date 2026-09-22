@@ -80,6 +80,7 @@ void WebAudioPlayerModuleService::clientConnected(const std::shared_ptr<::firebo
 {
     RIALTO_SERVER_LOG_INFO("Client Connected!");
     {
+        std::lock_guard<std::mutex> lock{m_clientWebAudioPlayerHandlesMutex};
         m_clientWebAudioPlayerHandles.emplace(ipcClient, std::set<int>());
     }
     ipcClient->exportService(shared_from_this());
@@ -90,6 +91,7 @@ void WebAudioPlayerModuleService::clientDisconnected(const std::shared_ptr<::fir
     RIALTO_SERVER_LOG_INFO("Client disconnected!");
     std::set<int> webAudioPlayerHandles;
     {
+        std::lock_guard<std::mutex> lock{m_clientWebAudioPlayerHandlesMutex};
         auto handleIter = m_clientWebAudioPlayerHandles.find(ipcClient);
         if (handleIter == m_clientWebAudioPlayerHandles.end())
         {
@@ -120,6 +122,7 @@ void WebAudioPlayerModuleService::createWebAudioPlayer(::google::protobuf::RpcCo
         return;
     }
 
+    std::lock_guard<std::mutex> lock{m_clientWebAudioPlayerHandlesMutex};
     std::shared_ptr<WebAudioConfig> config = std::make_shared<WebAudioConfig>();
     if (request->has_config())
     {
@@ -134,16 +137,20 @@ void WebAudioPlayerModuleService::createWebAudioPlayer(::google::protobuf::RpcCo
         }
     }
     int handle = generateHandle();
+    std::int32_t shmFd{-1};
+    std::uint32_t shmSize{0};
     bool webAudioPlayerCreated =
         m_webAudioPlayerService.createWebAudioPlayer(handle,
                                                      std::make_shared<WebAudioPlayerClient>(handle,
                                                                                             ipcController->getClient()),
-                                                     request->audio_mime_type(), request->priority(), config);
+                                                     request->audio_mime_type(), request->priority(), config, shmFd,
+                                                     shmSize);
     if (webAudioPlayerCreated)
     {
-        // Assume that IPC library works well and client is present
         m_clientWebAudioPlayerHandles[ipcController->getClient()].insert(handle);
         response->set_web_audio_player_handle(handle);
+        response->set_shm_fd(shmFd);
+        response->set_shm_size(shmSize);
     }
     else
     {
@@ -174,10 +181,13 @@ void WebAudioPlayerModuleService::destroyWebAudioPlayer(::google::protobuf::RpcC
         done->Run();
         return;
     }
-    auto handleIter = m_clientWebAudioPlayerHandles.find(ipcController->getClient());
-    if (handleIter != m_clientWebAudioPlayerHandles.end())
     {
-        handleIter->second.erase(request->web_audio_player_handle());
+        std::lock_guard<std::mutex> lock{m_clientWebAudioPlayerHandlesMutex};
+        auto handleIter = m_clientWebAudioPlayerHandles.find(ipcController->getClient());
+        if (handleIter != m_clientWebAudioPlayerHandles.end())
+        {
+            handleIter->second.erase(request->web_audio_player_handle());
+        }
     }
     done->Run();
 }

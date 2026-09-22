@@ -18,6 +18,7 @@
  */
 
 #include "WebAudioTestMethods.h"
+#include <sys/stat.h>
 
 using ::firebolt::rialto::WebAudioPlayerStateEvent;
 
@@ -215,6 +216,49 @@ TEST_F(WebAudioTest, testAllApisWithMultipleQueries)
 
     // Step 15: Destroy web audio player session
     destroyWebAudioPlayer();
+}
+
+TEST_F(WebAudioTest, playersUseIndependentSharedMemory)
+{
+    willCreateWebAudioPlayer();
+    createWebAudioPlayer();
+
+    int secondHandle{-1};
+    ShmHandle secondShmHandle;
+    willCreateWebAudioPlayer();
+    createWebAudioPlayer(secondHandle, secondShmHandle);
+
+    struct stat firstStat
+    {
+    };
+    struct stat secondStat
+    {
+    };
+    ASSERT_EQ(fstat(m_shmHandle.getFd(), &firstStat), 0);
+    ASSERT_EQ(fstat(secondShmHandle.getFd(), &secondStat), 0);
+    EXPECT_NE(firstStat.st_ino, secondStat.st_ino);
+    ASSERT_NE(m_shmHandle.getShm(), secondShmHandle.getShm());
+
+    m_shmHandle.getShm()[0] = 0x11;
+    secondShmHandle.getShm()[0] = 0x22;
+    EXPECT_EQ(m_shmHandle.getShm()[0], 0x11);
+    EXPECT_EQ(secondShmHandle.getShm()[0], 0x22);
+
+    destroyWebAudioPlayer(secondHandle);
+    destroyWebAudioPlayer();
+}
+
+TEST_F(WebAudioTest, disconnectDestroysAllPlayers)
+{
+    willCreateWebAudioPlayer();
+    createWebAudioPlayer();
+
+    int secondHandle{-1};
+    ShmHandle secondShmHandle;
+    willCreateWebAudioPlayer();
+    createWebAudioPlayer(secondHandle, secondShmHandle);
+
+    disconnectClient();
 }
 
 } // namespace firebolt::rialto::server::ct

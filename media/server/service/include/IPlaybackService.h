@@ -22,7 +22,6 @@
 
 #include "IMediaPipelineService.h"
 #include "IPrivateMetricsService.h"
-#include "ISharedMemoryBuffer.h"
 #include "IWebAudioPlayerService.h"
 #include "MediaCommon.h"
 #include <cstdint>
@@ -51,10 +50,8 @@ public:
     virtual void setResourceManagerAppName(const std::string &appName) const = 0;
 
     virtual bool isActive() const = 0;
-    virtual bool getSharedMemory(int32_t &fd, uint32_t &size) const = 0;
     virtual int getMaxPlaybacks() const = 0;
     virtual int getMaxWebAudioPlayers() const = 0;
-    virtual std::shared_ptr<ISharedMemoryBuffer> getShmBuffer() const = 0;
     virtual IMediaPipelineService &getMediaPipelineService() const = 0;
     virtual IWebAudioPlayerService &getWebAudioPlayerService() const = 0;
     virtual IPrivateMetricsService &getPrivateMetricsService() const = 0;

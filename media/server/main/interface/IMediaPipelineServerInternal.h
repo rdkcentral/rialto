@@ -37,7 +37,7 @@
 #include "IDecryptionService.h"
 #include "IHeartbeatHandler.h"
 #include "IMediaPipeline.h"
-#include "ISharedMemoryBuffer.h"
+#include "IPerInstanceSharedMemory.h"
 #include <MediaCommon.h>
 
 namespace firebolt::rialto::server
@@ -72,7 +72,7 @@ public:
      */
     virtual std::unique_ptr<IMediaPipelineServerInternal> createMediaPipelineServerInternal(
         std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
-        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService) const = 0;
+        const std::shared_ptr<IMediaPipelineSharedMemory> &shmBuffer, IDecryptionService &decryptionService) const = 0;
 };
 
 /**

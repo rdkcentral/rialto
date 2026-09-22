@@ -59,8 +59,9 @@ TEST_F(ReadShmDataAndAttachSamplesTest, shouldSkipAttachingSubtitleSamples)
     triggerReadShmDataAndAttachSamples();
 }
 
-TEST_F(ReadShmDataAndAttachSamplesTest, shouldSkipAttachingUnknownSamples)
+TEST_F(ReadShmDataAndAttachSamplesTest, shouldReadSharedMemoryBeforeRequestingMoreData)
 {
+    testing::InSequence sequence;
     shouldReadUnknownData();
     shouldNotAttachUnknownSamples();
     triggerReadShmDataAndAttachSamples();

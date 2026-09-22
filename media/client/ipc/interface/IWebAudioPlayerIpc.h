@@ -80,6 +80,14 @@ public:
     IWebAudioPlayerIpc &operator=(IWebAudioPlayerIpc &&) = delete;
 
     /**
+     * @brief Transfer ownership of the received shared-memory descriptor to the caller.
+     *
+     * @return The descriptor, or -1 if ownership was already transferred.
+     */
+    virtual std::int32_t takeSharedMemoryFd() = 0;
+    virtual std::uint32_t getSharedMemorySize() const = 0;
+
+    /**
      * @brief Play the web audio.
      *
      * @retval true on success.
