@@ -160,11 +160,12 @@ option(ENABLE_SERVER_MANAGER "Enable building RialtoServerManagerSim" ON)
 
 if ( NOT ENVIRONMENT_VARIABLES)
     set( ENVIRONMENT_VARIABLES
-        "\"XDG_RUNTIME_DIR=/tmp\","
-        "\"GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin\","
-        "\"WESTEROS_SINK_USE_ESSRMGR=1\","
-        "\"LD_PRELOAD=/var/tmp/perfetto/libheapprofd_glibc_preload.so\""
-    )
+        "\"XDG_RUNTIME_DIR=/tmp\",\"GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin\",\"WESTEROS_SINK_USE_ESSRMGR=1\"" )
+endif()
+
+if ( NOT ENVIRONMENT_VARIABLES MATCHES "LD_PRELOAD=" )
+    string( APPEND ENVIRONMENT_VARIABLES
+        ",\"LD_PRELOAD=/var/tmp/perfetto/libheapprofd_glibc_preload.so\"" )
 endif()
 
 if ( NOT EXTRA_ENV_VARIABLES)
