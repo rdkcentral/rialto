@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::wrappers
 {
