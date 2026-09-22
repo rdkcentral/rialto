@@ -38,10 +38,10 @@ MediaPipelineService::MediaPipelineService(
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
       m_decryptionService{decryptionService}
 {
-    printf("(fz-dbg)tid:%d inside MediaPipelineService.cpp constructor\n", syscall(SYS_gettid));
+    printf("(fz-dbg)tid:%ld inside MediaPipelineService.cpp constructor\n", syscall(SYS_gettid));
     if (!m_mediaPipelineCapabilities)
     {
-        printf("(fz-dbg)tid:%d failed to create Media Pipeline Capabilities\n", syscall(SYS_gettid));
+        printf("(fz-dbg)tid:%ld failed to create Media Pipeline Capabilities\n", syscall(SYS_gettid));
         throw std::runtime_error("Could not create Media Pipeline Capabilities");
     }
 

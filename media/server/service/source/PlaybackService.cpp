@@ -42,7 +42,7 @@ PlaybackService::PlaybackService(std::shared_ptr<IMediaPipelineServerInternalFac
                                                                     decryptionService)},
       m_webAudioPlayerService{std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory))}
 {
-    printf("(fz-dbg)tid:%d inside PlaybackService.cpp constructor\n", syscall(SYS_gettid));
+    printf("(fz-dbg)tid:%ld inside PlaybackService.cpp constructor\n", syscall(SYS_gettid));
     RIALTO_SERVER_LOG_DEBUG("PlaybackService is constructed");
 }
 

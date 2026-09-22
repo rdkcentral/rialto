@@ -18,7 +18,6 @@
  */
 
 #include <stdexcept>
-#include <syscall.h>
 #include "IMediaPipelineCapabilitiesIpcFactory.h"
 #include "MediaPipelineCapabilities.h"
 #include "RialtoClientLogging.h"
@@ -65,7 +64,6 @@ MediaPipelineCapabilities::MediaPipelineCapabilities(
     const std::shared_ptr<IMediaPipelineCapabilitiesIpcFactory> &MediaPipelineCapabilitiesIpcFactory)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-    printf("(fz-dbg)tid:%d inside MediaPipelineCapabilities.cpp constructor calling createMediaPipelineCapabilitiesIpc\n", syscall(SYS_gettid));
     m_mediaPipelineCapabilitiesIpc = MediaPipelineCapabilitiesIpcFactory->createMediaPipelineCapabilitiesIpc();
     if (!m_mediaPipelineCapabilitiesIpc)
     {

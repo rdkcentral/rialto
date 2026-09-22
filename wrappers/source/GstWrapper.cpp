@@ -25,22 +25,22 @@ namespace firebolt::rialto::wrappers
 {
 std::shared_ptr<IGstWrapper> GstWrapperFactory::getGstWrapper()
 {  
-    printf("(fz-dbg)tid:%d inside GstWrapperFactory::getGstWrapper\n", syscall(SYS_gettid));
+    printf("(fz-dbg)tid:%ld inside GstWrapperFactory::getGstWrapper\n", syscall(SYS_gettid));
     static std::shared_ptr<IGstWrapper> gstWrapper{};
     if (!gstWrapper)
     {   
-        printf("(fz-dbg)tid:%d creating GstWrapper instance\n", syscall(SYS_gettid));
+        printf("(fz-dbg)tid:%ld creating GstWrapper instance\n", syscall(SYS_gettid));
         try
         {
-            printf("(fz-dbg)tid:%d inside try block of GstWrapperFactory::getGstWrapper\n", syscall(SYS_gettid));
+            printf("(fz-dbg)tid:%ld inside try block of GstWrapperFactory::getGstWrapper\n", syscall(SYS_gettid));
             gstWrapper = std::make_shared<GstWrapper>();
         }
         catch (const std::exception &e)
         {
-            printf("(fz-dbg)tid:%d exception caught in GstWrapperFactory::getGstWrapper, reason: %s\n", syscall(SYS_gettid), e.what());
+            printf("(fz-dbg)tid:%ld exception caught in GstWrapperFactory::getGstWrapper, reason: %s\n", syscall(SYS_gettid), e.what());
         }
     }
-    printf("(fz-dbg)tid:%d returning GstWrapper instance\n", syscall(SYS_gettid));
+    printf("(fz-dbg)tid:%ld returning GstWrapper instance\n", syscall(SYS_gettid));
     return gstWrapper;
 }
 
