@@ -26,6 +26,7 @@
 #include "IMediaFrameWriter.h"
 #include "IMediaPipeline.h"
 #include "IMediaPipelineIpc.h"
+#include "ISharedMemoryHandle.h"
 #include <atomic>
 #include <condition_variable>
 #include <map>
@@ -103,7 +104,8 @@ public:
     MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
                   const std::shared_ptr<IMediaPipelineIpcFactory> &mediaPipelineIpcFactory,
                   const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
-                  IClientController &clientController);
+                  IClientController &clientController,
+                  const std::shared_ptr<ISharedMemoryHandle> &sharedMemoryHandle = nullptr);
 
     /**
      * @brief Virtual destructor.
@@ -229,6 +231,7 @@ protected:
      * @brief The media player ipc object.
      */
     std::unique_ptr<IMediaPipelineIpc> m_mediaPipelineIpc;
+    std::shared_ptr<ISharedMemoryHandle> m_shmHandle;
 
     /**
      * @brief The rialto shared memory manager object.

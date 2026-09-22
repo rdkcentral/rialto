@@ -41,6 +41,8 @@ constexpr firebolt::rialto::MediaSourceType kMediaSourceType{firebolt::rialto::M
 constexpr std::uint32_t kWidth{1920};
 constexpr std::uint32_t kHeight{1080};
 constexpr int kHardcodedSessionId{2};
+constexpr std::int32_t kShmFd{123};
+constexpr std::uint32_t kShmSize{1024};
 const firebolt::rialto::MediaType kMediaType{firebolt::rialto::MediaType::MSE};
 const std::string kMimeType{"exampleMimeType"};
 constexpr uint32_t kDolbyProfile{5};
@@ -258,15 +260,16 @@ void MediaPipelineModuleServiceTests::mediaPipelineServiceWillCreateSession()
 {
     expectRequestSuccess();
     EXPECT_CALL(*m_controllerMock, getClient()).Times(2).WillRepeatedly(Return(m_clientMock));
-    EXPECT_CALL(m_mediaPipelineServiceMock, createSession(_, _, kWidth, kHeight))
-        .WillOnce(DoAll(SaveArg<1>(&m_mediaPipelineClient), Return(true)));
+    EXPECT_CALL(m_mediaPipelineServiceMock, createSession(_, _, kWidth, kHeight, _, _))
+        .WillOnce(DoAll(SaveArg<1>(&m_mediaPipelineClient), SetArgReferee<4>(kShmFd), SetArgReferee<5>(kShmSize),
+                        Return(true)));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillFailToCreateSession()
 {
     expectRequestFailure();
     EXPECT_CALL(*m_controllerMock, getClient()).WillOnce(Return(m_clientMock));
-    EXPECT_CALL(m_mediaPipelineServiceMock, createSession(_, _, kWidth, kHeight)).WillOnce(Return(false));
+    EXPECT_CALL(m_mediaPipelineServiceMock, createSession(_, _, kWidth, kHeight, _, _)).WillOnce(Return(false));
 }
 
 void MediaPipelineModuleServiceTests::mediaPipelineServiceWillDestroySession()
@@ -888,6 +891,8 @@ int MediaPipelineModuleServiceTests::sendCreateSessionRequestAndReceiveResponse(
 
     m_service->createSession(m_controllerMock.get(), &request, &response, m_closureMock.get());
     EXPECT_GE(response.session_id(), 0);
+    EXPECT_EQ(response.shm_fd(), kShmFd);
+    EXPECT_EQ(response.shm_size(), kShmSize);
 
     return response.session_id();
 }

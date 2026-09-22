@@ -32,8 +32,10 @@ namespace firebolt::rialto::server::service
 MediaPipelineService::MediaPipelineService(
     IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
-    IDecryptionService &decryptionService, IPrivateMetricsService &metricsService)
+    const std::shared_ptr<IPerInstanceSharedMemoryFactory> &sharedMemoryFactory, IDecryptionService &decryptionService,
+    IPrivateMetricsService &metricsService)
     : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
+      m_sharedMemoryFactory{sharedMemoryFactory},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
       m_decryptionService{decryptionService}, m_metricsService{metricsService}
 {
@@ -57,7 +59,8 @@ void MediaPipelineService::clearMediaPipelines()
 }
 
 bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
-                                         std::uint32_t maxWidth, std::uint32_t maxHeight)
+                                         std::uint32_t maxWidth, std::uint32_t maxHeight, std::int32_t &shmFd,
+                                         std::uint32_t &shmSize)
 {
     RIALTO_SERVER_LOG_DEBUG("MediaPipelineService requested to create new session with id: %d", sessionId);
     if (!m_playbackService.isActive())
@@ -78,7 +81,22 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
             RIALTO_SERVER_LOG_ERROR("Session with id: %d already exists", sessionId);
             return false;
         }
-        auto shmBuffer = m_playbackService.getShmBuffer();
+        std::shared_ptr<IMediaPipelineSharedMemory> shmBuffer;
+        try
+        {
+            shmBuffer = m_sharedMemoryFactory->createMediaPipelineSharedMemory();
+        }
+        catch (const std::exception &e)
+        {
+            RIALTO_SERVER_LOG_ERROR("Could not create shared memory for session with id: %d, reason: %s", sessionId,
+                                    e.what());
+            return false;
+        }
+        if (!shmBuffer)
+        {
+            RIALTO_SERVER_LOG_ERROR("Could not create shared memory for session with id: %d", sessionId);
+            return false;
+        }
         m_mediaPipelines.emplace(
             std::make_pair(sessionId,
                            m_mediaPipelineFactory
@@ -94,6 +112,8 @@ bool MediaPipelineService::createSession(int sessionId, const std::shared_ptr<IM
             m_mediaPipelines.erase(sessionId);
             return false;
         }
+        shmFd = shmBuffer->getFd();
+        shmSize = shmBuffer->getSize();
     }
 
     RIALTO_SERVER_LOG_INFO("New session with id: %d created", sessionId);

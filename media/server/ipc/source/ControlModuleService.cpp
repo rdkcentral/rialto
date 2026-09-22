@@ -108,27 +108,6 @@ void ControlModuleService::clientDisconnected(const std::shared_ptr<::firebolt::
     }
 }
 
-void ControlModuleService::getSharedMemory(::google::protobuf::RpcController *controller,
-                                           const ::firebolt::rialto::GetSharedMemoryRequest *request,
-                                           ::firebolt::rialto::GetSharedMemoryResponse *response,
-                                           ::google::protobuf::Closure *done)
-{
-    RIALTO_SERVER_LOG_DEBUG("entry:");
-
-    int32_t fd;
-    uint32_t size;
-    if (!m_playbackService.getSharedMemory(fd, size))
-    {
-        RIALTO_SERVER_LOG_ERROR("getSharedMemory failed");
-        controller->SetFailed("Operation failed");
-        done->Run();
-        return;
-    }
-    response->set_fd(fd);
-    response->set_size(size);
-    done->Run();
-}
-
 void ControlModuleService::registerClient(::google::protobuf::RpcController *controller,
                                           const ::firebolt::rialto::RegisterClientRequest *request,
                                           ::firebolt::rialto::RegisterClientResponse *response,

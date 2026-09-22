@@ -182,7 +182,8 @@ MediaPipelineProxy::~MediaPipelineProxy()
 MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
                              const std::shared_ptr<IMediaPipelineIpcFactory> &mediaPipelineIpcFactory,
                              const std::shared_ptr<common::IMediaFrameWriterFactory> &mediaFrameWriterFactory,
-                             IClientController &clientController)
+                             IClientController &clientController,
+                             const std::shared_ptr<ISharedMemoryHandle> &sharedMemoryHandle)
     : m_mediaPipelineClient(client), m_clientController{clientController}, m_currentAppState{ApplicationState::UNKNOWN},
       m_mediaFrameWriterFactory(mediaFrameWriterFactory), m_currentState(State::IDLE)
 {
@@ -193,6 +194,15 @@ MediaPipeline::MediaPipeline(std::weak_ptr<IMediaPipelineClient> client, const V
     if (!m_mediaPipelineIpc)
     {
         throw std::runtime_error("Media player ipc could not be created");
+    }
+    if (sharedMemoryHandle)
+    {
+        m_shmHandle = sharedMemoryHandle;
+    }
+    else
+    {
+        m_shmHandle = ISharedMemoryHandle::create(m_mediaPipelineIpc->takeSharedMemoryFd(),
+                                                  m_mediaPipelineIpc->getSharedMemorySize());
     }
 }
 
@@ -421,7 +431,7 @@ AddSegmentStatus MediaPipeline::addSegment(uint32_t needDataRequestId, const std
     }
 
     std::shared_ptr<NeedDataRequest> needDataRequest = needDataRequestIt->second;
-    std::shared_ptr<ISharedMemoryHandle> shmHandle = m_clientController.getSharedMemoryHandle();
+    std::shared_ptr<ISharedMemoryHandle> shmHandle = m_shmHandle;
     if (nullptr == shmHandle || nullptr == shmHandle->getShm())
     {
         RIALTO_CLIENT_LOG_ERROR("Shared buffer no longer valid");
@@ -840,11 +850,13 @@ void MediaPipeline::notifyApplicationState(ApplicationState state)
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
     std::lock_guard<std::mutex> lock{m_needDataRequestMapMutex};
+    const bool wasRunning{ApplicationState::RUNNING == m_currentAppState};
     m_currentAppState = state;
-    if (ApplicationState::RUNNING != state)
+    if (wasRunning && ApplicationState::RUNNING != state)
     {
         // If shared memory in use, wait for it to finish before returning
         m_needDataRequestMap.clear();
+        m_shmHandle.reset();
     }
 }
 

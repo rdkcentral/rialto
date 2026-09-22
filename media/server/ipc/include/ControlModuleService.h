@@ -49,10 +49,6 @@ public:
     void clientConnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
     void clientDisconnected(const std::shared_ptr<::firebolt::rialto::ipc::IClient> &ipcClient) override;
 
-    void getSharedMemory(::google::protobuf::RpcController *controller,
-                         const ::firebolt::rialto::GetSharedMemoryRequest *request,
-                         ::firebolt::rialto::GetSharedMemoryResponse *response,
-                         ::google::protobuf::Closure *done) override;
     void registerClient(::google::protobuf::RpcController *controller,
                         const ::firebolt::rialto::RegisterClientRequest *request,
                         ::firebolt::rialto::RegisterClientResponse *response, ::google::protobuf::Closure *done) override;

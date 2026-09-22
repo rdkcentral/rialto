@@ -61,7 +61,6 @@ MediaPipelineTest::MediaPipelineTest()
 {
     configureSutInActiveState();
     connectClient();
-    initShm();
 }
 
 MediaPipelineTest::~MediaPipelineTest()
@@ -416,7 +415,12 @@ void MediaPipelineTest::createSession()
     ConfigureAction<CreateSession>(m_clientStub)
         .send(request)
         .expectSuccess()
-        .matchResponse([&](const ::firebolt::rialto::CreateSessionResponse &resp) { m_sessionId = resp.session_id(); });
+        .matchResponse(
+            [&](const ::firebolt::rialto::CreateSessionResponse &resp)
+            {
+                m_sessionId = resp.session_id();
+                m_shmHandle.init(resp.shm_fd(), resp.shm_size());
+            });
 }
 
 void MediaPipelineTest::willSetStateInvalidForQueryPosition()
@@ -800,15 +804,6 @@ void MediaPipelineTest::destroySession()
 {
     auto destroySessionReq{createDestroySessionRequest(m_sessionId)};
     ConfigureAction<DestroySession>(m_clientStub).send(destroySessionReq).expectSuccess();
-}
-
-void MediaPipelineTest::initShm()
-{
-    auto getShmReq{createGetSharedMemoryRequest()};
-    ConfigureAction<GetSharedMemory>(m_clientStub)
-        .send(getShmReq)
-        .expectSuccess()
-        .matchResponse([&](const auto &resp) { m_shmHandle.init(resp.fd(), resp.size()); });
 }
 
 void MediaPipelineTest::mayReceivePositionUpdates()

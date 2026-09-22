@@ -23,6 +23,7 @@
 #include "SchemaVersion.h"
 #include "mediapipelinemodule.pb.h"
 #include <gmock/gmock.h>
+#include <unistd.h>
 
 class MediaPipelineModuleMock : public ::firebolt::rialto::MediaPipelineModule
 {
@@ -155,10 +156,13 @@ public:
         done->Run();
     }
 
-    ::firebolt::rialto::CreateSessionResponse createSessionResponse(const int32_t sessionId)
+    ::firebolt::rialto::CreateSessionResponse createSessionResponse(const int32_t sessionId, const int32_t shmFd,
+                                                                    const uint32_t shmSize)
     {
         firebolt::rialto::CreateSessionResponse response;
         response.set_session_id(sessionId);
+        response.set_shm_fd(dup(shmFd));
+        response.set_shm_size(shmSize);
         return response;
     }
 

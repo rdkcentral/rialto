@@ -326,6 +326,7 @@ protected:
     virtual void notifyEvent() = 0;
     virtual void waitEvent() = 0;
     virtual std::shared_ptr<ServerStub> &getServerStub() = 0;
+    virtual int32_t getShmFd() = 0;
     virtual void *getShmAddress() = 0;
     virtual uint32_t getShmSize() = 0;
 

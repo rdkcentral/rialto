@@ -96,14 +96,6 @@ ClientController::ClientController(const std::shared_ptr<IControlIpcFactory> &Co
 ClientController::~ClientController()
 {
     RIALTO_CLIENT_LOG_DEBUG("entry:");
-
-    termSharedMemory();
-}
-
-std::shared_ptr<ISharedMemoryHandle> ClientController::getSharedMemoryHandle()
-{
-    std::lock_guard<std::mutex> lock{m_mutex};
-    return m_shmHandle;
 }
 
 bool ClientController::registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState)
@@ -178,34 +170,6 @@ bool ClientController::unregisterClient(std::weak_ptr<IControlClient> client)
     return true;
 }
 
-bool ClientController::initSharedMemory()
-try
-{
-    std::lock_guard<std::mutex> lock{m_mutex};
-    int32_t shmFd{-1};
-    uint32_t shmBufferLen{0U};
-    if (!m_controlIpc->getSharedMemory(shmFd, shmBufferLen))
-    {
-        RIALTO_CLIENT_LOG_ERROR("Failed to get the shared memory");
-        return false;
-    }
-    m_shmHandle = std::make_shared<SharedMemoryHandle>(shmFd, shmBufferLen);
-
-    RIALTO_CLIENT_LOG_INFO("Shared buffer was successfully initialised");
-    return true;
-}
-catch (const std::exception &e)
-{
-    RIALTO_CLIENT_LOG_ERROR("Failed to initialise shared memory: %s", e.what());
-    return false;
-}
-
-void ClientController::termSharedMemory()
-{
-    std::lock_guard<std::mutex> lock{m_mutex};
-    m_shmHandle.reset();
-}
-
 void ClientController::notifyApplicationState(ApplicationState state)
 {
     {
@@ -222,28 +186,7 @@ void ClientController::notifyApplicationState(ApplicationState state)
         }
     }
 
-    switch (state)
-    {
-    case ApplicationState::RUNNING:
-    {
-        if (!initSharedMemory())
-        {
-            RIALTO_CLIENT_LOG_ERROR("Could not initalise the shared memory");
-            return;
-        }
-        // Inform clients after memory initialisation
-        changeStateAndNotifyClients(state);
-        break;
-    }
-    case ApplicationState::INACTIVE:
-    case ApplicationState::UNKNOWN:
-    {
-        // Inform clients before memory termination
-        changeStateAndNotifyClients(state);
-        termSharedMemory();
-        break;
-    }
-    }
+    changeStateAndNotifyClients(state);
 }
 
 std::string ClientController::stateToString(ApplicationState state)

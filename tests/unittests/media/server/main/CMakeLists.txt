@@ -93,8 +93,7 @@ add_gtests (
         mediaKeySession/SelectKeyIdTest.cpp
         mediaKeySession/IsNetflixPlayreadyKeySystemTest.cpp
 
-        sharedMemoryBuffer/SharedMemoryBufferTestsFixture.cpp
-        sharedMemoryBuffer/SharedMemoryBufferTests.cpp
+        sharedMemoryBuffer/PerInstanceSharedMemoryTests.cpp
 
         needDataDelayCalculator/NeedDataDelayCalculatorTest.cpp
 

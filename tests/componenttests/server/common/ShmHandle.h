@@ -31,6 +31,7 @@ public:
     ~ShmHandle();
 
     void init(std::int32_t fd, std::uint32_t length);
+    std::int32_t getFd() const;
     std::uint8_t *getShm() const;
     std::uint32_t size() const;
 

@@ -69,6 +69,9 @@ public:
      */
     virtual ~MediaPipelineIpc();
 
+    std::int32_t takeSharedMemoryFd() override;
+    std::uint32_t getSharedMemorySize() const override;
+
     bool attachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source, int32_t &sourceId) override;
 
     bool removeSource(int32_t sourceId) override;
@@ -161,6 +164,8 @@ private:
     // onPlaybackStateUpdated() can be called before createSession() therefore
     // initialise m_sessionId to -1 which is an invalid session_id
     std::atomic<int> m_sessionId{-1};
+    std::int32_t m_shmFd{-1};
+    std::uint32_t m_shmSize{0};
 
     /**
      * @brief Thread for handling media player events from the server.

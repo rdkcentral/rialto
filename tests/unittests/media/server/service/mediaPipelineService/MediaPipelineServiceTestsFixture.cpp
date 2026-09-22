@@ -88,6 +88,9 @@ MediaPipelineServiceTests::MediaPipelineServiceTests()
       m_mediaPipelineCapabilities{std::make_unique<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock>>()},
       m_mediaPipelineCapabilitiesMock{dynamic_cast<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock> &>(
           *m_mediaPipelineCapabilities)},
+      m_shmBufferFactory{std::make_shared<StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock>>()},
+      m_shmBufferFactoryMock{
+          dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock> &>(*m_shmBufferFactory)},
       m_shmBuffer{std::make_shared<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock>>()},
       m_shmBufferMock{dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &>(*m_shmBuffer)},
       m_mediaPipeline{std::make_unique<StrictMock<firebolt::rialto::server::MediaPipelineServerInternalMock>>()},
@@ -533,7 +536,7 @@ void MediaPipelineServiceTests::playbackServiceWillReturnMaxPlaybacks(int maxPla
 
 void MediaPipelineServiceTests::playbackServiceWillReturnSharedMemoryBuffer()
 {
-    EXPECT_CALL(m_playbackServiceMock, getShmBuffer()).WillOnce(Return(m_shmBuffer)).RetiresOnSaturation();
+    EXPECT_CALL(m_shmBufferFactoryMock, createMediaPipelineSharedMemory()).WillOnce(Return(m_shmBuffer)).RetiresOnSaturation();
 }
 
 void MediaPipelineServiceTests::createMediaPipelineShouldSuccess()
@@ -544,6 +547,7 @@ void MediaPipelineServiceTests::createMediaPipelineShouldSuccess()
         std::make_unique<firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
                                                                                   m_mediaPipelineFactoryMock,
                                                                                   m_mediaPipelineCapabilitiesFactoryMock,
+                                                                                  m_shmBufferFactory,
                                                                                   m_decryptionServiceMock,
                                                                                   m_metricsServiceMock);
 }
@@ -552,23 +556,29 @@ void MediaPipelineServiceTests::createMediaPipelineShouldFailWhenMediaPipelineCa
 {
     EXPECT_CALL(*m_mediaPipelineCapabilitiesFactoryMock, createMediaPipelineCapabilities())
         .WillOnce(Return(ByMove(std::unique_ptr<firebolt::rialto::IMediaPipelineCapabilities>())));
-    EXPECT_THROW(m_sut =
-                     std::make_unique<firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
-                                                                                               m_mediaPipelineFactoryMock,
-                                                                                               m_mediaPipelineCapabilitiesFactoryMock,
-                                                                                               m_decryptionServiceMock,
-                                                                                               m_metricsServiceMock),
+    EXPECT_THROW(m_sut = std::make_unique<
+                     firebolt::rialto::server::service::MediaPipelineService>(m_playbackServiceMock,
+                                                                              m_mediaPipelineFactoryMock,
+                                                                              m_mediaPipelineCapabilitiesFactoryMock,
+                                                                              m_shmBufferFactory, m_decryptionServiceMock,
+                                                                              m_metricsServiceMock),
                  std::runtime_error);
 }
 
 void MediaPipelineServiceTests::createSessionShouldSucceed()
 {
-    EXPECT_TRUE(m_sut->createSession(kSessionId, kMediaPipelineClient, kWidth, kHeight));
+    EXPECT_CALL(m_shmBufferMock, getFd()).WillOnce(Return(123));
+    EXPECT_CALL(m_shmBufferMock, getSize()).WillOnce(Return(1024));
+    std::int32_t shmFd{-1};
+    std::uint32_t shmSize{0};
+    EXPECT_TRUE(m_sut->createSession(kSessionId, kMediaPipelineClient, kWidth, kHeight, shmFd, shmSize));
 }
 
 void MediaPipelineServiceTests::createSessionShouldFail()
 {
-    EXPECT_FALSE(m_sut->createSession(kSessionId, kMediaPipelineClient, kWidth, kHeight));
+    std::int32_t shmFd{-1};
+    std::uint32_t shmSize{0};
+    EXPECT_FALSE(m_sut->createSession(kSessionId, kMediaPipelineClient, kWidth, kHeight, shmFd, shmSize));
 }
 
 void MediaPipelineServiceTests::destroySessionShouldSucceed()

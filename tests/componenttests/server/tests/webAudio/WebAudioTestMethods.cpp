@@ -76,11 +76,7 @@ WebAudioTestMethods::~WebAudioTestMethods() {}
 
 void WebAudioTestMethods::initShm()
 {
-    auto getShmReq{createGetSharedMemoryRequest()};
-    ConfigureAction<GetSharedMemory>(m_clientStub)
-        .send(getShmReq)
-        .expectSuccess()
-        .matchResponse([&](const auto &resp) { m_shmHandle.init(resp.fd(), resp.size()); });
+    std::memset(m_shmHandle.getShm(), 0, 10U * 1024U);
 }
 
 int WebAudioTestMethods::checkInitialBufferAvailable()
@@ -91,11 +87,10 @@ int WebAudioTestMethods::checkInitialBufferAvailable()
     int lengthWrap;
     webAudioGetBufferAvailable(offsetMain, lengthMain, offsetWrap, lengthWrap);
 
-    constexpr int kExpectedMinBytes{1024 * 1024}; // one MB
     constexpr int kExpectedMinLengthMain{2560};
-    EXPECT_LE(kExpectedMinBytes, offsetMain);
+    EXPECT_EQ(0, offsetMain);
     EXPECT_LE(kExpectedMinLengthMain, lengthMain);
-    EXPECT_LE(kExpectedMinBytes, offsetWrap);
+    EXPECT_EQ(0, offsetWrap);
     EXPECT_EQ(0, lengthWrap);
 
     return lengthMain + lengthWrap;
@@ -272,18 +267,24 @@ void WebAudioTestMethods::willCreateWebAudioPlayer()
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_gstCaps1));
     EXPECT_CALL(*m_gstWrapperMock, gstCapsUnref(&m_gstCaps2));
 
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus)).Times(2);
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_bus)).Times(2).RetiresOnSaturation();
 
     // EXPECTS coming from...
     //   GstWebAudioPlayer::changePipelineState
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(&m_pipeline, GST_STATE_NULL))
-        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
+        .WillOnce(Return(GST_STATE_CHANGE_SUCCESS))
+        .RetiresOnSaturation();
 
-    EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr));
-    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline));
+    EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(&m_bus, nullptr, nullptr, nullptr)).RetiresOnSaturation();
+    EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(&m_pipeline)).RetiresOnSaturation();
 }
 
 void WebAudioTestMethods::createWebAudioPlayer()
+{
+    createWebAudioPlayer(m_webAudioPlayerHandle, m_shmHandle);
+}
+
+void WebAudioTestMethods::createWebAudioPlayer(int &handle, ShmHandle &shmHandle)
 {
     constexpr int kPriority{3};
     auto request = createCreateWebAudioPlayerRequest(kPcmRate, kPcmChannels, kPcmSampleSize, kPcmIsBigEndian,
@@ -292,9 +293,14 @@ void WebAudioTestMethods::createWebAudioPlayer()
     ConfigureAction<CreateWebAudioPlayer>(m_clientStub)
         .send(request)
         .expectSuccess()
-        .matchResponse([&](const auto &resp) { m_webAudioPlayerHandle = resp.web_audio_player_handle(); });
+        .matchResponse(
+            [&](const auto &resp)
+            {
+                handle = resp.web_audio_player_handle();
+                shmHandle.init(resp.shm_fd(), resp.shm_size());
+            });
 
-    EXPECT_GE(m_webAudioPlayerHandle, 0);
+    EXPECT_GE(handle, 0);
 }
 
 void WebAudioTestMethods::willFailToCreateWebAudioPlayer()
@@ -319,11 +325,15 @@ void WebAudioTestMethods::destroyWebAudioPlayer()
 {
     if (m_webAudioPlayerHandle >= 0)
     {
-        auto request = createDestroyWebAudioPlayerRequest(m_webAudioPlayerHandle);
-
-        ConfigureAction<DestroyWebAudioPlayer>(m_clientStub).send(request).expectSuccess();
+        destroyWebAudioPlayer(m_webAudioPlayerHandle);
         m_webAudioPlayerHandle = -1;
     }
+}
+
+void WebAudioTestMethods::destroyWebAudioPlayer(int handle)
+{
+    auto request = createDestroyWebAudioPlayerRequest(handle);
+    ConfigureAction<DestroyWebAudioPlayer>(m_clientStub).send(request).expectSuccess();
 }
 
 void WebAudioTestMethods::willWebAudioPlay()

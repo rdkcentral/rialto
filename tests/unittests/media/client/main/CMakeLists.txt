@@ -74,7 +74,7 @@ add_gtests (
 
         # ClientController tests
         clientController/CreateTest.cpp
-        clientController/MemoryManagementTest.cpp
+        clientController/SharedMemoryHandleTest.cpp
 
         # WebAudioPlayer tests
         webAudioPlayer/base/WebAudioPlayerTestBase.cpp

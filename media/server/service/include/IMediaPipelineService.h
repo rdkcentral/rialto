@@ -41,8 +41,14 @@ public:
     IMediaPipelineService &operator=(const IMediaPipelineService &) = delete;
     IMediaPipelineService &operator=(IMediaPipelineService &&) = delete;
 
+    /**
+     * @brief Create a session and return borrowed shared-memory descriptor metadata.
+     *
+     * The service retains ownership of @p shmFd for the lifetime of the session; IPC duplicates it for the client.
+     */
     virtual bool createSession(int sessionId, const std::shared_ptr<IMediaPipelineClient> &mediaPipelineClient,
-                               std::uint32_t maxWidth, std::uint32_t maxHeight) = 0;
+                               std::uint32_t maxWidth, std::uint32_t maxHeight, std::int32_t &shmFd,
+                               std::uint32_t &shmSize) = 0;
     virtual bool destroySession(int sessionId) = 0;
     virtual bool load(int sessionId, MediaType type, const std::string &mimeType, const std::string &url, bool isLive) = 0;
     virtual bool attachSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;

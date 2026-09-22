@@ -23,8 +23,8 @@
 #include "ActiveRequests.h"
 #include "DataReaderFactory.h"
 #include "IDataReader.h"
+#include "IPerInstanceSharedMemory.h"
 #include "IRdkGstreamerUtilsWrapper.h"
-#include "ISharedMemoryBuffer.h"
 #include "MediaPipelineServerInternal.h"
 #include "NeedMediaData.h"
 #include "RialtoServerLogging.h"
@@ -101,7 +101,7 @@ MediaPipelineServerInternalFactory::createMediaPipeline(std::weak_ptr<IMediaPipe
 
 std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInternalFactory::createMediaPipelineServerInternal(
     std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
-    const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService) const
+    const std::shared_ptr<IMediaPipelineSharedMemory> &shmBuffer, IDecryptionService &decryptionService) const
 {
     std::shared_ptr<IMediaPipelineClient> sharedClient = client.lock();
     if (!sharedClient)
@@ -133,7 +133,8 @@ std::unique_ptr<server::IMediaPipelineServerInternal> MediaPipelineServerInterna
 MediaPipelineServerInternal::MediaPipelineServerInternal(
     std::shared_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements,
     const std::shared_ptr<IGstGenericPlayerFactory> &gstPlayerFactory, int sessionId,
-    const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
+    const std::shared_ptr<IMediaPipelineSharedMemory> &shmBuffer,
+    const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     std::shared_ptr<common::ITimerFactory> timerFactory, std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
     std::unique_ptr<IActiveRequests> &&activeRequests, IDecryptionService &decryptionService)
     : m_mediaPipelineClient(client), m_kGstPlayerFactory(gstPlayerFactory), m_kVideoRequirements(videoRequirements),
@@ -150,21 +151,7 @@ MediaPipelineServerInternal::MediaPipelineServerInternal(
     }
     m_mainThreadClientId = m_mainThread->registerClient();
 
-    bool result = false;
-    auto task = [&]()
-    {
-        if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId))
-        {
-            RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
-        }
-        else
-        {
-            result = true;
-        }
-    };
-
-    m_mainThread->enqueueTaskAndWait(m_mainThreadClientId, task);
-    if (!result)
+    if (!m_shmBuffer)
     {
         throw std::runtime_error("MediaPipelineServerInternal construction failed");
     }
@@ -183,11 +170,6 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
                 timer.second->cancel();
             }
         }
-        if (!m_shmBuffer->unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId))
-        {
-            RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition");
-        }
-
         m_shmBuffer.reset();
         m_mainThread->unregisterClient(m_mainThreadClientId);
     };
@@ -742,8 +724,7 @@ bool MediaPipelineServerInternal::haveDataInternal(MediaSourceStatus status, uin
     std::uint32_t regionOffset = 0;
     try
     {
-        regionOffset =
-            m_shmBuffer->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
+        regionOffset = m_shmBuffer->getDataOffset(mediaSourceType);
     }
     catch (const std::runtime_error &e)
     {
@@ -1441,7 +1422,7 @@ bool MediaPipelineServerInternal::notifyNeedMediaData(MediaSourceType mediaSourc
 bool MediaPipelineServerInternal::notifyNeedMediaDataInternal(MediaSourceType mediaSourceType)
 {
     m_needMediaDataTimers.erase(mediaSourceType);
-    m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
+    m_shmBuffer->clearData(mediaSourceType);
     const auto kSourceIter = m_attachedSources.find(mediaSourceType);
 
     if (m_attachedSources.cend() == kSourceIter)
@@ -1489,7 +1470,7 @@ bool MediaPipelineServerInternal::notifyNeedMediaDataWithDelay(MediaSourceType m
 bool MediaPipelineServerInternal::notifyNeedMediaDataWithDelayInternal(MediaSourceType mediaSourceType)
 {
     m_needMediaDataTimers.erase(mediaSourceType);
-    m_shmBuffer->clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_sessionId, mediaSourceType);
+    m_shmBuffer->clearData(mediaSourceType);
     const auto kSourceIter = m_attachedSources.find(mediaSourceType);
 
     if (m_attachedSources.cend() == kSourceIter)

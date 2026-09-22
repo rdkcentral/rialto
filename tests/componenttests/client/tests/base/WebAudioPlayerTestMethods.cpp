@@ -118,7 +118,8 @@ void WebAudioPlayerTestMethods::shouldCreateWebAudioPlayer()
     EXPECT_CALL(*m_webAudioPlayerModuleMock,
                 createWebAudioPlayer(_, createWebAudioPlayerRequestMatcher(kAudioMimeType, kPriority, m_config), _, _))
         .WillOnce(
-            DoAll(SetArgPointee<2>(m_webAudioPlayerModuleMock->createWebAudioPlayerResponse(kWebAudioPlayerHandle)),
+            DoAll(SetArgPointee<2>(m_webAudioPlayerModuleMock->createWebAudioPlayerResponse(kWebAudioPlayerHandle,
+                                                                                            getShmFd(), getShmSize())),
                   (WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::defaultReturn)))));
 }
 
@@ -135,7 +136,8 @@ void WebAudioPlayerTestMethods::shouldNotCreateWebAudioPlayer()
     EXPECT_CALL(*m_webAudioPlayerModuleMock,
                 createWebAudioPlayer(_, createWebAudioPlayerRequestMatcher(kAudioMimeType, kPriority, m_config), _, _))
         .WillOnce(
-            DoAll(SetArgPointee<2>(m_webAudioPlayerModuleMock->createWebAudioPlayerResponse(kWebAudioPlayerHandle)),
+            DoAll(SetArgPointee<2>(m_webAudioPlayerModuleMock->createWebAudioPlayerResponse(kWebAudioPlayerHandle,
+                                                                                            getShmFd(), getShmSize())),
                   (WithArgs<0, 3>(Invoke(&(*m_webAudioPlayerModuleMock), &WebAudioPlayerModuleMock::failureReturn)))));
 }
 

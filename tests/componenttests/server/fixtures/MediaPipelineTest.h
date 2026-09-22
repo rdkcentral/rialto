@@ -83,7 +83,6 @@ public:
     void workerFinished();
 
 private:
-    void initShm();
     void mayReceivePositionUpdates();
     void positionUpdatesShouldNotBeReceivedFromNow();
 

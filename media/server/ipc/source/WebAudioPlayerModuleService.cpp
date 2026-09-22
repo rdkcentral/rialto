@@ -134,16 +134,21 @@ void WebAudioPlayerModuleService::createWebAudioPlayer(::google::protobuf::RpcCo
         }
     }
     int handle = generateHandle();
+    std::int32_t shmFd{-1};
+    std::uint32_t shmSize{0};
     bool webAudioPlayerCreated =
         m_webAudioPlayerService.createWebAudioPlayer(handle,
                                                      std::make_shared<WebAudioPlayerClient>(handle,
                                                                                             ipcController->getClient()),
-                                                     request->audio_mime_type(), request->priority(), config);
+                                                     request->audio_mime_type(), request->priority(), config, shmFd,
+                                                     shmSize);
     if (webAudioPlayerCreated)
     {
         // Assume that IPC library works well and client is present
         m_clientWebAudioPlayerHandles[ipcController->getClient()].insert(handle);
         response->set_web_audio_player_handle(handle);
+        response->set_shm_fd(shmFd);
+        response->set_shm_size(shmSize);
     }
     else
     {

@@ -20,6 +20,7 @@
 #include "MediaPipelineIpcTestBase.h"
 #include <memory>
 #include <string>
+#include <unistd.h>
 #include <utility>
 
 void MediaPipelineIpcTestBase::SetUp() // NOLINT(build/function_format)
@@ -170,4 +171,6 @@ void MediaPipelineIpcTestBase::setCreateSessionResponse(google::protobuf::Messag
     firebolt::rialto::CreateSessionResponse *createSessionResponse =
         dynamic_cast<firebolt::rialto::CreateSessionResponse *>(response);
     createSessionResponse->set_session_id(m_sessionId);
+    createSessionResponse->set_shm_fd(dup(STDIN_FILENO));
+    createSessionResponse->set_shm_size(1024);
 }

@@ -35,9 +35,10 @@ namespace firebolt::rialto::server::service
 {
 WebAudioPlayerService::WebAudioPlayerService(IPlaybackService &playbackService,
                                              std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
+                                             const std::shared_ptr<IPerInstanceSharedMemoryFactory> &sharedMemoryFactory,
                                              IPrivateMetricsService &metricsService)
     : m_playbackService{playbackService}, m_webAudioPlayerFactory{std::move(webAudioPlayerFactory)},
-      m_metricsService{metricsService}
+      m_sharedMemoryFactory{sharedMemoryFactory}, m_metricsService{metricsService}
 {
     RIALTO_SERVER_LOG_DEBUG("WebAudioPlayerService is constructed");
 }
@@ -56,7 +57,8 @@ void WebAudioPlayerService::clearWebAudioPlayers()
 bool WebAudioPlayerService::createWebAudioPlayer(int handle,
                                                  const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient,
                                                  const std::string &audioMimeType, const uint32_t priority,
-                                                 std::weak_ptr<const WebAudioConfig> config)
+                                                 std::weak_ptr<const WebAudioConfig> config, std::int32_t &shmFd,
+                                                 std::uint32_t &shmSize)
 {
     RIALTO_SERVER_LOG_DEBUG("WebAudioPlayerService requested to create new WebAudioPlayer with id: %d", handle);
     if (!m_playbackService.isActive())
@@ -77,7 +79,22 @@ bool WebAudioPlayerService::createWebAudioPlayer(int handle,
             RIALTO_SERVER_LOG_ERROR("WebAudioPlayer with handle: %d already exists", handle);
             return false;
         }
-        auto shmBuffer = m_playbackService.getShmBuffer();
+        std::shared_ptr<IWebAudioSharedMemory> shmBuffer;
+        try
+        {
+            shmBuffer = m_sharedMemoryFactory->createWebAudioSharedMemory();
+        }
+        catch (const std::exception &e)
+        {
+            RIALTO_SERVER_LOG_ERROR("Could not create shared memory for WebAudioPlayer with handle: %d, reason: %s",
+                                    handle, e.what());
+            return false;
+        }
+        if (!shmBuffer)
+        {
+            RIALTO_SERVER_LOG_ERROR("Could not create shared memory for WebAudioPlayer with handle: %d", handle);
+            return false;
+        }
 
         m_webAudioPlayers.emplace(
             std::make_pair(handle,
@@ -96,6 +113,8 @@ bool WebAudioPlayerService::createWebAudioPlayer(int handle,
             m_webAudioPlayers.erase(handle);
             return false;
         }
+        shmFd = shmBuffer->getFd();
+        shmSize = shmBuffer->getSize();
     }
 
     RIALTO_SERVER_LOG_INFO("New WebAudioPlayer: %d created", handle);

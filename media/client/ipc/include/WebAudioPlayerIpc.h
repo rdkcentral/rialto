@@ -64,6 +64,9 @@ public:
 
     virtual ~WebAudioPlayerIpc();
 
+    std::int32_t takeSharedMemoryFd() override;
+    std::uint32_t getSharedMemorySize() const override;
+
     bool play() override;
 
     bool pause() override;
@@ -112,6 +115,8 @@ private:
      * @brief Handle to an IPC connection to the server.
      */
     int32_t m_webAudioPlayerHandle;
+    std::int32_t m_shmFd{-1};
+    std::uint32_t m_shmSize{0};
 };
 
 }; // namespace firebolt::rialto::client

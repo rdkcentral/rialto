@@ -1824,8 +1824,9 @@ void MediaPipelineTestMethods::shouldCreateMediaSessionInternal(const int32_t se
     EXPECT_CALL(*m_mediaPipelineModuleMock,
                 createSession(_, createSessionRequestMatcher(videoRequirements.maxWidth, videoRequirements.maxHeight),
                               _, _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->createSessionResponse(sessionId)),
-                        WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
+        .WillOnce(
+            DoAll(SetArgPointee<2>(m_mediaPipelineModuleMock->createSessionResponse(sessionId, getShmFd(), getShmSize())),
+                  WithArgs<0, 3>(Invoke(&(*m_mediaPipelineModuleMock), &MediaPipelineModuleMock::defaultReturn))));
 }
 
 void MediaPipelineTestMethods::shouldLoadInternal(const int32_t sessionId, const MediaType &mediaType,

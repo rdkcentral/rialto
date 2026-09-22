@@ -20,7 +20,7 @@
 #include "NeedMediaData.h"
 #include "IActiveRequests.h"
 #include "IMediaPipelineClient.h"
-#include "ISharedMemoryBuffer.h"
+#include "IPerInstanceSharedMemory.h"
 #include "RialtoServerLogging.h"
 #include "ShmUtils.h"
 #include "TypeConverters.h"
@@ -28,11 +28,18 @@
 namespace firebolt::rialto::server
 {
 NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActiveRequests &activeRequests,
-                             const ISharedMemoryBuffer &shmBuffer, int sessionId, MediaSourceType mediaSourceType,
-                             std::int32_t sourceId, PlaybackState currentPlaybackState)
+                             const IMediaPipelineSharedMemory &shmBuffer, int sessionId,
+                             MediaSourceType mediaSourceType, std::int32_t sourceId, PlaybackState currentPlaybackState)
     : m_client{client}, m_activeRequests{activeRequests}, m_mediaSourceType{mediaSourceType}, m_frameCount{kMaxFrames},
       m_sourceId{sourceId}
 {
+    static_cast<void>(sessionId);
+    if (PlaybackState::PLAYING != currentPlaybackState)
+    {
+        RIALTO_SERVER_LOG_DEBUG("Pipeline in prerolling state. Sending smaller frame count for %s",
+                                common::convertMediaSourceType(m_mediaSourceType));
+        m_frameCount = kPrerollNumFrames;
+    }
     if (MediaSourceType::AUDIO != mediaSourceType && MediaSourceType::VIDEO != mediaSourceType &&
         MediaSourceType::SUBTITLE != mediaSourceType)
     {
@@ -43,11 +50,8 @@ NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActive
     }
     try
     {
-        m_maxMediaBytes =
-            shmBuffer.getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, sessionId, mediaSourceType) -
-            getMaxMetadataBytes();
-        auto metadataOffset =
-            shmBuffer.getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, sessionId, mediaSourceType);
+        m_maxMediaBytes = shmBuffer.getMaxDataLen(mediaSourceType) - getMaxMetadataBytes();
+        auto metadataOffset = shmBuffer.getDataOffset(mediaSourceType);
         auto mediadataOffset = metadataOffset + getMaxMetadataBytes();
         m_shmInfo = std::make_shared<MediaPlayerShmInfo>(
             MediaPlayerShmInfo{getMaxMetadataBytes(), metadataOffset, mediadataOffset, m_maxMediaBytes});
