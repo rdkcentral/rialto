@@ -32,14 +32,26 @@ if ( COVERAGE_ENABLED )
     add_link_options(--coverage)
 endif()
 
-add_compile_options(-Wall -Werror -fno-builtin-memset)
-
+add_compile_options(
+    -Wall
+    -Werror
+    -fno-builtin-memset
+    -fsanitize=address
+    -fno-omit-frame-pointer
+    -g
+)
+add_link_options(-fsanitize=address)
+link_libraries(
+    -Wl,--no-as-needed
+    asan
+    -Wl,--as-needed
+)
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 13.0)
     add_compile_options(-Wno-error=overloaded-virtual)
 endif()
 
 # By default set link time optimisation, can affect compilation performance
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
 
 option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
 option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
