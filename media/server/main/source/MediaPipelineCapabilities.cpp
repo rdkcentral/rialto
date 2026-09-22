@@ -18,7 +18,8 @@
  */
 
 #include <stdexcept>
-#include <syscall.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 
 #include "MediaPipelineCapabilities.h"
 #include "RialtoServerLogging.h"

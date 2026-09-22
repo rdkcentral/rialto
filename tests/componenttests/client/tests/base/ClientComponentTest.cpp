@@ -25,7 +25,7 @@
 #include <numeric>
 #include <stdexcept>
 #include <sys/mman.h>
-#include <syscall.h>
+#include <sys/syscall.h>
 #include <unistd.h>
 #include <utility>
 #include <vector>

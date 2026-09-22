@@ -24,7 +24,8 @@
 #include "IGstInitialiser.h"
 #include "RialtoServerLogging.h"
 #include <stdio.h>
-#include <syscall.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 // NOLINT(build/filename_format)
 
 int main(int argc, char *argv[])

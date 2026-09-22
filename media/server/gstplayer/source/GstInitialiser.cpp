@@ -22,7 +22,8 @@
 #include "IGlibWrapper.h"
 #include "RialtoServerLogging.h"
 #include <stdio.h>
-#include <syscall.h>
+#include <sys/syscall.h>
+#include <unistd.h>
 
 namespace firebolt::rialto::server
 {
