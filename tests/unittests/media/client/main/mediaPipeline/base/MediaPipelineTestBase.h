@@ -27,6 +27,7 @@
 #include "MediaPipelineClientMock.h"
 #include "MediaPipelineIpcFactoryMock.h"
 #include "MediaPipelineIpcMock.h"
+#include "SharedMemoryHandleMock.h"
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -61,6 +62,7 @@ protected:
     StrictMock<MediaPipelineIpcMock> *m_mediaPipelineIpcMock = nullptr;
     std::shared_ptr<StrictMock<MediaFrameWriterFactoryMock>> m_mediaFrameWriterFactoryMock;
     std::shared_ptr<StrictMock<ClientControllerMock>> m_clientControllerMock;
+    std::shared_ptr<StrictMock<SharedMemoryHandleMock>> m_sharedMemoryHandleMock;
     std::unique_ptr<StrictMock<MediaPipelineIpcMock>> mediaPipelineIpcMock;
 
     // MediaPipeline object

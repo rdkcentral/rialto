@@ -20,6 +20,7 @@
 syntax = "proto2";
 
 import "google/protobuf/descriptor.proto";
+import "rialtoipc.proto";
 
 package firebolt.rialto;
 
@@ -85,6 +86,8 @@ message CreateWebAudioPlayerRequest {
 }
 message CreateWebAudioPlayerResponse {
     optional int32 web_audio_player_handle = 1 [default = -1];
+    optional int32 shm_fd = 2 [(.firebolt.rialto.ipc.field_is_fd) = true, default = -1];
+    optional uint32 shm_size = 3;
 }
 
 /**

@@ -40,6 +40,7 @@ public:
 
     void willCreateWebAudioPlayer();
     void createWebAudioPlayer();
+    void createWebAudioPlayer(int &handle, ShmHandle &shmHandle);
 
     void willFailToCreateWebAudioPlayer();
     void failToCreateWebAudioPlayer();
@@ -72,6 +73,7 @@ public:
     void webAudioGetVolume();
 
     void destroyWebAudioPlayer();
+    void destroyWebAudioPlayer(int handle);
 
     //////////////////////////////////////////////
     // This section is for shared memory testing

@@ -20,6 +20,7 @@
 #include "WebAudioPlayerIpcTestBase.h"
 #include <memory>
 #include <string>
+#include <unistd.h>
 #include <utility>
 
 void WebAudioPlayerIpcTestBase::SetUp() // NOLINT(build/function_format)
@@ -89,4 +90,6 @@ void WebAudioPlayerIpcTestBase::setCreateWebAudioPlayerResponse(google::protobuf
     firebolt::rialto::CreateWebAudioPlayerResponse *createWebAudioPlayerResponse =
         dynamic_cast<firebolt::rialto::CreateWebAudioPlayerResponse *>(response);
     createWebAudioPlayerResponse->set_web_audio_player_handle(m_webAaudioPlayerHandle);
+    createWebAudioPlayerResponse->set_shm_fd(dup(STDIN_FILENO));
+    createWebAudioPlayerResponse->set_shm_size(1024);
 }

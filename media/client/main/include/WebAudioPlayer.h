@@ -22,6 +22,7 @@
 
 #include "IClientController.h"
 #include "IControlClient.h"
+#include "ISharedMemoryHandle.h"
 #include "IWebAudioPlayer.h"
 #include "IWebAudioPlayerIpc.h"
 #include "IWebAudioPlayerIpcClient.h"
@@ -92,7 +93,8 @@ public:
     WebAudioPlayer(std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType,
                    const uint32_t priority, std::weak_ptr<const WebAudioConfig> config,
                    const std::shared_ptr<IWebAudioPlayerIpcFactory> &webAudioPlayerIpcFactory,
-                   IClientController &clientController);
+                   IClientController &clientController,
+                   const std::shared_ptr<ISharedMemoryHandle> &sharedMemoryHandle = nullptr);
 
     /**
      * @brief Virtual destructor.
@@ -133,6 +135,7 @@ protected:
      * @brief The media player ipc object.
      */
     std::unique_ptr<IWebAudioPlayerIpc> m_webAudioPlayerIpc;
+    std::shared_ptr<ISharedMemoryHandle> m_shmHandle;
 
     /**
      * @brief The rialto client controller object.

@@ -19,17 +19,39 @@
 
 #include "SharedMemoryHandle.h"
 #include "RialtoClientLogging.h"
+#include <fcntl.h>
 #include <stdexcept>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <sys/un.h>
 #include <unistd.h>
 
 namespace firebolt::rialto::client
 {
+std::shared_ptr<ISharedMemoryHandle> ISharedMemoryHandle::create(std::int32_t shmFd, std::uint32_t shmBufferLen)
+{
+    try
+    {
+        return std::make_shared<SharedMemoryHandle>(shmFd, shmBufferLen);
+    }
+    catch (...)
+    {
+        if (shmFd >= 0 && fcntl(shmFd, F_GETFD) != -1)
+        {
+            close(shmFd);
+        }
+        throw;
+    }
+}
+
 SharedMemoryHandle::SharedMemoryHandle(std::int32_t shmFd, std::uint32_t shmBufferLen)
     : m_shmFd{shmFd}, m_shmBufferLen{shmBufferLen}
 {
-    if ((-1 == m_shmFd) || (0U == m_shmBufferLen))
+    struct stat shmStat
+    {
+    };
+    if ((-1 == m_shmFd) || (0U == m_shmBufferLen) || fstat(m_shmFd, &shmStat) != 0 ||
+        shmStat.st_size < static_cast<off_t>(m_shmBufferLen))
     {
         throw std::runtime_error("Shared buffer invalid");
     }

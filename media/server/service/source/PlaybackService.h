@@ -25,9 +25,9 @@
 #include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaPipelineCapabilities.h"
 #include "IMediaPipelineServerInternal.h"
+#include "IPerInstanceSharedMemory.h"
 #include "IPlaybackService.h"
 #include "IPrivateMetricsService.h"
-#include "ISharedMemoryBuffer.h"
 #include "IWebAudioPlayerServerInternal.h"
 #include "MediaPipelineService.h"
 #include "WebAudioPlayerService.h"
@@ -51,7 +51,7 @@ public:
         std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
         std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
         std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
-        std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory, IDecryptionService &decryptionService,
+        std::shared_ptr<IPerInstanceSharedMemoryFactory> &&sharedMemoryFactory, IDecryptionService &decryptionService,
         std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory);
     ~PlaybackService() override;
     PlaybackService(const PlaybackService &) = delete;
@@ -67,21 +67,18 @@ public:
     void setResourceManagerAppName(const std::string &clientDisplayName) const override;
 
     bool isActive() const override;
-    bool getSharedMemory(int32_t &fd, uint32_t &size) const override;
     int getMaxPlaybacks() const override;
     int getMaxWebAudioPlayers() const override;
-    std::shared_ptr<ISharedMemoryBuffer> getShmBuffer() const override;
     IMediaPipelineService &getMediaPipelineService() const override;
     IWebAudioPlayerService &getWebAudioPlayerService() const override;
     IPrivateMetricsService &getPrivateMetricsService() const override;
     void ping(const std::shared_ptr<IHeartbeatProcedure> &heartbeatProcedure) const override;
 
 private:
-    std::unique_ptr<ISharedMemoryBufferFactory> m_shmBufferFactory;
+    std::shared_ptr<IPerInstanceSharedMemoryFactory> m_sharedMemoryFactory;
     std::atomic<bool> m_isActive;
     std::atomic<int> m_maxPlaybacks;
     std::atomic<int> m_maxWebAudioPlayers;
-    std::shared_ptr<ISharedMemoryBuffer> m_shmBuffer;
     std::unique_ptr<IPrivateMetricsService> m_privateMetricsService;
     std::unique_ptr<MediaPipelineService> m_mediaPipelineService;
     std::unique_ptr<WebAudioPlayerService> m_webAudioPlayerService;

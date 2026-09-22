@@ -302,6 +302,7 @@ void MediaPipelineModuleService::clientConnected(const std::shared_ptr<::firebol
 {
     RIALTO_SERVER_LOG_INFO("Client Connected!");
     {
+        std::lock_guard<std::mutex> lock{m_clientSessionsMutex};
         m_clientSessions.emplace(ipcClient, std::set<int>());
     }
     ipcClient->exportService(shared_from_this());
@@ -312,6 +313,7 @@ void MediaPipelineModuleService::clientDisconnected(const std::shared_ptr<::fire
     RIALTO_SERVER_LOG_INFO("Client disconnected!");
     std::set<int> sessionIds;
     {
+        std::lock_guard<std::mutex> lock{m_clientSessionsMutex};
         auto sessionIter = m_clientSessions.find(ipcClient);
         if (sessionIter == m_clientSessions.end())
         {
@@ -342,16 +344,20 @@ void MediaPipelineModuleService::createSession(::google::protobuf::RpcController
         return;
     }
 
+    std::lock_guard<std::mutex> lock{m_clientSessionsMutex};
     int sessionId = generateSessionId();
+    std::int32_t shmFd{-1};
+    std::uint32_t shmSize{0};
     bool sessionCreated =
         m_mediaPipelineService.createSession(sessionId,
                                              std::make_shared<MediaPipelineClient>(sessionId, ipcController->getClient()),
-                                             request->max_width(), request->max_height());
+                                             request->max_width(), request->max_height(), shmFd, shmSize);
     if (sessionCreated)
     {
-        // Assume that IPC library works well and client is present
         m_clientSessions[ipcController->getClient()].insert(sessionId);
         response->set_session_id(sessionId);
+        response->set_shm_fd(shmFd);
+        response->set_shm_size(shmSize);
     }
     else
     {
@@ -383,10 +389,13 @@ void MediaPipelineModuleService::destroySession(::google::protobuf::RpcControlle
         done->Run();
         return;
     }
-    auto sessionIter = m_clientSessions.find(ipcController->getClient());
-    if (sessionIter != m_clientSessions.end())
     {
-        sessionIter->second.erase(request->session_id());
+        std::lock_guard<std::mutex> lock{m_clientSessionsMutex};
+        auto sessionIter = m_clientSessions.find(ipcController->getClient());
+        if (sessionIter != m_clientSessions.end())
+        {
+            sessionIter->second.erase(request->session_id());
+        }
     }
     done->Run();
 }

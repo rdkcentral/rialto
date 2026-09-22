@@ -83,7 +83,6 @@ public:
      *
      * @retval shared pointer to shm handle.
      */
-    virtual std::shared_ptr<ISharedMemoryHandle> getSharedMemoryHandle() = 0;
 
     /**
      * @brief Register a client notify when the shared buffer changes.

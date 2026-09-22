@@ -48,9 +48,11 @@ public:
     std::unique_ptr<IMediaPipeline> createMediaPipeline(std::weak_ptr<IMediaPipelineClient> client,
                                                         const VideoRequirements &videoRequirements) const override;
 
-    std::unique_ptr<server::IMediaPipelineServerInternal> createMediaPipelineServerInternal(
-        std::weak_ptr<IMediaPipelineClient> client, const VideoRequirements &videoRequirements, int sessionId,
-        const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, IDecryptionService &decryptionService) const override;
+    std::unique_ptr<server::IMediaPipelineServerInternal>
+    createMediaPipelineServerInternal(std::weak_ptr<IMediaPipelineClient> client,
+                                      const VideoRequirements &videoRequirements, int sessionId,
+                                      const std::shared_ptr<IMediaPipelineSharedMemory> &shmBuffer,
+                                      IDecryptionService &decryptionService) const override;
 
     /**
      * @brief Create the generic media player factory object.
@@ -82,7 +84,7 @@ public:
     MediaPipelineServerInternal(const std::shared_ptr<IMediaPipelineClient> &client,
                                 const VideoRequirements &videoRequirements,
                                 const std::shared_ptr<IGstGenericPlayerFactory> &gstPlayerFactory, int sessionId,
-                                const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
+                                const std::shared_ptr<IMediaPipelineSharedMemory> &shmBuffer,
                                 const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
                                 const std::shared_ptr<common::ITimerFactory> &timerFactory,
                                 std::unique_ptr<IDataReaderFactory> &&dataReaderFactory,
@@ -242,7 +244,7 @@ protected:
     /**
      * @brief Shared memory buffer
      */
-    std::shared_ptr<ISharedMemoryBuffer> m_shmBuffer;
+    std::shared_ptr<IMediaPipelineSharedMemory> m_shmBuffer;
 
     /**
      * @brief DataReader factory

@@ -25,6 +25,7 @@
 #include "IWebAudioPlayerService.h"
 #include <map>
 #include <memory>
+#include <mutex>
 #include <set>
 
 namespace firebolt::rialto::server::ipc
@@ -87,6 +88,7 @@ public:
 
 private:
     service::IWebAudioPlayerService &m_webAudioPlayerService;
+    std::mutex m_clientWebAudioPlayerHandlesMutex;
     std::map<std::shared_ptr<::firebolt::rialto::ipc::IClient>, std::set<int>> m_clientWebAudioPlayerHandles;
 };
 } // namespace firebolt::rialto::server::ipc

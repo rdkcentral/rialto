@@ -20,6 +20,7 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SERVICE_WEB_AUDIO_PLAYER_SERVICE_H_
 #define FIREBOLT_RIALTO_SERVER_SERVICE_WEB_AUDIO_PLAYER_SERVICE_H_
 
+#include "IPerInstanceSharedMemory.h"
 #include "IPlaybackService.h"
 #include "IPrivateMetricsService.h"
 #include "IWebAudioPlayerServerInternal.h"
@@ -42,6 +43,7 @@ class WebAudioPlayerService : public IWebAudioPlayerService
 public:
     WebAudioPlayerService(IPlaybackService &playbackService,
                           std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
+                          const std::shared_ptr<IPerInstanceSharedMemoryFactory> &sharedMemoryFactory,
                           IPrivateMetricsService &metricsService);
     ~WebAudioPlayerService() override;
     WebAudioPlayerService(const WebAudioPlayerService &) = delete;
@@ -51,7 +53,8 @@ public:
 
     bool createWebAudioPlayer(int handle, const std::shared_ptr<IWebAudioPlayerClient> &webAudioPlayerClient,
                               const std::string &audioMimeType, const uint32_t priority,
-                              std::weak_ptr<const WebAudioConfig> config) override;
+                              std::weak_ptr<const WebAudioConfig> config, std::int32_t &shmFd,
+                              std::uint32_t &shmSize) override;
     bool destroyWebAudioPlayer(int handle) override;
     bool play(int handle) override;
     bool pause(int handle) override;
@@ -70,6 +73,7 @@ public:
 private:
     IPlaybackService &m_playbackService;
     std::shared_ptr<IWebAudioPlayerServerInternalFactory> m_webAudioPlayerFactory;
+    std::shared_ptr<IPerInstanceSharedMemoryFactory> m_sharedMemoryFactory;
     IPrivateMetricsService &m_metricsService;
     std::map<int, std::unique_ptr<IWebAudioPlayerServerInternal>> m_webAudioPlayers;
     std::mutex m_webAudioPlayerMutex;

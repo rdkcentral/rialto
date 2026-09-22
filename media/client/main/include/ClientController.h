@@ -46,7 +46,6 @@ public:
                               const std::shared_ptr<IPrivateMetricsIpcFactory> &privateMetricsIpcFactory);
     ~ClientController() override;
 
-    std::shared_ptr<ISharedMemoryHandle> getSharedMemoryHandle() override;
     bool registerClient(std::weak_ptr<IControlClient> client, ApplicationState &appState) override;
     bool unregisterClient(std::weak_ptr<IControlClient> client) override;
 
@@ -59,12 +58,10 @@ private:
      *
      * @retval true on success, false otherwise.
      */
-    bool initSharedMemory();
 
     /**
      * @brief Terminates the shared memory.
      */
-    void termSharedMemory();
 
     /**
      * @brief Coverts a ApplicationState to string.
@@ -127,7 +124,6 @@ private:
     /**
      * @brief The shared memory buffer handle.
      */
-    std::shared_ptr<ISharedMemoryHandle> m_shmHandle;
 
     /**
      * @brief The rialto control ipc factory.

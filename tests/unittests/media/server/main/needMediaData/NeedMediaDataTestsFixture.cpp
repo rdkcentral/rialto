@@ -57,12 +57,8 @@ NeedMediaDataTests::NeedMediaDataTests()
 
 void NeedMediaDataTests::initialize(firebolt::rialto::PlaybackState playbackState)
 {
-    EXPECT_CALL(shmBufferMock, getMaxDataLen(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
-                                             kSessionId, kValidMediaSourceType))
-        .WillOnce(Return(kBufferLen));
-    EXPECT_CALL(shmBufferMock, getDataOffset(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType::GENERIC,
-                                             kSessionId, kValidMediaSourceType))
-        .WillOnce(Return(kMetadataOffset));
+    EXPECT_CALL(shmBufferMock, getMaxDataLen(kValidMediaSourceType)).WillOnce(Return(kBufferLen));
+    EXPECT_CALL(shmBufferMock, getDataOffset(kValidMediaSourceType)).WillOnce(Return(kMetadataOffset));
     m_sut = std::make_unique<firebolt::rialto::server::NeedMediaData>(m_clientMock, activeRequestsMock, shmBufferMock,
                                                                       kSessionId, kValidMediaSourceType, kSourceId,
                                                                       playbackState);

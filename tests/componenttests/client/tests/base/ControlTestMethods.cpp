@@ -81,9 +81,6 @@ void ControlTestMethods::shouldNotifyApplicationStateRunning()
 {
     EXPECT_CALL(*m_controlClientMock, notifyApplicationState(ApplicationState::RUNNING))
         .WillOnce(Invoke(this, &ControlTestMethods::notifyEvent));
-    EXPECT_CALL(*m_controlModuleMock, getSharedMemory(_, _, _, _))
-        .WillOnce(DoAll(SetArgPointee<2>(m_controlModuleMock->getSharedMemoryResponse(getShmFd(), getShmSize())),
-                        WithArgs<0, 3>(Invoke(&(*m_controlModuleMock), &ControlModuleMock::defaultReturn))));
 }
 
 void ControlTestMethods::sendNotifyApplicationStateRunning()

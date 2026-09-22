@@ -20,18 +20,18 @@
 #ifndef FIREBOLT_RIALTO_SERVER_SHARED_MEMORY_BUFFER_FACTORY_MOCK_H_
 #define FIREBOLT_RIALTO_SERVER_SHARED_MEMORY_BUFFER_FACTORY_MOCK_H_
 
-#include "ISharedMemoryBuffer.h"
+#include "IPerInstanceSharedMemory.h"
 #include <gmock/gmock.h>
 #include <memory>
 #include <string>
 
 namespace firebolt::rialto::server
 {
-class SharedMemoryBufferFactoryMock : public ISharedMemoryBufferFactory
+class SharedMemoryBufferFactoryMock : public IPerInstanceSharedMemoryFactory
 {
 public:
-    MOCK_METHOD(std::shared_ptr<ISharedMemoryBuffer>, createSharedMemoryBuffer,
-                (unsigned numOfPlaybacks, unsigned numOfWebAudioPlayers), (const, override));
+    MOCK_METHOD(std::shared_ptr<IMediaPipelineSharedMemory>, createMediaPipelineSharedMemory, (), (const, override));
+    MOCK_METHOD(std::shared_ptr<IWebAudioSharedMemory>, createWebAudioSharedMemory, (), (const, override));
 };
 } // namespace firebolt::rialto::server
 

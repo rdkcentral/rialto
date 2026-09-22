@@ -51,6 +51,9 @@ const std::shared_ptr<firebolt::rialto::IWebAudioPlayerClient> webAudioPlayerCli
 WebAudioPlayerServiceTests::WebAudioPlayerServiceTests()
     : m_webAudioPlayerFactoryMock{std::make_shared<
           StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalFactoryMock>>()},
+      m_shmBufferFactory{std::make_shared<StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock>>()},
+      m_shmBufferFactoryMock{
+          dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock> &>(*m_shmBufferFactory)},
       m_shmBuffer{std::make_shared<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock>>()},
       m_shmBufferMock{dynamic_cast<StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &>(*m_shmBuffer)},
       m_webAudioPlayer{std::make_unique<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalMock>>()},
@@ -192,26 +195,33 @@ void WebAudioPlayerServiceTests::playbackServiceWillReturnMaxWebAudioPlayers(int
 
 void WebAudioPlayerServiceTests::playbackServiceWillReturnSharedMemoryBuffer()
 {
-    EXPECT_CALL(m_playbackServiceMock, getShmBuffer()).WillOnce(Return(m_shmBuffer)).RetiresOnSaturation();
+    EXPECT_CALL(m_shmBufferFactoryMock, createWebAudioSharedMemory()).WillOnce(Return(m_shmBuffer)).RetiresOnSaturation();
 }
 
 void WebAudioPlayerServiceTests::createWebAudioPlayerService()
 {
     m_sut = std::make_unique<firebolt::rialto::server::service::WebAudioPlayerService>(m_playbackServiceMock,
                                                                                        m_webAudioPlayerFactoryMock,
+                                                                                       m_shmBufferFactory,
                                                                                        m_metricsServiceMock);
 }
 
 void WebAudioPlayerServiceTests::createWebAudioPlayerShouldSucceed()
 {
+    EXPECT_CALL(m_shmBufferMock, getFd()).WillOnce(Return(123));
+    EXPECT_CALL(m_shmBufferMock, getSize()).WillOnce(Return(1024));
+    std::int32_t shmFd{-1};
+    std::uint32_t shmSize{0};
     EXPECT_TRUE(m_sut->createWebAudioPlayer(kWebAudioPlayerHandle, webAudioPlayerClient, kAudioMimeType, kPriority,
-                                            std::shared_ptr<const firebolt::rialto::WebAudioConfig>{}));
+                                            std::shared_ptr<const firebolt::rialto::WebAudioConfig>{}, shmFd, shmSize));
 }
 
 void WebAudioPlayerServiceTests::createWebAudioPlayerShouldFail()
 {
+    std::int32_t shmFd{-1};
+    std::uint32_t shmSize{0};
     EXPECT_FALSE(m_sut->createWebAudioPlayer(kWebAudioPlayerHandle, webAudioPlayerClient, kAudioMimeType, kPriority,
-                                             std::shared_ptr<const firebolt::rialto::WebAudioConfig>{}));
+                                             std::shared_ptr<const firebolt::rialto::WebAudioConfig>{}, shmFd, shmSize));
 }
 
 void WebAudioPlayerServiceTests::destroyWebAudioPlayerShouldSucceed()

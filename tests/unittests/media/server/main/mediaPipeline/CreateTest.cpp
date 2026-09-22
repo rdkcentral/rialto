@@ -23,16 +23,23 @@ class RialtoServerCreateMediaPipelineTest : public MediaPipelineTestBase
 {
 };
 
+class DestructionTrackingGstGenericPlayerMock : public StrictMock<GstGenericPlayerMock>
+{
+public:
+    explicit DestructionTrackingGstGenericPlayerMock(bool &destroyed) : m_destroyed{destroyed} {}
+    ~DestructionTrackingGstGenericPlayerMock() override { m_destroyed = true; }
+
+private:
+    bool &m_destroyed;
+};
+
 /**
  * Test that a MediaPipeline object can be created successfully.
  */
 TEST_F(RialtoServerCreateMediaPipelineTest, Create)
 {
-    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
-    EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId))
-        .WillOnce(Return(true));
     EXPECT_NO_THROW(
         m_mediaPipeline =
             std::make_unique<MediaPipelineServerInternal>(m_mediaPipelineClientMock, m_videoReq, m_gstPlayerFactoryMock,
@@ -41,11 +48,33 @@ TEST_F(RialtoServerCreateMediaPipelineTest, Create)
                                                           std::move(m_activeRequests), m_decryptionServiceMock));
     EXPECT_NE(m_mediaPipeline, nullptr);
 
-    EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId))
-        .WillOnce(Return(true));
     EXPECT_CALL(*m_mainThreadMock, unregisterClient(m_kMainThreadClientId));
     // Objects are destroyed on the main thread
     mainThreadWillEnqueueTaskAndWait();
+}
+
+TEST_F(RialtoServerCreateMediaPipelineTest, DestroyGstPlayerBeforeSharedMemory)
+{
+    bool gstPlayerDestroyed{false};
+    bool sharedMemoryReleasedAfterGstPlayer{false};
+    auto *sharedMemoryBufferMock = new StrictMock<SharedMemoryBufferMock>();
+    m_sharedMemoryBufferMock =
+        std::shared_ptr<StrictMock<SharedMemoryBufferMock>>(sharedMemoryBufferMock,
+                                                            [&](StrictMock<SharedMemoryBufferMock> *mock)
+                                                            {
+                                                                sharedMemoryReleasedAfterGstPlayer = gstPlayerDestroyed;
+                                                                delete mock;
+                                                            });
+    m_gstPlayer = std::make_unique<DestructionTrackingGstGenericPlayerMock>(gstPlayerDestroyed);
+    m_gstPlayerMock = static_cast<StrictMock<GstGenericPlayerMock> *>(m_gstPlayer.get());
+
+    createMediaPipeline();
+    loadGstPlayer();
+    m_sharedMemoryBufferMock.reset();
+    destroyMediaPipeline();
+
+    EXPECT_TRUE(gstPlayerDestroyed);
+    EXPECT_TRUE(sharedMemoryReleasedAfterGstPlayer);
 }
 
 /**
@@ -65,9 +94,6 @@ TEST_F(RialtoServerCreateMediaPipelineTest, ExternalFactoryFailure)
  */
 TEST_F(RialtoServerCreateMediaPipelineTest, InternalFactoryCreatesObject)
 {
-    EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId))
-        .WillOnce(Return(true));
-
     std::shared_ptr<firebolt::rialto::server::MediaPipelineServerInternalFactory> factory =
         firebolt::rialto::server::MediaPipelineServerInternalFactory::createFactory();
 
@@ -76,7 +102,5 @@ TEST_F(RialtoServerCreateMediaPipelineTest, InternalFactoryCreatesObject)
                         factory->createMediaPipelineServerInternal(m_mediaPipelineClientMock, m_videoReq, m_kSessionId,
                                                                    m_sharedMemoryBufferMock, m_decryptionServiceMock));
 
-    EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId))
-        .WillOnce(Return(true));
     EXPECT_NE(mediaPipelineServer, nullptr);
 }

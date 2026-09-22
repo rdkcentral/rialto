@@ -36,16 +36,18 @@ PlaybackService::PlaybackService(
     std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
     std::shared_ptr<IWebAudioPlayerServerInternalFactory> &&webAudioPlayerFactory,
-    std::unique_ptr<ISharedMemoryBufferFactory> &&shmBufferFactory, IDecryptionService &decryptionService,
+    std::shared_ptr<IPerInstanceSharedMemoryFactory> &&sharedMemoryFactory, IDecryptionService &decryptionService,
     std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory)
-    : m_shmBufferFactory{std::move(shmBufferFactory)}, m_isActive{false}, m_maxPlaybacks{0}, m_maxWebAudioPlayers{0},
+    : m_sharedMemoryFactory{std::move(sharedMemoryFactory)}, m_isActive{false}, m_maxPlaybacks{0},
+      m_maxWebAudioPlayers{0},
       m_privateMetricsService{std::make_unique<PrivateMetricsService>(IMetricsCollectorFactory::createFactory())},
       m_mediaPipelineService{std::make_unique<MediaPipelineService>(*this, std::move(mediaPipelineFactory),
                                                                     std::move(mediaPipelineCapabilitiesFactory),
-                                                                    decryptionService, *m_privateMetricsService,
+                                                                    m_sharedMemoryFactory, decryptionService,
+                                                                    *m_privateMetricsService,
                                                                     std::move(mediaCapabilitiesFactory))},
-      m_webAudioPlayerService{
-          std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory), *m_privateMetricsService)}
+      m_webAudioPlayerService{std::make_unique<WebAudioPlayerService>(*this, std::move(webAudioPlayerFactory),
+                                                                      m_sharedMemoryFactory, *m_privateMetricsService)}
 {
     RIALTO_SERVER_LOG_DEBUG("PlaybackService is constructed");
 }
@@ -60,7 +62,6 @@ bool PlaybackService::switchToActive()
     try
     {
         RIALTO_SERVER_LOG_INFO("Switching SessionServer to Active state.");
-        m_shmBuffer = m_shmBufferFactory->createSharedMemoryBuffer(m_maxPlaybacks, m_maxWebAudioPlayers);
         m_isActive = true;
         return true;
     }
@@ -78,7 +79,6 @@ void PlaybackService::switchToInactive()
     m_isActive = false;
     m_mediaPipelineService->clearMediaPipelines();
     m_webAudioPlayerService->clearWebAudioPlayers();
-    m_shmBuffer.reset();
     // Return freed heap pages to the OS now that pipelines and shared memory
     // have been released, so the process has a low memory footprint while idle.
     ::malloc_trim(0);
@@ -114,19 +114,6 @@ void PlaybackService::setResourceManagerAppName(const std::string &appName) cons
     }
 }
 
-bool PlaybackService::getSharedMemory(int32_t &fd, uint32_t &size) const
-{
-    auto shmBuffer = m_shmBuffer;
-
-    if (!shmBuffer)
-    {
-        return false;
-    }
-    fd = shmBuffer->getFd();
-    size = shmBuffer->getSize();
-    return true;
-}
-
 bool PlaybackService::isActive() const
 {
     return m_isActive;
@@ -140,11 +127,6 @@ int PlaybackService::getMaxPlaybacks() const
 int PlaybackService::getMaxWebAudioPlayers() const
 {
     return m_maxWebAudioPlayers;
-}
-
-std::shared_ptr<ISharedMemoryBuffer> PlaybackService::getShmBuffer() const
-{
-    return m_shmBuffer;
 }
 
 IMediaPipelineService &PlaybackService::getMediaPipelineService() const

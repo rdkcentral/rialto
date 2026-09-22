@@ -92,6 +92,31 @@ TEST(TimerTests, ShouldCancelFromSameThread)
     EXPECT_FALSE(timer->isActive());
 }
 
+TEST(TimerTests, ShouldDestroyFromCallback)
+{
+    std::mutex mtx;
+    std::condition_variable cv;
+    bool destroyed = false;
+
+    std::unique_ptr<ITimer> timer;
+    timer = ITimerFactory::getFactory()->createTimer(std::chrono::milliseconds{50},
+                                                     [&]()
+                                                     {
+                                                         timer.reset();
+                                                         {
+                                                             std::lock_guard<std::mutex> lock{mtx};
+                                                             destroyed = true;
+                                                         }
+                                                         cv.notify_one();
+                                                     });
+
+    std::unique_lock<std::mutex> lock{mtx};
+    cv.wait_for(lock, kEnoughTimeForTestToComplete, [&] { return destroyed; });
+
+    EXPECT_TRUE(destroyed);
+    EXPECT_EQ(timer, nullptr);
+}
+
 TEST(TimerTests, ShouldTimeoutPeriodicTimer)
 {
     std::mutex mtx;

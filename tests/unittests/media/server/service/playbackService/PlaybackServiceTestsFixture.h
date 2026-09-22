@@ -40,9 +40,6 @@ public:
     PlaybackServiceTests();
     ~PlaybackServiceTests() = default;
 
-    void sharedMemoryBufferWillBeInitialized();
-    void sharedMemoryBufferWillReturnFdAndSize();
-
     void triggerSwitchToActive();
     void triggerSwitchToInactive();
     void triggerSetMaxPlaybacks();
@@ -51,10 +48,6 @@ public:
     void triggerPing();
 
     void createPlaybackServiceShouldSuccess();
-    void getSharedMemoryShouldSucceed();
-    void getSharedMemoryShouldFail();
-    void getShmBufferShouldSucceed();
-    void getShmBufferShouldFail();
     void getMaxPlaybacksShouldSucceed();
     void getMaxWebAudioPlayersShouldSucceed();
     void getPrivateMetricsServiceShouldSucceed();
@@ -67,10 +60,8 @@ private:
     std::shared_ptr<StrictMock<firebolt::rialto::server::WebAudioPlayerServerInternalFactoryMock>> m_webAudioPlayerFactoryMock;
     std::unique_ptr<StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock>> m_mediaPipelineCapabilities;
     StrictMock<firebolt::rialto::server::MediaPipelineCapabilitiesMock> &m_mediaPipelineCapabilitiesMock;
-    std::unique_ptr<firebolt::rialto::server::ISharedMemoryBufferFactory> m_shmBufferFactory;
+    std::shared_ptr<firebolt::rialto::server::IPerInstanceSharedMemoryFactory> m_shmBufferFactory;
     StrictMock<firebolt::rialto::server::SharedMemoryBufferFactoryMock> &m_shmBufferFactoryMock;
-    std::shared_ptr<firebolt::rialto::server::ISharedMemoryBuffer> m_shmBuffer;
-    StrictMock<firebolt::rialto::server::SharedMemoryBufferMock> &m_shmBufferMock;
     StrictMock<firebolt::rialto::server::DecryptionServiceMock> m_decryptionServiceMock;
     std::shared_ptr<StrictMock<firebolt::rialto::server::HeartbeatProcedureMock>> m_heartbeatProcedureMock;
     std::unique_ptr<firebolt::rialto::server::service::PlaybackService> m_sut;

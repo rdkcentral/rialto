@@ -28,23 +28,6 @@ package firebolt.rialto;
 option cc_generic_services = true;
 
 /**
- * @fn int getSharedMemoryFd()
- *
- * @brief Request the shared memory buffer file descriptor from the server.
- *
- * There is only one shared buffer per application. The file descriptor needs to be closed by
- * the caller when no longer needed.
- *
- * @returns The file descriptor to be mmapped by the client.
- */
-message GetSharedMemoryRequest {
-}
-message GetSharedMemoryResponse {
-    optional int32 fd = 1 [(rialto.ipc.field_is_fd) = true, default = -1];
-    optional  uint32 size = 2;
-}
-
-/**
  * @brief Schema version
  *
  * @param[in] major  : The number determines, if schemas are compatibile.
@@ -121,13 +104,6 @@ message PingEvent {
 }
 
 service ControlModule {
-
-    /**
-     * @brief Gets the shared memory file descriptor to be mmapped by the client.
-     * @see GetSharedMemoryRequest
-     */
-    rpc getSharedMemory(GetSharedMemoryRequest) returns (GetSharedMemoryResponse) {
-    }
 
     /**
      * @brief Registers new client

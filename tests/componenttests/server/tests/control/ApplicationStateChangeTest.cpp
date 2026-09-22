@@ -53,18 +53,6 @@ public:
         ASSERT_TRUE(runningNotification);
         EXPECT_EQ(runningNotification->application_state(), ApplicationStateChangeEvent_ApplicationState_RUNNING);
     }
-
-    void getSharedMemoryWillFail()
-    {
-        auto getShmReq{createGetSharedMemoryRequest()};
-        ConfigureAction<GetSharedMemory>(m_clientStub).send(getShmReq).expectFailure();
-    }
-
-    void getSharedMemoryWillSucceed()
-    {
-        auto getShmReq{createGetSharedMemoryRequest()};
-        ConfigureAction<GetSharedMemory>(m_clientStub).send(getShmReq).expectSuccess();
-    }
 };
 /*
  * Component Test: Application state change from RUNNING->INACTIVE->RUNNING
@@ -110,10 +98,8 @@ TEST_F(ApplicationStateChangeTest, lifecycle)
 {
     // Step 1: Change state to INACTIVE
     changeStateToInactive();
-    getSharedMemoryWillFail();
 
     // Step 2: Change state to RUNNING
     changeStateToRunning();
-    getSharedMemoryWillSucceed();
 }
 } // namespace firebolt::rialto::server::ct

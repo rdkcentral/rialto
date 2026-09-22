@@ -27,6 +27,8 @@
 #include "WebAudioPlayerProxy.h"
 #include "WebAudioPlayerTestBase.h"
 #include "WebAudioUtil.h"
+#include <sys/syscall.h>
+#include <unistd.h>
 
 #include <gtest/gtest.h>
 
@@ -39,6 +41,16 @@ using ::testing::StrictMock;
 
 namespace
 {
+void expectSharedMemory(WebAudioPlayerIpcMock &ipc)
+{
+    constexpr std::uint32_t kShmSize{10U * 1024U};
+    int shmFd = syscall(SYS_memfd_create, "rialto_client_test", 0);
+    ASSERT_GE(shmFd, 0);
+    ASSERT_EQ(ftruncate(shmFd, kShmSize), 0);
+    EXPECT_CALL(ipc, takeSharedMemoryFd()).WillOnce(Return(shmFd));
+    EXPECT_CALL(ipc, getSharedMemorySize()).WillOnce(Return(kShmSize));
+}
+
 MATCHER_P(webAudioConfigMatcher, config, "")
 {
     std::shared_ptr<const firebolt::rialto::WebAudioConfig> argConfig = arg.lock();
@@ -71,10 +83,10 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, Create)
 
     prepareForWebAudioPlayerConstructor(webAudioPlayerIpcMock);
 
-    EXPECT_NO_THROW(m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
-                                                                        m_priority, m_config,
-                                                                        m_webAudioPlayerIpcFactoryMock,
-                                                                        *m_clientControllerMock));
+    EXPECT_NO_THROW(
+        m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType, m_priority,
+                                                            m_config, m_webAudioPlayerIpcFactoryMock,
+                                                            *m_clientControllerMock, m_sharedMemoryHandleMock));
 
     EXPECT_NE(m_webAudioPlayer, nullptr);
 }
@@ -101,7 +113,8 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerProxy)
 
     std::shared_ptr<IWebAudioPlayerAndIControlClient> webAudioPlayer;
     webAudioPlayer = std::make_shared<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType, m_priority, m_config,
-                                                      m_webAudioPlayerIpcFactoryMock, *m_clientControllerMock);
+                                                      m_webAudioPlayerIpcFactoryMock, *m_clientControllerMock,
+                                                      m_sharedMemoryHandleMock);
     EXPECT_NE(webAudioPlayer, nullptr);
 
     std::shared_ptr<WebAudioPlayerProxy> proxy;
@@ -124,6 +137,7 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, FactoryCreatesObject)
         std::make_unique<StrictMock<WebAudioPlayerIpcMock>>();
 
     prepareForWebAudioPlayerConstructor(webAudioPlayerIpcMock);
+    expectSharedMemory(*m_webAudioPlayerIpcMock);
 
     std::unique_ptr<IWebAudioPlayer> webAudioPlayer;
     EXPECT_NO_THROW(webAudioPlayer = factory->createWebAudioPlayer(m_webAudioPlayerClientMock, m_audioMimeType,
@@ -209,7 +223,8 @@ TEST_F(RialtoClientCreateWebAudioPlayerTest, CreateWebAudioPlayerProxyRegisterFa
 
     std::shared_ptr<IWebAudioPlayerAndIControlClient> webAudioPlayer;
     webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType, m_priority, m_config,
-                                                      m_webAudioPlayerIpcFactoryMock, *m_clientControllerMock);
+                                                      m_webAudioPlayerIpcFactoryMock, *m_clientControllerMock,
+                                                      m_sharedMemoryHandleMock);
     EXPECT_NE(webAudioPlayer, nullptr);
 
     std::shared_ptr<WebAudioPlayerProxy> proxy;

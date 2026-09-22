@@ -60,12 +60,22 @@ public:
     bool isActive() const override;
 
 private:
-    std::atomic<bool> m_active;
-    std::chrono::milliseconds m_timeout;
-    std::function<void()> m_callback;
-    mutable std::mutex m_mutex;
+    struct State
+    {
+        State(const std::chrono::milliseconds &timeout, const std::function<void()> &callback)
+            : active{true}, timeout{timeout}, callback{callback}
+        {
+        }
+
+        std::atomic<bool> active;
+        std::chrono::milliseconds timeout;
+        std::function<void()> callback;
+        std::mutex mutex;
+        std::condition_variable cv;
+    };
+
+    std::shared_ptr<State> m_state;
     std::thread m_thread;
-    std::condition_variable m_cv;
 };
 } // namespace firebolt::rialto::common
 

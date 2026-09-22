@@ -27,6 +27,7 @@ void WebAudioPlayerTestBase::SetUp() // NOLINT(build/function_format)
     m_webAudioPlayerClientMock = std::make_shared<StrictMock<WebAudioPlayerClientMock>>();
     m_webAudioPlayerIpcFactoryMock = std::make_shared<StrictMock<WebAudioPlayerIpcFactoryMock>>();
     m_clientControllerMock = std::make_shared<StrictMock<ClientControllerMock>>();
+    m_sharedMemoryHandleMock = std::make_shared<StrictMock<SharedMemoryHandleMock>>();
 
     // Init pcm config
     m_config->pcm.rate = 1;
@@ -56,10 +57,10 @@ void WebAudioPlayerTestBase::createWebAudioPlayer()
     EXPECT_CALL(*m_webAudioPlayerIpcFactoryMock, createWebAudioPlayerIpc(_, _, _, _, _))
         .WillOnce(Return(ByMove(std::move(webAudioPlayerIpcMock))));
 
-    EXPECT_NO_THROW(m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType,
-                                                                        m_priority, m_config,
-                                                                        m_webAudioPlayerIpcFactoryMock,
-                                                                        *m_clientControllerMock));
+    EXPECT_NO_THROW(
+        m_webAudioPlayer = std::make_unique<WebAudioPlayer>(m_webAudioPlayerClientMock, m_audioMimeType, m_priority,
+                                                            m_config, m_webAudioPlayerIpcFactoryMock,
+                                                            *m_clientControllerMock, m_sharedMemoryHandleMock));
     m_webAudioPlayer->notifyApplicationState(ApplicationState::RUNNING);
 
     // Save a raw pointer here same as above

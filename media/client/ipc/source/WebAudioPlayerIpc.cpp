@@ -21,6 +21,7 @@
 #include "RialtoCommonIpc.h"
 #include "webaudioplayermodule.pb.h"
 #include <IWebAudioPlayer.h>
+#include <unistd.h>
 
 namespace firebolt::rialto::client
 {
@@ -84,6 +85,11 @@ WebAudioPlayerIpc::WebAudioPlayerIpc(IWebAudioPlayerIpcClient *client, const std
 
 WebAudioPlayerIpc::~WebAudioPlayerIpc()
 {
+    if (m_shmFd >= 0)
+    {
+        close(m_shmFd);
+    }
+
     // destroy web audio player session
     destroyWebAudioPlayer();
 
@@ -92,6 +98,18 @@ WebAudioPlayerIpc::~WebAudioPlayerIpc()
 
     // destroy the thread processing async notifications
     m_eventThread.reset();
+}
+
+std::int32_t WebAudioPlayerIpc::takeSharedMemoryFd()
+{
+    std::int32_t fd = m_shmFd;
+    m_shmFd = -1;
+    return fd;
+}
+
+std::uint32_t WebAudioPlayerIpc::getSharedMemorySize() const
+{
+    return m_shmSize;
 }
 
 bool WebAudioPlayerIpc::createRpcStubs(const std::shared_ptr<ipc::IChannel> &ipcChannel)
@@ -480,6 +498,19 @@ bool WebAudioPlayerIpc::createWebAudioPlayer(const std::string &audioMimeType, c
     }
 
     m_webAudioPlayerHandle = response.web_audio_player_handle();
+    if (!response.has_shm_fd() || response.shm_fd() < 0 || !response.has_shm_size() || response.shm_size() == 0)
+    {
+        if (response.has_shm_fd() && response.shm_fd() >= 0)
+        {
+            close(response.shm_fd());
+        }
+        RIALTO_CLIENT_LOG_ERROR("Create web audio player response contains invalid shared memory");
+        destroyWebAudioPlayer();
+        return false;
+    }
+
+    m_shmFd = response.shm_fd();
+    m_shmSize = response.shm_size();
 
     return true;
 }

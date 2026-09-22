@@ -23,15 +23,11 @@
 #include <vector>
 
 using testing::_;
-using testing::DoAll;
 using testing::Invoke;
 using testing::Return;
-using testing::SetArgReferee;
 
 namespace
 {
-constexpr int32_t kFd{123};
-constexpr uint32_t kSize{456U};
 constexpr int kControlId{8};
 constexpr int kPingId{35};
 } // namespace
@@ -82,20 +78,6 @@ void ControlModuleServiceTests::willFailDueToInvalidController()
     EXPECT_CALL(*m_closureMock, Run());
 }
 
-void ControlModuleServiceTests::playbackServiceWillGetSharedMemory()
-{
-    EXPECT_CALL(*m_closureMock, Run());
-    EXPECT_CALL(m_playbackServiceMock, getSharedMemory(_, _))
-        .WillOnce(DoAll(SetArgReferee<0>(kFd), SetArgReferee<1>(kSize), Return(true)));
-}
-
-void ControlModuleServiceTests::playbackServiceWillFailToGetSharedMemory()
-{
-    EXPECT_CALL(*m_controllerMock, SetFailed(_));
-    EXPECT_CALL(*m_closureMock, Run());
-    EXPECT_CALL(m_playbackServiceMock, getSharedMemory(_, _)).WillOnce(Return(false));
-}
-
 void ControlModuleServiceTests::playbackServiceWillAck()
 {
     EXPECT_CALL(m_controlServiceMock, ack(kControlId, kPingId)).WillOnce(Return(true));
@@ -138,25 +120,6 @@ void ControlModuleServiceTests::sendRegisterClientRequestWithInvalidControllerAn
     firebolt::rialto::RegisterClientResponse response;
 
     m_service->registerClient(m_invalidControllerMock.get(), &request, &response, m_closureMock.get());
-}
-
-void ControlModuleServiceTests::sendGetSharedMemoryRequestAndReceiveResponse()
-{
-    firebolt::rialto::GetSharedMemoryRequest request;
-    firebolt::rialto::GetSharedMemoryResponse response;
-
-    m_service->getSharedMemory(m_controllerMock.get(), &request, &response, m_closureMock.get());
-
-    EXPECT_EQ(response.fd(), kFd);
-    EXPECT_EQ(response.size(), kSize);
-}
-
-void ControlModuleServiceTests::sendGetSharedMemoryRequestAndExpectFailure()
-{
-    firebolt::rialto::GetSharedMemoryRequest request;
-    firebolt::rialto::GetSharedMemoryResponse response;
-
-    m_service->getSharedMemory(m_controllerMock.get(), &request, &response, m_closureMock.get());
 }
 
 void ControlModuleServiceTests::sendAckRequestAndReceiveResponse()

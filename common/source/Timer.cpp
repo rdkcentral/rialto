@@ -52,19 +52,19 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 }
 
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
-    : m_active{true}, m_timeout{timeout}, m_callback{callback}
+    : m_state{std::make_shared<State>(timeout, callback)}
 {
     m_thread = std::thread(
-        [this, timerType]()
+        [state = m_state, timerType]()
         {
             do
             {
                 bool shouldExecuteCallback = false;
                 {
-                    std::unique_lock<std::mutex> lock{m_mutex};
-                    if (!m_cv.wait_for(lock, m_timeout, [this]() { return !m_active; }))
+                    std::unique_lock<std::mutex> lock{state->mutex};
+                    if (!state->cv.wait_for(lock, state->timeout, [&state]() { return !state->active; }))
                     {
-                        if (m_active && m_callback)
+                        if (state->active && state->callback)
                         {
                             shouldExecuteCallback = true;
                         }
@@ -73,10 +73,10 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
 
                 if (shouldExecuteCallback)
                 {
-                    m_callback();
+                    state->callback();
                 }
-            } while (timerType == TimerType::PERIODIC && m_active);
-            m_active = false;
+            } while (timerType == TimerType::PERIODIC && state->active);
+            state->active = false;
         });
 }
 
@@ -87,8 +87,8 @@ Timer::~Timer()
 
 void Timer::cancel()
 {
-    m_active = false;
-    m_cv.notify_one();
+    m_state->active = false;
+    m_state->cv.notify_one();
 
     if (std::this_thread::get_id() == m_thread.get_id())
     {
@@ -107,6 +107,6 @@ void Timer::cancel()
 
 bool Timer::isActive() const
 {
-    return m_active;
+    return m_state->active;
 }
 } // namespace firebolt::rialto::common
