@@ -43,11 +43,8 @@ MediaPipelineTestBase::~MediaPipelineTestBase() {}
 
 void MediaPipelineTestBase::createMediaPipeline()
 {
-    mainThreadWillEnqueueTaskAndWait();
     EXPECT_CALL(*m_mainThreadFactoryMock, getMainThread()).WillOnce(Return(m_mainThreadMock));
     EXPECT_CALL(*m_mainThreadMock, registerClient()).WillOnce(Return(m_kMainThreadClientId));
-    EXPECT_CALL(*m_sharedMemoryBufferMock, mapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId))
-        .WillOnce(Return(true));
     EXPECT_NO_THROW(
         m_mediaPipeline =
             std::make_unique<MediaPipelineServerInternal>(m_mediaPipelineClientMock, m_videoReq, m_gstPlayerFactoryMock,
@@ -59,8 +56,6 @@ void MediaPipelineTestBase::createMediaPipeline()
 
 void MediaPipelineTestBase::destroyMediaPipeline()
 {
-    EXPECT_CALL(*m_sharedMemoryBufferMock, unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId))
-        .WillOnce(Return(true));
     EXPECT_CALL(*m_mainThreadMock, unregisterClient(m_kMainThreadClientId));
     // Objects are destroyed on the main thread
     mainThreadWillEnqueueTaskAndWait();
@@ -134,15 +129,9 @@ void MediaPipelineTestBase::expectNotifyNeedData(MediaSourceType sourceType, int
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_sharedMemoryBufferMock);
     ASSERT_TRUE(m_activeRequestsMock);
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, sourceType))
-        .WillOnce(Return(true));
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, sourceType))
-        .WillOnce(Return(7 * 1024 * 1024));
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, sourceType))
-        .WillOnce(Return(0));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, clearData(sourceType)).WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getMaxDataLen(sourceType)).WillOnce(Return(7 * 1024 * 1024));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, getDataOffset(sourceType)).WillOnce(Return(0));
     EXPECT_CALL(*m_activeRequestsMock, insert(sourceType, _, numFrames)).WillOnce(Return(0));
     EXPECT_CALL(*m_mediaPipelineClientMock,
                 notifyNeedMediaData(sourceId, numFrames, 0, _)); // params tested in NeedMediaDataTests
@@ -153,7 +142,5 @@ void MediaPipelineTestBase::expectNotifyNeedDataEos(MediaSourceType sourceType)
     mainThreadWillEnqueueTaskAndWait();
     ASSERT_TRUE(m_sharedMemoryBufferMock);
     ASSERT_TRUE(m_activeRequestsMock);
-    EXPECT_CALL(*m_sharedMemoryBufferMock,
-                clearData(ISharedMemoryBuffer::MediaPlaybackType::GENERIC, m_kSessionId, sourceType))
-        .WillOnce(Return(true));
+    EXPECT_CALL(*m_sharedMemoryBufferMock, clearData(sourceType)).WillOnce(Return(true));
 }

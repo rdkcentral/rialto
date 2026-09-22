@@ -67,7 +67,7 @@ WebAudioPlayerServerInternalFactory::createWebAudioPlayer(std::weak_ptr<IWebAudi
 
 std::unique_ptr<IWebAudioPlayerServerInternal> WebAudioPlayerServerInternalFactory::createWebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-    std::weak_ptr<const WebAudioConfig> config, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer, int handle,
+    std::weak_ptr<const WebAudioConfig> config, const std::shared_ptr<IWebAudioSharedMemory> &shmBuffer, int handle,
     const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory,
     std::weak_ptr<common::ITimerFactory> timerFactory) const
@@ -89,7 +89,7 @@ std::unique_ptr<IWebAudioPlayerServerInternal> WebAudioPlayerServerInternalFacto
 
 WebAudioPlayerServerInternal::WebAudioPlayerServerInternal(
     std::weak_ptr<IWebAudioPlayerClient> client, const std::string &audioMimeType, const uint32_t priority,
-    std::weak_ptr<const WebAudioConfig> webAudioConfig, const std::shared_ptr<ISharedMemoryBuffer> &shmBuffer,
+    std::weak_ptr<const WebAudioConfig> webAudioConfig, const std::shared_ptr<IWebAudioSharedMemory> &shmBuffer,
     int handle, const std::shared_ptr<IMainThreadFactory> &mainThreadFactory,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory, std::weak_ptr<common::ITimerFactory> timerFactory)
     : m_webAudioPlayerClient(client), m_shmBuffer{shmBuffer}, m_priority{priority}, m_shmId{handle}, m_shmPtr{nullptr},
@@ -138,12 +138,6 @@ bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
     const std::string &audioMimeType, std::weak_ptr<const WebAudioConfig> config,
     const std::shared_ptr<IGstWebAudioPlayerFactory> &gstPlayerFactory)
 {
-    if (!m_shmBuffer->mapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId))
-    {
-        RIALTO_SERVER_LOG_ERROR("Unable to map shm partition");
-        return false;
-    }
-
     if (!(m_shmPtr = m_shmBuffer->getBuffer()))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get the data pointer for the shared memory");
@@ -152,8 +146,7 @@ bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
 
     try
     {
-        m_partitionOffset = m_shmBuffer->getDataOffset(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId,
-                                                       MediaSourceType::AUDIO);
+        m_partitionOffset = m_shmBuffer->getDataOffset();
     }
     catch (const std::exception &e)
     {
@@ -161,8 +154,7 @@ bool WebAudioPlayerServerInternal::initWebAudioPlayerInternal(
         return false;
     }
 
-    if (!(m_maxDataLength = m_shmBuffer->getMaxDataLen(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId,
-                                                       MediaSourceType::AUDIO)))
+    if (!(m_maxDataLength = m_shmBuffer->getMaxDataLen()))
     {
         RIALTO_SERVER_LOG_ERROR("Failed to get the length of the partition");
         return false;
@@ -191,11 +183,6 @@ WebAudioPlayerServerInternal::~WebAudioPlayerServerInternal()
         if (m_writeDataTimer && (m_writeDataTimer->isActive()))
         {
             m_writeDataTimer->cancel();
-        }
-
-        if (!m_shmBuffer->unmapPartition(ISharedMemoryBuffer::MediaPlaybackType::WEB_AUDIO, m_shmId))
-        {
-            RIALTO_SERVER_LOG_ERROR("Unable to unmap shm partition");
         }
 
         m_shmBuffer.reset();

@@ -21,12 +21,14 @@
 #define FIREBOLT_RIALTO_CLIENT_I_SHARED_MEMORY_HANDLE_H_
 
 #include <cstdint>
+#include <memory>
 
 namespace firebolt::rialto::client
 {
 class ISharedMemoryHandle
 {
 public:
+    static std::shared_ptr<ISharedMemoryHandle> create(std::int32_t shmFd, std::uint32_t shmBufferLen);
     ISharedMemoryHandle() = default;
     ISharedMemoryHandle(const ISharedMemoryHandle &) = delete;
     ISharedMemoryHandle(ISharedMemoryHandle &&) = delete;

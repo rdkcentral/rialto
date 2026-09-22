@@ -31,7 +31,9 @@ namespace firebolt::rialto::server::service
 class MediaPipelineServiceMock : public IMediaPipelineService
 {
 public:
-    MOCK_METHOD(bool, createSession, (int, const std::shared_ptr<IMediaPipelineClient> &, std::uint32_t, std::uint32_t),
+    MOCK_METHOD(bool, createSession,
+                (int, const std::shared_ptr<IMediaPipelineClient> &, std::uint32_t, std::uint32_t, std::int32_t &,
+                 std::uint32_t &),
                 (override));
     MOCK_METHOD(bool, destroySession, (int), (override));
     MOCK_METHOD(bool, load, (int, MediaType, const std::string &, const std::string &, bool), (override));

@@ -299,8 +299,12 @@ public:
         ConfigureAction<CreateSession>(m_clientStub)
             .send(request)
             .expectSuccess()
-            .matchResponse([&](const ::firebolt::rialto::CreateSessionResponse &resp)
-                           { m_secondarySessionId = resp.session_id(); });
+            .matchResponse(
+                [&](const ::firebolt::rialto::CreateSessionResponse &resp)
+                {
+                    m_secondarySessionId = resp.session_id();
+                    m_secondaryShmHandle.init(resp.shm_fd(), resp.shm_size());
+                });
     }
 
     void createSecondaryLimitedSession()
@@ -310,8 +314,12 @@ public:
         ConfigureAction<CreateSession>(m_clientStub)
             .send(request)
             .expectSuccess()
-            .matchResponse([&](const ::firebolt::rialto::CreateSessionResponse &resp)
-                           { m_secondarySessionId = resp.session_id(); });
+            .matchResponse(
+                [&](const ::firebolt::rialto::CreateSessionResponse &resp)
+                {
+                    m_secondarySessionId = resp.session_id();
+                    m_secondaryShmHandle.init(resp.shm_fd(), resp.shm_size());
+                });
     }
 
     void loadSecondary()
@@ -394,7 +402,8 @@ public:
                                m_lastSecondaryNeedData->shm_info().metadata_offset(),
                                m_lastSecondaryNeedData->shm_info().media_data_offset(),
                                m_lastSecondaryNeedData->shm_info().max_media_bytes()})};
-        auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
+        auto writer{
+            common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_secondaryShmHandle.getShm(), shmInfo)};
 
         // Write frames to shm and add gst expects
         EXPECT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
@@ -428,7 +437,8 @@ public:
                                m_lastSecondaryNeedData->shm_info().metadata_offset(),
                                m_lastSecondaryNeedData->shm_info().media_data_offset(),
                                m_lastSecondaryNeedData->shm_info().max_media_bytes()})};
-        auto writer{common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_shmHandle.getShm(), shmInfo)};
+        auto writer{
+            common::IMediaFrameWriterFactory::getFactory()->createFrameWriter(m_secondaryShmHandle.getShm(), shmInfo)};
 
         // Write frames to shm and add gst expects
         EXPECT_EQ(writer->writeFrame(segment), AddSegmentStatus::OK);
@@ -481,6 +491,7 @@ public:
 
 public:
     int m_secondarySessionId{-1};
+    ShmHandle m_secondaryShmHandle;
     int m_secondaryVideoSourceId{-1};
     GstElement m_secondaryPipeline{};
     GstElement m_secondaryQueue{};

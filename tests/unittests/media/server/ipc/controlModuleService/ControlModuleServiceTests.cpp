@@ -78,18 +78,6 @@ TEST_F(ControlModuleServiceTests, shouldFailToRegisterClientWithNotCompatibleSch
     sendRegisterClientRequestAndReceiveResponse(schema);
 }
 
-TEST_F(ControlModuleServiceTests, shouldGetSharedMemory)
-{
-    playbackServiceWillGetSharedMemory();
-    sendGetSharedMemoryRequestAndReceiveResponse();
-}
-
-TEST_F(ControlModuleServiceTests, shouldFailToGetSharedMemory)
-{
-    playbackServiceWillFailToGetSharedMemory();
-    sendGetSharedMemoryRequestAndExpectFailure();
-}
-
 TEST_F(ControlModuleServiceTests, shouldFailToAckWhenControlServiceReturnsFailure)
 {
     playbackServiceWillFailToAck();

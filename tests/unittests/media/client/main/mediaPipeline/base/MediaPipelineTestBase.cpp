@@ -28,6 +28,7 @@ void MediaPipelineTestBase::SetUp() // NOLINT(build/function_format)
     m_mediaPipelineIpcFactoryMock = std::make_shared<StrictMock<MediaPipelineIpcFactoryMock>>();
     m_mediaFrameWriterFactoryMock = std::make_shared<StrictMock<MediaFrameWriterFactoryMock>>();
     m_clientControllerMock = std::make_shared<StrictMock<ClientControllerMock>>();
+    m_sharedMemoryHandleMock = std::make_shared<StrictMock<SharedMemoryHandleMock>>();
 }
 
 void MediaPipelineTestBase::TearDown() // NOLINT(build/function_format)
@@ -51,10 +52,10 @@ void MediaPipelineTestBase::createMediaPipeline()
     EXPECT_CALL(*m_mediaPipelineIpcFactoryMock, createMediaPipelineIpc(_, _, _))
         .WillOnce(DoAll(SaveArg<0>(&m_mediaPipelineCallback), Return(ByMove(std::move(mediaPipelineIpcMock)))));
 
-    EXPECT_NO_THROW(m_mediaPipeline = std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, videoReq,
-                                                                      m_mediaPipelineIpcFactoryMock,
-                                                                      m_mediaFrameWriterFactoryMock,
-                                                                      *m_clientControllerMock));
+    EXPECT_NO_THROW(
+        m_mediaPipeline = std::make_unique<MediaPipeline>(m_mediaPipelineClientMock, videoReq,
+                                                          m_mediaPipelineIpcFactoryMock, m_mediaFrameWriterFactoryMock,
+                                                          *m_clientControllerMock, m_sharedMemoryHandleMock));
     m_mediaPipeline->notifyApplicationState(ApplicationState::RUNNING);
     EXPECT_NE(m_mediaPipeline, nullptr);
 }

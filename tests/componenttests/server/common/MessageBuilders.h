@@ -122,7 +122,6 @@ createGetSupportedKeySystemVersionRequest(const std::string &keySystem);
 createIsServerCertificateSupportedRequest(const std::string &keySystem);
 
 // control module
-::firebolt::rialto::GetSharedMemoryRequest createGetSharedMemoryRequest();
 ::firebolt::rialto::RegisterClientRequest createRegisterClientRequest();
 ::firebolt::rialto::AckRequest createAckRequest(int controlHandle, int id);
 

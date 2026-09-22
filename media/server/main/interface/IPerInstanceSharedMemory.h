@@ -1,0 +1,66 @@
+/*
+ * If not stated otherwise in this file or this component's LICENSE file the
+ * following copyright and licenses apply:
+ *
+ * Copyright 2026 Sky UK
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef FIREBOLT_RIALTO_SERVER_I_PER_INSTANCE_SHARED_MEMORY_H_
+#define FIREBOLT_RIALTO_SERVER_I_PER_INSTANCE_SHARED_MEMORY_H_
+
+#include "MediaCommon.h"
+#include <cstdint>
+#include <memory>
+
+namespace firebolt::rialto::server
+{
+class IPerInstanceSharedMemory
+{
+public:
+    virtual ~IPerInstanceSharedMemory() = default;
+    virtual int getFd() const = 0;
+    virtual std::uint32_t getSize() const = 0;
+    virtual std::uint8_t *getBuffer() const = 0;
+};
+
+class IMediaPipelineSharedMemory : public IPerInstanceSharedMemory
+{
+public:
+    ~IMediaPipelineSharedMemory() override = default;
+    virtual bool clearData(MediaSourceType mediaSourceType) const = 0;
+    virtual std::uint32_t getDataOffset(MediaSourceType mediaSourceType) const = 0;
+    virtual std::uint32_t getMaxDataLen(MediaSourceType mediaSourceType) const = 0;
+    virtual std::uint8_t *getDataPtr(MediaSourceType mediaSourceType) const = 0;
+};
+
+class IWebAudioSharedMemory : public IPerInstanceSharedMemory
+{
+public:
+    ~IWebAudioSharedMemory() override = default;
+    virtual std::uint32_t getDataOffset() const = 0;
+    virtual std::uint32_t getMaxDataLen() const = 0;
+};
+
+class IPerInstanceSharedMemoryFactory
+{
+public:
+    virtual ~IPerInstanceSharedMemoryFactory() = default;
+    static std::shared_ptr<IPerInstanceSharedMemoryFactory> createFactory();
+    virtual std::shared_ptr<IMediaPipelineSharedMemory> createMediaPipelineSharedMemory() const = 0;
+    virtual std::shared_ptr<IWebAudioSharedMemory> createWebAudioSharedMemory() const = 0;
+};
+} // namespace firebolt::rialto::server
+
+#endif // FIREBOLT_RIALTO_SERVER_I_PER_INSTANCE_SHARED_MEMORY_H_

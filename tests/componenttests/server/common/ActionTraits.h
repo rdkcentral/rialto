@@ -539,14 +539,6 @@ struct IsServerCertificateSupported
 };
 
 // control module
-struct GetSharedMemory
-{
-    using RequestType = ::firebolt::rialto::GetSharedMemoryRequest;
-    using ResponseType = ::firebolt::rialto::GetSharedMemoryResponse;
-    using Stub = ::firebolt::rialto::ControlModule_Stub;
-    static constexpr auto m_kFunction{&Stub::getSharedMemory};
-};
-
 struct RegisterClient
 {
     using RequestType = ::firebolt::rialto::RegisterClientRequest;

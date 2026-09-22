@@ -92,8 +92,7 @@ add_gtests (
         mediaKeySession/GetLastDrmErrorTest.cpp
         mediaKeySession/SelectKeyIdTest.cpp
 
-        sharedMemoryBuffer/SharedMemoryBufferTestsFixture.cpp
-        sharedMemoryBuffer/SharedMemoryBufferTests.cpp
+        sharedMemoryBuffer/PerInstanceSharedMemoryTests.cpp
 
         needDataDelayCalculator/NeedDataDelayCalculatorTest.cpp
 

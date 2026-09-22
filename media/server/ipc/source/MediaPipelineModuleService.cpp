@@ -343,15 +343,19 @@ void MediaPipelineModuleService::createSession(::google::protobuf::RpcController
     }
 
     int sessionId = generateSessionId();
+    std::int32_t shmFd{-1};
+    std::uint32_t shmSize{0};
     bool sessionCreated =
         m_mediaPipelineService.createSession(sessionId,
                                              std::make_shared<MediaPipelineClient>(sessionId, ipcController->getClient()),
-                                             request->max_width(), request->max_height());
+                                             request->max_width(), request->max_height(), shmFd, shmSize);
     if (sessionCreated)
     {
         // Assume that IPC library works well and client is present
         m_clientSessions[ipcController->getClient()].insert(sessionId);
         response->set_session_id(sessionId);
+        response->set_shm_fd(shmFd);
+        response->set_shm_size(shmSize);
     }
     else
     {
