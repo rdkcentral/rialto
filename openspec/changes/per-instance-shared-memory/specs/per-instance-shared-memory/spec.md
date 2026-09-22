@@ -57,12 +57,6 @@ The system MUST transfer the owning instance's shared-memory descriptor and mapp
 - **THEN** the received descriptor, if any, is closed exactly once
 - **THEN** the corresponding server instance is destroyed
 
-#### Scenario: Client disconnect overlaps creation
-- **WHEN** client disconnect cleanup begins while a media pipeline or WebAudio player is being created
-- **THEN** creation ownership registration and response completion are serialized with disconnect cleanup
-- **THEN** the owning server instance keeps its descriptor valid until IPC has captured it for transfer
-- **THEN** disconnect cleanup destroys the created instance only after response completion
-
 ### Requirement: Instance-owned client mappings
 Each client media pipeline and WebAudio player MUST own and use its own mapped shared-memory handle for its complete usable lifetime.
 
@@ -103,13 +97,11 @@ The server SHALL address transport regions directly within the owning instance's
 
 #### Scenario: Media data is requested
 - **WHEN** the server prepares an immediate or delayed need-data notification for a source
-- **THEN** any queued reader for the preceding request has already consumed that source region
 - **THEN** it clears the complete pipeline-local region for that source type before notifying the client
 - **THEN** the clearing behavior matches the shipping implementation
 
 #### Scenario: Pipeline or player is destroyed
 - **WHEN** an instance is destroyed
-- **THEN** its timers are canceled and its GStreamer consumer and queued work are stopped before its mapping is released
 - **THEN** no partition-unmap operation is required
 - **THEN** releasing the instance's buffer owner releases the entire object after outstanding references are gone
 

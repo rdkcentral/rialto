@@ -18,8 +18,6 @@
  */
 
 #include "MediaPipelineService.h"
-#include "IGstCapabilities.h"
-#include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaPipelineServerInternal.h"
 #include "MediaPipelineMetricsClient.h"
 #include "RialtoServerLogging.h"
@@ -35,13 +33,10 @@ MediaPipelineService::MediaPipelineService(
     IPlaybackService &playbackService, std::shared_ptr<IMediaPipelineServerInternalFactory> &&mediaPipelineFactory,
     std::shared_ptr<IMediaPipelineCapabilitiesFactory> &&mediaPipelineCapabilitiesFactory,
     const std::shared_ptr<IPerInstanceSharedMemoryFactory> &sharedMemoryFactory, IDecryptionService &decryptionService,
-    IPrivateMetricsService &metricsService,
-    std::shared_ptr<firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory> &&mediaCapabilitiesFactory)
+    IPrivateMetricsService &metricsService)
     : m_playbackService{playbackService}, m_mediaPipelineFactory{std::move(mediaPipelineFactory)},
       m_sharedMemoryFactory{sharedMemoryFactory},
       m_mediaPipelineCapabilities{mediaPipelineCapabilitiesFactory->createMediaPipelineCapabilities()},
-      m_mediaCapabilities{mediaCapabilitiesFactory ? mediaCapabilitiesFactory->createMediaCapabilitiesServerInternal()
-                                                   : nullptr},
       m_decryptionService{decryptionService}, m_metricsService{metricsService}
 {
     if (!m_mediaPipelineCapabilities)
@@ -737,43 +732,6 @@ void MediaPipelineService::ping(const std::shared_ptr<IHeartbeatProcedure> &hear
     {
         auto &mediaPipeline = mediaPipelinePair.second;
         mediaPipeline->ping(heartbeatProcedure->createHandler());
-    }
-}
-
-common::AudioDecoderCapabilities MediaPipelineService::getSupportedAudioCapabilities()
-{
-    RIALTO_SERVER_LOG_DEBUG("GetSupportedAudioCapabilities requested");
-
-    if (m_mediaCapabilities)
-    {
-        return m_mediaCapabilities->getSupportedAudioCapabilities();
-    }
-
-    return common::AudioDecoderCapabilities();
-}
-
-common::VideoDecoderCapabilities MediaPipelineService::getSupportedVideoCapabilities()
-{
-    RIALTO_SERVER_LOG_DEBUG("GetSupportedVideoCapabilities requested");
-
-    if (m_mediaCapabilities)
-    {
-        return m_mediaCapabilities->getSupportedVideoCapabilities();
-    }
-
-    return common::VideoDecoderCapabilities();
-}
-
-void MediaPipelineService::setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
-                                                    const std::optional<common::VideoDecoderCapabilities> &videoCaps)
-{
-    RIALTO_SERVER_LOG_DEBUG("setPreloadedCapabilities called with audio: %s, video: %s",
-                            audioCaps.has_value() ? "yes" : "no", videoCaps.has_value() ? "yes" : "no");
-
-    // Delegate to MediaCapabilitiesServerInternal to store preloaded state
-    if (m_mediaCapabilities)
-    {
-        m_mediaCapabilities->setPreloadedCapabilities(audioCaps, videoCaps);
     }
 }
 

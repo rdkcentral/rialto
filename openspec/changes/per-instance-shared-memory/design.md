@@ -91,13 +91,9 @@ If both processes terminate, kernel teardown releases all copies without applica
 
 ### Make server lifetime deterministic
 
-The server-side instance and its shared-memory object have the same externally observable lifetime. Destroying a session or WebAudio player removes the instance from the service map. Teardown first cancels instance timers and destroys the GStreamer consumer and worker queues, then releases the shared-memory owner so no queued consumer can retain a raw pointer into an unmapped region. The mapping is then unmapped and the server descriptor is closed. IPC disconnect cleanup follows the same destruction path.
+The server-side instance and its shared-memory object have the same externally observable lifetime. Destroying a session or WebAudio player removes the instance from the service map; once outstanding server users release their references, the mapping is unmapped and the server descriptor is closed. IPC disconnect cleanup follows the same destruction path.
 
 Client destruction unmaps and closes only the descriptor received by that client. Closing either side's duplicate does not invalidate the other side while it remains open.
-
-Creation and client-disconnect cleanup are serialized through creation-response completion. The server records the new instance against the client and invokes the response completion while disconnect cleanup is excluded, ensuring the owning instance keeps its descriptor open until IPC has captured it for transfer. A disconnect that overlaps creation cleans up the instance only after response completion.
-
-The GStreamer worker reads the current shared-memory payload before requesting more data. The next need-data notification, and therefore the next full-region clear, cannot occur from that worker path until the current `IDataReader` has consumed the region. Duplicate GStreamer need-data callbacks remain suppressed while a request is pending.
 
 ### Remove global playback allocation and partition bookkeeping
 
@@ -121,10 +117,6 @@ This policy avoids maintaining two ownership models and prevents an old client f
 - Destroying one instance cannot alter offsets, capacity, or mapping validity for another instance.
 - Inactive transition and IPC disconnect destroy every owned instance before server shutdown proceeds.
 - No media request may be emitted until the server instance owns a valid mapped buffer and creation has completed.
-- Creation-response completion retains the owning instance and descriptor against overlapping client-disconnect cleanup.
-- GStreamer consumers and queued readers stop before their instance mapping is released.
-- A source region is consumed before another request clears it for reuse.
-- Timer callback state remains valid when callback processing releases or replaces the timer.
 - No client media write may proceed unless that client instance owns a valid mapped handle.
 
 ## Security and Resource Accounting

@@ -170,7 +170,6 @@ MediaPipelineServerInternal::~MediaPipelineServerInternal()
                 timer.second->cancel();
             }
         }
-        m_gstPlayer.reset();
         m_shmBuffer.reset();
         m_mainThread->unregisterClient(m_mainThreadClientId);
     };
@@ -538,14 +537,7 @@ bool MediaPipelineServerInternal::setImmediateOutputInternal(int32_t sourceId, b
         return false;
     }
 
-    if (sourceIter->first == MediaSourceType::VIDEO)
-    {
-        m_IsLowLatencyVideoPlayer = immediateOutput;
-    }
-    else if (sourceIter->first == MediaSourceType::AUDIO)
-    {
-        m_IsLowLatencyAudioPlayer = immediateOutput;
-    }
+    m_IsLowLatencyVideoPlayer = immediateOutput;
     return m_gstPlayer->setImmediateOutput(sourceIter->first, immediateOutput);
 }
 

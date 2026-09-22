@@ -185,7 +185,6 @@ WebAudioPlayerServerInternal::~WebAudioPlayerServerInternal()
             m_writeDataTimer->cancel();
         }
 
-        m_gstPlayer.reset();
         m_shmBuffer.reset();
         m_mainThread->unregisterClient(m_mainThreadClientId);
     };
