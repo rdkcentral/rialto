@@ -54,7 +54,8 @@ inline GstCaps *createSimpleCapsFromMimeType(std::shared_ptr<firebolt::rialto::w
          {"audio/x-eac3", "audio/x-eac3"},      {"audio/x-opus", "audio/x-opus"},
          {"audio/b-wav", "audio/b-wav"},        {"audio/x-raw", "audio/x-raw"},
          {"audio/x-flac", "audio/x-flac"},      {"text/vtt", "application/x-subtitle-vtt"},
-         {"text/ttml", "application/ttml+xml"}, {"text/cc", "subtitle/x-subtitle-cc"}};
+         {"text/ttml", "application/ttml+xml"}, {"text/cc", "subtitle/x-subtitle-cc"},
+         {"video/x-vp8", "video/x-vp8"},        {"audio/x-vorbis", "audio/x-vorbis"}};
     auto mimeToMediaTypeIt = mimeToMediaType.find(m_attachedSource.getMimeType());
     if (mimeToMediaTypeIt != mimeToMediaType.end())
     {
@@ -84,12 +85,14 @@ convertFromCapsVectorToMimeSet(const std::vector<GstCaps *> &supportedCaps,
          {m_gstWrapper->gstCapsFromString("audio/b-wav"), {"audio/b-wav"}},
          {m_gstWrapper->gstCapsFromString("audio/x-raw"), {"audio/x-raw"}},
          {m_gstWrapper->gstCapsFromString("audio/x-opus"), {"audio/x-opus"}},
+         {m_gstWrapper->gstCapsFromString("audio/x-vorbis"), {"audio/x-vorbis"}},
          {m_gstWrapper->gstCapsFromString("audio/x-opus, channel-mapping-family=(int)0"), {"audio/x-opus"}},
          {m_gstWrapper->gstCapsFromString("audio/x-flac"), {"audio/x-flac"}},
          {m_gstWrapper->gstCapsFromString("video/x-av1"), {"video/x-av1"}},
          {m_gstWrapper->gstCapsFromString("video/x-h264"), {"video/h264"}},
          {m_gstWrapper->gstCapsFromString("video/x-h265"), {"video/h265"}},
          {m_gstWrapper->gstCapsFromString("video/x-vp9"), {"video/x-vp9"}},
+         {m_gstWrapper->gstCapsFromString("video/x-vp8"), {"video/x-vp8"}},
          {m_gstWrapper->gstCapsFromString("video/mpeg, mpegversion=(int)4"), {"video/mp4"}},
          {m_gstWrapper->gstCapsFromString("video/x-h264(memory:DMABuf)"), {"video/h264"}},
          {m_gstWrapper->gstCapsFromString("video/x-h265(memory:DMABuf)"), {"video/h265"}},
