@@ -24,6 +24,7 @@
 
 #include <atomic>
 #include <glib.h>
+#include <memory>
 #include <thread>
 
 namespace firebolt::rialto::common
