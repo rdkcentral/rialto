@@ -25,10 +25,7 @@
 
 void debugLog(const std::string& message)
 {
-    static std::ofstream logFile("/tmp/rialto_debug.log", std::ios::app);
-    static std::mutex logMutex;
-
-    std::lock_guard<std::mutex> lock(logMutex);
+    static std::ofstream logFile("/opt/logs/rialto_debug.log", std::ios::app);
 
     logFile << "(fz-dbg)tid:" << syscall(SYS_gettid)
             << " " << message << std::endl;
