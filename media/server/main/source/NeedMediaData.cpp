@@ -34,12 +34,6 @@ NeedMediaData::NeedMediaData(std::weak_ptr<IMediaPipelineClient> client, IActive
       m_sourceId{sourceId}
 {
     static_cast<void>(sessionId);
-    if (PlaybackState::PLAYING != currentPlaybackState)
-    {
-        RIALTO_SERVER_LOG_DEBUG("Pipeline in prerolling state. Sending smaller frame count for %s",
-                                common::convertMediaSourceType(m_mediaSourceType));
-        m_frameCount = kPrerollNumFrames;
-    }
     if (MediaSourceType::AUDIO != mediaSourceType && MediaSourceType::VIDEO != mediaSourceType &&
         MediaSourceType::SUBTITLE != mediaSourceType)
     {

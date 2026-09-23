@@ -18,7 +18,7 @@
 #
 
 cmake_minimum_required( VERSION 3.10 )
-project( Rialto LANGUAGES C CXX VERSION 2.0.0 )
+project( Rialto LANGUAGES C CXX VERSION 1.0.0 )
 
 # Preprocesser Variable
 add_compile_definitions(PROJECT_VER_MAJOR="${PROJECT_VERSION_MAJOR}")
