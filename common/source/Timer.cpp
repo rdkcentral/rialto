@@ -129,13 +129,11 @@ Timer::~Timer()
 void Timer::cancel()
 {
     m_active = false;
-
-    if (std::this_thread::get_id() != m_thread.get_id() && m_thread.joinable())
+    if (m_timerId != 0)
     {
-        m_cv.notify_one();
-        m_thread.join();
+        g_source_remove(m_timerId);
+        m_timerId = 0;
     }
-    g_source_remove(m_timerId);
 }
 
 bool Timer::isActive() const
