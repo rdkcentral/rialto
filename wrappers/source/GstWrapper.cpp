@@ -18,31 +18,43 @@
  */
 
 #include "GstWrapper.h"
-#include <stdio.h>
+#include <fstream>
+#include <string>
 #include <sys/syscall.h>
 #include <unistd.h>
-#include "RialtoServerLogging.h"
 
+void debugLog(const std::string& message)
+{
+    static std::ofstream logFile("/tmp/rialto_debug.log", std::ios::app);
+    static std::mutex logMutex;
+
+    std::lock_guard<std::mutex> lock(logMutex);
+
+    logFile << "(fz-dbg)tid:" << syscall(SYS_gettid)
+            << " " << message << std::endl;
+
+    logFile.flush();
+}
 namespace firebolt::rialto::wrappers
 {
 std::shared_ptr<IGstWrapper> GstWrapperFactory::getGstWrapper()
 {  
-    RIALTO_SERVER_LOG_MIL("(fz-dbg)tid:%ld inside GstWrapperFactory::getGstWrapper\n", syscall(SYS_gettid));
+    debugLog("inside GstWrapperFactory::getGstWrapper");
     static std::shared_ptr<IGstWrapper> gstWrapper{};
     if (!gstWrapper)
     {   
-        RIALTO_SERVER_LOG_MIL("(fz-dbg)tid:%ld creating GstWrapper instance\n", syscall(SYS_gettid));
+        debugLog("creating GstWrapper instance");
         try
         {
-            RIALTO_SERVER_LOG_MIL("(fz-dbg)tid:%ld inside try block of GstWrapperFactory::getGstWrapper\n", syscall(SYS_gettid));
+            debugLog("inside try block of GstWrapperFactory::getGstWrapper");
             gstWrapper = std::make_shared<GstWrapper>();
         }
         catch (const std::exception &e)
         {
-            RIALTO_SERVER_LOG_MIL("(fz-dbg)tid:%ld exception caught in GstWrapperFactory::getGstWrapper, reason: %s\n", syscall(SYS_gettid), e.what());
+            debugLog("exception caught in GstWrapperFactory::getGstWrapper");
         }
     }
-    RIALTO_SERVER_LOG_MIL("(fz-dbg)tid:%ld returning GstWrapper instance\n", syscall(SYS_gettid));
+    debugLog("returning GstWrapper instance");
     return gstWrapper;
 }
 
