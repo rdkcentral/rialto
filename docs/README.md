@@ -2,7 +2,7 @@
 
 Rialto provides a solution for implementing AV (audio and video) pipelines of containerised native applications and browsers while keeping hardware-specific handles and system resources within the trusted server process. It acts as an out-of-process media pipeline service: applications running inside containers communicate with a trusted server process that has direct access to the underlying media hardware, GStreamer infrastructure, and DRM subsystems.
 
-At the product level, Rialto enables containerised browser runtimes and native applications to perform encrypted and unencrypted AV playback and web audio mixing, with full Media Source Extensions (MSE) support, while keeping hardware access and platform resource management within the trusted server process. At the module level, Rialto is structured as a client library (`RialtoClient`), a session server binary (`RialtoServer`), and a server manager library and simulator (`RialtoServerManager`/`RialtoServerManagerSim`), all communicating over protobuf-based IPC on Unix domain sockets.
+At the product level, Rialto enables containerised browser runtimes and native applications to perform encrypted and unencrypted AV playback and web audio mixing, with full Media Source Extensions (MSE) support, while keeping hardware access and platform resource management within the trusted server process. At the module level, Rialto is structured as a client library (`RialtoClient`), a session server binary (`RialtoServer`), and a server manager library (`RialtoServerManager`). The production client/server and server-manager/session-server channels use protobuf-based IPC over Unix domain sockets; `RialtoServerManagerSim` is a separate HTTP-based test executable.
 
 ```mermaid
 flowchart LR
@@ -56,7 +56,7 @@ classDef VL stroke:#808080,fill:#F2F2F2,stroke-width:2px
 - **EME / DRM Key Management**: Exposes `IMediaKeys` for managing Encrypted Media Extension (EME) key sessions, including key generation, licence updates, session persistence, DRM store management, and cipher mode configuration (CENC, CBC1, CENS, CBCS).
 - **Web Audio Playback**: Exposes `IWebAudioPlayer` for mixing PCM audio streams into the current audio output, with priority-based resource allocation for platforms with a limited number of concurrent audio mixers.
 - **Shared Memory Data Channel**: Provides a shared memory buffer whose file descriptor is passed from server to client via the `GetSharedMemory` control RPC, allowing media segment data to be transferred without redundant data copies across process boundaries.
-- **Container Lifecycle Management**: `RialtoServerManager` spawns and manages one `RialtoServer` process per application, applies resource limits (maximum simultaneous playback sessions and web audio players), manages session server states (INACTIVE, ACTIVE, NOT_RUNNING, ERROR), and performs periodic health checks via a ping/ack protocol.
+- **Container Lifecycle Management**: `RialtoServerManager` spawns and manages one `RialtoServer` process per application, applies resource limits (maximum simultaneous playback sessions and web audio players), manages session server states (UNINITIALIZED, INACTIVE, ACTIVE, NOT_RUNNING, ERROR), and performs periodic health checks via a ping/ack protocol.
 - **Capability Discovery**: Exposes `IMediaPipelineCapabilities` and `IMediaKeysCapabilities` for querying supported MIME types and DRM key systems at runtime.
 - **Subtitle and Text Track Support**: When the platform provides a text track plugin, Rialto attaches a dedicated GStreamer text track sink and manages subtitle rendering through a `TextTrackAccessor`.
 
@@ -68,7 +68,7 @@ Rialto is designed around strict process isolation. The `RialtoClient` library r
 
 The IPC layer is purpose-built to meet Rialto's specific requirements: per-connection client identity (pid/uid), in-band file descriptor passing for sharing memory buffer descriptors, and first-class asynchronous event delivery from server to client. The protobuf service definitions in `proto/` describe all RPC methods and events for the media pipeline, DRM, web audio, control, and server manager channels.
 
-Shared memory is used for the media data path. When a client session is established, the server allocates a `SharedMemoryBuffer` backed by an anonymous file descriptor, which is passed to the client via a `GetSharedMemory` RPC call. The client maps this buffer and writes encoded media segments directly into it; the server reads from the same buffer to feed GStreamer. This design avoids double-copying large AV buffers across process boundaries.
+Shared memory is used for the media data path. The server creates one per-application `SharedMemoryBuffer` when `PlaybackService` switches to ACTIVE, and passes its fd to the client via a `GetSharedMemory` RPC call. The client library maps this buffer and writes encoded media segments through its frame writer; the server reads from the same buffer to feed GStreamer. This design avoids copying the media payload through the socket.
 
 On the server side, GStreamer integration is managed by `GstGenericPlayer`, which wraps GStreamer pipeline construction and element management. The player is driven by a task queue to keep all GStreamer operations on a single dedicated worker thread. A separate `GstDispatcherThread` processes GStreamer bus messages (state changes, errors, end-of-stream) and translates them into server-side events. DRM operations are handled through the OpenCDM wrapper (`OcdmSystem`/`OcdmSession`).
 
@@ -98,7 +98,7 @@ graph TD
         ClientCtrl --> ClientIPC
     end
 
-    subgraph RSMBlock["RialtoServerManager Process"]
+    subgraph RSMBlock["Application Manager Process\n(RialtoServerManager library)"]
         RSMService["ServerManagerService\n(IServerManagerService)"]
         RSMConfig["ConfigHelper\n(rialto-config.json)"]
         RSMSpawner["Session Server App Manager\n(spawn / monitor / health-check)"]
@@ -146,7 +146,7 @@ graph TD
 
 - **Build Dependencies**: `protobuf`, `protobuf-native`, `openssl`, `jsoncpp`, `gstreamer1.0`, `gstreamer1.0-plugins-base`, `glib-2.0`, `rdk-gstreamer-utils`, `virtual/vendor-rdk-gstreamer-utils-platform`. The `servermanager` package additionally depends on `mongoose`.
 - **HAL**: Rialto accesses the platform media pipeline directly through GStreamer elements and the RDK GStreamer utilities wrapper (`IRdkGstreamerUtilsWrapper`). DRM access is through the OpenCDM (`open_cdm.h`) interface.
-- **Systemd Services**: The `RialtoServer` is spawned as a child process by `RialtoServerManager`. `RialtoServerManager` is expected to be launched by an application manager or framework integration layer.
+- **Process Launching**: `RialtoServer` is spawned as a child process by `RialtoServerManager`. The manager library is expected to be hosted by an application manager or framework integration layer.
 - **Configuration Files**: `rialto-config.json` (installed from `rialto-config.in.json`). The file specifies environment variables for `RialtoServer`, the server binary path, startup timeout, health-check interval, socket permissions, and number of pre-loaded server processes. On debug builds, an override file at the configured `overrides` path is also read.
 - **Startup Order**: `RialtoServerManager` must be running before any application requests `initiateApplication()`. The server manager spawns `RialtoServer` instances on demand; when `numOfPreloadedServers` is configured to a non-zero value, server processes are pre-launched at startup to reduce application connect latency.
 
@@ -156,7 +156,7 @@ graph TD
 
 #### Initialization to Active State
 
-The lifecycle begins when an application manager or framework calls `ServerManagerServiceFactory::createServerManagerService()` to obtain an `IServerManagerService` instance. The server manager reads its configuration, then waits for `initiateApplication()` calls. On each call it spawns a `RialtoServer` process, sends it a `SetConfiguration` RPC over the server management socket (carrying resource limits, initial state, socket names, and log levels), and monitors its response. The `RialtoServer` receives the configuration, sets up its IPC server socket for client connections, initialises the `PlaybackService` and `SharedMemoryBuffer`, and emits a `StateChangedEvent`. The server manager forwards the state change to any registered `IStateObserver` and records the socket name returned by `getAppConnectionInfo()` for the client to connect to.
+The lifecycle begins when an application manager or framework calls `rialto::servermanager::service::create(stateObserver[, config])` to obtain an `IServerManagerService` instance. The server manager reads its configuration, then waits for `initiateApplication()` calls. On each call it selects a pre-loaded server when available or spawns a `RialtoServer` process, sends it a `SetConfigurationRequest` over the server-management socket (carrying resource limits, initial state, socket names, and log levels), and monitors its response. The `RialtoServer` receives the configuration, sets up its IPC server socket for clients, initialises the services and shared-memory buffer when entering ACTIVE, and emits a `StateChangedEvent`. The server manager forwards the state change to any registered `IStateObserver` and records the socket name returned by `getAppConnectionInfo()` for the client to connect to.
 
 The component transitions through the following states during its lifecycle: **Initializing** (read config, allocate resources) → **Spawning** (fork RialtoServer process, send SetConfiguration) → **Active** (client-facing socket ready, accepting IPC connections) → **Shutdown** (deactivate sessions, unmap shared memory, terminate RialtoServer).
 
@@ -167,15 +167,15 @@ sequenceDiagram
     participant RS as RialtoServer
     participant Client as RialtoClient (in container)
 
-    AppMgr->>RSM: createServerManagerService()
+    AppMgr->>RSM: create(stateObserver)
     RSM->>RSM: Read rialto-config.json
     AppMgr->>RSM: initiateApplication(appId, ACTIVE, appConfig)
-    RSM->>RS: spawn RialtoServer process
+    RSM->>RS: select preloaded server or spawn RialtoServer process
+    RS-->>RSM: StateChangedEvent(UNINITIALIZED)
     RSM->>RS: SetConfigurationRequest (socket, resources, logLevels)
-    RS-->>RSM: SetConfigurationResponse
-    RS->>RS: Bind IPC server socket
-    RS->>RS: Initialise PlaybackService + SharedMemoryBuffer
+    RS->>RS: Bind client IPC socket + initialise services
     RS-->>RSM: StateChangedEvent(ACTIVE)
+    RS-->>RSM: SetConfigurationResponse
     RSM-->>AppMgr: stateChanged(appId, ACTIVE) via IStateObserver
     Client->>RS: Connect to client socket (RegisterClient RPC)
     RS-->>Client: RegisterClientResponse (control_handle, schema_version)
@@ -196,7 +196,7 @@ During normal operation, the server manager sends periodic `PingRequest` message
 
 **Context Switching Scenarios:**
 
-- Transitioning from ACTIVE to INACTIVE suspends media pipeline processing and releases GStreamer decoder resources, while keeping the IPC socket and shared memory intact.
+- Transitioning from ACTIVE to INACTIVE suspends media pipeline processing and releases GStreamer decoder resources, while keeping the IPC socket available but destroying the shared-memory buffer; clients must reacquire it after returning to ACTIVE.
 - Receiving an updated `setLogLevels()` call propagates new log level masks to all running `RialtoServer` instances at runtime via the server manager IPC channel.
 
 ---
@@ -212,17 +212,17 @@ sequenceDiagram
     participant Config as rialto-config.json
     participant RS as RialtoServer
 
-    AppMgr->>RSM: createServerManagerService(config, stateObserver)
+    AppMgr->>RSM: create(stateObserver, config)
     RSM->>Config: Read configuration file
     Config-->>RSM: sessionServerPath, timeouts, socketPermissions, etc.
     AppMgr->>RSM: initiateApplication(appId, ACTIVE, appConfig)
-    RSM->>RS: Fork and exec RialtoServer
+    RSM->>RS: Select preloaded server or fork/exec RialtoServer
+    RS-->>RSM: StateChangedEvent(UNINITIALIZED)
     RSM->>RS: SetConfigurationRequest over mgmt socket
     RS->>RS: Bind client IPC socket
-    RS->>RS: Initialise PlaybackService
-    RS->>RS: Allocate SharedMemoryBuffer (anon fd)
-    RS-->>RSM: SetConfigurationResponse
+    RS->>RS: Initialise services + SharedMemoryBuffer (anon fd) on switch to ACTIVE
     RS-->>RSM: StateChangedEvent(ACTIVE)
+    RS-->>RSM: SetConfigurationResponse
     RSM-->>AppMgr: IStateObserver::stateChanged(appId, ACTIVE)
 ```
 
@@ -246,11 +246,12 @@ sequenceDiagram
     App->>RC: IMediaPipeline::attachSource(MediaSourceAudio)
     RC->>RS: AttachSourceRequest (session_id, config)
     RS-->>RC: AttachSourceResponse (source_id)
-    RS->>RC: NeedMediaDataEvent (source_id, frameCount, shmInfo)
-    RC->>App: IMediaPipelineClient::notifyNeedMediaData(source_id, frameCount, shmInfo)
-    App->>SHM: Write encoded media segment at shmInfo.mediaDataOffset
+    RS->>RC: NeedMediaDataEvent (source_id, request_id, frameCount, shmInfo)
+    RC->>App: IMediaPipelineClient::notifyNeedMediaData(source_id, frameCount, requestId, nullptr)
     App->>RC: IMediaPipeline::addSegment(needDataRequestId, segment)
-    RC->>RS: HaveDataRequest (session_id, status, requestId)
+    RC->>SHM: Write encoded media segment via frame writer
+    App->>RC: IMediaPipeline::haveData(status, needDataRequestId)
+    RC->>RS: HaveDataRequest (session_id, status, num_frames, requestId)
     RS->>SHM: Read media data from shared memory
     RS->>GST: Push buffer into GStreamer src element (WorkerThread)
     RS->>RC: NeedMediaDataEvent (next request)
@@ -312,7 +313,7 @@ Rialto interacts with platform and system components through three main paths: I
 | `BufferUnderflowEvent`        | `mediapipelinemodule.proto` | Audio or video buffer underflow detected                                   | `RialtoClient` → `IMediaPipelineClient::notifyBufferUnderflow()` |
 | `KeyStatusesChangedEvent`     | `mediakeysmodule.proto`     | DRM key status updated for a key session                                   | `RialtoClient` → `IMediaKeysClient::onKeyStatusesChanged()`      |
 | `LicenseRenewalEvent`         | `mediakeysmodule.proto`     | DRM licence renewal required                                               | `RialtoClient` → `IMediaKeysClient::onLicenseRenewal()`          |
-| `ApplicationStateChangeEvent` | `controlmodule.proto`       | Server application state transitions (RUNNING / INACTIVE)                  | `RialtoClient` → `IControlClient::notifyApplicationState()`      |
+| `ApplicationStateChangeEvent` | `controlmodule.proto`       | Server application state transitions (RUNNING / INACTIVE / UNKNOWN)        | `RialtoClient` → `IControlClient::notifyApplicationState()`      |
 | `StateChangedEvent`           | `servermanagermodule.proto` | `RialtoServer` session state changes                                       | `RialtoServerManager` → `IStateObserver::stateChanged()`         |
 | `AckEvent`                    | `servermanagermodule.proto` | Response to periodic server health-check ping                              | `RialtoServerManager` health-check handler                       |
 
@@ -417,8 +418,8 @@ Rialto accesses the platform media subsystem directly through the following wrap
 | `socketOwner`                  | string | `""`                                                                                                         | User name applied via `chown` to the client-facing IPC socket file                                                    |
 | `socketGroup`                  | string | `""`                                                                                                         | Group name applied via `chown` to the client-facing IPC socket file                                                   |
 | `numOfPreloadedServers`        | int    | `0`                                                                                                          | Number of `RialtoServer` processes to pre-launch at startup to reduce application connect latency                     |
-| `numOfPingsBeforeRecovery`     | int    | —                                                                                                            | Number of consecutive unanswered health-check pings before the server manager triggers recovery for a server instance |
-| `logLevel`                     | uint   | —                                                                                                            | Default log level bitmask for all Rialto components at startup                                                        |
+| `numOfPingsBeforeRecovery`     | int    | `3`                                                                                                          | Number of consecutive unanswered health-check pings before the server manager triggers recovery for a server instance |
+| `logLevel`                     | uint   | `3`                                                                                                          | Default log level bitmask for all Rialto components at startup                                                        |
 | `environmentVariables`         | list   | `XDG_RUNTIME_DIR=/tmp`, `GST_REGISTRY=/tmp/rialto-server-gstreamer-cache.bin`, `WESTEROS_SINK_USE_ESSRMGR=1` | Environment variables set for every spawned `RialtoServer` process                                                    |
 | `extraEnvVariables`            | list   | `""`                                                                                                         | Additional environment variables merged into the server environment                                                   |
 
