@@ -19,7 +19,9 @@
 
 #include "Timer.h"
 #include "RialtoCommonLogging.h"
+#include <mutex>
 #include <thread>
+#include <unordered_set>
 
 namespace
 {
@@ -30,6 +32,24 @@ public:
     {
         static CommonTimerLoop instance;
         return instance;
+    }
+
+    void storeTimerId(guint timerId)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_activeTimers.insert(timerId);
+    }
+
+    void removeTimerId(guint timerId)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_activeTimers.erase(timerId);
+    }
+
+    bool isTimerActive(guint timerId)
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return 0 != timerId && m_activeTimers.find(timerId) != m_activeTimers.end();
     }
 
 private:
@@ -51,6 +71,8 @@ private:
 
     GMainLoop *m_loop;
     std::thread m_thread;
+    std::mutex m_mutex;
+    std::unordered_set<guint> m_activeTimers;
 };
 } // namespace
 
@@ -88,7 +110,7 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
     : m_active{true}, m_callback{callback}
 {
-    CommonTimerLoop::instance();
+    CommonTimerLoop &commonTimerLoop = CommonTimerLoop::instance();
     if (timerType == TimerType::PERIODIC)
     {
         m_timerId = g_timeout_add(
@@ -98,9 +120,13 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
                 Timer *timer = static_cast<Timer *>(data);
                 if (timer->m_active && timer->m_callback)
                 {
-                    timer->m_callback();
+                    // We need to call the callback copy here, because the timer instance may be deleted during the callback execution
+                    guint idCopy = timer->m_timerId;
+                    std::function<void()> cbCopy = timer->m_callback;
+                    cbCopy();
+                    return CommonTimerLoop::instance().isTimerActive(idCopy) ? TRUE : FALSE;
                 }
-                return timer->m_active ? TRUE : FALSE;
+                return FALSE;
             },
             this);
     }
@@ -113,11 +139,18 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
                 Timer *timer = static_cast<Timer *>(data);
                 if (timer->m_active && timer->m_callback)
                 {
-                    timer->m_callback();
+                    // We need to call the callback copy here, because the timer instance may be deleted during the callback execution
+                    std::function<void()> cbCopy = timer->m_callback;
+                    CommonTimerLoop::instance().removeTimerId(timer->m_timerId);
                     timer->m_timerId = 0;
+                    cbCopy();
                 }
             },
             this);
+    }
+    if (m_timerId != 0)
+    {
+        commonTimerLoop.storeTimerId(m_timerId);
     }
 }
 
@@ -131,6 +164,7 @@ void Timer::cancel()
     m_active = false;
     if (m_timerId != 0)
     {
+        CommonTimerLoop::instance().removeTimerId(m_timerId);
         g_source_remove(m_timerId);
         m_timerId = 0;
     }
