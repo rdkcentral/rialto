@@ -37,8 +37,6 @@ add_compile_options(
     -Werror
     -fno-builtin-memset
     -fsanitize=address
-    -fno-omit-frame-pointer
-    -g
 )
 add_link_options(-fsanitize=address)
 link_libraries(
@@ -51,7 +49,7 @@ if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 13.0)
 endif()
 
 # By default set link time optimisation, can affect compilation performance
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 option(RIALTO_LOG_FATAL_ENABLED "Enable fatal logging for RialtoServer" ON)
 option(RIALTO_LOG_ERROR_ENABLED "Enable error logging for RialtoServer" ON)
