@@ -33,6 +33,7 @@ add_library (
         source/ServerManagerServiceFactory.cpp
         source/ServerManagerService.cpp
         source/ServiceContext.cpp
+        source/memset.S
         ${RIALTO_CONFIG_SOURCE_FILES}
 )
 
