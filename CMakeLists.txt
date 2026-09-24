@@ -34,6 +34,22 @@ endif()
 
 add_compile_options(-Wall -Werror)
 
+add_compile_options(
+    -O0
+    -g
+    -fno-omit-frame-pointer
+    -fasynchronous-unwind-tables
+    -funwind-tables
+)
+
+# -marm is valid only for 32-bit ARM/AArch32 targets. It is not applicable
+# to AArch64 and must not be passed there.
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm|armv[5-8].*)$")
+    add_compile_options(-marm)
+endif()
+
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION FALSE)
+
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 13.0)
     add_compile_options(-Wno-error=overloaded-virtual)
 endif()
