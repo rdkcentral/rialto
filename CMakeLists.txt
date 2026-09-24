@@ -44,6 +44,8 @@ link_libraries(
     asan
     -Wl,--as-needed
 )
+add_compile_options(-Wall -Werror -fno-builtin-memset)
+
 if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 13.0)
     add_compile_options(-Wno-error=overloaded-virtual)
 endif()

@@ -149,3 +149,4 @@ memset:
 
 //END(memset)
 //libc_hidden_builtin_def (memset)
+//libc_hidden_builtin_def (memset)
