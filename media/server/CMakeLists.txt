@@ -32,6 +32,7 @@ add_executable (
         RialtoServer
 
         service/source/main.cpp
+        service/source/memset.S
 )
 
 
