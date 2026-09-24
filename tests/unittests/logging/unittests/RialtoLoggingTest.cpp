@@ -23,21 +23,11 @@
 using namespace firebolt::rialto::logging;
 
 uint32_t g_handlerCalledCount = 0U;
-uint32_t g_argEvaluatedCount = 0U;
-
-int countedArgument()
-{
-    return static_cast<int>(++g_argEvaluatedCount);
-}
 
 class RialtoLoggingTest : public ::testing::Test
 {
 protected:
-    virtual void SetUp()
-    {
-        g_handlerCalledCount = 0U;
-        g_argEvaluatedCount = 0U;
-    }
+    virtual void SetUp() { g_handlerCalledCount = 0U; }
 
     virtual void TearDown() {}
 
@@ -266,84 +256,4 @@ TEST_F(RialtoLoggingTest, GetLogLevelDebug)
     setLogLevels(RIALTO_COMPONENT_DEFAULT, logLevel);
 
     ASSERT_EQ(getLogLevels(RIALTO_COMPONENT_DEFAULT), logLevel);
-}
-
-/**
- * Test that rialtoIsLevelEnabled reports the log levels set for the component.
- */
-TEST_F(RialtoLoggingTest, IsLevelEnabledFollowsSetLogLevels)
-{
-    RIALTO_DEBUG_LEVEL logLevel = static_cast<RIALTO_DEBUG_LEVEL>(RIALTO_DEBUG_LEVEL_FATAL | RIALTO_DEBUG_LEVEL_DEBUG);
-
-    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::EmptyLogHandler, false);
-    setLogLevels(RIALTO_COMPONENT_DEFAULT, logLevel);
-
-    EXPECT_NE(0, rialtoIsLevelEnabled(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_FATAL));
-    EXPECT_NE(0, rialtoIsLevelEnabled(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_DEBUG));
-    EXPECT_EQ(0, rialtoIsLevelEnabled(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_ERROR));
-    EXPECT_EQ(0, rialtoIsLevelEnabled(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_WARNING));
-    EXPECT_EQ(0, rialtoIsLevelEnabled(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_MILESTONE));
-    EXPECT_EQ(0, rialtoIsLevelEnabled(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_INFO));
-}
-
-/**
- * Test that rialtoIsLevelEnabled reports an invalid RIALTO_COMPONENT as disabled.
- */
-TEST_F(RialtoLoggingTest, IsLevelEnabledInvalidComponent)
-{
-    EXPECT_EQ(0, rialtoIsLevelEnabled(RIALTO_COMPONENT_LAST, RIALTO_DEBUG_LEVEL_FATAL));
-}
-
-/**
- * Test that a disabled log level does not evaluate the arguments of the log call.
- */
-TEST_F(RialtoLoggingTest, DisabledLevelDoesNotEvaluateLogArguments)
-{
-    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, false);
-    setLogLevels(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_FATAL);
-
-    RIALTO_LOG_DEBUG(RIALTO_COMPONENT_DEFAULT, "value %d", countedArgument());
-    RIALTO_LOG_INFO(RIALTO_COMPONENT_DEFAULT, "value %d", countedArgument());
-    RIALTO_LOG_MIL(RIALTO_COMPONENT_DEFAULT, "value %d", countedArgument());
-    RIALTO_LOG_WARN(RIALTO_COMPONENT_DEFAULT, "value %d", countedArgument());
-    RIALTO_LOG_ERROR(RIALTO_COMPONENT_DEFAULT, "value %d", countedArgument());
-    RIALTO_LOG_SYS_ERROR(RIALTO_COMPONENT_DEFAULT, 1, "value %d", countedArgument());
-    EXPECT_EQ(g_argEvaluatedCount, 0U);
-    EXPECT_EQ(g_handlerCalledCount, 0U);
-
-    RIALTO_LOG_FATAL(RIALTO_COMPONENT_DEFAULT, "value %d", countedArgument());
-    EXPECT_EQ(g_argEvaluatedCount, 1U);
-    EXPECT_EQ(g_handlerCalledCount, 1U);
-}
-
-/**
- * Test that log calls are let through while the log levels are not initialised yet.
- */
-TEST_F(RialtoLoggingTest, IsLevelEnabledWhenLogLevelsNotInitialised)
-{
-    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::EmptyLogHandler, false);
-    setLogLevels(RIALTO_COMPONENT_DEFAULT, static_cast<RIALTO_DEBUG_LEVEL>(0));
-
-    EXPECT_NE(0, rialtoIsLevelEnabled(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_DEBUG));
-
-    setLogLevels(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_DEFAULT);
-}
-
-/**
- * Test that a log handler ignoring the log levels still evaluates the log arguments.
- */
-TEST_F(RialtoLoggingTest, IgnoredLogLevelsEvaluateLogArguments)
-{
-    setLogLevels(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_FATAL);
-    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::TestLogHandler, true);
-
-    EXPECT_NE(0, rialtoIsLevelEnabled(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_MILESTONE));
-    EXPECT_NE(0, rialtoIsLevelEnabled(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_DEBUG));
-
-    RIALTO_LOG_MIL(RIALTO_COMPONENT_DEFAULT, "value %d", countedArgument());
-    EXPECT_EQ(g_argEvaluatedCount, 1U);
-    EXPECT_EQ(g_handlerCalledCount, 1U);
-
-    setLogHandler(RIALTO_COMPONENT_DEFAULT, RialtoLoggingTest::EmptyLogHandler, false);
-    setLogLevels(RIALTO_COMPONENT_DEFAULT, RIALTO_DEBUG_LEVEL_DEFAULT);
 }

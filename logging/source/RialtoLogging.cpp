@@ -57,14 +57,13 @@
 
 #endif
 
+namespace
+{
 /**
  * Log levels for each component. By default will print all fatals, errors, warnings & milestones.
  */
 std::atomic<RIALTO_DEBUG_LEVEL> g_rialtoLogLevels[RIALTO_COMPONENT_LAST] = {};
-std::atomic<bool> g_ignoreLogLevels[RIALTO_COMPONENT_LAST] = {};
 
-namespace
-{
 /**
  * Default Log levels defined by RIALTO_DEBUG environment variable
  */
@@ -79,6 +78,7 @@ void journaldLogHandler(RIALTO_COMPONENT component, RIALTO_DEBUG_LEVEL level, co
                         const char *function, const char *message, size_t messageLen);
 
 firebolt::rialto::logging::LogHandler g_logHandler[RIALTO_COMPONENT_LAST] = {};
+bool g_ignoreLogLevels[RIALTO_COMPONENT_LAST] = {};
 std::mutex g_logHandlerMutex;
 
 std::string componentToString(RIALTO_COMPONENT component);
