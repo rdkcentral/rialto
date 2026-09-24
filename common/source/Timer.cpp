@@ -21,7 +21,7 @@
 #include "RialtoCommonLogging.h"
 #include <mutex>
 #include <thread>
-#include <unordered_set>
+#include <unordered_map>
 
 namespace
 {
@@ -34,22 +34,23 @@ public:
         return instance;
     }
 
-    void storeTimerId(guint timerId)
+    void storeTimerCallback(const firebolt::rialto::common::Timer *timer, const std::function<void()> &callback)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_activeTimers.insert(timerId);
+        m_activeTimers[timer] = callback;
     }
 
-    void removeTimerId(guint timerId)
+    void removeTimerCallback(const firebolt::rialto::common::Timer *timer)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_activeTimers.erase(timerId);
+        m_activeTimers.erase(timer);
     }
 
-    bool isTimerActive(guint timerId)
+    std::function<void()> getTimerCallback(const firebolt::rialto::common::Timer *timer)
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        return 0 != timerId && m_activeTimers.find(timerId) != m_activeTimers.end();
+        auto it = m_activeTimers.find(timer);
+        return it != m_activeTimers.end() ? it->second : nullptr;
     }
 
 private:
@@ -72,7 +73,7 @@ private:
     GMainLoop *m_loop;
     std::thread m_thread;
     std::mutex m_mutex;
-    std::unordered_set<guint> m_activeTimers;
+    std::unordered_map<const firebolt::rialto::common::Timer *, std::function<void()>> m_activeTimers;
 };
 } // namespace
 
@@ -108,23 +109,19 @@ std::unique_ptr<ITimer> TimerFactory::createTimer(const std::chrono::millisecond
 }
 
 Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void()> &callback, TimerType timerType)
-    : m_active{true}, m_callback{callback}
 {
-    CommonTimerLoop &commonTimerLoop = CommonTimerLoop::instance();
+    CommonTimerLoop::instance().storeTimerCallback(this, callback);
     if (timerType == TimerType::PERIODIC)
     {
         m_timerId = g_timeout_add(
             static_cast<guint>(timeout.count()),
             [](gpointer data) -> gboolean
             {
-                Timer *timer = static_cast<Timer *>(data);
-                if (timer->m_active && timer->m_callback)
+                auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data));
+                if (callback)
                 {
-                    // We need to call the callback copy here, because the timer instance may be deleted during the callback execution
-                    guint idCopy = timer->m_timerId;
-                    std::function<void()> cbCopy = timer->m_callback;
-                    cbCopy();
-                    return CommonTimerLoop::instance().isTimerActive(idCopy) ? TRUE : FALSE;
+                    callback();
+                    return CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data)) ? TRUE : FALSE;
                 }
                 return FALSE;
             },
@@ -136,21 +133,14 @@ Timer::Timer(const std::chrono::milliseconds &timeout, const std::function<void(
             static_cast<guint>(timeout.count()),
             [](gpointer data)
             {
-                Timer *timer = static_cast<Timer *>(data);
-                if (timer->m_active && timer->m_callback)
+                auto callback = CommonTimerLoop::instance().getTimerCallback(static_cast<Timer *>(data));
+                if (callback)
                 {
-                    // We need to call the callback copy here, because the timer instance may be deleted during the callback execution
-                    std::function<void()> cbCopy = timer->m_callback;
-                    CommonTimerLoop::instance().removeTimerId(timer->m_timerId);
-                    timer->m_timerId = 0;
-                    cbCopy();
+                    callback();
+                    CommonTimerLoop::instance().removeTimerCallback(static_cast<Timer *>(data));
                 }
             },
             this);
-    }
-    if (m_timerId != 0)
-    {
-        commonTimerLoop.storeTimerId(m_timerId);
     }
 }
 
@@ -161,10 +151,9 @@ Timer::~Timer()
 
 void Timer::cancel()
 {
-    m_active = false;
+    CommonTimerLoop::instance().removeTimerCallback(this);
     if (m_timerId != 0)
     {
-        CommonTimerLoop::instance().removeTimerId(m_timerId);
         g_source_remove(m_timerId);
         m_timerId = 0;
     }
@@ -172,6 +161,6 @@ void Timer::cancel()
 
 bool Timer::isActive() const
 {
-    return m_active;
+    return CommonTimerLoop::instance().getTimerCallback(this) != nullptr;
 }
 } // namespace firebolt::rialto::common
