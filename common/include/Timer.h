@@ -59,9 +59,7 @@ public:
     bool isActive() const override;
 
 private:
-    std::atomic<bool> m_active;
-    std::function<void()> m_callback;
-    std::atomic<guint> m_timerId;
+    std::atomic<guint> m_timerId{0};
 };
 } // namespace firebolt::rialto::common
 
