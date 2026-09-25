@@ -25,8 +25,9 @@
 
 namespace firebolt::rialto::ipc
 {
-ServerControllerImpl::ServerControllerImpl(std::shared_ptr<ClientImpl> client, uint64_t serialId)
-    : m_kClient(std::move(client)), m_kSerialId(serialId)
+ServerControllerImpl::ServerControllerImpl(std::shared_ptr<ClientImpl> client, uint64_t serialId, 
+                                            std::shared_ptr<google::protobuf::Arena> arena)
+    : m_kClient(std::move(client)), m_kSerialId(serialId), m_requestArena(std::move(arena))
 {
 }
 

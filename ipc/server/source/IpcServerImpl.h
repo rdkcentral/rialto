@@ -25,6 +25,7 @@
 #include "IIpcServerFactory.h"
 #include "IpcServerControllerImpl.h"
 #include "SimpleBufferPool.h"
+#include "Arena.h"
 
 #include "rialtoipc-transport.pb.h"
 
@@ -105,11 +106,15 @@ private:
                               const std::vector<FileDescriptor> &fds = {});
     
     bool parseMethodCall(const uint8_t *data, size_t dataLen, DecodedMethodCall &call);
+    
     void processMethodCall(const std::shared_ptr<ClientImpl> &client, const transport::MethodCall &call,
-                           const std::vector<FileDescriptor> &fds);                
+                                   const std::vector<FileDescriptor> &fds, 
+                                   const std::shared_ptr<google::protobuf::Arena> &requestArena);
+
     void processMethodCall(const std::shared_ptr<ClientImpl> &client, uint64_t serialId, std::string_view serviceName,
-                           std::string_view methodName, const uint8_t *requestData, size_t requestLen,
-                           const std::vector<FileDescriptor> &fds);
+                           std::string_view methodName, const uint8_t *requestData, size_t requestLen, 
+                           const std::vector<FileDescriptor> &fds, 
+                           const std::shared_ptr<google::protobuf::Arena> &requestArena);
 
     std::shared_ptr<ClientImpl> addClientSocket(int socketFd, const std::string &listeningSocketPath,
                                                 std::function<void(const std::shared_ptr<IClient> &)> disconnectedCb);

@@ -21,6 +21,7 @@
 #define FIREBOLT_RIALTO_IPC_IPC_CLIENT_IMPL_H_
 
 #include "IIpcServer.h"
+#include "Arena.h"
 
 #include <sys/socket.h>
 
@@ -61,6 +62,8 @@ private:
     const struct ucred m_kCredentials;
 
     std::map<std::string, std::shared_ptr<google::protobuf::Service>> m_services;
+
+    mutable Arena m_requestArena, m_replyArena, m_eventArena;
 };
 
 } // namespace firebolt::rialto::ipc
