@@ -908,16 +908,18 @@ void ServerImpl::processClientMessage(const std::shared_ptr<ClientImpl> &client,
                          fds.size(), client->id());
 
     // parse the message
-    transport::MessageToServer message;
-    if (!message.ParseFromArray(data, static_cast<int>(dataLen)))
+    auto arena = client->m_requestArena.acquire();
+    auto *message = google::protobuf::Arena::CreateMessage<transport::MessageToServer>(arena.get());
+
+    if (!message->ParseFromArray(data, static_cast<int>(dataLen)))
     {
         RIALTO_IPC_LOG_ERROR("invalid request");
         return;
     }
 
-    if (message.has_call())
+    if (message->has_call())
     {
-        processMethodCall(client, message.call(), fds);
+        processMethodCall(client, message->call(), fds, arena);
     }
     else
     {
@@ -933,7 +935,8 @@ void ServerImpl::processClientMessage(const std::shared_ptr<ClientImpl> &client,
 
  */
 void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, const transport::MethodCall &call,
-                                   const std::vector<FileDescriptor> &fds)
+                                   const std::vector<FileDescriptor> &fds,
+                                   const std::shared_ptr<google::protobuf::Arena> &requestArena)
 {
     // try and find the service with the given name
     const std::string &kServiceName = call.service_name();
@@ -963,7 +966,7 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
     const bool kNoReply = kMethod->options().HasExtension(no_reply) && kMethod->options().GetExtension(no_reply);
 
     // parse the request data
-    google::protobuf::Message *requestMessage = service->GetRequestPrototype(kMethod).New();
+    google::protobuf::Message *requestMessage = service->GetRequestPrototype(kMethod).New(requestArena.get());
     if (!requestMessage->ParseFromString(call.request_message()))
     {
         RIALTO_IPC_LOG_ERROR("failed to parse method from array");
@@ -977,7 +980,7 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
         RIALTO_IPC_LOG_DEBUG("call{ serial %" PRIu64 " } - %s.%s { %s }", call.serial_id(), kServiceName.c_str(),
                              kMethodName.c_str(), requestMessage->ShortDebugString().c_str());
 
-        auto *controller = new ServerControllerImpl(client, call.serial_id());
+        auto *controller = new ServerControllerImpl(client, call.serial_id(), requestArena);
 
         if (kNoReply)
         {
@@ -991,7 +994,7 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
         else
         {
             // create a response
-            google::protobuf::Message *responseMessage = service->GetResponsePrototype(kMethod).New();
+            google::protobuf::Message *responseMessage = service->GetResponsePrototype(kMethod).New(requestArena.get());
 
             // this is finally where we call the service implementation to process the request
             service->CallMethod(kMethod, controller, requestMessage, responseMessage,
@@ -999,8 +1002,6 @@ void ServerImpl::processMethodCall(const std::shared_ptr<ClientImpl> &client, co
                                                               responseMessage));
         }
     }
-
-    delete requestMessage;
 }
 
 // -----------------------------------------------------------------------------
@@ -1090,8 +1091,7 @@ void ServerImpl::handleResponse(ServerControllerImpl *controller, google::protob
         message = populateErrorReply(kClient, controller->m_kSerialId, controller->m_failureReason);
     }
 
-    // no longer need the controller or the response objects
-    delete response;
+    // no longer need the controller
     delete controller;
 
     // send the reply message to the given client
@@ -1159,8 +1159,9 @@ std::shared_ptr<msghdr> ServerImpl::populateReply(const std::shared_ptr<const Cl
                                                   google::protobuf::Message *response)
 {
     // create the base reply
-    transport::MessageFromServer message;
-    transport::MethodCallReply *reply = message.mutable_reply();
+    auto arena = client->m_replyArena.acquire();
+    auto *message = google::protobuf::Arena::CreateMessage<transport::MessageFromServer>(arena.get());
+    transport::MethodCallReply *reply = message->mutable_reply();
     if (!reply)
     {
         RIALTO_IPC_LOG_ERROR("failed to create mutable reply object");
@@ -1180,7 +1181,7 @@ std::shared_ptr<msghdr> ServerImpl::populateReply(const std::shared_ptr<const Cl
     const size_t kRequiredCtrlLen = kFds.empty() ? 0 : CMSG_SPACE(sizeof(int) * kFds.size());
 
     // calculate the size of the reply
-    const size_t kRequiredDataLen = message.ByteSizeLong();
+    const size_t kRequiredDataLen = message->ByteSizeLong();
     if (kRequiredDataLen > m_kMaxMessageLen)
     {
         RIALTO_IPC_LOG_ERROR("reply exceeds maximum message limit (%zu, max %zu)", kRequiredDataLen, m_kMaxMessageLen);
@@ -1209,7 +1210,7 @@ std::shared_ptr<msghdr> ServerImpl::populateReply(const std::shared_ptr<const Cl
     iov->iov_len = kRequiredDataLen;
 
     // copy in the data
-    message.SerializeWithCachedSizesToArray(data);
+    message->SerializeWithCachedSizesToArray(data);
 
     // add the fds
     if (!kFds.empty())
@@ -1246,20 +1247,21 @@ std::shared_ptr<msghdr> ServerImpl::populateErrorReply(const std::shared_ptr<con
                                                        uint64_t serialId, const std::string &reason)
 {
     // create the base reply
-    transport::MessageFromServer message;
-    transport::MethodCallError *error = message.mutable_error();
+    auto arena = client->m_replyArena.acquire();
+    auto *message = google::protobuf::Arena::CreateMessage<transport::MessageFromServer>(arena.get());
+    transport::MethodCallError *error = message->mutable_error();
     error->set_reply_id(serialId);
     error->set_error_reason(reason);
 
     // check the message will fit
-    size_t replySize = message.ByteSizeLong();
+    size_t replySize = message->ByteSizeLong();
     if (replySize > m_kMaxMessageLen)
     {
         RIALTO_IPC_LOG_ERROR("error reply exceeds max message size");
 
         // error message is to big, replace with a generic error
         error->set_error_reason("Error message truncated");
-        replySize = message.ByteSizeLong();
+        replySize = message->ByteSizeLong();
     }
 
     RIALTO_IPC_LOG_DEBUG("error{ serial %" PRIu64 " } - \"%s\"", serialId, reason.c_str());
@@ -1279,7 +1281,7 @@ std::shared_ptr<msghdr> ServerImpl::populateErrorReply(const std::shared_ptr<con
     iov->iov_len = replySize;
 
     // serialise the reply to the message buffer
-    message.SerializeWithCachedSizesToArray(data);
+    message->SerializeWithCachedSizesToArray(data);
 
     // std::reinterpret_pointer_cast is only implemented in C++17 and newer, so for
     // now do it manually
@@ -1332,13 +1334,29 @@ void ServerImpl::disconnectClient(uint64_t clientId)
  */
 bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::protobuf::Message> &eventMessage)
 {
+
+    std::shared_ptr<ClientImpl> client;
+
+    std::unique_lock<std::mutex> locker(m_clientsLock);
+
+    auto it = m_clients.find(clientId);
+    if (it == m_clients.end() || !it->second.client)
+    {
+        RIALTO_IPC_LOG_WARN("Unable to find client");
+        return false;
+    }
+    client = it->second.client;
+
+    locker.unlock();
+
     // gets the file descriptors from the event message
     const std::vector<int> kFds = getResponseFileDescriptors(eventMessage.get());
     const size_t kRequiredCtrlLen = kFds.empty() ? 0 : CMSG_SPACE(sizeof(int) * kFds.size());
 
     // create the base reply
-    transport::MessageFromServer message;
-    transport::EventFromServer *event = message.mutable_event();
+    auto arena = client->m_eventArena.acquire();
+    auto *message = google::protobuf::Arena::CreateMessage<transport::MessageFromServer>(arena.get());
+    transport::EventFromServer *event = message->mutable_event();
     if (!event)
     {
         RIALTO_IPC_LOG_ERROR("failed to create mutable event object");
@@ -1354,7 +1372,7 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
     event->set_message(std::move(respString));
 
     // check the reply will fit
-    size_t requiredDataLen = message.ByteSizeLong();
+    size_t requiredDataLen = message->ByteSizeLong();
     if (requiredDataLen > m_kMaxMessageLen)
     {
         RIALTO_IPC_LOG_ERROR("event message to big to fit in buffer (size %zu, max size %zu)", requiredDataLen,
@@ -1382,7 +1400,7 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
     iov->iov_len = requiredDataLen;
 
     // copy in the data
-    message.SerializeWithCachedSizesToArray(data);
+    message->SerializeWithCachedSizesToArray(data);
 
     // add the fds
     if (!kFds.empty())
@@ -1402,6 +1420,9 @@ bool ServerImpl::sendEvent(uint64_t clientId, const std::shared_ptr<google::prot
     }
 
     // finally, take the lock (so the socket is not closed beneath us) and send the reply
+    locker.lock();
+
+    if (it->second.sock < 0)
     {
         std::unique_lock<std::mutex> locker(m_clientsLock);
 
