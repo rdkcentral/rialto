@@ -67,6 +67,7 @@ public:
         std::uint32_t dataBufferAudioLen;
         std::uint32_t dataBufferVideoLen;
         std::uint32_t dataBufferSubtitleLen;
+        bool everUsed{false};
     };
 
 private:

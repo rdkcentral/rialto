@@ -29,6 +29,7 @@
 
 #include "RialtoServerLogging.h"
 #include "SharedMemoryBuffer.h"
+#include "ShmUtils.h"
 #include "TypeConverters.h"
 
 #if !defined(SYS_memfd_create)
@@ -89,6 +90,13 @@ calculatePartitionSize(firebolt::rialto::server::ISharedMemoryBuffer::MediaPlayb
     {
         return std::vector<firebolt::rialto::server::SharedMemoryBuffer::Partition>();
     }
+}
+
+// Readers never look past the frame count and lengths the client declares in haveData(), so only the
+// metadata header has to be reset between cycles - the payload behind it is always fully overwritten.
+void clearMetadataHeader(std::uint8_t *regionStart, std::uint32_t regionLen)
+{
+    memset(regionStart, 0x00, std::min(regionLen, firebolt::rialto::server::getMaxMetadataBytes()));
 }
 
 const char *toString(const firebolt::rialto::server::ISharedMemoryBuffer::MediaPlaybackType &type)
@@ -207,6 +215,20 @@ bool SharedMemoryBuffer::mapPartition(MediaPlaybackType playbackType, int id)
         return false;
     }
     freePartition->id = id;
+
+    // A recycled partition still holds the previous owner's payload; fresh memfd pages are already zero,
+    // so clearing those would only fault in the whole partition for nothing.
+    if (freePartition->everUsed)
+    {
+        std::uint8_t *partitionDataPtr = nullptr;
+        if (getDataPtrForPartition(playbackType, id, &partitionDataPtr))
+        {
+            memset(partitionDataPtr, 0x00,
+                   freePartition->dataBufferVideoLen + freePartition->dataBufferAudioLen +
+                       freePartition->dataBufferSubtitleLen);
+        }
+    }
+    freePartition->everUsed = true;
     return true;
 }
 
@@ -261,19 +283,19 @@ bool SharedMemoryBuffer::clearData(MediaPlaybackType playbackType, int id, const
     if (MediaSourceType::VIDEO == mediaSourceType)
     {
         std::uint8_t *videoData = partitionDataPtr;
-        memset(videoData, 0x00, partition->dataBufferVideoLen);
+        clearMetadataHeader(videoData, partition->dataBufferVideoLen);
         return true;
     }
     if (MediaSourceType::AUDIO == mediaSourceType)
     {
         std::uint8_t *audioData = partitionDataPtr + partition->dataBufferVideoLen;
-        memset(audioData, 0x00, partition->dataBufferAudioLen);
+        clearMetadataHeader(audioData, partition->dataBufferAudioLen);
         return true;
     }
     if (MediaSourceType::SUBTITLE == mediaSourceType)
     {
         std::uint8_t *subtitleoData = partitionDataPtr + partition->dataBufferVideoLen + partition->dataBufferAudioLen;
-        memset(subtitleoData, 0x00, partition->dataBufferSubtitleLen);
+        clearMetadataHeader(subtitleoData, partition->dataBufferSubtitleLen);
         return true;
     }
 
