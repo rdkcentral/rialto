@@ -682,25 +682,27 @@ void ChannelImpl::updateTimeoutTimer()
 void ChannelImpl::processServerMessage(const uint8_t *data, size_t dataLen, std::vector<FileDescriptor> *fds)
 {
     // parse the message
-    transport::MessageFromServer message;
-    if (!message.ParseFromArray(data, static_cast<int>(dataLen)))
+    auto arena = m_receiveArena.acquire();
+    auto *message = google::protobuf::Arena::CreateMessage<transport::MessageFromServer>(arena.get());
+
+    if (!message->ParseFromArray(data, static_cast<int>(dataLen)))
     {
         RIALTO_IPC_LOG_ERROR("invalid message from server");
         return;
     }
 
     // check if an event or a reply to a request
-    if (message.has_reply())
+    if (message->has_reply())
     {
-        processReplyFromServer(message.reply(), fds);
+        processReplyFromServer(message->reply(), fds);
     }
-    else if (message.has_error())
+    else if (message->has_error())
     {
-        processErrorFromServer(message.error());
+        processErrorFromServer(message->error());
     }
-    else if (message.has_event())
+    else if (message->has_event())
     {
-        processEventFromServer(message.event(), fds);
+        processEventFromServer(message->event(), fds);
     }
     else
     {
@@ -827,7 +829,9 @@ void ChannelImpl::processEventFromServer(const transport::EventFromServer &event
         return;
     }
 
-    std::shared_ptr<google::protobuf::Message> message(kPrototype->New());
+    auto arena = m_eventArena.acquire();
+    std::shared_ptr<google::protobuf::Message> message(kPrototype->New(arena.get()), 
+                                                        [arena](google::protobuf::Message *) mutable { arena.reset(); });
     if (!message)
     {
         RIALTO_IPC_LOG_ERROR("failed to create mutable message from prototype");
@@ -1090,9 +1094,11 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
     //
     const uint64_t kSerialId = m_serialCounter++;
 
-    // create the transport request
-    transport::MessageToServer message;
-    transport::MethodCall *call = message.mutable_call();
+    // create the transport request    
+    auto arena = m_sendArena.acquire();
+    auto *message = google::protobuf::Arena::CreateMessage<transport::MessageToServer>(arena.get());
+
+    transport::MethodCall *call = message->mutable_call();
     call->set_serial_id(kSerialId);
     call->set_service_name(method->service()->full_name());
     call->set_method_name(method->name());
@@ -1101,7 +1107,7 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
     std::string reqString = request->SerializeAsString();
     call->set_request_message(std::move(reqString));
 
-    const size_t kRequiredDataLen = message.ByteSizeLong();
+    const size_t kRequiredDataLen = message->ByteSizeLong();
     if (kRequiredDataLen > kMaxMessageSize)
     {
         RIALTO_IPC_LOG_ERROR("method call to big to send (%zu, max %zu", kRequiredDataLen, kMaxMessageSize);
@@ -1133,7 +1139,7 @@ void ChannelImpl::CallMethod(const google::protobuf::MethodDescriptor *method, /
     iov->iov_len = kRequiredDataLen;
 
     // copy in the data
-    message.SerializeWithCachedSizesToArray(data);
+    message->SerializeWithCachedSizesToArray(data);
 
     // next check if the request is sending any fd's
     if (!kFds.empty())

@@ -24,6 +24,7 @@
 #include "IIpcChannel.h"
 #include "IpcClientControllerImpl.h"
 #include "SimpleBufferPool.h"
+#include "Arena.h"
 
 #include "rialtoipc-transport.pb.h"
 #include <google/protobuf/service.h>
@@ -140,6 +141,8 @@ private:
     };
 
     std::multimap<std::string, Event> m_eventHandlers;
+
+    Arena m_sendArena, m_receiveArena, m_eventArena;
 };
 
 } // namespace firebolt::rialto::ipc

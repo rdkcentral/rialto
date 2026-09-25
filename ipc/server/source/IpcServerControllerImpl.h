@@ -22,6 +22,8 @@
 
 #include "IIpcController.h"
 #include "IpcClientImpl.h"
+#include "Arena.h"
+
 #include <memory>
 #include <string>
 
@@ -69,7 +71,8 @@ public:
 
 protected:
     friend class ServerImpl;
-    ServerControllerImpl(std::shared_ptr<ClientImpl> client, uint64_t serialId);
+    ServerControllerImpl(std::shared_ptr<ClientImpl> client, uint64_t serialId, 
+                            std::shared_ptr<google::protobuf::Arena> arena);
 
     const std::shared_ptr<ClientImpl> m_kClient;
     const uint64_t m_serialId{};
@@ -77,6 +80,8 @@ protected:
 
     bool m_failed = false;
     std::string m_failureReason;
+
+    const std::shared_ptr<google::protobuf::Arena> m_requestArena;
 };
 
 } // namespace firebolt::rialto::ipc
