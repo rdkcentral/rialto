@@ -19,6 +19,7 @@
 
 #include "GstInitialiser.h"
 #include "GstLogForwarding.h"
+#include "IGlibWrapper.h"
 #include "RialtoServerLogging.h"
 
 namespace firebolt::rialto::server
@@ -67,6 +68,15 @@ void GstInitialiser::initialise(int *argc, char ***argv)
             }
 
             m_gstWrapper->gstInit(argc, argv);
+
+            auto glibWrapper = firebolt::rialto::wrappers::IGlibWrapperFactory::getFactory()->getGlibWrapper();
+            if (!glibWrapper)
+            {
+                RIALTO_SERVER_LOG_ERROR("Failed to create the glib wrapper");
+                return;
+            }
+            glibWrapper->gThreadPoolSetMaxUnusedThreads(2);
+            glibWrapper->gThreadPoolSetMaxIdleTime(5 * 1000); // 5 seconds
 
             // remove rialto sinks from the registry
             GstPlugin *rialtoPlugin =
