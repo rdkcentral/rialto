@@ -159,6 +159,7 @@ TEST_F(RialtoServerCreateGstGenericPlayerTest, FactoryCreatesObject)
     EXPECT_CALL(*m_gstWrapperMock, gstBusSetSyncHandler(nullptr, nullptr, nullptr, nullptr));
     EXPECT_CALL(*m_gstWrapperMock, gstElementSetState(_, GST_STATE_NULL)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
     EXPECT_CALL(*m_gstWrapperMock, gstObjectUnref(_)).Times(2);
+    EXPECT_CALL(*m_glibWrapperMock, gThreadPoolStopUnusedThreads());
     player.reset();
 
     // Cleanup
