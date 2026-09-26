@@ -111,6 +111,13 @@ protected:
      */
     bool reattachChannelIfRequired();
 
+    /**
+     * @brief Checks whether the channel this object was attached to is still connected.
+     *
+     * @retval true if the attached channel is still connected, false otherwise.
+     */
+    bool isChannelConnected() const;
+
 private:
     /**
      * @brief Get connected IPC Channel

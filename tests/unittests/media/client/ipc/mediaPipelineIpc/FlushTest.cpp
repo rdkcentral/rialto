@@ -65,10 +65,6 @@ TEST_F(RialtoClientMediaPipelineIpcFlushTest, FlushChannelDisconnected)
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaPipelineIpc->flush(m_kSourceId, m_kResetTime, m_async), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

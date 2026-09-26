@@ -67,10 +67,6 @@ TEST_F(RialtoClientMediaPipelineIpcProcessAudioGapTest, ChannelDisconnected)
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaPipelineIpc->processAudioGap(m_kPosition, m_kDuration, m_kDiscontinuityGap, m_kIsAudioAac), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

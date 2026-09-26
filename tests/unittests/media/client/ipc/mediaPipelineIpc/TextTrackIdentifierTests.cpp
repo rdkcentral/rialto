@@ -64,10 +64,6 @@ TEST_F(RialtoClientMediaPipelineIpcTextTrackIdentifierTest, SetChannelDisconnect
     expectUnsubscribeEvents();
 
     EXPECT_FALSE(m_mediaPipelineIpc->setTextTrackIdentifier(m_kTextTrackIdentifier));
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**
@@ -130,10 +126,6 @@ TEST_F(RialtoClientMediaPipelineIpcTextTrackIdentifierTest, GetChannelDisconnect
 
     std::string textTrackIdentifier;
     EXPECT_FALSE(m_mediaPipelineIpc->getTextTrackIdentifier(textTrackIdentifier));
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

@@ -63,10 +63,6 @@ TEST_F(RialtoClientMediaPipelineIpcBufferingLimitTest, SetBufferingLimitChannelD
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaPipelineIpc->setBufferingLimit(m_kBufferingLimit), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**
@@ -128,10 +124,6 @@ TEST_F(RialtoClientMediaPipelineIpcBufferingLimitTest, GetBufferingLimitChannelD
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_mediaPipelineIpc->getBufferingLimit(bufferingLimit), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**

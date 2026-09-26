@@ -166,6 +166,15 @@ void MediaPipelineIpcTestBase::expectUnsubscribeEvents()
 
 void MediaPipelineIpcTestBase::destroyMediaPipelineIpc()
 {
+    if (m_channelDetached)
+    {
+        // A failed api call has already detached the channel, so the session is not destroyed
+        // on the server
+        m_mediaPipelineIpc.reset();
+        EXPECT_EQ(m_mediaPipelineIpc, nullptr);
+        return;
+    }
+
     expectIpcApiCallSuccess();
     expectUnsubscribeEvents();
 

@@ -75,10 +75,6 @@ TEST_F(RialtoClientWebAudioPlayerIpcPlayPauseTest, PlayChannelDisconnected)
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_webAudioPlayerIpc->play(), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**
@@ -130,10 +126,6 @@ TEST_F(RialtoClientWebAudioPlayerIpcPlayPauseTest, PauseChannelDisconnected)
     expectUnsubscribeEvents();
 
     EXPECT_EQ(m_webAudioPlayerIpc->pause(), false);
-
-    // Reattach channel on destroySession
-    EXPECT_CALL(*m_ipcClientMock, getChannel()).WillOnce(Return(m_channelMock)).RetiresOnSaturation();
-    expectSubscribeEvents();
 }
 
 /**
