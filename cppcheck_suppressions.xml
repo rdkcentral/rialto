@@ -51,6 +51,11 @@
         <fileName>tests/*</fileName>
         <symbolName>__*</symbolName>
     </suppress>
+    <suppress> <!-- gtest SetUpTestSuite is called by the framework, not detected by cppcheck -->
+        <id>unusedFunction</id>
+        <fileName>tests/unittests/wrappers/YamlCppWrapperTest.cpp</fileName>
+        <symbolName>SetUpTestSuite</symbolName>
+    </suppress>
     <suppress>
         <id>unusedFunction</id>
         <fileName>ipc/client/source/IpcClientControllerImpl.h</fileName>

@@ -50,6 +50,8 @@ set (
         include/IWebAudioPlayer.h
         include/IWebAudioPlayerClient.h
         include/MediaCommon.h
+        include/AudioDecoderCapabilities.h
+        include/VideoDecoderCapabilities.h
 )
 
 install (

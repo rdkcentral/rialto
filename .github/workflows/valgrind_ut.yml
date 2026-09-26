@@ -69,7 +69,7 @@ jobs:
 
       # Add misc package dependencies
       - name: install dependencies
-        run: sudo apt-get install libc6-dbg
+        run: sudo apt-get install libc6-dbg libyaml-cpp-dev
 
       # Setup gstreamer 1.0
       - name: Build gstreamer library

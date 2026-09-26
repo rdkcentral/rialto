@@ -121,6 +121,8 @@ public:
     void mediaPipelineWillFailToSwitchSource();
     void mediaPipelineWillCheckIfVideoIsMaster();
     void mediaPipelineWillFailToCheckIfVideoIsMaster();
+    void mediaPipelineWillGetAudioDecoderCapabilities();
+    void mediaPipelineWillGetVideoDecoderCapabilities();
 
     void mediaPipelineWillPing();
 
@@ -222,6 +224,8 @@ public:
     void switchSourceShouldFail();
     void isVideoMasterShouldSucceed();
     void isVideoMasterShouldFail();
+    void getAudioDecoderCapabilitiesShouldSucceed();
+    void getVideoDecoderCapabilitiesShouldSucceed();
 
     void clearMediaPipelines();
     void initSession();

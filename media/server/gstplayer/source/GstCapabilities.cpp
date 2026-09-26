@@ -147,8 +147,17 @@ std::unique_ptr<IGstCapabilities> GstCapabilitiesFactory::createGstCapabilities(
             throw std::runtime_error("Cannot create RdkGstreamerUtilsWrapper");
         }
 
+        std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapperFactory> yamlCppWrapperFactory =
+            firebolt::rialto::wrappers::IYamlCppWrapperFactory::getFactory();
+        std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> yamlCppWrapper;
+
+        if ((!yamlCppWrapperFactory) || (!(yamlCppWrapper = yamlCppWrapperFactory->createYamlCppWrapper())))
+        {
+            throw std::runtime_error("Cannot create YamlCppWrapper");
+        }
+
         gstCapabilities = std::make_unique<GstCapabilities>(gstWrapper, glibWrapper, rdkGstreamerUtilsWrapper,
-                                                            IGstInitialiser::instance());
+                                                            yamlCppWrapper, IGstInitialiser::instance());
     }
     catch (const std::exception &e)
     {
@@ -162,10 +171,21 @@ GstCapabilities::GstCapabilities(
     const std::shared_ptr<firebolt::rialto::wrappers::IGstWrapper> &gstWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IGlibWrapper> &glibWrapper,
     const std::shared_ptr<firebolt::rialto::wrappers::IRdkGstreamerUtilsWrapper> &rdkGstreamerUtilsWrapper,
+    const std::shared_ptr<firebolt::rialto::wrappers::IYamlCppWrapper> &yamlCppWrapper,
     const IGstInitialiser &gstInitialiser)
     : m_gstWrapper{gstWrapper}, m_glibWrapper{glibWrapper}, m_rdkGstreamerUtilsWrapper{rdkGstreamerUtilsWrapper},
-      m_gstInitialiser{gstInitialiser}
+      m_yamlCppWrapper{yamlCppWrapper}, m_gstInitialiser{gstInitialiser}
 {
+    auto logCapabilityStatus = [](DecoderCapabilitiesStatus status, const char *type)
+    {
+        if (status == DecoderCapabilitiesStatus::CONFIG_NOT_FOUND)
+            RIALTO_SERVER_LOG_INFO("No %s decoder capabilities config file found", type);
+        else if (status != DecoderCapabilitiesStatus::OK)
+            RIALTO_SERVER_LOG_WARN("Failed to get %s decoder capabilities from config file", type);
+    };
+
+    logCapabilityStatus(m_yamlCppWrapper->getAudioDecoderCapabilities(m_audioDecoderCapabilities), "audio");
+    logCapabilityStatus(m_yamlCppWrapper->getVideoDecoderCapabilities(m_videoDecoderCapabilities), "video");
     m_initialisationThread = std::thread(
         [this]()
         {
@@ -458,6 +478,14 @@ bool GstCapabilities::isVideoMaster(bool &isVideoMaster)
     return true;
 }
 
-} // namespace firebolt::rialto::server
+AudioDecoderCapabilities GstCapabilities::getSupportedAudioCapabilities()
+{
+    return m_audioDecoderCapabilities;
+}
 
-// namespace firebolt::rialto::server
+VideoDecoderCapabilities GstCapabilities::getSupportedVideoCapabilities()
+{
+    return m_videoDecoderCapabilities;
+}
+
+} // namespace firebolt::rialto::server

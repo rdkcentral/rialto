@@ -21,6 +21,574 @@
 #include "RialtoClientLogging.h"
 #include "RialtoCommonIpc.h"
 
+namespace
+{
+using AudioCapabilitiesResponse = firebolt::rialto::GetSupportedAudioCapabilitiesResponse;
+using VideoCapabilitiesResponse = firebolt::rialto::GetSupportedVideoCapabilitiesResponse;
+
+firebolt::rialto::AudioProfileCapability
+convertAudioProfileCapability(const AudioCapabilitiesResponse::AudioProfileCapability &proto)
+{
+    firebolt::rialto::AudioProfileCapability cap{};
+    if (proto.has_max_bitrate_in_bps())
+        cap.maxBitrateInBps = proto.max_bitrate_in_bps();
+    if (proto.has_max_channels())
+        cap.maxChannels = proto.max_channels();
+    if (proto.has_max_sample_rate_in_hz())
+        cap.maxSampleRateInHz = proto.max_sample_rate_in_hz();
+    if (proto.has_max_bit_depth())
+        cap.maxBitDepth = proto.max_bit_depth();
+    return cap;
+}
+
+firebolt::rialto::AacProfile convertAacProfile(AudioCapabilitiesResponse::AacProfile proto)
+{
+    switch (proto)
+    {
+    case AudioCapabilitiesResponse::AAC_PROFILE_LC:
+        return firebolt::rialto::AacProfile::LC;
+    case AudioCapabilitiesResponse::AAC_PROFILE_HE_V1:
+        return firebolt::rialto::AacProfile::HE_V1;
+    case AudioCapabilitiesResponse::AAC_PROFILE_HE_V2:
+        return firebolt::rialto::AacProfile::HE_V2;
+    case AudioCapabilitiesResponse::AAC_PROFILE_ELD:
+        return firebolt::rialto::AacProfile::ELD;
+    case AudioCapabilitiesResponse::AAC_PROFILE_X_HE:
+        return firebolt::rialto::AacProfile::X_HE;
+    }
+    return firebolt::rialto::AacProfile::LC;
+}
+
+firebolt::rialto::DolbyAc3Profile convertDolbyAc3Profile(AudioCapabilitiesResponse::DolbyAc3Profile proto)
+{
+    switch (proto)
+    {
+    case AudioCapabilitiesResponse::DOLBY_AC3_PROFILE_STANDARD:
+        return firebolt::rialto::DolbyAc3Profile::STANDARD;
+    }
+    return firebolt::rialto::DolbyAc3Profile::STANDARD;
+}
+
+firebolt::rialto::DolbyEac3Profile convertDolbyEac3Profile(AudioCapabilitiesResponse::DolbyEac3Profile proto)
+{
+    switch (proto)
+    {
+    case AudioCapabilitiesResponse::DOLBY_EAC3_PROFILE_PLUS:
+        return firebolt::rialto::DolbyEac3Profile::PLUS;
+    case AudioCapabilitiesResponse::DOLBY_EAC3_PROFILE_PLUS_JOC:
+        return firebolt::rialto::DolbyEac3Profile::PLUS_JOC;
+    }
+    return firebolt::rialto::DolbyEac3Profile::PLUS;
+}
+
+firebolt::rialto::MpegAudioProfile convertMpegAudioProfile(AudioCapabilitiesResponse::MpegAudioProfile proto)
+{
+    switch (proto)
+    {
+    case AudioCapabilitiesResponse::MPEG_AUDIO_PROFILE_LAYER_1:
+        return firebolt::rialto::MpegAudioProfile::LAYER_1;
+    case AudioCapabilitiesResponse::MPEG_AUDIO_PROFILE_LAYER_2:
+        return firebolt::rialto::MpegAudioProfile::LAYER_2;
+    }
+    return firebolt::rialto::MpegAudioProfile::LAYER_1;
+}
+
+firebolt::rialto::RealAudioProfile convertRealAudioProfile(AudioCapabilitiesResponse::RealAudioProfile proto)
+{
+    switch (proto)
+    {
+    case AudioCapabilitiesResponse::REALAUDIO_PROFILE_RA8:
+        return firebolt::rialto::RealAudioProfile::RA8;
+    case AudioCapabilitiesResponse::REALAUDIO_PROFILE_RA10:
+        return firebolt::rialto::RealAudioProfile::RA10;
+    }
+    return firebolt::rialto::RealAudioProfile::RA8;
+}
+
+firebolt::rialto::UsacProfile convertUsacProfile(AudioCapabilitiesResponse::UsacProfile proto)
+{
+    switch (proto)
+    {
+    case AudioCapabilitiesResponse::USAC_PROFILE_BASELINE:
+        return firebolt::rialto::UsacProfile::BASELINE;
+    case AudioCapabilitiesResponse::USAC_PROFILE_EXTENDED_HE_AAC:
+        return firebolt::rialto::UsacProfile::EXTENDED_HE_AAC;
+    }
+    return firebolt::rialto::UsacProfile::BASELINE;
+}
+
+firebolt::rialto::DtsProfile convertDtsProfile(AudioCapabilitiesResponse::DtsProfile proto)
+{
+    switch (proto)
+    {
+    case AudioCapabilitiesResponse::DTS_PROFILE_CORE:
+        return firebolt::rialto::DtsProfile::CORE;
+    case AudioCapabilitiesResponse::DTS_PROFILE_HD_HRA:
+        return firebolt::rialto::DtsProfile::HD_HRA;
+    case AudioCapabilitiesResponse::DTS_PROFILE_HD_MA:
+        return firebolt::rialto::DtsProfile::HD_MA;
+    }
+    return firebolt::rialto::DtsProfile::CORE;
+}
+
+firebolt::rialto::AvsProfile convertAvsProfile(AudioCapabilitiesResponse::AvsProfile proto)
+{
+    switch (proto)
+    {
+    case AudioCapabilitiesResponse::AVS_PROFILE_AVS1_PART2:
+        return firebolt::rialto::AvsProfile::AVS1_PART2;
+    case AudioCapabilitiesResponse::AVS_PROFILE_AVS2:
+        return firebolt::rialto::AvsProfile::AVS2;
+    case AudioCapabilitiesResponse::AVS_PROFILE_AVS3:
+        return firebolt::rialto::AvsProfile::AVS3;
+    }
+    return firebolt::rialto::AvsProfile::AVS1_PART2;
+}
+
+template <typename MapType, typename ProtoCapType, typename ProfileConverter>
+MapType deserializeNamedProfileMap(const ProtoCapType &proto, ProfileConverter convertProfile)
+{
+    MapType result;
+    for (int i = 0; i < proto.profiles_size(); ++i)
+    {
+        const auto &entry = proto.profiles(i);
+        if (entry.has_profile() && entry.has_capability())
+            result.emplace(convertProfile(entry.profile()), convertAudioProfileCapability(entry.capability()));
+    }
+    return result;
+}
+
+firebolt::rialto::AudioDecoderCapability
+convertAudioDecoderCapability(const AudioCapabilitiesResponse::AudioDecoderCapability &proto)
+{
+    firebolt::rialto::AudioDecoderCapability result;
+
+    if (proto.has_pcm())
+        result.pcm = firebolt::rialto::PcmCapability{convertAudioProfileCapability(proto.pcm().base())};
+    if (proto.has_mp3())
+        result.mp3 = firebolt::rialto::Mp3Capability{convertAudioProfileCapability(proto.mp3().base())};
+    if (proto.has_alac())
+        result.alac = firebolt::rialto::AlacCapability{convertAudioProfileCapability(proto.alac().base())};
+    if (proto.has_sbc())
+        result.sbc = firebolt::rialto::SbcCapability{convertAudioProfileCapability(proto.sbc().base())};
+    if (proto.has_dolby_ac4())
+        result.dolbyAc4 = firebolt::rialto::DolbyAc4Capability{convertAudioProfileCapability(proto.dolby_ac4().base())};
+    if (proto.has_dolby_truehd())
+        result.dolbyTruehd =
+            firebolt::rialto::DolbyTruehdCapability{convertAudioProfileCapability(proto.dolby_truehd().base())};
+    if (proto.has_flac())
+        result.flac = firebolt::rialto::FlacCapability{convertAudioProfileCapability(proto.flac().base())};
+    if (proto.has_vorbis())
+        result.vorbis = firebolt::rialto::VorbisCapability{convertAudioProfileCapability(proto.vorbis().base())};
+    if (proto.has_opus())
+        result.opus = firebolt::rialto::OpusCapability{convertAudioProfileCapability(proto.opus().base())};
+
+    if (proto.has_aac())
+        result.aac = firebolt::rialto::AacCapability{deserializeNamedProfileMap<
+            std::map<firebolt::rialto::AacProfile, firebolt::rialto::AudioProfileCapability>>(proto.aac(),
+                                                                                              convertAacProfile)};
+    if (proto.has_mpeg_audio())
+        result.mpegAudio = firebolt::rialto::MpegAudioCapability{deserializeNamedProfileMap<
+            std::map<firebolt::rialto::MpegAudioProfile, firebolt::rialto::AudioProfileCapability>>(proto.mpeg_audio(),
+                                                                                                    convertMpegAudioProfile)};
+    if (proto.has_dolby_ac3())
+        result.dolbyAc3 = firebolt::rialto::DolbyAc3Capability{deserializeNamedProfileMap<
+            std::map<firebolt::rialto::DolbyAc3Profile, firebolt::rialto::AudioProfileCapability>>(proto.dolby_ac3(),
+                                                                                                   convertDolbyAc3Profile)};
+    if (proto.has_dolby_eac3())
+        result.dolbyEac3 = firebolt::rialto::DolbyEac3Capability{deserializeNamedProfileMap<
+            std::map<firebolt::rialto::DolbyEac3Profile, firebolt::rialto::AudioProfileCapability>>(proto.dolby_eac3(),
+                                                                                                    convertDolbyEac3Profile)};
+    if (proto.has_real_audio())
+        result.realAudio = firebolt::rialto::RealAudioCapability{deserializeNamedProfileMap<
+            std::map<firebolt::rialto::RealAudioProfile, firebolt::rialto::AudioProfileCapability>>(proto.real_audio(),
+                                                                                                    convertRealAudioProfile)};
+    if (proto.has_usac())
+        result.usac = firebolt::rialto::UsacCapability{deserializeNamedProfileMap<
+            std::map<firebolt::rialto::UsacProfile, firebolt::rialto::AudioProfileCapability>>(proto.usac(),
+                                                                                               convertUsacProfile)};
+    if (proto.has_dts())
+        result.dts = firebolt::rialto::DtsCapability{deserializeNamedProfileMap<
+            std::map<firebolt::rialto::DtsProfile, firebolt::rialto::AudioProfileCapability>>(proto.dts(),
+                                                                                              convertDtsProfile)};
+    if (proto.has_avs())
+        result.avs = firebolt::rialto::AvsCapability{deserializeNamedProfileMap<
+            std::map<firebolt::rialto::AvsProfile, firebolt::rialto::AudioProfileCapability>>(proto.avs(),
+                                                                                              convertAvsProfile)};
+
+    return result;
+}
+
+firebolt::rialto::AudioDecoderCapabilities convertAudioDecoderCapabilities(const AudioCapabilitiesResponse &response)
+{
+    firebolt::rialto::AudioDecoderCapabilities result;
+    result.interfaceVersion = response.interface_version();
+    result.schemaVersion = response.schema_version();
+    for (const auto &cap : response.capabilities())
+    {
+        result.capabilities.push_back(convertAudioDecoderCapability(cap));
+    }
+    return result;
+}
+
+// ---------- Video converter helpers ----------
+
+firebolt::rialto::DynamicRange convertDynamicRange(VideoCapabilitiesResponse::DynamicRange proto)
+{
+    switch (proto)
+    {
+    case VideoCapabilitiesResponse::DYNAMIC_RANGE_SDR:
+        return firebolt::rialto::DynamicRange::SDR;
+    case VideoCapabilitiesResponse::DYNAMIC_RANGE_HLG:
+        return firebolt::rialto::DynamicRange::HLG;
+    case VideoCapabilitiesResponse::DYNAMIC_RANGE_HDR10:
+        return firebolt::rialto::DynamicRange::HDR10;
+    case VideoCapabilitiesResponse::DYNAMIC_RANGE_HDR10PLUS:
+        return firebolt::rialto::DynamicRange::HDR10PLUS;
+    case VideoCapabilitiesResponse::DYNAMIC_RANGE_DOLBY_VISION:
+        return firebolt::rialto::DynamicRange::DOLBY_VISION;
+    }
+    return firebolt::rialto::DynamicRange::SDR;
+}
+
+firebolt::rialto::Mpeg2Profile convertMpeg2Profile(const VideoCapabilitiesResponse::Mpeg2Profile &p)
+{
+    firebolt::rialto::Mpeg2Profile r{};
+    if (p.has_type())
+    {
+        switch (p.type())
+        {
+        case VideoCapabilitiesResponse::MPEG2_PROFILE_MAIN:
+            r.type = firebolt::rialto::Mpeg2ProfileType::MPEG2_MAIN;
+            break;
+        case VideoCapabilitiesResponse::MPEG2_PROFILE_SIMPLE:
+            r.type = firebolt::rialto::Mpeg2ProfileType::MPEG2_SIMPLE;
+            break;
+        }
+    }
+    if (p.has_max_level())
+    {
+        switch (p.max_level())
+        {
+        case VideoCapabilitiesResponse::MPEG2_LEVEL_LOW:
+            r.maxLevel = firebolt::rialto::Mpeg2Level::MPEG2_LEVEL_LOW;
+            break;
+        case VideoCapabilitiesResponse::MPEG2_LEVEL_MAIN:
+            r.maxLevel = firebolt::rialto::Mpeg2Level::MPEG2_LEVEL_MAIN;
+            break;
+        case VideoCapabilitiesResponse::MPEG2_LEVEL_HIGH:
+            r.maxLevel = firebolt::rialto::Mpeg2Level::MPEG2_LEVEL_HIGH;
+            break;
+        }
+    }
+    if (p.has_max_bitrate_in_bps())
+        r.maxBitrateInBps = p.max_bitrate_in_bps();
+    return r;
+}
+
+firebolt::rialto::H264Profile convertH264Profile(const VideoCapabilitiesResponse::H264Profile &p)
+{
+    firebolt::rialto::H264Profile r{};
+    if (p.has_type())
+    {
+        switch (p.type())
+        {
+        case VideoCapabilitiesResponse::H264_PROFILE_BASELINE:
+            r.type = firebolt::rialto::H264ProfileType::H264_BASELINE;
+            break;
+        case VideoCapabilitiesResponse::H264_PROFILE_MAIN:
+            r.type = firebolt::rialto::H264ProfileType::H264_MAIN;
+            break;
+        case VideoCapabilitiesResponse::H264_PROFILE_HIGH:
+            r.type = firebolt::rialto::H264ProfileType::H264_HIGH;
+            break;
+        }
+    }
+    if (p.has_max_level())
+    {
+        switch (p.max_level())
+        {
+        case VideoCapabilitiesResponse::H264_LEVEL_3:
+            r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_3;
+            break;
+        case VideoCapabilitiesResponse::H264_LEVEL_3_1:
+            r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_3_1;
+            break;
+        case VideoCapabilitiesResponse::H264_LEVEL_4:
+            r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_4;
+            break;
+        case VideoCapabilitiesResponse::H264_LEVEL_4_1:
+            r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_4_1;
+            break;
+        case VideoCapabilitiesResponse::H264_LEVEL_5:
+            r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_5;
+            break;
+        case VideoCapabilitiesResponse::H264_LEVEL_5_1:
+            r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_5_1;
+            break;
+        case VideoCapabilitiesResponse::H264_LEVEL_5_2:
+            r.maxLevel = firebolt::rialto::H264Level::H264_LEVEL_5_2;
+            break;
+        }
+    }
+    if (p.has_max_bitrate_in_bps())
+        r.maxBitrateInBps = p.max_bitrate_in_bps();
+    return r;
+}
+
+firebolt::rialto::H265Profile convertH265Profile(const VideoCapabilitiesResponse::H265Profile &p)
+{
+    firebolt::rialto::H265Profile r{};
+    if (p.has_type())
+    {
+        switch (p.type())
+        {
+        case VideoCapabilitiesResponse::H265_PROFILE_MAIN:
+            r.type = firebolt::rialto::H265ProfileType::H265_MAIN;
+            break;
+        case VideoCapabilitiesResponse::H265_PROFILE_MAIN_10:
+            r.type = firebolt::rialto::H265ProfileType::H265_MAIN_10;
+            break;
+        case VideoCapabilitiesResponse::H265_PROFILE_MAIN_10_HDR10:
+            r.type = firebolt::rialto::H265ProfileType::H265_MAIN_10_HDR10;
+            break;
+        }
+    }
+    if (p.has_max_level())
+    {
+        switch (p.max_level())
+        {
+        case VideoCapabilitiesResponse::H265_LEVEL_4:
+            r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_4;
+            break;
+        case VideoCapabilitiesResponse::H265_LEVEL_4_1:
+            r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_4_1;
+            break;
+        case VideoCapabilitiesResponse::H265_LEVEL_5:
+            r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_5;
+            break;
+        case VideoCapabilitiesResponse::H265_LEVEL_5_1:
+            r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_5_1;
+            break;
+        case VideoCapabilitiesResponse::H265_LEVEL_5_2:
+            r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_5_2;
+            break;
+        case VideoCapabilitiesResponse::H265_LEVEL_6:
+            r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_6;
+            break;
+        case VideoCapabilitiesResponse::H265_LEVEL_6_1:
+            r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_6_1;
+            break;
+        case VideoCapabilitiesResponse::H265_LEVEL_6_2:
+            r.maxLevel = firebolt::rialto::H265Level::H265_LEVEL_6_2;
+            break;
+        }
+    }
+    if (p.has_max_bitrate_in_bps())
+        r.maxBitrateInBps = p.max_bitrate_in_bps();
+    return r;
+}
+
+firebolt::rialto::Vp9Profile convertVp9Profile(const VideoCapabilitiesResponse::Vp9Profile &p)
+{
+    firebolt::rialto::Vp9Profile r{};
+    if (p.has_type())
+    {
+        switch (p.type())
+        {
+        case VideoCapabilitiesResponse::VP9_PROFILE_0:
+            r.type = firebolt::rialto::Vp9ProfileType::VP9_PROFILE_0;
+            break;
+        case VideoCapabilitiesResponse::VP9_PROFILE_1:
+            r.type = firebolt::rialto::Vp9ProfileType::VP9_PROFILE_1;
+            break;
+        case VideoCapabilitiesResponse::VP9_PROFILE_2:
+            r.type = firebolt::rialto::Vp9ProfileType::VP9_PROFILE_2;
+            break;
+        case VideoCapabilitiesResponse::VP9_PROFILE_3:
+            r.type = firebolt::rialto::Vp9ProfileType::VP9_PROFILE_3;
+            break;
+        }
+    }
+    if (p.has_max_level())
+    {
+        switch (p.max_level())
+        {
+        case VideoCapabilitiesResponse::VP9_LEVEL_1:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_1;
+            break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_1_1:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_1_1;
+            break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_2:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_2;
+            break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_2_1:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_2_1;
+            break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_3:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_3;
+            break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_3_1:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_3_1;
+            break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_4:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_4;
+            break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_4_1:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_4_1;
+            break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_5:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_5;
+            break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_5_1:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_5_1;
+            break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_5_2:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_5_2;
+            break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_6:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_6;
+            break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_6_1:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_6_1;
+            break;
+        case VideoCapabilitiesResponse::VP9_LEVEL_6_2:
+            r.maxLevel = firebolt::rialto::Vp9Level::VP9_LEVEL_6_2;
+            break;
+        }
+    }
+    if (p.has_max_bitrate_in_bps())
+        r.maxBitrateInBps = p.max_bitrate_in_bps();
+    return r;
+}
+
+firebolt::rialto::Av1Profile convertAv1Profile(const VideoCapabilitiesResponse::Av1Profile &p)
+{
+    firebolt::rialto::Av1Profile r{};
+    if (p.has_type())
+    {
+        switch (p.type())
+        {
+        case VideoCapabilitiesResponse::AV1_PROFILE_MAIN:
+            r.type = firebolt::rialto::Av1ProfileType::AV1_MAIN;
+            break;
+        case VideoCapabilitiesResponse::AV1_PROFILE_HIGH:
+            r.type = firebolt::rialto::Av1ProfileType::AV1_HIGH;
+            break;
+        }
+    }
+    if (p.has_max_level())
+    {
+        switch (p.max_level())
+        {
+        case VideoCapabilitiesResponse::AV1_LEVEL_4_0:
+            r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_4_0;
+            break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_4_1:
+            r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_4_1;
+            break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_5_0:
+            r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_5_0;
+            break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_5_1:
+            r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_5_1;
+            break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_5_2:
+            r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_5_2;
+            break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_6_0:
+            r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_6_0;
+            break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_6_1:
+            r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_6_1;
+            break;
+        case VideoCapabilitiesResponse::AV1_LEVEL_6_2:
+            r.maxLevel = firebolt::rialto::Av1Level::AV1_LEVEL_6_2;
+            break;
+        }
+    }
+    if (p.has_max_bitrate_in_bps())
+        r.maxBitrateInBps = p.max_bitrate_in_bps();
+    return r;
+}
+
+firebolt::rialto::VideoCodecCapabilities
+convertVideoCodecCapabilities(const VideoCapabilitiesResponse::VideoCodecCapabilities &proto)
+{
+    firebolt::rialto::VideoCodecCapabilities result;
+
+    auto fillDr = [](const auto &protoCodec, std::vector<firebolt::rialto::DynamicRange> &out)
+    {
+        for (int i = 0; i < protoCodec.dynamic_ranges_size(); ++i)
+            out.push_back(convertDynamicRange(protoCodec.dynamic_ranges(i)));
+    };
+
+    if (proto.has_mpeg2())
+    {
+        firebolt::rialto::Mpeg2CodecCapability c;
+        for (const auto &p : proto.mpeg2().profiles())
+            c.profiles.push_back(convertMpeg2Profile(p));
+        fillDr(proto.mpeg2(), c.dynamicRanges);
+        result.mpeg2 = std::move(c);
+    }
+    if (proto.has_h264())
+    {
+        firebolt::rialto::H264CodecCapability c;
+        for (const auto &p : proto.h264().profiles())
+            c.profiles.push_back(convertH264Profile(p));
+        fillDr(proto.h264(), c.dynamicRanges);
+        result.h264 = std::move(c);
+    }
+    if (proto.has_h265())
+    {
+        firebolt::rialto::H265CodecCapability c;
+        for (const auto &p : proto.h265().profiles())
+            c.profiles.push_back(convertH265Profile(p));
+        fillDr(proto.h265(), c.dynamicRanges);
+        result.h265 = std::move(c);
+    }
+    if (proto.has_vp9())
+    {
+        firebolt::rialto::Vp9CodecCapability c;
+        for (const auto &p : proto.vp9().profiles())
+            c.profiles.push_back(convertVp9Profile(p));
+        fillDr(proto.vp9(), c.dynamicRanges);
+        result.vp9 = std::move(c);
+    }
+    if (proto.has_av1())
+    {
+        firebolt::rialto::Av1CodecCapability c;
+        for (const auto &p : proto.av1().profiles())
+            c.profiles.push_back(convertAv1Profile(p));
+        fillDr(proto.av1(), c.dynamicRanges);
+        result.av1 = std::move(c);
+    }
+    return result;
+}
+
+firebolt::rialto::VideoDecoderCapability
+convertVideoDecoderCapability(const VideoCapabilitiesResponse::VideoDecoderCapability &proto)
+{
+    firebolt::rialto::VideoDecoderCapability result;
+    if (proto.has_codec_capabilities())
+        result.codecCapabilities = convertVideoCodecCapabilities(proto.codec_capabilities());
+    return result;
+}
+
+firebolt::rialto::VideoDecoderCapabilities convertVideoDecoderCapabilities(const VideoCapabilitiesResponse &response)
+{
+    firebolt::rialto::VideoDecoderCapabilities result;
+    result.interfaceVersion = response.interface_version();
+    result.schemaVersion = response.schema_version();
+    for (const auto &cap : response.capabilities())
+    {
+        result.capabilities.push_back(convertVideoDecoderCapability(cap));
+    }
+    return result;
+}
+} // namespace
+
 namespace firebolt::rialto::client
 {
 std::shared_ptr<IMediaPipelineCapabilitiesIpcFactory> IMediaPipelineCapabilitiesIpcFactory::createFactory()
@@ -204,5 +772,63 @@ bool MediaPipelineCapabilitiesIpc::isVideoMaster(bool &isVideoMaster)
     isVideoMaster = response.is_video_master();
 
     return true;
+}
+
+AudioDecoderCapabilities MediaPipelineCapabilitiesIpc::getSupportedAudioCapabilities()
+{
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return AudioDecoderCapabilities{};
+    }
+
+    firebolt::rialto::GetSupportedAudioCapabilitiesRequest request;
+    firebolt::rialto::GetSupportedAudioCapabilitiesResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineCapabilitiesStub->getSupportedAudioCapabilities(ipcController.get(), &request, &response,
+                                                                   blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed due to '%s'", ipcController->ErrorText().c_str());
+        return AudioDecoderCapabilities{};
+    }
+
+    return convertAudioDecoderCapabilities(response);
+}
+
+VideoDecoderCapabilities MediaPipelineCapabilitiesIpc::getSupportedVideoCapabilities()
+{
+    RIALTO_CLIENT_LOG_DEBUG("entry:");
+
+    if (!reattachChannelIfRequired())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reattachment of the ipc channel failed, ipc disconnected");
+        return VideoDecoderCapabilities{};
+    }
+
+    firebolt::rialto::GetSupportedVideoCapabilitiesRequest request;
+    firebolt::rialto::GetSupportedVideoCapabilitiesResponse response;
+    auto ipcController = m_ipc.createRpcController();
+    auto blockingClosure = m_ipc.createBlockingClosure();
+    m_mediaPipelineCapabilitiesStub->getSupportedVideoCapabilities(ipcController.get(), &request, &response,
+                                                                   blockingClosure.get());
+
+    // wait for the call to complete
+    blockingClosure->wait();
+
+    // check the result
+    if (ipcController->Failed())
+    {
+        RIALTO_CLIENT_LOG_ERROR("failed due to '%s'", ipcController->ErrorText().c_str());
+        return VideoDecoderCapabilities{};
+    }
+
+    return convertVideoDecoderCapabilities(response);
 }
 }; // namespace firebolt::rialto::client
