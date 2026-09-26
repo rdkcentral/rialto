@@ -49,8 +49,8 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
     add_compile_definitions(WRAPPERS_ENABLED)
 
     find_package( ocdm REQUIRED )
-    find_package( WPEFrameworkCore REQUIRED )
-    find_package( WPEFrameworkCOM REQUIRED )
+    find_package( ${NAMESPACE}Core REQUIRED )
+    find_package( ${NAMESPACE}COM REQUIRED )
 
     set(WRAPPER_INCLUDES
         ${OCdm_INCLUDE_DIRS}
@@ -61,8 +61,8 @@ if( NOT CMAKE_BUILD_FLAG STREQUAL "UnitTests" AND NOT CMAKE_BUILD_FLAG STREQUAL 
     set(WRAPPER_LIBS
         rdkgstreamerutils
         ocdm::ocdm
-        WPEFrameworkCore::WPEFrameworkCore
-        WPEFrameworkCOM::WPEFrameworkCOM
+        ${NAMESPACE}Core::${NAMESPACE}Core
+        ${NAMESPACE}COM::${NAMESPACE}COM
         ${CMAKE_DL_LIBS})
 
     set(WRAPPER_SOURCES
