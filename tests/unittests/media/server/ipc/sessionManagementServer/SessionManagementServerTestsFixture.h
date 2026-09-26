@@ -37,6 +37,7 @@
 #include "PrivateMetricsServiceMock.h"
 #include "WebAudioPlayerModuleServiceMock.h"
 #include "WebAudioPlayerServiceMock.h"
+#include <future>
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -91,6 +92,7 @@ private:
 
     std::function<void(const std::shared_ptr<firebolt::rialto::ipc::IClient> &)> m_clientConnectedCb;
     std::function<void(const std::shared_ptr<firebolt::rialto::ipc::IClient> &)> m_clientDisconnectedCb;
+    std::future<void> m_serverStartedFuture;
 };
 
 #endif // SESSION_MANAGEMENT_SERVER_TESTS_FIXTURE_H_
