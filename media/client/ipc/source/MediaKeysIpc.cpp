@@ -395,6 +395,7 @@ MediaKeyErrorStatus MediaKeysIpc::createKeySession(KeySessionType sessionType, s
 
 MediaKeyErrorStatus MediaKeysIpc::generateRequest(int32_t keySessionId, InitDataType initDataType,
                                                   const std::vector<uint8_t> &initData,
+                                                  const std::vector<uint8_t> &cdmData,
                                                   const LimitedDurationLicense &ldlState)
 {
     if (!reattachChannelIfRequired())
@@ -450,6 +451,11 @@ MediaKeyErrorStatus MediaKeysIpc::generateRequest(int32_t keySessionId, InitData
     for (auto it = initData.begin(); it != initData.end(); it++)
     {
         request.add_init_data(*it);
+    }
+
+    for (auto it = cdmData.begin(); it != cdmData.end(); it++)
+    {
+        request.add_cdm_data(*it);
     }
 
     firebolt::rialto::GenerateRequestResponse response;

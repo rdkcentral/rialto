@@ -109,10 +109,14 @@ MediaKeySession::~MediaKeySession()
 }
 
 MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, const std::vector<uint8_t> &initData,
+                                                     const std::vector<uint8_t> &cdmData,
                                                      const LimitedDurationLicense &ldlState)
 {
     RIALTO_SERVER_LOG_DEBUG("entry:");
-    if (LimitedDurationLicense::NOT_SPECIFIED != ldlState)
+    const bool kIsPersistentRestoreFlow = (m_kSessionType == KeySessionType::PERSISTENT_LICENCE) &&
+                                          (!cdmData.empty()) && (LimitedDurationLicense::NOT_SPECIFIED == ldlState);
+
+    if ((LimitedDurationLicense::NOT_SPECIFIED != ldlState) || !cdmData.empty())
     {
         m_extendedInterfaceInUse = true;
     }
@@ -129,7 +133,8 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
     {
         initOcdmErrorChecking();
 
-        status = m_ocdmSession->constructSession(m_kSessionType, initDataType, &initData[0], initData.size());
+        status = m_ocdmSession->constructSession(m_kSessionType, initDataType, initData.data(), initData.size(),
+                                                 cdmData.data(), cdmData.size());
         if (MediaKeyErrorStatus::OK != status)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to construct the key session");
@@ -152,7 +157,7 @@ MediaKeyErrorStatus MediaKeySession::generateRequest(InitDataType initDataType, 
         }
     }
 
-    if (m_isSessionConstructed && m_extendedInterfaceInUse)
+    if (m_isSessionConstructed && m_extendedInterfaceInUse && !kIsPersistentRestoreFlow)
     {
         // Ocdm-playready does not notify onProcessChallenge when complete.
         // Fetch the challenge manually.
@@ -176,7 +181,7 @@ void MediaKeySession::getChallenge(const LimitedDurationLicense &ldlState)
             return;
         }
         std::vector<uint8_t> challenge(challengeSize, 0x00);
-        status = m_ocdmSession->getChallengeData(kIsLdl, &challenge[0], &challengeSize);
+        status = m_ocdmSession->getChallengeData(kIsLdl, challenge.data(), &challengeSize);
         if (MediaKeyErrorStatus::OK != status)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to get the challenge data, no onLicenseRequest will be generated");
@@ -185,7 +190,7 @@ void MediaKeySession::getChallenge(const LimitedDurationLicense &ldlState)
 
         std::string url;
         m_licenseRequested = true;
-        onProcessChallenge(url.c_str(), &challenge[0], challengeSize);
+        onProcessChallenge(url.c_str(), challenge.data(), challengeSize);
     };
     m_mainThread->enqueueTask(m_mainThreadClientId, task);
 }
@@ -215,7 +220,7 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
     MediaKeyErrorStatus status;
     if (m_extendedInterfaceInUse)
     {
-        status = m_ocdmSession->storeLicenseData(&responseData[0], responseData.size());
+        status = m_ocdmSession->storeLicenseData(responseData.data(), responseData.size());
         if (MediaKeyErrorStatus::OK != status)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to store the license data for the key session");
@@ -223,7 +228,7 @@ MediaKeyErrorStatus MediaKeySession::updateSession(const std::vector<uint8_t> &r
     }
     else
     {
-        status = m_ocdmSession->update(&responseData[0], responseData.size());
+        status = m_ocdmSession->update(responseData.data(), responseData.size());
         if (MediaKeyErrorStatus::OK != status)
         {
             RIALTO_SERVER_LOG_ERROR("Failed to update the key session");
@@ -459,7 +464,7 @@ void MediaKeySession::onKeyUpdated(const uint8_t keyId[], const uint8_t keyIdLen
         std::shared_ptr<IMediaKeysClient> client = m_mediaKeysClient.lock();
         if (client)
         {
-            KeyStatus status = m_ocdmSession->getStatus(&keyIdVec[0], keyIdVec.size());
+            KeyStatus status = m_ocdmSession->getStatus(keyIdVec.data(), keyIdVec.size());
             m_updatedKeyStatuses.push_back(std::make_pair(keyIdVec, status));
         }
     };

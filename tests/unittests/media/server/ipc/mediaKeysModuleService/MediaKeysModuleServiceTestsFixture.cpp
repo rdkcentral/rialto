@@ -157,16 +157,16 @@ void MediaKeysModuleServiceTests::cdmServiceWillFailToCreateKeySession()
 void MediaKeysModuleServiceTests::cdmServiceWillGenerateRequest()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_cdmServiceMock,
-                generateRequest(kHardcodedMediaKeysHandle, kKeySessionId, kInitDataType, kInitData, kLdlState))
+    EXPECT_CALL(m_cdmServiceMock, generateRequest(kHardcodedMediaKeysHandle, kKeySessionId, kInitDataType, kInitData,
+                                                  std::vector<uint8_t>{}, kLdlState))
         .WillOnce(Return(firebolt::rialto::MediaKeyErrorStatus::OK));
 }
 
 void MediaKeysModuleServiceTests::cdmServiceWillFailToGenerateRequest()
 {
     expectRequestSuccess();
-    EXPECT_CALL(m_cdmServiceMock,
-                generateRequest(kHardcodedMediaKeysHandle, kKeySessionId, kInitDataType, kInitData, kLdlState))
+    EXPECT_CALL(m_cdmServiceMock, generateRequest(kHardcodedMediaKeysHandle, kKeySessionId, kInitDataType, kInitData,
+                                                  std::vector<uint8_t>{}, kLdlState))
         .WillOnce(Return(kErrorStatus));
 }
 
