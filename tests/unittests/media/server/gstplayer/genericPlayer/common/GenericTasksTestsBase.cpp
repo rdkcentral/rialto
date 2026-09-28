@@ -3727,16 +3727,32 @@ void GenericTasksTestsBase::triggerFailToCastDolbyVisionSource()
 
 void GenericTasksTestsBase::shouldSetImmediateOutput()
 {
+    shouldGetAudioElementsForImmediateOutput();
     EXPECT_CALL(testContext->m_gstPlayer, setImmediateOutput()).WillOnce(Return(true));
+}
+
+void GenericTasksTestsBase::shouldGetAudioElementsForImmediateOutput()
+{
+    EXPECT_CALL(testContext->m_gstPlayer, getDecoder(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
+    EXPECT_CALL(testContext->m_gstPlayer, getSink(MediaSourceType::AUDIO)).WillOnce(Return(nullptr));
 }
 
 void GenericTasksTestsBase::triggerSetImmediateOutput()
 {
-    firebolt::rialto::server::tasks::generic::SetImmediateOutput task{testContext->m_context, testContext->m_gstPlayer,
+    firebolt::rialto::server::tasks::generic::SetImmediateOutput task{testContext->m_context, testContext->m_gstWrapper,
+                                                                      testContext->m_glibWrapper, testContext->m_gstPlayer,
                                                                       MediaSourceType::VIDEO, true};
     task.execute();
 
     EXPECT_EQ(testContext->m_context.pendingImmediateOutputForVideo, true);
+}
+
+void GenericTasksTestsBase::triggerAudioSetImmediateOutput()
+{
+    firebolt::rialto::server::tasks::generic::SetImmediateOutput task{testContext->m_context, testContext->m_gstWrapper,
+                                                                      testContext->m_glibWrapper, testContext->m_gstPlayer,
+                                                                      MediaSourceType::AUDIO, true};
+    task.execute();
 }
 
 void GenericTasksTestsBase::shouldSetReportDecodeErrors()
