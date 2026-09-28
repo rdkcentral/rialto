@@ -708,7 +708,7 @@ void GstGenericPlayer::notifyPlaybackInfo()
     m_gstPlayerClient->notifyPlaybackInfo(info);
 }
 
-GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
+GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType) const
 {
     GstIterator *it = m_gstWrapper->gstBinIterateRecurse(GST_BIN(m_context.pipeline));
     GValue item = G_VALUE_INIT;
@@ -2186,6 +2186,134 @@ bool GstGenericPlayer::setImmediateOutput()
         else
         {
             RIALTO_SERVER_LOG_DEBUG("Pending an immediate-output, sink is NULL");
+        }
+    }
+    return result;
+}
+
+bool GstGenericPlayer::setLowLatencyAudioDecoder()
+{
+    bool result{true};
+    if (m_context.pendingLowLatencyForAudioDecoder.has_value())
+    {
+        GstElement *decoder = getDecoder(MediaSourceType::AUDIO);
+        if (decoder)
+        {
+            bool lowLatencyAudioDecoder{m_context.pendingLowLatencyForAudioDecoder.value()};
+            RIALTO_SERVER_LOG_DEBUG("Set low latency properties on audio decoder to %s", lowLatencyAudioDecoder ? "TRUE" : "FALSE");
+
+            const auto setDecoderBoolPropertyIfExists = [&](const char *property, bool value, bool ret)
+            {
+                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), property))
+                {
+                    gboolean propertyValue{value ? TRUE : FALSE};
+                    m_glibWrapper->gObjectSet(decoder, property, propertyValue, nullptr);
+                }
+                else
+                {
+                    ret = false;
+                }
+            };
+
+            const auto setDecoderIntPropertyIfExists = [&](const char *property, gint value, bool ret)
+            {
+                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(decoder), property))
+                {
+                    m_glibWrapper->gObjectSet(decoder, property, value, nullptr);
+                }
+                else
+                {
+                    ret = false;
+                }
+            };
+
+            const std::string decoderName{GST_ELEMENT_NAME(decoder)};
+            if (m_glibWrapper->gStrHasPrefix(decoderName.c_str(), "brcmaudiodecoder"))
+            {
+                setDecoderBoolPropertyIfExists("sync-off", lowLatencyAudioDecoder, result);
+                setDecoderIntPropertyIfExists("stream_sync_mode", lowLatencyAudioDecoder ? 1 : 0, result);
+            }
+
+            m_context.pendingLowLatencyForAudioDecoder.reset();
+            m_gstWrapper->gstObjectUnref(decoder);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending an low latency audio decoder, decoder is NULL");
+        }
+    }
+    return result;
+}
+
+bool GstGenericPlayer::setLowLatencyAudioSink()
+{
+    bool result{true};
+    if (m_context.pendingLowLatencyForAudioSink.has_value())
+    {
+        GstElement *sink{getSink(MediaSourceType::VIDEO)};
+        if (sink)
+        {
+            bool lowLatencyAudioSink{m_context.pendingLowLatencyForAudioSink.value()};
+            RIALTO_SERVER_LOG_DEBUG("Set low latency properties on audio sink to %s", lowLatencyAudioSink ? "TRUE" : "FALSE");
+
+            const auto setSinkBoolPropertyIfExists = [&](const char *property, bool value, bool ret)
+            {
+                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), property))
+                {
+                    gboolean propertyValue{value ? TRUE : FALSE};
+                    m_glibWrapper->gObjectSet(sink, property, propertyValue, nullptr);
+                }
+                else
+                {
+                    ret = false;
+                }
+            };
+
+            const auto setSinkIntPropertyIfExists = [&](const char *property, gint value, bool ret)
+            {
+                if (m_glibWrapper->gObjectClassFindProperty(G_OBJECT_GET_CLASS(sink), property))
+                {
+                    m_glibWrapper->gObjectSet(sink, property, value, nullptr);
+                }
+                else
+                {
+                    ret = false;
+                }
+            };
+
+            const std::string sinkName{GST_ELEMENT_NAME(sink)};
+            if (m_glibWrapper->gStrHasPrefix(sinkName.c_str(), "brcmaudiosink"))
+            {
+                setSinkBoolPropertyIfExists("low-latency", lowLatencyAudioSink, result);
+                setSinkBoolPropertyIfExists("sync", !lowLatencyAudioSink, result);
+            }
+            else if (m_glibWrapper->gStrHasPrefix(sinkName.c_str(), "rtkaudiosink"))
+            {
+                setSinkBoolPropertyIfExists("media-tunnel", false, result);
+                setSinkBoolPropertyIfExists("audio-service", true, result);
+                setSinkIntPropertyIfExists("lowdelay-sync-mode", lowLatencyAudioSink ? 0 : 1, result);
+                setSinkBoolPropertyIfExists("sync", !lowLatencyAudioSink, result);
+            }
+            else if (m_glibWrapper->gStrHasPrefix(sinkName.c_str(), "amlhalasink"))
+            {
+                setSinkBoolPropertyIfExists("llp-mode", lowLatencyAudioSink, result);
+                setSinkBoolPropertyIfExists("sync", !lowLatencyAudioSink, result);
+            }
+            else if (m_glibWrapper->gStrHasPrefix(sinkName.c_str(), "mtkaudiosink"))
+            {
+                setSinkBoolPropertyIfExists("llp-mode", lowLatencyAudioSink, result);
+            }
+            else
+            {
+                RIALTO_SERVER_LOG_WARN("No low latency vendor mapping applied for sink '%s'", sinkName.c_str());
+            }
+
+            m_context.pendingLowLatencyForAudioSink.reset();
+            m_gstWrapper->gstObjectUnref(sink);
+        }
+        else
+        {
+            RIALTO_SERVER_LOG_DEBUG("Pending an low latency audio sink, sink is NULL");
         }
     }
     return result;

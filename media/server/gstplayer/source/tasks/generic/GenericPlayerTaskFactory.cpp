@@ -340,7 +340,8 @@ GenericPlayerTaskFactory::createSetImmediateOutput(GenericPlayerContext &context
                                                    const firebolt::rialto::MediaSourceType &type,
                                                    bool immediateOutput) const
 {
-    return std::make_unique<tasks::generic::SetImmediateOutput>(context, player, type, immediateOutput);
+    return std::make_unique<tasks::generic::SetImmediateOutput>(context, m_gstWrapper, m_glibWrapper, player, type,
+                                                               immediateOutput);
 }
 
 std::unique_ptr<IPlayerTask>

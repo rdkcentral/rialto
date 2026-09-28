@@ -110,6 +110,20 @@ public:
     virtual bool setImmediateOutput() = 0;
 
     /**
+     * @brief Sets properties for low latency on audio decoder. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setLowLatencyAudioDecoder() = 0;
+
+    /**
+     * @brief Sets properties for low latency on audio decoder. Called by the worker thread.
+     *
+     * @retval true on success.
+     */
+    virtual bool setLowLatencyAudioSink() = 0;
+
+    /**
      * @brief Sets report decode error. Called by the worker thread.
      *
      * @retval true on success.
@@ -321,6 +335,15 @@ public:
      * @retval The sink, NULL if not found. Please call getObjectUnref() if it's non-null
      */
     virtual GstElement *getSink(const MediaSourceType &mediaSourceType) const = 0;
+
+    /**
+     * @brief Gets the decoder element for source type.
+     *
+     * @param[in] mediaSourceType : the source type to obtain the decoder for
+     *
+     * @retval The decoder, NULL if not found. Please call getObjectUnref() if it's non-null
+     */
+    virtual GstElement *getDecoder(const MediaSourceType &mediaSourceType) const = 0;
 
     /**
      * @brief Reattaches source (or switches it)

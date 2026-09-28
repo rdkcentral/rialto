@@ -164,6 +164,8 @@ private:
     void scheduleAllSourcesAttached() override;
     bool setVideoSinkRectangle() override;
     bool setImmediateOutput() override;
+    bool setLowLatencyAudioDecoder() override;
+    bool setLowLatencyAudioSink() override;
     bool setReportDecodeErrors() override;
     bool setShowVideoWindow() override;
     bool setLowLatency() override;
@@ -203,6 +205,7 @@ private:
     bool reattachSource(const std::unique_ptr<IMediaPipeline::MediaSource> &source) override;
     bool hasSourceType(const MediaSourceType &mediaSourceType) const override;
     GstElement *getSink(const MediaSourceType &mediaSourceType) const override;
+    GstElement *getDecoder(const MediaSourceType &mediaSourceType) const override;
     void setSourceFlushed(const MediaSourceType &mediaSourceType) override;
     bool isAsync(const MediaSourceType &mediaSourceType) const;
     void notifyPlaybackInfo() override;
@@ -305,15 +308,6 @@ private:
      * @retval Underlying child audio sink or 'sink' if there are no children.
      */
     GstElement *getSinkChildIfAutoAudioSink(GstElement *sink) const;
-
-    /**
-     * @brief Gets the decoder element for source type.
-     *
-     * @param[in] mediaSourceType : the source type to obtain the decoder for
-     *
-     * @retval The decoder, NULL if not found
-     */
-    GstElement *getDecoder(const MediaSourceType &mediaSourceType);
 
     /**
      * @brief Gets the parser element for source type.
