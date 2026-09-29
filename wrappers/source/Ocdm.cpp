@@ -22,9 +22,17 @@
 
 namespace firebolt::rialto::wrappers
 {
+std::weak_ptr<IOcdm> OcdmFactory::m_ocdm;
+std::mutex OcdmFactory::m_creationMutex;
+
 std::shared_ptr<IOcdm> OcdmFactory::getOcdm() const
 {
-    static std::shared_ptr<IOcdm> ocdm;
+    //static std::shared_ptr<IOcdm> ocdm;
+    std::lock_guard<std::mutex> lock{m_creationMutex};
+    // Held via weak_ptr (not cached forever) - the OCDM/DRM daemon connection is only kept alive
+    // while a capability query is in flight, so it doesn't linger through ACTIVE-idle periods.
+    std::shared_ptr<IOcdm> ocdm = m_ocdm.lock();
+    
     if (!ocdm)
     {
         try
@@ -34,6 +42,7 @@ std::shared_ptr<IOcdm> OcdmFactory::getOcdm() const
         catch (const std::exception &e)
         {
         }
+	m_ocdm = ocdm;
     }
     return ocdm;
 }
