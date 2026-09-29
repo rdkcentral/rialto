@@ -39,6 +39,7 @@ add_library (
         source/WebAudioPlayerService.cpp
         source/WebAudioPlayerMetricsClient.cpp
         source/PrivateMetricsService.cpp
+        source/ConsoleLogForwarding.cpp
 )
 set_target_properties (
         RialtoServerService

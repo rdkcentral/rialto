@@ -364,23 +364,6 @@ bool SessionServerApp::spawnSessionServer()
                     m_childInitialized = true;
                     m_processStartupCv.notify_one();
                 }
-                if (!firebolt::rialto::logging::isConsoleLoggingEnabled())
-                {
-                    int devNull = m_linuxWrapper->open("/dev/null", O_RDWR, 0);
-                    if (devNull < 0)
-                    {
-                        m_linuxWrapper->exit(EXIT_FAILURE);
-                        return false; // wrapper function is not [[noreturn]]
-                    }
-                    m_linuxWrapper->dup2(devNull, STDIN_FILENO);
-                    m_linuxWrapper->dup2(devNull, STDOUT_FILENO);
-                    m_linuxWrapper->dup2(devNull, STDERR_FILENO);
-                    if (devNull > STDERR_FILENO)
-                    {
-                        m_linuxWrapper->close(devNull);
-                        devNull = -1;
-                    }
-                }
                 const std::string kAppMgmtSocketStr{std::to_string(newSocket)};
                 char *const appArguments[] = {strdup(m_kSessionServerPath.c_str()), strdup(kAppMgmtSocketStr.c_str()),
                                               nullptr};
