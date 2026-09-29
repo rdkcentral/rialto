@@ -21,8 +21,11 @@
 #define FIREBOLT_RIALTO_SERVER_SERVICE_SESSION_SERVER_MANAGER_MOCK_H_
 
 #include "ISessionServerManager.h"
+#include <AudioDecoderCapabilities.h>
+#include <VideoDecoderCapabilities.h>
 #include <gmock/gmock.h>
 #include <memory>
+#include <optional>
 #include <string>
 
 namespace firebolt::rialto::server::service
@@ -48,6 +51,10 @@ public:
                  RIALTO_DEBUG_LEVEL serverManagerLogLevels, RIALTO_DEBUG_LEVEL commonLogLevels),
                 (override));
     MOCK_METHOD(bool, ping, (std::int32_t id, const std::shared_ptr<IAckSender> &ackSender), (override));
+    MOCK_METHOD(void, setPreloadedCapabilities,
+                (const std::optional<common::AudioDecoderCapabilities> &audioCaps,
+                 const std::optional<common::VideoDecoderCapabilities> &videoCaps),
+                (override));
 };
 } // namespace firebolt::rialto::server::service
 
