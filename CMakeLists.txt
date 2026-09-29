@@ -184,6 +184,11 @@ if ( NOT ENVIRONMENT_VARIABLES MATCHES "LD_PRELOAD=" )
         ",\"LD_PRELOAD=/var/tmp/perfetto/libheapprofd_glibc_preload.so\"" )
 endif()
 
+if ( NOT ENVIRONMENT_VARIABLES MATCHES "PERFETTO_HEAPPROFD_BLOCKING_INIT=" )
+    string( APPEND ENVIRONMENT_VARIABLES
+        ",\\"PERFETTO_HEAPPROFD_BLOCKING_INIT=1\\"" )
+endif()
+
 if ( NOT EXTRA_ENV_VARIABLES)
     set( EXTRA_ENV_VARIABLES "" )
 endif()
