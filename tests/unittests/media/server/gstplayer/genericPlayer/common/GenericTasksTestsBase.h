@@ -310,6 +310,8 @@ protected:
     // immediate-output sink property test methods
     void shouldSetImmediateOutput();
     void triggerSetImmediateOutput();
+    void shouldGetAudioElementsForImmediateOutput();
+    void triggerAudioSetImmediateOutput();
 
     // low-latency sink property test methods
     void shouldSetLowLatency();
