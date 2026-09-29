@@ -226,6 +226,7 @@ bool SharedMemoryBuffer::unmapPartition(MediaPlaybackType playbackType, int id)
         RIALTO_SERVER_LOG_WARN("Failed to unmap Shm partition for id: %d. - partition could not be found", id);
         return false;
     }
+    madvise(m_dataBuffer, m_dataBufferLen, MADV_DONTNEED);
     partition->id = kNoIdAssigned;
     return true;
 }

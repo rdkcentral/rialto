@@ -53,6 +53,8 @@ SharedMemoryHandle::~SharedMemoryHandle()
         return;
     }
 
+    // maybe not needed
+    madvise(m_shmBuffer, m_shmBufferLen, MADV_DONTNEED);
     int32_t ret = munmap(m_shmBuffer, m_shmBufferLen);
     if (-1 == ret)
     {
