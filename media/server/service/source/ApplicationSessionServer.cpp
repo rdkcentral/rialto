@@ -18,6 +18,9 @@
  */
 
 #include "ApplicationSessionServer.h"
+#include "IMediaCapabilitiesServerInternal.h"
+#include "RialtoServerLogging.h"
+#include <utility>
 
 namespace firebolt::rialto::server
 {

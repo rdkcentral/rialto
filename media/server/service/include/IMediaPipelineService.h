@@ -23,8 +23,11 @@
 #include "IHeartbeatProcedure.h"
 #include "IMediaPipeline.h"
 #include "MediaCommon.h"
+#include <AudioDecoderCapabilities.h>
+#include <VideoDecoderCapabilities.h>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -94,6 +97,10 @@ public:
     virtual bool switchSource(int sessionId, const std::unique_ptr<IMediaPipeline::MediaSource> &source) = 0;
     virtual bool isVideoMaster(bool &isVideoMaster) = 0;
     virtual bool getDuration(int sessionId, std::int64_t &duration) = 0;
+    virtual common::AudioDecoderCapabilities getSupportedAudioCapabilities() = 0;
+    virtual common::VideoDecoderCapabilities getSupportedVideoCapabilities() = 0;
+    virtual void setPreloadedCapabilities(const std::optional<common::AudioDecoderCapabilities> &audioCaps,
+                                          const std::optional<common::VideoDecoderCapabilities> &videoCaps) = 0;
 };
 } // namespace firebolt::rialto::server::service
 

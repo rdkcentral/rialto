@@ -21,6 +21,8 @@
 #define FIREBOLT_RIALTO_SERVER_CT_ACTION_TRAITS_H_
 
 #include "controlmodule.pb.h"
+#include "mediaCapabilitiesCommon.pb.h"
+#include "mediacapabilitiesmodule.pb.h"
 #include "mediakeyscapabilitiesmodule.pb.h"
 #include "mediakeysmodule.pb.h"
 #include "mediapipelinecapabilitiesmodule.pb.h"
@@ -594,6 +596,22 @@ struct IsVideoMaster
     using ResponseType = ::firebolt::rialto::IsVideoMasterResponse;
     using Stub = ::firebolt::rialto::MediaPipelineCapabilitiesModule_Stub;
     static constexpr auto m_kFunction{&Stub::isVideoMaster};
+};
+
+struct GetSupportedAudioCapabilities
+{
+    using RequestType = ::firebolt::rialto::GetSupportedAudioCapabilitiesRequest;
+    using ResponseType = ::firebolt::rialto::AudioCapabilities;
+    using Stub = ::firebolt::rialto::MediaCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getSupportedAudioCapabilities};
+};
+
+struct GetSupportedVideoCapabilities
+{
+    using RequestType = ::firebolt::rialto::GetSupportedVideoCapabilitiesRequest;
+    using ResponseType = ::firebolt::rialto::VideoCapabilities;
+    using Stub = ::firebolt::rialto::MediaCapabilitiesModule_Stub;
+    static constexpr auto m_kFunction{&Stub::getSupportedVideoCapabilities};
 };
 
 // web audio player module

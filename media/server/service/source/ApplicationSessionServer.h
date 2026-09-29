@@ -25,6 +25,7 @@
 #include "IApplicationSessionServer.h"
 #include "IControlServerInternal.h"
 #include "IHeartbeatProcedure.h"
+#include "IMediaCapabilitiesServerInternal.h"
 #include "IMediaKeysCapabilities.h"
 #include "IMediaKeysServerInternal.h"
 #include "IMediaPipelineCapabilities.h"
@@ -58,6 +59,7 @@ public:
 
 private:
     firebolt::rialto::server::ipc::IpcFactory m_ipcFactory;
+
     firebolt::rialto::server::service::ControlService m_controlService{
         firebolt::rialto::server::IControlServerInternalFactory::createFactory()};
     firebolt::rialto::server::service::CdmService
@@ -67,7 +69,9 @@ private:
         m_playbackService{firebolt::rialto::server::IMediaPipelineServerInternalFactory::createFactory(),
                           firebolt::rialto::IMediaPipelineCapabilitiesFactory::createFactory(),
                           firebolt::rialto::server::IWebAudioPlayerServerInternalFactory::createFactory(),
-                          firebolt::rialto::server::ISharedMemoryBufferFactory::createFactory(), m_cdmService};
+                          firebolt::rialto::server::ISharedMemoryBufferFactory::createFactory(),
+                          m_cdmService,
+                          firebolt::rialto::server::IMediaCapabilitiesServerInternalFactory::createFactory()};
     firebolt::rialto::server::service::SessionServerManager
         m_serviceManager{m_ipcFactory, m_playbackService, m_cdmService, m_controlService,
                          firebolt::rialto::server::IHeartbeatProcedureFactory::createFactory()};

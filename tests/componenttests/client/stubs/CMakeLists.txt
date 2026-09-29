@@ -27,6 +27,7 @@ add_library (
         ServerStub.cpp
         ControlModuleStub.cpp
         MediaPipelineModuleStub.cpp
+        MediaCapabilitiesModuleStub.cpp
         MediaKeysModuleStub.cpp
         MediaKeysCapabilitiesModuleStub.cpp
         MediaPipelineCapabilitiesModuleStub.cpp
