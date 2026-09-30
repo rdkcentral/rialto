@@ -292,6 +292,14 @@ struct GenericPlayerContext
     std::atomic<double> audioFadeVolume{1.0};
 
     /**
+     * @brief Last playback info values sent to the client to avoid redundant IPC payloads.
+     *        The values are updated from the worker thread that emits the events.
+     */
+    std::atomic<int64_t> lastPlaybackInfoPosition{-1};
+    std::atomic<double> lastPlaybackInfoVolume{-1.0};
+    std::atomic<bool> lastPlaybackInfoSet{false};
+
+    /**
      * @brief Workaround for the gstreamer flush issue
      */
     std::shared_ptr<IFlushOnPrerollController> flushOnPrerollController{std::make_shared<FlushOnPrerollController>()};

@@ -189,7 +189,7 @@ protected:
         return saveContext;
     }
 
-    void willNotifyPlaybackInfo()
+    void willNotifyPlaybackInfo(bool shouldNotify = true)
     {
         EXPECT_CALL(*m_gstWrapperMock, gstStateLock(_)).WillOnce(Return());
         EXPECT_CALL(*m_gstWrapperMock, gstElementGetState(_)).WillOnce(Return(GST_STATE_PLAYING));
@@ -207,7 +207,10 @@ protected:
         EXPECT_CALL(*m_gstWrapperMock, gstStreamVolumeGetVolume(_, GST_STREAM_VOLUME_FORMAT_LINEAR))
             .WillOnce(Return(kVolume));
 
-        EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo));
+        if (shouldNotify)
+        {
+            EXPECT_CALL(m_gstPlayerClient, notifyPlaybackInfo(kPlaybackInfo));
+        }
     }
 
     void willNotifyPlaybackInfoWithAudioFade()
@@ -1986,7 +1989,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldScheduleCheckAudioUnderflowWhenTimerIs
     m_sut->startCheckAudioUnderflowTimer();
 }
 
-TEST_F(GstGenericPlayerPrivateTest, shouldSchedulePlaybackInfoWhenPlaybackInfoTimerIsFired)
+TEST_F(GstGenericPlayerPrivateTest, shouldSuppressRedundantPlaybackInfoWhenPlaybackInfoTimerIsFired)
 {
     std::unique_ptr<common::ITimer> timerMock = std::make_unique<StrictMock<TimerMock>>();
     willNotifyPlaybackInfo();
@@ -1997,7 +2000,7 @@ TEST_F(GstGenericPlayerPrivateTest, shouldSchedulePlaybackInfoWhenPlaybackInfoTi
         .WillOnce(Invoke(
             [&](const std::chrono::milliseconds &timeout, const std::function<void()> &callback, common::TimerType timerType)
             {
-                willNotifyPlaybackInfo();
+                willNotifyPlaybackInfo(false);
                 callback();
                 return std::move(playbackInfoTimerMock);
             }));

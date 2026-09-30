@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cinttypes>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -705,7 +706,24 @@ void GstGenericPlayer::notifyPlaybackInfo()
     {
         getVolume(info.volume);
     }
-    m_gstPlayerClient->notifyPlaybackInfo(info);
+
+    const auto lastPosition = m_context.lastPlaybackInfoPosition.load(std::memory_order_relaxed);
+    const auto lastVolume = m_context.lastPlaybackInfoVolume.load(std::memory_order_relaxed);
+    const bool hadPreviousPlaybackInfo = m_context.lastPlaybackInfoSet.load(std::memory_order_relaxed);
+
+    if (hadPreviousPlaybackInfo && lastPosition == info.currentPosition && std::fabs(lastVolume - info.volume) < 1e-9)
+    {
+        return;
+    }
+
+    m_context.lastPlaybackInfoPosition.store(info.currentPosition, std::memory_order_relaxed);
+    m_context.lastPlaybackInfoVolume.store(info.volume, std::memory_order_relaxed);
+    m_context.lastPlaybackInfoSet.store(true, std::memory_order_relaxed);
+
+    if (m_gstPlayerClient)
+    {
+        m_gstPlayerClient->notifyPlaybackInfo(info);
+    }
 }
 
 GstElement *GstGenericPlayer::getDecoder(const MediaSourceType &mediaSourceType)
