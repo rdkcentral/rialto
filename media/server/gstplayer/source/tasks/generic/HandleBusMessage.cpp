@@ -72,9 +72,12 @@ void HandleBusMessage::execute() const
             {
             case GST_STATE_NULL:
             {
+                RIALTO_SERVER_LOG_WARN("USHA: NULL state: Entering to NULL state on Stop() call");
                 m_gstPlayerClient->notifyPlaybackState(PlaybackState::STOPPED);
+                RIALTO_SERVER_LOG_WARN("USHA: NULL state: notifyPlaybackState to STOPPED");
                 for (auto &elem : m_context.streamInfo)
                 {
+                    RIALTO_SERVER_LOG_WARN("USHA: NULL state: checking streamInfo.buffers");
                     StreamInfo &streamInfo = elem.second;
                     for (auto &buffer : streamInfo.buffers)
                     {
@@ -82,6 +85,7 @@ void HandleBusMessage::execute() const
                         m_gstWrapper->gstBufferUnref(buffer);
                     }
                     streamInfo.buffers.clear();
+                    RIALTO_SERVER_LOG_WARN("USHA: NULL state: cleared streamInfo.buffers by calling streamInfo.buffers.clear()");
                 }
                 m_glibWrapper->gThreadPoolStopUnusedThreads();
                 malloc_trim(0);
