@@ -39,9 +39,11 @@ IIpcClient &IpcClientAccessor::getIpcClient() const
 IpcClient::IpcClient(const std::shared_ptr<ipc::IChannelFactory> &ipcChannelFactory,
                      const std::shared_ptr<ipc::IControllerFactory> &ipcControllerFactory,
                      const std::shared_ptr<ipc::IBlockingClosureFactory> &blockingClosureFactory)
-    : m_ipcControllerFactory(ipcControllerFactory), m_ipcChannelFactory(ipcChannelFactory),
-      m_blockingClosureFactory(blockingClosureFactory), m_disconnecting(false)
+    : m_ipcThreadId{std::thread::id{}}, m_ipcControllerFactory(ipcControllerFactory),
+      m_ipcChannelFactory(ipcChannelFactory), m_blockingClosureFactory(blockingClosureFactory), m_disconnecting(false)
 {
+    std::lock_guard<std::mutex> lock{m_ipcMutex};
+
     // For now, always connect the client on construction
     if (!connect())
     {
@@ -51,6 +53,8 @@ IpcClient::IpcClient(const std::shared_ptr<ipc::IChannelFactory> &ipcChannelFact
 
 IpcClient::~IpcClient()
 {
+    std::lock_guard<std::mutex> lock{m_ipcMutex};
+
     if (!disconnect())
     {
         RIALTO_CLIENT_LOG_WARN("Could not disconnect client");
@@ -59,10 +63,15 @@ IpcClient::~IpcClient()
 
 bool IpcClient::connect()
 {
-    if (m_ipcChannel)
+    if (getChannelInternal())
     {
         RIALTO_CLIENT_LOG_INFO("Client already connected");
         return true;
+    }
+
+    if (m_ipcThread.joinable())
+    {
+        m_ipcThread.join();
     }
 
     // Verify that the version of the library that we linked against is
@@ -74,6 +83,7 @@ bool IpcClient::connect()
     //  - RIALTO_SOCKET_FD should specify the number of a file descriptor of the socket to connect to
     const char *kRialtoPath = getenv("RIALTO_SOCKET_PATH");
     const char *kRialtoFd = getenv("RIALTO_SOCKET_FD");
+    std::shared_ptr<ipc::IChannel> ipcChannel;
     if (kRialtoFd)
     {
         char *end = nullptr;
@@ -84,11 +94,11 @@ bool IpcClient::connect()
             return false;
         }
 
-        m_ipcChannel = m_ipcChannelFactory->createChannel(fd);
+        ipcChannel = m_ipcChannelFactory->createChannel(fd);
     }
     else if (kRialtoPath)
     {
-        m_ipcChannel = m_ipcChannelFactory->createChannel(kRialtoPath);
+        ipcChannel = m_ipcChannelFactory->createChannel(kRialtoPath);
     }
     else
     {
@@ -97,17 +107,25 @@ bool IpcClient::connect()
     }
 
     // check if the channel was opened
-    if (!m_ipcChannel)
+    if (!ipcChannel)
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to open a connection to the ipc socket");
         return false;
     }
 
+    {
+        std::lock_guard<std::mutex> channelLock{m_channelMutex};
+        m_ipcChannel = ipcChannel;
+    }
+
     // spin up the thread that runs the IPC event loop
-    m_ipcThread = std::thread(&IpcClient::processIpcThread, this);
+    m_ipcThread = std::thread(&IpcClient::processIpcThread, this, ipcChannel);
     if (!m_ipcThread.joinable())
     {
         RIALTO_CLIENT_LOG_ERROR("Failed to create thread for IPC");
+
+        std::lock_guard<std::mutex> channelLock{m_channelMutex};
+        m_ipcChannel.reset();
         return false;
     }
 
@@ -117,7 +135,7 @@ bool IpcClient::connect()
 bool IpcClient::disconnect()
 {
     // Increase reference in case client disconnects from another thread
-    std::shared_ptr<ipc::IChannel> ipcChannel = m_ipcChannel;
+    std::shared_ptr<ipc::IChannel> ipcChannel = getChannelInternal();
     if (!ipcChannel)
     {
         // The ipc channel may have disconnected unexpectedly, join the ipc thread if possible
@@ -138,22 +156,28 @@ bool IpcClient::disconnect()
         m_ipcThread.join();
 
     // destroy the IPC channel
-    m_ipcChannel.reset();
+    {
+        std::lock_guard<std::mutex> channelLock{m_channelMutex};
+        m_ipcChannel.reset();
+    }
+    ipcChannel.reset();
 
     m_disconnecting = false;
 
     return true;
 }
 
-void IpcClient::processIpcThread()
+void IpcClient::processIpcThread(std::shared_ptr<ipc::IChannel> ipcChannel)
 {
     pthread_setname_np(pthread_self(), "rialto-ipc");
 
+    m_ipcThreadId = std::this_thread::get_id();
+
     RIALTO_CLIENT_LOG_INFO("started ipc thread");
 
-    while (m_ipcChannel->process())
+    while (ipcChannel->process())
     {
-        m_ipcChannel->wait(-1);
+        ipcChannel->wait(-1);
     }
 
     if (!m_disconnecting)
@@ -162,7 +186,14 @@ void IpcClient::processIpcThread()
 
         // Safe to destroy the ipc objects in the ipc thread as the client has already disconnected.
         // This ensures the channel is destructed and that all ongoing ipc calls are unblocked.
-        m_ipcChannel.reset();
+        {
+            std::lock_guard<std::mutex> channelLock{m_channelMutex};
+            if (m_ipcChannel == ipcChannel)
+            {
+                m_ipcChannel.reset();
+            }
+        }
+        ipcChannel.reset();
 
         auto connectionObserver{m_connectionObserver.lock()};
         if (connectionObserver)
@@ -171,18 +202,26 @@ void IpcClient::processIpcThread()
         }
     }
 
+    m_ipcThreadId = std::thread::id{};
+
     RIALTO_CLIENT_LOG_INFO("exiting ipc thread");
+}
+
+std::shared_ptr<ipc::IChannel> IpcClient::getChannelInternal() const
+{
+    std::lock_guard<std::mutex> channelLock{m_channelMutex};
+    return m_ipcChannel;
 }
 
 std::weak_ptr<::firebolt::rialto::ipc::IChannel> IpcClient::getChannel() const
 {
-    return m_ipcChannel;
+    return getChannelInternal();
 }
 
 std::shared_ptr<ipc::IBlockingClosure> IpcClient::createBlockingClosure()
 {
     // Increase reference in case client disconnects from another thread
-    std::shared_ptr<ipc::IChannel> ipcChannel = m_ipcChannel;
+    std::shared_ptr<ipc::IChannel> ipcChannel = getChannelInternal();
     if (!ipcChannel)
     {
         RIALTO_CLIENT_LOG_ERROR("ipc channel not connected");
@@ -191,7 +230,7 @@ std::shared_ptr<ipc::IBlockingClosure> IpcClient::createBlockingClosure()
 
     // check which thread we're being called from, this determines if we pump
     // event loop from within the wait() method or not
-    if (m_ipcThread.get_id() == std::this_thread::get_id())
+    if (m_ipcThreadId.load() == std::this_thread::get_id())
         return m_blockingClosureFactory->createBlockingClosurePoll(std::move(ipcChannel));
     else
         return m_blockingClosureFactory->createBlockingClosureSemaphore();
@@ -204,6 +243,22 @@ std::shared_ptr<google::protobuf::RpcController> IpcClient::createRpcController(
 
 bool IpcClient::reconnect()
 {
+    if (m_ipcThreadId.load() == std::this_thread::get_id())
+    {
+        RIALTO_CLIENT_LOG_ERROR("Reconnection cannot be performed from the ipc thread");
+        return false;
+    }
+
+    std::lock_guard<std::mutex> lock{m_ipcMutex};
+
+    std::shared_ptr<ipc::IChannel> ipcChannel = getChannelInternal();
+    if (ipcChannel && ipcChannel->isConnected())
+    {
+        RIALTO_CLIENT_LOG_INFO("Channel has already been reconnected");
+        return true;
+    }
+    ipcChannel.reset();
+
     RIALTO_CLIENT_LOG_INFO("Trying to reconnect channel");
     if (disconnect())
     {
