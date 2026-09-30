@@ -36,7 +36,7 @@ Pause::~Pause()
 void Pause::execute() const
 {
     RIALTO_SERVER_LOG_DEBUG("Executing Pause");
-    m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
+    m_player.stopCheckAudioUnderflowTimer();
     m_player.changePipelineState(GST_STATE_PAUSED);
     m_context.isPlaying = false;
     RIALTO_SERVER_LOG_MIL("State change to PAUSED requested");

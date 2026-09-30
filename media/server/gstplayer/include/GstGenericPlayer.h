@@ -183,8 +183,8 @@ private:
     void addAudioClippingToBuffer(GstBuffer *buffer, uint64_t clippingStart, uint64_t clippingEnd) const override;
     GstStateChangeReturn changePipelineState(GstState newState) override;
     int64_t getPosition(GstElement *element) override;
-    void startPositionReportingAndCheckAudioUnderflowTimer() override;
-    void stopPositionReportingAndCheckAudioUnderflowTimer() override;
+    void startCheckAudioUnderflowTimer() override;
+    void stopCheckAudioUnderflowTimer() override;
     void startNotifyPlaybackInfoTimer() override;
     void stopNotifyPlaybackInfoTimer() override;
     void startSubtitleClockResyncTimer() override;
@@ -478,7 +478,7 @@ private:
      *
      * Variable can be used only in worker thread
      */
-    std::unique_ptr<firebolt::rialto::common::ITimer> m_positionReportingAndCheckAudioUnderflowTimer{nullptr};
+    std::unique_ptr<firebolt::rialto::common::ITimer> m_checkAudioUnderflowTimer{nullptr};
 
     /**
      * @brief Timer reporting playback information

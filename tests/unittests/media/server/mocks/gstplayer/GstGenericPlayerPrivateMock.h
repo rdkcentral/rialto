@@ -64,8 +64,8 @@ public:
                 (override));
     MOCK_METHOD(GstStateChangeReturn, changePipelineState, (GstState newState), (override));
     MOCK_METHOD(int64_t, getPosition, (GstElement * element), (override));
-    MOCK_METHOD(void, startPositionReportingAndCheckAudioUnderflowTimer, (), (override));
-    MOCK_METHOD(void, stopPositionReportingAndCheckAudioUnderflowTimer, (), (override));
+    MOCK_METHOD(void, startCheckAudioUnderflowTimer, (), (override));
+    MOCK_METHOD(void, stopCheckAudioUnderflowTimer, (), (override));
     MOCK_METHOD(void, startNotifyPlaybackInfoTimer, (), (override));
     MOCK_METHOD(void, stopNotifyPlaybackInfoTimer, (), (override));
     MOCK_METHOD(void, stopWorkerThread, (), (override));

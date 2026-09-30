@@ -2590,32 +2590,31 @@ bool GstGenericPlayer::setErmContext()
     return result;
 }
 
-void GstGenericPlayer::startPositionReportingAndCheckAudioUnderflowTimer()
+void GstGenericPlayer::startCheckAudioUnderflowTimer()
 {
-    if (m_positionReportingAndCheckAudioUnderflowTimer && m_positionReportingAndCheckAudioUnderflowTimer->isActive())
+    if (m_checkAudioUnderflowTimer && m_checkAudioUnderflowTimer->isActive())
     {
         return;
     }
 
-    m_positionReportingAndCheckAudioUnderflowTimer = m_timerFactory->createTimer(
+    m_checkAudioUnderflowTimer = m_timerFactory->createTimer(
         kPositionReportTimerMs,
         [this]()
         {
             if (m_workerThread)
             {
-                m_workerThread->enqueueTask(m_taskFactory->createReportPosition(m_context, *this));
                 m_workerThread->enqueueTask(m_taskFactory->createCheckAudioUnderflow(m_context, *this));
             }
         },
         firebolt::rialto::common::TimerType::PERIODIC);
 }
 
-void GstGenericPlayer::stopPositionReportingAndCheckAudioUnderflowTimer()
+void GstGenericPlayer::stopCheckAudioUnderflowTimer()
 {
-    if (m_positionReportingAndCheckAudioUnderflowTimer && m_positionReportingAndCheckAudioUnderflowTimer->isActive())
+    if (m_checkAudioUnderflowTimer && m_checkAudioUnderflowTimer->isActive())
     {
-        m_positionReportingAndCheckAudioUnderflowTimer->cancel();
-        m_positionReportingAndCheckAudioUnderflowTimer.reset();
+        m_checkAudioUnderflowTimer->cancel();
+        m_checkAudioUnderflowTimer.reset();
     }
 }
 

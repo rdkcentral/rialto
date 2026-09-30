@@ -285,7 +285,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedMessage)
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PAUSED));
-    EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(m_gstPlayer, stopCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, startNotifyPlaybackInfoTimer());
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
@@ -315,7 +315,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedMessageWhenSyncFlus
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PAUSED));
-    EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(m_gstPlayer, stopCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, startNotifyPlaybackInfoTimer());
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kFlushOngoing));
@@ -343,7 +343,7 @@ TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPausedMessageWhenAs
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Paused"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
-    EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(m_gstPlayer, stopCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, startNotifyPlaybackInfoTimer());
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillOnce(Return(kFlushOngoing));
@@ -371,7 +371,7 @@ TEST_F(HandleBusMessageTest, shouldSkipHandlingStateChangedToPausedMessageWhenAs
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Paused"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
-    EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(m_gstPlayer, stopCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, startNotifyPlaybackInfoTimer());
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillOnce(Return(kFlushOngoing));
@@ -396,7 +396,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPausedAndPendingPausedMes
     EXPECT_CALL(m_gstPlayer, hasSourceType(firebolt::rialto::MediaSourceType::SUBTITLE)).WillOnce(Return(false));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(GST_STATE_PAUSED)).WillRepeatedly(Return("Paused"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
-    EXPECT_CALL(m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(m_gstPlayer, stopCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayer, startNotifyPlaybackInfoTimer());
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
@@ -424,7 +424,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessage)
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Playing"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
-    EXPECT_CALL(m_gstPlayer, startPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(m_gstPlayer, startCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PLAYING));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kNoFlushOngoing));
@@ -456,7 +456,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessageWhenSyncFlu
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Playing"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
-    EXPECT_CALL(m_gstPlayer, startPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(m_gstPlayer, startCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PLAYING));
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));
     EXPECT_CALL(m_flushWatcherMock, isFlushOngoing()).WillRepeatedly(Return(kIsFlushOngoing));
@@ -540,7 +540,7 @@ TEST_F(HandleBusMessageTest, shouldHandleStateChangedToPlayingMessageAndSetPendi
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(newState)).Times(1).WillRepeatedly(Return("Playing"));
     EXPECT_CALL(*m_gstWrapper, gstElementStateGetName(pending)).WillOnce(Return("Void"));
     EXPECT_CALL(*m_gstWrapper, gstDebugBinToDotFileWithTs(GST_BIN(&m_pipeline), _, _));
-    EXPECT_CALL(m_gstPlayer, startPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(m_gstPlayer, startCheckAudioUnderflowTimer());
     EXPECT_CALL(m_gstPlayerClient, notifyPlaybackState(firebolt::rialto::PlaybackState::PLAYING));
     EXPECT_CALL(m_gstPlayer, setPendingPlaybackRate());
     EXPECT_CALL(*m_gstWrapper, gstMessageUnref(&m_message));

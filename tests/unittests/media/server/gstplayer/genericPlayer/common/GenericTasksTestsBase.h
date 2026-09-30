@@ -362,11 +362,6 @@ protected:
     void triggerPause();
     void checkContextPaused();
 
-    // ReportPosition test methods
-    void shouldReportPosition();
-    void triggerReportPosition();
-    void shouldFailToReportPosition();
-
     // FinishSetupSource test methods
     void shouldFinishSetupSource();
     void triggerFinishSetupSource();

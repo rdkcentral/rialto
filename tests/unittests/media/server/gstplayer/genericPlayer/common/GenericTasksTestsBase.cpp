@@ -40,7 +40,6 @@
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
-#include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetBufferingLimit.h"
 #include "tasks/generic/SetImmediateOutput.h"
 #include "tasks/generic/SetLowLatency.h"
@@ -2637,7 +2636,7 @@ void GenericTasksTestsBase::shouldStopGstPlayer()
     videoStreamIt->second.isDataNeeded = true;
     audioStreamIt->second.isDataNeeded = true;
     EXPECT_CALL(testContext->m_gstPlayer, clearAudioFirstFrameFallbackProbe());
-    EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(testContext->m_gstPlayer, stopCheckAudioUnderflowTimer());
     EXPECT_CALL(testContext->m_gstPlayer, stopNotifyPlaybackInfoTimer());
     EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_NULL)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
 }
@@ -2977,7 +2976,7 @@ void GenericTasksTestsBase::triggerPing()
 
 void GenericTasksTestsBase::shouldPause()
 {
-    EXPECT_CALL(testContext->m_gstPlayer, stopPositionReportingAndCheckAudioUnderflowTimer());
+    EXPECT_CALL(testContext->m_gstPlayer, stopCheckAudioUnderflowTimer());
     EXPECT_CALL(testContext->m_gstPlayer, changePipelineState(GST_STATE_PAUSED)).WillOnce(Return(GST_STATE_CHANGE_SUCCESS));
 }
 
@@ -2990,24 +2989,6 @@ void GenericTasksTestsBase::triggerPause()
 void GenericTasksTestsBase::checkContextPaused()
 {
     EXPECT_FALSE(testContext->m_context.isPlaying);
-}
-
-void GenericTasksTestsBase::shouldReportPosition()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getPosition(NotNullMatcher())).WillOnce(Return(kPosition));
-    EXPECT_CALL(testContext->m_gstPlayerClient, notifyPosition(kPosition));
-}
-
-void GenericTasksTestsBase::triggerReportPosition()
-{
-    firebolt::rialto::server::tasks::generic::ReportPosition task{testContext->m_context, &testContext->m_gstPlayerClient,
-                                                                  testContext->m_gstWrapper, testContext->m_gstPlayer};
-    task.execute();
-}
-
-void GenericTasksTestsBase::shouldFailToReportPosition()
-{
-    EXPECT_CALL(testContext->m_gstPlayer, getPosition(NotNullMatcher())).WillOnce(Return(-1));
 }
 
 void GenericTasksTestsBase::shouldFinishSetupSource()

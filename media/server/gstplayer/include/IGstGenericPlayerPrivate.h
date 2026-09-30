@@ -229,14 +229,14 @@ public:
     virtual int64_t getPosition(GstElement *element) = 0;
 
     /**
-     * @brief Starts position reporting and check audio underflow. Called by the worker thread.
+     * @brief Starts the audio-underflow check timer. Called by the worker thread.
      */
-    virtual void startPositionReportingAndCheckAudioUnderflowTimer() = 0;
+    virtual void startCheckAudioUnderflowTimer() = 0;
 
     /**
-     * @brief Stops position reporting and check audio underflow. Called by the worker thread.
+     * @brief Stops the audio-underflow check timer. Called by the worker thread.
      */
-    virtual void stopPositionReportingAndCheckAudioUnderflowTimer() = 0;
+    virtual void stopCheckAudioUnderflowTimer() = 0;
 
     /**
      * @brief Starts notify playback info timer. Called by the worker thread.

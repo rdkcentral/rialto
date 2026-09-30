@@ -52,7 +52,6 @@ add_library(
         source/tasks/generic/ReadShmDataAndAttachSamples.cpp
         source/tasks/generic/RemoveSource.cpp
         source/tasks/generic/RenderFrame.cpp
-        source/tasks/generic/ReportPosition.cpp
         source/tasks/generic/SetBufferingLimit.cpp
         source/tasks/generic/SetImmediateOutput.cpp
         source/tasks/generic/SetLowLatency.cpp

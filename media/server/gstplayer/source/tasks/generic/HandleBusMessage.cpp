@@ -82,7 +82,7 @@ void HandleBusMessage::execute() const
             case GST_STATE_PAUSED:
             {
                 m_player.startNotifyPlaybackInfoTimer();
-                m_player.stopPositionReportingAndCheckAudioUnderflowTimer();
+                m_player.stopCheckAudioUnderflowTimer();
                 if (pending != GST_STATE_PAUSED)
                 {
                     // If async flush was requested before HandleBusMessage task creation (but it was not executed yet)
@@ -120,7 +120,7 @@ void HandleBusMessage::execute() const
                 {
                     m_player.setPendingPlaybackRate();
                 }
-                m_player.startPositionReportingAndCheckAudioUnderflowTimer();
+                m_player.startCheckAudioUnderflowTimer();
                 if (m_player.hasSourceType(MediaSourceType::SUBTITLE))
                 {
                     m_player.startSubtitleClockResyncTimer();

@@ -47,7 +47,6 @@ add_gtests(RialtoServerGstPlayerUnitTests
     genericPlayer/tasksTests/ReadShmDataAndAttachSamplesTest.cpp
     genericPlayer/tasksTests/RemoveSourceTest.cpp
     genericPlayer/tasksTests/RenderFrameTest.cpp
-    genericPlayer/tasksTests/ReportPositionTest.cpp
     genericPlayer/tasksTests/SetBufferingLimitTest.cpp
     genericPlayer/tasksTests/SetLowLatencyTest.cpp
     genericPlayer/tasksTests/SetImmediateOutputTest.cpp

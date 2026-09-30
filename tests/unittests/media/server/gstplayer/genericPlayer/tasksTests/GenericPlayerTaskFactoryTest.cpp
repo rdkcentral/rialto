@@ -48,7 +48,6 @@
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
-#include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetBufferingLimit.h"
 #include "tasks/generic/SetImmediateOutput.h"
 #include "tasks/generic/SetLowLatency.h"
@@ -191,13 +190,6 @@ TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateRemoveSource)
     auto task = m_sut.createRemoveSource(m_context, m_gstPlayer, firebolt::rialto::MediaSourceType::AUDIO);
     EXPECT_NE(task, nullptr);
     EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::RemoveSource &>(*task));
-}
-
-TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateReportPosition)
-{
-    auto task = m_sut.createReportPosition(m_context, m_gstPlayer);
-    EXPECT_NE(task, nullptr);
-    EXPECT_NO_THROW(dynamic_cast<firebolt::rialto::server::tasks::generic::ReportPosition &>(*task));
 }
 
 TEST_F(GenericPlayerTaskFactoryTest, ShouldCreateCheckAudioUnderflow)

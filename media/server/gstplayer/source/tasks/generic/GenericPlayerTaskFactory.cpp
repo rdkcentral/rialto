@@ -36,7 +36,6 @@
 #include "tasks/generic/ReadShmDataAndAttachSamples.h"
 #include "tasks/generic/RemoveSource.h"
 #include "tasks/generic/RenderFrame.h"
-#include "tasks/generic/ReportPosition.h"
 #include "tasks/generic/SetBufferingLimit.h"
 #include "tasks/generic/SetImmediateOutput.h"
 #include "tasks/generic/SetLowLatency.h"
@@ -154,12 +153,6 @@ GenericPlayerTaskFactory::createRemoveSource(GenericPlayerContext &context, IGst
                                              const firebolt::rialto::MediaSourceType &type) const
 {
     return std::make_unique<tasks::generic::RemoveSource>(context, player, m_client, m_gstWrapper, type);
-}
-
-std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createReportPosition(GenericPlayerContext &context,
-                                                                            IGstGenericPlayerPrivate &player) const
-{
-    return std::make_unique<tasks::generic::ReportPosition>(context, m_client, m_gstWrapper, player);
 }
 
 std::unique_ptr<IPlayerTask> GenericPlayerTaskFactory::createCheckAudioUnderflow(GenericPlayerContext &context,
